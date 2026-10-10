@@ -534,10 +534,44 @@ theorem immutableLayout_keys :
     ∀ site ∈ immutableLayout.sites, site.2.2 ∈ contract.immutables.map (·.name) := by
   decide
 
-/-- A well-typed immutables store runs as the store of some valuation. -/
+-- LIBRARY CANDIDATE: extract an EVM word from a well-typed uint256 value.
+theorem exists_word_of_uint256_fits {value : Value}
+    (h : elemValueFits (.int (.uint ⟨256, by decide⟩)) value = true) :
+    ∃ w : EVM.Word, value = .int (Int.ofNat w.toNat) := by
+  cases value <;> simp [elemValueFits] at h
+  rename_i i
+  have hw : (EVM.word i.toNat).toNat = i.toNat :=
+    constructorUInt256Word_toNat i h.1 (by simpa [EVM.twoPow] using h.2)
+  refine ⟨EVM.word i.toNat, ?_⟩
+  rw [hw]
+  exact congrArg Value.int (Int.toNat_of_nonneg h.1).symm
+
+-- LIBRARY CANDIDATE: extract an address from a well-typed address value.
+theorem exists_address_of_address_fits {value : Value}
+    (h : elemValueFits .address value = true) :
+    ∃ a : EVM.Address, value = .address a := by
+  cases value <;> simp_all [elemValueFits]
+
 theorem restrictImmutables_of_fit {imms : Store} (h : immutablesFit contract imms) :
     ∃ v, restrictImmutables contract imms = immStore v := by
-  sorry  -- TODO: case on each immutable's value as in Examples/TinyImmutable/Common.lean
+  obtain ⟨d, hd, hdf⟩ := h ⟨"_CACHED_DOMAIN_SEPARATOR", .int (.uint ⟨256, by decide⟩)⟩ (by decide)
+  obtain ⟨c, hc, hcf⟩ := h ⟨"_CACHED_CHAIN_ID", .int (.uint ⟨256, by decide⟩)⟩ (by decide)
+  obtain ⟨t, ht, htf⟩ := h ⟨"_CACHED_THIS", .address⟩ (by decide)
+  obtain ⟨n, hn, hnf⟩ := h ⟨"_HASHED_NAME", .int (.uint ⟨256, by decide⟩)⟩ (by decide)
+  obtain ⟨v, hv, hvf⟩ := h ⟨"_HASHED_VERSION", .int (.uint ⟨256, by decide⟩)⟩ (by decide)
+  obtain ⟨y, hy, hyf⟩ := h ⟨"_TYPE_HASH", .int (.uint ⟨256, by decide⟩)⟩ (by decide)
+  obtain ⟨r, hr, hrf⟩ := h ⟨"_schemaRegistry", .address⟩ (by decide)
+  obtain ⟨d, rfl⟩ := exists_word_of_uint256_fits hdf
+  obtain ⟨c, rfl⟩ := exists_word_of_uint256_fits hcf
+  obtain ⟨t, rfl⟩ := exists_address_of_address_fits htf
+  obtain ⟨n, rfl⟩ := exists_word_of_uint256_fits hnf
+  obtain ⟨v, rfl⟩ := exists_word_of_uint256_fits hvf
+  obtain ⟨y, rfl⟩ := exists_word_of_uint256_fits hyf
+  obtain ⟨r, rfl⟩ := exists_address_of_address_fits hrf
+  refine ⟨⟨d, c, t, n, v, y, r⟩, ?_⟩
+  change ([_ , _, _, _, _, _, _] : List ImmutableDecl).foldl _ _ = _
+  simp only [List.foldl, hd, hc, ht, hn, hv, hy, hr, immStore]
+
 
 /-- The patched runtime has the template's jump destinations (patch sites are push payloads). -/
 theorem easPatchedValidJumps (v : EASImmutables) :

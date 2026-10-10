@@ -380,7 +380,17 @@ private abbrev contractBody : ContractDecl := solidity% contract EAS {
         bump = uint32(bump + 1);
       }
       attestation.uid = uid;
-      _db[uid] = attestation;
+      -- A static invocation halts at the first scalar store, before validating old data bytes.
+      _db[uid].uid = attestation.uid;
+      _db[uid].schema = attestation.schema;
+      _db[uid].time = attestation.time;
+      _db[uid].expirationTime = attestation.expirationTime;
+      _db[uid].revocationTime = attestation.revocationTime;
+      _db[uid].refUID = attestation.refUID;
+      _db[uid].recipient = attestation.recipient;
+      _db[uid].attester = attestation.attester;
+      _db[uid].revocable = attestation.revocable;
+      _db[uid].data = attestation.data;
       if (request.refUID != bytes32(0)) {
         var __c4 = isAttestationValid_body(request.refUID);
         require(__c4);
