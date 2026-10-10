@@ -1,24 +1,25 @@
 import Proofs.ERC20.Balances
-import Examples.ERC20.Transfer
-import Examples.ERC20.TransferFrom
-import Examples.ERC20.TotalSupply
-import Examples.ERC20.Allowance
+import Examples.ERC20.Correct
 import Mathlib.Algebra.BigOperators.Group.Finset.Piecewise
 import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 
 /-!
-# ERC20 contract invariant — `totalSupply = Σ balances`, preserved across every ABI call
+# ERC20 contract invariant — `totalSupply = Σ balances`
 
-This "closes the loop" on the ERC20 Solm spec: instead of proving the spec equivalent to bytecode
-(as in `Examples/ERC20`), we prove a *functional-correctness invariant of the spec itself* — the
-classic ERC20 supply invariant `totalSupply = Σ_a balanceOf[a]` — and show that **every** ABI
-entry point preserves it, and that the constructor establishes it.
+The classic ERC20 supply invariant `totalSupply = Σ_a balanceOf[a]`, stated on the Solm spec's
+storage, and its preservation by the post-states the spec's mutating bodies produce:
+`transferPostState`, `transferFromPostState`, `approvePostState`, and the constructor's
+`erc20CtorPostState` (all from `Examples/ERC20`).  `Proofs.ERC20.API` lifts these to every
+execution of every ABI entry point.
 
 The sum `Σ_a balanceOf[a]` ranges over *all* addresses.  Because `AccountAddress` is a finite type
 (`Fin _`), `∑ a : AccountAddress, balOf evm a` is a genuine `Finset.univ` sum — finitely supported
 automatically, with no auxiliary "set of holders" and no new axioms.  The only assumption is the
 explicit `InjectiveLayout` hypothesis (distinct storage refs ↦ distinct slots; see
 `Proofs.ERC20.Balances`).
+
+The preservation theorems need no hypothesis on the contract's account: if it is missing every
+storage write is a no-op, and a self-transfer (`from = to`) writes the sender's balance back.
 -/
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
@@ -37,6 +38,11 @@ noncomputable def totalBalances (evm : EVM.State) : ℕ :=
 /-- The ERC20 supply invariant: stored `totalSupply` equals the sum of all balances. -/
 def Inv (evm : EVM.State) : Prop :=
   totalSupplyVal evm = totalBalances evm
+
+/-- A missing contract account stores nothing: `totalSupply` reads as `0`. -/
+theorem totalSupplyVal_of_missing (evm : EVM.State)
+    (hmiss : evm.accountMap.get? evm.executionEnv.codeOwner = none) : totalSupplyVal evm = 0 := by
+  rw [totalSupplyVal, Solm.EVM.storageLoad, Ethereum.State.lookupAccount, hmiss]; rfl
 
 /-! ## Generic two-point "transfer" sum lemma
 
@@ -63,6 +69,11 @@ theorem sum_transfer_eq {α : Type*} [Fintype α] [DecidableEq α] (f : α → �
 section Transfer
 
 variable (evm : EVM.State) (I : ExecutionEnv)
+
+/-- Storage writes leave the execution environment untouched. -/
+theorem transferPostState_executionEnv :
+    (transferPostState evm I).executionEnv = evm.executionEnv := by
+  simp only [transferPostState, transferAfterDebitState, storageStore_codeOwner]
 
 /-- `codeOwner` is unchanged by the transfer post-state (storage writes don't touch the env). -/
 theorem transferPostState_codeOwner :
@@ -146,8 +157,8 @@ theorem balOf_transferPostState_other (hinj : InjectiveLayout erc20Config) (a : 
   rw [storageLoad_storageStore_ne _ _ _ _ _
         (by simpa [transferSenderSlot] using balanceOf_slot_ne hinj has)]
 
-/-- **Pointwise balance effect of `transfer`.**  On the success path, the post-state balances are
-    exactly the pre-state balances with `value` moved from the caller to the recipient. -/
+/-- **Pointwise balance effect of `transfer`** between distinct accounts: the post-state balances
+    are exactly the pre-state balances with `value` moved from the caller to the recipient. -/
 theorem balOf_transferPostState (hinj : InjectiveLayout erc20Config)
     {acc : Account} (hco : evm.accountMap.get? evm.executionEnv.codeOwner = some acc)
     (hne : evm.executionEnv.source ≠ AccountAddress.ofNat (transferToWord I).toNat)
@@ -170,31 +181,89 @@ theorem balOf_transferPostState (hinj : InjectiveLayout erc20Config)
     · rw [Function.update_of_ne hat, Function.update_of_ne has,
         balOf_transferPostState_other evm I hinj a hat has]
 
-/-- **`transfer` preserves the supply invariant.**  Packaged with the witness that this post-state
-    is exactly the result of executing the `transfer` body (`erc20TransferBodyReturns`), so this is a
-    statement about the real Solm semantics, not a hand-rolled state. -/
-theorem transfer_preserves_inv (hinj : InjectiveLayout erc20Config)
+/-! ### Self-transfer (`to = msg.sender`) -/
+
+theorem transferToSlot_eq_of_self
+    (hself : evm.executionEnv.source = AccountAddress.ofNat (transferToWord I).toNat) :
+    transferToSlot I = transferSenderSlot evm := by
+  simp only [transferToSlot, transferSenderSlot, hself]
+
+/-- A self-transfer credits back exactly what it debited. -/
+theorem transferNewToNat_of_self {acc : Account}
+    (hco : evm.accountMap.get? evm.executionEnv.codeOwner = some acc)
+    (hself : evm.executionEnv.source = AccountAddress.ofNat (transferToWord I).toNat)
+    (henough : (transferValueWord I).toNat ≤ balOf evm evm.executionEnv.source) :
+    transferNewToNat evm I = balOf evm evm.executionEnv.source := by
+  rw [transferNewToNat, transferToBalanceWord, transferToSlot_eq_of_self evm I hself,
+    transferAfterDebitState, storageLoad_storageStore_self _ _ _ _ hco, transferDebitWord_toNat]
+  omega
+
+/-- **Pointwise balance effect of a self-transfer**: no balance changes. -/
+theorem balOf_transferPostState_self (hinj : InjectiveLayout erc20Config)
     {acc : Account} (hco : evm.accountMap.get? evm.executionEnv.codeOwner = some acc)
-    (hne : evm.executionEnv.source ≠ AccountAddress.ofNat (transferToWord I).toNat)
+    (hself : evm.executionEnv.source = AccountAddress.ofNat (transferToWord I).toNat)
+    (henough : (transferValueWord I).toNat ≤ balOf evm evm.executionEnv.source) :
+    balOf (transferPostState evm I) = balOf evm := by
+  funext a
+  by_cases ha : a = evm.executionEnv.source
+  · subst ha
+    obtain ⟨acc', hX⟩ := storageStore_find_codeOwner evm evm.executionEnv.codeOwner
+      (transferSenderSlot evm) (transferDebitWord evm I) hco
+    have hfit : transferNewToNat evm I < UInt256.size := by
+      rw [transferNewToNat_of_self evm I hco hself henough]
+      exact Fin.isLt _
+    rw [balOf]
+    simp only [transferPostState, transferAfterDebitState, storageStore_codeOwner]
+    rw [show erc20BalanceOfSlot (KeyValue.address evm.executionEnv.source) = transferToSlot I from
+      (transferToSlot_eq_of_self evm I hself).symm]
+    rw [storageLoad_storageStore_self _ _ _ _ hX, transferNewToWord_toNat evm I hfit,
+      transferNewToNat_of_self evm I hco hself henough]
+  · rw [balOf, balOf]
+    simp only [transferPostState, transferAfterDebitState, storageStore_codeOwner]
+    rw [transferToSlot_eq_of_self evm I hself]
+    rw [storageLoad_storageStore_ne _ _ _ _ _
+          (by simpa [transferSenderSlot] using balanceOf_slot_ne hinj ha),
+        storageLoad_storageStore_ne _ _ _ _ _
+          (by simpa [transferSenderSlot] using balanceOf_slot_ne hinj ha)]
+
+/-! ### Missing contract account -/
+
+/-- Without a contract account every storage write is a no-op. -/
+theorem transferPostState_of_missing
+    (hmiss : evm.accountMap.get? evm.executionEnv.codeOwner = none) :
+    transferPostState evm I = evm := by
+  simp only [transferPostState, transferAfterDebitState]
+  rw [storageStore_noop_of_missing _ _ _ _ hmiss, storageStore_noop_of_missing _ _ _ _ hmiss]
+
+/-- **`transfer` preserves the supply invariant**, for any sender and recipient (including
+    `to = msg.sender`), whenever its two `require`/range checks pass. -/
+theorem transfer_preserves_inv (hinj : InjectiveLayout erc20Config)
     (henough : (transferValueWord I).toNat ≤ balOf evm evm.executionEnv.source)
     (hfit : transferNewToNat evm I < UInt256.size)
     (hInv : Inv evm) : Inv (transferPostState evm I) := by
-  unfold Inv totalBalances at *
-  rw [totalSupplyVal_transferPostState evm I hinj, hInv,
-    balOf_transferPostState evm I hinj hco hne hfit]
-  exact (sum_transfer_eq (balOf evm) hne (transferValueWord I).toNat henough).symm
+  rcases hacc : evm.accountMap.get? evm.executionEnv.codeOwner with _ | acc
+  · rw [transferPostState_of_missing evm I hacc]; exact hInv
+  · unfold Inv totalBalances at *
+    rw [totalSupplyVal_transferPostState evm I hinj, hInv]
+    by_cases hself : evm.executionEnv.source = AccountAddress.ofNat (transferToWord I).toNat
+    · rw [balOf_transferPostState_self evm I hinj hacc hself henough]
+    · rw [balOf_transferPostState evm I hinj hacc hself hfit]
+      exact (sum_transfer_eq (balOf evm) hself (transferValueWord I).toNat henough).symm
 
 end Transfer
 
-/-! ## `approve` and the read-only entry points preserve the invariant
+/-! ## `approve` preserves the invariant
 
 `approve` writes only an `allowance` slot — disjoint from every `balanceOf` slot and from
-`totalSupply` — so it perturbs neither side of the invariant.  The read-only methods
-(`totalSupply`, `balanceOf`, `allowance`) do not write storage at all. -/
+`totalSupply` — so it perturbs neither side of the invariant. -/
 
 section Approve
 
 variable (evm : EVM.State) (I : ExecutionEnv)
+
+theorem approvePostState_executionEnv :
+    (approvePostState evm I).executionEnv = evm.executionEnv := by
+  simp only [approvePostState, storageStore_codeOwner]
 
 theorem balOf_approvePostState (hinj : InjectiveLayout erc20Config) (a : AccountAddress) :
     balOf (approvePostState evm I) a = balOf evm a := by
@@ -233,6 +302,11 @@ section TransferFrom
 
 variable (evm : EVM.State) (I : ExecutionEnv)
 
+theorem transferFromPostState_executionEnv :
+    (transferFromPostState evm I).executionEnv = evm.executionEnv := by
+  simp only [transferFromPostState, transferFromAfterBalanceState,
+    transferFromAfterAllowanceState, storageStore_codeOwner]
+
 theorem transferFromPostState_codeOwner :
     (transferFromPostState evm I).executionEnv.codeOwner = evm.executionEnv.codeOwner := by
   simp only [transferFromPostState, transferFromAfterBalanceState,
@@ -255,9 +329,7 @@ theorem transferFromToBalanceWord_toNat (hinj : InjectiveLayout erc20Config)
   rfl
 
 /-- The `from`-balance debit value: `balOf evm from - value` (read past the allowance write). -/
-theorem transferFromBalanceDebitWord_toNat (hinj : InjectiveLayout erc20Config)
-    (henough : (transferFromValueWord I).toNat ≤
-      balOf evm (AccountAddress.ofNat (transferFromFromWord I).toNat)) :
+theorem transferFromBalanceDebitWord_toNat (hinj : InjectiveLayout erc20Config) :
     (transferFromBalanceDebitWord (transferFromAfterAllowanceState evm I) I).toNat =
       balOf evm (AccountAddress.ofNat (transferFromFromWord I).toNat) -
         (transferFromValueWord I).toNat := by
@@ -299,9 +371,7 @@ theorem balOf_transferFromPostState_to (hinj : InjectiveLayout erc20Config)
 theorem balOf_transferFromPostState_from (hinj : InjectiveLayout erc20Config)
     {acc : Account} (hco : evm.accountMap.get? evm.executionEnv.codeOwner = some acc)
     (hft : AccountAddress.ofNat (transferFromFromWord I).toNat ≠
-      AccountAddress.ofNat (transferFromToWord I).toNat)
-    (henough : (transferFromValueWord I).toNat ≤
-      balOf evm (AccountAddress.ofNat (transferFromFromWord I).toNat)) :
+      AccountAddress.ofNat (transferFromToWord I).toNat) :
     balOf (transferFromPostState evm I) (AccountAddress.ofNat (transferFromFromWord I).toNat) =
       balOf evm (AccountAddress.ofNat (transferFromFromWord I).toNat) -
         (transferFromValueWord I).toNat := by
@@ -316,7 +386,7 @@ theorem balOf_transferFromPostState_from (hinj : InjectiveLayout erc20Config)
   rw [storageLoad_storageStore_self (transferFromAfterAllowanceState evm I)
         evm.executionEnv.codeOwner (transferFromFromSlot I)
         (transferFromBalanceDebitWord (transferFromAfterAllowanceState evm I) I) hcoA]
-  rw [transferFromBalanceDebitWord_toNat evm I hinj henough]
+  rw [transferFromBalanceDebitWord_toNat evm I hinj]
 
 /-- Any third party's balance is untouched by `transferFrom`. -/
 theorem balOf_transferFromPostState_other (hinj : InjectiveLayout erc20Config) (a : AccountAddress)
@@ -334,12 +404,11 @@ theorem balOf_transferFromPostState_other (hinj : InjectiveLayout erc20Config) (
           (allowance_slot_ne_balanceOf hinj (AccountAddress.ofNat (transferFromFromWord I).toNat)
             evm.executionEnv.source a).symm)]
 
+/-- **Pointwise balance effect of `transferFrom`** between distinct accounts. -/
 theorem balOf_transferFromPostState (hinj : InjectiveLayout erc20Config)
     {acc : Account} (hco : evm.accountMap.get? evm.executionEnv.codeOwner = some acc)
     (hft : AccountAddress.ofNat (transferFromFromWord I).toNat ≠
       AccountAddress.ofNat (transferFromToWord I).toNat)
-    (henough : (transferFromValueWord I).toNat ≤
-      balOf evm (AccountAddress.ofNat (transferFromFromWord I).toNat))
     (hfit : transferFromNewToNat evm I < UInt256.size) :
     balOf (transferFromPostState evm I) =
       Function.update
@@ -356,7 +425,7 @@ theorem balOf_transferFromPostState (hinj : InjectiveLayout erc20Config)
   · by_cases haf : a = AccountAddress.ofNat (transferFromFromWord I).toNat
     · subst haf
       rw [Function.update_of_ne hat, Function.update_self,
-        balOf_transferFromPostState_from evm I hinj hco hft henough]
+        balOf_transferFromPostState_from evm I hinj hco hft]
     · rw [Function.update_of_ne hat, Function.update_of_ne haf,
         balOf_transferFromPostState_other evm I hinj a haf hat]
 
@@ -377,109 +446,105 @@ theorem totalSupplyVal_transferFromPostState (hinj : InjectiveLayout erc20Config
           (allowance_slot_ne_totalSupply hinj
             (AccountAddress.ofNat (transferFromFromWord I).toNat) evm.executionEnv.source).symm)]
 
-/-- **`transferFrom` preserves the supply invariant.** -/
-theorem transferFrom_preserves_inv (hinj : InjectiveLayout erc20Config)
-    {acc : Account} (hco : evm.accountMap.get? evm.executionEnv.codeOwner = some acc)
-    (hft : AccountAddress.ofNat (transferFromFromWord I).toNat ≠
+/-! ### Self-transfer (`from = to`) -/
+
+theorem transferFromToSlot_eq_of_self
+    (hself : AccountAddress.ofNat (transferFromFromWord I).toNat =
+      AccountAddress.ofNat (transferFromToWord I).toNat) :
+    transferFromToSlot I = transferFromFromSlot I := by
+  simp only [transferFromToSlot, transferFromFromSlot, hself]
+
+/-- A self-`transferFrom` credits back exactly what it debited. -/
+theorem transferFromNewToNat_of_self (hinj : InjectiveLayout erc20Config) {acc : Account}
+    (hco : evm.accountMap.get? evm.executionEnv.codeOwner = some acc)
+    (hself : AccountAddress.ofNat (transferFromFromWord I).toNat =
       AccountAddress.ofNat (transferFromToWord I).toNat)
+    (henough : (transferFromValueWord I).toNat ≤
+      balOf evm (AccountAddress.ofNat (transferFromFromWord I).toNat)) :
+    transferFromNewToNat evm I = balOf evm (AccountAddress.ofNat (transferFromFromWord I).toNat) := by
+  obtain ⟨_, hcoA⟩ := storageStore_find_codeOwner evm evm.executionEnv.codeOwner
+    (transferFromAllowanceSlot evm I) (transferFromAllowanceDebitWord evm I) hco
+  rw [transferFromNewToNat, transferFromToBalanceWord, transferFromToSlot_eq_of_self I hself,
+    transferFromAfterBalanceState,
+    storageLoad_storageStore_self (transferFromAfterAllowanceState evm I) evm.executionEnv.codeOwner
+      (transferFromFromSlot I) (transferFromBalanceDebitWord (transferFromAfterAllowanceState evm I) I)
+      hcoA,
+    transferFromBalanceDebitWord_toNat evm I hinj]
+  omega
+
+/-- **Pointwise balance effect of a self-`transferFrom`**: no balance changes. -/
+theorem balOf_transferFromPostState_self (hinj : InjectiveLayout erc20Config) {acc : Account}
+    (hco : evm.accountMap.get? evm.executionEnv.codeOwner = some acc)
+    (hself : AccountAddress.ofNat (transferFromFromWord I).toNat =
+      AccountAddress.ofNat (transferFromToWord I).toNat)
+    (henough : (transferFromValueWord I).toNat ≤
+      balOf evm (AccountAddress.ofNat (transferFromFromWord I).toNat)) :
+    balOf (transferFromPostState evm I) = balOf evm := by
+  funext a
+  by_cases ha : a = AccountAddress.ofNat (transferFromFromWord I).toNat
+  · subst ha
+    obtain ⟨_, hcoA⟩ := storageStore_find_codeOwner evm evm.executionEnv.codeOwner
+      (transferFromAllowanceSlot evm I) (transferFromAllowanceDebitWord evm I) hco
+    obtain ⟨_, hcoB⟩ := storageStore_find_codeOwner (transferFromAfterAllowanceState evm I)
+      evm.executionEnv.codeOwner (transferFromFromSlot I)
+      (transferFromBalanceDebitWord (transferFromAfterAllowanceState evm I) I) hcoA
+    have hfit : transferFromNewToNat evm I < UInt256.size := by
+      rw [transferFromNewToNat_of_self evm I hinj hco hself henough]
+      exact Fin.isLt _
+    rw [balOf, transferFromPostState_codeOwner, transferFromPostState]
+    rw [show erc20BalanceOfSlot
+          (KeyValue.address (AccountAddress.ofNat (transferFromFromWord I).toNat))
+        = transferFromToSlot I from (transferFromToSlot_eq_of_self I hself).symm]
+    rw [storageLoad_storageStore_self (transferFromAfterBalanceState evm I)
+          evm.executionEnv.codeOwner (transferFromToSlot I) (transferFromNewToWord evm I) hcoB]
+    rw [transferFromNewToWord_toNat evm I hfit,
+      transferFromNewToNat_of_self evm I hinj hco hself henough]
+  · rw [balOf, balOf, transferFromPostState_codeOwner, transferFromPostState,
+      transferFromAfterBalanceState, transferFromAfterAllowanceState]
+    rw [transferFromToSlot_eq_of_self I hself]
+    rw [storageLoad_storageStore_ne _ _ _ _ _
+          (by simpa [transferFromFromSlot] using balanceOf_slot_ne hinj ha)]
+    rw [storageLoad_storageStore_ne _ _ _ _ _
+          (by simpa [transferFromFromSlot] using balanceOf_slot_ne hinj ha)]
+    rw [storageLoad_storageStore_ne _ _ _ _ _
+          (by simpa [transferFromAllowanceSlot] using
+            (allowance_slot_ne_balanceOf hinj (AccountAddress.ofNat (transferFromFromWord I).toNat)
+              evm.executionEnv.source a).symm)]
+
+/-! ### Missing contract account -/
+
+theorem transferFromPostState_of_missing
+    (hmiss : evm.accountMap.get? evm.executionEnv.codeOwner = none) :
+    transferFromPostState evm I = evm := by
+  simp only [transferFromPostState, transferFromAfterBalanceState, transferFromAfterAllowanceState]
+  rw [storageStore_noop_of_missing _ _ _ _ hmiss, storageStore_noop_of_missing _ _ _ _ hmiss,
+    storageStore_noop_of_missing _ _ _ _ hmiss]
+
+/-- **`transferFrom` preserves the supply invariant**, for any `from` and `to` (including
+    `from = to`), whenever its checks pass. -/
+theorem transferFrom_preserves_inv (hinj : InjectiveLayout erc20Config)
     (henough : (transferFromValueWord I).toNat ≤
       balOf evm (AccountAddress.ofNat (transferFromFromWord I).toNat))
     (hfit : transferFromNewToNat evm I < UInt256.size)
     (hInv : Inv evm) : Inv (transferFromPostState evm I) := by
-  unfold Inv totalBalances at *
-  rw [totalSupplyVal_transferFromPostState evm I hinj, hInv,
-    balOf_transferFromPostState evm I hinj hco hft henough hfit]
-  exact (sum_transfer_eq (balOf evm) hft (transferFromValueWord I).toNat henough).symm
+  rcases hacc : evm.accountMap.get? evm.executionEnv.codeOwner with _ | acc
+  · rw [transferFromPostState_of_missing evm I hacc]; exact hInv
+  · unfold Inv totalBalances at *
+    rw [totalSupplyVal_transferFromPostState evm I hinj, hInv]
+    by_cases hself : AccountAddress.ofNat (transferFromFromWord I).toNat =
+        AccountAddress.ofNat (transferFromToWord I).toNat
+    · rw [balOf_transferFromPostState_self evm I hinj hacc hself henough]
+    · rw [balOf_transferFromPostState evm I hinj hacc hself hfit]
+      exact (sum_transfer_eq (balOf evm) hself (transferFromValueWord I).toNat henough).symm
 
 end TransferFrom
 
-/-! ## Closing the loop: every ABI entry point preserves `Inv`
-
-Each theorem below pairs the *real* `ExecTransitionBody` derivation of a transition body (reused
-verbatim from the equivalence development, e.g. `erc20TransferBodyReturns`) with a proof that the
-resulting state still satisfies `Inv`.  Together they say: executing any ERC20 ABI method on a state
-satisfying the supply invariant lands in a state that still satisfies it.
-
-The read-only methods return the state unchanged, so they preserve `Inv` trivially.  `transfer` and
-`transferFrom` additionally require `from ≠ to` (the self-transfer case is a no-op on the sum and is
-left as a small separate lemma) and that the contract's own account exists (`hco`, true of any live
-call). -/
-
-section ClosesLoop
-
-variable (evm : EVM.State) (I : ExecutionEnv)
-
-theorem transfer_closesLoop (hinj : InjectiveLayout erc20Config)
-    {acc : Account} (hco : evm.accountMap.get? evm.executionEnv.codeOwner = some acc)
-    (hne : evm.executionEnv.source ≠ AccountAddress.ofNat (transferToWord I).toNat)
-    (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (henough : (transferValueWord I).toNat ≤ balOf evm evm.executionEnv.source)
-    (hfit : transferNewToNat evm I < UInt256.size) (hInv : Inv evm) :
-    ExecTransitionBody erc20Config erc20Contract evm (transferStore I) transferTransition.body
-        (.returned { contract := erc20Contract, locals := transferStoreNewToBalance evm I }
-          (transferPostState evm I) (some [.bool true]))
-      ∧ Inv (transferPostState evm I) :=
-  ⟨erc20TransferBodyReturns evm I hwv henough hfit,
-    transfer_preserves_inv evm I hinj hco hne henough hfit hInv⟩
-
-theorem transferFrom_closesLoop (hinj : InjectiveLayout erc20Config)
-    {acc : Account} (hco : evm.accountMap.get? evm.executionEnv.codeOwner = some acc)
-    (hft : AccountAddress.ofNat (transferFromFromWord I).toNat ≠
-      AccountAddress.ofNat (transferFromToWord I).toNat)
-    (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hallowance : (transferFromValueWord I).toNat ≤ (transferFromCurrentAllowanceWord evm I).toNat)
-    (hbalance : (transferFromValueWord I).toNat ≤
-      balOf evm (AccountAddress.ofNat (transferFromFromWord I).toNat))
-    (hbalanceDebit : (transferFromValueWord I).toNat ≤
-      (transferFromFromBalanceWord (transferFromAfterAllowanceState evm I) I).toNat)
-    (hfit : transferFromNewToNat evm I < UInt256.size) (hInv : Inv evm) :
-    ExecTransitionBody erc20Config erc20Contract evm (transferFromStore I)
-        transferFromTransition.body
-        (.returned { contract := erc20Contract, locals := transferFromStoreNewToBalance evm I }
-          (transferFromPostState evm I) (some [.bool true]))
-      ∧ Inv (transferFromPostState evm I) :=
-  ⟨erc20TransferFromBodyReturns evm I hwv hallowance hbalance hbalanceDebit hfit,
-    transferFrom_preserves_inv evm I hinj hco hft hbalance hfit hInv⟩
-
-theorem approve_closesLoop (hinj : InjectiveLayout erc20Config)
-    (hwv : evm.executionEnv.weiValue = ⟨0⟩) (hInv : Inv evm) :
-    ExecTransitionBody erc20Config erc20Contract evm (approveStore I) approveTransition.body
-        (.returned { contract := erc20Contract, locals := approveStore I }
-          (approvePostState evm I) (some [.bool true]))
-      ∧ Inv (approvePostState evm I) :=
-  ⟨erc20ApproveBodyReturns evm I hwv, approve_preserves_inv evm I hinj hInv⟩
-
-theorem totalSupply_closesLoop (hwv : evm.executionEnv.weiValue = ⟨0⟩) (hInv : Inv evm) :
-    ExecTransitionBody erc20Config erc20Contract evm (∅ : Store) totalSupplyTransition.body
-        (.returned { contract := erc20Contract, locals := (∅ : Store) } evm
-          (some [.int (Int.ofNat
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩).toNat)]))
-      ∧ Inv evm :=
-  ⟨erc20TotalSupplyBodyReturns evm (∅ : Store) hwv (by simp), hInv⟩
-
-theorem balanceOf_closesLoop (hwv : evm.executionEnv.weiValue = ⟨0⟩) (hInv : Inv evm) :
-    ExecTransitionBody erc20Config erc20Contract evm (balanceOfStore I) balanceOfTransition.body
-        (.returned { contract := erc20Contract, locals := balanceOfStore I } evm
-          (some [.int (Int.ofNat
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (balanceOfSlot I)).toNat)]))
-      ∧ Inv evm :=
-  ⟨erc20BalanceOfBodyReturns evm I hwv, hInv⟩
-
-theorem allowance_closesLoop (hwv : evm.executionEnv.weiValue = ⟨0⟩) (hInv : Inv evm) :
-    ExecTransitionBody erc20Config erc20Contract evm (allowanceStore I) allowanceTransition.body
-        (.returned { contract := erc20Contract, locals := allowanceStore I } evm
-          (some [.int (Int.ofNat
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (allowanceSlot I)).toNat)]))
-      ∧ Inv evm :=
-  ⟨erc20AllowanceBodyReturns evm I hwv, hInv⟩
-
-end ClosesLoop
-
 /-! ## The constructor establishes the invariant (base case)
 
-`constructor(initialSupply)` mints `initialSupply` to the deployer and sets `totalSupply`.  From a
-fresh deploy state (all balances zero) the result satisfies `Inv`: the only non-zero balance is the
-deployer's, equal to `totalSupply`. -/
+`constructor(initialSupply)` mints `initialSupply` to the deployer and sets `totalSupply`
+(`erc20CtorPostState`, from `Examples/ERC20/Correct`).  From a fresh deploy state (all balances
+zero) the result satisfies `Inv`: the only non-zero balance is the deployer's, equal to
+`totalSupply`. -/
 
 section Constructor
 
@@ -492,45 +557,53 @@ theorem totalBalances_update_zero {α : Type*} [Fintype α] [DecidableEq α] (f 
   rw [Finset.sum_update_of_mem (Finset.mem_univ x),
     Finset.sum_eq_zero (fun a ha => hz a (by simpa using (Finset.mem_sdiff.mp ha).2)), Nat.add_zero]
 
-/-- The state after running the ERC20 constructor with supply word `s`: mint `s` to the deployer,
-    then set `totalSupply := s`. -/
-def ctorPostState (s : UInt256) : EVM.State :=
-  Solm.EVM.storageStore
-    (Solm.EVM.storageStore evm evm.executionEnv.codeOwner
-      (erc20BalanceOfSlot (.address evm.executionEnv.source)) s)
-    evm.executionEnv.codeOwner ⟨2⟩ s
+theorem erc20CtorPostState_executionEnv (s : UInt256) :
+    (erc20CtorPostState evm s).executionEnv = evm.executionEnv := by
+  simp only [erc20CtorPostState, erc20CtorBalancePostState, storageStore_codeOwner]
 
-theorem balOf_ctorPostState (s : UInt256) (hinj : InjectiveLayout erc20Config)
+theorem balOf_erc20CtorPostState (s : UInt256) (hinj : InjectiveLayout erc20Config)
     {acc : Account} (hco : evm.accountMap.get? evm.executionEnv.codeOwner = some acc) :
-    balOf (ctorPostState evm s) = Function.update (balOf evm) evm.executionEnv.source s.toNat := by
+    balOf (erc20CtorPostState evm s) =
+      Function.update (balOf evm) evm.executionEnv.source s.toNat := by
   funext a
   by_cases ha : a = evm.executionEnv.source
   · subst ha
     rw [balOf]
-    simp only [ctorPostState, storageStore_codeOwner]
+    simp only [erc20CtorPostState, erc20CtorBalancePostState, storageStore_codeOwner]
     rw [storageLoad_storageStore_ne _ _ _ _ _
           (balanceOf_slot_ne_totalSupply hinj evm.executionEnv.source)]
     rw [storageLoad_storageStore_self _ _ _ _ hco, Function.update_self]
   · rw [Function.update_of_ne ha, balOf, balOf]
-    simp only [ctorPostState, storageStore_codeOwner]
+    simp only [erc20CtorPostState, erc20CtorBalancePostState, storageStore_codeOwner]
     rw [storageLoad_storageStore_ne _ _ _ _ _ (balanceOf_slot_ne_totalSupply hinj a)]
     rw [storageLoad_storageStore_ne _ _ _ _ _ (balanceOf_slot_ne hinj ha)]
 
-theorem totalSupplyVal_ctorPostState (s : UInt256)
+theorem totalSupplyVal_erc20CtorPostState (s : UInt256)
     {acc : Account} (hco : evm.accountMap.get? evm.executionEnv.codeOwner = some acc) :
-    totalSupplyVal (ctorPostState evm s) = s.toNat := by
+    totalSupplyVal (erc20CtorPostState evm s) = s.toNat := by
   obtain ⟨_, h2⟩ := storageStore_find_codeOwner evm evm.executionEnv.codeOwner
     (erc20BalanceOfSlot (.address evm.executionEnv.source)) s hco
-  simp only [totalSupplyVal, ctorPostState, storageStore_codeOwner]
+  simp only [totalSupplyVal, erc20CtorPostState, erc20CtorBalancePostState, storageStore_codeOwner]
   rw [storageLoad_storageStore_self _ _ _ _ h2]
+
+theorem erc20CtorPostState_of_missing (s : UInt256)
+    (hmiss : evm.accountMap.get? evm.executionEnv.codeOwner = none) :
+    erc20CtorPostState evm s = evm := by
+  simp only [erc20CtorPostState, erc20CtorBalancePostState]
+  rw [storageStore_noop_of_missing _ _ _ _ hmiss]
+  exact storageStore_noop_of_missing _ _ _ _ hmiss
 
 /-- **The constructor establishes `Inv`** from a fresh (all-balances-zero) deploy state. -/
 theorem constructor_establishes_inv (s : UInt256) (hinj : InjectiveLayout erc20Config)
-    {acc : Account} (hco : evm.accountMap.get? evm.executionEnv.codeOwner = some acc)
-    (hzero : ∀ a, balOf evm a = 0) : Inv (ctorPostState evm s) := by
-  unfold Inv totalBalances
-  rw [totalSupplyVal_ctorPostState evm s hco, balOf_ctorPostState evm s hinj hco,
-    totalBalances_update_zero (balOf evm) evm.executionEnv.source s.toNat (fun a _ => hzero a)]
+    (hzero : ∀ a, balOf evm a = 0) : Inv (erc20CtorPostState evm s) := by
+  rcases hacc : evm.accountMap.get? evm.executionEnv.codeOwner with _ | acc
+  · rw [erc20CtorPostState_of_missing evm s hacc]
+    unfold Inv totalBalances
+    rw [totalSupplyVal_of_missing evm hacc]
+    exact (Finset.sum_eq_zero (fun a _ => hzero a)).symm
+  · unfold Inv totalBalances
+    rw [totalSupplyVal_erc20CtorPostState evm s hacc, balOf_erc20CtorPostState evm s hinj hacc,
+      totalBalances_update_zero (balOf evm) evm.executionEnv.source s.toNat (fun a _ => hzero a)]
 
 end Constructor
 
