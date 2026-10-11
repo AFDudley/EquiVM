@@ -71,8 +71,8 @@ import Benchmarks.Scaffolds.ERC721.Spec
 import Benchmarks.Scaffolds.ERC721.Bytecode
 import Benchmarks.Scaffolds.Klima.Spec
 import Benchmarks.Scaffolds.Klima.Bytecode
-import Benchmarks.Scaffolds.Safe.Spec
-import Benchmarks.Scaffolds.Safe.Bytecode
+import Benchmarks.Safe.Spec
+import Benchmarks.Safe.Bytecode
 import Benchmarks.Scaffolds.TimelockController.Spec
 import Benchmarks.Scaffolds.TimelockController.Bytecode
 import Benchmarks.Scaffolds.VestingWallet.Spec

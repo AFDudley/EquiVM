@@ -21,3 +21,6 @@ import Benchmarks.Dss.Flopper.Correct
 import Benchmarks.Dss.GemJoin.Correct
 import Benchmarks.Dss.DaiJoin.Correct
 import Benchmarks.EAS.Attester.Correct
+import Benchmarks.CompoundIII.Comet.Correct
+import Benchmarks.Morpho.MorphoBlue.Correct
+import Benchmarks.UniswapV3.Pool.Correct
