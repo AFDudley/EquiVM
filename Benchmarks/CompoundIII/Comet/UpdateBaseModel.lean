@@ -38,10 +38,12 @@ def updateBaseFinishBlock : List Stmt :=
     .assign .storage ⟨"userBasic", [.mindex (.var "account")]⟩ (.var "basic")]
 
 def updateBaseCallable : CallableDecl :=
-  { params := [⟨"account", .elem .address⟩, ⟨"basic", .tuple
-      [.elem (.int (.sint ⟨104, by decide⟩)), .elem (.int (.uint ⟨64, by decide⟩)),
-        .elem (.int (.uint ⟨64, by decide⟩)), .elem (.int (.uint ⟨16, by decide⟩)),
-        .elem (.int (.uint ⟨8, by decide⟩))]⟩,
+  { params := [⟨"account", .elem .address⟩, ⟨"basic", .struct "UserBasic"
+      [("principal", .elem (.int (.sint ⟨104, by decide⟩))),
+       ("baseTrackingIndex", .elem (.int (.uint ⟨64, by decide⟩))),
+       ("baseTrackingAccrued", .elem (.int (.uint ⟨64, by decide⟩))),
+       ("assetsIn", .elem (.int (.uint ⟨16, by decide⟩))),
+       ("_reserved", .elem (.int (.uint ⟨8, by decide⟩)))]⟩,
       ⟨"principalNew", .elem (.int (.sint ⟨104, by decide⟩))⟩]
     returnType := []
     body := [.letDecl "principal" (some (.elem (.int (.sint ⟨104, by decide⟩))))

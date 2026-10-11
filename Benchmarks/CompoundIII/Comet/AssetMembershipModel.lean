@@ -59,7 +59,7 @@ def assetMembershipCond (add : Bool) : Expr :=
     (.binary (if add then .ne else .eq) (.var "finalUserBalance") (.intLit 0))
 
 def assetMembershipCallable : CallableDecl :=
-  { params := [⟨"account", .elem .address⟩, ⟨"assetInfo", assetInfoType⟩,
+  { params := [⟨"account", .elem .address⟩, ⟨"assetInfo", assetInfoStorageType⟩,
       ⟨"initialUserBalance", .elem (.int (.uint ⟨128, by decide⟩))⟩,
       ⟨"finalUserBalance", .elem (.int (.uint ⟨128, by decide⟩))⟩]
     returnType := []

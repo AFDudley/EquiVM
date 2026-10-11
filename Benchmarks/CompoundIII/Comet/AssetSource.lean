@@ -41,9 +41,18 @@ def assetRemainder : List Stmt :=
   [.require (.var "ok"), .letDecl "decoded" none (.abiDecode assetInfoType (.var "result")),
     .return [assetStructExpr]]
 
+def assetInfoStorageType : StorageType := .struct "AssetInfo" [
+  ("offset", .elem (.int (.uint ⟨8, by decide⟩))),
+  ("asset", .elem .address), ("priceFeed", .elem .address),
+  ("scale", .elem (.int (.uint ⟨64, by decide⟩))),
+  ("borrowCollateralFactor", .elem (.int (.uint ⟨64, by decide⟩))),
+  ("liquidateCollateralFactor", .elem (.int (.uint ⟨64, by decide⟩))),
+  ("liquidationFactor", .elem (.int (.uint ⟨64, by decide⟩))),
+  ("supplyCap", .elem (.int (.uint ⟨128, by decide⟩)))]
+
 def assetCallable : CallableDecl :=
   { params := [⟨"i", .elem (.int (.uint ⟨8, by decide⟩))⟩]
-    returnType := [assetInfoType]
+    returnType := [assetInfoStorageType]
     body := assetPrefix ++ assetRemainder }
 
 theorem assetCallable_lookup :
