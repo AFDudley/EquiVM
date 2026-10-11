@@ -21,7 +21,7 @@ You are given a working directory, which is named after the contract
   layout. (file `Spec.lean`)
 
 - A correctness file stating the top-level theorem with a `sorry`
-  placeholder. (file `Correct.lean`)
+  placeholder and a proof scaffold. (file `Correct.lean`)
 
 The top-level theorem is the contract refinement
 
@@ -42,11 +42,6 @@ and the correctness of the runtime code:
 runtimeRefinement <config> <runtimeBytecode> <contract>
 ```
 
-It has no `I.perm = true` precondition, so it also covers calls entered
-with STATICCALL: at a path's first SSTORE / LOG / value-carrying CALL
-both sides halt with a static-mode violation (see
-`Misc/Template/Function.lean`).
-
 For a contract with immutables, the deployed runtime depends on the values the constructor sets,
 and the theorem is assembled with `contractRefinement.of_runtime` instead (Section 7).
 
@@ -62,9 +57,38 @@ user, and do not continue until it is resolved.
 You should only work in the `<Name>/` directory. Do not make changes
 outside of it.
 
+Keep in mind: Solidity's return routine for dynamic arrays may overflow. If this
+operation is present in the contract, the refinement relation will require the
+well-formedness condition to rule out overflowing states: 224 + 64 *
+(solcSlotWordAt X sigma I).toNat < UInt256.size, where X is the dynamic array's
+base slot.
+
+Keep in mind: the runtime relation can also carry a gas bound
+(`runtimeRefinementWithWF <wf> <gasBound> …`, `noGasBound` when there is none). Use one only
+when it lets you abstract a low-level implementation detail (e.g. gas-dependent freePtr arithmetic
+that cannot overflow below the bound), and choose the loosest bound that does. The bound is not
+free: for calls within the bound, every path on which the abstracted detail does not hold
+(e.g. the freePtr arithmetic would overflow) must be shown to end in the `outOfGas` refinement
+case. Only bounds above 2^24 are acceptable.
+
 ## 1. Overall Workflow
 
 ### Phase 0: Evaluate the spec and bytecode
+
+Run the differential suite first:
+
+```
+lake exe solm-difftest --only <Name> --count 50
+```
+
+(`Tests/DiffTest/README.md`; the target comes from `scripts/scaffold.py difftest`). It runs
+the bytecode and the Solm spec on generated calls and compares them with the refinement
+relation. Every `DISAGREE` or `spec stuck` must be understood and, when it is a spec error,
+fixed before any proof work; an inconclusive case (out of gas, out of fuel, allocation cap)
+imposes nothing. The `successful/cases` line shows which transitions the cases reach on a
+successful path; a transition at `0/N` has only been tested on its revert paths, so raise the
+count or add the words its guards need to `DiffTarget.lean`. The suite complements the audit
+below, it does not replace it: it cannot see paths the generator never reaches.
 
 Do a thorough read of the Solm spec and the bytecode. Check that the
 Solm spec matches the bytecode's storage reads/writes, arithmetic, and
@@ -268,7 +292,7 @@ The proof of a contract `<Name>` goes in a directory `<Name>/`:
 `Reasoning/` is a library of abstractions, lemmas, and tactics for
 proving EVM bytecode correct against its Solm spec. Useful reads:
 
-- `Reasoning/GUIDE.md` — the library map: where every kind of fact
+- `Reasoning/STRUCTURE.md` — the library map: where every kind of fact
   lives, import layering, and the gotchas (native_decide for decode,
   `RD.foo rd` not `rd.foo`, heartbeat budgets, etc.).
 
@@ -462,7 +486,7 @@ theorem <name>ContractCorrect : contractRefinement config <initcode> contract :=
   .of_runtime <name>ConstructorCorrect <name>RuntimeCorrect
 ```
 
-(`contractRefinementWF <wf> …` with a storage precondition), with
+(`contractRefinementWF <wf> <gasBound> …` with a storage precondition or gas bound), with
 `runtimeCodeOf := immutableLayout.deployed <template>` from `Reasoning/Immutables.lean`: the
 template with every immutable site patched with `wordsOf imms`, each immutable's word under Solm's
 `valueToWord`. Never define a contract-specific `runtimeCodeOf`, word map, or patch function.

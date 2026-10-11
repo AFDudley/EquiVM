@@ -20,3 +20,4 @@ import Benchmarks.Dss.Flipper.Correct
 import Benchmarks.Dss.Flopper.Correct
 import Benchmarks.Dss.GemJoin.Correct
 import Benchmarks.Dss.DaiJoin.Correct
+import Benchmarks.EAS.Attester.Correct
