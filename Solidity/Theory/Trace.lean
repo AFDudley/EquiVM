@@ -293,6 +293,19 @@ theorem Returned.specExecutionW {cfg fc imms σ σ₀ A I} {g : UInt256} {code o
     runtimeEquivalenceFor cfg fc σ σ₀ g A I imms :=
   Returned.specExecution o hcode h hspec hw.created hw.accounts hw.logs henc
 
+/-- A returned run + a spec run that inline assembly ended (`return` / `stop`) with the same raw
+    data (world related) ⇒ `execution`. -/
+theorem Returned.specHalt {cfg fc imms σ σ₀ A I} {g : UInt256} {code out : ByteArray}
+    {w : World} {m : Machine} {conv}
+    (o : Oracle) (hcode : I.code = code)
+    (h : Returned code (initState σ σ₀ (Sat256.ofUInt256 g) A I) w out)
+    (hspec : solidityExec cfg o fc imms σ σ₀ g A I (.halted m out) conv)
+    (hw : WorldEquiv w m) :
+    runtimeEquivalenceFor cfg fc σ σ₀ g A I imms := by
+  rcases Returned.xi hcode h with hoog | ⟨g', A', hxi, hcA, hlogs⟩
+  · exact .outOfGas hoog
+  · exact .execution hxi ⟨o, hspec, .halt rfl rfl hw.accounts (hlogs.trans hw.logs) (hcA.trans hw.created)⟩
+
 /-- A reverted run + a spec run reverting with the same data ⇒ `execution`. -/
 theorem Reverted.specRevert {cfg fc imms σ σ₀ A I} {g : UInt256} {code d : ByteArray} {conv}
     (o : Oracle) (hcode : I.code = code)

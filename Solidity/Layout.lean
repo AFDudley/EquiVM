@@ -28,6 +28,9 @@ inductive Node where
   /-- Fields as `(name, relative slot, byte offset, node)`, plus the total slot count. -/
   | struct (name : Ident) (fields : List (Ident × Nat × Nat × Node)) (slots : Nat)
   | bytes
+  /-- The target of a storage pointer set by inline assembly (`x.slot := s`, `absRef`): the
+      slot is the key of the `mindex` step that follows. -/
+  | absolute (val : Node)
   deriving Repr, Inhabited
 
 namespace Node
@@ -42,6 +45,7 @@ def slots : Node → Nat
   | .mapping .. => 1
   | .dynArray _ => 1
   | .bytes => 1
+  | .absolute _ => 0
   | .struct _ _ s => s
   | .staticArray e n =>
     match e.leafSize? with
@@ -100,14 +104,31 @@ def nodeOf (env : TypeEnv) (ty : Ty) : Option Node :=
 
 abbrev LayoutTable := List (FlatVar × Nat × Nat × Node)
 
-/-- Slot/offset of every storage variable (constants and immutables take no slot). -/
-def layoutVars (env : TypeEnv) (vars : List FlatVar) : Option LayoutTable := do
+/-! ### Absolute storage pointers
+
+Inline assembly points a local storage pointer at an arbitrary slot (`x.slot := s`).  Such a
+pointer is the path `absRef ty s`: the pseudo variable `absKey ty` (one per storage-pointer type
+of the program, placed at no slot with node `.absolute`) indexed by the slot. -/
+
+def absKey (ty : Ty) : Ident := "#slot:" ++ toString (repr ty)
+
+def absRef (ty : Ty) (slot : Nat) : Solm.EvaledStorageRef := ⟨absKey ty, [.mindex (.int slot)]⟩
+
+def absVar (ty : Ty) : FlatVar :=
+  { key := absKey ty, name := absKey ty, declaredIn := "", ty := ty, visibility := .internal,
+    mutability := .mutable, init := none }
+
+/-- Slot/offset of every storage variable (constants and immutables take no slot), then the
+    pseudo variables of the storage-pointer types `ptrTys`. -/
+def layoutVars (env : TypeEnv) (vars : List FlatVar) (ptrTys : List Ty := []) : Option LayoutTable := do
   let nodes ← vars.mapM fun v => (nodeOf env v.ty).map (v, ·)
   let (placed, _) := placeAll ⟨0, 0⟩ (nodes.map fun (v, n) => (v.key, n))
-  pure (placed.zip nodes |>.map fun ((_, slot, off, n), (v, _)) => (v, slot, off, n))
+  let abs ← ptrTys.mapM fun ty => (nodeOf env ty).map fun n => (absVar ty, 0, 0, Node.absolute n)
+  pure ((placed.zip nodes |>.map fun ((_, slot, off, n), (v, _)) => (v, slot, off, n)) ++ abs)
 
+/-- The slots of the state variables (the pseudo variables of `absRef` left out). -/
 def slotTable (t : LayoutTable) : List (Ident × Nat × Nat) :=
-  t.map fun (v, slot, off, _) => (v.key, slot, off)
+  t.filterMap fun (v, slot, off, _) => if v.key.startsWith "#slot:" then none else some (v.key, slot, off)
 
 /-! ## Locations -/
 
@@ -147,7 +168,13 @@ def follow : List Solm.EvaledStorageRefStep → Node → EVM.Word → Nat → Op
   | [], .leaf elem size, slot, off => (mkLoc slot off size elem).map .leaf
   | [], .dynArray _, slot, _ => some (.anchor slot)
   | [], .bytes, slot, _ => some (.anchor slot)
+  -- the slot of a struct, mapping or static array (`x.slot` in inline assembly); no backend
+  -- operation asks for it (they go by the storage type)
+  | [], .struct .., slot, _ => some (.anchor slot)
+  | [], .mapping .., slot, _ => some (.anchor slot)
+  | [], .staticArray .., slot, _ => some (.anchor slot)
   | [], _, _, _ => none
+  | .mindex (.int s) :: rest, .absolute n, _, _ => if 0 ≤ s then follow rest n (.ofNat s.toNat) 0 else none
   | .field f :: rest, .struct _ fields _, slot, _ =>
     (fields.find? (·.1 == f)).bind fun (_, rel, off', n') => follow rest n' (slot + .ofNat rel) off'
   | .mindex k :: rest, .mapping _ val, slot, _ => follow rest val (mappingSlot k slot) 0
@@ -169,7 +196,49 @@ def storageLayout (t : LayoutTable) : Solm.StorageLayout := layout t
 def storageBackend (t : LayoutTable) : Solm.StorageBackend :=
   Solm.solidityStorageBackend (storageLayout t)
 
+/-! ### Storage-pointer types -/
+
+mutual
+/-- Types of the storage locals declared in a statement (as written). -/
+def stmtStorageTys : Stmt → List Ty
+  | .block b | .unchecked b => stmtsStorageTys b
+  | .varDecl ty loc _ _ => if loc == some .storage then [ty] else []
+  | .tupleDecl binders _ => binders.filterMap fun b => b.bind fun p => if p.loc == some .storage then some p.ty else none
+  | .ite _ t e => stmtStorageTys t ++ optStmtStorageTys e
+  | .while _ body | .doWhile body _ => stmtStorageTys body
+  | .for init _ _ body => optStmtStorageTys init ++ stmtStorageTys body
+  | .tryCatch _ rets body cs =>
+    (rets.filterMap fun p => if p.loc == some .storage then some p.ty else none) ++ stmtsStorageTys body ++
+      catchesStorageTys cs
+  | _ => []
+def optStmtStorageTys : Option Stmt → List Ty
+  | none => []
+  | some s => stmtStorageTys s
+def stmtsStorageTys : List Stmt → List Ty
+  | [] => []
+  | s :: ss => stmtStorageTys s ++ stmtsStorageTys ss
+def catchesStorageTys : List CatchClause → List Ty
+  | [] => []
+  | .mk _ ps body :: cs =>
+    (ps.filterMap fun p => if p.loc == some .storage then some p.ty else none) ++ stmtsStorageTys body ++
+      catchesStorageTys cs
+end
+
+/-- The types of the storage pointers of the program (parameters, return variables and locals
+    located in storage), canonical, without repetition: the targets inline assembly may point at
+    an absolute slot. -/
+def FlatContract.storagePointerTys (fc : FlatContract) : List Ty :=
+  let ofParams (here : Ident) (ps : List Param) : List Ty :=
+    ps.filterMap fun p => if p.loc == some .storage then some (fc.types.canonTy here p.ty) else none
+  let ofFn (f : FnDef) : List Ty :=
+    ofParams f.declaredIn (f.decl.params ++ f.decl.returns) ++
+      (stmtsStorageTys (f.decl.body.getD [])).map (fc.types.canonTy f.declaredIn)
+  let ofMod (md : ModDef) : List Ty :=
+    ofParams md.declaredIn md.decl.params ++ (stmtsStorageTys (md.decl.body.getD [])).map (fc.types.canonTy md.declaredIn)
+  let all := fc.fns.toList.flatMap ofFn ++ fc.modifiers.toList.flatMap ofMod
+  all.foldl (fun acc ty => if acc.contains ty then acc else acc ++ [ty]) []
+
 def FlatContract.layoutTable? (fc : FlatContract) : Option LayoutTable :=
-  layoutVars fc.types fc.storageVars
+  layoutVars fc.types fc.storageVars fc.storagePointerTys
 
 end Solidity

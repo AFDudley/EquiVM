@@ -307,7 +307,7 @@ theorem ExecStmt.internalCallStmt {fr fr1 : Frame} {m m1 m2 : Machine} {f : Iden
     (hres : resolveOverload fc.types m1.heap fc (fc.fnsNamedIn fr.here f) vs = some fn)
     (hcall : CallFn cfg o fc fr1 m1 fn vs (.ok rets m2)) :
     ExecStmt cfg o fc fr m (.exprStmt (.call (.ident f) [] (.positional es))) (.normal fr1 m2) :=
-  ExecStmt.exprStmt (EvalExpr.internalCallPlain hf hx hne hargs hres hcall)
+  ExecStmt.exprStmtCall hf hx hne rfl hargs hres hcall
 
 /-! ## Local variables and plain assignment -/
 

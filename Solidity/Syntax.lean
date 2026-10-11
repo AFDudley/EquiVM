@@ -3,8 +3,8 @@ import ABI.Types
 /-!
 # Solidity abstract syntax
 
-Mirrors the Solidity 0.8 grammar (no inline assembly, function types, fixed-point or transient
-storage).  Identifiers are raw names; resolution (inheritance, overloads, getters, builtins) is
+Mirrors the Solidity 0.8 grammar (no function types, fixed-point or transient storage; inline
+assembly over the level-1 Yul idioms of `Semantics/Yul.lean`).  Identifiers are raw names; resolution (inheritance, overloads, getters, builtins) is
 done by `Solidity.Elab` and the semantics, so one base unit can be shared by many programs.
 Elementary type names in expression position are the only lexically classified forms
 (`Expr.typeExpr`).
@@ -152,6 +152,110 @@ structure EventParam where
   name : Option Ident := none
   deriving DecidableEq, Repr, Inhabited
 
+/-! ## Inline assembly (level 1) -/
+
+/-- The Yul builtins of the level-1 fragment (`Semantics/Yul.lean`). -/
+inductive YulBuiltin where
+  | add
+  | sub
+  | mul
+  | div
+  | sdiv
+  | mod
+  | smod
+  | exp
+  | signextend
+  | lt
+  | gt
+  | slt
+  | sgt
+  | eq
+  | iszero
+  | and
+  | or
+  | xor
+  | not
+  | shl
+  | shr
+  | sar
+  | byte
+  | addmod
+  | mulmod
+  | keccak256
+  | caller
+  | origin
+  | callvalue
+  | calldatasize
+  | calldataload
+  | calldatacopy
+  | gasprice
+  | gas
+  | address
+  | balance
+  | selfbalance
+  | extcodesize
+  | extcodehash
+  | chainid
+  | timestamp
+  | number
+  | coinbase
+  | gaslimit
+  | basefee
+  | prevrandao
+  | difficulty
+  | blockhash
+  | returndatasize
+  | returndatacopy
+  | sload
+  | sstore
+  | tload
+  | tstore
+  | mload
+  | mstore
+  | mstore8
+  | call
+  | staticcall
+  | delegatecall
+  | create
+  | create2
+  | log0
+  | log1
+  | log2
+  | log3
+  | log4
+  | pop
+  | revert
+  | «return»
+  | stop
+  deriving DecidableEq, Repr, Inhabited
+
+/-- A Yul expression of an `assembly { … }` block: a literal word (a number, or a string / hex
+    literal left-aligned), an identifier (a Yul local, a Solidity local, a constant), `x.slot` /
+    `x.offset` of a storage variable or pointer, or a builtin call. -/
+inductive YulExpr where
+  | lit (w : Nat)
+  | ident (x : Ident)
+  | slot (x : Ident)
+  | offset (x : Ident)
+  | call (f : YulBuiltin) (args : List YulExpr)
+  deriving Repr, Inhabited
+
+/-- A Yul statement (no functions, loops or `leave`: see `Semantics/Yul.lean`). -/
+inductive YulStmt where
+  /-- `let x := e` / `let x` (zero). -/
+  | «let» (x : Ident) (e : Option YulExpr)
+  /-- `x := e`: a Yul local, or a Solidity local of a value or memory type. -/
+  | assign (x : Ident) (e : YulExpr)
+  /-- `x.slot := e`: the local storage pointer `x` now points at slot `e`. -/
+  | assignSlot (x : Ident) (e : YulExpr)
+  /-- A builtin call for its effect (`mstore`, `sstore`, `revert`, `return`, `pop`, …). -/
+  | expr (e : YulExpr)
+  | «if» (c : YulExpr) (body : List YulStmt)
+  /-- `switch e case v { … } … default { … }`. -/
+  | «switch» (e : YulExpr) (cases : List (Nat × List YulStmt)) (dflt : Option (List YulStmt))
+  | block (body : List YulStmt)
+  deriving Repr, Inhabited
+
 mutual
 
 inductive Stmt where
@@ -174,6 +278,8 @@ inductive Stmt where
   | unchecked (b : List Stmt)
   /-- The modifier placeholder `_;`. -/
   | placeholder
+  /-- `assembly { … }` (`Semantics/Yul.lean`). -/
+  | assembly (body : List YulStmt)
 
 inductive CatchClause where
   /-- `kind` is `none` for `catch (bytes memory d)` / `catch {}`, `some "Error"` / `some "Panic"` otherwise. -/

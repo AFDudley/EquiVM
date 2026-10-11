@@ -59,6 +59,10 @@ theorem interpExec_sound {fuel immutables σ σ₀ g A I res conv}
                   cases IM.pure_some h
                   exact .callReturnPanic he (liftOpt_ok hfn) hpay (liftOpt_ok hret) (liftOpt_ok hsvs) (liftOpt_ok hvs) hc hprep
                 · simp at h
+              · rename_i m' d hcall
+                have hc := callFn_sound (cfg := cfg) (o := o) (fc := fc) hcall
+                cases IM.pure_some h
+                exact .callHalted he (liftOpt_ok hfn) hpay (liftOpt_ok hret) (liftOpt_ok hsvs) (liftOpt_ok hvs) hc
               · rename_i d hcall
                 have hc := callFn_sound (cfg := cfg) (o := o) (fc := fc) hcall
                 cases IM.pure_some h
@@ -78,6 +82,10 @@ theorem interpExec_sound {fuel immutables σ σ₀ g A I res conv}
             have hc := callFn_sound (cfg := cfg) (o := o) (fc := fc) hcall
             cases IM.pure_some h
             exact .receive hrec.1 (liftOpt_ok hfid) (liftOpt_ok hfn) hc
+          · rename_i m' d hcall
+            have hc := callFn_sound (cfg := cfg) (o := o) (fc := fc) hcall
+            cases IM.pure_some h
+            exact .receiveHalted hrec.1 (liftOpt_ok hfid) (liftOpt_ok hfn) hc
           · rename_i d hcall
             have hc := callFn_sound (cfg := cfg) (o := o) (fc := fc) hcall
             cases IM.pure_some h
@@ -111,6 +119,10 @@ theorem interpExec_sound {fuel immutables σ σ₀ g A I res conv}
                 · exact (liftOpt_error hd).elim
                 · cases IM.pure_some h
                   exact .fallback he hrec' (liftOpt_ok hfid) (liftOpt_ok hfn) hpay (liftOpt_ok hvs) hc (liftOpt_ok hout)
+              · rename_i m' d hcall
+                have hc := callFn_sound (cfg := cfg) (o := o) (fc := fc) hcall
+                cases IM.pure_some h
+                exact .fallbackHalted he hrec' (liftOpt_ok hfid) (liftOpt_ok hfn) hpay (liftOpt_ok hvs) hc
               · rename_i d hcall
                 have hc := callFn_sound (cfg := cfg) (o := o) (fc := fc) hcall
                 cases IM.pure_some h

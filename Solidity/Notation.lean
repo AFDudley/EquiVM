@@ -16,7 +16,8 @@ Design:
   `unchecked`, `function`, …) without reserving those words as Lean tokens.  Identifiers that
   are Lean keywords are written `«from»`, `«to»`, `«end»`, ….
 * Unsupported spellings: `x--`/`--x` (Lean comment token; write `x -= 1`), single-quoted
-  strings, `//` comments (use Lean comments).
+  strings, `//` comments (use Lean comments).  Inline assembly: the level-1 fragment only (see the
+  grammar); `$` in a Yul name is not a Lean identifier character (rename).
 * Escapes: `${t}` splices a Lean `Expr` / `Stmt` / `ContractItem` term; `#t` is an integer literal
   from a Lean `Nat` term.
 -/
@@ -148,6 +149,28 @@ syntax (name := solidityCatchClause)
 syntax "unchecked " "{" solidityStmt* "}" : solidityStmt
 syntax "_" ";" : solidityStmt
 syntax solidityEsc : solidityStmt
+
+-- Inline assembly (level 1, `Semantics/Yul.lean`): literals, identifiers (`x`, `x.slot`,
+-- `x.offset`), builtin calls, `let`, assignments, `if`, `switch`, blocks.  Loops, functions,
+-- `leave`, `break` and `continue` do not parse.
+declare_syntax_cat yulExpr (behavior := both)
+declare_syntax_cat yulStmt (behavior := both)
+declare_syntax_cat yulCase
+syntax:max num : yulExpr
+syntax:max str : yulExpr
+syntax:max ident str : yulExpr                                                   -- hex"1901"
+syntax:max ident : yulExpr
+syntax:max ident "(" yulExpr,* ")" : yulExpr
+syntax:max "return" "(" yulExpr,* ")" : yulExpr
+syntax:max "revert" "(" yulExpr,* ")" : yulExpr
+syntax "let " ident (" := " yulExpr)? : yulStmt
+syntax ident " := " yulExpr : yulStmt
+syntax yulExpr : yulStmt
+syntax "if " yulExpr "{" yulStmt* "}" : yulStmt
+syntax "case " num "{" yulStmt* "}" : yulCase
+syntax "switch " yulExpr yulCase* (&"default" "{" yulStmt* "}")? : yulStmt
+syntax "{" yulStmt* "}" : yulStmt
+syntax "assembly " ("(" str ")")? "{" yulStmt* "}" : solidityStmt
 
 -- Items
 syntax solidityVarAttr := "public" <|> "private" <|> &"internal" <|> &"constant" <|> &"immutable"
@@ -538,6 +561,148 @@ def elabEventParam (stx : TSyntax `solidityEventParam) : MacroM Term := do
 private def elabParams (ps : Array (TSyntax `solidityParam)) : MacroM Term := do
   mkList (← ps.mapM elabParam)
 
+/-! ### Inline assembly -/
+
+/-- A string or hex literal as a word: left-aligned, at most 32 bytes. -/
+private def yulBytesWord (bytes : List Nat) : MacroM Term := do
+  if bytes.length > 32 then Macro.throwError "a Yul string literal is at most 32 bytes"
+  let w := bytes.foldl (fun acc b => acc * 256 + b) 0 * 256 ^ (32 - bytes.length)
+  `(Solidity.YulExpr.lit $(natLit w))
+
+private def yulName (x : TSyntax `ident) : MacroM Term :=
+  match identParts x with
+  | ["true"] => `(Solidity.YulExpr.lit 1)
+  | ["false"] => `(Solidity.YulExpr.lit 0)
+  | [n] => `(Solidity.YulExpr.ident $(strLit n))
+  | [n, "slot"] => `(Solidity.YulExpr.slot $(strLit n))
+  | [n, "offset"] => `(Solidity.YulExpr.offset $(strLit n))
+  | _ => Macro.throwErrorAt x "unsupported Yul identifier (only `x`, `x.slot`, `x.offset`)"
+
+/-- The builtin named `n` (the level-1 fragment), else an error. -/
+private def yulBuiltin (ref : Syntax) (n : String) : MacroM Term :=
+  match n with
+  | "add" => `(Solidity.YulBuiltin.add)
+  | "sub" => `(Solidity.YulBuiltin.sub)
+  | "mul" => `(Solidity.YulBuiltin.mul)
+  | "div" => `(Solidity.YulBuiltin.div)
+  | "sdiv" => `(Solidity.YulBuiltin.sdiv)
+  | "mod" => `(Solidity.YulBuiltin.mod)
+  | "smod" => `(Solidity.YulBuiltin.smod)
+  | "exp" => `(Solidity.YulBuiltin.exp)
+  | "signextend" => `(Solidity.YulBuiltin.signextend)
+  | "lt" => `(Solidity.YulBuiltin.lt)
+  | "gt" => `(Solidity.YulBuiltin.gt)
+  | "slt" => `(Solidity.YulBuiltin.slt)
+  | "sgt" => `(Solidity.YulBuiltin.sgt)
+  | "eq" => `(Solidity.YulBuiltin.eq)
+  | "iszero" => `(Solidity.YulBuiltin.iszero)
+  | "and" => `(Solidity.YulBuiltin.and)
+  | "or" => `(Solidity.YulBuiltin.or)
+  | "xor" => `(Solidity.YulBuiltin.xor)
+  | "not" => `(Solidity.YulBuiltin.not)
+  | "shl" => `(Solidity.YulBuiltin.shl)
+  | "shr" => `(Solidity.YulBuiltin.shr)
+  | "sar" => `(Solidity.YulBuiltin.sar)
+  | "byte" => `(Solidity.YulBuiltin.byte)
+  | "addmod" => `(Solidity.YulBuiltin.addmod)
+  | "mulmod" => `(Solidity.YulBuiltin.mulmod)
+  | "keccak256" => `(Solidity.YulBuiltin.keccak256)
+  | "caller" => `(Solidity.YulBuiltin.caller)
+  | "origin" => `(Solidity.YulBuiltin.origin)
+  | "callvalue" => `(Solidity.YulBuiltin.callvalue)
+  | "calldatasize" => `(Solidity.YulBuiltin.calldatasize)
+  | "calldataload" => `(Solidity.YulBuiltin.calldataload)
+  | "calldatacopy" => `(Solidity.YulBuiltin.calldatacopy)
+  | "gasprice" => `(Solidity.YulBuiltin.gasprice)
+  | "gas" => `(Solidity.YulBuiltin.gas)
+  | "address" => `(Solidity.YulBuiltin.address)
+  | "balance" => `(Solidity.YulBuiltin.balance)
+  | "selfbalance" => `(Solidity.YulBuiltin.selfbalance)
+  | "extcodesize" => `(Solidity.YulBuiltin.extcodesize)
+  | "extcodehash" => `(Solidity.YulBuiltin.extcodehash)
+  | "chainid" => `(Solidity.YulBuiltin.chainid)
+  | "timestamp" => `(Solidity.YulBuiltin.timestamp)
+  | "number" => `(Solidity.YulBuiltin.number)
+  | "coinbase" => `(Solidity.YulBuiltin.coinbase)
+  | "gaslimit" => `(Solidity.YulBuiltin.gaslimit)
+  | "basefee" => `(Solidity.YulBuiltin.basefee)
+  | "prevrandao" => `(Solidity.YulBuiltin.prevrandao)
+  | "difficulty" => `(Solidity.YulBuiltin.difficulty)
+  | "blockhash" => `(Solidity.YulBuiltin.blockhash)
+  | "returndatasize" => `(Solidity.YulBuiltin.returndatasize)
+  | "returndatacopy" => `(Solidity.YulBuiltin.returndatacopy)
+  | "sload" => `(Solidity.YulBuiltin.sload)
+  | "sstore" => `(Solidity.YulBuiltin.sstore)
+  | "tload" => `(Solidity.YulBuiltin.tload)
+  | "tstore" => `(Solidity.YulBuiltin.tstore)
+  | "mload" => `(Solidity.YulBuiltin.mload)
+  | "mstore" => `(Solidity.YulBuiltin.mstore)
+  | "mstore8" => `(Solidity.YulBuiltin.mstore8)
+  | "call" => `(Solidity.YulBuiltin.call)
+  | "staticcall" => `(Solidity.YulBuiltin.staticcall)
+  | "delegatecall" => `(Solidity.YulBuiltin.delegatecall)
+  | "create" => `(Solidity.YulBuiltin.create)
+  | "create2" => `(Solidity.YulBuiltin.create2)
+  | "log0" => `(Solidity.YulBuiltin.log0)
+  | "log1" => `(Solidity.YulBuiltin.log1)
+  | "log2" => `(Solidity.YulBuiltin.log2)
+  | "log3" => `(Solidity.YulBuiltin.log3)
+  | "log4" => `(Solidity.YulBuiltin.log4)
+  | "pop" => `(Solidity.YulBuiltin.pop)
+  | "revert" => `(Solidity.YulBuiltin.revert)
+  | "return" => `(Solidity.YulBuiltin.«return»)
+  | "stop" => `(Solidity.YulBuiltin.stop)
+  | _ => Macro.throwErrorAt ref s!"`{n}` is not a Yul builtin of the level-1 fragment"
+
+partial def elabYulExpr (stx : TSyntax `yulExpr) : MacroM Term := do
+  match stx with
+  | `(yulExpr| $n:num) => `(Solidity.YulExpr.lit $n)
+  | `(yulExpr| $s:str) => yulBytesWord (s.getString.toUTF8.toList.map (·.toNat))
+  | `(yulExpr| $p:ident $s:str) =>
+    if identStr p == "hex" then yulBytesWord (← decodeHex s.getString)
+    else Macro.throwErrorAt p s!"unknown string prefix `{identStr p}`"
+  | `(yulExpr| $x:ident) => yulName x
+  | `(yulExpr| $f:ident ( $args,* )) => do
+    let argTerms ← args.getElems.mapM elabYulExpr
+    `(Solidity.YulExpr.call $(← yulBuiltin f (identStr f)) $(← mkList argTerms))
+  | `(yulExpr| return ( $args,* )) => do
+    let argTerms ← args.getElems.mapM elabYulExpr
+    `(Solidity.YulExpr.call Solidity.YulBuiltin.«return» $(← mkList argTerms))
+  | `(yulExpr| revert ( $args,* )) => do
+    let argTerms ← args.getElems.mapM elabYulExpr
+    `(Solidity.YulExpr.call Solidity.YulBuiltin.revert $(← mkList argTerms))
+  | _ => Macro.throwUnsupported
+
+mutual
+
+partial def elabYulBlock (stmts : Array (TSyntax `yulStmt)) : MacroM Term := do
+  mkList (← stmts.mapM elabYulStmt)
+
+partial def elabYulStmt (stx : TSyntax `yulStmt) : MacroM Term := do
+  match stx with
+  | `(yulStmt| let $x:ident $[:= $e]?) =>
+    `(Solidity.YulStmt.let $(strLit (identStr x)) $(← optTerm (← e.mapM elabYulExpr)))
+  | `(yulStmt| $x:ident := $e) =>
+    match identParts x with
+    | [n] => `(Solidity.YulStmt.assign $(strLit n) $(← elabYulExpr e))
+    | [n, "slot"] => `(Solidity.YulStmt.assignSlot $(strLit n) $(← elabYulExpr e))
+    | _ => Macro.throwErrorAt x "unsupported Yul assignment target (only `x` and `x.slot`)"
+  | `(yulStmt| $e:yulExpr) => `(Solidity.YulStmt.expr $(← elabYulExpr e))
+  | `(yulStmt| if $c { $ss* }) => `(Solidity.YulStmt.if $(← elabYulExpr c) $(← elabYulBlock ss))
+  | `(yulStmt| switch $e $cs:yulCase* $[default { $ds* }]?) => do
+    let cases ← cs.mapM fun c => do
+      match c with
+      | `(yulCase| case $v:num { $ss* }) => `(($v, $(← elabYulBlock ss)))
+      | _ => Macro.throwUnsupported
+    let dflt ← match ds with
+      | some ds => do `(some $(← elabYulBlock ds))
+      | none => `(none)
+    `(Solidity.YulStmt.switch $(← elabYulExpr e) $(← mkList cases) $dflt)
+  | `(yulStmt| { $ss* }) => `(Solidity.YulStmt.block $(← elabYulBlock ss))
+  | _ => Macro.throwUnsupported
+
+end
+
 mutual
 
 partial def elabBlock (stmts : Array (TSyntax `solidityStmt)) : MacroM Term := do
@@ -590,6 +755,7 @@ partial def elabStmt (stx : TSyntax `solidityStmt) : MacroM Term := do
     `(Solidity.Stmt.revert $(← exprOfIdent err) (Solidity.Args.named $(← mkList fields)))
   | `(solidityStmt| unchecked { $ss* }) => `(Solidity.Stmt.unchecked $(← elabBlock ss))
   | `(solidityStmt| _ ;) => `(Solidity.Stmt.placeholder)
+  | `(solidityStmt| assembly $[( $_:str )]? { $ss* }) => `(Solidity.Stmt.assembly $(← elabYulBlock ss))
   | `(solidityStmt| $e:solidityEsc) =>
     match e with
     | `(solidityEsc| ${ $t }) => `(($t : Solidity.Stmt))

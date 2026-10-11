@@ -246,11 +246,13 @@ theorem evalCall_sound_step {n} (ih : SoundAt cfg o fc n) :
           · rw [hsup', hopts']; exact .superArgsRevert (liftOpt_ok hes) (ih.exprs _ _ _ _ hd)
           · rcases IM.bind_some h with ⟨d, hd, rfl⟩ | ⟨fn, hfn, h⟩ <;> try dsimp only at h
             · exact (liftOpt_error hd).elim
-            · rcases IM.bind_some h with ⟨d, hd, rfl⟩ | ⟨⟨rets, m2⟩, hcall, h⟩ <;> try dsimp only at h
+            · rcases IM.bind_some h with ⟨d, hd, rfl⟩ | ⟨co, hcall, h⟩ <;> try dsimp only at h
               · rw [hsup', hopts']
                 exact .superCallRevert (liftOpt_ok hes) (ih.exprs _ _ _ _ hvs) (liftOpt_ok hfn) (ih.callFn _ _ _ _ _ hd)
-              · rw [IM.pure_some h, hsup', hopts']
-                exact .superCall (liftOpt_ok hes) (ih.exprs _ _ _ _ hvs) (liftOpt_ok hfn) (ih.callFn _ _ _ _ _ hcall)
+              · rcases co with ⟨rets, m2⟩ | ⟨m2, d⟩ <;> try dsimp only at h
+                · rw [IM.pure_some h, hsup', hopts']
+                  exact .superCall (liftOpt_ok hes) (ih.exprs _ _ _ _ hvs) (liftOpt_ok hfn) (ih.callFn _ _ _ _ _ hcall)
+                · exact (IM.failure_some h).elim
       · simp at h
     · split at h
       · -- abi.f(es)
@@ -305,13 +307,15 @@ theorem evalCall_sound_step {n} (ih : SoundAt cfg o fc n) :
                       exact .libraryArgsRevert hl.1.2 hl.1.1 hlibl hqt' (liftOpt_ok hes) (ih.exprs _ _ _ _ hd)
                     · rcases IM.bind_some h with ⟨d, hd, rfl⟩ | ⟨dcl, hdcl, h⟩ <;> try dsimp only at h
                       · exact (liftOpt_error hd).elim
-                      · rcases IM.bind_some h with ⟨d, hd, rfl⟩ | ⟨⟨rets, m2⟩, hcall, h⟩ <;> try dsimp only at h
+                      · rcases IM.bind_some h with ⟨d, hd, rfl⟩ | ⟨co, hcall, h⟩ <;> try dsimp only at h
                         · rw [hopts']
                           exact .libraryCallRevert hl.1.2 hl.1.1 hlibl hqt' (liftOpt_ok hes) (ih.exprs _ _ _ _ hvs)
                             (liftOpt_ok hdcl) (ih.callFn _ _ _ _ _ hd)
-                        · rw [IM.pure_some h, hopts']
-                          exact .libraryCall hl.1.2 hl.1.1 hlibl hqt' (liftOpt_ok hes) (ih.exprs _ _ _ _ hvs)
-                            (liftOpt_ok hdcl) (ih.callFn _ _ _ _ _ hcall)
+                        · rcases co with ⟨rets, m2⟩ | ⟨m2, d⟩ <;> try dsimp only at h
+                          · rw [IM.pure_some h, hopts']
+                            exact .libraryCall hl.1.2 hl.1.1 hlibl hqt' (liftOpt_ok hes) (ih.exprs _ _ _ _ hvs)
+                              (liftOpt_ok hdcl) (ih.callFn _ _ _ _ _ hcall)
+                          · exact (IM.failure_some h).elim
                 · simp at h
               · simp at h
             · simp at h
@@ -333,13 +337,15 @@ theorem evalCall_sound_step {n} (ih : SoundAt cfg o fc n) :
                       exact .baseArgsRevert hb.1.1.2 hb.1.1.1 hb.1.2 hb.2 hqt' (liftOpt_ok hes) (ih.exprs _ _ _ _ hd)
                     · rcases IM.bind_some h with ⟨d, hd, rfl⟩ | ⟨fn, hfn, h⟩ <;> try dsimp only at h
                       · exact (liftOpt_error hd).elim
-                      · rcases IM.bind_some h with ⟨d, hd, rfl⟩ | ⟨⟨rets, m2⟩, hcall, h⟩ <;> try dsimp only at h
+                      · rcases IM.bind_some h with ⟨d, hd, rfl⟩ | ⟨co, hcall, h⟩ <;> try dsimp only at h
                         · rw [hopts']
                           exact .baseCallRevert hb.1.1.2 hb.1.1.1 hb.1.2 hb.2 hqt' (liftOpt_ok hes) (ih.exprs _ _ _ _ hvs)
                             (liftOpt_ok hfn) (ih.callFn _ _ _ _ _ hd)
-                        · rw [IM.pure_some h, hopts']
-                          exact .baseCall hb.1.1.2 hb.1.1.1 hb.1.2 hb.2 hqt' (liftOpt_ok hes) (ih.exprs _ _ _ _ hvs)
-                            (liftOpt_ok hfn) (ih.callFn _ _ _ _ _ hcall)
+                        · rcases co with ⟨rets, m2⟩ | ⟨m2, d⟩ <;> try dsimp only at h
+                          · rw [IM.pure_some h, hopts']
+                            exact .baseCall hb.1.1.2 hb.1.1.1 hb.1.2 hb.2 hqt' (liftOpt_ok hes) (ih.exprs _ _ _ _ hvs)
+                              (liftOpt_ok hfn) (ih.callFn _ _ _ _ _ hcall)
+                          · exact (IM.failure_some h).elim
                 · simp at h
               · simp at h
             · split at h

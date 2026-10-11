@@ -218,10 +218,12 @@ theorem evalNamedCall_sound_step {n} (ih : SoundAt cfg o fc n) :
         · exact .internalArgsRevert hb hfr hne (liftOpt_ok hes) (ih.exprs _ _ _ _ hd)
         · rcases IM.bind_some h with ⟨d, hd, rfl⟩ | ⟨fn, hfn, h⟩ <;> try dsimp only at h
           · exact (liftOpt_error hd).elim
-          · rcases IM.bind_some h with ⟨d, hd, rfl⟩ | ⟨⟨rets, m2⟩, hcall, h⟩ <;> try dsimp only at h
+          · rcases IM.bind_some h with ⟨d, hd, rfl⟩ | ⟨co, hcall, h⟩ <;> try dsimp only at h
             · exact .internalCallRevert hb hfr hne (liftOpt_ok hes) (ih.exprs _ _ _ _ hvs) (liftOpt_ok hfn) (ih.callFn _ _ _ _ _ hd)
-            · rw [IM.pure_some h]
-              exact .internalCall hb hfr hne (liftOpt_ok hes) (ih.exprs _ _ _ _ hvs) (liftOpt_ok hfn) (ih.callFn _ _ _ _ _ hcall)
+            · rcases co with ⟨rets, m2⟩ | ⟨m2, d⟩ <;> try dsimp only at h
+              · rw [IM.pure_some h]
+                exact .internalCall hb hfr hne (liftOpt_ok hes) (ih.exprs _ _ _ _ hvs) (liftOpt_ok hfn) (ih.callFn _ _ _ _ _ hcall)
+              · exact (IM.failure_some h).elim
     · rename_i hnil
       have hnil' : fc.fnsNamedIn fr.here f = [] := by simpa using hnil
       split at h
@@ -279,13 +281,15 @@ theorem evalMemberCall_sound_step {n} (ih : SoundAt cfg o fc n) :
               · rw [hopts]; exact .usingForArgsRevert henv he hspec' hne (liftOpt_ok hes) (ih.exprs _ _ _ _ hd)
               · rcases IM.bind_some h with ⟨d, hd, rfl⟩ | ⟨fn, hfn, h⟩ <;> try dsimp only at h
                 · exact (liftOpt_error hd).elim
-                · rcases IM.bind_some h with ⟨d, hd, rfl⟩ | ⟨⟨rets, m3⟩, hcall, h⟩ <;> try dsimp only at h
+                · rcases IM.bind_some h with ⟨d, hd, rfl⟩ | ⟨co, hcall, h⟩ <;> try dsimp only at h
                   · rw [hopts]
                     exact .usingForCallRevert henv he hspec' hne (liftOpt_ok hes) (ih.exprs _ _ _ _ hvs) (liftOpt_ok hfn)
                       (ih.callFn _ _ _ _ _ hd)
-                  · rw [IM.pure_some h, hopts]
-                    exact .usingForCall henv he hspec' hne (liftOpt_ok hes) (ih.exprs _ _ _ _ hvs) (liftOpt_ok hfn)
-                      (ih.callFn _ _ _ _ _ hcall)
+                  · rcases co with ⟨rets, m3⟩ | ⟨m3, d⟩ <;> try dsimp only at h
+                    · rw [IM.pure_some h, hopts]
+                      exact .usingForCall henv he hspec' hne (liftOpt_ok hes) (ih.exprs _ _ _ _ hvs) (liftOpt_ok hfn)
+                        (ih.callFn _ _ _ _ _ hcall)
+                    · exact (IM.failure_some h).elim
           · simp at h
       rename_i hspec
       split at h

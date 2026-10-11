@@ -54,10 +54,12 @@ def hasDynamicMemoryParam (env : TypeEnv) (d : FnDecl) : Bool :=
 def returnAbiTys (env : TypeEnv) (d : FnDecl) : Option (List ABIType) :=
   d.returns.mapM fun p => abiTypeOf env p.ty
 
-/-- Outcome of a message call: return values (as ABI values) and the machine, or a revert. -/
+/-- Outcome of a message call: return values (as ABI values) and the machine, a revert, or a halt
+    (inline assembly `return` / `stop`: the raw return data). -/
 inductive TopResult where
   | returned (m : Machine) (vs : List Solm.Value)
   | reverted (data : ByteArray)
+  | halted (m : Machine) (data : ByteArray)
 
 /-- Whether any entry point accepts the calldata (selector, `receive`, or `fallback`). -/
 def dispatches (fc : FlatContract) (calldata : ByteArray) : Bool :=
@@ -117,6 +119,13 @@ inductive solidityExec (immutables : Store) (σ σ₀ : Ethereum.AccountMap) (g 
       ofAbiParams fc.types I.calldata fn.decl.params svs {} = some (vs, h0) →
       CallFn cfg o fc (rootFrame fc) (initMachine σ σ₀ g A I immutables h0) fn vs (.reverted d) →
       solidityExec immutables σ σ₀ g A I (.reverted d) (.abi retTys)
+  | callHalted :
+      selectorDispatch fc I.calldata = some e → fc.fns[e.fn]? = some fn →
+      payableOrNoValue fn.decl I → returnAbiTys fc.types fn.decl = some retTys →
+      decodeArgs cfg fc.types fn.decl I.calldata = some svs →
+      ofAbiParams fc.types I.calldata fn.decl.params svs {} = some (vs, h0) →
+      CallFn cfg o fc (rootFrame fc) (initMachine σ σ₀ g A I immutables h0) fn vs (.halted m' d) →
+      solidityExec immutables σ σ₀ g A I (.halted m' d) (.abi retTys)
   | nonPayable :
       selectorDispatch fc I.calldata = some e → fc.fns[e.fn]? = some fn →
       fn.decl.mutability ≠ .payable → I.weiValue ≠ ⟨0⟩ → returnAbiTys fc.types fn.decl = some retTys →
@@ -129,6 +138,10 @@ inductive solidityExec (immutables : Store) (σ σ₀ : Ethereum.AccountMap) (g 
       I.calldata.size = 0 → fc.receive? = some fid → fc.fns[fid]? = some fn →
       CallFn cfg o fc (rootFrame fc) (initMachine σ σ₀ g A I immutables) fn [] (.reverted d) →
       solidityExec immutables σ σ₀ g A I (.reverted d) (.abi [])
+  | receiveHalted :
+      I.calldata.size = 0 → fc.receive? = some fid → fc.fns[fid]? = some fn →
+      CallFn cfg o fc (rootFrame fc) (initMachine σ σ₀ g A I immutables) fn [] (.halted m' d) →
+      solidityExec immutables σ σ₀ g A I (.halted m' d) (.abi [])
   | fallback :
       selectorDispatch fc I.calldata = none → (fc.receive? = none ∨ I.calldata.size ≠ 0) →
       fc.fallback? = some fid → fc.fns[fid]? = some fn → payableOrNoValue fn.decl I →
@@ -142,6 +155,12 @@ inductive solidityExec (immutables : Store) (σ σ₀ : Ethereum.AccountMap) (g 
       fallbackArgs fn.decl I.calldata {} = some (vs, h0) →
       CallFn cfg o fc (rootFrame fc) (initMachine σ σ₀ g A I immutables h0) fn vs (.reverted d) →
       solidityExec immutables σ σ₀ g A I (.reverted d) (fallbackConvention fn.decl)
+  | fallbackHalted :
+      selectorDispatch fc I.calldata = none → (fc.receive? = none ∨ I.calldata.size ≠ 0) →
+      fc.fallback? = some fid → fc.fns[fid]? = some fn → payableOrNoValue fn.decl I →
+      fallbackArgs fn.decl I.calldata {} = some (vs, h0) →
+      CallFn cfg o fc (rootFrame fc) (initMachine σ σ₀ g A I immutables h0) fn vs (.halted m' d) →
+      solidityExec immutables σ σ₀ g A I (.halted m' d) (fallbackConvention fn.decl)
   | fallbackNonPayable :
       selectorDispatch fc I.calldata = none → (fc.receive? = none ∨ I.calldata.size ≠ 0) →
       fc.fallback? = some fid → fc.fns[fid]? = some fn → fn.decl.mutability ≠ .payable → I.weiValue ≠ ⟨0⟩ →

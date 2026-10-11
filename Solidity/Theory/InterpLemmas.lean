@@ -100,6 +100,19 @@ theorem newViaEVM_sound (cfg : Config) (o : Oracle) (m : Machine) (c : Ident) (v
           · exact Or.inr (Or.inr (Or.inl (Nat.le_of_not_lt h3)))
       · exact Or.inl (lt_of_not_ge (α := Fin Ethereum.UInt256.size) h1)
 
+/-! ## Statement-position calls -/
+
+theorem stmtCall_true_iff {fc : FlatContract} {fr : Frame} {f : Ident} :
+    stmtCall fc fr f = true ↔ isBuiltinFn f = false ∧ fr.get? f = none ∧ fc.fnsNamedIn fr.here f ≠ [] := by
+  simp [stmtCall, Option.isNone_iff_eq_none, and_assoc]
+
+theorem stmtCallExpr_false_of {fc : FlatContract} {fr : Frame} {e : Expr}
+    (h : ∀ f args, e = .call (.ident f) [] args → False) : stmtCallExpr fc fr e = false := by
+  unfold stmtCallExpr
+  split
+  · rename_i f args; exact (h f args rfl).elim
+  · rfl
+
 /-! ## Result conversions -/
 
 /-- `Res α` of an interpreter result. -/
@@ -116,8 +129,9 @@ def execOf : Except ByteArray ExecResult → ExecResult
   | .ok r => r
   | .error d => .reverted d
 
-def fnOf : Except ByteArray (List Value × Machine) → FnResult
-  | .ok (rets, m) => .ok rets m
+def fnOf : Except ByteArray Interp.CallOut → FnResult
+  | .ok (.ok rets m) => .ok rets m
+  | .ok (.halted m d) => .halted m d
   | .error d => .reverted d
 
 @[simp] theorem resOf_ok {α} (a : α) (fr : Frame) (m : Machine) : resOf (.ok (a, fr, m)) = .ok a fr m := rfl
@@ -126,7 +140,8 @@ def fnOf : Except ByteArray (List Value × Machine) → FnResult
 @[simp] theorem unitResOf_error (d : ByteArray) : unitResOf (.error d) = .reverted d := rfl
 @[simp] theorem execOf_ok (r : ExecResult) : execOf (.ok r) = r := rfl
 @[simp] theorem execOf_error (d : ByteArray) : execOf (.error d) = .reverted d := rfl
-@[simp] theorem fnOf_ok (rets : List Value) (m : Machine) : fnOf (.ok (rets, m)) = .ok rets m := rfl
+@[simp] theorem fnOf_ok (rets : List Value) (m : Machine) : fnOf (.ok (.ok rets m)) = .ok rets m := rfl
+@[simp] theorem fnOf_halted (m : Machine) (d : ByteArray) : fnOf (.ok (.halted m d)) = .halted m d := rfl
 @[simp] theorem fnOf_error (d : ByteArray) : fnOf (.error d) = .reverted d := rfl
 
 /-! ## Soundness at a fuel level: the induction hypothesis -/

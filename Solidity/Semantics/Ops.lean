@@ -1259,7 +1259,9 @@ def declare (cfg : Config) (env : TypeEnv) (fr : Frame) (m : Machine) (ty : Ty) 
     let (v', m') ← coerce cfg env m v ty loc
     pure (fr.bind name ty loc v', m')
   | none =>
-    if loc == some .storage then Op.stuck
+    -- a storage pointer not yet assigned (a return variable, a local): inline assembly sets it
+    -- (`x.slot := s`); any use before that is stuck (`absKey` of no layout entry)
+    if loc == some .storage then return (fr.bind name ty loc (.storageRef ⟨"#slot:unset", []⟩ ty), m)
     let some (v, h') := zeroObj env fuelDefault ty 0 m.heap | Op.stuck
     pure (fr.bind name ty loc v, { m with heap := h' })
 
@@ -1335,5 +1337,36 @@ def bindParams (env : TypeEnv) (fr : Frame) (h : Heap) (params : List Param) (vs
     let name ← p.name
     let (v, h') ← ofAbi env fuelDefault p.ty sv h
     pure (fr.bind name p.ty (p.loc <|> some .memory) v, h')) (fr, h)
+
+/-! ## Literals and account code -/
+
+def unitMul : Option SubDenom → Nat
+  | none | some .wei | some .seconds => 1
+  | some .gwei => 10 ^ 9
+  | some .ether => 10 ^ 18
+  | some .minutes => 60
+  | some .hours => 3600
+  | some .days => 86400
+  | some .weeks => 604800
+
+def literalValue : Literal → Option Value
+  | .number n u hd => some (.literal (n * unitMul u) (if u.isSome then none else hd))
+  | .decimal m e u =>
+    let n := m * unitMul u
+    if e ≥ 0 then some (.literal (n * 10 ^ e.toNat))
+    else
+      let d := 10 ^ (-e).toNat
+      if n % d = 0 then some (.literal (n / d)) else none
+  | .bool b => some (.bool b)
+  | .str s => some (.strLit s.toUTF8)
+  | .unicodeStr s => some (.strLit s.toUTF8)
+  | .hexStr bs => some (.strLit (ByteArray.mk bs.toArray))
+
+def codeOf (evm : EVM.State) (a : EVM.Address) : ByteArray :=
+  match evm.lookupAccount a with
+  | some acc => acc.code
+  | none => .empty
+
+def codeSize (evm : EVM.State) (a : EVM.Address) : Nat := (codeOf evm a).size
 
 end Solidity

@@ -30,9 +30,10 @@ def toExec : ExecResult → Except ByteArray ExecResult
   | .reverted d => .error d
   | r => .ok r
 
-def toFn : FnResult → Except ByteArray (List Value × Machine)
-  | .ok rets m => .ok (rets, m)
+def toFn : FnResult → Except ByteArray Interp.CallOut
+  | .ok rets m => .ok (.ok rets m)
   | .reverted d => .error d
+  | .halted m d => .ok (.halted m d)
 
 @[simp] theorem toRes_ok {α} (a : α) (fr : Frame) (m : Machine) : toRes (.ok a fr m) = .ok (a, fr, m) := rfl
 @[simp] theorem toRes_reverted {α} (d : ByteArray) : (toRes (.reverted d) : Except ByteArray (α × Frame × Machine)) = .error d := rfl
@@ -43,8 +44,10 @@ def toFn : FnResult → Except ByteArray (List Value × Machine)
 @[simp] theorem toExec_break (fr : Frame) (m : Machine) : toExec (.break fr m) = .ok (.break fr m) := rfl
 @[simp] theorem toExec_continue (fr : Frame) (m : Machine) : toExec (.continue fr m) = .ok (.continue fr m) := rfl
 @[simp] theorem toExec_reverted (d : ByteArray) : toExec (.reverted d) = .error d := rfl
-@[simp] theorem toFn_ok (rets : List Value) (m : Machine) : toFn (.ok rets m) = .ok (rets, m) := rfl
+@[simp] theorem toExec_halted (m : Machine) (d : ByteArray) : toExec (.halted m d) = .ok (.halted m d) := rfl
+@[simp] theorem toFn_ok (rets : List Value) (m : Machine) : toFn (.ok rets m) = .ok (.ok rets m) := rfl
 @[simp] theorem toFn_reverted (d : ByteArray) : toFn (.reverted d) = .error d := rfl
+@[simp] theorem toFn_halted (m : Machine) (d : ByteArray) : toFn (.halted m d) = .ok (.halted m d) := rfl
 
 /-! ## Determinism of the EVM bridges -/
 
@@ -198,6 +201,25 @@ theorem directMember_of_selectorMember {fr : Frame} {recv : Expr} {g : Ident} {v
   unfold selectorMember at h
   cases hc : fnRefContract fc fr recv <;> simp [directMember, hc] at h ⊢
 
+
+/-! ### Expression statements -/
+
+/-- The result of `e;` from the result of `e`. -/
+def exprStmtResult : Res Value → ExecResult
+  | .ok _ fr1 m1 => .normal fr1 m1
+  | .reverted d => .reverted d
+
+/-- An expression statement other than the call of an internal function runs its expression. -/
+theorem execStmt_exprStmt_generic {k : Nat} {fr : Frame} {m : Machine} {e : Expr} {r : Res Value}
+    (hne : stmtCallExpr fc fr e = false) (h : (evalExpr cfg o fc k fr m e).run = some (toRes r)) :
+    (execStmt cfg o fc (k + 1) fr m (.exprStmt e)).run = some (toExec (exprStmtResult r)) := by
+  cases r <;> (
+    rcases e with _ | _ | _ | _ | _ | _ | _ | ⟨callee, opts, args⟩ | _ | _ | _ | _ | _ | _ | _ | _ <;>
+      (try (interp_simp [exprStmtResult, h]; done))
+    rcases callee with _ | f | _ | _ | _ | _ | _ | _ | _ | _ | _ | _ | _ | _ | _ | _ <;>
+      (try (interp_simp [exprStmtResult, h]; done))
+    rcases opts with _ | ⟨_, _⟩ <;> (try (interp_simp [exprStmtResult, h]; done))
+    interp_simp [exprStmtResult, h, show stmtCall fc fr f = false by simpa [stmtCallExpr] using hne])
 
 mutual
 
@@ -1763,16 +1785,39 @@ theorem execStmt_complete {fr m s r} (h : ExecStmt cfg o fc fr m s r) :
     refine ⟨n1 + n2 + 1, fun k hk => ?_⟩
     obtain ⟨k', rfl⟩ := exists_add (k := k) (c := 1) (by omega)
     interp_simp [ih1 k' (by omega), ih2 k' (by omega)]
-  | .exprStmt p1 => by
+  | .exprStmt p1 hne => by
     obtain ⟨n1, ih1⟩ := evalExpr_complete p1
     refine ⟨n1 + 1, fun k hk => ?_⟩
     obtain ⟨k', rfl⟩ := exists_add (k := k) (c := 1) (by omega)
-    interp_simp [ih1 k' (by omega)]
-  | .exprStmtRevert p1 => by
+    exact execStmt_exprStmt_generic hne (ih1 k' (by omega))
+  | .exprStmtRevert p1 hne => by
     obtain ⟨n1, ih1⟩ := evalExpr_complete p1
     refine ⟨n1 + 1, fun k hk => ?_⟩
     obtain ⟨k', rfl⟩ := exists_add (k := k) (c := 1) (by omega)
-    interp_simp [ih1 k' (by omega)]
+    exact execStmt_exprStmt_generic hne (ih1 k' (by omega))
+  | .exprStmtCall p1 p2 p3 p4 p5 p6 p7 => by
+    obtain ⟨n5, ih5⟩ := evalExprs_complete p5
+    obtain ⟨n7, ih7⟩ := callFn_complete p7
+    refine ⟨n5 + n7 + 1, fun k hk => ?_⟩
+    obtain ⟨k', rfl⟩ := exists_add (k := k) (c := 1) (by omega)
+    interp_simp [stmtCall_true_iff.mpr ⟨p1, p2, p3⟩, p4, p6, ih5 k' (by omega), ih7 k' (by omega)]
+  | .exprStmtCallRevert p1 p2 p3 p4 p5 p6 p7 => by
+    obtain ⟨n5, ih5⟩ := evalExprs_complete p5
+    obtain ⟨n7, ih7⟩ := callFn_complete p7
+    refine ⟨n5 + n7 + 1, fun k hk => ?_⟩
+    obtain ⟨k', rfl⟩ := exists_add (k := k) (c := 1) (by omega)
+    interp_simp [stmtCall_true_iff.mpr ⟨p1, p2, p3⟩, p4, p6, ih5 k' (by omega), ih7 k' (by omega)]
+  | .exprStmtCallArgsRevert p1 p2 p3 p4 p5 => by
+    obtain ⟨n5, ih5⟩ := evalExprs_complete p5
+    refine ⟨n5 + 1, fun k hk => ?_⟩
+    obtain ⟨k', rfl⟩ := exists_add (k := k) (c := 1) (by omega)
+    interp_simp [stmtCall_true_iff.mpr ⟨p1, p2, p3⟩, p4, ih5 k' (by omega)]
+  | .exprStmtCallHalted p1 p2 p3 p4 p5 p6 p7 => by
+    obtain ⟨n5, ih5⟩ := evalExprs_complete p5
+    obtain ⟨n7, ih7⟩ := callFn_complete p7
+    refine ⟨n5 + n7 + 1, fun k hk => ?_⟩
+    obtain ⟨k', rfl⟩ := exists_add (k := k) (c := 1) (by omega)
+    interp_simp [stmtCall_true_iff.mpr ⟨p1, p2, p3⟩, p4, p6, ih5 k' (by omega), ih7 k' (by omega)]
   | .iteT p1 p2 => by
     obtain ⟨n1, ih1⟩ := evalExpr_complete p1
     obtain ⟨n2, ih2⟩ := execStmt_complete p2
@@ -1823,6 +1868,11 @@ theorem execStmt_complete {fr m s r} (h : ExecStmt cfg o fc fr m s r) :
     obtain ⟨k', rfl⟩ := exists_add (k := k) (c := 1) (by omega)
     interp_simp [ih1 k' (by omega)]
   | .doWhileRevert p1 => by
+    obtain ⟨n1, ih1⟩ := execStmt_complete p1
+    refine ⟨n1 + 1, fun k hk => ?_⟩
+    obtain ⟨k', rfl⟩ := exists_add (k := k) (c := 1) (by omega)
+    interp_simp [ih1 k' (by omega)]
+  | .doWhileHalted p1 => by
     obtain ⟨n1, ih1⟩ := execStmt_complete p1
     refine ⟨n1 + 1, fun k hk => ?_⟩
     obtain ⟨k', rfl⟩ := exists_add (k := k) (c := 1) (by omega)
@@ -1932,6 +1982,18 @@ theorem execStmt_complete {fr m s r} (h : ExecStmt cfg o fc fr m s r) :
     refine ⟨n1 + 1, fun k hk => ?_⟩
     obtain ⟨k', rfl⟩ := exists_add (k := k) (c := 1) (by omega)
     cases rr <;> simp [settlePlaceholder] at p2 <;> (try subst p2) <;> interp_simp [settlePlaceholder, ih1 k' (by omega)]
+  | .assembly p1 => by
+    refine ⟨1, fun k hk => ?_⟩
+    obtain ⟨k', rfl⟩ := exists_add hk
+    interp_simp [p1]
+  | .assemblyRevert p1 => by
+    refine ⟨1, fun k hk => ?_⟩
+    obtain ⟨k', rfl⟩ := exists_add hk
+    interp_simp [p1]
+  | .assemblyHalt p1 => by
+    refine ⟨1, fun k hk => ?_⟩
+    obtain ⟨k', rfl⟩ := exists_add hk
+    interp_simp [p1]
   | .tryCallOk (r := rr) p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 p11 p12 p13 p14 p15 => by
     have hne := isEmpty_false_of_ne (resolveDecl_ne_nil p7)
     obtain ⟨hmd1, hmd2, hmd3, hmd4⟩ := memberCallDirect_false p1
@@ -2287,6 +2349,18 @@ theorem execLoop_complete {fr m c post body r} (h : ExecLoop cfg o fc fr m c pos
     obtain ⟨k', rfl⟩ := exists_add (k := k) (c := 2) (by omega)
     simp only [execLoop, IM.run_bind, toRes, ih1 (k' + 1) (by omega)]
     interp_simp [ih2 k' (by omega)]
+  | .bodyHalted .none p2 => by
+    obtain ⟨n2, ih2⟩ := execStmt_complete p2
+    refine ⟨n2 + 2, fun k hk => ?_⟩
+    obtain ⟨k', rfl⟩ := exists_add (k := k) (c := 2) (by omega)
+    interp_simp [ih2 k' (by omega)]
+  | .bodyHalted (.some hp1) p2 => by
+    obtain ⟨n1, ih1⟩ := evalExpr_complete hp1
+    obtain ⟨n2, ih2⟩ := execStmt_complete p2
+    refine ⟨n1 + n2 + 2, fun k hk => ?_⟩
+    obtain ⟨k', rfl⟩ := exists_add (k := k) (c := 2) (by omega)
+    simp only [execLoop, IM.run_bind, toRes, ih1 (k' + 1) (by omega)]
+    interp_simp [ih2 k' (by omega)]
 
 theorem execBlock_complete {fr m ss r} (h : ExecBlock cfg o fc fr m ss r) :
     ∃ n, ∀ k, n ≤ k → (execBlock cfg o fc k fr m ss).run = some (toExec r) :=
@@ -2317,6 +2391,11 @@ theorem execBlock_complete {fr m ss r} (h : ExecBlock cfg o fc fr m ss r) :
     obtain ⟨k', rfl⟩ := exists_add (k := k) (c := 1) (by omega)
     interp_simp [ih1 k' (by omega)]
   | .consRevert p1 => by
+    obtain ⟨n1, ih1⟩ := execStmt_complete p1
+    refine ⟨n1 + 1, fun k hk => ?_⟩
+    obtain ⟨k', rfl⟩ := exists_add (k := k) (c := 1) (by omega)
+    interp_simp [ih1 k' (by omega)]
+  | .consHalted p1 => by
     obtain ⟨n1, ih1⟩ := execStmt_complete p1
     refine ⟨n1 + 1, fun k hk => ?_⟩
     obtain ⟨k', rfl⟩ := exists_add (k := k) (c := 1) (by omega)
@@ -2365,7 +2444,13 @@ theorem callFn_complete {fr m fn args r} (h : CallFn cfg o fc fr m fn args r) :
     | «break» fr' m' => simp [finished] at p4
     | «continue» fr' m' => simp [finished] at p4
     | reverted d => simp [finished] at p4
+    | halted m' d => simp [finished] at p4
   | .reverted p1 p2 p3 => by
+    obtain ⟨n3, ih3⟩ := execChain_complete p3
+    refine ⟨n3 + 1, fun k hk => ?_⟩
+    obtain ⟨k', rfl⟩ := exists_add (k := k) (c := 1) (by omega)
+    interp_simp [p1, p2, ih3 k' (by omega)]
+  | .halted p1 p2 p3 => by
     obtain ⟨n3, ih3⟩ := execChain_complete p3
     refine ⟨n3 + 1, fun k hk => ?_⟩
     obtain ⟨k', rfl⟩ := exists_add (k := k) (c := 1) (by omega)

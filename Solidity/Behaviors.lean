@@ -72,6 +72,7 @@ theorem runtimeEquivalence_no_crash {cfg bytecode fc immutables}
     cases hequiv with
     | success h1 => rw [hΞ'] at hΞ; rw [h1] at hΞ; cases hΞ
     | revert h1 => rw [hΞ'] at hΞ; rw [h1] at hΞ; cases hΞ
+    | halt h1 => rw [hΞ'] at hΞ; rw [h1] at hΞ; cases hΞ
   | noDispatch _ hΞ' => rw [hΞ'] at hΞ; cases hΞ
   | decodingFailed _ _ _ _ hΞ' _ => rw [hΞ'] at hΞ; cases hΞ
   | outOfGas hΞ' => rw [hΞ'] at hΞ; cases hΞ; rfl

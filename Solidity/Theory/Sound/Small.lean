@@ -216,6 +216,7 @@ theorem execBlock_sound_step {n} (ih : SoundAt cfg o fc n) :
       | returned fr1 m1 => rw [IM.pure_some h]; exact .consReturn hs
       | «break» fr1 m1 => rw [IM.pure_some h]; exact .consBreak hs
       | «continue» fr1 m1 => rw [IM.pure_some h]; exact .consContinue hs
+      | halted m1 d => rw [IM.pure_some h]; exact .consHalted hs
       | reverted d => rw [IM.throw_some h]; exact .consRevert hs
 
 theorem execChain_sound_step {n} (ih : SoundAt cfg o fc n) :
@@ -265,6 +266,7 @@ theorem callFn_sound_step {n} (ih : SoundAt cfg o fc n) :
       · have hc := ih.chain _ _ _ _ _ hr
         cases r' with
         | reverted d => rw [IM.throw_some h]; exact .reverted (liftOp_ok he) hbody hc
+        | halted m2 d => rw [IM.pure_some h]; exact .halted (liftOp_ok he) hbody hc
         | normal fr2 m2 =>
           rcases IM.bind_some h with ⟨d, hd, rfl⟩ | ⟨⟨fr2', m2'⟩, hf, h⟩ <;> try dsimp only at h
           · exact (liftOpt_error hd).elim

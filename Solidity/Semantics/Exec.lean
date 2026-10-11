@@ -1,4 +1,4 @@
-import Solidity.Semantics.Calls
+import Solidity.Semantics.Yul
 
 /-!
 # Relational big-step semantics
@@ -23,28 +23,6 @@ namespace Solidity
 open ABI
 
 /-! ## Pure helpers -/
-
-def unitMul : Option SubDenom → Nat
-  | none | some .wei | some .seconds => 1
-  | some .gwei => 10 ^ 9
-  | some .ether => 10 ^ 18
-  | some .minutes => 60
-  | some .hours => 3600
-  | some .days => 86400
-  | some .weeks => 604800
-
-def literalValue : Literal → Option Value
-  | .number n u hd => some (.literal (n * unitMul u) (if u.isSome then none else hd))
-  | .decimal m e u =>
-    let n := m * unitMul u
-    if e ≥ 0 then some (.literal (n * 10 ^ e.toNat))
-    else
-      let d := 10 ^ (-e).toNat
-      if n % d = 0 then some (.literal (n / d)) else none
-  | .bool b => some (.bool b)
-  | .str s => some (.strLit s.toUTF8)
-  | .unicodeStr s => some (.strLit s.toUTF8)
-  | .hexStr bs => some (.strLit (ByteArray.mk bs.toArray))
 
 def interfaceIdOf (fc : FlatContract) (n : Ident) : Option Value :=
   (fc.interfaceSigs.find? (·.1 == n)).map fun (_, sigs) =>
@@ -110,6 +88,20 @@ def isBuiltinFn (f : Ident) : Bool :=
   f == "require" || f == "assert" || f == "revert" || f == "keccak256" || f == "gasleft" ||
     f == "addmod" || f == "mulmod" || f == "type" || f == "ecrecover" || f == "blockhash" ||
     f == "sha256" || f == "ripemd160"
+
+/-- `f(args)` names an internal function: not a builtin, a local, a struct or a type. -/
+def stmtCall (fc : FlatContract) (fr : Frame) (f : Ident) : Bool :=
+  !isBuiltinFn f && (fr.get? f).isNone && !(fc.fnsNamedIn fr.here f).isEmpty
+
+/-- `e;` is the call of an internal function `f(args)`: the one statement whose callee may end
+    the message call (`ExecStmt.exprStmtCall*`). -/
+def stmtCallExpr (fc : FlatContract) (fr : Frame) : Expr → Bool
+  | .call (.ident f) [] _ => stmtCall fc fr f
+  | _ => false
+
+/-- Discharges `stmtCallExpr fc fr e = false` for a written `e` other than a user function call. -/
+syntax "stmt_call_dec" : tactic
+macro_rules | `(tactic| stmt_call_dec) => `(tactic| first | rfl | simp [stmtCallExpr, stmtCall, isBuiltinFn])
 
 /-- The error a `revert` names: `E` in the scope of the running code, or `Q.E`. -/
 def errorRef (fc : FlatContract) (here : Ident) : Expr → Option ErrorInfo
@@ -293,6 +285,7 @@ def settlePlaceholder (fr : Frame) : ExecResult → Option ExecResult
   | .normal fr' m => some (.normal (resumeScope fr fr') m)
   | .returned fr' m => some (.normal (resumeScope fr fr') m)
   | .reverted d => some (.reverted d)
+  | .halted m d => some (.halted m d)
   | _ => none
 
 def restoreUnchecked (u : Bool) : ExecResult → ExecResult
@@ -301,6 +294,7 @@ def restoreUnchecked (u : Bool) : ExecResult → ExecResult
   | .break fr m => .break { fr with unchecked := u } m
   | .continue fr m => .continue { fr with unchecked := u } m
   | .reverted d => .reverted d
+  | .halted m d => .halted m d
 
 /-- The frame in which a constant's initializer is evaluated: the scope of the unit `here` that
     declares it, no locals, in the reader's checked / unchecked mode (solc's legacy pipeline
@@ -314,6 +308,7 @@ def exitBlock (fr : Frame) : ExecResult → ExecResult
   | .break fr' m => .break (fr.exitScope fr') m
   | .continue fr' m => .continue (fr.exitScope fr') m
   | .reverted d => .reverted d
+  | .halted m d => .halted m d
 
 /-- Bytes of a `bytes memory` / `string memory` / literal argument. -/
 def bytesArg (h : Heap) : Value → Option ByteArray
@@ -362,13 +357,6 @@ def eventArgs (cands : List EventInfo) : Args → Option (List Expr)
         ei.decl.params.length == fs.length && ei.decl.params.all fun p => fs.any (p.name == some ·.1) with
     | [ei] => namedArgs (ei.decl.params.map (·.name.getD "")) fs
     | _ => none
-
-def codeOf (evm : EVM.State) (a : EVM.Address) : ByteArray :=
-  match evm.lookupAccount a with
-  | some acc => acc.code
-  | none => .empty
-
-def codeSize (evm : EVM.State) (a : EVM.Address) : Nat := (codeOf evm a).size
 
 def valueOpt : List CallOpt → Option Expr
   | [] => none
@@ -1482,8 +1470,33 @@ inductive ExecStmt : Frame → Machine → Stmt → ExecResult → Prop where
   | tupleDeclRevert : EvalExpr fr m rhs (.reverted d) → ExecStmt fr m (.tupleDecl binders rhs) (.reverted d)
   | tupleDeclPanic : EvalExpr fr m rhs (.ok (.tuple vs) fr1 m1) → DeclareTuple fr1 m1 binders vs (.reverted d) →
       ExecStmt fr m (.tupleDecl binders rhs) (.reverted d)
-  | exprStmt : EvalExpr fr m e (.ok v fr1 m1) → ExecStmt fr m (.exprStmt e) (.normal fr1 m1)
-  | exprStmtRevert : EvalExpr fr m e (.reverted d) → ExecStmt fr m (.exprStmt e) (.reverted d)
+  -- `e;` other than the call of an internal function (the auto-param holds by `rfl` / `simp` for a
+  -- written expression)
+  | exprStmt : EvalExpr fr m e (.ok v fr1 m1) → (hne : stmtCallExpr fc fr e = false := by stmt_call_dec) →
+      ExecStmt fr m (.exprStmt e) (.normal fr1 m1)
+  | exprStmtRevert : EvalExpr fr m e (.reverted d) → (hne : stmtCallExpr fc fr e = false := by stmt_call_dec) →
+      ExecStmt fr m (.exprStmt e) (.reverted d)
+  -- `f(args);` of an internal function (as `EvalExpr.internalCall`), whose body may also end the
+  -- message call (inline assembly `return` / `stop`; in expression position a halt has no rule)
+  | exprStmtCall : isBuiltinFn f = false → fr.get? f = none → fc.fnsNamedIn fr.here f ≠ [] →
+      callArgs (fc.candParams (fc.fnsNamedIn fr.here f)) args = some es →
+      EvalExprs fr m es (.ok vs fr1 m1) → resolveOverload fc.types m1.heap fc (fc.fnsNamedIn fr.here f) vs = some fn →
+      CallFn fr1 m1 fn vs (.ok rets m2) →
+      ExecStmt fr m (.exprStmt (.call (.ident f) [] args)) (.normal fr1 m2)
+  | exprStmtCallRevert : isBuiltinFn f = false → fr.get? f = none → fc.fnsNamedIn fr.here f ≠ [] →
+      callArgs (fc.candParams (fc.fnsNamedIn fr.here f)) args = some es →
+      EvalExprs fr m es (.ok vs fr1 m1) → resolveOverload fc.types m1.heap fc (fc.fnsNamedIn fr.here f) vs = some fn →
+      CallFn fr1 m1 fn vs (.reverted d) →
+      ExecStmt fr m (.exprStmt (.call (.ident f) [] args)) (.reverted d)
+  | exprStmtCallArgsRevert : isBuiltinFn f = false → fr.get? f = none → fc.fnsNamedIn fr.here f ≠ [] →
+      callArgs (fc.candParams (fc.fnsNamedIn fr.here f)) args = some es →
+      EvalExprs fr m es (.reverted d) →
+      ExecStmt fr m (.exprStmt (.call (.ident f) [] args)) (.reverted d)
+  | exprStmtCallHalted : isBuiltinFn f = false → fr.get? f = none → fc.fnsNamedIn fr.here f ≠ [] →
+      callArgs (fc.candParams (fc.fnsNamedIn fr.here f)) args = some es →
+      EvalExprs fr m es (.ok vs fr1 m1) → resolveOverload fc.types m1.heap fc (fc.fnsNamedIn fr.here f) vs = some fn →
+      CallFn fr1 m1 fn vs (.halted m2 d) →
+      ExecStmt fr m (.exprStmt (.call (.ident f) [] args)) (.halted m2 d)
   | iteT : EvalExpr fr m c (.ok (.bool true) fr1 m1) → ExecStmt fr1 m1 t r → ExecStmt fr m (.ite c t e) r
   | iteF : EvalExpr fr m c (.ok (.bool false) fr1 m1) → ExecStmt fr1 m1 s r → ExecStmt fr m (.ite c t (some s)) r
   | iteFNone : EvalExpr fr m c (.ok (.bool false) fr1 m1) → ExecStmt fr m (.ite c t none) (.normal fr1 m1)
@@ -1496,6 +1509,7 @@ inductive ExecStmt : Frame → Machine → Stmt → ExecResult → Prop where
   | doWhileBreak : ExecStmt fr m body (.break fr1 m1) → ExecStmt fr m (.doWhile body c) (.normal fr1 m1)
   | doWhileReturn : ExecStmt fr m body (.returned fr1 m1) → ExecStmt fr m (.doWhile body c) (.returned fr1 m1)
   | doWhileRevert : ExecStmt fr m body (.reverted d) → ExecStmt fr m (.doWhile body c) (.reverted d)
+  | doWhileHalted : ExecStmt fr m body (.halted m1 d) → ExecStmt fr m (.doWhile body c) (.halted m1 d)
   | forNoInit : ExecLoop fr m c post body r → ExecStmt fr m (.for none c post body) r
   | forInit : ExecStmt fr m init (.normal fr1 m1) → ExecLoop fr1 m1 c post body r →
       ExecStmt fr m (.for (some init) c post body) (exitBlock fr r)
@@ -1540,6 +1554,10 @@ inductive ExecStmt : Frame → Machine → Stmt → ExecResult → Prop where
       ExecStmt fr m (.unchecked ss) (exitBlock fr (restoreUnchecked fr.unchecked r))
   | placeholder : ExecChain (popFrame fr) m fr.chain fr.body r → settlePlaceholder fr r = some r' →
       ExecStmt fr m .placeholder r'
+  -- `assembly { … }` (`Semantics/Yul.lean`): fell through, reverted, or ended the message call
+  | assembly : yulExec cfg o fc fr m body = some (.done st) → ExecStmt fr m (.assembly body) (.normal st.fr st.m)
+  | assemblyRevert : yulExec cfg o fc fr m body = some (.reverted d) → ExecStmt fr m (.assembly body) (.reverted d)
+  | assemblyHalt : yulExec cfg o fc fr m body = some (.halted m' d) → ExecStmt fr m (.assembly body) (.halted m' d)
   -- `try recv.f{opts}(args) returns (ps) { body } catch …`: only the call itself is caught; the
   -- receiver, options, arguments, encoding, the code-size check and return decoding revert uncaught
   | tryCallOk : memberCallDirect fc fr recv = false → EvalExpr fr m recv (.ok (.contract c a) fr1 m1) →
@@ -1708,6 +1726,8 @@ inductive ExecLoop : Frame → Machine → Option Expr → Option Expr → Stmt 
       ExecLoop fr m c post body (.returned fr2 m2)
   | bodyRevert : EvalCond fr m c (.ok true fr1 m1) → ExecStmt fr1 m1 body (.reverted d) →
       ExecLoop fr m c post body (.reverted d)
+  | bodyHalted : EvalCond fr m c (.ok true fr1 m1) → ExecStmt fr1 m1 body (.halted m2 d) →
+      ExecLoop fr m c post body (.halted m2 d)
 
 /-- An optional loop condition (`none` is `true`). -/
 inductive EvalCond : Frame → Machine → Option Expr → Res Bool → Prop where
@@ -1727,6 +1747,7 @@ inductive ExecBlock : Frame → Machine → List Stmt → ExecResult → Prop wh
   | consBreak : ExecStmt fr m s (.break fr1 m1) → ExecBlock fr m (s :: ss) (.break fr1 m1)
   | consContinue : ExecStmt fr m s (.continue fr1 m1) → ExecBlock fr m (s :: ss) (.continue fr1 m1)
   | consRevert : ExecStmt fr m s (.reverted d) → ExecBlock fr m (s :: ss) (.reverted d)
+  | consHalted : ExecStmt fr m s (.halted m1 d) → ExecBlock fr m (s :: ss) (.halted m1 d)
 
 /-- Run the remaining modifier chain, then the body.  A modifier's arguments are evaluated when it is
     entered (at the outer modifier's `_;`, every time), in the function scope. -/
@@ -1754,6 +1775,9 @@ inductive CallFn : Frame → Machine → FnDef → List Value → FnResult → P
   | reverted : enterFn cfg fc.types fn.declaredIn fn.decl args m = some (.ok (fr0, m0)) → fn.decl.body = some body →
       ExecChain { fr0 with chain := fn.decl.modifiers, body := body } m0 fn.decl.modifiers body (.reverted d) →
       CallFn fr m fn args (.reverted d)
+  | halted : enterFn cfg fc.types fn.declaredIn fn.decl args m = some (.ok (fr0, m0)) → fn.decl.body = some body →
+      ExecChain { fr0 with chain := fn.decl.modifiers, body := body } m0 fn.decl.modifiers body (.halted m2 d) →
+      CallFn fr m fn args (.halted m2 d)
   | enterPanic : enterFn cfg fc.types fn.declaredIn fn.decl args m = some (.error p) → CallFn fr m fn args (.reverted p.data)
 
 end

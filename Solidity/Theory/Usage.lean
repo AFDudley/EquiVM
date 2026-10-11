@@ -235,4 +235,19 @@ example (fr : Frame) (m : Machine) (t : ValueTypeInfo) (n : ℕ)
   EvalExpr.wrapPlain (h' := m.heap) hrecv (EvalExpr.unwrapPlain hrecv (EvalExpr.localVal _ _ hp))
     (by rw [hund]; simp [implicitConv])
 
+/-! ## Inline assembly -/
+
+/-- `assembly { r := add(x, 1) }` on `uint256` locals: `yulExec` is evaluated by `simp`
+    (`exitOk_fresh` closes the exit check of a block that wrote no memory). -/
+example (fr : Frame) (m : Machine) (lr : Local) (n : ℕ)
+    (hx : fr.get? "x" = some { ty := u256Ty, loc := none, val := u256Val n })
+    (hr : fr.get? "r" = some lr) (hlr : lr.ty = u256Ty) (hloc : lr.loc = none) (hn : n + 1 < 2 ^ 256) :
+    ExecStmt cfg o fc fr m (.assembly [.assign "r" (.call .add [.ident "x", .lit 1])])
+      (.normal (fr.setVal "r" (u256Val (n + 1))) m) :=
+  ExecStmt.assembly (st := { fr := fr.setVal "r" (u256Val (n + 1)), m := m }) (by
+    simp [yulExec, yulExecStmts, yulExecStmt, yulEval, yulEvalArgs, yulValue, yulArith, yulIdent, lookupLocal,
+      yulAssign, hx, hr, hlr, hloc, valueToYul, scalarWord, yulToValue, cleanWord, W, ww, u256Val, u256Ty,
+      uadd_toNat, EVM.Word.ofNat, ofNat_toNat_mod, UInt256.size,
+      Nat.mod_eq_of_lt (show n + 1 < 115792089237316195423570985008687907853269984665640564039457584007913129639936 from hn)])
+
 end Solidity.Usage

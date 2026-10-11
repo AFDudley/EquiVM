@@ -31,6 +31,12 @@ def liftOpt {α} : Option α → IM α
 
 def guard' (b : Bool) : IM Unit := if b then pure () else failure
 
+/-- Outcome of `callFn`: the return values and the machine, or a halt (inline assembly `return` /
+    `stop`, which ends the message call). -/
+inductive CallOut where
+  | ok (rets : List Value) (m : Machine)
+  | halted (m : Machine) (data : ByteArray)
+
 /-! ## EVM bridges (deterministic mirrors of `Calls.lean`) -/
 
 def callViaEVM (o : Oracle) (m : Machine) (target : EVM.Address) (value : Nat) (calldata : EVM.Bytes)
@@ -380,8 +386,8 @@ def evalCall : Nat → Frame → Machine → Expr → List CallOpt → Args → 
           let es ← liftOpt (callArgs (fc.candParams (superCands fc fr.here f)) args)
           let (vs, fr1, m1) ← evalExprs fuel fr m es
           let fn ← liftOpt (resolveOverload fc.types m1.heap fc (superCands fc fr.here f) vs)
-          let rets ← callFn fuel fr1 m1 fn vs
-          pure (retValue rets.1, fr1, rets.2)
+          let .ok rets m2 ← callFn fuel fr1 m1 fn vs | failure
+          pure (retValue rets, fr1, m2)
         else failure
       else if isEnvObj (headIdent recv) then
         match recv, opts, args with
@@ -412,8 +418,8 @@ def evalCall : Nat → Frame → Machine → Expr → List CallOpt → Args → 
             let es ← liftOpt (callArgs ((lib.functions.filter (·.name == f)).map (·.params)) args)
             let (vs, fr1, m1) ← evalExprs fuel fr m es
             let d ← liftOpt (resolveDecl fc.types m1.heap (lib.functions.filter (·.name == f)) vs)
-            let rets ← callFn fuel fr1 m1 ⟨0, l, d⟩ vs
-            pure (retValue rets.1, fr1, rets.2)
+            let .ok rets m2 ← callFn fuel fr1 m1 ⟨0, l, d⟩ vs | failure
+            pure (retValue rets, fr1, m2)
           else failure
         | _ => failure
       else if baseRecv fc fr recv then
@@ -423,8 +429,8 @@ def evalCall : Nat → Frame → Machine → Expr → List CallOpt → Args → 
             let es ← liftOpt (callArgs (fc.candParams (baseCands fc b f)) args)
             let (vs, fr1, m1) ← evalExprs fuel fr m es
             let fn ← liftOpt (resolveOverload fc.types m1.heap fc (baseCands fc b f) vs)
-            let rets ← callFn fuel fr1 m1 fn vs
-            pure (retValue rets.1, fr1, rets.2)
+            let .ok rets m2 ← callFn fuel fr1 m1 fn vs | failure
+            pure (retValue rets, fr1, m2)
           else failure
         | _ => failure
       else if isTypeExprRecv recv then
@@ -542,8 +548,8 @@ def evalNamedCall : Nat → Frame → Machine → Ident → List CallOpt → Arg
       let es ← liftOpt (callArgs (fc.candParams (fc.fnsNamedIn fr.here f)) args)
       let (vs, fr1, m1) ← evalExprs fuel fr m es
       let fn ← liftOpt (resolveOverload fc.types m1.heap fc (fc.fnsNamedIn fr.here f) vs)
-      let rets ← callFn fuel fr1 m1 fn vs
-      pure (retValue rets.1, fr1, rets.2)
+      let .ok rets m2 ← callFn fuel fr1 m1 fn vs | failure
+      pure (retValue rets, fr1, m2)
     else
       match fc.types.structIn fr.here f with
       | some sd => do
@@ -736,8 +742,8 @@ def evalMemberCall : Nat → Frame → Machine → Expr → Ident → List CallO
         let es ← liftOpt (callArgs ((fc.candParams (usingCands fc fr.here (receiverTy m1.heap rv) f)).map (·.drop 1)) args)
         let (vs, fr2, m2) ← evalExprs fuel fr1 m1 es
         let fn ← liftOpt (resolveOverload fc.types m2.heap fc (usingCands fc fr.here (receiverTy m1.heap rv) f) (rv :: vs))
-        let rets ← callFn fuel fr2 m2 fn (rv :: vs)
-        pure (retValue rets.1, fr2, rets.2)
+        let .ok rets m3 ← callFn fuel fr2 m2 fn (rv :: vs) | failure
+        pure (retValue rets, fr2, m3)
       else failure
 
 def evalValueOpt : Nat → Frame → Machine → Option Expr → IM (Nat × Frame × Machine)
@@ -861,9 +867,23 @@ def execStmt : Nat → Frame → Machine → Stmt → IM ExecResult
       let .tuple vs := v | failure
       let (fr2, m2) ← declareTuple fuel fr1 m1 binders vs
       pure (.normal fr2 m2)
-    | .exprStmt e => do
-      let (_, fr1, m1) ← evalExpr fuel fr m e
-      pure (.normal fr1 m1)
+    | .exprStmt e =>
+      match e with
+      -- `f(args);` of an internal function may end the message call (`ExecStmt.exprStmtCall*`)
+      | .call (.ident f) [] args =>
+        if stmtCall fc fr f then do
+          let es ← liftOpt (callArgs (fc.candParams (fc.fnsNamedIn fr.here f)) args)
+          let (vs, fr1, m1) ← evalExprs fuel fr m es
+          let fn ← liftOpt (resolveOverload fc.types m1.heap fc (fc.fnsNamedIn fr.here f) vs)
+          match ← callFn fuel fr1 m1 fn vs with
+          | .ok _ m2 => pure (.normal fr1 m2)
+          | .halted m2 d => pure (.halted m2 d)
+        else do
+          let (_, fr1, m1) ← evalExpr fuel fr m e
+          pure (.normal fr1 m1)
+      | _ => do
+        let (_, fr1, m1) ← evalExpr fuel fr m e
+        pure (.normal fr1 m1)
     | .ite c t e => do
       let (cv, fr1, m1) ← evalExpr fuel fr m c
       match cv, e with
@@ -879,6 +899,7 @@ def execStmt : Nat → Frame → Machine → Stmt → IM ExecResult
       | .break fr1 m1 => pure (.normal fr1 m1)
       | .returned fr1 m1 => pure (.returned fr1 m1)
       | .reverted d => throw d
+      | .halted m1 d => pure (.halted m1 d)
     | .for init c post body => do
       match init with
       | none => execLoop fuel fr m c post body
@@ -924,6 +945,12 @@ def execStmt : Nat → Frame → Machine → Stmt → IM ExecResult
     | .placeholder => do
       let r ← execChain fuel (popFrame fr) m fr.chain fr.body
       liftOpt (settlePlaceholder fr r)
+    | .assembly body =>
+      match yulExec cfg o fc fr m body with
+      | some (.done st) => pure (.normal st.fr st.m)
+      | some (.reverted d) => throw d
+      | some (.halted m' d) => pure (.halted m' d)
+      | none => failure
     | .tryCatch call ps body cs =>
       match call with
       | .call (.member recv f) opts args => do
@@ -1011,6 +1038,7 @@ def execLoopBody : Nat → Frame → Machine → Option Expr → Option Expr →
     | .break fr2 m2 => pure (.normal fr2 m2)
     | .returned fr2 m2 => pure (.returned fr2 m2)
     | .reverted d => throw d
+    | .halted m2 d => pure (.halted m2 d)
 
 def execBlock : Nat → Frame → Machine → List Stmt → IM ExecResult
   | 0, _, _, _ => failure
@@ -1041,8 +1069,8 @@ def execChain : Nat → Frame → Machine → List ModifierInvocation → Block 
       | none =>
         if fc.linearization.contains mi.name then execChain fuel fr m rest body else failure
 
-/-- Run a function in a fresh frame; returns its return values and the machine. -/
-def callFn : Nat → Frame → Machine → FnDef → List Value → IM (List Value × Machine)
+/-- Run a function in a fresh frame; returns its return values and the machine, or the halt. -/
+def callFn : Nat → Frame → Machine → FnDef → List Value → IM CallOut
   | 0, _, _, _, _ => failure
   | fuel+1, _fr, m, fn, args => do
     let (fr0, m0) ← liftOp (enterFn cfg fc.types fn.declaredIn fn.decl args m)
@@ -1050,10 +1078,11 @@ def callFn : Nat → Frame → Machine → FnDef → List Value → IM (List Val
     let r ← execChain fuel { fr0 with chain := fn.decl.modifiers, body := body } m0 fn.decl.modifiers body
     match r with
     | .reverted d => throw d
+    | .halted m2 d => pure (.halted m2 d)
     | r =>
       let (fr2, m2) ← liftOpt (finished r)
       let rets ← liftOpt (retVals fr2)
-      pure (rets, m2)
+      pure (.ok rets m2)
 
 end
 
@@ -1073,13 +1102,14 @@ def interpExec (fuel : Nat) (immutables : Store)
     let (vs, h0) ← liftOpt (ofAbiParams fc.types I.calldata fn.decl.params svs {})
     let m0 := initMachine σ σ₀ g A I immutables h0
     match (callFn cfg o fc fuel (rootFrame fc) m0 fn vs : Option (Except ByteArray _)) with
-    | some (.ok (rets, m')) =>
+    | some (.ok (.ok rets m')) =>
       match prepareArgs fc.types I.calldata fuelDefault m'.heap rets with
       | some (.ok (rets, h')) =>
         let out ← liftOpt (rets.mapM (toAbi h' fuelDefault))
         pure (.returned m' out, .abi retTys)
       | some (.error p) => pure (.reverted p.data, .abi retTys)
       | none => failure
+    | some (.ok (.halted m' d)) => pure (.halted m' d, .abi retTys)
     | some (.error d) => pure (.reverted d, .abi retTys)
     | none => failure
   | none =>
@@ -1088,7 +1118,8 @@ def interpExec (fuel : Nat) (immutables : Store)
       let fn ← liftOpt fc.fns[fid]?
       let m0 := initMachine σ σ₀ g A I immutables
       match (callFn cfg o fc fuel (rootFrame fc) m0 fn [] : Option (Except ByteArray _)) with
-      | some (.ok (_, m')) => pure (.returned m' [], .abi [])
+      | some (.ok (.ok _ m')) => pure (.returned m' [], .abi [])
+      | some (.ok (.halted m' d)) => pure (.halted m' d, .abi [])
       | some (.error d) => pure (.reverted d, .abi [])
       | none => failure
     else
@@ -1099,9 +1130,10 @@ def interpExec (fuel : Nat) (immutables : Store)
       let (vs, h0) ← liftOpt (fallbackArgs fn.decl I.calldata {})
       let m0 := initMachine σ σ₀ g A I immutables h0
       match (callFn cfg o fc fuel (rootFrame fc) m0 fn vs : Option (Except ByteArray _)) with
-      | some (.ok (rets, m')) =>
+      | some (.ok (.ok rets m')) =>
         let out ← liftOpt (rets.mapM (toAbi m'.heap fuelDefault))
         pure (.returned m' out, fallbackConvention fn.decl)
+      | some (.ok (.halted m' d)) => pure (.halted m' d, fallbackConvention fn.decl)
       | some (.error d) => pure (.reverted d, fallbackConvention fn.decl)
       | none => failure
 

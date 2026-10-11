@@ -132,4 +132,57 @@ inductive newViaEVM (cfg : Config) (o : Oracle) (m : Machine) (name : Ident) (va
         creator.nonce.toNat ≥ 2 ^ 64 - 1 ∨ initCode.size > 49152) →
       newViaEVM cfg o m name value args salt (EVM.address 0, { m with tick := m.tick + 1 }, false, ByteArray.empty)
 
+/-! ## The functions behind the relations
+
+Deterministic given the oracle: the relations above are the graphs of these functions
+(`callViaEVM_sound` and the completeness lemmas say so for the interpreter's copies).  Inline
+assembly (`Semantics/Yul.lean`), a function itself, calls them. -/
+
+def callViaEVMFn (o : Oracle) (m : Machine) (target : EVM.Address) (value : Nat) (calldata : EVM.Bytes)
+    (perm : Bool) (gas : Ethereum.UInt256) : Bool × Machine × EVM.Bytes :=
+  let valueWord := EVM.Word.ofNat value
+  let bal := (m.evm.accountMap.get? m.this |>.getD default).balance
+  if valueWord ≤ bal ∧ m.evm.executionEnv.depth ≠ 1024 then
+    let (σ', _, A', z, out) :=
+      Ethereum.EVM.Θ m.evm.accountMap m.evm.σ₀ (subInput o m)
+        m.this m.evm.executionEnv.sender target (Ethereum.toExecute m.evm.accountMap target)
+        gas (.ofNat m.evm.executionEnv.gasPrice) valueWord valueWord calldata
+        (m.evm.executionEnv.depth + 1) m.evm.executionEnv.header
+        m.evm.executionEnv.blobVersionedHashes m.evm.executionEnv.blocks perm
+    (z, afterCall m σ' A', out)
+  else
+    (false, { m with evm := m.evm.addAccessedAccount target, tick := m.tick + 1 }, ByteArray.empty)
+
+def delegateCallViaEVMFn (o : Oracle) (m : Machine) (target : EVM.Address) (calldata : EVM.Bytes)
+    (gas : Ethereum.UInt256) : Bool × Machine × EVM.Bytes :=
+  if m.evm.executionEnv.depth ≠ 1024 then
+    let (σ', _, A', z, out) :=
+      Ethereum.EVM.Θ m.evm.accountMap m.evm.σ₀ (subInput o m)
+        m.evm.executionEnv.source m.evm.executionEnv.sender m.this
+        (Ethereum.toExecute m.evm.accountMap target) gas
+        (.ofNat m.evm.executionEnv.gasPrice) ⟨0⟩ m.evm.executionEnv.weiValue calldata
+        (m.evm.executionEnv.depth + 1) m.evm.executionEnv.header
+        m.evm.executionEnv.blobVersionedHashes m.evm.executionEnv.blocks m.evm.executionEnv.perm
+    (z, afterCall m σ' A', out)
+  else
+    (false, { m with evm := m.evm.addAccessedAccount target, tick := m.tick + 1 }, ByteArray.empty)
+
+/-- Creation from raw init code (`create` / `create2` of inline assembly): the `created` /
+    `notCreated` cases of `newViaEVM` with the code given; `(address, machine, success, returndata)`. -/
+def createViaEVMFn (o : Oracle) (m : Machine) (value : Nat) (initCode : EVM.Bytes) (salt : Option ByteArray) :
+    EVM.Address × Machine × Bool × EVM.Bytes :=
+  let valueWord := EVM.Word.ofNat value
+  let creator := m.evm.accountMap.get? m.this |>.getD default
+  if valueWord ≤ creator.balance ∧ m.evm.executionEnv.depth ≠ 1024 ∧ creator.nonce.toNat < 2 ^ 64 - 1 ∧
+      initCode.size ≤ 49152 then
+    let σStar := m.evm.accountMap.insert m.this { creator with nonce := creator.nonce + ⟨1⟩ }
+    let (addr, σ', _, A', z, out) :=
+      Ethereum.EVM.Lambda σStar m.evm.σ₀ (subInput o m) m.this
+        m.evm.executionEnv.sender (o.callGas m.tick) (.ofNat m.evm.executionEnv.gasPrice) valueWord initCode
+        (m.evm.executionEnv.depth + 1) salt m.evm.executionEnv.header
+        m.evm.executionEnv.blobVersionedHashes m.evm.executionEnv.blocks m.evm.executionEnv.perm
+    (addr, afterCall m σ' A', z, out)
+  else
+    (EVM.address 0, { m with tick := m.tick + 1 }, false, ByteArray.empty)
+
 end Solidity

@@ -49,6 +49,15 @@ inductive execResultsEquiv (evmRes : EVMResult) (res : TopResult) (conv : Solm.R
     evmRes = .ok (.revert g out) →
     res = .reverted out →
     execResultsEquiv evmRes res conv
+  /-- Inline assembly ended the call (`return` / `stop`): the raw return data, whatever the
+      convention. -/
+  | halt :
+    evmRes = .ok (.success (σ', g', A') out) →
+    res = .halted m out →
+    σ' = m.evm.accountMap →
+    A'.logSeries = m.evm.substate.logSeries →
+    A'.createdAccounts = m.evm.substate.createdAccounts →
+    execResultsEquiv evmRes res conv
 
 /-- Revert data of a call whose arguments cannot be decoded: empty, or `Panic(0x41)` when the
     decoder allocates memory for a dynamic argument (`hasDynamicMemoryParam`). -/

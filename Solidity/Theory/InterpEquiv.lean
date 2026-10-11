@@ -47,17 +47,22 @@ theorem interpExec_complete {immutables σ σ₀ g A I res conv}
   | call he hfn hpay hret hsvs hvs hc hprep hout =>
     obtain ⟨n, ih⟩ := callFn_complete hc
     refine ⟨n, fun k hk => ?_⟩
-    have ih' : callFn cfg o fc k (rootFrame fc) (initMachine σ σ₀ g A I immutables _) _ _ = some (.ok (_, _)) := ih k hk
+    have ih' : callFn cfg o fc k (rootFrame fc) (initMachine σ σ₀ g A I immutables _) _ _ = some (.ok (.ok _ _)) := ih k hk
     interp_simp [interpExec, he, hfn, hret, hsvs, hvs, hprep, hout, ih', payableOrNoValue_false hpay]
   | callReturnPanic he hfn hpay hret hsvs hvs hc hprep =>
     obtain ⟨n, ih⟩ := callFn_complete hc
     refine ⟨n, fun k hk => ?_⟩
-    have ih' : callFn cfg o fc k (rootFrame fc) (initMachine σ σ₀ g A I immutables _) _ _ = some (.ok (_, _)) := ih k hk
+    have ih' : callFn cfg o fc k (rootFrame fc) (initMachine σ σ₀ g A I immutables _) _ _ = some (.ok (.ok _ _)) := ih k hk
     interp_simp [interpExec, he, hfn, hret, hsvs, hvs, hprep, ih', payableOrNoValue_false hpay]
   | callReverted he hfn hpay hret hsvs hvs hc =>
     obtain ⟨n, ih⟩ := callFn_complete hc
     refine ⟨n, fun k hk => ?_⟩
     have ih' : callFn cfg o fc k (rootFrame fc) (initMachine σ σ₀ g A I immutables _) _ _ = some (.error _) := ih k hk
+    interp_simp [interpExec, he, hfn, hret, hsvs, hvs, ih', payableOrNoValue_false hpay]
+  | callHalted he hfn hpay hret hsvs hvs hc =>
+    obtain ⟨n, ih⟩ := callFn_complete hc
+    refine ⟨n, fun k hk => ?_⟩
+    have ih' : callFn cfg o fc k (rootFrame fc) (initMachine σ σ₀ g A I immutables _) _ _ = some (.ok (.halted _ _)) := ih k hk
     interp_simp [interpExec, he, hfn, hret, hsvs, hvs, ih', payableOrNoValue_false hpay]
   | nonPayable he hfn h1 h2 hret =>
     refine ⟨0, fun k _ => ?_⟩
@@ -65,17 +70,27 @@ theorem interpExec_complete {immutables σ σ₀ g A I res conv}
   | receive hsz hrec hfn hc =>
     obtain ⟨n, ih⟩ := callFn_complete hc
     refine ⟨n, fun k hk => ?_⟩
-    have ih' : callFn cfg o fc k (rootFrame fc) (initMachine σ σ₀ g A I immutables) _ [] = some (.ok (_, _)) := ih k hk
+    have ih' : callFn cfg o fc k (rootFrame fc) (initMachine σ σ₀ g A I immutables) _ [] = some (.ok (.ok _ _)) := ih k hk
     interp_simp [interpExec, selectorDispatch_empty hsz, hsz, hrec, hfn, ih']
   | receiveReverted hsz hrec hfn hc =>
     obtain ⟨n, ih⟩ := callFn_complete hc
     refine ⟨n, fun k hk => ?_⟩
     have ih' : callFn cfg o fc k (rootFrame fc) (initMachine σ σ₀ g A I immutables) _ [] = some (.error _) := ih k hk
     interp_simp [interpExec, selectorDispatch_empty hsz, hsz, hrec, hfn, ih']
+  | receiveHalted hsz hrec hfn hc =>
+    obtain ⟨n, ih⟩ := callFn_complete hc
+    refine ⟨n, fun k hk => ?_⟩
+    have ih' : callFn cfg o fc k (rootFrame fc) (initMachine σ σ₀ g A I immutables) _ [] = some (.ok (.halted _ _)) := ih k hk
+    interp_simp [interpExec, selectorDispatch_empty hsz, hsz, hrec, hfn, ih']
+  | fallbackHalted he hrec hfb hfn hpay hargs hc =>
+    obtain ⟨n, ih⟩ := callFn_complete hc
+    refine ⟨n, fun k hk => ?_⟩
+    have ih' : callFn cfg o fc k (rootFrame fc) (initMachine σ σ₀ g A I immutables _) _ _ = some (.ok (.halted _ _)) := ih k hk
+    interp_simp [interpExec, he, noReceive_false hrec, hfb, hfn, hargs, ih', payableOrNoValue_false hpay]
   | fallback he hrec hfb hfn hpay hargs hc hout =>
     obtain ⟨n, ih⟩ := callFn_complete hc
     refine ⟨n, fun k hk => ?_⟩
-    have ih' : callFn cfg o fc k (rootFrame fc) (initMachine σ σ₀ g A I immutables _) _ _ = some (.ok (_, _)) := ih k hk
+    have ih' : callFn cfg o fc k (rootFrame fc) (initMachine σ σ₀ g A I immutables _) _ _ = some (.ok (.ok _ _)) := ih k hk
     interp_simp [interpExec, he, noReceive_false hrec, hfb, hfn, hargs, hout, ih', payableOrNoValue_false hpay]
   | fallbackReverted he hrec hfb hfn hpay hargs hc =>
     obtain ⟨n, ih⟩ := callFn_complete hc

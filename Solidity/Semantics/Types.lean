@@ -74,6 +74,9 @@ inductive ExecResult where
   | break (fr : Frame) (m : Machine)
   | continue (fr : Frame) (m : Machine)
   | reverted (data : ByteArray)
+  /-- `return(p, n)` / `stop()` of an inline-assembly block: the message call ends successfully
+      with the raw return data `data`, in machine `m`. -/
+  | halted (m : Machine) (data : ByteArray)
 
 /-- Result of evaluating something that yields an `α` and may update the frame and machine. -/
 inductive Res (α : Type) where
@@ -88,10 +91,12 @@ inductive LValue where
   | memField (obj : Nat) (field : Ident)
   | memIndex (obj : Nat) (i : Nat)
 
-/-- Outcome of running a function: the return values and the machine, or a revert. -/
+/-- Outcome of running a function: the return values and the machine, a revert, or a halt
+    (`return` / `stop` of inline assembly, which ends the message call). -/
 inductive FnResult where
   | ok (vs : List Value) (m : Machine)
   | reverted (data : ByteArray)
+  | halted (m : Machine) (data : ByteArray)
 
 namespace Frame
 

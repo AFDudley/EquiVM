@@ -19,6 +19,7 @@ theorem execLoopBody_sound_step {n} (ih : SoundAt cfg o fc n) :
   · have hs := ih.stmt _ _ _ _ hr
     cases r' with
     | reverted d => rw [IM.throw_some h]; exact .bodyRevert hc hs
+    | halted m2 d => rw [IM.pure_some h]; exact .bodyHalted hc hs
     | «break» fr2 m2 => rw [IM.pure_some h]; exact .breakOut hc hs
     | returned fr2 m2 => rw [IM.pure_some h]; exact .returnOut hc hs
     | normal fr2 m2 =>
@@ -122,9 +123,37 @@ theorem execStmt_sound_step {n} (ih : SoundAt cfg o fc n) :
       · simp at h
   | exprStmt e =>
     simp only [execStmt] at h
-    rcases IM.bind_some h with ⟨d, hd, rfl⟩ | ⟨⟨v, fr1, m1⟩, hv, h⟩ <;> try dsimp only at h
-    · exact .exprStmtRevert (ih.expr _ _ _ _ hd)
-    · rw [IM.pure_some h]; exact .exprStmt (ih.expr _ _ _ _ hv)
+    split at h
+    · rename_i f args
+      split at h
+      · rename_i hsc
+        obtain ⟨hb, hfr, hne⟩ := stmtCall_true_iff.mp hsc
+        rcases IM.bind_some h with ⟨d, hd, rfl⟩ | ⟨es, hes, h⟩ <;> try dsimp only at h
+        · exact (liftOpt_error hd).elim
+        · rcases IM.bind_some h with ⟨d, hd, rfl⟩ | ⟨⟨vs, fr1, m1⟩, hvs, h⟩ <;> try dsimp only at h
+          · exact .exprStmtCallArgsRevert hb hfr hne (liftOpt_ok hes) (ih.exprs _ _ _ _ hd)
+          · rcases IM.bind_some h with ⟨d, hd, rfl⟩ | ⟨fn, hfn, h⟩ <;> try dsimp only at h
+            · exact (liftOpt_error hd).elim
+            · rcases IM.bind_some h with ⟨d, hd, rfl⟩ | ⟨co, hcall, h⟩ <;> try dsimp only at h
+              · exact .exprStmtCallRevert hb hfr hne (liftOpt_ok hes) (ih.exprs _ _ _ _ hvs) (liftOpt_ok hfn)
+                  (ih.callFn _ _ _ _ _ hd)
+              · rcases co with ⟨rets, m2⟩ | ⟨m2, d⟩ <;> try dsimp only at h
+                · rw [IM.pure_some h]
+                  exact .exprStmtCall hb hfr hne (liftOpt_ok hes) (ih.exprs _ _ _ _ hvs) (liftOpt_ok hfn)
+                    (ih.callFn _ _ _ _ _ hcall)
+                · rw [IM.pure_some h]
+                  exact .exprStmtCallHalted hb hfr hne (liftOpt_ok hes) (ih.exprs _ _ _ _ hvs) (liftOpt_ok hfn)
+                    (ih.callFn _ _ _ _ _ hcall)
+      · rename_i hsc
+        have hne : stmtCallExpr fc fr (.call (.ident f) [] args) = false := by simpa [stmtCallExpr] using hsc
+        rcases IM.bind_some h with ⟨d, hd, rfl⟩ | ⟨⟨v, fr1, m1⟩, hv, h⟩ <;> try dsimp only at h
+        · exact .exprStmtRevert (ih.expr _ _ _ _ hd) hne
+        · rw [IM.pure_some h]; exact .exprStmt (ih.expr _ _ _ _ hv) hne
+    · rename_i hno
+      have hne : stmtCallExpr fc fr e = false := stmtCallExpr_false_of hno
+      rcases IM.bind_some h with ⟨d, hd, rfl⟩ | ⟨⟨v, fr1, m1⟩, hv, h⟩ <;> try dsimp only at h
+      · exact .exprStmtRevert (ih.expr _ _ _ _ hd) hne
+      · rw [IM.pure_some h]; exact .exprStmt (ih.expr _ _ _ _ hv) hne
   | ite c t e =>
     simp only [execStmt] at h
     rcases IM.bind_some h with ⟨d, hd, rfl⟩ | ⟨⟨cv, fr1, m1⟩, hcv, h⟩ <;> try dsimp only at h
@@ -149,6 +178,7 @@ theorem execStmt_sound_step {n} (ih : SoundAt cfg o fc n) :
       | «break» fr1 m1 => rw [IM.pure_some h]; exact .doWhileBreak hs
       | returned fr1 m1 => rw [IM.pure_some h]; exact .doWhileReturn hs
       | reverted d => rw [IM.throw_some h]; exact .doWhileRevert hs
+      | halted m1 d => rw [IM.pure_some h]; exact .doWhileHalted hs
   | «for» init c post body =>
     cases init with
     | none =>
@@ -231,6 +261,13 @@ theorem execStmt_sound_step {n} (ih : SoundAt cfg o fc n) :
     · exact .placeholder (ih.chain _ _ _ _ _ hd) rfl
     · obtain ⟨a, ha, rfl⟩ := liftOpt_some h
       exact .placeholder (ih.chain _ _ _ _ _ hr) ha
+  | assembly body =>
+    simp only [execStmt] at h
+    split at h
+    · rename_i st hy; rw [IM.pure_some h]; exact .assembly hy
+    · rename_i d hy; rw [IM.throw_some h]; exact .assemblyRevert hy
+    · rename_i m' d hy; rw [IM.pure_some h]; exact .assemblyHalt hy
+    · exact (IM.failure_some h).elim
   | tryCatch call ps body cs =>
     cases call
     case call callee opts args =>

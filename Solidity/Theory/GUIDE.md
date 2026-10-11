@@ -71,6 +71,18 @@ Build `solidityExec … (.returned m vs) conv` (or `(.reverted d)`) with `solidi
 - reverts: the builder of the failing statement gives `(.reverted d)` with the exact bytes
   (`errorStringData`, `panicData 0x11`, `selectorOf sig ++ …`), and `ExecBlock.consRevert`
   propagates it.
+- inline assembly: `ExecStmt.assembly h` / `assemblyRevert h` / `assemblyHalt h` with
+  `h : yulExec cfg o fc fr m body = some (.done st | .reverted d | .halted m' d)`, proved by
+  evaluating the block (`simp [yulExec, yulExecStmts, yulExecStmt, yulEval, yulEvalArgs,
+  yulValue, yulArith, yulIdent, lookupLocal, yulAssign, valueToYul, scalarWord, yulToValue,
+  cleanWord, W, ww, …]` plus the frame and storage facts the block reads; `exitOk_fresh` closes
+  the exit check of a block that wrote no memory; `Usage.lean` has the example); a `return` /
+  `stop` ends the
+  call as `(.halted m' d)`, propagated by `ExecBlock.consHalted`, `ExecLoop.bodyHalted`,
+  `ExecStmt.exprStmtCallHalted` (the statement `f(args);`), `CallFn.halted`,
+  `solidityExec.callHalted`, and coupled with the EVM's `Returned` through
+  `execResultsEquiv.halt`.  An expression statement other than `f(args);` of an internal
+  function takes the auto-param `stmtCallExpr fc fr e = false` (automatic on written code).
 
 `Usage.lean` builds single statements this way (arithmetic with literals, keccak of
 `abi.encodePacked`, mapping writes, custom errors, `unchecked`, `delete`, `emit`) and the whole

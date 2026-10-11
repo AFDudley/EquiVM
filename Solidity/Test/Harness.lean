@@ -191,9 +191,12 @@ def compareRun (r : EVMResult) (res : TopResult) (conv : Solm.ReturnConvention) 
       |>.add (returnDataEquivB out vs conv) s!"return data differ: evm={hexOfBytes out}"
   | .ok (.revert _ out), .reverted d =>
     Diff.add {} (out == d) s!"revert data differ\n    evm:  {hexOfBytes out}\n    spec: {hexOfBytes d}"
+  | .ok (.success (σ', _, A') out), .halted m d =>
+    compareStates {} σ' A' m
+      |>.add (out == d) s!"return data differ\n    evm:  {hexOfBytes out}\n    spec: {hexOfBytes d}"
   | .ok (.success _ out), .reverted d =>
     { msgs := [s!"evm succeeded ({hexOfBytes out}) but spec reverted ({hexOfBytes d})"] }
-  | .ok (.revert _ out), .returned _ _ =>
+  | .ok (.revert _ out), .returned _ _ | .ok (.revert _ out), .halted _ _ =>
     { msgs := [s!"evm reverted ({hexOfBytes out}) but spec succeeded"] }
   | .error e, _ => { msgs := [s!"evm exception {repr e}"] }
 
