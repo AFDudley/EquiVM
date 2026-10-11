@@ -56,7 +56,7 @@ files unless `--force` is given.
 | `proof_skeleton.py` | `Spec.lean`, `Common.lean`, `Dispatch.lean`, `<Fn>.lean`, `Constructor.lean`, `Correct.lean` | `Spec.lean` configures the transient backend when the spec declares transient state. `Dispatch.lean` contains proved reach lemmas composed from the block summaries (linear and binary-search dispatchers, with and without a global callvalue guard). Function bodies and the constructor are `sorry` stubs with the fixed signatures `Correct.lean` consumes. |
 | `check_sol2solm.py` | report | Translates every given directory and elaborates the drafts (holes as comments). |
 | `finish_check.py` | report | Build, differential suite on the contract (`--difftest-count`, `--skip-difftest`), `sorry`/`admit`/`axiom` grep, `#print axioms` against the accepted trusted base. |
-| `check_all_benchmark_blocks.py` | report | CI check that every benchmark's block summaries compile. |
+| `check_all_benchmark_blocks.py` | report | Check that benchmark block summaries compile, excluding temporary contracts under `Benchmarks/Scaffolds/`. CI selects `UniswapV3/Pool`. |
 
 ## Conventions the generators follow
 
