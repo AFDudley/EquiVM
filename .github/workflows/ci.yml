@@ -62,8 +62,7 @@ jobs:
         run: |
           python3 -m unittest scripts/test_generate_rd_blocks.py
           python3 scripts/check_all_benchmark_blocks.py \
-            --contract Scaffolds/UniswapV3Pool \
-            --contract Scaffolds/Safe \
+            --contract UniswapV3/Pool \
             --jobs 4
 
       # These End dispatch consumers previously overflowed Lean's default stack.
@@ -110,7 +109,3 @@ jobs:
       #       Benchmarks.Dss.Flopper.Correct \
       #       Benchmarks.Dss.GemJoin.Correct \
       #       Benchmarks.Dss.DaiJoin.Correct
-
-      # # Scaffolded benchmarks: specs + bytecode compile, proofs are sorry stubs.
-      # - name: Build benchmark scaffolds
-      #   run: lake build Benchmarks.Scaffolds
