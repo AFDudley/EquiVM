@@ -27,8 +27,8 @@ set_option maxRecDepth 2000000
 namespace Benchmarks.WETH9
 
 theorem weth9Correct :
-    runtimeRefinementWithWF weth9StorageWF config weth9Bytecode contract := by
-  refine ⟨fun σ σ₀ g A I hcode hsize hwf ↦ ?_⟩
+    runtimeRefinementWithWF weth9StorageWF noGasBound config weth9Bytecode contract := by
+  refine ⟨fun σ σ₀ g A I hcode hsize hwf _ ↦ ?_⟩
   by_cases hsz : 4 ≤ I.calldata.size
   · by_cases h0 : selIs I (weth9SelBytes 0)
     · exact weth9NameBodyCore hcode hsize h0 hwf
@@ -69,7 +69,7 @@ theorem weth9Correct :
   · exact weth9ShortFallbackBodyCore hcode hsize (by omega)
 
 theorem weth9ContractCorrect :
-    contractRefinementWF weth9StorageWF config weth9CreationBytecode contract :=
+    contractRefinementWF weth9StorageWF noGasBound config weth9CreationBytecode contract :=
   contractRefinementWF.of_constant weth9ConstructorCorrect weth9Correct
 
 end Benchmarks.WETH9
