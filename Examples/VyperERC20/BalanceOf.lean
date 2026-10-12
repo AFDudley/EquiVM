@@ -1,4 +1,5 @@
 import Reasoning.WordArithmetic
+import Reasoning.Vyper
 import Examples.VyperERC20.TotalSupply
 import Examples.VyperERC20.Storage
 import Examples.ERC20.Common
@@ -124,52 +125,11 @@ theorem balanceOfHashMem_size (owner : UInt256) :
   unfold balanceOfHashMem
   exact wordAt0Mem_size_96 ⟨0⟩ (balanceOfKeyMem_size owner)
 
-theorem balanceOfKeyMem_read32 (owner : UInt256) :
-    (balanceOfKeyMem owner).readWithPadding 32 32 = UInt256.toByteArray owner := by
-  unfold balanceOfKeyMem wordAt32Mem
-  rw [write32_read_back _ _ _ (by rw [toByteArray_size])
-    (by rw [balanceOfOwnerArgMem_size owner]; omega)]
-  apply ByteArray.ext
-  rw [ByteArray.data_extract]
-  exact Array.extract_eq_self_of_le (by
-    change (UInt256.toByteArray owner).size ≤ 32
-    rw [toByteArray_size])
-
-theorem balanceOfHashMem_read0 (owner : UInt256) :
-    (balanceOfHashMem owner).readWithPadding 0 32 = UInt256.toByteArray (⟨0⟩ : UInt256) := by
-  unfold balanceOfHashMem
-  exact wordAt0Mem_read0 ⟨0⟩ (balanceOfKeyMem owner)
-
-theorem balanceOfHashMem_read32 (owner : UInt256) :
-    (balanceOfHashMem owner).readWithPadding 32 32 = UInt256.toByteArray owner := by
-  unfold balanceOfHashMem wordAt0Mem
-  rw [write32_read_above _ _ 0 32 (by rw [toByteArray_size])
-    (by rw [balanceOfKeyMem_size owner]; omega)
-    (by omega)
-    (by rw [balanceOfKeyMem_size owner]; omega)]
-  exact balanceOfKeyMem_read32 owner
-
 theorem balanceOfHashMem_read0_64 (owner : UInt256) :
     (balanceOfHashMem owner).readWithPadding 0 64 =
       UInt256.toByteArray (⟨0⟩ : UInt256) ++ UInt256.toByteArray owner := by
-  rw [readWithPadding_eq_extract' _ 0 64 (by norm_num) (by norm_num)
-      (by rw [balanceOfHashMem_size owner]; omega)]
-  have hleft :
-      (balanceOfHashMem owner).extract 0 32 = UInt256.toByteArray (⟨0⟩ : UInt256) := by
-    rw [← readWithPadding_eq_extract _ 0
-        (by rw [balanceOfHashMem_size owner]; omega),
-      balanceOfHashMem_read0 owner]
-  have hright :
-      (balanceOfHashMem owner).extract 32 64 = UInt256.toByteArray owner := by
-    rw [← readWithPadding_eq_extract _ 32
-        (by rw [balanceOfHashMem_size owner]; omega),
-      balanceOfHashMem_read32 owner]
-  rw [show (balanceOfHashMem owner).extract 0 64 =
-      (balanceOfHashMem owner).extract 0 32 ++
-        (balanceOfHashMem owner).extract 32 64 by
-      rw [ByteArray.extract_append_extract]
-      norm_num]
-  rw [hleft, hright]
+  exact wordAt0Mem_wordAt32Mem_read0_64 ⟨0⟩ owner
+    (by rw [balanceOfOwnerArgMem_size]; omega)
 
 theorem balanceOfKeccakSlot (I : ExecutionEnv)
     (hcanon : (balanceOfOwnerWord I).toNat < EVM.addressModulus) :
@@ -177,9 +137,7 @@ theorem balanceOfKeccakSlot (I : ExecutionEnv)
         (KEC ((balanceOfHashMem (balanceOfOwnerWord I)).readWithPadding 0 64)))
       = balanceOfSlot I := by
   rw [balanceOfHashMem_read0_64]
-  unfold balanceOfSlot erc20BalanceOfSlot vyperMappingSlot
-  rw [keyValueToWord_address_of_canonical _ hcanon]
-  exact keccakSlot_eq _
+  exact vyperMappingSlot_hash_address ⟨0⟩ (balanceOfOwnerWord I) hcanon
 
 theorem balanceOfReturnMem_size (owner val : UInt256) :
     (balanceOfReturnMem owner val).size = 128 := by

@@ -732,6 +732,26 @@ theorem twoWordHashMem_read0_64_any (key slot : UInt256) (mem : ByteArray) :
     (by simpa using twoWordHashMem_size_ge_64 key slot mem)]
   rw [twoWordHashMem_read0_any, twoWordHashMem_read32_any]
 
+/-- Read the two-word preimage when the second word is stored before the first. -/
+theorem wordAt0Mem_wordAt32Mem_read0_64 (first second : UInt256)
+    {mem : ByteArray} (hmem : 64 ≤ mem.size) :
+    (wordAt0Mem first (wordAt32Mem second mem)).readWithPadding 0 64 =
+      first.toByteArray ++ second.toByteArray := by
+  have hmidSize : (wordAt32Mem second mem).size = mem.size :=
+    wordAt32Mem_size_of_ge_64 second hmem
+  rw [byteArray_readWithPadding_split _ 0 32 32
+    (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
+    (by rw [wordAt0Mem_size_of_ge_32 first (by rw [hmidSize]; omega), hmidSize]; omega)]
+  rw [wordAt0Mem_read0]
+  have hsecond :
+      (wordAt0Mem first (wordAt32Mem second mem)).readWithPadding 32 32 =
+        second.toByteArray := by
+    unfold wordAt0Mem
+    rw [write32_read_above _ _ 0 32 (by rw [toByteArray_size])
+      (by rw [hmidSize]; omega) (by omega) (by rw [hmidSize]; omega)]
+    exact toByteArray_write32_read_back mem second 32 (by omega)
+  exact congrArg (fun b : ByteArray => first.toByteArray ++ b) hsecond
+
 theorem wordAt0Mem_read64_preserved_key (key : UInt256) {mem : ByteArray} (hmem : mem.size = 96) :
     (wordAt0Mem key mem).readWithPadding 64 32 = mem.readWithPadding 64 32 := by
   unfold wordAt0Mem

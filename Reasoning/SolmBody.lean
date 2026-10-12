@@ -929,8 +929,9 @@ theorem store_get_ne5 (L : Solm.Store) {k1 k2 k3 k4 k5 a : Ident}
 /-! ## Storage-access collapse (post storage-pointer refactor)
 
 After native storage pointers, `evalExpr? (.storage …)` and `assignStorageRef? .storage` route
-through `resolveStorageRef?` and then through the configured storage backend. For a Solidity
-backend, scalar leaves collapse to `storageLocLoad` and `storageLocStore`. -/
+through `resolveStorageRef?` and then through the configured storage backend. The generic lemmas
+use a backend read/write fact; the Solidity-layout specializations collapse scalar leaves to
+`storageLocLoad` and `storageLocStore`. -/
 
 /-- `resolveStorageRef?` for a base that is not a local storage pointer: just `evalStorageRef`
     paired with the declared type from `storageTypeAt?`. -/
@@ -942,6 +943,30 @@ theorem resolveStorageRef?_ok {cfg : Config} {solm : Frame} {evm : EVM.State} {s
     resolveStorageRef? cfg solm evm slot = .ok (er, ty) := by
   unfold resolveStorageRef?
   simp only [hbase, her, hty, EvalResult.ofOption, bind, EvalResult.bind, pure]
+
+/-- Read a scalar storage reference using a result from any configured backend. -/
+theorem evalExpr_storage_scalar_of_read {cfg : Config}
+    {solm : Frame} {evm : EVM.State} {slot : StorageRef}
+    {er : EvaledStorageRef} {t : ABI.ElemType} {value : Value}
+    (hbase : solm.locals.get? slot.base = none)
+    (her : evalStorageRef cfg solm evm slot = .ok er)
+    (hty : storageTypeAt? solm.contract.storage er = some (.elem t))
+    (hread : cfg.storageBackend.read er (.elem t) evm = .ok value) :
+    evalExpr? cfg solm evm (.storage slot) = .ok value := by
+  rw [evalExpr?]
+  simp only [resolveStorageRef?_ok hbase her hty, bind, EvalResult.bind, hread]
+
+/-- Write a storage reference through any configured backend. -/
+theorem assignStorageRef_storage_of_write {cfg : Config}
+    {solm : Frame} {evm evm' : EVM.State}
+    {slot : StorageRef} {er : EvaledStorageRef} {ty : StorageType} {value : Value}
+    (hbase : solm.locals.get? slot.base = none)
+    (her : evalStorageRef cfg solm evm slot = .ok er)
+    (hty : storageTypeAt? solm.contract.storage er = some ty)
+    (hwrite : cfg.storageBackend.write er ty value evm = .ok evm') :
+    assignStorageRef? cfg solm evm .storage slot value = .ok (solm, evm') := by
+  simp only [assignStorageRef?, resolveStorageRef?_ok hbase her hty,
+    hwrite, bind, EvalResult.bind, pure]
 
 /-- A Solidity backend reads an elementary leaf through its physical location. -/
 theorem readStorage?_elem {cfg : Config} {layout : StorageLayout} {evm : EVM.State}
@@ -962,9 +987,7 @@ theorem evalExpr_storage_scalar {cfg : Config} {layout : StorageLayout}
     (hbackend : cfg.storageBackend = solidityStorageBackend layout)
     (hloc : layout er = some (.leaf loc)) :
     evalExpr? cfg solm evm (.storage slot) = .ok (storageLocLoad evm loc) := by
-  rw [evalExpr?]
-  simp only [resolveStorageRef?_ok hbase her hty, bind, EvalResult.bind,
-    readStorage?_elem hbackend hloc]
+  exact evalExpr_storage_scalar_of_read hbase her hty (readStorage?_elem hbackend hloc)
 
 /-- A scalar storage read with an already-normalized `storageLocLoad` value. -/
 theorem evalExpr_storage_scalar_value {cfg : Config} {layout : StorageLayout}
