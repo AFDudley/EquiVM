@@ -133,12 +133,12 @@ def cases : List Case := Id.run do
     caseFor "setup/initial" setupTransition setupArgs [] [] 8192 (some "success"),
     caseFor "setup/self-owner" setupTransition
       [.array [addressValue 4096], .int 1, addressValue 0, bytesValue [],
-        addressValue 0, addressValue 0, .int 0, addressValue 0] [] [] 8192 (some "success"),
+        addressValue 0, addressValue 0, .int 0, addressValue 0] [] [] 8192 (some "revert"),
     caseFor "owner/remove-self" removeownerTransition
       [addressValue 1, addressValue 4096, .int 1]
       [pair 3 2, pair 4 1, (ownerSlot 1, UInt256.ofNat 4096),
         (ownerSlot 4096, UInt256.ofNat 8192), (ownerSlot 8192, UInt256.ofNat 1)]
-      [] 4096 (some "success"),
+      [] 4096 (some "revert"),
     caseFor "getOwners/normal" getownersTransition [] configuredSlots [] 8192 (some "success"),
     caseFor "getOwners/allocation-panic" getownersTransition [] [pair 3 (2 ^ 64)] [] 8192
       (some "revert"),
@@ -273,20 +273,42 @@ def cases : List Case := Id.run do
     name := "module/static-value", expected := some "staticViolation",
     input.executionEnv.perm := false }]
   -- A proxy/delegated execution can have codeOwner.code different from ExecutionEnv.code.
-  for delegated in [false, true] do
-    let code : ByteArray := if delegated then ⟨#[0xef, 0x01, 0x00]⟩ else ⟨#[0xef, 0x01, 0x01]⟩
+  -- EXTCODECOPY pads short code with zeroes and ignores bytes beyond the three-byte prefix.
+  for (code, delegated) in
+      [(⟨#[0xef, 0x01, 0x01]⟩, false), (⟨#[0xef, 0x01, 0x00]⟩, true),
+        (ByteArray.empty, false), (⟨#[0xef]⟩, false), (⟨#[0xef, 0x01]⟩, true),
+        (⟨#[0xef, 0x01, 0x00, 0xff]⟩, true)] do
     let σ := world configuredSlots
     let self := (σ.get? (EVM.address 4096)).getD default
     let σ := σ.insert (EVM.address 4096) { self with code }
     cases := cases ++ [{
-      name := s!"owner/self-delegated={delegated}",
+      name := s!"owner/self-code={code.toList}/delegated={delegated}",
       input := state (calldataFor addownerwiththresholdTransition [addressValue 4096, .int 1]) σ,
-      expected := some "success" }]
+      expected := some (if delegated then "success" else "revert") }]
     cases := cases ++ [{
-      name := s!"owner/swap-self-delegated={delegated}",
+      name := s!"owner/swap-self-code={code.toList}/delegated={delegated}",
       input := state (calldataFor swapownerTransition
         [addressValue 1, addressValue 8192, addressValue 4096]) σ,
-      expected := some "revert" }]
+      expected := some (if delegated then "success" else "revert") }]
+    let setupWorld := world []
+    let setupSelf := (setupWorld.get? (EVM.address 4096)).getD default
+    cases := cases ++ [{
+      name := s!"setup/self-code={code.toList}/delegated={delegated}",
+      input := state (calldataFor setupTransition
+        [.array [addressValue 4096], .int 1, addressValue 0, bytesValue [],
+          addressValue 0, addressValue 0, .int 0, addressValue 0])
+        (setupWorld.insert (EVM.address 4096) { setupSelf with code }) 8192,
+      expected := some (if delegated then "success" else "revert") }]
+    let removeWorld := world
+      [pair 3 2, pair 4 1, (ownerSlot 1, UInt256.ofNat 4096),
+        (ownerSlot 4096, UInt256.ofNat 8192), (ownerSlot 8192, UInt256.ofNat 1)]
+    let removeSelf := (removeWorld.get? (EVM.address 4096)).getD default
+    cases := cases ++ [{
+      name := s!"owner/remove-self-code={code.toList}/delegated={delegated}",
+      input := state (calldataFor removeownerTransition
+        [addressValue 1, addressValue 4096, .int 1])
+        (removeWorld.insert (EVM.address 4096) { removeSelf with code }),
+      expected := some (if delegated then "success" else "revert") }]
   cases := cases ++ [
     {
       name := "receive/value", input := state ⟨#[]⟩ (world []) 8192 true 7,

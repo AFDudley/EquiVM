@@ -108,12 +108,14 @@ def contractSyntax : ContractDecl :=
     }
 
     function requireCanAddOwner(address owner) internal {
-      require(owner != address(0) && owner != address(1));
+      require(owner != address(0) && (owner != address(1) &&
+        (owner != address(this) || extCodePrefix(this, 3) == ${Expr.bytesLit ⟨#[0xef, 0x01, 0x00]⟩})));
       require(owners[owner] == address(0));
     }
 
     function requireCanRemoveOwner(address prevOwner, address owner) internal {
-      require(owner != address(0) && owner != address(1));
+      require(owner != address(0) && (owner != address(1) &&
+        (owner != address(this) || extCodePrefix(this, 3) == ${Expr.bytesLit ⟨#[0xef, 0x01, 0x00]⟩})));
       require(owners[prevOwner] == owner);
     }
 
@@ -574,7 +576,6 @@ def contractSyntax : ContractDecl :=
 
     function swapOwner(address prevOwner, address oldOwner, address newOwner) external {
       require(msg.sender == address(this));
-      require(newOwner != address(this));
       var _canAdd = requireCanAddOwner(newOwner);
       var _canRemove = requireCanRemoveOwner(prevOwner, oldOwner);
       owners[newOwner] = owners[oldOwner];

@@ -329,8 +329,12 @@ def externalCallStmts (receiver : Expr) (name : Ident) (eth : Expr)
     (args : List Expr) (retVar : Ident) (perm : Bool := true) : List Stmt :=
   [ .externalCall receiver name eth args retVar (perm := perm) ]
 
+def delegatedThisExpr : Expr :=
+  eqE (.extCodePrefix this (.intLit 3)) (.bytesLit ⟨#[0xef, 0x01, 0x00]⟩)
+
 def validOwnerExpr (owner : Expr) : Expr :=
-  andE (neE owner zeroAddr) (neE owner sentinelAddr)
+  andE (neE owner zeroAddr)
+    (andE (neE owner sentinelAddr) (orE (neE owner this) delegatedThisExpr))
 
 def ownerEnabledExpr (owner : Expr) : Expr :=
   andE (neE (.storage (ownersRef owner)) zeroAddr) (neE owner sentinelAddr)
@@ -1153,8 +1157,7 @@ def swapownerTransition : TransitionDecl :=
     returnType := []
     body :=
       nonpayable ++ authorized ++
-      [ .require (neE (.var "newOwner") this),
-        .internalCall "requireCanAddOwner" [.var "newOwner"] "_canAdd",
+      [ .internalCall "requireCanAddOwner" [.var "newOwner"] "_canAdd",
         .internalCall "requireCanRemoveOwner" [.var "prevOwner", .var "oldOwner"] "_canRemove",
         .assign .storage (ownersRef (.var "newOwner")) (.storage (ownersRef (.var "oldOwner"))),
         .assign .storage (ownersRef (.var "prevOwner")) (.var "newOwner"),
