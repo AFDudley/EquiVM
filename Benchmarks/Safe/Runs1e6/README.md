@@ -5,12 +5,12 @@ Source: [`contracts/Safe.sol`](contracts/Safe.sol) from `safe-global/safe-smart-
 Compiled with Solidity 0.8.35 and optimizer enabled, from the repository root:
 
 ```bash
-solc --optimize --optimize-runs 200 --evm-version shanghai --metadata-hash none --bin --bin-runtime --abi --storage-layout \
+solc --optimize --optimize-runs 1000000 --evm-version shanghai --metadata-hash none --bin --bin-runtime --abi --storage-layout \
   --base-path . --overwrite -o /tmp/safe-build-current Benchmarks/Safe/Runs1e6/contracts/Safe.sol
 ```
 
-Original compiler: `0.8.35+commit.47b9dedd.Darwin.appleclang`. The audit reproduces both
-bytecode files and the ABI exactly with `0.8.35+commit.47b9dedd.Linux.g++`.
+Compiler: `0.8.35+commit.47b9dedd.Linux.g++`. The optimizer run count is 1,000,000.
+The audit reproduces both bytecode files and the ABI exactly with this pinned compiler.
 
 The EVM target is pinned to Shanghai to reproduce the original artifacts. The current local
 EVM semantics also implement `MCOPY`; changing the compiler target would still change the
@@ -22,8 +22,8 @@ artifact provenance for this benchmark.
 
 Artifacts:
 
-- `creation.hex`: optimized creation bytecode, 11907 bytes, sha256 `0d94b8c31e4fb2d01d7653b1c53013fba78f5d053014edd9e17c89888d7c7281`
-- `runtime.hex`: optimized deployed runtime bytecode, 11874 bytes, sha256 `99919d79befacfb9210453d4ba1d3193e3b334a5dc6206596b4f48bb55136006`
+- `creation.hex`: optimized creation bytecode, 14871 bytes, sha256 `946984774adcff184b5373f9746bfce597df31d147f74d7a9d6c6bfe9e31d43f`
+- `runtime.hex`: optimized deployed runtime bytecode, 14838 bytes, sha256 `a20f47a04ed9b915467aa478fbcb0d66b58d7a9d5ccbab6b93150fbc5431afae`
 - `Safe.abi.json`: ABI emitted by solc, sha256 `c2d916b516f1cf00691d5fe99f62e8bba92e0675e8c25b5e5800d6e53b08053a`
 - `sources.sha256`: sha256 manifest for the vendored Solidity source tree
 - `Spec.lean`: Solm AST with ABI surface, solc 0.8.35 decoding, and physical storage layout
@@ -58,11 +58,11 @@ Corrections made during the audit:
 
 | Area | Bytecode evidence and specification behavior |
 | --- | --- |
-| Events and static mode | All 17 `LOG` sites now have event statements in source order. Receive emits at PC 533. Setup emits at PC 4634 **before** its threshold/owner checks. Module events follow the post-guard; transaction events precede the post-guard. |
-| Assembly address stores | PCs 5944, 6194, and 8317 perform whole-word `SSTORE` for module guard, guard, and fallback handler. Their locators now have size 32; ordinary address mappings retain 20-byte writes preserving unrelated high bits. |
+| Events and static mode | All 17 `LOG` sites now have event statements in source order. Receive emits at PC 533. Setup emits at PC 5421 **before** its threshold/owner checks. Module events follow the post-guard; transaction events precede the post-guard. |
+| Assembly address stores | PCs 7132, 7495, and 10397 perform whole-word `SSTORE` for module guard, guard, and fallback handler. Their locators now have size 32; ordinary address mappings retain 20-byte writes preserving unrelated high bits. |
 | Fallback raw-word check | PCs 581–586 test the entire handler slot. A nonzero word with zero low 160 bits still calls address zero. The spec reads the raw word before converting the call target to an address. |
 | Allocation panics | The explicit `new` size guards for owners, module pages, and raw storage bytes are retained. `getStorageAt` checks the wrapped `length << 5`, not unbounded multiplication. |
-| Memory argument decoding | The decoder at PC 9242 checks its new free-memory pointer. Its sole memory `bytes` argument starts at 0x80, so `0x80 + 32 + ceil32(length) <= 2^64 - 1` requires `length <= 2^64 - 192`. All eight affected entrypoints now check this; calldata-only arguments do not. |
+| Memory argument decoding | The decoder at PC 11753 checks its new free-memory pointer. Its sole memory `bytes` argument starts at 0x80, so `0x80 + 32 + ceil32(length) <= 2^64 - 1` requires `length <= 2^64 - 192`. All eight affected entrypoints now check this; calldata-only arguments do not. |
 | Signature short circuit | The P-256 signer-address comparison precedes the precompile call. A mismatched address reverts without invoking the target. |
 | Execution order | Nonce increment precedes transaction hashing, as in the `nonce++` argument evaluation. Raw storage slot addition is explicitly reduced to 256 bits. |
 
@@ -94,15 +94,15 @@ the specification equality check, ABI checks, refinement proofs, and all generat
 
 ## Generated summaries and proof obligations
 
-There are 1,937 runtime summary theorems in 51 shards, plus seven constructor summary theorems.
+There are 1,929 runtime summary theorems in 51 shards, plus seven constructor summary theorems.
 These are generated using the existing RD opcode lemmas. Both sides of every conditional jump
-are indexed. Runtime summaries cover 7,844 instructions; the remaining 20 instruction sites are
+are indexed. Runtime summaries cover 7,263 instructions; the remaining 20 instruction sites are
 explicit boundaries, not assumed transitions:
 
-- `CALL`: 614, 3738, 4235, 7345, 7464, 7565, 7834, 9004.
-- `STATICCALL`: 2554, 2651, 5833, 6083, 7150, 8796.
-- `DELEGATECALL`: 4535, 7445.
-- `ORIGIN`: 7754; `GASPRICE`: 7775, 7782; `EXTCODECOPY`: 9062.
+- `CALL`: 614, 4397, 4969, 9054, 9173, 9325, 9633, 11476.
+- `STATICCALL`: 2824, 2921, 6997, 7360, 8771, 11184.
+- `DELEGATECALL`: 5309, 9154.
+- `ORIGIN`: 9527; `GASPRICE`: 9561, 9568; `EXTCODECOPY`: 11534.
 
 Every analyzed instruction is accounted for by a summary or a recorded boundary. Constructor
 summaries cover only PCs 0–32; the runtime at offset 33 is copied data. They quantify an arbitrary
@@ -116,7 +116,7 @@ compose the summaries, with separate proofs for internal callees and source-leve
 From the repository root, using the pinned compiler:
 
 ```bash
-python3 -B scripts/audit_safe.py --solc /path/to/solc-0.8.35
+python3 -B scripts/audit_safe.py --dir Benchmarks/Safe/Runs1e6 --runs 1000000 --solc /path/to/solc-0.8.35
 lake build Benchmarks.Safe.Runs1e6.ArtifactChecks Benchmarks.Safe.Runs1e6.SpecSyntax
 lake build Benchmarks.Safe.Runs1e6.Correct Benchmarks.Safe.Runs1e6.Audit
 lake build Benchmarks.Safe.Runs1e6.CorrectProofAudit Benchmarks.Safe.Runs1e6.GetOwnersModelAudit
