@@ -108,16 +108,12 @@ def contractSyntax : ContractDecl :=
     }
 
     function requireCanAddOwner(address owner) internal {
-      require(owner != address(0) && owner != address(1) &&
-        (owner != address(this) ||
-          extCodePrefix(address(this), 3) == ${Expr.bytesLit ⟨#[0xef, 0x01, 0x00]⟩}));
+      require(owner != address(0) && owner != address(1));
       require(owners[owner] == address(0));
     }
 
     function requireCanRemoveOwner(address prevOwner, address owner) internal {
-      require(owner != address(0) && owner != address(1) &&
-        (owner != address(this) ||
-          extCodePrefix(address(this), 3) == ${Expr.bytesLit ⟨#[0xef, 0x01, 0x00]⟩}));
+      require(owner != address(0) && owner != address(1));
       require(owners[prevOwner] == owner);
     }
 
@@ -189,11 +185,8 @@ def contractSyntax : ContractDecl :=
 
     function validateContractSignature(address owner, bytes32 dataHash, bytes signature)
         internal returns (bool) {
-      (bool sigSuccess, bytes memory sigResult) =
-        owner.staticcall(abi.encodeWithSelector(isValidSignature, dataHash, signature));
-      return sigSuccess && sigResult.length == 32 &&
-        abi.decode(sigResult, (bytes32)) ==
-          bytes32(0x1626ba7e00000000000000000000000000000000000000000000000000000000);
+      var sigResult = owner.isValidSignature{view}(dataHash, signature);
+      return sigResult == bytes4(0x1626ba7e);
     }
 
     function checkContractSignature(address owner, bytes32 dataHash, bytes signatures,
@@ -206,18 +199,6 @@ def contractSyntax : ContractDecl :=
       bytes memory contractSignature = signatures[signatureDataStart : signatureDataEnd];
       var valid = validateContractSignature(owner, dataHash, contractSignature);
       require(valid);
-    }
-
-    function p256Verify(bytes32 h, bytes32 r, bytes32 s, uint256 qx, uint256 qy)
-        internal returns (bool) {
-      ${[Stmt.lowLevelCall p256Precompile (.intLit 0)
-          (.abiEncodePacked
-            [ (Benchmarks.Safe.V0_cdb2eb5.bytes32, .var "h"), (Benchmarks.Safe.V0_cdb2eb5.bytes32, .var "r"),
-              (Benchmarks.Safe.V0_cdb2eb5.bytes32, .var "s"),
-              (Benchmarks.Safe.V0_cdb2eb5.uint256, .var "qx"), (Benchmarks.Safe.V0_cdb2eb5.uint256, .var "qy") ])
-          "p256Success" "p256Result" false]}
-      return ${Expr.var "p256Success"} && ${localLength "p256Result"} == 32 &&
-        abi.decode(${Expr.var "p256Result"}, (uint256)) == 1;
     }
 
     function ecrecoverAddress(bytes32 digest, uint8 v, bytes32 r, bytes32 s)
@@ -251,22 +232,6 @@ def contractSyntax : ContractDecl :=
         } else if (v == 1) {
           currentOwner = address(uint256(r));
           require(executor == currentOwner || approvedHashes[currentOwner][dataHash] != 0);
-        } else if (v == 2) {
-          currentOwner = address(uint256(r));
-          uint256 p256Offset = uint256(s);
-          require(p256Offset >= requiredBytes);
-          var p256End = _add(p256Offset, 128);
-          require(p256End <= signatures.length);
-          bytes32 p256r = abi.decode(signatures[p256Offset : p256Offset + 32], (bytes32));
-          bytes32 p256s =
-            abi.decode(signatures[p256Offset + 32 : p256Offset + 32 + 32], (bytes32));
-          uint256 qx = abi.decode(signatures[p256Offset + 64 : p256Offset + 64 + 32], (uint256));
-          uint256 qy = abi.decode(signatures[p256Offset + 96 : p256Offset + 96 + 32], (uint256));
-          address signerAddress =
-            address(uint256(keccak256(abi.encodePacked(uint256(qx), uint256(qy)))));
-          require(currentOwner == signerAddress);
-          var p256Ok = p256Verify(dataHash, p256r, p256s, qx, qy);
-          require(p256Ok);
         } else if (v > 30) {
           bytes32 ethSignedHash =
             keccak256(abi.encodePacked(bytes(${ethSignPrefix}), bytes32(dataHash)));
@@ -609,6 +574,7 @@ def contractSyntax : ContractDecl :=
 
     function swapOwner(address prevOwner, address oldOwner, address newOwner) external {
       require(msg.sender == address(this));
+      require(newOwner != address(this));
       var _canAdd = requireCanAddOwner(newOwner);
       var _canRemove = requireCanRemoveOwner(prevOwner, oldOwner);
       owners[newOwner] = owners[oldOwner];

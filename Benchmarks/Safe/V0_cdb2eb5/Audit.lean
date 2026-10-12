@@ -131,6 +131,14 @@ def cases : List Case := Id.run do
         (world [(fallbackHandlerSlot, UInt256.ofNat 20480)]
           [(20480, returning ⟨#[0x99]⟩ true)]), expected := some "revert" },
     caseFor "setup/initial" setupTransition setupArgs [] [] 8192 (some "success"),
+    caseFor "setup/self-owner" setupTransition
+      [.array [addressValue 4096], .int 1, addressValue 0, bytesValue [],
+        addressValue 0, addressValue 0, .int 0, addressValue 0] [] [] 8192 (some "success"),
+    caseFor "owner/remove-self" removeownerTransition
+      [addressValue 1, addressValue 4096, .int 1]
+      [pair 3 2, pair 4 1, (ownerSlot 1, UInt256.ofNat 4096),
+        (ownerSlot 4096, UInt256.ofNat 8192), (ownerSlot 8192, UInt256.ofNat 1)]
+      [] 4096 (some "success"),
     caseFor "getOwners/normal" getownersTransition [] configuredSlots [] 8192 (some "success"),
     caseFor "getOwners/allocation-panic" getownersTransition [] [pair 3 (2 ^ 64)] [] 8192
       (some "revert"),
@@ -207,15 +215,19 @@ def cases : List Case := Id.run do
     for t in [setguardTransition, setmoduleguardTransition] do
       cases := cases ++ [caseFor s!"{t.name}/return={Ethereum.toHex out}" t [addressValue 24576]
         configuredSlots [(24576, returning out)] 4096]
-  -- ERC-1271 exact length and exact magic word, reverting validators, and hash approvals.
+  -- ERC-1271 typed bytes4 decoding: a canonical word is required, trailing words are allowed.
   let sig := wordBytes 24576 ++ wordBytes 65 ++ ⟨#[0]⟩ ++ wordBytes 3 ++ ⟨#[1, 2, 3]⟩
   let sigSlots := configuredSlots ++ [(ownerSlot 24576, UInt256.ofNat 1)]
   for out in [wordBytes (0x1626ba7e * 2 ^ 224), wordBytes 0, ⟨#[0x16, 0x26, 0xba, 0x7e]⟩,
-      wordBytes (0x1626ba7e * 2 ^ 224) ++ wordBytes 0] do
+      wordBytes (0x1626ba7e * 2 ^ 224) ++ wordBytes 0,
+      wordBytes (0x1626ba7e * 2 ^ 224 + 1)] do
     for reverts in [false, true] do
       cases := cases ++ [caseFor s!"signature/1271/{Ethereum.toHex out}/{reverts}"
         checksignaturesAddressBytes32BytesTransition [addressValue 8192, hashValue 0, .bytes sig]
-        sigSlots [(24576, returning out reverts)] 8192]
+        sigSlots [(24576, returning out reverts)] 8192
+        (some (if !reverts && (out == wordBytes (0x1626ba7e * 2 ^ 224) ||
+          out == wordBytes (0x1626ba7e * 2 ^ 224) ++ wordBytes 0)
+          then "success" else "revert"))]
   for n in [0, 1, 2, 3, 27, 28, 31, 32, 255] do
     let sig := wordBytes 8192 ++ wordBytes 0 ++ ⟨#[UInt8.ofNat n]⟩
     cases := cases ++ [caseFor s!"signature/v={n}"
@@ -230,10 +242,10 @@ def cases : List Case := Id.run do
     let slots := configuredSlots ++ [(ownerSlot signer.val, UInt256.ofNat 1)]
     for out in [ByteArray.empty, wordBytes 0, wordBytes 1, wordBytes 2,
         wordBytes 1 ++ wordBytes 0] do
-      cases := cases ++ [caseFor s!"signature/p256/{wrongSigner}/{Ethereum.toHex out}"
+      cases := cases ++ [caseFor s!"signature/removed-p256/{wrongSigner}/{Ethereum.toHex out}"
         checknsignaturesAddressBytes32BytesUint256Transition
         [addressValue 8192, hashValue 0, .bytes sig, .int 1] slots
-        [(256, returning out)] 8192]
+        [(256, returning out)] 8192 (some "revert")]
   -- Threshold is loaded before external signature validation and list order is strict.
   let twice := approvedSignature 8192 ++ approvedSignature 8192
   cases := cases ++ [caseFor "signature/duplicate-owner"
@@ -269,7 +281,12 @@ def cases : List Case := Id.run do
     cases := cases ++ [{
       name := s!"owner/self-delegated={delegated}",
       input := state (calldataFor addownerwiththresholdTransition [addressValue 4096, .int 1]) σ,
-      expected := some (if delegated then "success" else "revert") }]
+      expected := some "success" }]
+    cases := cases ++ [{
+      name := s!"owner/swap-self-delegated={delegated}",
+      input := state (calldataFor swapownerTransition
+        [addressValue 1, addressValue 8192, addressValue 4096]) σ,
+      expected := some "revert" }]
   cases := cases ++ [
     {
       name := "receive/value", input := state ⟨#[]⟩ (world []) 8192 true 7,

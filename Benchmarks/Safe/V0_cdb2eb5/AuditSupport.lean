@@ -119,7 +119,7 @@ partial def execStmt (stmt : Stmt) : ReplayM Unit := do
   | .letDecl name _ expr => bindLocal name (← eval expr)
   | .letGas name =>
     let pc := match name with
-      | "gasForCheck" => 3807 | "gasBefore" => 3832 | "txGasLeft" => 3925 | "gasAfter" => 3946
+      | "gasForCheck" => 3713 | "gasBefore" => 3738 | "txGasLeft" => 3831 | "gasAfter" => 3852
       | _ => 0
     let gas := (s.gas.find? (·.1 == pc)).map Prod.snd |>.getD ⟨0⟩
     bindLocal name (.int gas.toNat)

@@ -61,7 +61,6 @@ def gasprice : Expr := .env .gasprice
 def zeroAddr : Expr := .cast (.intLit 0) addrSt
 def sentinelAddr : Expr := .cast (.intLit 1) addrSt
 def ecrecoverPrecompile : Expr := .cast (.intLit 1) addrSt
-def p256Precompile : Expr := .cast (.intLit 256) addrSt
 def maxUint256Expr : Expr := .intLit maxUint256
 
 def eqE (x y : Expr) : Expr := .binary .eq x y
@@ -292,7 +291,7 @@ def safeExternalABI : ExternalCallABI where
     else if name = "supportsInterface" then
       decodeReturn? boolTy out
     else if name = "isValidSignature" then
-      decodeReturn? bytes32 out
+      decodeReturn? bytes4 out
     else if name = "checkTransaction" then
       decodeVoid? out
     else if name = "checkAfterExecution" then
@@ -330,13 +329,8 @@ def externalCallStmts (receiver : Expr) (name : Ident) (eth : Expr)
     (args : List Expr) (retVar : Ident) (perm : Bool := true) : List Stmt :=
   [ .externalCall receiver name eth args retVar (perm := perm) ]
 
-def isThisDelegatedAccountExpr : Expr :=
-  eqE (.extCodePrefix this (.intLit 3)) (.bytesLit ⟨#[0xef, 0x01, 0x00]⟩)
-
 def validOwnerExpr (owner : Expr) : Expr :=
-  andE (neE owner zeroAddr)
-    (andE (neE owner sentinelAddr)
-      (orE (neE owner this) isThisDelegatedAccountExpr))
+  andE (neE owner zeroAddr) (neE owner sentinelAddr)
 
 def ownerEnabledExpr (owner : Expr) : Expr :=
   andE (neE (.storage (ownersRef owner)) zeroAddr) (neE owner sentinelAddr)
@@ -586,13 +580,9 @@ def validateContractSignatureFunction : FunctionDecl :=
         { name := "signature", ty := bytesTy } ]
     returnType := [boolTy]
     body :=
-      [ .lowLevelCall (.var "owner") (.intLit 0)
-          (.abiEncodeCall "isValidSignature" [.var "dataHash", .var "signature"])
-          "sigSuccess" "sigResult" false,
-        .return
-          [ andE (.var "sigSuccess")
-              (andE (eqE (localLength "sigResult") (.intLit 32))
-                (eqE (.abiDecode bytes32 (.var "sigResult")) eip1271MagicBytes32)) ] ] }
+      [ .externalCall (.var "owner") "isValidSignature" (.intLit 0)
+          [.var "dataHash", .var "signature"] "sigResult" (perm := false),
+        .return [eqE (.var "sigResult") (fixedBytes4Lit 0x16 0x26 0xba 0x7e)] ] }
 
 def checkContractSignatureFunction : FunctionDecl :=
   { name := "checkContractSignature"
@@ -613,24 +603,6 @@ def checkContractSignatureFunction : FunctionDecl :=
         .internalCall "validateContractSignature"
           [.var "owner", .var "dataHash", .var "contractSignature"] "valid",
         .require (.var "valid") ] }
-
-def p256VerifyFunction : FunctionDecl :=
-  { name := "p256Verify"
-    params :=
-      [ { name := "h", ty := bytes32 }, { name := "r", ty := bytes32 },
-        { name := "s", ty := bytes32 }, { name := "qx", ty := uint256 },
-        { name := "qy", ty := uint256 } ]
-    returnType := [boolTy]
-    body :=
-      [ .lowLevelCall p256Precompile (.intLit 0)
-          (.abiEncodePacked
-            [ (bytes32, .var "h"), (bytes32, .var "r"), (bytes32, .var "s"),
-              (uint256, .var "qx"), (uint256, .var "qy") ])
-          "p256Success" "p256Result" false,
-        .return
-          [ andE (.var "p256Success")
-              (andE (eqE (localLength "p256Result") (.intLit 32))
-                (eqE (.abiDecode uint256 (.var "p256Result")) (.intLit 1))) ] ] }
 
 def ecrecoverAddressFunction : FunctionDecl :=
   { name := "ecrecoverAddress"
@@ -683,44 +655,18 @@ def checkNSignaturesImplFunction : FunctionDecl :=
                       (orE (eqE (.var "executor") (.var "currentOwner"))
                         (neE (.storage (approvedHashesRef (.var "currentOwner") (.var "dataHash")))
                           (.intLit 0))) ]
-                  [ .ite (eqE (.var "v") (.intLit 2))
-                      [ .assign .localVar (varRef "currentOwner")
-                          (uint256AsAddress (bytes32AsUint256 (.var "r"))),
-                        .letDecl "p256Offset" (some uint256) (bytes32AsUint256 (.var "s")),
-                        .require (geE (.var "p256Offset") (.var "requiredBytes")),
-                        .internalCall "_add" [.var "p256Offset", .intLit 128] "p256End",
-                        .require (leE (.var "p256End") (localLength "signatures")),
-                        .letDecl "p256r" (some bytes32)
-                          (signatureWordAt (.var "signatures") (.var "p256Offset")),
-                        .letDecl "p256s" (some bytes32)
-                          (signatureWordAt (.var "signatures") (addE (.var "p256Offset") (.intLit 32))),
-                        .letDecl "qx" (some uint256)
-                          (signatureUintAt (.var "signatures") (addE (.var "p256Offset") (.intLit 64))),
-                        .letDecl "qy" (some uint256)
-                          (signatureUintAt (.var "signatures") (addE (.var "p256Offset") (.intLit 96))),
-                        .letDecl "signerAddress" (some addr)
-                          (uint256AsAddress
-                            (bytes32AsUint256
-                              (.keccak256
-                                (.abiEncodePacked
-                                  [(uint256, .var "qx"), (uint256, .var "qy")])))),
-                        .require (eqE (.var "currentOwner") (.var "signerAddress")),
-                        .internalCall "p256Verify"
-                          [.var "dataHash", .var "p256r", .var "p256s", .var "qx", .var "qy"]
-                          "p256Ok",
-                        .require (.var "p256Ok") ]
-                      [ .ite (gtE (.var "v") (.intLit 30))
-                          [ .letDecl "ethSignedHash" (some bytes32)
-                              (.keccak256
-                                (.abiEncodePacked
-                                  [(bytesTy, ethSignPrefix), (bytes32, .var "dataHash")])),
-                            .internalCall "ecrecoverAddress"
-                              [.var "ethSignedHash", u8 (subE (.var "v") (.intLit 4)),
-                                .var "r", .var "s"] "recoveredOwner",
-                            .assign .localVar (varRef "currentOwner") (.var "recoveredOwner") ]
-                          [ .internalCall "ecrecoverAddress"
-                              [.var "dataHash", .var "v", .var "r", .var "s"] "recoveredOwner",
-                            .assign .localVar (varRef "currentOwner") (.var "recoveredOwner") ] ] ] ],
+                  [ .ite (gtE (.var "v") (.intLit 30))
+                      [ .letDecl "ethSignedHash" (some bytes32)
+                          (.keccak256
+                            (.abiEncodePacked
+                              [(bytesTy, ethSignPrefix), (bytes32, .var "dataHash")])),
+                        .internalCall "ecrecoverAddress"
+                          [.var "ethSignedHash", u8 (subE (.var "v") (.intLit 4)),
+                            .var "r", .var "s"] "recoveredOwner",
+                        .assign .localVar (varRef "currentOwner") (.var "recoveredOwner") ]
+                      [ .internalCall "ecrecoverAddress"
+                          [.var "dataHash", .var "v", .var "r", .var "s"] "recoveredOwner",
+                        .assign .localVar (varRef "currentOwner") (.var "recoveredOwner") ] ] ],
             .require
               (andE (gtE (.var "currentOwner") (.var "lastOwner"))
                 (andE (neE (.storage (ownersRef (.var "currentOwner"))) zeroAddr)
@@ -758,7 +704,6 @@ def internalFunctions : List FunctionDecl :=
     postModuleExecutionFunction,
     validateContractSignatureFunction,
     checkContractSignatureFunction,
-    p256VerifyFunction,
     ecrecoverAddressFunction,
     checkNSignaturesImplFunction,
     checkSignaturesImplFunction ]
@@ -1208,7 +1153,8 @@ def swapownerTransition : TransitionDecl :=
     returnType := []
     body :=
       nonpayable ++ authorized ++
-      [ .internalCall "requireCanAddOwner" [.var "newOwner"] "_canAdd",
+      [ .require (neE (.var "newOwner") this),
+        .internalCall "requireCanAddOwner" [.var "newOwner"] "_canAdd",
         .internalCall "requireCanRemoveOwner" [.var "prevOwner", .var "oldOwner"] "_canRemove",
         .assign .storage (ownersRef (.var "newOwner")) (.storage (ownersRef (.var "oldOwner"))),
         .assign .storage (ownersRef (.var "prevOwner")) (.var "newOwner"),
