@@ -19,11 +19,11 @@ def domainSeparatorWord (σ : AccountMap) (I : ExecutionEnv) : UInt256 :=
 
 theorem daiDecode_domainSeparator_ok {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode
+    config.externalABI.decodeCalldata?
       (domainSeparatorTransition.params.map Param.name)
       (transitionSignature domainSeparatorTransition).paramTypes I.calldata =
         some domainSeparatorStore := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata =
+  change decodeCalldataWithMode .legacySolc05 [] [] I.calldata =
     some (∅ : Store)
   exact decodeCalldataWithMode_empty_ok hsz4
 
@@ -85,7 +85,7 @@ theorem daiDomainSeparatorBodyCoreOk
     (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some domainSeparatorTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode
+      config.externalABI.decodeCalldata?
         (domainSeparatorTransition.params.map Param.name)
         (transitionSignature domainSeparatorTransition).paramTypes I.calldata =
           some domainSeparatorStore)

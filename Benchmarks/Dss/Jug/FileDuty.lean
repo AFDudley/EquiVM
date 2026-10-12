@@ -131,7 +131,7 @@ theorem fileDutyIlkStoreHashMem_size (I : ExecutionEnv) :
 
 
 theorem jugDecode_fileDuty_ok {I : ExecutionEnv} (hsz100 : 100 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (fileDutyTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (fileDutyTransition.params.map Param.name)
       (transitionSignature fileDutyTransition).paramTypes I.calldata =
         some (fileDutyLocals I) := by
   simpa [config, fileDutyTransition, bytes32, bytes32Width, uint256, uint256Int,
@@ -142,7 +142,7 @@ theorem jugDecode_fileDuty_ok {I : ExecutionEnv} (hsz100 : 100 ≤ I.calldata.si
 
 theorem jugDecode_fileDuty_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 100) :
-    decodeCalldataWithMode config.abiDecodeMode (fileDutyTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (fileDutyTransition.params.map Param.name)
       (transitionSignature fileDutyTransition).paramTypes I.calldata = none := by
   simpa [config, fileDutyTransition, bytes32, bytes32Width, uint256, uint256Int,
     abiBytes32, abiBytes32Width, abiUInt256] using
@@ -1005,7 +1005,7 @@ theorem jugFileDutyBodyCoreOk
     (hwhat : fileDutyWhatBytes I = fileDutyBytes)
     (hdispatch : dispatchMsg contract I.calldata = some fileDutyTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileDutyTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileDutyTransition.params.map Param.name)
         (transitionSignature fileDutyTransition).paramTypes I.calldata = some (fileDutyLocals I))
     (hreach : ∃ k C, RD jugBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨185⟩ [sel]
@@ -1050,7 +1050,7 @@ theorem jugFileDutyBodyCoreStatic
     (hwhat : fileDutyWhatBytes I = fileDutyBytes)
     (hdispatch : dispatchMsg contract I.calldata = some fileDutyTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileDutyTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileDutyTransition.params.map Param.name)
         (transitionSignature fileDutyTransition).paramTypes I.calldata = some (fileDutyLocals I))
     (hreach : ∃ k C, RD jugBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨185⟩ [sel]
@@ -1076,7 +1076,7 @@ theorem jugFileDutyBodyCoreUnauthorized
     (hauth : relyAuthWord σ I ≠ ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some fileDutyTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileDutyTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileDutyTransition.params.map Param.name)
         (transitionSignature fileDutyTransition).paramTypes I.calldata = some (fileDutyLocals I))
     (hreach : ∃ k C, RD jugBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨185⟩ [sel]
@@ -1105,7 +1105,7 @@ theorem jugFileDutyBodyCoreRhoMismatch
       UInt256.ofNat I.header.timestamp ≠ solcSlotWordAt (fileDutyRhoSlotFor I) σ I)
     (hdispatch : dispatchMsg contract I.calldata = some fileDutyTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileDutyTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileDutyTransition.params.map Param.name)
         (transitionSignature fileDutyTransition).paramTypes I.calldata = some (fileDutyLocals I))
     (hreach : ∃ k C, RD jugBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨185⟩ [sel]
@@ -1137,7 +1137,7 @@ theorem jugFileDutyBodyCoreUnrecognized
     (hwhat : fileDutyWhatBytes I ≠ fileDutyBytes)
     (hdispatch : dispatchMsg contract I.calldata = some fileDutyTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileDutyTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileDutyTransition.params.map Param.name)
         (transitionSignature fileDutyTransition).paramTypes I.calldata = some (fileDutyLocals I))
     (hreach : ∃ k C, RD jugBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨185⟩ [sel]

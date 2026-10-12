@@ -26,7 +26,7 @@ theorem cometWithExtendedAssetListGetCollateralReservesBody {σ σ₀ A I} {g : 
   have hsz : 4 ≤ I.calldata.size := calldata_size_ge_of_selIs I (cometWithExtendedAssetListSelBytes 44) rfl hsel
   have hd : selectorDispatchMsg contract I.calldata = some getCollateralReservesTransition :=
     cometSelectorDispatch ⟨44, by decide⟩ hsel
-  have hdecode : decodeCalldataWithMode config.abiDecodeMode
+  have hdecode : config.externalABI.decodeCalldata?
       (getCollateralReservesTransition.params.map Param.name)
       (transitionSignature getCollateralReservesTransition).paramTypes I.calldata =
       decodeCalldata ["asset"] [.elem .address] I.calldata := by

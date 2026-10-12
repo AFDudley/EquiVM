@@ -169,7 +169,7 @@ theorem vowCageFirstDaiCallDepthLimitBody
   have hdispatch : dispatchMsg contract I.calldata = some cageTransition :=
     vowDispatch_cage hsel
   have hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (cageTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (cageTransition.params.map Param.name)
         (transitionSignature cageTransition).paramTypes I.calldata = some ∅ :=
     vowDecode_cage hsz
   have hmemAuth :
@@ -316,7 +316,7 @@ theorem vowCageBodyToFlapperCage
       have hdispatch : dispatchMsg contract I.calldata = some cageTransition :=
         vowDispatch_cage hsel
       have hdecode :
-          decodeCalldataWithMode config.abiDecodeMode (cageTransition.params.map Param.name)
+          config.externalABI.decodeCalldata? (cageTransition.params.map Param.name)
             (transitionSignature cageTransition).paramTypes I.calldata = some ∅ :=
         vowDecode_cage hsz
       rcases vowCageReachAfterClearSplit (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
@@ -616,7 +616,7 @@ theorem vowCageBodyToFlopperCage
   have hsz : 4 ≤ I.calldata.size :=
     calldata_size_ge_of_selIs I ⟨#[0x69, 0x24, 0x50, 0x09]⟩ rfl hsel
   have hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (cageTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (cageTransition.params.map Param.name)
         (transitionSignature cageTransition).paramTypes I.calldata = some ∅ :=
     vowDecode_cage hsz
   refine vowCageBodyToFlapperCage
@@ -857,7 +857,7 @@ theorem vowCageBodyToSecondDai
   have hsz : 4 ≤ I.calldata.size :=
     calldata_size_ge_of_selIs I ⟨#[0x69, 0x24, 0x50, 0x09]⟩ rfl hsel
   have hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (cageTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (cageTransition.params.map Param.name)
         (transitionSignature cageTransition).paramTypes I.calldata = some ∅ :=
     vowDecode_cage hsz
   refine vowCageBodyToFlopperCage
@@ -1059,7 +1059,7 @@ theorem vowCageBodyToVatSin
   have hsz : 4 ≤ I.calldata.size :=
     calldata_size_ge_of_selIs I ⟨#[0x69, 0x24, 0x50, 0x09]⟩ rfl hsel
   have hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (cageTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (cageTransition.params.map Param.name)
         (transitionSignature cageTransition).paramTypes I.calldata = some ∅ :=
     vowDecode_cage hsz
   refine vowCageBodyToSecondDai

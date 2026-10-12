@@ -57,7 +57,7 @@ theorem poolManagerSyncBody {σ σ₀ A I} {g : UInt256} (v : PoolManagerImmutab
             (accountWord_eq_iff currency _ hcanon).1 rfl
           have hclean : UInt256.land (calldataWord I.calldata 4) solcAddrMask = calldataWord I.calldata 4 :=
             solcAddrMask_clean hcanon
-          have hdec : decodeCalldataWithMode config.abiDecodeMode (syncTransition.params.map Param.name)
+          have hdec : config.externalABI.decodeCalldata? (syncTransition.params.map Param.name)
               (transitionSignature syncTransition).paramTypes I.calldata = some args :=
             decodeCalldata_address_ok hlen hhi hcanon
           by_cases hz : currency = AccountAddress.ofNat 0

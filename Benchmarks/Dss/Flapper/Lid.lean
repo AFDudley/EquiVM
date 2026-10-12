@@ -10,9 +10,9 @@ def lidWord (σ : AccountMap) (I : ExecutionEnv) : UInt256 :=
   solcSlotWordAt ⟨8⟩ σ I
 
 theorem flapperDecode_lid {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (lidTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (lidTransition.params.map Param.name)
       (transitionSignature lidTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 theorem flapperReachLidBody {σ σ₀ A I} {g : Sat256}

@@ -100,9 +100,9 @@ theorem transferNewToWord_toNat (evm : EVM.State) (I : ExecutionEnv)
 
 theorem uniswapDecode_transfer_ok {I : ExecutionEnv}
     (hsz68 : 68 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (transferTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (transferTransition.params.map Param.name)
       (transitionSignature transferTransition).paramTypes I.calldata = some (transferStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["to", "value"] [legacyAddr, uint256] I.calldata = _
+  show config.externalABI.decodeCalldata? ["to", "value"] [legacyAddr, uint256] I.calldata = _
   simpa [addr, uint256, abiUInt256, transferStore, transferToValue, transferValueValue,
     transferToWord, transferValueWord, calldataWord]
     using decodeCalldata_legacyAddress_uint256_ok
@@ -110,9 +110,9 @@ theorem uniswapDecode_transfer_ok {I : ExecutionEnv}
 
 theorem uniswapDecode_transfer_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 68) :
-    decodeCalldataWithMode config.abiDecodeMode (transferTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (transferTransition.params.map Param.name)
       (transitionSignature transferTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["to", "value"] [legacyAddr, uint256] I.calldata = none
+  show config.externalABI.decodeCalldata? ["to", "value"] [legacyAddr, uint256] I.calldata = none
   simpa [uint256, abiUInt256]
     using decodeCalldata_legacyAddress_uint256_none_short
       (cd := I.calldata) (x := "to") (y := "value") hsz4 hshort
@@ -120,9 +120,9 @@ theorem uniswapDecode_transfer_none_short {I : ExecutionEnv}
 theorem uniswapDecode_transfer_ok_noncanon {I : ExecutionEnv}
     (hsz68 : 68 ≤ I.calldata.size)
     (_hnc : ¬ (transferToWord I).toNat < EVM.addressModulus) :
-    decodeCalldataWithMode config.abiDecodeMode (transferTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (transferTransition.params.map Param.name)
       (transitionSignature transferTransition).paramTypes I.calldata = some (transferStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["to", "value"] [legacyAddr, uint256] I.calldata = _
+  show config.externalABI.decodeCalldata? ["to", "value"] [legacyAddr, uint256] I.calldata = _
   simpa [addr, uint256, abiUInt256, transferStore, transferToValue, transferValueValue,
     transferToWord, transferValueWord, calldataWord]
     using decodeCalldata_legacyAddress_uint256_ok
@@ -843,7 +843,7 @@ theorem uniswapTransferBodyCoreOk
         UInt256.size)
     (hdispatch : dispatchMsg contract I.calldata = some transferTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (transferTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (transferTransition.params.map Param.name)
         (transitionSignature transferTransition).paramTypes I.calldata = some (transferStore I))
     (hreach : ∃ k C, RD uniswapV2PairBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1234⟩ [sel]
@@ -894,7 +894,7 @@ theorem uniswapTransferBodyCoreRevert_insufficient
         (transferValueWord I).toNat)
     (hdispatch : dispatchMsg contract I.calldata = some transferTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (transferTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (transferTransition.params.map Param.name)
         (transitionSignature transferTransition).paramTypes I.calldata = some (transferStore I))
     (hreach : ∃ k C, RD uniswapV2PairBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1234⟩ [sel]
@@ -926,7 +926,7 @@ theorem uniswapTransferBodyCoreRevert_overflow
       transferNewToNat (initState σ σ₀ (Sat256.ofUInt256 g) A I) I)
     (hdispatch : dispatchMsg contract I.calldata = some transferTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (transferTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (transferTransition.params.map Param.name)
         (transitionSignature transferTransition).paramTypes I.calldata = some (transferStore I))
     (hreach : ∃ k C, RD uniswapV2PairBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1234⟩ [sel]

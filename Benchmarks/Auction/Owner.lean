@@ -48,7 +48,7 @@ theorem ownerBodyCore {σ σ₀ A I} {g : UInt256}
   by_cases hwv : I.weiValue = ⟨0⟩
   · have hsz := calldata_size_ge_of_selIs I (entryBytes 12) (entryBytes_size 12) hsel
     have hd := dispatchEntry 12 hsel
-    have hdec : decodeCalldataWithMode auctionConfig.abiDecodeMode
+    have hdec : auctionConfig.externalABI.decodeCalldata?
         (ownerGetter.params.map Param.name)
         (transitionSignature ownerGetter).paramTypes I.calldata = some ∅ :=
       decodeCalldata_empty_ok hsz

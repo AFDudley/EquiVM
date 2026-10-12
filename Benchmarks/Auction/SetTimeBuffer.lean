@@ -49,7 +49,7 @@ theorem setTimeBufferBodyCore {σ σ₀ A I} {g : UInt256}
     obtain ⟨_, _, rd5357⟩ := setterToDecoder 0 rd532 (by evm_ov)
     by_cases hlen : 36 ≤ I.calldata.size
     · by_cases hhi : I.calldata.size < 2 ^ 255 + 4
-      · have hdec : decodeCalldataWithMode auctionConfig.abiDecodeMode
+      · have hdec : auctionConfig.externalABI.decodeCalldata?
             (setTimeBufferTransition.params.map Param.name)
             (transitionSignature setTimeBufferTransition).paramTypes I.calldata =
               some ((∅ : Store).insert "_timeBuffer"
@@ -84,14 +84,14 @@ theorem setTimeBufferBodyCore {σ σ₀ A I} {g : UInt256}
             · simp
           exact (ownerDenied 2 rd1934 ho (by evm_ov)).reEquivExecutionRevert
             hcode hd hdec hbody
-      · have hdec : decodeCalldataWithMode auctionConfig.abiDecodeMode
+      · have hdec : auctionConfig.externalABI.decodeCalldata?
             (setTimeBufferTransition.params.map Param.name)
             (transitionSignature setTimeBufferTransition).paramTypes I.calldata = none :=
           decodeCalldata_uint256_none_huge (by omega)
         exact (decodeUint256Fail rd5357
           (solcDecodeLenCheckHuge_4_32 (by omega) hsize) (by evm_ov)).reEquivDecodingFailed
           hcode hd hdec
-    · have hdec : decodeCalldataWithMode auctionConfig.abiDecodeMode
+    · have hdec : auctionConfig.externalABI.decodeCalldata?
           (setTimeBufferTransition.params.map Param.name)
           (transitionSignature setTimeBufferTransition).paramTypes I.calldata = none :=
         decodeCalldata_uint256_none_short (by omega)

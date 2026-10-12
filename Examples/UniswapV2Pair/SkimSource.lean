@@ -1235,7 +1235,7 @@ theorem uniswapSkimBodyReverts_secondSafeTransferDecode
       (EVM.address (uniswapAddressAtSlot (uniswapLockEnteredState evm) ⟨7⟩)) 0 calldata1
       (true, evm3, out2))
     (hsize : out2.size ≠ 0)
-    (hdec : ABI.decodeReturnValueWithMode? config.abiDecodeMode boolTy out2 = none) :
+    (hdec : config.externalABI.decodeValue? boolTy out2 = none) :
     ExecTransitionBody config contract evm (skimStore I) skimTransition.body .reverted := by
   have hsafeStmt :
       ExecStmt config
@@ -1295,7 +1295,7 @@ theorem uniswapSkimBodyReverts_secondSafeTransferDecodeFalse
       (true, evm3, out2))
     (hsize : out2.size ≠ 0)
     (hdec :
-      ABI.decodeReturnValueWithMode? config.abiDecodeMode boolTy out2 = some (.bool false)) :
+      config.externalABI.decodeValue? boolTy out2 = some (.bool false)) :
     ExecTransitionBody config contract evm (skimStore I) skimTransition.body .reverted := by
   have hsafeStmt :
       ExecStmt config
@@ -1383,7 +1383,7 @@ theorem uniswapSkimBodyReverts_firstSafeTransferDecode
       (EVM.address (uniswapAddressAtSlot (uniswapLockEnteredState evm) ⟨6⟩)) 0 calldata0
       (true, evm1, out1))
     (hsize : out1.size ≠ 0)
-    (hdec : ABI.decodeReturnValueWithMode? config.abiDecodeMode boolTy out1 = none) :
+    (hdec : config.externalABI.decodeValue? boolTy out1 = none) :
     ExecTransitionBody config contract evm (skimStore I) skimTransition.body .reverted := by
   have hsafeStmt :
       ExecStmt config
@@ -1424,7 +1424,7 @@ theorem uniswapSkimBodyReverts_firstSafeTransferDecodeFalse
       (true, evm1, out1))
     (hsize : out1.size ≠ 0)
     (hdec :
-      ABI.decodeReturnValueWithMode? config.abiDecodeMode boolTy out1 = some (.bool false)) :
+      config.externalABI.decodeValue? boolTy out1 = some (.bool false)) :
     ExecTransitionBody config contract evm (skimStore I) skimTransition.body .reverted := by
   have hsafeStmt :
       ExecStmt config

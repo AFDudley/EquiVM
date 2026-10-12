@@ -37,9 +37,9 @@ theorem vowDispatch_hump {I : ExecutionEnv} (hsel : selIs I ⟨#[0x1b, 0x8e, 0x8
     exact hsel
 
 theorem vowDecode_hump {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (humpTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (humpTransition.params.map Param.name)
       (transitionSignature humpTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 theorem vowReachHumpBody {σ σ₀ A I} {g : Sat256}
@@ -76,7 +76,7 @@ theorem vowHumpBodyCore
     (hcode : I.code = vowBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some humpTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (humpTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (humpTransition.params.map Param.name)
         (transitionSignature humpTransition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD vowBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨375⟩ [sel]

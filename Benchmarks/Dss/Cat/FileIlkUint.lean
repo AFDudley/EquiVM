@@ -139,7 +139,7 @@ theorem catDispatch_fileIlkUint {I : ExecutionEnv}
     exact hsel
 
 theorem catDecode_fileIlkUint_ok {I : ExecutionEnv} (hsz100 : 100 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (fileIlkUintTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (fileIlkUintTransition.params.map Param.name)
       (transitionSignature fileIlkUintTransition).paramTypes I.calldata =
         some (fileIlkUintLocals I) := by
   simpa [config, fileIlkUintTransition, bytes32, bytes32Width, uint256, uint256Int,
@@ -150,7 +150,7 @@ theorem catDecode_fileIlkUint_ok {I : ExecutionEnv} (hsz100 : 100 ≤ I.calldata
 
 theorem catDecode_fileIlkUint_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 100) :
-    decodeCalldataWithMode config.abiDecodeMode (fileIlkUintTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (fileIlkUintTransition.params.map Param.name)
       (transitionSignature fileIlkUintTransition).paramTypes I.calldata = none := by
   simpa [config, fileIlkUintTransition, bytes32, bytes32Width, uint256, uint256Int,
     abiBytes32, abiBytes32Width, abiUInt256] using
@@ -979,7 +979,7 @@ theorem catFileIlkUintBodyCore
     (hsize : I.calldata.size < UInt256.size)
     (hdispatch : dispatchMsg contract I.calldata = some fileIlkUintTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileIlkUintTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileIlkUintTransition.params.map Param.name)
         (transitionSignature fileIlkUintTransition).paramTypes I.calldata =
           some (fileIlkUintLocals I))
     (hreach : ∃ k C, RD catBytecode I (Sat256.ofUInt256 g)

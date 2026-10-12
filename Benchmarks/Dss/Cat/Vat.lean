@@ -29,9 +29,9 @@ theorem catDispatch_vat {I : ExecutionEnv} (hsel : selIs I ⟨#[0x36, 0x56, 0x9e
   · rw [selectorOf, vatSelectorBytes]; exact hsel
 
 theorem catDecode_vat {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (vatTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (vatTransition.params.map Param.name)
       (transitionSignature vatTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 theorem catReachVatBody {σ σ₀ A I} {g : Sat256}

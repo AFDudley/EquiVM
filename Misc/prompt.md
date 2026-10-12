@@ -85,6 +85,15 @@ this pass, you should be confident that the Solm spec is a faithful
 model of the bytecode, and that it is possible to prove the
 refinement.
 
+Check `config.externalABI` against the bytecode's ABI handling. Its
+`decodeCalldata?` receives the full calldata, including the four-byte
+selector; selector matching is handled separately by dispatch. Its
+`decodeValue?` handles explicit `abi.decode` expressions. The named
+external-call return decoder is `decode?`, which may follow a different
+callee ABI. The default calldata and value decoders are modern; use
+`externalABI.withMode` or override the individual decoders when the
+compiler requires different behavior.
+
 Things to watch for:
 
 - The Solm spec, in general, must model storage reads/writes in the
@@ -154,7 +163,8 @@ internal and external calls.
 The proof of each function follows, roughly, four phases:
 
 
-1. ABI decode. Prove decode succeeds for valid calldata and fails on
+1. ABI decode. State the facts using `config.externalABI.decodeCalldata?`.
+   Prove decode succeeds for valid calldata and fails on
    each malformed branch (short / huge / non-canonical address
    lemmas). Use the `decodeCalldata_*` library lemmas
    (`decodeCalldata_address_ok`, `decodeCalldata_uint256_ok`,

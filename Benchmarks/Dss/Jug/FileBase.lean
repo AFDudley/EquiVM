@@ -57,7 +57,7 @@ theorem fileBaseWhatWord_ne_of_bytes_ne {I : ExecutionEnv} {bs : List UInt8}
 
 
 theorem jugDecode_fileBase_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (fileBaseTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (fileBaseTransition.params.map Param.name)
       (transitionSignature fileBaseTransition).paramTypes I.calldata =
         some (fileBaseLocals I) := by
   simpa [config, fileBaseTransition, bytes32, bytes32Width, uint256, uint256Int,
@@ -67,7 +67,7 @@ theorem jugDecode_fileBase_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size
 
 theorem jugDecode_fileBase_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 68) :
-    decodeCalldataWithMode config.abiDecodeMode (fileBaseTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (fileBaseTransition.params.map Param.name)
       (transitionSignature fileBaseTransition).paramTypes I.calldata = none := by
   simpa [config, fileBaseTransition, bytes32, bytes32Width, uint256, uint256Int, abiBytes32,
     abiBytes32Width, abiUInt256] using
@@ -674,7 +674,7 @@ theorem jugFileBaseBodyCoreOk
     (hwhat : fileBaseWhat I = fileBaseBytes)
     (hdispatch : dispatchMsg contract I.calldata = some fileBaseTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileBaseTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileBaseTransition.params.map Param.name)
         (transitionSignature fileBaseTransition).paramTypes I.calldata = some (fileBaseLocals I))
     (hreach : ∃ k C, RD jugBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨228⟩ [sel]
@@ -713,7 +713,7 @@ theorem jugFileBaseBodyCoreStatic
     (hwhat : fileBaseWhat I = fileBaseBytes)
     (hdispatch : dispatchMsg contract I.calldata = some fileBaseTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileBaseTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileBaseTransition.params.map Param.name)
         (transitionSignature fileBaseTransition).paramTypes I.calldata = some (fileBaseLocals I))
     (hreach : ∃ k C, RD jugBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨228⟩ [sel]
@@ -737,7 +737,7 @@ theorem jugFileBaseBodyCoreUnauthorized
     (hauth : relyAuthWord σ I ≠ ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some fileBaseTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileBaseTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileBaseTransition.params.map Param.name)
         (transitionSignature fileBaseTransition).paramTypes I.calldata = some (fileBaseLocals I))
     (hreach : ∃ k C, RD jugBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨228⟩ [sel]
@@ -765,7 +765,7 @@ theorem jugFileBaseBodyCoreUnrecognized
     (hwhat : fileBaseWhat I ≠ fileBaseBytes)
     (hdispatch : dispatchMsg contract I.calldata = some fileBaseTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileBaseTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileBaseTransition.params.map Param.name)
         (transitionSignature fileBaseTransition).paramTypes I.calldata = some (fileBaseLocals I))
     (hreach : ∃ k C, RD jugBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨228⟩ [sel]

@@ -1138,7 +1138,7 @@ theorem cureDispatchDrop {I : ExecutionEnv}
   native_decide
 
 theorem cureDecode_drop_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (dropTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (dropTransition.params.map Param.name)
       (transitionSignature dropTransition).paramTypes I.calldata =
         some (dropLocals I) := by
   simpa [config, dropTransition, dropLocals, dropSrc] using
@@ -1146,7 +1146,7 @@ theorem cureDecode_drop_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
 
 theorem cureDecode_drop_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (dropTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (dropTransition.params.map Param.name)
       (transitionSignature dropTransition).paramTypes I.calldata = none := by
   simpa [config, dropTransition] using
     (decodeCalldata_legacyAddress_none_short (cd := I.calldata) (x := "src") hsz4 hshort)
@@ -1269,7 +1269,7 @@ theorem cureDropReturnRuntimeEquiv
     (hcode : I.code = cureBytecode)
     (hdispatch : dispatchMsg contract I.calldata = some dropTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (dropTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (dropTransition.params.map Param.name)
         (transitionSignature dropTransition).paramTypes I.calldata = some (dropLocals I))
     (hret :
       RDret cureBytecode (Sat256.ofUInt256 g)
@@ -1292,7 +1292,7 @@ theorem cureDropSwapBranchRefinement {σ σ₀ A I} {g sel key : UInt256}
     (hcode : I.code = cureBytecode)
     (hdispatch : dispatchMsg contract I.calldata = some dropTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (dropTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (dropTransition.params.map Param.name)
         (transitionSignature dropTransition).paramTypes I.calldata = some (dropLocals I))
     (hperm : I.perm = true)
     (hwv : I.weiValue = ⟨0⟩)
@@ -1390,7 +1390,7 @@ theorem cureDropBodyCore {σ σ₀ A I} {g : UInt256}
     hcode hwv hsz4 hsize hsel
   by_cases hsz36 : 36 ≤ I.calldata.size
   · have hdecode :
-        decodeCalldataWithMode config.abiDecodeMode (dropTransition.params.map Param.name)
+        config.externalABI.decodeCalldata? (dropTransition.params.map Param.name)
           (transitionSignature dropTransition).paramTypes I.calldata = some (dropLocals I) :=
       cureDecode_drop_ok hsz36
     have hposSlotEq : dropPosSlotFor I = solcMappingSlot ⟨5⟩ key := by

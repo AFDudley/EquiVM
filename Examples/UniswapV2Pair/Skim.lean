@@ -12,10 +12,10 @@ theorem uniswapSkimBody
     (hdispatch : dispatchMsg contract I.calldata = some skimTransition) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   by_cases hsz36 : 36 ≤ I.calldata.size
-  · have hdecode : decodeCalldataWithMode config.abiDecodeMode
+  · have hdecode : config.externalABI.decodeCalldata?
         (skimTransition.params.map Param.name)
         (transitionSignature skimTransition).paramTypes I.calldata = some (skimStore I) := by
-      show decodeCalldataWithMode config.abiDecodeMode ["to"] [legacyAddr] I.calldata = _
+      show config.externalABI.decodeCalldata? ["to"] [legacyAddr] I.calldata = _
       simpa only [skimStore, skimToValue, skimToWord, calldataWord]
         using decodeCalldata_legacyAddress_ok (cd := I.calldata) (x := "to") hsz36
     exact uniswapSkimBodyDecoded hcode hsize hperm hwv hsel hdispatch hsz36 hdecode
@@ -33,10 +33,10 @@ theorem uniswapSkimBodyAnyPerm
   · exact uniswapSkimBody hcode hsize hperm hwv hsel hdispatch
   replace hperm : I.perm = false := by simpa using hperm
   by_cases hsz36 : 36 ≤ I.calldata.size
-  · have hdecode : decodeCalldataWithMode config.abiDecodeMode
+  · have hdecode : config.externalABI.decodeCalldata?
         (skimTransition.params.map Param.name)
         (transitionSignature skimTransition).paramTypes I.calldata = some (skimStore I) := by
-      show decodeCalldataWithMode config.abiDecodeMode ["to"] [legacyAddr] I.calldata = _
+      show config.externalABI.decodeCalldata? ["to"] [legacyAddr] I.calldata = _
       simpa only [skimStore, skimToValue, skimToWord, calldataWord]
         using decodeCalldata_legacyAddress_ok (cd := I.calldata) (x := "to") hsz36
     have hsz4 : 4 ≤ I.calldata.size :=

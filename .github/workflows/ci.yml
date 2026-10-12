@@ -90,7 +90,7 @@ jobs:
       #     lake build \
       #       Benchmarks.Auction.Correct \
       #       Benchmarks.WETH9.Correct \
-      #       Benchmarks.Safe.Correct \
+      #       Benchmarks.Safe.Main.Correct \
       #       Benchmarks.Dss.Dai.Correct \
       #       Benchmarks.Dss.Jug.Correct \
       #       Benchmarks.Dss.Vat.Correct \

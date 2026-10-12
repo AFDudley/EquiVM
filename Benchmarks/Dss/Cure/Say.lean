@@ -25,9 +25,9 @@ theorem cureDispatchSay {I : ExecutionEnv}
   native_decide
 
 theorem cureDecode_say {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (sayTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (sayTransition.params.map Param.name)
       (transitionSignature sayTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 theorem cureSayBodyCore {σ σ₀ A I} {g : UInt256}

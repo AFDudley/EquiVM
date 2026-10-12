@@ -10,9 +10,9 @@ def ilkWord (σ : AccountMap) (I : ExecutionEnv) : UInt256 :=
   solcSlotWordAt ⟨3⟩ σ I
 
 theorem flipperDecode_ilk {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (ilkTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (ilkTransition.params.map Param.name)
       (transitionSignature ilkTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 theorem flipperReachIlkBody {σ σ₀ A I} {g : Sat256}

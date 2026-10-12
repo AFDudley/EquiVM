@@ -81,9 +81,9 @@ theorem clipperDispatch_tail {I : ExecutionEnv}
 
 theorem clipperDecode_tail {I : ExecutionEnv}
     (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (tailTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (tailTransition.params.map Param.name)
       (transitionSignature tailTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  change decodeCalldataWithMode .legacySolc05 [] [] I.calldata = some ∅
   exact decodeCalldataWithMode_empty_ok hsz
 
 theorem clipperEvalTail (v : ClipperImmutables) (evm : EVM.State) (locals : Store)

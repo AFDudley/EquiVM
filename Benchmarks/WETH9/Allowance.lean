@@ -72,9 +72,9 @@ theorem weth9SelectorDispatchAllowance {I : ExecutionEnv} (hsel : selIs I (weth9
   native_decide
 
 theorem weth9Decode_allowance_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (allowanceTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (allowanceTransition.params.map Param.name)
       (transitionSignature allowanceTransition).paramTypes I.calldata = some (allowanceStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["owner", "guy"] [addr, addr] I.calldata = _
+  show config.externalABI.decodeCalldata? ["owner", "guy"] [addr, addr] I.calldata = _
   simpa [allowanceStore, allowanceOwnerValue, allowanceGuyValue, allowanceOwnerWord,
     allowanceGuyWord, calldataWord]
     using decodeCalldata_legacyAddress_legacyAddress_ok
@@ -82,9 +82,9 @@ theorem weth9Decode_allowance_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.s
 
 theorem weth9Decode_allowance_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 68) :
-    decodeCalldataWithMode config.abiDecodeMode (allowanceTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (allowanceTransition.params.map Param.name)
       (transitionSignature allowanceTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["owner", "guy"] [addr, addr] I.calldata = none
+  show config.externalABI.decodeCalldata? ["owner", "guy"] [addr, addr] I.calldata = none
   simpa using decodeCalldata_legacyAddress_legacyAddress_none_short
     (cd := I.calldata) (x := "owner") (y := "guy") hsz4 hshort
 

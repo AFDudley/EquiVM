@@ -164,7 +164,7 @@ def check (name : String) (data calleeCode : ByteArray) (value := 0) (perm := tr
   let s := runtimeState data calleeCode value perm depth target
   let source := do
     let t ← EvalResult.ofOption .typeError (selectorDispatchMsg contract data)
-    match decodeCalldataWithMode config.abiDecodeMode (t.params.map Param.name)
+    match config.externalABI.decodeCalldata? (t.params.map Param.name)
         (transitionSignature t).paramTypes data with
     | none => .revert
     | some locals =>

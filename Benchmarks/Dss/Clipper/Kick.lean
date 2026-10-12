@@ -24,7 +24,7 @@ private theorem clipperKickConnectOutcome
     {id : UInt256}
     (hcode : I.code = code)
     (hdispatch : dispatchMsg contract I.calldata = some kickTransition)
-    (hdecode : decodeCalldataWithMode config.abiDecodeMode
+    (hdecode : config.externalABI.decodeCalldata?
       (kickTransition.params.map Param.name)
       (transitionSignature kickTransition).paramTypes I.calldata =
         some (clipperKickStore I))

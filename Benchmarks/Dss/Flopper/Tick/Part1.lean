@@ -1088,18 +1088,18 @@ theorem flopperTickBodyReturns_success (evm : EVM.State) (I : ExecutionEnv)
 
 
 theorem flopperDecode_tick_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (tickTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (tickTransition.params.map Param.name)
       (transitionSignature tickTransition).paramTypes I.calldata = some (tickLocals I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["id"] [uint256] I.calldata =
+  show config.externalABI.decodeCalldata? ["id"] [uint256] I.calldata =
     some (tickLocals I)
   simpa [config, tickLocals, tickIdValue, tickIdWord, uint256] using
     decodeCalldata_legacyUInt256_ok (cd := I.calldata) (x := "id") hsz36
 
 theorem flopperDecode_tick_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (tickTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (tickTransition.params.map Param.name)
       (transitionSignature tickTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["id"] [uint256] I.calldata = none
+  show config.externalABI.decodeCalldata? ["id"] [uint256] I.calldata = none
   simpa [config, uint256] using
     decodeCalldata_legacyUInt256_none_short (cd := I.calldata) (x := "id") hsz4 hshort
 

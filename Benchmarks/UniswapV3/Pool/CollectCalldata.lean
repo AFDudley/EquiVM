@@ -19,7 +19,7 @@ theorem collectRequestedWord_lt (cd : ByteArray) (second : Bool) :
   u256LandMaskToNatLtOfToNat _ _ (by decide)
 
 theorem collectDecode {cd : ByteArray} (hlen : 164 ≤ cd.size) :
-    decodeCalldataWithMode config.abiDecodeMode (collectTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (collectTransition.params.map Param.name)
       (transitionSignature collectTransition).paramTypes cd =
       some (collectLocals (collectRecipient cd) (calldataWord cd 36) (calldataWord cd 68)
         (collectRequestedWord cd false) (collectRequestedWord cd true)) := by
@@ -34,7 +34,7 @@ theorem collectDecode {cd : ByteArray} (hlen : 164 ≤ cd.size) :
   exact h
 
 theorem collectDecodeShort {cd : ByteArray} (hshort : cd.size < 164) :
-    decodeCalldataWithMode config.abiDecodeMode (collectTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (collectTransition.params.map Param.name)
       (transitionSignature collectTransition).paramTypes cd = none :=
   decodeCalldata_legacyScalarWords_none_short rfl hshort
 

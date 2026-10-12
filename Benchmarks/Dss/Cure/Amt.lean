@@ -34,7 +34,7 @@ theorem cureDispatchAmt {I : ExecutionEnv}
   native_decide
 
 theorem cureDecode_amt_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (amtTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (amtTransition.params.map Param.name)
       (transitionSignature amtTransition).paramTypes I.calldata =
         some ((∅ : Store).insert "arg0" (.address (amtMappingArg I))) := by
   simpa [config, amtTransition, amtMappingArg] using
@@ -42,7 +42,7 @@ theorem cureDecode_amt_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
 
 theorem cureDecode_amt_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (amtTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (amtTransition.params.map Param.name)
       (transitionSignature amtTransition).paramTypes I.calldata = none := by
   simpa [config, amtTransition] using
     (decodeCalldata_legacyAddress_none_short (cd := I.calldata) (x := "arg0") hsz4 hshort)
@@ -53,7 +53,7 @@ theorem cureAmtBodyCoreOk
     (hsz36 : 36 ≤ I.calldata.size) (hsize : I.calldata.size < UInt256.size)
     (hdispatch : dispatchMsg contract I.calldata = some amtTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (amtTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (amtTransition.params.map Param.name)
         (transitionSignature amtTransition).paramTypes I.calldata =
           some ((∅ : Store).insert "arg0" (.address (amtMappingArg I))))
     (hreach : ∃ k C, RD cureBytecode I (Sat256.ofUInt256 g)

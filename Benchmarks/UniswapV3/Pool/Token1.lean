@@ -57,9 +57,11 @@ theorem uniswapV3PoolToken1Body {σ σ₀ A I} {g : UInt256} (v : UniswapV3PoolI
   have hd : dispatchMsg contract I.calldata = some token1Transition := by
     apply uniswapV3PoolDispatch_token1 <;>
       first | exact hsel | exact selectorMismatch_of_match hsel (by decide +kernel)
-  have hdec : decodeCalldataWithMode config.abiDecodeMode
+  have hdec : config.externalABI.decodeCalldata?
       (token1Transition.params.map Param.name) (transitionSignature token1Transition).paramTypes
-      I.calldata = some (∅ : Store) := decodeCalldataWithMode_empty_ok hsz
+      I.calldata = some (∅ : Store) := by
+    change decodeCalldataWithMode .modern [] [] I.calldata = some (∅ : Store)
+    exact decodeCalldataWithMode_empty_ok hsz
   exact (uniswapV3PoolToken1X (g := Sat256.ofUInt256 g) v hcode hwv hsz hsize hsel)
     |>.reEquivExecution hcode hd hdec
       (uniswapV3PoolToken1Returns v _ ∅ hwv)

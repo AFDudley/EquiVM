@@ -12367,7 +12367,7 @@ theorem dogNonpayableLivePrefixRevert {v : DogImmutables}
 
 theorem dogDecode_bark_ok {I : ExecutionEnv}
     (hsz100 : 100 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (barkTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (barkTransition.params.map Param.name)
       (transitionSignature barkTransition).paramTypes I.calldata =
         some (barkLocals I) := by
   simpa [config, barkTransition, barkLocals, barkIlkBytes, barkUrn, barkKpr, barkUrnWord,
@@ -12377,7 +12377,7 @@ theorem dogDecode_bark_ok {I : ExecutionEnv}
 
 theorem dogDecode_bark_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 100) :
-    decodeCalldataWithMode config.abiDecodeMode (barkTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (barkTransition.params.map Param.name)
       (transitionSignature barkTransition).paramTypes I.calldata = none := by
   simpa [config, barkTransition, bytes32, bytes32Width, addr, abiBytes32, abiBytes32Width,
     abiAddress] using
@@ -24249,7 +24249,7 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
     hpatch hcode hwv hsz4 hsize hsel
   by_cases hsz100 : 100 ≤ I.calldata.size
   · have hdecode :
-        decodeCalldataWithMode config.abiDecodeMode
+        config.externalABI.decodeCalldata?
           (barkTransition.params.map Param.name)
           (transitionSignature barkTransition).paramTypes I.calldata =
             some (barkLocals I) :=

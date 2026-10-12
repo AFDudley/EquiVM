@@ -614,7 +614,7 @@ theorem flopperKickBodyCoreUnauthorized
     (hauth : relyAuthWord σ I ≠ ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some kickTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (kickTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (kickTransition.params.map Param.name)
         (transitionSignature kickTransition).paramTypes I.calldata = some (kickLocals I))
     (rd3401 : ∃ k C, RD flopperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨3401⟩
@@ -648,7 +648,7 @@ theorem flopperKickBodyCoreNotLive
     (hlive : solcSlotWordAt ⟨8⟩ σ I ≠ ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some kickTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (kickTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (kickTransition.params.map Param.name)
         (transitionSignature kickTransition).paramTypes I.calldata = some (kickLocals I))
     (rd3494 : RD flopperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨3494⟩
@@ -684,7 +684,7 @@ theorem flopperKickBodyCoreKicksOverflow
     (hkicksGe : UInt256.size - 1 ≤ (solcSlotWordAt ⟨7⟩ σ I).toNat)
     (hdispatch : dispatchMsg contract I.calldata = some kickTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (kickTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (kickTransition.params.map Param.name)
         (transitionSignature kickTransition).paramTypes I.calldata = some (kickLocals I))
     (rd3568 : RD flopperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨3568⟩
@@ -725,7 +725,7 @@ theorem flopperKickBodyCoreAddOverflow
         (kickRuntimeTauWord I.codeOwner σ I).toNat)
     (hdispatch : dispatchMsg contract I.calldata = some kickTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (kickTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (kickTransition.params.map Param.name)
         (transitionSignature kickTransition).paramTypes I.calldata = some (kickLocals I))
     (rd3643 : RD flopperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨3643⟩
@@ -777,7 +777,7 @@ theorem flopperKickBodyCoreSuccess
         (kickRuntimeTauWord I.codeOwner σ I).toNat < 2 ^ 48)
     (hdispatch : dispatchMsg contract I.calldata = some kickTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (kickTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (kickTransition.params.map Param.name)
         (transitionSignature kickTransition).paramTypes I.calldata = some (kickLocals I))
     (rd3643 : RD flopperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨3643⟩

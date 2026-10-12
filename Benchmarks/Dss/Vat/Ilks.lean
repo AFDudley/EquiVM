@@ -104,17 +104,17 @@ theorem ilksDustSlotFor_eq {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
   simp [ilksDustSlotFor, ilksArtSlotFor_eq hsz36]
 
 theorem vatDecode_ilks_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (ilksTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (ilksTransition.params.map Param.name)
       (transitionSignature ilksTransition).paramTypes I.calldata = some (ilksStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["arg0"] [bytes32] I.calldata = _
+  show config.externalABI.decodeCalldata? ["arg0"] [bytes32] I.calldata = _
   simpa [config, ilksStore, ilksArgValue, ilksArgBytes, bytes32] using
     decodeCalldataWithMode_legacyBytes32_ok (cd := I.calldata) (x := "arg0") hsz36
 
 theorem vatDecode_ilks_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (ilksTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (ilksTransition.params.map Param.name)
       (transitionSignature ilksTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["arg0"] [bytes32] I.calldata = none
+  show config.externalABI.decodeCalldata? ["arg0"] [bytes32] I.calldata = none
   simpa [config, bytes32] using
     decodeCalldataWithMode_legacyBytes32_none_short (cd := I.calldata) (x := "arg0") hsz4 hshort
 
@@ -848,7 +848,7 @@ theorem vatIlksBodyCoreOk
     (hsz36 : 36 ≤ I.calldata.size) (hsize : I.calldata.size < UInt256.size)
     (hdispatch : dispatchMsg contract I.calldata = some ilksTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (ilksTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (ilksTransition.params.map Param.name)
         (transitionSignature ilksTransition).paramTypes I.calldata =
           some (ilksStore I))
     (hreach : ∃ k C, RD vatBytecode I (Sat256.ofUInt256 g)

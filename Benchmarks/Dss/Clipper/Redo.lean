@@ -179,10 +179,10 @@ theorem clipperDispatch_redo {I : ExecutionEnv}
 
 theorem clipperDecode_redo_ok {I : ExecutionEnv}
     (hsz68 : 68 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (redoTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (redoTransition.params.map Param.name)
       (transitionSignature redoTransition).paramTypes I.calldata =
         some (clipperRedoStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["id", "kpr"]
+  show config.externalABI.decodeCalldata? ["id", "kpr"]
     [uint256, addr] I.calldata = _
   simpa [config, clipperRedoStore, clipperRedoIdValue, clipperRedoKprValue,
     clipperRedoIdWord, clipperRedoKprWord] using
@@ -191,9 +191,9 @@ theorem clipperDecode_redo_ok {I : ExecutionEnv}
 
 theorem clipperDecode_redo_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 68) :
-    decodeCalldataWithMode config.abiDecodeMode (redoTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (redoTransition.params.map Param.name)
       (transitionSignature redoTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["id", "kpr"]
+  show config.externalABI.decodeCalldata? ["id", "kpr"]
     [uint256, addr] I.calldata = none
   simpa [config] using
     decodeCalldata_legacyUint256_address_none_short

@@ -34,7 +34,7 @@ abbrev fileLocals (I : ExecutionEnv) : Store :=
 
 
 theorem flopperDecode_file_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (fileTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (fileTransition.params.map Param.name)
       (transitionSignature fileTransition).paramTypes I.calldata = some (fileLocals I) := by
   simpa [config, fileTransition, bytes32, bytes32Width, uint256, uint256Int,
     fileLocals, fileWhat, fileData, abiBytes32, abiBytes32Width, abiUInt256] using
@@ -43,7 +43,7 @@ theorem flopperDecode_file_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size
 
 theorem flopperDecode_file_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 68) :
-    decodeCalldataWithMode config.abiDecodeMode (fileTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (fileTransition.params.map Param.name)
       (transitionSignature fileTransition).paramTypes I.calldata = none := by
   simpa [config, fileTransition, bytes32, bytes32Width, uint256, uint256Int, abiBytes32,
     abiBytes32Width, abiUInt256] using

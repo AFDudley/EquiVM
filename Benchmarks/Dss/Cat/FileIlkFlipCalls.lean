@@ -118,7 +118,7 @@ theorem catDispatch_fileIlkFlip {I : ExecutionEnv}
     exact hsel
 
 theorem catDecode_fileIlkFlip_ok {I : ExecutionEnv} (hsz100 : 100 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (fileIlkFlipTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (fileIlkFlipTransition.params.map Param.name)
       (transitionSignature fileIlkFlipTransition).paramTypes I.calldata =
         some (fileIlkFlipLocals I) := by
   simpa [config, fileIlkFlipTransition, bytes32, bytes32Width, addr, fileIlkFlipLocals,
@@ -129,7 +129,7 @@ theorem catDecode_fileIlkFlip_ok {I : ExecutionEnv} (hsz100 : 100 ≤ I.calldata
 
 theorem catDecode_fileIlkFlip_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 100) :
-    decodeCalldataWithMode config.abiDecodeMode (fileIlkFlipTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (fileIlkFlipTransition.params.map Param.name)
       (transitionSignature fileIlkFlipTransition).paramTypes I.calldata = none := by
   simpa [config, fileIlkFlipTransition, bytes32, bytes32Width, addr, abiBytes32,
     abiBytes32Width, abiAddress] using

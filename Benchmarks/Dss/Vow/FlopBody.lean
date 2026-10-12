@@ -114,7 +114,7 @@ theorem vowFlopBody {σ σ₀ A I} {g : UInt256}
   have hdispatch : dispatchMsg contract I.calldata = some flopTransition :=
     vowDispatch_flop hsel
   have hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (flopTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (flopTransition.params.map Param.name)
         (transitionSignature flopTransition).paramTypes I.calldata = some ∅ :=
     vowDecode_flop hsz4
   have hreach : ∃ k C, RD vowBytecode I (Sat256.ofUInt256 g)

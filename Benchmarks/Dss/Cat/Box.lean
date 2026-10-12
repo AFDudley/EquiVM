@@ -26,9 +26,9 @@ theorem catDispatch_box {I : ExecutionEnv} (hsel : selIs I ⟨#[0x75, 0x42, 0x15
   · rw [selectorOf, boxSelectorBytes]; exact hsel
 
 theorem catDecode_box {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (boxTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (boxTransition.params.map Param.name)
       (transitionSignature boxTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 theorem catReachBoxBody {σ σ₀ A I} {g : Sat256}

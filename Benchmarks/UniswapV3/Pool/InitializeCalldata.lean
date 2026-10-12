@@ -17,7 +17,7 @@ theorem initializePriceWord_lt (cd : ByteArray) :
   u256LandMaskToNatLtOfToNat _ _ (by decide)
 
 theorem initializeDecode {cd : ByteArray} (hlen : 36 ≤ cd.size) :
-    decodeCalldataWithMode config.abiDecodeMode (initializeTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (initializeTransition.params.map Param.name)
       (transitionSignature initializeTransition).paramTypes cd =
       some (initializeLocals (initializePriceWord cd)) := by
   have h := decodeCalldata_legacyInt_ok (.uint ⟨160, by decide⟩)
@@ -27,7 +27,7 @@ theorem initializeDecode {cd : ByteArray} (hlen : 36 ≤ cd.size) :
   exact h
 
 theorem initializeDecodeShort {cd : ByteArray} (hsz : 4 ≤ cd.size) (hshort : cd.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (initializeTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (initializeTransition.params.map Param.name)
       (transitionSignature initializeTransition).paramTypes cd = none :=
   decodeCalldata_legacyInt_none_short (.uint ⟨160, by decide⟩) hsz hshort
 

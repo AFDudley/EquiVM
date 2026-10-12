@@ -46,17 +46,17 @@ theorem noncesStorageSlot_eq_mapSlot_masked (I : ExecutionEnv) :
 
 theorem uniswapDecode_nonces_ok {I : ExecutionEnv}
     (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (noncesTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (noncesTransition.params.map Param.name)
       (transitionSignature noncesTransition).paramTypes I.calldata = some (noncesStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["owner"] [legacyAddr] I.calldata = _
+  show config.externalABI.decodeCalldata? ["owner"] [legacyAddr] I.calldata = _
   simpa [noncesStore, noncesOwnerValue, noncesOwnerWord, calldataWord]
     using decodeCalldata_legacyAddress_ok (cd := I.calldata) (x := "owner") hsz36
 
 theorem uniswapDecode_nonces_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (noncesTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (noncesTransition.params.map Param.name)
       (transitionSignature noncesTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["owner"] [legacyAddr] I.calldata = none
+  show config.externalABI.decodeCalldata? ["owner"] [legacyAddr] I.calldata = none
   simpa using decodeCalldata_legacyAddress_none_short (cd := I.calldata) (x := "owner")
     hsz4 hshort
 
@@ -165,7 +165,7 @@ theorem uniswapNoncesBodyCoreOk
     (hsz36 : 36 ≤ I.calldata.size)
     (hdispatch : dispatchMsg contract I.calldata = some noncesTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (noncesTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (noncesTransition.params.map Param.name)
         (transitionSignature noncesTransition).paramTypes I.calldata = some (noncesStore I))
     (hreach : ∃ k C, RD uniswapV2PairBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1125⟩ [sel]

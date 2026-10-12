@@ -34,7 +34,7 @@ theorem arrayHeadOffset_eval {f : Frame} {evm : EVM.State} {data : ByteArray}
       .ok (.bytes (data.extract 4 36)) := by
     simp only [evalExpr?, hd, EvalResult.ofOption, bind, EvalResult.bind, pure]
     exact sliceBytes_nat (by decide) hlen
-  have hdec : decodeReturnValueWithMode? config.abiDecodeMode abiUInt256 (data.extract 4 36) =
+  have hdec : config.externalABI.decodeValue? abiUInt256 (data.extract 4 36) =
       some (.int (Int.ofNat (calldataWord data 4).toNat)) :=
     decodeReturnUint_extract (by decide) hlen (by decide)
   rw [evalExpr?, hs]

@@ -13,9 +13,9 @@ def whenWord (σ : AccountMap) (I : ExecutionEnv) : UInt256 :=
   solcSlotWordAt ⟨9⟩ σ I
 
 theorem endDecode_when {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (whenTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (whenTransition.params.map Param.name)
       (transitionSignature whenTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 abbrev endWhenConcreteSelector : ByteArray := selectorBytes 0xe2 0xb0 0xca 0xef
@@ -68,7 +68,7 @@ theorem endWhenBodyCore
     (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some whenTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (whenTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (whenTransition.params.map Param.name)
         (transitionSignature whenTransition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD endBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) endWhenEntryPc [sel]

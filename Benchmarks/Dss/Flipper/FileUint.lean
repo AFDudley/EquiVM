@@ -83,7 +83,7 @@ theorem fileUintWhatWord_ne_of_bytes_ne {I : ExecutionEnv} {bs : List UInt8}
 
 
 theorem flipperDecode_fileUint_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (fileUintTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (fileUintTransition.params.map Param.name)
       (transitionSignature fileUintTransition).paramTypes I.calldata =
         some (fileUintLocals I) := by
   simpa [config, fileUintTransition, bytes32, bytes32Width, uint256, uint256Int,
@@ -93,7 +93,7 @@ theorem flipperDecode_fileUint_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.
 
 theorem flipperDecode_fileUint_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 68) :
-    decodeCalldataWithMode config.abiDecodeMode (fileUintTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (fileUintTransition.params.map Param.name)
       (transitionSignature fileUintTransition).paramTypes I.calldata = none := by
   simpa [config, fileUintTransition, bytes32, bytes32Width, uint256, uint256Int, abiBytes32,
     abiBytes32Width, abiUInt256] using
@@ -1163,7 +1163,7 @@ theorem flipperFileUintBodyCoreOkBeg
     (hwhat : fileUintWhat I = fileUintBegBytes)
     (hdispatch : dispatchMsg contract I.calldata = some fileUintTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileUintTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileUintTransition.params.map Param.name)
         (transitionSignature fileUintTransition).paramTypes I.calldata =
           some (fileUintLocals I))
     (hreach : ∃ k C, RD flipperBytecode I (Sat256.ofUInt256 g)
@@ -1206,7 +1206,7 @@ theorem flipperFileUintBodyCoreOkTtl
     (hwhat : fileUintWhat I = fileUintTtlBytes)
     (hdispatch : dispatchMsg contract I.calldata = some fileUintTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileUintTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileUintTransition.params.map Param.name)
         (transitionSignature fileUintTransition).paramTypes I.calldata =
           some (fileUintLocals I))
     (hreach : ∃ k C, RD flipperBytecode I (Sat256.ofUInt256 g)
@@ -1260,7 +1260,7 @@ theorem flipperFileUintBodyCoreOkTau
     (hwhat : fileUintWhat I = fileUintTauBytes)
     (hdispatch : dispatchMsg contract I.calldata = some fileUintTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileUintTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileUintTransition.params.map Param.name)
         (transitionSignature fileUintTransition).paramTypes I.calldata =
           some (fileUintLocals I))
     (hreach : ∃ k C, RD flipperBytecode I (Sat256.ofUInt256 g)
@@ -1313,7 +1313,7 @@ theorem flipperFileUintBodyCoreUnauthorized
     (hauth : solcSlotWordAt (flipperCallerWardsSlot I) σ I ≠ ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some fileUintTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileUintTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileUintTransition.params.map Param.name)
         (transitionSignature fileUintTransition).paramTypes I.calldata =
           some (fileUintLocals I))
     (hreach : ∃ k C, RD flipperBytecode I (Sat256.ofUInt256 g)
@@ -1343,7 +1343,7 @@ theorem flipperFileUintBodyCoreUnrecognized
     (hnotTau : fileUintWhat I ≠ fileUintTauBytes)
     (hdispatch : dispatchMsg contract I.calldata = some fileUintTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileUintTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileUintTransition.params.map Param.name)
         (transitionSignature fileUintTransition).paramTypes I.calldata =
           some (fileUintLocals I))
     (hreach : ∃ k C, RD flipperBytecode I (Sat256.ofUInt256 g)

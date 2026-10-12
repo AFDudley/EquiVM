@@ -458,7 +458,7 @@ theorem vowDispatch_fess {I : ExecutionEnv}
     exact hsel
 
 theorem vowDecode_fess_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (fessTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (fessTransition.params.map Param.name)
       (transitionSignature fessTransition).paramTypes I.calldata =
         some ((∅ : Store).insert "tab" (.int (Int.ofNat (fessTab I).toNat))) := by
   simpa [config, fessTransition, fessTab, uint256] using
@@ -466,7 +466,7 @@ theorem vowDecode_fess_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
 
 theorem vowDecode_fess_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (fessTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (fessTransition.params.map Param.name)
       (transitionSignature fessTransition).paramTypes I.calldata = none := by
   simpa [config, fessTransition, uint256] using
     (decodeCalldata_legacyUInt256_none_short (cd := I.calldata) (x := "tab") hsz4 hshort)
@@ -783,7 +783,7 @@ theorem vowFessBodyCore
     (hsize : I.calldata.size < UInt256.size)
     (hdispatch : dispatchMsg contract I.calldata = some fessTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fessTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fessTransition.params.map Param.name)
         (transitionSignature fessTransition).paramTypes I.calldata = some (fessLocals I))
     (hreach : ∃ k C, RD vowBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨571⟩ [sel]

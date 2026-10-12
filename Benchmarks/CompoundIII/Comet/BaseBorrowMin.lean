@@ -59,7 +59,7 @@ theorem cometWithExtendedAssetListBaseBorrowMinBody {σ σ₀ A I} {g : UInt256}
     runtimeRefinementFor config contract σ σ₀ g A I (immStore v) := by
   have hsz : 4 ≤ I.calldata.size :=
     calldata_size_ge_of_selIs I (cometWithExtendedAssetListSelBytes 15) rfl hsel
-  exact immutableGetter_refines (t := baseBorrowMinTransition) hcode hsz
+  exact immutableGetter_refines (t := baseBorrowMinTransition) hcode hsz (cometDecode_empty hsz)
     (cometSelectorDispatch ⟨15, by decide⟩ hsel) rfl rfl rfl
     (immStore_get_baseBorrowMin v) (uint256ReturnEncoding v.baseBorrowMin)
     (baseBorrowMinX v hcode hsz hsize hsel)

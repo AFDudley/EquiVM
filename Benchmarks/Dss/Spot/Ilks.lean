@@ -35,7 +35,7 @@ abbrev ilksMatSlotFor (I : ExecutionEnv) : UInt256 :=
   ilksPipSlotFor I + ⟨1⟩
 
 theorem spotDecode_ilks_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (ilksTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (ilksTransition.params.map Param.name)
       (transitionSignature ilksTransition).paramTypes I.calldata =
         some ((∅ : Store).insert "arg0" (ilksArgValue I)) := by
   simpa [config, ilksTransition, ilksArgValue, ilksArgBytes, bytes32, bytes32Width] using
@@ -44,7 +44,7 @@ theorem spotDecode_ilks_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
 
 theorem spotDecode_ilks_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (ilksTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (ilksTransition.params.map Param.name)
       (transitionSignature ilksTransition).paramTypes I.calldata = none := by
   simpa [config, ilksTransition, bytes32, bytes32Width] using
     (Reasoning.Theory.decodeCalldataWithMode_legacyBytes32_none_short
@@ -452,7 +452,7 @@ theorem spotIlksBodyCoreOk
     (hsz36 : 36 ≤ I.calldata.size) (hsize : I.calldata.size < UInt256.size)
     (hdispatch : dispatchMsg contract I.calldata = some ilksTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (ilksTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (ilksTransition.params.map Param.name)
         (transitionSignature ilksTransition).paramTypes I.calldata =
           some ((∅ : Store).insert "arg0" (ilksArgValue I)))
     (hreach : ∃ k C, RD spotBytecode I (Sat256.ofUInt256 g)

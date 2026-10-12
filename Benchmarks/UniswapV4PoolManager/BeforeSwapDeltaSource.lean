@@ -26,7 +26,8 @@ theorem beforeSwapDeltaSource {f : Frame} {evm : State} {amount : UInt256} {out 
     (hr : f.locals.get? "result" = some (.bytes out)) (hsize : 64 ≤ out.size) :
     ExecBlock config f evm beforeSwapDeltaStmts (beforeSwapDeltaResult f evm amount out) := by
   let f1 := valueLocal f "hookReturn" (.int (EVM.signed (calldataWord out 32)))
-  have hdecode := evalDecodeSigned256Slice (start := 32) rfl (evalLocalValue (cfg := config) (evm := evm) hr) hsize
+  have hdecode := evalDecodeSigned256Slice (start := 32) (cfg := config)
+    (by intro data; rfl) (evalLocalValue (cfg := config) (evm := evm) hr) hsize
   have hcomponent := balanceDeltaComponent_eval
     (evalLocalValue (cfg := config) (evm := evm) (f := f1) (store_get_self _ _ _)) false
   have hcomponent' : evalExpr? config f1 evm (balanceDeltaComponentExpr false (.var "hookReturn")) =

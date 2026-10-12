@@ -37,9 +37,9 @@ theorem weth9SelectorDispatchDecimals {I : ExecutionEnv} (hsel : selIs I (weth9S
   native_decide
 
 theorem weth9Decode_decimals_ok {I : ExecutionEnv} (hsz4 : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (decimalsTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (decimalsTransition.params.map Param.name)
       (transitionSignature decimalsTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some (∅ : Store)
+  change decodeCalldataWithMode .modern [] [] I.calldata = some (∅ : Store)
   exact decodeCalldataWithMode_empty_ok hsz4
 
 /-- The Solm `decimals()` body returns the low byte of slot 2. -/

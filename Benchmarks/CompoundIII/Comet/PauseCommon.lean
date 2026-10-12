@@ -147,7 +147,7 @@ theorem pauseGetter_refines {t : TransitionDecl} {imms : Store} {σ σ₀ A I} {
     (hX : GetterResult code I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) σ (pauseReturnWord σ I bit).toByteArray) :
     runtimeRefinementFor config contract σ σ₀ g A I imms := by
-  apply guardedGetter_refines hcode hsz hd hp hb ht
+  apply guardedGetter_refines hcode hsz (cometDecode_empty hsz) hd hp hb ht
     (nonzeroReturnEncoding (pauseBitRuntime σ I bit)) ?_ hX
   intro hvalue hsize
   simpa only [pauseBitWord_init] using

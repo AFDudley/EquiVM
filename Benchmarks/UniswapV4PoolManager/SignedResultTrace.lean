@@ -26,7 +26,7 @@ theorem signedReturnEncoding (bits : BitWidth) (w : UInt256)
 theorem signedResultTrace_refinement {cfg : Config} {contract : ContractDecl} {t : TransitionDecl}
     {σ σ₀ A I} {g : UInt256} {code : ByteArray} {args imms : Store} {result : ExecResult} {bits : BitWidth}
     (hcode : I.code = code) (hd : dispatchMsg contract I.calldata = some t)
-    (hdec : decodeCalldataWithMode cfg.abiDecodeMode (t.params.map Param.name)
+    (hdec : cfg.externalABI.decodeCalldata? (t.params.map Param.name)
       (transitionSignature t).paramTypes I.calldata = some args)
     (hbody : ExecTransitionBody cfg contract (initState σ σ₀ (Sat256.ofUInt256 g) A I) args t.body result imms)
     (htrace : signedResultTrace bits code (Sat256.ofUInt256 g) (initState σ σ₀ (Sat256.ofUInt256 g) A I) result)

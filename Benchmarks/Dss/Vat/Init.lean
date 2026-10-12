@@ -266,17 +266,17 @@ theorem vatInitSourceBodyAlreadyInit {σ σ₀ A I} {g : UInt256}
 
 theorem vatDecode_init_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size)
     (_hsize : I.calldata.size < UInt256.size) :
-    decodeCalldataWithMode config.abiDecodeMode (initTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (initTransition.params.map Param.name)
       (transitionSignature initTransition).paramTypes I.calldata = some (initStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["ilk"] [bytes32] I.calldata = _
+  show config.externalABI.decodeCalldata? ["ilk"] [bytes32] I.calldata = _
   simpa [config, initStore, initIlkValue, bytes32] using
     decodeCalldataWithMode_legacyBytes32_ok (cd := I.calldata) (x := "ilk") hsz36
 
 theorem vatDecode_init_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (initTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (initTransition.params.map Param.name)
       (transitionSignature initTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["ilk"] [bytes32] I.calldata = none
+  show config.externalABI.decodeCalldata? ["ilk"] [bytes32] I.calldata = none
   simpa [config, bytes32] using
     decodeCalldataWithMode_legacyBytes32_none_short (cd := I.calldata) (x := "ilk") hsz4 hshort
 
@@ -658,7 +658,7 @@ theorem vatInitBodyCoreOk
     (hrate : solcSlotWordAt (initRateSlot I) σ I = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some initTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (initTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (initTransition.params.map Param.name)
         (transitionSignature initTransition).paramTypes I.calldata = some (initStore I))
     (hreach : ∃ k C, RD vatBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨682⟩ [sel]
@@ -740,7 +740,7 @@ theorem vatInitBodyCoreUnauthorized
     (hauth : solcSlotWordAt (vatCallerWardsSlot I) σ I ≠ ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some initTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (initTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (initTransition.params.map Param.name)
         (transitionSignature initTransition).paramTypes I.calldata = some (initStore I))
     (hreach : ∃ k C, RD vatBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨682⟩ [sel]
@@ -780,7 +780,7 @@ theorem vatInitBodyCoreAlreadyInit
     (hrate : solcSlotWordAt (initRateSlot I) σ I ≠ ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some initTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (initTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (initTransition.params.map Param.name)
         (transitionSignature initTransition).paramTypes I.calldata = some (initStore I))
     (hreach : ∃ k C, RD vatBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨682⟩ [sel]

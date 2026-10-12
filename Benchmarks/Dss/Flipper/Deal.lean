@@ -9,7 +9,7 @@ namespace Benchmarks.Dss.Flipper
 /-! ## `deal(uint256)` -/
 
 theorem flipperDecode_deal_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (dealTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (dealTransition.params.map Param.name)
       (transitionSignature dealTransition).paramTypes I.calldata =
         some (dealLocals I) := by
   simpa [config, dealTransition, transitionSignature, dealLocals, dealId]
@@ -17,7 +17,7 @@ theorem flipperDecode_deal_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size
 
 theorem flipperDecode_deal_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (dealTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (dealTransition.params.map Param.name)
       (transitionSignature dealTransition).paramTypes I.calldata = none := by
   simpa [config, dealTransition, transitionSignature]
     using (decodeCalldata_legacyUInt256_none_short (cd := I.calldata)

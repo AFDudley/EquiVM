@@ -24,7 +24,7 @@ theorem wardsMappingSlotFor_eq (I : ExecutionEnv) :
   rw [keyValueToWord_address_ofNat_mask]
 
 theorem stairstepDecode_wards_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (wardsTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (wardsTransition.params.map Param.name)
       (transitionSignature wardsTransition).paramTypes I.calldata =
         some ((∅ : Store).insert "arg0" (.address (wardsMappingArg I))) := by
   simpa [config, wardsTransition, wardsMappingArg] using
@@ -32,7 +32,7 @@ theorem stairstepDecode_wards_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.s
 
 theorem stairstepDecode_wards_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (wardsTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (wardsTransition.params.map Param.name)
       (transitionSignature wardsTransition).paramTypes I.calldata = none := by
   simpa [config, wardsTransition] using
     (decodeCalldata_legacyAddress_none_short (cd := I.calldata) (x := "arg0") hsz4 hshort)
@@ -70,7 +70,7 @@ theorem stairstepWardsBodyCoreOk
     (hsz36 : 36 ≤ I.calldata.size) (hsize : I.calldata.size < UInt256.size)
     (hdispatch : dispatchMsg contract I.calldata = some wardsTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (wardsTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (wardsTransition.params.map Param.name)
         (transitionSignature wardsTransition).paramTypes I.calldata =
           some ((∅ : Store).insert "arg0" (.address (wardsMappingArg I))))
     (hreach : ∃ k C, RD exponentialDecreaseBytecode I (Sat256.ofUInt256 g)

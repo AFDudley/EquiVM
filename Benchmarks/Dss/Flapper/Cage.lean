@@ -88,18 +88,18 @@ theorem cageMoveEncode_eq (src guy rad : UInt256) {mem : ByteArray}
 
 
 theorem flapperDecode_cage_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (cageTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (cageTransition.params.map Param.name)
       (transitionSignature cageTransition).paramTypes I.calldata = some (cageLocals I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["rad"] [uint256] I.calldata =
+  show config.externalABI.decodeCalldata? ["rad"] [uint256] I.calldata =
     some (cageLocals I)
   simpa [config, cageLocals, cageRadValue, cageRadWord, uint256] using
     decodeCalldata_legacyUInt256_ok (cd := I.calldata) (x := "rad") hsz36
 
 theorem flapperDecode_cage_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (cageTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (cageTransition.params.map Param.name)
       (transitionSignature cageTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["rad"] [uint256] I.calldata = none
+  show config.externalABI.decodeCalldata? ["rad"] [uint256] I.calldata = none
   simpa [config, uint256] using
     decodeCalldata_legacyUInt256_none_short (cd := I.calldata) (x := "rad") hsz4 hshort
 
@@ -1046,7 +1046,7 @@ theorem flapperCageBodyCoreUnauthorized
     (hauth : relyAuthWord σ I ≠ ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some cageTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (cageTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (cageTransition.params.map Param.name)
         (transitionSignature cageTransition).paramTypes I.calldata = some (cageLocals I))
     (hreach : ∃ k C, RD flapperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨700⟩ [sel]
@@ -1080,7 +1080,7 @@ theorem flapperCageBodyCoreMoveNoCode
         (cageVatWord (cageLivePostAccountMap I σ) I) = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some cageTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (cageTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (cageTransition.params.map Param.name)
         (transitionSignature cageTransition).paramTypes I.calldata = some (cageLocals I))
     (hreach : ∃ k C, RD flapperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨700⟩ [sel]
@@ -1132,7 +1132,7 @@ theorem flapperCageBodyCoreMoveCallDepthLimit
     (hdepth : I.depth = 1024)
     (hdispatch : dispatchMsg contract I.calldata = some cageTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (cageTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (cageTransition.params.map Param.name)
         (transitionSignature cageTransition).paramTypes I.calldata = some (cageLocals I))
     (hreach : ∃ k C, RD flapperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨700⟩ [sel]
@@ -1248,7 +1248,7 @@ theorem flapperCageBodyCoreMoveCallFailure
     (houtSize : out.size < UInt256.size)
     (hdispatch : dispatchMsg contract I.calldata = some cageTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (cageTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (cageTransition.params.map Param.name)
         (transitionSignature cageTransition).paramTypes I.calldata = some (cageLocals I)) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   let evmEvm : EVM.State :=
@@ -1334,7 +1334,7 @@ theorem flapperCageBodyCoreMoveCallSuccess
           out) true)
     (hdispatch : dispatchMsg contract I.calldata = some cageTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (cageTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (cageTransition.params.map Param.name)
         (transitionSignature cageTransition).paramTypes I.calldata = some (cageLocals I)) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   let evmEvm : EVM.State :=

@@ -26,10 +26,12 @@ theorem cometWithExtendedAssetListInitializeStorageBody {σ σ₀ A I} {g : UInt
   have hsz : 4 ≤ I.calldata.size := calldata_size_ge_of_selIs I (cometWithExtendedAssetListSelBytes 6) rfl hsel
   have hd : selectorDispatchMsg contract I.calldata = some initializeStorageTransition :=
     cometSelectorDispatch ⟨6, by decide⟩ hsel
-  have hdec : decodeCalldataWithMode config.abiDecodeMode
+  have hdec : config.externalABI.decodeCalldata?
       (initializeStorageTransition.params.map Param.name)
       (transitionSignature initializeStorageTransition).paramTypes I.calldata =
-      some (∅ : Store) := decodeCalldataWithMode_empty_ok hsz
+      some (∅ : Store) := by
+    change decodeCalldataWithMode .solc0815 [] [] I.calldata = some (∅ : Store)
+    exact decodeCalldataWithMode_empty_ok hsz
   have hX := initializeX (σ := σ) (σ₀ := σ₀) (A := A)
     (g := Sat256.ofUInt256 g) v hcode hsz hsize hsel
   by_cases hv : I.weiValue = ⟨0⟩

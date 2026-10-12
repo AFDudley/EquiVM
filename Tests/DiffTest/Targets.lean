@@ -71,8 +71,8 @@ import Benchmarks.Scaffolds.ERC721.Spec
 import Benchmarks.Scaffolds.ERC721.Bytecode
 import Benchmarks.Scaffolds.Klima.Spec
 import Benchmarks.Scaffolds.Klima.Bytecode
-import Benchmarks.Safe.Spec
-import Benchmarks.Safe.Bytecode
+import Benchmarks.Safe.Main.Spec
+import Benchmarks.Safe.Main.Bytecode
 import Benchmarks.Scaffolds.TimelockController.Spec
 import Benchmarks.Scaffolds.TimelockController.Bytecode
 import Benchmarks.Scaffolds.VestingWallet.Spec
@@ -263,8 +263,8 @@ def klima : Target :=
 /-- The owner and module linked lists walk random storage, which cycles until the gas or the fuel
     runs out: smaller budgets keep those (inconclusive) cases cheap. -/
 def safe : Target :=
-  { name := "Safe", contract := Benchmarks.Safe.contract, config := Benchmarks.Safe.config,
-    runtime := Benchmarks.Safe.safeBytecode, initcode := some Benchmarks.Safe.safeCreationBytecode,
+  { name := "Safe", contract := Benchmarks.Safe.Main.contract, config := Benchmarks.Safe.Main.config,
+    runtime := Benchmarks.Safe.Main.safeBytecode, initcode := some Benchmarks.Safe.Main.safeCreationBytecode,
     callees := standardCallees, words := [0, 1, 2, 3], gas := 400000, fuel := 5000 }
 
 def timelockController : Target :=

@@ -238,7 +238,7 @@ theorem uniswapTransferFromBodyAnyPerm
   replace hperm : I.perm = false := by simpa using hperm
   by_cases hsz100 : 100 ≤ I.calldata.size
   · have hdecode :
-        decodeCalldataWithMode config.abiDecodeMode (transferFromTransition.params.map Param.name)
+        config.externalABI.decodeCalldata? (transferFromTransition.params.map Param.name)
           (transitionSignature transferFromTransition).paramTypes I.calldata =
             some (transferFromStore I) := by
       by_cases hcanonFrom : (transferFromFromWord I).toNat < EVM.addressModulus

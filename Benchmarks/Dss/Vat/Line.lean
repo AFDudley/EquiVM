@@ -10,9 +10,9 @@ def LineWord (σ : AccountMap) (I : ExecutionEnv) : UInt256 :=
   solcSlotWordAt ⟨9⟩ σ I
 
 theorem vatDecode_Line {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (LineTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (LineTransition.params.map Param.name)
       (transitionSignature LineTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 theorem vatReachLineBody {σ σ₀ A I} {g : Sat256}

@@ -621,7 +621,7 @@ def solmExecRun (fuel : Nat) (o : Oracle Ω) (ω : Ω) (cfg : Config) (contract 
   let evm := initialState σ σ₀ g A I
   match selectorDispatchMsg contract I.calldata with
   | some transition =>                                                                               -- solmExec.intro
-      match decodeCalldataWithMode cfg.abiDecodeMode (transition.params.map Param.name)
+      match cfg.externalABI.decodeCalldata? (transition.params.map Param.name)
           (transitionSignature transition).paramTypes I.calldata with
       | some callargs =>
           let (r, ω') := execTransitionBody fuel o ω cfg contract evm callargs transition.body immutables

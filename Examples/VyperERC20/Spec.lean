@@ -87,8 +87,7 @@ end VyperERC20
 def vyperERC20Config : Config :=
   { storageBackend := vyperStorageBackend VyperERC20.erc20StorageLayout
       (vyperBounds! [VyperERC20.erc20StorageDecls])
-    externalABI := defaultExternalCallABI
-    abiDecodeMode := DecodeMode.vyper
+    externalABI := (defaultExternalCallABI).withMode DecodeMode.vyper
     selfDeployment := genSolidityConstructorDeployment VyperERC20.erc20Contract.ctor.params }
 
 @[simp] theorem vyperERC20Config_storage_totalSupply :

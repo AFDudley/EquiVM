@@ -1301,7 +1301,7 @@ theorem erc20RuntimeNonPayableOfDispatch
     (hrev : RDrev vyperERC20Bytecode (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I)) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  by_cases hdec : decodeCalldataWithMode config.abiDecodeMode (t.params.map Param.name)
+  by_cases hdec : config.externalABI.decodeCalldata? (t.params.map Param.name)
       (transitionSignature t).paramTypes I.calldata = none
   · exact hrev.reEquivDecodingFailed hcode hd hdec
   · obtain ⟨callargs, hca⟩ := Option.ne_none_iff_exists'.mp hdec

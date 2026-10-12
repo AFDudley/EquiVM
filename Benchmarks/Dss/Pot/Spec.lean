@@ -396,8 +396,7 @@ def contract : ContractDecl :=
 
 def config : Config :=
   { storageBackend := solidityStorageBackend storageLayout
-    externalABI := potExternalABI
-    abiDecodeMode := DecodeMode.legacySolc05
+    externalABI := (potExternalABI).withMode DecodeMode.legacySolc05
     selfDeployment := genSolidityConstructorDeployment contract.ctor.params }
 
 end Benchmarks.Dss.Pot

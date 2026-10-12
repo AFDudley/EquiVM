@@ -75,7 +75,7 @@ theorem reEquivSelectorExecutionGen {cfg : Config} {contract : ContractDecl} {t 
     (hcode : I.code = code)
     (h : RDret code (.ofUInt256 g) (initState σ σ₀ (.ofUInt256 g) A I) acc o)
     (hd : selectorDispatchMsg contract I.calldata = some t)
-    (hdec : decodeCalldataWithMode cfg.abiDecodeMode (t.params.map Param.name)
+    (hdec : cfg.externalABI.decodeCalldata? (t.params.map Param.name)
       (transitionSignature t).paramTypes I.calldata = some callargs)
     (hbody : ExecTransitionBody cfg contract (initState σ σ₀ (.ofUInt256 g) A I)
       callargs t.body (.returned cs evm' retVal) immutables)
@@ -97,7 +97,7 @@ theorem reEquivSelectorStatic {cfg : Config} {contract : ContractDecl} {t : Tran
     (hcode : I.code = code)
     (h : RDstatic code (.ofUInt256 g) (initState σ σ₀ (.ofUInt256 g) A I))
     (hd : selectorDispatchMsg contract I.calldata = some t)
-    (hdec : decodeCalldataWithMode cfg.abiDecodeMode (t.params.map Param.name)
+    (hdec : cfg.externalABI.decodeCalldata? (t.params.map Param.name)
       (transitionSignature t).paramTypes I.calldata = some callargs)
     (hbody : ExecTransitionBody cfg contract (initState σ σ₀ (.ofUInt256 g) A I)
       callargs t.body .staticViolation immutables) :
@@ -116,7 +116,7 @@ theorem reEquivSelectorExecution {cfg : Config} {contract : ContractDecl} {t : T
     (hcode : I.code = code)
     (h : RDret code (.ofUInt256 g) (initState σ σ₀ (.ofUInt256 g) A I) σ o)
     (hd : selectorDispatchMsg contract I.calldata = some t)
-    (hdec : decodeCalldataWithMode cfg.abiDecodeMode (t.params.map Param.name)
+    (hdec : cfg.externalABI.decodeCalldata? (t.params.map Param.name)
       (transitionSignature t).paramTypes I.calldata = some callargs)
     (hbody : ExecTransitionBody cfg contract (initState σ σ₀ (.ofUInt256 g) A I)
       callargs t.body (.returned cs (initState σ σ₀ (.ofUInt256 g) A I) retVal) immutables)
@@ -131,7 +131,7 @@ theorem reEquivSelectorRevert {cfg : Config} {contract : ContractDecl} {t : Tran
     (hcode : I.code = code)
     (h : RDrev code (.ofUInt256 g) (initState σ σ₀ (.ofUInt256 g) A I))
     (hd : selectorDispatchMsg contract I.calldata = some t)
-    (hdec : decodeCalldataWithMode cfg.abiDecodeMode (t.params.map Param.name)
+    (hdec : cfg.externalABI.decodeCalldata? (t.params.map Param.name)
       (transitionSignature t).paramTypes I.calldata = some callargs)
     (hbody : ExecTransitionBody cfg contract (initState σ σ₀ (.ofUInt256 g) A I)
       callargs t.body .reverted immutables) :
@@ -197,7 +197,7 @@ theorem reEquivSelectorDecodingFailed {cfg : Config} {contract : ContractDecl}
     (hcode : I.code = code)
     (h : RDrev code (.ofUInt256 g) (initState σ σ₀ (.ofUInt256 g) A I))
     (hd : selectorDispatchMsg contract I.calldata = some t)
-    (hdec : decodeCalldataWithMode cfg.abiDecodeMode (t.params.map Param.name)
+    (hdec : cfg.externalABI.decodeCalldata? (t.params.map Param.name)
       (transitionSignature t).paramTypes I.calldata = none) :
     runtimeRefinementFor cfg contract σ σ₀ g A I immutables := by
   apply RDrev.reEquivElim hcode h

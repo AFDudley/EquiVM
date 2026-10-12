@@ -29,9 +29,9 @@ theorem catDispatch_vow {I : ExecutionEnv} (hsel : selIs I ⟨#[0x62, 0x6c, 0xb3
   · rw [selectorOf, vowSelectorBytes]; exact hsel
 
 theorem catDecode_vow {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (vowTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (vowTransition.params.map Param.name)
       (transitionSignature vowTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 theorem catReachVowBody {σ σ₀ A I} {g : Sat256}

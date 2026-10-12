@@ -60,7 +60,7 @@ theorem fileDsrWhatWord_ne_of_bytes_ne {I : ExecutionEnv} {bs : List UInt8}
 
 
 theorem potDecode_fileDsr_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (fileDsrTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (fileDsrTransition.params.map Param.name)
       (transitionSignature fileDsrTransition).paramTypes I.calldata =
         some (fileDsrLocals I) := by
   simpa [config, fileDsrTransition, bytes32, bytes32Width, uint256, uint256Int,
@@ -70,7 +70,7 @@ theorem potDecode_fileDsr_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size)
 
 theorem potDecode_fileDsr_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 68) :
-    decodeCalldataWithMode config.abiDecodeMode (fileDsrTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (fileDsrTransition.params.map Param.name)
       (transitionSignature fileDsrTransition).paramTypes I.calldata = none := by
   simpa [config, fileDsrTransition, bytes32, bytes32Width, uint256, uint256Int, abiBytes32,
     abiBytes32Width, abiUInt256] using
@@ -1141,7 +1141,7 @@ theorem potFileDsrBodyCoreOk
     (hwhat : fileDsrWhat I = fileDsrBytes)
     (hdispatch : dispatchMsg contract I.calldata = some fileDsrTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileDsrTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileDsrTransition.params.map Param.name)
         (transitionSignature fileDsrTransition).paramTypes I.calldata = some (fileDsrLocals I))
     (hreach : ∃ k C, RD potBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨367⟩ [sel]
@@ -1185,7 +1185,7 @@ theorem potFileDsrBodyCoreStatic
     (hwhat : fileDsrWhat I = fileDsrBytes)
     (hdispatch : dispatchMsg contract I.calldata = some fileDsrTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileDsrTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileDsrTransition.params.map Param.name)
         (transitionSignature fileDsrTransition).paramTypes I.calldata = some (fileDsrLocals I))
     (hreach : ∃ k C, RD potBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨367⟩ [sel]
@@ -1210,7 +1210,7 @@ theorem potFileDsrBodyCoreUnauthorized
     (hauth : relyAuthWord σ I ≠ ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some fileDsrTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileDsrTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileDsrTransition.params.map Param.name)
         (transitionSignature fileDsrTransition).paramTypes I.calldata = some (fileDsrLocals I))
     (hreach : ∃ k C, RD potBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨367⟩ [sel]
@@ -1237,7 +1237,7 @@ theorem potFileDsrBodyCoreLiveRevert
     (hlive : solcSlotWordAt ⟨8⟩ σ I ≠ ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some fileDsrTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileDsrTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileDsrTransition.params.map Param.name)
         (transitionSignature fileDsrTransition).paramTypes I.calldata = some (fileDsrLocals I))
     (hreach : ∃ k C, RD potBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨367⟩ [sel]
@@ -1267,7 +1267,7 @@ theorem potFileDsrBodyCoreRhoRevert
     (htime : UInt256.ofNat I.header.timestamp ≠ solcSlotWordAt ⟨7⟩ σ I)
     (hdispatch : dispatchMsg contract I.calldata = some fileDsrTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileDsrTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileDsrTransition.params.map Param.name)
         (transitionSignature fileDsrTransition).paramTypes I.calldata = some (fileDsrLocals I))
     (hreach : ∃ k C, RD potBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨367⟩ [sel]
@@ -1300,7 +1300,7 @@ theorem potFileDsrBodyCoreUnrecognized
     (hwhat : fileDsrWhat I ≠ fileDsrBytes)
     (hdispatch : dispatchMsg contract I.calldata = some fileDsrTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileDsrTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileDsrTransition.params.map Param.name)
         (transitionSignature fileDsrTransition).paramTypes I.calldata = some (fileDsrLocals I))
     (hreach : ∃ k C, RD potBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨367⟩ [sel]

@@ -167,6 +167,7 @@ theorem yankVatFluxCallMem_encode (σmem σ : AccountMap) (I : ExecutionEnv) :
         some ((yankVatFluxCallMem σmem σ I).readWithPadding 128 132) := by
   rw [yankVatFluxCallMem_read]
   unfold config externalABI
+  simp only [ExternalCallABI.withMode_encode?]
   simp only [if_true]
   unfold ABI.encodeCallWithSelector?
   have hpayload :
@@ -425,6 +426,7 @@ theorem yankVatMoveCallMem_encode (σmem σflux σ : AccountMap) (I : ExecutionE
         some ((yankVatMoveCallMem σmem σflux σ I).readWithPadding 128 100) := by
   rw [yankVatMoveCallMem_read]
   unfold config externalABI
+  simp only [ExternalCallABI.withMode_encode?]
   simp only [if_true]
   unfold ABI.encodeCallWithSelector?
   have hguy :

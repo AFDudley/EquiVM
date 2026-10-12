@@ -43,9 +43,9 @@ theorem uniswapX_token1 {σ σ₀ A I} {g : Sat256} {sel : UInt256}
     (by jump_dest) (by jump_dest)
 
 theorem uniswapDecode_token1 {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (token1Transition.params.map Param.name)
+    config.externalABI.decodeCalldata? (token1Transition.params.map Param.name)
       (transitionSignature token1Transition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 /-- `token1()` body core, parameterized by the dispatcher/decode facts still owned by `Correct`. -/
@@ -54,7 +54,7 @@ theorem uniswapToken1BodyCore
     (hcode : I.code = uniswapV2PairBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some token1Transition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (token1Transition.params.map Param.name)
+      config.externalABI.decodeCalldata? (token1Transition.params.map Param.name)
         (transitionSignature token1Transition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD uniswapV2PairBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1332⟩ [sel]
