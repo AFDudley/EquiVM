@@ -77,7 +77,10 @@ def main() -> None:
     spec = (safe / "Spec.lean").read_text()
     transitions = set(re.findall(r"^def (\w+Transition) : TransitionDecl", spec, re.MULTILINE))
     transitions -= {"receiveTransition", "fallbackTransition"}
-    scaffold = (safe / "Runtime.lean").read_text()
+    # Runtime.lean imports the 33 entrypoint modules; their statements carry the dispatch facts.
+    entrypoints = re.findall(rf"^import {re.escape(module)}\.(\w+)$",
+                             (safe / "Runtime.lean").read_text(), re.MULTILINE)
+    scaffold = "".join((safe / f"{name}.lean").read_text() for name in entrypoints)
     scaffold_transitions = set(re.findall(r"hdispatch : selectorDispatchMsg contract I.calldata =\s+"
                                         r"some (\w+Transition)", scaffold))
     assert len(transitions) == 31 and scaffold_transitions == transitions
