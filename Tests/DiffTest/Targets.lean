@@ -71,8 +71,6 @@ import Benchmarks.Scaffolds.ERC721.Spec
 import Benchmarks.Scaffolds.ERC721.Bytecode
 import Benchmarks.Scaffolds.Klima.Spec
 import Benchmarks.Scaffolds.Klima.Bytecode
-import Benchmarks.Safe.Main.Spec
-import Benchmarks.Safe.Main.Bytecode
 import Benchmarks.Safe.V0_cdb2eb5.Bytecode
 import Benchmarks.Safe.V1_0227664.Bytecode
 import Benchmarks.Safe.V2_0e91d99.Spec
@@ -266,10 +264,6 @@ def klima : Target :=
 
 /-- The owner and module linked lists walk random storage, which cycles until the gas or the fuel
     runs out: smaller budgets keep those (inconclusive) cases cheap. -/
-def safe : Target :=
-  { name := "Safe", contract := Benchmarks.Safe.Main.contract, config := Benchmarks.Safe.Main.config,
-    runtime := Benchmarks.Safe.Main.safeBytecode, initcode := some Benchmarks.Safe.Main.safeCreationBytecode,
-    callees := standardCallees, words := [0, 1, 2, 3], gas := 400000, fuel := 5000 }
 
 def safe_V0_cdb2eb5 : Target :=
   { name := "Safe_V0_cdb2eb5", contract := Benchmarks.Safe.V0_cdb2eb5.contract,
@@ -328,7 +322,7 @@ def benchmarks : List Target :=
   [weth9, auction, pot, cat, cure, dai, daiJoin, dssEnd, exponentialDecrease, flapper, flipper, flopper, gemJoin, jug, linearDecrease, spot, stairstepExponentialDecrease, vat, vow]
 
 def scaffolds : List Target :=
-  [erc721, klima, safe, safe_V0_cdb2eb5, safe_V1_0227664, safe_V2_0e91d99, timelockController, vestingWallet]
+  [erc721, klima, safe_V0_cdb2eb5, safe_V1_0227664, safe_V2_0e91d99, timelockController, vestingWallet]
 
 /-- Every target: the ones above, then the generated ones (`Generated.lean`) not already named. -/
 def allTargets : List Target :=
