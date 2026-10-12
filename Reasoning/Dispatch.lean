@@ -289,7 +289,7 @@ theorem RDrev.reEquivNonPayable {cfg : Config} {contract : ContractDecl} {transi
     · exact reEquiv_noDispatch hdisp hrev
     · obtain ⟨t, ht⟩ := Option.ne_none_iff_exists'.mp hdisp
       cases Reasoning.Theory.dispatch_unique hfallback htr ht hreceive
-      by_cases hdec : decodeCalldataWithMode cfg.abiDecodeMode (transition.params.map Param.name)
+      by_cases hdec : cfg.externalABI.decodeCalldata? (transition.params.map Param.name)
           (transitionSignature transition).paramTypes I.calldata = none
       · exact reEquiv_decodingFailed ht hdec hrev hfallback hreceive
       · obtain ⟨callargs, hca⟩ := Option.ne_none_iff_exists'.mp hdec
@@ -307,7 +307,7 @@ theorem RDret.reEquivExecutionGen {cfg : Config} {contract : ContractDecl}
     (hcode : I.code = code)
     (h : RDret code g (initState σ σ₀ g A I) acc o)
     (hd : dispatchMsg contract I.calldata = some t)
-    (hdec : decodeCalldataWithMode cfg.abiDecodeMode (t.params.map Param.name)
+    (hdec : cfg.externalABI.decodeCalldata? (t.params.map Param.name)
               (transitionSignature t).paramTypes I.calldata = some callargs)
     (hbody : ExecTransitionBody cfg contract
               (initState σ σ₀ g A I) callargs t.body
@@ -347,7 +347,7 @@ theorem RDret.reEquivExecution {cfg : Config} {contract : ContractDecl} {t : Tra
     (hcode : I.code = code)
     (h : RDret code g (initState σ σ₀ g A I) σ o)
     (hd : dispatchMsg contract I.calldata = some t)
-    (hdec : decodeCalldataWithMode cfg.abiDecodeMode (t.params.map Param.name)
+    (hdec : cfg.externalABI.decodeCalldata? (t.params.map Param.name)
               (transitionSignature t).paramTypes I.calldata = some callargs)
     (hbody : ExecTransitionBody cfg contract
               (initState σ σ₀ g A I) callargs t.body
@@ -371,7 +371,7 @@ theorem RDret.reEquivExecutionTransport {cfg : Config} {contract : ContractDecl}
     (hcode : I.code = code)
     (h : RDret code g (initState σ σ₀ g A I) σ o)
     (hd : dispatchMsg contract I.calldata = some t)
-    (hdec : decodeCalldataWithMode cfg.abiDecodeMode (t.params.map Param.name)
+    (hdec : cfg.externalABI.decodeCalldata? (t.params.map Param.name)
               (transitionSignature t).paramTypes I.calldata = some callargs)
     (hbody : ExecTransitionBody cfg contract
               (initState σ σ₀ g A I) callargs t.body
@@ -393,7 +393,7 @@ theorem RDrev.reEquivExecutionRevert {cfg : Config} {contract : ContractDecl} {t
     (hcode : I.code = code)
     (h : RDrev code g (initState σ σ₀ g A I))
     (hd : dispatchMsg contract I.calldata = some t)
-    (hdec : decodeCalldataWithMode cfg.abiDecodeMode (t.params.map Param.name)
+    (hdec : cfg.externalABI.decodeCalldata? (t.params.map Param.name)
               (transitionSignature t).paramTypes I.calldata = some callargs)
     (hbody : ExecTransitionBody cfg contract
               (initState σ σ₀ g A I) callargs t.body .reverted immutables)
@@ -412,7 +412,7 @@ theorem RDinvalid.reEquivExecutionInvalid {immutables : Store} {cfg : Config} {c
     (h : RDinvalid code (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I))
     (hd : dispatchMsg contract I.calldata = some t)
-    (hdec : decodeCalldataWithMode cfg.abiDecodeMode (t.params.map Param.name)
+    (hdec : cfg.externalABI.decodeCalldata? (t.params.map Param.name)
       (transitionSignature t).paramTypes I.calldata = some callargs)
     (hbody : ExecTransitionBody cfg contract
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) callargs t.body .reverted immutables)
