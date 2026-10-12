@@ -37,9 +37,9 @@ theorem safeTransferDataX {σ : AccountMap} {ee : ExecutionEnv} {g : Sat256}
     (hsize : out.size < 2 ^ 255) (ha : ActiveWords aw)
     (hptr : ptr.toNat + 64 ≤ 2 ^ 200) (hov : R.length + 8 ≤ 1024) :
     (RDrev (deployedRuntime v) g s0 ∧ out.size ≠ 0 ∧
-      (decodeReturnValueWithMode? config.abiDecodeMode abiBool out = none ∨
-       decodeReturnValueWithMode? config.abiDecodeMode abiBool out = some (.bool false))) ∨
-    ((out.size = 0 ∨ decodeReturnValueWithMode? config.abiDecodeMode abiBool out = some (.bool true)) ∧
+      (config.externalABI.decodeValue? abiBool out = none ∨
+       config.externalABI.decodeValue? abiBool out = some (.bool false))) ∨
+    ((out.size = 0 ∨ config.externalABI.decodeValue? abiBool out = some (.bool true)) ∧
       ∃ aw' k' C', RD (deployedRuntime v) ee g s0 ⟨15565⟩ (ptr :: R) mem aw' out σ k' C' ∧
         ActiveWords aw') := by
   have hsz : out.size < UInt256.size := lt_size_of_lt_sign hsize

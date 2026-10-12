@@ -706,7 +706,7 @@ inductive solmExec
     /- Solm selector transition dispatch. -/
     selectorDispatchMsg contract I.calldata = .some transition →
     transitionSig = transitionSignature transition →
-    decodeCalldataWithMode conf.abiDecodeMode (transition.params.map Param.name)
+    conf.externalABI.decodeCalldata? (transition.params.map Param.name)
       transitionSig.paramTypes I.calldata = .some callargs →
     evmState =
       { (default : EVM.State) with

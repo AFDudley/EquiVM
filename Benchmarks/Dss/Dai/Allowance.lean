@@ -79,10 +79,10 @@ theorem allowanceStorageSlot_eq_mapSlot_masked (I : ExecutionEnv) :
   rw [keyValueToWord_address_ofNat_mask, keyValueToWord_address_ofNat_mask]
 
 theorem daiDecode_allowance_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (allowanceTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (allowanceTransition.params.map Param.name)
       (transitionSignature allowanceTransition).paramTypes I.calldata =
         some (allowanceStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["arg0", "arg1"] [addr, addr]
+  show config.externalABI.decodeCalldata? ["arg0", "arg1"] [addr, addr]
     I.calldata = _
   simpa [allowanceStore, allowanceOwnerValue, allowanceSpenderValue, allowanceOwnerWord,
     allowanceSpenderWord, calldataWord]
@@ -91,9 +91,9 @@ theorem daiDecode_allowance_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.siz
 
 theorem daiDecode_allowance_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 68) :
-    decodeCalldataWithMode config.abiDecodeMode (allowanceTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (allowanceTransition.params.map Param.name)
       (transitionSignature allowanceTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["arg0", "arg1"] [addr, addr]
+  show config.externalABI.decodeCalldata? ["arg0", "arg1"] [addr, addr]
     I.calldata = none
   simpa using decodeCalldata_legacyAddress_legacyAddress_none_short
     (cd := I.calldata) (x := "arg0") (y := "arg1") hsz4 hshort
@@ -217,7 +217,7 @@ theorem daiAllowanceBodyCoreOk
     (hsz68 : 68 ≤ I.calldata.size)
     (hdispatch : dispatchMsg contract I.calldata = some allowanceTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (allowanceTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (allowanceTransition.params.map Param.name)
         (transitionSignature allowanceTransition).paramTypes I.calldata =
           some (allowanceStore I))
     (hreach : ∃ k C, RD daiBytecode I (Sat256.ofUInt256 g)

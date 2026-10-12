@@ -987,7 +987,7 @@ theorem flopperKickBodyReturns_success (evm : EVM.State) (I : ExecutionEnv)
   (flopperKickBodyReturns_successSplit evm I hwv hsrc hauth hlive hkicksLt).1 haddFit
 
 theorem flopperDecode_kick_ok {I : ExecutionEnv} (hsz100 : 100 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (kickTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (kickTransition.params.map Param.name)
       (transitionSignature kickTransition).paramTypes I.calldata = some (kickLocals I) := by
   change decodeCalldataWithMode DecodeMode.legacySolc05 ["gal", "lot", "bid"]
       [abiAddress, abiUInt256, abiUInt256] I.calldata =
@@ -998,7 +998,7 @@ theorem flopperDecode_kick_ok {I : ExecutionEnv} (hsz100 : 100 ≤ I.calldata.si
 
 theorem flopperDecode_kick_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 100) :
-    decodeCalldataWithMode config.abiDecodeMode (kickTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (kickTransition.params.map Param.name)
       (transitionSignature kickTransition).paramTypes I.calldata = none := by
   change decodeCalldataWithMode DecodeMode.legacySolc05 ["gal", "lot", "bid"]
       [abiAddress, abiUInt256, abiUInt256] I.calldata = none

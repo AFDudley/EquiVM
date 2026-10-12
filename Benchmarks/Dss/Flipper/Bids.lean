@@ -378,7 +378,7 @@ theorem bidsReturnEncoding (σ : AccountMap) (I : ExecutionEnv) :
 
 
 theorem flipperDecode_bids_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (bidsTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (bidsTransition.params.map Param.name)
       (transitionSignature bidsTransition).paramTypes I.calldata =
         some (bidsLocals I) := by
   simpa [config, bidsTransition, transitionSignature, bidsLocals, bidsId]
@@ -386,7 +386,7 @@ theorem flipperDecode_bids_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size
 
 theorem flipperDecode_bids_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (bidsTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (bidsTransition.params.map Param.name)
       (transitionSignature bidsTransition).paramTypes I.calldata = none := by
   simpa [config, bidsTransition, transitionSignature]
     using (decodeCalldata_legacyUInt256_none_short (cd := I.calldata)

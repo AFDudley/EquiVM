@@ -33,7 +33,7 @@ theorem safeSetguardBodyCore
         · obtain ⟨_, _, h₂⟩ := safeDecodeAddress hd (by simp) hlencheck hc (by jump_dest)
           have h₃ := safeRuntime_block_1465 (by simp) (by jump_dest) h₂
           have h₄ := safeRuntime_block_5998 (by simp) (by jump_dest) h₃
-          have hdec : decodeCalldataWithMode config.abiDecodeMode
+          have hdec : config.externalABI.decodeCalldata?
               (setguardTransition.params.map Param.name)
               (transitionSignature setguardTransition).paramTypes I.calldata =
               some (guardArgs .transaction (calldataWord I.calldata 4)) :=

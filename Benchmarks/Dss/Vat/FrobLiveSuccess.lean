@@ -1337,7 +1337,7 @@ theorem vatFrobLiveSuccessFinish
     (hcode : I.code = vatBytecode)
     (hsel : selIs I (vatSelBytes 11))
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (frobTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (frobTransition.params.map Param.name)
         (transitionSignature frobTransition).paramTypes I.calldata = some (frobStore I))
     (hsz196 : 196 ≤ I.calldata.size)
     (hret : RDret vatBytecode (Sat256.ofUInt256 g)
@@ -1573,7 +1573,7 @@ theorem vatFrobBodyCoreLiveSuccessGuards
     (hsel : selIs I (vatSelBytes 11))
     (hsz196 : 196 ≤ I.calldata.size)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (frobTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (frobTransition.params.map Param.name)
         (transitionSignature frobTransition).paramTypes I.calldata = some (frobStore I))
     (hdecoded :
       ∃ k C,

@@ -486,8 +486,7 @@ def contract : ContractDecl :=
 
 def config : Config :=
   { storageBackend := solidityStorageBackend storageLayout
-    externalABI := externalABI
-    abiDecodeMode := DecodeMode.legacySolc05
+    externalABI := (externalABI).withMode DecodeMode.legacySolc05
     selfDeployment := genSolidityConstructorDeployment constructorDecl.params }
 
 end Benchmarks.Dss.Dog

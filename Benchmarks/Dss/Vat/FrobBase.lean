@@ -14240,9 +14240,9 @@ theorem vatFrobSourceBodyNotLive {σ σ₀ A I} {g : UInt256}
 
 theorem vatDecode_frob_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 196) :
-    decodeCalldataWithMode config.abiDecodeMode (frobTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (frobTransition.params.map Param.name)
       (transitionSignature frobTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["i", "u", "v", "w", "dink", "dart"]
+  show config.externalABI.decodeCalldata? ["i", "u", "v", "w", "dink", "dart"]
     [bytes32, addr, addr, addr, int256, int256] I.calldata = none
   change decodeCalldataWithMode DecodeMode.legacySolc05 ["i", "u", "v", "w", "dink", "dart"]
     [bytes32, addr, addr, addr, int256, int256] I.calldata = none
@@ -14261,9 +14261,9 @@ theorem vatDecode_frob_none_short {I : ExecutionEnv}
     (I.calldata.toList.drop 4).length < 192)]
 
 theorem vatDecode_frob_ok {I : ExecutionEnv} (hsz196 : 196 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (frobTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (frobTransition.params.map Param.name)
       (transitionSignature frobTransition).paramTypes I.calldata = some (frobStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["i", "u", "v", "w", "dink", "dart"]
+  show config.externalABI.decodeCalldata? ["i", "u", "v", "w", "dink", "dart"]
     [bytes32, addr, addr, addr, int256, int256] I.calldata = some (frobStore I)
   change decodeCalldataWithMode DecodeMode.legacySolc05 ["i", "u", "v", "w", "dink", "dart"]
     [bytes32, addr, addr, addr, int256, int256] I.calldata = some (frobStore I)
@@ -14392,7 +14392,7 @@ theorem vatFrobBodyCoreNotLive
     (hlive : solcSlotWordAt ⟨10⟩ σ I ≠ ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some frobTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (frobTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (frobTransition.params.map Param.name)
         (transitionSignature frobTransition).paramTypes I.calldata = some (frobStore I))
     (hreach : ∃ k C, RD vatBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨901⟩ [sel]

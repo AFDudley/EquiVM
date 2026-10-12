@@ -50,7 +50,7 @@ theorem safeExectransactionfrommoduleBodyCore
     have hlen : payload.size = len := by
       dsimp only [payload]
       rw [ByteArray.size_extract]; omega
-    have hdec' : decodeCalldataWithMode config.abiDecodeMode
+    have hdec' : config.externalABI.decodeCalldata?
         (exectransactionfrommoduleTransition.params.map Param.name)
         (transitionSignature exectransactionfrommoduleTransition).paramTypes I.calldata =
         some (moduleArgs (AccountAddress.ofUInt256 (calldataWord I.calldata 4))

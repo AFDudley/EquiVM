@@ -572,7 +572,7 @@ theorem fileIlkClipWhatWord_ne_of_bytes_ne {I : ExecutionEnv} {bs : List UInt8}
 
 theorem dogDecode_fileIlkClip_ok {I : ExecutionEnv}
     (hsz100 : 100 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode
+    config.externalABI.decodeCalldata?
       (fileIlkClipTransition.params.map Param.name)
       (transitionSignature fileIlkClipTransition).paramTypes I.calldata =
         some (fileIlkClipLocals I) := by
@@ -584,7 +584,7 @@ theorem dogDecode_fileIlkClip_ok {I : ExecutionEnv}
 
 theorem dogDecode_fileIlkClip_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 100) :
-    decodeCalldataWithMode config.abiDecodeMode
+    config.externalABI.decodeCalldata?
       (fileIlkClipTransition.params.map Param.name)
       (transitionSignature fileIlkClipTransition).paramTypes I.calldata = none := by
   simpa [config, fileIlkClipTransition, bytes32, bytes32Width, addr, abiBytes32,
@@ -3055,7 +3055,7 @@ theorem dogFileIlkClipBodyCoreOk {v : DogImmutables} {code : ByteArray}
     (hsize : I.calldata.size < UInt256.size)
     (hdispatch : dispatchMsg contract I.calldata = some fileIlkClipTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode
+      config.externalABI.decodeCalldata?
         (fileIlkClipTransition.params.map Param.name)
         (transitionSignature fileIlkClipTransition).paramTypes I.calldata =
           some (fileIlkClipLocals I))

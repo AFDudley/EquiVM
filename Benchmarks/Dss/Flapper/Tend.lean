@@ -507,7 +507,7 @@ theorem tendMoveDecode_ok (out : ByteArray) :
   simp [config, externalABI, decodeVoid?]
 
 theorem flapperDecode_tend_ok {I : ExecutionEnv} (hsz100 : 100 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (tendTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (tendTransition.params.map Param.name)
       (transitionSignature tendTransition).paramTypes I.calldata = some (tendLocals I) := by
   change decodeCalldataWithMode DecodeMode.legacySolc05 ["id", "lot", "bid"]
       [abiUInt256, abiUInt256, abiUInt256] I.calldata =
@@ -518,7 +518,7 @@ theorem flapperDecode_tend_ok {I : ExecutionEnv} (hsz100 : 100 ≤ I.calldata.si
 
 theorem flapperDecode_tend_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 100) :
-    decodeCalldataWithMode config.abiDecodeMode (tendTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (tendTransition.params.map Param.name)
       (transitionSignature tendTransition).paramTypes I.calldata = none := by
   change decodeCalldataWithMode DecodeMode.legacySolc05 ["id", "lot", "bid"]
       [abiUInt256, abiUInt256, abiUInt256] I.calldata = none
@@ -6679,7 +6679,7 @@ theorem flapperTendBodyCoreNotLive
     (hlive : solcSlotWordAt ⟨7⟩ σ I ≠ ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some tendTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (tendTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (tendTransition.params.map Param.name)
         (transitionSignature tendTransition).paramTypes I.calldata = some (tendLocals I))
     (hreach : ∃ k C, RD flapperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨524⟩ [sel]
@@ -6708,7 +6708,7 @@ theorem flapperTendBodyCoreGuyNotSet
     (hguy : solcAddressSlotWord (auctionPackedSlot (tendIdWord I)) σ I = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some tendTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (tendTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (tendTransition.params.map Param.name)
         (transitionSignature tendTransition).paramTypes I.calldata = some (tendLocals I))
     (hreach : ∃ k C, RD flapperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨524⟩ [sel]
@@ -6744,7 +6744,7 @@ theorem flapperTendBodyCoreTicFinished
         (UInt256.ofNat I.header.timestamp).toNat)
     (hdispatch : dispatchMsg contract I.calldata = some tendTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (tendTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (tendTransition.params.map Param.name)
         (transitionSignature tendTransition).paramTypes I.calldata = some (tendLocals I))
     (hreach : ∃ k C, RD flapperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨524⟩ [sel]
@@ -6792,7 +6792,7 @@ theorem flapperTendBodyCoreEndFinished
         (UInt256.ofNat I.header.timestamp).toNat)
     (hdispatch : dispatchMsg contract I.calldata = some tendTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (tendTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (tendTransition.params.map Param.name)
         (transitionSignature tendTransition).paramTypes I.calldata = some (tendLocals I))
     (hreach : ∃ k C, RD flapperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨524⟩ [sel]
@@ -6912,7 +6912,7 @@ theorem flapperTendBodyCoreLotMismatch
     (hlot : tendLotWord I ≠ solcSlotWordAt (auctionLotSlot (tendIdWord I)) σ I)
     (hdispatch : dispatchMsg contract I.calldata = some tendTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (tendTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (tendTransition.params.map Param.name)
         (transitionSignature tendTransition).paramTypes I.calldata = some (tendLocals I))
     (hreach : ∃ k C, RD flapperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨524⟩ [sel]
@@ -7056,7 +7056,7 @@ theorem flapperTendBodyCoreBidNotHigher
         (solcSlotWordAt (auctionBidSlot (tendIdWord I)) σ I).toNat)
     (hdispatch : dispatchMsg contract I.calldata = some tendTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (tendTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (tendTransition.params.map Param.name)
         (transitionSignature tendTransition).paramTypes I.calldata = some (tendLocals I))
     (hreach : ∃ k C, RD flapperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨524⟩ [sel]
@@ -7226,7 +7226,7 @@ theorem flapperTendBodyCoreInsufficientIncrease
         (tendBegBidWord (initState σ σ₀ (Sat256.ofUInt256 g) A I) I).toNat)
     (hdispatch : dispatchMsg contract I.calldata = some tendTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (tendTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (tendTransition.params.map Param.name)
         (transitionSignature tendTransition).paramTypes I.calldata = some (tendLocals I))
     (hreach : ∃ k C, RD flapperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨524⟩ [sel]
@@ -7420,7 +7420,7 @@ theorem flapperTendBodyCoreBidOneOverflow
     (hoverflow : UInt256.size ≤ (tendBidWord I).toNat * tendOneWord.toNat)
     (hdispatch : dispatchMsg contract I.calldata = some tendTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (tendTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (tendTransition.params.map Param.name)
         (transitionSignature tendTransition).paramTypes I.calldata = some (tendLocals I))
     (hreach : ∃ k C, RD flapperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨524⟩ [sel]
@@ -7511,7 +7511,7 @@ theorem flapperTendBodyCoreBegBidOverflow
         (solcSlotWordAt (auctionBidSlot (tendIdWord I)) σ I).toNat)
     (hdispatch : dispatchMsg contract I.calldata = some tendTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (tendTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (tendTransition.params.map Param.name)
         (transitionSignature tendTransition).paramTypes I.calldata = some (tendLocals I))
     (hreach : ∃ k C, RD flapperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨524⟩ [sel]
@@ -7591,7 +7591,7 @@ theorem flapperTendBodyCoreIncreaseSufficient_finishFromGuard
     (hbidOneFit : (tendBidWord I).toNat * tendOneWord.toNat < UInt256.size)
     (hdispatch : dispatchMsg contract I.calldata = some tendTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (tendTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (tendTransition.params.map Param.name)
         (transitionSignature tendTransition).paramTypes I.calldata = some (tendLocals I))
     (hliveSolm₀ :
       tendLiveWord (initState σ σ₀ (Sat256.ofUInt256 g) A I) = ⟨1⟩)
@@ -8895,7 +8895,7 @@ theorem flapperTendBodyCoreIncreaseSufficient
         (tendBidOneWord I).toNat)
     (hdispatch : dispatchMsg contract I.calldata = some tendTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (tendTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (tendTransition.params.map Param.name)
         (transitionSignature tendTransition).paramTypes I.calldata = some (tendLocals I))
     (hreach : ∃ k C, RD flapperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨524⟩ [sel]

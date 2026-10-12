@@ -92,7 +92,7 @@ theorem clipperFileAddressData_value_masked (I : ExecutionEnv) :
 
 theorem clipperDecode_fileAddress_ok {I : ExecutionEnv}
     (hsz68 : 68 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (fileAddressTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (fileAddressTransition.params.map Param.name)
       (transitionSignature fileAddressTransition).paramTypes I.calldata =
         some (clipperFileAddressLocals I) := by
   simpa [config, fileAddressTransition, bytes32, bytes32Width, addr,
@@ -103,7 +103,7 @@ theorem clipperDecode_fileAddress_ok {I : ExecutionEnv}
 
 theorem clipperDecode_fileAddress_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 68) :
-    decodeCalldataWithMode config.abiDecodeMode (fileAddressTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (fileAddressTransition.params.map Param.name)
       (transitionSignature fileAddressTransition).paramTypes I.calldata = none := by
   simpa [config, fileAddressTransition, bytes32, bytes32Width, addr, abiBytes32,
     abiBytes32Width, abiAddress] using

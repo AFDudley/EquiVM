@@ -542,7 +542,7 @@ def evalExpr? (cfg : Config) (solm : Frame) (evm : EVM.State) :
       let value <- evalExpr? cfg solm evm e
       match value with
       | .bytes bytes =>
-          match ABI.decodeReturnValueWithMode? cfg.abiDecodeMode ty bytes with
+          match cfg.externalABI.decodeValue? ty bytes with
           | some decoded => pure decoded
           | none => .revert
       | _ => .error .typeError

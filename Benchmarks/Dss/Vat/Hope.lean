@@ -69,14 +69,14 @@ theorem hopeStorageSlot_eq_mapSlot_masked (I : ExecutionEnv) :
   rw [keyValueToWord_address_ofNat_mask, keyValueToWord_address]
 
 theorem vatDecode_hope_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (hopeTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (hopeTransition.params.map Param.name)
       (transitionSignature hopeTransition).paramTypes I.calldata = some (hopeStore I) := by
   simpa [config, hopeTransition, hopeStore, hopeUsrValue, hopeUsrWord, calldataWord] using
     decodeCalldata_legacyAddress_ok (cd := I.calldata) (x := "usr") hsz36
 
 theorem vatDecode_hope_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (hopeTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (hopeTransition.params.map Param.name)
       (transitionSignature hopeTransition).paramTypes I.calldata = none := by
   simpa [config, hopeTransition] using
     decodeCalldata_legacyAddress_none_short (cd := I.calldata) (x := "usr") hsz4 hshort
@@ -358,7 +358,7 @@ theorem vatHopeBodyCoreOk
     (hsz36 : 36 ≤ I.calldata.size)
     (hdispatch : dispatchMsg contract I.calldata = some hopeTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (hopeTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (hopeTransition.params.map Param.name)
         (transitionSignature hopeTransition).paramTypes I.calldata = some (hopeStore I))
     (hreach : ∃ k C, RD vatBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1207⟩ [sel]
@@ -391,7 +391,7 @@ theorem vatHopeBodyCoreStatic
     (hsz36 : 36 ≤ I.calldata.size)
     (hdispatch : dispatchMsg contract I.calldata = some hopeTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (hopeTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (hopeTransition.params.map Param.name)
         (transitionSignature hopeTransition).paramTypes I.calldata = some (hopeStore I))
     (hreach : ∃ k C, RD vatBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1207⟩ [sel]

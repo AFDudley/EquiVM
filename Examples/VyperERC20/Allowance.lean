@@ -800,7 +800,7 @@ theorem erc20AllowanceBodyCore
     · by_cases hcanonSpender : (allowanceSpenderWord I).toNat < EVM.addressModulus
       · have hdec0 := erc20Decode_allowance_ok (I := I) hsz68 hcanonOwner hcanonSpender
         have hdec :
-            decodeCalldataWithMode vyperERC20Config.abiDecodeMode
+            vyperERC20Config.externalABI.decodeCalldata?
               (ERC20.allowanceTransition.params.map Param.name)
               (transitionSignature ERC20.allowanceTransition).paramTypes I.calldata =
                 some (allowanceStore I) := by
@@ -812,7 +812,7 @@ theorem erc20AllowanceBodyCore
       · have hdec0 := erc20Decode_allowance_none_noncanon_spender
             (I := I) hsz68 hcanonOwner hcanonSpender
         have hdec :
-            decodeCalldataWithMode vyperERC20Config.abiDecodeMode
+            vyperERC20Config.externalABI.decodeCalldata?
               (ERC20.allowanceTransition.params.map Param.name)
               (transitionSignature ERC20.allowanceTransition).paramTypes I.calldata = none := by
           simpa [vyperERC20Config] using hdec0
@@ -821,7 +821,7 @@ theorem erc20AllowanceBodyCore
           |>.reEquivDecodingFailed hcode hd hdec
     · have hdec0 := erc20Decode_allowance_none_noncanon_owner (I := I) hsz68 hcanonOwner
       have hdec :
-          decodeCalldataWithMode vyperERC20Config.abiDecodeMode
+          vyperERC20Config.externalABI.decodeCalldata?
             (ERC20.allowanceTransition.params.map Param.name)
             (transitionSignature ERC20.allowanceTransition).paramTypes I.calldata = none := by
         simpa [vyperERC20Config] using hdec0
@@ -831,7 +831,7 @@ theorem erc20AllowanceBodyCore
   · have hshort : I.calldata.size < 68 := by omega
     have hdec0 := erc20Decode_allowance_none_short (I := I) hsz4 hshort
     have hdec :
-        decodeCalldataWithMode vyperERC20Config.abiDecodeMode
+        vyperERC20Config.externalABI.decodeCalldata?
           (ERC20.allowanceTransition.params.map Param.name)
           (transitionSignature ERC20.allowanceTransition).paramTypes I.calldata = none := by
       simpa [vyperERC20Config] using hdec0

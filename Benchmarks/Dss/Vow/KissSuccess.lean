@@ -912,7 +912,7 @@ theorem vowKissHealNoCodeBodyCore
     (hcode : I.code = vowBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some kissTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (kissTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (kissTransition.params.map Param.name)
         (transitionSignature kissTransition).paramTypes I.calldata = some (kissLocals I))
     (rd1839 : RD vowBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1839⟩
@@ -964,7 +964,7 @@ theorem vowKissHealCallFailureBodyCore
     (hcode : I.code = vowBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some kissTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (kissTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (kissTransition.params.map Param.name)
         (transitionSignature kissTransition).paramTypes I.calldata = some (kissLocals I))
     (rd1919 : RD vowBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1919⟩
@@ -1018,7 +1018,7 @@ theorem vowKissHealSuccessBodyCore
     (hcode : I.code = vowBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some kissTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (kissTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (kissTransition.params.map Param.name)
         (transitionSignature kissTransition).paramTypes I.calldata = some (kissLocals I))
     (rd1919 : RD vowBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1919⟩
@@ -1083,7 +1083,7 @@ theorem vowKissBody {σ σ₀ A I} {g : UInt256}
   have hdispatch : dispatchMsg contract I.calldata = some kissTransition :=
     vowDispatch_kiss hsel
   have hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (kissTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (kissTransition.params.map Param.name)
         (transitionSignature kissTransition).paramTypes I.calldata = some (kissLocals I) := by
     simpa [kissLocals] using vowDecode_kiss_ok (I := I) hsz36
   have hreach : ∃ k C, RD vowBytecode I (Sat256.ofUInt256 g)

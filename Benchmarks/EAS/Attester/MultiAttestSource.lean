@@ -10,14 +10,14 @@ def multiAttestLocals (schemas rows : List Value) : Store :=
 
 theorem multiAttestDecode_some {cd : ByteArray} {schemas rows : List Value}
     (hd : decodeArrays? uint256 cd = some (.array schemas, .array rows)) :
-    decodeCalldataWithMode config.abiDecodeMode (multiAttestTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (multiAttestTransition.params.map Param.name)
       (transitionSignature multiAttestTransition).paramTypes cd =
         some (multiAttestLocals schemas rows) := by
   simpa only [hd, Option.map_some, multiAttestLocals] using
     decodeCalldata_arrays_eq uint256 "schemas" "schemaInputs" cd
 
 theorem multiAttestDecode_none {cd : ByteArray} (hd : decodeArrays? uint256 cd = none) :
-    decodeCalldataWithMode config.abiDecodeMode (multiAttestTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (multiAttestTransition.params.map Param.name)
       (transitionSignature multiAttestTransition).paramTypes cd = none := by
   simpa only [hd, Option.map_none] using decodeCalldata_arrays_eq uint256 "schemas" "schemaInputs"
       cd

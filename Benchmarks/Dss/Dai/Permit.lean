@@ -862,7 +862,7 @@ theorem evalExpr_permitEcrecoverCallStore_data (evm evm' : EVM.State) (I : Execu
 
 theorem evalExpr_permitEcrecoverCallStore_recovered_revert
     (evm evm' : EVM.State) (I : ExecutionEnv) (out : ByteArray)
-    (hdec : ABI.decodeReturnValueWithMode? config.abiDecodeMode addr out = none) :
+    (hdec : config.externalABI.decodeValue? addr out = none) :
     evalExpr? config
         { contract := contract, locals := permitEcrecoverCallStore evm I true out }
         evm' (.abiDecode addr (.var "ecrecoverData")) =
@@ -875,7 +875,7 @@ theorem evalExpr_permitEcrecoverCallStore_recovered_ok
     (evm evm' : EVM.State) (I : ExecutionEnv) (out : ByteArray)
     (recovered : AccountAddress)
     (hdec :
-      ABI.decodeReturnValueWithMode? config.abiDecodeMode addr out =
+      config.externalABI.decodeValue? addr out =
         some (.address recovered)) :
     evalExpr? config
         { contract := contract, locals := permitEcrecoverCallStore evm I true out }
@@ -1738,7 +1738,7 @@ theorem daiPermitBodyReverts_recoveredDecode (evm evm' : EVM.State) (I : Executi
     (hnz : permitHolderMaskedWord I ≠ ⟨0⟩)
     (hcall : callViaEVM evm (EVM.address (AccountAddress.ofNat 1)) 0
       (permitEcrecoverCalldata evm I) (true, evm', out) false)
-    (hdec : ABI.decodeReturnValueWithMode? config.abiDecodeMode addr out = none) :
+    (hdec : config.externalABI.decodeValue? addr out = none) :
     ExecTransitionBody config contract evm (permitStore I) permitTransition.body .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
   simpa [permitTransition, nonpayable, permitEcrecoverCallStore] using
@@ -1770,7 +1770,7 @@ theorem daiPermitBodyReverts_badRecovered (evm evm' : EVM.State) (I : ExecutionE
     (hcall : callViaEVM evm (EVM.address (AccountAddress.ofNat 1)) 0
       (permitEcrecoverCalldata evm I) (true, evm', out) false)
     (hdec :
-      ABI.decodeReturnValueWithMode? config.abiDecodeMode addr out =
+      config.externalABI.decodeValue? addr out =
         some (.address recovered))
     (hne : AccountAddress.ofNat (permitHolderWord I).toNat ≠ recovered) :
     ExecTransitionBody config contract evm (permitStore I) permitTransition.body .reverted := by
@@ -1808,7 +1808,7 @@ theorem daiPermitBodyReverts_expired (evm evm' : EVM.State) (I : ExecutionEnv)
     (hcall : callViaEVM evm (EVM.address (AccountAddress.ofNat 1)) 0
       (permitEcrecoverCalldata evm I) (true, evm', out) false)
     (hdec :
-      ABI.decodeReturnValueWithMode? config.abiDecodeMode addr out =
+      config.externalABI.decodeValue? addr out =
         some (.address recovered))
     (heq : AccountAddress.ofNat (permitHolderWord I).toNat = recovered)
     (hexpiryNonzero : permitExpiryWord I ≠ ⟨0⟩)
@@ -1852,7 +1852,7 @@ theorem daiPermitBodyPrefix (evm evm' : EVM.State) (I : ExecutionEnv)
     (hcall : callViaEVM evm (EVM.address (AccountAddress.ofNat 1)) 0
       (permitEcrecoverCalldata evm I) (true, evm', out) false)
     (hdec :
-      ABI.decodeReturnValueWithMode? config.abiDecodeMode addr out =
+      config.externalABI.decodeValue? addr out =
         some (.address recovered))
     (heq : AccountAddress.ofNat (permitHolderWord I).toNat = recovered)
     (hexpiryOk :
@@ -1906,7 +1906,7 @@ theorem daiPermitBodyStatic (evm evm' : EVM.State) (I : ExecutionEnv)
     (hcall : callViaEVM evm (EVM.address (AccountAddress.ofNat 1)) 0
       (permitEcrecoverCalldata evm I) (true, evm', out) false)
     (hdec :
-      ABI.decodeReturnValueWithMode? config.abiDecodeMode addr out =
+      config.externalABI.decodeValue? addr out =
         some (.address recovered))
     (heq : AccountAddress.ofNat (permitHolderWord I).toNat = recovered)
     (hexpiryOk :
@@ -1931,7 +1931,7 @@ theorem daiPermitBodyReverts_nonceMismatch (evm evm' : EVM.State) (I : Execution
     (hcall : callViaEVM evm (EVM.address (AccountAddress.ofNat 1)) 0
       (permitEcrecoverCalldata evm I) (true, evm', out) false)
     (hdec :
-      ABI.decodeReturnValueWithMode? config.abiDecodeMode addr out =
+      config.externalABI.decodeValue? addr out =
         some (.address recovered))
     (heq : AccountAddress.ofNat (permitHolderWord I).toNat = recovered)
     (hexpiryOk :
@@ -1962,7 +1962,7 @@ theorem daiPermitBodyReturns_success (evm evm' : EVM.State) (I : ExecutionEnv)
     (hcall : callViaEVM evm (EVM.address (AccountAddress.ofNat 1)) 0
       (permitEcrecoverCalldata evm I) (true, evm', out) false)
     (hdec :
-      ABI.decodeReturnValueWithMode? config.abiDecodeMode addr out =
+      config.externalABI.decodeValue? addr out =
         some (.address recovered))
     (heq : AccountAddress.ofNat (permitHolderWord I).toNat = recovered)
     (hexpiryOk :
@@ -2092,9 +2092,9 @@ theorem decodeABIValues_permit_ok {bytes : List UInt8}
 
 theorem daiDecode_permit_ok {I : ExecutionEnv}
     (hsz260 : 260 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (permitTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (permitTransition.params.map Param.name)
       (transitionSignature permitTransition).paramTypes I.calldata = some (permitStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode
+  show config.externalABI.decodeCalldata?
     ["holder", "spender", "nonce", "expiry", "allowed", "v", "r", "s"]
     [addr, addr, uint256, uint256, boolTy, uint8, bytes32, bytes32] I.calldata = _
   change decodeCalldataWithMode DecodeMode.legacySolc05
@@ -2182,9 +2182,9 @@ theorem daiDecode_permit_ok {I : ExecutionEnv}
 
 theorem daiDecode_permit_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 260) :
-    decodeCalldataWithMode config.abiDecodeMode (permitTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (permitTransition.params.map Param.name)
       (transitionSignature permitTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode
+  show config.externalABI.decodeCalldata?
     ["holder", "spender", "nonce", "expiry", "allowed", "v", "r", "s"]
     [addr, addr, uint256, uint256, boolTy, uint8, bytes32, bytes32] I.calldata = none
   change decodeCalldataWithMode DecodeMode.legacySolc05
@@ -6079,7 +6079,7 @@ theorem daiPermitBodyCore {σ σ₀ A I} {g : UInt256}
           · let recoveredWord := UInt256.ofNat (fromByteArrayBigEndian (o.extract 0 32))
             let recovered := AccountAddress.ofNat (fromByteArrayBigEndian (o.extract 0 32))
             have hdecRet :
-                ABI.decodeReturnValueWithMode? config.abiDecodeMode addr o =
+                config.externalABI.decodeValue? addr o =
                   some (.address recovered) := by
               simpa [config, recovered] using
                 decodeReturnValue_legacyAddress_ok (returndata := o) ho32
@@ -6278,7 +6278,7 @@ theorem daiPermitBodyCore {σ σ₀ A I} {g : UInt256}
                 |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
           · have hoShort : o.size < 32 := Nat.lt_of_not_ge ho32
             have hdecNone :
-                ABI.decodeReturnValueWithMode? config.abiDecodeMode addr o = none := by
+                config.externalABI.decodeValue? addr o = none := by
               simpa [config] using
                 decodeReturnValue_legacyAddress_none_short (returndata := o) hoShort
             have ho0 : o.size = 0 := by

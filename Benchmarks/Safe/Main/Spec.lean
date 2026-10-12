@@ -1260,8 +1260,7 @@ def contract : ContractDecl :=
 
 def config : Config :=
   { storageBackend := solidityStorageBackend storageLayout
-    externalABI := safeExternalABI
-    abiDecodeMode := safeDecodeMode
+    externalABI := (safeExternalABI).withMode safeDecodeMode
     selfDeployment := genSolidityConstructorDeployment contract.ctor.params }
 
 end Benchmarks.Safe.Main

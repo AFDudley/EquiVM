@@ -211,7 +211,7 @@ theorem uniswapV3PoolObservationsBody {σ σ₀ A I} {g : UInt256} (v : UniswapV
     apply uniswapV3PoolDispatch_observations <;>
       first | exact hsel | exact selectorMismatch_of_match hsel (by decide +kernel)
   by_cases hlen : 36 ≤ I.calldata.size
-  · have hdec : decodeCalldataWithMode config.abiDecodeMode
+  · have hdec : config.externalABI.decodeCalldata?
         (observationsTransition.params.map Param.name)
         (transitionSignature observationsTransition).paramTypes I.calldata =
         some ((∅ : Store).insert "arg0" (.int (Int.ofNat (calldataWord I.calldata 4).toNat))) := by
@@ -228,7 +228,7 @@ theorem uniswapV3PoolObservationsBody {σ σ₀ A I} {g : UInt256} (v : UniswapV
         hd hdec (uniswapV3PoolObservationsOutOfBounds v _ _ (calldataWord I.calldata 4) hwv
           (by simp) (by simp) hin)
   · have hshort : I.calldata.size < 36 := by omega
-    have hdec : decodeCalldataWithMode config.abiDecodeMode
+    have hdec : config.externalABI.decodeCalldata?
         (observationsTransition.params.map Param.name)
         (transitionSignature observationsTransition).paramTypes I.calldata = none :=
       decodeCalldata_legacyInt_none_short (.uint ⟨256, by decide⟩) hsz hshort

@@ -59,7 +59,7 @@ theorem cometWithExtendedAssetListBaseScaleBody {σ σ₀ A I} {g : UInt256} (v 
     runtimeRefinementFor config contract σ σ₀ g A I (immStore v) := by
   have hsz : 4 ≤ I.calldata.size :=
     calldata_size_ge_of_selIs I (cometWithExtendedAssetListSelBytes 24) rfl hsel
-  exact immutableGetter_refines (t := baseScaleTransition) hcode hsz
+  exact immutableGetter_refines (t := baseScaleTransition) hcode hsz (cometDecode_empty hsz)
     (cometSelectorDispatch ⟨24, by decide⟩ hsel) rfl rfl rfl
     (immStore_get_baseScale v) (uint256ReturnEncoding v.baseScale)
     (baseScaleX v hcode hsz hsize hsel)

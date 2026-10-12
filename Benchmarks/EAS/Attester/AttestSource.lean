@@ -11,7 +11,7 @@ def attestLocals (schema input : UInt256) : Store :=
 
 theorem attesterAttestDecode {cd : ByteArray} (hlen : 68 ≤ cd.size)
     (hhi : cd.size < 2 ^ 255 + 4) :
-    decodeCalldataWithMode config.abiDecodeMode (attestTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (attestTransition.params.map Param.name)
       (transitionSignature attestTransition).paramTypes cd =
         some (attestLocals (calldataWord cd 4) (calldataWord cd 36)) := by
   have hlenList : cd.toList.length = cd.size := by
@@ -27,12 +27,12 @@ theorem attesterAttestDecode {cd : ByteArray} (hlen : 68 ≤ cd.size)
     decode_word_at_eq cd 36 (by omega) (by decide)] using hd
 
 theorem attesterAttestDecodeShort {cd : ByteArray} (hshort : cd.size < 68) :
-    decodeCalldataWithMode config.abiDecodeMode (attestTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (attestTransition.params.map Param.name)
       (transitionSignature attestTransition).paramTypes cd = none :=
   decodeCalldata_head_none_short (headSize := 64) (by native_decide) hshort
 
 theorem attesterAttestDecodeHuge {cd : ByteArray} (hhi : 2 ^ 255 + 4 ≤ cd.size) :
-    decodeCalldataWithMode config.abiDecodeMode (attestTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (attestTransition.params.map Param.name)
       (transitionSignature attestTransition).paramTypes cd = none :=
   decodeCalldata_nonempty_none_huge hhi
 

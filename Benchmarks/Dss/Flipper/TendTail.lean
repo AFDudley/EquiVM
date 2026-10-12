@@ -356,6 +356,7 @@ theorem tendVatPayCallMem_encode {mem : ByteArray} (σ : AccountMap) (I : Execut
         some ((tendVatPayCallMem mem σ I).readWithPadding 128 100) := by
   rw [tendVatPayCallMem_read σ I hmemSize]
   unfold config externalABI
+  simp only [ExternalCallABI.withMode_encode?]
   simp only [if_true]
   unfold ABI.encodeCallWithSelector?
   have hgal :
@@ -528,6 +529,7 @@ theorem tendVatRefundCallMem_encode {mem : ByteArray} (σ : AccountMap) (I : Exe
         some ((tendVatRefundCallMem mem σ I).readWithPadding 128 100) := by
   rw [tendVatRefundCallMem_read σ I hmemSize]
   unfold config externalABI
+  simp only [ExternalCallABI.withMode_encode?]
   simp only [if_true]
   unfold ABI.encodeCallWithSelector?
   have hguy :

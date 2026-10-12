@@ -244,7 +244,7 @@ theorem uniswapV3PoolTicksBody {σ σ₀ A I} {g : UInt256} (v : UniswapV3PoolIm
     apply uniswapV3PoolDispatch_ticks <;>
       first | exact hsel | exact selectorMismatch_of_match hsel (by decide +kernel)
   by_cases hlen : 36 ≤ I.calldata.size
-  · have hdec : decodeCalldataWithMode config.abiDecodeMode
+  · have hdec : config.externalABI.decodeCalldata?
         (ticksTransition.params.map Param.name)
         (transitionSignature ticksTransition).paramTypes I.calldata =
         some ((∅ : Store).insert "arg0" (.int (ticksKey I))) :=
@@ -255,7 +255,7 @@ theorem uniswapV3PoolTicksBody {σ σ₀ A I} {g : UInt256} (v : UniswapV3PoolIm
           (by simp) (by simp))
         (returnEquiv.returned rfl (ticksReturnEncoding (ticksKey I) σ I))
   · have hshort : I.calldata.size < 36 := by omega
-    have hdec : decodeCalldataWithMode config.abiDecodeMode
+    have hdec : config.externalABI.decodeCalldata?
         (ticksTransition.params.map Param.name)
         (transitionSignature ticksTransition).paramTypes I.calldata = none :=
       decodeCalldata_legacyInt_none_short (.sint ⟨24, by decide⟩) hsz hshort

@@ -10,9 +10,9 @@ def ttlWord (σ : AccountMap) (I : ExecutionEnv) : UInt256 :=
   flipperUint48Offset0Word ⟨5⟩ σ I
 
 theorem flipperDecode_ttl {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (ttlTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (ttlTransition.params.map Param.name)
       (transitionSignature ttlTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 theorem flipperReachTtlBody {σ σ₀ A I} {g : Sat256}

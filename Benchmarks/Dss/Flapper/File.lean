@@ -34,7 +34,7 @@ abbrev fileLocals (I : ExecutionEnv) : Store :=
 
 
 theorem flapperDecode_file_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (fileTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (fileTransition.params.map Param.name)
       (transitionSignature fileTransition).paramTypes I.calldata = some (fileLocals I) := by
   simpa [config, fileTransition, bytes32, bytes32Width, uint256, uint256Int,
     fileLocals, fileWhat, fileData, abiBytes32, abiBytes32Width, abiUInt256] using
@@ -43,7 +43,7 @@ theorem flapperDecode_file_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size
 
 theorem flapperDecode_file_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 68) :
-    decodeCalldataWithMode config.abiDecodeMode (fileTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (fileTransition.params.map Param.name)
       (transitionSignature fileTransition).paramTypes I.calldata = none := by
   simpa [config, fileTransition, bytes32, bytes32Width, uint256, uint256Int, abiBytes32,
     abiBytes32Width, abiUInt256] using
@@ -1457,7 +1457,7 @@ theorem flapperFileBodyCoreBeg
     (hwhat : fileWhat I = fileBegBytes)
     (hdispatch : dispatchMsg contract I.calldata = some fileTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileTransition.params.map Param.name)
         (transitionSignature fileTransition).paramTypes I.calldata = some (fileLocals I))
     (hreach : ∃ k C, RD flapperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨362⟩ [sel]
@@ -1509,7 +1509,7 @@ theorem flapperFileBodyCoreLid
     (hwhat : fileWhat I = fileLidBytes)
     (hdispatch : dispatchMsg contract I.calldata = some fileTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileTransition.params.map Param.name)
         (transitionSignature fileTransition).paramTypes I.calldata = some (fileLocals I))
     (hreach : ∃ k C, RD flapperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨362⟩ [sel]
@@ -1566,7 +1566,7 @@ theorem flapperFileBodyCoreTtl
     (hwhat : fileWhat I = fileTtlBytes)
     (hdispatch : dispatchMsg contract I.calldata = some fileTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileTransition.params.map Param.name)
         (transitionSignature fileTransition).paramTypes I.calldata = some (fileLocals I))
     (hreach : ∃ k C, RD flapperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨362⟩ [sel]
@@ -1621,7 +1621,7 @@ theorem flapperFileBodyCoreTau
     (hwhat : fileWhat I = fileTauBytes)
     (hdispatch : dispatchMsg contract I.calldata = some fileTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileTransition.params.map Param.name)
         (transitionSignature fileTransition).paramTypes I.calldata = some (fileLocals I))
     (hreach : ∃ k C, RD flapperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨362⟩ [sel]
@@ -1675,7 +1675,7 @@ theorem flapperFileBodyCoreUnauthorized
     (hauth : relyAuthWord σ I ≠ ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some fileTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileTransition.params.map Param.name)
         (transitionSignature fileTransition).paramTypes I.calldata = some (fileLocals I))
     (hreach : ∃ k C, RD flapperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨362⟩ [sel]
@@ -1710,7 +1710,7 @@ theorem flapperFileBodyCoreUnrecognized
     (hlid : fileWhat I ≠ fileLidBytes)
     (hdispatch : dispatchMsg contract I.calldata = some fileTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileTransition.params.map Param.name)
         (transitionSignature fileTransition).paramTypes I.calldata = some (fileLocals I))
     (hreach : ∃ k C, RD flapperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨362⟩ [sel]

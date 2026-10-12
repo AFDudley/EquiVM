@@ -10,9 +10,9 @@ def stepWord (σ : AccountMap) (I : ExecutionEnv) : UInt256 :=
   solcSlotWordAt ⟨1⟩ σ I
 
 theorem stairstepDecode_step {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (stepTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (stepTransition.params.map Param.name)
       (transitionSignature stepTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 theorem stairstepReachStepBody {σ σ₀ A I} {g : Sat256}
@@ -53,7 +53,7 @@ theorem stairstepStepBodyCore
     (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some stepTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (stepTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (stepTransition.params.map Param.name)
         (transitionSignature stepTransition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD stairstepExponentialDecreaseBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) stairstepStepEntryPc [sel]

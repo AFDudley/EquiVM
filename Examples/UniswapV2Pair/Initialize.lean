@@ -266,7 +266,7 @@ theorem initializeAssignToken1 (evm : EVM.State) (I : ExecutionEnv) :
 
 theorem uniswapDecode_initialize_ok {I : ExecutionEnv}
     (hsz68 : 68 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (initializeTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (initializeTransition.params.map Param.name)
       (transitionSignature initializeTransition).paramTypes I.calldata =
         some (initializeStore I) := by
   simpa [initializeTransition, initializeStore, initializeToken0Value, initializeToken1Value,
@@ -276,9 +276,9 @@ theorem uniswapDecode_initialize_ok {I : ExecutionEnv}
 
 theorem uniswapDecode_initialize_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 68) :
-    decodeCalldataWithMode config.abiDecodeMode (initializeTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (initializeTransition.params.map Param.name)
       (transitionSignature initializeTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["_token0", "_token1"] [legacyAddr, legacyAddr] I.calldata = none
+  show config.externalABI.decodeCalldata? ["_token0", "_token1"] [legacyAddr, legacyAddr] I.calldata = none
   simpa using decodeCalldata_legacyAddress_legacyAddress_none_short
     (cd := I.calldata) (x := "_token0") (y := "_token1") hsz4 hshort
 
@@ -609,7 +609,7 @@ theorem uniswapInitializeBodyCoreOk
       UInt256.land (initializeFactoryWord σ I) solcAddrMask = uniswapSourceWord I)
     (hdispatch : dispatchMsg contract I.calldata = some initializeTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (initializeTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (initializeTransition.params.map Param.name)
         (transitionSignature initializeTransition).paramTypes I.calldata =
           some (initializeStore I))
     (hreach : ∃ k C, RD uniswapV2PairBytecode I (Sat256.ofUInt256 g)
@@ -649,7 +649,7 @@ theorem uniswapInitializeBodyCoreRevert_forbidden
       UInt256.land (initializeFactoryWord σ I) solcAddrMask ≠ uniswapSourceWord I)
     (hdispatch : dispatchMsg contract I.calldata = some initializeTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (initializeTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (initializeTransition.params.map Param.name)
         (transitionSignature initializeTransition).paramTypes I.calldata =
           some (initializeStore I))
     (hreach : ∃ k C, RD uniswapV2PairBytecode I (Sat256.ofUInt256 g)

@@ -142,7 +142,7 @@ theorem endFileAddressData_value_masked (I : ExecutionEnv) :
     (solcAddressValue_masked (calldataWord I.calldata 36))
 
 theorem endDecode_fileAddress_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (fileAddressTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (fileAddressTransition.params.map Param.name)
       (transitionSignature fileAddressTransition).paramTypes I.calldata =
         some (endFileAddressLocals I) := by
   simpa [config, fileAddressTransition, bytes32, bytes32Width, addr, endFileAddressLocals,
@@ -152,7 +152,7 @@ theorem endDecode_fileAddress_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.s
 
 theorem endDecode_fileAddress_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 68) :
-    decodeCalldataWithMode config.abiDecodeMode (fileAddressTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (fileAddressTransition.params.map Param.name)
       (transitionSignature fileAddressTransition).paramTypes I.calldata = none := by
   simpa [config, fileAddressTransition, bytes32, bytes32Width, addr, abiBytes32,
     abiBytes32Width, abiAddress] using
@@ -2247,7 +2247,7 @@ theorem endFileAddressBodyCoreStore
     (hcode : I.code = endBytecode)
     (hdispatch : dispatchMsg contract I.calldata = some fileAddressTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileAddressTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileAddressTransition.params.map Param.name)
         (transitionSignature fileAddressTransition).paramTypes I.calldata =
           some (endFileAddressLocals I))
     (hbody :

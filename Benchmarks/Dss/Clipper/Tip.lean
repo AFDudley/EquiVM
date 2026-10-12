@@ -86,9 +86,9 @@ theorem clipperDispatch_tip {I : ExecutionEnv}
 
 theorem clipperDecode_tip {I : ExecutionEnv}
     (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (tipTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (tipTransition.params.map Param.name)
       (transitionSignature tipTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  change decodeCalldataWithMode .legacySolc05 [] [] I.calldata = some ∅
   exact decodeCalldataWithMode_empty_ok hsz
 
 theorem clipperEvalTip (v : ClipperImmutables) (evm : EVM.State) (locals : Store)

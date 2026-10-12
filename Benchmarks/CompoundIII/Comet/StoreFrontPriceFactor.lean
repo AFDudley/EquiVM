@@ -59,7 +59,7 @@ theorem cometWithExtendedAssetListStoreFrontPriceFactorBody {σ σ₀ A I} {g : 
     runtimeRefinementFor config contract σ σ₀ g A I (immStore v) := by
   have hsz : 4 ≤ I.calldata.size :=
     calldata_size_ge_of_selIs I (cometWithExtendedAssetListSelBytes 7) rfl hsel
-  exact immutableGetter_refines (t := storeFrontPriceFactorTransition) hcode hsz
+  exact immutableGetter_refines (t := storeFrontPriceFactorTransition) hcode hsz (cometDecode_empty hsz)
     (cometSelectorDispatch ⟨7, by decide⟩ hsel) rfl rfl rfl
     (immStore_get_storeFrontPriceFactor v) (uint256ReturnEncoding v.storeFrontPriceFactor)
     (storeFrontPriceFactorX v hcode hsz hsize hsel)

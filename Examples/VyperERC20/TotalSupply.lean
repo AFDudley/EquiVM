@@ -231,7 +231,7 @@ theorem erc20TotalSupplyBodyCore
   have hsz := erc20TotalSupplySelector_size hsel
   have hd := erc20Dispatch_totalSupply (cd := I.calldata) hsel
   have hdec :
-      decodeCalldataWithMode vyperERC20Config.abiDecodeMode
+      vyperERC20Config.externalABI.decodeCalldata?
         (ERC20.totalSupplyTransition.params.map Param.name)
         (transitionSignature ERC20.totalSupplyTransition).paramTypes I.calldata =
           some ∅ := by

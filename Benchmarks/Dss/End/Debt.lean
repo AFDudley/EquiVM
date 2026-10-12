@@ -13,9 +13,9 @@ def debtWord (σ : AccountMap) (I : ExecutionEnv) : UInt256 :=
   solcSlotWordAt ⟨11⟩ σ I
 
 theorem endDecode_debt {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (debtTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (debtTransition.params.map Param.name)
       (transitionSignature debtTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 theorem endDebtBodyCore
@@ -24,7 +24,7 @@ theorem endDebtBodyCore
     (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some debtTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (debtTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (debtTransition.params.map Param.name)
         (transitionSignature debtTransition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD endBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) endDebtEntryPc [sel]

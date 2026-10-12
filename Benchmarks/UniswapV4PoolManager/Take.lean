@@ -59,7 +59,7 @@ theorem poolManagerTakeBody {σ σ₀ A I} {g : UInt256} (v : PoolManagerImmutab
             let amount := calldataWord I.calldata 68
             let args := (((∅ : Store).insert "currency" (.address currency)).insert "to" (.address recipient)).insert
               "amount" (.int (Int.ofNat amount.toNat))
-            have hdec : decodeCalldataWithMode config.abiDecodeMode (takeTransition.params.map Param.name)
+            have hdec : config.externalABI.decodeCalldata? (takeTransition.params.map Param.name)
                 (transitionSignature takeTransition).paramTypes I.calldata = some args :=
               decodeCalldata_address_address_uint256_ok hlen hhi hc0 hc1
             let evm := initState σ σ₀ (Sat256.ofUInt256 g) A I

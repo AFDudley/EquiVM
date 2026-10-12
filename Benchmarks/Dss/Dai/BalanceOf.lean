@@ -35,17 +35,17 @@ theorem balanceOfStorageSlot_eq_mapSlot_masked (I : ExecutionEnv) :
   rw [keyValueToWord_address_ofNat_mask]
 
 theorem daiDecode_balanceOf_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (balanceOfTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (balanceOfTransition.params.map Param.name)
       (transitionSignature balanceOfTransition).paramTypes I.calldata = some (balanceOfStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["arg0"] [addr] I.calldata = _
+  show config.externalABI.decodeCalldata? ["arg0"] [addr] I.calldata = _
   simpa [balanceOfStore, balanceOfArgValue, balanceOfArgWord, calldataWord]
     using decodeCalldata_legacyAddress_ok (cd := I.calldata) (x := "arg0") hsz36
 
 theorem daiDecode_balanceOf_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (balanceOfTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (balanceOfTransition.params.map Param.name)
       (transitionSignature balanceOfTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["arg0"] [addr] I.calldata = none
+  show config.externalABI.decodeCalldata? ["arg0"] [addr] I.calldata = none
   simpa using decodeCalldata_legacyAddress_none_short (cd := I.calldata) (x := "arg0")
     hsz4 hshort
 
@@ -157,7 +157,7 @@ theorem daiBalanceOfBodyCoreOk
     (hsz36 : 36 ≤ I.calldata.size)
     (hdispatch : dispatchMsg contract I.calldata = some balanceOfTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (balanceOfTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (balanceOfTransition.params.map Param.name)
         (transitionSignature balanceOfTransition).paramTypes I.calldata = some (balanceOfStore I))
     (hreach : ∃ k C, RD daiBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨734⟩ [sel]

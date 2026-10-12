@@ -81,7 +81,7 @@ theorem catBiteRevertUrnsDecode {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = catBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some biteTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (biteTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (biteTransition.params.map Param.name)
         (transitionSignature biteTransition).paramTypes I.calldata = some (biteLocals I))
     (hdepth : (I.depth : ℕ) < 1024)
     (hvatCode :
@@ -150,7 +150,7 @@ theorem catBiteBodyImpl {σ σ₀ A I} {g : UInt256}
     have hsz36 : 36 ≤ I.calldata.size := by omega
     have hdispatch : dispatchMsg contract I.calldata = some biteTransition := catDispatch_bite hsel
     have hdecode :
-        decodeCalldataWithMode config.abiDecodeMode (biteTransition.params.map Param.name)
+        config.externalABI.decodeCalldata? (biteTransition.params.map Param.name)
           (transitionSignature biteTransition).paramTypes I.calldata = some (biteLocals I) :=
       biteDecode_ok hsz68
     by_cases hvatCode :

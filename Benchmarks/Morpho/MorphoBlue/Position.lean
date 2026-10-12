@@ -220,7 +220,7 @@ theorem morphoPositionBody {σ σ₀ A I} {g : UInt256} (v : MorphoImmutables)
   by_cases hlen : 68 ≤ I.calldata.size
   · by_cases hbound : I.calldata.size < 2 ^ 255 + 4
     · by_cases hcanon : (calldataWord I.calldata 36).toNat < EVM.addressModulus
-      · have hdec : decodeCalldataWithMode config.abiDecodeMode
+      · have hdec : config.externalABI.decodeCalldata?
             (positionTransition.params.map Param.name)
             (transitionSignature positionTransition).paramTypes I.calldata =
             some (positionArgs I.calldata) := by

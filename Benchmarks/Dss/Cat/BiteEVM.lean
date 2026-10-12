@@ -67,7 +67,7 @@ theorem catReachBiteEntry {σ σ₀ A I} {g : Sat256}
 theorem catDecode_bite {I : ExecutionEnv}
     (hsz68 : 68 ≤ I.calldata.size) (hbig : I.calldata.size < 2 ^ 255 + 4)
     (hcanon : (calldataWord I.calldata 36).toNat < EVM.addressModulus) :
-    decodeCalldataWithMode config.abiDecodeMode (biteTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (biteTransition.params.map Param.name)
       (transitionSignature biteTransition).paramTypes I.calldata = some (biteLocals I) := by
   show decodeCalldataWithMode DecodeMode.legacySolc05 ["ilk", "urn"]
     [bytes32, addr] I.calldata = some (biteLocals I)

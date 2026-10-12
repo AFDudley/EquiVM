@@ -38,7 +38,7 @@ theorem cureDispatchDeny {I : ExecutionEnv}
   native_decide
 
 theorem cureDecode_deny_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (denyTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (denyTransition.params.map Param.name)
       (transitionSignature denyTransition).paramTypes I.calldata =
         some ((∅ : Store).insert "usr" (.address (denyUsr I))) := by
   simpa [config, denyTransition, denyUsr] using
@@ -46,7 +46,7 @@ theorem cureDecode_deny_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
 
 theorem cureDecode_deny_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (denyTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (denyTransition.params.map Param.name)
       (transitionSignature denyTransition).paramTypes I.calldata = none := by
   simpa [config, denyTransition] using
     (decodeCalldata_legacyAddress_none_short (cd := I.calldata) (x := "usr") hsz4 hshort)
@@ -188,7 +188,7 @@ theorem cureDenyBodyCore {σ σ₀ A I} {g : UInt256}
     hcode hwv hsz4 hsize hsel
   by_cases hsz36 : 36 ≤ I.calldata.size
   · have hdecode :
-        decodeCalldataWithMode config.abiDecodeMode (denyTransition.params.map Param.name)
+        config.externalABI.decodeCalldata? (denyTransition.params.map Param.name)
           (transitionSignature denyTransition).paramTypes I.calldata =
             some ((∅ : Store).insert "usr" (.address (denyUsr I))) :=
       cureDecode_deny_ok hsz36

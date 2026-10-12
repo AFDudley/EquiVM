@@ -77,7 +77,7 @@ theorem fileVowData_value_masked (I : ExecutionEnv) :
 
 
 theorem potDecode_fileVow_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (fileVowTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (fileVowTransition.params.map Param.name)
       (transitionSignature fileVowTransition).paramTypes I.calldata =
         some (fileVowLocals I) := by
   simpa [config, fileVowTransition, bytes32, bytes32Width, addr, fileVowLocals,
@@ -87,7 +87,7 @@ theorem potDecode_fileVow_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size)
 
 theorem potDecode_fileVow_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 68) :
-    decodeCalldataWithMode config.abiDecodeMode (fileVowTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (fileVowTransition.params.map Param.name)
       (transitionSignature fileVowTransition).paramTypes I.calldata = none := by
   simpa [config, fileVowTransition, bytes32, bytes32Width, addr, abiBytes32,
     abiBytes32Width, abiAddress] using
@@ -766,7 +766,7 @@ theorem potFileVowBodyCoreOk
     (hwhat : fileVowWhat I = fileVowBytes)
     (hdispatch : dispatchMsg contract I.calldata = some fileVowTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileVowTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileVowTransition.params.map Param.name)
         (transitionSignature fileVowTransition).paramTypes I.calldata = some (fileVowLocals I))
     (hreach : ∃ k C, RD potBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨637⟩ [sel]
@@ -814,7 +814,7 @@ theorem potFileVowBodyCoreStatic
     (hwhat : fileVowWhat I = fileVowBytes)
     (hdispatch : dispatchMsg contract I.calldata = some fileVowTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileVowTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileVowTransition.params.map Param.name)
         (transitionSignature fileVowTransition).paramTypes I.calldata = some (fileVowLocals I))
     (hreach : ∃ k C, RD potBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨637⟩ [sel]
@@ -837,7 +837,7 @@ theorem potFileVowBodyCoreUnauthorized
     (hauth : relyAuthWord σ I ≠ ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some fileVowTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileVowTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileVowTransition.params.map Param.name)
         (transitionSignature fileVowTransition).paramTypes I.calldata = some (fileVowLocals I))
     (hreach : ∃ k C, RD potBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨637⟩ [sel]
@@ -864,7 +864,7 @@ theorem potFileVowBodyCoreUnrecognized
     (hwhat : fileVowWhat I ≠ fileVowBytes)
     (hdispatch : dispatchMsg contract I.calldata = some fileVowTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileVowTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileVowTransition.params.map Param.name)
         (transitionSignature fileVowTransition).paramTypes I.calldata = some (fileVowLocals I))
     (hreach : ∃ k C, RD potBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨637⟩ [sel]

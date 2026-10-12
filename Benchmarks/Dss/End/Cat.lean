@@ -13,9 +13,9 @@ def catWord (σ : AccountMap) (I : ExecutionEnv) : UInt256 :=
   solcAddressSlotWord ⟨2⟩ σ I
 
 theorem endDecode_cat {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (catTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (catTransition.params.map Param.name)
       (transitionSignature catTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 abbrev endCatConcreteSelector : ByteArray := selectorBytes 0xe4 0x88 0x18 0x13
@@ -67,7 +67,7 @@ theorem endCatBodyCore
     (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some catTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (catTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (catTransition.params.map Param.name)
         (transitionSignature catTransition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD endBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1208⟩ [sel]

@@ -10,9 +10,9 @@ def kicksWord (σ : AccountMap) (I : ExecutionEnv) : UInt256 :=
   solcSlotWordAt ⟨7⟩ σ I
 
 theorem flopperDecode_kicks {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (kicksTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (kicksTransition.params.map Param.name)
       (transitionSignature kicksTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 theorem flopperReachKicksBody {σ σ₀ A I} {g : Sat256}
@@ -58,7 +58,7 @@ theorem flopperKicksBodyCore
     (hcode : I.code = flopperBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some kicksTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (kicksTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (kicksTransition.params.map Param.name)
         (transitionSignature kicksTransition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD flopperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨841⟩ [sel]

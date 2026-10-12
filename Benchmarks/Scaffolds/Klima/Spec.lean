@@ -582,8 +582,7 @@ def contract : ContractDecl :=
 
 def config : Config :=
   { storageBackend := klimaStorageBackend storageLayout
-    externalABI := klimaExternalABI
-    abiDecodeMode := DecodeMode.legacySolc05
+    externalABI := (klimaExternalABI).withMode DecodeMode.legacySolc05
     selfDeployment := genSolidityConstructorDeployment contract.ctor.params }
 
 end Benchmarks.Klima

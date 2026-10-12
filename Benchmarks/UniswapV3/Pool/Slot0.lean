@@ -213,10 +213,12 @@ theorem uniswapV3PoolSlot0Body {σ σ₀ A I} {g : UInt256} (v : UniswapV3PoolIm
   have hd : dispatchMsg contract I.calldata = some slot0Transition := by
     apply uniswapV3PoolDispatch_slot0 <;>
       first | exact hsel | exact selectorMismatch_of_match hsel (by decide +kernel)
-  have hdec : decodeCalldataWithMode config.abiDecodeMode
+  have hdec : config.externalABI.decodeCalldata?
       (slot0Transition.params.map Param.name)
       (transitionSignature slot0Transition).paramTypes
-      I.calldata = some (∅ : Store) := decodeCalldataWithMode_empty_ok hsz
+      I.calldata = some (∅ : Store) := by
+    change decodeCalldataWithMode .modern [] [] I.calldata = some (∅ : Store)
+    exact decodeCalldataWithMode_empty_ok hsz
   exact (uniswapV3PoolSlot0X (g := Sat256.ofUInt256 g) v hcode hwv hsz hsize hsel)
     |>.reEquivExecution hcode hd hdec (uniswapV3PoolSlot0Returns v _ ∅ hwv (by simp))
       (returnEquiv.returned rfl (slot0ReturnEncoding σ I))

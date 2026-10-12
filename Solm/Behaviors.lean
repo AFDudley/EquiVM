@@ -28,7 +28,7 @@ abbrev EVMResult :=
 def specRejects (cfg : Config) (contract : ContractDecl) (calldata : ByteArray) : Prop :=
   dispatchMsg contract calldata = .none ∨
   ∃ transition, selectorDispatchMsg contract calldata = .some transition ∧
-    decodeCalldataWithMode cfg.abiDecodeMode (transition.params.map Param.name)
+    cfg.externalABI.decodeCalldata? (transition.params.map Param.name)
       (transitionSignature transition).paramTypes calldata = .none
 
 /-- A bytecode result `r` is captured by the specification, run from the Solm-side inputs:

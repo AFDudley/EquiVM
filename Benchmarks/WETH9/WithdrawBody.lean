@@ -44,17 +44,17 @@ theorem weth9SelectorDispatchWithdraw {I : ExecutionEnv} (hsel : selIs I (weth9S
 
 
 theorem weth9Decode_withdraw_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (withdrawTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (withdrawTransition.params.map Param.name)
       (transitionSignature withdrawTransition).paramTypes I.calldata = some (withdrawStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["wad"] [uint256] I.calldata = _
+  show config.externalABI.decodeCalldata? ["wad"] [uint256] I.calldata = _
   simpa [withdrawStore, withdrawWadWord] using
     decodeCalldata_legacyUInt256_ok (cd := I.calldata) (x := "wad") hsz36
 
 theorem weth9Decode_withdraw_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (withdrawTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (withdrawTransition.params.map Param.name)
       (transitionSignature withdrawTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["wad"] [uint256] I.calldata = none
+  show config.externalABI.decodeCalldata? ["wad"] [uint256] I.calldata = none
   simpa using decodeCalldata_legacyUInt256_none_short (cd := I.calldata) (x := "wad") hsz4 hshort
 
 /-! ## Solm body execution

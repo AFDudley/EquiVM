@@ -76,7 +76,7 @@ theorem entryNonpayableRevert {σ σ₀ A I} {g : UInt256}
   have hd := dispatchEntry i hsel
   apply hrev.reEquivElim hcode
   intro _ _ hXi
-  by_cases hdec : decodeCalldataWithMode auctionConfig.abiDecodeMode
+  by_cases hdec : auctionConfig.externalABI.decodeCalldata?
       ((entryTransition i).params.map Param.name)
       (transitionSignature (entryTransition i)).paramTypes I.calldata = none
   · exact reEquiv_decodingFailed hd hdec hXi (by rfl) (by rfl)

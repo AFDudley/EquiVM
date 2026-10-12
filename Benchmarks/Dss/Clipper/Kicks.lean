@@ -66,9 +66,9 @@ theorem clipperDispatch_kicks {I : ExecutionEnv}
 
 theorem clipperDecode_kicks {I : ExecutionEnv}
     (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (kicksTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (kicksTransition.params.map Param.name)
       (transitionSignature kicksTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  change decodeCalldataWithMode .legacySolc05 [] [] I.calldata = some ∅
   exact decodeCalldataWithMode_empty_ok hsz
 
 theorem clipperEvalKicks (v : ClipperImmutables) (evm : EVM.State) (locals : Store)

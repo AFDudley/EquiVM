@@ -44,7 +44,7 @@ theorem endOutSlotFor_eq {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size) :
   rw [endKeyValueToWord_bytes32ArgKey (I := I) (by omega)]
 
 theorem endDecode_out_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (outTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (outTransition.params.map Param.name)
       (transitionSignature outTransition).paramTypes I.calldata =
         some (endOutLocals I) := by
   simpa [config, outTransition, endOutLocals, endBytes32ArgValue, endBytes32ArgBytes,
@@ -55,7 +55,7 @@ theorem endDecode_out_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size) :
 
 theorem endDecode_out_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 68) :
-    decodeCalldataWithMode config.abiDecodeMode (outTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (outTransition.params.map Param.name)
       (transitionSignature outTransition).paramTypes I.calldata = none := by
   simpa [config, outTransition, bytes32, bytes32Width, addr, abiBytes32, abiBytes32Width,
     abiAddress] using
@@ -107,7 +107,7 @@ theorem endOutBodyCoreOk
     (hsz68 : 68 ≤ I.calldata.size) (hsize : I.calldata.size < UInt256.size)
     (hdispatch : dispatchMsg contract I.calldata = some outTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (outTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (outTransition.params.map Param.name)
         (transitionSignature outTransition).paramTypes I.calldata = some (endOutLocals I))
     (hreach : ∃ k C, RD endBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) endOutEntryPc [sel]

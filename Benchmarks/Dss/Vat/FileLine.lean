@@ -310,7 +310,7 @@ theorem vatFileLineSourceBodyUnrecognized {σ σ₀ A I} {g : UInt256}
 
 
 theorem vatDecode_fileLine_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (fileLineTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (fileLineTransition.params.map Param.name)
       (transitionSignature fileLineTransition).paramTypes I.calldata =
         some (fileLineLocals I) := by
   simpa [config, fileLineTransition, fileLineLocals, fileLineWhat, fileLineData, bytes32,
@@ -320,7 +320,7 @@ theorem vatDecode_fileLine_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size
 
 theorem vatDecode_fileLine_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 68) :
-    decodeCalldataWithMode config.abiDecodeMode (fileLineTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (fileLineTransition.params.map Param.name)
       (transitionSignature fileLineTransition).paramTypes I.calldata = none := by
   simpa [config, fileLineTransition, bytes32, uint256, bytes32Width, uint256Int] using
     (decodeCalldata_legacyBytes32_uint256_none_short (cd := I.calldata) (x := "what")
@@ -647,7 +647,7 @@ theorem vatFileLineBodyCoreOk
     (hwhat : fileLineWhat I = fileLineBytes)
     (hdispatch : dispatchMsg contract I.calldata = some fileLineTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileLineTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileLineTransition.params.map Param.name)
         (transitionSignature fileLineTransition).paramTypes I.calldata =
           some (fileLineLocals I))
     (hreach : ∃ k C, RD vatBytecode I (Sat256.ofUInt256 g)
@@ -725,7 +725,7 @@ theorem vatFileLineBodyCoreUnauthorized
     (hauth : solcSlotWordAt (vatCallerWardsSlot I) σ I ≠ ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some fileLineTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileLineTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileLineTransition.params.map Param.name)
         (transitionSignature fileLineTransition).paramTypes I.calldata =
           some (fileLineLocals I))
     (hreach : ∃ k C, RD vatBytecode I (Sat256.ofUInt256 g)
@@ -766,7 +766,7 @@ theorem vatFileLineBodyCoreNotLive
     (hlive : solcSlotWordAt ⟨10⟩ σ I ≠ ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some fileLineTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileLineTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileLineTransition.params.map Param.name)
         (transitionSignature fileLineTransition).paramTypes I.calldata =
           some (fileLineLocals I))
     (hreach : ∃ k C, RD vatBytecode I (Sat256.ofUInt256 g)
@@ -826,7 +826,7 @@ theorem vatFileLineBodyCoreUnrecognized
     (hwhat : fileLineWhat I ≠ fileLineBytes)
     (hdispatch : dispatchMsg contract I.calldata = some fileLineTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileLineTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileLineTransition.params.map Param.name)
         (transitionSignature fileLineTransition).paramTypes I.calldata =
           some (fileLineLocals I))
     (hreach : ∃ k C, RD vatBytecode I (Sat256.ofUInt256 g)

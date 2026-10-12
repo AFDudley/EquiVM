@@ -30,7 +30,7 @@ theorem endBagSlotFor_eq (I : ExecutionEnv) :
   rw [keyValueToWord_address_ofNat_mask]
 
 theorem endDecode_bag_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (bagTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (bagTransition.params.map Param.name)
       (transitionSignature bagTransition).paramTypes I.calldata =
         some ((∅ : Store).insert "arg0" (.address (endBagArg I))) := by
   simpa [config, bagTransition, endBagArg] using
@@ -38,7 +38,7 @@ theorem endDecode_bag_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
 
 theorem endDecode_bag_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (bagTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (bagTransition.params.map Param.name)
       (transitionSignature bagTransition).paramTypes I.calldata = none := by
   simpa [config, bagTransition] using
     (decodeCalldata_legacyAddress_none_short (cd := I.calldata) (x := "arg0") hsz4 hshort)
@@ -88,7 +88,7 @@ theorem endBagBodyCoreOk
     (hsz36 : 36 ≤ I.calldata.size) (hsize : I.calldata.size < UInt256.size)
     (hdispatch : dispatchMsg contract I.calldata = some bagTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (bagTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (bagTransition.params.map Param.name)
         (transitionSignature bagTransition).paramTypes I.calldata =
           some ((∅ : Store).insert "arg0" (.address (endBagArg I))))
     (hreach : ∃ k C, RD endBytecode I (Sat256.ofUInt256 g)

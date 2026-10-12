@@ -44,9 +44,9 @@ abbrev dripNowWord (I : ExecutionEnv) : UInt256 := UInt256.ofNat I.header.timest
 /-! ## Empty-calldata decode -/
 
 theorem potDecode_drip {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (dripTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (dripTransition.params.map Param.name)
       (transitionSignature dripTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 /-! ## Reach the drip logic block `@1819` -/

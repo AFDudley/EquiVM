@@ -10,9 +10,9 @@ def baseWord (σ : AccountMap) (I : ExecutionEnv) : UInt256 :=
   solcSlotWordAt ⟨4⟩ σ I
 
 theorem jugDecode_base {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (baseTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (baseTransition.params.map Param.name)
       (transitionSignature baseTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 theorem jugReachBaseBody {σ σ₀ A I} {g : Sat256}
@@ -46,7 +46,7 @@ theorem jugBaseBodyCore
     (hcode : I.code = jugBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some baseTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (baseTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (baseTransition.params.map Param.name)
         (transitionSignature baseTransition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD jugBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨375⟩ [sel]

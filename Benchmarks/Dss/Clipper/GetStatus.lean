@@ -30,19 +30,19 @@ theorem clipperGetStatusReturnEquiv
 
 theorem clipperDecode_getStatus_ok {I : ExecutionEnv}
     (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (getStatusTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (getStatusTransition.params.map Param.name)
       (transitionSignature getStatusTransition).paramTypes I.calldata =
         some (clipperGetStatusStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["id"] [uint256] I.calldata = _
+  show config.externalABI.decodeCalldata? ["id"] [uint256] I.calldata = _
   simpa [config, clipperGetStatusStore, clipperGetStatusArgValue,
     clipperGetStatusArgWord] using
     decodeCalldata_legacyUInt256_ok (cd := I.calldata) (x := "id") hsz36
 
 theorem clipperDecode_getStatus_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (getStatusTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (getStatusTransition.params.map Param.name)
       (transitionSignature getStatusTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["id"] [uint256] I.calldata = none
+  show config.externalABI.decodeCalldata? ["id"] [uint256] I.calldata = none
   simpa [config] using
     decodeCalldata_legacyUInt256_none_short (cd := I.calldata) (x := "id")
       hsz4 hshort
@@ -296,7 +296,7 @@ theorem clipperGetStatusPostCallReturnRuntime
     (hcode : I.code = code)
     (hdispatch : dispatchMsg contract I.calldata = some getStatusTransition)
     (hdec :
-      decodeCalldataWithMode config.abiDecodeMode
+      config.externalABI.decodeCalldata?
         (getStatusTransition.params.map Param.name)
         (transitionSignature getStatusTransition).paramTypes I.calldata =
           some (clipperGetStatusStore I))

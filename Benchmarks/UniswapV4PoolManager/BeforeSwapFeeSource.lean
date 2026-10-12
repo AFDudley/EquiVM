@@ -39,7 +39,8 @@ theorem beforeSwapFeeSource {f : Frame} {evm : State} {key : PoolKeyWords} {out 
   change evalExpr? config f evm _ = .ok (.bool (decide (beforeSwapDynamic key))) at hcondition
   by_cases hd : beforeSwapDynamic key
   · rw [beforeSwapFeeFrame, if_pos hd]
-    have hdecode := evalDecodeUint256Slice (start := 64) rfl (evalLocalValue (cfg := config) (evm := evm) hr) hsize
+    have hdecode := evalDecodeUint256Slice (start := 64) (cfg := config)
+      (by intro data; rfl) (evalLocalValue (cfg := config) (evm := evm) hr) hsize
     have hcast := evalExpr_cast_int (intType := .uint ⟨24, by decide⟩) hdecode
     rw [normalizeUintWord ⟨24, by decide⟩ _ ⟨16777215⟩ rfl] at hcast
     exact ExecStmt.iteTrue (hcondition.trans (by rw [decide_eq_true hd]))

@@ -104,7 +104,7 @@ theorem balanceReturns (v : UniswapV3PoolImmutables) (second : Bool) (evm evm' :
   have hd : evalExpr? config (balanceCallFrame v second true out) evm' (.var "data") =
       .ok (.bytes out) := evalExpr_var_get (by simp [balanceCallFrame])
   simp only [evalExprs?, evalExpr?, hd, bind, EvalResult.bind, pure]
-  rw [show decodeReturnValueWithMode? config.abiDecodeMode abiUInt256 out =
+  rw [show config.externalABI.decodeValue? abiUInt256 out =
       some (.int (Int.ofNat (fromByteArrayBigEndian (out.extract 0 32)))) from
     decodeReturnValueWithMode_legacy_uint256_ok hout, balanceValue_toNat out hout]
 

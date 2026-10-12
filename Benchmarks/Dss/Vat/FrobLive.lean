@@ -1241,7 +1241,7 @@ theorem vatFrobBodyCoreLiveRateZeroRevert
     (hsel : selIs I (vatSelBytes 11))
     (hsz196 : 196 ≤ I.calldata.size)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (frobTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (frobTransition.params.map Param.name)
         (transitionSignature frobTransition).paramTypes I.calldata = some (frobStore I))
     (hdecoded :
       ∃ k C,
@@ -3757,7 +3757,7 @@ theorem vatFrobBodyCoreLiveAddOverflowReverts
     (hsel : selIs I (vatSelBytes 11))
     (hsz196 : 196 ≤ I.calldata.size)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (frobTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (frobTransition.params.map Param.name)
         (transitionSignature frobTransition).paramTypes I.calldata = some (frobStore I))
     (hdecoded :
       ∃ k C,
@@ -4261,7 +4261,7 @@ theorem vatFrobBodyCoreLiveMulOverflowReverts
     (hsel : selIs I (vatSelBytes 11))
     (hsz196 : 196 ≤ I.calldata.size)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (frobTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (frobTransition.params.map Param.name)
         (transitionSignature frobTransition).paramTypes I.calldata = some (frobStore I))
     (hdecoded :
       ∃ k C,
@@ -4616,7 +4616,7 @@ theorem vatFrobBodyCoreLiveFinalArithmeticOverflowReverts
     (hsel : selIs I (vatSelBytes 11))
     (hsz196 : 196 ≤ I.calldata.size)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (frobTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (frobTransition.params.map Param.name)
         (transitionSignature frobTransition).paramTypes I.calldata = some (frobStore I))
     (hdecoded :
       ∃ k C,
@@ -5442,7 +5442,7 @@ theorem vatFrobBodyCoreLiveArithmeticOverflowReverts
     (hsel : selIs I (vatSelBytes 11))
     (hsz196 : 196 ≤ I.calldata.size)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (frobTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (frobTransition.params.map Param.name)
         (transitionSignature frobTransition).paramTypes I.calldata = some (frobStore I))
     (hdecoded :
       ∃ k C,
@@ -5480,7 +5480,7 @@ theorem vatFrobBodyCoreLiveDebtCeilingSafetyReverts
     (hsel : selIs I (vatSelBytes 11))
     (hsz196 : 196 ≤ I.calldata.size)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (frobTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (frobTransition.params.map Param.name)
         (transitionSignature frobTransition).paramTypes I.calldata = some (frobStore I))
     (hdecoded :
       ∃ k C,
@@ -6100,7 +6100,7 @@ theorem vatFrobBodyCoreLiveWishAuthDustReverts
     (hsel : selIs I (vatSelBytes 11))
     (hsz196 : 196 ≤ I.calldata.size)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (frobTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (frobTransition.params.map Param.name)
         (transitionSignature frobTransition).paramTypes I.calldata = some (frobStore I))
     (hdecoded :
       ∃ k C,
@@ -6932,7 +6932,7 @@ theorem vatFrobBodyCoreLive
     (hsel : selIs I (vatSelBytes 11))
     (hsz196 : 196 ≤ I.calldata.size)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (frobTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (frobTransition.params.map Param.name)
         (transitionSignature frobTransition).paramTypes I.calldata = some (frobStore I))
     (hdecoded :
       ∃ k C,

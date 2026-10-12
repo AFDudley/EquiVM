@@ -90,10 +90,10 @@ theorem approveStorageSlot_eq_mapSlot_masked (I : ExecutionEnv) :
   rw [keyValueToWord_address_ofNat_mask, keyValueToWord_address]
 
 theorem daiDecode_approve_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (approveTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (approveTransition.params.map Param.name)
       (transitionSignature approveTransition).paramTypes I.calldata =
         some (approveStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["usr", "wad"] [addr, uint256]
+  show config.externalABI.decodeCalldata? ["usr", "wad"] [addr, uint256]
     I.calldata = _
   simpa [approveStore, approveUsrValue, approveWadValue, approveUsrWord, approveWadWord,
     calldataWord]
@@ -102,9 +102,9 @@ theorem daiDecode_approve_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size)
 
 theorem daiDecode_approve_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 68) :
-    decodeCalldataWithMode config.abiDecodeMode (approveTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (approveTransition.params.map Param.name)
       (transitionSignature approveTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["usr", "wad"] [addr, uint256]
+  show config.externalABI.decodeCalldata? ["usr", "wad"] [addr, uint256]
     I.calldata = none
   simpa using decodeCalldata_legacyAddress_uint256_none_short
     (cd := I.calldata) (x := "usr") (y := "wad") hsz4 hshort
@@ -477,7 +477,7 @@ theorem daiApproveBodyCoreStatic
     (hsz68 : 68 ≤ I.calldata.size)
     (hdispatch : dispatchMsg contract I.calldata = some approveTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (approveTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (approveTransition.params.map Param.name)
         (transitionSignature approveTransition).paramTypes I.calldata =
           some (approveStore I))
     (hreach : ∃ k C, RD daiBytecode I (Sat256.ofUInt256 g)
@@ -505,7 +505,7 @@ theorem daiApproveBodyCoreOk
     (hsz68 : 68 ≤ I.calldata.size)
     (hdispatch : dispatchMsg contract I.calldata = some approveTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (approveTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (approveTransition.params.map Param.name)
         (transitionSignature approveTransition).paramTypes I.calldata =
           some (approveStore I))
     (hreach : ∃ k C, RD daiBytecode I (Sat256.ofUInt256 g)

@@ -2659,9 +2659,9 @@ theorem endSnipGrabEncodeFor_eq (σCall σLoc : AccountMap) (I : ExecutionEnv)
     ByteArray.append_assoc]
 
 theorem endDecode_snip_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (snipTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (snipTransition.params.map Param.name)
       (transitionSignature snipTransition).paramTypes I.calldata = some (endSnipStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["ilk", "id"] [bytes32, uint256]
+  show config.externalABI.decodeCalldata? ["ilk", "id"] [bytes32, uint256]
     I.calldata = _
   simpa [config, snipTransition, bytes32, bytes32Width, uint256, uint256Int,
     endSnipStore, endSnipIlkBytes, endSnipIdWord, abiBytes32, abiBytes32Width,
@@ -2671,9 +2671,9 @@ theorem endDecode_snip_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size) :
 
 theorem endDecode_snip_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 68) :
-    decodeCalldataWithMode config.abiDecodeMode (snipTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (snipTransition.params.map Param.name)
       (transitionSignature snipTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["ilk", "id"] [bytes32, uint256]
+  show config.externalABI.decodeCalldata? ["ilk", "id"] [bytes32, uint256]
     I.calldata = none
   simpa [config, snipTransition, bytes32, bytes32Width, uint256, uint256Int,
     abiBytes32, abiBytes32Width, abiUInt256] using

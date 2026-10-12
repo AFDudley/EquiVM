@@ -26,10 +26,11 @@ theorem cometWithExtendedAssetListGetReservesBody {σ σ₀ A I} {g : UInt256} (
   have hsz : 4 ≤ I.calldata.size := calldata_size_ge_of_selIs I (cometWithExtendedAssetListSelBytes 1) rfl hsel
   have hd : selectorDispatchMsg contract I.calldata = some getReservesTransition :=
     cometSelectorDispatch ⟨1, by decide⟩ hsel
-  have hdec : decodeCalldataWithMode config.abiDecodeMode
+  have hdec : config.externalABI.decodeCalldata?
       (getReservesTransition.params.map Param.name)
-      (transitionSignature getReservesTransition).paramTypes I.calldata = some (∅ : Store) :=
-    decodeCalldataWithMode_empty_ok hsz
+      (transitionSignature getReservesTransition).paramTypes I.calldata = some (∅ : Store) := by
+    change decodeCalldataWithMode .solc0815 [] [] I.calldata = some (∅ : Store)
+    exact decodeCalldataWithMode_empty_ok hsz
   have hX := getReservesX (σ := σ) (σ₀ := σ₀) (A := A)
     (g := Sat256.ofUInt256 g) v hcode hsz hsize hsel
   by_cases hv : I.weiValue = ⟨0⟩

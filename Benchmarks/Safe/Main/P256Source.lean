@@ -65,7 +65,7 @@ theorem evalP256Result (evm : EVM.State) (p : P256Input) (z : Bool) (out : ByteA
     (by simp [p256FinalFrame, Std.HashMap.getElem_insert])
   intro ho
   have hd := decodeReturnUint_long (out := out) (by omega) (by rw [ho]; decide)
-  change ABI.decodeReturnValueWithMode? config.abiDecodeMode uint256 out = _ at hd
+  change config.externalABI.decodeValue? uint256 out = _ at hd
   have he : (Value.int (Int.ofNat (calldataWord out 0).toNat) == Value.int 1) =
       decide (calldataWord out 0 = ⟨1⟩) := by
     apply Bool.eq_iff_iff.mpr

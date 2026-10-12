@@ -287,7 +287,7 @@ theorem morphoSetFeeRecipientBody {σ σ₀ A I} {g : UInt256} (v : MorphoImmuta
   by_cases hlen : 36 ≤ I.calldata.size
   · by_cases hbound : I.calldata.size < 2 ^ 255 + 4
     · by_cases hcanon : (calldataWord I.calldata 4).toNat < EVM.addressModulus
-      · have hdec : decodeCalldataWithMode config.abiDecodeMode
+      · have hdec : config.externalABI.decodeCalldata?
             (setFeeRecipientTransition.params.map Param.name)
             (transitionSignature setFeeRecipientTransition).paramTypes I.calldata =
             some (setFeeRecipientArgs I.calldata) := decodeCalldata_address_ok hlen hbound hcanon

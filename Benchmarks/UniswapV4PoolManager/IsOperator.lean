@@ -116,7 +116,7 @@ theorem poolManagerIsOperatorBodyCore {σ σ₀ A I} {g : UInt256} (v : PoolMana
             obtain ⟨k'', C'', rdReturn1⟩ := decodeAddress36 v (by simp) hcanon1 hjumpReturn1 rdAddr1
             have hret := isOperatorTrace v (by simp) hcanon hcanon1 rdReturn1
             let args := (((∅ : Store).insert "arg0" (.address (AccountAddress.ofNat (calldataWord I.calldata 4).toNat)))).insert "arg1" (.address (AccountAddress.ofNat (calldataWord I.calldata 36).toNat))
-            have hdec : decodeCalldataWithMode config.abiDecodeMode
+            have hdec : config.externalABI.decodeCalldata?
                 (isOperatorTransition.params.map Param.name)
                 (transitionSignature isOperatorTransition).paramTypes I.calldata = some args :=
               decodeCalldata_address_address_ok hlen hhi hcanon hcanon1

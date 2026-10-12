@@ -177,14 +177,14 @@ theorem catDispatch_claw {I : ExecutionEnv}
     exact hsel
 
 theorem catDecode_claw_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (clawTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (clawTransition.params.map Param.name)
       (transitionSignature clawTransition).paramTypes I.calldata = some (clawLocals I) := by
   simpa [config, clawTransition, clawRad, clawLocals, uint256] using
     (decodeCalldata_legacyUInt256_ok (cd := I.calldata) (x := "rad") hsz36)
 
 theorem catDecode_claw_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (clawTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (clawTransition.params.map Param.name)
       (transitionSignature clawTransition).paramTypes I.calldata = none := by
   simpa [config, clawTransition, uint256] using
     (decodeCalldata_legacyUInt256_none_short (cd := I.calldata) (x := "rad") hsz4 hshort)
@@ -227,7 +227,7 @@ theorem catClawBodyCore
     (hsize : I.calldata.size < UInt256.size)
     (hdispatch : dispatchMsg contract I.calldata = some clawTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (clawTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (clawTransition.params.map Param.name)
         (transitionSignature clawTransition).paramTypes I.calldata = some (clawLocals I))
     (hreach : ∃ k C, RD catBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨704⟩ [sel]

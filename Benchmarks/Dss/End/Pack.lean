@@ -2467,17 +2467,17 @@ theorem endPackBodyReturns {σ σ₀ A I} {g : UInt256}
   (endPackBodyReturnsSplit hwv hdebt hfit hcodeSize hcall hsrcMove hfitAdd).1
 
 theorem endDecode_pack_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (packTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (packTransition.params.map Param.name)
       (transitionSignature packTransition).paramTypes I.calldata = some (endPackStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["wad"] [uint256] I.calldata = _
+  show config.externalABI.decodeCalldata? ["wad"] [uint256] I.calldata = _
   simpa [config, endPackStore, endPackWadValue, endPackWadWord, uint256, uint256Int]
     using decode_legacyUint256_ok (cd := I.calldata) (x := "wad") hsz36
 
 theorem endDecode_pack_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (packTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (packTransition.params.map Param.name)
       (transitionSignature packTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["wad"] [uint256] I.calldata = none
+  show config.externalABI.decodeCalldata? ["wad"] [uint256] I.calldata = none
   simpa [config, uint256, uint256Int] using
     decode_legacyUint256_none_short (cd := I.calldata) (x := "wad") hsz4 hshort
 
