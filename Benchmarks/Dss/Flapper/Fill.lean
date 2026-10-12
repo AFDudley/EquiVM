@@ -10,9 +10,9 @@ def fillWord (σ : AccountMap) (I : ExecutionEnv) : UInt256 :=
   solcSlotWordAt ⟨9⟩ σ I
 
 theorem flapperDecode_fill {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (fillTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (fillTransition.params.map Param.name)
       (transitionSignature fillTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 theorem flapperReachFillBody {σ σ₀ A I} {g : Sat256}

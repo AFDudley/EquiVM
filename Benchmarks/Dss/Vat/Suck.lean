@@ -1665,9 +1665,9 @@ theorem vatSuckSourceRevertSinOverflow
   simpa [ExecTransitionBody, evm0] using ExecFuncBody.execBlockRevert hblock
 
 theorem vatDecode_suck_ok {I : ExecutionEnv} (hsz100 : 100 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (suckTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (suckTransition.params.map Param.name)
       (transitionSignature suckTransition).paramTypes I.calldata = some (suckStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["u", "v", "rad"]
+  show config.externalABI.decodeCalldata? ["u", "v", "rad"]
     [addr, addr, uint256] I.calldata = _
   change decodeCalldataWithMode DecodeMode.legacySolc05 ["u", "v", "rad"]
       [abiAddress, abiAddress, abiUInt256] I.calldata =
@@ -1681,9 +1681,9 @@ theorem vatDecode_suck_ok {I : ExecutionEnv} (hsz100 : 100 ≤ I.calldata.size) 
 
 theorem vatDecode_suck_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 100) :
-    decodeCalldataWithMode config.abiDecodeMode (suckTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (suckTransition.params.map Param.name)
       (transitionSignature suckTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["u", "v", "rad"]
+  show config.externalABI.decodeCalldata? ["u", "v", "rad"]
     [addr, addr, uint256] I.calldata = none
   change decodeCalldataWithMode DecodeMode.legacySolc05 ["u", "v", "rad"]
     [abiAddress, abiAddress, abiUInt256] I.calldata = none
@@ -2427,7 +2427,7 @@ theorem vatSuckFinishSuccess
     (hperm : I.perm = true)
     (hdispatch : dispatchMsg contract I.calldata = some suckTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (suckTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (suckTransition.params.map Param.name)
         (transitionSignature suckTransition).paramTypes I.calldata = some (suckStore I))
     (hbody :
       ExecTransitionBody config contract
@@ -2481,7 +2481,7 @@ theorem vatSuckAfterDaiViceOverflow
     (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some suckTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (suckTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (suckTransition.params.map Param.name)
         (transitionSignature suckTransition).paramTypes I.calldata = some (suckStore I))
     (hauthSolm : solcSlotWordAt (vatCallerWardsSlot I) σ I = ⟨1⟩)
     (hsinFitSolmVat :
@@ -2538,7 +2538,7 @@ theorem vatSuckAfterViceDebtOverflow
     (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some suckTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (suckTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (suckTransition.params.map Param.name)
         (transitionSignature suckTransition).paramTypes I.calldata = some (suckStore I))
     (hauthSolm : solcSlotWordAt (vatCallerWardsSlot I) σ I = ⟨1⟩)
     (hsinFitSolmVat :
@@ -2617,7 +2617,7 @@ theorem vatSuckAfterDaiStore
     (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some suckTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (suckTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (suckTransition.params.map Param.name)
         (transitionSignature suckTransition).paramTypes I.calldata = some (suckStore I))
     (hauthSolm : solcSlotWordAt (vatCallerWardsSlot I) σ I = ⟨1⟩)
     (hsinFitSolmVat :

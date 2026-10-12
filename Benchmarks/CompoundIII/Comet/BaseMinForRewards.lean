@@ -59,7 +59,7 @@ theorem cometWithExtendedAssetListBaseMinForRewardsBody {σ σ₀ A I} {g : UInt
     runtimeRefinementFor config contract σ σ₀ g A I (immStore v) := by
   have hsz : 4 ≤ I.calldata.size :=
     calldata_size_ge_of_selIs I (cometWithExtendedAssetListSelBytes 40) rfl hsel
-  exact immutableGetter_refines (t := baseMinForRewardsTransition) hcode hsz
+  exact immutableGetter_refines (t := baseMinForRewardsTransition) hcode hsz (cometDecode_empty hsz)
     (cometSelectorDispatch ⟨40, by decide⟩ hsel) rfl rfl rfl
     (immStore_get_baseMinForRewards v) (uint256ReturnEncoding v.baseMinForRewards)
     (baseMinForRewardsX v hcode hsz hsize hsel)

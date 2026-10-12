@@ -41,10 +41,11 @@ theorem poolManagerProtocolFeeControllerBodyCore {σ σ₀ A I} {g : UInt256} (v
     apply poolManagerDispatch_protocolFeeController <;> first
     | exact hsel
     | exact selectorNe_of_selIs hsel (by decide +kernel)
-  have hdec : decodeCalldataWithMode config.abiDecodeMode
+  have hdec : config.externalABI.decodeCalldata?
       (protocolFeeControllerTransition.params.map Param.name)
-      (transitionSignature protocolFeeControllerTransition).paramTypes I.calldata = some ∅ :=
-    decodeCalldataWithMode_empty_ok hsz
+      (transitionSignature protocolFeeControllerTransition).paramTypes I.calldata = some ∅ := by
+    change decodeCalldataWithMode .modern [] [] I.calldata = some ∅
+    exact decodeCalldataWithMode_empty_ok hsz
   obtain ⟨k, C, rdEntry⟩ := poolManagerReachProtocolFeeControllerBody (σ := σ) (σ₀ := σ₀) (A := A)
     (g := Sat256.ofUInt256 g) v hcode hsz hsize hsel
   change RD (deployedRuntime v) I (Sat256.ofUInt256 g)

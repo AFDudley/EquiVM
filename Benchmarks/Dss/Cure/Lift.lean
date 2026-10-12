@@ -721,7 +721,7 @@ theorem cureDispatchLift {I : ExecutionEnv}
   native_decide
 
 theorem cureDecode_lift_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (liftTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (liftTransition.params.map Param.name)
       (transitionSignature liftTransition).paramTypes I.calldata =
         some (liftLocals I) := by
   simpa [config, liftTransition, liftLocals, liftSrc] using
@@ -729,7 +729,7 @@ theorem cureDecode_lift_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
 
 theorem cureDecode_lift_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (liftTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (liftTransition.params.map Param.name)
       (transitionSignature liftTransition).paramTypes I.calldata = none := by
   simpa [config, liftTransition] using
     (decodeCalldata_legacyAddress_none_short (cd := I.calldata) (x := "src") hsz4 hshort)
@@ -769,7 +769,7 @@ theorem cureLiftBodyCore {σ σ₀ A I} {g : UInt256}
     hcode hwv hsz4 hsize hsel
   by_cases hsz36 : 36 ≤ I.calldata.size
   · have hdecode :
-        decodeCalldataWithMode config.abiDecodeMode (liftTransition.params.map Param.name)
+        config.externalABI.decodeCalldata? (liftTransition.params.map Param.name)
           (transitionSignature liftTransition).paramTypes I.calldata = some (liftLocals I) :=
       cureDecode_lift_ok hsz36
     have hcallerWord : solcSlotWordAt callerSlot σ I = solcSlotWordAt callerSlot σ I := rfl

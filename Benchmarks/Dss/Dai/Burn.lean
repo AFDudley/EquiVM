@@ -1966,9 +1966,9 @@ theorem daiBurnX_tailSupplyRevert {σ I} {g : Sat256} {s0 : State}
     husrEnough hltSupply (by simpa using h)
 
 theorem daiDecode_burn_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (burnTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (burnTransition.params.map Param.name)
       (transitionSignature burnTransition).paramTypes I.calldata = some (burnStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["usr", "wad"] [addr, uint256]
+  show config.externalABI.decodeCalldata? ["usr", "wad"] [addr, uint256]
     I.calldata = _
   simpa [burnStore, burnUsrValue, burnWadValue, burnUsrWord, burnWadWord, calldataWord]
     using decodeCalldata_legacyAddress_uint256_ok
@@ -1976,9 +1976,9 @@ theorem daiDecode_burn_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size) :
 
 theorem daiDecode_burn_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 68) :
-    decodeCalldataWithMode config.abiDecodeMode (burnTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (burnTransition.params.map Param.name)
       (transitionSignature burnTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["usr", "wad"] [addr, uint256]
+  show config.externalABI.decodeCalldata? ["usr", "wad"] [addr, uint256]
     I.calldata = none
   simpa using decodeCalldata_legacyAddress_uint256_none_short
     (cd := I.calldata) (x := "usr") (y := "wad") hsz4 hshort

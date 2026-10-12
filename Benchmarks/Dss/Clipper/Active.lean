@@ -63,18 +63,18 @@ theorem clipperDispatch_active {I : ExecutionEnv}
 
 theorem clipperDecode_active_ok {I : ExecutionEnv}
     (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (activeTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (activeTransition.params.map Param.name)
       (transitionSignature activeTransition).paramTypes I.calldata =
         some (clipperActiveStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["arg0"] [uint256] I.calldata = _
+  show config.externalABI.decodeCalldata? ["arg0"] [uint256] I.calldata = _
   simpa [config, clipperActiveStore, clipperActiveArgValue, clipperActiveArgWord] using
     decodeCalldata_legacyUInt256_ok (cd := I.calldata) (x := "arg0") hsz36
 
 theorem clipperDecode_active_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (activeTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (activeTransition.params.map Param.name)
       (transitionSignature activeTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["arg0"] [uint256] I.calldata = none
+  show config.externalABI.decodeCalldata? ["arg0"] [uint256] I.calldata = none
   simpa [config] using
     decodeCalldata_legacyUInt256_none_short (cd := I.calldata) (x := "arg0")
       hsz4 hshort

@@ -13,9 +13,9 @@ def spotWord (σ : AccountMap) (I : ExecutionEnv) : UInt256 :=
   solcAddressSlotWord ⟨6⟩ σ I
 
 theorem endDecode_spot {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (spotTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (spotTransition.params.map Param.name)
       (transitionSignature spotTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 abbrev endSpotConcreteSelector : ByteArray := selectorBytes 0x6f 0x26 0x5b 0x93
@@ -67,7 +67,7 @@ theorem endSpotBodyCore
     (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some spotTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (spotTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (spotTransition.params.map Param.name)
         (transitionSignature spotTransition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD endBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨835⟩ [sel]

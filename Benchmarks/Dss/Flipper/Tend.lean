@@ -673,7 +673,7 @@ theorem flipperTendDecodePushMask2946 :
   native_decide
 
 theorem flipperDecode_tend_ok {I : ExecutionEnv} (hsz100 : 100 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (tendTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (tendTransition.params.map Param.name)
       (transitionSignature tendTransition).paramTypes I.calldata =
         some (tendLocals I) := by
   change decodeCalldataWithMode DecodeMode.legacySolc05 ["id", "lot", "bid"]
@@ -683,7 +683,7 @@ theorem flipperDecode_tend_ok {I : ExecutionEnv} (hsz100 : 100 ≤ I.calldata.si
 
 theorem flipperDecode_tend_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 100) :
-    decodeCalldataWithMode config.abiDecodeMode (tendTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (tendTransition.params.map Param.name)
       (transitionSignature tendTransition).paramTypes I.calldata = none := by
   change decodeCalldataWithMode DecodeMode.legacySolc05 ["id", "lot", "bid"]
       [abiUInt256, abiUInt256, abiUInt256] I.calldata = none

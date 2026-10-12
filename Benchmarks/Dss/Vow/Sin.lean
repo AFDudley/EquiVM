@@ -33,9 +33,9 @@ theorem vowDispatch_Sin {I : ExecutionEnv} (hsel : selIs I ⟨#[0xd0, 0xad, 0xc3
     exact hsel
 
 theorem vowDecode_Sin {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (SinTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (SinTransition.params.map Param.name)
       (transitionSignature SinTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 theorem vowReachSinBody {σ σ₀ A I} {g : Sat256}
@@ -72,7 +72,7 @@ theorem vowSinBodyCore
     (hcode : I.code = vowBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some SinTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (SinTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (SinTransition.params.map Param.name)
         (transitionSignature SinTransition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD vowBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨729⟩ [sel]

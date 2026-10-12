@@ -212,9 +212,9 @@ theorem weth9SelectorDispatchName {I : ExecutionEnv} (hsel : selIs I (weth9SelBy
 
 /-- `name()` has no parameters: its ABI decode yields the empty store. -/
 theorem weth9Decode_name_ok {I : ExecutionEnv} (hsz4 : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (nameTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (nameTransition.params.map Param.name)
       (transitionSignature nameTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some (∅ : Store)
+  change decodeCalldataWithMode .modern [] [] I.calldata = some (∅ : Store)
   exact decodeCalldataWithMode_empty_ok hsz4
 
 theorem weth9NameBodyCore {σ σ₀ A I} {g : UInt256}

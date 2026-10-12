@@ -185,7 +185,7 @@ theorem cureDispatchRely {I : ExecutionEnv}
   native_decide
 
 theorem cureDecode_rely_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (relyTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (relyTransition.params.map Param.name)
       (transitionSignature relyTransition).paramTypes I.calldata =
         some ((∅ : Store).insert "usr" (.address (relyUsr I))) := by
   simpa [config, relyTransition, relyUsr] using
@@ -193,7 +193,7 @@ theorem cureDecode_rely_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
 
 theorem cureDecode_rely_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (relyTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (relyTransition.params.map Param.name)
       (transitionSignature relyTransition).paramTypes I.calldata = none := by
   simpa [config, relyTransition] using
     (decodeCalldata_legacyAddress_none_short (cd := I.calldata) (x := "usr") hsz4 hshort)
@@ -589,7 +589,7 @@ theorem cureRelyBodyCore {σ σ₀ A I} {g : UInt256}
     hcode hwv hsz4 hsize hsel
   by_cases hsz36 : 36 ≤ I.calldata.size
   · have hdecode :
-        decodeCalldataWithMode config.abiDecodeMode (relyTransition.params.map Param.name)
+        config.externalABI.decodeCalldata? (relyTransition.params.map Param.name)
           (transitionSignature relyTransition).paramTypes I.calldata =
             some ((∅ : Store).insert "usr" (.address (relyUsr I))) :=
       cureDecode_rely_ok hsz36

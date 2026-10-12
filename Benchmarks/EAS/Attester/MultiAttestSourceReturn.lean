@@ -114,7 +114,8 @@ theorem multiAttestSourceReturnDecodeFailure {imms locals : Store} {evm : State}
   change evalExpr? config ⟨contract, locals, imms⟩ evm
     (.abiDecode bytes32Array (.var "rawReturn")) = .revert
   simp only [evalExpr?, hout, EvalResult.ofOption, bind, EvalResult.bind,
-    show config.abiDecodeMode = .modern from rfl, decodeReturnValueWithMode?, hdecode]
+    show config.externalABI.decodeValue? bytes32Array out =
+      decodeReturnValue? bytes32Array out from rfl, hdecode]
 
 theorem multiAttestSourceReturnDecode {imms locals : Store} {evm : State} {out : ByteArray}
     {result : ExecResult} (hout : locals.get? "rawReturn" = some (.bytes out))
@@ -127,7 +128,8 @@ theorem multiAttestSourceReturnDecode {imms locals : Store} {evm : State} {out :
   change evalExpr? config ⟨contract, locals, imms⟩ evm
     (.abiDecode bytes32Array (.var "rawReturn")) = .ok (.array (returnArrayValues out))
   simp only [evalExpr?, hout, EvalResult.ofOption, bind, EvalResult.bind,
-    show config.abiDecodeMode = .modern from rfl, decodeReturnValueWithMode?, hdecode, pure]
+    show config.externalABI.decodeValue? bytes32Array out =
+      decodeReturnValue? bytes32Array out from rfl, hdecode, pure]
 
 theorem multiAttestSourceReturn {imms locals : Store} {evm : State} {base : Nat} {out : ByteArray}
     (hbase : locals.get? "allocationEnd" = some (.int (Int.ofNat base)))

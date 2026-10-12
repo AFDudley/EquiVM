@@ -40,9 +40,9 @@ theorem vowDispatch_wait {I : ExecutionEnv} (hsel : selIs I ⟨#[0x64, 0xbd, 0x7
     exact hsel
 
 theorem vowDecode_wait {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (waitTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (waitTransition.params.map Param.name)
       (transitionSignature waitTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 theorem vowReachWaitBody {σ σ₀ A I} {g : Sat256}
@@ -79,7 +79,7 @@ theorem vowWaitBodyCore
     (hcode : I.code = vowBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some waitTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (waitTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (waitTransition.params.map Param.name)
         (transitionSignature waitTransition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD vowBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨509⟩ [sel]

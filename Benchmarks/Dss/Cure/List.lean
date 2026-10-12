@@ -1425,9 +1425,9 @@ theorem cureDispatchList {I : ExecutionEnv}
   native_decide
 
 theorem cureDecode_list {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (listTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (listTransition.params.map Param.name)
       (transitionSignature listTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 set_option maxHeartbeats 8000000 in
@@ -1509,7 +1509,7 @@ theorem cureListBodyCore {σ σ₀ A I} {g : UInt256}
   have hdispatch : dispatchMsg contract I.calldata = some listTransition :=
     cureDispatchList hsel
   have hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (listTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (listTransition.params.map Param.name)
         (transitionSignature listTransition).paramTypes I.calldata = some ∅ :=
     cureDecode_list hsz
   have hreach := cureReachListBody (σ := σ)

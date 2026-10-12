@@ -632,7 +632,7 @@ theorem uniswapSkimBodyCoreRevert_locked
         ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some skimTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (skimTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (skimTransition.params.map Param.name)
         (transitionSignature skimTransition).paramTypes I.calldata = some (skimStore I))
     (hRuntime :
       RDrev uniswapV2PairBytecode (Sat256.ofUInt256 g)
@@ -685,7 +685,7 @@ theorem uniswapSkimBodyCoreRevert_firstNoCode
         ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some skimTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (skimTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (skimTransition.params.map Param.name)
         (transitionSignature skimTransition).paramTypes I.calldata = some (skimStore I))
     (hRuntime :
       RDrev uniswapV2PairBytecode (Sat256.ofUInt256 g)
@@ -721,7 +721,7 @@ theorem uniswapSkimBodyCoreRevert_firstCallDepth
         ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some skimTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (skimTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (skimTransition.params.map Param.name)
         (transitionSignature skimTransition).paramTypes I.calldata = some (skimStore I))
     (hRuntime :
       RDrev uniswapV2PairBytecode (Sat256.ofUInt256 g)
@@ -769,7 +769,7 @@ theorem uniswapSkimBodyRevert_locked
         ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some skimTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (skimTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (skimTransition.params.map Param.name)
         (transitionSignature skimTransition).paramTypes I.calldata = some (skimStore I))
     (hRuntime :
       RDrev uniswapV2PairBytecode (Sat256.ofUInt256 g)
@@ -806,7 +806,7 @@ theorem uniswapSkimBodyRevert_firstNoCode
         ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some skimTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (skimTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (skimTransition.params.map Param.name)
         (transitionSignature skimTransition).paramTypes I.calldata = some (skimStore I))
     (hRuntime :
       RDrev uniswapV2PairBytecode (Sat256.ofUInt256 g)

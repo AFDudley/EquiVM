@@ -587,7 +587,7 @@ theorem potExitX_mulOverflowReverts {σ'' I} {g : Sat256} {s0 : State} {k C : �
 
 
 theorem potDecode_exit_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (exitTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (exitTransition.params.map Param.name)
       (transitionSignature exitTransition).paramTypes I.calldata =
         some ((∅ : Store).insert "wad" (.int (Int.ofNat (joinWadWord I).toNat))) := by
   show decodeCalldataWithMode DecodeMode.legacySolc05 ["wad"] [abiUInt256] I.calldata = _
@@ -595,7 +595,7 @@ theorem potDecode_exit_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
 
 theorem potDecode_exit_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (exitTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (exitTransition.params.map Param.name)
       (transitionSignature exitTransition).paramTypes I.calldata = none := by
   show decodeCalldataWithMode DecodeMode.legacySolc05 ["wad"] [abiUInt256] I.calldata = _
   exact decodeCalldata_legacyUInt256_none_short (cd := I.calldata) (x := "wad") hsz4 hshort

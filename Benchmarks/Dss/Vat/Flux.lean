@@ -1845,9 +1845,9 @@ theorem vatFluxSourceRevertDstOverflow
 
 set_option maxHeartbeats 0 in
 theorem vatDecode_flux_ok {I : ExecutionEnv} (hsz132 : 132 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (fluxTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (fluxTransition.params.map Param.name)
       (transitionSignature fluxTransition).paramTypes I.calldata = some (fluxStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["ilk", "src", "dst", "wad"]
+  show config.externalABI.decodeCalldata? ["ilk", "src", "dst", "wad"]
     [bytes32, addr, addr, uint256] I.calldata = _
   change decodeCalldataWithMode DecodeMode.legacySolc05 ["ilk", "src", "dst", "wad"]
     [bytes32, addr, addr, uint256] I.calldata = some (fluxStore I)
@@ -1858,9 +1858,9 @@ theorem vatDecode_flux_ok {I : ExecutionEnv} (hsz132 : 132 ≤ I.calldata.size) 
 
 theorem vatDecode_flux_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 132) :
-    decodeCalldataWithMode config.abiDecodeMode (fluxTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (fluxTransition.params.map Param.name)
       (transitionSignature fluxTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["ilk", "src", "dst", "wad"]
+  show config.externalABI.decodeCalldata? ["ilk", "src", "dst", "wad"]
     [bytes32, addr, addr, uint256] I.calldata = none
   change decodeCalldataWithMode DecodeMode.legacySolc05 ["ilk", "src", "dst", "wad"]
     [bytes32, addr, addr, uint256] I.calldata = none
@@ -2019,7 +2019,7 @@ theorem vatFluxAuthorizedPath
     (hsz132 : 132 ≤ I.calldata.size)
     (hdispatch : dispatchMsg contract I.calldata = some fluxTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fluxTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fluxTransition.params.map Param.name)
         (transitionSignature fluxTransition).paramTypes I.calldata = some (fluxStore I))
     (hmemWish : memWish.size = 96)
     (hwishSolm :

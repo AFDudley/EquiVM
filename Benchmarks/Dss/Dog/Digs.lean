@@ -50,7 +50,7 @@ abbrev dogDigsLogTopic : UInt256 :=
 
 theorem dogDecode_digs_ok {I : ExecutionEnv}
     (hsz68 : 68 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (digsTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (digsTransition.params.map Param.name)
       (transitionSignature digsTransition).paramTypes I.calldata =
         some (digsLocals I) := by
   simpa [config, digsTransition, bytes32, bytes32Width, uint256, uint256Int,
@@ -61,7 +61,7 @@ theorem dogDecode_digs_ok {I : ExecutionEnv}
 
 theorem dogDecode_digs_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 68) :
-    decodeCalldataWithMode config.abiDecodeMode (digsTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (digsTransition.params.map Param.name)
       (transitionSignature digsTransition).paramTypes I.calldata = none := by
   simpa [config, digsTransition, bytes32, bytes32Width, uint256, uint256Int,
     abiBytes32, abiBytes32Width, abiUInt256] using
@@ -1930,7 +1930,7 @@ theorem dogDigsBodyCore {v : DogImmutables} {code : ByteArray}
     let sourceSlot := digsDirtSlotFor I
     let locals := digsLocals I
     have hdecode :
-        decodeCalldataWithMode config.abiDecodeMode
+        config.externalABI.decodeCalldata?
           (digsTransition.params.map Param.name)
           (transitionSignature digsTransition).paramTypes I.calldata =
             some locals := by

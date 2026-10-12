@@ -688,7 +688,7 @@ theorem vowDispatch_flog {I : ExecutionEnv}
     exact hsel
 
 theorem vowDecode_flog_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (flogTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (flogTransition.params.map Param.name)
       (transitionSignature flogTransition).paramTypes I.calldata =
         some ((∅ : Store).insert "era" (.int (Int.ofNat (flogEra I).toNat))) := by
   simpa [config, flogTransition, flogEra, uint256] using
@@ -696,7 +696,7 @@ theorem vowDecode_flog_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
 
 theorem vowDecode_flog_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (flogTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (flogTransition.params.map Param.name)
       (transitionSignature flogTransition).paramTypes I.calldata = none := by
   simpa [config, flogTransition, uint256] using
     (decodeCalldata_legacyUInt256_none_short (cd := I.calldata) (x := "era") hsz4 hshort)
@@ -1161,7 +1161,7 @@ theorem vowFlogBodyCore
     (hsize : I.calldata.size < UInt256.size)
     (hdispatch : dispatchMsg contract I.calldata = some flogTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (flogTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (flogTransition.params.map Param.name)
         (transitionSignature flogTransition).paramTypes I.calldata = some (flogLocals I))
     (hreach : ∃ k C, RD vowBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨781⟩ [sel]

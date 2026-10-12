@@ -10,9 +10,9 @@ def vatWord (σ : AccountMap) (I : ExecutionEnv) : UInt256 :=
   solcAddressSlotWord ⟨2⟩ σ I
 
 theorem jugDecode_vat {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (vatTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (vatTransition.params.map Param.name)
       (transitionSignature vatTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 theorem jugReachVatBody {σ σ₀ A I} {g : Sat256}
@@ -46,7 +46,7 @@ theorem jugVatBodyCore
     (hcode : I.code = jugBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some vatTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (vatTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (vatTransition.params.map Param.name)
         (transitionSignature vatTransition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD jugBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨263⟩ [sel]

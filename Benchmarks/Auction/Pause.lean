@@ -56,7 +56,7 @@ theorem pauseBodyCore {σ σ₀ A I} {g : UInt256}
   by_cases hwv : I.weiValue = ⟨0⟩
   · have hd := dispatchEntry 10 hsel
     have hsz := calldata_size_ge_of_selIs I (entryBytes 10) (entryBytes_size 10) hsel
-    have hdec : decodeCalldataWithMode auctionConfig.abiDecodeMode
+    have hdec : auctionConfig.externalABI.decodeCalldata?
         (pauseTransition.params.map Param.name)
         (transitionSignature pauseTransition).paramTypes I.calldata = some ∅ :=
       decodeCalldata_empty_ok hsz

@@ -6450,9 +6450,9 @@ theorem vatGrabSourceBodyAuthReverts {σ σ₀ A I} {g : UInt256}
 
 theorem vatDecode_grab_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 196) :
-    decodeCalldataWithMode config.abiDecodeMode (grabTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (grabTransition.params.map Param.name)
       (transitionSignature grabTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["i", "u", "v", "w", "dink", "dart"]
+  show config.externalABI.decodeCalldata? ["i", "u", "v", "w", "dink", "dart"]
     [bytes32, addr, addr, addr, int256, int256] I.calldata = none
   change decodeCalldataWithMode DecodeMode.legacySolc05 ["i", "u", "v", "w", "dink", "dart"]
     [bytes32, addr, addr, addr, int256, int256] I.calldata = none
@@ -6471,9 +6471,9 @@ theorem vatDecode_grab_none_short {I : ExecutionEnv}
     (I.calldata.toList.drop 4).length < 192)]
 
 theorem vatDecode_grab_ok {I : ExecutionEnv} (hsz196 : 196 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (grabTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (grabTransition.params.map Param.name)
       (transitionSignature grabTransition).paramTypes I.calldata = some (grabStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["i", "u", "v", "w", "dink", "dart"]
+  show config.externalABI.decodeCalldata? ["i", "u", "v", "w", "dink", "dart"]
     [bytes32, addr, addr, addr, int256, int256] I.calldata = some (grabStore I)
   change decodeCalldataWithMode DecodeMode.legacySolc05 ["i", "u", "v", "w", "dink", "dart"]
     [bytes32, addr, addr, addr, int256, int256] I.calldata = some (grabStore I)
@@ -6604,7 +6604,7 @@ theorem vatGrabBodyCoreUnauthorized
     (hauth : solcSlotWordAt (vatCallerWardsSlot I) σ I ≠ ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some grabTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (grabTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (grabTransition.params.map Param.name)
         (transitionSignature grabTransition).paramTypes I.calldata = some (grabStore I))
     (hreach : ∃ k C, RD vatBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨973⟩ [sel]
@@ -8463,7 +8463,7 @@ theorem vatGrabSuccessEquivFromFinalState
     (hcode : I.code = vatBytecode)
     (hdispatch : dispatchMsg contract I.calldata = some grabTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (grabTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (grabTransition.params.map Param.name)
         (transitionSignature grabTransition).paramTypes I.calldata = some (grabStore I))
     (hsz196 : 196 ≤ I.calldata.size)
     (urnInkNew urnArtNew ilkArtNew : UInt256) (dtab : Int)
@@ -8559,7 +8559,7 @@ theorem vatGrabSuccessEquivFromSourceBodyAndRuntimeGuards
     (hcode : I.code = vatBytecode)
     (hdispatch : dispatchMsg contract I.calldata = some grabTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (grabTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (grabTransition.params.map Param.name)
         (transitionSignature grabTransition).paramTypes I.calldata = some (grabStore I))
     (hsz196 : 196 ≤ I.calldata.size)
     (hperm : I.perm = true)
@@ -8621,7 +8621,7 @@ theorem vatGrabBodyStaticAfterInk
     (hcode : I.code = vatBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hsel : selIs I (vatSelBytes 13)) (hsz196 : 196 ≤ I.calldata.size)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (grabTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (grabTransition.params.map Param.name)
         (transitionSignature grabTransition).paramTypes I.calldata = some (grabStore I))
     (hauth : solcSlotWordAt (vatCallerWardsSlot I) σ I = ⟨1⟩)
     (hafterAuth : RD vatBytecode I (Sat256.ofUInt256 g)

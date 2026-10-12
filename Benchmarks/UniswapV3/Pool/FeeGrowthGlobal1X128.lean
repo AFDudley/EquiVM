@@ -56,10 +56,12 @@ theorem uniswapV3PoolFeeGrowthGlobal1X128Body {σ σ₀ A I} {g : UInt256} (v : 
   have hd : dispatchMsg contract I.calldata = some feeGrowthGlobal1X128Transition := by
     apply uniswapV3PoolDispatch_feeGrowthGlobal1X128 <;>
       first | exact hsel | exact selectorMismatch_of_match hsel (by decide +kernel)
-  have hdec : decodeCalldataWithMode config.abiDecodeMode
+  have hdec : config.externalABI.decodeCalldata?
       (feeGrowthGlobal1X128Transition.params.map Param.name)
       (transitionSignature feeGrowthGlobal1X128Transition).paramTypes
-      I.calldata = some (∅ : Store) := decodeCalldataWithMode_empty_ok hsz
+      I.calldata = some (∅ : Store) := by
+    change decodeCalldataWithMode .modern [] [] I.calldata = some (∅ : Store)
+    exact decodeCalldataWithMode_empty_ok hsz
   exact (uniswapV3PoolFeeGrowthGlobal1X128X (g := Sat256.ofUInt256 g) v hcode hwv hsz hsize hsel)
     |>.reEquivExecution hcode hd hdec (uniswapV3PoolFeeGrowthGlobal1X128Returns v _ ∅ hwv (by simp))
       (returnEquiv_of_encode (uint256ReturnEncoding (solcSlotWordAt ⟨2⟩ σ I)))

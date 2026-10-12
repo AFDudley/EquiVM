@@ -675,7 +675,7 @@ theorem flopperTickBodyCoreEndNotExpired
         (uint48Offset26Word (auctionPackedSlot (tickIdWord I)) σ I).toNat)
     (hdispatch : dispatchMsg contract I.calldata = some tickTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (tickTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (tickTransition.params.map Param.name)
         (transitionSignature tickTransition).paramTypes I.calldata = some (tickLocals I))
     (rd4292 : ∃ k C, RD flopperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨4292⟩
@@ -703,7 +703,7 @@ theorem flopperTickBodyCoreTicNonzero
     (htic : uint48Offset20Word (auctionPackedSlot (tickIdWord I)) σ I ≠ ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some tickTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (tickTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (tickTransition.params.map Param.name)
         (transitionSignature tickTransition).paramTypes I.calldata = some (tickLocals I))
     (rd4292 : ∃ k C, RD flopperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨4292⟩
@@ -738,7 +738,7 @@ theorem flopperTickBodyCoreMulOverflow
         (solcSlotWordAt (auctionLotSlot (tickIdWord I)) σ I).toNat)
     (hdispatch : dispatchMsg contract I.calldata = some tickTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (tickTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (tickTransition.params.map Param.name)
         (transitionSignature tickTransition).paramTypes I.calldata = some (tickLocals I))
     (rd4292 : ∃ k C, RD flopperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨4292⟩
@@ -778,7 +778,7 @@ theorem flopperTickBodyCoreAddOverflow
         (tickRuntimeTauWord I.codeOwner σ I).toNat)
     (hdispatch : dispatchMsg contract I.calldata = some tickTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (tickTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (tickTransition.params.map Param.name)
         (transitionSignature tickTransition).paramTypes I.calldata = some (tickLocals I))
     (rd4292 : ∃ k C, RD flopperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨4292⟩
@@ -830,7 +830,7 @@ theorem flopperTickBodyCoreSuccess
         (tickRuntimeTauWord I.codeOwner σ I).toNat < 2 ^ 48)
     (hdispatch : dispatchMsg contract I.calldata = some tickTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (tickTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (tickTransition.params.map Param.name)
         (transitionSignature tickTransition).paramTypes I.calldata = some (tickLocals I))
     (rd4292 : ∃ k C, RD flopperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨4292⟩

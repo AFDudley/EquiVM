@@ -134,7 +134,7 @@ theorem daiVersionBodyCoreOk
     (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some versionTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (versionTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (versionTransition.params.map Param.name)
         (transitionSignature versionTransition).paramTypes I.calldata =
           some versionStore)
     (hreach : ∃ k C, RD daiBytecode I (Sat256.ofUInt256 g)
@@ -159,10 +159,10 @@ theorem daiVersionBodyCoreOk
         exact returnEquiv_of_encode daiVersionReturnEncoding)
 
 theorem daiDecode_version_ok {I : ExecutionEnv} (hsz4 : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (versionTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (versionTransition.params.map Param.name)
       (transitionSignature versionTransition).paramTypes I.calldata =
         some versionStore := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata =
+  change decodeCalldataWithMode .legacySolc05 [] [] I.calldata =
     some (∅ : Store)
   exact decodeCalldataWithMode_empty_ok hsz4
 

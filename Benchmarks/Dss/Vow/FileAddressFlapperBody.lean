@@ -115,7 +115,7 @@ theorem vowFileAddressFlapperNopeCallDepthLimitBodyCore
     (hsize : I.calldata.size < UInt256.size)
     (hdispatch : dispatchMsg contract I.calldata = some fileAddressTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileAddressTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileAddressTransition.params.map Param.name)
         (transitionSignature fileAddressTransition).paramTypes I.calldata =
           some (fileAddressLocals I))
     (hreach : ∃ k C, RD vowBytecode I (Sat256.ofUInt256 g)
@@ -189,7 +189,7 @@ theorem vowFileAddressFlapperHopeNoCodeAfterNopeSuccessBodyCore
     (hperm : I.perm = true)
     (hdispatch : dispatchMsg contract I.calldata = some fileAddressTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileAddressTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileAddressTransition.params.map Param.name)
         (transitionSignature fileAddressTransition).paramTypes I.calldata =
           some (fileAddressLocals I))
     (rd4300 : RD vowBytecode I (Sat256.ofUInt256 g)
@@ -296,7 +296,7 @@ theorem vowFileAddressFlapperHopeCallFailureAfterNopeSuccessBodyCore
     (hcode : I.code = vowBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some fileAddressTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileAddressTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileAddressTransition.params.map Param.name)
         (transitionSignature fileAddressTransition).paramTypes I.calldata =
           some (fileAddressLocals I))
     (_rd4300 : RD vowBytecode I (Sat256.ofUInt256 g)
@@ -471,7 +471,7 @@ theorem vowFileAddressFlapperHopeSuccessAfterNopeSuccessBodyCore
     (hcode : I.code = vowBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some fileAddressTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileAddressTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileAddressTransition.params.map Param.name)
         (transitionSignature fileAddressTransition).paramTypes I.calldata =
           some (fileAddressLocals I))
     (hcallNopeEvm :
@@ -639,7 +639,7 @@ theorem vowFileAddressFlapperAuthorizedBodyCore
     (hsize : I.calldata.size < UInt256.size)
     (hdispatch : dispatchMsg contract I.calldata = some fileAddressTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileAddressTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileAddressTransition.params.map Param.name)
         (transitionSignature fileAddressTransition).paramTypes I.calldata =
           some (fileAddressLocals I))
     (hreach : ∃ k C, RD vowBytecode I (Sat256.ofUInt256 g)
@@ -858,7 +858,7 @@ theorem vowFileAddressFlapperBodyCore
     (hsize : I.calldata.size < UInt256.size)
     (hdispatch : dispatchMsg contract I.calldata = some fileAddressTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileAddressTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileAddressTransition.params.map Param.name)
         (transitionSignature fileAddressTransition).paramTypes I.calldata =
           some (fileAddressLocals I))
     (hreach : ∃ k C, RD vowBytecode I (Sat256.ofUInt256 g)

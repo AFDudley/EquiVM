@@ -58,7 +58,7 @@ theorem evalContractSignatureResult (evm : EVM.State) (owner : EVM.Address) (has
     (by simp [contractSignatureFinalFrame, Std.HashMap.getElem_insert])
   intro ho
   have hd := decodeBytes32ReturnLong (out := out) (by omega) (by rw [ho]; decide)
-  change ABI.decodeReturnValueWithMode? config.abiDecodeMode bytes32 out =
+  change config.externalABI.decodeValue? bytes32 out =
     some (wordBytes32Value (calldataWord out 0)) at hd
   have hm : eip1271MagicBytes32 =
       .fixedBytesLit bytes32Width (EVM.Word.toBytesBE signatureMagicWord) := by native_decide

@@ -26,9 +26,9 @@ theorem cureDispatchWait {I : ExecutionEnv}
   native_decide
 
 theorem cureDecode_wait {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (waitTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (waitTransition.params.map Param.name)
       (transitionSignature waitTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 theorem cureWaitBodyCore {σ σ₀ A I} {g : UInt256}

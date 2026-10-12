@@ -1104,7 +1104,7 @@ theorem vowFlopDai1CallFailureBodyCore
     (hcode : I.code = vowBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some flopTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (flopTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (flopTransition.params.map Param.name)
         (transitionSignature flopTransition).paramTypes I.calldata = some ∅)
     (rd3832 : RD vowBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨3832⟩
@@ -1161,7 +1161,7 @@ theorem vowFlopDai1NoCodeBodyCore
     (hcode : I.code = vowBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some flopTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (flopTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (flopTransition.params.map Param.name)
         (transitionSignature flopTransition).paramTypes I.calldata = some ∅)
     (rd3675 : RD vowBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨3675⟩
@@ -1222,7 +1222,7 @@ theorem vowFlopDai1DecodeShortBodyCore
     (hcode : I.code = vowBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some flopTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (flopTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (flopTransition.params.map Param.name)
         (transitionSignature flopTransition).paramTypes I.calldata = some ∅)
     (rd3832 : RD vowBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨3832⟩
@@ -1310,7 +1310,7 @@ theorem vowFlopDai1SurplusNotZeroBodyCore
     (hcode : I.code = vowBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some flopTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (flopTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (flopTransition.params.map Param.name)
         (transitionSignature flopTransition).paramTypes I.calldata = some ∅)
     (rd3832 : RD vowBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨3832⟩

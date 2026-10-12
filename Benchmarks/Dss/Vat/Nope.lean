@@ -12,14 +12,14 @@ def nopePostState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
   Solm.EVM.storageStore evm evm.executionEnv.codeOwner (hopeStorageSlot I) ⟨0⟩
 
 theorem vatDecode_nope_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (nopeTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (nopeTransition.params.map Param.name)
       (transitionSignature nopeTransition).paramTypes I.calldata = some (hopeStore I) := by
   simpa [config, nopeTransition, hopeStore, hopeUsrValue, hopeUsrWord, calldataWord] using
     decodeCalldata_legacyAddress_ok (cd := I.calldata) (x := "usr") hsz36
 
 theorem vatDecode_nope_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (nopeTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (nopeTransition.params.map Param.name)
       (transitionSignature nopeTransition).paramTypes I.calldata = none := by
   simpa [config, nopeTransition] using
     decodeCalldata_legacyAddress_none_short (cd := I.calldata) (x := "usr") hsz4 hshort
@@ -264,7 +264,7 @@ theorem vatNopeBodyCoreOk
     (hsz36 : 36 ≤ I.calldata.size)
     (hdispatch : dispatchMsg contract I.calldata = some nopeTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (nopeTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (nopeTransition.params.map Param.name)
         (transitionSignature nopeTransition).paramTypes I.calldata = some (hopeStore I))
     (hreach : ∃ k C, RD vatBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1467⟩ [sel]
@@ -297,7 +297,7 @@ theorem vatNopeBodyCoreStatic
     (hsz36 : 36 ≤ I.calldata.size)
     (hdispatch : dispatchMsg contract I.calldata = some nopeTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (nopeTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (nopeTransition.params.map Param.name)
         (transitionSignature nopeTransition).paramTypes I.calldata = some (hopeStore I))
     (hreach : ∃ k C, RD vatBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1467⟩ [sel]

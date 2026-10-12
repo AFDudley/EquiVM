@@ -43,9 +43,9 @@ theorem clipperDispatch_chip {I : ExecutionEnv}
 
 theorem clipperDecode_chip {I : ExecutionEnv}
     (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (chipTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (chipTransition.params.map Param.name)
       (transitionSignature chipTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  change decodeCalldataWithMode .legacySolc05 [] [] I.calldata = some ∅
   exact decodeCalldataWithMode_empty_ok hsz
 
 theorem clipperEvalChip (v : ClipperImmutables) (evm : EVM.State) (locals : Store)

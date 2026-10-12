@@ -1039,19 +1039,19 @@ theorem RD.endCageIlkTagDefinedRevert {g : Sat256} {s0 : State} {ee : ExecutionE
     raw rev 0 (by native_decide) mem_cost (by evm_ov)]
 
 theorem endDecode_cageIlk_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (cageIlkTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (cageIlkTransition.params.map Param.name)
       (transitionSignature cageIlkTransition).paramTypes I.calldata =
         some (endCageIlkStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["ilk"] [bytes32] I.calldata = _
+  show config.externalABI.decodeCalldata? ["ilk"] [bytes32] I.calldata = _
   simpa [config, endCageIlkStore, endCageIlkIlkValue, endCageIlkIlkWord,
     cageIlkTransition, bytes32, bytes32Width, abiBytes32, abiBytes32Width] using
     decodeCalldataWithMode_legacyBytes32_ok (cd := I.calldata) (x := "ilk") hsz36
 
 theorem endDecode_cageIlk_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (cageIlkTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (cageIlkTransition.params.map Param.name)
       (transitionSignature cageIlkTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["ilk"] [bytes32] I.calldata = none
+  show config.externalABI.decodeCalldata? ["ilk"] [bytes32] I.calldata = none
   simpa [config, cageIlkTransition, bytes32, bytes32Width, abiBytes32, abiBytes32Width] using
     decodeCalldataWithMode_legacyBytes32_none_short (cd := I.calldata) (x := "ilk") hsz4 hshort
 

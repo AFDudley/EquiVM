@@ -48,7 +48,7 @@ theorem poolManagerInitializeBody {σ σ₀ A I} {g : UInt256} (v : PoolManagerI
         let key := poolKeyOfCalldata I.calldata
         let price := calldataWord I.calldata 164
         let args := poolKeyFeeArgs "key" "sqrtPriceX96" key price
-        have hdec : decodeCalldataWithMode config.abiDecodeMode
+        have hdec : config.externalABI.decodeCalldata?
             (initializeTransition.params.map Param.name)
             (transitionSignature initializeTransition).paramTypes I.calldata =
             if PoolKeyCanonical key ∧ price.toNat < 2^160 then some args else none :=

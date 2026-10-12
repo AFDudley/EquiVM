@@ -10,9 +10,9 @@ def spotParWord (σ : AccountMap) (I : ExecutionEnv) : UInt256 :=
   solcSlotWordAt ⟨3⟩ σ I
 
 theorem spotDecode_par {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (parTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (parTransition.params.map Param.name)
       (transitionSignature parTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 theorem spotReachParBody {σ σ₀ A I} {g : Sat256}

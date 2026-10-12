@@ -191,7 +191,7 @@ theorem poolManagerApproveBodyCore {σ σ₀ A I} {g : UInt256} (v : PoolManager
             (.address (AccountAddress.ofNat (calldataWord I.calldata 4).toNat))).insert "id"
             (.int (Int.ofNat (calldataWord I.calldata 36).toNat))).insert "amount"
             (.int (Int.ofNat (calldataWord I.calldata 68).toNat))
-          have hdec : decodeCalldataWithMode config.abiDecodeMode
+          have hdec : config.externalABI.decodeCalldata?
               (approveTransition.params.map Param.name)
               (transitionSignature approveTransition).paramTypes I.calldata = some args :=
             decodeCalldata_address_uint256_uint256_ok hlen hhi hcanon

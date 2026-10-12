@@ -42,7 +42,7 @@ theorem poolManagerUnlockBody {σ σ₀ A I} {g : UInt256} (v : PoolManagerImmut
     · let args := (∅ : Store).insert "data" (.bytes (calldataBytesPayload I.calldata))
       let evm := initState σ σ₀ (Sat256.ofUInt256 g) A I
       let f := calldataFrame contract args (immStore v) evm
-      have hdec : decodeCalldataWithMode config.abiDecodeMode (unlockTransition.params.map Param.name)
+      have hdec : config.externalABI.decodeCalldata? (unlockTransition.params.map Param.name)
           (transitionSignature unlockTransition).paramTypes I.calldata = some args :=
         decodeCalldata_bytes_ok "data" hb
       have hdata : f.locals.get? "data" = some (.bytes (calldataBytesPayload I.calldata)) :=

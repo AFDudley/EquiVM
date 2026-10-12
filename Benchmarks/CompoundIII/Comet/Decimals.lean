@@ -62,7 +62,7 @@ theorem cometWithExtendedAssetListDecimalsBody {σ σ₀ A I} {g : UInt256} (v :
     runtimeRefinementFor config contract σ σ₀ g A I (immStore v) := by
   have hsz : 4 ≤ I.calldata.size :=
     calldata_size_ge_of_selIs I (cometWithExtendedAssetListSelBytes 16) rfl hsel
-  exact immutableGetter_refines (t := decimalsTransition) hcode hsz
+  exact immutableGetter_refines (t := decimalsTransition) hcode hsz (cometDecode_empty hsz)
     (cometSelectorDispatch ⟨16, by decide⟩ hsel) rfl rfl rfl
     (immStore_get_decimals v) (uint8ReturnEncoding v.decimals v.decimals_lt)
     (decimalsX v hcode hsz hsize hsel)

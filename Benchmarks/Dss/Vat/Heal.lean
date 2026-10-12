@@ -767,7 +767,7 @@ theorem vatHealFinishSuccess
     (hperm : I.perm = true)
     (hdispatch : dispatchMsg contract I.calldata = some healTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (healTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (healTransition.params.map Param.name)
         (transitionSignature healTransition).paramTypes I.calldata = some (healLocals I))
     (hbody :
       ExecTransitionBody config contract
@@ -820,7 +820,7 @@ theorem vatHealAllSuccess
     (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some healTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (healTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (healTransition.params.map Param.name)
         (transitionSignature healTransition).paramTypes I.calldata = some (healLocals I))
     (hsinNewEvm :
       UInt256.sub (solcSlotWordAt (healSinSlot I) σ I) (healRad I) = sinNew)
@@ -1009,14 +1009,14 @@ theorem vatHealAllSuccess
 
 
 theorem vatDecode_heal_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (healTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (healTransition.params.map Param.name)
       (transitionSignature healTransition).paramTypes I.calldata = some (healLocals I) := by
   simpa [config, healTransition, healLocals, healRad, uint256] using
     (decodeCalldata_legacyUInt256_ok (cd := I.calldata) (x := "rad") hsz36)
 
 theorem vatDecode_heal_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (healTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (healTransition.params.map Param.name)
       (transitionSignature healTransition).paramTypes I.calldata = none := by
   simpa [config, healTransition, uint256] using
     (decodeCalldata_legacyUInt256_none_short (cd := I.calldata) (x := "rad")
@@ -1128,7 +1128,7 @@ theorem vatHealBodyCoreOk
     (hsz36 : 36 ≤ I.calldata.size) (hsize : I.calldata.size < UInt256.size)
     (hdispatch : dispatchMsg contract I.calldata = some healTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (healTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (healTransition.params.map Param.name)
         (transitionSignature healTransition).paramTypes I.calldata = some (healLocals I))
     (hreach : ∃ k C, RD vatBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1597⟩ [sel]

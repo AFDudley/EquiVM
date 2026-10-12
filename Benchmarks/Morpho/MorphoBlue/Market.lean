@@ -151,7 +151,7 @@ theorem morphoMarketBody {σ σ₀ A I} {g : UInt256} (v : MorphoImmutables)
     morphoSelectorDispatch_of_selIs (by decide) hsel
   by_cases hlen : 36 ≤ I.calldata.size
   · by_cases hbound : I.calldata.size < 2 ^ 255 + 4
-    · have hdec : decodeCalldataWithMode config.abiDecodeMode
+    · have hdec : config.externalABI.decodeCalldata?
           (marketTransition.params.map Param.name)
           (transitionSignature marketTransition).paramTypes I.calldata =
           some (marketArgs I.calldata) := by

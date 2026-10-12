@@ -694,18 +694,18 @@ theorem RD.endFlowFixDefinedRevert {g : Sat256} {s0 : State} {ee : ExecutionEnv}
     raw rev 0 (by native_decide) mem_cost (by evm_ov)]
 
 theorem endDecode_flow_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (flowTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (flowTransition.params.map Param.name)
       (transitionSignature flowTransition).paramTypes I.calldata = some (endFlowStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["ilk"] [bytes32] I.calldata = _
+  show config.externalABI.decodeCalldata? ["ilk"] [bytes32] I.calldata = _
   simpa [config, endFlowStore, endFlowIlkValue, endFlowIlkWord, bytes32, bytes32Width,
     abiBytes32, abiBytes32Width] using
     decodeCalldataWithMode_legacyBytes32_ok (cd := I.calldata) (x := "ilk") hsz36
 
 theorem endDecode_flow_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (flowTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (flowTransition.params.map Param.name)
       (transitionSignature flowTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["ilk"] [bytes32] I.calldata = none
+  show config.externalABI.decodeCalldata? ["ilk"] [bytes32] I.calldata = none
   simpa [config, bytes32, bytes32Width, abiBytes32, abiBytes32Width] using
     decodeCalldataWithMode_legacyBytes32_none_short (cd := I.calldata) (x := "ilk") hsz4 hshort
 

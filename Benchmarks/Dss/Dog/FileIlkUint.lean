@@ -145,7 +145,7 @@ theorem fileIlkUintWhatWord_ne_of_bytes_ne {I : ExecutionEnv} {bs : List UInt8}
 
 theorem dogDecode_fileIlkUint_ok {I : ExecutionEnv}
     (hsz100 : 100 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode
+    config.externalABI.decodeCalldata?
       (fileIlkUintTransition.params.map Param.name)
       (transitionSignature fileIlkUintTransition).paramTypes I.calldata =
         some (fileIlkUintLocals I) := by
@@ -157,7 +157,7 @@ theorem dogDecode_fileIlkUint_ok {I : ExecutionEnv}
 
 theorem dogDecode_fileIlkUint_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 100) :
-    decodeCalldataWithMode config.abiDecodeMode
+    config.externalABI.decodeCalldata?
       (fileIlkUintTransition.params.map Param.name)
       (transitionSignature fileIlkUintTransition).paramTypes I.calldata = none := by
   simpa [config, fileIlkUintTransition, bytes32, bytes32Width, uint256, uint256Int,
@@ -1488,7 +1488,7 @@ theorem dogFileIlkUintBodyCoreOk
     (hsize : I.calldata.size < UInt256.size)
     (hdispatch : dispatchMsg contract I.calldata = some fileIlkUintTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode
+      config.externalABI.decodeCalldata?
         (fileIlkUintTransition.params.map Param.name)
         (transitionSignature fileIlkUintTransition).paramTypes I.calldata =
           some (fileIlkUintLocals I))

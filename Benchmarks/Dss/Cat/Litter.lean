@@ -28,9 +28,9 @@ theorem catDispatch_litter {I : ExecutionEnv} (hsel : selIs I ⟨#[0xa4, 0xfe, 0
   · rw [selectorOf, litterSelectorBytes]; exact hsel
 
 theorem catDecode_litter {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (litterTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (litterTransition.params.map Param.name)
       (transitionSignature litterTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 theorem catReachLitterBody {σ σ₀ A I} {g : Sat256}

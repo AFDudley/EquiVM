@@ -628,7 +628,7 @@ theorem vatFileIlkSourceBodyUnrecognized {σ σ₀ A I} {g : UInt256}
 
 
 theorem vatDecode_fileIlk_ok {I : ExecutionEnv} (hsz100 : 100 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (fileIlkTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (fileIlkTransition.params.map Param.name)
       (transitionSignature fileIlkTransition).paramTypes I.calldata =
         some (fileIlkLocals I) := by
   simpa [config, fileIlkTransition, fileIlkLocals, fileIlkIlkValue, fileIlkIlk,
@@ -638,7 +638,7 @@ theorem vatDecode_fileIlk_ok {I : ExecutionEnv} (hsz100 : 100 ≤ I.calldata.siz
 
 theorem vatDecode_fileIlk_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 100) :
-    decodeCalldataWithMode config.abiDecodeMode (fileIlkTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (fileIlkTransition.params.map Param.name)
       (transitionSignature fileIlkTransition).paramTypes I.calldata = none := by
   simpa [config, fileIlkTransition, bytes32, uint256, bytes32Width, uint256Int] using
     (decodeCalldata_legacyBytes32_bytes32_uint256_none_short (cd := I.calldata)
@@ -1106,7 +1106,7 @@ theorem vatFileIlkBodyCoreOkSpot
     (hwhat : fileIlkWhat I = fileIlkSpotBytes)
     (hdispatch : dispatchMsg contract I.calldata = some fileIlkTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileIlkTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileIlkTransition.params.map Param.name)
         (transitionSignature fileIlkTransition).paramTypes I.calldata =
           some (fileIlkLocals I))
     (hreach : ∃ k C, RD vatBytecode I (Sat256.ofUInt256 g)
@@ -1181,7 +1181,7 @@ theorem vatFileIlkBodyCoreOkLine
     (hwhat : fileIlkWhat I = fileIlkLineBytes)
     (hdispatch : dispatchMsg contract I.calldata = some fileIlkTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileIlkTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileIlkTransition.params.map Param.name)
         (transitionSignature fileIlkTransition).paramTypes I.calldata =
           some (fileIlkLocals I))
     (hreach : ∃ k C, RD vatBytecode I (Sat256.ofUInt256 g)
@@ -1265,7 +1265,7 @@ theorem vatFileIlkBodyCoreOkDust
     (hwhat : fileIlkWhat I = fileIlkDustBytes)
     (hdispatch : dispatchMsg contract I.calldata = some fileIlkTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileIlkTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileIlkTransition.params.map Param.name)
         (transitionSignature fileIlkTransition).paramTypes I.calldata =
           some (fileIlkLocals I))
     (hreach : ∃ k C, RD vatBytecode I (Sat256.ofUInt256 g)
@@ -1355,7 +1355,7 @@ theorem vatFileIlkBodyCoreUnauthorized
     (hauth : solcSlotWordAt (vatCallerWardsSlot I) σ I ≠ ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some fileIlkTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileIlkTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileIlkTransition.params.map Param.name)
         (transitionSignature fileIlkTransition).paramTypes I.calldata =
           some (fileIlkLocals I))
     (hreach : ∃ k C, RD vatBytecode I (Sat256.ofUInt256 g)
@@ -1391,7 +1391,7 @@ theorem vatFileIlkBodyCoreNotLive
     (hlive : solcSlotWordAt ⟨10⟩ σ I ≠ ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some fileIlkTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileIlkTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileIlkTransition.params.map Param.name)
         (transitionSignature fileIlkTransition).paramTypes I.calldata =
           some (fileIlkLocals I))
     (hreach : ∃ k C, RD vatBytecode I (Sat256.ofUInt256 g)
@@ -1448,7 +1448,7 @@ theorem vatFileIlkBodyCoreUnrecognized
     (hdustNe : fileIlkWhat I ≠ fileIlkDustBytes)
     (hdispatch : dispatchMsg contract I.calldata = some fileIlkTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileIlkTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileIlkTransition.params.map Param.name)
         (transitionSignature fileIlkTransition).paramTypes I.calldata =
           some (fileIlkLocals I))
     (hreach : ∃ k C, RD vatBytecode I (Sat256.ofUInt256 g)

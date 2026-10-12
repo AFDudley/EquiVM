@@ -129,7 +129,7 @@ theorem factoryOwnerRevertsShort (v : UniswapV3PoolImmutables) (evm evm' : EVM.S
   apply ExecBlock.consRevert
   apply ExecStmt.returnRevert
   simp only [evalExprs?, evalExpr?, evalFactoryOwnerData, bind, EvalResult.bind]
-  rw [show decodeReturnValueWithMode? config.abiDecodeMode abiAddress out = none from
+  rw [show config.externalABI.decodeValue? abiAddress out = none from
     decodeReturnValue_legacyAddress_none_short hout]
 
 def factoryOwnerInputMem : ByteArray :=

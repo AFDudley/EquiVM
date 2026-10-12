@@ -118,7 +118,7 @@ theorem evalSafeTransferConditionEmpty (imms : Store) (evm : EVM.State)
 theorem evalSafeTransferConditionBool (imms : Store) (evm : EVM.State)
     (token recipient : AccountAddress) (value : UInt256) (out : ByteArray) (result : Bool)
     (hne : out.size ≠ 0)
-    (hdecode : decodeReturnValueWithMode? config.abiDecodeMode abiBool out = some (.bool result)) :
+    (hdecode : config.externalABI.decodeValue? abiBool out = some (.bool result)) :
     evalExpr? config (safeTransferCallFrame imms token recipient value true out) evm safeTransferCondition =
       .ok (.bool result) := by
   have he := evalSafeTransferEmpty imms evm token recipient value true out
@@ -131,7 +131,7 @@ theorem evalSafeTransferConditionBool (imms : Store) (evm : EVM.State)
 
 theorem evalSafeTransferConditionRevert (imms : Store) (evm : EVM.State)
     (token recipient : AccountAddress) (value : UInt256) (out : ByteArray) (hne : out.size ≠ 0)
-    (hdecode : decodeReturnValueWithMode? config.abiDecodeMode abiBool out = none) :
+    (hdecode : config.externalABI.decodeValue? abiBool out = none) :
     evalExpr? config (safeTransferCallFrame imms token recipient value true out) evm safeTransferCondition =
       .revert := by
   have he := evalSafeTransferEmpty imms evm token recipient value true out
@@ -153,7 +153,7 @@ theorem safeTransferRevertsDecode (imms : Store) (evm evm' : EVM.State)
     (token recipient : AccountAddress) (value : UInt256) (out : ByteArray)
     (hcall : callViaEVM evm token 0 (safeTransferCalldata recipient value) (true, evm', out) true)
     (hne : out.size ≠ 0)
-    (hdecode : decodeReturnValueWithMode? config.abiDecodeMode abiBool out = none) :
+    (hdecode : config.externalABI.decodeValue? abiBool out = none) :
     ExecFuncBody config (safeTransferFrame imms token recipient value) evm safeTransferFunction.body
       .reverted := by
   apply ExecFuncBody.execBlockRevert
@@ -165,7 +165,7 @@ theorem safeTransferRevertsFalse (imms : Store) (evm evm' : EVM.State)
     (token recipient : AccountAddress) (value : UInt256) (out : ByteArray)
     (hcall : callViaEVM evm token 0 (safeTransferCalldata recipient value) (true, evm', out) true)
     (hne : out.size ≠ 0)
-    (hdecode : decodeReturnValueWithMode? config.abiDecodeMode abiBool out = some (.bool false)) :
+    (hdecode : config.externalABI.decodeValue? abiBool out = some (.bool false)) :
     ExecFuncBody config (safeTransferFrame imms token recipient value) evm safeTransferFunction.body
       .reverted := by
   apply ExecFuncBody.execBlockRevert
@@ -177,7 +177,7 @@ theorem safeTransferReturns (imms : Store) (evm evm' : EVM.State)
     (token recipient : AccountAddress) (value : UInt256) (out : ByteArray)
     (hcall : callViaEVM evm token 0 (safeTransferCalldata recipient value) (true, evm', out) true)
     (hgood : out.size = 0 ∨
-      decodeReturnValueWithMode? config.abiDecodeMode abiBool out = some (.bool true)) :
+      config.externalABI.decodeValue? abiBool out = some (.bool true)) :
     ExecFuncBody config (safeTransferFrame imms token recipient value) evm safeTransferFunction.body
       (.returned (safeTransferCallFrame imms token recipient value true out) evm' none) := by
   apply ExecFuncBody.execBlockOK

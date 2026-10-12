@@ -469,7 +469,7 @@ theorem daiJoinExitVatMoveCallFailedCore
     (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some exitTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (exitTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (exitTransition.params.map Param.name)
         (transitionSignature exitTransition).paramTypes I.calldata = some (exitStore I))
     (hliveOne : exitLiveWord σ I = ⟨1⟩)
     (hfit : daiJoinONEWord.toNat * (exitWadWord I).toNat < UInt256.size)
@@ -555,7 +555,7 @@ theorem daiJoinExitDaiMintNoCodeCore
     (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some exitTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (exitTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (exitTransition.params.map Param.name)
         (transitionSignature exitTransition).paramTypes I.calldata = some (exitStore I))
     (hliveOne : exitLiveWord σ I = ⟨1⟩)
     (hfit : daiJoinONEWord.toNat * (exitWadWord I).toNat < UInt256.size)
@@ -643,7 +643,7 @@ theorem daiJoinExitDaiMintCallFailedCore
     (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some exitTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (exitTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (exitTransition.params.map Param.name)
         (transitionSignature exitTransition).paramTypes I.calldata = some (exitStore I))
     (hliveOne : exitLiveWord σ I = ⟨1⟩)
     (hfit : daiJoinONEWord.toNat * (exitWadWord I).toNat < UInt256.size)
@@ -782,7 +782,7 @@ theorem daiJoinExitDaiMintSuccessCore
     (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some exitTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (exitTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (exitTransition.params.map Param.name)
         (transitionSignature exitTransition).paramTypes I.calldata = some (exitStore I))
     (hliveOne : exitLiveWord σ I = ⟨1⟩)
     (hfit : daiJoinONEWord.toNat * (exitWadWord I).toNat < UInt256.size)

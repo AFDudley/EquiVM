@@ -21,7 +21,7 @@ theorem cureDispatchLoad {I : ExecutionEnv}
   native_decide
 
 theorem cureDecode_load_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (loadTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (loadTransition.params.map Param.name)
       (transitionSignature loadTransition).paramTypes I.calldata =
         some (loadLocals I) := by
   simpa [config, loadTransition, loadLocals, loadSrc] using
@@ -29,7 +29,7 @@ theorem cureDecode_load_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
 
 theorem cureDecode_load_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (loadTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (loadTransition.params.map Param.name)
       (transitionSignature loadTransition).paramTypes I.calldata = none := by
   simpa [config, loadTransition] using
     (decodeCalldata_legacyAddress_none_short (cd := I.calldata) (x := "src") hsz4 hshort)
@@ -51,7 +51,7 @@ theorem cureLoadBodyCore {σ σ₀ A I} {g : UInt256}
     hcode hwv hsz4 hsize hsel
   by_cases hsz36 : 36 ≤ I.calldata.size
   · have hdecode :
-        decodeCalldataWithMode config.abiDecodeMode (loadTransition.params.map Param.name)
+        config.externalABI.decodeCalldata? (loadTransition.params.map Param.name)
           (transitionSignature loadTransition).paramTypes I.calldata = some (loadLocals I) :=
       cureDecode_load_ok hsz36
     let key := loadKey I

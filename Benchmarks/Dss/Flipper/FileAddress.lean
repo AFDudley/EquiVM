@@ -74,7 +74,7 @@ theorem fileAddressData_value_masked (I : ExecutionEnv) :
 
 
 theorem flipperDecode_fileAddress_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (fileAddressTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (fileAddressTransition.params.map Param.name)
       (transitionSignature fileAddressTransition).paramTypes I.calldata =
         some (fileAddressLocals I) := by
   simpa [config, fileAddressTransition, bytes32, bytes32Width, addr, fileAddressLocals,
@@ -84,7 +84,7 @@ theorem flipperDecode_fileAddress_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.callda
 
 theorem flipperDecode_fileAddress_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 68) :
-    decodeCalldataWithMode config.abiDecodeMode (fileAddressTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (fileAddressTransition.params.map Param.name)
       (transitionSignature fileAddressTransition).paramTypes I.calldata = none := by
   simpa [config, fileAddressTransition, bytes32, bytes32Width, addr, abiBytes32,
     abiBytes32Width, abiAddress] using
@@ -583,7 +583,7 @@ theorem flipperFileAddressBodyCoreOk
     (hwhat : fileAddressWhat I = fileAddressCatBytes)
     (hdispatch : dispatchMsg contract I.calldata = some fileAddressTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileAddressTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileAddressTransition.params.map Param.name)
         (transitionSignature fileAddressTransition).paramTypes I.calldata =
           some (fileAddressLocals I))
     (hreach : ∃ k C, RD flipperBytecode I (Sat256.ofUInt256 g)
@@ -632,7 +632,7 @@ theorem flipperFileAddressBodyCoreUnauthorized
     (hauth : solcSlotWordAt (flipperCallerWardsSlot I) σ I ≠ ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some fileAddressTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileAddressTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileAddressTransition.params.map Param.name)
         (transitionSignature fileAddressTransition).paramTypes I.calldata =
           some (fileAddressLocals I))
     (hreach : ∃ k C, RD flipperBytecode I (Sat256.ofUInt256 g)
@@ -660,7 +660,7 @@ theorem flipperFileAddressBodyCoreUnrecognized
     (hwhat : fileAddressWhat I ≠ fileAddressCatBytes)
     (hdispatch : dispatchMsg contract I.calldata = some fileAddressTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileAddressTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileAddressTransition.params.map Param.name)
         (transitionSignature fileAddressTransition).paramTypes I.calldata =
           some (fileAddressLocals I))
     (hreach : ∃ k C, RD flipperBytecode I (Sat256.ofUInt256 g)

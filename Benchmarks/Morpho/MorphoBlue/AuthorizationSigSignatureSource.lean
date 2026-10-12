@@ -18,7 +18,7 @@ theorem AuthorizationLocals.evalSignature {a cd locals} (hl : AuthorizationLocal
     (.bytesSlice (.var "__calldata") (.intLit 164) (.intLit 260)) = _ at he
   rw [evalExpr?, he]
   simp only [bind, EvalResult.bind]
-  rw [show config.abiDecodeMode = .modern from rfl, decodeSignature cd hs]
+  rw [show config.externalABI.decodeValue? = decodeReturnValueWithMode? .modern from rfl, decodeSignature cd hs]
   by_cases hv : (signatureRecoveryWord cd).toNat < 256 <;> simp only [hv, ↓reduceIte] <;> rfl
 
 def authorizationSignatureLocals (locals : Store) (cd : ByteArray) : Store :=

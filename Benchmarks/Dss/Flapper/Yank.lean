@@ -1216,18 +1216,18 @@ theorem flapperYankBodyReturns_moveCallSuccessSplit
 
 
 theorem flapperDecode_yank_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (yankTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (yankTransition.params.map Param.name)
       (transitionSignature yankTransition).paramTypes I.calldata = some (yankLocals I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["id"] [uint256] I.calldata =
+  show config.externalABI.decodeCalldata? ["id"] [uint256] I.calldata =
     some (yankLocals I)
   simpa [config, yankLocals, yankIdValue, yankIdWord, uint256] using
     decodeCalldata_legacyUInt256_ok (cd := I.calldata) (x := "id") hsz36
 
 theorem flapperDecode_yank_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (yankTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (yankTransition.params.map Param.name)
       (transitionSignature yankTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["id"] [uint256] I.calldata = none
+  show config.externalABI.decodeCalldata? ["id"] [uint256] I.calldata = none
   simpa [config, uint256] using
     decodeCalldata_legacyUInt256_none_short (cd := I.calldata) (x := "id") hsz4 hshort
 
@@ -2047,7 +2047,7 @@ theorem flapperYankBodyCoreStillLive
     (hlive : solcSlotWordAt ⟨7⟩ σ I ≠ ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some yankTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (yankTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (yankTransition.params.map Param.name)
         (transitionSignature yankTransition).paramTypes I.calldata = some (yankLocals I))
     (hreach : ∃ k C, RD flapperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨331⟩ [sel]
@@ -2076,7 +2076,7 @@ theorem flapperYankBodyCoreGuyNotSet
     (hguy : solcAddressSlotWord (auctionPackedSlot (yankIdWord I)) σ I = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some yankTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (yankTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (yankTransition.params.map Param.name)
         (transitionSignature yankTransition).paramTypes I.calldata = some (yankLocals I))
     (hreach : ∃ k C, RD flapperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨331⟩ [sel]
@@ -2111,7 +2111,7 @@ theorem flapperYankBodyCoreMoveNoCode
         (solcAddressSlotWord ⟨3⟩ σ I) = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some yankTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (yankTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (yankTransition.params.map Param.name)
         (transitionSignature yankTransition).paramTypes I.calldata = some (yankLocals I))
     (hreach : ∃ k C, RD flapperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨331⟩ [sel]
@@ -2183,7 +2183,7 @@ theorem flapperYankBodyCoreMoveCallFailure
     (houtSize : out.size < UInt256.size)
     (hdispatch : dispatchMsg contract I.calldata = some yankTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (yankTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (yankTransition.params.map Param.name)
         (transitionSignature yankTransition).paramTypes I.calldata = some (yankLocals I)) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
@@ -2235,7 +2235,7 @@ theorem flapperYankBodyCoreMoveCallDepthLimit
     (hdepth : I.depth = 1024)
     (hdispatch : dispatchMsg contract I.calldata = some yankTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (yankTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (yankTransition.params.map Param.name)
         (transitionSignature yankTransition).paramTypes I.calldata = some (yankLocals I))
     (hreach : ∃ k C, RD flapperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨331⟩ [sel]
@@ -2353,7 +2353,7 @@ theorem flapperYankBodyCoreMoveCallSuccess
           out) true)
     (hdispatch : dispatchMsg contract I.calldata = some yankTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (yankTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (yankTransition.params.map Param.name)
         (transitionSignature yankTransition).paramTypes I.calldata = some (yankLocals I)) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I

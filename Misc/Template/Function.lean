@@ -19,7 +19,7 @@ namespace Benchmarks.Xxx
 /-! ## Calldata decoding -/
 
 -- theorem xxxDecode_setValue_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
---     decodeCalldataWithMode config.abiDecodeMode (setValueTransition.params.map Param.name)
+--     config.externalABI.decodeCalldata? (setValueTransition.params.map Param.name)
 --       (transitionSignature setValueTransition).paramTypes I.calldata =
 --         some ((∅ : Store).insert "data" (.int … (calldataWord I.calldata 4) …)) := …
 

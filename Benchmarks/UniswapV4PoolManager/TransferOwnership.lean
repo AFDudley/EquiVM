@@ -115,7 +115,7 @@ theorem poolManagerTransferOwnershipBodyCore {σ σ₀ A I} {g : UInt256} (v : P
             rw [deployedRuntime_jumps v]; jump_dest
           obtain ⟨k'', C'', rdAuth⟩ := poolManagerBlocks.poolManager_block_2208 (by simp) hjumpAuth rdLoad
           let args := (∅ : Store).insert "newOwner" (.address (AccountAddress.ofNat (calldataWord I.calldata 4).toNat))
-          have hdec : decodeCalldataWithMode config.abiDecodeMode
+          have hdec : config.externalABI.decodeCalldata?
               (transferOwnershipTransition.params.map Param.name)
               (transitionSignature transferOwnershipTransition).paramTypes I.calldata = some args :=
             decodeCalldata_address_ok hlen hhi hcanon

@@ -12,9 +12,9 @@ abbrev exitStore (I : ExecutionEnv) : Store :=
   joinStore I
 
 theorem gemJoinDecode_exit_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (exitTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (exitTransition.params.map Param.name)
       (transitionSignature exitTransition).paramTypes I.calldata = some (exitStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["usr", "wad"] [addr, uint256]
+  show config.externalABI.decodeCalldata? ["usr", "wad"] [addr, uint256]
     I.calldata = _
   simpa [exitStore, joinStore, joinUsrValue, joinWadValue, joinUsrWord, joinWadWord,
     calldataWord] using
@@ -23,9 +23,9 @@ theorem gemJoinDecode_exit_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size
 
 theorem gemJoinDecode_exit_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 68) :
-    decodeCalldataWithMode config.abiDecodeMode (exitTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (exitTransition.params.map Param.name)
       (transitionSignature exitTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["usr", "wad"] [addr, uint256]
+  show config.externalABI.decodeCalldata? ["usr", "wad"] [addr, uint256]
     I.calldata = none
   simpa using decodeCalldata_legacyAddress_uint256_none_short
     (cd := I.calldata) (x := "usr") (y := "wad") hsz4 hshort
@@ -2340,7 +2340,7 @@ theorem gemJoinExitBodyCoreOverflow
     (hwadHigh : intLimit < (joinWadWord I).toNat)
     (hdispatch : dispatchMsg contract I.calldata = some exitTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (exitTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (exitTransition.params.map Param.name)
         (transitionSignature exitTransition).paramTypes I.calldata = some (exitStore I))
     (hreach : ∃ k C, RD gemJoinBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨428⟩ [sel]
@@ -2369,7 +2369,7 @@ theorem gemJoinExitBodyCoreVatNoCode
         (solcAddressSlotWord ⟨1⟩ σ I) = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some exitTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (exitTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (exitTransition.params.map Param.name)
         (transitionSignature exitTransition).paramTypes I.calldata = some (exitStore I))
     (hreach : ∃ k C, RD gemJoinBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨428⟩ [sel]
@@ -2442,7 +2442,7 @@ theorem gemJoinExitBodyCoreSlipCallDepthLimit
     (hdepth : I.depth = 1024)
     (hdispatch : dispatchMsg contract I.calldata = some exitTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (exitTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (exitTransition.params.map Param.name)
         (transitionSignature exitTransition).paramTypes I.calldata = some (exitStore I))
     (hreach : ∃ k C, RD gemJoinBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨428⟩ [sel]
@@ -2539,7 +2539,7 @@ theorem gemJoinExitBodyCoreSlipCallFailure
         (solcAddressSlotWord ⟨1⟩ σ I) ≠ ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some exitTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (exitTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (exitTransition.params.map Param.name)
         (transitionSignature exitTransition).paramTypes I.calldata = some (exitStore I))
     (rd1717 : RD gemJoinBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1717⟩
@@ -2669,7 +2669,7 @@ theorem gemJoinExitBodyCoreGemNoCode
         (solcAddressSlotWord ⟨3⟩ σ_slip I) = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some exitTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (exitTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (exitTransition.params.map Param.name)
         (transitionSignature exitTransition).paramTypes I.calldata = some (exitStore I))
     (rd1736 : RD gemJoinBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1736⟩
@@ -2840,7 +2840,7 @@ theorem gemJoinExitBodyCoreTransferCallFailure
     (hdepth : I.depth.val < 1024)
     (hdispatch : dispatchMsg contract I.calldata = some exitTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (exitTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (exitTransition.params.map Param.name)
         (transitionSignature exitTransition).paramTypes I.calldata = some (exitStore I))
     (rd1827 : RD gemJoinBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1827⟩
@@ -3062,7 +3062,7 @@ theorem gemJoinExitBodyCoreTransferDecodeShort
     (hshort : outTransfer.size < 32)
     (hdispatch : dispatchMsg contract I.calldata = some exitTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (exitTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (exitTransition.params.map Param.name)
         (transitionSignature exitTransition).paramTypes I.calldata = some (exitStore I))
     (rd1845 : RD gemJoinBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1845⟩
@@ -3337,7 +3337,7 @@ theorem gemJoinExitBodyCoreTransferReturnTrueSmall
     (hread64 : mem.readWithPadding 64 32 = UInt256.toByteArray ⟨128⟩)
     (hdispatch : dispatchMsg contract I.calldata = some exitTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (exitTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (exitTransition.params.map Param.name)
         (transitionSignature exitTransition).paramTypes I.calldata = some (exitStore I))
     (rd1868 : RD gemJoinBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1868⟩
@@ -3577,7 +3577,7 @@ theorem gemJoinExitBodyCoreTransferReturnFalseSmall
     (hread64 : mem.readWithPadding 64 32 = UInt256.toByteArray ⟨128⟩)
     (hdispatch : dispatchMsg contract I.calldata = some exitTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (exitTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (exitTransition.params.map Param.name)
         (transitionSignature exitTransition).paramTypes I.calldata = some (exitStore I))
     (rd1868 : RD gemJoinBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1868⟩

@@ -652,6 +652,7 @@ theorem kickVatFluxCallMem_encode (σmem σ : AccountMap) (I : ExecutionEnv) :
         some ((kickVatFluxCallMem σmem σ I).readWithPadding 128 132) := by
   rw [kickVatFluxCallMem_read]
   unfold config externalABI
+  simp only [ExternalCallABI.withMode_encode?]
   simp only [if_true]
   unfold ABI.encodeCallWithSelector?
   have hpayload :
@@ -680,7 +681,7 @@ theorem kickVatFluxCallMem_encode (σmem σ : AccountMap) (I : ExecutionEnv) :
 
 
 theorem flipperDecode_kick_ok {I : ExecutionEnv} (hsz164 : 164 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (kickTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (kickTransition.params.map Param.name)
       (transitionSignature kickTransition).paramTypes I.calldata =
         some (kickLocals I) := by
   change decodeCalldataWithMode DecodeMode.legacySolc05 ["usr", "gal", "tab", "lot", "bid"]
@@ -692,7 +693,7 @@ theorem flipperDecode_kick_ok {I : ExecutionEnv} (hsz164 : 164 ≤ I.calldata.si
 
 theorem flipperDecode_kick_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 164) :
-    decodeCalldataWithMode config.abiDecodeMode (kickTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (kickTransition.params.map Param.name)
       (transitionSignature kickTransition).paramTypes I.calldata = none := by
   change decodeCalldataWithMode DecodeMode.legacySolc05 ["usr", "gal", "tab", "lot", "bid"]
       [abiAddress, abiAddress, abiUInt256, abiUInt256, abiUInt256] I.calldata = none

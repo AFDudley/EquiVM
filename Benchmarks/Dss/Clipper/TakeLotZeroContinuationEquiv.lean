@@ -22,7 +22,7 @@ theorem clipperTakeLotZeroContinuationEquiv
     (hpatch : patchRuntime clipperBytecode (patches v) = some code)
     (hcode : I.code = code)
     (hdispatch : dispatchMsg contract I.calldata = some takeTransition)
-    (hdec : decodeCalldataWithMode config.abiDecodeMode
+    (hdec : config.externalABI.decodeCalldata?
       (List.map Param.name takeTransition.params)
       (transitionSignature takeTransition).paramTypes I.calldata =
         some (clipperTakeStore I))
@@ -354,7 +354,7 @@ theorem clipperTakeLotZeroContinuation
     (hpatch : patchRuntime clipperBytecode (patches v) = some code)
     (hcode : I.code = code)
     (hdispatch : dispatchMsg contract I.calldata = some takeTransition)
-    (hdec : decodeCalldataWithMode config.abiDecodeMode
+    (hdec : config.externalABI.decodeCalldata?
       (List.map Param.name takeTransition.params)
       (transitionSignature takeTransition).paramTypes I.calldata =
         some (clipperTakeStore I))

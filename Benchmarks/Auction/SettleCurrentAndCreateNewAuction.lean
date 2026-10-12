@@ -15,7 +15,7 @@ theorem settleCurrentAndCreateNewAuctionBodyCore {σ σ₀ A I} {g : UInt256}
   by_cases hwv : I.weiValue = ⟨0⟩
   · have hd := dispatchEntry 18 hsel
     have hsz := calldata_size_ge_of_selIs I (entryBytes 18) (entryBytes_size 18) hsel
-    have hdec : decodeCalldataWithMode auctionConfig.abiDecodeMode
+    have hdec : auctionConfig.externalABI.decodeCalldata?
         (settleAndCreateTransition.params.map Param.name)
         (transitionSignature settleAndCreateTransition).paramTypes I.calldata = some ∅ :=
       decodeCalldata_empty_ok hsz

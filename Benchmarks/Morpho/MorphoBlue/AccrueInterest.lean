@@ -47,7 +47,7 @@ theorem morphoAccrueInterestBody {σ σ₀ A I} {g : UInt256} (v : MorphoImmutab
   by_cases hlen : 164 ≤ I.calldata.size
   · by_cases hbound : I.calldata.size < 2 ^ 255 + 4
     · by_cases hc : p.Canonical
-      · have hdec : decodeCalldataWithMode config.abiDecodeMode
+      · have hdec : config.externalABI.decodeCalldata?
             (accrueInterestTransition.params.map Param.name)
             (transitionSignature accrueInterestTransition).paramTypes I.calldata =
             some (createMarketArgs p) := decodeCalldata_marketParams_ok hlen hbound hc
@@ -101,7 +101,7 @@ theorem morphoAccrueInterestBody {σ σ₀ A I} {g : UInt256} (v : MorphoImmutab
         · exact reEquivSelectorRevert hcode
             (morphoAccrueInterestXReverts v hcode hsize hsel (.inl hcv)) hd hdec
             (bodyReverts_nonPayable hcv)
-      · have hdec : decodeCalldataWithMode config.abiDecodeMode
+      · have hdec : config.externalABI.decodeCalldata?
             (accrueInterestTransition.params.map Param.name)
             (transitionSignature accrueInterestTransition).paramTypes I.calldata = none :=
           decodeCalldata_marketParams_noncanonical hlen hc

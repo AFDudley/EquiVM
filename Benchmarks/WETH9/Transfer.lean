@@ -49,9 +49,9 @@ theorem transferCallStore_bind (I : ExecutionEnv) :
   rfl
 
 theorem xferDecode_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (transferTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (transferTransition.params.map Param.name)
       (transitionSignature transferTransition).paramTypes I.calldata = some (transferStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["dst", "wad"] [addr, uint256]
+  show config.externalABI.decodeCalldata? ["dst", "wad"] [addr, uint256]
     I.calldata = _
   simpa [transferStore, xferDstVal, xferWadVal, xferDstWord, xferWadWord, calldataWord]
     using decodeCalldata_legacyAddress_uint256_ok
@@ -59,9 +59,9 @@ theorem xferDecode_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size) :
 
 theorem xferDecode_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 68) :
-    decodeCalldataWithMode config.abiDecodeMode (transferTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (transferTransition.params.map Param.name)
       (transitionSignature transferTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["dst", "wad"] [addr, uint256]
+  show config.externalABI.decodeCalldata? ["dst", "wad"] [addr, uint256]
     I.calldata = none
   simpa using decodeCalldata_legacyAddress_uint256_none_short
     (cd := I.calldata) (x := "dst") (y := "wad") hsz4 hshort

@@ -64,7 +64,7 @@ theorem transferFromAuthCore {σ σ₀ A I} {g : UInt256} {args : Store}
     {sender receiver : UInt256} {R : List UInt256} {k C : Nat} (v : PoolManagerImmutables)
     (hcode : I.code = deployedRuntime v)
     (hd : dispatchMsg contract I.calldata = some transferFromTransition)
-    (hdec : decodeCalldataWithMode config.abiDecodeMode
+    (hdec : config.externalABI.decodeCalldata?
       (transferFromTransition.params.map Param.name)
       (transitionSignature transferFromTransition).paramTypes I.calldata = some args)
     (hwv : I.weiValue = ⟨0⟩) (hhi : I.calldata.size < calldataLimit)
@@ -193,7 +193,7 @@ theorem poolManagerTransferFromBodyCore {σ σ₀ A I} {g : UInt256} (v : PoolMa
             obtain ⟨k1, C1, rd453⟩ := decodeAddress36 v (by simp) hc1 hj453 rdAddr1
             let args := transferFromLocals (calldataWord I.calldata 4) (calldataWord I.calldata 36)
               (calldataWord I.calldata 68) (calldataWord I.calldata 100)
-            have hdec : decodeCalldataWithMode config.abiDecodeMode
+            have hdec : config.externalABI.decodeCalldata?
                 (transferFromTransition.params.map Param.name)
                 (transitionSignature transferFromTransition).paramTypes I.calldata = some args :=
               decodeCalldata_address_address_uint256_uint256_ok hlen hhi hc0 hc1
