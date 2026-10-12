@@ -55,8 +55,8 @@ class PathTests(unittest.TestCase):
     def test_pot_binary_search_with_guard(self) -> None:
         self.check_contract("Benchmarks/Dss/Pot", "Pot", "pot", True)
 
-    def test_comet_rewards_via_ir_without_guard(self) -> None:
-        self.check_contract("Benchmarks/Scaffolds/CometRewards", "CometRewards", "cometRewards", False)
+    def test_morpho_via_ir_without_guard(self) -> None:
+        self.check_contract("Benchmarks/Morpho/MorphoBlue", "Morpho", "morpho", False)
 
     def test_tiny_immutable_linear(self) -> None:
         self.check_contract("Examples/TinyImmutable", "TinyImmutable", "tinyImmutable", True)
