@@ -63,7 +63,7 @@ theorem cometWithExtendedAssetListPauseGuardianBody {σ σ₀ A I} {g : UInt256}
     runtimeRefinementFor config contract σ σ₀ g A I (immStore v) := by
   have hsz : 4 ≤ I.calldata.size :=
     calldata_size_ge_of_selIs I (cometWithExtendedAssetListSelBytes 9) rfl hsel
-  exact immutableGetter_refines (t := pauseGuardianTransition) hcode hsz
+  exact immutableGetter_refines (t := pauseGuardianTransition) hcode hsz (cometDecode_empty hsz)
     (cometSelectorDispatch ⟨9, by decide⟩ hsel) rfl rfl rfl
     (immStore_get_pauseGuardian v) (getterAddressEncoding v.pauseGuardian)
     (pauseGuardianX v hcode hsz hsize hsel)

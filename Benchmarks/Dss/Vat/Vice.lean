@@ -10,9 +10,9 @@ def viceWord (σ : AccountMap) (I : ExecutionEnv) : UInt256 :=
   solcSlotWordAt ⟨8⟩ σ I
 
 theorem vatDecode_vice {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (viceTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (viceTransition.params.map Param.name)
       (transitionSignature viceTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 theorem vatReachViceBody {σ σ₀ A I} {g : Sat256}

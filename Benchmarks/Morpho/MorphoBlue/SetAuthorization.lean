@@ -361,7 +361,7 @@ theorem morphoSetAuthorizationBody {σ σ₀ A I} {g : UInt256} (v : MorphoImmut
   · by_cases hbound : I.calldata.size < 2 ^ 255 + 4
     · by_cases hcanon : (calldataWord I.calldata 4).toNat < EVM.addressModulus ∧
           (calldataWord I.calldata 36 = ⟨0⟩ ∨ calldataWord I.calldata 36 = ⟨1⟩)
-      · have hdec : decodeCalldataWithMode config.abiDecodeMode
+      · have hdec : config.externalABI.decodeCalldata?
             (setAuthorizationTransition.params.map Param.name)
             (transitionSignature setAuthorizationTransition).paramTypes I.calldata =
             some (setAuthorizationArgs I.calldata) := decodeCalldata_addr_bool_ok hlen hbound hcanon.1 hcanon.2

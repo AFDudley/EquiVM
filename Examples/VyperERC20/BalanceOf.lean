@@ -496,7 +496,7 @@ theorem erc20BalanceOfBodyCore
   · by_cases hcanon : (balanceOfOwnerWord I).toNat < EVM.addressModulus
     · have hdec0 := erc20Decode_balanceOf_ok (I := I) hsz36 hcanon
       have hdec :
-          decodeCalldataWithMode vyperERC20Config.abiDecodeMode
+          vyperERC20Config.externalABI.decodeCalldata?
             (ERC20.balanceOfTransition.params.map Param.name)
             (transitionSignature ERC20.balanceOfTransition).paramTypes I.calldata =
               some (balanceOfStore I) := by
@@ -506,7 +506,7 @@ theorem erc20BalanceOfBodyCore
           (returnEquiv_of_encode (Reasoning.Theory.uint256ReturnEncoding (balanceOfWord σ I)))
     · have hdec0 := erc20Decode_balanceOf_none_noncanon (I := I) hsz36 hcanon
       have hdec :
-          decodeCalldataWithMode vyperERC20Config.abiDecodeMode
+          vyperERC20Config.externalABI.decodeCalldata?
             (ERC20.balanceOfTransition.params.map Param.name)
             (transitionSignature ERC20.balanceOfTransition).paramTypes I.calldata = none := by
         simpa [vyperERC20Config] using hdec0
@@ -516,7 +516,7 @@ theorem erc20BalanceOfBodyCore
   · have hshort : I.calldata.size < 36 := by omega
     have hdec0 := erc20Decode_balanceOf_none_short (I := I) hsz4 hshort
     have hdec :
-        decodeCalldataWithMode vyperERC20Config.abiDecodeMode
+        vyperERC20Config.externalABI.decodeCalldata?
           (ERC20.balanceOfTransition.params.map Param.name)
           (transitionSignature ERC20.balanceOfTransition).paramTypes I.calldata = none := by
       simpa [vyperERC20Config] using hdec0

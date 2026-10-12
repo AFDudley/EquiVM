@@ -3323,18 +3323,18 @@ theorem endFreeX_grabLogReturnSplit {I} {g : Sat256} {s0 : State} {k C : ℕ}
   exact RD.stop rd563 (by native_decide) (by evm_ov)
 
 theorem endDecode_free_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (freeTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (freeTransition.params.map Param.name)
       (transitionSignature freeTransition).paramTypes I.calldata = some (endFreeStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["ilk"] [bytes32] I.calldata = _
+  show config.externalABI.decodeCalldata? ["ilk"] [bytes32] I.calldata = _
   simpa [config, endFreeStore, endFreeIlkValue, endFreeIlkWord, bytes32, bytes32Width,
     abiBytes32, abiBytes32Width] using
     decodeCalldataWithMode_legacyBytes32_ok (cd := I.calldata) (x := "ilk") hsz36
 
 theorem endDecode_free_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (freeTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (freeTransition.params.map Param.name)
       (transitionSignature freeTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["ilk"] [bytes32] I.calldata = none
+  show config.externalABI.decodeCalldata? ["ilk"] [bytes32] I.calldata = none
   simpa [config, bytes32, bytes32Width, abiBytes32, abiBytes32Width] using
     decodeCalldataWithMode_legacyBytes32_none_short (cd := I.calldata) (x := "ilk") hsz4 hshort
 

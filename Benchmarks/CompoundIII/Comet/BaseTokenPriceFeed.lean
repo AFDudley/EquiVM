@@ -63,7 +63,7 @@ theorem cometWithExtendedAssetListBaseTokenPriceFeedBody {σ σ₀ A I} {g : UIn
     runtimeRefinementFor config contract σ σ₀ g A I (immStore v) := by
   have hsz : 4 ≤ I.calldata.size :=
     calldata_size_ge_of_selIs I (cometWithExtendedAssetListSelBytes 65) rfl hsel
-  exact immutableGetter_refines (t := baseTokenPriceFeedTransition) hcode hsz
+  exact immutableGetter_refines (t := baseTokenPriceFeedTransition) hcode hsz (cometDecode_empty hsz)
     (cometSelectorDispatch ⟨65, by decide⟩ hsel) rfl rfl rfl
     (immStore_get_baseTokenPriceFeed v) (getterAddressEncoding v.baseTokenPriceFeed)
     (baseTokenPriceFeedX v hcode hsz hsize hsel)

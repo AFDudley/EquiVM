@@ -10,9 +10,9 @@ def gemJoinDecWord (σ : AccountMap) (I : ExecutionEnv) : UInt256 :=
   solcSlotWordAt ⟨4⟩ σ I
 
 theorem gemJoinDecode_dec {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (decTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (decTransition.params.map Param.name)
       (transitionSignature decTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 theorem gemJoinReachDecBody {σ σ₀ A I} {g : Sat256}

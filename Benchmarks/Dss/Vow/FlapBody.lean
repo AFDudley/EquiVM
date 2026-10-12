@@ -1335,7 +1335,7 @@ theorem vowFlapSurplus0AddOverflowBodyCore
     (hcode : I.code = vowBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some flapTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (flapTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (flapTransition.params.map Param.name)
         (transitionSignature flapTransition).paramTypes I.calldata = some ∅)
     (rd978 : RD vowBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨978⟩
@@ -1374,7 +1374,7 @@ theorem vowFlapSurplusNeedAddOverflowBodyCore
     (hcode : I.code = vowBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some flapTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (flapTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (flapTransition.params.map Param.name)
         (transitionSignature flapTransition).paramTypes I.calldata = some ∅)
     (rd985 : RD vowBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨985⟩
@@ -1419,7 +1419,7 @@ theorem vowFlapDai0InsufficientSurplusBodyCore
     (hcode : I.code = vowBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some flapTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (flapTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (flapTransition.params.map Param.name)
         (transitionSignature flapTransition).paramTypes I.calldata = some ∅)
     (rd1113 : RD vowBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1113⟩

@@ -256,10 +256,10 @@ theorem daiBindTransferFromCallStore (I : ExecutionEnv) :
 
 theorem daiDecode_transferFrom_ok {I : ExecutionEnv}
     (hsel : selIs I (daiSelBytes 19)) (hsz100 : 100 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (transferFromTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (transferFromTransition.params.map Param.name)
       (transitionSignature transferFromTransition).paramTypes I.calldata =
         some (transferFromStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["src", "dst", "wad"] [addr, addr, uint256]
+  show config.externalABI.decodeCalldata? ["src", "dst", "wad"] [addr, addr, uint256]
     I.calldata = _
   unfold transferFromStore transferFromSrcValue transferFromDstValue transferFromWadValue
   rw [transferFromSrcWord_of_transferFrom I hsel,
@@ -276,9 +276,9 @@ theorem daiDecode_transferFrom_ok {I : ExecutionEnv}
 
 theorem daiDecode_transferFrom_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 100) :
-    decodeCalldataWithMode config.abiDecodeMode (transferFromTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (transferFromTransition.params.map Param.name)
       (transitionSignature transferFromTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["src", "dst", "wad"] [addr, addr, uint256]
+  show config.externalABI.decodeCalldata? ["src", "dst", "wad"] [addr, addr, uint256]
     I.calldata = none
   simpa using decodeCalldata_legacyAddress_legacyAddress_uint256_none_short
     (cd := I.calldata) (x := "src") (y := "dst") (z := "wad") hsz4 hshort
@@ -4997,7 +4997,7 @@ theorem daiTransferFromInternalCallRuntimeCore
     (hcode : I.code = daiBytecode)
     (hdispatch : dispatchMsg contract I.calldata = some t)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (t.params.map Param.name)
+      config.externalABI.decodeCalldata? (t.params.map Param.name)
         (transitionSignature t).paramTypes I.calldata = some callargs)
     (hwv : I.weiValue = ⟨0⟩)
     (hSlen : S.length + 16 ≤ 1024)

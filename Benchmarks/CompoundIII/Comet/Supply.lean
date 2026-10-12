@@ -26,7 +26,7 @@ theorem cometWithExtendedAssetListSupplyBody {σ σ₀ A I} {g : UInt256} (v : C
   have hsz : 4 ≤ I.calldata.size := calldata_size_ge_of_selIs I (cometWithExtendedAssetListSelBytes 66) rfl hsel
   have hd : selectorDispatchMsg contract I.calldata = some supplyTransition :=
     cometSelectorDispatch ⟨66, by decide⟩ hsel
-  have hdecode : decodeCalldataWithMode config.abiDecodeMode
+  have hdecode : config.externalABI.decodeCalldata?
       (supplyTransition.params.map Param.name)
       (transitionSignature supplyTransition).paramTypes I.calldata =
       decodeCalldata ["asset", "amount"] [.elem .address, abiUInt256] I.calldata := by

@@ -94,7 +94,7 @@ theorem easRevokeOffchainBody {σ σ₀ A I} {g : UInt256} (v : EASImmutables)
         simp only [easBlocks.eas_block_2306_stack, ← keyValueToWord_address] at rd3
         let word := calldataWord I.calldata 4
         let time := easTimeWord I
-        have hdec : decodeCalldataWithMode config.abiDecodeMode
+        have hdec : config.externalABI.decodeCalldata?
             (revokeOffchainTransition.params.map Param.name)
             (transitionSignature revokeOffchainTransition).paramTypes I.calldata =
             some ((∅ : Store).insert "data" (wordBytes32Value word)) :=
@@ -142,7 +142,7 @@ theorem easRevokeOffchainBody {σ σ₀ A I} {g : UInt256} (v : EASImmutables)
   · have rd1 := easBlocks.eas_block_2258_taken (immWords := wordsOf (immStore v)) (by simp) hv
       (by rw [easPatchedValidJumpsRuntime v]; jump_dest) rd
     have hr := easBlocks.eas_block_402 (immWords := wordsOf (immStore v)) (by simp) rd1
-    cases hdec : decodeCalldataWithMode config.abiDecodeMode
+    cases hdec : config.externalABI.decodeCalldata?
         (revokeOffchainTransition.params.map Param.name)
         (transitionSignature revokeOffchainTransition).paramTypes I.calldata with
     | none => exact RDrev.reEquivDecodingFailed hcode hr hd hdec

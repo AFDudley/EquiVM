@@ -77,14 +77,14 @@ theorem relyAuthStorageSlot_eq_mapSlot_source (I : ExecutionEnv) :
   rw [keyValueToWord_address]
 
 theorem flopperDecode_rely_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (relyTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (relyTransition.params.map Param.name)
       (transitionSignature relyTransition).paramTypes I.calldata = some (relyStore I) := by
   simpa [config, relyTransition, relyStore, relyUsrValue, relyUsrWord, calldataWord] using
     decodeCalldata_legacyAddress_ok (cd := I.calldata) (x := "usr") hsz36
 
 theorem flopperDecode_rely_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (relyTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (relyTransition.params.map Param.name)
       (transitionSignature relyTransition).paramTypes I.calldata = none := by
   simpa [config, relyTransition] using
     decodeCalldata_legacyAddress_none_short (cd := I.calldata) (x := "usr") hsz4 hshort
@@ -649,7 +649,7 @@ theorem flopperRelyBodyCoreOk
     (hauth : relyAuthWord σ I = ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some relyTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (relyTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (relyTransition.params.map Param.name)
         (transitionSignature relyTransition).paramTypes I.calldata = some (relyStore I))
     (hreach : ∃ k C, RD flopperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨582⟩ [sel]
@@ -690,7 +690,7 @@ theorem flopperRelyBodyCoreUnauthorized
     (hauth : relyAuthWord σ I ≠ ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some relyTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (relyTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (relyTransition.params.map Param.name)
         (transitionSignature relyTransition).paramTypes I.calldata = some (relyStore I))
     (hreach : ∃ k C, RD flopperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨582⟩ [sel]

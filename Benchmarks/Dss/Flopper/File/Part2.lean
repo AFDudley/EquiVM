@@ -113,7 +113,7 @@ theorem flopperFileBodyCoreBeg
     (hwhat : fileWhat I = fileBegBytes)
     (hdispatch : dispatchMsg contract I.calldata = some fileTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileTransition.params.map Param.name)
         (transitionSignature fileTransition).paramTypes I.calldata = some (fileLocals I))
     (hreach : ∃ k C, RD flopperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨336⟩ [sel]
@@ -158,7 +158,7 @@ theorem flopperFileBodyCorePad
     (hwhat : fileWhat I = filePadBytes)
     (hdispatch : dispatchMsg contract I.calldata = some fileTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileTransition.params.map Param.name)
         (transitionSignature fileTransition).paramTypes I.calldata = some (fileLocals I))
     (hreach : ∃ k C, RD flopperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨336⟩ [sel]
@@ -206,7 +206,7 @@ theorem flopperFileBodyCoreTtl
     (hwhat : fileWhat I = fileTtlBytes)
     (hdispatch : dispatchMsg contract I.calldata = some fileTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileTransition.params.map Param.name)
         (transitionSignature fileTransition).paramTypes I.calldata = some (fileLocals I))
     (hreach : ∃ k C, RD flopperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨336⟩ [sel]
@@ -259,7 +259,7 @@ theorem flopperFileBodyCoreTau
     (hwhat : fileWhat I = fileTauBytes)
     (hdispatch : dispatchMsg contract I.calldata = some fileTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileTransition.params.map Param.name)
         (transitionSignature fileTransition).paramTypes I.calldata = some (fileLocals I))
     (hreach : ∃ k C, RD flopperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨336⟩ [sel]
@@ -311,7 +311,7 @@ theorem flopperFileBodyCoreUnauthorized
     (hauth : relyAuthWord σ I ≠ ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some fileTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileTransition.params.map Param.name)
         (transitionSignature fileTransition).paramTypes I.calldata = some (fileLocals I))
     (hreach : ∃ k C, RD flopperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨336⟩ [sel]
@@ -342,7 +342,7 @@ theorem flopperFileBodyCoreUnrecognized
     (htau : fileWhat I ≠ fileTauBytes)
     (hdispatch : dispatchMsg contract I.calldata = some fileTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileTransition.params.map Param.name)
         (transitionSignature fileTransition).paramTypes I.calldata = some (fileLocals I))
     (hreach : ∃ k C, RD flopperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨336⟩ [sel]

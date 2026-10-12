@@ -27,7 +27,7 @@ theorem cometWithExtendedAssetListAbsorbBody {σ σ₀ A I} {g : UInt256} (v : C
   have hsz : 4 ≤ I.calldata.size := calldata_size_ge_of_selIs I (cometWithExtendedAssetListSelBytes 38) rfl hsel
   have hd : selectorDispatchMsg contract I.calldata = some absorbTransition :=
     cometSelectorDispatch ⟨38, by decide⟩ hsel
-  have hdecode : decodeCalldataWithMode config.abiDecodeMode
+  have hdecode : config.externalABI.decodeCalldata?
       (absorbTransition.params.map Param.name) (transitionSignature absorbTransition).paramTypes
       I.calldata = decodeCalldataWithMode .solc0815 ["absorber", "accounts"]
         [.elem .address, .dynamicArray (.elem .address)] I.calldata := rfl

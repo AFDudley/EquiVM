@@ -30,9 +30,9 @@ theorem daiLookupTransferFromForMove :
 
 theorem daiDecode_move_ok {I : ExecutionEnv}
     (hsel : selIs I (daiSelBytes 8)) (hsz100 : 100 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (moveTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (moveTransition.params.map Param.name)
       (transitionSignature moveTransition).paramTypes I.calldata = some (moveStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["src", "dst", "wad"]
+  show config.externalABI.decodeCalldata? ["src", "dst", "wad"]
     [addr, addr, uint256] I.calldata = _
   unfold moveStore transferFromStore transferFromSrcValue transferFromDstValue
     transferFromWadValue
@@ -49,9 +49,9 @@ theorem daiDecode_move_ok {I : ExecutionEnv}
 
 theorem daiDecode_move_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 100) :
-    decodeCalldataWithMode config.abiDecodeMode (moveTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (moveTransition.params.map Param.name)
       (transitionSignature moveTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["src", "dst", "wad"]
+  show config.externalABI.decodeCalldata? ["src", "dst", "wad"]
     [addr, addr, uint256] I.calldata = none
   simpa using decodeCalldata_legacyAddress_legacyAddress_uint256_none_short
     (cd := I.calldata) (x := "src") (y := "dst") (z := "wad") hsz4 hshort

@@ -73,8 +73,7 @@ def externalABI : ExternalCallABI where
 
 def config : Config :=
   { storageBackend := storageBackend
-    externalABI := externalABI
-    abiDecodeMode := Syntax.abiDecodeMode
+    externalABI := externalABI.withMode Syntax.abiDecodeMode
     selfDeployment := genSolidityConstructorDeployment contract.ctor.params }
 
 end Benchmarks.EAS.EAS

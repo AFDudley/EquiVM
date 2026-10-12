@@ -76,9 +76,9 @@ theorem clipperDispatch_spotter {I : ExecutionEnv}
 
 theorem clipperDecode_spotter {I : ExecutionEnv}
     (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (spotterTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (spotterTransition.params.map Param.name)
       (transitionSignature spotterTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  change decodeCalldataWithMode .legacySolc05 [] [] I.calldata = some ∅
   exact decodeCalldataWithMode_empty_ok hsz
 
 theorem clipperEvalSpotter (v : ClipperImmutables) (evm : EVM.State) (locals : Store)

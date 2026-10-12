@@ -53,7 +53,8 @@ theorem hookDeltaReply {f : Frame} {evm : State} {out : ByteArray} {parse : Bool
     · rw [if_neg (not_not.mpr hl)]
       exact .execBlockRet (ExecBlock.consNormal hg
         (ExecBlock.consNormal (ExecStmt.requireTrue (hlen.trans (by rw [decide_eq_true hl])))
-          (ABlock.start.returns (evalDecodeSigned256Slice (start := 32) rfl (evalLocalValue ho) (by omega)))))
+          (ABlock.start.returns (evalDecodeSigned256Slice (start := 32)
+            (by intro data; rfl) (evalLocalValue ho) (by omega)))))
     · rw [if_pos hl]
       exact .execBlockRevert (ExecBlock.consNormal hg
         (ExecBlock.consRevert (ExecStmt.requireFalse (hlen.trans (by rw [decide_eq_false hl])))))

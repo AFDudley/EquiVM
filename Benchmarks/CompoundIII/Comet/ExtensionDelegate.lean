@@ -63,7 +63,7 @@ theorem cometWithExtendedAssetListExtensionDelegateBody {σ σ₀ A I} {g : UInt
     runtimeRefinementFor config contract σ σ₀ g A I (immStore v) := by
   have hsz : 4 ≤ I.calldata.size :=
     calldata_size_ge_of_selIs I (cometWithExtendedAssetListSelBytes 26) rfl hsel
-  exact immutableGetter_refines (t := extensionDelegateTransition) hcode hsz
+  exact immutableGetter_refines (t := extensionDelegateTransition) hcode hsz (cometDecode_empty hsz)
     (cometSelectorDispatch ⟨26, by decide⟩ hsel) rfl rfl rfl
     (immStore_get_extensionDelegate v) (getterAddressEncoding v.extensionDelegate)
     (extensionDelegateX v hcode hsz hsize hsel)

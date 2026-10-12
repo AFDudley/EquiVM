@@ -53,7 +53,7 @@ theorem poolManagerClearBodyCore {σ σ₀ A I} {g : UInt256} (v : PoolManagerIm
           let args := ((∅ : Store).insert "currency" (.address currency)).insert "amount" (.int (Int.ofNat amount.toNat))
           let evm := initState σ σ₀ (Sat256.ofUInt256 g) A I
           have hI : evm.executionEnv = I := rfl
-          have hdec : decodeCalldataWithMode config.abiDecodeMode (clearTransition.params.map Param.name)
+          have hdec : config.externalABI.decodeCalldata? (clearTransition.params.map Param.name)
               (transitionSignature clearTransition).paramTypes I.calldata = some args :=
             decodeCalldata_addr_uint256_ok hlen hhi hcanon
           have hc : args.get? "currency" = some (.address currency) :=

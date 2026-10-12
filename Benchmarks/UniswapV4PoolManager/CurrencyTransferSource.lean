@@ -40,7 +40,8 @@ theorem transferReturnBody {f : Frame} {evm : EVM.State} {z : Bool} {out : ByteA
     by_cases hlo : 32 ≤ out.size
     · rw [decide_eq_true (by omega : 31 < out.size)] at hg
       apply ExecStmt.iteTrue hg
-      have hdecode := evalDecodeUint256Prefix (cfg := config) (evm := evm) rfl (evalLocalValue hb1) hlo
+      have hdecode := evalDecodeUint256Prefix (cfg := config) (evm := evm)
+        (by intro data; rfl) (evalLocalValue hb1) hlo
       have heq := evalNatEqLiteral (k := 1) hdecode
       have hword : (returnedBalanceWord out).toNat = 1 ↔ returnedBalanceWord out = ⟨1⟩ :=
         ⟨fun h => u256_inj h, fun h => by rw [h]; rfl⟩

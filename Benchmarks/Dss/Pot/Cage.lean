@@ -20,9 +20,9 @@ abbrev cagePostState (evm : EVM.State) : EVM.State :=
     ⟨3⟩ potRay
 
 theorem potDecode_cage {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (cageTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (cageTransition.params.map Param.name)
       (transitionSignature cageTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 /-! ### Solm-side auth evaluation (empty locals) -/
@@ -441,7 +441,7 @@ theorem potCageBodyCoreOk
     (hauth : relyAuthWord σ I = ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some cageTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (cageTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (cageTransition.params.map Param.name)
         (transitionSignature cageTransition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD potBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨500⟩ [sel]
@@ -474,7 +474,7 @@ theorem potCageBodyCoreStatic
     (hauth : relyAuthWord σ I = ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some cageTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (cageTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (cageTransition.params.map Param.name)
         (transitionSignature cageTransition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD potBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨500⟩ [sel]
@@ -501,7 +501,7 @@ theorem potCageBodyCoreUnauthorized
     (hauth : relyAuthWord σ I ≠ ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some cageTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (cageTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (cageTransition.params.map Param.name)
         (transitionSignature cageTransition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD potBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨500⟩ [sel]

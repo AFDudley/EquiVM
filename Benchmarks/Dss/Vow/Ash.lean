@@ -24,9 +24,9 @@ theorem vowDispatch_Ash {I : ExecutionEnv} (hsel : selIs I ⟨#[0x2a, 0x1d, 0x2b
   rw [dispatchList_cons, selectorOf, AshSelectorBytes, if_pos hsel]
 
 theorem vowDecode_Ash {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (AshTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (AshTransition.params.map Param.name)
       (transitionSignature AshTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 theorem vowReachAshBody {σ σ₀ A I} {g : Sat256}
@@ -63,7 +63,7 @@ theorem vowAshBodyCore
     (hcode : I.code = vowBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some AshTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (AshTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (AshTransition.params.map Param.name)
         (transitionSignature AshTransition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD vowBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨449⟩ [sel]

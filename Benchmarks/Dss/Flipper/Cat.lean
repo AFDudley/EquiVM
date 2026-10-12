@@ -10,9 +10,9 @@ def catWord (σ : AccountMap) (I : ExecutionEnv) : UInt256 :=
   solcAddressSlotWord ⟨7⟩ σ I
 
 theorem flipperDecode_cat {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (catTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (catTransition.params.map Param.name)
       (transitionSignature catTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 theorem flipperReachCatBody {σ σ₀ A I} {g : Sat256}

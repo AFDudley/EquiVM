@@ -888,7 +888,7 @@ theorem vowCageMinHealLeftNoCodeBodyCore
     (hlive : solcSlotWordAt ⟨12⟩ σ I = ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some cageTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (cageTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (cageTransition.params.map Param.name)
         (transitionSignature cageTransition).paramTypes I.calldata = some ∅)
     (rd3234 : RD vowBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨3234⟩
@@ -989,7 +989,7 @@ theorem vowCageMinHealRightNoCodeBodyCore
     (hlive : solcSlotWordAt ⟨12⟩ σ I = ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some cageTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (cageTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (cageTransition.params.map Param.name)
         (transitionSignature cageTransition).paramTypes I.calldata = some ∅)
     (rd3234 : RD vowBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨3234⟩
@@ -1090,7 +1090,7 @@ theorem vowCageMinHealLeftCallFailureBodyCore
     (hlive : solcSlotWordAt ⟨12⟩ σ I = ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some cageTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (cageTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (cageTransition.params.map Param.name)
         (transitionSignature cageTransition).paramTypes I.calldata = some ∅)
     (rd3296 : RD vowBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨3296⟩
@@ -1189,7 +1189,7 @@ theorem vowCageMinHealRightCallFailureBodyCore
     (hlive : solcSlotWordAt ⟨12⟩ σ I = ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some cageTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (cageTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (cageTransition.params.map Param.name)
         (transitionSignature cageTransition).paramTypes I.calldata = some ∅)
     (rd3296 : RD vowBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨3296⟩
@@ -1288,7 +1288,7 @@ theorem vowCageMinHealLeftSuccessBodyCore
     (hlive : solcSlotWordAt ⟨12⟩ σ I = ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some cageTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (cageTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (cageTransition.params.map Param.name)
         (transitionSignature cageTransition).paramTypes I.calldata = some ∅)
     (rd3296 : RD vowBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨3296⟩
@@ -1390,7 +1390,7 @@ theorem vowCageMinHealRightSuccessBodyCore
     (hlive : solcSlotWordAt ⟨12⟩ σ I = ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some cageTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (cageTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (cageTransition.params.map Param.name)
         (transitionSignature cageTransition).paramTypes I.calldata = some ∅)
     (rd3296 : RD vowBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨3296⟩

@@ -12,9 +12,9 @@ def cagePostState (evm : EVM.State) : EVM.State :=
   Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨3⟩ ⟨0⟩
 
 theorem daiJoinDecode_cage {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (cageTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (cageTransition.params.map Param.name)
       (transitionSignature cageTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 theorem cageAssign (evm : EVM.State) :
@@ -438,7 +438,7 @@ theorem daiJoinCageBodyCoreOk
     (hauth : relyAuthWord σ I = ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some cageTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (cageTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (cageTransition.params.map Param.name)
         (transitionSignature cageTransition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD daiJoinBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨272⟩ [sel]
@@ -469,7 +469,7 @@ theorem daiJoinCageBodyCoreStatic
     (hauth : relyAuthWord σ I = ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some cageTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (cageTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (cageTransition.params.map Param.name)
         (transitionSignature cageTransition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD daiJoinBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨272⟩ [sel]
@@ -497,7 +497,7 @@ theorem daiJoinCageBodyCoreUnauthorized
     (hauth : relyAuthWord σ I ≠ ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some cageTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (cageTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (cageTransition.params.map Param.name)
         (transitionSignature cageTransition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD daiJoinBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨272⟩ [sel]

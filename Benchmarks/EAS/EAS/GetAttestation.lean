@@ -27,7 +27,7 @@ theorem easGetAttestationBody {σ σ₀ A I} {g : UInt256} (v : EASImmutables)
         let evm := initState σ σ₀ (Sat256.ofUInt256 g) A I
         let word := calldataWord I.calldata 4
         let args := (∅ : Store).insert "uid" (wordBytes32Value word)
-        have hdec : decodeCalldataWithMode config.abiDecodeMode
+        have hdec : config.externalABI.decodeCalldata?
             (getAttestationTransition.params.map Param.name)
             (transitionSignature getAttestationTransition).paramTypes I.calldata = some args :=
           easDecodeBytes32_ok "uid" h36 hbig hsize
@@ -64,7 +64,7 @@ theorem easGetAttestationBody {σ σ₀ A I} {g : UInt256} (v : EASImmutables)
   · have rd1 := easBlocks.eas_block_2545_taken (immWords := wordsOf (immStore v)) (by simp) hv
       (by rw [easPatchedValidJumpsRuntime v]; jump_dest) rd
     have hr := easBlocks.eas_block_402 (immWords := wordsOf (immStore v)) (by simp) rd1
-    cases hdec : decodeCalldataWithMode config.abiDecodeMode
+    cases hdec : config.externalABI.decodeCalldata?
         (getAttestationTransition.params.map Param.name)
         (transitionSignature getAttestationTransition).paramTypes I.calldata with
     | none => exact RDrev.reEquivDecodingFailed hcode hr hd hdec

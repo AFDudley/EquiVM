@@ -47,7 +47,7 @@ theorem decodeReturnSolc08Scalar_eq (table : List (Nat × List ABI.CalldataPlan)
 
 theorem easDecodeReturnBool_valid {out : ByteArray} (hv : BoolReturnValid out)
     (hb : out.size < 2^255) :
-    ABI.decodeReturnValueWithMode? config.abiDecodeMode abiBool out =
+    config.externalABI.decodeValue? abiBool out =
       some (.bool (decide (calldataWord out 0 ≠ ⟨0⟩))) := by
   change ABI.decodeReturnValueWithMode? (.solc08Calldata easPlanTable) abiBool out = _
   rw [decodeReturnSolc08Scalar_eq easPlanTable .bool out (by decide) hb]
@@ -55,7 +55,7 @@ theorem easDecodeReturnBool_valid {out : ByteArray} (hv : BoolReturnValid out)
 
 theorem easDecodeReturnBool_invalid {out : ByteArray} (hv : ¬ BoolReturnValid out)
     (hb : out.size < 2^255) :
-    ABI.decodeReturnValueWithMode? config.abiDecodeMode abiBool out = none := by
+    config.externalABI.decodeValue? abiBool out = none := by
   change ABI.decodeReturnValueWithMode? (.solc08Calldata easPlanTable) abiBool out = _
   rw [decodeReturnSolc08Scalar_eq easPlanTable .bool out (by decide) hb]
   exact decodeReturnBool_invalid hv hb

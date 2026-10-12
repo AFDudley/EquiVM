@@ -48,7 +48,7 @@ theorem nounsBodyCore {σ σ₀ A I} {g : UInt256}
   by_cases hwv : I.weiValue = ⟨0⟩
   · have hsz := calldata_size_ge_of_selIs I (entryBytes 1) (entryBytes_size 1) hsel
     have hd := dispatchEntry 1 hsel
-    have hdec : decodeCalldataWithMode auctionConfig.abiDecodeMode
+    have hdec : auctionConfig.externalABI.decodeCalldata?
         (nounsGetter.params.map Param.name)
         (transitionSignature nounsGetter).paramTypes I.calldata = some ∅ :=
       decodeCalldata_empty_ok hsz

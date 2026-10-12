@@ -26,7 +26,7 @@ theorem cometWithExtendedAssetListQuoteCollateralBody {σ σ₀ A I} {g : UInt25
   have hsz : 4 ≤ I.calldata.size := calldata_size_ge_of_selIs I (cometWithExtendedAssetListSelBytes 32) rfl hsel
   have hd : selectorDispatchMsg contract I.calldata = some quoteCollateralTransition :=
     cometSelectorDispatch ⟨32, by decide⟩ hsel
-  have hdecode : decodeCalldataWithMode config.abiDecodeMode
+  have hdecode : config.externalABI.decodeCalldata?
       (quoteCollateralTransition.params.map Param.name)
       (transitionSignature quoteCollateralTransition).paramTypes I.calldata =
       decodeCalldata ["asset", "baseAmount"] [.elem .address, abiUInt256] I.calldata := by

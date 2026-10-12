@@ -172,7 +172,7 @@ theorem cureUint256GetterBodyCore
     (hcode : I.code = cureBytecode)
     (hdispatch : dispatchMsg contract I.calldata = some transition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (transition.params.map Param.name)
+      config.externalABI.decodeCalldata? (transition.params.map Param.name)
         (transitionSignature transition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD cureBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) entry [sel]
@@ -752,7 +752,7 @@ theorem cureNonPayable {σ σ₀ A I} {g : UInt256}
         have htmem : t ∈ contract.transitions := by
           rw [dispatchMsg_eq_dispatchList contract I.calldata (by rfl)] at ht
           exact dispatchList_some_mem ht
-        by_cases hdec : decodeCalldataWithMode config.abiDecodeMode (t.params.map Param.name)
+        by_cases hdec : config.externalABI.decodeCalldata? (t.params.map Param.name)
             (transitionSignature t).paramTypes I.calldata = none
         · exact reEquiv_decodingFailed ht hdec hrev
         · obtain ⟨callargs, hca⟩ := Option.ne_none_iff_exists'.mp hdec

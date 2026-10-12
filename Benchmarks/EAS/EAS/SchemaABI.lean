@@ -148,7 +148,7 @@ def schemaReturnValid (out : ByteArray) : Prop :=
 instance (out : ByteArray) : Decidable (schemaReturnValid out) := by unfold schemaReturnValid; infer_instance
 
 theorem decodeSchemaReturn {out : ByteArray} (hs : out.size < 2^255) :
-    decodeReturnValueWithMode? config.abiDecodeMode schemaRecordABI out =
+    config.externalABI.decodeValue? schemaRecordABI out =
       if schemaReturnValid out then some (decodedSchemaRecord out (schemaReturnOffset out)).tuple else none := by
   change decodeReturnValueWithMode? (.solc08Calldata easPlanTable) schemaRecordABI out = _
   rw [decodeReturnSolc08Dynamic_eq easPlanTable (by native_decide) hs]

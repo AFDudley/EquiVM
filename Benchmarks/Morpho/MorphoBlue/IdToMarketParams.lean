@@ -170,7 +170,7 @@ theorem morphoIdToMarketParamsBody {σ σ₀ A I} {g : UInt256} (v : MorphoImmut
     morphoSelectorDispatch_of_selIs (by decide) hsel
   by_cases hlen : 36 ≤ I.calldata.size
   · by_cases hbound : I.calldata.size < 2 ^ 255 + 4
-    · have hdec : decodeCalldataWithMode config.abiDecodeMode
+    · have hdec : config.externalABI.decodeCalldata?
           (idToMarketParamsTransition.params.map Param.name)
           (transitionSignature idToMarketParamsTransition).paramTypes I.calldata =
           some (idToMarketParamsArgs I.calldata) := by

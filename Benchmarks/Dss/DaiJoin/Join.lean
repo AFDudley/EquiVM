@@ -10,7 +10,7 @@ namespace Benchmarks.Dss.DaiJoin
 /-! ## `join(address,uint256)` -/
 
 theorem daiJoinDecode_join_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (joinTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (joinTransition.params.map Param.name)
       (transitionSignature joinTransition).paramTypes I.calldata = some (joinStore I) := by
   simpa [config, joinTransition, joinStore, joinUsrValue, joinWadValue, joinUsrWord,
     joinWadWord, calldataWord] using
@@ -19,7 +19,7 @@ theorem daiJoinDecode_join_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size
 
 theorem daiJoinDecode_join_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 68) :
-    decodeCalldataWithMode config.abiDecodeMode (joinTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (joinTransition.params.map Param.name)
       (transitionSignature joinTransition).paramTypes I.calldata = none := by
   simpa [config, joinTransition] using
     decodeCalldata_legacyAddress_uint256_none_short (cd := I.calldata)
@@ -746,7 +746,7 @@ theorem daiJoinJoinVatMoveCallFailedCore
     (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some joinTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (joinTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (joinTransition.params.map Param.name)
         (transitionSignature joinTransition).paramTypes I.calldata = some (joinStore I))
     (hfit : daiJoinONEWord.toNat * (joinWadWord I).toNat < UInt256.size)
     (hcodeSize :
@@ -834,7 +834,7 @@ theorem daiJoinJoinDaiBurnNoCodeCore
     (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some joinTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (joinTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (joinTransition.params.map Param.name)
         (transitionSignature joinTransition).paramTypes I.calldata = some (joinStore I))
     (hfit : daiJoinONEWord.toNat * (joinWadWord I).toNat < UInt256.size)
     (hvatCodeSize :
@@ -927,7 +927,7 @@ theorem daiJoinJoinDaiBurnCallFailedCore
     (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some joinTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (joinTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (joinTransition.params.map Param.name)
         (transitionSignature joinTransition).paramTypes I.calldata = some (joinStore I))
     (hfit : daiJoinONEWord.toNat * (joinWadWord I).toNat < UInt256.size)
     (hvatCodeSize :
@@ -1080,7 +1080,7 @@ theorem daiJoinJoinDaiBurnSuccessCore
     (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some joinTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (joinTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (joinTransition.params.map Param.name)
         (transitionSignature joinTransition).paramTypes I.calldata = some (joinStore I))
     (hfit : daiJoinONEWord.toNat * (joinWadWord I).toNat < UInt256.size)
     (hvatCodeSize :

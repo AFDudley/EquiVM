@@ -302,6 +302,7 @@ theorem dentVatFluxCallMem_encode {mem : ByteArray} {σ : AccountMap} {I : Execu
       some ((dentVatFluxCallMem mem σ I).readWithPadding 128 132) := by
   rw [dentVatFluxCallMem_read hmemSize]
   unfold dentFluxArgValsMap config externalABI
+  simp only [ExternalCallABI.withMode_encode?]
   simp only [if_true]
   unfold ABI.encodeCallWithSelector?
   have husr :

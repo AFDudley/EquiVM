@@ -119,7 +119,7 @@ theorem fileMatIlkHashMem_read64 (I : ExecutionEnv) :
 
 set_option maxHeartbeats 1000000 in
 theorem spotDecode_fileMat_ok {I : ExecutionEnv} (hsz100 : 100 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (fileMatTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (fileMatTransition.params.map Param.name)
       (transitionSignature fileMatTransition).paramTypes I.calldata =
         some (fileMatLocals I) := by
   simpa [config, fileMatTransition, bytes32, bytes32Width, uint256, uint256Int,
@@ -130,7 +130,7 @@ theorem spotDecode_fileMat_ok {I : ExecutionEnv} (hsz100 : 100 ≤ I.calldata.si
 
 theorem spotDecode_fileMat_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 100) :
-    decodeCalldataWithMode config.abiDecodeMode (fileMatTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (fileMatTransition.params.map Param.name)
       (transitionSignature fileMatTransition).paramTypes I.calldata = none := by
   simpa [config, fileMatTransition, bytes32, bytes32Width, uint256, uint256Int,
     abiBytes32, abiBytes32Width, abiUInt256] using
@@ -819,7 +819,7 @@ theorem spotFileMatBodyCoreOk
     (hwhat : fileMatWhatBytes I = fileMatBytes)
     (hdispatch : dispatchMsg contract I.calldata = some fileMatTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileMatTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileMatTransition.params.map Param.name)
         (transitionSignature fileMatTransition).paramTypes I.calldata = some (fileMatLocals I))
     (hreach : ∃ k C, RD spotBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨216⟩ [sel]
@@ -866,7 +866,7 @@ theorem spotFileMatBodyCoreUnauthorized
     (hauth : relyAuthWord σ I ≠ ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some fileMatTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileMatTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileMatTransition.params.map Param.name)
         (transitionSignature fileMatTransition).paramTypes I.calldata = some (fileMatLocals I))
     (hreach : ∃ k C, RD spotBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨216⟩ [sel]
@@ -894,7 +894,7 @@ theorem spotFileMatBodyCoreNotLive
     (hlive : spotLiveWord σ I ≠ ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some fileMatTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileMatTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileMatTransition.params.map Param.name)
         (transitionSignature fileMatTransition).paramTypes I.calldata = some (fileMatLocals I))
     (hreach : ∃ k C, RD spotBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨216⟩ [sel]
@@ -925,7 +925,7 @@ theorem spotFileMatBodyCoreUnrecognized
     (hwhat : fileMatWhatBytes I ≠ fileMatBytes)
     (hdispatch : dispatchMsg contract I.calldata = some fileMatTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileMatTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileMatTransition.params.map Param.name)
         (transitionSignature fileMatTransition).paramTypes I.calldata = some (fileMatLocals I))
     (hreach : ∃ k C, RD spotBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨216⟩ [sel]

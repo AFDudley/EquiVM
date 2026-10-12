@@ -10,9 +10,9 @@ def vatWord (σ : AccountMap) (I : ExecutionEnv) : UInt256 :=
   solcAddressSlotWord ⟨2⟩ σ I
 
 theorem flopperDecode_vat {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (vatTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (vatTransition.params.map Param.name)
       (transitionSignature vatTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 theorem flopperReachVatBody {σ σ₀ A I} {g : Sat256}
@@ -58,7 +58,7 @@ theorem flopperVatBodyCore
     (hcode : I.code = flopperBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some vatTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (vatTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (vatTransition.params.map Param.name)
         (transitionSignature vatTransition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD flopperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨371⟩ [sel]

@@ -59,7 +59,7 @@ theorem easGetRevokeOffchainBody {σ σ₀ A I} {g : UInt256} (v : EASImmutables
             (.fixedBytes abiBytes32Width (EVM.Word.toBytesBE word))
           let value := UInt256.land (solcSlotWord σ I
             (offchainSlot (calldataWord I.calldata 4) word)) easUint64Mask
-          have hdec : decodeCalldataWithMode config.abiDecodeMode
+          have hdec : config.externalABI.decodeCalldata?
               (getRevokeOffchainTransition.params.map Param.name)
               (transitionSignature getRevokeOffchainTransition).paramTypes I.calldata = some args :=
             easDecodeAddressBytes32_ok "revoker" "data" h68 hbig hsize hc
@@ -112,7 +112,7 @@ theorem easGetRevokeOffchainBody {σ σ₀ A I} {g : UInt256} (v : EASImmutables
   · have rd1 := easBlocks.eas_block_2420_taken (immWords := wordsOf (immStore v)) (by simp) hv
       (by rw [easPatchedValidJumpsRuntime v]; jump_dest) rd
     have hr := easBlocks.eas_block_402 (immWords := wordsOf (immStore v)) (by simp) rd1
-    cases hdec : decodeCalldataWithMode config.abiDecodeMode
+    cases hdec : config.externalABI.decodeCalldata?
         (getRevokeOffchainTransition.params.map Param.name)
         (transitionSignature getRevokeOffchainTransition).paramTypes I.calldata with
     | none => exact RDrev.reEquivDecodingFailed hcode hr hd hdec

@@ -25,9 +25,9 @@ theorem daiLookupTransferFromForPush :
 
 theorem daiDecode_push_ok {I : ExecutionEnv}
     (hsel : selIs I (daiSelBytes 14)) (hsz68 : 68 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (pushTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (pushTransition.params.map Param.name)
       (transitionSignature pushTransition).paramTypes I.calldata = some (pushStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["usr", "wad"] [addr, uint256]
+  show config.externalABI.decodeCalldata? ["usr", "wad"] [addr, uint256]
     I.calldata = _
   unfold pushStore transferFromDstValue transferFromWadValue
   rw [transferFromDstWord_of_push I hsel, transferFromWadWord_of_push I hsel]
@@ -41,9 +41,9 @@ theorem daiDecode_push_ok {I : ExecutionEnv}
 
 theorem daiDecode_push_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 68) :
-    decodeCalldataWithMode config.abiDecodeMode (pushTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (pushTransition.params.map Param.name)
       (transitionSignature pushTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["usr", "wad"] [addr, uint256]
+  show config.externalABI.decodeCalldata? ["usr", "wad"] [addr, uint256]
     I.calldata = none
   simpa using decodeCalldata_legacyAddress_uint256_none_short
     (cd := I.calldata) (x := "usr") (y := "wad") hsz4 hshort

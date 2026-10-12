@@ -19,11 +19,11 @@ theorem permitTypehashBytes_eq_word :
 
 theorem daiDecode_permitTypehash_ok {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode
+    config.externalABI.decodeCalldata?
       (permitTypehashTransition.params.map Param.name)
       (transitionSignature permitTypehashTransition).paramTypes I.calldata =
         some permitTypehashStore := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata =
+  change decodeCalldataWithMode .legacySolc05 [] [] I.calldata =
     some (∅ : Store)
   exact decodeCalldataWithMode_empty_ok hsz4
 
@@ -63,7 +63,7 @@ theorem daiPermitTypehashBodyCoreOk
     (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some permitTypehashTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode
+      config.externalABI.decodeCalldata?
         (permitTypehashTransition.params.map Param.name)
         (transitionSignature permitTypehashTransition).paramTypes I.calldata =
           some permitTypehashStore)

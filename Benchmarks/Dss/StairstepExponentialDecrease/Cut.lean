@@ -10,9 +10,9 @@ def cutWord (σ : AccountMap) (I : ExecutionEnv) : UInt256 :=
   solcSlotWordAt ⟨2⟩ σ I
 
 theorem stairstepDecode_cut {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (cutTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (cutTransition.params.map Param.name)
       (transitionSignature cutTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 theorem stairstepReachCutBody {σ σ₀ A I} {g : Sat256}
@@ -53,7 +53,7 @@ theorem stairstepCutBodyCore
     (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some cutTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (cutTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (cutTransition.params.map Param.name)
         (transitionSignature cutTransition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD stairstepExponentialDecreaseBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) stairstepCutEntryPc [sel]

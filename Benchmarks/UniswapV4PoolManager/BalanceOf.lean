@@ -93,7 +93,7 @@ theorem poolManagerBalanceOfBodyCore {σ σ₀ A I} {g : UInt256} (v : PoolManag
             rw [deployedRuntime_jumps v]; jump_dest
           obtain ⟨k', C', rdReturn⟩ := decodeAddress4 v (by simp) hcanon hjumpReturn rdAddr
           have hret := balanceOfTrace v (by simp) hcanon rdReturn
-          have hdec : decodeCalldataWithMode config.abiDecodeMode
+          have hdec : config.externalABI.decodeCalldata?
               (balanceOfTransition.params.map Param.name)
               (transitionSignature balanceOfTransition).paramTypes I.calldata =
               some ((((∅ : Store).insert "arg0" (.address (AccountAddress.ofNat (calldataWord I.calldata 4).toNat)))).insert "arg1" (.int (Int.ofNat (calldataWord I.calldata 36).toNat))) :=

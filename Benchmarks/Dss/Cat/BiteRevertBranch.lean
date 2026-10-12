@@ -193,7 +193,7 @@ theorem catBiteRevertGrabFail {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = catBytecode)
     (hdispatch : dispatchMsg contract I.calldata = some biteTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (biteTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (biteTransition.params.map Param.name)
         (transitionSignature biteTransition).paramTypes I.calldata = some (biteLocals I))
     (hwv : I.weiValue = ⟨0⟩) (hsz36 : 36 ≤ I.calldata.size)
     (hdepth : (I.depth : ℕ) < 1024)
@@ -489,7 +489,7 @@ theorem catBiteRevertFessFail {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = catBytecode)
     (hdispatch : dispatchMsg contract I.calldata = some biteTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (biteTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (biteTransition.params.map Param.name)
         (transitionSignature biteTransition).paramTypes I.calldata = some (biteLocals I))
     (hwv : I.weiValue = ⟨0⟩) (hsz36 : 36 ≤ I.calldata.size)
     (hdepth : (I.depth : ℕ) < 1024)
@@ -825,7 +825,7 @@ theorem catBiteRevertKickFail {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = catBytecode)
     (hdispatch : dispatchMsg contract I.calldata = some biteTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (biteTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (biteTransition.params.map Param.name)
         (transitionSignature biteTransition).paramTypes I.calldata = some (biteLocals I))
     (hwv : I.weiValue = ⟨0⟩) (hsz36 : 36 ≤ I.calldata.size)
     (hdepth : (I.depth : ℕ) < 1024)
@@ -1288,7 +1288,7 @@ theorem catBiteRevertKickDecode {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = catBytecode)
     (hdispatch : dispatchMsg contract I.calldata = some biteTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (biteTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (biteTransition.params.map Param.name)
         (transitionSignature biteTransition).paramTypes I.calldata = some (biteLocals I))
     (hwv : I.weiValue = ⟨0⟩) (hsz36 : 36 ≤ I.calldata.size)
     (hdepth : (I.depth : ℕ) < 1024)
@@ -1762,7 +1762,7 @@ theorem catBiteRevertKickDecodeW {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = catBytecode)
     (hdispatch : dispatchMsg contract I.calldata = some biteTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (biteTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (biteTransition.params.map Param.name)
         (transitionSignature biteTransition).paramTypes I.calldata = some (biteLocals I))
     (hwv : I.weiValue = ⟨0⟩) (hsz36 : 36 ≤ I.calldata.size)
     (hdepth : (I.depth : ℕ) < 1024)
@@ -2100,7 +2100,7 @@ theorem catBiteRoomUnderflowEmptyRevertLeaf {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = catBytecode)
     (hdispatch : dispatchMsg contract I.calldata = some biteTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (biteTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (biteTransition.params.map Param.name)
         (transitionSignature biteTransition).paramTypes I.calldata = some (biteLocals I))
     (rd : RD catBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨3762⟩
@@ -2128,7 +2128,7 @@ theorem catBiteRevertRoomSub {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = catBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some biteTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (biteTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (biteTransition.params.map Param.name)
         (transitionSignature biteTransition).paramTypes I.calldata = some (biteLocals I))
     (hsz36 : 36 ≤ I.calldata.size)
     (hdepth : (I.depth : ℕ) < 1024)
@@ -2248,7 +2248,7 @@ theorem catBiteRevertDunkRoomWad {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = catBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some biteTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (biteTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (biteTransition.params.map Param.name)
         (transitionSignature biteTransition).paramTypes I.calldata = some (biteLocals I))
     (hsz36 : 36 ≤ I.calldata.size)
     (hdepth : (I.depth : ℕ) < 1024)
@@ -2399,7 +2399,7 @@ theorem catBiteRevertMilkChopZero {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = catBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some biteTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (biteTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (biteTransition.params.map Param.name)
         (transitionSignature biteTransition).paramTypes I.calldata = some (biteLocals I))
     (hsz36 : 36 ≤ I.calldata.size)
     (hdepth : (I.depth : ℕ) < 1024)
@@ -2559,7 +2559,7 @@ theorem catBiteRevertInkSpot {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = catBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some biteTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (biteTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (biteTransition.params.map Param.name)
         (transitionSignature biteTransition).paramTypes I.calldata = some (biteLocals I))
     (hsz36 : 36 ≤ I.calldata.size)
     (hdepth : (I.depth : ℕ) < 1024)
@@ -2654,7 +2654,7 @@ theorem catBiteRevertLive {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = catBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some biteTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (biteTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (biteTransition.params.map Param.name)
         (transitionSignature biteTransition).paramTypes I.calldata = some (biteLocals I))
     (hsz36 : 36 ≤ I.calldata.size)
     (hdepth : (I.depth : ℕ) < 1024)
@@ -2813,7 +2813,7 @@ theorem catBiteRevertUnsafe {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = catBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some biteTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (biteTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (biteTransition.params.map Param.name)
         (transitionSignature biteTransition).paramTypes I.calldata = some (biteLocals I))
     (hsz36 : 36 ≤ I.calldata.size)
     (hdepth : (I.depth : ℕ) < 1024)
@@ -2938,7 +2938,7 @@ theorem catBiteRevertSpotZero {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = catBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some biteTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (biteTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (biteTransition.params.map Param.name)
         (transitionSignature biteTransition).paramTypes I.calldata = some (biteLocals I))
     (hsz36 : 36 ≤ I.calldata.size)
     (hdepth : (I.depth : ℕ) < 1024)
@@ -3062,7 +3062,7 @@ theorem catBiteRevertArtRate {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = catBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some biteTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (biteTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (biteTransition.params.map Param.name)
         (transitionSignature biteTransition).paramTypes I.calldata = some (biteLocals I))
     (hsz36 : 36 ≤ I.calldata.size)
     (hdepth : (I.depth : ℕ) < 1024)
@@ -3196,7 +3196,7 @@ theorem catBiteRevertInkDart {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = catBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some biteTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (biteTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (biteTransition.params.map Param.name)
         (transitionSignature biteTransition).paramTypes I.calldata = some (biteLocals I))
     (hsz36 : 36 ≤ I.calldata.size)
     (hdepth : (I.depth : ℕ) < 1024)
@@ -3374,7 +3374,7 @@ theorem catBiteRevertTabBase {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = catBytecode)
     (hdispatch : dispatchMsg contract I.calldata = some biteTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (biteTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (biteTransition.params.map Param.name)
         (transitionSignature biteTransition).paramTypes I.calldata = some (biteLocals I))
     (hwv : I.weiValue = ⟨0⟩) (hsz36 : 36 ≤ I.calldata.size)
     (hdepth : (I.depth : ℕ) < 1024)
@@ -3794,7 +3794,7 @@ theorem catBiteRevertIlksDecode {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = catBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some biteTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (biteTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (biteTransition.params.map Param.name)
         (transitionSignature biteTransition).paramTypes I.calldata = some (biteLocals I))
     (hvatCode :
       ¬ Reasoning.Theory.extCodeSizeWord σ (catBiteVatTargetWord σ I) = ⟨0⟩)
@@ -3895,7 +3895,7 @@ theorem catBiteMilkRequireStringRevertLeaf {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = catBytecode)
     (hdispatch : dispatchMsg contract I.calldata = some biteTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (biteTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (biteTransition.params.map Param.name)
         (transitionSignature biteTransition).paramTypes I.calldata = some (biteLocals I))
     (rd : RD catBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) guardPc
@@ -3932,7 +3932,7 @@ theorem catBiteRevertDartZero {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = catBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some biteTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (biteTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (biteTransition.params.map Param.name)
         (transitionSignature biteTransition).paramTypes I.calldata = some (biteLocals I))
     (hsz36 : 36 ≤ I.calldata.size)
     (hdepth : (I.depth : ℕ) < 1024)
@@ -4119,7 +4119,7 @@ theorem catBiteRevertDinkZero {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = catBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some biteTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (biteTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (biteTransition.params.map Param.name)
         (transitionSignature biteTransition).paramTypes I.calldata = some (biteLocals I))
     (hsz36 : 36 ≤ I.calldata.size)
     (hdepth : (I.depth : ℕ) < 1024)
@@ -4315,7 +4315,7 @@ theorem catBiteRevertDartLimit {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = catBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some biteTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (biteTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (biteTransition.params.map Param.name)
         (transitionSignature biteTransition).paramTypes I.calldata = some (biteLocals I))
     (hsz36 : 36 ≤ I.calldata.size)
     (hdepth : (I.depth : ℕ) < 1024)
@@ -4513,7 +4513,7 @@ theorem catBiteRevertDinkLimit {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = catBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some biteTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (biteTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (biteTransition.params.map Param.name)
         (transitionSignature biteTransition).paramTypes I.calldata = some (biteLocals I))
     (hsz36 : 36 ≤ I.calldata.size)
     (hdepth : (I.depth : ℕ) < 1024)
@@ -4858,7 +4858,7 @@ theorem catBiteMilkRequireStringFullWordRevertLeaf {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = catBytecode)
     (hdispatch : dispatchMsg contract I.calldata = some biteTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (biteTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (biteTransition.params.map Param.name)
         (transitionSignature biteTransition).paramTypes I.calldata = some (biteLocals I))
     (rd : RD catBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) guardPc
@@ -4891,7 +4891,7 @@ theorem catBiteRevertLitterGeBox {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = catBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some biteTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (biteTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (biteTransition.params.map Param.name)
         (transitionSignature biteTransition).paramTypes I.calldata = some (biteLocals I))
     (hsz36 : 36 ≤ I.calldata.size)
     (hdepth : (I.depth : ℕ) < 1024)
@@ -5008,7 +5008,7 @@ theorem catBiteRevertRoomDust {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = catBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some biteTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (biteTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (biteTransition.params.map Param.name)
         (transitionSignature biteTransition).paramTypes I.calldata = some (biteLocals I))
     (hsz36 : 36 ≤ I.calldata.size)
     (hdepth : (I.depth : ℕ) < 1024)
@@ -5134,7 +5134,7 @@ theorem catBiteRevertFessNoCode {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = catBytecode)
     (hdispatch : dispatchMsg contract I.calldata = some biteTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (biteTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (biteTransition.params.map Param.name)
         (transitionSignature biteTransition).paramTypes I.calldata = some (biteLocals I))
     (hwv : I.weiValue = ⟨0⟩) (hsz36 : 36 ≤ I.calldata.size)
     (hdepth : (I.depth : ℕ) < 1024)
@@ -5471,7 +5471,7 @@ theorem catBiteRevertKickNoCodeSplit {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = catBytecode)
     (hdispatch : dispatchMsg contract I.calldata = some biteTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (biteTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (biteTransition.params.map Param.name)
         (transitionSignature biteTransition).paramTypes I.calldata = some (biteLocals I))
     (hwv : I.weiValue = ⟨0⟩) (hsz36 : 36 ≤ I.calldata.size)
     (hdepth : (I.depth : ℕ) < 1024)
@@ -5916,7 +5916,7 @@ theorem catBiteRevertKickNoCode {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = catBytecode)
     (hdispatch : dispatchMsg contract I.calldata = some biteTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (biteTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (biteTransition.params.map Param.name)
         (transitionSignature biteTransition).paramTypes I.calldata = some (biteLocals I))
     (hwv : I.weiValue = ⟨0⟩) (hsz36 : 36 ≤ I.calldata.size)
     (hdepth : (I.depth : ℕ) < 1024)
@@ -6073,7 +6073,7 @@ theorem catBiteRevertLitterAdd {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = catBytecode)
     (hdispatch : dispatchMsg contract I.calldata = some biteTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (biteTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (biteTransition.params.map Param.name)
         (transitionSignature biteTransition).paramTypes I.calldata = some (biteLocals I))
     (hwv : I.weiValue = ⟨0⟩) (hsz36 : 36 ≤ I.calldata.size)
     (hdepth : (I.depth : ℕ) < 1024)

@@ -7,9 +7,9 @@ namespace Benchmarks.Dss.Spot
 /-! ## `live()` getter -/
 
 theorem spotDecode_live {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (liveTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (liveTransition.params.map Param.name)
       (transitionSignature liveTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 theorem spotReachLiveBody {σ σ₀ A I} {g : Sat256}

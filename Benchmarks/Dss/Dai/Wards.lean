@@ -36,17 +36,17 @@ theorem wardsStorageSlot_eq_mapSlot_masked (I : ExecutionEnv) :
   rw [keyValueToWord_address_ofNat_mask]
 
 theorem daiDecode_wards_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (wardsTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (wardsTransition.params.map Param.name)
       (transitionSignature wardsTransition).paramTypes I.calldata = some (wardsStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["arg0"] [addr] I.calldata = _
+  show config.externalABI.decodeCalldata? ["arg0"] [addr] I.calldata = _
   simpa [wardsStore, wardsArgValue, wardsArgWord, calldataWord]
     using decodeCalldata_legacyAddress_ok (cd := I.calldata) (x := "arg0") hsz36
 
 theorem daiDecode_wards_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (wardsTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (wardsTransition.params.map Param.name)
       (transitionSignature wardsTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["arg0"] [addr] I.calldata = none
+  show config.externalABI.decodeCalldata? ["arg0"] [addr] I.calldata = none
   simpa using decodeCalldata_legacyAddress_none_short (cd := I.calldata) (x := "arg0")
     hsz4 hshort
 
@@ -157,7 +157,7 @@ theorem daiWardsBodyCoreOk
     (hsz36 : 36 ≤ I.calldata.size)
     (hdispatch : dispatchMsg contract I.calldata = some wardsTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (wardsTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (wardsTransition.params.map Param.name)
         (transitionSignature wardsTransition).paramTypes I.calldata = some (wardsStore I))
     (hreach : ∃ k C, RD daiBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1132⟩ [sel]

@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Reproduce Safe artifacts and regenerate/check the proof-support inventory.
 
-Usage: python3 scripts/audit_safe.py --solc /path/to/solc-0.8.35 [--write]
+Usage: python3 scripts/audit_safe.py --solc /path/to/solc-0.8.35 [--dir Benchmarks/Safe/Main] [--write]
+`--dir` is the proof directory (default `Benchmarks/Safe/Main`); its path is the Lean module prefix.
 The compiler must be 0.8.35+commit.47b9dedd. This checks artifact provenance and
 summary coverage; the separate Lean Audit target executes the semantic regressions.
 Neither check proves the unfilled refinement obligations.
@@ -24,8 +25,7 @@ from generate_rd_blocks import (
 )
 
 ROOT = Path(__file__).resolve().parent.parent
-SAFE = ROOT / "Benchmarks/Safe"
-SOURCE = "Benchmarks/Safe/contracts/Safe.sol"
+DEFAULT_DIR = "Benchmarks/Safe/Main"
 OPTIONS = ["--optimize", "--optimize-runs", "200", "--evm-version", "shanghai",
            "--metadata-hash", "none", "--base-path", "."]
 FIELDS = "bin,bin-runtime,abi,storage-layout,srcmap-runtime,hashes,function-debug-runtime"
@@ -47,29 +47,40 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--solc", type=Path, required=True)
     parser.add_argument("--write", action="store_true")
+    parser.add_argument("--dir", type=Path, default=Path(DEFAULT_DIR),
+                        help="proof directory relative to the repository root (its path is the module prefix)")
     args = parser.parse_args()
+    safe = (ROOT / args.dir).resolve()
+    rel = safe.relative_to(ROOT)
+    source = (rel / "contracts/Safe.sol").as_posix()
+    if not (ROOT / source).is_file():
+        raise SystemExit(f"no Safe source at {source}")
+    module = ".".join(rel.parts)
     compiler = args.solc.resolve()
     version = subprocess.check_output([str(compiler), "--version"], text=True)
     if "0.8.35+commit.47b9dedd" not in version:
         raise ValueError(f"unexpected compiler version: {version}")
-    run = subprocess.run([str(compiler), *OPTIONS, "--combined-json", FIELDS, SOURCE],
+    run = subprocess.run([str(compiler), *OPTIONS, "--combined-json", FIELDS, source],
                          cwd=ROOT, text=True, capture_output=True, check=True)
     data = json.loads(run.stdout)
-    artifact = data["contracts"][SOURCE + ":Safe"]
-    runtime = read_bytecode(SAFE / "runtime.hex")
-    creation = read_bytecode(SAFE / "creation.hex")
+    artifact = data["contracts"][source + ":Safe"]
+    runtime = read_bytecode(safe / "runtime.hex")
+    creation = read_bytecode(safe / "creation.hex")
     assert bytes.fromhex(artifact["bin-runtime"]) == runtime, "runtime compilation mismatch"
     assert bytes.fromhex(artifact["bin"]) == creation, "creation compilation mismatch"
-    assert read_bytecode(SAFE / "Bytecode.lean", "safeBytecode") == runtime
-    assert read_bytecode(SAFE / "Bytecode.lean", "safeCreationBytecode") == creation
-    assert artifact["abi"] == json.loads((SAFE / "Safe.abi.json").read_text())
-    for row in (SAFE / "sources.sha256").read_text().splitlines():
+    assert read_bytecode(safe / "Bytecode.lean", "safeBytecode") == runtime
+    assert read_bytecode(safe / "Bytecode.lean", "safeCreationBytecode") == creation
+    assert artifact["abi"] == json.loads((safe / "Safe.abi.json").read_text())
+    for row in (safe / "sources.sha256").read_text().splitlines():
         digest, name = row.split(None, 1)
         assert sha((ROOT / name).read_bytes()) == digest, f"source mismatch: {name}"
-    spec = (SAFE / "Spec.lean").read_text()
+    spec = (safe / "Spec.lean").read_text()
     transitions = set(re.findall(r"^def (\w+Transition) : TransitionDecl", spec, re.MULTILINE))
     transitions -= {"receiveTransition", "fallbackTransition"}
-    scaffold = (SAFE / "Runtime.lean").read_text()
+    # Runtime.lean imports the 33 entrypoint modules; their statements carry the dispatch facts.
+    entrypoints = re.findall(rf"^import {re.escape(module)}\.(\w+)$",
+                             (safe / "Runtime.lean").read_text(), re.MULTILINE)
+    scaffold = "".join((safe / f"{name}.lean").read_text() for name in entrypoints)
     scaffold_transitions = set(re.findall(r"hdispatch : selectorDispatchMsg contract I.calldata =\s+"
                                         r"some (\w+Transition)", scaffold))
     assert len(transitions) == 31 and scaffold_transitions == transitions
@@ -97,12 +108,12 @@ def main() -> None:
             arms[f"{a.argument:08x}"] = c.argument
     assert set(arms) == set(artifact["hashes"].values()), "ABI/dispatcher selector mismatch"
 
-    units = generate_unit_records(runtime, "safeRuntime", "Benchmarks.Safe.safeBytecode")
+    units = generate_unit_records(runtime, "safeRuntime", f"{module}.safeBytecode")
     runtime_offset = len(creation) - len(runtime)
     assert runtime_offset == 33 and creation[runtime_offset:] == runtime
     # Generate against the full creation bytes; select only the executable constructor prelude.
     ctor_units = [u for u in generate_unit_records(
-        creation, "safeCreation", "Benchmarks.Safe.safeCreationBytecode", creation_code=True)
+        creation, "safeCreation", f"{module}.safeCreationBytecode", creation_code=True)
         if u.pcs and max(u.pcs) < runtime_offset]
     unsupported = [ins for ins in instructions if not instruction_is_supported(ins)]
     covered = {pc for unit in units for pc in unit.pcs}
@@ -114,23 +125,23 @@ def main() -> None:
     with tempfile.TemporaryDirectory(prefix="safe-blocks-") as directory:
         destination = Path(directory)
         shards = write_outputs(destination / "Runtime.lean", "safeRuntime",
-                               ["Benchmarks.Safe.Bytecode"], units, 20, code=runtime)
+                               [f"{module}.Bytecode"], units, 20, code=runtime)
         ctor_files = write_outputs(destination / "Creation.lean", "safeCreation",
-                                   ["Benchmarks.Safe.Bytecode"], ctor_units, None,
-                                   creation_code=True, code_term="Benchmarks.Safe.safeCreationBytecode",
+                                   [f"{module}.Bytecode"], ctor_units, None,
+                                   creation_code=True, code_term=f"{module}.safeCreationBytecode",
                                    code=creation)
         outputs = sorted(destination.iterdir())
         for path in outputs:
-            compare_or_write(SAFE / "Blocks" / path.name, path.read_text(), args.write)
-        existing = {p.name for p in (SAFE / "Blocks").iterdir() if p.suffix in {".lean", ".index"}}
+            compare_or_write(safe / "Blocks" / path.name, path.read_text(), args.write)
+        existing = {p.name for p in (safe / "Blocks").iterdir() if p.suffix in {".lean", ".index"}}
         assert existing == {p.name for p in outputs}, "unexpected stale block shard(s)"
-        imports = "".join("import Benchmarks.Safe.Blocks." + p.stem + "\n"
+        imports = "".join(f"import {module}.Blocks." + p.stem + "\n"
                           for p in ctor_files + shards)
-        compare_or_write(SAFE / "Blocks.lean", imports, args.write)
+        compare_or_write(safe / "Blocks.lean", imports, args.write)
 
     # ABI expectations originate from solc, and are checked against the actual Lean declarations.
-    checks = ["import Benchmarks.Safe.Spec", "", "open Solm ABI Ethereum", "",
-              "namespace Benchmarks.Safe", "", "-- Generated by scripts/audit_safe.py from solc's ABI.",
+    checks = [f"import {module}.Spec", "", "open Solm ABI Ethereum", "",
+              f"namespace {module}", "", "-- Generated by scripts/audit_safe.py from solc's ABI.",
               "#guard transitions.length == 31", ""]
     for entry in artifact["abi"]:
         if entry["type"] != "function":
@@ -141,20 +152,20 @@ def main() -> None:
         checks += [f"#guard (transitions.find? (transitionSigStr · == {json.dumps(signature)})).map",
                    f"  (fun t ↦ t.returnType.map abiToSigStr) == some {returns}",
                    f"#guard (KEC {json.dumps(signature)}.toUTF8).extract 0 4 == ⟨#[{selector}]⟩", ""]
-    checks += ["end Benchmarks.Safe", ""]
-    compare_or_write(SAFE / "ArtifactChecks.lean", "\n".join(checks), args.write)
+    checks += [f"end {module}", ""]
+    compare_or_write(safe / "ArtifactChecks.lean", "\n".join(checks), args.write)
 
     friendly = {0x32: "ORIGIN", 0x3A: "GASPRICE", 0x3C: "EXTCODECOPY", 0xF4: "DELEGATECALL"}
     manifest = {
         "compiler": "0.8.35+commit.47b9dedd", "compiler_options": OPTIONS,
-        "source": SOURCE,
-        "artifacts": {name: {"file_sha256": sha((SAFE / name).read_bytes()),
+        "source": source,
+        "artifacts": {name: {"file_sha256": sha((safe / name).read_bytes()),
                              "bytes_sha256": sha(code), "bytes": len(code)}
                       for name, code in [("runtime.hex", runtime), ("creation.hex", creation)]},
-        "abi_file_sha256": sha((SAFE / "Safe.abi.json").read_bytes()),
-        "sources_manifest_sha256": sha((SAFE / "sources.sha256").read_bytes()),
-        "spec_sha256": sha((SAFE / "Spec.lean").read_bytes()),
-        "syntax_spec_sha256": sha((SAFE / "SpecSyntax.lean").read_bytes()),
+        "abi_file_sha256": sha((safe / "Safe.abi.json").read_bytes()),
+        "sources_manifest_sha256": sha((safe / "sources.sha256").read_bytes()),
+        "spec_sha256": sha((safe / "Spec.lean").read_bytes()),
+        "syntax_spec_sha256": sha((safe / "SpecSyntax.lean").read_bytes()),
         "runtime_entrypoint_obligations": 33,
         "selectors": [{"signature": sig, "selector": sel, "entry_pc": arms[sel]}
                       for sig, sel in artifact["hashes"].items()],
@@ -174,7 +185,7 @@ def main() -> None:
                         for ins in instructions if 0xA0 <= ins.opcode <= 0xA4],
         "scope": "Reproduction and instruction coverage only; refinement proofs remain unfilled.",
     }
-    compare_or_write(SAFE / "AuditManifest.json", json.dumps(manifest, indent=2) + "\n", args.write)
+    compare_or_write(safe / "AuditManifest.json", json.dumps(manifest, indent=2) + "\n", args.write)
     print(f"Safe artifacts reproduced; {len(arms)} ABI selectors; {len(covered)} summarized runtime "
           f"instructions and {len(unsupported)} explicit boundaries; {len(shards)} runtime shards.")
 

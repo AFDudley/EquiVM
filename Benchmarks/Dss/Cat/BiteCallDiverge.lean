@@ -123,7 +123,7 @@ theorem catBiteUrnsNoCodeLeaf {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = catBytecode)
     (hdispatch : dispatchMsg contract I.calldata = some biteTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (biteTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (biteTransition.params.map Param.name)
         (transitionSignature biteTransition).paramTypes I.calldata = some (biteLocals I))
     (rd : RD catBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1383⟩
@@ -145,7 +145,7 @@ theorem catBiteUrnsFailLeaf {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = catBytecode)
     (hdispatch : dispatchMsg contract I.calldata = some biteTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (biteTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (biteTransition.params.map Param.name)
         (transitionSignature biteTransition).paramTypes I.calldata = some (biteLocals I))
     (rd : RD catBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1399⟩
@@ -166,7 +166,7 @@ theorem catBiteUrnsDecodeShortLeaf {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = catBytecode)
     (hdispatch : dispatchMsg contract I.calldata = some biteTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (biteTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (biteTransition.params.map Param.name)
         (transitionSignature biteTransition).paramTypes I.calldata = some (biteLocals I))
     (rd : RD catBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1420⟩
@@ -197,7 +197,7 @@ theorem catBiteGrabNoCodeLeaf {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = catBytecode)
     (hdispatch : dispatchMsg contract I.calldata = some biteTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (biteTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (biteTransition.params.map Param.name)
         (transitionSignature biteTransition).paramTypes I.calldata = some (biteLocals I))
     (rd : RD catBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨2177⟩
@@ -219,7 +219,7 @@ theorem catBiteFessNoCodeLeaf {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = catBytecode)
     (hdispatch : dispatchMsg contract I.calldata = some biteTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (biteTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (biteTransition.params.map Param.name)
         (transitionSignature biteTransition).paramTypes I.calldata = some (biteLocals I))
     (rd : RD catBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨2284⟩
@@ -242,7 +242,7 @@ theorem catBiteKickNoCodeLeaf {σ σ₀ A I} {g target : UInt256} {mem : ByteArr
     (hcode : I.code = catBytecode)
     (hdispatch : dispatchMsg contract I.calldata = some biteTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (biteTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (biteTransition.params.map Param.name)
         (transitionSignature biteTransition).paramTypes I.calldata = some (biteLocals I))
     (rd : RD catBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨2516⟩
@@ -265,7 +265,7 @@ theorem catBiteIlksNoCodeLeaf {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = catBytecode)
     (hdispatch : dispatchMsg contract I.calldata = some biteTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (biteTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (biteTransition.params.map Param.name)
         (transitionSignature biteTransition).paramTypes I.calldata = some (biteLocals I))
     (rd : RD catBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1233⟩
@@ -287,7 +287,7 @@ theorem catBiteIlksFailLeaf {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = catBytecode)
     (hdispatch : dispatchMsg contract I.calldata = some biteTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (biteTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (biteTransition.params.map Param.name)
         (transitionSignature biteTransition).paramTypes I.calldata = some (biteLocals I))
     (rd : RD catBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1249⟩
@@ -310,7 +310,7 @@ theorem catBiteIlksDecodeShortLeaf {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = catBytecode)
     (hdispatch : dispatchMsg contract I.calldata = some biteTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (biteTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (biteTransition.params.map Param.name)
         (transitionSignature biteTransition).paramTypes I.calldata = some (biteLocals I))
     (rd : RD catBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1249⟩
@@ -633,7 +633,7 @@ theorem catBiteKickReturnDecodeShortLeaf {σ σ₀ A I} {g status fp : UInt256}
     (hcode : I.code = catBytecode)
     (hdispatch : dispatchMsg contract I.calldata = some biteTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (biteTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (biteTransition.params.map Param.name)
         (transitionSignature biteTransition).paramTypes I.calldata = some (biteLocals I))
     (rd : RD catBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨2532⟩

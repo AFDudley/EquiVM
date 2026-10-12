@@ -32,17 +32,17 @@ theorem burnToKey_word_masked (I : ExecutionEnv) :
   rw [keyValueToWord_address_ofNat_mask]
 
 theorem uniswapDecode_burn_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (burnTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (burnTransition.params.map Param.name)
       (transitionSignature burnTransition).paramTypes I.calldata = some (burnStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["to"] [legacyAddr] I.calldata = _
+  show config.externalABI.decodeCalldata? ["to"] [legacyAddr] I.calldata = _
   simpa [burnStore, burnToValue, burnToWord, calldataWord]
     using decodeCalldata_legacyAddress_ok (cd := I.calldata) (x := "to") hsz36
 
 theorem uniswapDecode_burn_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (burnTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (burnTransition.params.map Param.name)
       (transitionSignature burnTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["to"] [legacyAddr] I.calldata = none
+  show config.externalABI.decodeCalldata? ["to"] [legacyAddr] I.calldata = none
   simpa using decodeCalldata_legacyAddress_none_short (cd := I.calldata) (x := "to")
     hsz4 hshort
 

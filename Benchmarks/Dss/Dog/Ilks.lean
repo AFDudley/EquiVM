@@ -52,7 +52,7 @@ abbrev ilksDirtSlotFor (I : ExecutionEnv) : UInt256 :=
 
 theorem dogDecode_ilks_ok {I : ExecutionEnv}
     (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (ilksTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (ilksTransition.params.map Param.name)
       (transitionSignature ilksTransition).paramTypes I.calldata =
         some (ilksLocals I) := by
   simpa [config, ilksTransition, ilksLocals, ilksArgValue, ilksArgBytes, bytes32,
@@ -62,7 +62,7 @@ theorem dogDecode_ilks_ok {I : ExecutionEnv}
 
 theorem dogDecode_ilks_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (ilksTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (ilksTransition.params.map Param.name)
       (transitionSignature ilksTransition).paramTypes I.calldata = none := by
   simpa [config, ilksTransition, bytes32, bytes32Width] using
     (decodeCalldataWithMode_legacyBytes32_none_short (cd := I.calldata) (x := "arg0")
@@ -801,7 +801,7 @@ theorem dogIlksBodyCoreOk
     (hsz36 : 36 ≤ I.calldata.size) (hsize : I.calldata.size < UInt256.size)
     (hdispatch : dispatchMsg contract I.calldata = some ilksTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (ilksTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (ilksTransition.params.map Param.name)
         (transitionSignature ilksTransition).paramTypes I.calldata = some (ilksLocals I))
     (hreach : ∃ k C, RD code I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨658⟩ [sel]

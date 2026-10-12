@@ -440,7 +440,7 @@ theorem uniswapSyncBodyCoreRevert_firstCallDepth
         ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some syncTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (syncTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (syncTransition.params.map Param.name)
         (transitionSignature syncTransition).paramTypes I.calldata = some ∅)
     (hRuntime :
       RDrev uniswapV2PairBytecode (Sat256.ofUInt256 g)

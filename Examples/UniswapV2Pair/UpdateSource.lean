@@ -11,9 +11,9 @@ namespace UniswapV2Pair
 
 
 theorem uniswapDecode_sync {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (syncTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (syncTransition.params.map Param.name)
       (transitionSignature syncTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 

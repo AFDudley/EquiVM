@@ -37,7 +37,7 @@ theorem RDrev.reEquivNonPayableOfMem {cfg : Config} {contract : ContractDecl}
     have htmem : t ∈ contract.transitions := by
       rw [dispatchMsg_eq_dispatchList contract I.calldata hfallback hreceive] at ht
       exact dispatchList_some_mem ht
-    by_cases hdec : decodeCalldataWithMode cfg.abiDecodeMode (t.params.map Param.name)
+    by_cases hdec : cfg.externalABI.decodeCalldata? (t.params.map Param.name)
         (transitionSignature t).paramTypes I.calldata = none
     · exact reEquiv_decodingFailed ht hdec hrev hfallback hreceive
     · obtain ⟨callargs, hca⟩ := Option.ne_none_iff_exists'.mp hdec

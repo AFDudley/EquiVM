@@ -123,7 +123,7 @@ theorem setMinBidIncrementPercentageBodyCore {σ σ₀ A I} {g : UInt256}
       push2 ⟨413⟩, push2 ⟨408⟩, calldatasize, push1 ⟨4⟩, push2 ⟨5325⟩, jump (by jump_dest) ]
     by_cases hlen : 36 ≤ I.calldata.size
     · by_cases hhi : I.calldata.size < 2 ^ 255 + 4
-      · have hdec : decodeCalldataWithMode auctionConfig.abiDecodeMode
+      · have hdec : auctionConfig.externalABI.decodeCalldata?
             (setMinBidIncTransition.params.map Param.name)
             (transitionSignature setMinBidIncTransition).paramTypes I.calldata =
               if (calldataWord I.calldata 4).toNat < 256 then
@@ -165,14 +165,14 @@ theorem setMinBidIncrementPercentageBodyCore {σ σ₀ A I} {g : UInt256}
         · rw [if_neg hc] at hdec
           exact (decodeUint8FailNoncanonical rd5325 hlen hhi hsize hc
             (by evm_ov)).reEquivDecodingFailed hcode hd hdec
-      · have hdec : decodeCalldataWithMode auctionConfig.abiDecodeMode
+      · have hdec : auctionConfig.externalABI.decodeCalldata?
             (setMinBidIncTransition.params.map Param.name)
             (transitionSignature setMinBidIncTransition).paramTypes I.calldata = none :=
           decodeCalldata_uint_none_huge ⟨8, by decide⟩ (by omega)
         exact (calldataHeadFail rd5325 uint8HeadWf
           (solcDecodeLenCheckHuge_4_32 (by omega) hsize) (by evm_ov)).reEquivDecodingFailed
           hcode hd hdec
-    · have hdec : decodeCalldataWithMode auctionConfig.abiDecodeMode
+    · have hdec : auctionConfig.externalABI.decodeCalldata?
           (setMinBidIncTransition.params.map Param.name)
           (transitionSignature setMinBidIncTransition).paramTypes I.calldata = none :=
         decodeCalldata_uint_none_short ⟨8, by decide⟩ (by omega)

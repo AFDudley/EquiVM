@@ -1342,7 +1342,7 @@ theorem vowHealSinDecodeShortBodyCore
     (hcode : I.code = vowBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some healTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (healTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (healTransition.params.map Param.name)
         (transitionSignature healTransition).paramTypes I.calldata = some (healLocals I))
     (rd1277 : RD vowBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1277⟩
@@ -1396,7 +1396,7 @@ theorem vowHealFreeSinUnderflowBodyCore
     (hcode : I.code = vowBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some healTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (healTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (healTransition.params.map Param.name)
         (transitionSignature healTransition).paramTypes I.calldata = some (healLocals I))
     (rd1318 : RD vowBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1318⟩
@@ -1448,7 +1448,7 @@ theorem vowHealDebtUnderflowBodyCore
     (hcode : I.code = vowBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some healTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (healTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (healTransition.params.map Param.name)
         (transitionSignature healTransition).paramTypes I.calldata = some (healLocals I))
     (rd1325 : RD vowBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1325⟩
@@ -1506,7 +1506,7 @@ theorem vowHealInsufficientDebtBodyCore
     (hcode : I.code = vowBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some healTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (healTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (healTransition.params.map Param.name)
         (transitionSignature healTransition).paramTypes I.calldata = some (healLocals I))
     (rd4921 : RD vowBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨4921⟩

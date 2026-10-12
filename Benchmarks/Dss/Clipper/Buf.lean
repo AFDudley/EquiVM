@@ -39,9 +39,9 @@ theorem clipperDispatch_buf {I : ExecutionEnv}
 
 theorem clipperDecode_buf {I : ExecutionEnv}
     (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (bufTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (bufTransition.params.map Param.name)
       (transitionSignature bufTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  change decodeCalldataWithMode .legacySolc05 [] [] I.calldata = some ∅
   exact decodeCalldataWithMode_empty_ok hsz
 
 theorem clipperEvalBuf (v : ClipperImmutables) (evm : EVM.State) (locals : Store)

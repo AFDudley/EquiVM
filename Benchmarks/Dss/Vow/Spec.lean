@@ -534,8 +534,7 @@ def contract : ContractDecl :=
 
 def config : Config :=
   { storageBackend := solidityStorageBackend storageLayout
-    externalABI := vowExternalABI
-    abiDecodeMode := DecodeMode.legacySolc05
+    externalABI := (vowExternalABI).withMode DecodeMode.legacySolc05
     selfDeployment := genSolidityConstructorDeployment contract.ctor.params }
 
 end Benchmarks.Dss.Vow

@@ -916,9 +916,9 @@ theorem vatMoveSourceRevertDstOverflow
     checkedAddUintInto, List.append_assoc] using ExecFuncBody.execBlockRevert hblock
 
 theorem vatDecode_move_ok {I : ExecutionEnv} (hsz100 : 100 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (moveTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (moveTransition.params.map Param.name)
       (transitionSignature moveTransition).paramTypes I.calldata = some (moveStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["src", "dst", "rad"]
+  show config.externalABI.decodeCalldata? ["src", "dst", "rad"]
     [addr, addr, uint256] I.calldata = _
   change decodeCalldataWithMode DecodeMode.legacySolc05 ["src", "dst", "rad"]
       [abiAddress, abiAddress, abiUInt256] I.calldata =
@@ -932,9 +932,9 @@ theorem vatDecode_move_ok {I : ExecutionEnv} (hsz100 : 100 ≤ I.calldata.size) 
 
 theorem vatDecode_move_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 100) :
-    decodeCalldataWithMode config.abiDecodeMode (moveTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (moveTransition.params.map Param.name)
       (transitionSignature moveTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["src", "dst", "rad"]
+  show config.externalABI.decodeCalldata? ["src", "dst", "rad"]
     [addr, addr, uint256] I.calldata = none
   change decodeCalldataWithMode DecodeMode.legacySolc05 ["src", "dst", "rad"]
     [abiAddress, abiAddress, abiUInt256] I.calldata = none
@@ -1625,7 +1625,7 @@ theorem vatMoveAuthorizedPath
     (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some moveTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (moveTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (moveTransition.params.map Param.name)
         (transitionSignature moveTransition).paramTypes I.calldata = some (moveStore I))
     (hmemWish : memWish.size = 96)
     (hwishSolm :

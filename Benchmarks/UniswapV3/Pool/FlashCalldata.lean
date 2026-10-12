@@ -22,7 +22,7 @@ structure FlashCalldataValid (cd : ByteArray) : Prop where
   payload : flashDataStart cd + flashDataLength cd ≤ cd.size
 
 theorem flashDecode (cd : ByteArray) :
-    decodeCalldataWithMode config.abiDecodeMode (flashTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (flashTransition.params.map Param.name)
       (transitionSignature flashTransition).paramTypes cd =
       if FlashCalldataValid cd then some (flashLocals (flashDecodedArgs cd)) else none := by
   change decodeCalldataWithMode .legacySolc05 ["recipient", "amount0", "amount1", "data"]
@@ -49,12 +49,12 @@ theorem flashDecode (cd : ByteArray) :
   split_ifs <;> simp_all <;> omega
 
 theorem flashDecodeValid {cd : ByteArray} (h : FlashCalldataValid cd) :
-    decodeCalldataWithMode config.abiDecodeMode (flashTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (flashTransition.params.map Param.name)
       (transitionSignature flashTransition).paramTypes cd =
       some (flashLocals (flashDecodedArgs cd)) := by rw [flashDecode, if_pos h]
 
 theorem flashDecodeInvalid {cd : ByteArray} (h : ¬ FlashCalldataValid cd) :
-    decodeCalldataWithMode config.abiDecodeMode (flashTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (flashTransition.params.map Param.name)
       (transitionSignature flashTransition).paramTypes cd = none := by rw [flashDecode, if_neg h]
 
 theorem flashDecodedArgs_data_size {cd : ByteArray} (h : FlashCalldataValid cd) :

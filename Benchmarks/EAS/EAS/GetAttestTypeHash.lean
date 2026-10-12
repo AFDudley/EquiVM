@@ -24,10 +24,12 @@ theorem easGetAttestTypeHashBody {σ σ₀ A I} {g : UInt256} (v : EASImmutables
     (hsel : selIs I (easSelBytes 0)) :
     runtimeRefinementFor config contract σ σ₀ g A I (immStore v) := by
   have hsz : 4 ≤ I.calldata.size := calldata_size_ge_of_selIs I (easSelBytes 0) rfl hsel
-  have hdec : decodeCalldataWithMode config.abiDecodeMode
+  have hdec : config.externalABI.decodeCalldata?
       (getAttestTypeHashTransition.params.map Param.name)
       (transitionSignature getAttestTypeHashTransition).paramTypes I.calldata = some (∅ : Store) :=
-    decodeCalldataWithMode_empty_ok hsz
+    by
+      change decodeCalldataWithMode Syntax.abiDecodeMode [] [] I.calldata = some (∅ : Store)
+      exact decodeCalldataWithMode_empty_ok hsz
   obtain ⟨k, C, rd⟩ := easReachGetAttestTypeHashBody (σ := σ) (σ₀ := σ₀) (A := A) (g := Sat256.ofUInt256 g) v hcode hsz hsize hsel
   by_cases hv : I.weiValue = ⟨0⟩
   · have rd1 := easBlocks.eas_block_4138_fallthrough (immWords := wordsOf (immStore v)) (by simp) hv rd

@@ -190,7 +190,7 @@ theorem poolManagerSetOperatorBodyCore {σ σ₀ A I} {g : UInt256} (v : PoolMan
             let args := ((∅ : Store).insert "operator"
               (.address (AccountAddress.ofNat (calldataWord I.calldata 4).toNat))).insert "approved"
               (wordToElem .bool (calldataWord I.calldata 36))
-            have hdec : decodeCalldataWithMode config.abiDecodeMode
+            have hdec : config.externalABI.decodeCalldata?
                 (setOperatorTransition.params.map Param.name)
                 (transitionSignature setOperatorTransition).paramTypes I.calldata = some args :=
               decodeCalldata_addr_bool_ok hlen hhi hcanon hbool

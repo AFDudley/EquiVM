@@ -15,7 +15,7 @@ def getSchemaDecodeLocals (locals : Store) (record : SchemaRecord) : Store :=
 theorem getSchemaDecodeSource {cfg : Config} {locals imms : Store} {evm : EVM.State}
     {out : ByteArray} {record : SchemaRecord}
     (ho : locals.get? "result" = some (.bytes out))
-    (hd : decodeReturnValueWithMode? cfg.abiDecodeMode schemaRecordABI out = some record.tuple)
+    (hd : cfg.externalABI.decodeValue? schemaRecordABI out = some record.tuple)
     (hl : record.schema.size ≤ 2^64-1) :
     ExecBlock cfg {contract := contract, locals := locals, immutables := imms} evm getSchemaDecode
       (.ok {contract := contract, locals := getSchemaDecodeLocals locals record, immutables := imms} evm) := by
@@ -37,7 +37,7 @@ theorem getSchemaDecodeSource {cfg : Config} {locals imms : Store} {evm : EVM.St
 theorem getSchemaDecodeRevert {cfg : Config} {locals imms : Store} {evm : EVM.State}
     {out : ByteArray}
     (ho : locals.get? "result" = some (.bytes out))
-    (hd : decodeReturnValueWithMode? cfg.abiDecodeMode schemaRecordABI out = none) :
+    (hd : cfg.externalABI.decodeValue? schemaRecordABI out = none) :
     ExecBlock cfg {contract := contract, locals := locals, immutables := imms} evm getSchemaDecode .reverted := by
   apply ExecBlock.consRevert (ExecStmt.letDeclRevert ?_)
   simp only [evalExpr?, ho, EvalResult.ofOption, EvalResult.bind, bind, hd]

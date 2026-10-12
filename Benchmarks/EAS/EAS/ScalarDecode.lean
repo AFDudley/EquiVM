@@ -48,16 +48,14 @@ theorem solcSLT_sub4_of_check {size : Nat} {need : UInt256} {bit : Bool}
     | exact (by decide : (UInt256.ofNat 1 : UInt256) ≠ UInt256.ofNat 0) h
 
 abbrev easPlanTable : List (Nat × List CalldataPlan) :=
-  match config.abiDecodeMode with
-  | .solc08Calldata table => table
-  | _ => []
+  Syntax.abiCalldataPlans
 
 def easPlans (selector : Nat) : List CalldataPlan :=
   ((easPlanTable.find? (fun entry => entry.1 == selector)).map Prod.snd).getD []
 
 theorem easPlans_noTopDefer (selector : Nat) :
     ((easPlans selector).headD {}).deferErrors.contains [] = false := by
-  simp only [easPlans, easPlanTable, config, Syntax.abiDecodeMode, List.find?]
+  simp only [easPlans, easPlanTable, Syntax.abiCalldataPlans, List.find?]
   cases h1 : (1152239886 == selector) <;>
     cases h2 : (1287121381 == selector) <;>
     cases h3 : (2199782817 == selector) <;>
@@ -68,18 +66,19 @@ theorem easPlans_noTopDefer (selector : Nat) :
 theorem easDecodeScalar_none_check {cd : ByteArray} (name : Ident) (ty : ElemType)
     (h4 : 4 ≤ cd.size)
     (hcheck : ABI.Solc08Calldata.solcSLT (ABI.Solc08Calldata.solcSub cd.size 4) 32 = true) :
-    decodeCalldataWithMode config.abiDecodeMode [name] [.elem ty] cd = none := by
+    config.externalABI.decodeCalldata? [name] [.elem ty] cd = none := by
   have hlen : cd.toList.length = cd.size := by rw [byteArray_toList_eq, Array.length_toList]; rfl
   simp only [decodeCalldataWithMode, decodeCalldata, hlen, show ¬ cd.size < 4 by omega,
     if_false, List.any_cons, List.any_nil, isDynamicABIType, Bool.false_or, Bool.false_eq_true,
-    false_and, config, Syntax.abiDecodeMode, ABI.Solc08Calldata.decodeArgs?, List.isEmpty_cons,
+    false_and, config, ExternalCallABI.withMode, Syntax.abiDecodeMode,
+    ABI.Solc08Calldata.decodeArgs?, List.isEmpty_cons,
     Bool.false_eq_true, abiTupleHeadSize?, staticABIEncodedSize?, bind, Option.bind,
     hcheck, if_true]
 
 theorem easDecodeScalar_eq {cd : ByteArray} (name : Ident) (ty : ElemType)
     (h36 : 36 ≤ cd.size)
     (hcheck : ABI.Solc08Calldata.solcSLT (ABI.Solc08Calldata.solcSub cd.size 4) 32 = false) :
-    decodeCalldataWithMode config.abiDecodeMode [name] [.elem ty] cd =
+    config.externalABI.decodeCalldata? [name] [.elem ty] cd =
       (decodeABIValue? (.elem ty) ((cd.toList.drop 4).take 32) 0).map
         (fun value => (∅ : Store).insert name value.1) := by
   have hlen : cd.toList.length = cd.size := by rw [byteArray_toList_eq, Array.length_toList]; rfl
@@ -90,7 +89,8 @@ theorem easDecodeScalar_eq {cd : ByteArray} (name : Ident) (ty : ElemType)
       show 4 % EVM.wordModulus = 4 from rfl, htake, Nat.sub_self, List.replicate_zero, List.append_nil]
   simp only [decodeCalldataWithMode, decodeCalldata, hlen, show ¬ cd.size < 4 by omega,
     if_false, List.any_cons, List.any_nil, isDynamicABIType, Bool.false_or, Bool.false_eq_true,
-    false_and, config, Syntax.abiDecodeMode, ABI.Solc08Calldata.decodeArgs?, List.isEmpty_cons,
+    false_and, config, ExternalCallABI.withMode, Syntax.abiDecodeMode,
+    ABI.Solc08Calldata.decodeArgs?, List.isEmpty_cons,
     abiTupleHeadSize?, staticABIEncodedSize?, bind, Option.bind, hcheck,
     ABI.Solc08Calldata.decodeFields?, ABI.Solc08Calldata.stride?]
   have hdefer := easPlans_noTopDefer (ABI.bytesToWord (cd.toList.take 4)).toNat
@@ -103,14 +103,14 @@ theorem easDecodeScalar_eq {cd : ByteArray} (name : Ident) (ty : ElemType)
 
 theorem easDecodeScalar_none_short {cd : ByteArray} (name : Ident) (ty : ElemType)
     (h4 : 4 ≤ cd.size) (hshort : cd.size < 36) (hsize : cd.size < UInt256.size) :
-    decodeCalldataWithMode config.abiDecodeMode [name] [.elem ty] cd = none :=
+    config.externalABI.decodeCalldata? [name] [.elem ty] cd = none :=
   easDecodeScalar_none_check name ty h4
     (solcSLT_sub4_of_check (need := ⟨32⟩) (bit := true)
       (solcDecodeLenCheckShort_4_32 h4 hshort hsize))
 
 theorem easDecodeScalar_none_huge {cd : ByteArray} (name : Ident) (ty : ElemType)
     (hbig : 2^255 + 4 ≤ cd.size) (hsize : cd.size < UInt256.size) :
-    decodeCalldataWithMode config.abiDecodeMode [name] [.elem ty] cd = none :=
+    config.externalABI.decodeCalldata? [name] [.elem ty] cd = none :=
   easDecodeScalar_none_check name ty (by omega)
     (solcSLT_sub4_of_check (need := ⟨32⟩) (bit := true)
       (solcDecodeLenCheckHuge_4_32 hbig hsize))
@@ -118,7 +118,7 @@ theorem easDecodeScalar_none_huge {cd : ByteArray} (name : Ident) (ty : ElemType
 theorem easDecodeAddress_ok {cd : ByteArray} (name : Ident)
     (h36 : 36 ≤ cd.size) (hbig : cd.size < 2^255 + 4) (hsize : cd.size < UInt256.size)
     (hcanon : (calldataWord cd 4).toNat < EVM.addressModulus) :
-    decodeCalldataWithMode config.abiDecodeMode [name] [.elem .address] cd =
+    config.externalABI.decodeCalldata? [name] [.elem .address] cd =
       some ((∅ : Store).insert name (.address (AccountAddress.ofNat (calldataWord cd 4).toNat))) := by
   rw [easDecodeScalar_eq name .address h36
     (solcSLT_sub4_of_check (need := ⟨32⟩) (bit := false)
@@ -135,7 +135,7 @@ theorem easDecodeAddress_ok {cd : ByteArray} (name : Ident)
 theorem easDecodeAddress_none_noncanon {cd : ByteArray} (name : Ident)
     (h36 : 36 ≤ cd.size) (hbig : cd.size < 2^255 + 4) (hsize : cd.size < UInt256.size)
     (hcanon : ¬ (calldataWord cd 4).toNat < EVM.addressModulus) :
-    decodeCalldataWithMode config.abiDecodeMode [name] [.elem .address] cd = none := by
+    config.externalABI.decodeCalldata? [name] [.elem .address] cd = none := by
   rw [easDecodeScalar_eq name .address h36
     (solcSLT_sub4_of_check (need := ⟨32⟩) (bit := false)
       (solcDecodeLenCheckOk_4_32 h36 hbig hsize))]
@@ -192,7 +192,7 @@ theorem easCalldataSub4 {cd : ByteArray} (hsz : 4 ≤ cd.size)
 
 theorem easDecodeBytes32_ok {cd : ByteArray} (name : Ident)
     (h36 : 36 ≤ cd.size) (hbig : cd.size < 2^255 + 4) (hsize : cd.size < UInt256.size) :
-    decodeCalldataWithMode config.abiDecodeMode [name] [abiBytes32] cd =
+    config.externalABI.decodeCalldata? [name] [abiBytes32] cd =
       some ((∅ : Store).insert name
         (.fixedBytes abiBytes32Width (EVM.Word.toBytesBE (calldataWord cd 4)))) := by
   rw [easDecodeScalar_eq name (.bytes abiBytes32Width) h36
@@ -209,7 +209,7 @@ theorem easDecodeBytes32_ok {cd : ByteArray} (name : Ident)
   rw [← hword, toBytesBE_bytesToWord_of_length htake]
 
 theorem easPlans_tail_nil (selector : Nat) : (easPlans selector).tail = [] := by
-  simp only [easPlans, easPlanTable, config, Syntax.abiDecodeMode, List.find?]
+  simp only [easPlans, easPlanTable, Syntax.abiCalldataPlans, List.find?]
   cases h1 : (1152239886 == selector) <;>
     cases h2 : (1287121381 == selector) <;>
     cases h3 : (2199782817 == selector) <;>
@@ -219,18 +219,19 @@ theorem easPlans_tail_nil (selector : Nat) : (easPlans selector).tail = [] := by
 theorem easDecodePair_none_check {cd : ByteArray} (x y : Ident) (t u : ElemType)
     (h4 : 4 ≤ cd.size)
     (hcheck : ABI.Solc08Calldata.solcSLT (ABI.Solc08Calldata.solcSub cd.size 4) 64 = true) :
-    decodeCalldataWithMode config.abiDecodeMode [x, y] [.elem t, .elem u] cd = none := by
+    config.externalABI.decodeCalldata? [x, y] [.elem t, .elem u] cd = none := by
   have hlen : cd.toList.length = cd.size := by rw [byteArray_toList_eq, Array.length_toList]; rfl
   simp only [decodeCalldataWithMode, decodeCalldata, hlen, show ¬ cd.size < 4 by omega,
     if_false, List.any_cons, List.any_nil, isDynamicABIType, Bool.false_or, Bool.false_eq_true,
-    false_and, config, Syntax.abiDecodeMode, ABI.Solc08Calldata.decodeArgs?, List.isEmpty_cons,
+    false_and, config, ExternalCallABI.withMode, Syntax.abiDecodeMode,
+    ABI.Solc08Calldata.decodeArgs?, List.isEmpty_cons,
     abiTupleHeadSize?, staticABIEncodedSize?, bind, Option.bind,
     show (32 : Nat) + 32 = 64 from rfl, hcheck, if_true]
 
 theorem easDecodePair_eq {cd : ByteArray} (x y : Ident) (t u : ElemType)
     (h68 : 68 ≤ cd.size)
     (hcheck : ABI.Solc08Calldata.solcSLT (ABI.Solc08Calldata.solcSub cd.size 4) 64 = false) :
-    decodeCalldataWithMode config.abiDecodeMode [x, y] [.elem t, .elem u] cd =
+    config.externalABI.decodeCalldata? [x, y] [.elem t, .elem u] cd =
       (decodeABIValue? (.elem t) ((cd.toList.drop 4).take 32) 0).bind (fun a =>
         (decodeABIValue? (.elem u) ((cd.toList.drop 36).take 32) 0).map (fun b =>
           ((∅ : Store).insert x a.1).insert y b.1)) := by
@@ -245,7 +246,8 @@ theorem easDecodePair_eq {cd : ByteArray} (x y : Ident) (t u : ElemType)
   have hread36 := hread 36 h68 (by decide)
   simp only [decodeCalldataWithMode, decodeCalldata, hlen, show ¬ cd.size < 4 by omega,
     if_false, List.any_cons, List.any_nil, isDynamicABIType, Bool.false_or, Bool.false_eq_true,
-    false_and, config, Syntax.abiDecodeMode, ABI.Solc08Calldata.decodeArgs?, List.isEmpty_cons,
+    false_and, config, ExternalCallABI.withMode, Syntax.abiDecodeMode,
+    ABI.Solc08Calldata.decodeArgs?, List.isEmpty_cons,
     abiTupleHeadSize?, staticABIEncodedSize?, bind, Option.bind,
     show (32 : Nat) + 32 = 64 from rfl, hcheck,
     ABI.Solc08Calldata.decodeFields?, ABI.Solc08Calldata.stride?]
@@ -266,14 +268,14 @@ theorem easDecodePair_eq {cd : ByteArray} (x y : Ident) (t u : ElemType)
 
 theorem easDecodePair_none_short {cd : ByteArray} (x y : Ident) (t u : ElemType)
     (h4 : 4 ≤ cd.size) (hshort : cd.size < 68) (hsize : cd.size < UInt256.size) :
-    decodeCalldataWithMode config.abiDecodeMode [x, y] [.elem t, .elem u] cd = none :=
+    config.externalABI.decodeCalldata? [x, y] [.elem t, .elem u] cd = none :=
   easDecodePair_none_check x y t u h4
     (solcSLT_sub4_of_check (need := ⟨64⟩) (bit := true)
       (solcDecodeLenCheckShort_4_64 h4 hshort hsize))
 
 theorem easDecodePair_none_huge {cd : ByteArray} (x y : Ident) (t u : ElemType)
     (hbig : 2^255 + 4 ≤ cd.size) (hsize : cd.size < UInt256.size) :
-    decodeCalldataWithMode config.abiDecodeMode [x, y] [.elem t, .elem u] cd = none :=
+    config.externalABI.decodeCalldata? [x, y] [.elem t, .elem u] cd = none :=
   easDecodePair_none_check x y t u (by omega)
     (solcSLT_sub4_of_check (need := ⟨64⟩) (bit := true)
       (solcDecodeLenCheckHuge_4_64 hbig hsize))
@@ -281,7 +283,7 @@ theorem easDecodePair_none_huge {cd : ByteArray} (x y : Ident) (t u : ElemType)
 theorem easDecodeAddressBytes32_ok {cd : ByteArray} (x y : Ident)
     (h68 : 68 ≤ cd.size) (hbig : cd.size < 2^255 + 4) (hsize : cd.size < UInt256.size)
     (hcanon : (calldataWord cd 4).toNat < EVM.addressModulus) :
-    decodeCalldataWithMode config.abiDecodeMode [x, y] [.elem .address, abiBytes32] cd =
+    config.externalABI.decodeCalldata? [x, y] [.elem .address, abiBytes32] cd =
       some (((∅ : Store).insert x (.address (AccountAddress.ofNat (calldataWord cd 4).toNat))).insert y
         (.fixedBytes abiBytes32Width (EVM.Word.toBytesBE (calldataWord cd 36)))) := by
   rw [easDecodePair_eq x y .address (.bytes abiBytes32Width) h68
@@ -306,7 +308,7 @@ theorem easDecodeAddressBytes32_ok {cd : ByteArray} (x y : Ident)
 theorem easDecodeAddressBytes32_none_noncanon {cd : ByteArray} (x y : Ident)
     (h68 : 68 ≤ cd.size) (hbig : cd.size < 2^255 + 4) (hsize : cd.size < UInt256.size)
     (hcanon : ¬ (calldataWord cd 4).toNat < EVM.addressModulus) :
-    decodeCalldataWithMode config.abiDecodeMode [x, y] [.elem .address, abiBytes32] cd = none := by
+    config.externalABI.decodeCalldata? [x, y] [.elem .address, abiBytes32] cd = none := by
   rw [easDecodePair_eq x y .address (.bytes abiBytes32Width) h68
     (solcSLT_sub4_of_check (need := ⟨64⟩) (bit := false)
       (solcDecodeLenCheckOk_4_64 h68 hbig hsize))]

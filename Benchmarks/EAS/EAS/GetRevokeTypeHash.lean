@@ -30,10 +30,12 @@ theorem easGetRevokeTypeHashBody {σ σ₀ A I} {g : UInt256} (v : EASImmutables
       change ¬ (_ == I.calldata.extract 0 4) = true
       rw [← byteArray_eq_of_beq hsel]
       decide +kernel
-  have hdec : decodeCalldataWithMode config.abiDecodeMode
+  have hdec : config.externalABI.decodeCalldata?
       (getRevokeTypeHashTransition.params.map Param.name)
       (transitionSignature getRevokeTypeHashTransition).paramTypes I.calldata = some (∅ : Store) :=
-    decodeCalldataWithMode_empty_ok hsz
+    by
+      change decodeCalldataWithMode Syntax.abiDecodeMode [] [] I.calldata = some (∅ : Store)
+      exact decodeCalldataWithMode_empty_ok hsz
   obtain ⟨k, C, rd⟩ := easReachGetRevokeTypeHashBody (σ := σ) (σ₀ := σ₀) (A := A) (g := Sat256.ofUInt256 g) v hcode hsz hsize hsel
   by_cases hv : I.weiValue = ⟨0⟩
   · have rd1 := easBlocks.eas_block_2331_fallthrough (immWords := wordsOf (immStore v)) (by simp) hv rd

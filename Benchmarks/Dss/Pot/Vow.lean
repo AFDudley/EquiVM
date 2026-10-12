@@ -7,9 +7,9 @@ namespace Benchmarks.Dss.Pot
 /-! ## `vow()` public getter (debt engine address, slot 6). Group @174 arm 3. -/
 
 theorem potDecode_vow {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (vowTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (vowTransition.params.map Param.name)
       (transitionSignature vowTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 theorem potReachVowBody {σ σ₀ A I} {g : Sat256}
@@ -40,7 +40,7 @@ theorem potVowBodyCore
     (hcode : I.code = potBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some vowTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (vowTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (vowTransition.params.map Param.name)
         (transitionSignature vowTransition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD potBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨454⟩ [sel]

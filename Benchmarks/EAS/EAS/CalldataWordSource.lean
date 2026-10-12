@@ -58,7 +58,7 @@ theorem calldataWordTailSource {L imms : Store} {evm : EVM.State} {offset : UInt
       (.abiEncodePacked [(.bytes,.var "part"),(.bytes,.var "padding")])=.ok (.bytes word) := by
     simp only [evalExpr?,evalPackedArgs?,hp2,hz2,EvalResult.ofOption,bind,EvalResult.bind,pure,encodePacked_dynamic_bytes,List.append_nil]
     rfl
-  have hd : ABI.decodeReturnValueWithMode? config.abiDecodeMode abiUInt256 word=
+  have hd : config.externalABI.decodeValue? abiUInt256 word=
       some (.int (Int.ofNat (calldataWord evm.executionEnv.calldata offset.toNat).toNat)) :=
     decodeReturnUint_wordBytes _ (by simpa only [word,byteArray_toList_eq,List.toList_toArray] using calldataWord_paddedSlice evm.executionEnv.calldata offset)
   have hh3 : L3.get? "$EAS.freeMemory"=some (.int (Int.ofNat heap)) := by

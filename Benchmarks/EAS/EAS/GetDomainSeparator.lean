@@ -89,10 +89,12 @@ theorem easGetDomainSeparatorBody {σ σ₀ A I} {g : UInt256} (v : EASImmutable
       change ¬ (_ == I.calldata.extract 0 4) = true
       rw [← byteArray_eq_of_beq hsel]
       decide +kernel
-  have hdec : decodeCalldataWithMode config.abiDecodeMode
+  have hdec : config.externalABI.decodeCalldata?
       (getDomainSeparatorTransition.params.map Param.name)
       (transitionSignature getDomainSeparatorTransition).paramTypes I.calldata = some (∅ : Store) :=
-    decodeCalldataWithMode_empty_ok hsz
+    by
+      change decodeCalldataWithMode Syntax.abiDecodeMode [] [] I.calldata = some (∅ : Store)
+      exact decodeCalldataWithMode_empty_ok hsz
   obtain ⟨k, C, rd⟩ := easReachGetDomainSeparatorBody (σ := σ) (σ₀ := σ₀) (A := A)
     (g := Sat256.ofUInt256 g) v hcode hsz hsize hsel
   by_cases hv : I.weiValue = ⟨0⟩

@@ -25,7 +25,7 @@ theorem cometWithExtendedAssetListIsLiquidatableBody {σ σ₀ A I} {g : UInt256
   have hbodyEq : isLiquidatableTransition.body = collateralCheckPublicBody false := rfl
   have hd : selectorDispatchMsg contract I.calldata = some isLiquidatableTransition :=
     cometSelectorDispatch ⟨0, by decide⟩ hsel
-  have hdecode : decodeCalldataWithMode config.abiDecodeMode
+  have hdecode : config.externalABI.decodeCalldata?
       (isLiquidatableTransition.params.map Param.name)
       (transitionSignature isLiquidatableTransition).paramTypes I.calldata =
       decodeCalldata ["account"] [.elem .address] I.calldata := by

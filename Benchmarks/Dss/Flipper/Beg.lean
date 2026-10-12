@@ -10,9 +10,9 @@ def begWord (σ : AccountMap) (I : ExecutionEnv) : UInt256 :=
   solcSlotWordAt ⟨4⟩ σ I
 
 theorem flipperDecode_beg {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (begTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (begTransition.params.map Param.name)
       (transitionSignature begTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 theorem flipperReachBegBody {σ σ₀ A I} {g : Sat256}

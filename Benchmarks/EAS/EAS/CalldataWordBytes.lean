@@ -23,7 +23,7 @@ theorem calldataWord_paddedSlice (cd : ByteArray) (offset : UInt256) :
 
 theorem decodeReturnUint_wordBytes {out : ByteArray} (word : UInt256)
     (he : out.toList=EVM.Word.toBytesBE word) :
-    ABI.decodeReturnValueWithMode? config.abiDecodeMode abiUInt256 out=some (.int (Int.ofNat word.toNat)) := by
+    config.externalABI.decodeValue? abiUInt256 out=some (.int (Int.ofNat word.toNat)) := by
   have hs : out.size=32 := by have ht := congrArg List.length he; simpa only [byteArray_toList_eq,Array.length_toList,word_toBytesBE_length_32] using ht
   change ABI.decodeReturnValueWithMode? (.solc08Calldata easPlanTable) abiUInt256 out=_
   rw [decodeReturnSolc08Scalar_eq easPlanTable _ out rfl (by omega)]

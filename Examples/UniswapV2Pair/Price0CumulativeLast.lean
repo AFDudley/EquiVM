@@ -41,9 +41,9 @@ theorem uniswapX_price0CumulativeLast {σ σ₀ A I} {g : Sat256} {sel : UInt256
     (by jump_dest) (by jump_dest)
 
 theorem uniswapDecode_price0CumulativeLast {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (price0CumulativeLastTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (price0CumulativeLastTransition.params.map Param.name)
       (transitionSignature price0CumulativeLastTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 /-- `price0CumulativeLast()` body core, parameterized by dispatcher/decode facts. -/
@@ -52,7 +52,7 @@ theorem uniswapPrice0CumulativeLastBodyCore
     (hcode : I.code = uniswapV2PairBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some price0CumulativeLastTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (price0CumulativeLastTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (price0CumulativeLastTransition.params.map Param.name)
         (transitionSignature price0CumulativeLastTransition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD uniswapV2PairBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1025⟩ [sel]

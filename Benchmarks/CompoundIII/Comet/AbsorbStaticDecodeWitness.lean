@@ -13,7 +13,8 @@ open Benchmarks.CompoundIII.Comet Benchmarks.CompoundIII.Comet.Immutables
 
 namespace Benchmarks.CompoundIII.Comet.AbsorbStaticDecodeWitness
 
-def baselineConfig : Config := { config with abiDecodeMode := .modern }
+def baselineConfig : Config :=
+  { config with externalABI := config.externalABI.withMode .modern }
 
 def zeroImms : CometWithExtendedAssetListImmutables :=
   { governor := EVM.address 0, pauseGuardian := EVM.address 0,
@@ -54,7 +55,7 @@ theorem calldata_selects :
     selectorDispatchMsg contract dirtyData = some absorbTransition := by native_decide
 
 theorem calldata_does_not_decode :
-    decodeCalldataWithMode baselineConfig.abiDecodeMode (absorbTransition.params.map Param.name)
+    baselineConfig.externalABI.decodeCalldata? (absorbTransition.params.map Param.name)
       (transitionSignature absorbTransition).paramTypes dirtyData = none := by native_decide
 
 theorem gas_within_bound : cometGasBound (UInt256.ofNat 3000000) := by
@@ -66,7 +67,7 @@ theorem no_refinement_of_static_decode_failure
     {cfg : Config} {contract : ContractDecl} {σ σ₀ : AccountMap} {gas : UInt256}
     {A : Substate} {I : ExecutionEnv} {imms : Store} {t : TransitionDecl}
     (hdispatch : selectorDispatchMsg contract I.calldata = some t)
-    (hdecode : decodeCalldataWithMode cfg.abiDecodeMode (t.params.map Param.name)
+    (hdecode : cfg.externalABI.decodeCalldata? (t.params.map Param.name)
       (transitionSignature t).paramTypes I.calldata = none)
     (hreceive : receiveDispatchMsg contract I.calldata = none)
     (hevm : Ξ σ σ₀ gas A I = .error .StaticModeViolation) :

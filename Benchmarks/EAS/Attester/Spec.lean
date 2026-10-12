@@ -138,8 +138,7 @@ def storageLayout : StorageLayout := fun _ => none
 
 def config : Config :=
   { storageBackend := solidityStorageBackend storageLayout
-    externalABI := attesterExternalABI
-    abiDecodeMode := .modern
+    externalABI := (attesterExternalABI).withMode .modern
     selfDeployment := genSolidityConstructorDeployment constructorDecl.params }
 
 end Benchmarks.EAS.Attester

@@ -57,7 +57,7 @@ theorem easIsAttestationValidBody {σ σ₀ A I} {g : UInt256} (v : EASImmutable
       · have rd2 := easBlocks.eas_block_1812_fallthrough (immWords := wordsOf (immStore v)) (by simp)
           (by rw [easCalldataSub4 hsz hsize]; exact solcDecodeLenCheckOk_4_32 h36 hbig hsize) rd1
         have hout := isAttestationValidEVM v (by simp) rd2
-        have hdec : decodeCalldataWithMode config.abiDecodeMode
+        have hdec : config.externalABI.decodeCalldata?
             (isAttestationValidTransition.params.map Param.name)
             (transitionSignature isAttestationValidTransition).paramTypes I.calldata =
             some ((∅ : Store).insert "uid"
@@ -103,7 +103,7 @@ theorem easIsAttestationValidBody {σ σ₀ A I} {g : UInt256} (v : EASImmutable
   · have rd1 := easBlocks.eas_block_1806_taken (immWords := wordsOf (immStore v)) (by simp) hv
       (by rw [easPatchedValidJumpsRuntime v]; jump_dest) rd
     have hr := easBlocks.eas_block_402 (immWords := wordsOf (immStore v)) (by simp) rd1
-    cases hdec : decodeCalldataWithMode config.abiDecodeMode
+    cases hdec : config.externalABI.decodeCalldata?
         (isAttestationValidTransition.params.map Param.name)
         (transitionSignature isAttestationValidTransition).paramTypes I.calldata with
     | none => exact RDrev.reEquivDecodingFailed hcode hr hd hdec

@@ -77,19 +77,19 @@ theorem clipperRelyAuthStorageSlot_eq_mapSlot_source (I : ExecutionEnv) :
 
 theorem clipperDecode_rely_ok {I : ExecutionEnv}
     (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (relyTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (relyTransition.params.map Param.name)
       (transitionSignature relyTransition).paramTypes I.calldata =
         some (clipperRelyStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["usr"] [addr] I.calldata = _
+  show config.externalABI.decodeCalldata? ["usr"] [addr] I.calldata = _
   simpa [config, clipperRelyStore, clipperRelyUsrValue, clipperRelyUsrWord,
     calldataWord] using
       decodeCalldata_legacyAddress_ok (cd := I.calldata) (x := "usr") hsz36
 
 theorem clipperDecode_rely_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (relyTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (relyTransition.params.map Param.name)
       (transitionSignature relyTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["usr"] [addr] I.calldata = none
+  show config.externalABI.decodeCalldata? ["usr"] [addr] I.calldata = none
   simpa [config] using
     decodeCalldata_legacyAddress_none_short (cd := I.calldata) (x := "usr") hsz4 hshort
 
@@ -1253,7 +1253,7 @@ theorem clipperRelyBodyCoreOk
     (hauth : clipperRelyAuthWord σ I = ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some relyTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (relyTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (relyTransition.params.map Param.name)
         (transitionSignature relyTransition).paramTypes I.calldata = some (clipperRelyStore I))
     (hreach : ∃ k C, RD code I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) (⟨837⟩ : UInt256) [sel]
@@ -1292,7 +1292,7 @@ theorem clipperRelyBodyCoreStatic
     (hauth : clipperRelyAuthWord σ I = ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some relyTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (relyTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (relyTransition.params.map Param.name)
         (transitionSignature relyTransition).paramTypes I.calldata = some (clipperRelyStore I))
     (hreach : ∃ k C, RD code I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) (⟨837⟩ : UInt256) [sel]
@@ -1326,7 +1326,7 @@ theorem clipperRelyBodyCoreUnauthorized
     (hauth : clipperRelyAuthWord σ I ≠ ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some relyTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (relyTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (relyTransition.params.map Param.name)
         (transitionSignature relyTransition).paramTypes I.calldata = some (clipperRelyStore I))
     (hreach : ∃ k C, RD code I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) (⟨837⟩ : UInt256) [sel]

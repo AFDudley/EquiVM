@@ -38,9 +38,9 @@ theorem catDispatch_cage {I : ExecutionEnv}
     exact hsel
 
 theorem catDecode_cage {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (cageTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (cageTransition.params.map Param.name)
       (transitionSignature cageTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 theorem catReachCageBody {σ σ₀ A I} {g : Sat256}
@@ -79,7 +79,7 @@ theorem catCageBodyCore
     (hcode : I.code = catBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some cageTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (cageTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (cageTransition.params.map Param.name)
         (transitionSignature cageTransition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD catBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨483⟩ [sel]

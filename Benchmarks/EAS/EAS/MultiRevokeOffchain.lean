@@ -107,7 +107,7 @@ theorem easMultiRevokeOffchainBody {σ σ₀ A I} {g : UInt256} (v : EASImmutabl
   · have rd1 := easBlocks.eas_block_3994_taken (immWords := wordsOf (immStore v)) (by simp) hv
       (by rw [easPatchedValidJumpsRuntime v]; jump_dest) rd
     have hr := easBlocks.eas_block_402 (immWords := wordsOf (immStore v)) (by simp) rd1
-    cases hdec : decodeCalldataWithMode config.abiDecodeMode
+    cases hdec : config.externalABI.decodeCalldata?
         (multiRevokeOffchainTransition.params.map Param.name)
         (transitionSignature multiRevokeOffchainTransition).paramTypes I.calldata with
     | none => exact RDrev.reEquivDecodingFailed hcode hr hd hdec

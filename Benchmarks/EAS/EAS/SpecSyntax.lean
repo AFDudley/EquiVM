@@ -945,7 +945,7 @@ def contractSyntax : ContractDecl := withAllocator contractBody
     offset, then its elements are eagerly decoded for `_attest`/`_revoke`. The whole delegated
     revocation request is copied instead. Unlisted parameters use eager decoding.
     See `EAS.optimized.yul` and `HANDOFF.md` for the audit evidence. -/
-def abiDecodeMode : ABI.DecodeMode := .solc08Calldata [
+def abiCalldataPlans : List (Nat × List ABI.CalldataPlan) := [
   -- multiAttest / multiRevoke: array elements stay in calldata; each data field is copied.
   (0x44adc90e, [{ materialize := [[.element, .field 1]], deferErrors := [[.element]] }]),
   (0x4cb7e9e5, [{ materialize := [[.element, .field 1]], deferErrors := [[.element]] }]),
@@ -959,5 +959,7 @@ def abiDecodeMode : ABI.DecodeMode := .solc08Calldata [
   -- attest: the request's data tail is accessed directly, then the data struct is copied.
   (0xf17325e7, [{ materialize := [[.field 1]] }])
 ]
+
+def abiDecodeMode : ABI.DecodeMode := .solc08Calldata abiCalldataPlans
 
 end Benchmarks.EAS.EAS.Syntax

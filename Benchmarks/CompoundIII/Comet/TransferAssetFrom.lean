@@ -26,7 +26,7 @@ theorem cometWithExtendedAssetListTransferAssetFromBody {σ σ₀ A I} {g : UInt
   have hsz : 4 ≤ I.calldata.size := calldata_size_ge_of_selIs I (cometWithExtendedAssetListSelBytes 53) rfl hsel
   have hd : selectorDispatchMsg contract I.calldata = some transferAssetFromTransition :=
     cometSelectorDispatch ⟨53, by decide⟩ hsel
-  have hdecode : decodeCalldataWithMode config.abiDecodeMode
+  have hdecode : config.externalABI.decodeCalldata?
       (transferAssetFromTransition.params.map Param.name)
       (transitionSignature transferAssetFromTransition).paramTypes I.calldata =
       decodeCalldata ["src", "dst", "asset", "amount"]

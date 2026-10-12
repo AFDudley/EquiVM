@@ -39,9 +39,9 @@ theorem vowDispatch_sump {I : ExecutionEnv} (hsel : selIs I ⟨#[0xc3, 0x49, 0xd
     exact hsel
 
 theorem vowDecode_sump {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (sumpTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (sumpTransition.params.map Param.name)
       (transitionSignature sumpTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 theorem vowReachSumpBody {σ σ₀ A I} {g : Sat256}
@@ -78,7 +78,7 @@ theorem vowSumpBodyCore
     (hcode : I.code = vowBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some sumpTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (sumpTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (sumpTransition.params.map Param.name)
         (transitionSignature sumpTransition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD vowBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨692⟩ [sel]

@@ -329,10 +329,11 @@ offsets keep the unsigned 64-bit cap, including return decoding.
 `CalldataPlan.materialize` lists paths where a value is copied: `.element`
 selects array elements and `.field i` selects a tuple component. `[[]]` means
 eager decoding at the root (the default); `[]` means direct calldata access
-throughout. `SpecSyntax.abiDecodeMode` supplies the compiled EAS paths for
-`multiAttest`, `multiRevoke`, both delegated batches, and `attest`. The proof
-skeleton generator preserves this explicit choice in `Spec.config`; other
-contracts retain their compiler-version defaults.
+throughout. `SpecSyntax.abiCalldataPlans` supplies the compiled EAS paths for
+`multiAttest`, `multiRevoke`, both delegated batches, and `attest`.
+`SpecSyntax.abiDecodeMode` packages those plans for the standard solc 0.8 decoder;
+the proof skeleton installs its calldata and explicit-value functions through
+`Spec.config.externalABI`. Named external-call return decoding remains separate.
 
 `ABI/CalldataTests.lean` covers offset boundaries, selector-byte aliases,
 top-level and length caps, memory-copy rejection, return offsets, and unchanged

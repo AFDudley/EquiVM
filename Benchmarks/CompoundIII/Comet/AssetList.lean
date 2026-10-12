@@ -63,7 +63,7 @@ theorem cometWithExtendedAssetListAssetListBody {σ σ₀ A I} {g : UInt256} (v 
     runtimeRefinementFor config contract σ σ₀ g A I (immStore v) := by
   have hsz : 4 ≤ I.calldata.size :=
     calldata_size_ge_of_selIs I (cometWithExtendedAssetListSelBytes 62) rfl hsel
-  exact immutableGetter_refines (t := assetListTransition) hcode hsz
+  exact immutableGetter_refines (t := assetListTransition) hcode hsz (cometDecode_empty hsz)
     (cometSelectorDispatch ⟨62, by decide⟩ hsel) rfl rfl rfl
     (immStore_get_assetList v) (getterAddressEncoding v.assetList)
     (assetListX v hcode hsz hsize hsel)

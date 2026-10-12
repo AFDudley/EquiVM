@@ -26,7 +26,7 @@ theorem cometWithExtendedAssetListGetPriceBody {σ σ₀ A I} {g : UInt256} (v :
   have hsz : 4 ≤ I.calldata.size := calldata_size_ge_of_selIs I (cometWithExtendedAssetListSelBytes 21) rfl hsel
   have hd : selectorDispatchMsg contract I.calldata = some getPriceTransition :=
     cometSelectorDispatch ⟨21, by decide⟩ hsel
-  have hdecode : decodeCalldataWithMode config.abiDecodeMode
+  have hdecode : config.externalABI.decodeCalldata?
       (getPriceTransition.params.map Param.name)
       (transitionSignature getPriceTransition).paramTypes I.calldata =
       decodeCalldata ["priceFeed"] [.elem .address] I.calldata := by

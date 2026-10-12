@@ -852,7 +852,7 @@ theorem RD.vatRelyStoreOneSplit {code : ByteArray} {g : Sat256} {s0 : State}
 /-! ### Dispatch, ABI, reachability, and body proof -/
 
 theorem vatDecode_rely_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (relyTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (relyTransition.params.map Param.name)
       (transitionSignature relyTransition).paramTypes I.calldata =
         some ((∅ : Store).insert "usr" (.address (relyUsr I))) := by
   simpa [config, relyTransition, relyUsr] using
@@ -860,7 +860,7 @@ theorem vatDecode_rely_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
 
 theorem vatDecode_rely_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (relyTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (relyTransition.params.map Param.name)
       (transitionSignature relyTransition).paramTypes I.calldata = none := by
   simpa [config, relyTransition] using
     (decodeCalldata_legacyAddress_none_short (cd := I.calldata) (x := "usr") hsz4 hshort)
@@ -920,7 +920,7 @@ theorem vatRelyBodyCoreOk
     (hsize : I.calldata.size < UInt256.size)
     (hdispatch : dispatchMsg contract I.calldata = some relyTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (relyTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (relyTransition.params.map Param.name)
         (transitionSignature relyTransition).paramTypes I.calldata =
           some ((∅ : Store).insert "usr" (.address (relyUsr I))))
     (hreach : ∃ k C, RD vatBytecode I (Sat256.ofUInt256 g)

@@ -49,7 +49,7 @@ theorem easGetNonceBody {σ σ₀ A I} {g : UInt256} (v : EASImmutables)
         have rd3 := easBlocks.eas_block_3941 (immWords := wordsOf (immStore v)) (by simp)
           (by rw [easPatchedValidJumpsRuntime v]; jump_dest) rd2
         by_cases hc : (calldataWord I.calldata 4).toNat < EVM.addressModulus
-        · have hdec : decodeCalldataWithMode config.abiDecodeMode
+        · have hdec : config.externalABI.decodeCalldata?
               (getNonceTransition.params.map Param.name)
               (transitionSignature getNonceTransition).paramTypes I.calldata =
               some ((∅ : Store).insert "account"
@@ -101,7 +101,7 @@ theorem easGetNonceBody {σ σ₀ A I} {g : UInt256} (v : EASImmutables)
   · have rd1 := easBlocks.eas_block_3893_taken (immWords := wordsOf (immStore v)) (by simp) hv
       (by rw [easPatchedValidJumpsRuntime v]; jump_dest) rd
     have hr := easBlocks.eas_block_402 (immWords := wordsOf (immStore v)) (by simp) rd1
-    cases hdec : decodeCalldataWithMode config.abiDecodeMode
+    cases hdec : config.externalABI.decodeCalldata?
         (getNonceTransition.params.map Param.name)
         (transitionSignature getNonceTransition).paramTypes I.calldata with
     | none => exact RDrev.reEquivDecodingFailed hcode hr hd hdec

@@ -17,8 +17,10 @@ differential suite cannot tell apart from it, and the proof skeleton the proving
 
 - No guessing. Every statement of the specification follows from the source or the bytecode
   report. When the two differ, the bytecode wins and the difference is recorded.
-- Generated files are not edited by hand; rerun the generator with `--force`. The one file you
-  write is `SpecSyntax.lean`; its surface syntax is documented in the header of `Solm/Notation.lean`.
+- Generated files are not edited by hand except for the ABI configuration in `Spec.lean` when
+  the generated decoder does not match the bytecode. Rerun the generator with `--force` before
+  making that edit, and reapply it if regeneration is later necessary. The main file you write is
+  `SpecSyntax.lean`; its surface syntax is documented in the header of `Solm/Notation.lean`.
 - Nothing outside `<Dir>` changes: not `Solm/`, not `Reasoning/`, not `scripts/`.
 - Inline assembly, library calls and everything else the translator leaves as a hole are
   modelled by their effect: the Solm statements that perform the same storage reads and writes,
@@ -70,7 +72,14 @@ differential suite cannot tell apart from it, and the proof skeleton the proving
 5. **Skeleton.** `scripts/proof_skeleton.py --dir <Dir> --module <Module>` writes `Spec.lean`,
    `Common.lean`, the proved `Dispatch.lean`, one stub per function, `Constructor.lean` and
    `Correct.lean`. Check the external-call ABI table in `Spec.lean` against the callees' ABIs; a
-   `TODO` there is a hole you close in `SpecSyntax.lean` or report.
+   `TODO` there is a hole you close in `SpecSyntax.lean` or report. Configure `config.externalABI`
+   to match the pinned bytecode's calldata and explicit `abi.decode` behavior, including how it
+   handles malformed inputs. The default decoders are modern; use `externalABI.withMode` only
+   when a built-in variant matches. Otherwise define a custom decoder in `Spec.lean` and assign
+   it to `decodeCalldata?` and/or `decodeValue?` there. Calldata decoding receives the full
+   calldata, including the four-byte selector; dispatch checks the selector separately. Keep
+   named external-call return decoding in `decode?`, matched to the callee's ABI. Build the
+   resulting `Spec.lean` before accepting the scaffold.
 6. **Build.** `lake build <Module>.Correct` succeeds. The only `sorry`s are the generated stubs:
    the function files, `Constructor.lean`, `restrictImmutables_of_fit` in `Common.lean` when the
    contract has immutables, and the dispatch facts when it has a `fallback` or `receive`.
@@ -123,7 +132,8 @@ differential suite cannot tell apart from it, and the proof skeleton the proving
 9. **Hand-off.** `<Dir>/HANDOFF.md`: compiler settings and provenance; the differential run
    (command, seed, summary line, coverage line); the places where the spec follows the bytecode
    rather than the source, if any; what the proving session should know (immutables and their
-   valuation, external-call ABI entries, the functions you expect to be hard and why); the gas
+   valuation, external-call ABI entries, the selected or custom calldata and value decoders and
+   the bytecode behavior that justifies them, the functions you expect to be hard and why); the gas
    bound: `noGasBound`, or the bound with the details it abstracts, why it is the loosest, why it
    sits above `2^24`, and why every path that breaks an abstracted detail within it runs out of gas.
 
@@ -131,6 +141,7 @@ differential suite cannot tell apart from it, and the proof skeleton the proving
 
 - `scripts/scaffold.py check --dir <Dir>` prints only `ok` lines.
 - `lake build <Module>.Correct` succeeds with no `sorry` outside the generated stubs.
+- `config.externalABI` uses decoders that match the pinned bytecode, including malformed inputs.
 - `lake exe solm-difftest --only <Name> --count 50` reports no disagreement and no stuck case.
 - The audit of step 8 is complete for every function and the constructor, with no finding left.
 - `HANDOFF.md` has the five sections of step 9.

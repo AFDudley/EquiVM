@@ -17,7 +17,7 @@ namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 2000000
 
 theorem setFeeProtocolDecode (I : ExecutionEnv) (hlen : 68 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode
+    config.externalABI.decodeCalldata?
       (setFeeProtocolTransition.params.map Param.name)
       (transitionSignature setFeeProtocolTransition).paramTypes I.calldata =
       some (setFeeProtocolLocals
@@ -82,7 +82,7 @@ theorem uniswapV3PoolSetFeeProtocolBody {σ σ₀ A I} {g : UInt256} (v : Uniswa
                     (by simpa only [henv'] using howner) hvalid) rfl
                   (returnEquiv.fallthrough (dvs := []) rfl rfl (by native_decide))
   · have hshort : I.calldata.size < 68 := by omega
-    have hdec : decodeCalldataWithMode config.abiDecodeMode
+    have hdec : config.externalABI.decodeCalldata?
         (setFeeProtocolTransition.params.map Param.name)
         (transitionSignature setFeeProtocolTransition).paramTypes I.calldata = none :=
       decodeCalldata_legacyIntPair_none_short (.uint ⟨8, by decide⟩) (.uint ⟨8, by decide⟩) hsz hshort

@@ -83,7 +83,7 @@ theorem resolverResultTail_ok {cfg : Config} {locals imms : Store} {evm : EVM.St
     (ho : locals.get? "result" = some (.bytes out))
     (hh : locals.get? "$EAS.freeMemory" = some (.int (Int.ofNat heap)))
     (hg : allocateNext heap (min out.size 32) ≤ 2^64-1 ∧ heap ≤ allocateNext heap (min out.size 32))
-    (hd : ABI.decodeReturnValueWithMode? cfg.abiDecodeMode abiBool out = some (.bool accepted)) :
+    (hd : cfg.externalABI.decodeValue? abiBool out = some (.bool accepted)) :
     ExecBlock cfg {contract := contract, locals := locals, immutables := imms} evm resolverResultTail
       (.returned {contract := contract, locals := (resolverResultLocals locals out heap).insert "accepted" (.bool accepted), immutables := imms}
         evm (some [.bool accepted, .int (Int.ofNat (allocateNext heap (min out.size 32)))])) := by
@@ -101,7 +101,7 @@ theorem resolverResultTail_decode_revert {cfg : Config} {locals imms : Store} {e
     (ho : locals.get? "result" = some (.bytes out))
     (hh : locals.get? "$EAS.freeMemory" = some (.int (Int.ofNat heap)))
     (hg : allocateNext heap (min out.size 32) ≤ 2^64-1 ∧ heap ≤ allocateNext heap (min out.size 32))
-    (hd : ABI.decodeReturnValueWithMode? cfg.abiDecodeMode abiBool out = none) :
+    (hd : cfg.externalABI.decodeValue? abiBool out = none) :
     ExecBlock cfg {contract := contract, locals := locals, immutables := imms} evm resolverResultTail .reverted := by
   apply execBlock_append (resolverResultAllocation ho hh hg)
   apply ExecBlock.consRevert (ExecStmt.letDeclRevert ?_)

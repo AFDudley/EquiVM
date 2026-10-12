@@ -26,9 +26,9 @@ theorem cureDispatchTCount {I : ExecutionEnv}
   native_decide
 
 theorem cureDecode_tCount {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (tCountTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (tCountTransition.params.map Param.name)
       (transitionSignature tCountTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 theorem cureTCountBodyCore {σ σ₀ A I} {g : UInt256}

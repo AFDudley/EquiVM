@@ -3136,9 +3136,9 @@ theorem endSkipLogDataMem3ForTrace_read64
     hloCat hloVat hloBid
 
 theorem endDecode_skip_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (skipTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (skipTransition.params.map Param.name)
       (transitionSignature skipTransition).paramTypes I.calldata = some (endSkipStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["ilk", "id"] [bytes32, uint256]
+  show config.externalABI.decodeCalldata? ["ilk", "id"] [bytes32, uint256]
     I.calldata = _
   simpa [config, skipTransition, bytes32, bytes32Width, uint256, uint256Int,
     endSkipStore, endSkipIlkBytes, endSkipIdWord, abiBytes32, abiBytes32Width,
@@ -3148,9 +3148,9 @@ theorem endDecode_skip_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size) :
 
 theorem endDecode_skip_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 68) :
-    decodeCalldataWithMode config.abiDecodeMode (skipTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (skipTransition.params.map Param.name)
       (transitionSignature skipTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["ilk", "id"] [bytes32, uint256]
+  show config.externalABI.decodeCalldata? ["ilk", "id"] [bytes32, uint256]
     I.calldata = none
   simpa [config, skipTransition, bytes32, bytes32Width, uint256, uint256Int,
     abiBytes32, abiBytes32Width, abiUInt256] using

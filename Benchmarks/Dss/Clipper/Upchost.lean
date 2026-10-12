@@ -123,9 +123,9 @@ theorem clipperDispatch_upchost {I : ExecutionEnv}
 
 theorem clipperDecode_upchost {I : ExecutionEnv}
     (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (upchostTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (upchostTransition.params.map Param.name)
       (transitionSignature upchostTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  change decodeCalldataWithMode .legacySolc05 [] [] I.calldata = some ∅
   exact decodeCalldataWithMode_empty_ok hsz
 
 set_option maxHeartbeats 1000000 in
@@ -2814,7 +2814,7 @@ theorem clipperUpchostDogChopNoCodeBodyCore (v : ClipperImmutables) {code : Byte
     (hcode : I.code = code) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some upchostTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (upchostTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (upchostTransition.params.map Param.name)
         (transitionSignature upchostTransition).paramTypes I.calldata = some ∅)
     (rd1599 : RD code I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1599⟩
@@ -2889,7 +2889,7 @@ theorem clipperUpchostDogChopCallFailureBodyCore (v : ClipperImmutables) {code :
     (hcode : I.code = code) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some upchostTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (upchostTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (upchostTransition.params.map Param.name)
         (transitionSignature upchostTransition).paramTypes I.calldata = some ∅)
     (rd1599 : RD code I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1599⟩
@@ -3004,7 +3004,7 @@ theorem clipperUpchostDogChopDecodeShortBodyCore (v : ClipperImmutables) {code :
     (hcode : I.code = code) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some upchostTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (upchostTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (upchostTransition.params.map Param.name)
         (transitionSignature upchostTransition).paramTypes I.calldata = some ∅)
     (rd1599 : RD code I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1599⟩
@@ -3124,7 +3124,7 @@ theorem clipperUpchostDogChopSuccessBodyCore (v : ClipperImmutables) {code : Byt
     (hcode : I.code = code) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some upchostTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (upchostTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (upchostTransition.params.map Param.name)
         (transitionSignature upchostTransition).paramTypes I.calldata = some ∅)
     (rd1599 : RD code I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1599⟩
@@ -3279,7 +3279,7 @@ theorem clipperUpchostDogChopWmulRevertBodyCore (v : ClipperImmutables) {code : 
     (hcode : I.code = code) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some upchostTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (upchostTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (upchostTransition.params.map Param.name)
         (transitionSignature upchostTransition).paramTypes I.calldata = some ∅)
     (rd1599 : RD code I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1599⟩
@@ -3401,7 +3401,7 @@ theorem clipperUpchostVatIlksCallFailureBodyCore (v : ClipperImmutables) {code :
     (hcode : I.code = code) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some upchostTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (upchostTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (upchostTransition.params.map Param.name)
         (transitionSignature upchostTransition).paramTypes I.calldata = some ∅)
     (rd1599 : RD code I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1599⟩
@@ -3454,7 +3454,7 @@ theorem clipperUpchostVatIlksDecodeShortBodyCore (v : ClipperImmutables) {code :
     (hcode : I.code = code) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some upchostTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (upchostTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (upchostTransition.params.map Param.name)
         (transitionSignature upchostTransition).paramTypes I.calldata = some ∅)
     (rd1599 : RD code I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1599⟩
@@ -3507,7 +3507,7 @@ theorem clipperUpchostVatNoCodeBodyCore (v : ClipperImmutables) {code : ByteArra
     (hcode : I.code = code) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some upchostTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (upchostTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (upchostTransition.params.map Param.name)
         (transitionSignature upchostTransition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD code I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨494⟩ [clipperSelWord I]

@@ -15,7 +15,7 @@ def endDenyPostState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
   Solm.EVM.storageStore evm evm.executionEnv.codeOwner (endRelyUsrStorageSlot I) ⟨0⟩
 
 theorem endDecode_deny_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (denyTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (denyTransition.params.map Param.name)
       (transitionSignature denyTransition).paramTypes I.calldata = some (endRelyStore I) := by
   simpa [config, denyTransition, endRelyStore, endRelyUsrValue, endRelyUsrWord,
     calldataWord] using
@@ -23,7 +23,7 @@ theorem endDecode_deny_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
 
 theorem endDecode_deny_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (denyTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (denyTransition.params.map Param.name)
       (transitionSignature denyTransition).paramTypes I.calldata = none := by
   simpa [config, denyTransition] using
     decodeCalldata_legacyAddress_none_short (cd := I.calldata) (x := "usr") hsz4 hshort
@@ -372,7 +372,7 @@ theorem endDenyBodyCoreOk
     (hauth : endRelyAuthWord σ I = ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some denyTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (denyTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (denyTransition.params.map Param.name)
         (transitionSignature denyTransition).paramTypes I.calldata = some (endRelyStore I))
     (hreach : ∃ k C, RD endBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) endDenyEntryPc [sel]
@@ -413,7 +413,7 @@ theorem endDenyBodyCoreUnauthorized
     (hauth : endRelyAuthWord σ I ≠ ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some denyTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (denyTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (denyTransition.params.map Param.name)
         (transitionSignature denyTransition).paramTypes I.calldata = some (endRelyStore I))
     (hreach : ∃ k C, RD endBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) endDenyEntryPc [sel]

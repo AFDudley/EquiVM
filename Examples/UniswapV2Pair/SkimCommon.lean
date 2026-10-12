@@ -412,26 +412,26 @@ theorem skimSecondExcessStore_excess1
 theorem uniswapDecode_skim_ok {I : ExecutionEnv}
     (hsz36 : 36 ≤ I.calldata.size)
     (_hcanon : (skimToWord I).toNat < EVM.addressModulus) :
-    decodeCalldataWithMode config.abiDecodeMode (skimTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (skimTransition.params.map Param.name)
       (transitionSignature skimTransition).paramTypes I.calldata = some (skimStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["to"] [legacyAddr] I.calldata = _
+  show config.externalABI.decodeCalldata? ["to"] [legacyAddr] I.calldata = _
   simpa [skimStore, skimToValue, skimToWord, calldataWord]
     using decodeCalldata_legacyAddress_ok (cd := I.calldata) (x := "to") hsz36
 
 theorem uniswapDecode_skim_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (skimTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (skimTransition.params.map Param.name)
       (transitionSignature skimTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["to"] [legacyAddr] I.calldata = none
+  show config.externalABI.decodeCalldata? ["to"] [legacyAddr] I.calldata = none
   simpa using decodeCalldata_legacyAddress_none_short (cd := I.calldata) (x := "to")
     hsz4 hshort
 
 theorem uniswapDecode_skim_ok_noncanon {I : ExecutionEnv}
     (hsz36 : 36 ≤ I.calldata.size)
     (_hnc : ¬ (skimToWord I).toNat < EVM.addressModulus) :
-    decodeCalldataWithMode config.abiDecodeMode (skimTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (skimTransition.params.map Param.name)
       (transitionSignature skimTransition).paramTypes I.calldata = some (skimStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["to"] [legacyAddr] I.calldata = _
+  show config.externalABI.decodeCalldata? ["to"] [legacyAddr] I.calldata = _
   simpa [skimStore, skimToValue, skimToWord, calldataWord]
     using decodeCalldata_legacyAddress_ok (cd := I.calldata) (x := "to") hsz36
 

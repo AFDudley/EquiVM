@@ -19,7 +19,7 @@ abbrev initTimestampWord (I : ExecutionEnv) : UInt256 :=
   UInt256.ofNat I.header.timestamp
 
 theorem jugDecode_init_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (initTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (initTransition.params.map Param.name)
       (transitionSignature initTransition).paramTypes I.calldata =
         some (initLocals I) := by
   simpa [config, initTransition, initLocals, fileDutyIlkBytes, bytes32, bytes32Width] using
@@ -27,7 +27,7 @@ theorem jugDecode_init_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
 
 theorem jugDecode_init_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (initTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (initTransition.params.map Param.name)
       (transitionSignature initTransition).paramTypes I.calldata = none := by
   simpa [config, initTransition, bytes32, bytes32Width] using
     (decodeCalldataWithMode_legacyBytes32_none_short (cd := I.calldata) (x := "ilk")
@@ -700,7 +700,7 @@ theorem jugInitBodyCoreOk
     (hduty : solcSlotWordAt (fileDutyDutySlotFor I) σ I = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some initTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (initTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (initTransition.params.map Param.name)
         (transitionSignature initTransition).paramTypes I.calldata = some (initLocals I))
     (hreach : ∃ k C, RD jugBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨299⟩ [sel]
@@ -748,7 +748,7 @@ theorem jugInitBodyCoreStatic
     (hduty : solcSlotWordAt (fileDutyDutySlotFor I) σ I = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some initTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (initTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (initTransition.params.map Param.name)
         (transitionSignature initTransition).paramTypes I.calldata = some (initLocals I))
     (hreach : ∃ k C, RD jugBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨299⟩ [sel]
@@ -771,7 +771,7 @@ theorem jugInitBodyCoreUnauthorized
     (hauth : relyAuthWord σ I ≠ ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some initTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (initTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (initTransition.params.map Param.name)
         (transitionSignature initTransition).paramTypes I.calldata = some (initLocals I))
     (hreach : ∃ k C, RD jugBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨299⟩ [sel]
@@ -799,7 +799,7 @@ theorem jugInitBodyCoreAlreadyInit
     (hduty : solcSlotWordAt (fileDutyDutySlotFor I) σ I ≠ ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some initTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (initTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (initTransition.params.map Param.name)
         (transitionSignature initTransition).paramTypes I.calldata = some (initLocals I))
     (hreach : ∃ k C, RD jugBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨299⟩ [sel]

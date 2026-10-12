@@ -123,7 +123,7 @@ theorem poolManagerSupportsInterfaceBodyCore {σ σ₀ A I} {g : UInt256} (v : P
             u256_sub_eq_zero_iff_eq.mpr hclean.symm
           have rdCompare := poolManagerBlocks.poolManager_block_11334_fallthrough (by simp) hcond rdDecode
           have hret := supportsInterfaceTrace v hlen (by simp) rdCompare
-          have hdec : decodeCalldataWithMode config.abiDecodeMode
+          have hdec : config.externalABI.decodeCalldata?
               (supportsInterfaceTransition.params.map Param.name)
               (transitionSignature supportsInterfaceTransition).paramTypes I.calldata =
               some ((∅ : Store).insert "interfaceId" (.fixedBytes abiBytes4Width (calldataBytes4Arg I.calldata))) :=

@@ -79,9 +79,9 @@ theorem clipperDispatch_stopped {I : ExecutionEnv}
 
 theorem clipperDecode_stopped {I : ExecutionEnv}
     (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (stoppedTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (stoppedTransition.params.map Param.name)
       (transitionSignature stoppedTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  change decodeCalldataWithMode .legacySolc05 [] [] I.calldata = some ∅
   exact decodeCalldataWithMode_empty_ok hsz
 
 theorem clipperEvalStopped (v : ClipperImmutables) (evm : EVM.State) (locals : Store)

@@ -94,9 +94,9 @@ theorem vowDispatch_flop {I : ExecutionEnv}
     exact hsel
 
 theorem vowDecode_flop {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (flopTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (flopTransition.params.map Param.name)
       (transitionSignature flopTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 theorem vowReachFlopBody {σ σ₀ A I} {g : Sat256}
@@ -1298,7 +1298,7 @@ theorem vowFlopVatSin0NoCodeBodyCore
     (hcode : I.code = vowBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some flopTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (flopTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (flopTransition.params.map Param.name)
         (transitionSignature flopTransition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD vowBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨646⟩ [sel]
@@ -1333,7 +1333,7 @@ theorem vowFlopSin0CallFailureBodyCore
     (hcode : I.code = vowBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some flopTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (flopTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (flopTransition.params.map Param.name)
         (transitionSignature flopTransition).paramTypes I.calldata = some ∅)
     (rd1277 : RD vowBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1277⟩
@@ -1363,7 +1363,7 @@ theorem vowFlopSin0DecodeShortBodyCore
     (hcode : I.code = vowBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some flopTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (flopTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (flopTransition.params.map Param.name)
         (transitionSignature flopTransition).paramTypes I.calldata = some ∅)
     (rd1277 : RD vowBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1277⟩
@@ -1428,7 +1428,7 @@ theorem vowFlopFreeSinUnderflowBodyCore
     (hcode : I.code = vowBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some flopTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (flopTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (flopTransition.params.map Param.name)
         (transitionSignature flopTransition).paramTypes I.calldata = some ∅)
     (rd1277 : RD vowBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1277⟩
@@ -1514,7 +1514,7 @@ theorem vowFlopDebtUnderflowBodyCore
     (hcode : I.code = vowBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some flopTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (flopTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (flopTransition.params.map Param.name)
         (transitionSignature flopTransition).paramTypes I.calldata = some ∅)
     (rd1325 : RD vowBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1325⟩
@@ -1557,7 +1557,7 @@ theorem vowFlopInsufficientDebtBodyCore
     (hcode : I.code = vowBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some flopTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (flopTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (flopTransition.params.map Param.name)
         (transitionSignature flopTransition).paramTypes I.calldata = some ∅)
     (rd3675 : RD vowBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨3675⟩

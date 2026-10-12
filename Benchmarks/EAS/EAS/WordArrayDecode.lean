@@ -41,7 +41,7 @@ theorem easPlans_empty_of_selector {I : ExecutionEnv} {idx : Nat}
 theorem easDecodeWordArray {cd : ByteArray} (name : Ident)
     (h36 : 36 ≤ cd.size) (hbig : cd.size < 2^255 + 4) (hsize : cd.size < UInt256.size)
     (hplans : easPlans (bytesToWord (cd.toList.take 4)).toNat = []) :
-    decodeCalldataWithMode config.abiDecodeMode [name] [.dynamicArray abiBytes32] cd =
+    config.externalABI.decodeCalldata? [name] [.dynamicArray abiBytes32] cd =
       if wordArrayValid cd then some ((∅ : Store).insert name (wordArrayValue cd)) else none :=
   decodeWordArray name easPlanTable h36 hbig hsize hplans
 

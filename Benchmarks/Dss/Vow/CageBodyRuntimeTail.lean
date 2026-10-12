@@ -19,7 +19,7 @@ theorem vowCageVatSinNoCodeAt3115BodyCore
     (hlive : solcSlotWordAt ⟨12⟩ σ I = ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some cageTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (cageTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (cageTransition.params.map Param.name)
         (transitionSignature cageTransition).paramTypes I.calldata = some ∅)
     (rd3115 : RD vowBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨3115⟩
@@ -168,7 +168,7 @@ theorem vowCageBodyToMinHeal
   have hsz : 4 ≤ I.calldata.size :=
     calldata_size_ge_of_selIs I ⟨#[0x69, 0x24, 0x50, 0x09]⟩ rfl hsel
   have hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (cageTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (cageTransition.params.map Param.name)
         (transitionSignature cageTransition).paramTypes I.calldata = some ∅ :=
     vowDecode_cage hsz
   refine vowCageBodyToVatSin
@@ -385,7 +385,7 @@ theorem vowCageBody {σ σ₀ A I} {g : UInt256}
   have hsz : 4 ≤ I.calldata.size :=
     calldata_size_ge_of_selIs I ⟨#[0x69, 0x24, 0x50, 0x09]⟩ rfl hsel
   have hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (cageTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (cageTransition.params.map Param.name)
         (transitionSignature cageTransition).paramTypes I.calldata = some ∅ :=
     vowDecode_cage hsz
   refine vowCageBodyToMinHeal

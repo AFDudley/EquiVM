@@ -135,8 +135,10 @@ def externalABI : ExternalCallABI where
 
 def config : Config :=
   { storageBackend := storageBackend
-    externalABI := externalABI
-    abiDecodeMode := .solc0815
+    -- Only calldata needs the 0.8.15 deferred address-array decoder. Explicit `abi.decode`
+    -- keeps the modern decoder, and named external returns keep `externalABI.decode?`.
+    externalABI := { externalABI with
+      decodeCalldata? := ABI.decodeCalldataWithMode .solc0815 }
     selfDeployment := genSolidityConstructorDeployment contract.ctor.params }
 
 end Benchmarks.CompoundIII.Comet

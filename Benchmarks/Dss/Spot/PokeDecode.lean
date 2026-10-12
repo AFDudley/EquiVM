@@ -6,7 +6,7 @@ open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.Dss.Spot
 
 theorem spotDecode_poke_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (pokeTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (pokeTransition.params.map Param.name)
       (transitionSignature pokeTransition).paramTypes I.calldata = some (pokeLocals I) := by
   simpa [config, pokeTransition, pokeLocals, pokeIlkValue, pokeIlkBytes, bytes32, bytes32Width]
     using
@@ -15,7 +15,7 @@ theorem spotDecode_poke_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
 
 theorem spotDecode_poke_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (pokeTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (pokeTransition.params.map Param.name)
       (transitionSignature pokeTransition).paramTypes I.calldata = none := by
   simpa [config, pokeTransition, bytes32, bytes32Width] using
     (Reasoning.Theory.decodeCalldataWithMode_legacyBytes32_none_short
