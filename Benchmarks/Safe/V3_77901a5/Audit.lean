@@ -215,7 +215,7 @@ def cases : List Case := Id.run do
     for t in [setguardTransition, setmoduleguardTransition] do
       cases := cases ++ [caseFor s!"{t.name}/return={Ethereum.toHex out}" t [addressValue 24576]
         configuredSlots [(24576, returning out)] 4096]
-  -- ERC-1271 typed bytes4 decoding: a canonical word is required, trailing words are allowed.
+  -- ERC-1271 validation requires exactly one padded magic word and a successful call.
   let sig := wordBytes 24576 ++ wordBytes 65 ++ ⟨#[0]⟩ ++ wordBytes 3 ++ ⟨#[1, 2, 3]⟩
   let sigSlots := configuredSlots ++ [(ownerSlot 24576, UInt256.ofNat 1)]
   for out in [wordBytes (0x1626ba7e * 2 ^ 224), wordBytes 0, ⟨#[0x16, 0x26, 0xba, 0x7e]⟩,
@@ -225,8 +225,7 @@ def cases : List Case := Id.run do
       cases := cases ++ [caseFor s!"signature/1271/{Ethereum.toHex out}/{reverts}"
         checksignaturesAddressBytes32BytesTransition [addressValue 8192, hashValue 0, .bytes sig]
         sigSlots [(24576, returning out reverts)] 8192
-        (some (if !reverts && (out == wordBytes (0x1626ba7e * 2 ^ 224) ||
-          out == wordBytes (0x1626ba7e * 2 ^ 224) ++ wordBytes 0)
+        (some (if !reverts && out == wordBytes (0x1626ba7e * 2 ^ 224)
           then "success" else "revert"))]
   for n in [0, 1, 2, 3, 27, 28, 31, 32, 255] do
     let sig := wordBytes 8192 ++ wordBytes 0 ++ ⟨#[UInt8.ofNat n]⟩

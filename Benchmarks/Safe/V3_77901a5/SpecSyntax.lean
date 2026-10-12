@@ -187,8 +187,10 @@ def contractSyntax : ContractDecl :=
 
     function validateContractSignature(address owner, bytes32 dataHash, bytes signature)
         internal returns (bool) {
-      var sigResult = owner.isValidSignature{view}(dataHash, signature);
-      return sigResult == bytes4(0x1626ba7e);
+      (bool sigSuccess, bytes memory sigResult) =
+        owner.staticcall(abi.encodeWithSelector(isValidSignature, dataHash, signature));
+      return sigSuccess && (sigResult.length == 32 &&
+        abi.decode(sigResult, (bytes32)) == ${signatureMagic});
     }
 
     function checkContractSignature(address owner, bytes32 dataHash, bytes signatures,

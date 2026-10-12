@@ -113,6 +113,9 @@ def fixedBytes4Lit (a b c d : UInt8) : Expr :=
 
 /-! ## Constants -/
 
+def signatureMagic : Expr :=
+  .fixedBytesLit bytes32Width ([0x16, 0x26, 0xba, 0x7e] ++ List.replicate 28 0)
+
 def domainSeparatorTypehash : Expr :=
   .fixedBytesLit bytes32Width
     [ 0x47, 0xe7, 0x95, 0x34, 0xa2, 0x45, 0x95, 0x2e,
@@ -590,9 +593,14 @@ def validateContractSignatureFunction : FunctionDecl :=
         { name := "signature", ty := bytesTy } ]
     returnType := [boolTy]
     body :=
-      [ .externalCall (.var "owner") "isValidSignature" (.intLit 0)
-          [.var "dataHash", .var "signature"] "sigResult" (perm := false),
-        .return [eqE (.var "sigResult") (fixedBytes4Lit 0x16 0x26 0xba 0x7e)] ] }
+      [ .lowLevelCall (.var "owner") (.intLit 0)
+          (.abiEncodeCall "isValidSignature" [.var "dataHash", .var "signature"])
+          "sigSuccess" "sigResult" false,
+        .return
+          [ andE (.var "sigSuccess")
+              (andE (eqE (localLength "sigResult") (.intLit 32))
+                (eqE (.abiDecode bytes32 (.var "sigResult"))
+                  signatureMagic)) ] ] }
 
 def checkContractSignatureFunction : FunctionDecl :=
   { name := "checkContractSignature"
