@@ -14,20 +14,20 @@
   "source": "Benchmarks/Safe/V3_77901a5/contracts/Safe.sol",
   "artifacts": {
     "runtime.hex": {
-      "file_sha256": "7d0bd9860acadf2430abf739f082349472fa10d0640ab1db189cbfa6b79e1943",
-      "bytes_sha256": "e51422e510f846373daf462911c8e7abd3bee28fb72a12d7da709448adfb893a",
-      "bytes": 11749
+      "file_sha256": "406b84a059e1ba6ec27fbe630072710c3e13745ed9343e3b128a32cbcd4de4b6",
+      "bytes_sha256": "ef9a77c6bb587d69bb3c440dedac219f5d60ceb2b000254740f622e4eda62398",
+      "bytes": 11874
     },
     "creation.hex": {
-      "file_sha256": "e719fb2920ba4421cb43325db3b94bf24a16e33a867fdd2813fddc9b49a5cd34",
-      "bytes_sha256": "ad3aa5dd14da048061551a913f61f20bcb1d87c7d19d5e955038ddaab7a2f286",
-      "bytes": 11782
+      "file_sha256": "4ec4d14f59ce96302ff8b416bd7beaa5e7d1578b4e50f48fb9ac51d1a5fbe78c",
+      "bytes_sha256": "6a6141aa65d2a6f30f29026a2f31e8452895a93f829dd0e57ce3acf5ccf68dfe",
+      "bytes": 11907
     }
   },
   "abi_file_sha256": "40069244550920fc4ecdb4a162f9b45c78b5de06fc7fdcb8f7d4350739bb8682",
-  "sources_manifest_sha256": "38e17cab44f4edb90da7c3f22c17c9ded78df46f913a19bea327351d953ed76a",
-  "spec_sha256": "08604ea1c7410a8dd7ab1536c4f2e16f22f18d9dd263d2fed481cbc2dba1eb6f",
-  "syntax_spec_sha256": "efb200da91dc39e69e4f5de7ed090184fb5bc8a8306c1917d5e3c54bf3ea840c",
+  "sources_manifest_sha256": "613f39d0950d8537c80caf7969f1dc5a0fba72d2c45dcdacf45fcccd294aca7d",
+  "spec_sha256": "18898d8e201347b0e8591e20e6db0bf6f814729c5a2f5cd74516e6b6fe78ed82",
+  "syntax_spec_sha256": "8bf47471507967f83e46a12d3d9cc44b497f5d06b140104baed1d6ec591fa77a",
   "runtime_entrypoint_obligations": 33,
   "selectors": [
     {
@@ -189,7 +189,7 @@
   "storage_layout": {
     "storage": [
       {
-        "astId": 2458,
+        "astId": 2516,
         "contract": "Benchmarks/Safe/V3_77901a5/contracts/Safe.sol:Safe",
         "label": "singleton",
         "offset": 0,
@@ -197,7 +197,7 @@
         "type": "t_address"
       },
       {
-        "astId": 1286,
+        "astId": 1282,
         "contract": "Benchmarks/Safe/V3_77901a5/contracts/Safe.sol:Safe",
         "label": "modules",
         "offset": 0,
@@ -205,7 +205,7 @@
         "type": "t_mapping(t_address,t_address)"
       },
       {
-        "astId": 1899,
+        "astId": 1895,
         "contract": "Benchmarks/Safe/V3_77901a5/contracts/Safe.sol:Safe",
         "label": "owners",
         "offset": 0,
@@ -213,7 +213,7 @@
         "type": "t_mapping(t_address,t_address)"
       },
       {
-        "astId": 1902,
+        "astId": 1898,
         "contract": "Benchmarks/Safe/V3_77901a5/contracts/Safe.sol:Safe",
         "label": "ownerCount",
         "offset": 0,
@@ -221,7 +221,7 @@
         "type": "t_uint256"
       },
       {
-        "astId": 1905,
+        "astId": 1901,
         "contract": "Benchmarks/Safe/V3_77901a5/contracts/Safe.sol:Safe",
         "label": "threshold",
         "offset": 0,
@@ -229,7 +229,7 @@
         "type": "t_uint256"
       },
       {
-        "astId": 76,
+        "astId": 75,
         "contract": "Benchmarks/Safe/V3_77901a5/contracts/Safe.sol:Safe",
         "label": "nonce",
         "offset": 0,
@@ -237,7 +237,7 @@
         "type": "t_uint256"
       },
       {
-        "astId": 79,
+        "astId": 78,
         "contract": "Benchmarks/Safe/V3_77901a5/contracts/Safe.sol:Safe",
         "label": "_deprecatedDomainSeparator",
         "offset": 0,
@@ -245,7 +245,7 @@
         "type": "t_bytes32"
       },
       {
-        "astId": 85,
+        "astId": 84,
         "contract": "Benchmarks/Safe/V3_77901a5/contracts/Safe.sol:Safe",
         "label": "signedMessages",
         "offset": 0,
@@ -253,7 +253,7 @@
         "type": "t_mapping(t_bytes32,t_uint256)"
       },
       {
-        "astId": 93,
+        "astId": 92,
         "contract": "Benchmarks/Safe/V3_77901a5/contracts/Safe.sol:Safe",
         "label": "approvedHashes",
         "offset": 0,
@@ -301,505 +301,516 @@
     }
   },
   "function_entry_points": {
-    "@addOwnerWithThreshold_2048": {
+    "@addOwnerWithThreshold_2044": {
       "entryPoint": 1736,
-      "id": 2048,
+      "id": 2044,
       "parameterSlots": 2,
       "returnSlots": 0
     },
-    "@add_2597": {
-      "entryPoint": 7193,
-      "id": 2597,
+    "@add_2655": {
+      "entryPoint": 7082,
+      "id": 2655,
       "parameterSlots": 2,
       "returnSlots": 1
     },
-    "@approveHash_937": {
+    "@approveHash_933": {
       "entryPoint": 5195,
-      "id": 937,
+      "id": 933,
       "parameterSlots": 1,
       "returnSlots": 0
     },
-    "@changeThreshold_2274": {
+    "@changeThreshold_2270": {
       "entryPoint": 3415,
-      "id": 2274,
+      "id": 2270,
       "parameterSlots": 1,
       "returnSlots": 0
     },
-    "@checkContractSignature_543": {
+    "@checkContractSignature_539": {
       "entryPoint": 6935,
-      "id": 543,
+      "id": 539,
       "parameterSlots": 4,
       "returnSlots": 0
     },
-    "@checkNSignatures_857": {
+    "@checkNSignatures_853": {
       "entryPoint": 1959,
-      "id": 857,
+      "id": 853,
       "parameterSlots": 4,
       "returnSlots": 0
     },
-    "@checkNSignatures_900": {
+    "@checkNSignatures_896": {
       "entryPoint": 1940,
-      "id": 900,
+      "id": 896,
       "parameterSlots": 5,
       "returnSlots": 0
     },
-    "@checkSignatures_574": {
+    "@checkSignatures_570": {
       "entryPoint": 6526,
-      "id": 574,
+      "id": 570,
       "parameterSlots": 3,
       "returnSlots": 0
     },
-    "@checkSignatures_877": {
+    "@checkSignatures_873": {
       "entryPoint": 4272,
-      "id": 877,
+      "id": 873,
       "parameterSlots": 4,
       "returnSlots": 0
     },
-    "@disableModule_1574": {
+    "@disableModule_1570": {
       "entryPoint": 5524,
-      "id": 1574,
+      "id": 1570,
       "parameterSlots": 2,
       "returnSlots": 0
     },
-    "@enableModule_1516": {
+    "@enableModule_1512": {
       "entryPoint": 3168,
-      "id": 1516,
+      "id": 1512,
       "parameterSlots": 1,
       "returnSlots": 0
     },
-    "@execTransactionFromModuleReturnData_1673": {
+    "@execTransactionFromModuleReturnData_1669": {
       "entryPoint": 2970,
-      "id": 1673,
+      "id": 1669,
       "parameterSlots": 4,
       "returnSlots": 2
     },
-    "@execTransactionFromModule_1622": {
+    "@execTransactionFromModule_1618": {
       "entryPoint": 2914,
-      "id": 1622,
+      "id": 1618,
       "parameterSlots": 4,
       "returnSlots": 1
     },
-    "@execTransaction_385": {
+    "@execTransaction_384": {
       "entryPoint": 3533,
-      "id": 385,
+      "id": 384,
       "parameterSlots": 11,
       "returnSlots": 1
     },
-    "@execute_3020": {
-      "entryPoint": 7519,
-      "id": 3020,
+    "@execute_3056": {
+      "entryPoint": 7408,
+      "id": 3056,
       "parameterSlots": 5,
       "returnSlots": 1
     },
-    "@getModulesPaginated_1795": {
+    "@getModulesPaginated_1791": {
       "entryPoint": 4815,
-      "id": 1795,
+      "id": 1791,
       "parameterSlots": 2,
       "returnSlots": 2
     },
-    "@getOwners_2361": {
+    "@getOwners_2357": {
       "entryPoint": 4289,
-      "id": 2361,
+      "id": 2357,
       "parameterSlots": 0,
       "returnSlots": 1
     },
-    "@getStorageAt_2502": {
+    "@getStorageAt_2560": {
       "entryPoint": 3053,
-      "id": 2502,
+      "id": 2560,
       "parameterSlots": 2,
       "returnSlots": 1
     },
-    "@getTransactionHash_981": {
+    "@getTransactionHash_977": {
       "entryPoint": 5311,
-      "id": 981,
+      "id": 977,
       "parameterSlots": 11,
       "returnSlots": 1
     },
-    "@handlePayment_481": {
-      "entryPoint": 7841,
-      "id": 481,
+    "@handlePayment_480": {
+      "entryPoint": 7730,
+      "id": 480,
       "parameterSlots": 5,
       "returnSlots": 1
     },
-    "@internalSetFallbackHandler_1040": {
-      "entryPoint": 8361,
-      "id": 1040,
+    "@internalSetFallbackHandler_1036": {
+      "entryPoint": 8250,
+      "id": 1036,
       "parameterSlots": 1,
       "returnSlots": 0
     },
-    "@isModuleEnabled_1696": {
+    "@isModuleEnabled_1692": {
       "entryPoint": 2802,
-      "id": 1696,
+      "id": 1692,
       "parameterSlots": 1,
       "returnSlots": 1
     },
-    "@isOwner_2309": {
+    "@isOwner_2305": {
       "entryPoint": 2859,
-      "id": 2309,
+      "id": 2305,
       "parameterSlots": 1,
       "returnSlots": 1
     },
-    "@isThisDelegatedAccount_3136": {
-      "entryPoint": 8928,
-      "id": 3136,
+    "@isThisDelegatedAccount_3172": {
+      "entryPoint": 9055,
+      "id": 3172,
       "parameterSlots": 0,
       "returnSlots": 1
     },
-    "@max_2615": {
-      "entryPoint": 7796,
-      "id": 2615,
+    "@max_2673": {
+      "entryPoint": 7685,
+      "id": 2673,
       "parameterSlots": 2,
       "returnSlots": 1
     },
-    "@mul_2551": {
+    "@mul_2609": {
       "entryPoint": 6843,
-      "id": 2551,
+      "id": 2609,
       "parameterSlots": 2,
       "returnSlots": 1
     },
-    "@p256Verify_2383": {
-      "entryPoint": 7219,
-      "id": 2383,
+    "@p256Verify_2379": {
+      "entryPoint": 7108,
+      "id": 2379,
       "parameterSlots": 5,
       "returnSlots": 1
     },
-    "@postModuleExecution_1460": {
-      "entryPoint": 7587,
-      "id": 1460,
+    "@postModuleExecution_1456": {
+      "entryPoint": 7476,
+      "id": 1456,
       "parameterSlots": 3,
       "returnSlots": 0
     },
-    "@preModuleExecution_1421": {
-      "entryPoint": 7283,
-      "id": 1421,
+    "@preModuleExecution_1417": {
+      "entryPoint": 7172,
+      "id": 1417,
       "parameterSlots": 4,
       "returnSlots": 2
     },
-    "@removeOwner_2105": {
+    "@removeOwner_2101": {
       "entryPoint": 6566,
-      "id": 2105,
+      "id": 2101,
       "parameterSlots": 3,
       "returnSlots": 0
     },
-    "@requireCanAddOwner_2217": {
+    "@requireCanAddOwner_2213": {
       "entryPoint": 6783,
-      "id": 2217,
+      "id": 2213,
       "parameterSlots": 1,
       "returnSlots": 0
     },
-    "@requireCanRemoveOwner_2240": {
-      "entryPoint": 8639,
-      "id": 2240,
+    "@requireCanRemoveOwner_2236": {
+      "entryPoint": 8528,
+      "id": 2236,
       "parameterSlots": 2,
       "returnSlots": 0
     },
-    "@requireIsValidOwner_2193": {
-      "entryPoint": 8700,
-      "id": 2193,
+    "@requireIsValidOwner_2189": {
+      "entryPoint": 8589,
+      "id": 2189,
       "parameterSlots": 1,
       "returnSlots": 0
     },
-    "@requireSelfCall_2879": {
+    "@requireSelfCall_2915": {
       "entryPoint": 6757,
-      "id": 2879,
+      "id": 2915,
       "parameterSlots": 0,
       "returnSlots": 0
     },
-    "@revertWithError_3259": {
+    "@revertWithError_3317": {
       "entryPoint": 6898,
-      "id": 3259,
+      "id": 3317,
       "parameterSlots": 1,
       "returnSlots": 0
     },
-    "@setFallbackHandler_1058": {
+    "@setFallbackHandler_1054": {
       "entryPoint": 6455,
-      "id": 1058,
+      "id": 1054,
       "parameterSlots": 1,
       "returnSlots": 0
     },
-    "@setGuard_1187": {
+    "@setGuard_1183": {
       "entryPoint": 5998,
-      "id": 1187,
+      "id": 1183,
       "parameterSlots": 1,
       "returnSlots": 0
     },
-    "@setModuleGuard_1849": {
+    "@setModuleGuard_1845": {
       "entryPoint": 5748,
-      "id": 1849,
+      "id": 1845,
       "parameterSlots": 1,
       "returnSlots": 0
     },
-    "@setupModules_1350": {
-      "entryPoint": 8430,
-      "id": 1350,
+    "@setupModules_1346": {
+      "entryPoint": 8319,
+      "id": 1346,
       "parameterSlots": 2,
       "returnSlots": 0
     },
-    "@setupOwners_2003": {
-      "entryPoint": 8086,
-      "id": 2003,
+    "@setupOwners_1999": {
+      "entryPoint": 7975,
+      "id": 1999,
       "parameterSlots": 2,
       "returnSlots": 0
     },
-    "@setup_168": {
+    "@setup_167": {
       "entryPoint": 4561,
-      "id": 168,
+      "id": 167,
       "parameterSlots": 10,
       "returnSlots": 0
     },
-    "@simulateAndRevert_2513": {
+    "@simulateAndRevert_2571": {
       "entryPoint": 4524,
-      "id": 2513,
+      "id": 2571,
       "parameterSlots": 2,
       "returnSlots": 0
     },
-    "@sub_2572": {
-      "entryPoint": 7818,
-      "id": 2572,
+    "@sub_2630": {
+      "entryPoint": 7707,
+      "id": 2630,
       "parameterSlots": 2,
       "returnSlots": 1
     },
-    "@swapOwner_2159": {
+    "@swapOwner_2155": {
       "entryPoint": 6248,
-      "id": 2159,
+      "id": 2155,
       "parameterSlots": 3,
       "returnSlots": 0
     },
-    "@transferToken_2431": {
-      "entryPoint": 8788,
-      "id": 2431,
+    "@transferToken_2489": {
+      "entryPoint": 8915,
+      "id": 2489,
+      "parameterSlots": 3,
+      "returnSlots": 1
+    },
+    "@validateContractSignature_2462": {
+      "entryPoint": 8677,
+      "id": 2462,
       "parameterSlots": 3,
       "returnSlots": 1
     },
     "abi_decode_address": {
-      "entryPoint": 8969,
+      "entryPoint": 9096,
       "parameterSlots": 1,
       "returnSlots": 1
     },
     "abi_decode_bytes": {
-      "entryPoint": 9115,
+      "entryPoint": 9242,
       "parameterSlots": 2,
       "returnSlots": 1
     },
     "abi_decode_bytes_calldata": {
-      "entryPoint": 9027,
+      "entryPoint": 9154,
       "parameterSlots": 2,
       "returnSlots": 2
     },
     "abi_decode_enum_Operation": {
-      "entryPoint": 9491,
+      "entryPoint": 9618,
       "parameterSlots": 1,
       "returnSlots": 1
     },
     "abi_decode_tuple_t_address": {
-      "entryPoint": 9464,
+      "entryPoint": 9591,
       "parameterSlots": 2,
       "returnSlots": 1
     },
     "abi_decode_tuple_t_addresst_address": {
-      "entryPoint": 10731,
+      "entryPoint": 10868,
       "parameterSlots": 2,
       "returnSlots": 2
     },
     "abi_decode_tuple_t_addresst_addresst_address": {
-      "entryPoint": 10786,
+      "entryPoint": 10923,
       "parameterSlots": 2,
       "returnSlots": 3
     },
     "abi_decode_tuple_t_addresst_addresst_uint256": {
-      "entryPoint": 10942,
+      "entryPoint": 11079,
       "parameterSlots": 2,
       "returnSlots": 3
     },
     "abi_decode_tuple_t_addresst_bytes32t_bytes_memory_ptr": {
-      "entryPoint": 10858,
+      "entryPoint": 10995,
       "parameterSlots": 2,
       "returnSlots": 3
     },
     "abi_decode_tuple_t_addresst_bytes32t_bytes_memory_ptrt_uint256": {
-      "entryPoint": 9372,
+      "entryPoint": 9499,
       "parameterSlots": 2,
       "returnSlots": 4
     },
     "abi_decode_tuple_t_addresst_bytes_memory_ptr": {
-      "entryPoint": 10186,
+      "entryPoint": 10323,
       "parameterSlots": 2,
       "returnSlots": 2
     },
     "abi_decode_tuple_t_addresst_uint256": {
-      "entryPoint": 8985,
+      "entryPoint": 9112,
       "parameterSlots": 2,
       "returnSlots": 2
     },
-    "abi_decode_tuple_t_addresst_uint256t_bytes_calldata_ptrt_enum$_Operation_$2623t_uint256t_uint256t_uint256t_addresst_address_payablet_bytes_memory_ptr": {
-      "entryPoint": 9780,
+    "abi_decode_tuple_t_addresst_uint256t_bytes_calldata_ptrt_enum$_Operation_$2681t_uint256t_uint256t_uint256t_addresst_address_payablet_bytes_memory_ptr": {
+      "entryPoint": 9917,
       "parameterSlots": 2,
       "returnSlots": 11
     },
-    "abi_decode_tuple_t_addresst_uint256t_bytes_calldata_ptrt_enum$_Operation_$2623t_uint256t_uint256t_uint256t_addresst_addresst_uint256": {
-      "entryPoint": 10542,
+    "abi_decode_tuple_t_addresst_uint256t_bytes_calldata_ptrt_enum$_Operation_$2681t_uint256t_uint256t_uint256t_addresst_addresst_uint256": {
+      "entryPoint": 10679,
       "parameterSlots": 2,
       "returnSlots": 11
     },
-    "abi_decode_tuple_t_addresst_uint256t_bytes_memory_ptrt_enum$_Operation_$2623": {
-      "entryPoint": 9505,
+    "abi_decode_tuple_t_addresst_uint256t_bytes_memory_ptrt_enum$_Operation_$2681": {
+      "entryPoint": 9632,
       "parameterSlots": 2,
       "returnSlots": 4
     },
     "abi_decode_tuple_t_array$_t_address_$dyn_calldata_ptrt_uint256t_addresst_bytes_calldata_ptrt_addresst_addresst_uint256t_address_payable": {
-      "entryPoint": 10262,
+      "entryPoint": 10399,
       "parameterSlots": 2,
       "returnSlots": 10
     },
     "abi_decode_tuple_t_bool_fromMemory": {
-      "entryPoint": 11495,
+      "entryPoint": 11632,
       "parameterSlots": 2,
       "returnSlots": 1
     },
     "abi_decode_tuple_t_bytes32": {
-      "entryPoint": 9757,
+      "entryPoint": 9894,
       "parameterSlots": 2,
       "returnSlots": 1
     },
     "abi_decode_tuple_t_bytes32_fromMemory": {
-      "entryPoint": 11713,
+      "entryPoint": 11787,
       "parameterSlots": 2,
       "returnSlots": 1
     },
     "abi_decode_tuple_t_bytes32t_bytes_calldata_ptrt_bytes_memory_ptr": {
-      "entryPoint": 9988,
+      "entryPoint": 10125,
       "parameterSlots": 2,
       "returnSlots": 4
     },
     "abi_decode_tuple_t_bytes32t_bytes_calldata_ptrt_bytes_memory_ptrt_uint256": {
-      "entryPoint": 9252,
+      "entryPoint": 9379,
       "parameterSlots": 2,
       "returnSlots": 5
     },
-    "abi_decode_tuple_t_bytes4_fromMemory": {
-      "entryPoint": 11594,
-      "parameterSlots": 2,
-      "returnSlots": 1
-    },
     "abi_decode_tuple_t_uint256t_uint256": {
-      "entryPoint": 9707,
+      "entryPoint": 9844,
       "parameterSlots": 2,
       "returnSlots": 2
     },
     "abi_encode_array_address_dyn": {
-      "entryPoint": 10101,
+      "entryPoint": 10238,
       "parameterSlots": 2,
       "returnSlots": 1
     },
     "abi_encode_bytes": {
-      "entryPoint": 9606,
+      "entryPoint": 9767,
       "parameterSlots": 2,
       "returnSlots": 1
     },
     "abi_encode_enum_Operation": {
-      "entryPoint": 11087,
+      "entryPoint": 11224,
       "parameterSlots": 2,
       "returnSlots": 0
     },
-    "abi_encode_tuple_t_address_t_uint256_t_bytes_calldata_ptr_t_enum$_Operation_$2623_t_uint256_t_uint256_t_uint256_t_address_t_address_payable_t_bytes_memory_ptr_t_address__to_t_address_t_uint256_t_bytes_memory_ptr_t_uint8_t_uint256_t_uint256_t_uint256_t_address_t_address_payable_t_bytes_memory_ptr_t_address__fromStack_reversed": {
-      "entryPoint": 11119,
+    "abi_encode_tuple_packed_t_bytes_memory_ptr__to_t_bytes_memory_ptr__nonPadded_inplace_fromStack_reversed": {
+      "entryPoint": 11834,
+      "parameterSlots": 2,
+      "returnSlots": 1
+    },
+    "abi_encode_tuple_t_address_t_uint256_t_bytes_calldata_ptr_t_enum$_Operation_$2681_t_uint256_t_uint256_t_uint256_t_address_t_address_payable_t_bytes_memory_ptr_t_address__to_t_address_t_uint256_t_bytes_memory_ptr_t_uint8_t_uint256_t_uint256_t_uint256_t_address_t_address_payable_t_bytes_memory_ptr_t_address__fromStack_reversed": {
+      "entryPoint": 11256,
       "parameterSlots": 13,
       "returnSlots": 1
     },
-    "abi_encode_tuple_t_address_t_uint256_t_bytes_memory_ptr_t_enum$_Operation_$2623_t_address__to_t_address_t_uint256_t_bytes_memory_ptr_t_uint8_t_address__fromStack_reversed": {
-      "entryPoint": 11633,
+    "abi_encode_tuple_t_address_t_uint256_t_bytes_memory_ptr_t_enum$_Operation_$2681_t_address__to_t_address_t_uint256_t_bytes_memory_ptr_t_uint8_t_address__fromStack_reversed": {
+      "entryPoint": 11707,
       "parameterSlots": 6,
       "returnSlots": 1
     },
     "abi_encode_tuple_t_array$_t_address_$dyn_calldata_ptr_t_uint256_t_address_t_address__to_t_array$_t_address_$dyn_memory_ptr_t_uint256_t_address_t_address__fromStack_reversed": {
-      "entryPoint": 11388,
+      "entryPoint": 11525,
       "parameterSlots": 6,
       "returnSlots": 1
     },
     "abi_encode_tuple_t_array$_t_address_$dyn_memory_ptr__to_t_array$_t_address_$dyn_memory_ptr__fromStack_reversed": {
-      "entryPoint": 10168,
+      "entryPoint": 10305,
       "parameterSlots": 2,
       "returnSlots": 1
     },
     "abi_encode_tuple_t_array$_t_address_$dyn_memory_ptr_t_address__to_t_array$_t_address_$dyn_memory_ptr_t_address__fromStack_reversed": {
-      "entryPoint": 10501,
+      "entryPoint": 10638,
       "parameterSlots": 3,
       "returnSlots": 1
     },
     "abi_encode_tuple_t_bool_t_bytes_memory_ptr__to_t_bool_t_bytes_memory_ptr__fromStack_reversed": {
-      "entryPoint": 9673,
+      "entryPoint": 9810,
       "parameterSlots": 3,
       "returnSlots": 1
     },
     "abi_encode_tuple_t_bytes32_t_bytes_memory_ptr__to_t_bytes32_t_bytes_memory_ptr__fromStack_reversed": {
-      "entryPoint": 11570,
+      "entryPoint": 11810,
       "parameterSlots": 3,
       "returnSlots": 1
     },
     "abi_encode_tuple_t_bytes_memory_ptr__to_t_bytes_memory_ptr__fromStack_reversed": {
-      "entryPoint": 9739,
+      "entryPoint": 9876,
       "parameterSlots": 2,
       "returnSlots": 1
     },
     "checked_add_t_uint256": {
-      "entryPoint": 11318,
+      "entryPoint": 11455,
       "parameterSlots": 2,
       "returnSlots": 1
     },
     "checked_div_t_uint256": {
-      "entryPoint": 11337,
+      "entryPoint": 11474,
       "parameterSlots": 2,
       "returnSlots": 1
     },
     "checked_mul_t_uint256": {
-      "entryPoint": 11547,
+      "entryPoint": 11684,
       "parameterSlots": 2,
       "returnSlots": 1
     },
     "checked_sub_t_uint256": {
-      "entryPoint": 11048,
+      "entryPoint": 11185,
       "parameterSlots": 2,
       "returnSlots": 1
     },
+    "copy_memory_to_memory_with_cleanup": {
+      "entryPoint": 9733,
+      "parameterSlots": 3,
+      "returnSlots": 0
+    },
     "decrement_t_uint256": {
-      "entryPoint": 11526,
+      "entryPoint": 11663,
       "parameterSlots": 1,
       "returnSlots": 1
     },
     "increment_t_uint256": {
-      "entryPoint": 11024,
+      "entryPoint": 11161,
       "parameterSlots": 1,
       "returnSlots": 1
     },
     "panic_error_0x11": {
-      "entryPoint": 11004,
+      "entryPoint": 11141,
       "parameterSlots": 0,
       "returnSlots": 0
     },
     "panic_error_0x21": {
-      "entryPoint": 11067,
+      "entryPoint": 11204,
       "parameterSlots": 0,
       "returnSlots": 0
     },
     "panic_error_0x32": {
-      "entryPoint": 11368,
+      "entryPoint": 11505,
       "parameterSlots": 0,
       "returnSlots": 0
     },
     "panic_error_0x41": {
-      "entryPoint": 9095,
+      "entryPoint": 9222,
       "parameterSlots": 0,
       "returnSlots": 0
     },
     "validator_revert_address": {
-      "entryPoint": 8949,
+      "entryPoint": 9076,
       "parameterSlots": 1,
       "returnSlots": 0
     }
   },
-  "runtime_instructions": 7767,
-  "runtime_summarized_instructions": 7747,
-  "runtime_summary_theorems": 1918,
+  "runtime_instructions": 7864,
+  "runtime_summarized_instructions": 7844,
+  "runtime_summary_theorems": 1937,
   "runtime_shards": 51,
   "creation_runtime_offset": 33,
   "creation_summarized_instructions": 24,
@@ -878,25 +889,16 @@
       }
     },
     {
-      "pc": 7102,
-      "opcode": "STATICCALL",
-      "source": {
-        "file": "Benchmarks/Safe/V3_77901a5/contracts/Safe.sol",
-        "line": 295,
-        "text": "ISignatureValidator(owner).isValidSignature(dataHash, contractSignature)"
-      }
-    },
-    {
-      "pc": 7261,
+      "pc": 7150,
       "opcode": "STATICCALL",
       "source": {
         "file": "Benchmarks/Safe/V3_77901a5/contracts/common/EIP7951.sol",
-        "line": 40,
+        "line": 39,
         "text": "staticcall(gas(), 0x100, ptr, 0xa0, 0x00, 0x20)"
       }
     },
     {
-      "pc": 7456,
+      "pc": 7345,
       "opcode": "CALL",
       "source": {
         "file": "Benchmarks/Safe/V3_77901a5/contracts/base/ModuleManager.sol",
@@ -905,7 +907,7 @@
       }
     },
     {
-      "pc": 7556,
+      "pc": 7445,
       "opcode": "DELEGATECALL",
       "source": {
         "file": "Benchmarks/Safe/V3_77901a5/contracts/base/Executor.sol",
@@ -914,7 +916,7 @@
       }
     },
     {
-      "pc": 7575,
+      "pc": 7464,
       "opcode": "CALL",
       "source": {
         "file": "Benchmarks/Safe/V3_77901a5/contracts/base/Executor.sol",
@@ -923,7 +925,7 @@
       }
     },
     {
-      "pc": 7676,
+      "pc": 7565,
       "opcode": "CALL",
       "source": {
         "file": "Benchmarks/Safe/V3_77901a5/contracts/base/ModuleManager.sol",
@@ -932,7 +934,7 @@
       }
     },
     {
-      "pc": 7865,
+      "pc": 7754,
       "opcode": "ORIGIN",
       "source": {
         "file": "Benchmarks/Safe/V3_77901a5/contracts/Safe.sol",
@@ -941,7 +943,7 @@
       }
     },
     {
-      "pc": 7886,
+      "pc": 7775,
       "opcode": "GASPRICE",
       "source": {
         "file": "Benchmarks/Safe/V3_77901a5/contracts/Safe.sol",
@@ -950,7 +952,7 @@
       }
     },
     {
-      "pc": 7893,
+      "pc": 7782,
       "opcode": "GASPRICE",
       "source": {
         "file": "Benchmarks/Safe/V3_77901a5/contracts/Safe.sol",
@@ -959,7 +961,7 @@
       }
     },
     {
-      "pc": 7945,
+      "pc": 7834,
       "opcode": "CALL",
       "source": {
         "file": "Benchmarks/Safe/V3_77901a5/contracts/Safe.sol",
@@ -968,7 +970,16 @@
       }
     },
     {
-      "pc": 8877,
+      "pc": 8796,
+      "opcode": "STATICCALL",
+      "source": {
+        "file": "Benchmarks/Safe/V3_77901a5/contracts/common/SecuredSignatureValidator.sol",
+        "line": 22,
+        "text": "owner.staticcall(data)"
+      }
+    },
+    {
+      "pc": 9004,
       "opcode": "CALL",
       "source": {
         "file": "Benchmarks/Safe/V3_77901a5/contracts/common/SecuredTokenTransfer.sol",
@@ -977,7 +988,7 @@
       }
     },
     {
-      "pc": 8935,
+      "pc": 9062,
       "opcode": "EXTCODECOPY",
       "source": {
         "file": "Benchmarks/Safe/V3_77901a5/contracts/common/EIP7702.sol",
@@ -1123,7 +1134,7 @@
       }
     },
     {
-      "pc": 7744,
+      "pc": 7633,
       "opcode": "LOG2",
       "source": {
         "file": "Benchmarks/Safe/V3_77901a5/contracts/base/ModuleManager.sol",
@@ -1132,7 +1143,7 @@
       }
     },
     {
-      "pc": 7791,
+      "pc": 7680,
       "opcode": "LOG2",
       "source": {
         "file": "Benchmarks/Safe/V3_77901a5/contracts/base/ModuleManager.sol",

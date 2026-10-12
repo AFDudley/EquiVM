@@ -1,12 +1,12 @@
 # Safe Benchmark
 
-Source: [`contracts/Safe.sol`](contracts/Safe.sol) from `safe-fndn/safe-smart-account` commit `0e91d99ea35f2ec650dd7cb3795f78eeacec7985`.
+Source: [`contracts/Safe.sol`](contracts/Safe.sol) from `safe-fndn/safe-smart-account` commit `77901a5a1ad835b74ad3b72f73a8412cfe491c57`.
 
 Compiled with Solidity 0.8.35 and optimizer enabled, from the repository root:
 
 ```bash
 solc --optimize --optimize-runs 200 --evm-version shanghai --metadata-hash none --bin --bin-runtime --abi --storage-layout \
-  --base-path . --overwrite -o /tmp/safe-v2-build Benchmarks/Safe/V3_77901a5/contracts/Safe.sol
+  --base-path . --overwrite -o /tmp/safe-v3-build Benchmarks/Safe/V3_77901a5/contracts/Safe.sol
 ```
 
 Pinned compiler: `0.8.35+commit.47b9dedd.Linux.g++`, sha256
@@ -22,8 +22,8 @@ artifact provenance for this benchmark.
 
 Artifacts:
 
-- `creation.hex`: optimized creation bytecode, 11782 bytes, sha256 `e719fb2920ba4421cb43325db3b94bf24a16e33a867fdd2813fddc9b49a5cd34`
-- `runtime.hex`: optimized deployed runtime bytecode, 11749 bytes, sha256 `7d0bd9860acadf2430abf739f082349472fa10d0640ab1db189cbfa6b79e1943`
+- `creation.hex`: optimized creation bytecode, 11907 bytes, sha256 `4ec4d14f59ce96302ff8b416bd7beaa5e7d1578b4e50f48fb9ac51d1a5fbe78c`
+- `runtime.hex`: optimized deployed runtime bytecode, 11874 bytes, sha256 `406b84a059e1ba6ec27fbe630072710c3e13745ed9343e3b128a32cbcd4de4b6`
 - `Safe.abi.json`: ABI emitted by solc, sha256 `40069244550920fc4ecdb4a162f9b45c78b5de06fc7fdcb8f7d4350739bb8682`
 - `sources.sha256`: sha256 manifest for the vendored Solidity source tree
 - `Spec.lean`: Solm AST with ABI surface, solc 0.8.35 decoding, and physical storage layout
@@ -38,7 +38,7 @@ Artifacts:
 - `Audit.lean`, `AuditSupport.lean`: differential regressions against the actual EVM interpreter
 - `AuditManifest.json`: reproducible compiler, ABI, storage, instruction, event, and boundary inventory
 
-Main source sha256: `fb2768bfc940795ba403cc861177ff6abf62733933b573b41ab9233766719244`.
+Main source sha256: `9f91d9250e18bb0710b7b1f10dcbe2417e9ef8d22eeee98dba2ef48661a060fa`.
 
 ## Semantic audit
 
