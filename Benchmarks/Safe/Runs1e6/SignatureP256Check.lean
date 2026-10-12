@@ -14,19 +14,19 @@ namespace Benchmarks.Safe.Runs1e6
 set_option maxRecDepth 100000
 
 theorem safeSignatureP256Reject {I g s0 σ k C aw mem rdata} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨2365⟩ (⟨1⟩ :: R) mem aw rdata σ k C)
+    (h : RD safeBytecode I g s0 ⟨2611⟩ (⟨1⟩ :: R) mem aw rdata σ k C)
     (hov : R.length + 6 ≤ 1024) : RDrev safeBytecode g s0 := by
-  have h₁ := safeRuntime_block_2365_fallthrough (by omega) (by decide) h
-  have h₂ := safeRuntime_block_2371
-    (by simp only [safeRuntime_block_2365_fallthrough_stack]; omega) (by jump_dest) h₁
-  exact safeRuntime_block_6898 (by
-    simp only [safeRuntime_block_2371_stack, safeRuntime_block_2365_fallthrough_stack,
+  have h₁ := safeRuntime_block_2611_fallthrough (by omega) (by decide) h
+  have h₂ := safeRuntime_block_2617
+    (by simp only [safeRuntime_block_2611_fallthrough_stack]; omega) (by jump_dest) h₁
+  exact safeRuntime_block_8421 (by
+    simp only [safeRuntime_block_2617_stack, safeRuntime_block_2611_fallthrough_stack,
       List.length_cons]; omega) h₂
 
 theorem safeSignatureP256Check (p : SignatureInput) (evm : EVM.State)
     {I g s0 σ k C aw mem rdata ptr src} {i off oldR v owner last : UInt256}
     {R : List UInt256} {f : Frame}
-    (h : RD safeBytecode I g s0 ⟨2293⟩
+    (h : RD safeBytecode I g s0 ⟨2526⟩
       (i :: off :: oldR :: v :: owner :: last :: p.required :: UInt256.ofNat src :: p.hash :: R)
       mem aw rdata σ k C)
     (hc : SignatureCore p f) (hoff : f.locals["p256Offset"]? = some (uint256Value off))
@@ -42,7 +42,7 @@ theorem safeSignatureP256Check (p : SignatureInput) (evm : EVM.State)
         (.ok (signatureSet (signatureP256SignerFrame f (signatureP256Input p off))
           "p256Ok" (.bool true)) evm') ∧
       evm'.executionEnv = I ∧ evm'.accountMap = σ' ∧ evm'.σ₀ = s0.σ₀ ∧
-      RD safeBytecode I g s0 ⟨2679⟩
+      RD safeBytecode I g s0 ⟨2949⟩
         (i :: (signatureP256Input p off).s :: (signatureP256Input p off).r :: v :: owner :: last ::
           p.required :: UInt256.ofNat src :: p.hash :: R) mem' aw' out σ' k' C' ∧
       BytesMemory mem' src p.signatures ∧ memLoad ⟨64⟩ mem' = UInt256.ofNat ptr ∧
@@ -60,9 +60,9 @@ theorem safeSignatureP256Check (p : SignatureInput) (evm : EVM.State)
       apply u256_eq_of_ne
       rw [u256_land_comm]
       exact Ne.symm hv
-    have h₁ := safeRuntime_block_2293_taken (by simp; omega)
-      (by rw [safeAddressMask, hh, heq]; decide) (by jump_dest) h
-    simp only [safeRuntime_block_2293_taken_stack, safeAddressMask, hh, heq] at h₁
+    have h₁ := safeRuntime_block_2526_taken (by simp; omega)
+      (by rw [safeAddressMaskLiteral, hh, heq]; decide) (by jump_dest) h
+    simp only [safeRuntime_block_2526_taken_stack, safeAddressMaskLiteral, hh, heq] at h₁
     exact .inl ⟨safeSignatureP256Reject h₁ (by simp; omega),
       signatureP256SourceSignerFailed hc hoff ho hbound hv⟩
   have heq : UInt256.eq
@@ -70,17 +70,18 @@ theorem safeSignatureP256Check (p : SignatureInput) (evm : EVM.State)
       (UInt256.land solcAddrMask owner) = ⟨1⟩ := by
     rw [u256_land_comm, ← hv]
     exact uInt256_eq_self _
-  have h₁ := safeRuntime_block_2293_fallthrough (by simp; omega)
-    (by rw [safeAddressMask, hh, heq]; decide) h
-  simp only [safeRuntime_block_2293_fallthrough_stack, safeAddressMask, hh, heq, hr, hs, hx, hy]
+  have h₁ := safeRuntime_block_2526_fallthrough (by simp; omega)
+    (by rw [safeAddressMaskLiteral, hh, heq]; decide) h
+  simp only [safeRuntime_block_2526_fallthrough_stack, safeAddressMaskLiteral,
+    hh, heq, hr, hs, hx, hy]
     at h₁
-  have h₂ := safeRuntime_block_2350 (by omega) (by jump_dest) h₁
+  have h₂ := safeRuntime_block_2596 (by omega) (by jump_dest) h₁
   obtain ⟨evm', σ', z, out, aw', k', C', hcall, he, hac, hw, h₃⟩ :=
     safeP256Trace (p := signatureP256Input p off) evm h₂ hee hacc hworld hf hb
       (by simp; omega) (by jump_dest)
   have hsource := signatureP256SourceVerified hc hoff ho hbound hv hcall
-  have h₄ := safeRuntime_block_2363 (by simp; omega) h₃
-  simp only [safeRuntime_block_2363_stack] at h₄
+  have h₄ := safeRuntime_block_2609 (by simp; omega) h₃
+  simp only [safeRuntime_block_2609_stack] at h₄
   cases hzout : p256Result z out with
   | false =>
       rw [hzout] at h₄
@@ -88,8 +89,8 @@ theorem safeSignatureP256Check (p : SignatureInput) (evm : EVM.State)
         simpa only [hzout, Bool.false_eq_true, if_false] using hsource⟩
   | true =>
       rw [hzout] at h₄
-      have h₅ := safeRuntime_block_2365_taken (by simp; omega) (by decide) (by jump_dest) h₄
-      obtain ⟨aw'', k'', C'', h₆⟩ := safeRuntime_block_2387_packed (by simp; omega)
+      have h₅ := safeRuntime_block_2611_taken (by simp; omega) (by decide) (by jump_dest) h₄
+      obtain ⟨aw'', k'', C'', h₆⟩ := safeRuntime_block_2657_packed (by simp; omega)
         (by jump_dest) h₅
       refine .inr ⟨evm', σ', _, aw'', out, k'', C'', ?_, he, hac, hw, h₆, ?_, ?_, ?_, ?_, ?_⟩
       · simpa only [hzout, if_true] using hsource

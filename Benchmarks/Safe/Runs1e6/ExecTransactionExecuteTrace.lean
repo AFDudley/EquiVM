@@ -22,7 +22,7 @@ set_option maxRecDepth 100000 in
 theorem safeExecTransactionExecute (p : ExecTransactionInput) (evm : EVM.State)
     {I g s0 σ k C aw mem rdata src ptr locals} {sigPtr guard hash : UInt256}
     {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨3830⟩ (execGuardSaved p src sigPtr guard hash R)
+    (h : RD safeBytecode I g s0 ⟨4513⟩ (execGuardSaved p src sigPtr guard hash R)
       mem aw rdata σ k C)
     (hee : evm.executionEnv = I) (hacc : evm.accountMap = σ) (hworld : evm.σ₀ = s0.σ₀)
     (hl : ExecTransactionLocals p locals)
@@ -41,7 +41,7 @@ theorem safeExecTransactionExecute (p : ExecTransactionInput) (evm : EVM.State)
         ExecBlock config { contract := contract, locals := locals } evm
           (exectransactionTransition.body.drop 10) result) ∧
       evm'.executionEnv = I ∧ evm'.accountMap = σ' ∧ evm'.σ₀ = s0.σ₀ ∧
-      RD safeBytecode I g s0 ⟨3940⟩
+      RD safeBytecode I g s0 ⟨4623⟩
         (z.toUInt256 :: before :: execGuardSaved p src sigPtr guard hash R)
         (execDataMemory p I.calldata mem src ptr) aw' out σ' k' C' ∧
       out.size < UInt256.size := by

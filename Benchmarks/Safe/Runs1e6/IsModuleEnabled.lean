@@ -2,7 +2,7 @@ import Benchmarks.Safe.Runs1e6.Dispatch
 import Benchmarks.Safe.Runs1e6.ModuleMembership
 import Benchmarks.Safe.Runs1e6.Routines
 import Benchmarks.Safe.Runs1e6.Blocks.Runtime_006
-import Benchmarks.Safe.Runs1e6.Blocks.Runtime_017
+import Benchmarks.Safe.Runs1e6.Blocks.Runtime_007
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -42,7 +42,7 @@ theorem safeIsModuleEnabledSource (evm : EVM.State) (key : UInt256)
 
 set_option maxRecDepth 100000 in
 theorem safeIsModuleEnabledTrace {I g s0 σ k C} {key : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨2802⟩ (key :: ⟨759⟩ :: R) solcFreePtrMem
+    (h : RD safeBytecode I g s0 ⟨3148⟩ (key :: ⟨759⟩ :: R) solcFreePtrMem
       (UInt256.ofNat 3) ByteArray.empty σ k C)
     (hov : R.length + 7 ≤ 1024) (hcanon : key.toNat < EVM.addressModulus) :
     RDret safeBytecode g s0 σ (addressMembership key

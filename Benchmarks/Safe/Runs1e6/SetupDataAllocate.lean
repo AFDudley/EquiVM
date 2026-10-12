@@ -10,13 +10,13 @@ namespace Benchmarks.Safe.Runs1e6
 
 set_option maxRecDepth 100000 in
 theorem safeSetupModulesAllocate {I g s0 σ k C aw mem rdata n len ptr} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨4719⟩ (setupDecodedStack I.calldata n len R)
+    (h : RD safeBytecode I g s0 ⟨5519⟩ (setupDecodedStack I.calldata n len R)
       mem aw rdata σ k C)
     (hb : SetupCalldataBounds I.calldata n len)
     (hf : memLoad (UInt256.ofNat 64) mem = UInt256.ofNat ptr)
     (hp : ptr + 64 + len < UInt256.size) (hov : R.length + 24 ≤ 1024) :
-    ∃ aw' k' C', RD safeBytecode I g s0 ⟨8319⟩
-      (UInt256.ofNat ptr :: calldataWord I.calldata 68 :: ⟨4782⟩ ::
+    ∃ aw' k' C', RD safeBytecode I g s0 ⟨10399⟩
+      (UInt256.ofNat ptr :: calldataWord I.calldata 68 :: ⟨5582⟩ ::
         setupDecodedStack I.calldata n len R)
       (calldataBufferMemory I.calldata mem (setupDataStart I.calldata) ptr len len
         (ptr + 32 + ABI.paddedSize len)) aw' rdata σ k' C' := by
@@ -34,8 +34,8 @@ theorem safeSetupModulesAllocate {I g s0 σ k C aw mem rdata n len ptr} {R : Lis
   have htail : ((UInt256.ofNat 32 + UInt256.ofNat ptr) + UInt256.ofNat len).toNat =
       ptr + 32 + len := by
     rw [uadd_toNat, hstart, ulit_toNat' len (by omega), Nat.mod_eq_of_lt (by omega)]
-  obtain ⟨aw', k', C', h₁⟩ := safeRuntime_block_4719_packed (by simp; omega) (by jump_dest) h
-  simp only [safeRuntime_block_4719_stack, safeRuntime_block_4719_memory, hf,
+  obtain ⟨aw', k', C', h₁⟩ := safeRuntime_block_5519_packed (by simp; omega) (by jump_dest) h
+  simp only [safeRuntime_block_5519_stack, safeRuntime_block_5519_memory, hf,
     roundedCalldataLength len (by omega), hend, hstart, htail,
     ulit_toNat' ptr (by omega), ulit_toNat' len (by omega),
     ulit_toNat' (setupDataStart I.calldata) hsrc] at h₁

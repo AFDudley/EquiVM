@@ -4,7 +4,6 @@ import Benchmarks.Safe.Runs1e6.ModuleReturnDataMemory
 import Benchmarks.Safe.Runs1e6.ExecuteRawTrace
 import Benchmarks.Safe.Runs1e6.PostModuleTrace
 import Benchmarks.Safe.Runs1e6.BoolBytesReturn
-import Benchmarks.Safe.Runs1e6.Blocks.Runtime_017
 import Benchmarks.Safe.Runs1e6.Blocks.Runtime_018
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
@@ -16,7 +15,7 @@ set_option maxRecDepth 100000 in
 set_option maxHeartbeats 1000000 in
 theorem safeModuleReturnDataTrace (evm : EVM.State) (payload : ByteArray)
     {I g s0 σ k C aw rdata} {target value operation : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨2970⟩
+    (h : RD safeBytecode I g s0 ⟨3399⟩
       (operation :: ⟨128⟩ :: value :: target :: ⟨873⟩ :: R)
       (memoryBytesDecoded payload) aw rdata σ k C)
     (hee : evm.executionEnv = I) (hacc : evm.accountMap = σ) (hworld : evm.σ₀ = s0.σ₀)
@@ -37,7 +36,7 @@ theorem safeModuleReturnDataTrace (evm : EVM.State) (payload : ByteArray)
         (.returned frame evm' (some [.bool z, .bytes out])) ∧
       evm'.executionEnv = I ∧ evm'.accountMap = σ' ∧ evm'.σ₀ = s0.σ₀ ∧
       RDret safeBytecode g s0 σ' (boolBytesReturnBytes z out) := by
-  have h₁ := safeRuntime_block_2970 (by simp; omega) (by jump_dest) h
+  have h₁ := safeRuntime_block_3399 (by simp; omega) (by jump_dest) h
   rcases safeModulePreDecodedTrace evm payload h₁ hee hacc hworld hn ho
     (by simp; omega) (by jump_dest) with
     ⟨hr, hs⟩ | ⟨preFrame, evm₁, σ₁, mem₁, aw₁, out₁, hash, k₁, C₁,
@@ -48,7 +47,7 @@ theorem safeModuleReturnDataTrace (evm : EVM.State) (payload : ByteArray)
     at hmem
   obtain ⟨hl, hd⟩ := modulePreMemoryData hn hmem
   obtain ⟨ptr, hf, hm, hp, hb⟩ := modulePreMemoryFree hn hmem
-  have h₃ := safeRuntime_block_2987 (by simp; omega) (by jump_dest) h₂
+  have h₃ := safeRuntime_block_3416 (by simp; omega) (by jump_dest) h₂
   have hdata : mem₁.readWithPadding ((⟨128⟩ : UInt256) + UInt256.ofNat 32).toNat
       (memLoad ⟨128⟩ mem₁).toNat = payload := by
     rw [hl, ulit_toNat' _ (by change _ < 2 ^ 256; omega)]
@@ -76,11 +75,11 @@ theorem safeModuleReturnDataTrace (evm : EVM.State) (payload : ByteArray)
   have hfree : memLoad ⟨64⟩ copied = UInt256.ofNat dst := moduleReturnDataMemory_free _ _ _ hp
   have hbool : (if z then (⟨1⟩ : UInt256) else ⟨0⟩) = z.toUInt256 := by cases z <;> rfl
   rw [hbool] at h₄
-  have h₅ := safeRuntime_block_3005 (by simp; omega)
+  have h₅ := safeRuntime_block_3465 (by simp; omega)
     (by rw [ulit_toNat' _ hout₂]; change 0 + out₂.size ≤ out₂.size; omega) (by jump_dest) h₄
   rw [safeModuleReturnDataMemory hf (by change dst < 2 ^ 256; omega)] at h₅
   change memLoad (UInt256.ofNat 64) mem₁ = ptr at hf
-  simp only [safeRuntime_block_3005_stack, hf] at h₅
+  simp only [safeRuntime_block_3465_stack, hf] at h₅
   rcases safePostModuleTrace z evm₂ h₅ he₂ ha₂ hw₂ hfree
     (by rw [hcopied]; omega) (by rw [hdstNat]; dsimp [dst]; omega)
     (by rw [hdstNat]; change dst + 68 < 2 ^ 256; omega)
@@ -93,7 +92,7 @@ theorem safeModuleReturnDataTrace (evm : EVM.State) (payload : ByteArray)
   · exact Or.inr (Or.inl ⟨hr, .execBlockStatic (safeModuleChecks hv hn ho
       (.consNormal (safeModulePreCall hpre) (.consNormal hexe
         (.consStatic (safeModuleReturnDataPost hs)))))⟩)
-  have h₇ := safeRuntime_block_3042 (by simp; omega) (by jump_dest) h₆
+  have h₇ := safeRuntime_block_3502 (by simp; omega) (by jump_dest) h₆
   have hf₃ : memLoad ⟨64⟩ mem₃ = UInt256.ofNat dst := by
     rcases hmem₃ with rfl | rfl
     · exact hfree

@@ -9,7 +9,7 @@ namespace Benchmarks.Safe.Runs1e6
 set_option maxRecDepth 100000 in
 theorem safeDecodeSetupValid {I g s0 σ k C aw mem rdata n len} {ret : UInt256}
     {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨10399⟩
+    (h : RD safeBytecode I g s0 ⟨13025⟩
       (⟨4⟩ :: UInt256.ofNat I.calldata.size :: ret :: R) mem aw rdata σ k C)
     (hb : SetupCalldataBounds I.calldata n len)
     (hov : R.length + 24 ≤ 1024) (hret : (D_J safeBytecode 0).contains ret = true) :
@@ -37,7 +37,7 @@ theorem safeDecodeSetupValid {I g s0 σ k C aw mem rdata n len} {ret : UInt256}
 set_option maxRecDepth 100000 in
 theorem safeDecodeSetupEvidence {I g s0 σ k C aw mem rdata} {ret : UInt256}
     {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨10399⟩
+    (h : RD safeBytecode I g s0 ⟨13025⟩
       (⟨4⟩ :: UInt256.ofNat I.calldata.size :: ret :: R) mem aw rdata σ k C)
     (hlong : 4 ≤ I.calldata.size) (hsize : I.calldata.size < UInt256.size)
     (hov : R.length + 24 ≤ 1024) (hret : (D_J safeBytecode 0).contains ret = true) :

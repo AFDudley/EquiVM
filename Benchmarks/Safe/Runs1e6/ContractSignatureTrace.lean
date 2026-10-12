@@ -9,7 +9,7 @@ namespace Benchmarks.Safe.Runs1e6
 theorem safeContractSignatureTrace (words : List UInt256)
     {I g s0 σ k C aw mem rdata ptr src} {signature : ByteArray}
     {hash owner ret : UInt256} {R : List UInt256} (evm : EVM.State)
-    (h : RD safeBytecode I g s0 ⟨8677⟩
+    (h : RD safeBytecode I g s0 ⟨11010⟩
       (UInt256.ofNat src :: hash :: owner :: ret :: R) mem aw rdata σ k C)
     (hee : evm.executionEnv = I) (hacc : evm.accountMap = σ) (hworld : evm.σ₀ = s0.σ₀)
     (hf : memLoad ⟨64⟩ mem = UInt256.ofNat ptr) (hz : memLoad ⟨96⟩ mem = ⟨0⟩)

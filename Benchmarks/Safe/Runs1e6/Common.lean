@@ -10,6 +10,14 @@ open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.Runs1e6
 
+theorem safeRoundMaskLiteral :
+    UInt256.ofNat 115792089237316195423570985008687907853269984665640564039457584007913129639904 =
+      UInt256.lnot (UInt256.ofNat 31) := rfl
+
+theorem safeAddressComplementLiteral :
+    UInt256.ofNat 115792089237316195423570985007226406215939081747436879206741300988257197096960 =
+      UInt256.lnot solcAddrMask := rfl
+
 abbrev selIs (I : ExecutionEnv) (sel : ByteArray) : Prop :=
   (sel == I.calldata.extract 0 4) = true
 

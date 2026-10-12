@@ -1,4 +1,5 @@
 import Benchmarks.Safe.Runs1e6.ExecTransactionGasUsed
+import Benchmarks.Safe.Runs1e6.Blocks.Runtime_021
 import Benchmarks.Safe.Runs1e6.Blocks.Runtime_022
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
@@ -10,7 +11,7 @@ def execEventStmt : Stmt :=
   .ite (.var "success") [.emit "ExecutionSuccess" [.var "txHash", .var "payment"]]
     [.emit "ExecutionFailure" [.var "txHash", .var "payment"]]
 
-def execEventLogPC (z : Bool) : UInt256 := if z then ⟨4072⟩ else ⟨4135⟩
+def execEventLogPC (z : Bool) : UInt256 := if z then ⟨4755⟩ else ⟨4818⟩
 
 def execEventTopic (z : Bool) : UInt256 :=
   if z then ⟨30839331137535485569665531618491634834793013124148307919264258885536190059886⟩
@@ -47,7 +48,7 @@ set_option maxRecDepth 100000 in
 theorem safeExecEventPrepare (p : ExecTransactionInput)
     {I g s0 σ k C aw mem rdata src} {sigPtr guard hash used paid : UInt256}
     {z : Bool} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨4016⟩
+    (h : RD safeBytecode I g s0 ⟨4699⟩
       (paid :: used :: execResultSaved p src sigPtr guard hash z R) mem aw rdata σ k C)
     (hov : R.length + 22 ≤ 1024) :
     ∃ aw' k' C', RD safeBytecode I g s0 (execEventLogPC z)
@@ -55,12 +56,12 @@ theorem safeExecEventPrepare (p : ExecTransactionInput)
         execResultSaved p src sigPtr guard hash z R)
       (writeWord mem (memLoad ⟨64⟩ mem).toNat paid) aw' rdata σ k' C' := by
   cases z
-  · have h₁ := safeRuntime_block_4016_taken (by simp [execResultSaved]; omega)
+  · have h₁ := safeRuntime_block_4699_taken (by simp [execResultSaved]; omega)
       (by decide) (by jump_dest) h
-    exact safeRuntime_block_4085_packed (by simp [execResultSaved]; omega) (by jump_dest) h₁
-  · have h₁ := safeRuntime_block_4016_fallthrough (by simp [execResultSaved]; omega)
+    exact safeRuntime_block_4768_packed (by simp [execResultSaved]; omega) (by jump_dest) h₁
+  · have h₁ := safeRuntime_block_4699_fallthrough (by simp [execResultSaved]; omega)
       (by decide) h
-    exact safeRuntime_block_4023_packed (by simp [execResultSaved]; omega) (by jump_dest) h₁
+    exact safeRuntime_block_4706_packed (by simp [execResultSaved]; omega) (by jump_dest) h₁
 
 set_option maxRecDepth 100000 in
 theorem safeExecEventLog {I g s0 σ k C aw mem rdata finish topic hash}
@@ -68,10 +69,10 @@ theorem safeExecEventLog {I g s0 σ k C aw mem rdata finish topic hash}
     (h : RD safeBytecode I g s0 (execEventLogPC z) (finish :: topic :: hash :: R)
       mem aw rdata σ k C)
     (hov : R.length + 5 ≤ 1024) (hp : I.perm = true) :
-    ∃ aw' k' C', RD safeBytecode I g s0 ⟨4144⟩ R mem aw' rdata σ k' C' := by
+    ∃ aw' k' C', RD safeBytecode I g s0 ⟨4827⟩ R mem aw' rdata σ k' C' := by
   cases z
-  · exact safeRuntime_block_4135_packed hov hp h
-  · exact safeRuntime_block_4072_packed hov hp (by jump_dest) h
+  · exact safeRuntime_block_4818_packed hov hp h
+  · exact safeRuntime_block_4755_packed hov hp (by jump_dest) h
 
 set_option maxRecDepth 100000 in
 theorem safeExecEventLogStatic {I g s0 σ k C aw mem rdata finish topic hash}

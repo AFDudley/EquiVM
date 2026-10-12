@@ -17,7 +17,7 @@ theorem contractSignatureArgs_free {mem : ByteArray} {ptr len : Nat} {hash : UIn
 set_option maxRecDepth 100000 in
 theorem safeContractSignatureArgs (words : List UInt256)
     {I g s0 σ k C aw mem rdata ptr src len} {hash owner ret : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨8677⟩
+    (h : RD safeBytecode I g s0 ⟨11010⟩
       (UInt256.ofNat src :: hash :: owner :: ret :: R) mem aw rdata σ k C)
     (hf : memLoad ⟨64⟩ mem = UInt256.ofNat ptr)
     (hl : memLoad (UInt256.ofNat src) mem = UInt256.ofNat len)
@@ -25,7 +25,7 @@ theorem safeContractSignatureArgs (words : List UInt256)
     (hin : src + 32 + 32 * words.length ≤ mem.size)
     (ha : src + 32 + 32 * words.length ≤ ptr + 36)
     (hb : ptr + 164 + 32 * words.length < UInt256.size) (hov : R.length + 26 ≤ 1024) :
-    ∃ aw' k' C', RD safeBytecode I g s0 ⟨8706⟩
+    ∃ aw' k' C', RD safeBytecode I g s0 ⟨11039⟩
       (UInt256.ofNat (contractSignatureCallEnd ptr len) :: signatureMagicWord :: ⟨0⟩ ::
         ⟨0⟩ :: UInt256.ofNat src :: hash :: owner :: ret :: R)
       (wordBytesArgsMemory mem (ptr + 36) len hash words) aw' rdata σ k' C' := by
@@ -34,9 +34,9 @@ theorem safeContractSignatureArgs (words : List UInt256)
     rw [ulit_toNat' _ (by omega)]
     exact (uadd_ofNat_toNat (a := 36) (b := ptr) (by decide) (by omega) (by omega)).trans
       (by omega)
-  have h₁ := safeRuntime_block_8677 (by simp; omega) (by jump_dest) h
+  have h₁ := safeRuntime_block_11010 (by simp; omega) (by jump_dest) h
   change memLoad (UInt256.ofNat 64) mem = UInt256.ofNat ptr at hf
-  simp only [safeRuntime_block_8677_stack, hf, hadd] at h₁
+  simp only [safeRuntime_block_11010_stack, hf, hadd] at h₁
   obtain ⟨aw', k', C', h₂⟩ := safeWordBytesEncode words h₁ hl hw hn hin (by omega)
     (by omega) (by simp; omega) (by jump_dest)
   have he : ptr + 36 + 96 + 32 * words.length = contractSignatureCallEnd ptr len := by
@@ -50,7 +50,7 @@ theorem safeContractSignatureEncodedMemory {mem : ByteArray} {ptr len : Nat} {ha
     {words : List UInt256} (hf : memLoad ⟨64⟩ mem = UInt256.ofNat ptr)
     (hm : 96 ≤ mem.size) (hp : 96 ≤ ptr) (hn : words.length = (len + 31) / 32)
     (hb : contractSignatureCallEnd ptr len + 32 < UInt256.size) :
-    safeRuntime_block_8706_memory
+    safeRuntime_block_11039_memory
       (mem := wordBytesArgsMemory mem (ptr + 36) len hash words)
       (x0 := UInt256.ofNat (contractSignatureCallEnd ptr len)) (x1 := signatureMagicWord) =
       contractSignatureEncodedMemory mem ptr len hash words := by
@@ -80,7 +80,7 @@ theorem safeContractSignatureEncodedMemory {mem : ByteArray} {ptr len : Nat} {ha
       UInt256.ofNat (2 ^ 256 - 2 ^ 224) := by decide +kernel
   have hfree := contractSignatureArgs_free (len := len) (hash := hash) (words := words) hf hm hp
   change memLoad (UInt256.ofNat 64) _ = UInt256.ofNat ptr at hfree
-  simp only [safeRuntime_block_8706_memory, hfree, hlen, h32, hmask, hnot,
+  simp only [safeRuntime_block_11039_memory, hfree, hlen, h32, hmask, hnot,
     ulit_toNat' ptr hptr, ulit_toNat' (ptr + 32) (by
       simp only [contractSignatureCallEnd] at hb; omega)]
   change writeWord (contractSignatureHeaderMemory mem ptr len hash words) (ptr + 32)
@@ -97,35 +97,35 @@ theorem safeContractSignatureEncodedMemory {mem : ByteArray} {ptr len : Nat} {ha
 set_option maxRecDepth 100000 in
 theorem safeContractSignatureEncode {I g s0 σ k C aw mem rdata ptr src len}
     {hash owner ret : UInt256} {words : List UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨8706⟩
+    (h : RD safeBytecode I g s0 ⟨11039⟩
       (UInt256.ofNat (contractSignatureCallEnd ptr len) :: signatureMagicWord :: ⟨0⟩ ::
         ⟨0⟩ :: UInt256.ofNat src :: hash :: owner :: ret :: R)
       (wordBytesArgsMemory mem (ptr + 36) len hash words) aw rdata σ k C)
     (hf : memLoad ⟨64⟩ mem = UInt256.ofNat ptr)
     (hm : 96 ≤ mem.size) (hp : 96 ≤ ptr) (hn : words.length = (len + 31) / 32)
     (hb : contractSignatureCallEnd ptr len + 32 < UInt256.size) (hov : R.length + 14 ≤ 1024) :
-    ∃ aw' k' C', RD safeBytecode I g s0 ⟨11834⟩
-      (UInt256.ofNat (contractSignatureCallEnd ptr len) :: UInt256.ofNat ptr :: ⟨8785⟩ ::
+    ∃ aw' k' C', RD safeBytecode I g s0 ⟨14798⟩
+      (UInt256.ofNat (contractSignatureCallEnd ptr len) :: UInt256.ofNat ptr :: ⟨11173⟩ ::
         UInt256.land solcAddrMask owner :: ⟨0⟩ :: ⟨0⟩ :: UInt256.ofNat ptr :: ⟨0⟩ ::
         UInt256.ofNat src :: hash :: owner :: ret :: R)
       (contractSignatureEncodedMemory mem ptr len hash words) aw' rdata σ k' C' := by
   have hmemory := safeContractSignatureEncodedMemory (hash := hash) hf hm hp hn hb
-  have hstack : safeRuntime_block_8706_stack
+  have hstack : safeRuntime_block_11039_stack
       (mem := wordBytesArgsMemory mem (ptr + 36) len hash words)
       (x0 := UInt256.ofNat (contractSignatureCallEnd ptr len)) (x1 := signatureMagicWord)
       (x3 := ⟨0⟩) (x4 := UInt256.ofNat src) (x5 := hash) (x6 := owner) (R := ret :: R) =
-      UInt256.ofNat (contractSignatureCallEnd ptr len) :: UInt256.ofNat ptr :: ⟨8785⟩ ::
+      UInt256.ofNat (contractSignatureCallEnd ptr len) :: UInt256.ofNat ptr :: ⟨11173⟩ ::
         UInt256.land solcAddrMask owner :: ⟨0⟩ :: ⟨0⟩ :: UInt256.ofNat ptr :: ⟨0⟩ ::
         UInt256.ofNat src :: hash :: owner :: ret :: R := by
-    change memLoad ⟨64⟩ (safeRuntime_block_8706_memory
+    change memLoad ⟨64⟩ (safeRuntime_block_11039_memory
       (mem := wordBytesArgsMemory mem (ptr + 36) len hash words)
       (x0 := UInt256.ofNat (contractSignatureCallEnd ptr len)) (x1 := signatureMagicWord)) ::
-      memLoad ⟨64⟩ (wordBytesArgsMemory mem (ptr + 36) len hash words) :: ⟨8785⟩ ::
+      memLoad ⟨64⟩ (wordBytesArgsMemory mem (ptr + 36) len hash words) :: ⟨11173⟩ ::
       UInt256.land _ owner :: ⟨0⟩ :: ⟨0⟩ ::
       memLoad ⟨64⟩ (wordBytesArgsMemory mem (ptr + 36) len hash words) :: _ = _
     rw [hmemory, contractSignatureEncodedMemory_free _ _ _ _ _ hn hp,
-      contractSignatureArgs_free hf hm hp, safeAddressMask]
-  obtain ⟨aw', k', C', h₁⟩ := safeRuntime_block_8706_packed (by simp; omega) (by jump_dest) h
+      contractSignatureArgs_free hf hm hp, safeAddressMaskLiteral]
+  obtain ⟨aw', k', C', h₁⟩ := safeRuntime_block_11039_packed (by simp; omega) (by jump_dest) h
   rw [hmemory, hstack] at h₁
   exact ⟨aw', k', C', h₁⟩
 

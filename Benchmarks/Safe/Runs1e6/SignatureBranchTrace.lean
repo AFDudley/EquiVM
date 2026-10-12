@@ -13,7 +13,7 @@ set_option maxRecDepth 100000
 theorem safeSignatureBranchTrace (p : SignatureInput) (evm : EVM.State)
     {I g s0 σ k C aw mem rdata ptr src i} {s r v current last executor : UInt256}
     {R : List UInt256} {f : Frame} {old : Value}
-    (h : RD safeBytecode I g s0 (if v = ⟨0⟩ then ⟨2052⟩ else ⟨2108⟩)
+    (h : RD safeBytecode I g s0 (if v = ⟨0⟩ then ⟨2150⟩ else ⟨2230⟩)
       (UInt256.ofNat i :: s :: r :: v :: current :: last :: p.required :: UInt256.ofNat src ::
         p.hash :: executor :: R) mem aw rdata σ k C)
     (hc : SignatureContext p f i last) (he : p.executor = AccountAddress.ofUInt256 executor)
@@ -52,12 +52,12 @@ theorem safeSignatureBranchTrace (p : SignatureInput) (evm : EVM.State)
       (by change src < 2 ^ 256; omega) (by omega)
   simp only [if_neg h₁]
   have hn₁ : UInt256.ofNat 1 ≠ v := fun hh ↦ h₁ (congrArg UInt256.toNat hh.symm)
-  have h₂ := safeRuntime_block_2108_taken (by simp; omega)
+  have h₂ := safeRuntime_block_2230_taken (by simp; omega)
     (u256_sub_ne_zero_of_ne hn₁) (by jump_dest) h
   by_cases htwo : v.toNat = 2
   · have heq : v = ⟨2⟩ := u256_inj htwo
     subst v
-    have h₃ := safeRuntime_block_2209_fallthrough (by simp; omega) (by decide) h₂
+    have h₃ := safeRuntime_block_2394_fallthrough (by simp; omega) (by decide) h₂
     obtain ⟨hrev, hbody⟩ | ⟨evm', σ', mem', aw', out, k', C', hbody, hee', hacc', hw',
         h₄, hm', hf', hz', hms, hpres⟩ :=
       safeSignatureP256Trace p evm h₃ hc.toSignatureCore hr hs ho hee hacc hworld hm hf hz
@@ -71,12 +71,12 @@ theorem safeSignatureBranchTrace (p : SignatureInput) (evm : EVM.State)
       Std.HashMap.getElem?_insert, Std.HashMap.getElem_insert]
   simp only [if_neg htwo]
   have hn₂ : UInt256.ofNat 2 ≠ v := fun hh ↦ htwo (congrArg UInt256.toNat hh.symm)
-  have h₃ := safeRuntime_block_2209_taken (by simp; omega)
+  have h₃ := safeRuntime_block_2394_taken (by simp; omega)
     (u256_sub_ne_zero_of_ne hn₂) (by jump_dest) h₂
   by_cases hh : 30 < v.toNat
   · simp only [if_pos hh]
     have hgt : UInt256.gt v (UInt256.ofNat 30) = ⟨1⟩ := ugt_one hh
-    have h₄ := safeRuntime_block_2395_fallthrough (by simp; omega) (by rw [hgt]; decide) h₃
+    have h₄ := safeRuntime_block_2665_fallthrough (by simp; omega) (by rw [hgt]; decide) h₃
     obtain ⟨hrev, hbody⟩ | ⟨evm', σ', mem', ptr', aw', out, owner, k', C', hbody,
         hee', hacc', hw', h₅, hm', hf', hz', hpl, hph, hms, hpres⟩ :=
       safeSignatureEthTrace p evm h₄ hc.toSignatureCore hr hs hv ho hee hacc hworld hm hf hz
@@ -89,7 +89,7 @@ theorem safeSignatureBranchTrace (p : SignatureInput) (evm : EVM.State)
   · simp only [if_neg hh]
     have hgt : UInt256.gt v (UInt256.ofNat 30) = ⟨0⟩ :=
       ugt_zero (by change v.toNat ≤ 30; omega)
-    have h₄ := safeRuntime_block_2395_taken (by simp; omega) (by rw [hgt]; decide)
+    have h₄ := safeRuntime_block_2665_taken (by simp; omega) (by rw [hgt]; decide)
       (by jump_dest) h₃
     obtain ⟨hrev, hbody⟩ | ⟨evm', σ', mem', ptr', aw', out, owner, k', C', hbody,
         hee', hacc', hw', h₅, hm', hf', hz', hpl, hph, hms, hpres⟩ :=

@@ -4,6 +4,7 @@ import Benchmarks.Safe.Runs1e6.Blocks.Runtime_006
 import Benchmarks.Safe.Runs1e6.Blocks.Runtime_010
 import Benchmarks.Safe.Runs1e6.Blocks.Runtime_011
 import Benchmarks.Safe.Runs1e6.Blocks.Runtime_026
+import Benchmarks.Safe.Runs1e6.Blocks.Runtime_030
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -109,7 +110,7 @@ theorem safeApproveHashSourceRevert (evm : EVM.State) (key : UInt256)
 theorem safeApproveHashSlot (I : ExecutionEnv) (key : UInt256) (mem : ByteArray)
     (hmem : mem.size = 96) :
     keccakWord ⟨0⟩ (UInt256.ofNat 64)
-      (safeRuntime_block_5240_memory (ee := I) (mem := mem) (x0 := key)) = approveHashSlot I key
+      (safeRuntime_block_6204_memory (ee := I) (mem := mem) (x0 := key)) = approveHashSlot I key
         := by
   change keccakWord ⟨0⟩ (UInt256.ofNat 64) (twoWordHashMem key
     (keccakWord ⟨0⟩ (UInt256.ofNat 64) (twoWordHashMem (solcSourceWord I) ⟨8⟩ mem))
@@ -118,20 +119,20 @@ theorem safeApproveHashSlot (I : ExecutionEnv) (key : UInt256) (mem : ByteArray)
   exact twoWordHashMemMapSlot _ _ (twoWordHashMem_size_96 _ _ hmem)
 
 theorem safeApproveHashTrace {I g s0 σ k C aw mem rdata} {key : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨5240⟩ (key :: ⟨664⟩ :: R) mem aw rdata σ k C)
+    (h : RD safeBytecode I g s0 ⟨6204⟩ (key :: ⟨664⟩ :: R) mem aw rdata σ k C)
     (hov : R.length + 9 ≤ 1024) (hmem : mem.size = 96) (hperm : I.perm = true) :
     RDret safeBytecode g s0 (sstoreAccountMap I.codeOwner σ (approveHashSlot I key) ⟨1⟩)
       ByteArray.empty := by
-  obtain ⟨_, _, h664⟩ := safeRuntime_block_5240 hov hperm (by jump_dest) h
-  have hret := safeRuntime_block_664 (by simp [safeRuntime_block_5240_stack]; omega) h664
+  obtain ⟨_, _, h664⟩ := safeRuntime_block_6204 hov hperm (by jump_dest) h
+  have hret := safeRuntime_block_664 (by simp [safeRuntime_block_6204_stack]; omega) h664
   change RDret safeBytecode g s0 (sstoreAccountMap I.codeOwner σ
     (keccakWord ⟨0⟩ (UInt256.ofNat 64)
-      (safeRuntime_block_5240_memory (ee := I) (mem := mem) (x0 := key))) ⟨1⟩)
+      (safeRuntime_block_6204_memory (ee := I) (mem := mem) (x0 := key))) ⟨1⟩)
     ByteArray.empty at hret
   rwa [safeApproveHashSlot I key mem hmem] at hret
 
 theorem safeApproveHashTraceStatic {I g s0 σ k C aw mem rdata} {key : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨5240⟩ (key :: R) mem aw rdata σ k C)
+    (h : RD safeBytecode I g s0 ⟨6204⟩ (key :: R) mem aw rdata σ k C)
     (hov : R.length + 8 ≤ 1024) (hperm : I.perm = false) :
     RDstatic safeBytecode g s0 := by
   have hcaller := evm_run h with [jumpdest, caller, push0, dup2, dup2, genMstore]
@@ -143,15 +144,15 @@ theorem safeApproveHashTraceStatic {I g s0 σ k C aw mem rdata} {key : UInt256} 
   exact hstore.sstoreStatic hperm (by native_decide) (by simp; omega)
 
 theorem safeApproveHashTraceRevert {I g s0 σ k C aw mem rdata} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨5224⟩ R mem aw rdata σ k C)
+    (h : RD safeBytecode I g s0 ⟨6164⟩ R mem aw rdata σ k C)
     (hov : R.length + 6 ≤ 1024) : RDrev safeBytecode g s0 := by
-  have h6898 := safeRuntime_block_5224 (by omega) (by jump_dest) h
-  exact safeRuntime_block_6898 (by simp; omega) h6898
+  have h6898 := safeRuntime_block_6164 (by omega) (by jump_dest) h
+  exact safeRuntime_block_8421 (by simp; omega) h6898
 
 theorem safeApproveHashCheck (σ : AccountMap) (I : ExecutionEnv) :
     UInt256.land (UInt256.sub (UInt256.shiftLeft (UInt256.ofNat 1) (UInt256.ofNat 160))
       (UInt256.ofNat 1)) (solcSlotWordAt (keccakWord ⟨0⟩ (UInt256.ofNat 64)
-        (safeRuntime_block_5195_taken_memory (ee := I) (mem := solcFreePtrMem))) σ I) =
+        (safeRuntime_block_6122_taken_memory (ee := I) (mem := solcFreePtrMem))) σ I) =
       approveHashOwnerWord σ I := by
   rw [safeAddressMask]
   change UInt256.land solcAddrMask (solcSlotWordAt (keccakWord ⟨0⟩ (UInt256.ofNat 64)
@@ -184,14 +185,14 @@ theorem safeApprovehashBodyCore
             some (approveHashArgs (calldataWord I.calldata 4)) := decodeCalldataBytes32Word hlen
               hbig
         by_cases howner : approveHashOwnerWord σ I = ⟨0⟩
-        · obtain ⟨_, _, h5224⟩ := safeRuntime_block_5195_fallthrough (by simp)
+        · obtain ⟨_, _, h5224⟩ := safeRuntime_block_6122_fallthrough (by simp)
             ((safeApproveHashCheck σ I).trans howner) h5195
           have hrev := safeApproveHashTraceRevert h5224 (by simp)
           have hbody := safeApproveHashSourceRevert (initState σ σ₀ (.ofUInt256 g) A I)
             (calldataWord I.calldata 4) hvalue howner
           exact RDrev.reEquivElim hcode hrev fun _ _ hΞ ↦
             reEquivSelectorExecution hdispatch hdec hbody (.revert hΞ rfl)
-        · obtain ⟨_, _, h5240⟩ := safeRuntime_block_5195_taken (by simp)
+        · obtain ⟨_, _, h5240⟩ := safeRuntime_block_6122_taken (by simp)
             (fun he ↦ howner ((safeApproveHashCheck σ I).symm.trans he)) (by jump_dest) h5195
           cases hperm : I.perm with
           | false =>

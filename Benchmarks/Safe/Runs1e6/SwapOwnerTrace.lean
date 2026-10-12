@@ -1,6 +1,6 @@
 import Benchmarks.Safe.Runs1e6.SwapOwnerSource
-import Benchmarks.Safe.Runs1e6.Blocks.Runtime_028
 import Benchmarks.Safe.Runs1e6.Blocks.Runtime_006
+import Benchmarks.Safe.Runs1e6.Blocks.Runtime_028
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -26,15 +26,16 @@ theorem safeSwapOwnerAccounts (evm : EVM.State) (prev old new : UInt256) :
 
 theorem safeSwapOwnerTrace {I g s0 σ k C aw mem rdata} {prev old new : UInt256}
     {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨6275⟩ (new :: old :: prev :: ⟨664⟩ :: R) mem aw rdata σ k C)
+    (h : RD safeBytecode I g s0 ⟨7589⟩ (new :: old :: prev :: ⟨664⟩ :: R) mem aw rdata σ k C)
     (hov : R.length + 16 ≤ 1024) (hm : mem.size = 96)
     (hp : prev.toNat < EVM.addressModulus) (ho : old.toNat < EVM.addressModulus)
     (hn : new.toNat < EVM.addressModulus) (hperm : I.perm = true) :
     RDret safeBytecode g s0 (swapOwnerAccounts σ I prev old new) ByteArray.empty := by
-  obtain ⟨_, _, h₁⟩ := safeRuntime_block_6275 (by simp; omega) hperm h
-  obtain ⟨_, _, h₂⟩ := safeRuntime_block_6348 (by omega) hperm (by jump_dest) h₁
-  have hret := safeRuntime_block_664 (by simp [safeRuntime_block_6348_stack]; omega) h₂
-  simp only [safeAddressMask, solcAddrMask_clean_left hn, solcAddrMask_clean_left ho,
+  obtain ⟨_, _, h₁⟩ := safeRuntime_block_7589 (by simp; omega) hperm h
+  obtain ⟨_, _, h₂⟩ := safeRuntime_block_7708 (by omega) hperm (by jump_dest) h₁
+  have hret := safeRuntime_block_664 (by simp [safeRuntime_block_7708_stack]; omega) h₂
+  simp only [safeAddressMaskLiteral, safeAddressComplementLiteral,
+    solcAddrMask_clean_left hn, solcAddrMask_clean_left ho,
     solcAddrMask_clean hp] at hret
   have hOld := twoWordHashMemMapSlot old (UInt256.ofNat 2) hm
   change keccakWord ⟨0⟩ (UInt256.ofNat 64)
@@ -86,18 +87,20 @@ theorem safeSwapOwnerTrace {I g s0 σ k C aw mem rdata} {prev old new : UInt256}
 
 theorem safeSwapOwnerTraceStatic {I g s0 σ k C aw mem rdata} {prev old new : UInt256}
     {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨6275⟩ (new :: old :: prev :: R) mem aw rdata σ k C)
+    (h : RD safeBytecode I g s0 ⟨7589⟩ (new :: old :: prev :: R) mem aw rdata σ k C)
     (hov : R.length + 15 ≤ 1024) (hperm : I.perm = false) :
     RDstatic safeBytecode g s0 := by
-  have hhash := evm_run h with [jumpdest, push1 ⟨1⟩, push1 ⟨1⟩, push1 ⟨160⟩, shl, sub,
+  have hhash := evm_run h with [jumpdest, push20 solcAddrMask,
     dup3, dup2, and, push0, dup2, dup2, genMstore, push1 ⟨2⟩, push1 ⟨32⟩, genMstore,
     push1 ⟨64⟩, dup1, dup3, genKeccak256, dup1]
   obtain ⟨_, _, hnext⟩ := RD.sload hhash (by native_decide) (by simp; omega)
   have hnewhash := evm_run hnext with [dup7, dup7, and, dup1, dup6, genMstore, dup4, dup6,
     genKeccak256, dup1]
   obtain ⟨_, _, hload⟩ := RD.sload hnewhash (by native_decide) (by simp; omega)
-  have hstore := evm_run hload with [swap3, dup9, and, push1 ⟨1⟩, push1 ⟨1⟩,
-    push1 ⟨160⟩, shl, sub, not, swap4, dup5, and, or, swap1]
+  have hmask := evm_run hload with [swap3, dup9, and]
+  have hmask := hmask.pushConst (UInt256.lnot solcAddrMask)
+    (width := 32) (op := .PUSH32) (by decide) (by native_decide) (by simp; omega)
+  have hstore := evm_run hmask with [swap4, dup5, and, or, swap1]
   exact hstore.sstoreStatic hperm (by native_decide) (by simp; omega)
 
 end Benchmarks.Safe.Runs1e6

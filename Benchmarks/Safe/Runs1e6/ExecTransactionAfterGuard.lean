@@ -12,7 +12,7 @@ set_option maxHeartbeats 800000 in
 theorem safeExecTransactionAfterGuard (p : ExecTransactionInput) (evm : EVM.State)
     {I g s0 σ k C aw mem rdata src ptr locals} {sigPtr guard hash : UInt256}
     {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨3758⟩
+    (h : RD safeBytecode I g s0 ⟨4417⟩
       (execGuardSaved p src sigPtr guard hash (⟨759⟩ :: R)) mem aw rdata σ k C)
     (hee : evm.executionEnv = I) (hacc : evm.accountMap = σ) (hworld : evm.σ₀ = s0.σ₀)
     (hl : ExecTransactionLocals p locals)

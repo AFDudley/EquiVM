@@ -10,7 +10,7 @@ namespace Benchmarks.Safe.Runs1e6
 set_option maxRecDepth 100000 in
 theorem safePaymentNativeTrace (p : PaymentInput) (evm : EVM.State)
     {I g s0 σ k C aw mem rdata ptr} {ret : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨7805⟩
+    (h : RD safeBytecode I g s0 ⟨9591⟩
       (UInt256.mul p.gasTotal (p.nativePrice I) :: UInt256.ofNat (p.receiver I).val :: ⟨0⟩ ::
         UInt256.ofNat p.refundReceiver.val :: UInt256.ofNat p.gasToken.val :: p.gasPrice ::
         p.baseGas :: p.gasUsed :: ret :: R) mem aw rdata σ k C)
@@ -22,10 +22,10 @@ theorem safePaymentNativeTrace (p : PaymentInput) (evm : EVM.State)
     (hz : memLoad ⟨96⟩ mem = ⟨0⟩) (hb : ptr < 2 ^ 220)
     (hov : R.length + 24 ≤ 1024) (hret : (D_J safeBytecode 0).contains ret = true) :
     PaymentOutcome p evm I g s0 mem ptr ret R := by
-  obtain ⟨aw₁, k₁, C₁, h₁⟩ := safeRuntime_block_7805_packed (by simp; omega) h
+  obtain ⟨aw₁, k₁, C₁, h₁⟩ := safeRuntime_block_9591_packed (by simp; omega) h
   have hr := safePaymentReceiverWord p I
   have hf₁ : memLoad (UInt256.ofNat 64) mem = UInt256.ofNat ptr := hf
-  simp only [safeRuntime_block_7805_stack, safeAddressMask, solcAddrMask_clean_left hr,
+  simp only [safeRuntime_block_9591_stack, safeAddressMaskLiteral, solcAddrMask_clean_left hr,
     hf₁, u256_sub_self] at h₁
   by_cases hperm : I.perm = true ∨ UInt256.mul p.gasTotal (p.nativePrice I) = ⟨0⟩
   swap

@@ -1,6 +1,7 @@
 import Benchmarks.Safe.Runs1e6.BoolBytesEncoding
 import Benchmarks.Safe.Runs1e6.MemoryBytesDecoded
 import Benchmarks.Safe.Runs1e6.Blocks.Runtime_007
+import Benchmarks.Safe.Runs1e6.Blocks.Runtime_043
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -47,17 +48,17 @@ theorem safeBoolBytesReturn {I g s0 σ k C aw mem rdata src dst} {R : List UInt2
   have h₁ := safeRuntime_block_873 (by simp; omega) (by jump_dest) h
   change memLoad (UInt256.ofNat 64) mem = UInt256.ofNat dst at hf
   simp only [safeRuntime_block_873_stack, hf] at h₁
-  have h₂ := safeRuntime_block_9810 (by simp; omega) (by jump_dest) h₁
-  simp only [safeRuntime_block_9810_stack, safeRuntime_block_9810_memory, hz,
+  have h₂ := safeRuntime_block_12418 (by simp; omega) (by jump_dest) h₁
+  simp only [safeRuntime_block_12418_stack, safeRuntime_block_12418_memory, hz,
     h32, h64, ulit_toNat' dst (by omega)] at h₂
-  change RD safeBytecode I g s0 ⟨9767⟩
-    (UInt256.ofNat src :: UInt256.ofNat (dst + 64) :: ⟨9836⟩ :: ⟨0⟩ ::
+  change RD safeBytecode I g s0 ⟨12345⟩
+    (UInt256.ofNat src :: UInt256.ofNat (dst + 64) :: ⟨12444⟩ :: ⟨0⟩ ::
       UInt256.ofNat dst :: UInt256.ofNat src :: z.toUInt256 :: ⟨771⟩ :: R)
     headMem _ rdata σ _ _ at h₂
   obtain ⟨aw₃, k₃, C₃, h₃⟩ := safeMemoryBytesEncodeInto words h₂ hl'
     (memoryWords_view _ _ _) hn (by rw [hn]; omega) hi (by rw [hn]; omega)
     (by simp; omega) (by jump_dest)
-  have h₄ := safeRuntime_block_9836 (by simp; omega) (by jump_dest) h₃
+  have h₄ := safeRuntime_block_12444 (by simp; omega) (by jump_dest) h₃
   have hr := safeRuntime_block_771 (by simp; omega) h₄
   have hf' : memLoad (UInt256.ofNat 64)
       (memoryBytesEncodedInto headMem (dst + 64) out.size words) = UInt256.ofNat dst := by

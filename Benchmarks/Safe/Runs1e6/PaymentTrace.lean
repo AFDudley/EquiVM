@@ -7,7 +7,7 @@ namespace Benchmarks.Safe.Runs1e6
 
 theorem safePaymentTrace (p : PaymentInput) (evm : EVM.State)
     {I g s0 σ k C aw mem rdata ptr} {ret : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨7730⟩
+    (h : RD safeBytecode I g s0 ⟨9490⟩
       (UInt256.ofNat p.refundReceiver.val :: UInt256.ofNat p.gasToken.val :: p.gasPrice ::
         p.baseGas :: p.gasUsed :: ret :: R) mem aw rdata σ k C)
     (hee : evm.executionEnv = I) (hacc : evm.accountMap = σ) (hworld : evm.σ₀ = s0.σ₀)

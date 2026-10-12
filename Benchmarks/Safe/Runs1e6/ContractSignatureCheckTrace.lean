@@ -15,7 +15,7 @@ set_option maxHeartbeats 1000000
 theorem safeCheckContractTrace (p : ContractSignatureInput)
     {I g s0 σ k C aw mem rdata ptr src} {owner ret : UInt256} {R : List UInt256}
     (evm : EVM.State)
-    (h : RD safeBytecode I g s0 ⟨6935⟩
+    (h : RD safeBytecode I g s0 ⟨8484⟩
       (p.offset :: UInt256.ofNat src :: p.hash :: owner :: ret :: R) mem aw rdata σ k C)
     (hee : evm.executionEnv = I) (hacc : evm.accountMap = σ) (hworld : evm.σ₀ = s0.σ₀)
     (howner : p.owner = AccountAddress.ofUInt256 owner)
@@ -68,8 +68,8 @@ theorem safeCheckContractTrace (p : ContractSignatureInput)
     congr 1
     dsimp [subptr]
     omega
-  have h₂ := safeRuntime_block_7036 (by simp; omega) (by jump_dest) h₁
-  simp only [safeRuntime_block_7036_stack, hadd] at h₂
+  have h₂ := safeRuntime_block_8633 (by simp; omega) (by jump_dest) h₁
+  simp only [safeRuntime_block_8633_stack, hadd] at h₂
   have hcl : contractSignatureCallLength p.signature.size < 2 ^ 65 := by
     dsimp [contractSignatureCallLength, ABI.paddedSize]
     omega
@@ -91,18 +91,18 @@ theorem safeCheckContractTrace (p : ContractSignatureInput)
     simpa only [howner] using hc
   have hsource := safeCheckContractSource p hstart hend (by omega) hc'
   cases hv : contractSignatureResult z out
-  · have h₄ := safeRuntime_block_7053_fallthrough (by simp; omega)
+  · have h₄ := safeRuntime_block_8650_fallthrough (by simp; omega)
       (by rw [hv]; rfl) h₃
-    have h₅ := safeRuntime_block_7058 (by
-      simp only [safeRuntime_block_7053_fallthrough_stack, List.length_cons]; omega)
+    have h₅ := safeRuntime_block_8655 (by
+      simp only [safeRuntime_block_8650_fallthrough_stack, List.length_cons]; omega)
       (by jump_dest) h₄
-    exact Or.inl ⟨safeRuntime_block_6898 (by
-      simp only [safeRuntime_block_7058_stack, safeRuntime_block_7053_fallthrough_stack,
+    exact Or.inl ⟨safeRuntime_block_8421 (by
+      simp only [safeRuntime_block_8655_stack, safeRuntime_block_8650_fallthrough_stack,
         List.length_cons]; omega) h₅, by simpa only [hv, Bool.false_eq_true, if_false] using
           hsource⟩
-  · have h₄ := safeRuntime_block_7053_taken (by simp; omega)
+  · have h₄ := safeRuntime_block_8650_taken (by simp; omega)
       (by rw [hv]; decide) (by jump_dest) h₃
-    have h₅ := safeRuntime_block_7074 (by omega) hret h₄
+    have h₅ := safeRuntime_block_8695 (by omega) hret h₄
     have hbmem := contractSignatureFinalMemory_size_le mem out ptr p.signature.size p.hash words
       hwords (by omega) hsig64 hout
     have hbnext := contractSignatureNext_bounds ptr p.signature.size out hsig64 hout

@@ -9,7 +9,7 @@ namespace Benchmarks.Safe.Runs1e6
 theorem safeEcrecoverInputMemory {mem : ByteArray} {ptr : Nat} {p : EcrecoverInput}
     (hf : memLoad ⟨64⟩ mem = UInt256.ofNat ptr) (hb : ptr + 160 < UInt256.size)
     (hv : p.v.toNat < 256) :
-    safeRuntime_block_2493_memory (mem := mem) (x0 := p.v) (x1 := p.digest)
+    safeRuntime_block_2763_memory (mem := mem) (x0 := p.v) (x1 := p.digest)
       (x4 := p.s) (x5 := p.r) = ecrecoverInputMemory mem ptr p := by
   have hadd (j : Nat) (hj : j ≤ 160) :
       (UInt256.ofNat ptr + UInt256.ofNat j).toNat = ptr + j :=
@@ -19,7 +19,7 @@ theorem safeEcrecoverInputMemory {mem : ByteArray} {ptr : Nat} {p : EcrecoverInp
     exact u256_32_add_ofNat ptr
   have hmask : UInt256.land p.v (UInt256.ofNat 255) = p.v := lowByteClean hv
   change memLoad (UInt256.ofNat 64) mem = UInt256.ofNat ptr at hf
-  simp only [safeRuntime_block_2493_memory, hf, hmask, hadd 32 (by decide),
+  simp only [safeRuntime_block_2763_memory, hf, hmask, hadd 32 (by decide),
     hadd 64 (by decide), hadd 96 (by decide), hadd 128 (by decide), h32,
     ulit_toNat' ptr (by omega), ulit_toNat' (ptr + 32) (by omega), ecrecoverInputMemory,
     ecrecoverWords, writeWords, Reasoning.Theory.writeWord, Nat.add_assoc]
@@ -44,45 +44,45 @@ theorem ecrecoverPointerArithmetic {ptr : Nat} (hb : ptr + 160 < UInt256.size) :
 
 theorem safeEcrecoverEthSignPrepare {I g s0 σ k C aw mem rdata ptr} {p : EcrecoverInput}
     {x : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨2493⟩
+    (h : RD safeBytecode I g s0 ⟨2763⟩
       (p.v :: p.digest :: ⟨1⟩ :: x :: p.s :: p.r :: R) mem aw rdata σ k C)
     (hf : memLoad ⟨64⟩ mem = UInt256.ofNat ptr) (hp : 96 ≤ ptr)
     (hb : ptr + 160 < UInt256.size) (hv : p.v.toNat < 256) (hov : R.length + 11 ≤ 1024) :
-    ∃ gasArg aw' k' C', RD safeBytecode I g s0 ⟨2554⟩
+    ∃ gasArg aw' k' C', RD safeBytecode I g s0 ⟨2824⟩
       (gasArg :: ⟨1⟩ :: UInt256.ofNat (ptr + 32) :: ⟨128⟩ :: UInt256.ofNat ptr :: ⟨32⟩ ::
         UInt256.ofNat (ptr + 160) :: ⟨1⟩ :: x :: p.s :: p.r :: R)
       (ecrecoverInputMemory mem ptr p) aw' rdata σ k' C' := by
-  obtain ⟨aw', k', C', hr⟩ := safeRuntime_block_2493_packed hov h
+  obtain ⟨aw', k', C', hr⟩ := safeRuntime_block_2763_packed hov h
   have hm := safeEcrecoverInputMemory hf hb hv
   have hfree := ecrecoverInputMemory_free mem ptr p hp
   change memLoad (UInt256.ofNat 64) _ = _ at hfree
   change memLoad (UInt256.ofNat 64) mem = UInt256.ofNat ptr at hf
   rcases ecrecoverPointerArithmetic hb with ⟨h160, h128, h32⟩
-  simp only [safeRuntime_block_2493_stack] at hr
-  rw [← safeRuntime_block_2493_memory, hm] at hr
+  simp only [safeRuntime_block_2763_stack] at hr
+  rw [← safeRuntime_block_2763_memory, hm] at hr
   simp only [hfree, hf, h160, h128, h32] at hr
   exact ⟨_, aw', k', C', hr⟩
 
 theorem safeEcrecoverPlainPrepare {I g s0 σ k C aw mem rdata ptr} {p : EcrecoverInput}
     {x y a b c : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨2586⟩
+    (h : RD safeBytecode I g s0 ⟨2856⟩
       (x :: p.s :: p.r :: p.v :: y :: a :: b :: c :: p.digest :: R) mem aw rdata σ k C)
     (hf : memLoad ⟨64⟩ mem = UInt256.ofNat ptr) (hp : 96 ≤ ptr)
     (hb : ptr + 160 < UInt256.size) (hv : p.v.toNat < 256) (hov : R.length + 17 ≤ 1024) :
-    ∃ gasArg aw' k' C', RD safeBytecode I g s0 ⟨2651⟩
+    ∃ gasArg aw' k' C', RD safeBytecode I g s0 ⟨2921⟩
       (gasArg :: ⟨1⟩ :: UInt256.ofNat (ptr + 32) :: ⟨128⟩ :: UInt256.ofNat ptr :: ⟨32⟩ ::
         UInt256.ofNat (ptr + 160) :: ⟨1⟩ :: x :: p.s :: p.r :: p.v :: y :: a :: b :: c ::
         p.digest :: R) (ecrecoverInputMemory mem ptr p) aw' rdata σ k' C' := by
-  obtain ⟨aw', k', C', hr⟩ := safeRuntime_block_2586_packed hov h
+  obtain ⟨aw', k', C', hr⟩ := safeRuntime_block_2856_packed hov h
   have hm := safeEcrecoverInputMemory hf hb hv
   have hfree := ecrecoverInputMemory_free mem ptr p hp
   change memLoad (UInt256.ofNat 64) _ = _ at hfree
   change memLoad (UInt256.ofNat 64) mem = UInt256.ofNat ptr at hf
   rcases ecrecoverPointerArithmetic hb with ⟨h160, h128, h32⟩
-  change safeRuntime_block_2586_memory (mem := mem) (x1 := p.s) (x2 := p.r)
+  change safeRuntime_block_2856_memory (mem := mem) (x1 := p.s) (x2 := p.r)
     (x3 := p.v) (x8 := p.digest) = _ at hm
-  simp only [safeRuntime_block_2586_stack] at hr
-  rw [← safeRuntime_block_2586_memory, hm] at hr
+  simp only [safeRuntime_block_2856_stack] at hr
+  rw [← safeRuntime_block_2856_memory, hm] at hr
   simp only [hfree, hf, h160, h128, h32] at hr
   exact ⟨_, aw', k', C', hr⟩
 

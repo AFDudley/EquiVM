@@ -12,7 +12,7 @@ def signatureP256FinalFrame (f : Frame) (p : SignatureInput) (r s : UInt256) : F
 theorem safeSignatureP256Trace (p : SignatureInput) (evm : EVM.State)
     {I g s0 σ k C aw mem rdata ptr src} {i s r v current last : UInt256}
     {R : List UInt256} {f : Frame} {old : Value}
-    (h : RD safeBytecode I g s0 ⟨2218⟩
+    (h : RD safeBytecode I g s0 ⟨2403⟩
       (i :: s :: r :: v :: current :: last :: p.required :: UInt256.ofNat src :: p.hash :: R)
       mem aw rdata σ k C)
     (hc : SignatureCore p f) (hr : f.locals["r"]? = some (wordBytes32Value r))
@@ -28,7 +28,7 @@ theorem safeSignatureP256Trace (p : SignatureInput) (evm : EVM.State)
     ∃ evm' σ' mem' aw' out k' C',
       ExecBlock config f evm signatureP256Body (.ok (signatureP256FinalFrame f p r s) evm') ∧
       evm'.executionEnv = I ∧ evm'.accountMap = σ' ∧ evm'.σ₀ = s0.σ₀ ∧
-      RD safeBytecode I g s0 ⟨2679⟩
+      RD safeBytecode I g s0 ⟨2949⟩
         (i :: (signatureP256Input p s).s :: (signatureP256Input p s).r :: v :: r :: last ::
           p.required :: UInt256.ofNat src :: p.hash :: R) mem' aw' out σ' k' C' ∧
       BytesMemory mem' src p.signatures ∧ memLoad ⟨64⟩ mem' = UInt256.ofNat ptr ∧

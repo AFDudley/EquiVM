@@ -27,7 +27,7 @@ theorem transactionHashMemory_free {I : ExecutionEnv} {mem : ByteArray} {ptr : N
 set_option maxRecDepth 100000 in
 theorem safeTransactionHashTrace (tx : SafeTransaction)
     {I g s0 σ k C aw mem rdata ptr} {off ret : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨5311⟩
+    (h : RD safeBytecode I g s0 ⟨6275⟩
       (tx.nonce :: UInt256.ofNat tx.refundReceiver.val :: UInt256.ofNat tx.gasToken.val ::
         tx.gasPrice :: tx.baseGas :: tx.safeTxGas :: tx.operation ::
         UInt256.ofNat tx.payload.size :: off :: tx.value :: UInt256.ofNat tx.target.val :: ret :: R)
@@ -44,11 +44,11 @@ theorem safeTransactionHashTrace (tx : SafeTransaction)
     rw [memLoadReadWord, show (⟨64⟩ : UInt256).toNat = 64 by rfl, domainMemoryAt,
       writeWords_readBelow _ _ _ _ _ hm hp]
     exact (memLoadReadWord mem ⟨64⟩).symm.trans hf
-  obtain ⟨aw₂, k₂, C₂, h₂⟩ := safeRuntime_block_5377_packed (by simp; omega) h₁
+  obtain ⟨aw₂, k₂, C₂, h₂⟩ := safeRuntime_block_6341_packed (by simp; omega) h₁
   rw [safeTransactionPrefixMemory hfree hb hn (by rw [domainMemoryAt_size]; omega) hi hd] at h₂
   change memLoad (UInt256.ofNat 64) (domainMemoryAt mem ptr I) = UInt256.ofNat ptr at hfree
-  simp only [safeRuntime_block_5377_stack, hfree] at h₂
-  obtain ⟨aw₃, k₃, C₃, h₃⟩ := safeRuntime_block_5483_packed (by simp; omega) hret h₂
+  simp only [safeRuntime_block_6341_stack, hfree] at h₂
+  obtain ⟨aw₃, k₃, C₃, h₃⟩ := safeRuntime_block_6447_packed (by simp; omega) hret h₂
   rw [safeTransactionFinalMemory _ _ _ _ hb, safeTransactionFinalStack _ _ _ _ _ hb] at h₃
   exact ⟨aw₃, k₃, C₃, h₃⟩
 

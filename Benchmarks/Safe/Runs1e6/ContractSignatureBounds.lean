@@ -13,18 +13,18 @@ set_option maxRecDepth 100000
 
 theorem safeCheckContractBounds (p : ContractSignatureInput)
     {I g s0 σ k C aw mem rdata src} {owner ret : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨6935⟩
+    (h : RD safeBytecode I g s0 ⟨8484⟩
       (p.offset :: UInt256.ofNat src :: p.hash :: owner :: ret :: R) mem aw rdata σ k C)
     (hm : BytesMemory mem src p.signatures)
     (hb : src + 64 + p.signatures.size < UInt256.size) (hov : R.length + 20 ≤ 1024) :
     (RDrev safeBytecode g s0 ∧ ¬(p.start ≤ p.signatures.size ∧ p.finish ≤ p.signatures.size)) ∨
       ∃ aw' k' C', p.start ≤ p.signatures.size ∧ p.finish ≤ p.signatures.size ∧
-        RD safeBytecode I g s0 ⟨7036⟩
+        RD safeBytecode I g s0 ⟨8633⟩
           (p.len :: p.offset :: UInt256.ofNat src :: p.hash :: owner :: ret :: R)
           mem aw' rdata σ k' C' := by
   have hlen := hm.length
-  have h₁ := safeRuntime_block_6935 (by simp; omega) (by jump_dest) h
-  simp only [safeRuntime_block_6935_stack, hlen] at h₁
+  have h₁ := safeRuntime_block_8484 (by simp; omega) (by jump_dest) h
+  simp only [safeRuntime_block_8484_stack, hlen] at h₁
   by_cases hsfit : p.start < UInt256.size
   swap
   · exact Or.inl ⟨safeAddOverflow h₁ (Nat.le_of_not_gt hsfit) (by simp; omega), by omega⟩
@@ -37,17 +37,17 @@ theorem safeCheckContractBounds (p : ContractSignatureInput)
   swap
   · have hcond : UInt256.gt (p.offset + UInt256.ofNat 32)
         (UInt256.ofNat p.signatures.size) = ⟨1⟩ := ugt_one (by rw [hstart, hn]; omega)
-    have h₃ := safeRuntime_block_6948_fallthrough (by simp; omega)
+    have h₃ := safeRuntime_block_8497_fallthrough (by simp; omega)
       (by rw [hcond]; decide) h₂
-    have h₄ := safeRuntime_block_6955 (by
-      simp only [safeRuntime_block_6948_fallthrough_stack, List.length_cons]; omega)
+    have h₄ := safeRuntime_block_8504 (by
+      simp only [safeRuntime_block_8497_fallthrough_stack, List.length_cons]; omega)
       (by jump_dest) h₃
-    exact Or.inl ⟨safeRuntime_block_6898 (by
-      simp only [safeRuntime_block_6955_stack, safeRuntime_block_6948_fallthrough_stack,
+    exact Or.inl ⟨safeRuntime_block_8421 (by
+      simp only [safeRuntime_block_8504_stack, safeRuntime_block_8497_fallthrough_stack,
         List.length_cons]; omega) h₄, by omega⟩
   have hcond : UInt256.gt (p.offset + UInt256.ofNat 32)
       (UInt256.ofNat p.signatures.size) = ⟨0⟩ := ugt_zero (by rw [hstart, hn]; exact hs)
-  have h₃ := safeRuntime_block_6948_taken (by simp; omega)
+  have h₃ := safeRuntime_block_8497_taken (by simp; omega)
     (by rw [hcond]; decide) (by jump_dest) h₂
   have hread : memLoad ((UInt256.ofNat src + p.offset) + UInt256.ofNat 32) mem = p.len := by
     have haddr : (UInt256.ofNat src + p.offset) + UInt256.ofNat 32 =
@@ -62,11 +62,11 @@ theorem safeCheckContractBounds (p : ContractSignatureInput)
       omega
     rw [haddr]
     exact hm.word hs (by have hs' : p.offset.toNat + 32 ≤ p.signatures.size := hs; omega)
-  have h₄ := safeRuntime_block_6971 (by simp; omega) (by jump_dest) h₃
-  change RD safeBytecode I g s0 ⟨7082⟩ _ _ _ _ _ _ _ at h₄
-  simp only [safeRuntime_block_6971_stack, hread, hlen] at h₄
+  have h₄ := safeRuntime_block_8544 (by simp; omega) (by jump_dest) h₃
+  change RD safeBytecode I g s0 ⟨8703⟩ _ _ _ _ _ _ _ at h₄
+  simp only [safeRuntime_block_8544_stack, hread, hlen] at h₄
   obtain ⟨_, _, h₅⟩ := safeAddTrace h₄ hsfit (by simp; omega) (by jump_dest)
-  have h₆ := safeRuntime_block_7007 (by simp; omega) (by jump_dest) h₅
+  have h₆ := safeRuntime_block_8580 (by simp; omega) (by jump_dest) h₅
   by_cases hefit : p.finish < UInt256.size
   swap
   · exact Or.inl ⟨safeAddOverflow h₆ (by rw [hstart]; exact Nat.le_of_not_gt hefit)
@@ -80,18 +80,18 @@ theorem safeCheckContractBounds (p : ContractSignatureInput)
   by_cases he : p.finish ≤ p.signatures.size
   · have hcond : UInt256.gt (p.offset + UInt256.ofNat 32 + p.len)
         (UInt256.ofNat p.signatures.size) = ⟨0⟩ := ugt_zero (by rw [hend, hn]; exact he)
-    have h₈ := safeRuntime_block_7013_taken (by simp; omega)
+    have h₈ := safeRuntime_block_8586_taken (by simp; omega)
       (by rw [hcond]; decide) (by jump_dest) h₇
     exact Or.inr ⟨_, _, _, hs, he, h₈⟩
   · have hcond : UInt256.gt (p.offset + UInt256.ofNat 32 + p.len)
         (UInt256.ofNat p.signatures.size) = ⟨1⟩ := ugt_one (by rw [hend, hn]; omega)
-    have h₈ := safeRuntime_block_7013_fallthrough (by simp; omega)
+    have h₈ := safeRuntime_block_8586_fallthrough (by simp; omega)
       (by rw [hcond]; decide) h₇
-    have h₉ := safeRuntime_block_7020 (by
-      simp only [safeRuntime_block_7013_fallthrough_stack, List.length_cons]; omega)
+    have h₉ := safeRuntime_block_8593 (by
+      simp only [safeRuntime_block_8586_fallthrough_stack, List.length_cons]; omega)
       (by jump_dest) h₈
-    exact Or.inl ⟨safeRuntime_block_6898 (by
-      simp only [safeRuntime_block_7020_stack, safeRuntime_block_7013_fallthrough_stack,
+    exact Or.inl ⟨safeRuntime_block_8421 (by
+      simp only [safeRuntime_block_8593_stack, safeRuntime_block_8586_fallthrough_stack,
         List.length_cons]; omega) h₉, by omega⟩
 
 end Benchmarks.Safe.Runs1e6

@@ -7,7 +7,7 @@ namespace Benchmarks.Safe.Runs1e6
 
 theorem safeModuleGuardCall {σ σ₀ : AccountMap} {A : Substate} {I : ExecutionEnv} {g : Sat256}
     {k C : Nat} {aw gasArg guard : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g (initState σ σ₀ g A I) ⟨5833⟩
+    (h : RD safeBytecode I g (initState σ σ₀ g A I) ⟨6997⟩
       (gasArg :: guard :: ⟨128⟩ :: ⟨36⟩ :: ⟨128⟩ :: ⟨32⟩ :: R)
       (guardCallMemory .moduleGuard) aw ByteArray.empty σ k C)
     (hov : R.length + 1 ≤ 1024) :
@@ -16,7 +16,7 @@ theorem safeModuleGuardCall {σ σ₀ : AccountMap} {A : Substate} {I : Executio
       typedCallViaEVM config (initState σ σ₀ g A I) (AccountAddress.ofNat guard.toNat)
         "supportsInterface" 0 [guardInterfaceValue .moduleGuard] (z, evm', out) false ∧
       evm'.executionEnv = I ∧ evm'.accountMap = σ' ∧
-      RD safeBytecode I g (initState σ σ₀ g A I) ⟨5834⟩
+      RD safeBytecode I g (initState σ σ₀ g A I) ⟨6998⟩
         ((if z then ⟨1⟩ else ⟨0⟩) :: R) ((guardOutputMemory .moduleGuard) out) aw' out σ' k' C' ∧
       out.size < 2 ^ 138 := by
   obtain ⟨evm', σ', z, out, aw', k', C', hc, hee, hacc, hr, hout⟩ :=

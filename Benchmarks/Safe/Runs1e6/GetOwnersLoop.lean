@@ -7,7 +7,7 @@ namespace Benchmarks.Safe.Runs1e6
 
 theorem safeGetOwnersLoop (evm : EVM.State) {g s0 k C aw mem rdata n words i current locals}
     {ret : UInt256} {R : List UInt256}
-    (h : RD safeBytecode evm.executionEnv g s0 ⟨4419⟩
+    (h : RD safeBytecode evm.executionEnv g s0 ⟨5167⟩
       (current :: UInt256.ofNat i :: ⟨128⟩ :: ⟨96⟩ :: ret :: R)
       mem aw rdata evm.accountMap k C)
     (hov : R.length + 11 ≤ 1024)

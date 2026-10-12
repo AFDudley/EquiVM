@@ -70,7 +70,7 @@ theorem safeChecksignaturesBodyCore
       have h₃ := safeRuntime_block_1149 (by simp [signatureLegacyDecodedStack]) (by jump_dest) h₂
       simp only [signatureLegacyDecodedStack, Bool.false_eq_true, if_false,
         List.cons_append, List.nil_append] at h₃
-      have h₄ := safeRuntime_block_4272 (by simp) (by jump_dest) h₃
+      have h₄ := safeRuntime_block_5006 (by simp) (by jump_dest) h₃
       have hsmall : p.signatures.size ≤ 2 ^ 64 - 192 := by
         change payload.size ≤ _
         rw [hlen]; exact hvalid
@@ -87,8 +87,8 @@ theorem safeChecksignaturesBodyCore
         exact RDrev.reEquivElim hcode hr fun _ _ hΞ ↦
           reEquivSelectorExecution hdispatch hdec'
             hsource (.revert hΞ rfl)
-      · have hfinish := safeRuntime_block_4283 (by simp) (by jump_dest) hstop
-        have hr := safeRuntime_block_664 (by simp [safeRuntime_block_4283_stack]) hfinish
+      · have hfinish := safeRuntime_block_5017 (by simp) (by jump_dest) hstop
+        have hr := safeRuntime_block_664 (by simp [safeRuntime_block_5017_stack]) hfinish
         have hsource := ExecFuncBody.execBlockOK
           (safeCheckSignaturesLegacySource (p := p) (evm := evm) data hvalue rfl hsmall hbody)
         exact reEquivReturnElim hcode hr fun _ _ hΞ ↦

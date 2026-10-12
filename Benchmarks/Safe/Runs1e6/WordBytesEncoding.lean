@@ -1,7 +1,7 @@
 import Benchmarks.Safe.Runs1e6.MemoryBytesEncodingInto
 import Benchmarks.Safe.Runs1e6.MemoryBytesDecoded
-import Benchmarks.Safe.Runs1e6.Blocks.Runtime_051
 import Benchmarks.Safe.Runs1e6.Blocks.Runtime_043
+import Benchmarks.Safe.Runs1e6.Blocks.Runtime_051
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -54,7 +54,7 @@ theorem wordBytesArgsMemory_read (mem : ByteArray) (base len : Nat) (word : UInt
 set_option maxRecDepth 100000 in
 theorem safeWordBytesEncode (words : List UInt256)
     {I g s0 σ k C aw mem rdata base src len} {word ret : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨11810⟩
+    (h : RD safeBytecode I g s0 ⟨14774⟩
       (UInt256.ofNat base :: UInt256.ofNat src :: word :: ret :: R) mem aw rdata σ k C)
     (hl : memLoad (UInt256.ofNat src) mem = UInt256.ofNat len)
     (hw : WordArrayMemory mem (src + 32) words) (hn : words.length = (len + 31) / 32)
@@ -71,9 +71,9 @@ theorem safeWordBytesEncode (words : List UInt256)
     rw [ulit_toNat' _ hh]
     exact uadd_ofNat_toNat (by omega) (by omega) hh
   let head := writeWords mem base [word, ⟨64⟩]
-  have hm : safeRuntime_block_11810_memory (mem := mem) (x0 := UInt256.ofNat base)
+  have hm : safeRuntime_block_14774_memory (mem := mem) (x0 := UInt256.ofNat base)
       (x2 := word) = head := by
-    simp only [safeRuntime_block_11810_memory, hadd 32 (by omega),
+    simp only [safeRuntime_block_14774_memory, hadd 32 (by omega),
       ulit_toNat' base (by omega), ulit_toNat' (base + 32) (by omega),
       head, writeWords, Reasoning.Theory.writeWord]
     rfl
@@ -86,13 +86,13 @@ theorem safeWordBytesEncode (words : List UInt256)
     intro i hi
     rw [writeWords_readBelow _ _ _ _ _ (by omega) (by omega)]
     exact hw i hi
-  have h₁ := safeRuntime_block_11810 (by simp; omega) (by jump_dest) h
-  simp only [safeRuntime_block_11810_stack, hm, hadd 64 (by omega)] at h₁
+  have h₁ := safeRuntime_block_14774 (by simp; omega) (by jump_dest) h
+  simp only [safeRuntime_block_14774_stack, hm, hadd 64 (by omega)] at h₁
   obtain ⟨_, _, _, h₂⟩ := safeMemoryBytesEncodeInto words h₁ hload hwords hn (by omega)
     (by dsimp [head]; rw [writeWords_size_nonempty _ _ _ (by simp)]; omega)
     (by omega) (by simp; omega) (by jump_dest)
-  have h₃ := safeRuntime_block_9836 (by omega) hret h₂
-  simp only [safeRuntime_block_9836_stack] at h₃
+  have h₃ := safeRuntime_block_12444 (by omega) hret h₂
+  simp only [safeRuntime_block_12444_stack] at h₃
   rw [show base + 64 + 32 + 32 * words.length = base + 96 + 32 * words.length by omega] at h₃
   exact ⟨_, _, _, h₃⟩
 

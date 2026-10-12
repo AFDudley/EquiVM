@@ -12,42 +12,41 @@ set_option maxRecDepth 100000
 set_option maxHeartbeats 1000000 in
 theorem safeDecodeTransactionArgsStart {I g s0 σ k C aw mem rdata} {stop ret : UInt256}
     {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨10679⟩ (⟨4⟩ :: stop :: ret :: R) mem aw rdata σ k C)
+    (h : RD safeBytecode I g s0 ⟨13322⟩ (⟨4⟩ :: stop :: ret :: R) mem aw rdata σ k C)
     (hc : UInt256.slt (UInt256.sub stop ⟨4⟩) (UInt256.ofNat 320) = ⟨0⟩)
     (hov : R.length + 21 ≤ 1024) :
-    ∃ k' C', RD safeBytecode I g s0 ⟨9076⟩
-      (calldataWord I.calldata 4 :: ⟨10717⟩ :: calldataWord I.calldata 4 ::
+    ∃ k' C', RD safeBytecode I g s0 ⟨11548⟩
+      (calldataWord I.calldata 4 :: ⟨13360⟩ :: calldataWord I.calldata 4 ::
         ⟨0⟩ :: ⟨0⟩ :: ⟨0⟩ :: ⟨0⟩ :: ⟨0⟩ :: ⟨0⟩ :: ⟨0⟩ :: ⟨0⟩ :: ⟨0⟩ :: ⟨0⟩ :: ⟨0⟩ ::
         ⟨4⟩ :: stop :: ret :: R) mem aw rdata σ k' C' := by
-  have h₁ := safeRuntime_block_10679_taken (by simp; omega) (by rw [hc]; decide)
+  have h₁ := safeRuntime_block_13322_taken (by simp; omega) (by rw [hc]; decide)
     (by jump_dest) h
-  have h₂ := safeRuntime_block_10706 (by simp; omega) (by jump_dest) h₁
+  have h₂ := safeRuntime_block_13349 (by simp; omega) (by jump_dest) h₁
   exact ⟨_, _, h₂⟩
 
 set_option maxHeartbeats 1000000 in
 theorem safeDecodeTransactionArgsToBytes {I g s0 σ k C aw mem rdata} {stop ret : UInt256}
     {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨10717⟩
+    (h : RD safeBytecode I g s0 ⟨13360⟩
       (calldataWord I.calldata 4 ::
         ⟨0⟩ :: ⟨0⟩ :: ⟨0⟩ :: ⟨0⟩ :: ⟨0⟩ :: ⟨0⟩ :: ⟨0⟩ :: ⟨0⟩ :: ⟨0⟩ :: ⟨0⟩ :: ⟨0⟩ ::
         ⟨4⟩ :: stop :: ret :: R) mem aw rdata σ k C)
     (hoff : (calldataWord I.calldata 68).toNat ≤ 2 ^ 64 - 1)
     (hov : R.length + 21 ≤ 1024) :
-    ∃ k' C', RD safeBytecode I g s0 ⟨9154⟩
-      (UInt256.ofNat (4 + (calldataWord I.calldata 68).toNat) :: stop :: ⟨10762⟩ ::
+    ∃ k' C', RD safeBytecode I g s0 ⟨11639⟩
+      (UInt256.ofNat (4 + (calldataWord I.calldata 68).toNat) :: stop :: ⟨13406⟩ ::
         calldataWord I.calldata 68 ::
         ⟨0⟩ :: ⟨0⟩ :: ⟨0⟩ :: ⟨0⟩ :: ⟨0⟩ :: ⟨0⟩ :: ⟨0⟩ :: ⟨0⟩ :: ⟨0⟩ ::
         calldataWord I.calldata 36 :: calldataWord I.calldata 4 :: ⟨4⟩ :: stop :: ret :: R)
       mem aw rdata σ k' C' := by
-  have hm : UInt256.sub (UInt256.shiftLeft (UInt256.ofNat 1) (UInt256.ofNat 64))
-      (UInt256.ofNat 1) = UInt256.ofNat (2 ^ 64 - 1) := by decide +kernel
-  have h₁ := safeRuntime_block_10717_taken (by simp; omega) (by
+  have hm : UInt256.ofNat 18446744073709551615 = UInt256.ofNat (2 ^ 64 - 1) := by decide +kernel
+  have h₁ := safeRuntime_block_13360_taken (by simp; omega) (by
     change UInt256.isZero (UInt256.gt (calldataWord I.calldata 68) _) ≠ UInt256.ofNat 0
     rw [hm, ugt_zero (by simpa only [show
       (UInt256.ofNat (2 ^ 64 - 1)).toNat = 2 ^ 64 - 1 by decide +kernel] using hoff)]
     decide) (by jump_dest) h
-  have h₂ := safeRuntime_block_10750 (by simp; omega) (by jump_dest) h₁
-  simp only [safeRuntime_block_10750_stack, safeRuntime_block_10717_taken_stack,
+  have h₂ := safeRuntime_block_13394 (by simp; omega) (by jump_dest) h₁
+  simp only [safeRuntime_block_13394_stack, safeRuntime_block_13360_taken_stack,
     show ((⟨4⟩ : UInt256) + UInt256.ofNat 64).toNat = 68 by decide +kernel,
     show ((⟨4⟩ : UInt256) + UInt256.ofNat 32).toNat = 36 by decide +kernel] at h₂
   have hadd : (⟨4⟩ : UInt256) + calldataWord I.calldata 68 =
@@ -63,27 +62,27 @@ theorem safeDecodeTransactionArgsToBytes {I g s0 σ k C aw mem rdata} {stop ret 
 set_option maxHeartbeats 1000000 in
 theorem safeDecodeTransactionArgsToToken {I g s0 σ k C aw mem rdata}
     {len off stop ret : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨10762⟩
+    (h : RD safeBytecode I g s0 ⟨13406⟩
       (len :: off :: calldataWord I.calldata 68 ::
         ⟨0⟩ :: ⟨0⟩ :: ⟨0⟩ :: ⟨0⟩ :: ⟨0⟩ :: ⟨0⟩ :: ⟨0⟩ :: ⟨0⟩ :: ⟨0⟩ ::
         calldataWord I.calldata 36 :: calldataWord I.calldata 4 :: ⟨4⟩ :: stop :: ret :: R)
       mem aw rdata σ k C)
     (ho : (calldataWord I.calldata 100).toNat < 2) (hov : R.length + 21 ≤ 1024) :
-    ∃ k' C', RD safeBytecode I g s0 ⟨9076⟩
-      (calldataWord I.calldata 228 :: ⟨10818⟩ :: calldataWord I.calldata 228 ::
+    ∃ k' C', RD safeBytecode I g s0 ⟨11548⟩
+      (calldataWord I.calldata 228 :: ⟨13462⟩ :: calldataWord I.calldata 228 ::
         ⟨0⟩ :: ⟨0⟩ :: ⟨0⟩ :: calldataWord I.calldata 196 :: calldataWord I.calldata 164 ::
         calldataWord I.calldata 132 :: calldataWord I.calldata 100 :: len :: off ::
         calldataWord I.calldata 36 :: calldataWord I.calldata 4 :: ⟨4⟩ :: stop :: ret :: R)
       mem aw rdata σ k' C' := by
-  have h₁ := safeRuntime_block_10762 (by simp; omega) (by jump_dest) h
+  have h₁ := safeRuntime_block_13406 (by simp; omega) (by jump_dest) h
   obtain ⟨_, _, h₂⟩ := safeDecodeOperation h₁ ho (by simp; omega) (by jump_dest)
-  have h₃ := safeRuntime_block_10781 (by simp; omega) (by jump_dest) h₂
+  have h₃ := safeRuntime_block_13425 (by simp; omega) (by jump_dest) h₂
   exact ⟨_, _, h₃⟩
 
 set_option maxHeartbeats 1000000 in
 theorem safeDecodeTransactionArgsValid {I g s0 σ k C aw mem rdata len} {ret : UInt256}
     {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨10679⟩
+    (h : RD safeBytecode I g s0 ⟨13322⟩
       (⟨4⟩ :: UInt256.ofNat I.calldata.size :: ret :: R) mem aw rdata σ k C)
     (hh : 324 ≤ I.calldata.size) (hs : I.calldata.size < 2 ^ 255)
     (hc : (calldataWord I.calldata 4).toNat < EVM.addressModulus)
@@ -112,15 +111,15 @@ theorem safeDecodeTransactionArgsValid {I g s0 σ k C aw mem rdata len} {ret : U
     (by jump_dest)
   obtain ⟨_, _, h₅⟩ := safeDecodeTransactionArgsToToken h₄ ho (by omega)
   obtain ⟨_, _, h₆⟩ := safeValidateAddress h₅ (by simp; omega) hgas (by jump_dest)
-  have h₇ := safeRuntime_block_10818 (by simp; omega) (by jump_dest) h₆
+  have h₇ := safeRuntime_block_13462 (by simp; omega) (by jump_dest) h₆
   obtain ⟨_, _, h₈⟩ := safeValidateAddress h₇ (by simp; omega) href (by jump_dest)
-  have h₉ := safeRuntime_block_10835 (by simp; omega) hret h₈
+  have h₉ := safeRuntime_block_13479 (by simp; omega) hret h₈
   exact ⟨_, _, h₉⟩
 
 set_option maxHeartbeats 1000000 in
 theorem safeDecodeTransactionArgsEvidence {I g s0 σ k C aw mem rdata} {ret : UInt256}
     {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨10679⟩
+    (h : RD safeBytecode I g s0 ⟨13322⟩
       (⟨4⟩ :: UInt256.ofNat I.calldata.size :: ret :: R) mem aw rdata σ k C)
     (hlong : 4 ≤ I.calldata.size) (hsize : I.calldata.size < UInt256.size)
     (hov : R.length + 24 ≤ 1024) (hret : (D_J safeBytecode 0).contains ret = true) :
@@ -144,9 +143,9 @@ theorem safeDecodeTransactionArgsEvidence {I g s0 σ k C aw mem rdata} {ret : UI
   have hfail (hc : UInt256.slt
       (UInt256.sub (UInt256.ofNat I.calldata.size) ⟨4⟩) (UInt256.ofNat 320) = ⟨1⟩) :
       RDrev safeBytecode g s0 := by
-    have h₁ := safeRuntime_block_10679_fallthrough (by simp; omega) (by rw [hc]; decide) h
-    exact safeRuntime_block_10703 (by
-      simp only [safeRuntime_block_10679_fallthrough_stack, List.length_cons]; omega) h₁
+    have h₁ := safeRuntime_block_13322_fallthrough (by simp; omega) (by rw [hc]; decide) h
+    exact safeRuntime_block_13346 (by
+      simp only [safeRuntime_block_13322_fallthrough_stack, List.length_cons]; omega) h₁
   by_cases hh : 324 ≤ I.calldata.size
   swap
   · exact Or.inl (hfail (solcDecodeLenCheckShort hlong (by simpa using Nat.lt_of_not_ge hh)
@@ -163,34 +162,33 @@ theorem safeDecodeTransactionArgsEvidence {I g s0 σ k C aw mem rdata} {ret : UI
   obtain ⟨_, _, h₂⟩ := safeValidateAddress h₁ (by simp; omega) hc (by jump_dest)
   by_cases hoff : (calldataWord I.calldata 68).toNat ≤ 2 ^ 64 - 1
   swap
-  · have hm : UInt256.sub (UInt256.shiftLeft (UInt256.ofNat 1) (UInt256.ofNat 64))
-        (UInt256.ofNat 1) = UInt256.ofNat (2 ^ 64 - 1) := by decide +kernel
-    have h₃ := safeRuntime_block_10717_fallthrough (by simp; omega) (by
+  · have hm : UInt256.ofNat 18446744073709551615 = UInt256.ofNat (2 ^ 64 - 1) := by decide +kernel
+    have h₃ := safeRuntime_block_13360_fallthrough (by simp; omega) (by
       change UInt256.isZero (UInt256.gt (calldataWord I.calldata 68) _) = UInt256.ofNat 0
       rw [hm, ugt_one (by
         change 2 ^ 64 - 1 < (calldataWord I.calldata 68).toNat; omega)]
       decide) h₂
-    exact Or.inl (safeRuntime_block_10747 (by
-      simp only [safeRuntime_block_10717_fallthrough_stack, List.length_cons]; omega) h₃)
+    exact Or.inl (safeRuntime_block_13391 (by
+      simp only [safeRuntime_block_13360_fallthrough_stack, List.length_cons]; omega) h₃)
   obtain ⟨_, _, h₃⟩ := safeDecodeTransactionArgsToBytes h₂ hoff (by omega)
   rcases safeDecodeCalldataBytesEvidence h₃ (by omega) hsize (by simp; omega)
     (by jump_dest) with hr | ⟨len, k', C', hw, hn, hs, hin, h₄⟩
   · exact Or.inl hr
   by_cases ho : (calldataWord I.calldata 100).toNat < 2
   swap
-  · have h₅ := safeRuntime_block_10762 (by simp; omega) (by jump_dest) h₄
+  · have h₅ := safeRuntime_block_13406 (by simp; omega) (by jump_dest) h₄
     exact Or.inl (safeDecodeOperationRevert h₅ ho (by simp; omega))
   obtain ⟨_, _, h₅⟩ := safeDecodeTransactionArgsToToken h₄ ho (by omega)
   by_cases hgas : (calldataWord I.calldata 228).toNat < EVM.addressModulus
   swap
   · exact Or.inl (safeValidateAddressRevert h₅ (by simp; omega) hgas)
   obtain ⟨_, _, h₆⟩ := safeValidateAddress h₅ (by simp; omega) hgas (by jump_dest)
-  have h₇ := safeRuntime_block_10818 (by simp; omega) (by jump_dest) h₆
+  have h₇ := safeRuntime_block_13462 (by simp; omega) (by jump_dest) h₆
   by_cases href : (calldataWord I.calldata 260).toNat < EVM.addressModulus
   swap
   · exact Or.inl (safeValidateAddressRevert h₇ (by simp; omega) href)
   obtain ⟨_, _, h₈⟩ := safeValidateAddress h₇ (by simp; omega) href (by jump_dest)
-  have h₉ := safeRuntime_block_10835 (by simp; omega) hret h₈
+  have h₉ := safeRuntime_block_13479 (by simp; omega) hret h₈
   exact Or.inr ⟨len, _, _, hh, hs, hc, hoff, hw, hn, hin, ho, hgas, href, h₉⟩
 
 end Benchmarks.Safe.Runs1e6

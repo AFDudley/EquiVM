@@ -1,7 +1,6 @@
 import Benchmarks.Safe.Runs1e6.SetupOwnersSource
 import Benchmarks.Safe.Runs1e6.OwnerHeapTraces
 import Benchmarks.Safe.Runs1e6.WordArrayBuffer
-import Benchmarks.Safe.Runs1e6.Blocks.Runtime_035
 import Benchmarks.Safe.Runs1e6.Blocks.Runtime_036
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
@@ -26,19 +25,19 @@ theorem writeOwnerLinkAccounts (evm : EVM.State) (key value : UInt256) :
 set_option maxRecDepth 100000 in
 theorem safeSetupOwnersStore (evm : EVM.State) {I g s0 σ k C aw mem rdata i n}
     {owner current threshold src ret : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨8145⟩
+    (h : RD safeBytecode I g s0 ⟨10114⟩
       (owner :: UInt256.ofNat i :: UInt256.ofNat n :: current :: threshold :: src :: ret :: R)
       mem aw rdata σ k C)
     (hee : evm.executionEnv = I) (hacc : evm.accountMap = σ)
     (hc : current.toNat < EVM.addressModulus) (hfit : i + 1 < UInt256.size)
     (hperm : I.perm = true) (hov : R.length + 12 ≤ 1024) :
-    ∃ aw' k' C', RD safeBytecode I g s0 ⟨8057⟩
+    ∃ aw' k' C', RD safeBytecode I g s0 ⟨9976⟩
       (UInt256.ofNat (i + 1) :: UInt256.ofNat n :: owner :: threshold :: src :: ret :: R)
       (twoWordHashMem current ⟨2⟩ mem) aw' rdata (writeOwnerLink evm current owner).accountMap
       k' C' := by
-  obtain ⟨aw', k', C', h'⟩ := safeRuntime_block_8145_packed (by simp; omega)
+  obtain ⟨aw', k', C', h'⟩ := safeRuntime_block_10114_packed (by simp; omega)
     hperm (by jump_dest) h
-  simp only [safeRuntime_block_8145_stack, safeRuntime_block_8145_memory, safeAddressMask,
+  simp only [safeRuntime_block_10114_stack, safeRuntime_block_10114_memory, safeAddressMaskLiteral,
     solcAddrMask_clean_left hc, uInt256_one_add_ofNat_of_lt hfit] at h'
   have hh := twoWordHashMemMapSlotAny current ⟨2⟩ mem
   change keccakWord ⟨0⟩ (UInt256.ofNat 64)
@@ -48,7 +47,7 @@ theorem safeSetupOwnersStore (evm : EVM.State) {I g s0 σ k C aw mem rdata i n}
   have hinc : UInt256.ofNat 1 + UInt256.ofNat i = UInt256.ofNat (i + 1) :=
     uInt256_one_add_ofNat_of_lt hfit
   rw [hh, hinc] at h'
-  change RD safeBytecode I g s0 ⟨8057⟩
+  change RD safeBytecode I g s0 ⟨9976⟩
     (UInt256.ofNat (i + 1) :: UInt256.ofNat n :: owner :: threshold :: src :: ret :: R)
     (twoWordHashMem current ⟨2⟩ mem) aw' rdata
     (sstoreAccountMap I.codeOwner σ (mapSlot current ⟨2⟩)

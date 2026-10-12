@@ -1,7 +1,7 @@
 import Benchmarks.Safe.Runs1e6.SelectorWordsMemory
 import Benchmarks.Safe.Runs1e6.PostModuleSource
-import Benchmarks.Safe.Runs1e6.Blocks.Runtime_032
 import Reasoning.WordArithmetic
+import Benchmarks.Safe.Runs1e6.Blocks.Runtime_032
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -14,18 +14,19 @@ def postModuleMemory (mem : ByteArray) (ptr hash : UInt256) (z : Bool) : ByteArr
 
 theorem safePostModuleMemory {mem : ByteArray} {ptr hash : UInt256} (z : Bool)
     (hf : memLoad ⟨64⟩ mem = ptr) (hb : ptr.toNat + 68 < UInt256.size) :
-    safeRuntime_block_7492_taken_memory (mem := mem) (x0 := z.toUInt256) (x1 := hash) =
+    safeRuntime_block_9214_taken_memory (mem := mem) (x0 := z.toUInt256) (x1 := hash) =
       postModuleMemory mem ptr hash z := by
   change memLoad (UInt256.ofNat 64) mem = ptr at hf
   have ha4 : (ptr + UInt256.ofNat 4).toNat = ptr.toNat + 4 :=
     addWord_toNat ptr ⟨4⟩ (by change ptr.toNat + 4 < UInt256.size; omega)
   have ha36 : (ptr + UInt256.ofNat 36).toNat = ptr.toNat + 36 :=
     addWord_toNat ptr ⟨36⟩ (by change ptr.toNat + 36 < UInt256.size; omega)
-  simp only [safeRuntime_block_7492_taken_memory, hf, ha4, ha36,
+  simp only [safeRuntime_block_9214_taken_memory, hf, ha4, ha36,
     postModuleMemory, selectorWordPairMemory, Reasoning.Theory.writeWord]
   have hz : UInt256.isZero (UInt256.isZero z.toUInt256) = z.toUInt256 := by
     cases z <;> decide
   rw [hz]
+  rfl
 
 theorem safePostModuleMemoryFree {mem : ByteArray} {ptr hash : UInt256} (z : Bool)
     (hf : memLoad ⟨64⟩ mem = ptr) (hm : 96 ≤ mem.size) (hp : 96 ≤ ptr.toNat) :

@@ -1,5 +1,6 @@
 import Benchmarks.Safe.Runs1e6.SetupOwnersStore
 import Benchmarks.Safe.Runs1e6.OwnerGuardTraces
+import Benchmarks.Safe.Runs1e6.Blocks.Runtime_035
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -10,7 +11,7 @@ set_option maxRecDepth 100000
 
 theorem safeSetupOwnersIteration (evm : EVM.State) {p locals i current ptr}
     {I g s0 σ k C aw mem rdata} {ret : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨8066⟩
+    (h : RD safeBytecode I g s0 ⟨9985⟩
       (UInt256.ofNat i :: UInt256.ofNat p.owners.length :: current :: p.threshold ::
         UInt256.ofNat ptr :: ret :: R) mem aw rdata σ k C)
     (hl : SetupOwnersLocals p locals i current) (hi : i < p.owners.length)
@@ -26,7 +27,7 @@ theorem safeSetupOwnersIteration (evm : EVM.State) {p locals i current ptr}
       ExecBlock config { contract := contract, locals := locals } evm setupOwnersLoopBody
         (.ok { contract := contract, locals := setupOwnersNextLocals locals p.owners[i] i }
           (writeOwnerLink evm current p.owners[i])) ∧
-      RD safeBytecode I g s0 ⟨8057⟩
+      RD safeBytecode I g s0 ⟨9976⟩
         (UInt256.ofNat (i + 1) :: UInt256.ofNat p.owners.length :: p.owners[i] :: p.threshold ::
           UInt256.ofNat ptr :: ret :: R) mem' aw' rdata
         (writeOwnerLink evm current p.owners[i]).accountMap k' C' ∧
@@ -37,28 +38,28 @@ theorem safeSetupOwnersIteration (evm : EVM.State) {p locals i current ptr}
   have hlt : UInt256.lt (UInt256.ofNat i) (memLoad (UInt256.ofNat ptr) mem) = ⟨1⟩ := by
     rw [hm.lengthWord (by omega)]
     exact ult_one (by rw [ulit_toNat' i (by omega), ulit_toNat' _ hn]; exact hi)
-  have h₁ := safeRuntime_block_8066_taken (by simp; omega)
+  have h₁ := safeRuntime_block_9985_taken (by simp; omega)
     (by rw [hlt]; decide) (by jump_dest) h
-  simp only [safeRuntime_block_8066_taken_stack] at h₁
+  simp only [safeRuntime_block_9985_taken_stack] at h₁
   have hword := hm.indexWord i hi hb
   have hmask : UInt256.land
-      (UInt256.sub (UInt256.shiftLeft (UInt256.ofNat 1) (UInt256.ofNat 160)) (UInt256.ofNat 1))
-      current = current := by rw [safeAddressMask, solcAddrMask_clean_left hc]
+      (UInt256.ofNat 1461501637330902918203684832716283019655932542975)
+      current = current := by rw [safeAddressMaskLiteral, solcAddrMask_clean_left hc]
   have howner : UInt256.land
-      (UInt256.sub (UInt256.shiftLeft (UInt256.ofNat 1) (UInt256.ofNat 160)) (UInt256.ofNat 1))
-      p.owners[i] = p.owners[i] := by rw [safeAddressMask, solcAddrMask_clean_left ho]
+      (UInt256.ofNat 1461501637330902918203684832716283019655932542975)
+      p.owners[i] = p.owners[i] := by rw [safeAddressMaskLiteral, solcAddrMask_clean_left ho]
   by_cases he : p.owners[i] = current
-  · have h₂ := safeRuntime_block_8084_fallthrough (by simp; omega)
+  · have h₂ := safeRuntime_block_10003_fallthrough (by simp; omega)
       (by rw [hword, hmask, howner, he, u256_sub_self]; rfl) h₁
-    simp only [safeRuntime_block_8084_fallthrough_stack, hword] at h₂
-    have h₃ := safeRuntime_block_8120 (by simp; omega) (by jump_dest) h₂
-    exact .inl ⟨safeRuntime_block_6898 (by simp; omega) h₃,
+    simp only [safeRuntime_block_10003_fallthrough_stack, hword] at h₂
+    have h₃ := safeRuntime_block_10065 (by simp; omega) (by jump_dest) h₂
+    exact .inl ⟨safeRuntime_block_8421 (by simp; omega) h₃,
       safeSetupOwnersRepeated evm hl hi hc he⟩
-  have h₂ := safeRuntime_block_8084_taken (by simp; omega)
+  have h₂ := safeRuntime_block_10003_taken (by simp; omega)
     (by rw [hword, hmask, howner]; exact u256_sub_ne_zero_of_ne he) (by jump_dest) h₁
-  simp only [safeRuntime_block_8084_taken_stack, hword] at h₂
-  have h₃ := safeRuntime_block_8136 (by simp; omega) (by jump_dest) h₂
-  simp only [safeRuntime_block_8136_stack] at h₃
+  simp only [safeRuntime_block_10003_taken_stack, hword] at h₂
+  have h₃ := safeRuntime_block_10105 (by simp; omega) (by jump_dest) h₂
+  simp only [safeRuntime_block_10105_stack] at h₃
   have hsize : 96 ≤ mem.size := by have := hm.size; omega
   by_cases hv : validOwner σ I p.owners[i]
   · by_cases he0 : ownerLinkAt σ I p.owners[i] = ⟨0⟩

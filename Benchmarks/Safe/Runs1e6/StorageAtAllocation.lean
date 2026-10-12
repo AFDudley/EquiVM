@@ -1,6 +1,7 @@
 import Benchmarks.Safe.Runs1e6.StorageAtGas
 import Benchmarks.Safe.Runs1e6.AddressArrayMemory
 import Benchmarks.Safe.Runs1e6.Memory
+import Benchmarks.Safe.Runs1e6.Blocks.Runtime_018
 import Benchmarks.Safe.Runs1e6.Blocks.Runtime_040
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
@@ -21,79 +22,77 @@ theorem storageAtAllocatedMemory_size (bytes : UInt256) :
   decide +kernel
 
 theorem safeStorageAtAllocationMemory (bytes : UInt256) :
-    safeRuntime_block_3084_taken_memory (mem := solcFreePtrMem) (x0 := bytes) =
+    safeRuntime_block_3545_taken_memory (mem := solcFreePtrMem) (x0 := bytes) =
       storageAtAllocatedMemory bytes := by
-  simp only [safeRuntime_block_3084_taken_memory,
+  simp only [safeRuntime_block_3545_taken_memory,
     show memLoad (UInt256.ofNat 64) solcFreePtrMem = ⟨128⟩ from solcFreePtrMem_mload64]
   rfl
 
 theorem safeStorageAtAllocate {I g s0 σ k C aw rdata bytes len offset}
     {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨3084⟩
+    (h : RD safeBytecode I g s0 ⟨3545⟩
       (bytes :: ⟨0⟩ :: ⟨96⟩ :: len :: offset :: R) solcFreePtrMem aw rdata σ k C)
     (hov : R.length + 11 ≤ 1024) (hsize : I.calldata.size < UInt256.size) :
-    ∃ aw' k' C', RD safeBytecode I g s0 ⟨3131⟩
+    ∃ aw' k' C', RD safeBytecode I g s0 ⟨3592⟩
       (⟨0⟩ :: ⟨128⟩ :: ⟨96⟩ :: len :: offset :: R)
       (storageAtAllocatedMemory bytes) aw' rdata σ k' C' := by
   have hmem := safeStorageAtAllocationMemory bytes
-  have hstart : ∃ aw' k' C' x, RD safeBytecode I g s0 ⟨3126⟩
+  have hstart : ∃ aw' k' C' x, RD safeBytecode I g s0 ⟨3587⟩
       (x :: ⟨128⟩ :: ⟨0⟩ :: ⟨96⟩ :: len :: offset :: R)
       (storageAtAllocatedMemory bytes) aw' rdata σ k' C' := by
     by_cases hz : bytes = ⟨0⟩
-    · obtain ⟨aw', k', C', h'⟩ := safeRuntime_block_3084_taken_packed (by simp; omega)
+    · obtain ⟨aw', k', C', h'⟩ := safeRuntime_block_3545_taken_packed (by simp; omega)
         (by rw [hz]; decide) (by jump_dest) h
-      simp only [safeRuntime_block_3084_taken_stack,
+      simp only [safeRuntime_block_3545_taken_stack,
         show memLoad (UInt256.ofNat 64) solcFreePtrMem = ⟨128⟩ from solcFreePtrMem_mload64,
         hmem] at h'
       exact ⟨_, _, _, _, h'⟩
-    · obtain ⟨aw₁, k₁, C₁, h₁⟩ := safeRuntime_block_3084_fallthrough_packed
+    · obtain ⟨aw₁, k₁, C₁, h₁⟩ := safeRuntime_block_3545_fallthrough_packed
         (by simp; omega) (isZero_eq_zero_of_ne hz) h
-      change safeRuntime_block_3084_fallthrough_memory (mem := solcFreePtrMem)
+      change safeRuntime_block_3545_fallthrough_memory (mem := solcFreePtrMem)
         (x0 := bytes) = storageAtAllocatedMemory bytes at hmem
-      simp only [safeRuntime_block_3084_fallthrough_stack,
+      simp only [safeRuntime_block_3545_fallthrough_stack,
         show memLoad (UInt256.ofNat 64) solcFreePtrMem = ⟨128⟩ from solcFreePtrMem_mload64,
         hmem] at h₁
-      obtain ⟨aw₂, k₂, C₂, h₂⟩ := safeRuntime_block_3114_packed (by simp; omega) h₁
-      have hcopy : safeRuntime_block_3114_memory (ee := I)
+      obtain ⟨aw₂, k₂, C₂, h₂⟩ := safeRuntime_block_3575_packed (by simp; omega) h₁
+      have hcopy : safeRuntime_block_3575_memory (ee := I)
           (mem := storageAtAllocatedMemory bytes) (x0 := bytes) (x1 := ⟨128⟩) =
           storageAtAllocatedMemory bytes := by
-        simp only [safeRuntime_block_3114_memory, ulit_toNat' _ hsize]
+        simp only [safeRuntime_block_3575_memory, ulit_toNat' _ hsize]
         change I.calldata.write I.calldata.size (storageAtAllocatedMemory bytes) 160 _ = _
         rw [← storageAtAllocatedMemory_size bytes]
         exact writePastSourceAtMemoryEnd _ _ _
       rw [hcopy] at h₂
       exact ⟨_, _, _, _, h₂⟩
   obtain ⟨aw₁, k₁, C₁, x, h₁⟩ := hstart
-  have h₂ := safeRuntime_block_3126 (by simp; omega) h₁
+  have h₂ := safeRuntime_block_3587 (by simp; omega) h₁
   exact ⟨_, _, _, h₂⟩
 
 theorem safeStorageAtLengthCheck {I g s0 σ k C aw mem rdata len} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨3053⟩ (len :: R) mem aw rdata σ k C)
+    (h : RD safeBytecode I g s0 ⟨3513⟩ (len :: R) mem aw rdata σ k C)
     (hov : R.length + 7 ≤ 1024)
     (hn : (UInt256.shiftLeft len (UInt256.ofNat 5)).toNat ≤ 2 ^ 64 - 1) :
-    RD safeBytecode I g s0 ⟨3084⟩
+    RD safeBytecode I g s0 ⟨3545⟩
       (UInt256.shiftLeft len (UInt256.ofNat 5) :: ⟨0⟩ :: ⟨96⟩ :: len :: R)
-      mem aw rdata σ (k + 17) (C + 55) := by
+      mem aw rdata σ (k + 13) (C + 43) := by
   have hg : UInt256.gt (UInt256.shiftLeft len (UInt256.ofNat 5))
-      (UInt256.sub (UInt256.shiftLeft (UInt256.ofNat 1) (UInt256.ofNat 64))
-        (UInt256.ofNat 1)) = ⟨0⟩ := ugt_zero hn
-  exact safeRuntime_block_3053_taken hov (by rw [hg]; decide) (by jump_dest) h
+      (UInt256.ofNat 18446744073709551615) = ⟨0⟩ := ugt_zero hn
+  exact safeRuntime_block_3513_taken (by omega) (by rw [hg]; decide) (by jump_dest) h
 
 theorem safeStorageAtLengthFail {I g s0 σ k C aw mem rdata len} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨3053⟩ (len :: R) mem aw rdata σ k C)
+    (h : RD safeBytecode I g s0 ⟨3513⟩ (len :: R) mem aw rdata σ k C)
     (hov : R.length + 7 ≤ 1024)
     (hn : ¬(UInt256.shiftLeft len (UInt256.ofNat 5)).toNat ≤ 2 ^ 64 - 1) :
     RDrev safeBytecode g s0 := by
   have hg : UInt256.gt (UInt256.shiftLeft len (UInt256.ofNat 5))
-      (UInt256.sub (UInt256.shiftLeft (UInt256.ofNat 1) (UInt256.ofNat 64))
-        (UInt256.ofNat 1)) = ⟨1⟩ := ugt_one (by simpa using hn)
-  have h₁ := safeRuntime_block_3053_fallthrough hov (by rw [hg]; decide) h
-  have h₂ := safeRuntime_block_3077
-    (by simp only [safeRuntime_block_3053_fallthrough_stack, List.length_cons]; omega)
+      (UInt256.ofNat 18446744073709551615) = ⟨1⟩ := ugt_one (by simpa using hn)
+  have h₁ := safeRuntime_block_3513_fallthrough (by omega) (by rw [hg]; decide) h
+  have h₂ := safeRuntime_block_3538
+    (by simp only [safeRuntime_block_3513_fallthrough_stack, List.length_cons]; omega)
     (by jump_dest) h₁
-  exact safeRuntime_block_9222
-    (by simp only [safeRuntime_block_3053_fallthrough_stack,
-      safeRuntime_block_3077_stack, List.length_cons]; omega) h₂
+  exact safeRuntime_block_11708
+    (by simp only [safeRuntime_block_3513_fallthrough_stack,
+      safeRuntime_block_3538_stack, List.length_cons]; omega) h₂
 
 theorem storageAtAllocatedMemory_wordBuffer (n : Nat) (hn : n ≤ 2 ^ 64 - 1) :
     storageAtAllocatedMemory (UInt256.ofNat (32 * n)) =

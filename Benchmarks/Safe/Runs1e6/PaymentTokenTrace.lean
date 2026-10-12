@@ -10,7 +10,7 @@ namespace Benchmarks.Safe.Runs1e6
 set_option maxRecDepth 100000 in
 theorem safePaymentTokenTrace (p : PaymentInput) (evm : EVM.State)
     {I g s0 σ k C aw mem rdata ptr} {ret : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨7931⟩
+    (h : RD safeBytecode I g s0 ⟨9754⟩
       (UInt256.mul p.gasTotal p.gasPrice :: UInt256.ofNat (p.receiver I).val :: ⟨0⟩ ::
         UInt256.ofNat p.refundReceiver.val :: UInt256.ofNat p.gasToken.val :: p.gasPrice ::
         p.baseGas :: p.gasUsed :: ret :: R) mem aw rdata σ k C)
@@ -22,8 +22,8 @@ theorem safePaymentTokenTrace (p : PaymentInput) (evm : EVM.State)
     (hz : memLoad ⟨96⟩ mem = ⟨0⟩) (hb : ptr < 2 ^ 220)
     (hov : R.length + 24 ≤ 1024) (hret : (D_J safeBytecode 0).contains ret = true) :
     PaymentOutcome p evm I g s0 mem ptr ret R := by
-  have h₁ := safeRuntime_block_7931 (by simp; omega) (by jump_dest) h
-  simp only [safeRuntime_block_7931_stack] at h₁
+  have h₁ := safeRuntime_block_9754 (by simp; omega) (by jump_dest) h
+  simp only [safeRuntime_block_9754_stack] at h₁
   obtain ⟨evm', σ', z, out, aw₂, k₂, C₂, hsource, hee', hacc', hw', h₂,
       hf', hz', hpres, hsize, hout⟩ :=
     safeTokenTransferTrace (p.tokenInput I) evm h₁ hee hacc hworld hf hm hp hz

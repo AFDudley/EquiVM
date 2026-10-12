@@ -32,7 +32,7 @@ theorem safeAddownerwiththresholdBodyCore
         · obtain ⟨_, _, h659⟩ := safeDecodeAddressWord h9112 (by simp)
             hcheck hc (by jump_dest)
           have h1736 := safeRuntime_block_659 (by simp) (by jump_dest) h659
-          have h6757 := safeRuntime_block_1736 (by simp) (by jump_dest) h1736
+          have h6757 := safeRuntime_block_1760 (by simp) (by jump_dest) h1736
           have hdec : config.externalABI.decodeCalldata?
               (addownerwiththresholdTransition.params.map Param.name)
               (transitionSignature addownerwiththresholdTransition).paramTypes I.calldata =
@@ -40,12 +40,12 @@ theorem safeAddownerwiththresholdBodyCore
             decodeCalldata_addr_uint256_ok hlen hbig hc
           by_cases hauth : I.source = I.codeOwner
           · obtain ⟨_, _, h1744⟩ := safeAuthorizedTrace h6757 (by simp) hauth (by jump_dest)
-            have h6783 := safeRuntime_block_1744 (by simp) (by jump_dest) h1744
+            have h6783 := safeRuntime_block_1768 (by simp) (by jump_dest) h1744
             let evm := initState σ σ₀ (.ofUInt256 g) A I
             let key := calldataWord I.calldata 4
             let threshold := calldataWord I.calldata 36
-            change RD safeBytecode I (.ofUInt256 g) evm ⟨6783⟩
-              [key, ⟨1753⟩, threshold, key, ⟨664⟩, selWord I] _ _ _ σ _ _ at h6783
+            change RD safeBytecode I (.ofUInt256 g) evm ⟨8269⟩
+              [key, ⟨1777⟩, threshold, key, ⟨664⟩, selWord I] _ _ _ σ _ _ at h6783
             by_cases hv : validOwner σ I key
             · by_cases he : ownerLinkAt σ I key = ⟨0⟩
               · have he' : ownerLink evm key = ⟨0⟩ := by rw [ownerLink_eq_at]; exact he
@@ -96,7 +96,7 @@ theorem safeAddownerwiththresholdBodyCore
                             (.abi (.fallthrough rfl rfl encodeReturnValues_nil)))
                       · obtain ⟨_, _, _, h3415⟩ := safeAddOwnerCountChanged h1863 (by simp) hperm
                           (by rwa [hcthreshold] at ht)
-                        have h6757' := safeRuntime_block_3415 (by simp) (by jump_dest) h3415
+                        have h6757' := safeRuntime_block_4000 (by simp) (by jump_dest) h3415
                         obtain ⟨_, _, h3423⟩ := safeAuthorizedTrace h6757' (by simp) hauth
                           (by jump_dest)
                         by_cases hle : threshold.toNat ≤ (ownerCount counted).toNat
@@ -113,9 +113,9 @@ theorem safeAddownerwiththresholdBodyCore
                               (by rwa [hccount] at hle) hz
                             obtain ⟨_, _, _, _, h1936⟩ := safeThresholdTrace h3474 (by simp)
                               hperm (by jump_dest)
-                            have h664 := safeRuntime_block_1936 (by simp) (by jump_dest) h1936
+                            have h664 := safeRuntime_block_2010 (by simp) (by jump_dest) h1936
                             have hret := safeRuntime_block_664 (by simp
-                              [safeRuntime_block_1936_stack]) h664
+                              [safeRuntime_block_2010_stack]) h664
                             have hbody := ExecFuncBody.execBlockOK
                               (safeAddOwnerPrefix evm key threshold hc hvalue hauth hv he'
                                 (safeAddOwnerTailOK linked key threshold hno
@@ -154,7 +154,7 @@ theorem safeAddownerwiththresholdBodyCore
               exact RDrev.reEquivElim hcode hrev fun _ _ hΞ ↦
                 reEquivSelectorExecution hdispatch hdec hbody (.revert hΞ rfl)
           · have hrev := safeUnauthorizedTrace h6757
-              (by simp [safeRuntime_block_1736_stack]) hauth
+              (by simp [safeRuntime_block_1760_stack]) hauth
             exact reEquivSelectorRevert hcode hdispatch hrev fun locals ↦
               safeAddOwnerSourceUnauthorized _ locals hvalue hauth
         · have hrev := safeDecodeAddressWordNoncanon h9112 (by simp) hcheck hc

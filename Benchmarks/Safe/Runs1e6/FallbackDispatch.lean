@@ -1,4 +1,8 @@
 import Benchmarks.Safe.Runs1e6.SelectorMiss
+import Benchmarks.Safe.Runs1e6.Blocks.Runtime_001
+import Benchmarks.Safe.Runs1e6.Blocks.Runtime_002
+import Benchmarks.Safe.Runs1e6.Blocks.Runtime_003
+import Benchmarks.Safe.Runs1e6.Blocks.Runtime_004
 import Benchmarks.Safe.Runs1e6.Blocks.Runtime_005
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
