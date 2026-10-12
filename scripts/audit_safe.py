@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Reproduce Safe artifacts and regenerate/check the proof-support inventory.
 
-Usage: python3 scripts/audit_safe.py --solc /path/to/solc-0.8.35 [--dir Benchmarks/Safe/Main] [--write]
+Usage: python3 scripts/audit_safe.py --solc /path/to/solc-0.8.35 [--dir Benchmarks/Safe/Main] [--runs 200] [--write]
 `--dir` is the proof directory (default `Benchmarks/Safe/Main`); its path is the Lean module prefix.
 The compiler must be 0.8.35+commit.47b9dedd. This checks artifact provenance and
 summary coverage; the separate Lean Audit target executes the semantic regressions.
@@ -26,8 +26,13 @@ from generate_rd_blocks import (
 
 ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_DIR = "Benchmarks/Safe/Main"
-OPTIONS = ["--optimize", "--optimize-runs", "200", "--evm-version", "shanghai",
-           "--metadata-hash", "none", "--base-path", "."]
+
+
+def compiler_options(runs: int) -> list[str]:
+    return ["--optimize", "--optimize-runs", str(runs), "--evm-version", "shanghai",
+            "--metadata-hash", "none", "--base-path", "."]
+
+
 FIELDS = "bin,bin-runtime,abi,storage-layout,srcmap-runtime,hashes,function-debug-runtime"
 
 
@@ -47,6 +52,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--solc", type=Path, required=True)
     parser.add_argument("--write", action="store_true")
+    parser.add_argument("--runs", type=int, default=200, help="solc --optimize-runs value of the proof's bytecode")
     parser.add_argument("--dir", type=Path, default=Path(DEFAULT_DIR),
                         help="proof directory relative to the repository root (its path is the module prefix)")
     args = parser.parse_args()
@@ -57,10 +63,11 @@ def main() -> None:
         raise SystemExit(f"no Safe source at {source}")
     module = ".".join(rel.parts)
     compiler = args.solc.resolve()
+    options = compiler_options(args.runs)
     version = subprocess.check_output([str(compiler), "--version"], text=True)
     if "0.8.35+commit.47b9dedd" not in version:
         raise ValueError(f"unexpected compiler version: {version}")
-    run = subprocess.run([str(compiler), *OPTIONS, "--combined-json", FIELDS, source],
+    run = subprocess.run([str(compiler), *options, "--combined-json", FIELDS, source],
                          cwd=ROOT, text=True, capture_output=True, check=True)
     data = json.loads(run.stdout)
     artifact = data["contracts"][source + ":Safe"]
@@ -157,7 +164,7 @@ def main() -> None:
 
     friendly = {0x32: "ORIGIN", 0x3A: "GASPRICE", 0x3C: "EXTCODECOPY", 0xF4: "DELEGATECALL"}
     manifest = {
-        "compiler": "0.8.35+commit.47b9dedd", "compiler_options": OPTIONS,
+        "compiler": "0.8.35+commit.47b9dedd", "compiler_options": options,
         "source": source,
         "artifacts": {name: {"file_sha256": sha((safe / name).read_bytes()),
                              "bytes_sha256": sha(code), "bytes": len(code)}
