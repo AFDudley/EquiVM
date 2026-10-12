@@ -6,6 +6,9 @@ open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.V3_77901a5
 
+set_option maxRecDepth 100000
+set_option maxHeartbeats 1000000
+
 theorem safeContractSignatureTrace (words : List UInt256)
     {I g s0 σ k C aw mem rdata ptr src subptr} {signature : ByteArray}
     {hash offset owner ret : UInt256} {R : List UInt256} (evm : EVM.State)
@@ -19,10 +22,10 @@ theorem safeContractSignatureTrace (words : List UInt256)
     (hw : WordArrayMemory (contractSignatureHeaderMemory mem ptr hash) (subptr + 32) words)
     (hn : words.length = (signature.size + 31) / 32)
     (hs : (wordBytes words).extract 0 signature.size = signature)
-    (hm : 96 ≤ mem.size) (hp : 96 ≤ ptr)
+    (hm : 128 ≤ mem.size) (hp : 128 ≤ ptr) (hz : memLoad ⟨96⟩ mem = ⟨0⟩)
     (hin : subptr + 32 ≤ mem.size) (ha : subptr + 32 ≤ ptr)
-    (hsrc : subptr + 32 + 32 * words.length ≤ ptr + 68)
-    (hb : ptr + 132 + 32 * words.length < UInt256.size)
+    (hsrc : subptr + 32 + 32 * words.length ≤ ptr + 100)
+    (hb : ptr + 512 + 64 * words.length + 2 ^ 139 < UInt256.size)
     (hsmall : contractSignatureCallLength signature.size ≤ maxReturnDataSizeByGas)
     (hov : R.length + 33 ≤ 1024) (hret : (D_J safeBytecode 0).contains ret = true) :
     ∃ evm' σ' z out,
@@ -33,14 +36,14 @@ theorem safeContractSignatureTrace (words : List UInt256)
       ((RDrev safeBytecode g s0 ∧ contractSignatureResult z out = false) ∨
         ∃ aw' k' C', RD safeBytecode I g s0 ret R
           (signatureReturnMemory (contractSignatureCallMemory mem ptr signature.size hash words)
-            ptr out) aw' out σ' k' C' ∧ contractSignatureResult z out = true) := by
+            (contractSignatureCallEnd ptr signature.size) out) aw' out σ' k' C' ∧ contractSignatureResult z out = true) := by
   have hptr : ptr + 32 < UInt256.size := by omega
   have hcl : contractSignatureCallLength signature.size < UInt256.size := by
     dsimp [contractSignatureCallLength, ABI.paddedSize]
     rw [hn] at hb
     omega
   obtain ⟨_, _, _, _, h₁⟩ := safeContractSignaturePrepare words h hf hsub hl hw hn
-    hm hp hin ha hsrc hb hov
+    (by omega) (by omega) hin ha hsrc (by omega) hov
   obtain ⟨evm', σ', z, out, aw', k', C', hc, he, hac, hworld', h₂, hout, hbound⟩ :=
     rawStaticCallTraceFrom evm h₁ hee hacc hworld (by native_decide) (by simp; omega)
   have ho : out.size < 2 ^ 138 := hbound (by
@@ -53,23 +56,27 @@ theorem safeContractSignatureTrace (words : List UInt256)
       (addressOfNat_eq_of_masked_word owner).symm
   have hc' : callViaEVM evm (EVM.address (AccountAddress.ofUInt256 owner)) 0
       (contractSignatureCallBytes hash signature) (z, evm', out) false := by
-    simpa only [ht, ulit_toNat' ptr (by omega),
+    simpa only [ht, ulit_toNat' (contractSignatureCallEnd ptr signature.size) (by
+      dsimp [contractSignatureCallEnd, contractSignatureCallLength, ABI.paddedSize]; rw [hn] at hb; omega),
       ulit_toNat' (contractSignatureCallLength signature.size) hcl,
-      contractSignatureCallMemory_read _ _ _ _ _ hn hp hptr hs] using hc
+      contractSignatureCallMemory_read _ _ _ _ _ hn (by omega) hptr hs] using hc
   refine ⟨evm', σ', z, out, hc', he, hac, hworld', ho, ?_⟩
-  have hcopy : (min (⟨32⟩ : UInt256) (UInt256.ofNat out.size)).toNat = min 32 out.size :=
-    callOutputLength hout
-  rw [callOutputMem, hcopy] at h₂
-  cases z with
-  | false =>
-      exact Or.inl ⟨safeContractSignatureCallFailure h₂ (by simp; omega), rfl⟩
-  | true =>
-      have hf' := contractSignatureArgs_free (len := signature.size) (hash := hash)
-        (words := words) hf hm hp hn
-      rcases safeContractSignatureReturnBuffer h₂ hf'
-        (by rw [contractSignatureCallMemory_size _ _ _ _ _ hn]; omega) hp (by omega)
-        (by omega) (by simp; omega) with ⟨hr, hd⟩ | ⟨aw'', k'', C'', h₃, hd⟩
-      · exact Or.inl ⟨hr, contractSignatureResult_of_not_decoded hd⟩
-      · exact safeContractSignatureFinish h₃ hd (by omega) hret
+  rw [callOutputMem_zero] at h₂
+  have hf' := contractSignatureCallMemory_free mem ptr signature.size hash words hn
+    (by omega) (by omega)
+  have hbout : contractSignatureCallEnd ptr signature.size + out.size + 64 < UInt256.size := by
+    dsimp [contractSignatureCallEnd, contractSignatureCallLength, ABI.paddedSize]
+    rw [hn] at hb
+    omega
+  have hz' : memLoad ⟨96⟩ (contractSignatureCallMemory mem ptr signature.size hash words) = ⟨0⟩ := by
+    rw [memLoadReadWord, show (⟨96⟩ : UInt256).toNat = 96 from rfl,
+      contractSignatureCallMemory_preserved _ _ _ _ _ _ _ hn hm (by decide) hp,
+      ← show (⟨96⟩ : UInt256).toNat = 96 from rfl, ← memLoadReadWord, hz]
+  obtain ⟨_, _, _, h₃⟩ := safeContractSignatureReturnBuffer h₂ hf' hbout (by simp; omega)
+  obtain ⟨_, _, _, h₄⟩ := safeContractSignatureFinish h₃
+    (signatureReturnMemory_length _ _ _ hz' (by omega))
+    (fun hs ↦ signatureReturnMemory_word _ _ _ hs (by omega))
+    hout (by simp; omega) (by jump_dest)
+  exact safeContractSignatureRequire h₄ (by omega) hret
 
 end Benchmarks.Safe.V3_77901a5

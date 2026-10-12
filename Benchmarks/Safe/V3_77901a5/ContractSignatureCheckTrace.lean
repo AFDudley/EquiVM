@@ -86,7 +86,7 @@ theorem safeCheckContractTrace (p : ContractSignatureInput)
     omega
   obtain ⟨evm', σ', z, out, hc, he, hac, hw, hout, htrace⟩ :=
     safeContractSignatureTrace words evm h₁ hee hacc hworld hf hadd hlen hview hwords hsview
-      (by omega) (by omega)
+      (by omega) (by omega) hz
       (by dsimp [subptr]; omega) (by dsimp [subptr]; omega)
       (by rw [hwords, hsig]; dsimp [subptr]; omega)
       (by rw [hwords, hsig]; omega)

@@ -37,7 +37,7 @@ theorem safeSetupPaymentTrace (evm : EVM.State)
     ((canonicalAddress_eq_address_iff _ _ hb.paymentToken).mp rfl).symm
   have hr : UInt256.ofNat p.paymentInput.refundReceiver.val = p.paymentReceiver :=
     ((canonicalAddress_eq_address_iff _ _ hb.paymentReceiver).mp rfl).symm
-  have hcall : RD safeBytecode I g s0 ⟨7841⟩
+  have hcall : RD safeBytecode I g s0 ⟨7730⟩
       (UInt256.ofNat p.paymentInput.refundReceiver.val ::
         UInt256.ofNat p.paymentInput.gasToken.val :: p.paymentInput.gasPrice ::
         p.paymentInput.baseGas :: p.paymentInput.gasUsed :: ⟨4802⟩ ::

@@ -2,7 +2,7 @@ import Benchmarks.Safe.V3_77901a5.GetOwnersMemory
 import Benchmarks.Safe.V3_77901a5.OwnerStorage
 import Benchmarks.Safe.V3_77901a5.CheckedIncrement
 import Benchmarks.Safe.V3_77901a5.Blocks.Runtime_023
-import Benchmarks.Safe.V3_77901a5.Blocks.Runtime_049
+import Benchmarks.Safe.V3_77901a5.Blocks.Runtime_050
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -56,7 +56,7 @@ theorem safeGetOwnersLoopNext {I g s0 σ k C aw mem rdata n words i current}
   have hh := twoWordHashMem_mapSlot_of_ge64 (mem := writeWord mem (160 + 32 * i) current)
     current ⟨2⟩ (by rw [writeWord_sparse_size]; have := hm.lower; omega)
   change keccakWord ⟨0⟩ ⟨64⟩ (getOwnersStepMemory mem i current) = mapSlot current ⟨2⟩ at hh
-  change RD safeBytecode I g s0 ⟨11024⟩
+  change RD safeBytecode I g s0 ⟨11161⟩
     (UInt256.ofNat i :: ⟨4509⟩ ::
       UInt256.land (solcSlotWordAt
         (keccakWord ⟨0⟩ ⟨64⟩ (getOwnersStepMemory mem i current)) σ I) solcAddrMask ::
@@ -92,7 +92,7 @@ theorem safeGetOwnersLoopOutOfBounds {I g s0 σ k C aw mem rdata n words i curre
   have h₃ := safeRuntime_block_4448
     (by simp only [safeRuntime_block_4437_fallthrough_stack, List.length_cons]; omega)
     (by jump_dest) h₂
-  exact safeRuntime_block_11368
+  exact safeRuntime_block_11505
     (by simp only [safeRuntime_block_4437_fallthrough_stack,
       safeRuntime_block_4448_stack, List.length_cons]; omega) h₃
 

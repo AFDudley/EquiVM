@@ -34,14 +34,14 @@ theorem safeSetupFallbackTrace (p : SetupInput) (evm : EVM.State)
   have h₂ := safeRuntime_block_4711 (by omega) (by jump_dest) h₁
   simp only [safeRuntime_block_4711_stack] at h₂
   by_cases heq : AccountAddress.ofNat p.fallbackHandler.toNat = I.codeOwner
-  · have h₃ := safeRuntime_block_8361_fallthrough (by simp; omega)
+  · have h₃ := safeRuntime_block_8250_fallthrough (by simp; omega)
       (by rw [safeAddressMask, solcAddrMask_clean hc]
           exact u256_sub_eq_zero_iff_eq.mpr
             ((canonicalAddress_eq_address_iff _ _ hc).mp heq)) h₂
     exact .inl ⟨safeInternalFallbackTraceRevert h₃ (by simp; omega),
       safeSetupFallbackCall p evm hl hc hz
         (safeInternalSetFallbackHandlerRevert evm p.fallbackHandler (by rwa [hee]))⟩
-  have h₃ := safeRuntime_block_8361_taken (by simp; omega)
+  have h₃ := safeRuntime_block_8250_taken (by simp; omega)
     (by rw [safeAddressMask, solcAddrMask_clean hc]
         exact u256_sub_ne_zero_of_ne
           (fun hw ↦ heq ((canonicalAddress_eq_address_iff _ _ hc).mpr hw))) (by jump_dest) h₂

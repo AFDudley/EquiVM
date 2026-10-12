@@ -15,7 +15,7 @@ theorem safeSetupModulesAllocate {I g s0 σ k C aw mem rdata n len ptr} {R : Lis
     (hb : SetupCalldataBounds I.calldata n len)
     (hf : memLoad (UInt256.ofNat 64) mem = UInt256.ofNat ptr)
     (hp : ptr + 64 + len < UInt256.size) (hov : R.length + 24 ≤ 1024) :
-    ∃ aw' k' C', RD safeBytecode I g s0 ⟨8430⟩
+    ∃ aw' k' C', RD safeBytecode I g s0 ⟨8319⟩
       (UInt256.ofNat ptr :: calldataWord I.calldata 68 :: ⟨4782⟩ ::
         setupDecodedStack I.calldata n len R)
       (calldataBufferMemory I.calldata mem (setupDataStart I.calldata) ptr len len

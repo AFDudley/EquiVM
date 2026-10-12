@@ -2,7 +2,7 @@ import Benchmarks.Safe.V3_77901a5.ModuleMembership
 import Benchmarks.Safe.V3_77901a5.Routines
 import Benchmarks.Safe.V3_77901a5.Blocks.Runtime_024
 import Benchmarks.Safe.V3_77901a5.Blocks.Runtime_030
-import Benchmarks.Safe.V3_77901a5.Blocks.Runtime_039
+import Benchmarks.Safe.V3_77901a5.Blocks.Runtime_040
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -77,7 +77,7 @@ theorem safeModulesLargeSize {I g s0 σ k C aw mem rdata pageSize x0 x1}
   have h₂ := safeRuntime_block_4913
     (by simp only [safeRuntime_block_4896_fallthrough_stack, List.length_cons]; omega)
     (by jump_dest) h₁
-  exact safeRuntime_block_9095
+  exact safeRuntime_block_9222
     (by simp only [safeRuntime_block_4913_stack, safeRuntime_block_4896_fallthrough_stack,
       List.length_cons]; omega) h₂
 

@@ -79,7 +79,7 @@ theorem safeSetFallbackHandlerUnauthorized (evm : EVM.State) (locals : Store)
     (by simpa [hauth] using safeEvalAuthorized evm _))
 
 theorem safeSetFallbackHandlerTrace {I g s0 σ k C} {handler : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨8394⟩ (handler :: ⟨6472⟩ :: handler :: ⟨664⟩ :: R)
+    (h : RD safeBytecode I g s0 ⟨8283⟩ (handler :: ⟨6472⟩ :: handler :: ⟨664⟩ :: R)
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C)
     (hov : R.length + 6 ≤ 1024) (hperm : I.perm = true) :
     RDret safeBytecode g s0 (sstoreAccountMap I.codeOwner σ fallbackHandlerSlot handler)
@@ -119,7 +119,7 @@ theorem safeSetfallbackhandlerBodyCore
           · obtain ⟨_, _, h6463⟩ := safeAuthorizedTrace h6757 (by simp) hauth (by jump_dest)
             have h8250 := safeRuntime_block_6463 (by simp) (by jump_dest) h6463
             by_cases heq : AccountAddress.ofNat (calldataWord I.calldata 4).toNat = I.codeOwner
-            · have h8267 := safeRuntime_block_8361_fallthrough (by simp)
+            · have h8267 := safeRuntime_block_8250_fallthrough (by simp)
                 (by rw [safeAddressMask, show (UInt256.ofNat 4).toNat = 4 by rfl,
                       solcAddrMask_clean hcanon]
                     exact u256_sub_eq_zero_iff_eq.mpr
@@ -129,7 +129,7 @@ theorem safeSetfallbackhandlerBodyCore
                 (initState σ σ₀ (.ofUInt256 g) A I) (calldataWord I.calldata 4) hvalue hauth heq
               exact RDrev.reEquivElim hcode hrev fun _ _ hΞ ↦
                 reEquivSelectorExecution hdispatch hdec hbody (.revert hΞ rfl)
-            · have h8283 := safeRuntime_block_8361_taken (by simp)
+            · have h8283 := safeRuntime_block_8250_taken (by simp)
                 (by rw [safeAddressMask, show (UInt256.ofNat 4).toNat = 4 by rfl,
                       solcAddrMask_clean hcanon]
                     exact u256_sub_ne_zero_of_ne

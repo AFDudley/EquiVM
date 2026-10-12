@@ -1,7 +1,7 @@
 import Benchmarks.Safe.V3_77901a5.SignatureLegacyDecodeSteps
-import Benchmarks.Safe.V3_77901a5.Blocks.Runtime_040
 import Benchmarks.Safe.V3_77901a5.Blocks.Runtime_041
 import Benchmarks.Safe.V3_77901a5.Blocks.Runtime_044
+import Benchmarks.Safe.V3_77901a5.Blocks.Runtime_045
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -10,7 +10,7 @@ namespace Benchmarks.Safe.V3_77901a5
 
 set_option maxRecDepth 100000
 
-def signatureLegacyBytesPC (counted : Bool) : UInt256 := if counted then ⟨9354⟩ else ⟨10089⟩
+def signatureLegacyBytesPC (counted : Bool) : UInt256 := if counted then ⟨9481⟩ else ⟨10226⟩
 
 def signatureLegacyBytesSaved (counted : Bool) (cd : ByteArray)
     (stop ret dataOff dataLen : UInt256) (R : List UInt256) : List UInt256 :=
@@ -34,15 +34,15 @@ theorem safeSignatureLegacyBytesOffsetRevert (counted : Bool)
   | false =>
     simp only [signatureLegacyDataPC, signatureLegacyDataSaved, Bool.false_eq_true, if_false,
       List.cons_append, List.nil_append] at h
-    have h₁ := safeRuntime_block_10047_fallthrough (by simp; omega) (by exact hcond) h
-    exact safeRuntime_block_10074 (by
-      simp only [safeRuntime_block_10047_fallthrough_stack, List.length_cons]; omega) h₁
+    have h₁ := safeRuntime_block_10184_fallthrough (by simp; omega) (by exact hcond) h
+    exact safeRuntime_block_10211 (by
+      simp only [safeRuntime_block_10184_fallthrough_stack, List.length_cons]; omega) h₁
   | true =>
     simp only [signatureLegacyDataPC, signatureLegacyDataSaved, if_true,
       List.cons_append, List.nil_append] at h
-    have h₁ := safeRuntime_block_9312_fallthrough (by simp; omega) (by exact hcond) h
-    exact safeRuntime_block_9339 (by
-      simp only [safeRuntime_block_9312_fallthrough_stack, List.length_cons]; omega) h₁
+    have h₁ := safeRuntime_block_9439_fallthrough (by simp; omega) (by exact hcond) h
+    exact safeRuntime_block_9466 (by
+      simp only [safeRuntime_block_9439_fallthrough_stack, List.length_cons]; omega) h₁
 
 theorem safeSignatureLegacyToBytes (counted : Bool)
     {I g s0 σ k C aw mem rdata stop ret dataOff dataLen} {R : List UInt256}
@@ -51,7 +51,7 @@ theorem safeSignatureLegacyToBytes (counted : Bool)
       mem aw rdata σ k C)
     (hoff : (calldataWord I.calldata 68).toNat ≤ 2 ^ 64 - 1)
     (hov : R.length + 20 ≤ 1024) :
-    ∃ k' C', RD safeBytecode I g s0 ⟨9115⟩
+    ∃ k' C', RD safeBytecode I g s0 ⟨9242⟩
       (UInt256.ofNat (4 + (calldataWord I.calldata 68).toNat) :: stop ::
         signatureLegacyBytesPC counted ::
         signatureLegacyBytesSaved counted I.calldata stop ret dataOff dataLen R)
@@ -63,18 +63,18 @@ theorem safeSignatureLegacyToBytes (counted : Bool)
   | false =>
     simp only [signatureLegacyDataPC, signatureLegacyDataSaved, Bool.false_eq_true, if_false,
       List.cons_append, List.nil_append] at h
-    have h₁ := safeRuntime_block_10047_taken (by simp; omega) (by exact hcond) (by jump_dest) h
-    have h₂ := safeRuntime_block_10077 (by simp; omega) (by jump_dest) h₁
-    simp only [safeRuntime_block_10077_stack, safeRuntime_block_10047_taken_stack,
+    have h₁ := safeRuntime_block_10184_taken (by simp; omega) (by exact hcond) (by jump_dest) h
+    have h₂ := safeRuntime_block_10214 (by simp; omega) (by jump_dest) h₁
+    simp only [safeRuntime_block_10214_stack, safeRuntime_block_10184_taken_stack,
       show ((⟨4⟩ : UInt256) + UInt256.ofNat 64).toNat = 68 by decide +kernel] at h₂
     rw [hadd] at h₂
     exact ⟨_, _, h₂⟩
   | true =>
     simp only [signatureLegacyDataPC, signatureLegacyDataSaved, if_true,
       List.cons_append, List.nil_append] at h
-    have h₁ := safeRuntime_block_9312_taken (by simp; omega) (by exact hcond) (by jump_dest) h
-    have h₂ := safeRuntime_block_9342 (by simp; omega) (by jump_dest) h₁
-    simp only [safeRuntime_block_9342_stack, safeRuntime_block_9312_taken_stack,
+    have h₁ := safeRuntime_block_9439_taken (by simp; omega) (by exact hcond) (by jump_dest) h
+    have h₂ := safeRuntime_block_9469 (by simp; omega) (by jump_dest) h₁
+    simp only [safeRuntime_block_9469_stack, safeRuntime_block_9439_taken_stack,
       show ((⟨4⟩ : UInt256) + UInt256.ofNat 64).toNat = 68 by decide +kernel] at h₂
     rw [hadd] at h₂
     exact ⟨_, _, h₂⟩
@@ -89,11 +89,11 @@ theorem safeSignatureLegacyDecodeFinish (counted : Bool)
       (signatureLegacyDecodedStack counted I.calldata dataOff dataLen R) mem aw rdata σ k' C' := by
   cases counted with
   | false =>
-    have h₁ := safeRuntime_block_10089 (by simp; omega) hret h
+    have h₁ := safeRuntime_block_10226 (by simp; omega) hret h
     exact ⟨_, _, h₁⟩
   | true =>
-    have h₁ := safeRuntime_block_9354 (by simp; omega) hret h
-    simp only [safeRuntime_block_9354_stack,
+    have h₁ := safeRuntime_block_9481 (by simp; omega) hret h
+    simp only [safeRuntime_block_9481_stack,
       show (UInt256.ofNat 96 + (⟨4⟩ : UInt256)).toNat = 100 by decide +kernel] at h₁
     exact ⟨_, _, h₁⟩
 

@@ -2,7 +2,7 @@ import Benchmarks.Safe.V3_77901a5.PreModuleCallPrepare
 import Benchmarks.Safe.V3_77901a5.PreModuleReturn
 import Benchmarks.Safe.V3_77901a5.PreModuleSource
 import Benchmarks.Safe.V3_77901a5.RawValueCall
-import Benchmarks.Safe.V3_77901a5.Blocks.Runtime_032
+import Benchmarks.Safe.V3_77901a5.Blocks.Runtime_031
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -14,7 +14,7 @@ set_option maxHeartbeats 1000000 in
 theorem safePreModuleCheckTrace (words : List UInt256) (payload : ByteArray) (evm : EVM.State)
     {I g s0 σ k C aw mem rdata ptr src} {guard target value operation : UInt256}
     {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨7376⟩
+    (h : RD safeBytecode I g s0 ⟨7265⟩
       (⟨0⟩ :: guard :: operation :: UInt256.ofNat src :: value :: target :: R)
       mem aw rdata σ k C)
     (hee : evm.executionEnv = I) (hacc : evm.accountMap = σ) (hworld : evm.σ₀ = s0.σ₀)
@@ -37,20 +37,20 @@ theorem safePreModuleCheckTrace (words : List UInt256) (payload : ByteArray) (ev
       frame.locals["guard"]? = some (.address (AccountAddress.ofUInt256 guard)) ∧
       frame.locals["guardHash"]? = some (.fixedBytes bytes32Width (EVM.Word.toBytesBE hash)) ∧
       evm'.executionEnv = I ∧ evm'.accountMap = σ' ∧ evm'.σ₀ = s0.σ₀ ∧
-      RD safeBytecode I g s0 ⟨7510⟩
+      RD safeBytecode I g s0 ⟨7399⟩
         (hash :: guard :: operation :: UInt256.ofNat src :: value :: target :: R)
         mem' aw' rdata' σ' k' C' ∧
       (mem' = mem ∨ ∃ out, out.size < 2 ^ 138 ∧ mem' = preModuleReturnMemory
         (preModuleCallMemory mem ptr payload.size target value operation
           (UInt256.ofNat I.source.val) words) out (UInt256.ofNat ptr)) := by
   by_cases hz : UInt256.land guard solcAddrMask = ⟨0⟩
-  · have h₁ := safeRuntime_block_7376_taken (by simp; omega)
+  · have h₁ := safeRuntime_block_7265_taken (by simp; omega)
       (by rw [safeAddressMask, hz]; decide) (by jump_dest) h
     refine Or.inr ⟨_, evm, σ, mem, _, rdata, ⟨0⟩, _, _,
       safePreModuleCheckZero evm _ value payload operation guard hz, ?_, ?_,
       hee, hacc, hworld, h₁, Or.inl rfl⟩ <;>
       simp [preModuleCheckingFrame, preModuleLocals, preModuleArgs, Std.HashMap.getElem_insert]
-  have h₁ := safeRuntime_block_7376_fallthrough (by simp; omega)
+  have h₁ := safeRuntime_block_7265_fallthrough (by simp; omega)
     (by rw [safeAddressMask]; exact isZero_eq_zero_of_ne hz) h
   obtain ⟨gasArg, aw₂, k₂, C₂, h₂⟩ := safePreModuleCallPrepare words h₁ hf hl hw hn
     hm hu hp hin ha hb ho hov

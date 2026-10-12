@@ -22,7 +22,7 @@ theorem safeConstructorSourceRevert (evm : EVM.State)
   .execBlockRevert (.consRevert (.requireFalse (evalCallvalueEq_false hv)))
 
 theorem safeCreationRuntime :
-    ((safeCreationBytecode.write 33 solcFreePtrMem 0 11749).readWithPadding 0 11749) =
+    ((safeCreationBytecode.write 33 solcFreePtrMem 0 11874).readWithPadding 0 11874) =
       safeBytecode := by native_decide
 
 set_option maxRecDepth 100000 in
@@ -39,7 +39,7 @@ theorem safeConstructorTrace {σ σ₀ A I} {g : Sat256}
   simp only [ByteArray.append_empty] at h₂
   change RDret safeCreationBytecode g (initState σ σ₀ g A I)
     (sstoreAccountMap I.codeOwner σ ⟨4⟩ ⟨1⟩)
-    ((safeCreationBytecode.write 33 solcFreePtrMem 0 11749).readWithPadding 0 11749) at h₂
+    ((safeCreationBytecode.write 33 solcFreePtrMem 0 11874).readWithPadding 0 11874) at h₂
   rw [safeCreationRuntime] at h₂
   exact h₂
 

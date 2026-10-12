@@ -2,9 +2,9 @@ import Benchmarks.Safe.V3_77901a5.SafeAddTrace
 import Benchmarks.Safe.V3_77901a5.Blocks.Runtime_017
 import Benchmarks.Safe.V3_77901a5.Blocks.Runtime_029
 import Benchmarks.Safe.V3_77901a5.Blocks.Runtime_030
-import Benchmarks.Safe.V3_77901a5.Blocks.Runtime_048
 import Benchmarks.Safe.V3_77901a5.Blocks.Runtime_049
 import Benchmarks.Safe.V3_77901a5.Blocks.Runtime_050
+import Benchmarks.Safe.V3_77901a5.Blocks.Runtime_051
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -15,7 +15,7 @@ set_option maxRecDepth 100000
 
 theorem safeCheckedMulTrace {I g s0 σ k C aw mem rdata} {a b ret : UInt256}
     {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨11547⟩ (b :: a :: ret :: R) mem aw rdata σ k C)
+    (h : RD safeBytecode I g s0 ⟨11684⟩ (b :: a :: ret :: R) mem aw rdata σ k C)
     (hfit : a.toNat * b.toNat < UInt256.size) (hov : R.length + 7 ≤ 1024)
     (hret : (D_J safeBytecode 0).contains ret = true) :
     ∃ k' C', RD safeBytecode I g s0 ret (UInt256.mul a b :: R) mem aw rdata σ k' C' := by
@@ -28,12 +28,12 @@ theorem safeCheckedMulTrace {I g s0 σ k C aw mem rdata} {a b ret : UInt256}
       exact u256_lor_one_ne_zero _
     · rw [u256_mul_div_right_eq_of_noOverflow a b hb hfit, u256_eq_refl]
       exact u256_lor_one_ne_zero _
-  have h₁ := safeRuntime_block_11547_taken (by simp; omega) hg (by jump_dest) h
+  have h₁ := safeRuntime_block_11684_taken (by simp; omega) hg (by jump_dest) h
   exact ⟨_, _, safeRuntime_block_2853 (by omega) hret h₁⟩
 
 theorem safeCheckedMulOverflow {I g s0 σ k C aw mem rdata} {a b : UInt256}
     {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨11547⟩ (b :: a :: R) mem aw rdata σ k C)
+    (h : RD safeBytecode I g s0 ⟨11684⟩ (b :: a :: R) mem aw rdata σ k C)
     (hover : UInt256.size ≤ a.toNat * b.toNat) (hov : R.length + 7 ≤ 1024) :
     RDrev safeBytecode g s0 := by
   have hb : b ≠ ⟨0⟩ := by
@@ -45,12 +45,12 @@ theorem safeCheckedMulOverflow {I g s0 σ k C aw mem rdata} {a b : UInt256}
     have hne := u256_mul_div_right_overflow_ne a b hover
     rw [u256_eq_of_ne (Ne.symm hne), isZero_eq_zero_of_ne hb]
     decide
-  have h₁ := safeRuntime_block_11547_fallthrough (by omega) hg h
-  have h₂ := safeRuntime_block_11563 (by
-    simp only [safeRuntime_block_11547_fallthrough_stack, List.length_cons]; omega)
+  have h₁ := safeRuntime_block_11684_fallthrough (by omega) hg h
+  have h₂ := safeRuntime_block_11700 (by
+    simp only [safeRuntime_block_11684_fallthrough_stack, List.length_cons]; omega)
     (by jump_dest) h₁
-  exact safeRuntime_block_11004 (by
-    simp only [safeRuntime_block_11563_stack, safeRuntime_block_11547_fallthrough_stack,
+  exact safeRuntime_block_11141 (by
+    simp only [safeRuntime_block_11700_stack, safeRuntime_block_11684_fallthrough_stack,
       List.length_cons]; omega) h₂
 
 theorem safeMulTrace {I g s0 σ k C aw mem rdata} {a b ret : UInt256}
@@ -71,8 +71,8 @@ theorem safeMulTrace {I g s0 σ k C aw mem rdata} {a b ret : UInt256}
     obtain ⟨_, _, h₃⟩ := safeCheckedMulTrace h₂ (by simpa [Nat.mul_comm] using hfit)
       (by simp; omega) (by jump_dest)
     have h₄ := safeRuntime_block_6869 (by simp; omega) (by jump_dest) h₃
-    have h₅ := safeRuntime_block_11337_taken (by simp; omega) ha (by jump_dest) h₄
-    have h₆ := safeRuntime_block_11363 (by simp; omega) (by jump_dest) h₅
+    have h₅ := safeRuntime_block_11474_taken (by simp; omega) ha (by jump_dest) h₄
+    have h₆ := safeRuntime_block_11500 (by simp; omega) (by jump_dest) h₅
     have hdiv : UInt256.div (UInt256.mul b a) a = b :=
       u256_mul_div_right_eq_of_noOverflow b a ha (by simpa [Nat.mul_comm] using hfit)
     have h₇ := safeRuntime_block_6882_taken (by simp; omega)

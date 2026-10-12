@@ -4,7 +4,7 @@ import Benchmarks.Safe.V3_77901a5.AddressArrayEncoding
 import Benchmarks.Safe.V3_77901a5.Blocks.Runtime_007
 import Benchmarks.Safe.V3_77901a5.Blocks.Runtime_009
 import Benchmarks.Safe.V3_77901a5.Blocks.Runtime_030
-import Benchmarks.Safe.V3_77901a5.Blocks.Runtime_044
+import Benchmarks.Safe.V3_77901a5.Blocks.Runtime_045
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -33,9 +33,9 @@ theorem safeGetOwnersReturnTrace {I g s0 σ k C aw mem rdata n words} {R : List 
       hm.freePtr
   obtain ⟨aw₁, k₁, C₁, h₁⟩ := safeRuntime_block_1174_packed (by omega) (by jump_dest) h
   simp only [safeRuntime_block_1174_stack, hfree] at h₁
-  obtain ⟨aw₂, k₂, C₂, h₂⟩ := safeRuntime_block_10168_packed (by simp; omega)
+  obtain ⟨aw₂, k₂, C₂, h₂⟩ := safeRuntime_block_10305_packed (by simp; omega)
     (by jump_dest) h₁
-  simp only [safeRuntime_block_10168_stack, safeRuntime_block_10168_memory, hfp, hfpadd] at h₂
+  simp only [safeRuntime_block_10305_stack, safeRuntime_block_10305_memory, hfp, hfpadd] at h₂
   have hcount : memLoad ⟨128⟩ (writeWord mem fp ⟨32⟩) = UInt256.ofNat n := by
     apply mloadWordValue_of_readWithPadding
       (by change 128 < (writeWord mem fp ⟨32⟩).size
@@ -43,8 +43,8 @@ theorem safeGetOwnersReturnTrace {I g s0 σ k C aw mem rdata n words} {R : List 
     change (writeWord mem fp ⟨32⟩).readWithPadding 128 32 = _
     rw [writeWord_sparse_read_preserved _ _ _ _ (.inl ⟨by dsimp [fp]; omega, hm.lower⟩)]
     exact hm.count
-  obtain ⟨aw₃, k₃, C₃, h₃⟩ := safeRuntime_block_10101_packed (by simp; omega) h₂
-  change RD safeBytecode I g s0 ⟨10119⟩
+  obtain ⟨aw₃, k₃, C₃, h₃⟩ := safeRuntime_block_10238_packed (by simp; omega) h₂
+  change RD safeBytecode I g s0 ⟨10256⟩
     (⟨0⟩ :: (⟨128⟩ + UInt256.ofNat 32) :: memLoad ⟨128⟩ (writeWord mem fp ⟨32⟩) ::
       ⟨0⟩ :: ⟨128⟩ :: (UInt256.ofNat (fp + 32) + UInt256.ofNat 32) ::
       ⟨6891⟩ :: ⟨0⟩ :: addressArrayFreePtr n :: ⟨128⟩ :: ⟨771⟩ :: R)

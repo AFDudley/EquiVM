@@ -33,7 +33,7 @@ set_option maxRecDepth 100000 in
 theorem safeTokenTransferMemory {mem : ByteArray} {ptr : Nat} {receiver amount : UInt256}
     (hf : memLoad ⟨64⟩ mem = UInt256.ofNat ptr) (hm : 96 ≤ mem.size) (hp : 96 ≤ ptr)
     (hb : ptr + 100 < UInt256.size) (hc : receiver.toNat < EVM.addressModulus) :
-    safeRuntime_block_8788_memory (mem := mem) (x0 := amount) (x1 := receiver) =
+    safeRuntime_block_8915_memory (mem := mem) (x0 := amount) (x1 := receiver) =
       tokenTransferMemory mem ptr receiver amount := by
   have hargs := safeTokenTransferArgsMemory (amount := amount) hf hb hc
   have hfree := tokenTransferArgsMemory_free (receiver := receiver) (amount := amount) hf hm hp
@@ -43,7 +43,7 @@ theorem safeTokenTransferMemory {mem : ByteArray} {ptr : Nat} {receiver amount :
       (UInt256.ofNat 1) = UInt256.ofNat (2 ^ 224 - 1) := by decide +kernel
   have hsel : UInt256.land (UInt256.ofNat (2 ^ 256 - 2 ^ 224)) transferSelectorWord =
       transferSelectorWord := by decide +kernel
-  unfold safeRuntime_block_8788_memory
+  unfold safeRuntime_block_8915_memory
   rw [hargs, hfree, hf]
   simp only [u256_sub_self,
     u256_add_zero, tokenTransferPointerAdd hb 32 (by decide),
@@ -63,12 +63,12 @@ theorem safeTokenTransferMemory {mem : ByteArray} {ptr : Nat} {receiver amount :
 set_option maxRecDepth 100000 in
 theorem safeTokenTransferPrepare {I g s0 σ k C aw mem rdata ptr}
     {amount receiver token ret : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨8788⟩ (amount :: receiver :: token :: ret :: R)
+    (h : RD safeBytecode I g s0 ⟨8915⟩ (amount :: receiver :: token :: ret :: R)
       mem aw rdata σ k C)
     (hf : memLoad ⟨64⟩ mem = UInt256.ofNat ptr) (hm : 96 ≤ mem.size) (hp : 96 ≤ ptr)
     (hb : ptr + 100 < UInt256.size) (hc : receiver.toNat < EVM.addressModulus)
     (hov : R.length + 14 ≤ 1024) :
-    ∃ gasArg aw' k' C', RD safeBytecode I g s0 ⟨8877⟩
+    ∃ gasArg aw' k' C', RD safeBytecode I g s0 ⟨9004⟩
       (gasArg :: token :: ⟨0⟩ :: UInt256.ofNat (ptr + 32) :: ⟨68⟩ :: ⟨0⟩ :: ⟨32⟩ ::
         UInt256.ofNat ptr :: ⟨0⟩ :: amount :: receiver :: token :: ret :: R)
       (tokenTransferMemory mem ptr receiver amount) aw' rdata σ k' C' := by
@@ -76,17 +76,17 @@ theorem safeTokenTransferPrepare {I g s0 σ k C aw mem rdata ptr}
   have hargs := safeTokenTransferArgsMemory (amount := amount) hf hb hc
   have hfree := tokenTransferArgsMemory_free (receiver := receiver) (amount := amount) hf hm hp
   change memLoad (UInt256.ofNat 64) _ = UInt256.ofNat ptr at hfree
-  obtain ⟨aw₁, k₁, C₁, h₁⟩ := safeRuntime_block_8788_packed (by simp; omega) h
-  simp only [safeRuntime_block_8788_stack] at h₁
-  rw [← safeRuntime_block_8788_memory, hmemory, hargs, hfree] at h₁
+  obtain ⟨aw₁, k₁, C₁, h₁⟩ := safeRuntime_block_8915_packed (by simp; omega) h
+  simp only [safeRuntime_block_8915_stack] at h₁
+  rw [← safeRuntime_block_8915_memory, hmemory, hargs, hfree] at h₁
   have hlen : memLoad (UInt256.ofNat ptr) (tokenTransferMemory mem ptr receiver amount) =
       ⟨68⟩ := by
     apply memLoad_of_wordRead
     rw [ulit_toNat' ptr (by omega)]
     exact tokenTransferMemory_length _ _ _ _ hp
   simp only [hlen, tokenTransferPointerAdd hb 32 (by decide)] at h₁
-  have h₂ := safeRuntime_block_8868 (by simp; omega) h₁
-  simp only [safeRuntime_block_8868_stack] at h₂
+  have h₂ := safeRuntime_block_8995 (by simp; omega) h₁
+  simp only [safeRuntime_block_8995_stack] at h₂
   exact ⟨_, aw₁, _, _, h₂⟩
 
 end Benchmarks.Safe.V3_77901a5

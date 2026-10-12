@@ -22,7 +22,7 @@ theorem safeGuardReturnStart {I g s0 σ k C aw out} {x0 x1 x2 : UInt256}
     (h : RD safeBytecode I g s0 ⟨6084⟩ (⟨1⟩ :: x0 :: x1 :: x2 :: R)
       ((guardOutputMemory .transaction) out) aw out σ k C)
     (hov : R.length + 6 ≤ 1024) :
-    ∃ aw' k' C', RD safeBytecode I g s0 ⟨11495⟩
+    ∃ aw' k' C', RD safeBytecode I g s0 ⟨11632⟩
       (⟨128⟩ :: (⟨128⟩ + UInt256.ofNat out.size) :: ⟨6134⟩ :: R)
       ((guardDecodedMemory .transaction) out) aw' out σ k' C' := by
   have hr := safeRuntime_block_6084_taken (by simp; omega) (by decide) (by jump_dest) h
@@ -50,7 +50,7 @@ theorem safeGuardUnsupported {I g s0 σ k C aw mem rdata} {R : List UInt256}
     (by simp [safeRuntime_block_6142_stack, safeRuntime_block_6136_fallthrough_stack]; omega) hr
 
 theorem safeGuardReturnTrue {I g s0 σ k C aw out} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨11495⟩
+    (h : RD safeBytecode I g s0 ⟨11632⟩
       (⟨128⟩ :: (⟨128⟩ + UInt256.ofNat out.size) :: ⟨6134⟩ :: R)
       ((guardDecodedMemory .transaction) out) aw out σ k C)
     (hov : R.length + 7 ≤ 1024) (hl : 32 ≤ out.size) (hb : out.size < 2 ^ 255)
@@ -65,7 +65,7 @@ theorem safeGuardReturnTrue {I g s0 σ k C aw out} {R : List UInt256}
   exact ⟨aw', k'', C'', he⟩
 
 theorem safeGuardReturnFalse {I g s0 σ k C aw out} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨11495⟩
+    (h : RD safeBytecode I g s0 ⟨11632⟩
       (⟨128⟩ :: (⟨128⟩ + UInt256.ofNat out.size) :: ⟨6134⟩ :: R)
       ((guardDecodedMemory .transaction) out) aw out σ k C)
     (hov : R.length + 7 ≤ 1024) (hl : 32 ≤ out.size) (hb : out.size < 2 ^ 255)

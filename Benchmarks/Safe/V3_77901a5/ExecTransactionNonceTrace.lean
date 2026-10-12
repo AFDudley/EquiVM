@@ -27,7 +27,7 @@ theorem safeExecNonceStart (evm : EVM.State) {I g s0 σ k C aw mem rdata len}
       mem aw rdata σ k C)
     (hee : evm.executionEnv = I) (hacc : evm.accountMap = σ)
     (hov : R.length + 36 ≤ 1024) :
-    ∃ k' C', RD safeBytecode I g s0 ⟨11024⟩
+    ∃ k' C', RD safeBytecode I g s0 ⟨11161⟩
       (execNonce evm :: ⟨3566⟩ :: ⟨0⟩ :: ⟨5⟩ ::
         execHashStack I.calldata len ptr (execNonce evm) R) mem aw rdata σ k' C' := by
   have hload : (σ.get? I.codeOwner |>.option (⟨0⟩ : UInt256)

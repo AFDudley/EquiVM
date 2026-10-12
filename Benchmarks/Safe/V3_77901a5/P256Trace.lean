@@ -9,13 +9,13 @@ namespace Benchmarks.Safe.V3_77901a5
 
 theorem safeP256InputMemory {mem : ByteArray} {ptr : Nat} {p : P256Input}
     (hf : memLoad ⟨64⟩ mem = UInt256.ofNat ptr) (hb : ptr + 160 < UInt256.size) :
-    safeRuntime_block_7219_memory (mem := mem) (x0 := p.qy) (x1 := p.qx)
+    safeRuntime_block_7108_memory (mem := mem) (x0 := p.qy) (x1 := p.qx)
       (x2 := p.s) (x3 := p.r) (x4 := p.hash) = p256InputMemory mem ptr p := by
   have hadd (j : Nat) (hj : j ≤ 160) :
       (UInt256.ofNat ptr + UInt256.ofNat j).toNat = ptr + j :=
     uadd_ofNat_toNat (by omega) (by omega) (by omega)
   change memLoad (UInt256.ofNat 64) mem = UInt256.ofNat ptr at hf
-  simp only [safeRuntime_block_7219_memory, hf, hadd 32 (by decide), hadd 64 (by decide),
+  simp only [safeRuntime_block_7108_memory, hf, hadd 32 (by decide), hadd 64 (by decide),
     hadd 96 (by decide), hadd 128 (by decide), ulit_toNat' ptr (by omega),
     p256InputMemory, P256Input.words, writeWords, Reasoning.Theory.writeWord, Nat.add_assoc]
 
@@ -46,7 +46,7 @@ theorem p256OutputResultWord (mem out : ByteArray) (ptr : Nat) (p : P256Input) (
 set_option maxRecDepth 100000 in
 theorem safeP256Trace (p : P256Input) (evm : EVM.State)
     {I g s0 σ k C aw mem rdata ptr ret} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨7219⟩
+    (h : RD safeBytecode I g s0 ⟨7108⟩
       (p.qy :: p.qx :: p.s :: p.r :: p.hash :: ret :: R) mem aw rdata σ k C)
     (hee : evm.executionEnv = I) (hacc : evm.accountMap = σ) (hworld : evm.σ₀ = s0.σ₀)
     (hf : memLoad ⟨64⟩ mem = UInt256.ofNat ptr) (hb : ptr + 160 < UInt256.size)
@@ -57,10 +57,10 @@ theorem safeP256Trace (p : P256Input) (evm : EVM.State)
       evm'.executionEnv = I ∧ evm'.accountMap = σ' ∧ evm'.σ₀ = s0.σ₀ ∧
       RD safeBytecode I g s0 ret ((p256Result z out).toUInt256 :: R)
         (p256OutputMemory mem ptr p out) aw' out σ' k' C' := by
-  obtain ⟨aw₁, k₁, C₁, h₁⟩ := safeRuntime_block_7219_packed (by simp; omega) h
+  obtain ⟨aw₁, k₁, C₁, h₁⟩ := safeRuntime_block_7108_packed (by simp; omega) h
   have hm := safeP256InputMemory (p := p) hf hb
   change memLoad (UInt256.ofNat 64) mem = UInt256.ofNat ptr at hf
-  simp only [safeRuntime_block_7219_stack] at h₁
+  simp only [safeRuntime_block_7108_stack] at h₁
   rw [hm] at h₁
   simp only [hf] at h₁
   obtain ⟨evm', σ', z, out, aw₂, k₂, C₂, hc, he, ha, hw, h₂, hout, _⟩ :=
@@ -76,11 +76,11 @@ theorem safeP256Trace (p : P256Input) (evm : EVM.State)
       (z, evm', out) false := by
     simpa only [ulit_toNat' ptr (by omega),
       show (UInt256.ofNat 160).toNat = 160 from rfl, p256InputMemory_read] using hc
-  change RD safeBytecode I g s0 ⟨7262⟩
+  change RD safeBytecode I g s0 ⟨7151⟩
     (z.toUInt256 :: UInt256.ofNat ptr :: ⟨0⟩ :: p.qy :: p.qx :: p.s :: p.r :: p.hash :: ret :: R)
     (p256OutputMemory mem ptr p out) aw₂ out σ' k₂ C₂ at h₂
-  obtain ⟨aw₃, k₃, C₃, h₃⟩ := safeRuntime_block_7262_packed (by omega) hret h₂
-  simp only [safeRuntime_block_7262_stack, p256OutputResultWord _ _ _ _ _ hout] at h₃
+  obtain ⟨aw₃, k₃, C₃, h₃⟩ := safeRuntime_block_7151_packed (by omega) hret h₂
+  simp only [safeRuntime_block_7151_stack, p256OutputResultWord _ _ _ _ _ hout] at h₃
   exact ⟨evm', σ', out, z, aw₃, k₃, C₃, safeP256Source hc', he, ha, hw, h₃⟩
 
 end Benchmarks.Safe.V3_77901a5

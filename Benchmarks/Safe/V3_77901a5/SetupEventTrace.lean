@@ -19,7 +19,7 @@ theorem safeSetupEventStart {I g s0 σ k C aw rdata n len} {R : List UInt256}
     (h : RD safeBytecode I g s0 ⟨4561⟩ (setupDecodedStack I.calldata n len R)
       solcFreePtrMem aw rdata σ k C)
     (hov : R.length + 32 ≤ 1024) :
-    ∃ aw' k' C', RD safeBytecode I g s0 ⟨11388⟩
+    ∃ aw' k' C', RD safeBytecode I g s0 ⟨11525⟩
       (⟨128⟩ :: calldataWord I.calldata 132 :: calldataWord I.calldata 68 ::
         calldataWord I.calldata 36 :: UInt256.ofNat n ::
         UInt256.ofNat (setupOwnersStart I.calldata) :: ⟨4626⟩ :: setupEventSaved I n len R)
@@ -79,7 +79,7 @@ theorem safeSetupOwnersAllocate {I g s0 σ k C aw rdata n len} {R : List UInt256
       (setupEventInitialMemory I.calldata n) aw rdata σ k C)
     (hb : SetupCalldataBounds I.calldata n len)
     (hp : I.perm = true) (hov : R.length + 32 ≤ 1024) :
-    ∃ aw' k' C', RD safeBytecode I g s0 ⟨8086⟩
+    ∃ aw' k' C', RD safeBytecode I g s0 ⟨7975⟩
       (calldataWord I.calldata 36 :: ⟨128⟩ :: ⟨4695⟩ :: setupDecodedStack I.calldata n len R)
       (setupOwnersAllocatedMemory I.calldata n) aw' rdata σ k' C' := by
   have hu : UInt256.size = 2 ^ 256 := rfl

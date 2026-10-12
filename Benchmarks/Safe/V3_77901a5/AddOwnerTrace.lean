@@ -46,7 +46,7 @@ theorem safeAddOwnerLinksTrace {I g s0 σ k C aw mem rdata} {key threshold : UIn
     (h : RD safeBytecode I g s0 ⟨1753⟩ (threshold :: key :: R) mem aw rdata σ k C)
     (hov : R.length + 11 ≤ 1024) (hm : mem.size = 96)
     (hc : key.toNat < EVM.addressModulus) (hperm : I.perm = true) :
-    ∃ mem' aw' k' C', RD safeBytecode I g s0 ⟨11024⟩
+    ∃ mem' aw' k' C', RD safeBytecode I g s0 ⟨11161⟩
       (solcSlotWordAt ⟨3⟩ (addOwnerLinkAccounts σ I key) I :: ⟨1863⟩ :: ⟨0⟩ :: ⟨3⟩ ::
         threshold :: key :: R) mem' aw' rdata (addOwnerLinkAccounts σ I key) k' C' := by
   obtain ⟨aw', k', C', h'⟩ := safeRuntime_block_1753_packed hov hperm (by jump_dest) h

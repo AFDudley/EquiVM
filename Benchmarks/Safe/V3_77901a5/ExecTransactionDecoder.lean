@@ -9,7 +9,7 @@ namespace Benchmarks.Safe.V3_77901a5
 set_option maxRecDepth 100000 in
 theorem safeDecodeExecTransactionValid {I g s0 σ k C aw rdata dataLen sigLen}
     {ret : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨9780⟩
+    (h : RD safeBytecode I g s0 ⟨9917⟩
       (⟨4⟩ :: UInt256.ofNat I.calldata.size :: ret :: R) solcFreePtrMem aw rdata σ k C)
     (hb : ExecTransactionCalldataBounds I.calldata dataLen sigLen)
     (ho : (calldataWord I.calldata 100).toNat < 2) (hn : sigLen ≤ 2 ^ 64 - 192)

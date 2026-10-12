@@ -64,7 +64,7 @@ theorem safeCheckContractBounds (p : ContractSignatureInput)
     rw [haddr]
     exact hm.word hs (by have hs' : p.offset.toNat + 32 ≤ p.signatures.size := hs; omega)
   have h₄ := safeRuntime_block_6971 (by simp; omega) (by jump_dest) h₃
-  change RD safeBytecode I g s0 ⟨7193⟩ _ _ _ _ _ _ _ at h₄
+  change RD safeBytecode I g s0 ⟨7082⟩ _ _ _ _ _ _ _ at h₄
   simp only [safeRuntime_block_6971_stack, hread, hlen] at h₄
   obtain ⟨_, _, h₅⟩ := safeAddTrace h₄ hsfit (by simp; omega) (by jump_dest)
   have h₆ := safeRuntime_block_7007 (by simp; omega) (by jump_dest) h₅

@@ -1,5 +1,5 @@
 import Benchmarks.Safe.V3_77901a5.SetupOwnersIteration
-import Benchmarks.Safe.V3_77901a5.Blocks.Runtime_036
+import Benchmarks.Safe.V3_77901a5.Blocks.Runtime_035
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -10,7 +10,7 @@ set_option maxRecDepth 100000
 
 theorem safeSetupOwnersLoop (fuel : Nat) (p : SetupOwnersInput) (evm : EVM.State)
     {locals i current ptr I g s0 k C aw mem rdata} {ret : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨8168⟩
+    (h : RD safeBytecode I g s0 ⟨8057⟩
       (UInt256.ofNat i :: UInt256.ofNat p.owners.length :: current :: p.threshold ::
         UInt256.ofNat ptr :: ret :: R) mem aw rdata evm.accountMap k C)
     (hl : SetupOwnersLocals p locals i current) (hn : i + fuel = p.owners.length)
@@ -28,7 +28,7 @@ theorem safeSetupOwnersLoop (fuel : Nat) (p : SetupOwnersInput) (evm : EVM.State
         (.ok { contract := contract, locals := locals' } evm') ∧
       SetupOwnersLocals p locals' p.owners.length current' ∧
       current'.toNat < EVM.addressModulus ∧ evm'.executionEnv = I ∧ evm'.σ₀ = evm.σ₀ ∧
-      RD safeBytecode I g s0 ⟨8310⟩
+      RD safeBytecode I g s0 ⟨8199⟩
         (UInt256.ofNat p.owners.length :: UInt256.ofNat p.owners.length :: current' ::
           p.threshold :: UInt256.ofNat ptr :: ret :: R) mem' aw' rdata evm'.accountMap k' C' ∧
       mem'.size = mem.size ∧
@@ -40,7 +40,7 @@ theorem safeSetupOwnersLoop (fuel : Nat) (p : SetupOwnersInput) (evm : EVM.State
       have hg : UInt256.lt (UInt256.ofNat i) (UInt256.ofNat p.owners.length) = ⟨0⟩ := by
         rw [hi]
         exact ult_zero (by omega)
-      have h₁ := safeRuntime_block_8168_taken (by simp; omega)
+      have h₁ := safeRuntime_block_8057_taken (by simp; omega)
         (by rw [hg]; decide) (by jump_dest) h
       rw [hi] at h₁ hl
       refine .inr ⟨locals, evm, current, mem, aw, _, _, .whileFalse ?_, hl, hc, hee, rfl,
@@ -55,7 +55,7 @@ theorem safeSetupOwnersLoop (fuel : Nat) (p : SetupOwnersInput) (evm : EVM.State
       have hcond : evalExpr? config { contract := contract, locals := locals } evm
           setupOwnersLoopCondition = .ok (.bool true) := by
         simpa only [hi, decide_true] using safeSetupOwnersCondition evm hl
-      have h₁ := safeRuntime_block_8168_fallthrough (by simp; omega) (by rw [hg]; rfl) h
+      have h₁ := safeRuntime_block_8057_fallthrough (by simp; omega) (by rw [hg]; rfl) h
       obtain ⟨hrev, hbody⟩ | ⟨mem₂, aw₂, k₂, C₂, hbody, h₂, hsize₂, hr₂⟩ :=
         safeSetupOwnersIteration evm h₁ hl hi hee rfl hm hp hb hc (ho i hi) hperm hov
       · exact .inl ⟨hrev, .whileRevert hcond hbody⟩

@@ -100,7 +100,7 @@ theorem safeModulesLoopStep {I g s0 σ k C aw mem rdata n words index current}
     (mem := writeWord mem (160 + 32 * index) current) current ⟨1⟩
     (by rw [writeWord_sparse_size]; have := hm.lower; omega)
   change keccakWord ⟨0⟩ ⟨64⟩ (modulesStepMemory mem index current) = mapSlot current ⟨1⟩ at hh
-  change RD safeBytecode I g s0 ⟨11024⟩
+  change RD safeBytecode I g s0 ⟨11161⟩
     (UInt256.ofNat index :: ⟨5121⟩ :: UInt256.ofNat index ::
       UInt256.land (solcSlotWordAt
         (keccakWord ⟨0⟩ ⟨64⟩ (modulesStepMemory mem index current)) σ I) solcAddrMask ::

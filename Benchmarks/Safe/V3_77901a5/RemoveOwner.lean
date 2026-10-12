@@ -52,7 +52,7 @@ theorem safeRemoveownerBodyCore
               let prev := calldataWord I.calldata 4
               let key := calldataWord I.calldata 36
               let threshold := calldataWord I.calldata 68
-              change RD safeBytecode I (.ofUInt256 g) evm ⟨11526⟩
+              change RD safeBytecode I (.ofUInt256 g) evm ⟨11663⟩
                 [solcSlotWordAt ⟨3⟩ σ I, ⟨6589⟩, ⟨0⟩, ⟨3⟩, threshold, threshold,
                   key, prev, ⟨664⟩, selWord I] _ _ _ σ _ _ at h11663
               have hcount : ownerCount evm = solcSlotWordAt ⟨3⟩ σ I :=

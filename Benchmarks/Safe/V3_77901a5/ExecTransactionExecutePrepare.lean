@@ -19,7 +19,7 @@ theorem safeExecExecutePrepare (p : ExecTransactionInput)
     (RDrev safeBytecode g s0 ∧ p.tx.gasPrice = ⟨0⟩ ∧
       ∃ gasLeft : UInt256, gasLeft.toNat < 2500) ∨
     ∃ gasLeft k' C', (p.tx.gasPrice = ⟨0⟩ → 2500 ≤ gasLeft.toNat) ∧
-      RD safeBytecode I g s0 ⟨7519⟩
+      RD safeBytecode I g s0 ⟨7408⟩
         ([execCallGas p gasLeft, p.tx.operation, UInt256.ofNat ptr, p.tx.value,
           UInt256.ofNat p.tx.target.val, ⟨3940⟩, before] ++
           execGuardSaved p src sigPtr guard hash R) mem aw rdata σ k' C' := by

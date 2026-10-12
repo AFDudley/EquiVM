@@ -8,7 +8,7 @@ namespace Benchmarks.Safe.V3_77901a5
 
 theorem safeSetupOwnersTrace (p : SetupOwnersInput) (evm : EVM.State)
     {I g s0 σ k C aw mem rdata ptr} {ret : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨8086⟩
+    (h : RD safeBytecode I g s0 ⟨7975⟩
       (p.threshold :: UInt256.ofNat ptr :: ret :: R) mem aw rdata σ k C)
     (hee : evm.executionEnv = I) (hacc : evm.accountMap = σ)
     (hm : WordArrayBuffer mem ptr p.owners) (hp : 96 ≤ ptr)

@@ -4,6 +4,7 @@ import Benchmarks.Safe.V3_77901a5.Blocks.Runtime_008
 import Benchmarks.Safe.V3_77901a5.Blocks.Runtime_013
 import Benchmarks.Safe.V3_77901a5.Blocks.Runtime_030
 import Benchmarks.Safe.V3_77901a5.Blocks.Runtime_042
+import Benchmarks.Safe.V3_77901a5.Blocks.Runtime_043
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -24,14 +25,16 @@ theorem safeVersionTrace {I g s0 σ k C} {R : List UInt256} {cv : UInt256}
     RDret safeBytecode g s0 σ versionReturnData := by
   have h918 := safeRuntime_block_1699 (by omega) (by jump_dest) h
   have h9876 := safeRuntime_block_918 (by simp; omega) (by jump_dest) h918
-  have h9767 := safeRuntime_block_9739 (by simp; omega) (by jump_dest) h9876
-  have h9735 := safeRuntime_block_9606 (by simp; omega) h9767
-  have h9744 := safeRuntime_block_9614_fallthrough (by evm_ov)
+  have h9767 := safeRuntime_block_9876 (by simp; omega) (by jump_dest) h9876
+  have h9733 := safeRuntime_block_9767 (by simp; omega) (by jump_dest) h9767
+  have h9735 := safeRuntime_block_9733 (by simp only [safeRuntime_block_9767_stack, List.length_cons]; omega) h9733
+  have h9744 := safeRuntime_block_9735_fallthrough (by evm_ov)
     (by native_decide) h9735
-  have h9735' := safeRuntime_block_9623 (by evm_ov) (by jump_dest) h9744
-  have h9759 := safeRuntime_block_9614_taken (by evm_ov)
+  have h9735' := safeRuntime_block_9744 (by evm_ov) (by jump_dest) h9744
+  have h9759 := safeRuntime_block_9735_taken (by evm_ov)
     (by native_decide) (by jump_dest) h9735'
-  have h6891 := safeRuntime_block_9642 (by simp; omega) (by jump_dest) h9759
+  have h9790 := safeRuntime_block_9759 (by simp; omega) (by jump_dest) h9759
+  have h6891 := safeRuntime_block_9790 (by simp; omega) (by jump_dest) h9790
   have h771 := safeRuntime_block_6891 (by simp; omega) (by jump_dest) h6891
   have hret := safeRuntime_block_771 (by simp; omega) h771
   convert hret using 1 <;> native_decide

@@ -2,7 +2,7 @@ import Benchmarks.Safe.V3_77901a5.GetOwnersLoopTrace
 import Benchmarks.Safe.V3_77901a5.Memory
 import Benchmarks.Safe.V3_77901a5.Blocks.Runtime_022
 import Benchmarks.Safe.V3_77901a5.Blocks.Runtime_023
-import Benchmarks.Safe.V3_77901a5.Blocks.Runtime_039
+import Benchmarks.Safe.V3_77901a5.Blocks.Runtime_040
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -101,7 +101,7 @@ theorem safeGetOwnersCountFail {I g s0 σ k C aw mem rdata} {R : List UInt256}
   have h₂ := safeRuntime_block_4311
     (by simp only [safeRuntime_block_4289_fallthrough_stack, List.length_cons]; omega)
     (by jump_dest) h₁
-  exact safeRuntime_block_9095
+  exact safeRuntime_block_9222
     (by simp only [safeRuntime_block_4289_fallthrough_stack,
       safeRuntime_block_4311_stack, List.length_cons]; omega) h₂
 

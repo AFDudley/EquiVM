@@ -63,7 +63,7 @@ theorem setupOwnersFinishState_accounts (p : SetupOwnersInput) (evm : EVM.State)
 set_option maxRecDepth 100000 in
 theorem safeSetupOwnersFinishTrace (p : SetupOwnersInput) (evm : EVM.State)
     {I g s0 σ k C aw mem rdata i} {current src ret : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨8310⟩
+    (h : RD safeBytecode I g s0 ⟨8199⟩
       (i :: UInt256.ofNat p.owners.length :: current :: p.threshold :: src :: ret :: R)
       mem aw rdata σ k C)
     (hee : evm.executionEnv = I) (hacc : evm.accountMap = σ)
@@ -71,8 +71,8 @@ theorem safeSetupOwnersFinishTrace (p : SetupOwnersInput) (evm : EVM.State)
     (hov : R.length + 9 ≤ 1024) (hret : (D_J safeBytecode 0).contains ret = true) :
     ∃ aw' k' C', RD safeBytecode I g s0 ret R (twoWordHashMem current ⟨2⟩ mem)
       aw' rdata (setupOwnersFinishState p evm current).accountMap k' C' := by
-  obtain ⟨aw', k', C', h'⟩ := safeRuntime_block_8310_packed hov hperm hret h
-  simp only [safeRuntime_block_8310_stack, safeRuntime_block_8310_memory, safeAddressMask,
+  obtain ⟨aw', k', C', h'⟩ := safeRuntime_block_8199_packed hov hperm hret h
+  simp only [safeRuntime_block_8199_stack, safeRuntime_block_8199_memory, safeAddressMask,
     solcAddrMask_clean hc] at h'
   have hh := twoWordHashMemMapSlotAny current ⟨2⟩ mem
   change keccakWord ⟨0⟩ (UInt256.ofNat 64)
