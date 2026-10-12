@@ -59,7 +59,7 @@ theorem cometWithExtendedAssetListBaseTrackingBorrowSpeedBody {σ σ₀ A I} {g 
     runtimeRefinementFor config contract σ σ₀ g A I (immStore v) := by
   have hsz : 4 ≤ I.calldata.size :=
     calldata_size_ge_of_selIs I (cometWithExtendedAssetListSelBytes 42) rfl hsel
-  exact immutableGetter_refines (t := baseTrackingBorrowSpeedTransition) hcode hsz
+  exact immutableGetter_refines (t := baseTrackingBorrowSpeedTransition) hcode hsz (cometDecode_empty hsz)
     (cometSelectorDispatch ⟨42, by decide⟩ hsel) rfl rfl rfl
     (immStore_get_baseTrackingBorrowSpeed v) (uint256ReturnEncoding v.baseTrackingBorrowSpeed)
     (baseTrackingBorrowSpeedX v hcode hsz hsize hsel)

@@ -85,8 +85,7 @@ def externalABI : ExternalCallABI where
 
 def config : Config :=
   { storageBackend := storageBackend
-    externalABI := externalABI
-    abiDecodeMode := DecodeMode.legacySolc05
+    externalABI := (externalABI).withMode DecodeMode.legacySolc05
     selfDeployment := genSolidityConstructorDeployment contract.ctor.params }
 
 end Benchmarks.UniswapV3.Pool

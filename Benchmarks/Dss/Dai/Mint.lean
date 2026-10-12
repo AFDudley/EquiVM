@@ -138,9 +138,9 @@ theorem mintAuthStorageSlot_eq_mapSlot_source (I : ExecutionEnv) :
   rw [keyValueToWord_address]
 
 theorem daiDecode_mint_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (mintTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (mintTransition.params.map Param.name)
       (transitionSignature mintTransition).paramTypes I.calldata = some (mintStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["usr", "wad"] [addr, uint256]
+  show config.externalABI.decodeCalldata? ["usr", "wad"] [addr, uint256]
     I.calldata = _
   simpa [mintStore, mintUsrValue, mintWadValue, mintUsrWord, mintWadWord, calldataWord]
     using decodeCalldata_legacyAddress_uint256_ok
@@ -148,9 +148,9 @@ theorem daiDecode_mint_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size) :
 
 theorem daiDecode_mint_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 68) :
-    decodeCalldataWithMode config.abiDecodeMode (mintTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (mintTransition.params.map Param.name)
       (transitionSignature mintTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["usr", "wad"] [addr, uint256]
+  show config.externalABI.decodeCalldata? ["usr", "wad"] [addr, uint256]
     I.calldata = none
   simpa using decodeCalldata_legacyAddress_uint256_none_short
     (cd := I.calldata) (x := "usr") (y := "wad") hsz4 hshort

@@ -14,10 +14,10 @@ abbrev decimalsWord : UInt256 :=
   ⟨18⟩
 
 theorem daiDecode_decimals_ok {I : ExecutionEnv} (hsz4 : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (decimalsTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (decimalsTransition.params.map Param.name)
       (transitionSignature decimalsTransition).paramTypes I.calldata =
         some decimalsStore := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata =
+  change decodeCalldataWithMode .legacySolc05 [] [] I.calldata =
     some (∅ : Store)
   exact decodeCalldataWithMode_empty_ok hsz4
 
@@ -60,7 +60,7 @@ theorem daiDecimalsBodyCoreOk
     (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some decimalsTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (decimalsTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (decimalsTransition.params.map Param.name)
         (transitionSignature decimalsTransition).paramTypes I.calldata =
           some decimalsStore)
     (hreach : ∃ k C, RD daiBytecode I (Sat256.ofUInt256 g)

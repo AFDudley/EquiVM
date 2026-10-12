@@ -27,9 +27,9 @@ theorem cureDispatchWhen {I : ExecutionEnv}
   native_decide
 
 theorem cureDecode_when {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (whenTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (whenTransition.params.map Param.name)
       (transitionSignature whenTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 theorem cureWhenBodyCore {σ σ₀ A I} {g : UInt256}

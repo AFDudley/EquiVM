@@ -48,7 +48,7 @@ theorem wethBodyCore {σ σ₀ A I} {g : UInt256}
   by_cases hwv : I.weiValue = ⟨0⟩
   · have hsz := calldata_size_ge_of_selIs I (entryBytes 4) (entryBytes_size 4) hsel
     have hd := dispatchEntry 4 hsel
-    have hdec : decodeCalldataWithMode auctionConfig.abiDecodeMode
+    have hdec : auctionConfig.externalABI.decodeCalldata?
         (wethGetter.params.map Param.name)
         (transitionSignature wethGetter).paramTypes I.calldata = some ∅ :=
       decodeCalldata_empty_ok hsz

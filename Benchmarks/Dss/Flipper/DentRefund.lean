@@ -187,6 +187,7 @@ theorem dentVatRefundCallMem_encode {mem : ByteArray} {σ : AccountMap} {I : Exe
       some ((dentVatRefundCallMem mem σ I).readWithPadding 128 100) := by
   rw [dentVatRefundCallMem_read hmemSize]
   unfold dentRefundMoveArgValsMap config externalABI
+  simp only [ExternalCallABI.withMode_encode?]
   simp only [if_true]
   unfold ABI.encodeCallWithSelector?
   have hguy :

@@ -612,7 +612,7 @@ theorem permitDecodeABIValues_ok {I : ExecutionEnv} (hsz228 : 228 ≤ I.calldata
   permitDecodeABIValues_ok_core hsz228
 
 theorem uniswapDecode_permit_ok {I : ExecutionEnv} (hsz228 : 228 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (permitTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (permitTransition.params.map Param.name)
       (transitionSignature permitTransition).paramTypes I.calldata = some (permitStore I) := by
   show decodeCalldataWithMode DecodeMode.legacySolc05
     ["owner", "spender", "value", "deadline", "v", "r", "s"]
@@ -693,7 +693,7 @@ theorem uniswapDecode_permit_ok {I : ExecutionEnv} (hsz228 : 228 ≤ I.calldata.
 
 theorem uniswapDecode_permit_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 228) :
-    decodeCalldataWithMode config.abiDecodeMode (permitTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (permitTransition.params.map Param.name)
       (transitionSignature permitTransition).paramTypes I.calldata = none :=
   uniswapDecode_permit_none_short_core hsz4 hshort
 

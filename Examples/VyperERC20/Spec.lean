@@ -92,8 +92,7 @@ end VyperERC20
 operations, while the handwritten Vyper locator determines the mapping slots. -/
 def vyperERC20Config : Config :=
   { storageBackend := solidityStorageBackend VyperERC20.erc20StorageLayout
-    externalABI := defaultExternalCallABI
-    abiDecodeMode := DecodeMode.vyper
+    externalABI := (defaultExternalCallABI).withMode DecodeMode.vyper
     selfDeployment := genSolidityConstructorDeployment VyperERC20.erc20Contract.ctor.params }
 
 @[simp] theorem vyperERC20Config_storage_totalSupply :

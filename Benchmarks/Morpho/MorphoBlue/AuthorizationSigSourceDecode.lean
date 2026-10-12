@@ -60,7 +60,7 @@ theorem evalAuthorizationDecode (evm : EVM.State) (v : MorphoImmutables)
     (.bytesSlice (.var "__calldata") (.intLit 4) (.intLit 164)) = _ at hs
   rw [evalExpr?, hs]
   simp only [bind, EvalResult.bind]
-  rw [show config.abiDecodeMode = .modern from rfl, decodeAuthorization _ hl]
+  rw [show config.externalABI.decodeValue? = decodeReturnValueWithMode? .modern from rfl, decodeAuthorization _ hl]
   by_cases hc : (authorizationFromCalldata evm.executionEnv.calldata).Canonical <;>
     simp only [hc, ↓reduceIte] <;> rfl
 

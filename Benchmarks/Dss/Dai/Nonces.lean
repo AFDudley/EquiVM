@@ -35,17 +35,17 @@ theorem noncesStorageSlot_eq_mapSlot_masked (I : ExecutionEnv) :
   rw [keyValueToWord_address_ofNat_mask]
 
 theorem daiDecode_nonces_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (noncesTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (noncesTransition.params.map Param.name)
       (transitionSignature noncesTransition).paramTypes I.calldata = some (noncesStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["arg0"] [addr] I.calldata = _
+  show config.externalABI.decodeCalldata? ["arg0"] [addr] I.calldata = _
   simpa [noncesStore, noncesArgValue, noncesArgWord, calldataWord]
     using decodeCalldata_legacyAddress_ok (cd := I.calldata) (x := "arg0") hsz36
 
 theorem daiDecode_nonces_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (noncesTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (noncesTransition.params.map Param.name)
       (transitionSignature noncesTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["arg0"] [addr] I.calldata = none
+  show config.externalABI.decodeCalldata? ["arg0"] [addr] I.calldata = none
   simpa using decodeCalldata_legacyAddress_none_short (cd := I.calldata) (x := "arg0")
     hsz4 hshort
 
@@ -157,7 +157,7 @@ theorem daiNoncesBodyCoreOk
     (hsz36 : 36 ≤ I.calldata.size)
     (hdispatch : dispatchMsg contract I.calldata = some noncesTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (noncesTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (noncesTransition.params.map Param.name)
         (transitionSignature noncesTransition).paramTypes I.calldata = some (noncesStore I))
     (hreach : ∃ k C, RD daiBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨772⟩ [sel]

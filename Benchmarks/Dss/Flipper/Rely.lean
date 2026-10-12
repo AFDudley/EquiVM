@@ -10,7 +10,7 @@ namespace Benchmarks.Dss.Flipper
 /-! ## `rely(address)` -/
 
 theorem flipperDecode_rely_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (relyTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (relyTransition.params.map Param.name)
       (transitionSignature relyTransition).paramTypes I.calldata =
         some (flipperUsrStore I) := by
   simpa [config, relyTransition, flipperUsrStore, flipperUsrValue, flipperUsr] using
@@ -18,7 +18,7 @@ theorem flipperDecode_rely_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size
 
 theorem flipperDecode_rely_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (relyTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (relyTransition.params.map Param.name)
       (transitionSignature relyTransition).paramTypes I.calldata = none := by
   simpa [config, relyTransition] using
     (decodeCalldata_legacyAddress_none_short (cd := I.calldata) (x := "usr") hsz4 hshort)
@@ -63,7 +63,7 @@ theorem flipperRelyBodyCoreOk
     (hsize : I.calldata.size < UInt256.size)
     (hdispatch : dispatchMsg contract I.calldata = some relyTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (relyTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (relyTransition.params.map Param.name)
         (transitionSignature relyTransition).paramTypes I.calldata = some (flipperUsrStore I))
     (hreach : ∃ k C, RD flipperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨711⟩ [sel]

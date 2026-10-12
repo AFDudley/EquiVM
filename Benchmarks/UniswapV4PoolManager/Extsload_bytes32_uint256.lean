@@ -46,7 +46,7 @@ theorem poolManagerExtsload_bytes32_uint256Body {σ σ₀ A I} {g : UInt256} (v 
         have hfit : 224+32*(calldataWord I.calldata 36).toNat < UInt256.size :=
           hWF ⟨(byteArray_eq_of_beq hsel).symm, hwv, hlen, hhi⟩
         have htrace := wordRangeTrace v (by simp) hfit rdBody
-        have hdec : decodeCalldataWithMode config.abiDecodeMode
+        have hdec : config.externalABI.decodeCalldata?
             (extsload_bytes32_uint256Transition.params.map Param.name)
             (transitionSignature extsload_bytes32_uint256Transition).paramTypes I.calldata =
             some (wordRangeArgs (calldataWord I.calldata 4) (calldataWord I.calldata 36).toNat) :=

@@ -35,7 +35,7 @@ theorem safeGetmodulespaginatedBodyCore
           let evm := initState σ σ₀ (.ofUInt256 g) A I
           let start := calldataWord I.calldata 4
           let pageSize := calldataWord I.calldata 36
-          have hdec : decodeCalldataWithMode config.abiDecodeMode
+          have hdec : config.externalABI.decodeCalldata?
               (getmodulespaginatedTransition.params.map Param.name)
               (transitionSignature getmodulespaginatedTransition).paramTypes I.calldata =
               some (modulesArgs start pageSize) := decodeCalldata_addr_uint256_ok hlen hbig hc

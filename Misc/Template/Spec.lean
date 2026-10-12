@@ -54,7 +54,8 @@ def storageLayout : StorageLayout := solidityStorageLayout storageLayoutRaw
 /-! ## Config -/
 
 -- TODO for contracts with external calls: a real `ExternalCallABI` with the callee selectors
--- (cf. `Benchmarks/EAS/Attester/Spec.lean`); `abiDecodeMode` per compiler version.
+-- (cf. `Benchmarks/EAS/Attester/Spec.lean`); use `externalABI.withMode` for the
+-- compiler's standard calldata and explicit-value decoders.
 def config : Config :=
   { storage := storageLayout
     externalABI := defaultExternalCallABI

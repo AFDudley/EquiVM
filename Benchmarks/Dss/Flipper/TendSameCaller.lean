@@ -15,7 +15,7 @@ theorem flipperTendBodyFrom3486SameCaller
     (hcode : I.code = flipperBytecode)
     (hdispatch : dispatchMsg contract I.calldata = some tendTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (tendTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (tendTransition.params.map Param.name)
         (transitionSignature tendTransition).paramTypes I.calldata = some (tendLocals I))
     (hwv : I.weiValue = ⟨0⟩)
     (hguySolm : bidGuyWord (tendId I) σ I ≠ ⟨0⟩)

@@ -9,9 +9,9 @@ namespace Benchmarks.Dss.Pot
 def rhoWord (σ : AccountMap) (I : ExecutionEnv) : UInt256 := solcSlotWordAt ⟨7⟩ σ I
 
 theorem potDecode_rho {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (rhoTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (rhoTransition.params.map Param.name)
       (transitionSignature rhoTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 theorem potReachRhoBody {σ σ₀ A I} {g : Sat256}
@@ -42,7 +42,7 @@ theorem potRhoBodyCore
     (hcode : I.code = potBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some rhoTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (rhoTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (rhoTransition.params.map Param.name)
         (transitionSignature rhoTransition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD potBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨359⟩ [sel]

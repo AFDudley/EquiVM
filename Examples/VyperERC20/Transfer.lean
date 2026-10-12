@@ -1708,7 +1708,7 @@ theorem erc20TransferBodyCore
   · by_cases hcanonTo : (transferToWord I).toNat < EVM.addressModulus
     · have hdec0 := erc20Decode_transfer_ok (I := I) hsz68 hcanonTo
       have hdec :
-          decodeCalldataWithMode vyperERC20Config.abiDecodeMode
+          vyperERC20Config.externalABI.decodeCalldata?
             (ERC20.transferTransition.params.map Param.name)
             (transitionSignature ERC20.transferTransition).paramTypes I.calldata =
               some (transferStore I) := by
@@ -1763,7 +1763,7 @@ theorem erc20TransferBodyCore
           |>.reEquivExecutionRevert hcode hd hdec hbody
     · have hdec0 := erc20Decode_transfer_none_noncanon (I := I) hsz68 hcanonTo
       have hdec :
-          decodeCalldataWithMode vyperERC20Config.abiDecodeMode
+          vyperERC20Config.externalABI.decodeCalldata?
             (ERC20.transferTransition.params.map Param.name)
             (transitionSignature ERC20.transferTransition).paramTypes I.calldata = none := by
         simpa [vyperERC20Config] using hdec0
@@ -1773,7 +1773,7 @@ theorem erc20TransferBodyCore
   · have hshort : I.calldata.size < 68 := by omega
     have hdec0 := erc20Decode_transfer_none_short (I := I) hsz4 hshort
     have hdec :
-        decodeCalldataWithMode vyperERC20Config.abiDecodeMode
+        vyperERC20Config.externalABI.decodeCalldata?
           (ERC20.transferTransition.params.map Param.name)
           (transitionSignature ERC20.transferTransition).paramTypes I.calldata = none := by
       simpa [vyperERC20Config] using hdec0

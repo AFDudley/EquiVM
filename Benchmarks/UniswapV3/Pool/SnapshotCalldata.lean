@@ -22,7 +22,7 @@ theorem snapshotDecodedWord_clean (cd : ByteArray) (offset : Nat) :
   exact signextend_normalizeSint ⟨24, by decide⟩ _ _ (by decide) (by decide)
 
 theorem snapshotDecode {cd : ByteArray} (hlen : 68 ≤ cd.size) :
-    decodeCalldataWithMode config.abiDecodeMode (snapshotTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (snapshotTransition.params.map Param.name)
       (transitionSignature snapshotTransition).paramTypes cd =
       some (snapshotLocals (snapshotDecodedTick cd 4) (snapshotDecodedTick cd 36)) := by
   have h := decodeCalldata_legacyIntPair_ok (.sint ⟨24, by decide⟩) (.sint ⟨24, by decide⟩)
@@ -30,7 +30,7 @@ theorem snapshotDecode {cd : ByteArray} (hlen : 68 ≤ cd.size) :
   exact h
 
 theorem snapshotDecodeShort {cd : ByteArray} (hsz : 4 ≤ cd.size) (hshort : cd.size < 68) :
-    decodeCalldataWithMode config.abiDecodeMode (snapshotTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (snapshotTransition.params.map Param.name)
       (transitionSignature snapshotTransition).paramTypes cd = none :=
   decodeCalldata_legacyIntPair_none_short (.sint ⟨24, by decide⟩) (.sint ⟨24, by decide⟩) hsz hshort
 

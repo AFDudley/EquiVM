@@ -60,7 +60,7 @@ theorem endFileUintWhatWord_ne_of_bytes_ne {I : ExecutionEnv} {bs : List UInt8}
 
 
 theorem endDecode_fileUint_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (fileUintTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (fileUintTransition.params.map Param.name)
       (transitionSignature fileUintTransition).paramTypes I.calldata =
         some (endFileUintLocals I) := by
   simpa [config, fileUintTransition, bytes32, bytes32Width, uint256, uint256Int,
@@ -71,7 +71,7 @@ theorem endDecode_fileUint_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size
 
 theorem endDecode_fileUint_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 68) :
-    decodeCalldataWithMode config.abiDecodeMode (fileUintTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (fileUintTransition.params.map Param.name)
       (transitionSignature fileUintTransition).paramTypes I.calldata = none := by
   simpa [config, fileUintTransition, bytes32, bytes32Width, uint256, uint256Int,
     abiBytes32, abiBytes32Width, abiUInt256] using

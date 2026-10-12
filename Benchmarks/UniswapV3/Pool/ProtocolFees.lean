@@ -63,10 +63,12 @@ theorem uniswapV3PoolProtocolFeesBody {σ σ₀ A I} {g : UInt256} (v : UniswapV
   have hd : dispatchMsg contract I.calldata = some protocolFeesTransition := by
     apply uniswapV3PoolDispatch_protocolFees <;>
       first | exact hsel | exact selectorMismatch_of_match hsel (by decide +kernel)
-  have hdec : decodeCalldataWithMode config.abiDecodeMode
+  have hdec : config.externalABI.decodeCalldata?
       (protocolFeesTransition.params.map Param.name)
       (transitionSignature protocolFeesTransition).paramTypes
-      I.calldata = some (∅ : Store) := decodeCalldataWithMode_empty_ok hsz
+      I.calldata = some (∅ : Store) := by
+    change decodeCalldataWithMode .modern [] [] I.calldata = some (∅ : Store)
+    exact decodeCalldataWithMode_empty_ok hsz
   exact (uniswapV3PoolProtocolFeesX (g := Sat256.ofUInt256 g) v hcode hwv hsz hsize hsel)
     |>.reEquivExecution hcode hd hdec (uniswapV3PoolProtocolFeesReturns v _ ∅ hwv (by simp))
       (returnEquiv.returned rfl (uintPairReturnEncoding ⟨128, by decide⟩ ⟨128, by decide⟩

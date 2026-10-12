@@ -9,9 +9,9 @@ namespace Benchmarks.Dss.Pot
 def liveWord (σ : AccountMap) (I : ExecutionEnv) : UInt256 := solcSlotWordAt ⟨8⟩ σ I
 
 theorem potDecode_live {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (liveTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (liveTransition.params.map Param.name)
       (transitionSignature liveTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 theorem potReachLiveBody {σ σ₀ A I} {g : Sat256}
@@ -42,7 +42,7 @@ theorem potLiveBodyCore
     (hcode : I.code = potBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some liveTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (liveTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (liveTransition.params.map Param.name)
         (transitionSignature liveTransition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD potBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨537⟩ [sel]

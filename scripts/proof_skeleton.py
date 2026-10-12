@@ -266,7 +266,7 @@ def render_spec(c: Contract) -> str:
         abi_name = "externalABI"
     else:
         abi_name = "defaultExternalCallABI"
-    decode_mode = "" if c.version >= (0, 8, 0) or c.abicoder_v2 else "\n    abiDecodeMode := DecodeMode.legacySolc05"
+    decode_mode = "" if c.version >= (0, 8, 0) or c.abicoder_v2 else ".withMode DecodeMode.legacySolc05"
     transient = ("\n    transientBackend := solidityTransientStorage! [contract.structs] [contract.transient]"
                  if c.has_transient else "")
     out += ["/-! ## Config -/", "", "def config : Config :=",
@@ -1115,7 +1115,7 @@ def render_correct(c: Contract, global_guard: bool) -> str:
                 "        have htmem : t ∈ contract.transitions := by",
                 "          rw [dispatchMsg_eq_dispatchList contract I.calldata (by rfl) (by rfl)] at ht",
                 "          exact dispatchList_some_mem ht",
-                "        by_cases hdec : decodeCalldataWithMode config.abiDecodeMode (t.params.map Param.name)",
+                "        by_cases hdec : config.externalABI.decodeCalldata? (t.params.map Param.name)",
                 "            (transitionSignature t).paramTypes I.calldata = none",
                 "        · exact reEquiv_decodingFailed ht hdec hrev",
                 "        · obtain ⟨callargs, hca⟩ := Option.ne_none_iff_exists'.mp hdec",

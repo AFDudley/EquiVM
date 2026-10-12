@@ -9,7 +9,7 @@ theorem guardFinish {kind : GuardKind} {σ σ₀ σ' : AccountMap} {g : UInt256}
     {I : ExecutionEnv} {guard : UInt256} {evm' : EVM.State} {locals : Store}
     (hcode : I.code = safeBytecode)
     (hd : selectorDispatchMsg contract I.calldata = some (guardTransition kind))
-    (hdec : decodeCalldataWithMode config.abiDecodeMode
+    (hdec : config.externalABI.decodeCalldata?
       ((guardTransition kind).params.map Param.name)
       (transitionSignature (guardTransition kind)).paramTypes I.calldata =
       some (guardArgs kind guard))

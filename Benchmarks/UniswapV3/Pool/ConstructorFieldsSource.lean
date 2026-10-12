@@ -22,7 +22,7 @@ theorem constructorDecodeSource (original : AccountAddress) (evm : EVM.State)
   simp only [evalExpr?, evalConstructorData, bind, EvalResult.bind]
   have hd := constructorParameterDecode out hlen
   simp only [constructorParameterTypes] at hd
-  rw [show config.abiDecodeMode = .legacySolc05 from rfl, hd]
+  rw [show config.externalABI.decodeValue? = decodeReturnValueWithMode? .legacySolc05 from rfl, hd]
   rfl
 
 theorem constructorFieldsSource (original : AccountAddress) (evm : EVM.State) (out : ByteArray) :
@@ -96,6 +96,6 @@ theorem constructorRevertsShort (evm evm' : EVM.State) (out : ByteArray)
   simp only [evalExpr?, evalConstructorData, bind, EvalResult.bind]
   have hd := constructorParameterDecodeShort out hshort
   simp only [constructorParameterTypes] at hd
-  rw [show config.abiDecodeMode = .legacySolc05 from rfl, hd]
+  rw [show config.externalABI.decodeValue? = decodeReturnValueWithMode? .legacySolc05 from rfl, hd]
 
 end Benchmarks.UniswapV3.Pool

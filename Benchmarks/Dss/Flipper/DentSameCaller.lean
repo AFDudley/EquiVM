@@ -15,7 +15,7 @@ theorem flipperDentBodyFrom4733SameCaller
     (hcode : I.code = flipperBytecode)
     (hdispatch : dispatchMsg contract I.calldata = some dentTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (dentTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (dentTransition.params.map Param.name)
         (transitionSignature dentTransition).paramTypes I.calldata = some (dentLocals I))
     (hwv : I.weiValue = ⟨0⟩)
     (hguySolm : bidGuyWord (dentId I) σ I ≠ ⟨0⟩)

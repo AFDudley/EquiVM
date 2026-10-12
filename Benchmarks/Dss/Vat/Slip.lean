@@ -550,9 +550,9 @@ theorem evalSlipGuardPos_false {evm : EVM.State} {I : ExecutionEnv} {old gemNew 
 
 set_option maxHeartbeats 0 in
 theorem vatDecode_slip_ok {I : ExecutionEnv} (hsz100 : 100 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (slipTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (slipTransition.params.map Param.name)
       (transitionSignature slipTransition).paramTypes I.calldata = some (slipStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["ilk", "usr", "wad"]
+  show config.externalABI.decodeCalldata? ["ilk", "usr", "wad"]
     [bytes32, addr, int256] I.calldata = _
   change decodeCalldataWithMode DecodeMode.legacySolc05 ["ilk", "usr", "wad"]
     [bytes32, addr, int256] I.calldata =
@@ -565,9 +565,9 @@ theorem vatDecode_slip_ok {I : ExecutionEnv} (hsz100 : 100 ≤ I.calldata.size) 
 
 theorem vatDecode_slip_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 100) :
-    decodeCalldataWithMode config.abiDecodeMode (slipTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (slipTransition.params.map Param.name)
       (transitionSignature slipTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["ilk", "usr", "wad"]
+  show config.externalABI.decodeCalldata? ["ilk", "usr", "wad"]
     [bytes32, addr, int256] I.calldata = none
   change decodeCalldataWithMode DecodeMode.legacySolc05 ["ilk", "usr", "wad"]
     [bytes32, addr, int256] I.calldata = none

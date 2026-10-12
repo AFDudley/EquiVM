@@ -257,7 +257,7 @@ theorem vatFoldFinishSuccess
     (hcode : I.code = vatBytecode)
     (hdispatch : dispatchMsg contract I.calldata = some foldTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (foldTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (foldTransition.params.map Param.name)
         (transitionSignature foldTransition).paramTypes I.calldata = some (foldStore I))
     (hbody :
       ExecTransitionBody config contract

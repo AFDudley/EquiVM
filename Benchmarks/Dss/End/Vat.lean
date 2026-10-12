@@ -13,9 +13,9 @@ def vatWord (σ : AccountMap) (I : ExecutionEnv) : UInt256 :=
   solcAddressSlotWord ⟨1⟩ σ I
 
 theorem endDecode_vat {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (vatTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (vatTransition.params.map Param.name)
       (transitionSignature vatTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 abbrev endVatConcreteSelector : ByteArray := selectorBytes 0x36 0x56 0x9e 0x77
@@ -67,7 +67,7 @@ theorem endVatBodyCore
     (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some vatTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (vatTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (vatTransition.params.map Param.name)
         (transitionSignature vatTransition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD endBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) endVatEntryPc [sel]

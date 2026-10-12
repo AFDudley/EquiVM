@@ -740,9 +740,9 @@ theorem cureDispatchTell {I : ExecutionEnv}
   native_decide
 
 theorem cureDecode_tell {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (tellTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (tellTransition.params.map Param.name)
       (transitionSignature tellTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 theorem cureReachTellBody {σ σ₀ A I} {g : Sat256}

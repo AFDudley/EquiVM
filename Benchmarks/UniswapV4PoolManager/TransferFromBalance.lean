@@ -14,7 +14,7 @@ theorem transferFromBalanceCore {σ σ₀ A I} {g : UInt256}
     {k C : Nat} {R : List UInt256} (v : PoolManagerImmutables)
     (hcode : I.code = deployedRuntime v)
     (hd : dispatchMsg contract I.calldata = some transferFromTransition)
-    (hdec : decodeCalldataWithMode config.abiDecodeMode
+    (hdec : config.externalABI.decodeCalldata?
       (transferFromTransition.params.map Param.name)
       (transitionSignature transferFromTransition).paramTypes I.calldata = some args)
     (henv : evm.executionEnv = I) (hc : receiver.toNat < EVM.addressModulus)

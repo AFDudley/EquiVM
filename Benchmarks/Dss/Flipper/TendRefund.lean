@@ -2298,6 +2298,7 @@ theorem tendVatPayCallMem_encode_228 {mem : ByteArray} (σ : AccountMap) (I : Ex
         some ((tendVatPayCallMem mem σ I).readWithPadding 128 100) := by
   rw [tendVatPayCallMem_read_228 σ I hmemSize]
   unfold config externalABI
+  simp only [ExternalCallABI.withMode_encode?]
   simp only [if_true]
   unfold ABI.encodeCallWithSelector?
   have hgal :
@@ -2660,7 +2661,7 @@ theorem flipperTendBodyFrom3486Refund
     (hcode : I.code = flipperBytecode)
     (hdispatch : dispatchMsg contract I.calldata = some tendTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (tendTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (tendTransition.params.map Param.name)
         (transitionSignature tendTransition).paramTypes I.calldata = some (tendLocals I))
     (hwv : I.weiValue = ⟨0⟩)
     (hguySolm : bidGuyWord (tendId I) σ I ≠ ⟨0⟩)

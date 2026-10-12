@@ -842,9 +842,9 @@ theorem vatFoldSourceSuccess (evm : EVM.State) (I : ExecutionEnv)
 
 set_option maxHeartbeats 0 in
 theorem vatDecode_fold_ok {I : ExecutionEnv} (hsz100 : 100 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (foldTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (foldTransition.params.map Param.name)
       (transitionSignature foldTransition).paramTypes I.calldata = some (foldStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["i", "u", "rate"]
+  show config.externalABI.decodeCalldata? ["i", "u", "rate"]
     [bytes32, addr, int256] I.calldata = _
   change decodeCalldataWithMode DecodeMode.legacySolc05 ["i", "u", "rate"]
     [bytes32, addr, int256] I.calldata =
@@ -857,9 +857,9 @@ theorem vatDecode_fold_ok {I : ExecutionEnv} (hsz100 : 100 ≤ I.calldata.size) 
 
 theorem vatDecode_fold_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 100) :
-    decodeCalldataWithMode config.abiDecodeMode (foldTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (foldTransition.params.map Param.name)
       (transitionSignature foldTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["i", "u", "rate"]
+  show config.externalABI.decodeCalldata? ["i", "u", "rate"]
     [bytes32, addr, int256] I.calldata = none
   change decodeCalldataWithMode DecodeMode.legacySolc05 ["i", "u", "rate"]
     [bytes32, addr, int256] I.calldata = none

@@ -164,7 +164,7 @@ abbrev fileParLocals (I : ExecutionEnv) : Store :=
     "data" (.int (Int.ofNat (fileParData I).toNat))
 
 theorem spotDecode_filePar_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (fileParTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (fileParTransition.params.map Param.name)
       (transitionSignature fileParTransition).paramTypes I.calldata =
         some (fileParLocals I) := by
   simpa [config, fileParTransition, bytes32, bytes32Width, uint256, uint256Int,
@@ -174,7 +174,7 @@ theorem spotDecode_filePar_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size
 
 theorem spotDecode_filePar_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 68) :
-    decodeCalldataWithMode config.abiDecodeMode (fileParTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (fileParTransition.params.map Param.name)
       (transitionSignature fileParTransition).paramTypes I.calldata = none := by
   simpa [config, fileParTransition, bytes32, bytes32Width, uint256, uint256Int, abiBytes32,
     abiBytes32Width, abiUInt256] using
@@ -830,7 +830,7 @@ theorem spotFileParBodyCoreOk
     (hwhat : fileParWhat I = fileParBytes)
     (hdispatch : dispatchMsg contract I.calldata = some fileParTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileParTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileParTransition.params.map Param.name)
         (transitionSignature fileParTransition).paramTypes I.calldata = some (fileParLocals I))
     (hreach : ∃ k C, RD spotBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨257⟩ [sel]
@@ -875,7 +875,7 @@ theorem spotFileParBodyCoreUnauthorized
     (hauth : relyAuthWord σ I ≠ ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some fileParTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileParTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileParTransition.params.map Param.name)
         (transitionSignature fileParTransition).paramTypes I.calldata = some (fileParLocals I))
     (hreach : ∃ k C, RD spotBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨257⟩ [sel]
@@ -903,7 +903,7 @@ theorem spotFileParBodyCoreNotLive
     (hlive : spotLiveWord σ I ≠ ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some fileParTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileParTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileParTransition.params.map Param.name)
         (transitionSignature fileParTransition).paramTypes I.calldata = some (fileParLocals I))
     (hreach : ∃ k C, RD spotBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨257⟩ [sel]
@@ -934,7 +934,7 @@ theorem spotFileParBodyCoreUnrecognized
     (hwhat : fileParWhat I ≠ fileParBytes)
     (hdispatch : dispatchMsg contract I.calldata = some fileParTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileParTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileParTransition.params.map Param.name)
         (transitionSignature fileParTransition).paramTypes I.calldata = some (fileParLocals I))
     (hreach : ∃ k C, RD spotBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨257⟩ [sel]

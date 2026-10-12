@@ -834,8 +834,7 @@ def contract : ContractDecl :=
 
 def config : Config :=
   { storageBackend := solidityStorageBackend storageLayout
-    externalABI := uniswapExternalABI
-    abiDecodeMode := DecodeMode.legacySolc05
+    externalABI := (uniswapExternalABI).withMode DecodeMode.legacySolc05
     selfDeployment := genSolidityConstructorDeployment contract.ctor.params }
 
 end UniswapV2Pair

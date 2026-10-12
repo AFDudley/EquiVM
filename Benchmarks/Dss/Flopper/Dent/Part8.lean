@@ -96,7 +96,7 @@ theorem flopperDentBodyCoreKissCallFailureMoveCallerNeTicZero
     (houtKissSize : outKiss.size < UInt256.size)
     (hdispatch : dispatchMsg contract I.calldata = some dentTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (dentTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (dentTransition.params.map Param.name)
         (transitionSignature dentTransition).paramTypes I.calldata = some (dentLocals I)) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
@@ -340,7 +340,7 @@ theorem flopperDentBodyCoreAddOverflowMoveCallerNeTicZeroKissSuccess
           outKiss) true)
     (hdispatch : dispatchMsg contract I.calldata = some dentTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (dentTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (dentTransition.params.map Param.name)
         (transitionSignature dentTransition).paramTypes I.calldata = some (dentLocals I)) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
@@ -618,7 +618,7 @@ theorem flopperDentBodyCoreSuccessMoveCallerNeTicZeroKissSuccess
           outKiss) true)
     (hdispatch : dispatchMsg contract I.calldata = some dentTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (dentTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (dentTransition.params.map Param.name)
         (transitionSignature dentTransition).paramTypes I.calldata = some (dentLocals I)) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
@@ -875,7 +875,7 @@ theorem flopperDentBodyCoreAddOverflowMoveCallerNeTicNonzero
           out) true)
     (hdispatch : dispatchMsg contract I.calldata = some dentTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (dentTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (dentTransition.params.map Param.name)
         (transitionSignature dentTransition).paramTypes I.calldata = some (dentLocals I)) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
@@ -1055,7 +1055,7 @@ theorem flopperDentBodyCoreSuccessMoveCallerNeTicNonzero
           out) true)
     (hdispatch : dispatchMsg contract I.calldata = some dentTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (dentTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (dentTransition.params.map Param.name)
         (transitionSignature dentTransition).paramTypes I.calldata = some (dentLocals I)) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
@@ -1207,7 +1207,7 @@ theorem flopperDentBodyCoreNotLive
     (hlive : solcSlotWordAt ⟨8⟩ σ I ≠ ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some dentTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (dentTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (dentTransition.params.map Param.name)
         (transitionSignature dentTransition).paramTypes I.calldata = some (dentLocals I))
     (hreach : ∃ k C, RD flopperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨533⟩ [sel]
@@ -1237,7 +1237,7 @@ theorem flopperDentBodyCoreGuyNotSet
     (hguy : solcAddressSlotWord (auctionPackedSlot (dentIdWord I)) σ I = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some dentTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (dentTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (dentTransition.params.map Param.name)
         (transitionSignature dentTransition).paramTypes I.calldata = some (dentLocals I))
     (hreach : ∃ k C, RD flopperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨533⟩ [sel]
@@ -1272,7 +1272,7 @@ theorem flopperDentBodyCoreTicFinished
         (UInt256.ofNat I.header.timestamp).toNat)
     (hdispatch : dispatchMsg contract I.calldata = some dentTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (dentTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (dentTransition.params.map Param.name)
         (transitionSignature dentTransition).paramTypes I.calldata = some (dentLocals I))
     (hreach : ∃ k C, RD flopperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨533⟩ [sel]
@@ -1321,7 +1321,7 @@ theorem flopperDentBodyCoreEndFinished
         (UInt256.ofNat I.header.timestamp).toNat)
     (hdispatch : dispatchMsg contract I.calldata = some dentTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (dentTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (dentTransition.params.map Param.name)
         (transitionSignature dentTransition).paramTypes I.calldata = some (dentLocals I))
     (hreach : ∃ k C, RD flopperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨533⟩ [sel]
@@ -1441,7 +1441,7 @@ theorem flopperDentBodyCoreBidMismatch
     (hbid : dentBidWord I ≠ solcSlotWordAt (auctionBidSlot (dentIdWord I)) σ I)
     (hdispatch : dispatchMsg contract I.calldata = some dentTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (dentTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (dentTransition.params.map Param.name)
         (transitionSignature dentTransition).paramTypes I.calldata = some (dentLocals I))
     (hreach : ∃ k C, RD flopperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨533⟩ [sel]

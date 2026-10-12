@@ -14,6 +14,7 @@ theorem checkedGetter_refines {cfg : Config} {C : ContractDecl} {t : TransitionD
     {imms : Store} {σ σ₀ A I} {g : UInt256} {code out : ByteArray}
     {body : List Stmt} {values : List Value} {P : Prop} [Decidable P]
     (hcode : I.code = code) (hsz : 4 ≤ I.calldata.size)
+    (hempty : cfg.externalABI.decodeCalldata? [] [] I.calldata = some (∅ : Store))
     (hd : selectorDispatchMsg C I.calldata = some t) (hp : t.params = [])
     (hb : t.body = calldataPrologue body)
     (hreturn : P → returnEquiv out (some values) t.returnType)
@@ -25,10 +26,9 @@ theorem checkedGetter_refines {cfg : Config} {C : ContractDecl} {t : TransitionD
     (hX : CheckedGetterResult P code I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) σ out) :
     runtimeRefinementFor cfg C σ σ₀ g A I imms := by
-  have hdec : decodeCalldataWithMode cfg.abiDecodeMode (t.params.map Param.name)
+  have hdec : cfg.externalABI.decodeCalldata? (t.params.map Param.name)
       (transitionSignature t).paramTypes I.calldata = some (∅ : Store) := by
-    simpa only [transitionSignature, hp, List.map_nil] using
-      (decodeCalldataWithMode_empty_ok (mode := cfg.abiDecodeMode) hsz)
+    simpa only [transitionSignature, hp, List.map_nil] using hempty
   by_cases hv : I.weiValue = ⟨0⟩
   · by_cases hhi : I.calldata.size < 2^255 + 4
     · by_cases hP : P

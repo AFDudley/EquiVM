@@ -651,7 +651,7 @@ theorem erc20ApproveBodyCore
   · by_cases hcanonSpender : (approveSpenderWord I).toNat < EVM.addressModulus
     · have hdec0 := erc20Decode_approve_ok (I := I) hsz68 hcanonSpender
       have hdec :
-          decodeCalldataWithMode vyperERC20Config.abiDecodeMode
+          vyperERC20Config.externalABI.decodeCalldata?
             (ERC20.approveTransition.params.map Param.name)
             (transitionSignature ERC20.approveTransition).paramTypes I.calldata =
               some (approveStore I) := by
@@ -671,7 +671,7 @@ theorem erc20ApproveBodyCore
               (by simp only [evm, initState]; exact hpf))
     · have hdec0 := erc20Decode_approve_none_noncanon (I := I) hsz68 hcanonSpender
       have hdec :
-          decodeCalldataWithMode vyperERC20Config.abiDecodeMode
+          vyperERC20Config.externalABI.decodeCalldata?
             (ERC20.approveTransition.params.map Param.name)
             (transitionSignature ERC20.approveTransition).paramTypes I.calldata = none := by
         simpa [vyperERC20Config] using hdec0
@@ -681,7 +681,7 @@ theorem erc20ApproveBodyCore
   · have hshort : I.calldata.size < 68 := by omega
     have hdec0 := erc20Decode_approve_none_short (I := I) hsz4 hshort
     have hdec :
-        decodeCalldataWithMode vyperERC20Config.abiDecodeMode
+        vyperERC20Config.externalABI.decodeCalldata?
           (ERC20.approveTransition.params.map Param.name)
           (transitionSignature ERC20.approveTransition).paramTypes I.calldata = none := by
       simpa [vyperERC20Config] using hdec0

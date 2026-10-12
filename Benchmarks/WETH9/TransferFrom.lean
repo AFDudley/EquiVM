@@ -175,7 +175,7 @@ theorem weth9TFConnect {σ σ₀ A I} {g : UInt256} {evmPost : EVM.State} {cs}
     runtimeRefinementFor config contract σ σ₀ g A I := by
   refine weth9ReEquivExecGen (t := transferFromTransition) hcode hX
     (weth9SelectorDispatchTransferFrom hsel) ?_ hbody ?_ ?_
-  · show decodeCalldataWithMode config.abiDecodeMode (transferFromTransition.params.map Param.name)
+  · show config.externalABI.decodeCalldata? (transferFromTransition.params.map Param.name)
       (transitionSignature transferFromTransition).paramTypes I.calldata = some (tfStore I)
     exact tfDecode_ok hsz100
   · exact hbodyMap.symm

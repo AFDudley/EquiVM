@@ -48,7 +48,7 @@ theorem poolManagerUpdateDynamicLPFeeBody {σ σ₀ A I} {g : UInt256} (v : Pool
         let key := poolKeyOfCalldata I.calldata
         let fee := calldataWord I.calldata 164
         let args := poolKeyFeeArgs "key" "newDynamicLPFee" key fee
-        have hdecAll : decodeCalldataWithMode config.abiDecodeMode
+        have hdecAll : config.externalABI.decodeCalldata?
             (updateDynamicLPFeeTransition.params.map Param.name)
             (transitionSignature updateDynamicLPFeeTransition).paramTypes I.calldata =
             if PoolKeyCanonical key ∧ fee.toNat < 2^24 then some args else none :=

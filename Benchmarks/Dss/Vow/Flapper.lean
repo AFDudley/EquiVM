@@ -36,9 +36,9 @@ theorem vowDispatch_flapper {I : ExecutionEnv}
     exact hsel
 
 theorem vowDecode_flapper {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (flapperTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (flapperTransition.params.map Param.name)
       (transitionSignature flapperTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 theorem vowReachFlapperBody {σ σ₀ A I} {g : Sat256}
@@ -75,7 +75,7 @@ theorem vowFlapperBodyCore
     (hcode : I.code = vowBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some flapperTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (flapperTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (flapperTransition.params.map Param.name)
         (transitionSignature flapperTransition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD vowBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨501⟩ [sel]

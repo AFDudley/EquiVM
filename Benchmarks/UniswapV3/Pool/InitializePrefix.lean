@@ -13,7 +13,8 @@ def initializeFrame (v : UniswapV3PoolImmutables) (price : UInt256) : Frame :=
   {contract := contract, locals := initializeLocals price, immutables := immStore v}
 
 theorem initializeBind (price : UInt256) :
-    bindParams? initializeTransition.params [.int (Int.ofNat price.toNat)] =
+    bindParams? (initializeTransition.params.map Param.toFunctionParam)
+      [.int (Int.ofNat price.toNat)] =
       some (initializeLocals price) := rfl
 
 def initializeTickFrame (v : UniswapV3PoolImmutables) (price : UInt256) (tick : Int) : Frame :=

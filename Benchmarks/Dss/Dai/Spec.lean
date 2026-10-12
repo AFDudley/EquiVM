@@ -429,8 +429,7 @@ def contract : ContractDecl :=
 
 def config : Config :=
   { storageBackend := solidityStorageBackend storageLayout
-    externalABI := defaultExternalCallABI
-    abiDecodeMode := DecodeMode.legacySolc05
+    externalABI := (defaultExternalCallABI).withMode DecodeMode.legacySolc05
     selfDeployment := genSolidityConstructorDeployment contract.ctor.params }
 
 end Benchmarks.Dss.Dai

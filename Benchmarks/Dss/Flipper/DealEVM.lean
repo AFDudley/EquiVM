@@ -248,6 +248,7 @@ theorem dealCatCallMem_encode (σ : AccountMap) (I : ExecutionEnv) :
         some ((dealCatCallMem σ I).readWithPadding 128 36) := by
   rw [dealCatCallMem_read]
   unfold config externalABI
+  simp only [ExternalCallABI.withMode_encode?]
   simp only [if_true]
   unfold ABI.encodeCallWithSelector?
   have hpayload :
@@ -610,6 +611,7 @@ theorem dealVatFluxCallMem_encode (σmem σ : AccountMap) (I : ExecutionEnv) :
         some ((dealVatFluxCallMem σmem σ I).readWithPadding 128 132) := by
   rw [dealVatFluxCallMem_read]
   unfold config externalABI
+  simp only [ExternalCallABI.withMode_encode?]
   simp only [if_true]
   unfold ABI.encodeCallWithSelector?
   have hguy :

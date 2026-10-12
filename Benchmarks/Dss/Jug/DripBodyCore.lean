@@ -39,7 +39,7 @@ theorem jugDripBodyCoreInvalidNow
         (solcSlotWordAt (fileDutyRhoSlotFor I) σ I).toNat)
     (hdispatch : dispatchMsg contract I.calldata = some dripTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (dripTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (dripTransition.params.map Param.name)
         (transitionSignature dripTransition).paramTypes I.calldata = some (dripLocals I))
     (hreach : ∃ k C, RD jugBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨328⟩ [sel]
@@ -67,7 +67,7 @@ theorem jugDripBodyCoreVatIlksNoCode
         (UInt256.ofNat I.header.timestamp).toNat)
     (hdispatch : dispatchMsg contract I.calldata = some dripTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (dripTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (dripTransition.params.map Param.name)
         (transitionSignature dripTransition).paramTypes I.calldata = some (dripLocals I))
     (hreach : ∃ k C, RD jugBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨328⟩ [sel]
@@ -105,7 +105,7 @@ theorem jugDripBodyCoreVatIlksCallFailed
         (UInt256.ofNat I.header.timestamp).toNat)
     (hdispatch : dispatchMsg contract I.calldata = some dripTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (dripTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (dripTransition.params.map Param.name)
         (transitionSignature dripTransition).paramTypes I.calldata = some (dripLocals I))
     (hcodeSize :
       Reasoning.Theory.extCodeSizeWord σ (dripVatTargetWord σ I) ≠ ⟨0⟩)
@@ -187,7 +187,7 @@ theorem jugDripBodyCoreVatIlksCallDepthLimit
         (UInt256.ofNat I.header.timestamp).toNat)
     (hdispatch : dispatchMsg contract I.calldata = some dripTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (dripTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (dripTransition.params.map Param.name)
         (transitionSignature dripTransition).paramTypes I.calldata = some (dripLocals I))
     (hcodeSize :
       Reasoning.Theory.extCodeSizeWord σ (dripVatTargetWord σ I) ≠ ⟨0⟩)
@@ -246,7 +246,7 @@ theorem jugDripBodyCoreVatIlksReturnDecodeShort
         (UInt256.ofNat I.header.timestamp).toNat)
     (hdispatch : dispatchMsg contract I.calldata = some dripTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (dripTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (dripTransition.params.map Param.name)
         (transitionSignature dripTransition).paramTypes I.calldata = some (dripLocals I))
     (hcodeSize :
       Reasoning.Theory.extCodeSizeWord σ (dripVatTargetWord σ I) ≠ ⟨0⟩)
@@ -332,7 +332,7 @@ theorem jugDripBodyCoreVatIlksAddOverflow
         (UInt256.ofNat I.header.timestamp).toNat)
     (hdispatch : dispatchMsg contract I.calldata = some dripTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (dripTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (dripTransition.params.map Param.name)
         (transitionSignature dripTransition).paramTypes I.calldata = some (dripLocals I))
     (hcodeSize :
       Reasoning.Theory.extCodeSizeWord σ (dripVatTargetWord σ I) ≠ ⟨0⟩)

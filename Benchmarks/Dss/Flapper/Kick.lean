@@ -1909,7 +1909,7 @@ theorem flapperKickBodyReturns_moveCallSuccess
 
 
 theorem flapperDecode_kick_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (kickTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (kickTransition.params.map Param.name)
       (transitionSignature kickTransition).paramTypes I.calldata = some (kickLocals I) := by
   change decodeCalldataWithMode DecodeMode.legacySolc05 ["lot", "bid"]
       [abiUInt256, abiUInt256] I.calldata =
@@ -1919,7 +1919,7 @@ theorem flapperDecode_kick_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size
 
 theorem flapperDecode_kick_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 68) :
-    decodeCalldataWithMode config.abiDecodeMode (kickTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (kickTransition.params.map Param.name)
       (transitionSignature kickTransition).paramTypes I.calldata = none := by
   change decodeCalldataWithMode DecodeMode.legacySolc05 ["lot", "bid"]
       [abiUInt256, abiUInt256] I.calldata = none

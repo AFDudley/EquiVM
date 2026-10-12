@@ -60,7 +60,7 @@ theorem cometWithExtendedAssetListBorrowPerSecondInterestRateSlopeHighBody {σ �
     runtimeRefinementFor config contract σ σ₀ g A I (immStore v) := by
   have hsz : 4 ≤ I.calldata.size :=
     calldata_size_ge_of_selIs I (cometWithExtendedAssetListSelBytes 11) rfl hsel
-  exact immutableGetter_refines (t := borrowPerSecondInterestRateSlopeHighTransition) hcode hsz
+  exact immutableGetter_refines (t := borrowPerSecondInterestRateSlopeHighTransition) hcode hsz (cometDecode_empty hsz)
     (cometSelectorDispatch ⟨11, by decide⟩ hsel) rfl rfl rfl
     (immStore_get_borrowPerSecondInterestRateSlopeHigh v) (uint256ReturnEncoding v.borrowPerSecondInterestRateSlopeHigh)
     (borrowPerSecondInterestRateSlopeHighX v hcode hsz hsize hsel)

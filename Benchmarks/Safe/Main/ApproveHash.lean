@@ -178,7 +178,7 @@ theorem safeApprovehashBodyCore
       · obtain ⟨_, _, h1341⟩ := safeDecodeWord h9894 (by simp)
           (solcDecodeLenCheckOk_4_32 hlen hbig hsize) (by jump_dest)
         have h5195 := safeRuntime_block_1341 (by simp) (by jump_dest) h1341
-        have hdec : decodeCalldataWithMode config.abiDecodeMode
+        have hdec : config.externalABI.decodeCalldata?
             (approvehashTransition.params.map Param.name)
             (transitionSignature approvehashTransition).paramTypes I.calldata =
             some (approveHashArgs (calldataWord I.calldata 4)) := decodeCalldataBytes32Word hlen

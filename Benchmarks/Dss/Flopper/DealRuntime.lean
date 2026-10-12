@@ -591,7 +591,7 @@ theorem flopperDealBodyCoreNotLive
     (hlive : solcSlotWordAt ⟨8⟩ σ I ≠ ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some dealTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (dealTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (dealTransition.params.map Param.name)
         (transitionSignature dealTransition).paramTypes I.calldata = some (dealLocals I))
     (hreach : ∃ k C, RD flopperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨804⟩ [sel]
@@ -620,7 +620,7 @@ theorem flopperDealBodyCoreTicZero
     (htic : uint48Offset20Word (auctionPackedSlot (dealIdWord I)) σ I = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some dealTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (dealTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (dealTransition.params.map Param.name)
         (transitionSignature dealTransition).paramTypes I.calldata = some (dealLocals I))
     (hreach : ∃ k C, RD flopperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨804⟩ [sel]
@@ -660,7 +660,7 @@ theorem flopperDealBodyCoreNotFinished
         (uint48Offset26Word (auctionPackedSlot (dealIdWord I)) σ I).toNat)
     (hdispatch : dispatchMsg contract I.calldata = some dealTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (dealTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (dealTransition.params.map Param.name)
         (transitionSignature dealTransition).paramTypes I.calldata = some (dealLocals I))
     (hreach : ∃ k C, RD flopperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨804⟩ [sel]
@@ -707,7 +707,7 @@ theorem flopperDealBodyCoreMintNoCode
         (solcAddressSlotWord ⟨3⟩ σ I) = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some dealTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (dealTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (dealTransition.params.map Param.name)
         (transitionSignature dealTransition).paramTypes I.calldata = some (dealLocals I))
     (hreach : ∃ k C, RD flopperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨804⟩ [sel]
@@ -786,7 +786,7 @@ theorem flopperDealBodyCoreMintCallFailure
     (houtSize : out.size < UInt256.size)
     (hdispatch : dispatchMsg contract I.calldata = some dealTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (dealTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (dealTransition.params.map Param.name)
         (transitionSignature dealTransition).paramTypes I.calldata = some (dealLocals I)) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
@@ -852,7 +852,7 @@ theorem flopperDealBodyCoreMintCallDepthLimit
     (hdepth : I.depth = 1024)
     (hdispatch : dispatchMsg contract I.calldata = some dealTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (dealTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (dealTransition.params.map Param.name)
         (transitionSignature dealTransition).paramTypes I.calldata = some (dealLocals I))
     (hreach : ∃ k C, RD flopperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨804⟩ [sel]
@@ -962,7 +962,7 @@ theorem flopperDealBodyCoreMintCallSuccess
           out) true)
     (hdispatch : dispatchMsg contract I.calldata = some dealTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (dealTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (dealTransition.params.map Param.name)
         (transitionSignature dealTransition).paramTypes I.calldata = some (dealLocals I)) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
