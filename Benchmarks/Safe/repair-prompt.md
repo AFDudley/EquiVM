@@ -1,19 +1,20 @@
-  # Safe proof repair: <FROM_COMMIT> -> <TO_COMMIT>
+# Safe proof repair: <FROM_COMMIT> -> <TO_COMMIT>
 
-  Layout. Every version of the Safe proof is a directory `Benchmarks/Safe/<NAME>/` with Lean
-  module path `Benchmarks.Safe.<NAME>`; the same name appears in its `namespace` lines and
-  path strings. `Benchmarks/Safe/Main/` is the live proof and is never modified. In this session:
-  - <START> = <START_NAME>: holds a complete, axiom-clean refinement proof (`safeContractCorrect`
-    in `Correct.lean`) of Safe at upstream commit <FROM_COMMIT> of safe-global/safe-smart-account.
-  - <TARGET> = <TARGET_NAME>: the new directory that will hold the proof for upstream commit
-    <TO_COMMIT>, which changes the source: <one line>.
+Layout. Every version of the Safe proof is a directory `Benchmarks/Safe/<NAME>/`
+with Lean module path `Benchmarks.Safe.<NAME>`; the same name appears in its
+`namespace` lines and path strings. `Benchmarks/Safe/Main/` is the live proof
+and is never modified. `Benchmarks/Safe/<START>/` holds a complete,
+axiom-clean refinement proof (`safeContractCorrect` in `Correct.lean`) of Safe
+at upstream commit <FROM_COMMIT> of safe-global/safe-smart-account.
+`Benchmarks/Safe/<TARGET>/` does not exist yet; it will hold the proof for
+upstream commit <TO_COMMIT>.
 
-  Goal: carry the proof over to <TO_COMMIT> with the smallest sound change to the proof.
+Goal: carry the proof over to <TO_COMMIT> with the smallest sound change to the proof.
 
-  Input: the commit hash <TO_COMMIT>. Fetch the upstream `contracts/` directory at that commit,
-  byte-exact, and the pinned compiler 0.8.35+commit.47b9dedd (the only compiler to use; the
-  options are in the README). Do not consult any other version of this proof: no other EquiVM
-  checkout, branch, remote or fork.
+Input: the commit hash <TO_COMMIT>. Fetch the upstream `contracts/` directory at that commit,
+byte-exact, and the pinned compiler 0.8.35+commit.47b9dedd (the only compiler to use; the
+options are in the README). Do not consult any other version of this proof: no other EquiVM
+checkout, branch, remote or fork.
 
   0. Copy `Benchmarks/Safe/<START>/` to `Benchmarks/Safe/<TARGET>/`. In the copy only, replace
      every occurrence of the token `Benchmarks.Safe.<START>` by `Benchmarks.Safe.<TARGET>` and of
@@ -49,7 +50,7 @@
      could not be repaired in place and was reproved; blockers. Do not list files: the commits
      record them. Commit: "Benchmarks: Safe repair report".
 
-  Rules: work only inside `Benchmarks/Safe/<TARGET>/`, plus the registry entry of step 2. No
-  other edits to `Tests/`, and none to `Solm/`, `Reasoning/`, `EVM/`, `scripts/`,
-  `Benchmarks.lean`, CI or the lakefile; if one seems unavoidable, stop and report. Never
-  bypass a problem; if something looks unprovable, investigate, report and wait.
+Rules: work only inside `Benchmarks/Safe/<TARGET>/`, plus the registry entry of step 2. No
+other edits to `Tests/`, and none to `Solm/`, `Reasoning/`, `EVM/`, `scripts/`,
+`Benchmarks.lean`, CI or the lakefile; if one seems unavoidable, stop and report. Never
+bypass a problem; if something looks unprovable, investigate, report and wait.
