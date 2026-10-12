@@ -1,12 +1,12 @@
 # Safe Benchmark
 
-Source: [`contracts/Safe.sol`](contracts/Safe.sol) from `safe-fndn/safe-smart-account` commit `cdb2eb578dbdba4c3f10a47f9a2dd9580773e63a`.
+Source: [`contracts/Safe.sol`](contracts/Safe.sol) from `safe-fndn/safe-smart-account` commit `02276647d5dd3353edc52d8c3e915f7f18dab95a`.
 
 Compiled with Solidity 0.8.35 and optimizer enabled, from the repository root:
 
 ```bash
 solc --optimize --optimize-runs 200 --evm-version shanghai --metadata-hash none --bin --bin-runtime --abi --storage-layout \
-  --base-path . --overwrite -o /tmp/safe-v0-build Benchmarks/Safe/V1_0227664/contracts/Safe.sol
+  --base-path . --overwrite -o /tmp/safe-v1-build Benchmarks/Safe/V1_0227664/contracts/Safe.sol
 ```
 
 Pinned compiler: `0.8.35+commit.47b9dedd.Linux.g++`, sha256
@@ -22,9 +22,9 @@ artifact provenance for this benchmark.
 
 Artifacts:
 
-- `creation.hex`: optimized creation bytecode, 11788 bytes, sha256 `410cc595f77a67b48e84b33f35e98444217ff5265a9bf454f6115c1635efb3fc`
-- `runtime.hex`: optimized deployed runtime bytecode, 11755 bytes, sha256 `0e4f8a6acc3ca0e7240cafb99580e33dee7d2c7d3fff49cc88df6cea664a4fcd`
-- `Safe.abi.json`: ABI emitted by solc, sha256 `40069244550920fc4ecdb4a162f9b45c78b5de06fc7fdcb8f7d4350739bb8682`
+- `creation.hex`: optimized creation bytecode, 11532 bytes, sha256 `eed71a8c1353962dff77cd62001fabdcd3b588492ecac8c2bb40a13032e7d779`
+- `runtime.hex`: optimized deployed runtime bytecode, 11499 bytes, sha256 `1385b50abd612aa3307c159a9dda4fc8ea549f88caa46d26b4c3bed36ea1c9c5`
+- `Safe.abi.json`: ABI emitted by solc, sha256 `c2d916b516f1cf00691d5fe99f62e8bba92e0675e8c25b5e5800d6e53b08053a`
 - `sources.sha256`: sha256 manifest for the vendored Solidity source tree
 - `Spec.lean`: Solm AST with ABI surface, solc 0.8.35 decoding, and physical storage layout
 - `SpecSyntax.lean`: syntax-side wrapper checked definitionally against the AST scaffold
@@ -38,7 +38,7 @@ Artifacts:
 - `Audit.lean`, `AuditSupport.lean`: differential regressions against the actual EVM interpreter
 - `AuditManifest.json`: reproducible compiler, ABI, storage, instruction, event, and boundary inventory
 
-Main source sha256: `1ffd10dbcb76e9983e5dd40bc230d71aa3dfc231165176bbac9596513137af4e`.
+Main source sha256: `2faaaa199a971757bb9e0cd7024a654c978c6b78a4f70e99db376dfdf6146323`.
 
 ## Semantic audit
 

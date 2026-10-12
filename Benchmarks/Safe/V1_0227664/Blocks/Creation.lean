@@ -26,7 +26,7 @@ theorem safeCreation_block_0_taken {tail : ByteArray} {ee : ExecutionEnv} {g : S
     (h : RD (Benchmarks.Safe.V1_0227664.safeCreationBytecode ++ tail) ee g s0 (UInt256.ofNat 0) R mem aw rdata σ k C)
     : RD (Benchmarks.Safe.V1_0227664.safeCreationBytecode ++ tail) ee g s0 (UInt256.ofNat 14) (safeCreation_block_0_taken_stack (ee := ee) (R := R)) (safeCreation_block_0_taken_memory (mem := mem)) (M aw (UInt256.ofNat 64) (⟨32⟩ : UInt256)) rdata σ (k + 8) (C + ((30) + (memExpansionCost aw (UInt256.ofNat 64) (⟨32⟩ : UInt256)))) := by
   let r0 := h
-  have hcreationCodeSize : Benchmarks.Safe.V1_0227664.safeCreationBytecode.size = 11788 := by native_decide
+  have hcreationCodeSize : Benchmarks.Safe.V1_0227664.safeCreationBytecode.size = 11532 := by native_decide
   have r1 := r0.push1 (UInt256.ofNat 128) (by exact d tail _ _ _ (by native_decide) (by rw [hcreationCodeSize]; native_decide) (by native_decide)) (by evm_ov)
   have r2 := r1.push1 (UInt256.ofNat 64) (by exact d tail _ _ _ (by native_decide) (by rw [hcreationCodeSize]; native_decide) (by native_decide)) (by evm_ov)
   have r3 := RD.genMstore r2 (by exact d tail _ _ _ (by native_decide) (by rw [hcreationCodeSize]; native_decide) (by native_decide)) (by evm_ov)
@@ -63,7 +63,7 @@ theorem safeCreation_block_0_fallthrough {tail : ByteArray} {ee : ExecutionEnv} 
     (h : RD (Benchmarks.Safe.V1_0227664.safeCreationBytecode ++ tail) ee g s0 (UInt256.ofNat 0) R mem aw rdata σ k C)
     : RD (Benchmarks.Safe.V1_0227664.safeCreationBytecode ++ tail) ee g s0 (UInt256.ofNat 11) (safeCreation_block_0_fallthrough_stack (ee := ee) (R := R)) (safeCreation_block_0_fallthrough_memory (mem := mem)) (M aw (UInt256.ofNat 64) (⟨32⟩ : UInt256)) rdata σ (k + 8) (C + ((30) + (memExpansionCost aw (UInt256.ofNat 64) (⟨32⟩ : UInt256)))) := by
   let r0 := h
-  have hcreationCodeSize : Benchmarks.Safe.V1_0227664.safeCreationBytecode.size = 11788 := by native_decide
+  have hcreationCodeSize : Benchmarks.Safe.V1_0227664.safeCreationBytecode.size = 11532 := by native_decide
   have r1 := r0.push1 (UInt256.ofNat 128) (by exact d tail _ _ _ (by native_decide) (by rw [hcreationCodeSize]; native_decide) (by native_decide)) (by evm_ov)
   have r2 := r1.push1 (UInt256.ofNat 64) (by exact d tail _ _ _ (by native_decide) (by rw [hcreationCodeSize]; native_decide) (by native_decide)) (by evm_ov)
   have r3 := RD.genMstore r2 (by exact d tail _ _ _ (by native_decide) (by rw [hcreationCodeSize]; native_decide) (by native_decide)) (by evm_ov)
@@ -90,7 +90,7 @@ theorem safeCreation_block_11 {tail : ByteArray} {ee : ExecutionEnv} {g : Sat256
     (h : RD (Benchmarks.Safe.V1_0227664.safeCreationBytecode ++ tail) ee g s0 (UInt256.ofNat 11) R mem aw rdata σ k C)
     : RDrev (Benchmarks.Safe.V1_0227664.safeCreationBytecode ++ tail) g s0 := by
   let r0 := h
-  have hcreationCodeSize : Benchmarks.Safe.V1_0227664.safeCreationBytecode.size = 11788 := by native_decide
+  have hcreationCodeSize : Benchmarks.Safe.V1_0227664.safeCreationBytecode.size = 11532 := by native_decide
   have r1 := r0.push0 (by exact d tail _ _ _ (by native_decide) (by rw [hcreationCodeSize]; native_decide) (by native_decide)) (by evm_ov)
   have r2 := r1.push0 (by exact d tail _ _ _ (by native_decide) (by rw [hcreationCodeSize]; native_decide) (by native_decide)) (by evm_ov)
   exact RD.genRev r2 (by exact d tail _ _ _ (by native_decide) (by rw [hcreationCodeSize]; native_decide) (by native_decide)) (by evm_ov)
@@ -100,15 +100,15 @@ theorem safeCreation_block_14 {tail : ByteArray} {ee : ExecutionEnv} {g : Sat256
     (hstack : R.length + 4 ≤ 1024)
     (hperm : ee.perm = true)
     (h : RD (Benchmarks.Safe.V1_0227664.safeCreationBytecode ++ tail) ee g s0 (UInt256.ofNat 14) (x0 :: R) mem aw rdata σ k C)
-    : RDret (Benchmarks.Safe.V1_0227664.safeCreationBytecode ++ tail) g s0 (sstoreAccountMap ee.codeOwner σ (UInt256.ofNat 4) (UInt256.ofNat 1)) (((Benchmarks.Safe.V1_0227664.safeCreationBytecode ++ tail).write (UInt256.ofNat 33).toNat mem (⟨0⟩ : UInt256).toNat (UInt256.ofNat 11755).toNat).readWithPadding (⟨0⟩ : UInt256).toNat (UInt256.ofNat 11755).toNat) := by
+    : RDret (Benchmarks.Safe.V1_0227664.safeCreationBytecode ++ tail) g s0 (sstoreAccountMap ee.codeOwner σ (UInt256.ofNat 4) (UInt256.ofNat 1)) (((Benchmarks.Safe.V1_0227664.safeCreationBytecode ++ tail).write (UInt256.ofNat 33).toNat mem (⟨0⟩ : UInt256).toNat (UInt256.ofNat 11499).toNat).readWithPadding (⟨0⟩ : UInt256).toNat (UInt256.ofNat 11499).toNat) := by
   let r0 := h
-  have hcreationCodeSize : Benchmarks.Safe.V1_0227664.safeCreationBytecode.size = 11788 := by native_decide
+  have hcreationCodeSize : Benchmarks.Safe.V1_0227664.safeCreationBytecode.size = 11532 := by native_decide
   have r1 := r0.jumpdest (by exact d tail _ _ _ (by native_decide) (by rw [hcreationCodeSize]; native_decide) (by native_decide)) (by evm_ov)
   have r2 := r1.pop (by exact d tail _ _ _ (by native_decide) (by rw [hcreationCodeSize]; native_decide) (by native_decide)) (by evm_ov)
   have r3 := r2.push1 (UInt256.ofNat 1) (by exact d tail _ _ _ (by native_decide) (by rw [hcreationCodeSize]; native_decide) (by native_decide)) (by evm_ov)
   have r4 := r3.push1 (UInt256.ofNat 4) (by exact d tail _ _ _ (by native_decide) (by rw [hcreationCodeSize]; native_decide) (by native_decide)) (by evm_ov)
   obtain ⟨_, _, r5⟩ := RD.sstore r4 hperm (by exact d tail _ _ _ (by native_decide) (by rw [hcreationCodeSize]; native_decide) (by native_decide)) (by evm_ov)
-  have r6 := r5.push2 (UInt256.ofNat 11755) (by exact d tail _ _ _ (by native_decide) (by rw [hcreationCodeSize]; native_decide) (by native_decide)) (by evm_ov)
+  have r6 := r5.push2 (UInt256.ofNat 11499) (by exact d tail _ _ _ (by native_decide) (by rw [hcreationCodeSize]; native_decide) (by native_decide)) (by evm_ov)
   have r7 := r6.dup1 (by exact d tail _ _ _ (by native_decide) (by rw [hcreationCodeSize]; native_decide) (by native_decide)) (by evm_ov)
   have r8 := r7.push2 (UInt256.ofNat 33) (by exact d tail _ _ _ (by native_decide) (by rw [hcreationCodeSize]; native_decide) (by native_decide)) (by evm_ov)
   have r9 := r8.push0 (by exact d tail _ _ _ (by native_decide) (by rw [hcreationCodeSize]; native_decide) (by native_decide)) (by evm_ov)
@@ -121,7 +121,7 @@ theorem safeCreation_block_32 {tail : ByteArray} {ee : ExecutionEnv} {g : Sat256
     (h : RD (Benchmarks.Safe.V1_0227664.safeCreationBytecode ++ tail) ee g s0 (UInt256.ofNat 32) R mem aw rdata σ k C)
     : RDinvalid (Benchmarks.Safe.V1_0227664.safeCreationBytecode ++ tail) g s0 := by
   let r0 := h
-  have hcreationCodeSize : Benchmarks.Safe.V1_0227664.safeCreationBytecode.size = 11788 := by native_decide
+  have hcreationCodeSize : Benchmarks.Safe.V1_0227664.safeCreationBytecode.size = 11532 := by native_decide
   exact RD.invalid r0 (by exact d tail _ _ _ (by native_decide) (by rw [hcreationCodeSize]; native_decide) (by native_decide))
 
 end safeCreationBlocks
