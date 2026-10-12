@@ -61,6 +61,7 @@ def gasprice : Expr := .env .gasprice
 def zeroAddr : Expr := .cast (.intLit 0) addrSt
 def sentinelAddr : Expr := .cast (.intLit 1) addrSt
 def ecrecoverPrecompile : Expr := .cast (.intLit 1) addrSt
+def p256Precompile : Expr := .cast (.intLit 256) addrSt
 def maxUint256Expr : Expr := .intLit maxUint256
 
 def eqE (x y : Expr) : Expr := .binary .eq x y
@@ -399,6 +400,11 @@ def ecrecoverCalldataExpr : Expr :=
       (bytes32, .var "r"),
       (bytes32, .var "s") ]
 
+def p256CalldataExpr : Expr :=
+  .abiEncodePacked
+    [ (bytes32, .var "h"), (bytes32, .var "r"), (bytes32, .var "s"),
+      (uint256, .var "qx"), (uint256, .var "qy") ]
+
 /-! ## SafeMath and internal helper functions -/
 
 def addFunction : FunctionDecl :=
@@ -623,6 +629,21 @@ def ecrecoverAddressFunction : FunctionDecl :=
               zeroAddr
               (.abiDecode addr (.var "ecrecoverData")) ] ] }
 
+def p256VerifyFunction : FunctionDecl :=
+  { name := "p256Verify"
+    params :=
+      [ { name := "h", ty := bytes32 }, { name := "r", ty := bytes32 },
+        { name := "s", ty := bytes32 }, { name := "qx", ty := uint256 },
+        { name := "qy", ty := uint256 } ]
+    returnType := [boolTy]
+    body :=
+      [ .lowLevelCall p256Precompile (.intLit 0) p256CalldataExpr
+          "p256Success" "p256Data" false,
+        .return
+          [ andE (.var "p256Success")
+              (andE (eqE (localLength "p256Data") (.intLit 32))
+                (eqE (.abiDecode uint256 (.var "p256Data")) (.intLit 1))) ] ] }
+
 def checkNSignaturesImplFunction : FunctionDecl :=
   { name := "checkNSignaturesImpl"
     params :=
@@ -659,18 +680,44 @@ def checkNSignaturesImplFunction : FunctionDecl :=
                       (orE (eqE (.var "executor") (.var "currentOwner"))
                         (neE (.storage (approvedHashesRef (.var "currentOwner") (.var "dataHash")))
                           (.intLit 0))) ]
-                  [ .ite (gtE (.var "v") (.intLit 30))
-                      [ .letDecl "ethSignedHash" (some bytes32)
-                          (.keccak256
-                            (.abiEncodePacked
-                              [(bytesTy, ethSignPrefix), (bytes32, .var "dataHash")])),
-                        .internalCall "ecrecoverAddress"
-                          [.var "ethSignedHash", u8 (subE (.var "v") (.intLit 4)),
-                            .var "r", .var "s"] "recoveredOwner",
-                        .assign .localVar (varRef "currentOwner") (.var "recoveredOwner") ]
-                      [ .internalCall "ecrecoverAddress"
-                          [.var "dataHash", .var "v", .var "r", .var "s"] "recoveredOwner",
-                        .assign .localVar (varRef "currentOwner") (.var "recoveredOwner") ] ] ],
+                  [ .ite (eqE (.var "v") (.intLit 2))
+                      [ .assign .localVar (varRef "currentOwner")
+                          (uint256AsAddress (bytes32AsUint256 (.var "r"))),
+                        .letDecl "p256Offset" (some uint256) (bytes32AsUint256 (.var "s")),
+                        .require (geE (.var "p256Offset") (.var "requiredBytes")),
+                        .internalCall "_add" [.var "p256Offset", .intLit 128] "p256End",
+                        .require (leE (.var "p256End") (localLength "signatures")),
+                        .assign .localVar (varRef "r")
+                          (signatureWordAt (.var "signatures") (.var "p256Offset")),
+                        .assign .localVar (varRef "s")
+                          (signatureWordAt (.var "signatures")
+                            (addE (.var "p256Offset") (.intLit 32))),
+                        .letDecl "qx" (some uint256)
+                          (signatureUintAt (.var "signatures")
+                            (addE (.var "p256Offset") (.intLit 64))),
+                        .letDecl "qy" (some uint256)
+                          (signatureUintAt (.var "signatures")
+                            (addE (.var "p256Offset") (.intLit 96))),
+                        .letDecl "signerAddress" (some addr)
+                          (uint256AsAddress (bytes32AsUint256
+                            (.keccak256 (.abiEncodePacked
+                              [(uint256, .var "qx"), (uint256, .var "qy")])))),
+                        .require (eqE (.var "currentOwner") (.var "signerAddress")),
+                        .internalCall "p256Verify"
+                          [.var "dataHash", .var "r", .var "s", .var "qx", .var "qy"] "p256Valid",
+                        .require (.var "p256Valid") ]
+                      [ .ite (gtE (.var "v") (.intLit 30))
+                          [ .letDecl "ethSignedHash" (some bytes32)
+                              (.keccak256
+                                (.abiEncodePacked
+                                  [(bytesTy, ethSignPrefix), (bytes32, .var "dataHash")])),
+                            .internalCall "ecrecoverAddress"
+                              [.var "ethSignedHash", u8 (subE (.var "v") (.intLit 4)),
+                                .var "r", .var "s"] "recoveredOwner",
+                            .assign .localVar (varRef "currentOwner") (.var "recoveredOwner") ]
+                          [ .internalCall "ecrecoverAddress"
+                              [.var "dataHash", .var "v", .var "r", .var "s"] "recoveredOwner",
+                            .assign .localVar (varRef "currentOwner") (.var "recoveredOwner") ] ] ] ],
             .require
               (andE (gtE (.var "currentOwner") (.var "lastOwner"))
                 (andE (neE (.storage (ownersRef (.var "currentOwner"))) zeroAddr)
@@ -709,6 +756,7 @@ def internalFunctions : List FunctionDecl :=
     validateContractSignatureFunction,
     checkContractSignatureFunction,
     ecrecoverAddressFunction,
+    p256VerifyFunction,
     checkNSignaturesImplFunction,
     checkSignaturesImplFunction ]
 

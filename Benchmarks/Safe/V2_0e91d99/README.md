@@ -58,14 +58,15 @@ Corrections made during the audit:
 
 | Area | Bytecode evidence and specification behavior |
 | --- | --- |
-| Events and static mode | All 17 `LOG` sites now have event statements in source order. Receive emits at PC 533. Setup emits at PC 4448 **before** its threshold/owner checks. Module events follow the post-guard; transaction events precede the post-guard. |
-| Assembly address stores | PCs 5758, 6008, and 8152 perform whole-word `SSTORE` for module guard, guard, and fallback handler. Their locators now have size 32; ordinary address mappings retain 20-byte writes preserving unrelated high bits. |
+| Events and static mode | All 17 `LOG` sites now have event statements in source order. Receive emits at PC 533. Setup emits at PC 4634 **before** its threshold/owner checks. Module events follow the post-guard; transaction events precede the post-guard. |
+| Assembly address stores | PCs 5944, 6194, and 8428 perform whole-word `SSTORE` for module guard, guard, and fallback handler. Their locators now have size 32; ordinary address mappings retain 20-byte writes preserving unrelated high bits. |
 | Fallback raw-word check | PCs 581–586 test the entire handler slot. A nonzero word with zero low 160 bits still calls address zero. The spec reads the raw word before converting the call target to an address. |
 | Allocation panics | The explicit `new` size guards for owners, module pages, and raw storage bytes are retained. `getStorageAt` checks the wrapped `length << 5`, not unbounded multiplication. |
-| Memory argument decoding | The decoder at PC 8865 checks its new free-memory pointer. Its sole memory `bytes` argument starts at 0x80, so `0x80 + 32 + ceil32(length) <= 2^64 - 1` requires `length <= 2^64 - 192`. All eight affected entrypoints now check this; calldata-only arguments do not. |
-| Signature dispatch | There is no P-256 branch. Values other than 0, 1, or greater than 30 use ordinary ecrecover, including `v = 2`. |
-| Contract signatures | The `STATICCALL` at PC 6916 propagates failure. The return decoder at PC 11344 accepts at least 32 bytes, validates canonical `bytes4` padding, and permits trailing data. |
-| Self owners | Setup, add, remove, and swap reject zero/sentinel owner addresses. A self owner is accepted only when `EXTCODECOPY` at PC 8685 reads the zero-padded prefix `ef0100`; the shared guard at PC 8424 enforces this for both added and removed owners. |
+| Memory argument decoding | The decoder at PC 9115 checks its new free-memory pointer. Its sole memory `bytes` argument starts at 0x80, so `0x80 + 32 + ceil32(length) <= 2^64 - 1` requires `length <= 2^64 - 192`. All eight affected entrypoints now check this; calldata-only arguments do not. |
+| Signature dispatch | `v = 2` selects the P-256 branch at PC 2209. It checks the dynamic offset and 128-byte payload, derives the signer from the public-key hash, then calls `p256Verify`. Other values besides 0, 1, 2, or greater than 30 use ordinary ecrecover. |
+| P-256 verification | `STATICCALL` at PC 7261 sends five words to address `0x100`. PCs 7262–7272 accept only call success with exactly 32 return bytes containing the word 1; empty, short, oversized, non-one, or failed returns are rejected. |
+| Contract signatures | The `STATICCALL` at PC 7102 propagates failure. The return decoder at PC 11594 accepts at least 32 bytes, validates canonical `bytes4` padding, and permits trailing data. |
+| Self owners | Setup, add, remove, and swap reject zero/sentinel owner addresses. A self owner is accepted only when `EXTCODECOPY` at PC 8935 reads the zero-padded prefix `ef0100`; the shared guard at PC 8700 enforces this for both added and removed owners. |
 | Execution order | Nonce increment precedes transaction hashing, as in the `nonce++` argument evaluation. Raw storage slot addition is explicitly reduced to 256 bits. |
 
 The remaining behavior was checked against the vendored sources, the exactly reproduced compiler
@@ -77,14 +78,14 @@ output, its generated ABI decoder code, and source-mapped instructions:
 | Owner management | Authorization, sentinel and zero restrictions, conditional self-address restriction on every owner change, duplicate owners, linked-list rewiring, checked count changes, threshold updates, malformed lists and array bounds. |
 | Module management | Enable/disable authorization, sentinel membership, page allocation and truncation, last-element continuation, broken zero links, cached guard, call/delegatecall distinction, return-data capture before post-guard. |
 | Setup and constructor | Constructor writes only threshold after its value check. Setup event order, single initialization, owner setup, full-word fallback store, code-existence check for setup delegatecall, and optional payment. |
-| Signatures | Both compatibility overloads, ignored data preimages, checked `requiredSignatures * 65`, ordered owners, all `v` branches, dynamic bounds and overflow checks, approved hashes, typed ERC-1271 magic/return decoding and propagated failure, ordinary ecrecover for `v = 2`, ecrecover failure. |
+| Signatures | Both compatibility overloads, ignored data preimages, checked `requiredSignatures * 65`, ordered owners, all `v` branches, dynamic bounds and overflow checks, approved hashes, typed ERC-1271 magic/return decoding and propagated failure, P-256 dynamic bounds and signer derivation, exact P-256 return decoding, ecrecover failure. |
 | Transaction and payment | EIP-712 constants/encoding, nonce timing, enum validation, guard checks, checked additions and wrapping shift in gas check, failure policy, native refund price cap/origin, ERC-20 empty/32-byte/nonzero acceptance, and event/post-guard ordering. |
 | Views and simulation | Scalar and mapping getters, flattened tuple returns, domain/transaction hashes, modulo raw storage addressing, delegatecall effects followed by unconditional revert. |
 | Calls | Correct caller/value/permission inheritance, depth and balance failures, arbitrary target code, raw return data, typed bool validation, missing code on void calls, and callee world effects. |
 
 `Audit.lean` runs every selector in both permission modes and with zero/nonzero call value, then
 checks malformed ABI heads, dirty storage, linked lists, calldata aliases, guard return sizes,
-contract signatures, removed P-256 inputs, self owners, token return conventions, refunds, delegatecall storage changes,
+contract signatures, P-256 inputs and return conventions, self owners, token return conventions, refunds, delegatecall storage changes,
 depth limits, and construction. It compares success return bytes and the entire final account map.
 Call replay also checks opcode, target, value, calldata, and the account map before every call.
 The owner validity expression includes the short-circuit EIP-7702 probe. The compiled shared
@@ -93,23 +94,23 @@ typed call and magic-value comparison.
 The harness reports out-of-gas separately and fails on test-fuel exhaustion or unsupported AST
 forms. It is independent of the refinement proofs.
 
-The recorded regression run passed all 434 cases: 115 successes, 307 reverts, 11 static-mode
+The recorded regression run passed all 468 cases: 117 successes, 339 reverts, 11 static-mode
 violations, and one separately classified out-of-gas result. The targeted Lake build includes
 the specification equality check, ABI checks, refinement proofs, and all generated summaries.
 
 ## Generated summaries and proof obligations
 
-There are 1,878 runtime summary theorems in 50 shards, plus seven constructor summary theorems.
+There are 1,918 runtime summary theorems in 51 shards, plus seven constructor summary theorems.
 These are generated using the existing RD opcode lemmas. Both sides of every conditional jump
-are indexed. Runtime summaries cover 7,573 instructions; the remaining 19 instruction sites are
+are indexed. Runtime summaries cover 7,747 instructions; the remaining 20 instruction sites are
 explicit boundaries, not assumed transitions:
 
-- `CALL`: 614, 3552, 4049, 7180, 7299, 7400, 7669, 8627.
-- `STATICCALL`: 2368, 2465, 5647, 5897, 6916.
-- `DELEGATECALL`: 4349, 7280.
-- `ORIGIN`: 7589.
-- `GASPRICE`: 7610, 7617.
-- `EXTCODECOPY`: 8685.
+- `CALL`: 614, 3738, 4235, 7456, 7575, 7676, 7945, 8877.
+- `STATICCALL`: 2554, 2651, 5833, 6083, 7102, 7261.
+- `DELEGATECALL`: 4535, 7556.
+- `ORIGIN`: 7865.
+- `GASPRICE`: 7886, 7893.
+- `EXTCODECOPY`: 8935.
 
 Every analyzed instruction is accounted for by a summary or a recorded boundary. Constructor
 summaries cover only PCs 0–32; the runtime at offset 33 is copied data. They quantify an arbitrary
@@ -139,7 +140,7 @@ the manifest separately records hashes of the decoded bytecode bytes.
 The randomized differential test reports:
 
 ```text
-Safe_V1_0227664: 1775 cases: 1761 agree (579 successful), 0 disagree, 0 stuck, 14 EVM out of gas, 0 spec out of fuel
+Safe_V2_0e91d99: 1775 cases: 1761 agree (578 successful), 0 disagree, 0 stuck, 14 EVM out of gas, 0 spec out of fuel
 ```
 
 The EVM dependency's Python cryptography helpers resolve paths from its package directory.
@@ -148,5 +149,5 @@ directory to `PATH`, and run the randomized suite there (with `-d` pointing to t
 
 ```bash
 cd .lake/packages/evmlean
-lake -d ../../.. exe solm-difftest --only Safe_V1_0227664 --count 50
+lake -d ../../.. exe solm-difftest --only Safe_V2_0e91d99 --count 50
 ```

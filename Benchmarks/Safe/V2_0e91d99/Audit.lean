@@ -240,12 +240,28 @@ def cases : List Case := Id.run do
     let sig := wordBytes claimed ++ wordBytes 65 ++ ⟨#[2]⟩ ++
       wordBytes 1 ++ wordBytes 2 ++ publicKey
     let slots := configuredSlots ++ [(ownerSlot signer.val, UInt256.ofNat 1)]
-    for out in [ByteArray.empty, wordBytes 0, wordBytes 1, wordBytes 2,
+    for out in [ByteArray.empty, ⟨#[1]⟩, (wordBytes 1).extract 1 32,
+        wordBytes 0, wordBytes 1, wordBytes 2, wordBytes 1 ++ ⟨#[0]⟩,
         wordBytes 1 ++ wordBytes 0] do
-      cases := cases ++ [caseFor s!"signature/removed-p256/{wrongSigner}/{Ethereum.toHex out}"
+      for reverts in [false, true] do
+        cases := cases ++ [caseFor
+          s!"signature/p256/{wrongSigner}/{Ethereum.toHex out}/{reverts}"
+          checknsignaturesAddressBytes32BytesUint256Transition
+          [addressValue 8192, hashValue 0, .bytes sig, .int 1] slots
+          [(256, returning out reverts)] 8192
+          (some (if !wrongSigner && !reverts && out == wordBytes 1
+            then "success" else "revert"))]
+  -- The dynamic P-256 data must follow the static signatures and contain all four words.
+  for offset in [0, 64, 65, 66, 2 ^ 256 - 128, 2 ^ 256 - 1] do
+    for size in [127, 128] do
+      let dynamic := (wordBytes 1 ++ wordBytes 2 ++ publicKey).extract 0 size
+      let sig := wordBytes signer.val ++ wordBytes offset ++ ⟨#[2]⟩ ++ dynamic
+      let slots := configuredSlots ++ [(ownerSlot signer.val, UInt256.ofNat 1)]
+      cases := cases ++ [caseFor s!"signature/p256-bounds/{offset}/{size}"
         checknsignaturesAddressBytes32BytesUint256Transition
         [addressValue 8192, hashValue 0, .bytes sig, .int 1] slots
-        [(256, returning out)] 8192 (some "revert")]
+        [(256, returning (wordBytes 1))] 8192
+        (some (if offset == 65 && size == 128 then "success" else "revert"))]
   -- Threshold is loaded before external signature validation and list order is strict.
   let twice := approvedSignature 8192 ++ approvedSignature 8192
   cases := cases ++ [caseFor "signature/duplicate-owner"

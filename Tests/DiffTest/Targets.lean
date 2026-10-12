@@ -75,6 +75,8 @@ import Benchmarks.Safe.Main.Spec
 import Benchmarks.Safe.Main.Bytecode
 import Benchmarks.Safe.V0_cdb2eb5.Bytecode
 import Benchmarks.Safe.V1_0227664.Bytecode
+import Benchmarks.Safe.V2_0e91d99.Spec
+import Benchmarks.Safe.V2_0e91d99.Bytecode
 import Benchmarks.Scaffolds.TimelockController.Spec
 import Benchmarks.Scaffolds.TimelockController.Bytecode
 import Benchmarks.Scaffolds.VestingWallet.Spec
@@ -283,6 +285,13 @@ def safe_V1_0227664 : Target :=
     initcode := some Benchmarks.Safe.V1_0227664.safeCreationBytecode,
     callees := standardCallees, words := [0, 1, 2, 3], gas := 400000, fuel := 5000 }
 
+def safe_V2_0e91d99 : Target :=
+  { name := "Safe_V2_0e91d99", contract := Benchmarks.Safe.V2_0e91d99.contract,
+    config := Benchmarks.Safe.V2_0e91d99.config,
+    runtime := Benchmarks.Safe.V2_0e91d99.safeBytecode,
+    initcode := some Benchmarks.Safe.V2_0e91d99.safeCreationBytecode,
+    callees := standardCallees, words := [0, 1, 2, 3], gas := 400000, fuel := 5000 }
+
 def timelockController : Target :=
   { name := "TimelockController", contract := OpenZeppelinBench.TimelockController.contract,
     config := OpenZeppelinBench.TimelockController.config,
@@ -319,7 +328,7 @@ def benchmarks : List Target :=
   [weth9, auction, pot, cat, cure, dai, daiJoin, dssEnd, exponentialDecrease, flapper, flipper, flopper, gemJoin, jug, linearDecrease, spot, stairstepExponentialDecrease, vat, vow]
 
 def scaffolds : List Target :=
-  [erc721, klima, safe, safe_V0_cdb2eb5, safe_V1_0227664, timelockController, vestingWallet]
+  [erc721, klima, safe, safe_V0_cdb2eb5, safe_V1_0227664, safe_V2_0e91d99, timelockController, vestingWallet]
 
 /-- Every target: the ones above, then the generated ones (`Generated.lean`) not already named. -/
 def allTargets : List Target :=

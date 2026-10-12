@@ -212,6 +212,14 @@ def contractSyntax : ContractDecl :=
         abi.decode(${Expr.var "ecrecoverData"}, (address));
     }
 
+    function p256Verify(bytes32 h, bytes32 r, bytes32 s, uint256 qx, uint256 qy)
+        internal returns (bool) {
+      ${[Stmt.lowLevelCall p256Precompile (.intLit 0) p256CalldataExpr
+          "p256Success" "p256Data" false]}
+      return ${Expr.var "p256Success"} && (${localLength "p256Data"} == 32 &&
+        abi.decode(${Expr.var "p256Data"}, (uint256)) == 1);
+    }
+
     function checkNSignaturesImpl(address executor, bytes32 dataHash, bytes signatures,
         uint256 requiredSignatures) internal {
       var requiredBytes = _mul(requiredSignatures, 65);
@@ -234,6 +242,21 @@ def contractSyntax : ContractDecl :=
         } else if (v == 1) {
           currentOwner = address(uint256(r));
           require(executor == currentOwner || approvedHashes[currentOwner][dataHash] != 0);
+        } else if (v == 2) {
+          currentOwner = address(uint256(r));
+          uint256 p256Offset = uint256(s);
+          require(p256Offset >= requiredBytes);
+          var p256End = _add(p256Offset, 128);
+          require(p256End <= signatures.length);
+          r = abi.decode(signatures[p256Offset : p256Offset + 32], (bytes32));
+          s = abi.decode(signatures[p256Offset + 32 : p256Offset + 32 + 32], (bytes32));
+          uint256 qx = abi.decode(signatures[p256Offset + 64 : p256Offset + 64 + 32], (uint256));
+          uint256 qy = abi.decode(signatures[p256Offset + 96 : p256Offset + 96 + 32], (uint256));
+          address signerAddress =
+            address(uint256(keccak256(abi.encodePacked(uint256(qx), uint256(qy)))));
+          require(currentOwner == signerAddress);
+          var p256Valid = p256Verify(dataHash, r, s, qx, qy);
+          require(p256Valid);
         } else if (v > 30) {
           bytes32 ethSignedHash =
             keccak256(abi.encodePacked(bytes(${ethSignPrefix}), bytes32(dataHash)));
