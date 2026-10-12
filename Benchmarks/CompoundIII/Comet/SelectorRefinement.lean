@@ -23,7 +23,7 @@ theorem selectorStateReturn_refines {cfg : Config} {C : ContractDecl} {t : Trans
     (hcode : I.code = code)
     (h : RDret code (Sat256.ofUInt256 g) (initState σ σ₀ (Sat256.ofUInt256 g) A I) σ' out)
     (hd : selectorDispatchMsg C I.calldata = some t)
-    (hdec : decodeCalldataWithMode cfg.abiDecodeMode (t.params.map Param.name)
+    (hdec : cfg.externalABI.decodeCalldata? (t.params.map Param.name)
       (transitionSignature t).paramTypes I.calldata = some args)
     (hbody : ExecTransitionBody cfg C (initState σ σ₀ (Sat256.ofUInt256 g) A I)
       args t.body (.returned frame evm' values) imms)
@@ -41,7 +41,7 @@ theorem selectorStatic_refines {cfg : Config} {C : ContractDecl} {t : Transition
     (hcode : I.code = code)
     (h : RDstatic code (Sat256.ofUInt256 g) (initState σ σ₀ (Sat256.ofUInt256 g) A I))
     (hd : selectorDispatchMsg C I.calldata = some t)
-    (hdec : decodeCalldataWithMode cfg.abiDecodeMode (t.params.map Param.name)
+    (hdec : cfg.externalABI.decodeCalldata? (t.params.map Param.name)
       (transitionSignature t).paramTypes I.calldata = some args)
     (hbody : ExecTransitionBody cfg C (initState σ σ₀ (Sat256.ofUInt256 g) A I)
       args t.body .staticViolation imms) :
@@ -56,7 +56,7 @@ theorem selectorReturn_refines {cfg : Config} {C : ContractDecl} {t : Transition
     (hcode : I.code = code)
     (h : RDret code (Sat256.ofUInt256 g) (initState σ σ₀ (Sat256.ofUInt256 g) A I) σ out)
     (hd : selectorDispatchMsg C I.calldata = some t)
-    (hdec : decodeCalldataWithMode cfg.abiDecodeMode (t.params.map Param.name)
+    (hdec : cfg.externalABI.decodeCalldata? (t.params.map Param.name)
       (transitionSignature t).paramTypes I.calldata = some args)
     (hbody : ExecTransitionBody cfg C (initState σ σ₀ (Sat256.ofUInt256 g) A I)
       args t.body (.returned frame (initState σ σ₀ (Sat256.ofUInt256 g) A I) values) imms)
@@ -71,7 +71,7 @@ theorem selectorRevert_refines {cfg : Config} {C : ContractDecl} {t : Transition
     (hcode : I.code = code)
     (h : RDrev code (Sat256.ofUInt256 g) (initState σ σ₀ (Sat256.ofUInt256 g) A I))
     (hd : selectorDispatchMsg C I.calldata = some t)
-    (hdec : decodeCalldataWithMode cfg.abiDecodeMode (t.params.map Param.name)
+    (hdec : cfg.externalABI.decodeCalldata? (t.params.map Param.name)
       (transitionSignature t).paramTypes I.calldata = some args)
     (hbody : ExecTransitionBody cfg C (initState σ σ₀ (Sat256.ofUInt256 g) A I)
       args t.body .reverted imms) :
@@ -85,7 +85,7 @@ theorem selectorDecodeFailure_refines {cfg : Config} {C : ContractDecl} {t : Tra
     (hcode : I.code = code)
     (h : RDrev code (Sat256.ofUInt256 g) (initState σ σ₀ (Sat256.ofUInt256 g) A I))
     (hd : selectorDispatchMsg C I.calldata = some t)
-    (hdec : decodeCalldataWithMode cfg.abiDecodeMode (t.params.map Param.name)
+    (hdec : cfg.externalABI.decodeCalldata? (t.params.map Param.name)
       (transitionSignature t).paramTypes I.calldata = none) :
     runtimeRefinementFor cfg C σ σ₀ g A I imms := by
   exact h.reEquivElim hcode fun _ _ hxi ↦ .decodingFailed hd rfl hdec hxi

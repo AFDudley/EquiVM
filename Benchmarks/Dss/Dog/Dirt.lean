@@ -6,7 +6,7 @@ open Benchmarks.Dss.Dog.Immutables
 namespace Benchmarks.Dss.Dog
 
 theorem dogDecode_Dirt {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (DirtTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (DirtTransition.params.map Param.name)
       (transitionSignature DirtTransition).paramTypes I.calldata = some ∅ := by
   show decodeCalldataWithMode DecodeMode.legacySolc05 [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz

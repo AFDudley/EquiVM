@@ -84,7 +84,7 @@ theorem poolManagerProtocolFeesAccruedBodyCore {σ σ₀ A I} {g : UInt256} (v :
             rw [deployedRuntime_jumps v]; jump_dest
           obtain ⟨k', C', rdReturn⟩ := decodeAddress4 v (by simp) hcanon hjumpReturn rdAddr
           have hret := protocolFeesAccruedTrace v (by simp) hcanon rdReturn
-          have hdec : decodeCalldataWithMode config.abiDecodeMode
+          have hdec : config.externalABI.decodeCalldata?
               (protocolFeesAccruedTransition.params.map Param.name)
               (transitionSignature protocolFeesAccruedTransition).paramTypes I.calldata =
               some ((∅ : Store).insert "arg0" (.address (AccountAddress.ofNat (calldataWord I.calldata 4).toNat))) :=

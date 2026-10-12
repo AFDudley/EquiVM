@@ -12,7 +12,7 @@ theorem vatFrobSuccessEquivFromFinalState
     (hcode : I.code = vatBytecode)
     (hdispatch : dispatchMsg contract I.calldata = some frobTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (frobTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (frobTransition.params.map Param.name)
         (transitionSignature frobTransition).paramTypes I.calldata = some (frobStore I))
     (hret : RDret vatBytecode (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I)
@@ -39,7 +39,7 @@ theorem vatFrobSuccessEquivFromSourceFinal
     (hcode : I.code = vatBytecode)
     (hdispatch : dispatchMsg contract I.calldata = some frobTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (frobTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (frobTransition.params.map Param.name)
         (transitionSignature frobTransition).paramTypes I.calldata = some (frobStore I))
     (hret : RDret vatBytecode (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I)

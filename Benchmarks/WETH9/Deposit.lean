@@ -277,7 +277,9 @@ theorem weth9DepositBodyCore {σ σ₀ A I} {g : UInt256}
     ⟨_hperm, hX⟩ | ⟨hperm, hstatic⟩
   swap
   · exact weth9ReEquivExecStatic hcode hstatic (weth9SelectorDispatchDeposit hsel)
-      (decodeCalldataWithMode_empty_ok hsz4) (weth9DepositBodyReturnsSplit.2 hperm)
+      (by change decodeCalldataWithMode .modern [] [] I.calldata = some ∅
+          exact decodeCalldataWithMode_empty_ok hsz4)
+      (weth9DepositBodyReturnsSplit.2 hperm)
   have hbody := weth9DepositBodyReturns (σ := σ) (σ₀ := σ₀)
     (A := A) (I := I) (g := Sat256.ofUInt256 g)
   have hvaleq : I.weiValue + solcSlotWord σ I (callerBalSlot I)
@@ -285,7 +287,7 @@ theorem weth9DepositBodyCore {σ σ₀ A I} {g : UInt256}
     exact u256_add_comm _ _
   refine weth9ReEquivExecGen (t := depositTransition) hcode hX
     (weth9SelectorDispatchDeposit hsel) ?_ hbody ?_ ?_
-  · show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  · change decodeCalldataWithMode .modern [] [] I.calldata = some ∅
     exact decodeCalldataWithMode_empty_ok hsz4
   · rw [hvaleq, weth9DepositBody_accountMap]
   · exact returnEquiv.fallthrough (dvs := []) rfl rfl (by native_decide)

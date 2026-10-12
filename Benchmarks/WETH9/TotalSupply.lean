@@ -28,9 +28,9 @@ theorem weth9SelectorDispatchTotalSupply {I : ExecutionEnv} (hsel : selIs I (wet
   native_decide
 
 theorem weth9Decode_totalSupply_ok {I : ExecutionEnv} (hsz4 : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (totalSupplyTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (totalSupplyTransition.params.map Param.name)
       (transitionSignature totalSupplyTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some (∅ : Store)
+  change decodeCalldataWithMode .modern [] [] I.calldata = some (∅ : Store)
   exact decodeCalldataWithMode_empty_ok hsz4
 
 /-- The Solm `totalSupply()` body returns `address(this).balance`. -/

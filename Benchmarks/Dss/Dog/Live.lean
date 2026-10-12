@@ -6,7 +6,7 @@ open Benchmarks.Dss.Dog.Immutables
 namespace Benchmarks.Dss.Dog
 
 theorem dogDecode_live {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (liveTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (liveTransition.params.map Param.name)
       (transitionSignature liveTransition).paramTypes I.calldata = some ∅ := by
   show decodeCalldataWithMode DecodeMode.legacySolc05 [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz

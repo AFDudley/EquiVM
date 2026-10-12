@@ -58,7 +58,7 @@ theorem dripIlkHashMem_read64 (I : ExecutionEnv) :
     solcFreePtrMem_size solcFreePtrMem_read64
 
 theorem jugDecode_drip_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (dripTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (dripTransition.params.map Param.name)
       (transitionSignature dripTransition).paramTypes I.calldata =
         some (dripLocals I) := by
   simpa [config, dripTransition, dripLocals, fileDutyIlkBytes, bytes32, bytes32Width] using
@@ -66,7 +66,7 @@ theorem jugDecode_drip_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
 
 theorem jugDecode_drip_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (dripTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (dripTransition.params.map Param.name)
       (transitionSignature dripTransition).paramTypes I.calldata = none := by
   simpa [config, dripTransition, bytes32, bytes32Width] using
     (decodeCalldataWithMode_legacyBytes32_none_short (cd := I.calldata) (x := "ilk")

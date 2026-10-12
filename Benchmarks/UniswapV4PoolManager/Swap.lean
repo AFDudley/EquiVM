@@ -37,7 +37,7 @@ theorem poolManagerSwapBody {σ σ₀ A I} {g : UInt256} (v : PoolManagerImmutab
     entryMemory ⟨3⟩ .empty σ k C at rdEntry
   have hjump : (D_J (deployedRuntime v) 0).contains (UInt256.ofNat 816) = true := by
     rw [deployedRuntime_jumps]; jump_dest
-  have hdec : decodeCalldataWithMode config.abiDecodeMode (swapTransition.params.map Param.name)
+  have hdec : config.externalABI.decodeCalldata? (swapTransition.params.map Param.name)
       (transitionSignature swapTransition).paramTypes I.calldata =
       if SwapCalldataBounds I.calldata then some (swapArgs I.calldata) else none :=
     decodeCalldata_swap I.calldata

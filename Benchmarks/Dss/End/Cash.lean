@@ -950,9 +950,9 @@ theorem RD.endCashFixUndefinedRevert {g : Sat256} {s0 : State} {ee : ExecutionEn
     raw rev 0 (by native_decide) mem_cost (by evm_ov)]
 
 theorem endDecode_cash_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (cashTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (cashTransition.params.map Param.name)
       (transitionSignature cashTransition).paramTypes I.calldata = some (endCashStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["ilk", "wad"] [bytes32, uint256]
+  show config.externalABI.decodeCalldata? ["ilk", "wad"] [bytes32, uint256]
     I.calldata = _
   simpa [config, cashTransition, bytes32, bytes32Width, uint256, uint256Int,
     endCashStore, endCashIlkBytes, endCashWadWord, abiBytes32, abiBytes32Width,
@@ -962,9 +962,9 @@ theorem endDecode_cash_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size) :
 
 theorem endDecode_cash_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 68) :
-    decodeCalldataWithMode config.abiDecodeMode (cashTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (cashTransition.params.map Param.name)
       (transitionSignature cashTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["ilk", "wad"] [bytes32, uint256]
+  show config.externalABI.decodeCalldata? ["ilk", "wad"] [bytes32, uint256]
     I.calldata = none
   simpa [config, cashTransition, bytes32, bytes32Width, uint256, uint256Int,
     abiBytes32, abiBytes32Width, abiUInt256] using

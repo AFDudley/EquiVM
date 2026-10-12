@@ -65,18 +65,18 @@ def clipperSalesPackedTicWord (w : UInt256) : UInt256 :=
 
 theorem clipperDecode_sales_ok {I : ExecutionEnv}
     (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (salesTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (salesTransition.params.map Param.name)
       (transitionSignature salesTransition).paramTypes I.calldata =
         some (clipperSalesStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["arg0"] [uint256] I.calldata = _
+  show config.externalABI.decodeCalldata? ["arg0"] [uint256] I.calldata = _
   simpa [config, clipperSalesStore, clipperSalesArgValue, clipperSalesArgWord] using
     decodeCalldata_legacyUInt256_ok (cd := I.calldata) (x := "arg0") hsz36
 
 theorem clipperDecode_sales_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (salesTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (salesTransition.params.map Param.name)
       (transitionSignature salesTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["arg0"] [uint256] I.calldata = none
+  show config.externalABI.decodeCalldata? ["arg0"] [uint256] I.calldata = none
   simpa [config] using
     decodeCalldata_legacyUInt256_none_short (cd := I.calldata) (x := "arg0")
       hsz4 hshort

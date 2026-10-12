@@ -1129,7 +1129,7 @@ theorem flopperDentBodyCoreRevert
     (hcode : I.code = flopperBytecode)
     (hdispatch : dispatchMsg contract I.calldata = some dentTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (dentTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (dentTransition.params.map Param.name)
         (transitionSignature dentTransition).paramTypes I.calldata = some (dentLocals I))
     (hbody :
       ExecTransitionBody config contract
@@ -1145,7 +1145,7 @@ theorem flopperDentBodyCoreSuccessCallerEqBridge
     (hcode : I.code = flopperBytecode)
     (hdispatch : dispatchMsg contract I.calldata = some dentTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (dentTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (dentTransition.params.map Param.name)
         (transitionSignature dentTransition).paramTypes I.calldata = some (dentLocals I))
     (hbody :
       ExecTransitionBody config contract
@@ -1175,7 +1175,7 @@ theorem flopperDentBodyCoreSuccessCallerEqBridge
           (dvs := []) rfl (by native_decide) (by native_decide)))
 
 theorem flopperDecode_dent_ok {I : ExecutionEnv} (hsz100 : 100 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (dentTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (dentTransition.params.map Param.name)
       (transitionSignature dentTransition).paramTypes I.calldata = some (dentLocals I) := by
   change decodeCalldataWithMode DecodeMode.legacySolc05 ["id", "lot", "bid"]
       [abiUInt256, abiUInt256, abiUInt256] I.calldata =
@@ -1186,7 +1186,7 @@ theorem flopperDecode_dent_ok {I : ExecutionEnv} (hsz100 : 100 ≤ I.calldata.si
 
 theorem flopperDecode_dent_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 100) :
-    decodeCalldataWithMode config.abiDecodeMode (dentTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (dentTransition.params.map Param.name)
       (transitionSignature dentTransition).paramTypes I.calldata = none := by
   change decodeCalldataWithMode DecodeMode.legacySolc05 ["id", "lot", "bid"]
       [abiUInt256, abiUInt256, abiUInt256] I.calldata = none

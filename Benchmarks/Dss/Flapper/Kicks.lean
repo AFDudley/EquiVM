@@ -10,9 +10,9 @@ def kicksWord (σ : AccountMap) (I : ExecutionEnv) : UInt256 :=
   solcSlotWordAt ⟨6⟩ σ I
 
 theorem flapperDecode_kicks {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (kicksTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (kicksTransition.params.map Param.name)
       (transitionSignature kicksTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 theorem flapperReachKicksBody {σ σ₀ A I} {g : Sat256}

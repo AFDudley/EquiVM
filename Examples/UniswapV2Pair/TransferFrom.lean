@@ -87,10 +87,10 @@ theorem uniswapDecode_transferFrom_ok {I : ExecutionEnv}
     (hsz100 : 100 ≤ I.calldata.size)
     (_hcanonFrom : (transferFromFromWord I).toNat < EVM.addressModulus)
     (_hcanonTo : (transferFromToWord I).toNat < EVM.addressModulus) :
-    decodeCalldataWithMode config.abiDecodeMode (transferFromTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (transferFromTransition.params.map Param.name)
       (transitionSignature transferFromTransition).paramTypes I.calldata =
         some (transferFromStore I) := by
-  change decodeCalldataWithMode config.abiDecodeMode ["from", "to", "value"] [legacyAddr, legacyAddr, abiUInt256]
+  change config.externalABI.decodeCalldata? ["from", "to", "value"] [legacyAddr, legacyAddr, abiUInt256]
     I.calldata =
     some ((((∅ : Store).insert "from"
       (.address (AccountAddress.ofNat (calldataWord I.calldata 4).toNat))).insert "to"
@@ -101,9 +101,9 @@ theorem uniswapDecode_transferFrom_ok {I : ExecutionEnv}
 
 theorem uniswapDecode_transferFrom_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 100) :
-    decodeCalldataWithMode config.abiDecodeMode (transferFromTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (transferFromTransition.params.map Param.name)
       (transitionSignature transferFromTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["from", "to", "value"] [legacyAddr, legacyAddr, uint256]
+  show config.externalABI.decodeCalldata? ["from", "to", "value"] [legacyAddr, legacyAddr, uint256]
     I.calldata = none
   simpa [uint256, abiUInt256]
     using decodeCalldata_legacyAddress_legacyAddress_uint256_none_short
@@ -112,10 +112,10 @@ theorem uniswapDecode_transferFrom_none_short {I : ExecutionEnv}
 theorem uniswapDecode_transferFrom_ok_noncanon_from {I : ExecutionEnv}
     (hsz100 : 100 ≤ I.calldata.size)
     (_hnc : ¬ (transferFromFromWord I).toNat < EVM.addressModulus) :
-    decodeCalldataWithMode config.abiDecodeMode (transferFromTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (transferFromTransition.params.map Param.name)
       (transitionSignature transferFromTransition).paramTypes I.calldata =
         some (transferFromStore I) := by
-  change decodeCalldataWithMode config.abiDecodeMode ["from", "to", "value"] [legacyAddr, legacyAddr, abiUInt256]
+  change config.externalABI.decodeCalldata? ["from", "to", "value"] [legacyAddr, legacyAddr, abiUInt256]
     I.calldata =
     some ((((∅ : Store).insert "from"
       (.address (AccountAddress.ofNat (calldataWord I.calldata 4).toNat))).insert "to"
@@ -128,10 +128,10 @@ theorem uniswapDecode_transferFrom_ok_noncanon_to {I : ExecutionEnv}
     (hsz100 : 100 ≤ I.calldata.size)
     (_hcanonFrom : (transferFromFromWord I).toNat < EVM.addressModulus)
     (_hnc : ¬ (transferFromToWord I).toNat < EVM.addressModulus) :
-    decodeCalldataWithMode config.abiDecodeMode (transferFromTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (transferFromTransition.params.map Param.name)
       (transitionSignature transferFromTransition).paramTypes I.calldata =
         some (transferFromStore I) := by
-  change decodeCalldataWithMode config.abiDecodeMode ["from", "to", "value"] [legacyAddr, legacyAddr, abiUInt256]
+  change config.externalABI.decodeCalldata? ["from", "to", "value"] [legacyAddr, legacyAddr, abiUInt256]
     I.calldata =
     some ((((∅ : Store).insert "from"
       (.address (AccountAddress.ofNat (calldataWord I.calldata 4).toNat))).insert "to"

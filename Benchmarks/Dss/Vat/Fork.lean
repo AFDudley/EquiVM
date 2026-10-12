@@ -9445,9 +9445,9 @@ theorem execForkSourceRevertWish {evm0 : EVM.State} {I : ExecutionEnv}
 
 set_option maxHeartbeats 0 in
 theorem vatDecode_fork_ok {I : ExecutionEnv} (hsz164 : 164 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (forkTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (forkTransition.params.map Param.name)
       (transitionSignature forkTransition).paramTypes I.calldata = some (forkStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["ilk", "src", "dst", "dink", "dart"]
+  show config.externalABI.decodeCalldata? ["ilk", "src", "dst", "dink", "dart"]
     [bytes32, addr, addr, int256, int256] I.calldata = _
   change decodeCalldataWithMode DecodeMode.legacySolc05 ["ilk", "src", "dst", "dink", "dart"]
     [bytes32, addr, addr, int256, int256] I.calldata = some (forkStore I)
@@ -9460,9 +9460,9 @@ theorem vatDecode_fork_ok {I : ExecutionEnv} (hsz164 : 164 ≤ I.calldata.size) 
 
 theorem vatDecode_fork_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 164) :
-    decodeCalldataWithMode config.abiDecodeMode (forkTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (forkTransition.params.map Param.name)
       (transitionSignature forkTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["ilk", "src", "dst", "dink", "dart"]
+  show config.externalABI.decodeCalldata? ["ilk", "src", "dst", "dink", "dart"]
     [bytes32, addr, addr, int256, int256] I.calldata = none
   change decodeCalldataWithMode DecodeMode.legacySolc05 ["ilk", "src", "dst", "dink", "dart"]
     [bytes32, addr, addr, int256, int256] I.calldata = none
@@ -13570,7 +13570,7 @@ theorem vatForkSuccessEquivFromFinalState
     (hcode : I.code = vatBytecode)
     (hdispatch : dispatchMsg contract I.calldata = some forkTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (forkTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (forkTransition.params.map Param.name)
         (transitionSignature forkTransition).paramTypes I.calldata = some (forkStore I))
     (hret : RDret vatBytecode (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I)
@@ -13594,7 +13594,7 @@ theorem vatForkSuccessEquivFromSourceFinal
     (hcode : I.code = vatBytecode)
     (hdispatch : dispatchMsg contract I.calldata = some forkTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (forkTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (forkTransition.params.map Param.name)
         (transitionSignature forkTransition).paramTypes I.calldata = some (forkStore I))
     (hret : RDret vatBytecode (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I)
@@ -13684,7 +13684,7 @@ theorem vatForkSuccessEquivFromFinalGuards
     (hsel : selIs I (vatSelBytes 10))
     (hsz164 : 164 ≤ I.calldata.size)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (forkTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (forkTransition.params.map Param.name)
         (transitionSignature forkTransition).paramTypes I.calldata = some (forkStore I))
     (hdecoded :
       ∃ k C, RD vatBytecode I (Sat256.ofUInt256 g)

@@ -44,9 +44,9 @@ theorem clipperDispatch_chost {I : ExecutionEnv}
 
 theorem clipperDecode_chost {I : ExecutionEnv}
     (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (chostTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (chostTransition.params.map Param.name)
       (transitionSignature chostTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  change decodeCalldataWithMode .legacySolc05 [] [] I.calldata = some ∅
   exact decodeCalldataWithMode_empty_ok hsz
 
 theorem clipperEvalChost (v : ClipperImmutables) (evm : EVM.State) (locals : Store)

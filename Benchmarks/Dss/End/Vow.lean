@@ -13,9 +13,9 @@ def vowWord (σ : AccountMap) (I : ExecutionEnv) : UInt256 :=
   solcAddressSlotWord ⟨4⟩ σ I
 
 theorem endDecode_vow {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (vowTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (vowTransition.params.map Param.name)
       (transitionSignature vowTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 abbrev endVowConcreteSelector : ByteArray := selectorBytes 0x62 0x6c 0xb3 0xc5
@@ -67,7 +67,7 @@ theorem endVowBodyCore
     (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some vowTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (vowTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (vowTransition.params.map Param.name)
         (transitionSignature vowTransition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD endBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨715⟩ [sel]

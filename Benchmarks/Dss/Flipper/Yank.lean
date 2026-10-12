@@ -183,6 +183,7 @@ theorem yankCatCallMem_encode (σ : AccountMap) (I : ExecutionEnv) :
         some ((yankCatCallMem σ I).readWithPadding 128 36) := by
   rw [yankCatCallMem_read]
   unfold config externalABI
+  simp only [ExternalCallABI.withMode_encode?]
   simp only [if_true]
   unfold ABI.encodeCallWithSelector?
   have hpayload :
@@ -347,7 +348,7 @@ theorem yankLocals_get_cat (I : ExecutionEnv) :
   simp
 
 theorem flipperDecode_yank_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (yankTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (yankTransition.params.map Param.name)
       (transitionSignature yankTransition).paramTypes I.calldata =
         some (yankLocals I) := by
   simpa [config, yankTransition, transitionSignature, yankLocals, yankId]
@@ -355,7 +356,7 @@ theorem flipperDecode_yank_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size
 
 theorem flipperDecode_yank_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (yankTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (yankTransition.params.map Param.name)
       (transitionSignature yankTransition).paramTypes I.calldata = none := by
   simpa [config, yankTransition, transitionSignature]
     using (decodeCalldata_legacyUInt256_none_short (cd := I.calldata)

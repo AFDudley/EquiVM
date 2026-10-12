@@ -83,10 +83,11 @@ theorem morphoOwnerBody {σ σ₀ A I} {g : UInt256} (v : MorphoImmutables)
   have hsz : 4 ≤ I.calldata.size := calldata_size_ge_of_selIs I (morphoSelBytes 17) rfl hsel
   have hd : selectorDispatchMsg contract I.calldata = some ownerTransition :=
     morphoSelectorDispatch_of_selIs (by decide) hsel
-  have hdec : decodeCalldataWithMode config.abiDecodeMode
+  have hdec : config.externalABI.decodeCalldata?
       (ownerTransition.params.map Param.name)
-      (transitionSignature ownerTransition).paramTypes I.calldata = some ∅ :=
-    decodeCalldataWithMode_empty_ok hsz
+      (transitionSignature ownerTransition).paramTypes I.calldata = some ∅ := by
+    change decodeCalldataWithMode .modern [] [] I.calldata = some ∅
+    exact decodeCalldataWithMode_empty_ok hsz
   by_cases hcv : I.weiValue = ⟨0⟩
   · by_cases hbound : I.calldata.size < 2 ^ 255 + 4
     · apply reEquivSelectorExecution hcode

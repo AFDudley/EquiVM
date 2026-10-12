@@ -35,7 +35,7 @@ theorem weth9ReEquivExecGen {cfg : Config} {contract : ContractDecl} {t : Transi
     (hcode : I.code = weth9Bytecode)
     (h : RDret weth9Bytecode g (initState σ σ₀ g A I) acc o)
     (hsel : selectorDispatchMsg contract I.calldata = some t)
-    (hdec : decodeCalldataWithMode cfg.abiDecodeMode (t.params.map Param.name)
+    (hdec : cfg.externalABI.decodeCalldata? (t.params.map Param.name)
               (transitionSignature t).paramTypes I.calldata = some callargs)
     (hbody : ExecTransitionBody cfg contract
               (initState σ σ₀ g A I) callargs t.body
@@ -66,7 +66,7 @@ theorem weth9ReEquivExecStatic {cfg : Config} {contract : ContractDecl}
     (hcode : I.code = weth9Bytecode)
     (h : RDstatic weth9Bytecode g (initState σ σ₀ g A I))
     (hsel : selectorDispatchMsg contract I.calldata = some t)
-    (hdec : decodeCalldataWithMode cfg.abiDecodeMode (t.params.map Param.name)
+    (hdec : cfg.externalABI.decodeCalldata? (t.params.map Param.name)
       (transitionSignature t).paramTypes I.calldata = some callargs)
     (hbody : ExecTransitionBody cfg contract
       (initState σ σ₀ g A I) callargs t.body .staticViolation) :
@@ -88,7 +88,7 @@ theorem weth9ReEquivExecRev {cfg : Config} {contract : ContractDecl} {t : Transi
     (hcode : I.code = weth9Bytecode)
     (h : RDrev weth9Bytecode g (initState σ σ₀ g A I))
     (hsel : selectorDispatchMsg contract I.calldata = some t)
-    (hdec : decodeCalldataWithMode cfg.abiDecodeMode (t.params.map Param.name)
+    (hdec : cfg.externalABI.decodeCalldata? (t.params.map Param.name)
               (transitionSignature t).paramTypes I.calldata = some callargs)
     (hbody : ExecTransitionBody cfg contract
               (initState σ σ₀ g A I) callargs t.body .reverted) :
@@ -115,7 +115,7 @@ theorem weth9ReEquivDecodeFailed {cfg : Config} {contract : ContractDecl} {t : T
     (hcode : I.code = weth9Bytecode)
     (h : RDrev weth9Bytecode g (initState σ σ₀ g A I))
     (hsel : selectorDispatchMsg contract I.calldata = some t)
-    (hdec : decodeCalldataWithMode cfg.abiDecodeMode (t.params.map Param.name)
+    (hdec : cfg.externalABI.decodeCalldata? (t.params.map Param.name)
               (transitionSignature t).paramTypes I.calldata = none) :
     runtimeRefinementFor cfg contract σ σ₀ g.toUInt256 A I := by
   rcases h with hoog | ⟨g', o, hrev⟩
@@ -137,12 +137,12 @@ theorem weth9NonpayableRevert {cfg : Config} {contract : ContractDecl} {t : Tran
     (h : RDrev weth9Bytecode g (initState σ σ₀ g A I))
     (hsel : selectorDispatchMsg contract I.calldata = some t)
     (hbodyRev : ∀ callargs,
-      decodeCalldataWithMode cfg.abiDecodeMode (t.params.map Param.name)
+      cfg.externalABI.decodeCalldata? (t.params.map Param.name)
         (transitionSignature t).paramTypes I.calldata = some callargs →
       ExecTransitionBody cfg contract (initState σ σ₀ g A I) callargs t.body
         .reverted) :
     runtimeRefinementFor cfg contract σ σ₀ g.toUInt256 A I := by
-  by_cases hdec : decodeCalldataWithMode cfg.abiDecodeMode (t.params.map Param.name)
+  by_cases hdec : cfg.externalABI.decodeCalldata? (t.params.map Param.name)
       (transitionSignature t).paramTypes I.calldata = none
   · exact weth9ReEquivDecodeFailed hcode h hsel hdec
   · obtain ⟨callargs, hca⟩ := Option.ne_none_iff_exists'.mp hdec

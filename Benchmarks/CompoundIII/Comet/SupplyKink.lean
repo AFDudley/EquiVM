@@ -59,7 +59,7 @@ theorem cometWithExtendedAssetListSupplyKinkBody {σ σ₀ A I} {g : UInt256} (v
     runtimeRefinementFor config contract σ σ₀ g A I (immStore v) := by
   have hsz : 4 ≤ I.calldata.size :=
     calldata_size_ge_of_selIs I (cometWithExtendedAssetListSelBytes 48) rfl hsel
-  exact immutableGetter_refines (t := supplyKinkTransition) hcode hsz
+  exact immutableGetter_refines (t := supplyKinkTransition) hcode hsz (cometDecode_empty hsz)
     (cometSelectorDispatch ⟨48, by decide⟩ hsel) rfl rfl rfl
     (immStore_get_supplyKink v) (uint256ReturnEncoding v.supplyKink)
     (supplyKinkX v hcode hsz hsize hsel)

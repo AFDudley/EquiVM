@@ -10,9 +10,9 @@ def gemWord (σ : AccountMap) (I : ExecutionEnv) : UInt256 :=
   solcAddressSlotWord ⟨3⟩ σ I
 
 theorem flopperDecode_gem {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (gemTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (gemTransition.params.map Param.name)
       (transitionSignature gemTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 theorem flopperReachGemBody {σ σ₀ A I} {g : Sat256}
@@ -58,7 +58,7 @@ theorem flopperGemBodyCore
     (hcode : I.code = flopperBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some gemTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (gemTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (gemTransition.params.map Param.name)
         (transitionSignature gemTransition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD flopperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨628⟩ [sel]

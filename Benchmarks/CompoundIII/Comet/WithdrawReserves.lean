@@ -26,7 +26,7 @@ theorem cometWithExtendedAssetListWithdrawReservesBody {σ σ₀ A I} {g : UInt2
   have hsz : 4 ≤ I.calldata.size := calldata_size_ge_of_selIs I (cometWithExtendedAssetListSelBytes 63) rfl hsel
   have hd : selectorDispatchMsg contract I.calldata = some withdrawReservesTransition :=
     cometSelectorDispatch ⟨63, by decide⟩ hsel
-  have hdecode : decodeCalldataWithMode config.abiDecodeMode
+  have hdecode : config.externalABI.decodeCalldata?
       (withdrawReservesTransition.params.map Param.name)
       (transitionSignature withdrawReservesTransition).paramTypes I.calldata =
       decodeCalldata ["to", "amount"] [.elem .address, abiUInt256] I.calldata := by

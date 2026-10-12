@@ -37,7 +37,7 @@ theorem durationBodyCore {σ σ₀ A I} {g : UInt256}
   by_cases hwv : I.weiValue = ⟨0⟩
   · have hsz := calldata_size_ge_of_selIs I (entryBytes 0) (entryBytes_size 0) hsel
     have hd := dispatchEntry 0 hsel
-    have hdec : decodeCalldataWithMode auctionConfig.abiDecodeMode
+    have hdec : auctionConfig.externalABI.decodeCalldata?
         (durationGetter.params.map Param.name)
         (transitionSignature durationGetter).paramTypes I.calldata = some ∅ :=
       decodeCalldata_empty_ok hsz

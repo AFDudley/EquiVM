@@ -13,7 +13,7 @@ theorem uniswapSkimBodyDecoded
     (hsel : selIs I ⟨#[0xbc, 0x25, 0xcf, 0x77]⟩)
     (hdispatch : dispatchMsg contract I.calldata = some skimTransition)
     (hsz36 : 36 ≤ I.calldata.size)
-    (hdecode : decodeCalldataWithMode config.abiDecodeMode (skimTransition.params.map Param.name)
+    (hdecode : config.externalABI.decodeCalldata? (skimTransition.params.map Param.name)
       (transitionSignature skimTransition).paramTypes I.calldata = some (skimStore I)) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   by_cases hlocked :
@@ -1011,8 +1011,7 @@ theorem uniswapSkimBodyDecoded
                             · by_cases hout3Sign : out3.size < 2 ^ 255
                               · by_cases hshort3 : out3.size < 32
                                 · have hdecSafe1 :
-                                      ABI.decodeReturnValueWithMode?
-                                          config.abiDecodeMode boolTy out3 =
+                                      config.externalABI.decodeValue? boolTy out3 =
                                         none := by
                                     change
                                       ABI.decodeReturnValueWithMode?
@@ -1041,8 +1040,7 @@ theorem uniswapSkimBodyDecoded
                                       (fromByteArrayBigEndian (out3.extract 0 32))
                                   by_cases hword1 : safeWord1 = ⟨0⟩
                                   · have hdecSafe1 :
-                                        ABI.decodeReturnValueWithMode?
-                                            config.abiDecodeMode boolTy out3 =
+                                        config.externalABI.decodeValue? boolTy out3 =
                                           some (.bool false) := by
                                       change
                                         ABI.decodeReturnValueWithMode?
@@ -1066,8 +1064,7 @@ theorem uniswapSkimBodyDecoded
                                     exact rdRev.reEquivExecutionRevert hcode hdispatch
                                       hdecode hbody
                                   · have hdecSafe1 :
-                                        ABI.decodeReturnValueWithMode?
-                                            config.abiDecodeMode boolTy out3 =
+                                        config.externalABI.decodeValue? boolTy out3 =
                                           some (.bool true) := by
                                       change
                                         ABI.decodeReturnValueWithMode?
@@ -1118,8 +1115,7 @@ theorem uniswapSkimBodyDecoded
                                     exact hfinish rd5433 hsafe1
                               · have hhi : 2 ^ 255 ≤ out3.size := le_of_not_gt hout3Sign
                                 have hdecSafe1 :
-                                    ABI.decodeReturnValueWithMode?
-                                        config.abiDecodeMode boolTy out3 =
+                                    config.externalABI.decodeValue? boolTy out3 =
                                       none := by
                                   change
                                     ABI.decodeReturnValueWithMode?
@@ -1145,7 +1141,7 @@ theorem uniswapSkimBodyDecoded
                 · by_cases hout1Sign : out1.size < 2 ^ 255
                   · by_cases hshort1 : out1.size < 32
                     · have hdecSafe0 :
-                          ABI.decodeReturnValueWithMode? config.abiDecodeMode boolTy out1 =
+                          config.externalABI.decodeValue? boolTy out1 =
                             none := by
                         change
                           ABI.decodeReturnValueWithMode? DecodeMode.legacySolc05 boolTy out1 =
@@ -1170,7 +1166,7 @@ theorem uniswapSkimBodyDecoded
                         UInt256.ofNat (fromByteArrayBigEndian (out1.extract 0 32))
                       by_cases hword0 : safeWord0 = ⟨0⟩
                       · have hdecSafe0 :
-                            ABI.decodeReturnValueWithMode? config.abiDecodeMode boolTy out1 =
+                            config.externalABI.decodeValue? boolTy out1 =
                               some (.bool false) := by
                           change
                             ABI.decodeReturnValueWithMode? DecodeMode.legacySolc05 boolTy out1 =
@@ -1191,7 +1187,7 @@ theorem uniswapSkimBodyDecoded
                         exact rdRev.reEquivExecutionRevert hcode hdispatch
                           hdecode hbody
                       · have hdecSafe0 :
-                            ABI.decodeReturnValueWithMode? config.abiDecodeMode boolTy out1 =
+                            config.externalABI.decodeValue? boolTy out1 =
                               some (.bool true) := by
                           change
                             ABI.decodeReturnValueWithMode? DecodeMode.legacySolc05 boolTy out1 =
@@ -1761,8 +1757,7 @@ theorem uniswapSkimBodyDecoded
                                   · by_cases hout3Sign : out3.size < 2 ^ 255
                                     · by_cases hshort3 : out3.size < 32
                                       · have hdecSafe1 :
-                                            ABI.decodeReturnValueWithMode?
-                                                config.abiDecodeMode boolTy out3 =
+                                            config.externalABI.decodeValue? boolTy out3 =
                                               none := by
                                           change
                                             ABI.decodeReturnValueWithMode?
@@ -1792,8 +1787,7 @@ theorem uniswapSkimBodyDecoded
                                             (fromByteArrayBigEndian (out3.extract 0 32))
                                         by_cases hword1 : safeWord1 = ⟨0⟩
                                         · have hdecSafe1 :
-                                              ABI.decodeReturnValueWithMode?
-                                                  config.abiDecodeMode boolTy out3 =
+                                              config.externalABI.decodeValue? boolTy out3 =
                                                 some (.bool false) := by
                                             change
                                               ABI.decodeReturnValueWithMode?
@@ -1818,8 +1812,7 @@ theorem uniswapSkimBodyDecoded
                                           exact rdRev.reEquivExecutionRevert hcode hdispatch
                                             hdecode hbody
                                         · have hdecSafe1 :
-                                              ABI.decodeReturnValueWithMode?
-                                                  config.abiDecodeMode boolTy out3 =
+                                              config.externalABI.decodeValue? boolTy out3 =
                                                 some (.bool true) := by
                                             change
                                               ABI.decodeReturnValueWithMode?
@@ -1875,7 +1868,7 @@ theorem uniswapSkimBodyDecoded
                                       exact False.elim (hout3Sign this)
                   · have hhi : 2 ^ 255 ≤ out1.size := le_of_not_gt hout1Sign
                     have hdecSafe0 :
-                        ABI.decodeReturnValueWithMode? config.abiDecodeMode boolTy out1 =
+                        config.externalABI.decodeValue? boolTy out1 =
                           none := by
                       change
                         ABI.decodeReturnValueWithMode? DecodeMode.legacySolc05 boolTy out1 =

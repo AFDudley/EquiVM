@@ -1073,8 +1073,7 @@ def contract : ContractDecl :=
 
 def config : Config :=
   { storageBackend := solidityStorageBackend storageLayout
-    externalABI := routerExternalABI
-    abiDecodeMode := DecodeMode.legacySolc05
+    externalABI := (routerExternalABI).withMode DecodeMode.legacySolc05
     selfDeployment := genSolidityConstructorDeployment (contract).ctor.params }
 
 end Benchmarks.UniswapV2Router02

@@ -54,7 +54,7 @@ theorem poolManagerSettleForBody {σ σ₀ A I} {g : UInt256} (v : PoolManagerIm
         have hI : evm.executionEnv = I := rfl
         have hword : accountWord recipient = calldataWord I.calldata 4 :=
           (accountWord_eq_iff recipient _ hcanon).1 rfl
-        have hdec : decodeCalldataWithMode config.abiDecodeMode (settleForTransition.params.map Param.name)
+        have hdec : config.externalABI.decodeCalldata? (settleForTransition.params.map Param.name)
             (transitionSignature settleForTransition).paramTypes I.calldata = some args :=
           decodeCalldata_address_ok hlen hhi hcanon
         by_cases hl : transientWord evm lockSlot = ⟨0⟩

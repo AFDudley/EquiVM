@@ -35,7 +35,7 @@ theorem selectedRevert {cfg : Config} {C : ContractDecl} {t : TransitionDecl}
       args t.body .reverted imms)
     (hfallback : C.fallback = none := by rfl) (hreceive : C.receive = none := by rfl) :
     runtimeRefinementFor cfg C σ σ₀ g.toUInt256 A I imms := by
-  cases hdec : decodeCalldataWithMode cfg.abiDecodeMode (t.params.map Param.name)
+  cases hdec : cfg.externalABI.decodeCalldata? (t.params.map Param.name)
       (transitionSignature t).paramTypes I.calldata with
   | none => exact h.reEquivDecodingFailed hcode hd hdec hfallback hreceive
   | some args => exact h.reEquivExecutionRevert hcode hd hdec (hbody args) hfallback hreceive

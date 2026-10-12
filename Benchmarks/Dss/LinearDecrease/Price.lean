@@ -688,7 +688,7 @@ theorem stairstepExecRmulFunctionRevertMul (evm : EVM.State) {x y : UInt256}
 
 
 theorem stairstepDecode_price_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (priceTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (priceTransition.params.map Param.name)
       (transitionSignature priceTransition).paramTypes I.calldata =
         some (priceLocals I) := by
   simpa [config, priceTransition, uint256, uint256Int, priceLocals, priceTop, priceDur,
@@ -698,7 +698,7 @@ theorem stairstepDecode_price_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.s
 
 theorem stairstepDecode_price_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 68) :
-    decodeCalldataWithMode config.abiDecodeMode (priceTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (priceTransition.params.map Param.name)
       (transitionSignature priceTransition).paramTypes I.calldata = none := by
   simpa [config, priceTransition, uint256, uint256Int, abiUInt256] using
     (decodeCalldata_legacyUInt256_uint256_none_short (cd := I.calldata)
@@ -1614,7 +1614,7 @@ theorem stairstepPriceBodyCoreZero
     (hcode : I.code = linearDecreaseBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some priceTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (priceTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (priceTransition.params.map Param.name)
         (transitionSignature priceTransition).paramTypes I.calldata = some (priceLocals I))
     (hreach : ∃ k C, RD linearDecreaseBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨552⟩

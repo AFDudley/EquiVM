@@ -29,7 +29,7 @@ abbrev chopSlotFor (I : ExecutionEnv) : UInt256 :=
 
 theorem dogDecode_chop_ok {I : ExecutionEnv}
     (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (chopTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (chopTransition.params.map Param.name)
       (transitionSignature chopTransition).paramTypes I.calldata =
         some (chopLocals I) := by
   simpa [config, chopTransition, chopLocals, chopArgValue, chopArgBytes, bytes32,
@@ -38,7 +38,7 @@ theorem dogDecode_chop_ok {I : ExecutionEnv}
 
 theorem dogDecode_chop_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (chopTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (chopTransition.params.map Param.name)
       (transitionSignature chopTransition).paramTypes I.calldata = none := by
   simpa [config, chopTransition, bytes32, bytes32Width] using
     (decodeCalldataWithMode_legacyBytes32_none_short (cd := I.calldata) (x := "ilk")
@@ -163,7 +163,7 @@ theorem dogChopBodyCoreOk
     (hsz36 : 36 ≤ I.calldata.size) (hsize : I.calldata.size < UInt256.size)
     (hdispatch : dispatchMsg contract I.calldata = some chopTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (chopTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (chopTransition.params.map Param.name)
         (transitionSignature chopTransition).paramTypes I.calldata = some (chopLocals I))
     (hreach : ∃ k C, RD code I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨629⟩ [sel]

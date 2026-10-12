@@ -13,9 +13,9 @@ def dogWord (σ : AccountMap) (I : ExecutionEnv) : UInt256 :=
   solcAddressSlotWord ⟨3⟩ σ I
 
 theorem endDecode_dog {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (dogTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (dogTransition.params.map Param.name)
       (transitionSignature dogTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 abbrev endDogConcreteSelector : ByteArray := selectorBytes 0xc3 0xb3 0xad 0x7f
@@ -67,7 +67,7 @@ theorem endDogBodyCore
     (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some dogTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (dogTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (dogTransition.params.map Param.name)
         (transitionSignature dogTransition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD endBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1017⟩ [sel]

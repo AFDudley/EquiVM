@@ -435,14 +435,14 @@ theorem assign_tickEndStorage (evm : EVM.State) (σ : AccountMap) (I : Execution
 
 
 theorem flipperDecode_tick_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (tickTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (tickTransition.params.map Param.name)
       (transitionSignature tickTransition).paramTypes I.calldata = some (tickLocals I) := by
   simpa [config, tickTransition, tickLocals, tickId, uint256] using
     (decodeCalldata_legacyUInt256_ok (cd := I.calldata) (x := "id") hsz36)
 
 theorem flipperDecode_tick_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (tickTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (tickTransition.params.map Param.name)
       (transitionSignature tickTransition).paramTypes I.calldata = none := by
   simpa [config, tickTransition, uint256] using
     (decodeCalldata_legacyUInt256_none_short (cd := I.calldata) (x := "id") hsz4

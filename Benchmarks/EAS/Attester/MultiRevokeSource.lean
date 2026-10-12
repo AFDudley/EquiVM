@@ -10,14 +10,14 @@ def multiRevokeLocals (schemas rows : List Value) : Store :=
 
 theorem multiRevokeDecode_some {cd : ByteArray} {schemas rows : List Value}
     (hd : decodeArrays? bytes32 cd = some (.array schemas, .array rows)) :
-    decodeCalldataWithMode config.abiDecodeMode (multiRevokeTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (multiRevokeTransition.params.map Param.name)
       (transitionSignature multiRevokeTransition).paramTypes cd =
         some (multiRevokeLocals schemas rows) := by
   simpa only [hd, Option.map_some, multiRevokeLocals] using
     decodeCalldata_arrays_eq bytes32 "schemas" "schemaUids" cd
 
 theorem multiRevokeDecode_none {cd : ByteArray} (hd : decodeArrays? bytes32 cd = none) :
-    decodeCalldataWithMode config.abiDecodeMode (multiRevokeTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (multiRevokeTransition.params.map Param.name)
       (transitionSignature multiRevokeTransition).paramTypes cd = none := by
   simpa only [hd, Option.map_none] using decodeCalldata_arrays_eq bytes32 "schemas" "schemaUids" cd
 

@@ -415,7 +415,7 @@ theorem vowDispatch_kiss {I : ExecutionEnv}
     exact hsel
 
 theorem vowDecode_kiss_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (kissTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (kissTransition.params.map Param.name)
       (transitionSignature kissTransition).paramTypes I.calldata =
         some (kissLocals I) := by
   simpa [config, kissTransition, kissLocals, kissRad, uint256, uint256Int] using
@@ -423,7 +423,7 @@ theorem vowDecode_kiss_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
 
 theorem vowDecode_kiss_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (kissTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (kissTransition.params.map Param.name)
       (transitionSignature kissTransition).paramTypes I.calldata = none := by
   simpa [config, kissTransition, uint256, uint256Int] using
     (decodeCalldata_legacyUInt256_none_short (cd := I.calldata) (x := "rad") hsz4 hshort)
@@ -1450,7 +1450,7 @@ theorem vowKissDaiSuccessInsufficientSurplusBodyCore
     (hcode : I.code = vowBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some kissTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (kissTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (kissTransition.params.map Param.name)
         (transitionSignature kissTransition).paramTypes I.calldata = some (kissLocals I))
     (rd1704 : RD vowBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1704⟩
@@ -1536,7 +1536,7 @@ theorem vowKissNoVatCodeBodyCore
     (hsz36 : 36 ≤ I.calldata.size) (hsize : I.calldata.size < UInt256.size)
     (hdispatch : dispatchMsg contract I.calldata = some kissTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (kissTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (kissTransition.params.map Param.name)
         (transitionSignature kissTransition).paramTypes I.calldata = some (kissLocals I))
     (hreach : ∃ k C, RD vowBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨383⟩ [sel]
@@ -1586,7 +1586,7 @@ theorem vowKissDaiCallFailureBodyCore
     (hcode : I.code = vowBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some kissTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (kissTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (kissTransition.params.map Param.name)
         (transitionSignature kissTransition).paramTypes I.calldata = some (kissLocals I))
     (rd1704 : RD vowBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1704⟩
@@ -1627,7 +1627,7 @@ theorem vowKissDaiDecodeShortBodyCore
     (hcode : I.code = vowBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some kissTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (kissTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (kissTransition.params.map Param.name)
         (transitionSignature kissTransition).paramTypes I.calldata = some (kissLocals I))
     (rd1704 : RD vowBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1704⟩
@@ -1692,7 +1692,7 @@ theorem vowKissNotEnoughAshBodyCore
     (hsz36 : 36 ≤ I.calldata.size) (hsize : I.calldata.size < UInt256.size)
     (hdispatch : dispatchMsg contract I.calldata = some kissTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (kissTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (kissTransition.params.map Param.name)
         (transitionSignature kissTransition).paramTypes I.calldata = some (kissLocals I))
     (hreach : ∃ k C, RD vowBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨383⟩ [sel]

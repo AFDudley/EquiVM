@@ -46,7 +46,7 @@ theorem renounceOwnershipBodyCore {σ σ₀ A I} {g : UInt256}
   by_cases hwv : I.weiValue = ⟨0⟩
   · have hd := dispatchEntry 8 hsel
     have hsz := calldata_size_ge_of_selIs I (entryBytes 8) (entryBytes_size 8) hsel
-    have hdec : decodeCalldataWithMode auctionConfig.abiDecodeMode
+    have hdec : auctionConfig.externalABI.decodeCalldata?
         (renounceOwnershipTransition.params.map Param.name)
         (transitionSignature renounceOwnershipTransition).paramTypes I.calldata = some ∅ :=
       decodeCalldata_empty_ok hsz

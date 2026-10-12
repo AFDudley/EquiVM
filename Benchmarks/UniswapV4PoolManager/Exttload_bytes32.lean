@@ -63,7 +63,7 @@ theorem poolManagerExttload_bytes32BodyCore {σ σ₀ A I} {g : UInt256} (v : Po
             (codeOwnerTransientWord I σ (calldataWord I.calldata 4)).toByteArray := by
           simpa only [show (⟨0⟩ : UInt256).toNat = 0 from rfl,
             show (UInt256.ofNat 32).toNat = 32 from rfl, returnWordAtZero] using hret
-        have hdec : decodeCalldataWithMode config.abiDecodeMode
+        have hdec : config.externalABI.decodeCalldata?
             (exttload_bytes32Transition.params.map Param.name)
             (transitionSignature exttload_bytes32Transition).paramTypes I.calldata =
             some ((∅ : Store).insert "slot" (wordBytes32Value (calldataWord I.calldata 4))) :=

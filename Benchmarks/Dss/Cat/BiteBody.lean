@@ -25,7 +25,7 @@ param types `[bytes32, addr]` are defeq `[abiBytes32, abiAddress]` and its outpu
 This is the decode the integrator needs — `catDecode_bite`'s spurious `hbig`/`hcanon` (neither derivable
 from `hsize`) are avoided entirely. -/
 theorem biteDecode_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (biteTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (biteTransition.params.map Param.name)
       (transitionSignature biteTransition).paramTypes I.calldata = some (biteLocals I) := by
   show decodeCalldataWithMode DecodeMode.legacySolc05 ["ilk", "urn"] [bytes32, addr] I.calldata
     = some (biteLocals I)
@@ -92,7 +92,7 @@ theorem catBiteBodyIlksNoCode {σ σ₀ A I} {g : UInt256}
     (hsz68 : 68 ≤ I.calldata.size)
     (hdispatch : dispatchMsg contract I.calldata = some biteTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (biteTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (biteTransition.params.map Param.name)
         (transitionSignature biteTransition).paramTypes I.calldata = some (biteLocals I))
     (hvatCode :
       Reasoning.Theory.extCodeSizeWord σ (catBiteVatTargetWord σ I) = ⟨0⟩) :
@@ -124,7 +124,7 @@ theorem catBiteBodyIlksFailCore {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = catBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some biteTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (biteTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (biteTransition.params.map Param.name)
         (transitionSignature biteTransition).paramTypes I.calldata = some (biteLocals I))
     (hvatCode : Reasoning.Theory.extCodeSizeWord σ (catBiteVatTargetWord σ I) ≠ ⟨0⟩)
     (hIlksFailCall : typedCallViaEVM config (initState σ σ₀ (Sat256.ofUInt256 g) A I)

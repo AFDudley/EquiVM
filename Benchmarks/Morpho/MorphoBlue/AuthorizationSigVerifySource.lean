@@ -63,7 +63,7 @@ theorem morphoAuthorizationSourceSignatory {a cd locals}
         evm (.var "recovered") = .ok (.bytes out) := by
       simp only [evalExpr?, hout', EvalResult.ofOption]
     rw [he']
-    simp only [bind, EvalResult.bind, show config.abiDecodeMode = .modern from rfl,
+    simp only [bind, EvalResult.bind, show config.externalABI.decodeValue? = decodeReturnValueWithMode? .modern from rfl,
       decodeAddressWord32 hs (ho.canonical hs), ecrecoverWord, hs,
       show (32 : Nat) ≠ 0 by decide, ↓reduceIte]
     rfl

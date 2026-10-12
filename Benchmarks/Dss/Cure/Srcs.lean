@@ -40,7 +40,7 @@ theorem cureDispatchSrcs {I : ExecutionEnv}
 
 theorem cureDecode_srcs_ok {I : ExecutionEnv}
     (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (srcsTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (srcsTransition.params.map Param.name)
       (transitionSignature srcsTransition).paramTypes I.calldata =
         some ((∅ : Store).insert "arg0" (.int (Int.ofNat (srcsIndex I).toNat))) := by
   have htlen : I.calldata.toList.length = I.calldata.size := by
@@ -66,7 +66,7 @@ theorem cureDecode_srcs_ok {I : ExecutionEnv}
   rw [hword4]
 
 theorem cureDecode_srcs_none_short {I : ExecutionEnv} (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (srcsTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (srcsTransition.params.map Param.name)
       (transitionSignature srcsTransition).paramTypes I.calldata = none := by
   have htlen : I.calldata.toList.length = I.calldata.size := by
     rw [byteArray_toList_eq, Array.length_toList]; rfl
@@ -524,7 +524,7 @@ theorem RDinvalid.reEquivExecutionInvalid {cfg : Config} {contract : ContractDec
     (hcode : I.code = code)
     (h : RDinvalid code g (initState σ σ₀ g A I))
     (hd : dispatchMsg contract I.calldata = some t)
-    (hdec : decodeCalldataWithMode cfg.abiDecodeMode (t.params.map Param.name)
+    (hdec : cfg.externalABI.decodeCalldata? (t.params.map Param.name)
       (transitionSignature t).paramTypes I.calldata = some callargs)
     (hbody : ExecTransitionBody cfg contract
       (initState σ σ₀ g A I) callargs t.body .reverted)
@@ -545,7 +545,7 @@ theorem cureSrcsBodyCoreOk
     (hsz36 : 36 ≤ I.calldata.size) (hsize : I.calldata.size < UInt256.size)
     (hdispatch : dispatchMsg contract I.calldata = some srcsTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (srcsTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (srcsTransition.params.map Param.name)
         (transitionSignature srcsTransition).paramTypes I.calldata =
           some ((∅ : Store).insert "arg0" (.int (Int.ofNat (srcsIndex I).toNat))))
     (hlt : (srcsIndex I).toNat < (srcsLenWord σ I).toNat)
@@ -621,7 +621,7 @@ theorem cureSrcsBodyCoreOob
     (hsz36 : 36 ≤ I.calldata.size) (hsize : I.calldata.size < UInt256.size)
     (hdispatch : dispatchMsg contract I.calldata = some srcsTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (srcsTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (srcsTransition.params.map Param.name)
         (transitionSignature srcsTransition).paramTypes I.calldata =
           some ((∅ : Store).insert "arg0" (.int (Int.ofNat (srcsIndex I).toNat))))
     (hle : (srcsLenWord σ I).toNat ≤ (srcsIndex I).toNat)

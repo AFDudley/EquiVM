@@ -287,7 +287,7 @@ section Decode
 variable {I : ExecutionEnv} {callargs : Store}
 
 theorem decode_approve_eq (hsz4 : 4 ≤ I.calldata.size)
-    (h : decodeCalldataWithMode erc20Config.abiDecodeMode (approveTransition.params.map Param.name)
+    (h : erc20Config.externalABI.decodeCalldata? (approveTransition.params.map Param.name)
       (transitionSignature approveTransition).paramTypes I.calldata = some callargs) :
     callargs = approveStore I := by
   change decodeCalldata (approveTransition.params.map Param.name)
@@ -301,7 +301,7 @@ theorem decode_approve_eq (hsz4 : 4 ≤ I.calldata.size)
   · rw [erc20Decode_approve_none_short hsz4 (by omega)] at h; cases h
 
 theorem decode_totalSupply_eq (hsz4 : 4 ≤ I.calldata.size)
-    (h : decodeCalldataWithMode erc20Config.abiDecodeMode
+    (h : erc20Config.externalABI.decodeCalldata?
       (totalSupplyTransition.params.map Param.name)
       (transitionSignature totalSupplyTransition).paramTypes I.calldata = some callargs) :
     callargs = ∅ := by
@@ -311,7 +311,7 @@ theorem decode_totalSupply_eq (hsz4 : 4 ≤ I.calldata.size)
   exact (Option.some.inj h).symm
 
 theorem decode_transferFrom_eq (hsz4 : 4 ≤ I.calldata.size)
-    (h : decodeCalldataWithMode erc20Config.abiDecodeMode
+    (h : erc20Config.externalABI.decodeCalldata?
       (transferFromTransition.params.map Param.name)
       (transitionSignature transferFromTransition).paramTypes I.calldata = some callargs) :
     callargs = transferFromStore I := by
@@ -329,7 +329,7 @@ theorem decode_transferFrom_eq (hsz4 : 4 ≤ I.calldata.size)
   · rw [erc20Decode_transferFrom_none_short hsz4 (by omega)] at h; cases h
 
 theorem decode_balanceOf_eq (hsz4 : 4 ≤ I.calldata.size)
-    (h : decodeCalldataWithMode erc20Config.abiDecodeMode
+    (h : erc20Config.externalABI.decodeCalldata?
       (balanceOfTransition.params.map Param.name)
       (transitionSignature balanceOfTransition).paramTypes I.calldata = some callargs) :
     callargs = balanceOfStore I := by
@@ -344,7 +344,7 @@ theorem decode_balanceOf_eq (hsz4 : 4 ≤ I.calldata.size)
   · rw [erc20Decode_balanceOf_none_short hsz4 (by omega)] at h; cases h
 
 theorem decode_transfer_eq (hsz4 : 4 ≤ I.calldata.size)
-    (h : decodeCalldataWithMode erc20Config.abiDecodeMode (transferTransition.params.map Param.name)
+    (h : erc20Config.externalABI.decodeCalldata? (transferTransition.params.map Param.name)
       (transitionSignature transferTransition).paramTypes I.calldata = some callargs) :
     callargs = transferStore I := by
   change decodeCalldata (transferTransition.params.map Param.name)
@@ -358,7 +358,7 @@ theorem decode_transfer_eq (hsz4 : 4 ≤ I.calldata.size)
   · rw [erc20Decode_transfer_none_short hsz4 (by omega)] at h; cases h
 
 theorem decode_allowance_eq (hsz4 : 4 ≤ I.calldata.size)
-    (h : decodeCalldataWithMode erc20Config.abiDecodeMode
+    (h : erc20Config.externalABI.decodeCalldata?
       (allowanceTransition.params.map Param.name)
       (transitionSignature allowanceTransition).paramTypes I.calldata = some callargs) :
     callargs = allowanceStore I := by

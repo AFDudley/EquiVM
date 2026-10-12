@@ -134,7 +134,7 @@ theorem daiSymbolBodyCoreOk
     (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some symbolTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (symbolTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (symbolTransition.params.map Param.name)
         (transitionSignature symbolTransition).paramTypes I.calldata =
           some symbolStore)
     (hreach : ∃ k C, RD daiBytecode I (Sat256.ofUInt256 g)
@@ -159,10 +159,10 @@ theorem daiSymbolBodyCoreOk
         exact returnEquiv_of_encode daiSymbolReturnEncoding)
 
 theorem daiDecode_symbol_ok {I : ExecutionEnv} (hsz4 : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (symbolTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (symbolTransition.params.map Param.name)
       (transitionSignature symbolTransition).paramTypes I.calldata =
         some symbolStore := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata =
+  change decodeCalldataWithMode .legacySolc05 [] [] I.calldata =
     some (∅ : Store)
   exact decodeCalldataWithMode_empty_ok hsz4
 

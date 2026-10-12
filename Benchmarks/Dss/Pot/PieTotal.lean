@@ -9,9 +9,9 @@ namespace Benchmarks.Dss.Pot
 def PieTotalWord (σ : AccountMap) (I : ExecutionEnv) : UInt256 := solcSlotWordAt ⟨2⟩ σ I
 
 theorem potDecode_PieTotal {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (PieTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (PieTransition.params.map Param.name)
       (transitionSignature PieTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 theorem potReachPieTotalBody {σ σ₀ A I} {g : Sat256}
@@ -42,7 +42,7 @@ theorem potPieTotalBodyCore
     (hcode : I.code = potBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some PieTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (PieTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (PieTransition.params.map Param.name)
         (transitionSignature PieTransition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD potBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨402⟩ [sel]

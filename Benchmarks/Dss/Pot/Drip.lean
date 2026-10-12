@@ -1305,7 +1305,7 @@ theorem potDripBodyAfterRpow {σ σ₀ A I} {g pow : UInt256} {rpowLocals : Stor
     (hcode : I.code = potBytecode) (_hsize : I.calldata.size < UInt256.size)
     (hperm : I.perm = true) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some dripTransition)
-    (hdecode : decodeCalldataWithMode config.abiDecodeMode (dripTransition.params.map Param.name)
+    (hdecode : config.externalABI.decodeCalldata? (dripTransition.params.map Param.name)
       (transitionSignature dripTransition).paramTypes I.calldata = some ∅)
     (hle : (dripRhoWord σ I).toNat ≤ (dripNowWord I).toNat)
     (hrpow : ExecFuncBody config
@@ -1514,7 +1514,7 @@ theorem potDripBodyAfterRpowStatic {σ σ₀ A I} {g pow : UInt256} {rpowLocals 
     (hcode : I.code = potBytecode)
     (hperm : I.perm = false) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some dripTransition)
-    (hdecode : decodeCalldataWithMode config.abiDecodeMode (dripTransition.params.map Param.name)
+    (hdecode : config.externalABI.decodeCalldata? (dripTransition.params.map Param.name)
       (transitionSignature dripTransition).paramTypes I.calldata = some ∅)
     (hle : (dripRhoWord σ I).toNat ≤ (dripNowWord I).toNat)
     (hrpow : ExecFuncBody config
@@ -1551,7 +1551,7 @@ theorem potDripBody {σ σ₀ A I} {g : UInt256}
     runtimeRefinementFor config contract σ σ₀ g A I := by
   have hsz4 : 4 ≤ I.calldata.size := calldata_size_ge_of_selIs I (potSelBytes 4) rfl hsel
   have hdispatch : dispatchMsg contract I.calldata = some dripTransition := potDispatchDrip hsel
-  have hdecode : decodeCalldataWithMode config.abiDecodeMode (dripTransition.params.map Param.name)
+  have hdecode : config.externalABI.decodeCalldata? (dripTransition.params.map Param.name)
       (transitionSignature dripTransition).paramTypes I.calldata = some ∅ := potDecode_drip hsz4
   have hrho : dripRhoWord σ I = dripRhoWord σ I := rfl
   have hdsr : dripDsrWord σ I = dripDsrWord σ I := rfl
@@ -1627,7 +1627,7 @@ theorem potDripBodyAnyPerm {σ σ₀ A I} {g : UInt256}
   replace hperm : I.perm = false := by simpa using hperm
   have hsz4 : 4 ≤ I.calldata.size := calldata_size_ge_of_selIs I (potSelBytes 4) rfl hsel
   have hdispatch : dispatchMsg contract I.calldata = some dripTransition := potDispatchDrip hsel
-  have hdecode : decodeCalldataWithMode config.abiDecodeMode (dripTransition.params.map Param.name)
+  have hdecode : config.externalABI.decodeCalldata? (dripTransition.params.map Param.name)
       (transitionSignature dripTransition).paramTypes I.calldata = some ∅ := potDecode_drip hsz4
   obtain ⟨k, C, h1819⟩ := potReachDripBody (g := Sat256.ofUInt256 g) hcode hwv hsz4 hsize hsel
   by_cases hnow : (dripNowWord I).toNat < (dripRhoWord σ I).toNat

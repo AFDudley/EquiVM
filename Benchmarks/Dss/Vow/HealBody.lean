@@ -21,7 +21,7 @@ theorem vowHealBody {σ σ₀ A I} {g : UInt256}
   have hdispatch : dispatchMsg contract I.calldata = some healTransition :=
     vowDispatch_heal hsel
   have hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (healTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (healTransition.params.map Param.name)
         (transitionSignature healTransition).paramTypes I.calldata = some (healLocals I) := by
     simpa [healLocals] using vowDecode_heal_ok (I := I) hsz36
   have hreach : ∃ k C, RD vowBytecode I (Sat256.ofUInt256 g)

@@ -1545,7 +1545,7 @@ theorem daiJoinExitDaiMintSuccessTailSplit
   simpa using RD.stop rd232' (by native_decide) (by evm_ov)
 
 theorem daiJoinDecode_exit_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (exitTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (exitTransition.params.map Param.name)
       (transitionSignature exitTransition).paramTypes I.calldata = some (exitStore I) := by
   simpa [config, exitTransition, exitStore, exitUsrValue, exitWadValue, exitUsrWord,
     exitWadWord, calldataWord] using
@@ -1554,7 +1554,7 @@ theorem daiJoinDecode_exit_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size
 
 theorem daiJoinDecode_exit_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 68) :
-    decodeCalldataWithMode config.abiDecodeMode (exitTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (exitTransition.params.map Param.name)
       (transitionSignature exitTransition).paramTypes I.calldata = none := by
   simpa [config, exitTransition] using
     decodeCalldata_legacyAddress_uint256_none_short (cd := I.calldata)

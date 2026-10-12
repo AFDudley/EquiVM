@@ -61,18 +61,18 @@ theorem bidsPackedSlotFor_eq (I : ExecutionEnv) :
 
 
 theorem flapperDecode_bids_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (bidsTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (bidsTransition.params.map Param.name)
       (transitionSignature bidsTransition).paramTypes I.calldata =
         some ((∅ : Store).insert "arg0" (bidsArgValue I)) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["arg0"] [uint256] I.calldata = _
+  show config.externalABI.decodeCalldata? ["arg0"] [uint256] I.calldata = _
   simpa [config, bidsArgValue, bidsArgWord, uint256] using
     decodeCalldata_legacyUInt256_ok (cd := I.calldata) (x := "arg0") hsz36
 
 theorem flapperDecode_bids_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (bidsTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (bidsTransition.params.map Param.name)
       (transitionSignature bidsTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["arg0"] [uint256] I.calldata = none
+  show config.externalABI.decodeCalldata? ["arg0"] [uint256] I.calldata = none
   simpa [config, uint256] using
     decodeCalldata_legacyUInt256_none_short (cd := I.calldata) (x := "arg0") hsz4 hshort
 
@@ -946,7 +946,7 @@ theorem flapperBidsBodyCoreOk
     (hsz36 : 36 ≤ I.calldata.size) (hsize : I.calldata.size < UInt256.size)
     (hdispatch : dispatchMsg contract I.calldata = some bidsTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (bidsTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (bidsTransition.params.map Param.name)
         (transitionSignature bidsTransition).paramTypes I.calldata =
           some ((∅ : Store).insert "arg0" (bidsArgValue I)))
     (hreach : ∃ k C, RD flapperBytecode I (Sat256.ofUInt256 g)

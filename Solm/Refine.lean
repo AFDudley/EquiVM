@@ -177,7 +177,7 @@ inductive runtimeRefinementFor (cfg : Config)
   | decodingFailed {transition transitionSig g' o} : /- Decoding fails in Solm, EVM reverts -/
     selectorDispatchMsg contract I.calldata = .some transition →
     transitionSig = transitionSignature transition →
-    decodeCalldataWithMode cfg.abiDecodeMode (transition.params.map Param.name)
+    cfg.externalABI.decodeCalldata? (transition.params.map Param.name)
       transitionSig.paramTypes I.calldata = .none →
     Ethereum.EVM.Ξ σ σ₀ g A I = .ok (.revert g' o) →
     runtimeRefinementFor cfg contract σ σ₀ g A I immutables

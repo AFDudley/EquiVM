@@ -59,7 +59,7 @@ theorem fileWhatWord_ne_of_bytes_ne {I : ExecutionEnv} {bs : List UInt8}
 
 
 theorem stairstepDecode_file_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (fileTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (fileTransition.params.map Param.name)
       (transitionSignature fileTransition).paramTypes I.calldata =
         some (fileLocals I) := by
   simpa [config, fileTransition, bytes32, bytes32Width, uint256, uint256Int,
@@ -69,7 +69,7 @@ theorem stairstepDecode_file_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.si
 
 theorem stairstepDecode_file_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 68) :
-    decodeCalldataWithMode config.abiDecodeMode (fileTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (fileTransition.params.map Param.name)
       (transitionSignature fileTransition).paramTypes I.calldata = none := by
   simpa [config, fileTransition, bytes32, bytes32Width, uint256, uint256Int, abiBytes32,
     abiBytes32Width, abiUInt256] using

@@ -78,17 +78,17 @@ theorem denyAuthStorageSlot_eq_mapSlot_source (I : ExecutionEnv) :
   rw [keyValueToWord_address]
 
 theorem daiDecode_deny_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (denyTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (denyTransition.params.map Param.name)
       (transitionSignature denyTransition).paramTypes I.calldata = some (denyStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["guy"] [addr] I.calldata = _
+  show config.externalABI.decodeCalldata? ["guy"] [addr] I.calldata = _
   simpa [denyStore, denyGuyValue, denyGuyWord, calldataWord]
     using decodeCalldata_legacyAddress_ok (cd := I.calldata) (x := "guy") hsz36
 
 theorem daiDecode_deny_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (denyTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (denyTransition.params.map Param.name)
       (transitionSignature denyTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["guy"] [addr] I.calldata = none
+  show config.externalABI.decodeCalldata? ["guy"] [addr] I.calldata = none
   simpa using decodeCalldata_legacyAddress_none_short (cd := I.calldata) (x := "guy")
     hsz4 hshort
 
@@ -564,7 +564,7 @@ theorem daiDenyBodyCoreStatic
     (hauth : denyAuthWord σ I = ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some denyTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (denyTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (denyTransition.params.map Param.name)
         (transitionSignature denyTransition).paramTypes I.calldata = some (denyStore I))
     (hreach : ∃ k C, RD daiBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨908⟩ [sel]
@@ -595,7 +595,7 @@ theorem daiDenyBodyCoreOk
     (hauth : denyAuthWord σ I = ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some denyTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (denyTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (denyTransition.params.map Param.name)
         (transitionSignature denyTransition).paramTypes I.calldata = some (denyStore I))
     (hreach : ∃ k C, RD daiBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨908⟩ [sel]
@@ -634,7 +634,7 @@ theorem daiDenyBodyCoreUnauthorized
     (hauth : denyAuthWord σ I ≠ ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some denyTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (denyTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (denyTransition.params.map Param.name)
         (transitionSignature denyTransition).paramTypes I.calldata = some (denyStore I))
     (hreach : ∃ k C, RD daiBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨908⟩ [sel]

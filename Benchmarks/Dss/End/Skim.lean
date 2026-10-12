@@ -967,9 +967,9 @@ theorem endSkimUrnsPostCallMem_mload160 (I : ExecutionEnv) (vatOut urnOut : Byte
   rw [endSkimUrnsPostCallMem_read160_32 I vatOut urnOut hloVat hloUrn]
 
 theorem endDecode_skim_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (skimTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (skimTransition.params.map Param.name)
       (transitionSignature skimTransition).paramTypes I.calldata = some (endSkimStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["ilk", "urn"] [bytes32, addr]
+  show config.externalABI.decodeCalldata? ["ilk", "urn"] [bytes32, addr]
     I.calldata = _
   simpa [config, skimTransition, bytes32, bytes32Width, addr, endSkimStore,
     endSkimIlkBytes, endSkimUrnAddr, endSkimUrnWord, abiBytes32, abiBytes32Width,
@@ -979,9 +979,9 @@ theorem endDecode_skim_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size) :
 
 theorem endDecode_skim_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 68) :
-    decodeCalldataWithMode config.abiDecodeMode (skimTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (skimTransition.params.map Param.name)
       (transitionSignature skimTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["ilk", "urn"] [bytes32, addr]
+  show config.externalABI.decodeCalldata? ["ilk", "urn"] [bytes32, addr]
     I.calldata = none
   simpa [config, skimTransition, bytes32, bytes32Width, addr, abiBytes32,
     abiBytes32Width, abiAddress] using
