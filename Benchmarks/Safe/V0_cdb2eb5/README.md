@@ -1,16 +1,16 @@
 # Safe Benchmark
 
-Source: [`contracts/Safe.sol`](contracts/Safe.sol) from `safe-global/safe-smart-account` commit `77901a5a1ad835b74ad3b72f73a8412cfe491c57` (2026-06-05, `Do Not Propagate Reverts on Signatures (#1115)`).
+Source: [`contracts/Safe.sol`](contracts/Safe.sol) from `safe-fndn/safe-smart-account` commit `cdb2eb578dbdba4c3f10a47f9a2dd9580773e63a`.
 
 Compiled with Solidity 0.8.35 and optimizer enabled, from the repository root:
 
 ```bash
 solc --optimize --optimize-runs 200 --evm-version shanghai --metadata-hash none --bin --bin-runtime --abi --storage-layout \
-  --base-path . --overwrite -o /tmp/safe-build-current Benchmarks/Safe/V0_cdb2eb5/contracts/Safe.sol
+  --base-path . --overwrite -o /tmp/safe-v0-build Benchmarks/Safe/V0_cdb2eb5/contracts/Safe.sol
 ```
 
-Original compiler: `0.8.35+commit.47b9dedd.Darwin.appleclang`. The audit reproduces both
-bytecode files and the ABI exactly with `0.8.35+commit.47b9dedd.Linux.g++`.
+Pinned compiler: `0.8.35+commit.47b9dedd.Linux.g++`, sha256
+`fa8ac9a32d301ad023a36ee5a29f8e291fe3200c60244e43c142539e82a617f4`.
 
 The EVM target is pinned to Shanghai to reproduce the original artifacts. The current local
 EVM semantics also implement `MCOPY`; changing the compiler target would still change the
@@ -22,9 +22,9 @@ artifact provenance for this benchmark.
 
 Artifacts:
 
-- `creation.hex`: optimized creation bytecode, 11907 bytes, sha256 `0d94b8c31e4fb2d01d7653b1c53013fba78f5d053014edd9e17c89888d7c7281`
-- `runtime.hex`: optimized deployed runtime bytecode, 11874 bytes, sha256 `99919d79befacfb9210453d4ba1d3193e3b334a5dc6206596b4f48bb55136006`
-- `Safe.abi.json`: ABI emitted by solc, sha256 `c2d916b516f1cf00691d5fe99f62e8bba92e0675e8c25b5e5800d6e53b08053a`
+- `creation.hex`: optimized creation bytecode, 11788 bytes, sha256 `410cc595f77a67b48e84b33f35e98444217ff5265a9bf454f6115c1635efb3fc`
+- `runtime.hex`: optimized deployed runtime bytecode, 11755 bytes, sha256 `0e4f8a6acc3ca0e7240cafb99580e33dee7d2c7d3fff49cc88df6cea664a4fcd`
+- `Safe.abi.json`: ABI emitted by solc, sha256 `40069244550920fc4ecdb4a162f9b45c78b5de06fc7fdcb8f7d4350739bb8682`
 - `sources.sha256`: sha256 manifest for the vendored Solidity source tree
 - `Spec.lean`: Solm AST with ABI surface, solc 0.8.35 decoding, and physical storage layout
 - `SpecSyntax.lean`: syntax-side wrapper checked definitionally against the AST scaffold
@@ -38,7 +38,7 @@ Artifacts:
 - `Audit.lean`, `AuditSupport.lean`: differential regressions against the actual EVM interpreter
 - `AuditManifest.json`: reproducible compiler, ABI, storage, instruction, event, and boundary inventory
 
-Main source sha256: `9f91d9250e18bb0710b7b1f10dcbe2417e9ef8d22eeee98dba2ef48661a060fa`.
+Main source sha256: `1ffd10dbcb76e9983e5dd40bc230d71aa3dfc231165176bbac9596513137af4e`.
 
 ## Semantic audit
 
@@ -116,7 +116,7 @@ compose the summaries, with separate proofs for internal callees and source-leve
 From the repository root, using the pinned compiler:
 
 ```bash
-python3 -B scripts/audit_safe.py --solc /path/to/solc-0.8.35
+python3 -B scripts/audit_safe.py --dir Benchmarks/Safe/V0_cdb2eb5 --solc /path/to/solc-0.8.35
 lake build Benchmarks.Safe.V0_cdb2eb5.ArtifactChecks Benchmarks.Safe.V0_cdb2eb5.SpecSyntax
 lake build Benchmarks.Safe.V0_cdb2eb5.Correct Benchmarks.Safe.V0_cdb2eb5.Audit
 lake build Benchmarks.Safe.V0_cdb2eb5.CorrectProofAudit Benchmarks.Safe.V0_cdb2eb5.GetOwnersModelAudit
