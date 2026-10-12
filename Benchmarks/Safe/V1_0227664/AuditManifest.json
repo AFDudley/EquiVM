@@ -1,0 +1,1097 @@
+{
+  "compiler": "0.8.35+commit.47b9dedd",
+  "compiler_options": [
+    "--optimize",
+    "--optimize-runs",
+    "200",
+    "--evm-version",
+    "shanghai",
+    "--metadata-hash",
+    "none",
+    "--base-path",
+    "."
+  ],
+  "source": "Benchmarks/Safe/V1_0227664/contracts/Safe.sol",
+  "artifacts": {
+    "runtime.hex": {
+      "file_sha256": "0e4f8a6acc3ca0e7240cafb99580e33dee7d2c7d3fff49cc88df6cea664a4fcd",
+      "bytes_sha256": "aadb2b88f982ffa4e49a4699bcf38e674a4962f62b58275593f7dc5ebe80d897",
+      "bytes": 11755
+    },
+    "creation.hex": {
+      "file_sha256": "410cc595f77a67b48e84b33f35e98444217ff5265a9bf454f6115c1635efb3fc",
+      "bytes_sha256": "ec98b3a3ac789fdf077fa5b13986f2113129a232564e1ffa42bec46c5e377d6a",
+      "bytes": 11788
+    }
+  },
+  "abi_file_sha256": "40069244550920fc4ecdb4a162f9b45c78b5de06fc7fdcb8f7d4350739bb8682",
+  "sources_manifest_sha256": "37ff0d8c76409cb2153c31ee6f6fb98f7210068cf52568b0a0d6f7ec93b1ad31",
+  "spec_sha256": "ee872c58e0eb3e25e4dd615b8112fd9bc0fc90e58e5e0cf955f36aab684b6de2",
+  "syntax_spec_sha256": "7c2a8819d5b4383ac573f76ff280540b00a9f68ab309060c82078c44fa05ebd2",
+  "runtime_entrypoint_obligations": 33,
+  "selectors": [
+    {
+      "signature": "VERSION()",
+      "selector": "ffa1ad74",
+      "entry_pc": 1688
+    },
+    {
+      "signature": "addOwnerWithThreshold(address,uint256)",
+      "selector": "0d582f13",
+      "entry_pc": 633
+    },
+    {
+      "signature": "approveHash(bytes32)",
+      "selector": "d4d9bdcd",
+      "entry_pc": 1315
+    },
+    {
+      "signature": "approvedHashes(address,bytes32)",
+      "selector": "7d832974",
+      "entry_pc": 1069
+    },
+    {
+      "signature": "changeThreshold(uint256)",
+      "selector": "694e80c3",
+      "entry_pc": 1019
+    },
+    {
+      "signature": "checkNSignatures(address,bytes32,bytes,uint256)",
+      "selector": "1fcac7f3",
+      "entry_pc": 697
+    },
+    {
+      "signature": "checkNSignatures(bytes32,bytes,bytes,uint256)",
+      "selector": "12fb68e0",
+      "entry_pc": 666
+    },
+    {
+      "signature": "checkSignatures(address,bytes32,bytes)",
+      "selector": "f855438b",
+      "entry_pc": 1626
+    },
+    {
+      "signature": "checkSignatures(bytes32,bytes,bytes)",
+      "selector": "934f3a11",
+      "entry_pc": 1123
+    },
+    {
+      "signature": "disableModule(address,address)",
+      "selector": "e009cfde",
+      "entry_pc": 1377
+    },
+    {
+      "signature": "domainSeparator()",
+      "selector": "f698da25",
+      "entry_pc": 1552
+    },
+    {
+      "signature": "enableModule(address)",
+      "selector": "610b5925",
+      "entry_pc": 988
+    },
+    {
+      "signature": "execTransaction(address,uint256,bytes,uint8,uint256,uint256,uint256,address,address,bytes)",
+      "selector": "6a761202",
+      "entry_pc": 1050
+    },
+    {
+      "signature": "execTransactionFromModule(address,uint256,bytes,uint8)",
+      "selector": "468721a7",
+      "entry_pc": 811
+    },
+    {
+      "signature": "execTransactionFromModuleReturnData(address,uint256,bytes,uint8)",
+      "selector": "5229073f",
+      "entry_pc": 842
+    },
+    {
+      "signature": "getModulesPaginated(address,uint256)",
+      "selector": "cc2f8452",
+      "entry_pc": 1270
+    },
+    {
+      "signature": "getOwners()",
+      "selector": "a0e67e2b",
+      "entry_pc": 1154
+    },
+    {
+      "signature": "getStorageAt(uint256,uint256)",
+      "selector": "5624b25b",
+      "entry_pc": 887
+    },
+    {
+      "signature": "getThreshold()",
+      "selector": "e75235b8",
+      "entry_pc": 1501
+    },
+    {
+      "signature": "getTransactionHash(address,uint256,bytes,uint8,uint256,uint256,uint256,address,address,uint256)",
+      "selector": "d8d11f78",
+      "entry_pc": 1346
+    },
+    {
+      "signature": "isModuleEnabled(address)",
+      "selector": "2d9ad53d",
+      "entry_pc": 728
+    },
+    {
+      "signature": "isOwner(address)",
+      "selector": "2f54bf6e",
+      "entry_pc": 780
+    },
+    {
+      "signature": "nonce()",
+      "selector": "affed0e0",
+      "entry_pc": 1187
+    },
+    {
+      "signature": "removeOwner(address,address,uint256)",
+      "selector": "f8dc5dd9",
+      "entry_pc": 1657
+    },
+    {
+      "signature": "setFallbackHandler(address)",
+      "selector": "f08a0323",
+      "entry_pc": 1521
+    },
+    {
+      "signature": "setGuard(address)",
+      "selector": "e19a9dd9",
+      "entry_pc": 1439
+    },
+    {
+      "signature": "setModuleGuard(address)",
+      "selector": "e068df37",
+      "entry_pc": 1408
+    },
+    {
+      "signature": "setup(address[],uint256,address,bytes,address,address,uint256,address)",
+      "selector": "b63e800d",
+      "entry_pc": 1239
+    },
+    {
+      "signature": "signedMessages(bytes32)",
+      "selector": "5ae6bd37",
+      "entry_pc": 931
+    },
+    {
+      "signature": "simulateAndRevert(address,bytes)",
+      "selector": "b4faba09",
+      "entry_pc": 1208
+    },
+    {
+      "signature": "swapOwner(address,address,address)",
+      "selector": "e318b52b",
+      "entry_pc": 1470
+    }
+  ],
+  "storage_layout": {
+    "storage": [
+      {
+        "astId": 2388,
+        "contract": "Benchmarks/Safe/V1_0227664/contracts/Safe.sol:Safe",
+        "label": "singleton",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_address"
+      },
+      {
+        "astId": 1208,
+        "contract": "Benchmarks/Safe/V1_0227664/contracts/Safe.sol:Safe",
+        "label": "modules",
+        "offset": 0,
+        "slot": "1",
+        "type": "t_mapping(t_address,t_address)"
+      },
+      {
+        "astId": 1817,
+        "contract": "Benchmarks/Safe/V1_0227664/contracts/Safe.sol:Safe",
+        "label": "owners",
+        "offset": 0,
+        "slot": "2",
+        "type": "t_mapping(t_address,t_address)"
+      },
+      {
+        "astId": 1820,
+        "contract": "Benchmarks/Safe/V1_0227664/contracts/Safe.sol:Safe",
+        "label": "ownerCount",
+        "offset": 0,
+        "slot": "3",
+        "type": "t_uint256"
+      },
+      {
+        "astId": 1823,
+        "contract": "Benchmarks/Safe/V1_0227664/contracts/Safe.sol:Safe",
+        "label": "threshold",
+        "offset": 0,
+        "slot": "4",
+        "type": "t_uint256"
+      },
+      {
+        "astId": 72,
+        "contract": "Benchmarks/Safe/V1_0227664/contracts/Safe.sol:Safe",
+        "label": "nonce",
+        "offset": 0,
+        "slot": "5",
+        "type": "t_uint256"
+      },
+      {
+        "astId": 75,
+        "contract": "Benchmarks/Safe/V1_0227664/contracts/Safe.sol:Safe",
+        "label": "_deprecatedDomainSeparator",
+        "offset": 0,
+        "slot": "6",
+        "type": "t_bytes32"
+      },
+      {
+        "astId": 81,
+        "contract": "Benchmarks/Safe/V1_0227664/contracts/Safe.sol:Safe",
+        "label": "signedMessages",
+        "offset": 0,
+        "slot": "7",
+        "type": "t_mapping(t_bytes32,t_uint256)"
+      },
+      {
+        "astId": 89,
+        "contract": "Benchmarks/Safe/V1_0227664/contracts/Safe.sol:Safe",
+        "label": "approvedHashes",
+        "offset": 0,
+        "slot": "8",
+        "type": "t_mapping(t_address,t_mapping(t_bytes32,t_uint256))"
+      }
+    ],
+    "types": {
+      "t_address": {
+        "encoding": "inplace",
+        "label": "address",
+        "numberOfBytes": "20"
+      },
+      "t_bytes32": {
+        "encoding": "inplace",
+        "label": "bytes32",
+        "numberOfBytes": "32"
+      },
+      "t_mapping(t_address,t_address)": {
+        "encoding": "mapping",
+        "key": "t_address",
+        "label": "mapping(address => address)",
+        "numberOfBytes": "32",
+        "value": "t_address"
+      },
+      "t_mapping(t_address,t_mapping(t_bytes32,t_uint256))": {
+        "encoding": "mapping",
+        "key": "t_address",
+        "label": "mapping(address => mapping(bytes32 => uint256))",
+        "numberOfBytes": "32",
+        "value": "t_mapping(t_bytes32,t_uint256)"
+      },
+      "t_mapping(t_bytes32,t_uint256)": {
+        "encoding": "mapping",
+        "key": "t_bytes32",
+        "label": "mapping(bytes32 => uint256)",
+        "numberOfBytes": "32",
+        "value": "t_uint256"
+      },
+      "t_uint256": {
+        "encoding": "inplace",
+        "label": "uint256",
+        "numberOfBytes": "32"
+      }
+    }
+  },
+  "function_entry_points": {
+    "@addOwnerWithThreshold_2010": {
+      "entryPoint": 1736,
+      "id": 2010,
+      "parameterSlots": 2,
+      "returnSlots": 0
+    },
+    "@add_2527": {
+      "entryPoint": 8786,
+      "id": 2527,
+      "parameterSlots": 2,
+      "returnSlots": 1
+    },
+    "@approveHash_859": {
+      "entryPoint": 5101,
+      "id": 859,
+      "parameterSlots": 1,
+      "returnSlots": 0
+    },
+    "@changeThreshold_2226": {
+      "entryPoint": 3321,
+      "id": 2226,
+      "parameterSlots": 1,
+      "returnSlots": 0
+    },
+    "@checkContractSignature_539": {
+      "entryPoint": 7082,
+      "id": 539,
+      "parameterSlots": 4,
+      "returnSlots": 0
+    },
+    "@checkNSignatures_779": {
+      "entryPoint": 2051,
+      "id": 779,
+      "parameterSlots": 4,
+      "returnSlots": 0
+    },
+    "@checkNSignatures_822": {
+      "entryPoint": 2032,
+      "id": 822,
+      "parameterSlots": 5,
+      "returnSlots": 0
+    },
+    "@checkSignatures_570": {
+      "entryPoint": 6638,
+      "id": 570,
+      "parameterSlots": 3,
+      "returnSlots": 0
+    },
+    "@checkSignatures_799": {
+      "entryPoint": 4178,
+      "id": 799,
+      "parameterSlots": 4,
+      "returnSlots": 0
+    },
+    "@disableModule_1496": {
+      "entryPoint": 5430,
+      "id": 1496,
+      "parameterSlots": 2,
+      "returnSlots": 0
+    },
+    "@enableModule_1438": {
+      "entryPoint": 3074,
+      "id": 1438,
+      "parameterSlots": 1,
+      "returnSlots": 0
+    },
+    "@execTransactionFromModuleReturnData_1595": {
+      "entryPoint": 2876,
+      "id": 1595,
+      "parameterSlots": 4,
+      "returnSlots": 2
+    },
+    "@execTransactionFromModule_1544": {
+      "entryPoint": 2820,
+      "id": 1544,
+      "parameterSlots": 4,
+      "returnSlots": 1
+    },
+    "@execTransaction_381": {
+      "entryPoint": 3439,
+      "id": 381,
+      "parameterSlots": 11,
+      "returnSlots": 1
+    },
+    "@execute_2950": {
+      "entryPoint": 7576,
+      "id": 2950,
+      "parameterSlots": 5,
+      "returnSlots": 1
+    },
+    "@getModulesPaginated_1717": {
+      "entryPoint": 4721,
+      "id": 1717,
+      "parameterSlots": 2,
+      "returnSlots": 2
+    },
+    "@getOwners_2313": {
+      "entryPoint": 4195,
+      "id": 2313,
+      "parameterSlots": 0,
+      "returnSlots": 1
+    },
+    "@getStorageAt_2432": {
+      "entryPoint": 2959,
+      "id": 2432,
+      "parameterSlots": 2,
+      "returnSlots": 1
+    },
+    "@getTransactionHash_903": {
+      "entryPoint": 5217,
+      "id": 903,
+      "parameterSlots": 11,
+      "returnSlots": 1
+    },
+    "@handlePayment_477": {
+      "entryPoint": 7898,
+      "id": 477,
+      "parameterSlots": 5,
+      "returnSlots": 1
+    },
+    "@internalSetFallbackHandler_962": {
+      "entryPoint": 8508,
+      "id": 962,
+      "parameterSlots": 1,
+      "returnSlots": 0
+    },
+    "@isModuleEnabled_1618": {
+      "entryPoint": 2708,
+      "id": 1618,
+      "parameterSlots": 1,
+      "returnSlots": 1
+    },
+    "@isOwner_2261": {
+      "entryPoint": 2765,
+      "id": 2261,
+      "parameterSlots": 1,
+      "returnSlots": 1
+    },
+    "@max_2545": {
+      "entryPoint": 7853,
+      "id": 2545,
+      "parameterSlots": 2,
+      "returnSlots": 1
+    },
+    "@mul_2481": {
+      "entryPoint": 7027,
+      "id": 2481,
+      "parameterSlots": 2,
+      "returnSlots": 1
+    },
+    "@postModuleExecution_1382": {
+      "entryPoint": 7644,
+      "id": 1382,
+      "parameterSlots": 3,
+      "returnSlots": 0
+    },
+    "@preModuleExecution_1343": {
+      "entryPoint": 7340,
+      "id": 1343,
+      "parameterSlots": 4,
+      "returnSlots": 2
+    },
+    "@removeOwner_2087": {
+      "entryPoint": 6678,
+      "id": 2087,
+      "parameterSlots": 3,
+      "returnSlots": 0
+    },
+    "@requireSelfCall_2809": {
+      "entryPoint": 6964,
+      "id": 2809,
+      "parameterSlots": 0,
+      "returnSlots": 0
+    },
+    "@revertWithError_3177": {
+      "entryPoint": 6990,
+      "id": 3177,
+      "parameterSlots": 1,
+      "returnSlots": 0
+    },
+    "@setFallbackHandler_980": {
+      "entryPoint": 6567,
+      "id": 980,
+      "parameterSlots": 1,
+      "returnSlots": 0
+    },
+    "@setGuard_1109": {
+      "entryPoint": 5904,
+      "id": 1109,
+      "parameterSlots": 1,
+      "returnSlots": 0
+    },
+    "@setModuleGuard_1771": {
+      "entryPoint": 5654,
+      "id": 1771,
+      "parameterSlots": 1,
+      "returnSlots": 0
+    },
+    "@setupModules_1272": {
+      "entryPoint": 8577,
+      "id": 1272,
+      "parameterSlots": 2,
+      "returnSlots": 0
+    },
+    "@setupOwners_1941": {
+      "entryPoint": 8143,
+      "id": 1941,
+      "parameterSlots": 2,
+      "returnSlots": 0
+    },
+    "@setup_164": {
+      "entryPoint": 4467,
+      "id": 164,
+      "parameterSlots": 10,
+      "returnSlots": 0
+    },
+    "@simulateAndRevert_2443": {
+      "entryPoint": 4430,
+      "id": 2443,
+      "parameterSlots": 2,
+      "returnSlots": 0
+    },
+    "@sub_2502": {
+      "entryPoint": 7875,
+      "id": 2502,
+      "parameterSlots": 2,
+      "returnSlots": 1
+    },
+    "@swapOwner_2192": {
+      "entryPoint": 6154,
+      "id": 2192,
+      "parameterSlots": 3,
+      "returnSlots": 0
+    },
+    "@transferToken_2361": {
+      "entryPoint": 8812,
+      "id": 2361,
+      "parameterSlots": 3,
+      "returnSlots": 1
+    },
+    "abi_decode_address": {
+      "entryPoint": 8975,
+      "parameterSlots": 1,
+      "returnSlots": 1
+    },
+    "abi_decode_bytes": {
+      "entryPoint": 9121,
+      "parameterSlots": 2,
+      "returnSlots": 1
+    },
+    "abi_decode_bytes_calldata": {
+      "entryPoint": 9033,
+      "parameterSlots": 2,
+      "returnSlots": 2
+    },
+    "abi_decode_enum_Operation": {
+      "entryPoint": 9497,
+      "parameterSlots": 1,
+      "returnSlots": 1
+    },
+    "abi_decode_tuple_t_address": {
+      "entryPoint": 9470,
+      "parameterSlots": 2,
+      "returnSlots": 1
+    },
+    "abi_decode_tuple_t_addresst_address": {
+      "entryPoint": 10737,
+      "parameterSlots": 2,
+      "returnSlots": 2
+    },
+    "abi_decode_tuple_t_addresst_addresst_address": {
+      "entryPoint": 10792,
+      "parameterSlots": 2,
+      "returnSlots": 3
+    },
+    "abi_decode_tuple_t_addresst_addresst_uint256": {
+      "entryPoint": 10948,
+      "parameterSlots": 2,
+      "returnSlots": 3
+    },
+    "abi_decode_tuple_t_addresst_bytes32t_bytes_memory_ptr": {
+      "entryPoint": 10864,
+      "parameterSlots": 2,
+      "returnSlots": 3
+    },
+    "abi_decode_tuple_t_addresst_bytes32t_bytes_memory_ptrt_uint256": {
+      "entryPoint": 9378,
+      "parameterSlots": 2,
+      "returnSlots": 4
+    },
+    "abi_decode_tuple_t_addresst_bytes_memory_ptr": {
+      "entryPoint": 10192,
+      "parameterSlots": 2,
+      "returnSlots": 2
+    },
+    "abi_decode_tuple_t_addresst_uint256": {
+      "entryPoint": 8991,
+      "parameterSlots": 2,
+      "returnSlots": 2
+    },
+    "abi_decode_tuple_t_addresst_uint256t_bytes_calldata_ptrt_enum$_Operation_$2784t_uint256t_uint256t_uint256t_addresst_address_payablet_bytes_memory_ptr": {
+      "entryPoint": 9786,
+      "parameterSlots": 2,
+      "returnSlots": 11
+    },
+    "abi_decode_tuple_t_addresst_uint256t_bytes_calldata_ptrt_enum$_Operation_$2784t_uint256t_uint256t_uint256t_addresst_addresst_uint256": {
+      "entryPoint": 10548,
+      "parameterSlots": 2,
+      "returnSlots": 11
+    },
+    "abi_decode_tuple_t_addresst_uint256t_bytes_memory_ptrt_enum$_Operation_$2784": {
+      "entryPoint": 9511,
+      "parameterSlots": 2,
+      "returnSlots": 4
+    },
+    "abi_decode_tuple_t_array$_t_address_$dyn_calldata_ptrt_uint256t_addresst_bytes_calldata_ptrt_addresst_addresst_uint256t_address_payable": {
+      "entryPoint": 10268,
+      "parameterSlots": 2,
+      "returnSlots": 10
+    },
+    "abi_decode_tuple_t_bool_fromMemory": {
+      "entryPoint": 11501,
+      "parameterSlots": 2,
+      "returnSlots": 1
+    },
+    "abi_decode_tuple_t_bytes32": {
+      "entryPoint": 9763,
+      "parameterSlots": 2,
+      "returnSlots": 1
+    },
+    "abi_decode_tuple_t_bytes32_fromMemory": {
+      "entryPoint": 11719,
+      "parameterSlots": 2,
+      "returnSlots": 1
+    },
+    "abi_decode_tuple_t_bytes32t_bytes_calldata_ptrt_bytes_memory_ptr": {
+      "entryPoint": 9994,
+      "parameterSlots": 2,
+      "returnSlots": 4
+    },
+    "abi_decode_tuple_t_bytes32t_bytes_calldata_ptrt_bytes_memory_ptrt_uint256": {
+      "entryPoint": 9258,
+      "parameterSlots": 2,
+      "returnSlots": 5
+    },
+    "abi_decode_tuple_t_bytes4_fromMemory": {
+      "entryPoint": 11600,
+      "parameterSlots": 2,
+      "returnSlots": 1
+    },
+    "abi_decode_tuple_t_uint256t_uint256": {
+      "entryPoint": 9713,
+      "parameterSlots": 2,
+      "returnSlots": 2
+    },
+    "abi_encode_array_address_dyn": {
+      "entryPoint": 10107,
+      "parameterSlots": 2,
+      "returnSlots": 1
+    },
+    "abi_encode_bytes": {
+      "entryPoint": 9612,
+      "parameterSlots": 2,
+      "returnSlots": 1
+    },
+    "abi_encode_enum_Operation": {
+      "entryPoint": 11093,
+      "parameterSlots": 2,
+      "returnSlots": 0
+    },
+    "abi_encode_tuple_t_address_t_uint256_t_bytes_calldata_ptr_t_enum$_Operation_$2784_t_uint256_t_uint256_t_uint256_t_address_t_address_payable_t_bytes_memory_ptr_t_address__to_t_address_t_uint256_t_bytes_memory_ptr_t_uint8_t_uint256_t_uint256_t_uint256_t_address_t_address_payable_t_bytes_memory_ptr_t_address__fromStack_reversed": {
+      "entryPoint": 11125,
+      "parameterSlots": 13,
+      "returnSlots": 1
+    },
+    "abi_encode_tuple_t_address_t_uint256_t_bytes_memory_ptr_t_enum$_Operation_$2784_t_address__to_t_address_t_uint256_t_bytes_memory_ptr_t_uint8_t_address__fromStack_reversed": {
+      "entryPoint": 11639,
+      "parameterSlots": 6,
+      "returnSlots": 1
+    },
+    "abi_encode_tuple_t_array$_t_address_$dyn_calldata_ptr_t_uint256_t_address_t_address__to_t_array$_t_address_$dyn_memory_ptr_t_uint256_t_address_t_address__fromStack_reversed": {
+      "entryPoint": 11394,
+      "parameterSlots": 6,
+      "returnSlots": 1
+    },
+    "abi_encode_tuple_t_array$_t_address_$dyn_memory_ptr__to_t_array$_t_address_$dyn_memory_ptr__fromStack_reversed": {
+      "entryPoint": 10174,
+      "parameterSlots": 2,
+      "returnSlots": 1
+    },
+    "abi_encode_tuple_t_array$_t_address_$dyn_memory_ptr_t_address__to_t_array$_t_address_$dyn_memory_ptr_t_address__fromStack_reversed": {
+      "entryPoint": 10507,
+      "parameterSlots": 3,
+      "returnSlots": 1
+    },
+    "abi_encode_tuple_t_bool_t_bytes_memory_ptr__to_t_bool_t_bytes_memory_ptr__fromStack_reversed": {
+      "entryPoint": 9679,
+      "parameterSlots": 3,
+      "returnSlots": 1
+    },
+    "abi_encode_tuple_t_bytes32_t_bytes_memory_ptr__to_t_bytes32_t_bytes_memory_ptr__fromStack_reversed": {
+      "entryPoint": 11576,
+      "parameterSlots": 3,
+      "returnSlots": 1
+    },
+    "abi_encode_tuple_t_bytes_memory_ptr__to_t_bytes_memory_ptr__fromStack_reversed": {
+      "entryPoint": 9745,
+      "parameterSlots": 2,
+      "returnSlots": 1
+    },
+    "checked_add_t_uint256": {
+      "entryPoint": 11324,
+      "parameterSlots": 2,
+      "returnSlots": 1
+    },
+    "checked_div_t_uint256": {
+      "entryPoint": 11343,
+      "parameterSlots": 2,
+      "returnSlots": 1
+    },
+    "checked_mul_t_uint256": {
+      "entryPoint": 11553,
+      "parameterSlots": 2,
+      "returnSlots": 1
+    },
+    "checked_sub_t_uint256": {
+      "entryPoint": 11054,
+      "parameterSlots": 2,
+      "returnSlots": 1
+    },
+    "decrement_t_uint256": {
+      "entryPoint": 11532,
+      "parameterSlots": 1,
+      "returnSlots": 1
+    },
+    "increment_t_uint256": {
+      "entryPoint": 11030,
+      "parameterSlots": 1,
+      "returnSlots": 1
+    },
+    "panic_error_0x11": {
+      "entryPoint": 11010,
+      "parameterSlots": 0,
+      "returnSlots": 0
+    },
+    "panic_error_0x21": {
+      "entryPoint": 11073,
+      "parameterSlots": 0,
+      "returnSlots": 0
+    },
+    "panic_error_0x32": {
+      "entryPoint": 11374,
+      "parameterSlots": 0,
+      "returnSlots": 0
+    },
+    "panic_error_0x41": {
+      "entryPoint": 9101,
+      "parameterSlots": 0,
+      "returnSlots": 0
+    },
+    "validator_revert_address": {
+      "entryPoint": 8952,
+      "parameterSlots": 1,
+      "returnSlots": 0
+    }
+  },
+  "runtime_instructions": 7756,
+  "runtime_summarized_instructions": 7738,
+  "runtime_summary_theorems": 1920,
+  "runtime_shards": 51,
+  "creation_runtime_offset": 33,
+  "creation_summarized_instructions": 24,
+  "creation_summary_theorems": 7,
+  "boundaries": [
+    {
+      "pc": 614,
+      "opcode": "CALL",
+      "source": {
+        "file": "Benchmarks/Safe/V1_0227664/contracts/base/FallbackManager.sol",
+        "line": 78,
+        "text": "call(gas(), handler, 0, ptr, add(calldatasize(), 20), 0, 0)"
+      }
+    },
+    {
+      "pc": 2460,
+      "opcode": "STATICCALL",
+      "source": {
+        "file": "Benchmarks/Safe/V1_0227664/contracts/Safe.sol",
+        "line": 355,
+        "text": "ecrecover(keccak256(abi.encodePacked(\"\\x19Ethereum Signed Message:\\n32\", dataHash)), uint8(v - 4), r, s)"
+      }
+    },
+    {
+      "pc": 2557,
+      "opcode": "STATICCALL",
+      "source": {
+        "file": "Benchmarks/Safe/V1_0227664/contracts/Safe.sol",
+        "line": 358,
+        "text": "ecrecover(dataHash, uint8(v), r, s)"
+      }
+    },
+    {
+      "pc": 3644,
+      "opcode": "CALL",
+      "source": {
+        "file": "Benchmarks/Safe/V1_0227664/contracts/Safe.sol",
+        "line": 173,
+        "text": "ITransactionGuard(guard).checkTransaction(\n                    // Transaction info:\n                    to,\n                    value,\n                    data,\n                    operation,\n                    safeTxGas,\n                    // Payment info:\n                    baseGas,\n                    gasPrice,\n                    gasToken,\n                    refundReceiver,\n                    // Signature info:\n                    signatures,\n                    msg.sender\n                )"
+      }
+    },
+    {
+      "pc": 4141,
+      "opcode": "CALL",
+      "source": {
+        "file": "Benchmarks/Safe/V1_0227664/contracts/Safe.sol",
+        "line": 225,
+        "text": "ITransactionGuard(guard).checkAfterExecution(txHash, success)"
+      }
+    },
+    {
+      "pc": 4441,
+      "opcode": "DELEGATECALL",
+      "source": {
+        "file": "Benchmarks/Safe/V1_0227664/contracts/common/StorageAccessible.sol",
+        "line": 39,
+        "text": "delegatecall(gas(), targetContract, add(calldataPayload, 0x20), mload(calldataPayload), 0, 0)"
+      }
+    },
+    {
+      "pc": 5739,
+      "opcode": "STATICCALL",
+      "source": {
+        "file": "Benchmarks/Safe/V1_0227664/contracts/base/ModuleManager.sol",
+        "line": 271,
+        "text": "IModuleGuard(moduleGuard).supportsInterface(type(IModuleGuard).interfaceId)"
+      }
+    },
+    {
+      "pc": 5989,
+      "opcode": "STATICCALL",
+      "source": {
+        "file": "Benchmarks/Safe/V1_0227664/contracts/base/GuardManager.sol",
+        "line": 78,
+        "text": "ITransactionGuard(guard).supportsInterface(type(ITransactionGuard).interfaceId)"
+      }
+    },
+    {
+      "pc": 7249,
+      "opcode": "STATICCALL",
+      "source": {
+        "file": "Benchmarks/Safe/V1_0227664/contracts/Safe.sol",
+        "line": 293,
+        "text": "ISignatureValidator(owner).isValidSignature(dataHash, contractSignature)"
+      }
+    },
+    {
+      "pc": 7513,
+      "opcode": "CALL",
+      "source": {
+        "file": "Benchmarks/Safe/V1_0227664/contracts/base/ModuleManager.sol",
+        "line": 120,
+        "text": "IModuleGuard(guard).checkModuleTransaction(to, value, data, operation, msg.sender)"
+      }
+    },
+    {
+      "pc": 7613,
+      "opcode": "DELEGATECALL",
+      "source": {
+        "file": "Benchmarks/Safe/V1_0227664/contracts/base/Executor.sol",
+        "line": 33,
+        "text": "delegatecall(txGas, to, add(data, 0x20), mload(data), 0, 0)"
+      }
+    },
+    {
+      "pc": 7632,
+      "opcode": "CALL",
+      "source": {
+        "file": "Benchmarks/Safe/V1_0227664/contracts/base/Executor.sol",
+        "line": 40,
+        "text": "call(txGas, to, value, add(data, 0x20), mload(data), 0, 0)"
+      }
+    },
+    {
+      "pc": 7733,
+      "opcode": "CALL",
+      "source": {
+        "file": "Benchmarks/Safe/V1_0227664/contracts/base/ModuleManager.sol",
+        "line": 133,
+        "text": "IModuleGuard(guard).checkAfterModuleExecution(guardHash, success)"
+      }
+    },
+    {
+      "pc": 7922,
+      "opcode": "ORIGIN",
+      "source": {
+        "file": "Benchmarks/Safe/V1_0227664/contracts/Safe.sol",
+        "line": 247,
+        "text": "tx.origin"
+      }
+    },
+    {
+      "pc": 7943,
+      "opcode": "GASPRICE",
+      "source": {
+        "file": "Benchmarks/Safe/V1_0227664/contracts/Safe.sol",
+        "line": 250,
+        "text": "tx.gasprice"
+      }
+    },
+    {
+      "pc": 7950,
+      "opcode": "GASPRICE",
+      "source": {
+        "file": "Benchmarks/Safe/V1_0227664/contracts/Safe.sol",
+        "line": 250,
+        "text": "tx.gasprice"
+      }
+    },
+    {
+      "pc": 8002,
+      "opcode": "CALL",
+      "source": {
+        "file": "Benchmarks/Safe/V1_0227664/contracts/Safe.sol",
+        "line": 251,
+        "text": "receiver.call{value: payment}(\"\")"
+      }
+    },
+    {
+      "pc": 8901,
+      "opcode": "CALL",
+      "source": {
+        "file": "Benchmarks/Safe/V1_0227664/contracts/common/SecuredTokenTransfer.sol",
+        "line": 27,
+        "text": "call(sub(gas(), 10000), token, 0, add(data, 0x20), mload(data), 0, 0x20)"
+      }
+    }
+  ],
+  "event_sites": [
+    {
+      "pc": 533,
+      "opcode": "LOG2",
+      "source": {
+        "file": "Benchmarks/Safe/V1_0227664/contracts/common/NativeCurrencyPaymentFallback.sol",
+        "line": 16,
+        "text": "SafeReceived(msg.sender, msg.value)"
+      }
+    },
+    {
+      "pc": 2010,
+      "opcode": "LOG2",
+      "source": {
+        "file": "Benchmarks/Safe/V1_0227664/contracts/base/OwnerManager.sol",
+        "line": 80,
+        "text": "AddedOwner(owner)"
+      }
+    },
+    {
+      "pc": 3318,
+      "opcode": "LOG2",
+      "source": {
+        "file": "Benchmarks/Safe/V1_0227664/contracts/base/ModuleManager.sol",
+        "line": 149,
+        "text": "EnabledModule(module)"
+      }
+    },
+    {
+      "pc": 3436,
+      "opcode": "LOG1",
+      "source": {
+        "file": "Benchmarks/Safe/V1_0227664/contracts/base/OwnerManager.sol",
+        "line": 129,
+        "text": "ChangedThreshold(_threshold)"
+      }
+    },
+    {
+      "pc": 3986,
+      "opcode": "LOG2",
+      "source": {
+        "file": "Benchmarks/Safe/V1_0227664/contracts/Safe.sol",
+        "line": 220,
+        "text": "ExecutionSuccess(txHash, payment)"
+      }
+    },
+    {
+      "pc": 4049,
+      "opcode": "LOG2",
+      "source": {
+        "file": "Benchmarks/Safe/V1_0227664/contracts/Safe.sol",
+        "line": 221,
+        "text": "ExecutionFailure(txHash, payment)"
+      }
+    },
+    {
+      "pc": 4540,
+      "opcode": "LOG2",
+      "source": {
+        "file": "Benchmarks/Safe/V1_0227664/contracts/Safe.sol",
+        "line": 119,
+        "text": "SafeSetup(msg.sender, _owners, _threshold, to, fallbackHandler)"
+      }
+    },
+    {
+      "pc": 5214,
+      "opcode": "LOG3",
+      "source": {
+        "file": "Benchmarks/Safe/V1_0227664/contracts/Safe.sol",
+        "line": 405,
+        "text": "ApproveHash(hashToApprove, msg.sender)"
+      }
+    },
+    {
+      "pc": 5650,
+      "opcode": "LOG2",
+      "source": {
+        "file": "Benchmarks/Safe/V1_0227664/contracts/base/ModuleManager.sol",
+        "line": 161,
+        "text": "DisabledModule(module)"
+      }
+    },
+    {
+      "pc": 5901,
+      "opcode": "LOG2",
+      "source": {
+        "file": "Benchmarks/Safe/V1_0227664/contracts/base/ModuleManager.sol",
+        "line": 280,
+        "text": "ChangedModuleGuard(moduleGuard)"
+      }
+    },
+    {
+      "pc": 6151,
+      "opcode": "LOG2",
+      "source": {
+        "file": "Benchmarks/Safe/V1_0227664/contracts/base/GuardManager.sol",
+        "line": 87,
+        "text": "ChangedGuard(guard)"
+      }
+    },
+    {
+      "pc": 6511,
+      "opcode": "LOG2",
+      "source": {
+        "file": "Benchmarks/Safe/V1_0227664/contracts/base/OwnerManager.sol",
+        "line": 116,
+        "text": "RemovedOwner(oldOwner)"
+      }
+    },
+    {
+      "pc": 6562,
+      "opcode": "LOG2",
+      "source": {
+        "file": "Benchmarks/Safe/V1_0227664/contracts/base/OwnerManager.sol",
+        "line": 117,
+        "text": "AddedOwner(newOwner)"
+      }
+    },
+    {
+      "pc": 6635,
+      "opcode": "LOG2",
+      "source": {
+        "file": "Benchmarks/Safe/V1_0227664/contracts/base/FallbackManager.sol",
+        "line": 48,
+        "text": "ChangedFallbackHandler(handler)"
+      }
+    },
+    {
+      "pc": 6941,
+      "opcode": "LOG2",
+      "source": {
+        "file": "Benchmarks/Safe/V1_0227664/contracts/base/OwnerManager.sol",
+        "line": 97,
+        "text": "RemovedOwner(owner)"
+      }
+    },
+    {
+      "pc": 7801,
+      "opcode": "LOG2",
+      "source": {
+        "file": "Benchmarks/Safe/V1_0227664/contracts/base/ModuleManager.sol",
+        "line": 135,
+        "text": "ExecutionFromModuleSuccess(msg.sender)"
+      }
+    },
+    {
+      "pc": 7848,
+      "opcode": "LOG2",
+      "source": {
+        "file": "Benchmarks/Safe/V1_0227664/contracts/base/ModuleManager.sol",
+        "line": 136,
+        "text": "ExecutionFromModuleFailure(msg.sender)"
+      }
+    }
+  ],
+  "scope": "Reproduction and instruction coverage only; refinement proofs remain unfilled."
+}
