@@ -360,4 +360,43 @@ theorem deployedRuntime_eq_words (imms : Solm.Store) (v0 v1 v2 : Solm.Value)
   unfold deployedRuntime Reasoning.VyperImmutables.Layout.deployed
   rw [immutableWordsBridge imms v0 v1 v2 b0 b1 b2 hget0 henc0 hget1 henc1 hget2 henc2 hsize0 hsize1 hsize2]
 
+/-- Constructor memory writes in slot order produce the patched runtime. -/
+theorem returnedRuntime_eq_deployed (imms : Solm.Store) (returned : ByteArray)
+    (v0 v1 v2 : Solm.Value) (b0 b1 b2 : ByteArray)
+    (hget0 : imms.get? "OWNER" = some v0)
+    (henc0 : Reasoning.VyperImmutables.scalarBytes? v0 = some b0)
+    (hget1 : imms.get? "LIMIT" = some v1)
+    (henc1 : Reasoning.VyperImmutables.scalarBytes? v1 = some b1)
+    (hget2 : imms.get? "TAG" = some v2)
+    (henc2 : Reasoning.VyperImmutables.scalarBytes? v2 = some b2)
+    (hsize0 : b0.size = 32) (hsize1 : b1.size = 32) (hsize2 : b2.size = 32)
+    (hreturned : returned = immutableBytecode ++
+      Reasoning.Theory.writeCascade (ByteArray.zeroes immutableLayout.size)
+        (immutableLayout.slots.map fun slot =>
+          (slot.offset, Reasoning.VyperImmutables.wordsOf imms slot.name))) :
+    returned = deployedRuntime imms := by
+  exact Reasoning.VyperImmutables.Layout.returned_eq_deployed
+    immutableLayout immutableBytecode returned imms (by decide)
+    (immutableWordsBridge imms v0 v1 v2 b0 b1 b2 hget0 henc0 hget1 henc1 hget2 henc2 hsize0 hsize1 hsize2) hreturned
+
+/-- A full RETURN read of that buffer yields the patched runtime. -/
+theorem returnedRuntime_read_eq_deployed (imms : Solm.Store) (returned : ByteArray)
+    (v0 v1 v2 : Solm.Value) (b0 b1 b2 : ByteArray)
+    (hget0 : imms.get? "OWNER" = some v0)
+    (henc0 : Reasoning.VyperImmutables.scalarBytes? v0 = some b0)
+    (hget1 : imms.get? "LIMIT" = some v1)
+    (henc1 : Reasoning.VyperImmutables.scalarBytes? v1 = some b1)
+    (hget2 : imms.get? "TAG" = some v2)
+    (henc2 : Reasoning.VyperImmutables.scalarBytes? v2 = some b2)
+    (hsize0 : b0.size = 32) (hsize1 : b1.size = 32) (hsize2 : b2.size = 32)
+    (hreturned : returned = immutableBytecode ++
+      Reasoning.Theory.writeCascade (ByteArray.zeroes immutableLayout.size)
+        (immutableLayout.slots.map fun slot =>
+          (slot.offset, Reasoning.VyperImmutables.wordsOf imms slot.name))) :
+    returned.readWithPadding 0 (immutableBytecode.size + immutableLayout.size) =
+      deployedRuntime imms := by
+  exact Reasoning.VyperImmutables.Layout.returned_read_eq_deployed
+    immutableLayout immutableBytecode returned imms (by decide)
+    (immutableWordsBridge imms v0 v1 v2 b0 b1 b2 hget0 henc0 hget1 henc1 hget2 henc2 hsize0 hsize1 hsize2) hreturned (by native_decide) (by native_decide)
+
 end Examples.VyperImmutable
