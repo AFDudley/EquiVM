@@ -74,6 +74,25 @@ theorem Layout.suffixWords_size (layout : Layout) (words : String → Ethereum.U
   | some out =>
       simpa [hpatch, ByteArray_zeroes_size] using patchRuntime_size_eq hpatch
 
+/-- When every scalar slot fits, Vyper's patched suffix is exactly the sequence
+    of 32-byte memory writes made by the constructor. -/
+theorem Layout.suffixWords_eq_writeCascade (layout : Layout)
+    (words : String → Ethereum.UInt256)
+    (hfit : ∀ slot ∈ layout.slots, slot.offset + 32 ≤ layout.size) :
+    layout.suffixWords words =
+      writeCascade (ByteArray.zeroes layout.size)
+        (layout.slots.map fun slot => (slot.offset, words slot.name)) := by
+  let writes := layout.slots.map fun slot => (slot.offset, words slot.name)
+  have hfit' : ∀ p ∈ writes, p.1 + 32 ≤ (ByteArray.zeroes layout.size).size := by
+    intro p hp
+    obtain ⟨slot, hs, rfl⟩ := List.mem_map.mp hp
+    simpa [writes, ByteArray_zeroes_size] using hfit slot hs
+  have hpatch := patchRuntime_wordWrites_eq_writeCascade
+    (ByteArray.zeroes layout.size) writes hfit'
+  unfold Layout.suffixWords
+  simpa [writes, List.map_map, hpatch] using congrArg
+    (fun out : Option ByteArray => out.getD (ByteArray.zeroes layout.size)) hpatch
+
 /-- A compiler-reported scalar slot reads back as its word valuation. The
     patch witness records that the scalar layout fits the reported suffix. -/
 theorem Layout.suffixWords_read_slot {layout : Layout}
@@ -119,6 +138,42 @@ theorem Layout.deployed_eq_of_suffix {layout : Layout} {template : ByteArray}
     {imms : Store} {suffix : ByteArray} (h : layout.suffix? imms = some suffix) :
     layout.deployed template imms = template ++ suffix := by
   simp [Layout.deployed, h]
+
+/-- A constructor return buffer represented by chronological scalar writes
+    equals the runtime prescribed by the Vyper immutable layout. -/
+theorem Layout.returned_eq_deployed (layout : Layout) (template returned : ByteArray)
+    (imms : Store)
+    (hfit : ∀ slot ∈ layout.slots, slot.offset + 32 ≤ layout.size)
+    (hwords : layout.suffixWords (wordsOf imms) =
+      (layout.suffix? imms).getD (ByteArray.zeroes layout.size))
+    (hreturned : returned = template ++
+      writeCascade (ByteArray.zeroes layout.size)
+        (layout.slots.map fun slot => (slot.offset, wordsOf imms slot.name))) :
+    returned = layout.deployed template imms := by
+  rw [hreturned, ← layout.suffixWords_eq_writeCascade (wordsOf imms) hfit,
+    hwords]
+  rfl
+
+/-- Reading the full constructor return buffer yields the patched runtime. -/
+theorem Layout.returned_read_eq_deployed (layout : Layout) (template returned : ByteArray)
+    (imms : Store)
+    (hfit : ∀ slot ∈ layout.slots, slot.offset + 32 ≤ layout.size)
+    (hwords : layout.suffixWords (wordsOf imms) =
+      (layout.suffix? imms).getD (ByteArray.zeroes layout.size))
+    (hreturned : returned = template ++
+      writeCascade (ByteArray.zeroes layout.size)
+        (layout.slots.map fun slot => (slot.offset, wordsOf imms slot.name)))
+    (hpos : 0 < template.size + layout.size)
+    (hlen : template.size + layout.size < 2 ^ 64) :
+    returned.readWithPadding 0 (template.size + layout.size) =
+      layout.deployed template imms := by
+  have hsize : returned.size = template.size + layout.size := by
+    rw [hreturned, ← layout.suffixWords_eq_writeCascade (wordsOf imms) hfit,
+      ByteArray.size_append, layout.suffixWords_size]
+  rw [readWithPadding_eq_extract' returned 0 (template.size + layout.size)
+    hpos hlen (by omega), Nat.zero_add, ← hsize, byteArray_extract_self]
+  exact layout.returned_eq_deployed template returned imms hfit hwords hreturned
+
 
 /-- A slot in a successfully encoded suffix contains exactly its value, provided
     later slots do not overlap it. The patch split is convenient to prove from a

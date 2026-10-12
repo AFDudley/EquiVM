@@ -784,6 +784,42 @@ def render_vyper_immutable_code_lean(namespace: str, module: str, prefix: str,
             "  rw [immutableWordsBridge imms " + f"{values} {byte_values} "
             + " ".join(f"hget{i} henc{i}" for i in range(n))
             + " " + " ".join(f"hsize{i}" for i in range(n)) + "]", ""]
+    out += ["/-- Constructor memory writes in slot order produce the patched runtime. -/",
+            f"theorem returnedRuntime_eq_deployed (imms : Solm.Store) (returned : ByteArray)",
+            f"    ({values} : Solm.Value) ({byte_values} : ByteArray)"]
+    for i, imm in enumerate(imms):
+        out += [f'    (hget{i} : imms.get? "{imm["name"]}" = some v{i})',
+                f'    (henc{i} : Reasoning.VyperImmutables.scalarBytes? v{i} = some b{i})']
+    out += ["    " + " ".join(f"(hsize{i} : b{i}.size = 32)" for i in range(n)),
+            f"    (hreturned : returned = {prefix}Bytecode ++",
+            "      Reasoning.Theory.writeCascade (ByteArray.zeroes immutableLayout.size)",
+            "        (immutableLayout.slots.map fun slot =>",
+            "          (slot.offset, Reasoning.VyperImmutables.wordsOf imms slot.name))) :",
+            "    returned = deployedRuntime imms := by",
+            "  exact Reasoning.VyperImmutables.Layout.returned_eq_deployed",
+            f"    immutableLayout {prefix}Bytecode returned imms (by decide)",
+            "    (immutableWordsBridge imms " + f"{values} {byte_values} "
+            + " ".join(f"hget{i} henc{i}" for i in range(n))
+            + " " + " ".join(f"hsize{i}" for i in range(n)) + ") hreturned", ""]
+    out += ["/-- A full RETURN read of that buffer yields the patched runtime. -/",
+            f"theorem returnedRuntime_read_eq_deployed (imms : Solm.Store) (returned : ByteArray)",
+            f"    ({values} : Solm.Value) ({byte_values} : ByteArray)"]
+    for i, imm in enumerate(imms):
+        out += [f'    (hget{i} : imms.get? "{imm["name"]}" = some v{i})',
+                f'    (henc{i} : Reasoning.VyperImmutables.scalarBytes? v{i} = some b{i})']
+    out += ["    " + " ".join(f"(hsize{i} : b{i}.size = 32)" for i in range(n)),
+            f"    (hreturned : returned = {prefix}Bytecode ++",
+            "      Reasoning.Theory.writeCascade (ByteArray.zeroes immutableLayout.size)",
+            "        (immutableLayout.slots.map fun slot =>",
+            "          (slot.offset, Reasoning.VyperImmutables.wordsOf imms slot.name))) :",
+            f"    returned.readWithPadding 0 ({prefix}Bytecode.size + immutableLayout.size) =",
+            "      deployedRuntime imms := by",
+            "  exact Reasoning.VyperImmutables.Layout.returned_read_eq_deployed",
+            f"    immutableLayout {prefix}Bytecode returned imms (by decide)",
+            "    (immutableWordsBridge imms " + f"{values} {byte_values} "
+            + " ".join(f"hget{i} henc{i}" for i in range(n))
+            + " " + " ".join(f"hsize{i}" for i in range(n))
+            + ") hreturned (by native_decide) (by native_decide)", ""]
     out += [f"end {namespace}", ""]
     return "\n".join(out)
 

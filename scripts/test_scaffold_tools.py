@@ -290,6 +290,10 @@ class VyperImmutableTests(unittest.TestCase):
                              [("OWNER", 0, 32), ("LIMIT", 32, 32), ("TAG", 64, 32)])
             self.assertIn("slots :=", scaffold.render_vyper_immutables_lean(
                 "Probe", "Immutable", build))
+            code_lean = scaffold.render_vyper_immutable_code_lean(
+                "Probe", "Probe", "immutable", build)
+            self.assertIn("theorem returnedRuntime_eq_deployed", code_lean)
+            self.assertIn("theorem returnedRuntime_read_eq_deployed", code_lean)
             self.assertEqual(scaffold.selector_table(directory, "Immutable", build)[0][1].hex(),
                              "57de26a4")
 
