@@ -1,40 +1,70 @@
-# Safe proof repair: 0227664 → 0e91d99
+# Safe proof repair: 0e91d99 to 77901a5
 
-Ported upstream `02276647d5dd3353edc52d8c3e915f7f18dab95a` to
-`0e91d99ea35f2ec650dd7cb3795f78eeacec7985` using the byte-exact upstream contracts and
-Solidity `0.8.35+commit.47b9dedd`, with the original compiler flags.
+Ported from `0e91d99ea35f2ec650dd7cb3795f78eeacec7985` to
+`77901a5a1ad835b74ad3b72f73a8412cfe491c57`, using only the starting proof and
+Solidity `0.8.35+commit.47b9dedd`. All 69 upstream contract files are byte-exact.
+The regenerated runtime and creation bytecode contain 11,874 and 11,907 bytes.
 
-The specification adds the `v = 2` P-256 signature branch and `p256Verify`. It checks that the
-dynamic offset follows the static signatures and that the full 128-byte payload is available,
-including checked-add overflow. It reads `(r, s, qx, qy)`, derives the signer from the low
-160 bits of `keccak256(qx || qy)`, and validates the signature through address `0x100`.
-Bytecode dispatch at PC 2209 selects this branch; PCs 2218–2387 implement its bounds, signer,
-and validity checks. The `STATICCALL` at PC 7261 sends five words `(hash, r, s, qx, qy)`;
-PCs 7262–7272 require call success and exactly 32 return bytes containing the word one.
-The syntax/AST equality remains proved.
+## Specification and evidence
 
-Before proof repair, the 468-case audit reported `failures 0`. The randomized differential run
-with `--count 50` reported:
+Contract signatures now use `SecuredSignatureValidator`: a low-level static call
+returns a Boolean requiring call success, exactly 32 return bytes, and the entire
+word equal to the zero-padded ERC-1271 magic value. Previously, the typed bytes4
+decoder accepted trailing return data and reverted inside the helper on call or
+decoding failure. The new helper returns `false`; its caller enforces `GS024`.
+
+The bytecode performs `STATICCALL` at PC 8796, checks success and exact length at
+PCs 8852–8871, decodes bytes32 at PC 11787, and compares the full word at PC 8903.
+PC 7053 branches to the caller's `GS024` revert when the result is false.
+The specification syntax equality remains proved.
+
+Before proof edits, the deterministic audit passed 468 cases with `failures 0`.
+The required randomized run (`--count 50`) reported:
 
 ```text
-Safe_V2_0e91d99: 1775 cases: 1761 agree (578 successful), 0 disagree, 0 stuck, 14 EVM out of gas, 0 spec out of fuel
+Safe_V3_77901a5: 1775 cases: 1761 agree (578 successful), 0 disagree, 0 stuck, 14 EVM out of gas, 0 spec out of fuel
 ```
 
-All 33 `safe…Refines` statements and `safeContractCorrect`, `safeCorrect`, and
-`safeConstructorCorrect` are unchanged. The 358 changed existing helper statements only
-relocate instruction/return addresses and generated-summary references, or update bytecode
-lengths: runtime 11499→11749 and creation 11532→11782. For example, `safeAddTrace` now enters
-at PC 7193, and signature branch traces join at PC 2679. No existing declaration was removed.
+## Proof changes
 
-Existing proofs were repaired in place; `signatureSwitchSource` and `safeSignatureBranchTrace`
-were extended without changing their statements. The new P-256 path needed fresh proofs of
-payload decoding, signer hashing, call/return behavior, and preservation of signature memory.
-No existing proof required replacement.
+All 33 entrypoint refinement statements and the statements of `safeCorrect`,
+`safeConstructorCorrect`, and `safeContractCorrect` are unchanged. For unchanged
+code, statement edits only relocate program counters or update the creation
+proof's embedded runtime length.
 
-All four required final Lake targets passed (3919 jobs), and the artifact audit passed without
-`--write`. The final audit again reported 468 cases and zero failures. Source scans found no
-`sorry`, `admit`, or custom axiom declarations. `#print axioms` and the complete axiom audit
-confirmed only `propext`, `Classical.choice`, `Quot.sound`, and 11819 `native_decide` certificates
-for `safeContractCorrect`.
+The four byte-buffer copy-loop statements now describe the factored loop's new
+stack, cleanup address, and stack bound. Their induction proofs were adapted in
+place. The ABI encoder's external memory result is preserved.
 
-Blockers: none.
+`evalContractSignatureResult`, `safeContractSignatureSource`, and
+`safeCheckContractCall` now describe unconditional Boolean returns from the helper.
+`safeContractSignatureArgs`, `safeContractSignatureEncode`,
+`safeContractSignaturePrepare`, `safeContractSignatureCallFailure`,
+`safeContractSignatureReturnBuffer`, `safeContractSignatureFinish`, and
+`safeContractSignatureTrace` describe the new allocation, call, return-data, and
+short-circuit paths. The trace additionally requires the zero slot and sufficient
+space for the allocated return buffer. The existing caller discharges these
+conditions without changing its statement.
+
+The header-size, argument free-pointer, call-memory size/free/read, and final-memory
+size statements follow the new allocation layout. Other memory preservation and
+growth guarantees remain intact. Obsolete bytes4 decoder trace lemmas,
+`contractSignatureResult_of_not_decoded`, and `contractSignatureNext_word` were
+removed with their replaced paths.
+
+The secured helper could not be repaired by relocation alone: its selector patch,
+second byte copy, raw return-data allocation, exact-word check, and caller require
+were reproved. New support for the second copy covers its overlapping final
+partial-word load and cleanup; only actual payload bytes are used. Existing
+arithmetic, ABI, memory, static-call, and bytes32-decoder proofs were reused.
+
+## Final verification
+
+The required joint build of `Correct`, `CorrectProofAudit`, `ArtifactChecks`, and
+`Audit` succeeds; the audit again reports `failures 0`. Artifact verification
+without `--write` reproduces the pinned compilation and all summaries.
+There is no `sorry`, `admit`, or axiom declaration in the target Lean sources.
+`#print axioms safeContractCorrect` reports only `propext`, `Classical.choice`,
+`Quot.sound`, and 11,925 native-decision certificates; the proof audit reports no
+unexpected axioms. Repository edits are confined to the target and its registry
+entry. Blockers: none.
