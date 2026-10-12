@@ -1,14 +1,15 @@
 # Agent prompt — from a contract to a ready-to-prove scaffold
 
-In one session you turn one Solidity contract into a proof scaffold: pinned artifacts, generated
+In one session you turn one Solidity or Vyper contract into a proof scaffold: pinned artifacts, generated
 Lean that builds, a Solm specification you have audited against the bytecode and that the
 differential suite cannot tell apart from it, and the proof skeleton the proving session
-(`Misc/prompt.md`) starts from. You write no proofs.
+(`Misc/prompt.md`) starts from. You write no proofs. The Vyper path currently requires a
+hand-written `SpecSyntax.lean` and proof skeleton; record this limitation in the hand-off.
 
 ## Inputs
 
 - The contract: its sources (the main unit and its import closure), the compiler version and
-  settings (optimizer and runs, via-IR, EVM version), or the deployed bytecode with its verified
+  settings (solc optimizer/runs/via-IR or Vyper optimization pragma, EVM version), or the deployed bytecode with its verified
   sources. The proof targets the bytecode as deployed, so the settings must reproduce it.
 - Its place: a directory `<Dir>` and module path `<Module>`, for example
   `Benchmarks/Scaffolds/<Name>` and `Benchmarks.Scaffolds.<Name>`.
@@ -17,7 +18,7 @@ differential suite cannot tell apart from it, and the proof skeleton the proving
 
 - No guessing. Every statement of the specification follows from the source or the bytecode
   report. When the two differ, the bytecode wins and the difference is recorded.
-- Generated files are not edited by hand except for the ABI configuration in `Spec.lean` when
+- Generated files are not edited by hand except for the ABI and Vyper storage configuration in `Spec.lean` when
   the generated decoder does not match the bytecode. Rerun the generator with `--force` before
   making that edit, and reapply it if regeneration is later necessary. The main file you write is
   `SpecSyntax.lean`; its surface syntax is documented in the header of `Solm/Notation.lean`.
@@ -57,9 +58,19 @@ differential suite cannot tell apart from it, and the proof skeleton the proving
    modules, `DiffTarget.lean` (registered in `Tests/DiffTest/Generated.lean`), the block
    summaries, and checks them. Every check line must read `ok`. A contract with transient
    storage needs `--evm-version cancun` (or later) and solc 0.8.28 or later.
+   For Vyper 0.4.3, pin the entire local import tree (`.vy` and `.vyi`) under `<Dir>/contracts`
+   and run:
+   ```
+   scripts/scaffold.py all --dir <Dir> --vyper /path/to/vyper --main <Main.vy> \
+       --contract <Name> --evm-version <v> --module <Module>
+   ```
+   Record the source's `# pragma optimize` and `# pragma nonreentrancy` settings. Vyper's
+   `layout` output and source map have different shapes from solc's. `all` creates artifacts,
+   selectors, block summaries and a differential target; it does not create a Solm spec.
 2. **Report.** `scripts/bytecode_report.py <Dir> --output <Dir>/<Name>.report.md`: the
    dispatcher, every runtime block with its source statement, the per-function pc ranges, the
-   internal routines. This is the ground truth for steps 4 and 8.
+   internal routines. For Vyper, the report annotates blocks from `pc_pos_map`; it does not
+   infer solc AST function ranges or jump tags. This is the ground truth for steps 4 and 8.
 3. **Draft.**
    ```
    scripts/sol2solm.py <Dir> --contract <Name> --namespace <Module> \
@@ -67,8 +78,15 @@ differential suite cannot tell apart from it, and the proof skeleton the proving
    ```
    The draft encodes checked arithmetic, the compiler's guards, hoisted calls and the getters;
    what it cannot translate is a `${hole …}`, listed in the file header.
+   **Vyper:** `sol2solm.py` accepts solc AST only. Write `SpecSyntax.lean` from the pinned Vyper
+   source and report, using `Examples/VyperERC20/SpecSyntax.lean` as a surface-syntax example.
+   Give each ABI selector its own transition. Vyper default arguments generate several selectors
+   for one source function; model each accepted argument list and its default values. Include
+   public getters, constructor or initializer behavior, compiler guards, and external call effects.
+   Treat external calls and imported modules according to the compiled bytecode, not their names.
 4. **Close the holes.** Replace each hole with the Solm statements the source and the report
-   justify. `lake build <Module>.SpecSyntax` must succeed before you continue.
+   justify. For Vyper, finish the hand-written spec. `lake build <Module>.SpecSyntax` must succeed
+   before you continue.
 5. **Skeleton.** `scripts/proof_skeleton.py --dir <Dir> --module <Module>` writes `Spec.lean`,
    `Common.lean`, the proved `Dispatch.lean`, one stub per function, `Constructor.lean` and
    `Correct.lean`. Check the external-call ABI table in `Spec.lean` against the callees' ABIs; a
@@ -80,9 +98,22 @@ differential suite cannot tell apart from it, and the proof skeleton the proving
    calldata, including the four-byte selector; dispatch checks the selector separately. Keep
    named external-call return decoding in `decode?`, matched to the callee's ABI. Build the
    resulting `Spec.lean` before accepting the scaffold.
+   **Vyper:** run `scripts/proof_skeleton.py --dir <Dir> --module <Module> --only Spec` after
+   writing `SpecSyntax.lean`. It selects `vyperStorage!` for static state and Vyper calldata mode.
+   Compare the state layout with `<Name>.storage.json`. If state contains `DynArray`, `Bytes`, or
+   `String`, replace the static backend with `vyperBoundedStorage!` and explicit
+   `VyperStorageDecl` capacities. If an entry parameter is bounded, declare a
+   `List ABI.VyperABIFunction` from the source and use `externalABI.withVyperABI` so oversized
+   values fail; plain `.withMode .vyper` does not check capacities. Include every default-argument
+   selector variant in the list. Explicit `abi_decode`, constructor inputs, and callee return
+   bounds need separate review: the entry-calldata adapter does not check those sites.
+   The generator does not yet emit Vyper dispatch, constructor, or immutable proof templates;
+   build those from the generated blocks and `Examples/VyperERC20` / `Examples/VyperImmutable`.
 6. **Build.** `lake build <Module>.Correct` succeeds. The only `sorry`s are the generated stubs:
    the function files, `Constructor.lean`, `restrictImmutables_of_fit` in `Common.lean` when the
    contract has immutables, and the dispatch facts when it has a `fallback` or `receive`.
+   For Vyper, first build `SpecSyntax` and `Spec`, then the hand-written proof modules as they
+   become available. Do not report a finished ready-to-prove skeleton before `Correct` builds.
 7. **Differential test**, before the audit, so the gross errors are gone when you read.
    `lake exe solm-difftest --only <Name> --count 50` (`Tests/DiffTest/README.md`). Every
    `DISAGREE` and every `spec stuck` case is understood: a specification error is fixed in
@@ -91,9 +122,11 @@ differential suite cannot tell apart from it, and the proof skeleton the proving
    entry is nonzero, or you say why; raise `--count` or add the words and callees its guards need
    to `DiffTarget.lean`.
 8. **Semantic audit.** Its purpose: be certain that the spec is a faithful, authoritative model of
-   the bytecode and that nothing in it will block the proof. Nothing is written down. For every
+   the bytecode and that nothing in it will block the proof. Record findings in the hand-off. For every
    function (each selector arm, the constructor, `receive` and `fallback` when present), take its
    pc range and blocks from the report and walk the blocks in order against the spec:
+   for Vyper computed dispatch, reconstruct selector-to-entry and block ownership directly from
+   the generated selector table and bytecode, then record the mapping in `HANDOFF.md`;
    - every block implements a spec statement and every statement has its blocks; a block without
      a statement, or a statement without blocks, is a finding;
    - memory: a block that only manages memory (free-pointer bumps, allocation, encoding buffers)
@@ -103,6 +136,9 @@ differential suite cannot tell apart from it, and the proof skeleton the proving
      with the same slot derivation (mapping keys, array elements and lengths, packed fields);
      the same for `TLOAD` and `TSTORE` against the `transient` declarations, whose slots start
      at zero in their own space;
+     for Vyper, check full-word state slots, Vyper's mapping-key/slot hash order, and inline
+     bounded dynamic storage against the compiler layout; verify any compiler-generated
+     nonreentrancy lock, including view checks and reentrant exceptions;
    - arithmetic: checked operations revert on overflow and wrapping ones do not; division and
      modulo by zero; shifts, masks and sign extension at the declared widths;
    - guards, in the order the bytecode evaluates them: the compiler's (payability, `EXTCODESIZE`,
@@ -136,6 +172,9 @@ differential suite cannot tell apart from it, and the proof skeleton the proving
    the bytecode behavior that justifies them, the functions you expect to be hard and why); the gas
    bound: `noGasBound`, or the bound with the details it abstracts, why it is the loosest, why it
    sits above `2^24`, and why every path that breaks an abstracted detail within it runs out of gas.
+   For Vyper, also list selector variants from default arguments, bound-bearing entry and
+   explicit decode sites, source/layout-derived storage capacities, the EVM fork used for locks,
+   and any proof modules still requiring manual scaffolding.
 
 ## Done when
 
@@ -145,3 +184,6 @@ differential suite cannot tell apart from it, and the proof skeleton the proving
 - `lake exe solm-difftest --only <Name> --count 50` reports no disagreement and no stuck case.
 - The audit of step 8 is complete for every function and the constructor, with no finding left.
 - `HANDOFF.md` has the five sections of step 9.
+
+For Vyper, these completion conditions apply after the manual spec and proof skeleton work. If
+only artifact scaffolding is complete, state that narrower result and list the missing modules.

@@ -4,9 +4,10 @@ Everything a proof needs that is a pure function of the compiler artifacts is ge
 The agent's work starts after these scripts: closing the spec holes, auditing the spec against
 the bytecode report, and proving the function bodies.
 
-All scripts are plain Python 3 with no third-party dependencies (keccak is included), run from
-the repository root. `solc` binaries are taken from `--solc`; the standard-JSON interface is used,
-so any solc ≥ 0.5 works.
+All scripts are plain Python 3 with no third-party Python dependencies (keccak is included), run
+from the repository root. `solc` binaries are taken from `--solc`; the standard-JSON interface is
+used, so any solc ≥ 0.5 works. Vyper compilation uses a Vyper 0.4.3 executable passed to
+`--vyper` and a pinned local import tree.
 
 ## Pipeline for a new contract
 
@@ -42,18 +43,57 @@ scripts/finish_check.py --dir $D --module $M --theorem $M.fooContractCorrect
 `scaffold.py all` runs steps 1–3 and the check in one go. Steps 2, 3 and 6 never overwrite existing
 files unless `--force` is given.
 
+## Vyper path
+
+Put the exact main `.vy`, imported `.vy`/`.vyi` files, and any imported package modules under
+`<Dir>/contracts/`, preserving their import paths. Pin the compiler and EVM fork:
+
+```bash
+scripts/scaffold.py all --dir <Dir> --vyper /path/to/vyper-0.4.3 \
+    --main path/to/Main.vy --contract Main --evm-version prague --module <Module>
+scripts/bytecode_report.py <Dir> -o <Dir>/REPORT.md
+```
+
+`all` generates artifacts, Lean bytecode, selectors, block summaries, and a differential target.
+The build JSON records the source `# pragma optimize` mode, including `codesize`. The report uses
+Vyper's `pc_pos_map` for block-to-source line annotations; solc AST function ranges are unavailable.
+Check the source and `<Name>.storage.json` together before writing `SpecSyntax.lean`.
+
+`sol2solm.py` requires a solc AST, so write a Vyper `SpecSyntax.lean` manually. Use
+`Examples/VyperERC20/SpecSyntax.lean` for the Solm syntax and include a transition for every ABI
+selector, including variants from default arguments. Once it builds, generate the Config shell:
+
+```bash
+scripts/proof_skeleton.py --dir <Dir> --module <Module> --only Spec
+lake build <Module>.Spec
+```
+
+This selects the static Vyper storage backend and Vyper calldata mode. For bounded dynamic state,
+replace `vyperStorage!` with source-checked `vyperBoundedStorage!` declarations. For bounded
+entry arguments, replace `.withMode DecodeMode.vyper` with `.withVyperABI` and list the
+capacity-bearing selector variants from the source; ABI JSON does not retain their bounds.
+Review explicit `abi_decode`, constructor inputs, and return decoding separately. If a contract
+uses Vyper transient state, write its backend explicitly; `proof_skeleton.py` will stop instead
+of generating a Solidity transient layout.
+
+The full `proof_skeleton.py` dispatcher, constructor, and immutable templates currently assume
+solc bytecode. It therefore accepts only `--only Spec` for Vyper. Use `Examples/VyperERC20` for a
+complete Vyper proof and `Examples/VyperImmutable` for generated immutable suffix artifacts;
+write the remaining proof modules against the generated block summaries. A successful `all` run
+is an artifact scaffold, not a finished ready-to-prove contract skeleton.
+
 ## What each script produces
 
 | Script | Output | Notes |
 |---|---|---|
-| `scaffold.py compile` | `runtime.hex`, `creation.hex`, `<Name>.abi.json`, `<Name>.storage.json`, `<Name>.sol.ast.json`, `<Name>.metadata.json`, `<Name>.build.json`, `sources.sha256` | `build.json` holds the compiler version and settings, method identifiers, immutable references (named, in constructor write order), source maps, generated sources, and every source unit's AST. Only the import closure of `--main` is compiled. |
+| `scaffold.py compile` | `runtime.hex`, `creation.hex`, `<Name>.abi.json`, `<Name>.storage.json`, `<Name>.build.json`, `sources.sha256`; solc also emits `<Name>.sol.ast.json` and `<Name>.metadata.json` | `build.json` holds compiler settings and selectors. Solc includes AST and immutable patch sites; Vyper includes its source maps and code-layout immutables. |
 | `scaffold.py lean` | `Bytecode.lean`, `Selectors.lean`, `Immutables.lean`, `ImmutableCode.lean` | Selector table in `SpecSyntax.lean` order when that file exists, else by selector value. Selector facts are spec-independent keccak facts; the bridge to each transition is in the skeleton's `Common.lean`. |
 | `scaffold.py blocks` | `RuntimeBlocks_NNN.lean`, `CreationBlocks_NNN.lean`, `.index` files | `generate_rd_blocks.py` driven with the right code terms, immutable-aware when needed. |
 | `scaffold.py check` | report | Lean bytes vs hex, jump tables vs the EVM scan, selector table vs ABI and spec order, immutable offsets, source hashes. |
 | `scaffold.py difftest` | `DiffTarget.lean`, `Tests/DiffTest/Generated.lean` | The contract's `Target` for the differential suite (spec, config, runtime, creation code, immutable plumbing when the contract has immutables) and the registry of every `DiffTarget.lean` in the repository, which `lake exe solm-difftest` runs. Delete a `DiffTarget.lean` and rerun to unregister. |
-| `bytecode_report.py` | Markdown | Opcode census, dispatcher (guard, size check, pivots, arms, fallthroughs), JUMPDEST set, per-function pc ranges and internal routines from the source map, every runtime block with its source statement, creation summary. |
+| `bytecode_report.py` | Markdown | Opcode census, dispatcher, JUMPDEST set and annotated blocks. Solc reports AST function ranges and internal routines; Vyper reports source lines from `pc_pos_map`. |
 | `sol2solm.py` | `SpecSyntax.lean` draft, optional `.spec.json` | From the solc AST: storage (persistent and `transient`)/structs/events/immutables, constructor with base constructors and initialisers inlined, external functions (modifiers inlined, getters generated), reachable internal and library functions, checked arithmetic from static types, external calls bound with view flags and EXTCODESIZE guards, via-IR calldata guard. Holes for what it cannot translate. |
-| `proof_skeleton.py` | `Spec.lean`, `Common.lean`, `Dispatch.lean`, `<Fn>.lean`, `Constructor.lean`, `Correct.lean` | `Spec.lean` configures the transient backend when the spec declares transient state. `Dispatch.lean` contains proved reach lemmas composed from the block summaries (linear and binary-search dispatchers, with and without a global callvalue guard). Function bodies and the constructor are `sorry` stubs with the fixed signatures `Correct.lean` consumes. |
+| `proof_skeleton.py` | Solidity: `Spec.lean`, `Common.lean`, `Dispatch.lean`, `<Fn>.lean`, `Constructor.lean`, `Correct.lean`; Vyper: `Spec.lean` with `--only Spec` | The full proof template uses solc dispatch and immutable assumptions. Vyper `Spec.lean` selects Vyper storage and ABI defaults, then needs capacity review. |
 | `check_sol2solm.py` | report | Translates every given directory and elaborates the drafts (holes as comments). |
 | `finish_check.py` | report | Build, differential suite on the contract (`--difftest-count`, `--skip-difftest`), `sorry`/`admit`/`axiom` grep, `#print axioms` against the accepted trusted base. |
 | `check_all_benchmark_blocks.py` | report | Check that benchmark block summaries compile, excluding temporary contracts under `Benchmarks/Scaffolds/`. CI selects `UniswapV3/Pool`. |

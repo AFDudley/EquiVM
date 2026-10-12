@@ -14,6 +14,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import evm_tools as et  # noqa: E402
 import scaffold  # noqa: E402
+import bytecode_report  # noqa: E402
 import check_all_benchmark_blocks as benchmark_blocks  # noqa: E402
 import generate_rd_blocks as rd  # noqa: E402
 from generate_rd_blocks import disassemble  # noqa: E402
@@ -141,6 +142,22 @@ class ImmutableOrderTests(unittest.TestCase):
 
 
 class VyperImmutableTests(unittest.TestCase):
+    def test_optimization_pragma_is_recorded(self) -> None:
+        source = "# pragma version 0.4.3\n# pragma optimize codesize\n"
+        self.assertEqual(scaffold.vyper_optimize_mode(source, False), "codesize")
+        self.assertEqual(scaffold.vyper_optimize_mode(source, True), "none")
+        self.assertEqual(scaffold.vyper_optimize_mode("# pragma version 0.4.3", False), "gas")
+
+    def test_vyper_report_uses_pc_positions(self) -> None:
+        directory = ROOT / "Examples/VyperImmutable"
+        build = json.loads((directory / "Immutable.build.json").read_text())
+        abi = json.loads((directory / "Immutable.abi.json").read_text())
+        report = bytecode_report.render(directory, "Immutable", build, abi, True)
+        self.assertIn("compiler: vyper", report)
+        self.assertIn("Vyper source positions annotate blocks", report)
+        self.assertIn("Selectors not recovered as direct arms", report)
+        self.assertIn("line 26:", report)
+
     @staticmethod
     def scalar_units(runtime: bytes, prefix: str, code: str, slots: list[dict],
                      max_summary_instructions: int = 1000) -> list[rd.GeneratedUnit]:

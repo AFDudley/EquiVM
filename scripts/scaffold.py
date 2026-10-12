@@ -5,9 +5,9 @@ Subcommands (``all`` runs them in order):
 
   compile   run solc (standard JSON), or Vyper 0.4.3 with --vyper, on the pinned sources:
             runtime.hex, creation.hex, <Name>.abi.json, <Name>.storage.json,
-            <Name>.sol.ast.json (main source unit), <Name>.metadata.json, sources.sha256, and
-            <Name>.build.json (compiler version and settings, method identifiers, immutable
-            references, source maps, generated sources, every source unit's AST).
+            sources.sha256 and <Name>.build.json (compiler settings, selectors, source maps,
+            immutables). solc also writes <Name>.sol.ast.json, <Name>.metadata.json and the
+            full source-unit AST; Vyper records its code layout and pc source-position map.
   lean      write Bytecode.lean (chunked byte arrays plus the JUMPDEST theorems), Selectors.lean
             (selector table, selIs/selWord, keccak facts), and for contracts with immutables
             Immutables.lean and ImmutableCode.lean.  Existing files are kept unless --force.
@@ -192,6 +192,14 @@ def vyper_scalar_immutable_type(ty: str) -> bool:
     return bool(match and 1 <= int(match.group(1)) <= 32)
 
 
+def vyper_optimize_mode(source: str, no_optimize: bool) -> str:
+    """Record the optimization selected by the CLI or the source pragma."""
+    if no_optimize:
+        return "none"
+    match = re.search(r"(?m)^\s*#\s*pragma\s+optimize\s+(gas|codesize|none)\s*$", source)
+    return match.group(1) if match else "gas"
+
+
 def immutable_declarations(units: dict[str, dict]) -> dict[int, dict]:
     out: dict[int, dict] = {}
     for unit in units.values():
@@ -347,6 +355,7 @@ def cmd_compile_vyper(args: argparse.Namespace) -> int:
     source = sources_root / main
     if not source.is_file() or source.suffix != ".vy":
         raise SystemExit(f"Vyper source {source} does not exist")
+    optimize = vyper_optimize_mode(source.read_text(encoding="utf-8"), args.no_optimize)
     version = subprocess.run([args.vyper, "--version"], text=True, capture_output=True,
                              check=True).stdout.strip()
     if not version.startswith("0.4.3"):
@@ -389,7 +398,7 @@ def cmd_compile_vyper(args: argparse.Namespace) -> int:
     build = {"contract": name, "main": main, "sourcesRoot": args.sources_root,
              "compiler": {"kind": "vyper", "version": version, "path": args.vyper},
              "settings": {"evmVersion": args.evm_version or "prague",
-                          "optimize": "none" if args.no_optimize else "gas",
+                          "optimize": optimize,
                           "bytecodeMetadata": False},
              "methodIdentifiers": artifact.get("method_identifiers", {}),
              "immutables": immutables, "immutableSuffixSize": suffix_size,

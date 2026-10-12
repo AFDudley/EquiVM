@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -72,6 +73,32 @@ class ImmutableTests(unittest.TestCase):
                       "D_J tinyImmutableBytecode 0", common)
         gen = ps.ProofGen(c, ps.Dispatcher(c, None))
         self.assertIn("tinyImmutablePatchedValidJumpsRuntime v", gen.valid_proof())
+
+
+class VyperSpecTests(unittest.TestCase):
+    def test_generated_config_uses_vyper_storage_and_abi(self) -> None:
+        c = fake_contract(ROOT / "Examples/VyperImmutable", "Immutable", "immutable")
+        c.compiler_kind = "vyper"
+        text = ps.render_spec(c)
+        self.assertIn("import Solm.MetaVyperLayout", text)
+        self.assertIn("vyperStorage! [contract.storage]", text)
+        self.assertIn("withMode DecodeMode.vyper", text)
+        self.assertIn("withVyperABI", text)
+        self.assertNotIn("solidityStorage!", text)
+
+    def test_only_spec_skips_solc_dispatch_generation(self) -> None:
+        source = ROOT / "Examples/VyperImmutable"
+        with tempfile.TemporaryDirectory() as tmp:
+            directory = Path(tmp)
+            for name in ("Immutable.build.json", "runtime.hex", "Selectors.lean"):
+                (directory / name).write_bytes((source / name).read_bytes())
+            (directory / "SpecSyntax.lean").write_text(
+                "def contractSyntax : ContractDecl := solidity% contract Immutable {}\n")
+            self.assertEqual(ps.main(["--dir", tmp, "--module", "Test.Vyper", "--only", "Spec"]), 0)
+            self.assertIn("vyperStorage!", (directory / "Spec.lean").read_text())
+            self.assertFalse((directory / "Dispatch.lean").exists())
+            with self.assertRaisesRegex(SystemExit, "only Spec"):
+                ps.main(["--dir", tmp, "--module", "Test.Vyper"])
 
 
 class SpellingTests(unittest.TestCase):
