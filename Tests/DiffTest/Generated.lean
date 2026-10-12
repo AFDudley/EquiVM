@@ -1,6 +1,7 @@
 import Solm.DiffTest.Harness
 import Benchmarks.CompoundIII.Comet.DiffTarget
 import Benchmarks.EAS.EAS.DiffTarget
+import Benchmarks.UniswapV3.Pool.DiffTarget
 import Tests.DiffTest.Fixtures.Factory.DiffTarget
 import Tests.Pipeline.Vault.DiffTarget
 
@@ -14,6 +15,7 @@ namespace Tests.DiffTest
 def generatedTargets : List Solm.DiffTest.Target :=
   [ Benchmarks.CompoundIII.Comet.diffTarget,
     Benchmarks.EAS.EAS.diffTarget,
+    Benchmarks.UniswapV3.Pool.diffTarget,
     Tests.DiffTest.Fixtures.Factory.diffTarget,
     Tests.Pipeline.Vault.diffTarget ]
 

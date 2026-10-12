@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Generate and compile supported runtime block summaries under Benchmarks/.
 
+Temporary contracts under Benchmarks/Scaffolds/ are excluded.
 The output and per-shard results live under /tmp/equivm-benchmark-blocks by
 default. Successful shards are cached by source hash, so a failed run can resume.
 """
@@ -26,13 +27,21 @@ def module_name(path: Path) -> str:
     return ".".join(path.relative_to(ROOT).with_suffix("").parts)
 
 
+def benchmark_paths(root: Path) -> list[Path]:
+    return sorted(path for path in root.rglob("Bytecode.lean")
+                  if "Scaffolds" not in path.relative_to(root).parts)
+
+
 def benchmark_inputs(path: Path) -> tuple[str, str, Path | None]:
     source = path.read_text(encoding="utf-8")
     names = re.findall(r"^def (\w+Bytecode)\s*:\s*ByteArray", source, re.MULTILINE)
     runtime = next(name for name in names if "Creation" not in name)
     namespace = re.search(r"^namespace ([\w.]+)", source, re.MULTILINE)
     code_term = f"{namespace.group(1)}.{runtime}" if namespace else runtime
-    layout = path.with_name("Immutables.lean")
+    # Generated layouts live in ImmutableCode; older benchmarks use Immutables.
+    layout = path.with_name("ImmutableCode.lean")
+    if not layout.exists():
+        layout = path.with_name("Immutables.lean")
     return code_term, module_name(path), layout if layout.exists() else None
 
 
@@ -74,7 +83,7 @@ def main() -> int:
     if args.jobs < 1 or args.shard_size < 1:
         parser.error("--jobs and --shard-size must be positive")
 
-    paths = sorted((ROOT / "Benchmarks").rglob("Bytecode.lean"))
+    paths = benchmark_paths(ROOT / "Benchmarks")
     if args.only:
         paths = [p for p in paths if args.only.lower() in str(p.parent).lower()]
     if args.contract:
@@ -115,7 +124,7 @@ def main() -> int:
                    "--shard-size", str(args.shard_size),
                    "--output", str(output)]
         if layout:
-            # The declaration namespace in Immutables.lean can differ from its module path.
+            # The layout's declaration namespace can differ from its module path.
             layout_source = layout.read_text(encoding="utf-8")
             match = re.search(r"^namespace ([\w.]+)", layout_source, re.MULTILINE)
             assert match is not None

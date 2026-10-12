@@ -56,7 +56,7 @@ files unless `--force` is given.
 | `proof_skeleton.py` | `Spec.lean`, `Common.lean`, `Dispatch.lean`, `<Fn>.lean`, `Constructor.lean`, `Correct.lean` | `Spec.lean` configures the transient backend when the spec declares transient state. `Dispatch.lean` contains proved reach lemmas composed from the block summaries (linear and binary-search dispatchers, with and without a global callvalue guard). Function bodies and the constructor are `sorry` stubs with the fixed signatures `Correct.lean` consumes. |
 | `check_sol2solm.py` | report | Translates every given directory and elaborates the drafts (holes as comments). |
 | `finish_check.py` | report | Build, differential suite on the contract (`--difftest-count`, `--skip-difftest`), `sorry`/`admit`/`axiom` grep, `#print axioms` against the accepted trusted base. |
-| `check_all_benchmark_blocks.py` | report | CI check that every benchmark's block summaries compile. |
+| `check_all_benchmark_blocks.py` | report | Check that benchmark block summaries compile, excluding temporary contracts under `Benchmarks/Scaffolds/`. CI selects `UniswapV3/Pool`. |
 
 ## Conventions the generators follow
 
@@ -69,6 +69,14 @@ files unless `--force` is given.
   item). Enums are `uint8`. Interface casts are dropped (receivers are addresses).
 - A public function that is also called internally is split into `<f>_body` (internal) plus the
   external wrapper, so the internal call does not pass through the entry guards.
+- Internal `storage` parameters and returns keep their source types, including mappings and
+  library structs. Named storage returns and local pointer assignments bind aliases. Library
+  extension calls include their receiver; colliding struct names are qualified by their owner.
+- Memory structs, arrays, `bytes` and `string` are passed to internal functions by reference in
+  Solidity but by value in Solm. A callee that may modify one (directly, or through a callee)
+  returns its final value after the declared results, and the caller assigns it back to the
+  argument's path. Overlapping arguments, a parameter that is reassigned and modified, and a
+  modification through a local alias of a parameter are holes.
 - Contracts with a `fallback`/`receive` get `sorry` stubs for the Solm dispatch facts: the
   unmatched-selector path then runs the fallback instead of reverting.
 

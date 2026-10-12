@@ -111,6 +111,17 @@ theorem dispatchList_some_mem {ts : List TransitionDecl} {cd : ByteArray} {t : T
       · rw [if_pos hb] at h; cases h; simp
       · rw [if_neg hb] at h; exact List.mem_cons_of_mem head (ih h)
 
+/-- A transition returned by `dispatchList` matched the calldata prefix. -/
+theorem dispatchList_some_selIs {ts : List TransitionDecl} {cd : ByteArray} {t : TransitionDecl}
+    (h : dispatchList ts cd = some t) : (selectorOf t == cd.extract 0 4) = true := by
+  induction ts with
+  | nil => simp [dispatchList] at h
+  | cons head tail ih =>
+      rw [dispatchList_cons] at h
+      by_cases hb : (selectorOf head == cd.extract 0 4) = true
+      · rw [if_pos hb] at h; cases h; exact hb
+      · rw [if_neg hb] at h; exact ih h
+
 /-- If **no** transition's selector matches the calldata prefix, dispatch yields nothing — the
     n-ary form of `dispatch_none_nomatch`. -/
 theorem dispatchList_none_of_all_ne {ts : List TransitionDecl} {cd : ByteArray}

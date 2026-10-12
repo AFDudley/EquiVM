@@ -201,7 +201,7 @@ theorem internalCallTransitionReturn {cfg : Config} {caller : Frame} {evm callee
     {callee : TransitionDecl} {locals : Store} {calleeSolm : Frame} {value : Value}
     (hargs : evalExprs? cfg caller evm args = .ok argVals)
     (hlookup : lookupCallable? caller.contract name = some callee.toCallable)
-    (hbind : bindParams? callee.params argVals = some locals)
+    (hbind : bindParams? callee.toCallable.params argVals = some locals)
     (hbody : ExecTransitionBody cfg caller.contract evm locals callee.body
       (.returned calleeSolm calleeEvm (some [value])) caller.immutables) :
     ExecStmt cfg caller evm (.internalCall name args retVar)
@@ -219,7 +219,7 @@ theorem internalCallTransitionRevert {cfg : Config} {caller : Frame} {evm : EVM.
     {callee : TransitionDecl} {locals : Store}
     (hargs : evalExprs? cfg caller evm args = .ok argVals)
     (hlookup : lookupCallable? caller.contract name = some callee.toCallable)
-    (hbind : bindParams? callee.params argVals = some locals)
+    (hbind : bindParams? callee.toCallable.params argVals = some locals)
     (hbody : ExecTransitionBody cfg caller.contract evm locals callee.body .reverted
       caller.immutables) :
     ExecStmt cfg caller evm (.internalCall name args retVar) .reverted := by
@@ -658,6 +658,116 @@ theorem execFor_var_state_continue {cfg : Config} {C : ContractDecl} {imms : Sto
       rcases hbody with hbody | hbody
       · exact ⟨L', evm', ExecForLoop.iterate (htrue v L evm hP) hbody hpost hloop, hP'⟩
       · exact ⟨L', evm', ExecForLoop.continueIter (htrue v L evm hP) hbody hpost hloop, hP'⟩
+
+/-! ## Inverting straight-line blocks
+
+The forward lemmas above *build* a derivation.  To reason about a derivation given as a
+hypothesis — "whatever this body did" — a block is taken apart statement by statement: each
+lemma below lists how a block starting with the given statement kind can have produced its
+result.  Every premise of these statements is an equation about a function (`evalExpr?`,
+`assignStorageRef?`), so the successful alternative pins the intermediate values. -/
+
+/-- The EVM state a result carries, if any (`.reverted` / `.staticViolation` carry none). -/
+def resultState? : ExecResult → Option EVM.State
+  | .returned _ evm _ => some evm
+  | .ok _ evm => some evm
+  | .break _ evm => some evm
+  | .continue _ evm => some evm
+  | .reverted => none
+  | .staticViolation => none
+
+@[simp] theorem resultState?_returned (solm : Frame) (evm : EVM.State) (v : Option (List Value)) :
+    resultState? (.returned solm evm v) = some evm := rfl
+@[simp] theorem resultState?_ok (solm : Frame) (evm : EVM.State) :
+    resultState? (.ok solm evm) = some evm := rfl
+@[simp] theorem resultState?_break (solm : Frame) (evm : EVM.State) :
+    resultState? (.break solm evm) = some evm := rfl
+@[simp] theorem resultState?_continue (solm : Frame) (evm : EVM.State) :
+    resultState? (.continue solm evm) = some evm := rfl
+@[simp] theorem resultState?_reverted : resultState? .reverted = none := rfl
+@[simp] theorem resultState?_staticViolation : resultState? .staticViolation = none := rfl
+
+/-- A function body's result carries the state of its block's result. -/
+theorem execFuncBody_block {cfg : Config} {solm : Frame} {evm : EVM.State} {body : List Stmt}
+    {r : ExecResult} (h : ExecFuncBody cfg solm evm body r) :
+    ∃ r', ExecBlock cfg solm evm body r' ∧ resultState? r' = resultState? r := by
+  cases h with
+  | execBlockOK hb => exact ⟨_, hb, rfl⟩
+  | execBlockRet hb => exact ⟨_, hb, rfl⟩
+  | execBlockRevert hb => exact ⟨_, hb, rfl⟩
+  | execBlockBreak hb => exact ⟨_, hb, rfl⟩
+  | execBlockContinue hb => exact ⟨_, hb, rfl⟩
+  | execBlockStatic hb => exact ⟨_, hb, rfl⟩
+
+/-- A block opening with `require c` either reverted or passed the check unchanged. -/
+theorem execBlock_require_cons {cfg : Config} {solm : Frame} {evm : EVM.State} {c : Expr}
+    {rest : List Stmt} {r : ExecResult} (h : ExecBlock cfg solm evm (.require c :: rest) r) :
+    r = .reverted ∨ (evalExpr? cfg solm evm c = .ok (.bool true) ∧ ExecBlock cfg solm evm rest r) := by
+  cases h with
+  | consNormal hst hrest => cases hst with | requireTrue hc => exact Or.inr ⟨hc, hrest⟩
+  | consReturn hst => cases hst
+  | consRevert _ => exact Or.inl rfl
+  | consBreak hst => cases hst
+  | consContinue hst => cases hst
+  | consStatic hst => cases hst
+
+/-- A block opening with a `let` either reverted or bound the evaluated value. -/
+theorem execBlock_letDecl_cons {cfg : Config} {solm : Frame} {evm : EVM.State} {name : Ident}
+    {ty : Option ABIType} {e : Expr} {rest : List Stmt} {r : ExecResult}
+    (h : ExecBlock cfg solm evm (.letDecl name ty e :: rest) r) :
+    r = .reverted ∨ ∃ v, evalExpr? cfg solm evm e = .ok v ∧
+      ExecBlock cfg { solm with locals := solm.locals.insert name v } evm rest r := by
+  cases h with
+  | consNormal hst hrest => cases hst with | letDecl hv => exact Or.inr ⟨_, hv, hrest⟩
+  | consReturn hst => cases hst
+  | consRevert _ => exact Or.inl rfl
+  | consBreak hst => cases hst
+  | consContinue hst => cases hst
+  | consStatic hst => cases hst
+
+/-- A block opening with an assignment either reverted, halted in static mode, or performed the
+    write. -/
+theorem execBlock_assign_cons {cfg : Config} {solm : Frame} {evm : EVM.State} {origin : VarOrigin}
+    {ref : StorageRef} {e : Expr} {rest : List Stmt} {r : ExecResult}
+    (h : ExecBlock cfg solm evm (.assign origin ref e :: rest) r) :
+    r = .reverted ∨ r = .staticViolation ∨
+      ∃ v solm' evm', evalExpr? cfg solm evm e = .ok v ∧
+        assignStorageRef? cfg solm evm origin ref v = .ok (solm', evm') ∧
+        ExecBlock cfg solm' evm' rest r := by
+  cases h with
+  | consNormal hst hrest =>
+      cases hst with | assign hv ha => exact Or.inr (Or.inr ⟨_, _, _, hv, ha, hrest⟩)
+  | consReturn hst => cases hst
+  | consRevert _ => exact Or.inl rfl
+  | consBreak hst => cases hst
+  | consContinue hst => cases hst
+  | consStatic _ => exact Or.inr (Or.inl rfl)
+
+/-- A block opening with `emit` either reverted, halted in static mode, or continued unchanged. -/
+theorem execBlock_emit_cons {cfg : Config} {solm : Frame} {evm : EVM.State} {name : Ident}
+    {args : List Expr} {rest : List Stmt} {r : ExecResult}
+    (h : ExecBlock cfg solm evm (.emit name args :: rest) r) :
+    r = .reverted ∨ r = .staticViolation ∨ ExecBlock cfg solm evm rest r := by
+  cases h with
+  | consNormal hst hrest => cases hst with | emit _ => exact Or.inr (Or.inr hrest)
+  | consReturn hst => cases hst
+  | consRevert _ => exact Or.inl rfl
+  | consBreak hst => cases hst
+  | consContinue hst => cases hst
+  | consStatic _ => exact Or.inr (Or.inl rfl)
+
+/-- A block opening with `return` either reverted or returned the evaluated values from the
+    current state. -/
+theorem execBlock_return_cons {cfg : Config} {solm : Frame} {evm : EVM.State} {es : List Expr}
+    {rest : List Stmt} {r : ExecResult} (h : ExecBlock cfg solm evm (.return es :: rest) r) :
+    r = .reverted ∨ ∃ vs, evalExprs? cfg solm evm es = .ok vs ∧ r = .returned solm evm (some vs) := by
+  cases h with
+  | consNormal hst _ => cases hst
+  | consReturn hst => cases hst with | «return» hvs => exact Or.inr ⟨_, hvs, rfl⟩
+  | consRevert _ => exact Or.inl rfl
+  | consBreak hst => cases hst
+  | consContinue hst => cases hst
+  | consStatic hst => cases hst
 
 /-! ## Block sequencing -/
 
