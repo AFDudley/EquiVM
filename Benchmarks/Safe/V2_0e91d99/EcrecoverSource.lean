@@ -78,7 +78,7 @@ theorem evalEcrecoverReturn (evm : EVM.State) (p : EcrecoverInput) (z : Bool) (o
     decide +kernel
   · have hdecode := decodeReturnAddressLong (by omega : 32 ≤ out.size)
       (by rw [h32]; decide) hc
-    change ABI.decodeReturnValueWithMode? config.abiDecodeMode addr out = _ at hdecode
+    change config.externalABI.decodeValue? addr out = _ at hdecode
     simp only [h32, Nat.reduceEqDiff, decide_false, bind, EvalResult.bind]
     rw [evalExpr?, hd]
     simp only [bind, EvalResult.bind, hdecode, pure,

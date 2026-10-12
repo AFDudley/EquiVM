@@ -57,7 +57,7 @@ theorem safeChecksignaturesBodyCore
     have hlen : payload.size = len := by
       dsimp only [payload]
       rw [ByteArray.size_extract]; omega
-    have hdec' : decodeCalldataWithMode config.abiDecodeMode
+    have hdec' : config.externalABI.decodeCalldata?
         (checksignaturesTransition.params.map Param.name)
         (transitionSignature checksignaturesTransition).paramTypes
         I.calldata = some (signatureLegacyArgs false p.hash data p.signatures ⟨0⟩) := by

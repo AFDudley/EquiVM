@@ -39,7 +39,7 @@ theorem safeRemoveownerBodyCore
               hcheck hp hc (by jump_dest)
             have h6566 := safeRuntime_block_1683 (by simp) (by jump_dest) h1683
             have h6757 := safeRuntime_block_6566 (by simp) (by jump_dest) h6566
-            have hdec : decodeCalldataWithMode config.abiDecodeMode
+            have hdec : config.externalABI.decodeCalldata?
                 (removeownerTransition.params.map Param.name)
                 (transitionSignature removeownerTransition).paramTypes I.calldata =
                 some (removeOwnerArgs (calldataWord I.calldata 4) (calldataWord I.calldata 36)

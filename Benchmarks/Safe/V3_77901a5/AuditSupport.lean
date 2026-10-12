@@ -186,7 +186,7 @@ def runSpec (state : State) (observed : Trace) (constructor : Bool := false) :
   if !constructor then
     match selectorDispatchMsg contract state.executionEnv.calldata with
     | some transition =>
-      match decodeCalldataWithMode config.abiDecodeMode (transition.params.map Param.name)
+      match config.externalABI.decodeCalldata? (transition.params.map Param.name)
           (transition.params.map Param.ty) state.executionEnv.calldata with
       | none => return (.reverted, empty)
       | some args => locals := args; body := transition.body

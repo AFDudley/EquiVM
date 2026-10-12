@@ -38,7 +38,7 @@ theorem safeSwapownerBodyCore
                 hcheck hc0 hc1 hc2 (by jump_dest)
               have h6248 := safeRuntime_block_1496 (by simp) (by jump_dest) h1496
               have h6757 := safeRuntime_block_6062 (by simp) (by jump_dest) h6248
-              have hdec : decodeCalldataWithMode config.abiDecodeMode
+              have hdec : config.externalABI.decodeCalldata?
                   (swapownerTransition.params.map Param.name)
                   (transitionSignature swapownerTransition).paramTypes I.calldata =
                   some (swapOwnerArgs (calldataWord I.calldata 4) (calldataWord I.calldata 36)

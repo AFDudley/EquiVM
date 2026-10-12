@@ -33,7 +33,7 @@ theorem safeSetmoduleguardBodyCore
         · obtain ⟨_, _, h₂⟩ := safeDecodeAddress hd (by simp) hlencheck hc (by jump_dest)
           have h₃ := safeRuntime_block_1434 (by simp) (by jump_dest) h₂
           have h₄ := safeRuntime_block_5562 (by simp) (by jump_dest) h₃
-          have hdec : decodeCalldataWithMode config.abiDecodeMode
+          have hdec : config.externalABI.decodeCalldata?
               (setmoduleguardTransition.params.map Param.name)
               (transitionSignature setmoduleguardTransition).paramTypes I.calldata =
               some (guardArgs .moduleGuard (calldataWord I.calldata 4)) :=

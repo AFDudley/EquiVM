@@ -73,7 +73,7 @@ theorem evalContractSignatureResult (evm : EVM.State) (owner : EVM.Address) (has
   apply evalWordCallResult hsuccess hdata
   intro hs
   have hd := decodeBytes32ReturnLong (out := out) (by omega) (by rw [hs]; decide)
-  change ABI.decodeReturnValueWithMode? config.abiDecodeMode bytes32 out =
+  change config.externalABI.decodeValue? bytes32 out =
     some (wordBytes32Value (calldataWord out 0)) at hd
   have hm : signatureMagic =
       Expr.fixedBytesLit bytes32Width (EVM.Word.toBytesBE signatureMagicWord) := by

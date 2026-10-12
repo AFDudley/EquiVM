@@ -35,7 +35,7 @@ theorem safeExectransactionBodyCore
     obtain ⟨dataLen, sigLen, hb, rfl⟩ := decodeExecTransactionEvidence hlong hdec
     let p := execTransactionCalldataInput I.calldata dataLen sigLen
     have hlen : p.signatures.size = sigLen := execTransactionSignaturesSize hb
-    have hdec' : decodeCalldataWithMode config.abiDecodeMode
+    have hdec' : config.externalABI.decodeCalldata?
         (exectransactionTransition.params.map Param.name)
         (transitionSignature exectransactionTransition).paramTypes I.calldata = some p.args :=
       hdec

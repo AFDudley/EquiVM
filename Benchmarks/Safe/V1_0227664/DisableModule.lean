@@ -290,7 +290,7 @@ theorem safeDisablemoduleBodyCore
               hcheck hc0 hc1 (by jump_dest)
             have h5524 := safeRuntime_block_1403 (by simp) (by jump_dest) h1403
             have h6757 := safeRuntime_block_5338 (by simp) (by jump_dest) h5524
-            have hdec : decodeCalldataWithMode config.abiDecodeMode
+            have hdec : config.externalABI.decodeCalldata?
                 (disablemoduleTransition.params.map Param.name)
                 (transitionSignature disablemoduleTransition).paramTypes I.calldata =
                 some (disableModuleArgs (calldataWord I.calldata 4) (calldataWord I.calldata 36)) :=

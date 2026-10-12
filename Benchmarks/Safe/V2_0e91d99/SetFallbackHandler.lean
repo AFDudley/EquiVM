@@ -110,7 +110,7 @@ theorem safeSetfallbackhandlerBodyCore
         · obtain ⟨_, _, h1547⟩ := safeDecodeAddress h9591 (by simp) hcheck hcanon (by jump_dest)
           have h6455 := safeRuntime_block_1547 (by simp) (by jump_dest) h1547
           have h6757 := safeRuntime_block_6455 (by simp) (by jump_dest) h6455
-          have hdec : decodeCalldataWithMode config.abiDecodeMode
+          have hdec : config.externalABI.decodeCalldata?
               (setfallbackhandlerTransition.params.map Param.name)
               (transitionSignature setfallbackhandlerTransition).paramTypes I.calldata =
               some (fallbackHandlerArgs (calldataWord I.calldata 4)) :=

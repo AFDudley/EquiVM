@@ -81,7 +81,7 @@ theorem safeGettransactionhashBodyCore
     have hlen : payload.size = len := by
       dsimp only [payload]
       rw [ByteArray.size_extract]; omega
-    have hdec' : decodeCalldataWithMode config.abiDecodeMode
+    have hdec' : config.externalABI.decodeCalldata?
         (gettransactionhashTransition.params.map Param.name)
         (transitionSignature gettransactionhashTransition).paramTypes I.calldata =
         some (transactionArgs tx) := hdec

@@ -88,7 +88,7 @@ theorem safeChangethresholdBodyCore
           (solcDecodeLenCheckOk_4_32 hlen hbig hsize) (by jump_dest)
         have h3415 := safeRuntime_block_1045 (by simp) (by jump_dest) h1045
         have h6757 := safeRuntime_block_3321 (by simp) (by jump_dest) h3415
-        have hdec : decodeCalldataWithMode config.abiDecodeMode
+        have hdec : config.externalABI.decodeCalldata?
             (changethresholdTransition.params.map Param.name)
             (transitionSignature changethresholdTransition).paramTypes I.calldata =
             some (thresholdArgs (calldataWord I.calldata 4)) := decodeCalldata_uint256_ok hlen hbig

@@ -45,7 +45,7 @@ theorem safeSetupBodyCore
       exact reEquivSelectorDecodingFailed (cfg := config) hcode hdispatch hdec hr
   | some args =>
       obtain ⟨n, len, hb, hc, rfl⟩ := decodeSetupEvidence hlong hdec
-      have hdec' : decodeCalldataWithMode config.abiDecodeMode
+      have hdec' : config.externalABI.decodeCalldata?
           (setupTransition.params.map Param.name) (transitionSignature setupTransition).paramTypes
           I.calldata = some (setupCalldataInput I.calldata n len).args := hdec
       obtain ⟨k', C', h₂⟩ := safeDecodeSetupValid hdecode hb (by simp) (by jump_dest)

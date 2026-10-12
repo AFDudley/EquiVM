@@ -69,7 +69,7 @@ theorem evalTokenTransferResult (p : TokenTransferInput) (evm : EVM.State)
     simp only [beq_eq_false_iff_ne, ne_eq, Value.int.injEq]; omega
   by_cases hs : out.size = 32
   · have hd := decodeReturnUint_long (out := out) (by omega) (by rw [hs]; decide)
-    change ABI.decodeReturnValueWithMode? config.abiDecodeMode uint256 out = _ at hd
+    change config.externalABI.decodeValue? uint256 out = _ at hd
     have heq : (Value.int (Int.ofNat (calldataWord out 0).toNat) == Value.int 0) =
         decide (calldataWord out 0 = ⟨0⟩) := by
       apply Bool.eq_iff_iff.mpr

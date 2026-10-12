@@ -37,7 +37,7 @@ theorem safeAddownerwiththresholdBodyCore
             hcheck hc (by jump_dest)
           have h1736 := safeRuntime_block_659 (by simp) (by jump_dest) h659
           have h6757 := safeRuntime_block_1736 (by simp) (by jump_dest) h1736
-          have hdec : decodeCalldataWithMode config.abiDecodeMode
+          have hdec : config.externalABI.decodeCalldata?
               (addownerwiththresholdTransition.params.map Param.name)
               (transitionSignature addownerwiththresholdTransition).paramTypes I.calldata =
               some (addOwnerArgs (calldataWord I.calldata 4) (calldataWord I.calldata 36)) :=

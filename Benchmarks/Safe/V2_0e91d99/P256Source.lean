@@ -68,7 +68,7 @@ theorem evalP256Result (p : P256Input) (evm : EVM.State) (z : Bool) (out : ByteA
   apply evalWordCallResult hsuccess hdata
   intro hs
   have hd := decodeReturnUint_long (out := out) (by omega) (by rw [hs]; decide)
-  change ABI.decodeReturnValueWithMode? config.abiDecodeMode uint256 out = _ at hd
+  change config.externalABI.decodeValue? uint256 out = _ at hd
   have heq : (Value.int (Int.ofNat (calldataWord out 0).toNat) == Value.int 1) =
       decide (calldataWord out 0 = ⟨1⟩) := by
     apply Bool.eq_iff_iff.mpr

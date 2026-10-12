@@ -255,7 +255,7 @@ theorem safeEnablemoduleBodyCore
         · obtain ⟨_, _, h1014⟩ := safeDecodeAddress h9591 (by simp) hcheck hcanon (by jump_dest)
           have h3168 := safeRuntime_block_1014 (by simp) (by jump_dest) h1014
           have h6757 := safeRuntime_block_2982 (by simp) (by jump_dest) h3168
-          have hdec : decodeCalldataWithMode config.abiDecodeMode
+          have hdec : config.externalABI.decodeCalldata?
               (enablemoduleTransition.params.map Param.name)
               (transitionSignature enablemoduleTransition).paramTypes I.calldata =
               some (enableModuleArgs (calldataWord I.calldata 4)) :=
