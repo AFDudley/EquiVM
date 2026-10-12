@@ -40,7 +40,7 @@ theorem tokenTransferOutputMemory_free (mem : ByteArray) (ptr : Nat)
 set_option maxRecDepth 100000 in
 theorem safeTokenTransferTrace (p : TokenTransferInput) (evm : EVM.State)
     {I g s0 σ k C aw mem rdata ptr} {ret : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨8538⟩
+    (h : RD safeBytecode I g s0 ⟨8788⟩
       (p.amount :: UInt256.ofNat p.receiver.val :: UInt256.ofNat p.token.val :: ret :: R)
       mem aw rdata σ k C)
     (hee : evm.executionEnv = I) (hacc : evm.accountMap = σ) (hworld : evm.σ₀ = s0.σ₀)

@@ -9,7 +9,7 @@ set_option maxRecDepth 100000
 
 theorem safeSetupBodyTrace (evm : EVM.State)
     {I g s0 σ k C aw rdata n len} {ret : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨4375⟩ (setupDecodedStack I.calldata n len (ret :: R))
+    (h : RD safeBytecode I g s0 ⟨4561⟩ (setupDecodedStack I.calldata n len (ret :: R))
       solcFreePtrMem aw rdata σ k C)
     (hee : evm.executionEnv = I) (hacc : evm.accountMap = σ) (hworld : evm.σ₀ = s0.σ₀)
     (hb : SetupCalldataBounds I.calldata n len)

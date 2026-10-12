@@ -1,7 +1,7 @@
 import Benchmarks.Safe.V2_0e91d99.ExecTransactionEvent
 import Benchmarks.Safe.V2_0e91d99.ExecAfterGuardTrace
 import Benchmarks.Safe.V2_0e91d99.BoolReturnMemory
-import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_021
+import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_022
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -12,7 +12,7 @@ set_option maxRecDepth 100000 in
 theorem safeExecTransactionFinish (p : ExecTransactionInput) (evm : EVM.State)
     {I g s0 σ k C aw mem rdata src} {sigPtr guard hash used paid ptr : UInt256}
     {z : Bool} {R : List UInt256} {frame : Frame}
-    (h : RD safeBytecode I g s0 ⟨3830⟩
+    (h : RD safeBytecode I g s0 ⟨4016⟩
       (paid :: used :: execResultSaved p src sigPtr guard hash z (⟨759⟩ :: R))
       mem aw rdata σ k C)
     (hee : evm.executionEnv = I) (hacc : evm.accountMap = σ) (hworld : evm.σ₀ = s0.σ₀)
@@ -51,7 +51,7 @@ theorem safeExecTransactionFinish (p : ExecTransactionInput) (evm : EVM.State)
         h₃, hmem⟩ := safeExecAfterGuardTrace z evm h₂ hee hacc hworld hg hh hz hf₂ hm₂ hp hb
           (by simp [execResultSaved]; omega)
     · exact .inl ⟨hr, .consNormal (safeExecEventSource hz hh hpaid) (.consRevert hs)⟩
-    have h₄ := safeRuntime_block_4069 (by simp; omega) (by jump_dest) h₃
+    have h₄ := safeRuntime_block_4255 (by simp; omega) (by jump_dest) h₃
     have hf' : memLoad ⟨64⟩ mem' = ptr := by
       rcases hmem with rfl | rfl
       · exact hf₂

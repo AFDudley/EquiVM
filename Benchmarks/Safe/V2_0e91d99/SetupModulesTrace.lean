@@ -1,9 +1,8 @@
 import Benchmarks.Safe.V2_0e91d99.SetupModulesPrepare
 import Benchmarks.Safe.V2_0e91d99.ExecuteRawTrace
 import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_014
-import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_029
-import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_035
-import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_036
+import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_030
+import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_037
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -14,7 +13,7 @@ set_option maxRecDepth 100000
 
 theorem safeSetupModulesTrace (p : SetupModulesInput) (evm : EVM.State)
     {I g s0 σ k C aw mem rdata ptr} {ret : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨8154⟩
+    (h : RD safeBytecode I g s0 ⟨8430⟩
       (UInt256.ofNat ptr :: p.target :: ret :: R) mem aw rdata σ k C)
     (hee : evm.executionEnv = I) (hacc : evm.accountMap = σ) (hworld : evm.σ₀ = s0.σ₀)
     (hm : BytesMemory mem ptr p.payload) (hp : 96 ≤ ptr)
@@ -41,14 +40,14 @@ theorem safeSetupModulesTrace (p : SetupModulesInput) (evm : EVM.State)
       hee₁, hw₁, h₂⟩
   simp only [if_neg ht] at h₁
   by_cases hcode : extCodeSizeWord (p.state evm).accountMap p.target = ⟨0⟩
-  · obtain ⟨aw₂, k₂, C₂, h₂⟩ := safeRuntime_block_8305_fallthrough_packed (by simp; omega) hcode h₁
-    have h₃ := safeRuntime_block_8311 (by simp; omega) (by jump_dest) h₂
-    exact .inl ⟨safeRuntime_block_6712 (by simp; omega) h₃,
+  · obtain ⟨aw₂, k₂, C₂, h₂⟩ := safeRuntime_block_8581_fallthrough_packed (by simp; omega) hcode h₁
+    have h₃ := safeRuntime_block_8587 (by simp; omega) (by jump_dest) h₂
+    exact .inl ⟨safeRuntime_block_6898 (by simp; omega) h₃,
       safeSetupModulesNoCode p evm hc he ht hcode⟩
-  obtain ⟨aw₂, k₂, C₂, h₂⟩ := safeRuntime_block_8305_taken_packed (by simp; omega) hcode
+  obtain ⟨aw₂, k₂, C₂, h₂⟩ := safeRuntime_block_8581_taken_packed (by simp; omega) hcode
     (by jump_dest) h₁
-  have h₃ := safeRuntime_block_8327 (by simp; omega) (by jump_dest) h₂
-  simp only [safeRuntime_block_8327_stack] at h₃
+  have h₃ := safeRuntime_block_8603 (by simp; omega) (by jump_dest) h₂
+  simp only [safeRuntime_block_8603_stack] at h₃
   have hm' : BytesMemory (setupModulesMemory mem) ptr p.payload :=
     (hm.scratch (by omega) (by omega) ⟨1⟩ ⟨1⟩).scratch (by omega) (by omega) ⟨1⟩ ⟨1⟩
   have hdata : (setupModulesMemory mem).readWithPadding
@@ -73,13 +72,13 @@ theorem safeSetupModulesTrace (p : SetupModulesInput) (evm : EVM.State)
     (by simpa only [accountAddress_ofUInt256_eq_ofNat_toNat] using hcallee)
   cases z with
   | false =>
-      have h₅ := safeRuntime_block_8342_fallthrough (by simp; omega) rfl h₄
-      simp only [safeRuntime_block_8342_fallthrough_stack] at h₅
-      have h₆ := safeRuntime_block_8347 (by simp; omega) (by jump_dest) h₅
-      exact .inl ⟨safeRuntime_block_6712 (by simp; omega) h₆, hsource⟩
+      have h₅ := safeRuntime_block_8618_fallthrough (by simp; omega) rfl h₄
+      simp only [safeRuntime_block_8618_fallthrough_stack] at h₅
+      have h₆ := safeRuntime_block_8623 (by simp; omega) (by jump_dest) h₅
+      exact .inl ⟨safeRuntime_block_6898 (by simp; omega) h₆, hsource⟩
   | true =>
-      have h₅ := safeRuntime_block_8342_taken (by simp; omega) (by decide) (by jump_dest) h₄
-      simp only [safeRuntime_block_8342_taken_stack] at h₅
+      have h₅ := safeRuntime_block_8618_taken (by simp; omega) (by decide) (by jump_dest) h₄
+      simp only [safeRuntime_block_8618_taken_stack] at h₅
       have h₆ := safeRuntime_block_1936 (by omega) hret h₅
       rw [← hacc'] at h₆
       exact .inr ⟨p.finalFrame true, evm', out, aw₄, _, _, hsource, hee', hw', h₆⟩

@@ -1,7 +1,7 @@
 import Benchmarks.Safe.V2_0e91d99.PaymentOutcome
 import Benchmarks.Safe.V2_0e91d99.PaymentNativeReturn
 import Benchmarks.Safe.V2_0e91d99.RawValueCall
-import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_033
+import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_034
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -11,7 +11,7 @@ namespace Benchmarks.Safe.V2_0e91d99
 set_option maxRecDepth 100000 in
 theorem safePaymentNativeTrace (p : PaymentInput) (evm : EVM.State)
     {I g s0 σ k C aw mem rdata ptr} {ret : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨7640⟩
+    (h : RD safeBytecode I g s0 ⟨7916⟩
       (UInt256.mul p.gasTotal (p.nativePrice I) :: UInt256.ofNat (p.receiver I).val :: ⟨0⟩ ::
         UInt256.ofNat p.refundReceiver.val :: UInt256.ofNat p.gasToken.val :: p.gasPrice ::
         p.baseGas :: p.gasUsed :: ret :: R) mem aw rdata σ k C)
@@ -23,10 +23,10 @@ theorem safePaymentNativeTrace (p : PaymentInput) (evm : EVM.State)
     (hz : memLoad ⟨96⟩ mem = ⟨0⟩) (hb : ptr < 2 ^ 220)
     (hov : R.length + 24 ≤ 1024) (hret : (D_J safeBytecode 0).contains ret = true) :
     PaymentOutcome p evm I g s0 mem ptr ret R := by
-  obtain ⟨aw₁, k₁, C₁, h₁⟩ := safeRuntime_block_7640_packed (by simp; omega) h
+  obtain ⟨aw₁, k₁, C₁, h₁⟩ := safeRuntime_block_7916_packed (by simp; omega) h
   have hr := safePaymentReceiverWord p I
   have hf₁ : memLoad (UInt256.ofNat 64) mem = UInt256.ofNat ptr := hf
-  simp only [safeRuntime_block_7640_stack, safeAddressMask, solcAddrMask_clean_left hr,
+  simp only [safeRuntime_block_7916_stack, safeAddressMask, solcAddrMask_clean_left hr,
     hf₁, u256_sub_self] at h₁
   by_cases hperm : I.perm = true ∨ UInt256.mul p.gasTotal (p.nativePrice I) = ⟨0⟩
   swap

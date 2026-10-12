@@ -1,6 +1,6 @@
 import Benchmarks.Safe.V2_0e91d99.PreModuleCheck
 import Benchmarks.Safe.V2_0e91d99.PreModuleAuthorization
-import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_031
+import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_032
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -11,7 +11,7 @@ set_option maxRecDepth 100000 in
 theorem safePreModuleTrace (words : List UInt256) (payload : ByteArray) (evm : EVM.State)
     {I g s0 σ k C aw mem rdata ptr src} {target value operation ret : UInt256}
     {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨7007⟩
+    (h : RD safeBytecode I g s0 ⟨7283⟩
       (operation :: UInt256.ofNat src :: value :: target :: ret :: R) mem aw rdata σ k C)
     (hee : evm.executionEnv = I) (hacc : evm.accountMap = σ) (hworld : evm.σ₀ = s0.σ₀)
     (hf : memLoad ⟨64⟩ mem = UInt256.ofNat ptr)
@@ -66,7 +66,7 @@ theorem safePreModuleTrace (words : List UInt256) (payload : ByteArray) (evm : E
     ⟨hr, hc⟩ | ⟨frame, evm', σ', mem', aw', rdata', hash, k', C', hc, hg, hh,
       he, hac, hwo, hr, hmem⟩
   · exact Or.inl ⟨hr, safePreModuleSourceRevert hauth hc⟩
-  have h₂ := safeRuntime_block_7234 (by simp; omega) hret hr
+  have h₂ := safeRuntime_block_7510 (by simp; omega) hret hr
   exact Or.inr ⟨frame, evm', σ', mem', _, rdata', hash, _, _,
     safePreModuleSourceReturn hauth hc hg hh, he, hac, hwo, h₂, hmem⟩
 

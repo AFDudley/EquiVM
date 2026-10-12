@@ -2,7 +2,7 @@ import Benchmarks.Safe.V2_0e91d99.SignatureInput
 import Benchmarks.Safe.V2_0e91d99.BytesMemory
 import Benchmarks.Safe.V2_0e91d99.SafeMulTrace
 import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_014
-import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_029
+import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_030
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -54,7 +54,7 @@ theorem safeSignatureBoundsTrace (p : SignatureInput) (evm : EVM.State)
     have h₄ := safeRuntime_block_1979 (by
       simp only [safeRuntime_block_1970_fallthrough_stack, List.length_cons]; omega)
       (by jump_dest) h₃
-    exact .inl ⟨safeRuntime_block_6712 (by
+    exact .inl ⟨safeRuntime_block_6898 (by
       simp only [safeRuntime_block_1979_stack, safeRuntime_block_1970_fallthrough_stack,
         List.length_cons]; omega) h₄, safeSignatureBoundsFailed p evm (by omega)⟩
 

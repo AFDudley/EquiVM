@@ -2,7 +2,7 @@ import Benchmarks.Safe.V2_0e91d99.SignatureContractSource
 import Benchmarks.Safe.V2_0e91d99.ContractSignatureCheckTrace
 import Benchmarks.Safe.V2_0e91d99.SafeMulTrace
 import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_014
-import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_029
+import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_030
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -31,7 +31,7 @@ theorem safeSignatureContractTrace (p : SignatureInput) (evm : EVM.State)
       ExecBlock config f evm signatureContractBody
         (.ok (signatureSet (signatureContractFrame f r s) "_contractSigOk" .unit) evm') ∧
       evm'.executionEnv = I ∧ evm'.accountMap = σ' ∧ evm'.σ₀ = s0.σ₀ ∧
-      RD safeBytecode I g s0 ⟨2493⟩
+      RD safeBytecode I g s0 ⟨2679⟩
         (i :: s :: r :: ⟨0⟩ :: r :: last :: p.required :: UInt256.ofNat src :: p.hash :: R)
         mem' aw' out σ' k' C' ∧
       BytesMemory mem' src p.signatures ∧ memLoad ⟨64⟩ mem' = UInt256.ofNat ptr' ∧
@@ -52,7 +52,7 @@ theorem safeSignatureContractTrace (p : SignatureInput) (evm : EVM.State)
     have h₄ := safeRuntime_block_2075 (by
       simp only [safeRuntime_block_2067_fallthrough_stack, List.length_cons]; omega)
       (by jump_dest) h₃
-    exact .inl ⟨safeRuntime_block_6712 (by
+    exact .inl ⟨safeRuntime_block_6898 (by
       simp only [safeRuntime_block_2075_stack, safeRuntime_block_2067_fallthrough_stack,
         List.length_cons]; omega) h₄, signatureContractSourceRejected hc hr hs ho hb⟩
   have hlt : UInt256.lt s (UInt256.mul p.required (UInt256.ofNat 65)) = ⟨0⟩ :=

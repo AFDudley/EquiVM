@@ -42,7 +42,7 @@ theorem safeIsModuleEnabledSource (evm : EVM.State) (key : UInt256)
 
 set_option maxRecDepth 100000 in
 theorem safeIsModuleEnabledTrace {I g s0 σ k C} {key : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨2616⟩ (key :: ⟨759⟩ :: R) solcFreePtrMem
+    (h : RD safeBytecode I g s0 ⟨2802⟩ (key :: ⟨759⟩ :: R) solcFreePtrMem
       (UInt256.ofNat 3) ByteArray.empty σ k C)
     (hov : R.length + 7 ≤ 1024) (hcanon : key.toNat < EVM.addressModulus) :
     RDret safeBytecode g s0 σ (addressMembership key

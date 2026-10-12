@@ -4,7 +4,7 @@ import Benchmarks.Safe.V2_0e91d99.AddOwnerTrace
 import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_006
 import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_013
 import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_014
-import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_018
+import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_019
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -99,7 +99,7 @@ theorem safeAddownerwiththresholdBodyCore
                             (.abi (.fallthrough rfl rfl encodeReturnValues_nil)))
                       · obtain ⟨_, _, _, h3415⟩ := safeAddOwnerCountChanged h1863 (by simp) hperm
                           (by rwa [hcthreshold] at ht)
-                        have h6757' := safeRuntime_block_3229 (by simp) (by jump_dest) h3415
+                        have h6757' := safeRuntime_block_3415 (by simp) (by jump_dest) h3415
                         obtain ⟨_, _, h3423⟩ := safeAuthorizedTrace h6757' (by simp) hauth
                           (by jump_dest)
                         by_cases hle : threshold.toNat ≤ (ownerCount counted).toNat

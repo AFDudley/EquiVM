@@ -9,7 +9,7 @@ namespace Benchmarks.Safe.V2_0e91d99
 set_option maxRecDepth 100000 in
 theorem safeExecTransactionBodyTrace (evm : EVM.State)
     {I g s0 σ k C aw rdata dataLen sigLen} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨3347⟩
+    (h : RD safeBytecode I g s0 ⟨3533⟩
       (execTransactionDecodedStack I.calldata dataLen ⟨128⟩ (⟨759⟩ :: R))
       (memoryBytesDecoded (execTransactionCalldataInput I.calldata dataLen sigLen).signatures)
       aw rdata σ k C)

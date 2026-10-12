@@ -46,7 +46,7 @@ theorem safeAddOwnerLinksTrace {I g s0 σ k C aw mem rdata} {key threshold : UIn
     (h : RD safeBytecode I g s0 ⟨1753⟩ (threshold :: key :: R) mem aw rdata σ k C)
     (hov : R.length + 11 ≤ 1024) (hm : mem.size = 96)
     (hc : key.toNat < EVM.addressModulus) (hperm : I.perm = true) :
-    ∃ mem' aw' k' C', RD safeBytecode I g s0 ⟨10774⟩
+    ∃ mem' aw' k' C', RD safeBytecode I g s0 ⟨11024⟩
       (solcSlotWordAt ⟨3⟩ (addOwnerLinkAccounts σ I key) I :: ⟨1863⟩ :: ⟨0⟩ :: ⟨3⟩ ::
         threshold :: key :: R) mem' aw' rdata (addOwnerLinkAccounts σ I key) k' C' := by
   obtain ⟨aw', k', C', h'⟩ := safeRuntime_block_1753_packed hov hperm (by jump_dest) h
@@ -108,7 +108,7 @@ theorem safeAddOwnerCountChanged {I g s0 σ k C aw mem rdata} {key threshold ret
       mem aw rdata σ k C)
     (hov : R.length + 7 ≤ 1024) (hperm : I.perm = true)
     (ht : solcSlotWordAt ⟨4⟩ (addOwnerCountAccounts σ I) I ≠ threshold) :
-    ∃ aw' k' C', RD safeBytecode I g s0 ⟨3229⟩
+    ∃ aw' k' C', RD safeBytecode I g s0 ⟨3415⟩
       (threshold :: ⟨1936⟩ :: threshold :: key :: ret :: R) mem aw' rdata
       (addOwnerCountAccounts σ I) k' C' := by
   obtain ⟨aw', k', C', h₁⟩ := safeRuntime_block_1863_fallthrough_packed (by simp; omega) hperm

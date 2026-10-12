@@ -2,7 +2,7 @@ import Benchmarks.Safe.V2_0e91d99.WordArrayMemory
 import Benchmarks.Safe.V2_0e91d99.Memory
 import Benchmarks.Safe.V2_0e91d99.Decoders
 import Reasoning.WordArithmetic
-import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_043
+import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_044
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -15,7 +15,7 @@ set_option maxRecDepth 100000
 set_option maxHeartbeats 800000 in
 theorem safeAddressArrayCopyLoop (words : List UInt256)
     {I g s0 σ k C aw mem rdata i n src dst scratch arr ret} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨9869⟩
+    (h : RD safeBytecode I g s0 ⟨10119⟩
       (UInt256.ofNat i :: UInt256.ofNat src :: UInt256.ofNat n :: scratch :: arr ::
         UInt256.ofNat dst :: ret :: R) mem aw rdata σ k C)
     (hov : R.length + 11 ≤ 1024)
@@ -30,9 +30,9 @@ theorem safeAddressArrayCopyLoop (words : List UInt256)
   induction words generalizing i src dst mem aw k C with
   | nil =>
       have hin : i = n := by simpa using hi
-      have h₁ := safeRuntime_block_9869_taken (by simp; omega)
+      have h₁ := safeRuntime_block_10119_taken (by simp; omega)
         (by rw [hin, ult_zero (by omega)]; decide) (by jump_dest) h
-      have h₂ := safeRuntime_block_9908 (by omega) hret h₁
+      have h₂ := safeRuntime_block_10158 (by omega) hret h₁
       simpa only [List.length_nil, Nat.mul_zero, Nat.add_zero, wordBytes,
         ByteArray.append_empty] using (show ∃ aw' k' C', RD safeBytecode I g s0 ret
           (UInt256.ofNat dst :: R) mem aw' rdata σ k' C' from ⟨_, _, _, h₂⟩)
@@ -46,11 +46,11 @@ theorem safeAddressArrayCopyLoop (words : List UInt256)
         apply mloadWordValue_of_readWithPadding (mem := mem)
           (by rw [hsp]; simp only [List.length_cons] at hsrc; omega)
         simpa only [hsp, Nat.mul_zero, Nat.add_zero] using hw 0 (by simp)
-      have h₁ := safeRuntime_block_9869_fallthrough (by simp; omega)
+      have h₁ := safeRuntime_block_10119_fallthrough (by simp; omega)
         (by rw [ult_one (by rw [hip, hnp]; exact hi')]; decide) h
-      obtain ⟨aw₂, k₂, C₂, h₂⟩ := safeRuntime_block_9878_packed
+      obtain ⟨aw₂, k₂, C₂, h₂⟩ := safeRuntime_block_10128_packed
         (by simp; omega) (by jump_dest) h₁
-      simp only [safeRuntime_block_9878_stack, safeRuntime_block_9878_memory,
+      simp only [safeRuntime_block_10128_stack, safeRuntime_block_10128_memory,
         safeAddressMask, hload, solcAddrMask_clean_left (hc w (by simp)), hdp] at h₂
       have hsadd : UInt256.ofNat src + UInt256.ofNat 32 = UInt256.ofNat (src + 32) := by
         rw [u256_add_comm]

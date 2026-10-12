@@ -1,6 +1,6 @@
 import Benchmarks.Safe.V2_0e91d99.SelectorWordsMemory
 import Benchmarks.Safe.V2_0e91d99.OptionalCheckedCall
-import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_021
+import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_022
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -17,14 +17,14 @@ def execAfterGuardMemory (mem : ByteArray) (ptr hash : UInt256) (z : Bool) : Byt
 
 theorem safeExecAfterGuardMemory {mem : ByteArray} {ptr hash : UInt256} (z : Bool)
     (hf : memLoad ⟨64⟩ mem = ptr) (hb : ptr.toNat + 68 < UInt256.size) :
-    safeRuntime_block_3976_taken_memory (mem := mem) (x1 := hash) (x2 := z.toUInt256) =
+    safeRuntime_block_4162_taken_memory (mem := mem) (x1 := hash) (x2 := z.toUInt256) =
       execAfterGuardMemory mem ptr hash z := by
   change memLoad (UInt256.ofNat 64) mem = ptr at hf
   have ha4 : (ptr + UInt256.ofNat 4).toNat = ptr.toNat + 4 :=
     addWord_toNat ptr ⟨4⟩ (by change ptr.toNat + 4 < UInt256.size; omega)
   have ha36 : (ptr + UInt256.ofNat 36).toNat = ptr.toNat + 36 :=
     addWord_toNat ptr ⟨36⟩ (by change ptr.toNat + 36 < UInt256.size; omega)
-  simp only [safeRuntime_block_3976_taken_memory, hf, ha4, ha36,
+  simp only [safeRuntime_block_4162_taken_memory, hf, ha4, ha36,
     execAfterGuardMemory, selectorWordPairMemory, Reasoning.Theory.writeWord]
   have hz : UInt256.isZero (UInt256.isZero z.toUInt256) = z.toUInt256 := by
     cases z <;> decide

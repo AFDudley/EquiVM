@@ -1,8 +1,8 @@
 import Benchmarks.Safe.V2_0e91d99.SignatureLegacyCalldata
 import Benchmarks.Safe.V2_0e91d99.CalldataBytesDecoder
-import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_039
-import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_042
+import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_040
 import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_043
+import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_044
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -11,9 +11,9 @@ namespace Benchmarks.Safe.V2_0e91d99
 
 set_option maxRecDepth 100000
 
-def signatureLegacyDecodePC (counted : Bool) : UInt256 := if counted then ⟨9002⟩ else ⟨9738⟩
-def signatureLegacyOffsetPC (counted : Bool) : UInt256 := if counted then ⟨9022⟩ else ⟨9757⟩
-def signatureLegacyDataPC (counted : Bool) : UInt256 := if counted then ⟨9062⟩ else ⟨9797⟩
+def signatureLegacyDecodePC (counted : Bool) : UInt256 := if counted then ⟨9252⟩ else ⟨9988⟩
+def signatureLegacyOffsetPC (counted : Bool) : UInt256 := if counted then ⟨9272⟩ else ⟨10007⟩
+def signatureLegacyDataPC (counted : Bool) : UInt256 := if counted then ⟨9312⟩ else ⟨10047⟩
 
 def signatureLegacyInitialStack (counted : Bool) (stop ret : UInt256)
     (R : List UInt256) : List UInt256 :=
@@ -62,14 +62,14 @@ theorem safeSignatureLegacyHeaderRevert (counted : Bool)
   cases counted with
   | false =>
     simp only [signatureAddressHead, Bool.false_eq_true, if_false] at hc
-    have h₁ := safeRuntime_block_9738_fallthrough (by simp; omega) (by rw [hc]; decide) h
-    exact safeRuntime_block_9754 (by
-      simp only [safeRuntime_block_9738_fallthrough_stack, List.length_cons]; omega) h₁
+    have h₁ := safeRuntime_block_9988_fallthrough (by simp; omega) (by rw [hc]; decide) h
+    exact safeRuntime_block_10004 (by
+      simp only [safeRuntime_block_9988_fallthrough_stack, List.length_cons]; omega) h₁
   | true =>
     simp only [signatureAddressHead, if_true] at hc
-    have h₁ := safeRuntime_block_9002_fallthrough (by simp; omega) (by rw [hc]; decide) h
-    exact safeRuntime_block_9019 (by
-      simp only [safeRuntime_block_9002_fallthrough_stack, List.length_cons]; omega) h₁
+    have h₁ := safeRuntime_block_9252_fallthrough (by simp; omega) (by rw [hc]; decide) h
+    exact safeRuntime_block_9269 (by
+      simp only [safeRuntime_block_9252_fallthrough_stack, List.length_cons]; omega) h₁
 
 theorem safeSignatureLegacyStart (counted : Bool)
     {I g s0 σ k C aw mem rdata stop ret} {R : List UInt256}
@@ -82,12 +82,12 @@ theorem safeSignatureLegacyStart (counted : Bool)
   cases counted with
   | false =>
     simp only [signatureAddressHead, Bool.false_eq_true, if_false] at hc
-    have h₁ := safeRuntime_block_9738_taken (by simp; omega) (by rw [hc]; decide)
+    have h₁ := safeRuntime_block_9988_taken (by simp; omega) (by rw [hc]; decide)
       (by jump_dest) h
     exact ⟨_, _, h₁⟩
   | true =>
     simp only [signatureAddressHead, if_true] at hc
-    have h₁ := safeRuntime_block_9002_taken (by simp; omega) (by rw [hc]; decide)
+    have h₁ := safeRuntime_block_9252_taken (by simp; omega) (by rw [hc]; decide)
       (by jump_dest) h
     exact ⟨_, _, h₁⟩
 
@@ -102,15 +102,15 @@ theorem safeSignatureLegacyDataOffsetRevert (counted : Bool)
   | false =>
     simp only [signatureLegacyOffsetPC, signatureLegacyInitialStack, Bool.false_eq_true, if_false,
       List.cons_append, List.nil_append] at h
-    have h₁ := safeRuntime_block_9757_fallthrough (by simp; omega) (by exact hcond) h
-    exact safeRuntime_block_9782 (by
-      simp only [safeRuntime_block_9757_fallthrough_stack, List.length_cons]; omega) h₁
+    have h₁ := safeRuntime_block_10007_fallthrough (by simp; omega) (by exact hcond) h
+    exact safeRuntime_block_10032 (by
+      simp only [safeRuntime_block_10007_fallthrough_stack, List.length_cons]; omega) h₁
   | true =>
     simp only [signatureLegacyOffsetPC, signatureLegacyInitialStack, if_true,
       List.cons_append, List.nil_append] at h
-    have h₁ := safeRuntime_block_9022_fallthrough (by simp; omega) (by exact hcond) h
-    exact safeRuntime_block_9047 (by
-      simp only [safeRuntime_block_9022_fallthrough_stack, List.length_cons]; omega) h₁
+    have h₁ := safeRuntime_block_9272_fallthrough (by simp; omega) (by exact hcond) h
+    exact safeRuntime_block_9297 (by
+      simp only [safeRuntime_block_9272_fallthrough_stack, List.length_cons]; omega) h₁
 
 theorem safeSignatureLegacyToData (counted : Bool)
     {I g s0 σ k C aw mem rdata stop ret} {R : List UInt256}
@@ -118,7 +118,7 @@ theorem safeSignatureLegacyToData (counted : Bool)
       (signatureLegacyInitialStack counted stop ret R) mem aw rdata σ k C)
     (hoff : (calldataWord I.calldata 36).toNat ≤ 2 ^ 64 - 1)
     (hov : R.length + 20 ≤ 1024) :
-    ∃ k' C', RD safeBytecode I g s0 ⟨8777⟩
+    ∃ k' C', RD safeBytecode I g s0 ⟨9027⟩
       (UInt256.ofNat (4 + (calldataWord I.calldata 36).toNat) :: stop ::
         signatureLegacyDataPC counted :: signatureLegacyDataSaved counted I.calldata stop ret R)
       mem aw rdata σ k' C' := by
@@ -129,18 +129,18 @@ theorem safeSignatureLegacyToData (counted : Bool)
   | false =>
     simp only [signatureLegacyOffsetPC, signatureLegacyInitialStack, Bool.false_eq_true, if_false,
       List.cons_append, List.nil_append] at h
-    have h₁ := safeRuntime_block_9757_taken (by simp; omega) (by exact hcond) (by jump_dest) h
-    have h₂ := safeRuntime_block_9785 (by simp; omega) (by jump_dest) h₁
-    simp only [safeRuntime_block_9785_stack, safeRuntime_block_9757_taken_stack,
+    have h₁ := safeRuntime_block_10007_taken (by simp; omega) (by exact hcond) (by jump_dest) h
+    have h₂ := safeRuntime_block_10035 (by simp; omega) (by jump_dest) h₁
+    simp only [safeRuntime_block_10035_stack, safeRuntime_block_10007_taken_stack,
       show ((⟨4⟩ : UInt256) + UInt256.ofNat 32).toNat = 36 by decide +kernel] at h₂
     rw [hadd] at h₂
     exact ⟨_, _, h₂⟩
   | true =>
     simp only [signatureLegacyOffsetPC, signatureLegacyInitialStack, if_true,
       List.cons_append, List.nil_append] at h
-    have h₁ := safeRuntime_block_9022_taken (by simp; omega) (by exact hcond) (by jump_dest) h
-    have h₂ := safeRuntime_block_9050 (by simp; omega) (by jump_dest) h₁
-    simp only [safeRuntime_block_9050_stack, safeRuntime_block_9022_taken_stack,
+    have h₁ := safeRuntime_block_9272_taken (by simp; omega) (by exact hcond) (by jump_dest) h
+    have h₂ := safeRuntime_block_9300 (by simp; omega) (by jump_dest) h₁
+    simp only [safeRuntime_block_9300_stack, safeRuntime_block_9272_taken_stack,
       show ((⟨4⟩ : UInt256) + UInt256.ofNat 32).toNat = 36 by decide +kernel] at h₂
     rw [hadd] at h₂
     exact ⟨_, _, h₂⟩

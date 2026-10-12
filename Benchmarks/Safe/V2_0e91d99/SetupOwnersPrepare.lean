@@ -1,7 +1,7 @@
 import Benchmarks.Safe.V2_0e91d99.SetupOwnersPrefix
 import Benchmarks.Safe.V2_0e91d99.SetupOwnersStore
-import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_029
-import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_034
+import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_030
+import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_035
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -12,7 +12,7 @@ set_option maxRecDepth 100000
 
 theorem safeSetupOwnersPrepare (p : SetupOwnersInput) (evm : EVM.State)
     {I g s0 σ k C aw mem rdata ptr} {ret : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨7810⟩
+    (h : RD safeBytecode I g s0 ⟨8086⟩
       (p.threshold :: UInt256.ofNat ptr :: ret :: R) mem aw rdata σ k C)
     (hee : evm.executionEnv = I) (hacc : evm.accountMap = σ)
     (hm : WordArrayBuffer mem ptr p.owners)
@@ -20,7 +20,7 @@ theorem safeSetupOwnersPrepare (p : SetupOwnersInput) (evm : EVM.State)
     (RDrev safeBytecode g s0 ∧ ExecFuncBody config p.frame evm setupOwnersFunction.body .reverted) ∨
     ∃ aw' k' C', (storedThreshold evm).toNat = 0 ∧ p.threshold.toNat ≤ p.owners.length ∧
       p.threshold.toNat ≠ 0 ∧
-      RD safeBytecode I g s0 ⟨7892⟩
+      RD safeBytecode I g s0 ⟨8168⟩
         (⟨0⟩ :: UInt256.ofNat p.owners.length :: ⟨1⟩ :: p.threshold ::
           UInt256.ofNat ptr :: ret :: R) mem aw' rdata σ k' C' := by
   have hs : (σ.get? I.codeOwner |>.option (⟨0⟩ : UInt256)
@@ -29,7 +29,7 @@ theorem safeSetupOwnersPrepare (p : SetupOwnersInput) (evm : EVM.State)
     rfl
   by_cases hz : (storedThreshold evm).toNat = 0
   · have hzword : storedThreshold evm = ⟨0⟩ := u256_inj hz
-    obtain ⟨aw₁, k₁, C₁, h₁⟩ := safeRuntime_block_7810_taken_packed (by simp; omega)
+    obtain ⟨aw₁, k₁, C₁, h₁⟩ := safeRuntime_block_8086_taken_packed (by simp; omega)
       (by rw [hs, hzword]; decide) (by jump_dest) h
     have hlen := hm.lengthWord (by omega)
     have hn : p.owners.length < UInt256.size := by omega
@@ -37,33 +37,33 @@ theorem safeSetupOwnersPrepare (p : SetupOwnersInput) (evm : EVM.State)
     · have hgt : UInt256.gt p.threshold (memLoad (UInt256.ofNat ptr) mem) = ⟨0⟩ := by
         rw [hlen]
         exact ugt_zero (by rwa [ulit_toNat' _ hn])
-      have h₂ := safeRuntime_block_7835_taken (by simp; omega)
+      have h₂ := safeRuntime_block_8111_taken (by simp; omega)
         (by rw [hgt]; decide) (by jump_dest) h₁
       by_cases hnz : p.threshold.toNat = 0
       · have hw : p.threshold = ⟨0⟩ := u256_inj hnz
-        have h₃ := safeRuntime_block_7861_fallthrough (by simp; omega)
+        have h₃ := safeRuntime_block_8137_fallthrough (by simp; omega)
           (by rw [hw]; rfl) h₂
-        have h₄ := safeRuntime_block_7869 (by simp; omega) (by jump_dest) h₃
-        exact .inl ⟨safeRuntime_block_6712 (by simp; omega) h₄,
+        have h₄ := safeRuntime_block_8145 (by simp; omega) (by jump_dest) h₃
+        exact .inl ⟨safeRuntime_block_6898 (by simp; omega) h₄,
           safeSetupOwnersThresholdZero p evm hz hle hnz⟩
       · have hw : p.threshold ≠ ⟨0⟩ := fun h ↦ hnz (congrArg UInt256.toNat h)
-        have h₃ := safeRuntime_block_7861_taken (by simp; omega)
+        have h₃ := safeRuntime_block_8137_taken (by simp; omega)
           (u256_zero_sub_ne_zero hw) (by jump_dest) h₂
-        have h₄ := safeRuntime_block_7885 (by simp; omega) h₃
-        simp only [safeRuntime_block_7885_stack, hlen] at h₄
+        have h₄ := safeRuntime_block_8161 (by simp; omega) h₃
+        simp only [safeRuntime_block_8161_stack, hlen] at h₄
         exact .inr ⟨_, _, _, hz, hle, hnz, h₄⟩
     · have hgt : UInt256.gt p.threshold (memLoad (UInt256.ofNat ptr) mem) = ⟨1⟩ := by
         rw [hlen]
         exact ugt_one (by rw [ulit_toNat' _ hn]; omega)
-      have h₂ := safeRuntime_block_7835_fallthrough (by simp; omega) (by rw [hgt]; rfl) h₁
-      have h₃ := safeRuntime_block_7845 (by simp; omega) (by jump_dest) h₂
-      exact .inl ⟨safeRuntime_block_6712 (by simp; omega) h₃,
+      have h₂ := safeRuntime_block_8111_fallthrough (by simp; omega) (by rw [hgt]; rfl) h₁
+      have h₃ := safeRuntime_block_8121 (by simp; omega) (by jump_dest) h₂
+      exact .inl ⟨safeRuntime_block_6898 (by simp; omega) h₃,
         safeSetupOwnersThresholdTooLarge p evm hz hle⟩
   · have hw : storedThreshold evm ≠ ⟨0⟩ := fun h ↦ hz (congrArg UInt256.toNat h)
-    obtain ⟨aw₁, k₁, C₁, h₁⟩ := safeRuntime_block_7810_fallthrough_packed (by simp; omega)
+    obtain ⟨aw₁, k₁, C₁, h₁⟩ := safeRuntime_block_8086_fallthrough_packed (by simp; omega)
       (by rw [hs]; exact isZero_eq_zero_of_ne hw) h
-    have h₂ := safeRuntime_block_7819 (by simp; omega) (by jump_dest) h₁
-    exact .inl ⟨safeRuntime_block_6712 (by simp; omega) h₂,
+    have h₂ := safeRuntime_block_8095 (by simp; omega) (by jump_dest) h₁
+    exact .inl ⟨safeRuntime_block_6898 (by simp; omega) h₂,
       safeSetupOwnersAlreadyInitialized p evm hz⟩
 
 end Benchmarks.Safe.V2_0e91d99

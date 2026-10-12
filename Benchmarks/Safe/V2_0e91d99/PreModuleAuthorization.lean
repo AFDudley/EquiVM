@@ -1,7 +1,7 @@
 import Benchmarks.Safe.V2_0e91d99.PreModuleSource
 import Benchmarks.Safe.V2_0e91d99.Decoders
-import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_029
 import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_030
+import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_031
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -12,26 +12,26 @@ set_option maxRecDepth 100000
 
 theorem safePreModuleUnauthorizedTrace {I g s0 σ k C aw mem rdata}
     {x : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨7078⟩ (x :: R) mem aw rdata σ k C)
+    (h : RD safeBytecode I g s0 ⟨7354⟩ (x :: R) mem aw rdata σ k C)
     (hx : x ≠ ⟨0⟩) (hov : R.length + 8 ≤ 1024) : RDrev safeBytecode g s0 := by
-  have h₁ := safeRuntime_block_7078_fallthrough (by omega) (isZero_eq_zero_of_ne hx) h
-  have h₂ := safeRuntime_block_7084 (by
-    simp only [safeRuntime_block_7078_fallthrough_stack]; omega) (by jump_dest) h₁
-  exact safeRuntime_block_6712 (by
-    simp only [safeRuntime_block_7084_stack, safeRuntime_block_7078_fallthrough_stack,
+  have h₁ := safeRuntime_block_7354_fallthrough (by omega) (isZero_eq_zero_of_ne hx) h
+  have h₂ := safeRuntime_block_7360 (by
+    simp only [safeRuntime_block_7354_fallthrough_stack]; omega) (by jump_dest) h₁
+  exact safeRuntime_block_6898 (by
+    simp only [safeRuntime_block_7360_stack, safeRuntime_block_7354_fallthrough_stack,
       List.length_cons]; omega) h₂
 
 theorem safePreModuleAuthorizationTrace {I g s0 σ k C aw mem rdata} {R : List UInt256}
     (evm : EVM.State)
-    (h : RD safeBytecode I g s0 ⟨7007⟩ R mem aw rdata σ k C)
+    (h : RD safeBytecode I g s0 ⟨7283⟩ R mem aw rdata σ k C)
     (hee : evm.executionEnv = I) (hacc : evm.accountMap = σ)
     (hm : 64 ≤ mem.size) (hov : R.length + 10 ≤ 1024) :
     (RDrev safeBytecode g s0 ∧ ¬preModuleAuthorized evm) ∨
     (preModuleAuthorized evm ∧
-      ∃ aw' k' C', RD safeBytecode I g s0 ⟨7100⟩ (⟨0⟩ :: preModuleGuardWord evm :: R)
+      ∃ aw' k' C', RD safeBytecode I g s0 ⟨7376⟩ (⟨0⟩ :: preModuleGuardWord evm :: R)
         (twoWordHashMem (UInt256.ofNat I.source.val) ⟨1⟩ mem) aw' rdata σ k' C') := by
   by_cases hs : UInt256.ofNat I.source.val = ⟨1⟩
-  · obtain ⟨_, _, h₁⟩ := safeRuntime_block_7007_taken (by omega)
+  · obtain ⟨_, _, h₁⟩ := safeRuntime_block_7283_taken (by omega)
       (by rw [hs]; decide) (by jump_dest) h
     refine Or.inl ⟨safePreModuleUnauthorizedTrace h₁ ?_ (by
       simp only [List.length_cons]; omega), ?_⟩
@@ -39,8 +39,8 @@ theorem safePreModuleAuthorizationTrace {I g s0 σ k C aw mem rdata} {R : List U
     · simp [preModuleAuthorized, hee, hs]
   have hs' : UInt256.eq (UInt256.ofNat I.source.val) (UInt256.ofNat 1) = ⟨0⟩ :=
     uInt256_eq_zero_of_ne (fun he ↦ hs (uInt256_eq_one_eq he))
-  obtain ⟨_, _, h₁⟩ := safeRuntime_block_7007_fallthrough (by omega) hs' h
-  obtain ⟨_, _, h₂⟩ := safeRuntime_block_7052 (by
+  obtain ⟨_, _, h₁⟩ := safeRuntime_block_7283_fallthrough (by omega) hs' h
+  obtain ⟨_, _, h₂⟩ := safeRuntime_block_7328 (by
     simp only [List.length_cons]; omega) h₁
   have hh := twoWordHashMem_mapSlot_of_ge64 (mem := mem)
     (UInt256.ofNat I.source.val) ⟨1⟩ hm
@@ -49,12 +49,12 @@ theorem safePreModuleAuthorizationTrace {I g s0 σ k C aw mem rdata} {R : List U
   have hlink : moduleLink evm (UInt256.ofNat I.source.val) =
       moduleLinkAt σ I (UInt256.ofNat I.source.val) := by
     rw [moduleLink_eq_at, hee, hacc]
-  have hmem : safeRuntime_block_7052_memory (ee := I) (mem := mem) =
+  have hmem : safeRuntime_block_7328_memory (ee := I) (mem := mem) =
       twoWordHashMem (UInt256.ofNat I.source.val) ⟨1⟩ mem := rfl
   have hguard : preModuleGuardWord evm = solcSlotWordAt moduleGuardSlot σ I := by
     simp only [preModuleGuardWord, storageLoad_eq_solcSlotWord, hee, hacc]
     rfl
-  simp only [safeRuntime_block_7052_stack, safeRuntime_block_7007_fallthrough_stack,
+  simp only [safeRuntime_block_7328_stack, safeRuntime_block_7283_fallthrough_stack,
     safeAddressMask, hmem] at h₂
   change RD safeBytecode I g s0 _
     (UInt256.isZero (UInt256.land solcAddrMask
@@ -71,7 +71,7 @@ theorem safePreModuleAuthorizationTrace {I g s0 σ k C aw mem rdata} {R : List U
       (by simp; omega), ?_⟩
     simp [preModuleAuthorized, hee, hz]
   · refine Or.inr ⟨by simpa only [preModuleAuthorized, hee] using And.intro hs hz, ?_⟩
-    have h₃ := safeRuntime_block_7078_taken (by simp; omega)
+    have h₃ := safeRuntime_block_7354_taken (by simp; omega)
       (by rw [isZero_eq_zero_of_ne hz]; decide) (by jump_dest) h₂
     exact ⟨_, _, _, h₃⟩
 

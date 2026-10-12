@@ -10,7 +10,7 @@ set_option maxRecDepth 100000 in
 theorem safeContractSignaturePrepare (words : List UInt256)
     {I g s0 σ k C aw mem rdata ptr src subptr len} {hash offset owner ret : UInt256}
     {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨6850⟩
+    (h : RD safeBytecode I g s0 ⟨7036⟩
       (UInt256.ofNat len :: offset :: UInt256.ofNat src :: hash :: owner :: ret :: R)
       mem aw rdata σ k C)
     (hf : memLoad ⟨64⟩ mem = UInt256.ofNat ptr)
@@ -21,7 +21,7 @@ theorem safeContractSignaturePrepare (words : List UInt256)
     (hin : subptr + 32 ≤ mem.size) (ha : subptr + 32 ≤ ptr)
     (hsrc : subptr + 32 + 32 * words.length ≤ ptr + 68)
     (hb : ptr + 132 + 32 * words.length < UInt256.size) (hov : R.length + 33 ≤ 1024) :
-    ∃ gasArg aw' k' C', RD safeBytecode I g s0 ⟨6916⟩
+    ∃ gasArg aw' k' C', RD safeBytecode I g s0 ⟨7102⟩
       (gasArg :: UInt256.land owner solcAddrMask :: UInt256.ofNat ptr ::
         UInt256.ofNat (contractSignatureCallLength len) :: UInt256.ofNat ptr :: ⟨32⟩ ::
         UInt256.ofNat (contractSignatureCallEnd ptr len) :: ⟨371636862⟩ ::
@@ -44,8 +44,8 @@ theorem safeContractSignaturePrepare (words : List UInt256)
       rw [ulit_toNat' _ he]
       exact uadd_ofNat_toNat (by omega) (by dsimp [contractSignatureCallEnd] at he; omega) he
     rw [← hadd, word_add_sub_left]
-  have h₂ := safeRuntime_block_6904 (by simp; omega) h₁
-  simp only [safeRuntime_block_6904_stack, hfree, hsub'] at h₂
+  have h₂ := safeRuntime_block_7090 (by simp; omega) h₁
+  simp only [safeRuntime_block_7090_stack, hfree, hsub'] at h₂
   exact ⟨_, _, _, _, h₂⟩
 
 end Benchmarks.Safe.V2_0e91d99

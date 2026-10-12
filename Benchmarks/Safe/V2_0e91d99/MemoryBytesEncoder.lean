@@ -1,6 +1,6 @@
 import Benchmarks.Safe.V2_0e91d99.WordBufferCopy
 import Benchmarks.Safe.V2_0e91d99.ByteBufferMemory
-import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_041
+import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_042
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -20,7 +20,7 @@ def memoryBytesEncodedInto (mem : ByteArray) (dst len : Nat) (words : List UInt2
 set_option maxRecDepth 100000 in
 theorem safeMemoryBytesEncodeInto (words : List UInt256)
     {I g s0 σ k C aw mem rdata src dst len} {ret : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨9356⟩
+    (h : RD safeBytecode I g s0 ⟨9606⟩
       (UInt256.ofNat src :: UInt256.ofNat dst :: ret :: R) mem aw rdata σ k C)
     (hl : memLoad (UInt256.ofNat src) mem = UInt256.ofNat len)
     (hw : WordArrayMemory mem (src + 32) words) (hn : words.length = (len + 31) / 32)
@@ -38,8 +38,8 @@ theorem safeMemoryBytesEncodeInto (words : List UInt256)
     rw [u256_add_comm]
     exact u256_32_add_ofNat dst
   have hd : (UInt256.ofNat dst).toNat = dst := ulit_toNat' _ (by omega)
-  have h₁ := safeRuntime_block_9356 (by simp; omega) h
-  simp only [safeRuntime_block_9356_stack, safeRuntime_block_9356_memory, hl, hsrc, hdst, hd] at h₁
+  have h₁ := safeRuntime_block_9606 (by simp; omega) h
+  simp only [safeRuntime_block_9606_stack, safeRuntime_block_9606_memory, hl, hsrc, hdst, hd] at h₁
   have hw' := hw.writeAfter mem (src + 32) words hin dst (UInt256.ofNat len) (by omega)
   have hs : dst + 32 ≤ (writeWord mem dst (UInt256.ofNat len)).size := by
     rw [writeWord_sparse_size]; omega
@@ -49,7 +49,7 @@ theorem safeMemoryBytesEncodeInto (words : List UInt256)
     (by omega) (by simpa only [Nat.zero_add] using hlen)
     (by intro hne; have hp := List.length_pos_iff.mpr hne; rw [hn] at hp ⊢; omega)
     (by omega)
-  have h₄ := safeRuntime_block_9392 (by simp; omega) hret h₃
+  have h₄ := safeRuntime_block_9642 (by simp; omega) hret h₃
   have hwrite : ((UInt256.ofNat dst + UInt256.ofNat len) + UInt256.ofNat 32).toNat =
       dst + 32 + len := by
     rw [uadd3_ofNat_toNat (by omega) (by omega) (by omega) (by omega) (by omega)]
@@ -67,14 +67,14 @@ theorem safeMemoryBytesEncodeInto (words : List UInt256)
     rw [uadd3_ofNat_toNat (by omega) (by omega) (by omega) (by omega) (by omega),
       ulit_toNat' _ (by omega)]
     omega
-  simp only [safeRuntime_block_9392_stack, safeRuntime_block_9392_memory,
+  simp only [safeRuntime_block_9642_stack, safeRuntime_block_9642_memory,
     hmask, hend, hwrite, Nat.add_zero, Nat.zero_add] at h₄
   exact ⟨_, _, _, h₄⟩
 
 set_option maxRecDepth 100000 in
 theorem safeMemoryBytesEncode (words : List UInt256)
     {I g s0 σ k C aw mem rdata src dst len} {ret : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨9356⟩
+    (h : RD safeBytecode I g s0 ⟨9606⟩
       (UInt256.ofNat src :: UInt256.ofNat dst :: ret :: R) mem aw rdata σ k C)
     (hl : memLoad (UInt256.ofNat src) mem = UInt256.ofNat len)
     (hw : WordArrayMemory mem (src + 32) words) (hn : words.length = (len + 31) / 32)

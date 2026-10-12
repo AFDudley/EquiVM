@@ -2,8 +2,10 @@ import Benchmarks.Safe.V2_0e91d99.SignatureApprovalBranch
 import Benchmarks.Safe.V2_0e91d99.SignatureContractTrace
 import Benchmarks.Safe.V2_0e91d99.SignaturePlainTrace
 import Benchmarks.Safe.V2_0e91d99.SignatureEthTrace
+import Benchmarks.Safe.V2_0e91d99.SignatureP256Trace
 import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_014
 import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_015
+import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_016
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -56,10 +58,20 @@ theorem safeSignatureBranchTrace (p : SignatureInput) (evm : EVM.State)
   have hn₁ : UInt256.ofNat 1 ≠ v := fun hh ↦ h₁ (congrArg UInt256.toNat hh.symm)
   have h₂ := safeRuntime_block_2108_taken (by simp; omega)
     (u256_sub_ne_zero_of_ne hn₁) (by jump_dest) h
+  by_cases hv₂ : v.toNat = 2
+  · have heq : v = ⟨2⟩ := u256_inj hv₂
+    subst v
+    have h₃ := safeRuntime_block_2209_fallthrough (by simp; omega) (by decide) h₂
+    exact safeSignatureP256Trace p evm h₃ hc hr hs ho hee hacc hworld hm hf hz hsrc ha hp
+      hn hreq hov
+  simp only [if_neg hv₂]
+  have hn₂ : UInt256.ofNat 2 ≠ v := fun hh ↦ hv₂ (congrArg UInt256.toNat hh.symm)
+  have h₃ := safeRuntime_block_2209_taken (by simp; omega)
+    (u256_sub_ne_zero_of_ne hn₂) (by jump_dest) h₂
   by_cases hh : 30 < v.toNat
   · simp only [if_pos hh]
     have hgt : UInt256.gt v (UInt256.ofNat 30) = ⟨1⟩ := ugt_one hh
-    have h₄ := safeRuntime_block_2209_fallthrough (by simp; omega) (by rw [hgt]; decide) h₂
+    have h₄ := safeRuntime_block_2395_fallthrough (by simp; omega) (by rw [hgt]; decide) h₃
     obtain ⟨hrev, hbody⟩ | ⟨evm', σ', mem', ptr', aw', out, owner, k', C', hbody,
         hee', hacc', hw', h₅, hm', hf', hz', hpl, hph, hms, hpres⟩ :=
       safeSignatureEthTrace p evm h₄ hc.toSignatureCore hr hs hv ho hee hacc hworld hm hf hz
@@ -72,8 +84,8 @@ theorem safeSignatureBranchTrace (p : SignatureInput) (evm : EVM.State)
   · simp only [if_neg hh]
     have hgt : UInt256.gt v (UInt256.ofNat 30) = ⟨0⟩ :=
       ugt_zero (by change v.toNat ≤ 30; omega)
-    have h₄ := safeRuntime_block_2209_taken (by simp; omega) (by rw [hgt]; decide)
-      (by jump_dest) h₂
+    have h₄ := safeRuntime_block_2395_taken (by simp; omega) (by rw [hgt]; decide)
+      (by jump_dest) h₃
     obtain ⟨hrev, hbody⟩ | ⟨evm', σ', mem', ptr', aw', out, owner, k', C', hbody,
         hee', hacc', hw', h₅, hm', hf', hz', hpl, hph, hms, hpres⟩ :=
       safeSignaturePlainTrace p evm h₄ hc.toSignatureCore hr hs hv ho hee hacc hworld hm hf hz

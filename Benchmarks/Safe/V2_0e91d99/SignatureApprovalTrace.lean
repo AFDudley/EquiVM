@@ -2,7 +2,7 @@ import Benchmarks.Safe.V2_0e91d99.SignatureApprovalSource
 import Benchmarks.Safe.V2_0e91d99.ModuleMemory
 import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_014
 import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_015
-import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_029
+import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_030
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -18,7 +18,7 @@ def signatureApprovalMemory (mem : ByteArray) (owner hash : UInt256) : ByteArray
 theorem safeSignatureApprovalAccept {I g s0 σ k C aw mem rdata} {R : List UInt256}
     (h : RD safeBytecode I g s0 ⟨2187⟩ (⟨0⟩ :: R) mem aw rdata σ k C)
     (hov : R.length + 2 ≤ 1024) :
-    ∃ aw' k' C', RD safeBytecode I g s0 ⟨2493⟩ R mem aw' rdata σ k' C' := by
+    ∃ aw' k' C', RD safeBytecode I g s0 ⟨2679⟩ R mem aw' rdata σ k' C' := by
   have h₁ := safeRuntime_block_2187_taken hov (by decide) (by jump_dest) h
   exact safeRuntime_block_2103_packed (by omega) (by jump_dest) h₁
 
@@ -28,7 +28,7 @@ theorem safeSignatureApprovalReject {I g s0 σ k C aw mem rdata} {R : List UInt2
   have h₁ := safeRuntime_block_2187_fallthrough (by omega) (by decide) h
   have h₂ := safeRuntime_block_2193 (by
     simp only [safeRuntime_block_2187_fallthrough_stack]; omega) (by jump_dest) h₁
-  exact safeRuntime_block_6712 (by
+  exact safeRuntime_block_6898 (by
     simp only [safeRuntime_block_2193_stack, safeRuntime_block_2187_fallthrough_stack,
       List.length_cons]; omega) h₂
 
@@ -39,7 +39,7 @@ theorem safeSignatureApprovalTrace {I g s0 σ k C aw mem rdata}
       mem aw rdata σ k C) (hm : 64 ≤ mem.size) (hov : R.length + 16 ≤ 1024) :
     (RDrev safeBytecode g s0 ∧ ¬signatureApproved σ I executor r hash) ∨
     ∃ mem' aw' k' C', signatureApproved σ I executor r hash ∧
-      RD safeBytecode I g s0 ⟨2493⟩
+      RD safeBytecode I g s0 ⟨2679⟩
         (i :: s :: r :: ⟨1⟩ :: r :: last :: required :: src :: hash :: executor :: R)
         mem' aw' rdata σ k' C' ∧
       (mem' = mem ∨ mem' = signatureApprovalMemory mem r hash) := by

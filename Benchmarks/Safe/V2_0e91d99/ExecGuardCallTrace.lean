@@ -1,7 +1,7 @@
 import Benchmarks.Safe.V2_0e91d99.ExecGuardCallPrepare
 import Benchmarks.Safe.V2_0e91d99.ExecGuardSource
 import Benchmarks.Safe.V2_0e91d99.RawValueCall
-import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_019
+import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_020
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -12,7 +12,7 @@ set_option maxRecDepth 100000 in
 theorem safeExecGuardCallTrace (p : ExecTransactionInput) (evm : EVM.State)
     {I g s0 σ k C aw mem rdata ptr src sigPtr locals} {guard hash : UInt256}
     {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨3461⟩
+    (h : RD safeBytecode I g s0 ⟨3647⟩
       (execGuardSaved p src (UInt256.ofNat sigPtr) guard hash R) mem aw rdata σ k C)
     (hee : evm.executionEnv = I) (hacc : evm.accountMap = σ) (hworld : evm.σ₀ = s0.σ₀)
     (hl : ExecTransactionLocals p locals)
@@ -34,7 +34,7 @@ theorem safeExecGuardCallTrace (p : ExecTransactionInput) (evm : EVM.State)
                locals := locals.insert "_guardChecked" (collapseReturns []) } evm') ∧
       evm'.executionEnv = I ∧ evm'.σ₀ = s0.σ₀ ∧
       words.length = (p.signatures.size + 31) / 32 ∧
-      RD safeBytecode I g s0 ⟨3572⟩
+      RD safeBytecode I g s0 ⟨3758⟩
         (execGuardSaved p src (UInt256.ofNat sigPtr) guard hash R)
         (execGuardCallMemory I.calldata mem ptr src p (UInt256.ofNat I.source.val) words)
         aw' out evm'.accountMap k' C' := by
@@ -52,12 +52,12 @@ theorem safeExecGuardCallTrace (p : ExecTransactionInput) (evm : EVM.State)
   obtain ⟨words, _, _, _, hn, hp, h₁⟩ :=
     safeExecGuardCallPrepare p h hf hsig ha hin hs hb ho hov
   by_cases hc : extCodeSizeWord σ (UInt256.land solcAddrMask guard) = ⟨0⟩
-  · obtain ⟨_, _, h₂⟩ := safeRuntime_block_3526_fallthrough
+  · obtain ⟨_, _, h₂⟩ := safeRuntime_block_3712_fallthrough
       (by simp [execGuardSaved]; omega) (by rw [hc]; decide) h₁
-    have hr := safeRuntime_block_3546 (by
-      simp [safeRuntime_block_3526_fallthrough_stack, execGuardSaved]; omega) h₂
+    have hr := safeRuntime_block_3732 (by
+      simp [safeRuntime_block_3712_fallthrough_stack, execGuardSaved]; omega) h₂
     exact .inl ⟨hr, optionalCheckedCallNoCode he hguard ht (by simpa only [hacc] using hc)⟩
-  obtain ⟨_, _, h₂⟩ := safeRuntime_block_3526_taken
+  obtain ⟨_, _, h₂⟩ := safeRuntime_block_3712_taken
     (by simp [execGuardSaved]; omega)
     (by rw [isZero_eq_zero_of_ne hc]; decide) (by jump_dest) h₁
   have hpres := execGuardCallMemory_preserves I.calldata mem ptr src p
@@ -67,7 +67,7 @@ theorem safeExecGuardCallTrace (p : ExecTransactionInput) (evm : EVM.State)
       UInt256.ofNat ptr :=
     (hpres.load ⟨64⟩ (by decide) (by change 96 ≤ ptr; omega)
       (by change 96 ≤ mem.size; omega)).trans hf
-  simp only [safeRuntime_block_3526_taken_stack, hfree] at h₂
+  simp only [safeRuntime_block_3712_taken_stack, hfree] at h₂
   let count := 420 + ABI.paddedSize p.tx.payload.size + ABI.paddedSize p.signatures.size
   have hsub : UInt256.sub (UInt256.ofNat (ptr + 420 + ABI.paddedSize p.tx.payload.size +
       ABI.paddedSize p.signatures.size)) (UInt256.ofNat ptr) = UInt256.ofNat count := by
@@ -79,7 +79,7 @@ theorem safeExecGuardCallTrace (p : ExecTransactionInput) (evm : EVM.State)
     rw [show ptr + 420 + ABI.paddedSize p.tx.payload.size + ABI.paddedSize p.signatures.size =
       ptr + count by dsimp [count]; omega, he, word_add_sub_left]
   rw [hsub] at h₂
-  have h₃ := safeRuntime_block_3549 (by simp [execGuardSaved]; omega) h₂
+  have h₃ := safeRuntime_block_3735 (by simp [execGuardSaved]; omega) h₂
   obtain ⟨evm', σ', called, out, aw', k', C', hcall, hee', hacc', hw', h₄, _⟩ :=
     rawValueCallTraceFrom evm h₃ hee hacc hworld (by native_decide)
       (by simp [execGuardSaved]; omega) (Or.inr rfl)
@@ -96,15 +96,15 @@ theorem safeExecGuardCallTrace (p : ExecTransactionInput) (evm : EVM.State)
     · simpa only [addressOfAddress, ht, ulit_toNat' ptr (by omega),
         ulit_toNat' count (by dsimp [count]; omega)] using hcall
   cases called
-  · have h₅ := safeRuntime_block_3553_fallthrough (by simp [execGuardSaved]; omega)
+  · have h₅ := safeRuntime_block_3739_fallthrough (by simp [execGuardSaved]; omega)
       (by decide) h₄
-    have hr := safeRuntime_block_3560 (by
-      simp [safeRuntime_block_3553_fallthrough_stack, execGuardSaved]; omega) h₅
+    have hr := safeRuntime_block_3746 (by
+      simp [safeRuntime_block_3739_fallthrough_stack, execGuardSaved]; omega) h₅
     exact .inl ⟨hr, optionalCheckedCallFailure he hguard ht
       (by simpa only [hacc] using hc) hargs htyped⟩
-  · have h₅ := safeRuntime_block_3553_taken (by simp [execGuardSaved]; omega)
+  · have h₅ := safeRuntime_block_3739_taken (by simp [execGuardSaved]; omega)
       (by decide) (by jump_dest) h₄
-    have h₆ := safeRuntime_block_3567 (by simp [execGuardSaved]; omega) h₅
+    have h₆ := safeRuntime_block_3753 (by simp [execGuardSaved]; omega) h₅
     rw [← hacc'] at h₆
     exact .inr ⟨evm', words, aw', out, _, _, optionalCheckedCallSuccess he hguard ht
       (by simpa only [hacc] using hc) hargs htyped rfl, hee', hw', hn, h₆⟩

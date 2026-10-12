@@ -1,8 +1,8 @@
 import Benchmarks.Safe.V2_0e91d99.Authorization
 import Benchmarks.Safe.V2_0e91d99.Storage
 import Benchmarks.Safe.V2_0e91d99.Decoders
-import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_029
-import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_035
+import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_030
+import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_036
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -79,16 +79,16 @@ theorem safeInternalSetFallbackHandlerRevert (evm : EVM.State) (handler : UInt25
 
 theorem safeInternalFallbackTrace {I g s0 σ k C aw mem rdata} {handler ret : UInt256}
     {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨8118⟩ (handler :: ret :: R) mem aw rdata σ k C)
+    (h : RD safeBytecode I g s0 ⟨8394⟩ (handler :: ret :: R) mem aw rdata σ k C)
     (hov : R.length + 3 ≤ 1024) (hperm : I.perm = true)
     (hret : (D_J safeBytecode 0).contains ret = true) :
     ∃ k' C', RD safeBytecode I g s0 ret R mem aw rdata
       (sstoreAccountMap I.codeOwner σ fallbackHandlerSlot handler) k' C' :=
-  safeRuntime_block_8118 hov hperm hret h
+  safeRuntime_block_8394 hov hperm hret h
 
 theorem safeInternalFallbackTraceStatic {I g s0 σ k C aw mem rdata} {handler : UInt256}
     {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨8118⟩ (handler :: R) mem aw rdata σ k C)
+    (h : RD safeBytecode I g s0 ⟨8394⟩ (handler :: R) mem aw rdata σ k C)
     (hov : R.length + 2 ≤ 1024) (hperm : I.perm = false) :
     RDstatic safeBytecode g s0 := by
   have hdest := h.jumpdest (by native_decide) (by simp; omega)
@@ -97,9 +97,9 @@ theorem safeInternalFallbackTraceStatic {I g s0 σ k C aw mem rdata} {handler : 
   exact hslot.sstoreStatic hperm (by native_decide) (by omega)
 
 theorem safeInternalFallbackTraceRevert {I g s0 σ k C aw mem rdata} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨8102⟩ R mem aw rdata σ k C)
+    (h : RD safeBytecode I g s0 ⟨8378⟩ R mem aw rdata σ k C)
     (hov : R.length + 6 ≤ 1024) : RDrev safeBytecode g s0 := by
-  have h6898 := safeRuntime_block_8102 (by omega) (by jump_dest) h
-  exact safeRuntime_block_6712 (by simp; omega) h6898
+  have h6898 := safeRuntime_block_8378 (by omega) (by jump_dest) h
+  exact safeRuntime_block_6898 (by simp; omega) h6898
 
 end Benchmarks.Safe.V2_0e91d99

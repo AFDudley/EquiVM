@@ -7,7 +7,7 @@ namespace Benchmarks.Safe.V2_0e91d99
 
 theorem safePostModuleTrace {I g s0 σ k C aw mem rdata}
     {hash guard ptr ret : UInt256} {R : List UInt256} (z : Bool) (evm : EVM.State)
-    (h : RD safeBytecode I g s0 ⟨7311⟩
+    (h : RD safeBytecode I g s0 ⟨7587⟩
       (z.toUInt256 :: hash :: guard :: ret :: R) mem aw rdata σ k C)
     (hee : evm.executionEnv = I) (hacc : evm.accountMap = σ) (hworld : evm.σ₀ = s0.σ₀)
     (hf : memLoad ⟨64⟩ mem = ptr) (hm : 96 ≤ mem.size) (hp : 96 ≤ ptr.toNat)

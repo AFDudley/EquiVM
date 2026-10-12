@@ -1,5 +1,6 @@
 import Benchmarks.Safe.V2_0e91d99.SignatureContext
 import Benchmarks.Safe.V2_0e91d99.SignatureApprovalSource
+import Benchmarks.Safe.V2_0e91d99.SignatureP256Source
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
@@ -26,6 +27,7 @@ theorem naturalGtSource {cfg frame evm lhs rhs} {a b : Nat}
 def signatureSelectedBody (v : UInt256) : List Stmt :=
   if v.toNat = 0 then signatureContractBody
   else if v.toNat = 1 then signatureApprovalBody
+  else if v.toNat = 2 then signatureP256Body
   else if 30 < v.toNat then signatureEthBody
   else signatureRecoverBody (.var "dataHash") (.var "v")
 
@@ -49,10 +51,15 @@ theorem signatureSwitchSource {f : Frame} {evm : EVM.State} {v : UInt256} {resul
       (by simpa only [signatureSelectedBody, h₀, h₁, if_false, if_true] using hbody)
   apply ExecStmt.iteFalse (by simpa only [h₁, decide_false] using heq 1)
   apply execBlock_singleton
+  by_cases h₂ : v.toNat = 2
+  · exact .iteTrue (by simpa only [h₂, decide_true] using heq 2)
+      (by simpa only [signatureSelectedBody, h₀, h₁, h₂, if_false, if_true] using hbody)
+  apply ExecStmt.iteFalse (by simpa only [h₂, decide_false] using heq 2)
+  apply execBlock_singleton
   by_cases hh : 30 < v.toNat
   · exact .iteTrue (by simpa only [hh, decide_true] using hgt)
-      (by simpa only [signatureSelectedBody, h₀, h₁, hh, if_false, if_true] using hbody)
+      (by simpa only [signatureSelectedBody, h₀, h₁, h₂, hh, if_false, if_true] using hbody)
   · exact .iteFalse (by simpa only [hh, decide_false] using hgt)
-      (by simpa only [signatureSelectedBody, h₀, h₁, hh, if_false] using hbody)
+      (by simpa only [signatureSelectedBody, h₀, h₁, h₂, hh, if_false] using hbody)
 
 end Benchmarks.Safe.V2_0e91d99

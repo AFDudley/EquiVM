@@ -1,7 +1,6 @@
 import Benchmarks.Safe.V2_0e91d99.SetupSource
-import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_022
 import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_023
-import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_035
+import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_036
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -12,7 +11,7 @@ set_option maxRecDepth 100000
 
 theorem safeSetupFallbackTrace (p : SetupInput) (evm : EVM.State)
     {I g s0 σ k C aw mem rdata locals} {x0 x1 x2 : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨4509⟩
+    (h : RD safeBytecode I g s0 ⟨4695⟩
       (x0 :: x1 :: x2 :: p.fallbackHandler :: R) mem aw rdata σ k C)
     (hee : evm.executionEnv = I) (hacc : evm.accountMap = σ)
     (hl : SetupLocals p locals) (hc : p.fallbackHandler.toNat < EVM.addressModulus)
@@ -23,26 +22,26 @@ theorem safeSetupFallbackTrace (p : SetupInput) (evm : EVM.State)
       ExecStmt config { contract := contract, locals := locals } evm setupFallbackStmt
         (.ok { contract := contract, locals := locals' } evm') ∧
       SetupLocals p locals' ∧ evm'.executionEnv = I ∧ evm'.σ₀ = evm.σ₀ ∧
-      RD safeBytecode I g s0 ⟨4533⟩
+      RD safeBytecode I g s0 ⟨4719⟩
         (x0 :: x1 :: x2 :: p.fallbackHandler :: R) mem aw rdata evm'.accountMap k' C' := by
   by_cases hz : p.fallbackHandler = ⟨0⟩
-  · have h₁ := safeRuntime_block_4509_taken (by omega)
+  · have h₁ := safeRuntime_block_4695_taken (by omega)
       (by rw [safeAddressMask, solcAddrMask_clean hc, hz]; decide) (by jump_dest) h
     rw [← hacc] at h₁
     exact .inr ⟨locals, evm, _, _, safeSetupFallbackSkip p evm hl hc hz, hl, hee, rfl, h₁⟩
-  have h₁ := safeRuntime_block_4509_fallthrough (by omega)
+  have h₁ := safeRuntime_block_4695_fallthrough (by omega)
     (by rw [safeAddressMask, solcAddrMask_clean hc]; exact isZero_eq_zero_of_ne hz) h
-  have h₂ := safeRuntime_block_4525 (by omega) (by jump_dest) h₁
-  simp only [safeRuntime_block_4525_stack] at h₂
+  have h₂ := safeRuntime_block_4711 (by omega) (by jump_dest) h₁
+  simp only [safeRuntime_block_4711_stack] at h₂
   by_cases heq : AccountAddress.ofNat p.fallbackHandler.toNat = I.codeOwner
-  · have h₃ := safeRuntime_block_8085_fallthrough (by simp; omega)
+  · have h₃ := safeRuntime_block_8361_fallthrough (by simp; omega)
       (by rw [safeAddressMask, solcAddrMask_clean hc]
           exact u256_sub_eq_zero_iff_eq.mpr
             ((canonicalAddress_eq_address_iff _ _ hc).mp heq)) h₂
     exact .inl ⟨safeInternalFallbackTraceRevert h₃ (by simp; omega),
       safeSetupFallbackCall p evm hl hc hz
         (safeInternalSetFallbackHandlerRevert evm p.fallbackHandler (by rwa [hee]))⟩
-  have h₃ := safeRuntime_block_8085_taken (by simp; omega)
+  have h₃ := safeRuntime_block_8361_taken (by simp; omega)
     (by rw [safeAddressMask, solcAddrMask_clean hc]
         exact u256_sub_ne_zero_of_ne
           (fun hw ↦ heq ((canonicalAddress_eq_address_iff _ _ hc).mpr hw))) (by jump_dest) h₂

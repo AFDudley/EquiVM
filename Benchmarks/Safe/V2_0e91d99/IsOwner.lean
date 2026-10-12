@@ -2,7 +2,7 @@ import Benchmarks.Safe.V2_0e91d99.Dispatch
 import Benchmarks.Safe.V2_0e91d99.Membership
 import Benchmarks.Safe.V2_0e91d99.Routines
 import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_007
-import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_016
+import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_017
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -42,27 +42,27 @@ theorem safeIsOwnerSource (evm : EVM.State) (key : UInt256)
 
 set_option maxRecDepth 100000 in
 theorem safeIsOwnerTrace {I g s0 σ k C} {key : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨2673⟩ (key :: ⟨759⟩ :: R) solcFreePtrMem
+    (h : RD safeBytecode I g s0 ⟨2859⟩ (key :: ⟨759⟩ :: R) solcFreePtrMem
       (UInt256.ofNat 3) ByteArray.empty σ k C)
     (hov : R.length + 7 ≤ 1024) (hcanon : key.toNat < EVM.addressModulus) :
     RDret safeBytecode g s0 σ (addressMembership key
       (UInt256.land (solcSlotWordAt (mapSlot key ⟨2⟩) σ I) solcAddrMask)).toUInt256.toByteArray :=
         by
   by_cases hs : key = ⟨1⟩
-  · have h2907 := safeRuntime_block_2673_taken (by simp; omega)
+  · have h2907 := safeRuntime_block_2859_taken (by simp; omega)
       (by rw [safeAddressMask, solcAddrMask_clean hcanon, hs]; decide) (by jump_dest) h
-    have h759 := safeRuntime_block_2721 (by omega) (by jump_dest) h2907
-    simp only [safeRuntime_block_2721_stack, hs, safeAddressMask,
+    have h759 := safeRuntime_block_2907 (by omega) (by jump_dest) h2907
+    simp only [safeRuntime_block_2907_stack, hs, safeAddressMask,
       show UInt256.land (⟨1⟩ : UInt256) solcAddrMask = ⟨1⟩ by decide] at h759
     have hret := safeReturnBoolFromScratch (b := false) h759 (by omega)
       solcFreePtrMem_size solcFreePtrMem_read64
     simpa [addressMembership, hs] using hret
-  · have h2879 := safeRuntime_block_2673_fallthrough (by simp; omega)
+  · have h2879 := safeRuntime_block_2859_fallthrough (by simp; omega)
       (by rw [safeAddressMask, solcAddrMask_clean hcanon]
           exact uInt256_eq_zero_of_ne (fun he ↦ hs (uInt256_eq_one_eq he).symm)) h
-    obtain ⟨_, _, h2907⟩ := safeRuntime_block_2693 (by simp; omega) h2879
-    have h759 := safeRuntime_block_2721 (by omega) (by jump_dest) h2907
-    simp only [safeRuntime_block_2721_stack, safeRuntime_block_2693_memory,
+    obtain ⟨_, _, h2907⟩ := safeRuntime_block_2879 (by simp; omega) h2879
+    have h759 := safeRuntime_block_2907 (by omega) (by jump_dest) h2907
+    simp only [safeRuntime_block_2907_stack, safeRuntime_block_2879_memory,
       safeAddressMask, solcAddrMask_clean_left hcanon] at h759
     change RD safeBytecode I g s0 ⟨759⟩
       (UInt256.isZero (UInt256.isZero (UInt256.land (solcSlotWordAt

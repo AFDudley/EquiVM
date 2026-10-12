@@ -1,7 +1,7 @@
 import Benchmarks.Safe.V2_0e91d99.PreModuleReturnMemory
 import Benchmarks.Safe.V2_0e91d99.ContractSignatureSource
-import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_029
 import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_030
+import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_031
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -14,32 +14,32 @@ def signatureReturnMemory (mem : ByteArray) (ptr : Nat) (out : ByteArray) : Byte
   preModuleReturnMemory mem out (UInt256.ofNat ptr)
 
 theorem safeContractSignatureCallFailure {I g s0 σ k C aw mem out} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨6917⟩ (⟨0⟩ :: R) mem aw out σ k C)
+    (h : RD safeBytecode I g s0 ⟨7103⟩ (⟨0⟩ :: R) mem aw out σ k C)
     (hov : R.length + 4 ≤ 1024) : RDrev safeBytecode g s0 := by
-  have h₁ := safeRuntime_block_6917_fallthrough (by omega) (by decide) h
-  exact safeRuntime_block_6924 (by
-    simp only [safeRuntime_block_6917_fallthrough_stack, List.length_cons]; omega) h₁
+  have h₁ := safeRuntime_block_7103_fallthrough (by omega) (by decide) h
+  exact safeRuntime_block_7110 (by
+    simp only [safeRuntime_block_7103_fallthrough_stack, List.length_cons]; omega) h₁
 
 theorem safeContractSignatureReturnBuffer {I g s0 σ k C aw mem ptr}
     {out : ByteArray} {a b c : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨6917⟩ (⟨1⟩ :: a :: b :: c :: R)
+    (h : RD safeBytecode I g s0 ⟨7103⟩ (⟨1⟩ :: a :: b :: c :: R)
       (preModuleOutputMemory mem out (UInt256.ofNat ptr)) aw out σ k C)
     (hf : memLoad ⟨64⟩ mem = UInt256.ofNat ptr)
     (hm : ptr + 32 ≤ mem.size) (hp : 96 ≤ ptr) (hptr : ptr < UInt256.size)
     (hb : out.size < 2 ^ 255) (hov : R.length + 8 ≤ 1024) :
     (RDrev safeBytecode g s0 ∧ contractSignatureDecoded true out = false) ∨
-    ∃ aw' k' C', RD safeBytecode I g s0 ⟨6967⟩ (calldataWord out 0 :: R)
+    ∃ aw' k' C', RD safeBytecode I g s0 ⟨7153⟩ (calldataWord out 0 :: R)
       (signatureReturnMemory mem ptr out) aw' out σ k' C' ∧
       contractSignatureDecoded true out = true := by
-  have h₁ := safeRuntime_block_6917_taken (by simp; omega) (by decide) (by jump_dest) h
-  have h₂ := safeRuntime_block_6931 (by simp; omega) (by jump_dest) h₁
+  have h₁ := safeRuntime_block_7103_taken (by simp; omega) (by decide) (by jump_dest) h
+  have h₂ := safeRuntime_block_7117 (by simp; omega) (by jump_dest) h₁
   have hfree : memLoad (UInt256.ofNat 64)
       (preModuleOutputMemory mem out (UInt256.ofNat ptr)) = UInt256.ofNat ptr :=
     preModuleOutputFree hf (by rw [ulit_toNat' ptr hptr]; omega)
       (by rw [ulit_toNat' ptr hptr]; exact hp)
-  simp only [safeRuntime_block_6931_stack, safeRuntime_block_6931_memory, hfree] at h₂
+  simp only [safeRuntime_block_7117_stack, safeRuntime_block_7117_memory, hfree] at h₂
   change RD safeBytecode I g s0 _
-    (UInt256.ofNat ptr :: (UInt256.ofNat ptr + UInt256.ofNat out.size) :: ⟨6967⟩ :: R)
+    (UInt256.ofNat ptr :: (UInt256.ofNat ptr + UInt256.ofNat out.size) :: ⟨7153⟩ :: R)
     (signatureReturnMemory mem ptr out) _ out σ _ _ at h₂
   by_cases hl : 32 ≤ out.size
   · have hword : memLoad (UInt256.ofNat ptr) (signatureReturnMemory mem ptr out) =
@@ -56,7 +56,7 @@ theorem safeContractSignatureReturnBuffer {I g s0 σ k C aw mem ptr}
 
 theorem safeContractSignatureFinish {I g s0 σ k C aw mem} {out : ByteArray}
     {d0 d1 d2 d3 d4 d5 ret : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨6967⟩
+    (h : RD safeBytecode I g s0 ⟨7153⟩
       (calldataWord out 0 :: signatureMagicWord :: d0 :: d1 :: d2 :: d3 :: d4 :: d5 :: ret :: R)
       mem aw out σ k C)
     (hd : contractSignatureDecoded true out = true) (hov : R.length + 13 ≤ 1024)
@@ -71,20 +71,20 @@ theorem safeContractSignatureFinish {I g s0 σ k C aw mem} {out : ByteArray}
     rw [u256_land_comm]
     exact hh.2.symm
   by_cases hv : calldataWord out 0 = signatureMagicWord
-  · have h₁ := safeRuntime_block_6967_taken (by simp; omega)
+  · have h₁ := safeRuntime_block_7153_taken (by simp; omega)
       (by change UInt256.eq (UInt256.land bytes4Mask (calldataWord out 0)) signatureMagicWord ≠ ⟨0⟩
           rw [hclean, hv, uInt256_eq_self]; decide) (by jump_dest) h
-    have h₂ := safeRuntime_block_6999 (by omega) hret h₁
+    have h₂ := safeRuntime_block_7185 (by omega) hret h₁
     exact Or.inr ⟨_, _, _, h₂, by
       simp only [contractSignatureResult, hh.1, hv, decide_true, Bool.and_self]⟩
-  · have h₁ := safeRuntime_block_6967_fallthrough (by simp; omega)
+  · have h₁ := safeRuntime_block_7153_fallthrough (by simp; omega)
       (by change UInt256.eq (UInt256.land bytes4Mask (calldataWord out 0)) signatureMagicWord = ⟨0⟩
           rw [hclean]
           exact uInt256_eq_zero_of_ne (fun he ↦ hv (uInt256_eq_one_eq he))) h
-    simp only [safeRuntime_block_6967_fallthrough_stack] at h₁
-    have h₂ := safeRuntime_block_6983 (by simp; omega) (by jump_dest) h₁
-    refine Or.inl ⟨safeRuntime_block_6712 (by
-      simp only [safeRuntime_block_6983_stack, safeRuntime_block_6967_fallthrough_stack,
+    simp only [safeRuntime_block_7153_fallthrough_stack] at h₁
+    have h₂ := safeRuntime_block_7169 (by simp; omega) (by jump_dest) h₁
+    refine Or.inl ⟨safeRuntime_block_6898 (by
+      simp only [safeRuntime_block_7169_stack, safeRuntime_block_7153_fallthrough_stack,
         List.length_cons]; omega) h₂, ?_⟩
     simp only [contractSignatureResult, hv, decide_false, Bool.and_false]
 

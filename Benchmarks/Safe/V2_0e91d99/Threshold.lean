@@ -1,7 +1,7 @@
 import Benchmarks.Safe.V2_0e91d99.Authorization
 import Benchmarks.Safe.V2_0e91d99.Storage
-import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_018
-import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_029
+import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_019
+import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_030
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -96,54 +96,54 @@ theorem safeThresholdSourceZero (evm : EVM.State) :
     (.consRevert (.requireFalse (by simpa using safeThresholdNonzero evm ⟨0⟩))))
 
 theorem safeThresholdReach {I g s0 σ k C aw mem rdata} {value : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨3237⟩ (value :: R) mem aw rdata σ k C)
+    (h : RD safeBytecode I g s0 ⟨3423⟩ (value :: R) mem aw rdata σ k C)
     (hov : R.length + 3 ≤ 1024)
     (hle : value.toNat ≤ (solcSlotWordAt ⟨3⟩ σ I).toNat) (hnz : value ≠ ⟨0⟩) :
-    ∃ k' C', RD safeBytecode I g s0 ⟨3288⟩ (value :: R) mem aw rdata σ k' C' := by
-  obtain ⟨_, _, h3450⟩ := safeRuntime_block_3237_taken hov
+    ∃ k' C', RD safeBytecode I g s0 ⟨3474⟩ (value :: R) mem aw rdata σ k' C' := by
+  obtain ⟨_, _, h3450⟩ := safeRuntime_block_3423_taken hov
     (by
       change UInt256.isZero (UInt256.gt value (solcSlotWordAt ⟨3⟩ σ I)) ≠ ⟨0⟩
       rw [ugt_zero hle]; decide) (by jump_dest) h
-  exact ⟨_, _, safeRuntime_block_3264_taken hov (u256_zero_sub_ne_zero hnz) (by jump_dest) h3450⟩
+  exact ⟨_, _, safeRuntime_block_3450_taken hov (u256_zero_sub_ne_zero hnz) (by jump_dest) h3450⟩
 
 theorem safeThresholdTrace {I g s0 σ k C aw mem rdata} {value ret : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨3288⟩ (value :: ret :: R) mem aw rdata σ k C)
+    (h : RD safeBytecode I g s0 ⟨3474⟩ (value :: ret :: R) mem aw rdata σ k C)
     (hov : R.length + 6 ≤ 1024) (hperm : I.perm = true)
     (hret : (D_J safeBytecode 0).contains ret = true) :
     ∃ mem' aw' k' C', RD safeBytecode I g s0 ret R mem' aw' rdata
       (sstoreAccountMap I.codeOwner σ ⟨4⟩ value) k' C' := by
-  obtain ⟨_, _, hout⟩ := safeRuntime_block_3288 hov hperm hret h
+  obtain ⟨_, _, hout⟩ := safeRuntime_block_3474 hov hperm hret h
   exact ⟨_, _, _, _, hout⟩
 
 theorem safeThresholdTraceStatic {I g s0 σ k C aw mem rdata} {value : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨3288⟩ (value :: R) mem aw rdata σ k C)
+    (h : RD safeBytecode I g s0 ⟨3474⟩ (value :: R) mem aw rdata σ k C)
     (hov : R.length + 3 ≤ 1024) (hperm : I.perm = false) :
     RDstatic safeBytecode g s0 := by
   have hstore := evm_run h with [jumpdest, push1 ⟨4⟩, dup2, swap1]
   exact hstore.sstoreStatic hperm (by native_decide) (by simp; omega)
 
 theorem safeThresholdTraceTooLarge {I g s0 σ k C aw mem rdata} {value : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨3237⟩ (value :: R) mem aw rdata σ k C)
+    (h : RD safeBytecode I g s0 ⟨3423⟩ (value :: R) mem aw rdata σ k C)
     (hov : R.length + 7 ≤ 1024)
     (hle : ¬ value.toNat ≤ (solcSlotWordAt ⟨3⟩ σ I).toNat) : RDrev safeBytecode g s0 := by
-  obtain ⟨_, _, h3434⟩ := safeRuntime_block_3237_fallthrough (by omega)
+  obtain ⟨_, _, h3434⟩ := safeRuntime_block_3423_fallthrough (by omega)
     (by
       change UInt256.isZero (UInt256.gt value (solcSlotWordAt ⟨3⟩ σ I)) = ⟨0⟩
       rw [ugt_one (by omega)]; decide) h
-  have h6898 := safeRuntime_block_3248 (by simp; omega) (by jump_dest) h3434
-  exact safeRuntime_block_6712 (by simp; omega) h6898
+  have h6898 := safeRuntime_block_3434 (by simp; omega) (by jump_dest) h3434
+  exact safeRuntime_block_6898 (by simp; omega) h6898
 
 theorem safeThresholdTraceZero {I g s0 σ k C aw mem rdata} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨3237⟩ (⟨0⟩ :: R) mem aw rdata σ k C)
+    (h : RD safeBytecode I g s0 ⟨3423⟩ (⟨0⟩ :: R) mem aw rdata σ k C)
     (hov : R.length + 7 ≤ 1024) : RDrev safeBytecode g s0 := by
-  obtain ⟨_, _, h3450⟩ := safeRuntime_block_3237_taken (by omega)
+  obtain ⟨_, _, h3450⟩ := safeRuntime_block_3423_taken (by omega)
     (by
       change UInt256.isZero (UInt256.gt ⟨0⟩ (solcSlotWordAt ⟨3⟩ σ I)) ≠ ⟨0⟩
       rw [ugt_zero (show (⟨0⟩ : UInt256).toNat ≤ (solcSlotWordAt ⟨3⟩ σ I).toNat
         from Nat.zero_le _)]; decide)
     (by jump_dest) h
-  have h3458 := safeRuntime_block_3264_fallthrough (by omega) (by decide) h3450
-  have h6898 := safeRuntime_block_3272 (by simp; omega) (by jump_dest) h3458
-  exact safeRuntime_block_6712 (by simp; omega) h6898
+  have h3458 := safeRuntime_block_3450_fallthrough (by omega) (by decide) h3450
+  have h6898 := safeRuntime_block_3458 (by simp; omega) (by jump_dest) h3458
+  exact safeRuntime_block_6898 (by simp; omega) h6898
 
 end Benchmarks.Safe.V2_0e91d99

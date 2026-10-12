@@ -15,7 +15,7 @@ set_option maxHeartbeats 1000000
 theorem safeCheckContractTrace (p : ContractSignatureInput)
     {I g s0 σ k C aw mem rdata ptr src} {owner ret : UInt256} {R : List UInt256}
     (evm : EVM.State)
-    (h : RD safeBytecode I g s0 ⟨6749⟩
+    (h : RD safeBytecode I g s0 ⟨6935⟩
       (p.offset :: UInt256.ofNat src :: p.hash :: owner :: ret :: R) mem aw rdata σ k C)
     (hee : evm.executionEnv = I) (hacc : evm.accountMap = σ) (hworld : evm.σ₀ = s0.σ₀)
     (howner : p.owner = AccountAddress.ofUInt256 owner)

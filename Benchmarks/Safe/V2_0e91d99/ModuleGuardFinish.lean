@@ -22,7 +22,7 @@ theorem safeModuleGuardFinish {σ σ₀ σ' : AccountMap} {g : UInt256} {A : Sub
     (hcheck : ExecStmt config (guardFrame .moduleGuard guard) (initState σ σ₀ (.ofUInt256 g) A I)
       (guardCheck .moduleGuard)
       (.ok { contract := contract, locals := locals } evm'))
-    (h : RD safeBytecode I (.ofUInt256 g) (initState σ σ₀ (.ofUInt256 g) A I) ⟨5722⟩
+    (h : RD safeBytecode I (.ofUInt256 g) (initState σ σ₀ (.ofUInt256 g) A I) ⟨5908⟩
       (guard :: ⟨664⟩ :: R) mem aw out σ' k C)
     (hov : R.length + 6 ≤ 1024) : runtimeRefinementFor config contract σ σ₀ g A I := by
   exact guardFinish (kind := .moduleGuard) hcode hdispatch hdec hc hv ha hg hb hee hacc hcheck

@@ -14,7 +14,7 @@ theorem setupModulesMemory_load (mem : ByteArray) (off : UInt256)
 
 theorem safeSetupModulesCallTrace (evm : EVM.State)
     {I g s0 σ k C aw mem rdata n len ptr locals} {ret : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨4533⟩ (setupDecodedStack I.calldata n len (ret :: R))
+    (h : RD safeBytecode I g s0 ⟨4719⟩ (setupDecodedStack I.calldata n len (ret :: R))
       mem aw rdata σ k C)
     (hee : evm.executionEnv = I) (hacc : evm.accountMap = σ) (hworld : evm.σ₀ = s0.σ₀)
     (hl : SetupLocals (setupCalldataInput I.calldata n len) locals)

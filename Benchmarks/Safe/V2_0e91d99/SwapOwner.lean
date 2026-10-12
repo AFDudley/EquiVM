@@ -3,7 +3,7 @@ import Benchmarks.Safe.V2_0e91d99.SwapOwnerTrace
 import Benchmarks.Safe.V2_0e91d99.TripleDecoders
 import Benchmarks.Safe.V2_0e91d99.TripleCalldata
 import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_012
-import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_027
+import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_028
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -37,7 +37,7 @@ theorem safeSwapownerBodyCore
             · obtain ⟨_, _, h1496⟩ := safeDecodeAddressTriple h10923 (by simp)
                 hcheck hc0 hc1 hc2 (by jump_dest)
               have h6248 := safeRuntime_block_1496 (by simp) (by jump_dest) h1496
-              have h6757 := safeRuntime_block_6062 (by simp) (by jump_dest) h6248
+              have h6757 := safeRuntime_block_6248 (by simp) (by jump_dest) h6248
               have hdec : decodeCalldataWithMode config.abiDecodeMode
                   (swapownerTransition.params.map Param.name)
                   (transitionSignature swapownerTransition).paramTypes I.calldata =
@@ -52,7 +52,7 @@ theorem safeSwapownerBodyCore
                 let prev := calldataWord I.calldata 4
                 let old := calldataWord I.calldata 36
                 let new := calldataWord I.calldata 68
-                change RD safeBytecode I (.ofUInt256 g) evm ⟨6070⟩
+                change RD safeBytecode I (.ofUInt256 g) evm ⟨6256⟩
                   [new, old, prev, ⟨664⟩, selWord I] _ _ _ σ _ _ at h6256
                 by_cases hvn : validOwner σ I new
                 · by_cases he : ownerLinkAt σ I new = ⟨0⟩
@@ -105,7 +105,7 @@ theorem safeSwapownerBodyCore
                   exact RDrev.reEquivElim hcode hrev fun _ _ hΞ ↦
                     reEquivSelectorExecution hdispatch hdec hbody (.revert hΞ rfl)
               · have hrev := safeUnauthorizedTrace h6757
-                  (by simp [safeRuntime_block_6062_stack]) hauth
+                  (by simp [safeRuntime_block_6248_stack]) hauth
                 exact reEquivSelectorRevert hcode hdispatch hrev fun locals ↦
                   safeSwapOwnerSourceUnauthorized _ locals hvalue hauth
             · have hrev := safeDecodeAddressTripleNoncanon2 h10923 (by simp) hcheck hc0 hc1 hc2
