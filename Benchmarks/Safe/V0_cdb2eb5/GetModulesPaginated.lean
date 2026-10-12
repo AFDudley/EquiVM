@@ -2,6 +2,8 @@ import Benchmarks.Safe.V0_cdb2eb5.Dispatch
 import Benchmarks.Safe.V0_cdb2eb5.ModulesAllocation
 import Benchmarks.Safe.V0_cdb2eb5.ModulesLoopFinish
 import Benchmarks.Safe.V0_cdb2eb5.ModulesReturn
+import Benchmarks.Safe.V0_cdb2eb5.Blocks.Runtime_010
+import Benchmarks.Safe.V0_cdb2eb5.Blocks.Runtime_023
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -39,7 +41,7 @@ theorem safeGetmodulespaginatedBodyCore
               (getmodulespaginatedTransition.params.map Param.name)
               (transitionSignature getmodulespaginatedTransition).paramTypes I.calldata =
               some (modulesArgs start pageSize) := decodeCalldata_addr_uint256_ok hlen hbig hc
-          change RD safeBytecode I (.ofUInt256 g) evm ⟨4815⟩
+          change RD safeBytecode I (.ofUInt256 g) evm ⟨4721⟩
             [pageSize, start, ⟨1301⟩, selWord I] _ _ _ σ _ _ at h₃
           obtain ⟨mem₄, aw₄, k₄, C₄, h₄, hm₄, hr₄⟩ := safeModulesStartCheck h₃
             (by simp) hc solcFreePtrMem_size solcFreePtrMem_read64
@@ -49,8 +51,8 @@ theorem safeGetmodulespaginatedBodyCore
           by_cases hs : start = ⟨1⟩ ∨ moduleLinkAt σ I start ≠ ⟨0⟩
           · have hs' : start = ⟨1⟩ ∨ moduleLink evm start ≠ ⟨0⟩ := by rwa [hlink]
             simp only [hs, not_true_eq_false, decide_false] at h₄
-            have h₅ := safeRuntime_block_4850_taken (by simp) (by decide) (by jump_dest) h₄
-            change RD safeBytecode I (.ofUInt256 g) evm ⟨4872⟩
+            have h₅ := safeRuntime_block_4756_taken (by simp) (by decide) (by jump_dest) h₄
+            change RD safeBytecode I (.ofUInt256 g) evm ⟨4778⟩
               [⟨0⟩, ⟨96⟩, pageSize, start, ⟨1301⟩, selWord I] mem₄ aw₄ _ σ _ _ at h₅
             by_cases hz : pageSize = ⟨0⟩
             · have hrev := safeModulesZeroSize (hz ▸ h₅) (by simp)

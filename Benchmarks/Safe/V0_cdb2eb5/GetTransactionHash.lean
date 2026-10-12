@@ -16,7 +16,7 @@ variable {σ σ₀ : AccountMap} {g : UInt256} {A : Substate} {I : ExecutionEnv}
 set_option maxRecDepth 100000 in
 theorem safeGetTransactionHashTrace (tx : SafeTransaction)
     {I g s0 σ k C aw rdata} {off : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨5311⟩
+    (h : RD safeBytecode I g s0 ⟨5217⟩
       (tx.nonce :: UInt256.ofNat tx.refundReceiver.val :: UInt256.ofNat tx.gasToken.val ::
         tx.gasPrice :: tx.baseGas :: tx.safeTxGas :: tx.operation ::
         UInt256.ofNat tx.payload.size :: off :: tx.value :: UInt256.ofNat tx.target.val ::
@@ -98,7 +98,7 @@ theorem safeGettransactionhashBodyCore
       have hnat : (UInt256.ofNat (4 + (calldataWord I.calldata 68).toNat + 32)).toNat =
           4 + (calldataWord I.calldata 68).toNat + 32 :=
         ulit_toNat' _ (by change _ < 2 ^ 256; omega)
-      have htrace : RD safeBytecode I (.ofUInt256 g) evm ⟨5311⟩
+      have htrace : RD safeBytecode I (.ofUInt256 g) evm ⟨5217⟩
           (tx.nonce :: UInt256.ofNat tx.refundReceiver.val :: UInt256.ofNat tx.gasToken.val ::
             tx.gasPrice :: tx.baseGas :: tx.safeTxGas :: tx.operation ::
             UInt256.ofNat tx.payload.size ::

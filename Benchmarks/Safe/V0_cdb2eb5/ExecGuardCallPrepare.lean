@@ -1,6 +1,6 @@
 import Benchmarks.Safe.V0_cdb2eb5.ExecGuardEncode
 import Benchmarks.Safe.V0_cdb2eb5.ExecGuardCallMemory
-import Benchmarks.Safe.V0_cdb2eb5.Blocks.Runtime_020
+import Benchmarks.Safe.V0_cdb2eb5.Blocks.Runtime_019
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -17,7 +17,7 @@ def execGuardSaved (p : ExecTransactionInput) (src : Nat) (sigPtr guard hash : U
 set_option maxRecDepth 100000 in
 theorem safeExecGuardCallPrepare (p : ExecTransactionInput)
     {I g s0 σ k C aw mem rdata ptr src sigPtr} {guard hash : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨3647⟩
+    (h : RD safeBytecode I g s0 ⟨3553⟩
       (execGuardSaved p src (UInt256.ofNat sigPtr) guard hash R) mem aw rdata σ k C)
     (hf : memLoad ⟨64⟩ mem = UInt256.ofNat ptr) (hsig : BytesMemory mem sigPtr p.signatures)
     (ha : sigPtr + 32 + p.signatures.size ≤ ptr)
@@ -27,7 +27,7 @@ theorem safeExecGuardCallPrepare (p : ExecTransactionInput)
     (ho : p.tx.operation.toNat < 2) (hov : R.length + 48 ≤ 1024) :
     ∃ words aw' k' C', words.length = (p.signatures.size + 31) / 32 ∧
       (wordBytes words).extract 0 p.signatures.size = p.signatures ∧
-      RD safeBytecode I g s0 ⟨3712⟩
+      RD safeBytecode I g s0 ⟨3618⟩
         ([UInt256.ofNat (ptr + 420 + ABI.paddedSize p.tx.payload.size +
             ABI.paddedSize p.signatures.size), ⟨1978710866⟩,
           UInt256.land solcAddrMask guard] ++
@@ -47,8 +47,8 @@ theorem safeExecGuardCallPrepare (p : ExecTransactionInput)
     apply hsig.preserved (by omega) hm
     intro off count hlo hhi
     exact writeWordReadBelow _ _ _ _ _ (by have := hsig.available; omega) (by omega)
-  obtain ⟨_, _, _, h₁⟩ := safeRuntime_block_3647_packed (by simp; omega) (by jump_dest) h
-  simp only [safeRuntime_block_3647_stack, safeRuntime_block_3647_memory,
+  obtain ⟨_, _, _, h₁⟩ := safeRuntime_block_3553_packed (by simp; omega) (by jump_dest) h
+  simp only [safeRuntime_block_3553_stack, safeRuntime_block_3553_memory,
     safeAddressMask, hf, ht, h4] at h₁
   obtain ⟨words, aw', k', C', hn, hp, h₂⟩ := safeExecGuardEncode p.tx p.signatures h₁ hsigs
     (by omega) hin hs (by omega) ho (by simp [execGuardSaved]; omega) (by jump_dest)

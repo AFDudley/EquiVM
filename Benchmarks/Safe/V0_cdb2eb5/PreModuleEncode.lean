@@ -1,5 +1,6 @@
 import Benchmarks.Safe.V0_cdb2eb5.PreModuleEncodingMemory
 import Benchmarks.Safe.V0_cdb2eb5.Blocks.Runtime_049
+import Benchmarks.Safe.V0_cdb2eb5.Blocks.Runtime_050
 import Benchmarks.Safe.V0_cdb2eb5.Blocks.Runtime_051
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
@@ -12,7 +13,7 @@ set_option maxHeartbeats 1000000 in
 theorem safePreModuleEncode (words : List UInt256)
     {I g s0 σ k C aw mem rdata base src len} {target value operation sender ret : UInt256}
     {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨11707⟩
+    (h : RD safeBytecode I g s0 ⟨11639⟩
       (UInt256.ofNat base :: sender :: operation :: UInt256.ofNat src :: value ::
         target :: ret :: R) mem aw rdata σ k C)
     (hl : memLoad (UInt256.ofNat src) mem = UInt256.ofNat len)
@@ -34,9 +35,9 @@ theorem safePreModuleEncode (words : List UInt256)
   have ht (n : Nat) (hh : base + n < UInt256.size) :
       (UInt256.ofNat (base + n)).toNat = base + n := ulit_toNat' _ hh
   have hs : (UInt256.ofNat src).toNat = src := ulit_toNat' _ (by omega)
-  have hhead : safeRuntime_block_11707_memory (mem := mem) (x0 := UInt256.ofNat base)
+  have hhead : safeRuntime_block_11639_memory (mem := mem) (x0 := UInt256.ofNat base)
       (x4 := value) (x5 := target) = preModuleHeadMemory mem base target value := by
-    simp only [safeRuntime_block_11707_memory, safeAddressMask, hadd 32 (by omega),
+    simp only [safeRuntime_block_11639_memory, safeAddressMask, hadd 32 (by omega),
       hadd 64 (by omega), ht 32 (by omega), ht 64 (by omega), ulit_toNat' base (by omega)]
     rfl
   have hload : memLoad (UInt256.ofNat src) (preModuleHeadMemory mem base target value) =
@@ -46,23 +47,23 @@ theorem safePreModuleEncode (words : List UInt256)
     simpa only [memLoad, hs, if_neg (show ¬ src ≥ mem.size by omega),
       if_neg (show ¬ src ≥ (preModuleHeadMemory mem base target value).size by omega), hr]
       using hl
-  have h₁ := safeRuntime_block_11707 (by simp; omega) (by jump_dest) h
-  simp only [safeRuntime_block_11707_stack, hhead, hadd 160 (by omega)] at h₁
+  have h₁ := safeRuntime_block_11639 (by simp; omega) (by jump_dest) h
+  simp only [safeRuntime_block_11639_stack, hhead, hadd 160 (by omega)] at h₁
   obtain ⟨aw', k', C', h₂⟩ := safeMemoryBytesEncode words h₁ hload
     (preModuleHeadMemory_words _ _ _ _ _ _ hw hin ha) hn
     (by rw [preModuleHeadMemory_size]; omega)
     (by rw [preModuleHeadMemory_size]; omega) (by omega) (by simp; omega) (by jump_dest)
-  have h₃ := safeRuntime_block_11745 (by simp; omega) (by jump_dest) h₂
-  simp only [safeRuntime_block_11745_stack, hadd 96 (by omega)] at h₃
+  have h₃ := safeRuntime_block_11677 (by simp; omega) (by jump_dest) h₂
+  simp only [safeRuntime_block_11677_stack, hadd 96 (by omega)] at h₃
   have hcond : UInt256.lt operation (UInt256.ofNat 2) ≠ UInt256.ofNat 0 := by
     simp [UInt256.lt, UInt256.fromBool, show operation < UInt256.ofNat 2 from ho]
     decide
-  have h₄ := safeRuntime_block_11224_taken (by simp; omega) hcond (by jump_dest) h₃
-  have h₅ := safeRuntime_block_11252 (by simp; omega) (by jump_dest) h₄
-  simp only [safeRuntime_block_11252_stack, safeRuntime_block_11252_memory,
+  have h₄ := safeRuntime_block_11093_taken (by simp; omega) hcond (by jump_dest) h₃
+  have h₅ := safeRuntime_block_11121 (by simp; omega) (by jump_dest) h₄
+  simp only [safeRuntime_block_11121_stack, safeRuntime_block_11121_memory,
     ht 96 (by omega)] at h₅
-  have h₆ := safeRuntime_block_11760 (by simp; omega) hret h₅
-  simp only [safeRuntime_block_11760_stack, safeRuntime_block_11760_memory,
+  have h₆ := safeRuntime_block_11692 (by simp; omega) hret h₅
+  simp only [safeRuntime_block_11692_stack, safeRuntime_block_11692_memory,
     safeAddressMask] at h₆
   rw [show UInt256.ofNat 128 + UInt256.ofNat base = UInt256.ofNat (base + 128) by
     rw [u256_add_comm]; exact hadd 128 (by omega)] at h₆

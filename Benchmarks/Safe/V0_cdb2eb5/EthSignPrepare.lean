@@ -1,6 +1,6 @@
 import Benchmarks.Safe.V0_cdb2eb5.EthSignMemory
 import Benchmarks.Safe.V0_cdb2eb5.CheckedSubtract
-import Benchmarks.Safe.V0_cdb2eb5.Blocks.Runtime_016
+import Benchmarks.Safe.V0_cdb2eb5.Blocks.Runtime_015
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -26,7 +26,7 @@ theorem ethSignPayloadAddresses {mem : ByteArray} {ptr : Nat} {hash : UInt256}
 theorem safeEthSignMemory {mem : ByteArray} {ptr : Nat} {hash : UInt256}
     (hf : memLoad ⟨64⟩ mem = UInt256.ofNat ptr) (hm : 96 ≤ mem.size) (hp : 96 ≤ ptr)
     (hb : ptr + 92 < UInt256.size) :
-    safeRuntime_block_2405_memory (mem := mem) (x8 := hash) = ethSignMemory mem ptr hash := by
+    safeRuntime_block_2311_memory (mem := mem) (x8 := hash) = ethSignMemory mem ptr hash := by
   have hadd (j : Nat) (hj : j ≤ 92) :
       UInt256.ofNat ptr + UInt256.ofNat j = UInt256.ofNat (ptr + j) := by
     apply u256_inj
@@ -48,7 +48,7 @@ theorem safeEthSignMemory {mem : ByteArray} {ptr : Nat} {hash : UInt256}
       omega
     rw [he]
     rfl
-  simp only [safeRuntime_block_2405_memory, hf]
+  simp only [safeRuntime_block_2311_memory, hf]
   change (UInt256.ofNat 92 + UInt256.ofNat ptr).toByteArray.write 0
     ((UInt256.sub (UInt256.sub (UInt256.ofNat 92 + UInt256.ofNat ptr)
       (memLoad (UInt256.ofNat 64) _)) (UInt256.ofNat 32)).toByteArray.write 0 _
@@ -58,11 +58,11 @@ theorem safeEthSignMemory {mem : ByteArray} {ptr : Nat} {hash : UInt256}
 
 theorem safeEthSignPrepare {I g s0 σ k C aw mem rdata ptr}
     {i s r v current last required src hash : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨2405⟩
+    (h : RD safeBytecode I g s0 ⟨2311⟩
       (i :: s :: r :: v :: current :: last :: required :: src :: hash :: R) mem aw rdata σ k C)
     (hf : memLoad ⟨64⟩ mem = UInt256.ofNat ptr) (hm : 96 ≤ mem.size) (hp : 96 ≤ ptr)
     (hb : ptr + 92 < UInt256.size) (hv : 4 ≤ v.toNat) (hov : R.length + 17 ≤ 1024) :
-    ∃ aw' k' C', RD safeBytecode I g s0 ⟨2493⟩
+    ∃ aw' k' C', RD safeBytecode I g s0 ⟨2399⟩
       (UInt256.sub v ⟨4⟩ :: ethSignWord hash :: ⟨1⟩ :: i :: s :: r :: v :: current :: last ::
         required :: src :: hash :: R) (ethSignMemory mem ptr hash) aw' rdata σ k' C' := by
   have hpay := ethSignPayloadAddresses (mem := mem) (hash := hash) hb
@@ -76,9 +76,9 @@ theorem safeEthSignPrepare {I g s0 σ k C aw mem rdata ptr}
     simp only [keccakWord, ethSignWord, uInt256OfByteArray_eq]
     rw [ulit_toNat' _ (by omega), show (⟨60⟩ : UInt256).toNat = 60 from rfl,
       ethSignMemory_read _ _ _ hp]
-  obtain ⟨aw₁, k₁, C₁, h₁⟩ := safeRuntime_block_2405_packed (by omega) (by jump_dest) h
-  simp only [safeRuntime_block_2405_stack] at h₁
-  rw [← safeRuntime_block_2405_memory, hmemory] at h₁
+  obtain ⟨aw₁, k₁, C₁, h₁⟩ := safeRuntime_block_2311_packed (by omega) (by jump_dest) h
+  simp only [safeRuntime_block_2311_stack] at h₁
+  rw [← safeRuntime_block_2311_memory, hmemory] at h₁
   change memLoad (UInt256.ofNat 64) mem = UInt256.ofNat ptr at hf
   change memLoad (UInt256.ofNat 64) _ = UInt256.ofNat ptr at hfree
   rw [hf, hpay, hfree, hlength, h32, hhash] at h₁

@@ -2,7 +2,7 @@ import Benchmarks.Safe.V0_cdb2eb5.ModulesLoop
 import Benchmarks.Safe.V0_cdb2eb5.ModulesSource
 import Benchmarks.Safe.V0_cdb2eb5.CheckedSubtract
 import Benchmarks.Safe.V0_cdb2eb5.Memory
-import Benchmarks.Safe.V0_cdb2eb5.Blocks.Runtime_026
+import Benchmarks.Safe.V0_cdb2eb5.Blocks.Runtime_025
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -32,7 +32,7 @@ theorem safeModulesLastWord {mem capacity words}
 
 theorem safeModulesFinish {I g s0 σ k C aw mem rdata capacity words next start ret}
     {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨5128⟩
+    (h : RD safeBytecode I g s0 ⟨5034⟩
       (UInt256.ofNat words.length :: next :: ⟨128⟩ :: UInt256.ofNat capacity :: start :: ret :: R)
       mem aw rdata σ k C)
     (hov : R.length + 13 ≤ 1024)
@@ -42,21 +42,21 @@ theorem safeModulesFinish {I g s0 σ k C aw mem rdata capacity words next start 
     (hret : (D_J safeBytecode 0).contains ret = true) :
     ∃ aw' k' C', RD safeBytecode I g s0 ret (modulesPageNext words next :: ⟨128⟩ :: R)
       (writeWord mem 128 (UInt256.ofNat words.length)) aw' rdata σ k' C' := by
-  have h5184 : ∃ aw' k' C', RD safeBytecode I g s0 ⟨5184⟩
+  have h5184 : ∃ aw' k' C', RD safeBytecode I g s0 ⟨5090⟩
       (UInt256.ofNat words.length :: modulesPageNext words next :: ⟨128⟩ ::
         UInt256.ofNat capacity :: start :: ret :: R) mem aw' rdata σ k' C' := by
     by_cases hs : next = ⟨1⟩
-    · have h₁ := safeRuntime_block_5128_taken (by simp; omega)
+    · have h₁ := safeRuntime_block_5034_taken (by simp; omega)
         (by rw [safeAddressMask, solcAddrMask_clean hc, hs]; decide) (by jump_dest) h
       exact ⟨_, _, _, by simpa [modulesPageNext, hs] using h₁⟩
     · have hi : 0 < words.length := hg.resolve_left hs
-      have h₁ := safeRuntime_block_5128_fallthrough (by simp; omega)
+      have h₁ := safeRuntime_block_5034_fallthrough (by simp; omega)
         (by rw [safeAddressMask, solcAddrMask_clean hc]; exact u256_eq_of_ne (Ne.symm hs)) h
-      have h₂ := safeRuntime_block_5146 (by simp; omega) (by jump_dest) h₁
+      have h₂ := safeRuntime_block_5052 (by simp; omega) (by jump_dest) h₁
       have hlword := ulit_toNat' words.length (by change words.length < 2 ^ 256; omega)
       have hnword := ulit_toNat' capacity (by change capacity < 2 ^ 256; omega)
       obtain ⟨k₃, C₃, h₃⟩ := safeSubtractTrace h₂
-        (by simp only [safeRuntime_block_5146_stack, List.length_cons]; omega)
+        (by simp only [safeRuntime_block_5052_stack, List.length_cons]; omega)
         (by rw [hlword]; exact hi) (by jump_dest)
       have hsub : UInt256.sub (UInt256.ofNat words.length) (UInt256.ofNat 1) =
           UInt256.ofNat (words.length - 1) := by
@@ -68,24 +68,24 @@ theorem safeModulesFinish {I g s0 σ k C aw mem rdata capacity words next start 
         memLoad_of_wordRead mem _ _ hm.count
       have hlt := ult_one (a := UInt256.ofNat (words.length - 1)) (b := UInt256.ofNat capacity)
         (by rw [hnword, ulit_toNat' _ (by change words.length - 1 < 2 ^ 256; omega)]; omega)
-      have h₄ := safeRuntime_block_5157_taken (by simp; omega)
+      have h₄ := safeRuntime_block_5063_taken (by simp; omega)
         (by rw [hcount, hlt]; decide) (by jump_dest) h₃
-      have h₅ := safeRuntime_block_5173 (by simp; omega) h₄
-      simp only [safeRuntime_block_5173_stack, safeModulesLastWord hm hi hn hlen] at h₅
+      have h₅ := safeRuntime_block_5079 (by simp; omega) h₄
+      simp only [safeRuntime_block_5079_stack, safeModulesLastWord hm hi hn hlen] at h₅
       exact ⟨_, _, _, by simpa only [modulesPageNext, hs, if_false] using h₅⟩
   obtain ⟨aw₁, k₁, C₁, h₁⟩ := h5184
-  exact safeRuntime_block_5184_packed (by simp; omega) hret h₁
+  exact safeRuntime_block_5090_packed (by simp; omega) hret h₁
 
 theorem safeModulesFinishEmpty {I g s0 σ k C aw mem rdata capacity next start ret}
     {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨5128⟩
+    (h : RD safeBytecode I g s0 ⟨5034⟩
       (⟨0⟩ :: next :: ⟨128⟩ :: capacity :: start :: ret :: R) mem aw rdata σ k C)
     (hov : R.length + 14 ≤ 1024) (hc : next.toNat < EVM.addressModulus)
     (hs : next ≠ ⟨1⟩) : RDrev safeBytecode g s0 := by
-  have h₁ := safeRuntime_block_5128_fallthrough (by simp; omega)
+  have h₁ := safeRuntime_block_5034_fallthrough (by simp; omega)
     (by rw [safeAddressMask, solcAddrMask_clean hc]; exact u256_eq_of_ne (Ne.symm hs)) h
-  have h₂ := safeRuntime_block_5146 (by simp; omega) (by jump_dest) h₁
+  have h₂ := safeRuntime_block_5052 (by simp; omega) (by jump_dest) h₁
   exact safeSubtractZeroOne h₂
-    (by simp only [safeRuntime_block_5146_stack, List.length_cons]; omega)
+    (by simp only [safeRuntime_block_5052_stack, List.length_cons]; omega)
 
 end Benchmarks.Safe.V0_cdb2eb5

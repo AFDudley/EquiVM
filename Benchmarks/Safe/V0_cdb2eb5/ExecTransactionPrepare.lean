@@ -18,7 +18,7 @@ def ExecTransactionPrepareOutcome (p : ExecTransactionInput) (evm : EVM.State)
       (exectransactionTransition.body.drop 6) result →
       ExecBlock config p.frame evm exectransactionTransition.body result) ∧
     evm'.executionEnv = I ∧ evm'.σ₀ = s0.σ₀ ∧
-    RD safeBytecode I g s0 ⟨3588⟩
+    RD safeBytecode I g s0 ⟨3494⟩
       (execSignatureSaved I.calldata dataLen ⟨128⟩ (execTransactionHash p evm) R)
       mem' aw' out evm'.accountMap k' C' ∧
     BytesMemory mem' 128 p.signatures ∧ memLoad ⟨64⟩ mem' = UInt256.ofNat ptr' ∧
@@ -27,7 +27,7 @@ def ExecTransactionPrepareOutcome (p : ExecTransactionInput) (evm : EVM.State)
 set_option maxRecDepth 100000 in
 theorem safeExecTransactionPrepare (evm : EVM.State)
     {I g s0 σ k C aw rdata dataLen sigLen} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨3533⟩ (execTransactionDecodedStack I.calldata dataLen ⟨128⟩ R)
+    (h : RD safeBytecode I g s0 ⟨3439⟩ (execTransactionDecodedStack I.calldata dataLen ⟨128⟩ R)
       (memoryBytesDecoded (execTransactionCalldataInput I.calldata dataLen sigLen).signatures)
       aw rdata σ k C)
     (hee : evm.executionEnv = I) (hacc : evm.accountMap = σ) (hworld : evm.σ₀ = s0.σ₀)

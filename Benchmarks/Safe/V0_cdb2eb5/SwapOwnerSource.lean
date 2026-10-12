@@ -76,11 +76,35 @@ theorem safeSwapOwnerLocals (prev old new : UInt256) :
   simp [swapOwnerFrame₂, swapOwnerFrame₁, swapOwnerFrame, swapOwnerArgs,
     resumeAfterInternalCall, Std.HashMap.getElem_insert]
 
+theorem safeSwapOwnerSelfGuard (evm : EVM.State) (prev old new : UInt256) :
+    evalExpr? config (swapOwnerFrame prev old new) evm (neE (.var "newOwner") this) =
+      .ok (.bool (decide (AccountAddress.ofNat new.toNat ≠ evm.executionEnv.codeOwner))) := by
+  rw [neE, evalExpr_binary_nonshort (by decide) (by decide)]
+  have he : evalExpr? config (swapOwnerFrame prev old new) evm (.var "newOwner") =
+      .ok (.address (AccountAddress.ofNat new.toNat)) := by
+    simp [swapOwnerFrame, swapOwnerArgs, evalExpr?, EvalResult.ofOption]
+  rw [he]
+  simp [this, evalExpr?, envValue, evalBinaryOpNeAddress, EvalResult.bind, bind, pure]
+  apply Bool.eq_iff_iff.mpr
+  simp only [beq_iff_eq, Value.address.injEq, decide_eq_true_eq]
+
+theorem safeSwapOwnerSourceSelf (evm : EVM.State) (prev old new : UInt256)
+    (hvalue : evm.executionEnv.weiValue = ⟨0⟩)
+    (hauth : evm.executionEnv.source = evm.executionEnv.codeOwner)
+    (hself : AccountAddress.ofNat new.toNat = evm.executionEnv.codeOwner) :
+    ExecTransitionBody config contract evm (swapOwnerArgs prev old new) swapownerTransition.body
+      .reverted := by
+  exact .execBlockRevert (.consNormal (.requireTrue (evalCallvalueEq_true hvalue))
+    (.consNormal (.requireTrue (by simpa [hauth] using safeEvalAuthorized evm _))
+      (.consRevert (.requireFalse (by
+        simpa [hself] using (safeSwapOwnerSelfGuard evm prev old new))))))
+
 theorem safeSwapOwnerSource (evm : EVM.State) (prev old new : UInt256)
     (hp : prev.toNat < EVM.addressModulus) (ho : old.toNat < EVM.addressModulus)
     (hn : new.toNat < EVM.addressModulus)
     (hvalue : evm.executionEnv.weiValue = ⟨0⟩)
     (hauth : evm.executionEnv.source = evm.executionEnv.codeOwner)
+    (hself : AccountAddress.ofNat new.toNat ≠ evm.executionEnv.codeOwner)
     (hvn : validOwner evm.accountMap evm.executionEnv new) (he : ownerLink evm new = ⟨0⟩)
     (hvo : validOwner evm.accountMap evm.executionEnv old) (hl : ownerLink evm prev = old) :
     ExecTransitionBody config contract evm (swapOwnerArgs prev old new) swapownerTransition.body
@@ -100,6 +124,8 @@ theorem safeSwapOwnerSource (evm : EVM.State) (prev old new : UInt256)
       bind, pure]
   exact .execBlockOK (.consNormal (.requireTrue (evalCallvalueEq_true hvalue))
     (.consNormal (.requireTrue (by simpa [hauth] using safeEvalAuthorized evm _))
+      (.consNormal (.requireTrue (by
+        simpa [hself] using (safeSwapOwnerSelfGuard evm prev old new)))
       (.consNormal (safeSwapOwnerCanAdd evm prev old new hn hvn he)
         (.consNormal (safeSwapOwnerCanRemove evm prev old new hp ho hvo hl)
           (.consNormal (.assign hload hfirst)
@@ -107,13 +133,14 @@ theorem safeSwapOwnerSource (evm : EVM.State) (prev old new : UInt256)
               (.consNormal (.assign (hz _) hthird)
                 (.consNormal (.emit (evalExprs?_singleton (safeSwapOwnerEvalOld _ prev old new)))
                   (.consNormal (.emit (evalExprs?_singleton (safeSwapOwnerEvalNew _ prev old new)))
-                    .nil)))))))))
+                    .nil))))))))))
 
 theorem safeSwapOwnerSourceStatic (evm : EVM.State) (prev old new : UInt256)
     (hp : prev.toNat < EVM.addressModulus) (ho : old.toNat < EVM.addressModulus)
     (hn : new.toNat < EVM.addressModulus)
     (hvalue : evm.executionEnv.weiValue = ⟨0⟩)
     (hauth : evm.executionEnv.source = evm.executionEnv.codeOwner)
+    (hself : AccountAddress.ofNat new.toNat ≠ evm.executionEnv.codeOwner)
     (hvn : validOwner evm.accountMap evm.executionEnv new) (he : ownerLink evm new = ⟨0⟩)
     (hvo : validOwner evm.accountMap evm.executionEnv old) (hl : ownerLink evm prev = old)
     (hperm : evm.executionEnv.perm = false) :
@@ -125,13 +152,16 @@ theorem safeSwapOwnerSourceStatic (evm : EVM.State) (prev old new : UInt256)
     (solcAddrMask_result_canonical _) (safeSwapOwnerEvalNew evm prev old new)
   exact .execBlockStatic (.consNormal (.requireTrue (evalCallvalueEq_true hvalue))
     (.consNormal (.requireTrue (by simpa [hauth] using safeEvalAuthorized evm _))
+      (.consNormal (.requireTrue (by
+        simpa [hself] using (safeSwapOwnerSelfGuard evm prev old new)))
       (.consNormal (safeSwapOwnerCanAdd evm prev old new hn hvn he)
         (.consNormal (safeSwapOwnerCanRemove evm prev old new hp ho hvo hl)
-          (.consStatic (.assignStatic hload hfirst hperm))))))
+          (.consStatic (.assignStatic hload hfirst hperm)))))))
 
 theorem safeSwapOwnerSourceAddRevert (evm : EVM.State) (prev old new : UInt256)
     (hvalue : evm.executionEnv.weiValue = ⟨0⟩)
     (hauth : evm.executionEnv.source = evm.executionEnv.codeOwner)
+    (hself : AccountAddress.ofNat new.toNat ≠ evm.executionEnv.codeOwner)
     (hbody : ExecFuncBody config (canAddOwnerFrame new) evm
       requireCanAddOwnerFunction.body .reverted) :
     ExecTransitionBody config contract evm (swapOwnerArgs prev old new) swapownerTransition.body
@@ -148,12 +178,15 @@ theorem safeSwapOwnerSourceAddRevert (evm : EVM.State) (prev old new : UInt256)
     · exact hbody
   exact .execBlockRevert (.consNormal (.requireTrue (evalCallvalueEq_true hvalue))
     (.consNormal (.requireTrue (by simpa [hauth] using safeEvalAuthorized evm _))
-      (.consRevert hcall)))
+      (.consNormal (.requireTrue (by
+        simpa [hself] using (safeSwapOwnerSelfGuard evm prev old new)))
+      (.consRevert hcall))))
 
 theorem safeSwapOwnerSourceRemoveRevert (evm : EVM.State) (prev old new : UInt256)
     (hn : new.toNat < EVM.addressModulus)
     (hvalue : evm.executionEnv.weiValue = ⟨0⟩)
     (hauth : evm.executionEnv.source = evm.executionEnv.codeOwner)
+    (hself : AccountAddress.ofNat new.toNat ≠ evm.executionEnv.codeOwner)
     (hvn : validOwner evm.accountMap evm.executionEnv new) (he : ownerLink evm new = ⟨0⟩)
     (hbody : ExecFuncBody config (canRemoveOwnerFrame prev old) evm
       requireCanRemoveOwnerFunction.body .reverted) :
@@ -174,7 +207,9 @@ theorem safeSwapOwnerSourceRemoveRevert (evm : EVM.State) (prev old new : UInt25
     · exact hbody
   exact .execBlockRevert (.consNormal (.requireTrue (evalCallvalueEq_true hvalue))
     (.consNormal (.requireTrue (by simpa [hauth] using safeEvalAuthorized evm _))
-      (.consNormal (safeSwapOwnerCanAdd evm prev old new hn hvn he) (.consRevert hcall))))
+      (.consNormal (.requireTrue (by
+        simpa [hself] using (safeSwapOwnerSelfGuard evm prev old new)))
+      (.consNormal (safeSwapOwnerCanAdd evm prev old new hn hvn he) (.consRevert hcall)))))
 
 theorem safeSwapOwnerSourceUnauthorized (evm : EVM.State) (locals : Store)
     (hvalue : evm.executionEnv.weiValue = ⟨0⟩)

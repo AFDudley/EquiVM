@@ -1,5 +1,6 @@
 import Benchmarks.Safe.V0_cdb2eb5.ExecGuardCallTrace
 import Benchmarks.Safe.V0_cdb2eb5.ExecGuardCalldataStack
+import Benchmarks.Safe.V0_cdb2eb5.Blocks.Runtime_019
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -19,7 +20,7 @@ def ExecTransactionGuardOutcome (p : ExecTransactionInput) (initial current : EV
     locals["guard"]? = some (.address (AccountAddress.ofUInt256 (execGuardWord current))) ∧
     locals["txHash"]? = some (wordBytes32Value (execTransactionHash p initial)) ∧
     evm'.executionEnv = I ∧ evm'.σ₀ = s0.σ₀ ∧
-    RD safeBytecode I g s0 ⟨3758⟩
+    RD safeBytecode I g s0 ⟨3664⟩
       (execGuardSaved p src ⟨128⟩ (execGuardWord current) (execTransactionHash p initial) R)
       mem' aw' out evm'.accountMap k' C' ∧
     memLoad ⟨64⟩ mem' = UInt256.ofNat ptr ∧ memLoad ⟨96⟩ mem' = ⟨0⟩ ∧ 128 ≤ mem'.size
@@ -27,7 +28,7 @@ def ExecTransactionGuardOutcome (p : ExecTransactionInput) (initial current : EV
 set_option maxRecDepth 100000 in
 theorem safeExecTransactionGuard (initial evm : EVM.State)
     {I g s0 σ k C aw mem rdata ptr dataLen sigLen} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨3588⟩
+    (h : RD safeBytecode I g s0 ⟨3494⟩
       (execSignatureSaved I.calldata dataLen ⟨128⟩
         (execTransactionHash (execTransactionCalldataInput I.calldata dataLen sigLen) initial) R)
       mem aw rdata σ k C)
@@ -63,9 +64,9 @@ theorem safeExecTransactionGuard (initial evm : EVM.State)
       (fun ac ↦ ac.storage.getD guardSlot ⟨0⟩)) = execGuardWord evm := by
     simp only [execGuardWord, Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
       hee, hacc]
-  obtain ⟨_, _, h₁⟩ := safeRuntime_block_3588
+  obtain ⟨_, _, h₁⟩ := safeRuntime_block_3494
     (by simp [execSignatureSaved, execTransactionDecodedStack]; omega) (by jump_dest) h
-  change RD safeBytecode I g s0 ⟨3629⟩
+  change RD safeBytecode I g s0 ⟨3535⟩
     ((σ.get? I.codeOwner |>.option (⟨0⟩ : UInt256)
       (fun ac ↦ ac.storage.getD guardSlot ⟨0⟩)) :: ⟨0⟩ ::
       execSignatureSaved I.calldata dataLen ⟨128⟩ (execTransactionHash p initial) R)
@@ -81,7 +82,7 @@ theorem safeExecTransactionGuard (initial evm : EVM.State)
     simp [execGuardFrame, execSignedFrame, resumeAfterInternalCall, execHashFrame,
       Std.HashMap.getElem_insert]
   by_cases hzero : UInt256.land (execGuardWord evm) solcAddrMask = ⟨0⟩
-  · have h₂ := safeRuntime_block_3629_taken
+  · have h₂ := safeRuntime_block_3535_taken
       (by simp [execSignatureSaved, execTransactionDecodedStack]; omega)
       (by rw [safeAddressMask, hzero]; decide) (by jump_dest) h₁
     change RD safeBytecode I g s0 _
@@ -97,7 +98,7 @@ theorem safeExecTransactionGuard (initial evm : EVM.State)
     exact .inr ⟨_, evm, mem, _, rdata, _, _,
       fun _ ht ↦ .consNormal hs (.consNormal hskip ht), hl, hg, hh, hee, hworld,
       h₂, hf, hz, hm⟩
-  have h₂ := safeRuntime_block_3629_fallthrough
+  have h₂ := safeRuntime_block_3535_fallthrough
     (by simp [execSignatureSaved, execTransactionDecodedStack]; omega)
     (by rw [safeAddressMask]; exact isZero_eq_zero_of_ne hzero) h₁
   change RD safeBytecode I g s0 _

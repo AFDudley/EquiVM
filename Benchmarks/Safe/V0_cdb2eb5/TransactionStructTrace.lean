@@ -1,5 +1,6 @@
 import Benchmarks.Safe.V0_cdb2eb5.TransactionDomainTrace
 import Benchmarks.Safe.V0_cdb2eb5.ByteCopy
+import Benchmarks.Safe.V0_cdb2eb5.Blocks.Runtime_025
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -32,7 +33,7 @@ theorem safeTransactionPrefixMemory {I : ExecutionEnv} {mem : ByteArray} {ptr : 
     (hn : tx.payload.size < UInt256.size) (hp : ptr ≤ mem.size)
     (hi : off.toNat + tx.payload.size ≤ I.calldata.size)
     (hd : I.calldata.extract off.toNat (off.toNat + tx.payload.size) = tx.payload) :
-    safeRuntime_block_5377_memory (ee := I) (mem := mem)
+    safeRuntime_block_5283_memory (ee := I) (mem := mem)
       (x5 := UInt256.ofNat tx.gasToken.val) (x6 := tx.gasPrice) (x7 := tx.baseGas)
       (x8 := tx.safeTxGas) (x9 := tx.operation) (x10 := UInt256.ofNat tx.payload.size)
       (x11 := off) (x12 := tx.value) (x13 := UInt256.ofNat tx.target.val) =
@@ -41,7 +42,7 @@ theorem safeTransactionPrefixMemory {I : ExecutionEnv} {mem : ByteArray} {ptr : 
       (UInt256.ofNat ptr + UInt256.ofNat j).toNat = ptr + j :=
     uadd_ofNat_toNat (by omega) (by omega) (by omega)
   change memLoad (UInt256.ofNat 64) mem = UInt256.ofNat ptr at hf
-  simp only [safeRuntime_block_5377_memory, hf, ulit_toNat' ptr (by omega),
+  simp only [safeRuntime_block_5283_memory, hf, ulit_toNat' ptr (by omega),
     ulit_toNat' tx.payload.size hn, hadd 32 (by decide), hadd 64 (by decide),
     hadd 96 (by decide), hadd 128 (by decide), hadd 160 (by decide), hadd 192 (by decide),
     hadd 224 (by decide), hadd 256 (by decide),
@@ -53,7 +54,7 @@ theorem safeTransactionPrefixMemory {I : ExecutionEnv} {mem : ByteArray} {ptr : 
 set_option maxRecDepth 100000 in
 theorem safeTransactionFinalMemory (I : ExecutionEnv) (mem : ByteArray) (ptr : Nat)
     (tx : SafeTransaction) (hb : ptr + 352 < UInt256.size) :
-    safeRuntime_block_5483_memory (mem := transactionPrefixMemory mem ptr tx)
+    safeRuntime_block_5389_memory (mem := transactionPrefixMemory mem ptr tx)
       (x0 := UInt256.ofNat tx.refundReceiver.val) (x1 := tx.nonce) (x2 := domainWord I)
       (x3 := UInt256.ofNat ptr) (x5 := UInt256.ofNat ptr + UInt256.ofNat 64)
       (x6 := UInt256.ofNat ptr + UInt256.ofNat 32) = transactionFinalMemory mem ptr I tx := by
@@ -65,7 +66,7 @@ theorem safeTransactionFinalMemory (I : ExecutionEnv) (mem : ByteArray) (ptr : N
     simp only [keccakWord, ulit_toNat' ptr (by omega),
       show (UInt256.ofNat 352).toNat = 352 by rfl, transactionStructMemory_read,
       transactionStructWord, uInt256OfByteArray_eq]
-  simp only [safeRuntime_block_5483_memory, ulit_toNat' ptr (by omega),
+  simp only [safeRuntime_block_5389_memory, ulit_toNat' ptr (by omega),
     hadd 288 (by decide), hadd 320 (by decide), hadd 32 (by decide), hadd 64 (by decide)]
   change writeWord (writeWord (writeWord
     (writeWord (writeWord (transactionPrefixMemory mem ptr tx) (ptr + 288)
@@ -79,12 +80,12 @@ theorem safeTransactionFinalMemory (I : ExecutionEnv) (mem : ByteArray) (ptr : N
 
 theorem safeTransactionFinalStack (I : ExecutionEnv) (mem : ByteArray) (ptr : Nat)
     (tx : SafeTransaction) (R : List UInt256) (hb : ptr + 352 < UInt256.size) :
-    safeRuntime_block_5483_stack (mem := transactionPrefixMemory mem ptr tx)
+    safeRuntime_block_5389_stack (mem := transactionPrefixMemory mem ptr tx)
       (x0 := UInt256.ofNat tx.refundReceiver.val) (x1 := tx.nonce) (x2 := domainWord I)
       (x3 := UInt256.ofNat ptr) (x5 := UInt256.ofNat ptr + UInt256.ofNat 64)
       (x6 := UInt256.ofNat ptr + UInt256.ofNat 32) (R := R) = transactionWord I tx :: R := by
   change keccakWord (UInt256.ofNat ptr + UInt256.ofNat 30) (UInt256.ofNat 66)
-    (safeRuntime_block_5483_memory (mem := transactionPrefixMemory mem ptr tx)
+    (safeRuntime_block_5389_memory (mem := transactionPrefixMemory mem ptr tx)
       (x0 := UInt256.ofNat tx.refundReceiver.val) (x1 := tx.nonce) (x2 := domainWord I)
       (x3 := UInt256.ofNat ptr) (x5 := UInt256.ofNat ptr + UInt256.ofNat 64)
       (x6 := UInt256.ofNat ptr + UInt256.ofNat 32)) :: R = _

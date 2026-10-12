@@ -1,4 +1,6 @@
 import Benchmarks.Safe.V0_cdb2eb5.MemoryBytesDecodeValid
+import Benchmarks.Safe.V0_cdb2eb5.Blocks.Runtime_039
+import Benchmarks.Safe.V0_cdb2eb5.Blocks.Runtime_040
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -9,7 +11,7 @@ set_option maxRecDepth 100000 in
 set_option maxHeartbeats 1000000 in
 theorem safeDecodeMemoryBytesEvidence {I g s0 σ k C aw rdata off} {ret : UInt256}
     {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨9242⟩
+    (h : RD safeBytecode I g s0 ⟨9121⟩
       (UInt256.ofNat off :: UInt256.ofNat I.calldata.size :: ret :: R)
       solcFreePtrMem aw rdata σ k C)
     (hoff : off ≤ 2 ^ 64 + 4) (hsize : I.calldata.size < UInt256.size)
@@ -28,9 +30,9 @@ theorem safeDecodeMemoryBytesEvidence {I g s0 σ k C aw rdata off} {ret : UInt25
   have ht : (UInt256.ofNat I.calldata.size).toNat = I.calldata.size := ulit_toNat' _ hsize
   have hfail (hc : UInt256.slt (UInt256.ofNat off + UInt256.ofNat 31)
       (UInt256.ofNat I.calldata.size) = UInt256.ofNat 0) : RDrev safeBytecode g s0 := by
-    have h₁ := safeRuntime_block_9242_fallthrough (by simp; omega) hc h
-    exact safeRuntime_block_9254 (by
-      simp only [safeRuntime_block_9242_fallthrough_stack, List.length_cons]; omega) h₁
+    have h₁ := safeRuntime_block_9121_fallthrough (by simp; omega) hc h
+    exact safeRuntime_block_9133 (by
+      simp only [safeRuntime_block_9121_fallthrough_stack, List.length_cons]; omega) h₁
   by_cases hs : I.calldata.size < 2 ^ 255
   swap
   · exact Or.inl (hfail (by
@@ -41,7 +43,7 @@ theorem safeDecodeMemoryBytesEvidence {I g s0 σ k C aw rdata off} {ret : UInt25
   · exact Or.inl (hfail (by
       rw [hadd off 31 (by omega)]
       exact slt_ofNat_lit_zero hs (by omega) (by omega)))
-  have h₁ := safeRuntime_block_9242_taken (by simp; omega) (by
+  have h₁ := safeRuntime_block_9121_taken (by simp; omega) (by
     rw [hadd off 31 (by omega), slt_ofNat_lit_one_low hs (by omega)]; decide) (by jump_dest) h
   let len := (calldataWord I.calldata off).toNat
   have hword : calldataWord I.calldata off = UInt256.ofNat len :=
@@ -51,24 +53,24 @@ theorem safeDecodeMemoryBytesEvidence {I g s0 σ k C aw rdata off} {ret : UInt25
   have hmaxNat : (UInt256.ofNat (2 ^ 64 - 1)).toNat = 2 ^ 64 - 1 := by decide +kernel
   by_cases hn : len < 2 ^ 64
   swap
-  · have h₂ := safeRuntime_block_9257_fallthrough (by simp; omega) (by
+  · have h₂ := safeRuntime_block_9136_fallthrough (by simp; omega) (by
       change UInt256.isZero (UInt256.gt (calldataWord I.calldata (UInt256.ofNat off).toNat)
         _) = UInt256.ofNat 0
       rw [ho, hmax, ugt_one (by rw [hmaxNat]; change 2 ^ 64 - 1 < len; omega)]
       decide) h₁
-    have h₃ := safeRuntime_block_9275 (by
-      simp only [safeRuntime_block_9257_fallthrough_stack, List.length_cons]; omega)
+    have h₃ := safeRuntime_block_9154 (by
+      simp only [safeRuntime_block_9136_fallthrough_stack, List.length_cons]; omega)
       (by jump_dest) h₂
-    exact Or.inl (safeRuntime_block_9222 (by
-      simp only [safeRuntime_block_9275_stack, safeRuntime_block_9257_fallthrough_stack,
+    exact Or.inl (safeRuntime_block_9101 (by
+      simp only [safeRuntime_block_9154_stack, safeRuntime_block_9136_fallthrough_stack,
         List.length_cons]; omega) h₃)
   have hlen : (UInt256.ofNat len).toNat = len := ulit_toNat' _ (by omega)
-  have h₂ := safeRuntime_block_9257_taken (by simp; omega) (by
+  have h₂ := safeRuntime_block_9136_taken (by simp; omega) (by
     change UInt256.isZero (UInt256.gt (calldataWord I.calldata (UInt256.ofNat off).toNat)
       _) ≠ UInt256.ofNat 0
     rw [ho, hmax, ugt_zero (by rw [hmaxNat]; change len ≤ 2 ^ 64 - 1; omega)]
     decide) (by jump_dest) h₁
-  simp only [safeRuntime_block_9257_taken_stack, ho] at h₂
+  simp only [safeRuntime_block_9136_taken_stack, ho] at h₂
   change RD safeBytecode I g s0 _ (calldataWord I.calldata off :: _) _ _ _ _ _ _ at h₂
   rw [hword] at h₂
   have he := memoryBytesEnd_initial hn
@@ -82,23 +84,23 @@ theorem safeDecodeMemoryBytesEvidence {I g s0 σ k C aw rdata off} {ret : UInt25
   unfold memoryBytesEnd at he'
   by_cases hlenBound : len ≤ 2 ^ 64 - 192
   swap
-  · have h₃ := safeRuntime_block_9282_fallthrough (by simp; omega) (by
+  · have h₃ := safeRuntime_block_9161_fallthrough (by simp; omega) (by
       rw [he', hf, hmax, ult_zero (by simpa only [heNat] using hlarge),
         ugt_one (by
           rw [heNat, hmaxNat]
           have := memoryBytesInitialEnd_large (len := len) (by omega)
           omega)]
       decide) h₂
-    have h₄ := safeRuntime_block_9321 (by
-      simp only [safeRuntime_block_9282_fallthrough_stack, List.length_cons]; omega)
+    have h₄ := safeRuntime_block_9200 (by
+      simp only [safeRuntime_block_9161_fallthrough_stack, List.length_cons]; omega)
       (by jump_dest) h₃
-    exact Or.inl (safeRuntime_block_9222 (by
-      simp only [safeRuntime_block_9321_stack, safeRuntime_block_9282_fallthrough_stack,
+    exact Or.inl (safeRuntime_block_9101 (by
+      simp only [safeRuntime_block_9200_stack, safeRuntime_block_9161_fallthrough_stack,
         List.length_cons]; omega) h₄)
   by_cases hin : off + 32 + len ≤ I.calldata.size
   · obtain ⟨aw', k', C', hr⟩ := safeDecodeMemoryBytesValid h hword hin hs hlenBound hov hret
     exact Or.inr ⟨len, aw', k', C', hword, hlenBound, hs, hin, hr⟩
-  · have h₃ := safeRuntime_block_9282_taken (by simp; omega) (by
+  · have h₃ := safeRuntime_block_9161_taken (by simp; omega) (by
       rw [he', hf, hmax, ult_zero (by simpa only [heNat] using hlarge),
         ugt_zero (by rw [heNat, hmaxNat]; have := memoryBytesInitialEnd_bound hlenBound; omega)]
       decide) (by jump_dest) h₂
@@ -106,10 +108,10 @@ theorem safeDecodeMemoryBytesEvidence {I g s0 σ k C aw rdata off} {ret : UInt25
         off + 32 + len := by
       rw [hadd len off (by omega), hadd 32 (len + off) (by omega), ulit_toNat' _ (by omega)]
       omega
-    have h₄ := safeRuntime_block_9328_fallthrough (by simp; omega) (by
+    have h₄ := safeRuntime_block_9207_fallthrough (by simp; omega) (by
       rw [ult_one (by rw [ht, hcopyEnd]; omega)]; decide) h₃
-    exact Or.inl (safeRuntime_block_9348 (by
-      simp only [safeRuntime_block_9328_fallthrough_stack,
-        safeRuntime_block_9282_taken_stack, List.length_cons]; omega) h₄)
+    exact Or.inl (safeRuntime_block_9227 (by
+      simp only [safeRuntime_block_9207_fallthrough_stack,
+        safeRuntime_block_9161_taken_stack, List.length_cons]; omega) h₄)
 
 end Benchmarks.Safe.V0_cdb2eb5

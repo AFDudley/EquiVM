@@ -2,6 +2,8 @@ import Benchmarks.Safe.V0_cdb2eb5.Dispatch
 import Benchmarks.Safe.V0_cdb2eb5.WordPairDecoder
 import Benchmarks.Safe.V0_cdb2eb5.StorageAtLoop
 import Benchmarks.Safe.V0_cdb2eb5.StorageAtReturn
+import Benchmarks.Safe.V0_cdb2eb5.Blocks.Runtime_007
+import Benchmarks.Safe.V0_cdb2eb5.Blocks.Runtime_008
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -37,7 +39,7 @@ theorem safeGetstorageatBodyCore
             (getstorageatTransition.params.map Param.name)
             (transitionSignature getstorageatTransition).paramTypes I.calldata =
             some (storageAtArgs offset len) := decodeWordPair hlen hbig
-        change RD safeBytecode I (.ofUInt256 g) evm ⟨3053⟩
+        change RD safeBytecode I (.ofUInt256 g) evm ⟨2959⟩
           [len, offset, ⟨918⟩, selWord I] _ _ _ σ _ _ at h₃
         by_cases hg : (UInt256.shiftLeft len (UInt256.ofNat 5)).toNat ≤ 2 ^ 64 - 1
         · have h₄ := safeStorageAtLengthCheck h₃ (by simp) hg

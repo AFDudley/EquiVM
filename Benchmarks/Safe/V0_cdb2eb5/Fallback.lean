@@ -4,6 +4,7 @@ import Benchmarks.Safe.V0_cdb2eb5.FallbackTrace
 import Benchmarks.Safe.V0_cdb2eb5.FallbackRefinement
 import Benchmarks.Safe.V0_cdb2eb5.FallbackGas
 import Benchmarks.Safe.V0_cdb2eb5.RawZeroCall
+import Benchmarks.Safe.V0_cdb2eb5.Blocks.Runtime_005
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks

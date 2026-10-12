@@ -1,6 +1,6 @@
 import Benchmarks.Safe.V0_cdb2eb5.ByteCopy
 import Benchmarks.Safe.V0_cdb2eb5.MemoryBytesDecoded
-import Benchmarks.Safe.V0_cdb2eb5.Blocks.Runtime_038
+import Benchmarks.Safe.V0_cdb2eb5.Blocks.Runtime_035
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -56,7 +56,7 @@ theorem returnDataMemory_preserved (mem out : ByteArray) (ptr off count : Nat)
 theorem safeReturnDataMemory {mem out : ByteArray} {ptr : Nat}
     (hf : memLoad ⟨64⟩ mem = UInt256.ofNat ptr)
     (hb : ptr + out.size + 64 < UInt256.size) :
-    safeRuntime_block_8809_memory (mem := mem) (rdata := out) = returnDataMemory mem ptr out := by
+    safeRuntime_block_8016_memory (mem := mem) (rdata := out) = returnDataMemory mem ptr out := by
   have halloc : UInt256.land (UInt256.ofNat out.size + UInt256.ofNat 63)
       (UInt256.lnot (UInt256.ofNat 31)) = UInt256.ofNat (32 + ABI.paddedSize out.size) := by
     rw [u256_land_comm]
@@ -76,7 +76,7 @@ theorem safeReturnDataMemory {mem out : ByteArray} {ptr : Nat}
   have h32 : (UInt256.ofNat ptr + UInt256.ofNat 32).toNat = ptr + 32 :=
     uadd_ofNat_toNat (by omega) (by decide) (by omega)
   change memLoad (UInt256.ofNat 64) mem = UInt256.ofNat ptr at hf
-  simp only [safeRuntime_block_8809_memory, hf, halloc, hnext, h32,
+  simp only [safeRuntime_block_8016_memory, hf, halloc, hnext, h32,
     ulit_toNat' ptr (by omega), ulit_toNat' out.size (by omega),
     returnDataMemory, Reasoning.Theory.writeWord]
   rfl

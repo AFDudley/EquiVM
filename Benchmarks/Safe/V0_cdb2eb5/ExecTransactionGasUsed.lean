@@ -1,6 +1,7 @@
 import Benchmarks.Safe.V0_cdb2eb5.ExecTransactionExecuteTrace
 import Benchmarks.Safe.V0_cdb2eb5.SafeSubSource
 import Benchmarks.Safe.V0_cdb2eb5.SafeSubTrace
+import Benchmarks.Safe.V0_cdb2eb5.Blocks.Runtime_020
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -23,7 +24,7 @@ set_option maxRecDepth 100000 in
 theorem safeExecGasUsed (p : ExecTransactionInput) (evm : EVM.State)
     {I g s0 σ k C aw mem rdata src locals} {sigPtr guard hash before : UInt256}
     {z : Bool} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨3940⟩
+    (h : RD safeBytecode I g s0 ⟨3846⟩
       (z.toUInt256 :: before :: execGuardSaved p src sigPtr guard hash R)
       mem aw rdata σ k C)
     (hb : locals["gasBefore"]? = some (uint256Value before))
@@ -35,13 +36,13 @@ theorem safeExecGasUsed (p : ExecTransactionInput) (evm : EVM.State)
         (exectransactionTransition.body.drop 15) result →
         ExecBlock config { contract := contract, locals := locals } evm
           (exectransactionTransition.body.drop 13) result) ∧
-      RD safeBytecode I g s0 ⟨3953⟩
+      RD safeBytecode I g s0 ⟨3859⟩
         (UInt256.sub before after :: before :: execResultSaved p src sigPtr guard hash z R)
         mem aw rdata σ k' C' := by
   let after := (g.subNat (C + 9 + 2)).toUInt256
-  have h₁ := safeRuntime_block_3940 (by simp [execGuardSaved]; omega) (by jump_dest) h
+  have h₁ := safeRuntime_block_3846 (by simp [execGuardSaved]; omega) (by jump_dest) h
   change RD safeBytecode I g s0 _
-    (after :: before :: ⟨3953⟩ :: before :: execResultSaved p src sigPtr guard hash z R)
+    (after :: before :: ⟨3859⟩ :: before :: execResultSaved p src sigPtr guard hash z R)
     _ _ _ _ _ _ at h₁
   let f : Frame :=
     { contract := contract, locals := locals.insert "gasAfter" (uint256Value after) }

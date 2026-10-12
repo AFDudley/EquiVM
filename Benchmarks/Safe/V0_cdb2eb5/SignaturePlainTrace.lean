@@ -10,7 +10,7 @@ namespace Benchmarks.Safe.V0_cdb2eb5
 theorem safeSignaturePlainTrace (p : SignatureInput) (evm : EVM.State)
     {I g s0 σ k C aw mem rdata ptr src} {i s r v current last : UInt256}
     {R : List UInt256} {f : Frame} {old : Value}
-    (h : RD safeBytecode I g s0 ⟨2586⟩
+    (h : RD safeBytecode I g s0 ⟨2492⟩
       (i :: s :: r :: v :: current :: last :: p.required :: UInt256.ofNat src :: p.hash :: R)
       mem aw rdata σ k C)
     (hc : SignatureCore p f) (hr : f.locals["r"]? = some (wordBytes32Value r))
@@ -27,7 +27,7 @@ theorem safeSignaturePlainTrace (p : SignatureInput) (evm : EVM.State)
       ExecBlock config f evm (signatureRecoverBody (.var "dataHash") (.var "v"))
         (.ok (signatureRecoveredFrame f owner) evm') ∧
       evm'.executionEnv = I ∧ evm'.accountMap = σ' ∧ evm'.σ₀ = s0.σ₀ ∧
-      RD safeBytecode I g s0 ⟨2679⟩
+      RD safeBytecode I g s0 ⟨2585⟩
         (i :: s :: r :: v :: owner :: last :: p.required :: UInt256.ofNat src :: p.hash :: R)
         mem' aw' out σ' k' C' ∧
       BytesMemory mem' src p.signatures ∧ memLoad ⟨64⟩ mem' = UInt256.ofNat ptr' ∧

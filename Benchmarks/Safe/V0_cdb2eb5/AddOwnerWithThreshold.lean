@@ -1,6 +1,10 @@
 import Benchmarks.Safe.V0_cdb2eb5.Dispatch
 import Benchmarks.Safe.V0_cdb2eb5.Decoders
 import Benchmarks.Safe.V0_cdb2eb5.AddOwnerTrace
+import Benchmarks.Safe.V0_cdb2eb5.Blocks.Runtime_006
+import Benchmarks.Safe.V0_cdb2eb5.Blocks.Runtime_013
+import Benchmarks.Safe.V0_cdb2eb5.Blocks.Runtime_014
+import Benchmarks.Safe.V0_cdb2eb5.Blocks.Runtime_018
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -40,17 +44,16 @@ theorem safeAddownerwiththresholdBodyCore
             decodeCalldata_addr_uint256_ok hlen hbig hc
           by_cases hauth : I.source = I.codeOwner
           · obtain ⟨_, _, h1744⟩ := safeAuthorizedTrace h6757 (by simp) hauth (by jump_dest)
-            have h6783 := safeRuntime_block_1744 (by simp) (by jump_dest) h1744
             let evm := initState σ σ₀ (.ofUInt256 g) A I
             let key := calldataWord I.calldata 4
             let threshold := calldataWord I.calldata 36
-            change RD safeBytecode I (.ofUInt256 g) evm ⟨6783⟩
-              [key, ⟨1753⟩, threshold, key, ⟨664⟩, selWord I] _ _ _ σ _ _ at h6783
+            change RD safeBytecode I (.ofUInt256 g) evm ⟨1744⟩
+              [threshold, key, ⟨664⟩, selWord I] _ _ _ σ _ _ at h1744
             by_cases hv : validOwner σ I key
             · by_cases he : ownerLinkAt σ I key = ⟨0⟩
               · have he' : ownerLink evm key = ⟨0⟩ := by rw [ownerLink_eq_at]; exact he
-                obtain ⟨mem₁, aw₁, k₁, C₁, hm₁, _, h1753⟩ := safeCanAddOwnerTrace h6783
-                  (by simp) hc solcFreePtrMem_size solcFreePtrMem_read64 hv he (by jump_dest)
+                obtain ⟨mem₁, aw₁, k₁, C₁, hm₁, _, h1753⟩ := safeCanAddOwnerTrace h1744
+                  (by simp) hc solcFreePtrMem_size solcFreePtrMem_read64 hv he
                 cases hperm : I.perm with
                 | false =>
                     have hstatic := safeAddOwnerTraceStatic h1753 (by simp) hperm
@@ -96,7 +99,7 @@ theorem safeAddownerwiththresholdBodyCore
                             (.abi (.fallthrough rfl rfl encodeReturnValues_nil)))
                       · obtain ⟨_, _, _, h3415⟩ := safeAddOwnerCountChanged h1863 (by simp) hperm
                           (by rwa [hcthreshold] at ht)
-                        have h6757' := safeRuntime_block_3415 (by simp) (by jump_dest) h3415
+                        have h6757' := safeRuntime_block_3321 (by simp) (by jump_dest) h3415
                         obtain ⟨_, _, h3423⟩ := safeAuthorizedTrace h6757' (by simp) hauth
                           (by jump_dest)
                         by_cases hle : threshold.toNat ≤ (ownerCount counted).toNat
@@ -113,9 +116,9 @@ theorem safeAddownerwiththresholdBodyCore
                               (by rwa [hccount] at hle) hz
                             obtain ⟨_, _, _, _, h1936⟩ := safeThresholdTrace h3474 (by simp)
                               hperm (by jump_dest)
-                            have h664 := safeRuntime_block_1936 (by simp) (by jump_dest) h1936
+                            have h664 := safeRuntime_block_2028 (by simp) (by jump_dest) h1936
                             have hret := safeRuntime_block_664 (by simp
-                              [safeRuntime_block_1936_stack]) h664
+                              [safeRuntime_block_2028_stack]) h664
                             have hbody := ExecFuncBody.execBlockOK
                               (safeAddOwnerPrefix evm key threshold hc hvalue hauth hv he'
                                 (safeAddOwnerTailOK linked key threshold hno
@@ -141,13 +144,13 @@ theorem safeAddownerwiththresholdBodyCore
                           (safeAddOwnerIncrementOverflow linked key threshold hno))
                       exact RDrev.reEquivElim hcode hrev fun _ _ hΞ ↦
                         reEquivSelectorExecution hdispatch hdec hbody (.revert hΞ rfl)
-              · have hrev := safeCanAddOwnerTraceExisting h6783 (by simp) hc
+              · have hrev := safeCanAddOwnerTraceExisting h1744 (by simp) hc
                   solcFreePtrMem_size hv he
                 have hbody := safeAddOwnerSourceGuardRevert evm key threshold hvalue hauth
                   (safeCanAddOwnerSourceExisting evm key hc hv (by rwa [ownerLink_eq_at]))
                 exact RDrev.reEquivElim hcode hrev fun _ _ hΞ ↦
                   reEquivSelectorExecution hdispatch hdec hbody (.revert hΞ rfl)
-            · have hrev := safeCanAddOwnerTraceInvalid h6783 (by simp) hc
+            · have hrev := safeCanAddOwnerTraceInvalid h1744 (by simp) hc
                 (by rw [solcFreePtrMem_size]; omega) hv
               have hbody := safeAddOwnerSourceGuardRevert evm key threshold hvalue hauth
                 (safeCanAddOwnerSourceInvalid evm key hc hv)

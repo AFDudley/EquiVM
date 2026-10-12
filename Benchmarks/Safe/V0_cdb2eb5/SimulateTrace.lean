@@ -23,10 +23,10 @@ theorem safeSimulateReverts {σ σ₀ A I} {g : Sat256} {k C aw mem rdata} {R : 
     hrev | ⟨ptr, target, mem', aw', k', C', h₃⟩
   · exact hrev
   have h₄ := safeRuntime_block_1234 (by simp; omega) (by jump_dest) h₃
-  have h₅ := safeRuntime_block_4524 (by simp; omega) h₄
+  have h₅ := safeRuntime_block_4430 (by simp; omega) h₄
   obtain ⟨evm', σ', z, out, aw'', k'', C'', _, _, _, h₆, hout⟩ :=
     rawDelegateCallTrace h₅ (by native_decide) (by simp; omega)
-  exact safeRuntime_block_4536 (by simp; omega) (by
+  exact safeRuntime_block_4442 (by simp; omega) (by
     rw [ulit_toNat' out.size hout]
     change 0 + out.size ≤ out.size
     omega) h₆

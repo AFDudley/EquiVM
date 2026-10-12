@@ -1,4 +1,3 @@
-import Benchmarks.Safe.V0_cdb2eb5.SignatureP256Trace
 import Benchmarks.Safe.V0_cdb2eb5.SignatureContractSource
 import Benchmarks.Safe.V0_cdb2eb5.EthSignSource
 import Benchmarks.Safe.V0_cdb2eb5.SignatureOwnerSource
@@ -50,12 +49,6 @@ theorem SignatureContext.eth {p : SignatureInput} {f : Frame} {i : Nat} {last : 
     (h : SignatureContext p f i last) (owner : UInt256) :
     SignatureContext p (signatureRecoveredFrame (signatureEthFrame f p.hash) owner) i last :=
   (h.set _ _ (by decide)).recovered owner
-
-theorem SignatureContext.p256 {p : SignatureInput} {f : Frame} {i : Nat} {last : UInt256}
-    (h : SignatureContext p f i last) (r s : UInt256) :
-    SignatureContext p (signatureP256FinalFrame f p r s) i last :=
-  ((((((((h.current r).set _ _ (by decide)).set _ _ (by decide)).set _ _ (by decide)).set _ _
-    (by decide)).set _ _ (by decide)).set _ _ (by decide)).set _ _ (by decide)).set _ _ (by decide)
 
 theorem SignatureContext.next {p : SignatureInput} {f : Frame} {i : Nat}
     {last current : UInt256} (h : SignatureContext p f i last) :

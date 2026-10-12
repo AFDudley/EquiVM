@@ -30,7 +30,7 @@ theorem signatureApprovalMemoryFacts {mem : ByteArray} {src ptr : Nat} {p : Sign
 theorem safeSignatureApprovalBranch (p : SignatureInput) (evm : EVM.State)
     {I g s0 σ k C aw mem rdata ptr src i} {s r current last executor : UInt256}
     {R : List UInt256} {f : Frame} {old : Value}
-    (h : RD safeBytecode I g s0 ⟨2108⟩
+    (h : RD safeBytecode I g s0 ⟨2200⟩
       (UInt256.ofNat i :: s :: r :: ⟨1⟩ :: current :: last :: p.required :: UInt256.ofNat src ::
         p.hash :: executor :: R) mem aw rdata σ k C)
     (hc : SignatureContext p f i last) (he : p.executor = AccountAddress.ofUInt256 executor)

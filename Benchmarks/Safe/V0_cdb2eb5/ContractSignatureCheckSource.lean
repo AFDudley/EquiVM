@@ -126,24 +126,34 @@ theorem safeCheckContractSlice (p : ContractSignatureInput) (evm : EVM.State)
   · exact hb
 
 theorem safeCheckContractCall (p : ContractSignatureInput) {evm evm' : EVM.State}
-    {z : Bool} {out : ByteArray}
+    {z : Bool} {out : ByteArray} (hb : out.size < 2 ^ 255)
     (hc : callViaEVM evm (EVM.address p.owner) 0 (contractSignatureCallBytes p.hash p.signature)
       (z, evm', out) false) :
     ExecStmt config p.sliceFrame evm
       (.internalCall "validateContractSignature"
         [.var "owner", .var "dataHash", .var "contractSignature"] "valid")
-      (.ok (p.finalFrame (contractSignatureResult z out)) evm') := by
-  apply internalCallFunctionReturn (callee := validateContractSignatureFunction)
-    (argVals := [.address p.owner, wordBytes32Value p.hash, .bytes p.signature])
-    (locals := contractSignatureArgs p.owner p.hash p.signature)
-    (calleeSolm := contractSignatureFinalFrame p.owner p.hash p.signature z out)
-    (value := some [.bool (contractSignatureResult z out)])
-  · simp [sliceFrame, endFrame, lengthFrame, startFrame, frame, args,
+      (if contractSignatureDecoded z out then
+        .ok (p.finalFrame (contractSignatureResult z out)) evm' else .reverted) := by
+  have ha : evalExprs? config p.sliceFrame evm
+      [.var "owner", .var "dataHash", .var "contractSignature"] =
+      .ok [.address p.owner, wordBytes32Value p.hash, .bytes p.signature] := by
+    simp [sliceFrame, endFrame, lengthFrame, startFrame, frame, args,
       evalExprs?, evalExpr?, EvalResult.ofOption, EvalResult.bind, bind, pure,
       Std.HashMap.getElem_insert]
-  · rfl
-  · rfl
-  · exact safeContractSignatureSource hc
+  have hs := safeContractSignatureSource hb hc
+  cases hd : contractSignatureDecoded z out
+  · simp only [hd, Bool.false_eq_true, if_false] at hs ⊢
+    exact internalCallFunctionRevert (callee := validateContractSignatureFunction)
+      (caller := p.sliceFrame)
+      (argVals := [.address p.owner, wordBytes32Value p.hash, .bytes p.signature])
+      (locals := contractSignatureArgs p.owner p.hash p.signature) ha rfl rfl hs
+  · simp only [hd, if_true] at hs ⊢
+    exact internalCallFunctionReturn (callee := validateContractSignatureFunction)
+      (caller := p.sliceFrame)
+      (argVals := [.address p.owner, wordBytes32Value p.hash, .bytes p.signature])
+      (calleeSolm := contractSignatureFinalFrame p.owner p.hash p.signature z out)
+      (value := some [.bool (contractSignatureResult z out)])
+      (locals := contractSignatureArgs p.owner p.hash p.signature) ha rfl rfl hs
 
 theorem safeCheckContractSourcePrefix (p : ContractSignatureInput) (evm : EVM.State)
     (hs : p.start ≤ p.signatures.size) (he : p.finish ≤ p.signatures.size)
@@ -164,26 +174,33 @@ theorem safeCheckContractSourcePrefix (p : ContractSignatureInput) (evm : EVM.St
 theorem safeCheckContractSource (p : ContractSignatureInput) {evm evm' : EVM.State}
     {z : Bool} {out : ByteArray} (hs : p.start ≤ p.signatures.size)
     (he : p.finish ≤ p.signatures.size) (hb : p.signatures.size < UInt256.size)
+    (hout : out.size < 2 ^ 255)
     (hc : callViaEVM evm (EVM.address p.owner) 0 (contractSignatureCallBytes p.hash p.signature)
       (z, evm', out) false) :
     ExecFuncBody config p.frame evm checkContractSignatureFunction.body
       (if contractSignatureResult z out then
         .returned (p.finalFrame true) evm' none else .reverted) := by
-  have hv : evalExpr? config (p.finalFrame (contractSignatureResult z out)) evm'
-      (.var "valid") = .ok (.bool (contractSignatureResult z out)) :=
-    evalLocalValue (by simp [finalFrame, Std.HashMap.getElem_insert])
-  cases hz : contractSignatureResult z out
-  · simp only [hz, Bool.false_eq_true, if_false]
-    apply ExecFuncBody.execBlockRevert
-    apply safeCheckContractSourcePrefix p evm hs he hb
-    exact .consNormal (safeCheckContractCall p hc)
-      (.consRevert (.requireFalse (by simpa only [hz] using hv)))
-  · simp only [hz, if_true]
-    apply ExecFuncBody.execBlockOK
-    apply safeCheckContractSourcePrefix p evm hs he hb
-    have ht := ExecBlock.consNormal (safeCheckContractCall p hc)
-      (ExecBlock.consNormal (ExecStmt.requireTrue (by simpa only [hz] using hv)) ExecBlock.nil)
-    simpa only [hz] using ht
+  have hcall := safeCheckContractCall p hout hc
+  cases hd : contractSignatureDecoded z out
+  · simp only [hd, Bool.false_eq_true, if_false] at hcall
+    rw [contractSignatureResult_of_not_decoded hd]
+    exact .execBlockRevert
+      (safeCheckContractSourcePrefix p evm hs he hb (.consRevert hcall))
+  · simp only [hd, if_true] at hcall
+    have hv : evalExpr? config (p.finalFrame (contractSignatureResult z out)) evm'
+        (.var "valid") = .ok (.bool (contractSignatureResult z out)) :=
+      evalLocalValue (by simp [finalFrame, Std.HashMap.getElem_insert])
+    cases hz : contractSignatureResult z out
+    · simp only [hz, Bool.false_eq_true, if_false]
+      apply ExecFuncBody.execBlockRevert
+      apply safeCheckContractSourcePrefix p evm hs he hb
+      exact .consNormal hcall (.consRevert (.requireFalse (by simpa only [hz] using hv)))
+    · simp only [hz, if_true]
+      apply ExecFuncBody.execBlockOK
+      apply safeCheckContractSourcePrefix p evm hs he hb
+      have ht := ExecBlock.consNormal hcall
+        (ExecBlock.consNormal (ExecStmt.requireTrue (by simpa only [hz] using hv)) ExecBlock.nil)
+      simpa only [hz] using ht
 
 theorem safeCheckContractBoundsFailed (p : ContractSignatureInput) (evm : EVM.State)
     (hbad : ¬(p.start ≤ p.signatures.size ∧ p.finish ≤ p.signatures.size)) :

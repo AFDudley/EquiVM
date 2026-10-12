@@ -1,7 +1,7 @@
 import Benchmarks.Safe.V0_cdb2eb5.ModuleMemory
 import Benchmarks.Safe.V0_cdb2eb5.PostModuleMemory
 import Benchmarks.Safe.V0_cdb2eb5.ByteCopy
-import Benchmarks.Safe.V0_cdb2eb5.Blocks.Runtime_018
+import Benchmarks.Safe.V0_cdb2eb5.Blocks.Runtime_017
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -15,7 +15,7 @@ def moduleReturnDataMemory (mem : ByteArray) (ptr : Nat) (out : ByteArray) : Byt
 
 theorem safeModuleReturnDataMemory {mem out : ByteArray} {ptr : UInt256}
     (hf : memLoad ⟨64⟩ mem = ptr) (hb : ptr.toNat + 32 + out.size < UInt256.size) :
-    safeRuntime_block_3005_memory (mem := mem) (rdata := out) =
+    safeRuntime_block_2911_memory (mem := mem) (rdata := out) =
       moduleReturnDataMemory mem ptr.toNat out := by
   have h32 : (ptr + UInt256.ofNat 32).toNat = ptr.toNat + 32 :=
     addWord_toNat ptr ⟨32⟩ (by change ptr.toNat + 32 < UInt256.size; omega)
@@ -28,7 +28,7 @@ theorem safeModuleReturnDataMemory {mem out : ByteArray} {ptr : UInt256}
       ulit_toNat' _ hb]
     omega
   change memLoad (UInt256.ofNat 64) mem = ptr at hf
-  simp only [safeRuntime_block_3005_memory, hf, h32, hnext,
+  simp only [safeRuntime_block_2911_memory, hf, h32, hnext,
     ulit_toNat' out.size (by omega), moduleReturnDataMemory, Reasoning.Theory.writeWord]
   rfl
 

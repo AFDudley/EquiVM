@@ -16,29 +16,29 @@ def setupEventSaved (I : ExecutionEnv) (n len : Nat) (R : List UInt256) : List U
 
 set_option maxRecDepth 100000 in
 theorem safeSetupEventStart {I g s0 σ k C aw rdata n len} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨4561⟩ (setupDecodedStack I.calldata n len R)
+    (h : RD safeBytecode I g s0 ⟨4467⟩ (setupDecodedStack I.calldata n len R)
       solcFreePtrMem aw rdata σ k C)
     (hov : R.length + 32 ≤ 1024) :
-    ∃ aw' k' C', RD safeBytecode I g s0 ⟨11525⟩
+    ∃ aw' k' C', RD safeBytecode I g s0 ⟨11394⟩
       (⟨128⟩ :: calldataWord I.calldata 132 :: calldataWord I.calldata 68 ::
         calldataWord I.calldata 36 :: UInt256.ofNat n ::
-        UInt256.ofNat (setupOwnersStart I.calldata) :: ⟨4626⟩ :: setupEventSaved I n len R)
+        UInt256.ofNat (setupOwnersStart I.calldata) :: ⟨4532⟩ :: setupEventSaved I n len R)
       solcFreePtrMem aw' rdata σ k' C' := by
-  obtain ⟨aw', k', C', h₁⟩ := safeRuntime_block_4561_packed
+  obtain ⟨aw', k', C', h₁⟩ := safeRuntime_block_4467_packed
     (by simp; omega) (by jump_dest) h
   have hf : memLoad (UInt256.ofNat 64) solcFreePtrMem = ⟨128⟩ := solcFreePtrMem_mload64
-  simp only [safeRuntime_block_4561_stack, hf, safeAddressMask] at h₁
+  simp only [safeRuntime_block_4467_stack, hf, safeAddressMask] at h₁
   exact ⟨aw', k', C', h₁⟩
 
 set_option maxRecDepth 100000 in
 theorem safeSetupEventTrace {I g s0 σ k C aw rdata n len} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨4561⟩ (setupDecodedStack I.calldata n len R)
+    (h : RD safeBytecode I g s0 ⟨4467⟩ (setupDecodedStack I.calldata n len R)
       solcFreePtrMem aw rdata σ k C)
     (hb : SetupCalldataBounds I.calldata n len)
     (hc : ∀ w ∈ calldataWords I.calldata (setupOwnersStart I.calldata) n,
       w.toNat < EVM.addressModulus)
     (hov : R.length + 32 ≤ 1024) :
-    ∃ aw' k' C', RD safeBytecode I g s0 ⟨4626⟩
+    ∃ aw' k' C', RD safeBytecode I g s0 ⟨4532⟩
       (UInt256.ofNat (288 + 32 * n) :: setupEventSaved I n len R)
       (setupEventInitialMemory I.calldata n) aw' rdata σ k' C' := by
   have hu : UInt256.size = 2 ^ 256 := rfl
@@ -51,7 +51,7 @@ theorem safeSetupEventTrace {I g s0 σ k C aw rdata n len} {R : List UInt256}
 
 set_option maxRecDepth 100000 in
 theorem safeSetupEventTraceRevert {I g s0 σ k C aw rdata n len} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨4561⟩ (setupDecodedStack I.calldata n len R)
+    (h : RD safeBytecode I g s0 ⟨4467⟩ (setupDecodedStack I.calldata n len R)
       solcFreePtrMem aw rdata σ k C)
     (hb : SetupCalldataBounds I.calldata n len)
     (hc : ¬∀ w ∈ calldataWords I.calldata (setupOwnersStart I.calldata) n,
@@ -67,20 +67,20 @@ theorem safeSetupEventTraceRevert {I g s0 σ k C aw rdata n len} {R : List UInt2
 set_option maxRecDepth 100000 in
 theorem safeSetupEventStatic {I g s0 σ k C aw mem rdata finish topic sender}
     {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨4626⟩ (finish :: topic :: sender :: R) mem aw rdata σ k C)
+    (h : RD safeBytecode I g s0 ⟨4532⟩ (finish :: topic :: sender :: R) mem aw rdata σ k C)
     (hp : I.perm = false) (hov : R.length + 6 ≤ 1024) : RDstatic safeBytecode g s0 := by
   have h₁ := evm_run h with [jumpdest, push1 ⟨64⟩, genMload, dup1, swap2, sub, swap1]
   exact RD.log2Static h₁ hp (by native_decide) (by omega)
 
 set_option maxRecDepth 100000 in
 theorem safeSetupOwnersAllocate {I g s0 σ k C aw rdata n len} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨4626⟩
+    (h : RD safeBytecode I g s0 ⟨4532⟩
       (UInt256.ofNat (288 + 32 * n) :: setupEventSaved I n len R)
       (setupEventInitialMemory I.calldata n) aw rdata σ k C)
     (hb : SetupCalldataBounds I.calldata n len)
     (hp : I.perm = true) (hov : R.length + 32 ≤ 1024) :
-    ∃ aw' k' C', RD safeBytecode I g s0 ⟨7975⟩
-      (calldataWord I.calldata 36 :: ⟨128⟩ :: ⟨4695⟩ :: setupDecodedStack I.calldata n len R)
+    ∃ aw' k' C', RD safeBytecode I g s0 ⟨8143⟩
+      (calldataWord I.calldata 36 :: ⟨128⟩ :: ⟨4601⟩ :: setupDecodedStack I.calldata n len R)
       (setupOwnersAllocatedMemory I.calldata n) aw' rdata σ k' C' := by
   have hu : UInt256.size = 2 ^ 256 := rfl
   have hn := hb.ownersLength
@@ -95,10 +95,10 @@ theorem safeSetupOwnersAllocate {I g s0 σ k C aw rdata n len} {R : List UInt256
     rw [uadd_toNat, hmul]
     change (160 + 32 * n) % UInt256.size = _
     exact Nat.mod_eq_of_lt (by omega)
-  obtain ⟨aw', k', C', h₁⟩ := safeRuntime_block_4626_packed (by simp; omega) hp (by jump_dest) h
+  obtain ⟨aw', k', C', h₁⟩ := safeRuntime_block_4532_packed (by simp; omega) hp (by jump_dest) h
   have hf : memLoad (UInt256.ofNat 64) (setupEventInitialMemory I.calldata n) = ⟨128⟩ :=
     setupEventInitialMemory_free _ _
-  simp only [safeRuntime_block_4626_stack, safeRuntime_block_4626_memory,
+  simp only [safeRuntime_block_4532_stack, safeRuntime_block_4532_memory,
     hf, addressArrayFreePtr_eq n hn,
     ulit_toNat' (setupOwnersStart I.calldata) hs, hmul, hend] at h₁
   exact ⟨aw', k', C', h₁⟩

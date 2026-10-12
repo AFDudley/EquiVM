@@ -1,7 +1,6 @@
 import Benchmarks.Safe.V0_cdb2eb5.CalldataLengthRounding
 import Benchmarks.Safe.V0_cdb2eb5.ExecGuardEncodingMemory
 import Benchmarks.Safe.V0_cdb2eb5.Blocks.Runtime_049
-import Benchmarks.Safe.V0_cdb2eb5.Blocks.Runtime_050
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -11,7 +10,7 @@ namespace Benchmarks.Safe.V0_cdb2eb5
 set_option maxRecDepth 100000 in
 theorem safeExecGuardEncode (tx : SafeTransaction) (signatures : ByteArray)
     {I g s0 σ k C aw mem rdata base src sigPtr} {sender ret : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨11256⟩
+    (h : RD safeBytecode I g s0 ⟨11125⟩
       (UInt256.ofNat base :: sender :: UInt256.ofNat sigPtr ::
         UInt256.ofNat tx.refundReceiver.val :: UInt256.ofNat tx.gasToken.val ::
         tx.gasPrice :: tx.baseGas :: tx.safeTxGas :: tx.operation ::
@@ -43,11 +42,11 @@ theorem safeExecGuardEncode (tx : SafeTransaction) (signatures : ByteArray)
   have ht (n : Nat) (hh : n < UInt256.size) : (UInt256.ofNat n).toNat = n :=
     ulit_toNat' _ hh
   have hmask := roundedCalldataLengthMask tx.payload.size (by omega)
-  have hhead : safeRuntime_block_11256_memory (ee := I) (mem := mem)
+  have hhead : safeRuntime_block_11125_memory (ee := I) (mem := mem)
       (x0 := UInt256.ofNat base) (x9 := UInt256.ofNat tx.payload.size)
       (x10 := UInt256.ofNat src) (x11 := tx.value) (x12 := UInt256.ofNat tx.target.val) =
       execGuardHeadMemory I.calldata mem base src tx := by
-    simp only [safeRuntime_block_11256_memory, safeAddressMask,
+    simp only [safeRuntime_block_11125_memory, safeAddressMask,
       hadd base 32 (by omega), hadd base 64 (by omega), hadd base 352 (by omega),
       hadd base 384 (by omega), hadd base tx.payload.size (by omega),
       hadd (base + tx.payload.size) 384 (by omega), ht base (by omega), ht src hs,
@@ -58,32 +57,32 @@ theorem safeExecGuardEncode (tx : SafeTransaction) (signatures : ByteArray)
       Reasoning.Theory.writeWord, Nat.add_assoc, Nat.reduceAdd,
       Nat.add_right_comm base tx.payload.size 384]
     rfl
-  obtain ⟨_, _, _, h₁⟩ := safeRuntime_block_11256_packed (by simp; omega) (by jump_dest) h
+  obtain ⟨_, _, _, h₁⟩ := safeRuntime_block_11125_packed (by simp; omega) (by jump_dest) h
   rw [hhead] at h₁
-  simp only [safeRuntime_block_11256_stack, hmask, hadd base 96 (by omega),
+  simp only [safeRuntime_block_11125_stack, hmask, hadd base 96 (by omega),
     hadd base (ABI.paddedSize tx.payload.size) (by omega)] at h₁
   have hc : UInt256.lt tx.operation (UInt256.ofNat 2) ≠ UInt256.ofNat 0 := by
     simp [UInt256.lt, UInt256.fromBool, show tx.operation < UInt256.ofNat 2 from ho]
     decide
-  have h₂ := safeRuntime_block_11224_taken (by simp; omega) hc (by jump_dest) h₁
-  obtain ⟨_, _, _, h₃⟩ := safeRuntime_block_11252_packed (by simp; omega) (by jump_dest) h₂
-  simp only [safeRuntime_block_11252_stack, safeRuntime_block_11252_memory,
+  have h₂ := safeRuntime_block_11093_taken (by simp; omega) hc (by jump_dest) h₁
+  obtain ⟨_, _, _, h₃⟩ := safeRuntime_block_11121_packed (by simp; omega) (by jump_dest) h₂
+  simp only [safeRuntime_block_11121_stack, safeRuntime_block_11121_memory,
     ht (base + 96) (by omega)] at h₃
-  obtain ⟨_, _, _, h₄⟩ := safeRuntime_block_11331_packed (by simp; omega) (by jump_dest) h₃
-  obtain ⟨_, _, _, h₅⟩ := safeRuntime_block_11370_packed (by simp; omega) (by jump_dest) h₄
+  obtain ⟨_, _, _, h₄⟩ := safeRuntime_block_11200_packed (by simp; omega) (by jump_dest) h₃
+  obtain ⟨_, _, _, h₅⟩ := safeRuntime_block_11239_packed (by simp; omega) (by jump_dest) h₄
   have hsub : UInt256.sub (UInt256.ofNat (base + ABI.paddedSize tx.payload.size))
       (UInt256.ofNat base) = UInt256.ofNat (ABI.paddedSize tx.payload.size) := by
     rw [← hadd _ _ (by omega), word_add_sub_left]
   have hm : execGuardPrefixMemory I.calldata mem base src tx =
-      safeRuntime_block_11370_memory
-        (mem := safeRuntime_block_11331_memory
+      safeRuntime_block_11239_memory
+        (mem := safeRuntime_block_11200_memory
           (mem := tx.operation.toByteArray.write 0
             (execGuardHeadMemory I.calldata mem base src tx) (base + 96) 32)
           (x2 := UInt256.ofNat base) (x6 := UInt256.ofNat tx.gasToken.val)
           (x7 := tx.gasPrice) (x8 := tx.baseGas) (x9 := tx.safeTxGas))
         (x0 := UInt256.ofNat (base + ABI.paddedSize tx.payload.size))
         (x2 := UInt256.ofNat base) (x5 := UInt256.ofNat tx.refundReceiver.val) := by
-    simp only [safeRuntime_block_11370_memory, safeRuntime_block_11331_memory,
+    simp only [safeRuntime_block_11239_memory, safeRuntime_block_11200_memory,
       safeAddressMask, hsub,
       hadd base 128 (by omega), hadd base 160 (by omega), hadd base 192 (by omega),
       hadd base 224 (by omega), hadd base 256 (by omega), hadd base 288 (by omega),
@@ -93,7 +92,7 @@ theorem safeExecGuardEncode (tx : SafeTransaction) (signatures : ByteArray)
       execGuardPrefixMemory, execGuardMiddleWords, writeWords, Reasoning.Theory.writeWord,
       Nat.add_assoc, Nat.reduceAdd, Nat.add_comm (ABI.paddedSize tx.payload.size) 384]
   rw [← hm] at h₅
-  simp only [safeRuntime_block_11370_stack,
+  simp only [safeRuntime_block_11239_stack,
     hadd (base + ABI.paddedSize tx.payload.size) 384 (by omega)] at h₅
   rw [show base + ABI.paddedSize tx.payload.size + 384 =
     base + 384 + ABI.paddedSize tx.payload.size by omega] at h₅
@@ -112,11 +111,11 @@ theorem safeExecGuardEncode (tx : SafeTransaction) (signatures : ByteArray)
   obtain ⟨_, _, _, h₆⟩ := safeMemoryBytesEncodeInto words h₅ hsig'.length
     (memoryWords_view _ _ _) hn (by rw [hn]; unfold ABI.paddedSize; omega) hi
     (by rw [hn]; unfold ABI.paddedSize at hb ⊢; omega) (by simp; omega) (by jump_dest)
-  obtain ⟨_, _, _, h₇⟩ := safeRuntime_block_11413_packed (by simp; omega) (by jump_dest) h₆
-  simp only [safeRuntime_block_11413_stack, safeRuntime_block_11413_memory, safeAddressMask,
+  obtain ⟨_, _, _, h₇⟩ := safeRuntime_block_11282_packed (by simp; omega) (by jump_dest) h₆
+  simp only [safeRuntime_block_11282_stack, safeRuntime_block_11282_memory, safeAddressMask,
     hadd base 320 (by omega), ht (base + 320) (by omega)] at h₇
-  obtain ⟨_, _, _, h₈⟩ := safeRuntime_block_11438_packed (by simp; omega) hret h₇
-  simp only [safeRuntime_block_11438_stack] at h₈
+  obtain ⟨_, _, _, h₈⟩ := safeRuntime_block_11307_packed (by simp; omega) hret h₇
+  simp only [safeRuntime_block_11307_stack] at h₈
   have he : base + 384 + ABI.paddedSize tx.payload.size + 32 + 32 * words.length =
       base + 416 + ABI.paddedSize tx.payload.size + ABI.paddedSize signatures.size := by
     rw [hn]; unfold ABI.paddedSize; omega

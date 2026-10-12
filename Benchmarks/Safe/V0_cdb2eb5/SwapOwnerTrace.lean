@@ -1,6 +1,7 @@
 import Benchmarks.Safe.V0_cdb2eb5.SwapOwnerSource
-import Benchmarks.Safe.V0_cdb2eb5.Blocks.Runtime_028
 import Benchmarks.Safe.V0_cdb2eb5.Blocks.Runtime_006
+import Benchmarks.Safe.V0_cdb2eb5.Blocks.Runtime_028
+import Benchmarks.Safe.V0_cdb2eb5.Blocks.Runtime_029
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -26,14 +27,14 @@ theorem safeSwapOwnerAccounts (evm : EVM.State) (prev old new : UInt256) :
 
 theorem safeSwapOwnerTrace {I g s0 σ k C aw mem rdata} {prev old new : UInt256}
     {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨6275⟩ (new :: old :: prev :: ⟨664⟩ :: R) mem aw rdata σ k C)
+    (h : RD safeBytecode I g s0 ⟨6387⟩ (new :: old :: prev :: ⟨664⟩ :: R) mem aw rdata σ k C)
     (hov : R.length + 16 ≤ 1024) (hm : mem.size = 96)
     (hp : prev.toNat < EVM.addressModulus) (ho : old.toNat < EVM.addressModulus)
     (hn : new.toNat < EVM.addressModulus) (hperm : I.perm = true) :
     RDret safeBytecode g s0 (swapOwnerAccounts σ I prev old new) ByteArray.empty := by
-  obtain ⟨_, _, h₁⟩ := safeRuntime_block_6275 (by simp; omega) hperm h
-  obtain ⟨_, _, h₂⟩ := safeRuntime_block_6348 (by omega) hperm (by jump_dest) h₁
-  have hret := safeRuntime_block_664 (by simp [safeRuntime_block_6348_stack]; omega) h₂
+  obtain ⟨_, _, h₁⟩ := safeRuntime_block_6387 (by simp; omega) hperm h
+  obtain ⟨_, _, h₂⟩ := safeRuntime_block_6460 (by omega) hperm (by jump_dest) h₁
+  have hret := safeRuntime_block_664 (by simp [safeRuntime_block_6460_stack]; omega) h₂
   simp only [safeAddressMask, solcAddrMask_clean_left hn, solcAddrMask_clean_left ho,
     solcAddrMask_clean hp] at hret
   have hOld := twoWordHashMemMapSlot old (UInt256.ofNat 2) hm
@@ -86,7 +87,7 @@ theorem safeSwapOwnerTrace {I g s0 σ k C aw mem rdata} {prev old new : UInt256}
 
 theorem safeSwapOwnerTraceStatic {I g s0 σ k C aw mem rdata} {prev old new : UInt256}
     {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨6275⟩ (new :: old :: prev :: R) mem aw rdata σ k C)
+    (h : RD safeBytecode I g s0 ⟨6387⟩ (new :: old :: prev :: R) mem aw rdata σ k C)
     (hov : R.length + 15 ≤ 1024) (hperm : I.perm = false) :
     RDstatic safeBytecode g s0 := by
   have hhash := evm_run h with [jumpdest, push1 ⟨1⟩, push1 ⟨1⟩, push1 ⟨160⟩, shl, sub,
