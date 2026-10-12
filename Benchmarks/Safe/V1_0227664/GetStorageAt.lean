@@ -39,7 +39,7 @@ theorem safeGetstorageatBodyCore
             (getstorageatTransition.params.map Param.name)
             (transitionSignature getstorageatTransition).paramTypes I.calldata =
             some (storageAtArgs offset len) := decodeWordPair hlen hbig
-        change RD safeBytecode I (.ofUInt256 g) evm ⟨2959⟩
+        change RD safeBytecode I (.ofUInt256 g) evm ⟨2867⟩
           [len, offset, ⟨918⟩, selWord I] _ _ _ σ _ _ at h₃
         by_cases hg : (UInt256.shiftLeft len (UInt256.ofNat 5)).toNat ≤ 2 ^ 64 - 1
         · have h₄ := safeStorageAtLengthCheck h₃ (by simp) hg

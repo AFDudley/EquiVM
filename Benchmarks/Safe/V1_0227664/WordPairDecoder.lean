@@ -1,6 +1,6 @@
 import Benchmarks.Safe.V1_0227664.Calldata
 import Benchmarks.Safe.V1_0227664.Decoders
-import Benchmarks.Safe.V1_0227664.Blocks.Runtime_042
+import Benchmarks.Safe.V1_0227664.Blocks.Runtime_041
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -56,26 +56,26 @@ theorem decodeWordPairHuge {cd : ByteArray} {x y : Solm.Ident}
 
 theorem safeDecodeWordPair {I g s0 σ k C aw mem rdata} {head stop ret : UInt256}
     {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨9713⟩ (head :: stop :: ret :: R) mem aw rdata σ k C)
+    (h : RD safeBytecode I g s0 ⟨9457⟩ (head :: stop :: ret :: R) mem aw rdata σ k C)
     (hov : R.length + 8 ≤ 1024)
     (hlen : UInt256.slt (UInt256.sub stop head) (UInt256.ofNat 64) = ⟨0⟩)
     (hret : (D_J safeBytecode 0).contains ret = true) :
     ∃ k' C', RD safeBytecode I g s0 ret
       (calldataWord I.calldata (head + UInt256.ofNat 32).toNat ::
         calldataWord I.calldata head.toNat :: R) mem aw rdata σ k' C' := by
-  have h₁ := safeRuntime_block_9713_taken (by simp; omega) (by rw [hlen]; decide)
+  have h₁ := safeRuntime_block_9457_taken (by simp; omega) (by rw [hlen]; decide)
     (by jump_dest) h
-  have h₂ := safeRuntime_block_9730 (by simp; omega) hret h₁
+  have h₂ := safeRuntime_block_9474 (by simp; omega) hret h₁
   exact ⟨_, _, h₂⟩
 
 theorem safeDecodeWordPairRevert {I g s0 σ k C aw mem rdata} {head stop : UInt256}
     {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨9713⟩ (head :: stop :: R) mem aw rdata σ k C)
+    (h : RD safeBytecode I g s0 ⟨9457⟩ (head :: stop :: R) mem aw rdata σ k C)
     (hov : R.length + 7 ≤ 1024)
     (hlen : UInt256.slt (UInt256.sub stop head) (UInt256.ofNat 64) = ⟨1⟩) :
     RDrev safeBytecode g s0 := by
-  have h₁ := safeRuntime_block_9713_fallthrough hov (by rw [hlen]; decide) h
-  exact safeRuntime_block_9727
-    (by simp only [safeRuntime_block_9713_fallthrough_stack, List.length_cons]; omega) h₁
+  have h₁ := safeRuntime_block_9457_fallthrough hov (by rw [hlen]; decide) h
+  exact safeRuntime_block_9471
+    (by simp only [safeRuntime_block_9457_fallthrough_stack, List.length_cons]; omega) h₁
 
 end Benchmarks.Safe.V1_0227664

@@ -10,7 +10,7 @@ set_option maxRecDepth 100000 in
 theorem safeExecuteTrace {I g s0 σ k C aw mem rdata}
     {target value ptr operation txGas ret : UInt256} {R : List UInt256}
     (evm : EVM.State) (payload : ByteArray)
-    (h : RD safeBytecode I g s0 ⟨7576⟩
+    (h : RD safeBytecode I g s0 ⟨7243⟩
       (txGas :: operation :: ptr :: value :: target :: ret :: R) mem aw rdata σ k C)
     (hee : evm.executionEnv = I) (hacc : evm.accountMap = σ) (hworld : evm.σ₀ = s0.σ₀)
     (hdata : mem.readWithPadding (ptr + UInt256.ofNat 32).toNat (memLoad ptr mem).toNat =

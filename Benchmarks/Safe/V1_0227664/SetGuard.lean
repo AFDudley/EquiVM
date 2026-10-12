@@ -2,7 +2,7 @@ import Benchmarks.Safe.V1_0227664.Dispatch
 import Benchmarks.Safe.V1_0227664.GuardFinish
 import Benchmarks.Safe.V1_0227664.Blocks.Runtime_011
 import Benchmarks.Safe.V1_0227664.Blocks.Runtime_012
-import Benchmarks.Safe.V1_0227664.Blocks.Runtime_027
+import Benchmarks.Safe.V1_0227664.Blocks.Runtime_026
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -33,7 +33,7 @@ theorem safeSetguardBodyCore
         by_cases hc : (calldataWord I.calldata 4).toNat < EVM.addressModulus
         · obtain ⟨_, _, h₂⟩ := safeDecodeAddress hd (by simp) hlencheck hc (by jump_dest)
           have h₃ := safeRuntime_block_1465 (by simp) (by jump_dest) h₂
-          have h₄ := safeRuntime_block_5904 (by simp) (by jump_dest) h₃
+          have h₄ := safeRuntime_block_5812 (by simp) (by jump_dest) h₃
           have hdec : decodeCalldataWithMode config.abiDecodeMode
               (setguardTransition.params.map Param.name)
               (transitionSignature setguardTransition).paramTypes I.calldata =
@@ -41,7 +41,7 @@ theorem safeSetguardBodyCore
             decodeCalldata_address_ok hlen hbig hc
           by_cases ha : I.source = I.codeOwner
           · obtain ⟨_, _, h₅⟩ := safeAuthorizedTrace h₄ (by simp) ha (by jump_dest)
-            change RD safeBytecode I (.ofUInt256 g) (initState σ σ₀ (.ofUInt256 g) A I) ⟨5912⟩
+            change RD safeBytecode I (.ofUInt256 g) (initState σ σ₀ (.ofUInt256 g) A I) ⟨5820⟩
               [calldataWord I.calldata 4, ⟨664⟩, selWord I] _ _ _ σ _ _ at h₅
             by_cases hz : calldataWord I.calldata 4 = ⟨0⟩
             · obtain ⟨_, _, he⟩ := safeGuardZeroTrace (hz ▸ h₅) (by simp)
@@ -91,7 +91,7 @@ theorem safeSetguardBodyCore
                         (safeGuardDecodeShort (by omega)))
                     exact RDrev.reEquivElim hcode hrev fun _ _ hΞ ↦
                       reEquivSelectorExecution hdispatch hdec hbody (.revert hΞ rfl)
-          · have hrev := safeUnauthorizedTrace h₄ (by simp [safeRuntime_block_5904_stack]) ha
+          · have hrev := safeUnauthorizedTrace h₄ (by simp [safeRuntime_block_5812_stack]) ha
             exact reEquivSelectorRevert hcode hdispatch hrev fun locals ↦
               safeGuardSourceUnauthorized (kind := .transaction) locals hv ha
         · have hrev := safeDecodeAddressNoncanon hd (by simp) hlencheck hc

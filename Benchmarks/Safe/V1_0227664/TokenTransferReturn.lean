@@ -1,6 +1,6 @@
 import Benchmarks.Safe.V1_0227664.TokenTransferMemory
 import Reasoning.HeapMemory
-import Benchmarks.Safe.V1_0227664.Blocks.Runtime_038
+import Benchmarks.Safe.V1_0227664.Blocks.Runtime_037
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -30,7 +30,7 @@ theorem callOutput32_read_above (mem out : ByteArray) (dst : UInt256) (off count
 set_option maxRecDepth 100000 in
 theorem safeTokenTransferReturn {I g s0 σ k C aw mem out}
     {ptr amount receiver token ret : UInt256} {R : List UInt256} (z : Bool)
-    (h : RD safeBytecode I g s0 ⟨8902⟩
+    (h : RD safeBytecode I g s0 ⟨8628⟩
       (z.toUInt256 :: ptr :: ⟨0⟩ :: amount :: receiver :: token :: ret :: R)
       (callOutputMem mem out ⟨0⟩ ⟨32⟩) aw out σ k C)
     (hb : out.size < UInt256.size) (hov : R.length + 11 ≤ 1024)
@@ -38,44 +38,44 @@ theorem safeTokenTransferReturn {I g s0 σ k C aw mem out}
     ∃ aw' k' C', RD safeBytecode I g s0 ret ((tokenTransferResult z out).toUInt256 :: R)
       (callOutputMem mem out ⟨0⟩ ⟨32⟩) aw' out σ k' C' := by
   by_cases hz : out.size = 0
-  · have h₁ := safeRuntime_block_8902_taken (by simp; omega)
+  · have h₁ := safeRuntime_block_8628_taken (by simp; omega)
       (by rw [hz]; decide) (by jump_dest) h
-    simp only [safeRuntime_block_8902_taken_stack] at h₁
-    have h₂ := safeRuntime_block_8924 (by simp; omega) (by jump_dest) h₁
-    simp only [safeRuntime_block_8924_stack] at h₂
-    have h₃ := safeRuntime_block_8942 (by simp; omega) hret h₂
-    simp only [safeRuntime_block_8942_stack] at h₃
+    simp only [safeRuntime_block_8628_taken_stack] at h₁
+    have h₂ := safeRuntime_block_8650 (by simp; omega) (by jump_dest) h₁
+    simp only [safeRuntime_block_8650_stack] at h₂
+    have h₃ := safeRuntime_block_8668 (by simp; omega) hret h₂
+    simp only [safeRuntime_block_8668_stack] at h₃
     exact ⟨_, _, _, by simpa only [tokenTransferResult, hz, ite_true] using h₃⟩
   have hnz : UInt256.ofNat out.size ≠ ⟨0⟩ := by
     intro he
     have he' := congrArg UInt256.toNat he
     rw [ulit_toNat' out.size hb] at he'
     exact hz he'
-  have h₁ := safeRuntime_block_8902_fallthrough (by simp; omega)
+  have h₁ := safeRuntime_block_8628_fallthrough (by simp; omega)
     (by exact isZero_eq_zero_of_ne hnz) h
-  simp only [safeRuntime_block_8902_fallthrough_stack] at h₁
+  simp only [safeRuntime_block_8628_fallthrough_stack] at h₁
   by_cases hs : out.size = 32
-  · have h₂ := safeRuntime_block_8909_taken (by simp; omega)
+  · have h₂ := safeRuntime_block_8635_taken (by simp; omega)
       (by rw [hs]; decide) (by jump_dest) h₁
-    have h₃ := safeRuntime_block_8932 (by simp; omega) h₂
+    have h₃ := safeRuntime_block_8658 (by simp; omega) h₂
     have hw : memLoad ⟨0⟩ (callOutputMem mem out ⟨0⟩ ⟨32⟩) = calldataWord out 0 := by
       apply memLoad_of_wordRead
       exact callOutput32_read_word _ _ _ hb (by omega) (by exact Nat.zero_le _)
-    simp only [safeRuntime_block_8932_stack, hw, callSuccessNonzeroWord] at h₃
-    have h₄ := safeRuntime_block_8942 (by simp; omega) hret h₃
-    simp only [safeRuntime_block_8942_stack] at h₄
+    simp only [safeRuntime_block_8658_stack, hw, callSuccessNonzeroWord] at h₃
+    have h₄ := safeRuntime_block_8668 (by simp; omega) hret h₃
+    simp only [safeRuntime_block_8668_stack] at h₄
     exact ⟨_, _, _, by simpa only [tokenTransferResult, hz, hs, ite_false, ite_true] using h₄⟩
   · have hns : UInt256.ofNat out.size ≠ UInt256.ofNat 32 := by
       intro he
       have he' := congrArg UInt256.toNat he
       rw [ulit_toNat' out.size hb] at he'
       exact hs he'
-    have h₂ := safeRuntime_block_8909_fallthrough (by simp; omega)
+    have h₂ := safeRuntime_block_8635_fallthrough (by simp; omega)
       (by exact u256_eq_of_ne hns) h₁
-    have h₃ := safeRuntime_block_8917 (by simp; omega) (by jump_dest) h₂
-    simp only [safeRuntime_block_8917_stack] at h₃
-    have h₄ := safeRuntime_block_8942 (by simp; omega) hret h₃
-    simp only [safeRuntime_block_8942_stack] at h₄
+    have h₃ := safeRuntime_block_8643 (by simp; omega) (by jump_dest) h₂
+    simp only [safeRuntime_block_8643_stack] at h₃
+    have h₄ := safeRuntime_block_8668 (by simp; omega) hret h₃
+    simp only [safeRuntime_block_8668_stack] at h₄
     exact ⟨_, _, _, by simpa only [tokenTransferResult, hz, hs, ite_false] using h₄⟩
 
 end Benchmarks.Safe.V1_0227664

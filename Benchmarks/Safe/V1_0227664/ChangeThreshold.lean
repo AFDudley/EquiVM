@@ -87,14 +87,14 @@ theorem safeChangethresholdBodyCore
       · obtain ⟨_, _, h1045⟩ := safeDecodeWord h9894 (by simp)
           (solcDecodeLenCheckOk_4_32 hlen hbig hsize) (by jump_dest)
         have h3415 := safeRuntime_block_1045 (by simp) (by jump_dest) h1045
-        have h6757 := safeRuntime_block_3321 (by simp) (by jump_dest) h3415
+        have h6757 := safeRuntime_block_3229 (by simp) (by jump_dest) h3415
         have hdec : decodeCalldataWithMode config.abiDecodeMode
             (changethresholdTransition.params.map Param.name)
             (transitionSignature changethresholdTransition).paramTypes I.calldata =
             some (thresholdArgs (calldataWord I.calldata 4)) := decodeCalldata_uint256_ok hlen hbig
         by_cases hauth : I.source = I.codeOwner
         · obtain ⟨_, _, h3423⟩ := safeAuthorizedTrace h6757 (by simp) hauth (by jump_dest)
-          change RD safeBytecode I (.ofUInt256 g) (initState σ σ₀ (.ofUInt256 g) A I) ⟨3329⟩
+          change RD safeBytecode I (.ofUInt256 g) (initState σ σ₀ (.ofUInt256 g) A I) ⟨3237⟩
             [calldataWord I.calldata 4, ⟨664⟩, selWord I] _ _ _ σ _ _ at h3423
           by_cases hle : (calldataWord I.calldata 4).toNat ≤ (solcSlotWordAt ⟨3⟩ σ I).toNat
           · by_cases hz : calldataWord I.calldata 4 = ⟨0⟩
@@ -126,7 +126,7 @@ theorem safeChangethresholdBodyCore
               (calldataWord I.calldata 4) hvalue hauth (safeThresholdSourceTooLarge _ _ hle)
             exact RDrev.reEquivElim hcode hrev fun _ _ hΞ ↦
               reEquivSelectorExecution hdispatch hdec hbody (.revert hΞ rfl)
-        · have hrev := safeUnauthorizedTrace h6757 (by simp [safeRuntime_block_3321_stack]) hauth
+        · have hrev := safeUnauthorizedTrace h6757 (by simp [safeRuntime_block_3229_stack]) hauth
           exact reEquivSelectorRevert hcode hdispatch hrev fun locals ↦
             safeChangeThresholdUnauthorized _ locals hvalue hauth
       · have hrev := safeDecodeWordRevert h9894 (by simp)

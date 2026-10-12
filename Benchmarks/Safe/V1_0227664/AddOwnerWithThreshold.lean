@@ -99,7 +99,7 @@ theorem safeAddownerwiththresholdBodyCore
                             (.abi (.fallthrough rfl rfl encodeReturnValues_nil)))
                       · obtain ⟨_, _, _, h3415⟩ := safeAddOwnerCountChanged h1863 (by simp) hperm
                           (by rwa [hcthreshold] at ht)
-                        have h6757' := safeRuntime_block_3321 (by simp) (by jump_dest) h3415
+                        have h6757' := safeRuntime_block_3229 (by simp) (by jump_dest) h3415
                         obtain ⟨_, _, h3423⟩ := safeAuthorizedTrace h6757' (by simp) hauth
                           (by jump_dest)
                         by_cases hle : threshold.toNat ≤ (ownerCount counted).toNat
@@ -116,9 +116,9 @@ theorem safeAddownerwiththresholdBodyCore
                               (by rwa [hccount] at hle) hz
                             obtain ⟨_, _, _, _, h1936⟩ := safeThresholdTrace h3474 (by simp)
                               hperm (by jump_dest)
-                            have h664 := safeRuntime_block_2028 (by simp) (by jump_dest) h1936
+                            have h664 := safeRuntime_block_1936 (by simp) (by jump_dest) h1936
                             have hret := safeRuntime_block_664 (by simp
-                              [safeRuntime_block_2028_stack]) h664
+                              [safeRuntime_block_1936_stack]) h664
                             have hbody := ExecFuncBody.execBlockOK
                               (safeAddOwnerPrefix evm key threshold hc hvalue hauth hv he'
                                 (safeAddOwnerTailOK linked key threshold hno

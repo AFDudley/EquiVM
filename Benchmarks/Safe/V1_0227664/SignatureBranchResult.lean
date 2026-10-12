@@ -13,7 +13,7 @@ def SignatureBranchResult (p : SignatureInput) (I : ExecutionEnv) (g : Sat256) (
     ExecBlock config f evm body (.ok f' evm') ∧ SignatureContext p f' i last ∧
     f'.locals["currentOwner"]? = some (.address (AccountAddress.ofUInt256 owner)) ∧
     evm'.executionEnv = I ∧ evm'.accountMap = σ' ∧ evm'.σ₀ = s0.σ₀ ∧
-    RD safeBytecode I g s0 ⟨2585⟩
+    RD safeBytecode I g s0 ⟨2493⟩
       (UInt256.ofNat i :: s' :: r' :: v' :: owner :: last :: p.required :: UInt256.ofNat src ::
         p.hash :: executor :: R) mem' aw' out σ' k' C' ∧
     BytesMemory mem' src p.signatures ∧ memLoad ⟨64⟩ mem' = UInt256.ofNat ptr' ∧

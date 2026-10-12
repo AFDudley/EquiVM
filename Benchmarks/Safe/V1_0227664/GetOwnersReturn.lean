@@ -3,8 +3,8 @@ import Benchmarks.Safe.V1_0227664.AddressArrayCopy
 import Benchmarks.Safe.V1_0227664.AddressArrayEncoding
 import Benchmarks.Safe.V1_0227664.Blocks.Runtime_007
 import Benchmarks.Safe.V1_0227664.Blocks.Runtime_009
-import Benchmarks.Safe.V1_0227664.Blocks.Runtime_031
-import Benchmarks.Safe.V1_0227664.Blocks.Runtime_044
+import Benchmarks.Safe.V1_0227664.Blocks.Runtime_029
+import Benchmarks.Safe.V1_0227664.Blocks.Runtime_043
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -33,9 +33,9 @@ theorem safeGetOwnersReturnTrace {I g s0 σ k C aw mem rdata n words} {R : List 
       hm.freePtr
   obtain ⟨aw₁, k₁, C₁, h₁⟩ := safeRuntime_block_1174_packed (by omega) (by jump_dest) h
   simp only [safeRuntime_block_1174_stack, hfree] at h₁
-  obtain ⟨aw₂, k₂, C₂, h₂⟩ := safeRuntime_block_10174_packed (by simp; omega)
+  obtain ⟨aw₂, k₂, C₂, h₂⟩ := safeRuntime_block_9918_packed (by simp; omega)
     (by jump_dest) h₁
-  simp only [safeRuntime_block_10174_stack, safeRuntime_block_10174_memory, hfp, hfpadd] at h₂
+  simp only [safeRuntime_block_9918_stack, safeRuntime_block_9918_memory, hfp, hfpadd] at h₂
   have hcount : memLoad ⟨128⟩ (writeWord mem fp ⟨32⟩) = UInt256.ofNat n := by
     apply mloadWordValue_of_readWithPadding
       (by change 128 < (writeWord mem fp ⟨32⟩).size
@@ -43,11 +43,11 @@ theorem safeGetOwnersReturnTrace {I g s0 σ k C aw mem rdata n words} {R : List 
     change (writeWord mem fp ⟨32⟩).readWithPadding 128 32 = _
     rw [writeWord_sparse_read_preserved _ _ _ _ (.inl ⟨by dsimp [fp]; omega, hm.lower⟩)]
     exact hm.count
-  obtain ⟨aw₃, k₃, C₃, h₃⟩ := safeRuntime_block_10107_packed (by simp; omega) h₂
-  change RD safeBytecode I g s0 ⟨10125⟩
+  obtain ⟨aw₃, k₃, C₃, h₃⟩ := safeRuntime_block_9851_packed (by simp; omega) h₂
+  change RD safeBytecode I g s0 ⟨9869⟩
     (⟨0⟩ :: (⟨128⟩ + UInt256.ofNat 32) :: memLoad ⟨128⟩ (writeWord mem fp ⟨32⟩) ::
       ⟨0⟩ :: ⟨128⟩ :: (UInt256.ofNat (fp + 32) + UInt256.ofNat 32) ::
-      ⟨7075⟩ :: ⟨0⟩ :: addressArrayFreePtr n :: ⟨128⟩ :: ⟨771⟩ :: R)
+      ⟨6705⟩ :: ⟨0⟩ :: addressArrayFreePtr n :: ⟨128⟩ :: ⟨771⟩ :: R)
     (writeWord (writeWord mem fp ⟨32⟩) (UInt256.ofNat (fp + 32)).toNat
       (memLoad ⟨128⟩ (writeWord mem fp ⟨32⟩))) aw₃ rdata σ k₃ C₃ at h₃
   have ha : UInt256.ofNat (fp + 32) + UInt256.ofNat 32 = UInt256.ofNat (fp + 64) := by
@@ -63,7 +63,7 @@ theorem safeGetOwnersReturnTrace {I g s0 σ k C aw mem rdata n words} {R : List 
     (by simpa using hm.length) (by change n < 2 ^ 256; omega)
     (by rw [hm.length]; change fp + 64 + 32 * n < 2 ^ 256; dsimp [fp]; omega)
     hc (by jump_dest)
-  have h₅ := safeRuntime_block_7075 (by omega) (by jump_dest) h₄
+  have h₅ := safeRuntime_block_6705 (by omega) (by jump_dest) h₄
   have hret := safeRuntime_block_771 (by omega) h₅
   let encoded := addressArrayHeaderMemory mem fp n ++ wordBytes words
   have he64 : encoded.readWithPadding 64 32 = (addressArrayFreePtr n).toByteArray := by

@@ -2,6 +2,7 @@ import Benchmarks.Safe.V1_0227664.SignatureApprovalBranch
 import Benchmarks.Safe.V1_0227664.SignatureContractTrace
 import Benchmarks.Safe.V1_0227664.SignaturePlainTrace
 import Benchmarks.Safe.V1_0227664.SignatureEthTrace
+import Benchmarks.Safe.V1_0227664.Blocks.Runtime_014
 import Benchmarks.Safe.V1_0227664.Blocks.Runtime_015
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
@@ -14,7 +15,7 @@ set_option maxRecDepth 100000
 theorem safeSignatureBranchTrace (p : SignatureInput) (evm : EVM.State)
     {I g s0 σ k C aw mem rdata ptr src i} {s r v current last executor : UInt256}
     {R : List UInt256} {f : Frame} {old : Value}
-    (h : RD safeBytecode I g s0 (if v = ⟨0⟩ then ⟨2144⟩ else ⟨2200⟩)
+    (h : RD safeBytecode I g s0 (if v = ⟨0⟩ then ⟨2052⟩ else ⟨2108⟩)
       (UInt256.ofNat i :: s :: r :: v :: current :: last :: p.required :: UInt256.ofNat src ::
         p.hash :: executor :: R) mem aw rdata σ k C)
     (hc : SignatureContext p f i last) (he : p.executor = AccountAddress.ofUInt256 executor)
@@ -53,12 +54,12 @@ theorem safeSignatureBranchTrace (p : SignatureInput) (evm : EVM.State)
       (by change src < 2 ^ 256; omega) (by omega)
   simp only [if_neg h₁]
   have hn₁ : UInt256.ofNat 1 ≠ v := fun hh ↦ h₁ (congrArg UInt256.toNat hh.symm)
-  have h₂ := safeRuntime_block_2200_taken (by simp; omega)
+  have h₂ := safeRuntime_block_2108_taken (by simp; omega)
     (u256_sub_ne_zero_of_ne hn₁) (by jump_dest) h
   by_cases hh : 30 < v.toNat
   · simp only [if_pos hh]
     have hgt : UInt256.gt v (UInt256.ofNat 30) = ⟨1⟩ := ugt_one hh
-    have h₄ := safeRuntime_block_2301_fallthrough (by simp; omega) (by rw [hgt]; decide) h₂
+    have h₄ := safeRuntime_block_2209_fallthrough (by simp; omega) (by rw [hgt]; decide) h₂
     obtain ⟨hrev, hbody⟩ | ⟨evm', σ', mem', ptr', aw', out, owner, k', C', hbody,
         hee', hacc', hw', h₅, hm', hf', hz', hpl, hph, hms, hpres⟩ :=
       safeSignatureEthTrace p evm h₄ hc.toSignatureCore hr hs hv ho hee hacc hworld hm hf hz
@@ -71,7 +72,7 @@ theorem safeSignatureBranchTrace (p : SignatureInput) (evm : EVM.State)
   · simp only [if_neg hh]
     have hgt : UInt256.gt v (UInt256.ofNat 30) = ⟨0⟩ :=
       ugt_zero (by change v.toNat ≤ 30; omega)
-    have h₄ := safeRuntime_block_2301_taken (by simp; omega) (by rw [hgt]; decide)
+    have h₄ := safeRuntime_block_2209_taken (by simp; omega) (by rw [hgt]; decide)
       (by jump_dest) h₂
     obtain ⟨hrev, hbody⟩ | ⟨evm', σ', mem', ptr', aw', out, owner, k', C', hbody,
         hee', hacc', hw', h₅, hm', hf', hz', hpl, hph, hms, hpres⟩ :=

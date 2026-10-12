@@ -1,7 +1,7 @@
 import Benchmarks.Safe.V1_0227664.SetupEventMemory
 import Benchmarks.Safe.V1_0227664.AddressCalldataCopy
+import Benchmarks.Safe.V1_0227664.Blocks.Runtime_048
 import Benchmarks.Safe.V1_0227664.Blocks.Runtime_049
-import Benchmarks.Safe.V1_0227664.Blocks.Runtime_050
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -11,25 +11,25 @@ namespace Benchmarks.Safe.V1_0227664
 set_option maxRecDepth 100000 in
 theorem safeSetupEventEncodeStart {I g s0 σ k C aw mem rdata ptr n src}
     {fallbackHandler target threshold ret : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨11394⟩
+    (h : RD safeBytecode I g s0 ⟨11138⟩
       (UInt256.ofNat ptr :: fallbackHandler :: target :: threshold :: UInt256.ofNat n ::
         UInt256.ofNat src :: ret :: R) mem aw rdata σ k C)
     (hp : ptr + 160 < UInt256.size) (hov : R.length + 18 ≤ 1024) :
-    ∃ aw' k' C', RD safeBytecode I g s0 ⟨11412⟩
+    ∃ aw' k' C', RD safeBytecode I g s0 ⟨11156⟩
       (⟨0⟩ :: UInt256.ofNat (ptr + 160) :: UInt256.ofNat src :: ⟨0⟩ :: UInt256.ofNat ptr ::
         fallbackHandler :: target :: threshold :: UInt256.ofNat n :: UInt256.ofNat src ::
         ret :: R) (setupEventHeader mem ptr n) aw' rdata σ k' C' := by
-  obtain ⟨aw', k', C', h₁⟩ := safeRuntime_block_11394_packed (by simp; omega) h
+  obtain ⟨aw', k', C', h₁⟩ := safeRuntime_block_11138_packed (by simp; omega) h
   have h128 : (UInt256.ofNat ptr + UInt256.ofNat 128).toNat = ptr + 128 :=
     uadd_ofNat_toNat (by omega) (by decide) (by omega)
-  simp only [safeRuntime_block_11394_stack, safeRuntime_block_11394_memory,
+  simp only [safeRuntime_block_11138_stack, safeRuntime_block_11138_memory,
     wordOfNatAdd ptr 160 hp, ulit_toNat' ptr (by omega), h128] at h₁
   exact ⟨aw', k', C', h₁⟩
 
 set_option maxRecDepth 100000 in
 theorem safeSetupEventEncode {I g s0 σ k C aw mem rdata ptr n src}
     {fallbackHandler target threshold ret : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨11394⟩
+    (h : RD safeBytecode I g s0 ⟨11138⟩
       (UInt256.ofNat ptr :: fallbackHandler :: target :: threshold :: UInt256.ofNat n ::
         UInt256.ofNat src :: ret :: R) mem aw rdata σ k C)
     (hm : mem.size ≤ ptr) (hn : n < UInt256.size)
@@ -44,14 +44,14 @@ theorem safeSetupEventEncode {I g s0 σ k C aw mem rdata ptr n src}
   obtain ⟨_, _, _, h₁⟩ := safeSetupEventEncodeStart h (by omega) hov
   obtain ⟨_, _, _, h₂⟩ := safeAddressCalldataCopyLoop (i := 0) n h₁ (Nat.zero_add _) hn hs hp
     (setupEventHeader_size mem ptr n hm) hc (by simp; omega)
-  obtain ⟨aw', k', C', h₃⟩ := safeRuntime_block_11460_packed (by omega) hret h₂
+  obtain ⟨aw', k', C', h₃⟩ := safeRuntime_block_11204_packed (by omega) hret h₂
   have h32 : (UInt256.ofNat ptr + UInt256.ofNat 32).toNat = ptr + 32 :=
     uadd_ofNat_toNat (by omega) (by decide) (by omega)
   have h64 : (UInt256.ofNat ptr + UInt256.ofNat 64).toNat = ptr + 64 :=
     uadd_ofNat_toNat (by omega) (by decide) (by omega)
   have h96 : (UInt256.ofNat ptr + UInt256.ofNat 96).toNat = ptr + 96 :=
     uadd_ofNat_toNat (by omega) (by decide) (by omega)
-  simp only [safeRuntime_block_11460_stack, safeRuntime_block_11460_memory,
+  simp only [safeRuntime_block_11204_stack, safeRuntime_block_11204_memory,
     safeAddressMask, solcAddrMask_clean_left ht, solcAddrMask_clean_left hf, h32, h64, h96] at h₃
   simpa only [setupEventMemory, calldataWords_length] using
     (show ∃ aw' k' C', RD safeBytecode I g s0 ret
@@ -64,7 +64,7 @@ theorem safeSetupEventEncode {I g s0 σ k C aw mem rdata ptr n src}
 set_option maxRecDepth 100000 in
 theorem safeSetupEventEncodeRevert {I g s0 σ k C aw mem rdata ptr n src}
     {fallbackHandler target threshold ret : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨11394⟩
+    (h : RD safeBytecode I g s0 ⟨11138⟩
       (UInt256.ofNat ptr :: fallbackHandler :: target :: threshold :: UInt256.ofNat n ::
         UInt256.ofNat src :: ret :: R) mem aw rdata σ k C)
     (hn : n < UInt256.size) (hp : ptr + 160 + 32 * n < UInt256.size)

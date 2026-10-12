@@ -4,8 +4,7 @@ import Benchmarks.Safe.V1_0227664.RemoveOwnerTrace
 import Benchmarks.Safe.V1_0227664.Blocks.Runtime_006
 import Benchmarks.Safe.V1_0227664.Blocks.Runtime_013
 import Benchmarks.Safe.V1_0227664.Blocks.Runtime_018
-import Benchmarks.Safe.V1_0227664.Blocks.Runtime_029
-import Benchmarks.Safe.V1_0227664.Blocks.Runtime_030
+import Benchmarks.Safe.V1_0227664.Blocks.Runtime_028
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -38,7 +37,7 @@ theorem safeRemoveownerBodyCore
           · obtain ⟨_, _, h1683⟩ := safeDecodeAddressAddressWord h11079 (by simp)
               hcheck hp hc (by jump_dest)
             have h6566 := safeRuntime_block_1683 (by simp) (by jump_dest) h1683
-            have h6757 := safeRuntime_block_6678 (by simp) (by jump_dest) h6566
+            have h6757 := safeRuntime_block_6380 (by simp) (by jump_dest) h6566
             have hdec : decodeCalldataWithMode config.abiDecodeMode
                 (removeownerTransition.params.map Param.name)
                 (transitionSignature removeownerTransition).paramTypes I.calldata =
@@ -47,13 +46,13 @@ theorem safeRemoveownerBodyCore
               decodeCalldata_address_address_uint256_ok hlen hbig hp hc
             by_cases hauth : I.source = I.codeOwner
             · obtain ⟨_, _, h6574⟩ := safeAuthorizedTrace h6757 (by simp) hauth (by jump_dest)
-              obtain ⟨_, _, h11663⟩ := safeRuntime_block_6686 (by simp) (by jump_dest) h6574
+              obtain ⟨_, _, h11663⟩ := safeRuntime_block_6388 (by simp) (by jump_dest) h6574
               let evm := initState σ σ₀ (.ofUInt256 g) A I
               let prev := calldataWord I.calldata 4
               let key := calldataWord I.calldata 36
               let threshold := calldataWord I.calldata 68
-              change RD safeBytecode I (.ofUInt256 g) evm ⟨11532⟩
-                [solcSlotWordAt ⟨3⟩ σ I, ⟨6701⟩, ⟨0⟩, ⟨3⟩, threshold, threshold,
+              change RD safeBytecode I (.ofUInt256 g) evm ⟨11276⟩
+                [solcSlotWordAt ⟨3⟩ σ I, ⟨6403⟩, ⟨0⟩, ⟨3⟩, threshold, threshold,
                   key, prev, ⟨664⟩, selWord I] _ _ _ σ _ _ at h11663
               have hcount : ownerCount evm = solcSlotWordAt ⟨3⟩ σ I :=
                 storageLoad_codeOwner_eq_solcSlotWordAt evm I ⟨3⟩ rfl
@@ -120,7 +119,7 @@ theorem safeRemoveownerBodyCore
                                 (.abi (.fallthrough rfl rfl encodeReturnValues_nil)))
                           · obtain ⟨_, _, _, h3415⟩ := safeRemoveOwnerThresholdChanged h6700
                               (by simp) hperm (by rwa [hlthreshold] at ht)
-                            have h6757' := safeRuntime_block_3321 (by simp) (by jump_dest) h3415
+                            have h6757' := safeRuntime_block_3229 (by simp) (by jump_dest) h3415
                             obtain ⟨_, _, h3423⟩ := safeAuthorizedTrace h6757' (by simp) hauth
                               (by jump_dest)
                             by_cases hle' : threshold.toNat ≤ (ownerCount linked).toNat
@@ -137,9 +136,9 @@ theorem safeRemoveownerBodyCore
                                   (by rwa [hlcount] at hle') htz
                                 obtain ⟨_, _, _, _, h6752⟩ := safeThresholdTrace h3474 (by simp)
                                   hperm (by jump_dest)
-                                have h664 := safeRuntime_block_6959 (by simp) (by jump_dest) h6752
+                                have h664 := safeRuntime_block_6566 (by simp) (by jump_dest) h6752
                                 have hret := safeRuntime_block_664
-                                  (by simp [safeRuntime_block_6959_stack]) h664
+                                  (by simp [safeRuntime_block_6566_stack]) h664
                                 have hbody := ExecFuncBody.execBlockOK
                                   (safeRemoveOwnerPrefix evm prev key threshold hvalue hauth hz
                                     (safeRemoveOwnerLinksPrefix counted prev key threshold hp hc hle
@@ -184,7 +183,7 @@ theorem safeRemoveownerBodyCore
                       exact RDrev.reEquivElim hcode hrev fun _ _ hΞ ↦
                         reEquivSelectorExecution hdispatch hdec hbody (.revert hΞ rfl)
             · have hrev := safeUnauthorizedTrace h6757
-                (by simp [safeRuntime_block_6678_stack]) hauth
+                (by simp [safeRuntime_block_6380_stack]) hauth
               exact reEquivSelectorRevert hcode hdispatch hrev fun locals ↦
                 safeRemoveOwnerUnauthorized _ locals hvalue hauth
           · have hrev := safeDecodeAddressAddressWordNoncanon1 h11079 (by simp) hcheck hp hc

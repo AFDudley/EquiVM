@@ -1,8 +1,6 @@
 import Benchmarks.Safe.V1_0227664.ContractSignatureBounds
 import Benchmarks.Safe.V1_0227664.ContractSignatureState
 import Benchmarks.Safe.V1_0227664.MemoryPreserves
-import Benchmarks.Safe.V1_0227664.Blocks.Runtime_030
-import Benchmarks.Safe.V1_0227664.Blocks.Runtime_031
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -17,7 +15,7 @@ set_option maxHeartbeats 1000000
 theorem safeCheckContractTrace (p : ContractSignatureInput)
     {I g s0 σ k C aw mem rdata ptr src} {owner ret : UInt256} {R : List UInt256}
     (evm : EVM.State)
-    (h : RD safeBytecode I g s0 ⟨7082⟩
+    (h : RD safeBytecode I g s0 ⟨6749⟩
       (p.offset :: UInt256.ofNat src :: p.hash :: owner :: ret :: R) mem aw rdata σ k C)
     (hee : evm.executionEnv = I) (hacc : evm.accountMap = σ) (hworld : evm.σ₀ = s0.σ₀)
     (howner : p.owner = AccountAddress.ofUInt256 owner)

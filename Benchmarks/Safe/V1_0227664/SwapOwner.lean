@@ -37,7 +37,7 @@ theorem safeSwapownerBodyCore
             · obtain ⟨_, _, h1496⟩ := safeDecodeAddressTriple h10923 (by simp)
                 hcheck hc0 hc1 hc2 (by jump_dest)
               have h6248 := safeRuntime_block_1496 (by simp) (by jump_dest) h1496
-              have h6757 := safeRuntime_block_6154 (by simp) (by jump_dest) h6248
+              have h6757 := safeRuntime_block_6062 (by simp) (by jump_dest) h6248
               have hdec : decodeCalldataWithMode config.abiDecodeMode
                   (swapownerTransition.params.map Param.name)
                   (transitionSignature swapownerTransition).paramTypes I.calldata =
@@ -52,70 +52,60 @@ theorem safeSwapownerBodyCore
                 let prev := calldataWord I.calldata 4
                 let old := calldataWord I.calldata 36
                 let new := calldataWord I.calldata 68
-                change RD safeBytecode I (.ofUInt256 g) evm ⟨6162⟩
+                change RD safeBytecode I (.ofUInt256 g) evm ⟨6070⟩
                   [new, old, prev, ⟨664⟩, selWord I] _ _ _ σ _ _ at h6256
-                have hselfEquiv := canonicalAddress_eq_address_iff new I.codeOwner hc2
-                by_cases hself : AccountAddress.ofNat new.toNat ≠ I.codeOwner
-                · have hselfWord : new ≠ UInt256.ofNat I.codeOwner.val :=
-                    fun he ↦ hself (hselfEquiv.mpr he)
-                  by_cases hvn : validOwner σ I new
-                  · by_cases he : ownerLinkAt σ I new = ⟨0⟩
-                    · have he' : ownerLink evm new = ⟨0⟩ := by rw [ownerLink_eq_at]; exact he
-                      obtain ⟨mem₁, aw₁, k₁, C₁, hm₁, h64₁, h6265⟩ := safeSwapCanAddOwnerTrace h6256
-                        (by simp) hc2 solcFreePtrMem_size solcFreePtrMem_read64 hvn hselfWord he
-                      by_cases hvo : validOwner σ I old
-                      · by_cases hl : ownerLinkAt σ I prev = old
-                        · have hl' : ownerLink evm prev = old := by rw [ownerLink_eq_at]; exact hl
-                          obtain ⟨mem₂, aw₂, k₂, C₂, hm₂, _, h6275⟩ := safeSwapCanRemoveOwnerTrace h6265
-                            (by simp) hc0 hc1 hm₁ h64₁ hvo hl
-                          cases hperm : I.perm with
-                          | false =>
-                              have hstatic := safeSwapOwnerTraceStatic h6275 (by simp) hperm
-                              have hbody := safeSwapOwnerSourceStatic evm prev old new hc0 hc1 hc2
-                                hvalue hauth hself hvn he' hvo hl' hperm
-                              exact RDstatic.reEquivElim hcode hstatic fun hΞ ↦
-                                reEquivSelectorExecution hdispatch hdec hbody (.staticHalt hΞ rfl)
-                          | true =>
-                              have hret := safeSwapOwnerTrace h6275 (by simp) hm₂ hc0 hc1 hc2 hperm
-                              have hbody := safeSwapOwnerSource evm prev old new hc0 hc1 hc2
-                                hvalue hauth hself hvn he' hvo hl'
-                              refine reEquivReturnElim hcode hret fun _ _ hsuccess ↦ ?_
-                              exact reEquivSelectorExecution hdispatch hdec hbody
-                                (.success hsuccess rfl (safeSwapOwnerAccounts evm prev old new).symm
-                                  (.abi (.fallthrough rfl rfl encodeReturnValues_nil)))
-                        · have hrev := safeSwapCanRemoveOwnerTraceUnlinked h6265 (by simp)
-                            hc0 hc1 hm₁ hvo hl
-                          have hbody := safeSwapOwnerSourceRemoveRevert evm prev old new hc2 hvalue
-                            hauth hself hvn he' (safeCanRemoveOwnerSourceUnlinked evm prev old hc0 hc1
-                              hvo (by rwa [ownerLink_eq_at]))
-                          exact RDrev.reEquivElim hcode hrev fun _ _ hΞ ↦
-                            reEquivSelectorExecution hdispatch hdec hbody (.revert hΞ rfl)
-                      · have hrev := safeSwapCanRemoveOwnerTraceInvalid h6265 (by simp) hc1
-                          (by omega) hvo
+                by_cases hvn : validOwner σ I new
+                · by_cases he : ownerLinkAt σ I new = ⟨0⟩
+                  · have he' : ownerLink evm new = ⟨0⟩ := by rw [ownerLink_eq_at]; exact he
+                    obtain ⟨mem₁, aw₁, k₁, C₁, hm₁, h64₁, h6265⟩ := safeSwapCanAddOwnerTrace h6256
+                      (by simp) hc2 solcFreePtrMem_size solcFreePtrMem_read64 hvn he
+                    by_cases hvo : validOwner σ I old
+                    · by_cases hl : ownerLinkAt σ I prev = old
+                      · have hl' : ownerLink evm prev = old := by rw [ownerLink_eq_at]; exact hl
+                        obtain ⟨mem₂, aw₂, k₂, C₂, hm₂, _, h6275⟩ :=
+                          safeSwapCanRemoveOwnerTrace h6265 (by simp) hc0 hc1 hm₁ h64₁ hvo hl
+                        cases hperm : I.perm with
+                        | false =>
+                            have hstatic := safeSwapOwnerTraceStatic h6275 (by simp) hperm
+                            have hbody := safeSwapOwnerSourceStatic evm prev old new hc0 hc1 hc2
+                              hvalue hauth hvn he' hvo hl' hperm
+                            exact RDstatic.reEquivElim hcode hstatic fun hΞ ↦
+                              reEquivSelectorExecution hdispatch hdec hbody (.staticHalt hΞ rfl)
+                        | true =>
+                            have hret := safeSwapOwnerTrace h6275 (by simp) hm₂ hc0 hc1 hc2 hperm
+                            have hbody := safeSwapOwnerSource evm prev old new hc0 hc1 hc2
+                              hvalue hauth hvn he' hvo hl'
+                            refine reEquivReturnElim hcode hret fun _ _ hsuccess ↦ ?_
+                            exact reEquivSelectorExecution hdispatch hdec hbody
+                              (.success hsuccess rfl (safeSwapOwnerAccounts evm prev old new).symm
+                                (.abi (.fallthrough rfl rfl encodeReturnValues_nil)))
+                      · have hrev := safeSwapCanRemoveOwnerTraceUnlinked h6265 (by simp)
+                          hc0 hc1 hm₁ hvo hl
                         have hbody := safeSwapOwnerSourceRemoveRevert evm prev old new hc2 hvalue
-                          hauth hself hvn he' (safeCanRemoveOwnerSourceInvalid evm prev old hc1 hvo)
+                          hauth hvn he' (safeCanRemoveOwnerSourceUnlinked evm prev old hc0 hc1
+                            hvo (by rwa [ownerLink_eq_at]))
                         exact RDrev.reEquivElim hcode hrev fun _ _ hΞ ↦
                           reEquivSelectorExecution hdispatch hdec hbody (.revert hΞ rfl)
-                    · have hrev := safeSwapCanAddOwnerTraceExisting h6256 (by simp) hc2
-                        hvn hselfWord he
-                      have hbody := safeSwapOwnerSourceAddRevert evm prev old new hvalue hauth hself
-                        (safeCanAddOwnerSourceExisting evm new hc2 hvn (by rwa [ownerLink_eq_at]))
+                    · have hrev := safeSwapCanRemoveOwnerTraceInvalid h6265 (by simp) hc1
+                        (by omega) hvo
+                      have hbody := safeSwapOwnerSourceRemoveRevert evm prev old new hc2 hvalue
+                        hauth hvn he' (safeCanRemoveOwnerSourceInvalid evm prev old hc1 hvo)
                       exact RDrev.reEquivElim hcode hrev fun _ _ hΞ ↦
                         reEquivSelectorExecution hdispatch hdec hbody (.revert hΞ rfl)
-                  · have hrev := safeInvalidSwapNewOwnerTrace h6256 (by simp) hc2
-                      (fun hh ↦ hvn hh.1)
-                    have hbody := safeSwapOwnerSourceAddRevert evm prev old new hvalue hauth hself
-                      (safeCanAddOwnerSourceInvalid evm new hc2 hvn)
+                  · have hrev := safeSwapCanAddOwnerTraceExisting h6256 (by simp) hc2
+                      (by native_decide) hvn he
+                    have hbody := safeSwapOwnerSourceAddRevert evm prev old new hvalue hauth
+                      (safeCanAddOwnerSourceExisting evm new hc2 hvn (by rwa [ownerLink_eq_at]))
                     exact RDrev.reEquivElim hcode hrev fun _ _ hΞ ↦
                       reEquivSelectorExecution hdispatch hdec hbody (.revert hΞ rfl)
-                · have heq : AccountAddress.ofNat new.toNat = I.codeOwner := not_not.mp hself
-                  have hrev := safeInvalidSwapNewOwnerTrace h6256 (by simp) hc2
-                    (fun hh ↦ hh.2 (hselfEquiv.mp heq))
-                  have hbody := safeSwapOwnerSourceSelf evm prev old new hvalue hauth heq
+                · have hrev := safeInvalidSwapNewOwnerTrace h6256 (by simp) hc2
+                    (by native_decide) hvn
+                  have hbody := safeSwapOwnerSourceAddRevert evm prev old new hvalue hauth
+                    (safeCanAddOwnerSourceInvalid evm new hc2 hvn)
                   exact RDrev.reEquivElim hcode hrev fun _ _ hΞ ↦
                     reEquivSelectorExecution hdispatch hdec hbody (.revert hΞ rfl)
               · have hrev := safeUnauthorizedTrace h6757
-                  (by simp [safeRuntime_block_6154_stack]) hauth
+                  (by simp [safeRuntime_block_6062_stack]) hauth
                 exact reEquivSelectorRevert hcode hdispatch hrev fun locals ↦
                   safeSwapOwnerSourceUnauthorized _ locals hvalue hauth
             · have hrev := safeDecodeAddressTripleNoncanon2 h10923 (by simp) hcheck hc0 hc1 hc2

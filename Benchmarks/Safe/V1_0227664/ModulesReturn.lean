@@ -3,8 +3,8 @@ import Benchmarks.Safe.V1_0227664.AddressArrayMemory
 import Benchmarks.Safe.V1_0227664.AddressArrayCopy
 import Benchmarks.Safe.V1_0227664.Blocks.Runtime_007
 import Benchmarks.Safe.V1_0227664.Blocks.Runtime_010
-import Benchmarks.Safe.V1_0227664.Blocks.Runtime_044
-import Benchmarks.Safe.V1_0227664.Blocks.Runtime_046
+import Benchmarks.Safe.V1_0227664.Blocks.Runtime_043
+import Benchmarks.Safe.V1_0227664.Blocks.Runtime_045
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -45,13 +45,13 @@ theorem safeModulesReturn {I g s0 σ k C aw mem rdata capacity words next} {R : 
   have hfree : memLoad (UInt256.ofNat 64) baseMem = addressArrayFreePtr capacity :=
     memLoad_of_wordRead _ _ _ hbfree
   obtain ⟨aw₁, k₁, C₁, h₁⟩ := safeRuntime_block_1301_packed (by omega) (by jump_dest) h
-  change RD safeBytecode I g s0 ⟨10507⟩
+  change RD safeBytecode I g s0 ⟨10251⟩
     (memLoad (UInt256.ofNat 64) baseMem :: next :: ⟨128⟩ :: ⟨771⟩ :: R)
     baseMem aw₁ rdata σ k₁ C₁ at h₁
   rw [hfree] at h₁
-  obtain ⟨aw₂, k₂, C₂, h₂⟩ := safeRuntime_block_10507_packed (by simp; omega)
+  obtain ⟨aw₂, k₂, C₂, h₂⟩ := safeRuntime_block_10251_packed (by simp; omega)
     (by jump_dest) h₁
-  simp only [safeRuntime_block_10507_stack, safeRuntime_block_10507_memory,
+  simp only [safeRuntime_block_10251_stack, safeRuntime_block_10251_memory,
     hfp, hfpadd 64 (by decide)] at h₂
   have hcount : memLoad ⟨128⟩ (writeWord baseMem fp ⟨64⟩) = UInt256.ofNat words.length := by
     apply memLoad_of_wordRead
@@ -59,11 +59,11 @@ theorem safeModulesReturn {I g s0 σ k C aw mem rdata capacity words next} {R : 
     rw [writeWord_sparse_read_preserved _ _ _ _
       (.inl ⟨by dsimp [fp]; omega, by rw [hbsize]; exact hm.lower⟩)]
     exact writeWord_sparse_read_back _ _ _
-  obtain ⟨aw₃, k₃, C₃, h₃⟩ := safeRuntime_block_10107_packed (by simp; omega) h₂
-  change RD safeBytecode I g s0 ⟨10125⟩
+  obtain ⟨aw₃, k₃, C₃, h₃⟩ := safeRuntime_block_9851_packed (by simp; omega) h₂
+  change RD safeBytecode I g s0 ⟨9869⟩
     (⟨0⟩ :: (⟨128⟩ + UInt256.ofNat 32) :: memLoad ⟨128⟩ (writeWord baseMem fp ⟨64⟩) ::
       ⟨0⟩ :: ⟨128⟩ :: (UInt256.ofNat (fp + 64) + UInt256.ofNat 32) ::
-      ⟨10525⟩ :: ⟨0⟩ :: addressArrayFreePtr capacity :: next :: ⟨128⟩ :: ⟨771⟩ :: R)
+      ⟨10269⟩ :: ⟨0⟩ :: addressArrayFreePtr capacity :: next :: ⟨128⟩ :: ⟨771⟩ :: R)
     (writeWord (writeWord baseMem fp ⟨64⟩) (UInt256.ofNat (fp + 64)).toNat
       (memLoad ⟨128⟩ (writeWord baseMem fp ⟨64⟩))) aw₃ rdata σ k₃ C₃ at h₃
   have ha : UInt256.ofNat (fp + 64) + UInt256.ofNat 32 = UInt256.ofNat (fp + 96) := by
@@ -77,11 +77,11 @@ theorem safeModulesReturn {I g s0 σ k C aw mem rdata capacity words next} {R : 
     (by simp; omega) hwords hmsize (by dsimp [fp]; omega) (by simp)
     (by change words.length < 2 ^ 256; omega)
     (by change fp + 96 + 32 * words.length < 2 ^ 256; dsimp [fp]; omega) hc (by jump_dest)
-  obtain ⟨aw₅, k₅, C₅, h₅⟩ := safeRuntime_block_10525_packed (by simp; omega)
+  obtain ⟨aw₅, k₅, C₅, h₅⟩ := safeRuntime_block_10269_packed (by simp; omega)
     (by jump_dest) h₄
   have hfp32 : (addressArrayFreePtr capacity + UInt256.ofNat 32).toNat = fp + 32 := by
     rw [hfpadd 32 (by decide), ulit_toNat' _ (by change fp + 32 < 2 ^ 256; dsimp [fp]; omega)]
-  simp only [safeRuntime_block_10525_stack, safeRuntime_block_10525_memory,
+  simp only [safeRuntime_block_10269_stack, safeRuntime_block_10269_memory,
     safeAddressMask, solcAddrMask_clean hnext, hfp32] at h₅
   have hret := safeRuntime_block_771 (by omega) h₅
   let encoded := modulesEncodedMemory baseMem fp words next

@@ -20,7 +20,7 @@ theorem evalSignatureLoopCondition {p : SignatureInput} {f : Frame} {evm : EVM.S
 theorem safeSignatureLoop (fuel : Nat) (p : SignatureInput) (evm : EVM.State)
     {I g s0 σ k C aw mem rdata ptr src i} {s r v current last executor ret : UInt256}
     {R : List UInt256} {f : Frame} {old : Value}
-    (h : RD safeBytecode I g s0 ⟨2094⟩
+    (h : RD safeBytecode I g s0 ⟨2002⟩
       (UInt256.ofNat i :: s :: r :: v :: current :: last :: p.required :: UInt256.ofNat src ::
         p.hash :: executor :: ret :: R) mem aw rdata σ k C)
     (hc : SignatureContext p f i last) (he : p.executor = AccountAddress.ofUInt256 executor)
@@ -48,9 +48,9 @@ theorem safeSignatureLoop (fuel : Nat) (p : SignatureInput) (evm : EVM.State)
         omega
       have hlt : UInt256.lt (UInt256.ofNat i) p.required = ⟨0⟩ :=
         ult_zero (by rw [ulit_toNat' i hib, hcount]; omega)
-      have h₁ := safeRuntime_block_2094_taken (by simp; omega)
+      have h₁ := safeRuntime_block_2002_taken (by simp; omega)
         (by rw [hlt]; decide) (by jump_dest) h
-      obtain ⟨aw', k', C', h₂⟩ := safeRuntime_block_2696_packed (by omega) hret h₁
+      obtain ⟨aw', k', C', h₂⟩ := safeRuntime_block_2604_packed (by omega) hret h₁
       refine .inr ⟨f, evm, σ, mem, ptr, aw', rdata, k', C', .whileFalse ?_, hee, hacc, hworld,
         h₂, hm, hf, hz, Nat.le_refl _, by omega, by omega, MemoryPreserves.refl _ _ _⟩
       simpa only [hcount, Nat.add_zero, lt_self_iff_false, decide_false] using
@@ -62,7 +62,7 @@ theorem safeSignatureLoop (fuel : Nat) (p : SignatureInput) (evm : EVM.State)
         ult_one (by rwa [ulit_toNat' i hib])
       have hcond : evalExpr? config f evm signatureLoopCondition = .ok (.bool true) := by
         simpa only [hi, decide_true] using evalSignatureLoopCondition (evm := evm) hc
-      have h₁ := safeRuntime_block_2094_fallthrough (by simp; omega) (by rw [hlt]; decide) h
+      have h₁ := safeRuntime_block_2002_fallthrough (by simp; omega) (by rw [hlt]; decide) h
       obtain ⟨hrev, hbody⟩ | ⟨f', evm', σ', mem', ptr', aw', out, s', r', v', owner, k', C',
           hbody, hc', ho', hee', hacc', hw', h₂, hm', hf', hz', hpl, hph, hms, hpres⟩ :=
         safeSignatureIteration p evm h₁ hc he ho hee hacc hworld hm hf hz hsrc ha (by omega)

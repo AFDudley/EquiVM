@@ -9,7 +9,7 @@ namespace Benchmarks.Safe.V1_0227664
 theorem safeSignatureIteration (p : SignatureInput) (evm : EVM.State)
     {I g s0 σ k C aw mem rdata ptr src i} {s r v current last executor : UInt256}
     {R : List UInt256} {f : Frame} {old : Value}
-    (h : RD safeBytecode I g s0 ⟨2103⟩
+    (h : RD safeBytecode I g s0 ⟨2011⟩
       (UInt256.ofNat i :: s :: r :: v :: current :: last :: p.required :: UInt256.ofNat src ::
         p.hash :: executor :: R) mem aw rdata σ k C)
     (hc : SignatureContext p f i last) (he : p.executor = AccountAddress.ofUInt256 executor)
@@ -26,7 +26,7 @@ theorem safeSignatureIteration (p : SignatureInput) (evm : EVM.State)
       SignatureContext p f' (i + 1) owner ∧
       f'.locals["currentOwner"]? = some (.address (AccountAddress.ofUInt256 owner)) ∧
       evm'.executionEnv = I ∧ evm'.accountMap = σ' ∧ evm'.σ₀ = s0.σ₀ ∧
-      RD safeBytecode I g s0 ⟨2094⟩
+      RD safeBytecode I g s0 ⟨2002⟩
         (UInt256.ofNat (i + 1) :: s' :: r' :: v' :: owner :: owner :: p.required ::
           UInt256.ofNat src :: p.hash :: executor :: R) mem' aw' out σ' k' C' ∧
       BytesMemory mem' src p.signatures ∧ memLoad ⟨64⟩ mem' = UInt256.ofNat ptr' ∧

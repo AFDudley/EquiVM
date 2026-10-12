@@ -1,6 +1,6 @@
 import Benchmarks.Safe.V1_0227664.StorageAtSource
 import Benchmarks.Safe.V1_0227664.StorageAtAllocation
-import Benchmarks.Safe.V1_0227664.Blocks.Runtime_018
+import Benchmarks.Safe.V1_0227664.Blocks.Runtime_017
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -19,19 +19,19 @@ theorem safeStorageAtIndexAddress (i : Nat) (hi : i ≤ 2 ^ 64 - 1) :
 set_option maxHeartbeats 800000 in
 theorem safeStorageAtLoopNext (evm : EVM.State) {g s0 k C aw mem rdata i n offset}
     {R : List UInt256}
-    (h : RD safeBytecode evm.executionEnv g s0 ⟨3037⟩
+    (h : RD safeBytecode evm.executionEnv g s0 ⟨2945⟩
       (UInt256.ofNat i :: ⟨128⟩ :: ⟨96⟩ :: UInt256.ofNat n :: offset :: R)
       mem aw rdata evm.accountMap k C)
     (hov : R.length + 9 ≤ 1024) (hn : n ≤ 2 ^ 64 - 1) (hi : i < n) :
-    ∃ aw' k' C', RD safeBytecode evm.executionEnv g s0 ⟨3037⟩
+    ∃ aw' k' C', RD safeBytecode evm.executionEnv g s0 ⟨2945⟩
       (UInt256.ofNat (i + 1) :: ⟨128⟩ :: ⟨96⟩ :: UInt256.ofNat n :: offset :: R)
       (writeWord mem (160 + 32 * i) (storageAtWord evm offset i))
       aw' rdata evm.accountMap k' C' := by
   have hiw := ulit_toNat' i (by change i < 2 ^ 256; omega)
   have hnw := ulit_toNat' n (by change n < 2 ^ 256; omega)
-  have h₁ := safeRuntime_block_3037_fallthrough (by simp; omega)
+  have h₁ := safeRuntime_block_2945_fallthrough (by simp; omega)
     (by rw [ult_one (by rw [hiw, hnw]; exact hi)]; decide) h
-  obtain ⟨aw', k', C', h'⟩ := safeRuntime_block_3046_packed hov (by jump_dest) h₁
+  obtain ⟨aw', k', C', h'⟩ := safeRuntime_block_2954_packed hov (by jump_dest) h₁
   have hp := safeStorageAtIndexAddress i (by omega)
   change (((⟨128⟩ : UInt256) + UInt256.mul (UInt256.ofNat i) (UInt256.ofNat 32)) +
     UInt256.ofNat 32).toNat = 160 + 32 * i at hp
@@ -40,26 +40,26 @@ theorem safeStorageAtLoopNext (evm : EVM.State) {g s0 k C aw mem rdata i n offse
       storageAtWord evm offset i := by
     rw [u256_add_comm (UInt256.ofNat i) offset]
     rfl
-  simp only [safeRuntime_block_3046_stack, safeRuntime_block_3046_memory,
+  simp only [safeRuntime_block_2954_stack, safeRuntime_block_2954_memory,
     hp, hslot, show UInt256.ofNat 1 + UInt256.ofNat i = UInt256.ofNat (i + 1) from
       u256_one_add_ofNat i] at h'
   exact ⟨_, _, _, h'⟩
 
 theorem safeStorageAtLoopExit {I g s0 σ k C aw mem rdata n offset ret}
     {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨3037⟩
+    (h : RD safeBytecode I g s0 ⟨2945⟩
       (UInt256.ofNat n :: ⟨128⟩ :: ⟨96⟩ :: UInt256.ofNat n :: offset :: ret :: R)
       mem aw rdata σ k C)
     (hov : R.length + 8 ≤ 1024) (hret : (D_J safeBytecode 0).contains ret = true) :
     ∃ k' C', RD safeBytecode I g s0 ret (⟨128⟩ :: R) mem aw rdata σ k' C' := by
-  have h₁ := safeRuntime_block_3037_taken (by simp; omega)
+  have h₁ := safeRuntime_block_2945_taken (by simp; omega)
     (by rw [ult_zero (by omega)]; decide) (by jump_dest) h
-  have h₂ := safeRuntime_block_3066 (by omega) hret h₁
+  have h₂ := safeRuntime_block_2974 (by omega) hret h₁
   exact ⟨_, _, h₂⟩
 
 theorem safeStorageAtLoop (evm : EVM.State) {g s0 k C aw mem rdata n offset locals}
     {doneWords : List UInt256} {fuel : Nat} {ret : UInt256} {R : List UInt256}
-    (h : RD safeBytecode evm.executionEnv g s0 ⟨3037⟩
+    (h : RD safeBytecode evm.executionEnv g s0 ⟨2945⟩
       (UInt256.ofNat doneWords.length :: ⟨128⟩ :: ⟨96⟩ :: UInt256.ofNat n :: offset :: ret :: R)
       mem aw rdata evm.accountMap k C)
     (hov : R.length + 10 ≤ 1024)

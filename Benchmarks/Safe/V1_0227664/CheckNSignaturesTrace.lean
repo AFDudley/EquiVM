@@ -7,7 +7,7 @@ namespace Benchmarks.Safe.V1_0227664
 
 theorem safeCheckNSignaturesTrace (p : SignatureInput) (evm : EVM.State)
     {I g s0 σ k C aw mem rdata ptr src} {executor ret : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨2051⟩
+    (h : RD safeBytecode I g s0 ⟨1959⟩
       (p.required :: UInt256.ofNat src :: p.hash :: executor :: ret :: R) mem aw rdata σ k C)
     (he : p.executor = AccountAddress.ofUInt256 executor)
     (hee : evm.executionEnv = I) (hacc : evm.accountMap = σ) (hworld : evm.σ₀ = s0.σ₀)

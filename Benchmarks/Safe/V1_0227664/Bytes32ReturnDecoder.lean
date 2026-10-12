@@ -1,7 +1,7 @@
 import Benchmarks.Safe.V1_0227664.Memory
 import Reasoning.ABIComposite
 import Reasoning.WordArithmetic
-import Benchmarks.Safe.V1_0227664.Blocks.Runtime_051
+import Benchmarks.Safe.V1_0227664.Blocks.Runtime_050
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -12,21 +12,21 @@ set_option maxRecDepth 100000
 
 theorem safeBytes32DecoderShort {I g s0 σ k C aw mem rdata} {start ret : UInt256}
     {len : Nat} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨11719⟩
+    (h : RD safeBytecode I g s0 ⟨11463⟩
       (start :: (start + UInt256.ofNat len) :: ret :: R) mem aw rdata σ k C)
     (hov : R.length + 7 ≤ 1024) (hl : len < 32) : RDrev safeBytecode g s0 := by
   have hlt : UInt256.slt (UInt256.ofNat len) (UInt256.ofNat 32) = ⟨1⟩ := by
     apply slt_lit_one_low (by decide)
     rw [ulit_toNat' len (by change len < 2 ^ 256; omega)]
     exact hl
-  have hr := safeRuntime_block_11719_fallthrough (by simp; omega)
+  have hr := safeRuntime_block_11463_fallthrough (by simp; omega)
     (by rw [word_add_sub_left, hlt]; decide) h
-  exact safeRuntime_block_11732 (by
-    simp only [safeRuntime_block_11719_fallthrough_stack, List.length_cons]; omega) hr
+  exact safeRuntime_block_11476 (by
+    simp only [safeRuntime_block_11463_fallthrough_stack, List.length_cons]; omega) hr
 
 theorem safeBytes32DecoderValid {I g s0 σ k C aw mem rdata} {start ret : UInt256}
     {len : Nat} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨11719⟩
+    (h : RD safeBytecode I g s0 ⟨11463⟩
       (start :: (start + UInt256.ofNat len) :: ret :: R) mem aw rdata σ k C)
     (hov : R.length + 7 ≤ 1024) (hl : 32 ≤ len) (hb : len < 2 ^ 255)
     (hret : (D_J safeBytecode 0).contains ret = true) :
@@ -35,9 +35,9 @@ theorem safeBytes32DecoderValid {I g s0 σ k C aw mem rdata} {start ret : UInt25
     apply slt_lit_zero (by decide)
     · rw [ulit_toNat' len (by change len < 2 ^ 256; omega)]; exact hl
     · rw [ulit_toNat' len (by change len < 2 ^ 256; omega)]; exact hb
-  have hr := safeRuntime_block_11719_taken (by simp; omega)
+  have hr := safeRuntime_block_11463_taken (by simp; omega)
     (by rw [word_add_sub_left, hlt]; decide) (by jump_dest) h
-  exact safeRuntime_block_11735_packed (by omega) hret hr
+  exact safeRuntime_block_11479_packed (by omega) hret hr
 
 -- GENERALIZES decodeReturnValue_bytes32_ok to the modern decoder's signed-size guard.
 theorem decodeBytes32ReturnLong {out : ByteArray} (hl : 32 ≤ out.size) (hb : out.size < 2 ^ 255) :

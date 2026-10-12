@@ -2,7 +2,7 @@ import Benchmarks.Safe.V1_0227664.PaymentPrepare
 import Benchmarks.Safe.V1_0227664.PaymentSourcePaths
 import Benchmarks.Safe.V1_0227664.SafeMulTrace
 import Benchmarks.Safe.V1_0227664.MemoryPreserves
-import Benchmarks.Safe.V1_0227664.Blocks.Runtime_035
+import Benchmarks.Safe.V1_0227664.Blocks.Runtime_033
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -29,7 +29,7 @@ def PaymentOutcome (p : PaymentInput) (evm : EVM.State) (I : ExecutionEnv) (g : 
 set_option maxRecDepth 100000 in
 theorem safePaymentArithmetic (p : PaymentInput) (evm : EVM.State)
     {I g s0 σ k C aw mem rdata} {ret : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨7898⟩
+    (h : RD safeBytecode I g s0 ⟨7565⟩
       (UInt256.ofNat p.refundReceiver.val :: UInt256.ofNat p.gasToken.val :: p.gasPrice ::
         p.baseGas :: p.gasUsed :: ret :: R) mem aw rdata σ k C)
     (hee : evm.executionEnv = I) (hov : R.length + 24 ≤ 1024) :
@@ -47,8 +47,8 @@ theorem safePaymentArithmetic (p : PaymentInput) (evm : EVM.State)
   · exact .inl ⟨safeAddOverflow h₁ (Nat.le_of_not_gt hs) (by simp; omega),
       safePaymentAddOverflow p evm (Nat.le_of_not_gt hs)⟩
   obtain ⟨k₂, C₂, h₂⟩ := safeAddTrace h₁ hs (by simp; omega) (by jump_dest)
-  have h₃ := safeRuntime_block_7967 (by simp; omega) (by jump_dest) h₂
-  simp only [safeRuntime_block_7967_stack] at h₃
+  have h₃ := safeRuntime_block_7634 (by simp; omega) (by jump_dest) h₂
+  simp only [safeRuntime_block_7634_stack] at h₃
   by_cases hm : p.gasTotal.toNat * (paymentPrice p I).toNat < UInt256.size
   swap
   · refine .inl ⟨safeMulOverflow h₃ (Nat.le_of_not_gt hm) (by simp; omega), ?_⟩

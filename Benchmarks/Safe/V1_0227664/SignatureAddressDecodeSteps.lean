@@ -1,9 +1,9 @@
 import Benchmarks.Safe.V1_0227664.SignatureAddressCalldata
 import Benchmarks.Safe.V1_0227664.Decoders
 import Benchmarks.Safe.V1_0227664.MemoryBytesDecodeEvidence
-import Benchmarks.Safe.V1_0227664.Blocks.Runtime_041
+import Benchmarks.Safe.V1_0227664.Blocks.Runtime_040
+import Benchmarks.Safe.V1_0227664.Blocks.Runtime_046
 import Benchmarks.Safe.V1_0227664.Blocks.Runtime_047
-import Benchmarks.Safe.V1_0227664.Blocks.Runtime_048
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -12,9 +12,9 @@ namespace Benchmarks.Safe.V1_0227664
 
 set_option maxRecDepth 100000
 
-def signatureDecodePC (counted : Bool) : UInt256 := if counted then ⟨9378⟩ else ⟨10864⟩
-def signatureAddressPC (counted : Bool) : UInt256 := if counted then ⟨9408⟩ else ⟨10893⟩
-def signatureBytesPC (counted : Bool) : UInt256 := if counted then ⟨9453⟩ else ⟨10938⟩
+def signatureDecodePC (counted : Bool) : UInt256 := if counted then ⟨9122⟩ else ⟨10608⟩
+def signatureAddressPC (counted : Bool) : UInt256 := if counted then ⟨9152⟩ else ⟨10637⟩
+def signatureBytesPC (counted : Bool) : UInt256 := if counted then ⟨9197⟩ else ⟨10682⟩
 
 def signatureAddressStack (counted : Bool) (cd : ByteArray) (stop ret : UInt256)
     (R : List UInt256) : List UInt256 :=
@@ -39,14 +39,14 @@ theorem safeSignatureDecodeHeaderRevert (counted : Bool)
   cases counted with
   | false =>
     simp only [signatureAddressHead, Bool.false_eq_true, if_false] at hc
-    have h₁ := safeRuntime_block_10864_fallthrough (by simp; omega) (by rw [hc]; decide) h
-    exact safeRuntime_block_10879 (by
-      simp only [safeRuntime_block_10864_fallthrough_stack, List.length_cons]; omega) h₁
+    have h₁ := safeRuntime_block_10608_fallthrough (by simp; omega) (by rw [hc]; decide) h
+    exact safeRuntime_block_10623 (by
+      simp only [safeRuntime_block_10608_fallthrough_stack, List.length_cons]; omega) h₁
   | true =>
     simp only [signatureAddressHead, if_true] at hc
-    have h₁ := safeRuntime_block_9378_fallthrough (by simp; omega) (by rw [hc]; decide) h
-    exact safeRuntime_block_9394 (by
-      simp only [safeRuntime_block_9378_fallthrough_stack, List.length_cons]; omega) h₁
+    have h₁ := safeRuntime_block_9122_fallthrough (by simp; omega) (by rw [hc]; decide) h
+    exact safeRuntime_block_9138 (by
+      simp only [safeRuntime_block_9122_fallthrough_stack, List.length_cons]; omega) h₁
 
 theorem safeSignatureDecodeAddress (counted : Bool)
     {I g s0 σ k C aw mem rdata stop ret} {R : List UInt256}
@@ -54,21 +54,21 @@ theorem safeSignatureDecodeAddress (counted : Bool)
       mem aw rdata σ k C)
     (hc : UInt256.slt (UInt256.sub stop ⟨4⟩) (UInt256.ofNat (signatureAddressHead counted)) = ⟨0⟩)
     (hov : R.length + 18 ≤ 1024) :
-    ∃ k' C', RD safeBytecode I g s0 ⟨8952⟩
+    ∃ k' C', RD safeBytecode I g s0 ⟨8699⟩
       (calldataWord I.calldata 4 :: signatureAddressPC counted ::
         signatureAddressStack counted I.calldata stop ret R) mem aw rdata σ k' C' := by
   cases counted with
   | false =>
     simp only [signatureAddressHead, Bool.false_eq_true, if_false] at hc
-    have h₁ := safeRuntime_block_10864_taken (by simp; omega) (by rw [hc]; decide)
+    have h₁ := safeRuntime_block_10608_taken (by simp; omega) (by rw [hc]; decide)
       (by jump_dest) h
-    have h₂ := safeRuntime_block_10882 (by simp; omega) (by jump_dest) h₁
+    have h₂ := safeRuntime_block_10626 (by simp; omega) (by jump_dest) h₁
     exact ⟨_, _, h₂⟩
   | true =>
     simp only [signatureAddressHead, if_true] at hc
-    have h₁ := safeRuntime_block_9378_taken (by simp; omega) (by rw [hc]; decide)
+    have h₁ := safeRuntime_block_9122_taken (by simp; omega) (by rw [hc]; decide)
       (by jump_dest) h
-    have h₂ := safeRuntime_block_9397 (by simp; omega) (by jump_dest) h₁
+    have h₂ := safeRuntime_block_9141 (by simp; omega) (by jump_dest) h₁
     exact ⟨_, _, h₂⟩
 
 set_option maxHeartbeats 1000000 in
@@ -90,16 +90,16 @@ theorem safeSignatureDecodeOffsetRevert (counted : Bool)
   | false =>
     simp only [signatureAddressPC, signatureAddressStack, Bool.false_eq_true, if_false,
       List.cons_append, List.nil_append] at h
-    have h₁ := safeRuntime_block_10893_fallthrough (by simp; omega) (by exact hcond) h
-    exact safeRuntime_block_10923 (by
-      simp only [safeRuntime_block_10893_fallthrough_stack, List.length_cons, List.length_append,
+    have h₁ := safeRuntime_block_10637_fallthrough (by simp; omega) (by exact hcond) h
+    exact safeRuntime_block_10667 (by
+      simp only [safeRuntime_block_10637_fallthrough_stack, List.length_cons, List.length_append,
         List.length_nil]; omega) h₁
   | true =>
     simp only [signatureAddressPC, signatureAddressStack, if_true,
       List.cons_append, List.nil_append] at h
-    have h₁ := safeRuntime_block_9408_fallthrough (by simp; omega) (by exact hcond) h
-    exact safeRuntime_block_9438 (by
-      simp only [safeRuntime_block_9408_fallthrough_stack, List.length_cons, List.length_append,
+    have h₁ := safeRuntime_block_9152_fallthrough (by simp; omega) (by exact hcond) h
+    exact safeRuntime_block_9182 (by
+      simp only [safeRuntime_block_9152_fallthrough_stack, List.length_cons, List.length_append,
         List.length_nil]; omega) h₁
 
 set_option maxHeartbeats 1000000 in
@@ -109,7 +109,7 @@ theorem safeSignatureDecodeBytes (counted : Bool)
       (signatureAddressStack counted I.calldata stop ret R) mem aw rdata σ k C)
     (hoff : (calldataWord I.calldata 68).toNat ≤ 2 ^ 64 - 1)
     (hov : R.length + 18 ≤ 1024) :
-    ∃ k' C', RD safeBytecode I g s0 ⟨9121⟩
+    ∃ k' C', RD safeBytecode I g s0 ⟨8865⟩
       (UInt256.ofNat (4 + (calldataWord I.calldata 68).toNat) :: stop :: signatureBytesPC counted ::
         signatureBytesSaved counted I.calldata stop ret R) mem aw rdata σ k' C' := by
   have hmax : UInt256.sub (UInt256.shiftLeft (UInt256.ofNat 1) (UInt256.ofNat 64))
@@ -130,9 +130,9 @@ theorem safeSignatureDecodeBytes (counted : Bool)
   | false =>
     simp only [signatureAddressPC, signatureAddressStack, Bool.false_eq_true, if_false,
       List.cons_append, List.nil_append] at h
-    have h₁ := safeRuntime_block_10893_taken (by simp; omega) (by exact hcond) (by jump_dest) h
-    have h₂ := safeRuntime_block_10926 (by simp; omega) (by jump_dest) h₁
-    simp only [safeRuntime_block_10926_stack, safeRuntime_block_10893_taken_stack,
+    have h₁ := safeRuntime_block_10637_taken (by simp; omega) (by exact hcond) (by jump_dest) h
+    have h₂ := safeRuntime_block_10670 (by simp; omega) (by jump_dest) h₁
+    simp only [safeRuntime_block_10670_stack, safeRuntime_block_10637_taken_stack,
       show ((⟨4⟩ : UInt256) + UInt256.ofNat 64).toNat = 68 by decide +kernel,
       show ((⟨4⟩ : UInt256) + UInt256.ofNat 32).toNat = 36 by decide +kernel] at h₂
     simp only [calldataWord] at hadd
@@ -141,9 +141,9 @@ theorem safeSignatureDecodeBytes (counted : Bool)
   | true =>
     simp only [signatureAddressPC, signatureAddressStack, if_true,
       List.cons_append, List.nil_append] at h
-    have h₁ := safeRuntime_block_9408_taken (by simp; omega) (by exact hcond) (by jump_dest) h
-    have h₂ := safeRuntime_block_9441 (by simp; omega) (by jump_dest) h₁
-    simp only [safeRuntime_block_9441_stack, safeRuntime_block_9408_taken_stack,
+    have h₁ := safeRuntime_block_9152_taken (by simp; omega) (by exact hcond) (by jump_dest) h
+    have h₂ := safeRuntime_block_9185 (by simp; omega) (by jump_dest) h₁
+    simp only [safeRuntime_block_9185_stack, safeRuntime_block_9152_taken_stack,
       show ((⟨4⟩ : UInt256) + UInt256.ofNat 64).toNat = 68 by decide +kernel,
       show ((⟨4⟩ : UInt256) + UInt256.ofNat 32).toNat = 36 by decide +kernel] at h₂
     simp only [calldataWord] at hadd
@@ -160,11 +160,11 @@ theorem safeSignatureDecodeFinish (counted : Bool)
       mem aw rdata σ k' C' := by
   cases counted with
   | false =>
-    have h₁ := safeRuntime_block_10938 (by simp; omega) hret h
+    have h₁ := safeRuntime_block_10682 (by simp; omega) hret h
     exact ⟨_, _, h₁⟩
   | true =>
-    have h₁ := safeRuntime_block_9453 (by simp; omega) hret h
-    simp only [safeRuntime_block_9453_stack,
+    have h₁ := safeRuntime_block_9197 (by simp; omega) hret h
+    simp only [safeRuntime_block_9197_stack,
       show (UInt256.ofNat 96 + (⟨4⟩ : UInt256)).toNat = 100 by decide +kernel] at h₁
     exact ⟨_, _, h₁⟩
 

@@ -7,7 +7,7 @@ namespace Benchmarks.Safe.V1_0227664
 set_option maxRecDepth 100000 in
 theorem safeModulePreDecodedTrace (evm : EVM.State) (payload : ByteArray)
     {I g s0 σ k C aw rdata} {target value operation ret : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨7340⟩
+    (h : RD safeBytecode I g s0 ⟨7007⟩
       (operation :: ⟨128⟩ :: value :: target :: ret :: R)
       (memoryBytesDecoded payload) aw rdata σ k C)
     (hee : evm.executionEnv = I) (hacc : evm.accountMap = σ) (hworld : evm.σ₀ = s0.σ₀)
