@@ -1,0 +1,67 @@
+import Benchmarks.Safe.V2_0e91d99.Decoders
+import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_038
+import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_039
+
+open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open safeRuntimeBlocks
+
+namespace Benchmarks.Safe.V2_0e91d99
+
+-- LIBRARY CANDIDATE: solc's rounded allocation expression for a memory bytes object.
+def memoryBytesEnd (mem : ByteArray) (n : UInt256) : UInt256 :=
+  memLoad (UInt256.ofNat 64) mem +
+    UInt256.land
+      (UInt256.ofNat 63 + UInt256.land (UInt256.lnot (UInt256.ofNat 31))
+        (n + UInt256.ofNat 31))
+      (UInt256.lnot (UInt256.ofNat 31))
+
+set_option maxRecDepth 100000 in
+theorem safeDecodeMemoryBytesOrRevert {I g s0 σ k C aw mem rdata}
+    {off stop ret : UInt256} {R : List UInt256}
+    (h : RD safeBytecode I g s0 ⟨8865⟩ (off :: stop :: ret :: R) mem aw rdata σ k C)
+    (hov : R.length + 10 ≤ 1024) (hret : (D_J safeBytecode 0).contains ret = true) :
+    RDrev safeBytecode g s0 ∨
+      ∃ ptr mem' aw' k' C', RD safeBytecode I g s0 ret (ptr :: R) mem' aw' rdata σ k' C' := by
+  by_cases hlen : UInt256.slt (off + UInt256.ofNat 31) stop = UInt256.ofNat 0
+  · left
+    have h₁ := safeRuntime_block_8865_fallthrough (by simp; omega) hlen h
+    exact safeRuntime_block_8877
+      (by simp only [safeRuntime_block_8865_fallthrough_stack, List.length_cons]; omega) h₁
+  have h₁ := safeRuntime_block_8865_taken (by simp; omega) hlen (by jump_dest) h
+  let n := calldataWord I.calldata off.toNat
+  let max64 := UInt256.sub (UInt256.shiftLeft (UInt256.ofNat 1) (UInt256.ofNat 64))
+    (UInt256.ofNat 1)
+  by_cases hn : UInt256.isZero (UInt256.gt n max64) = UInt256.ofNat 0
+  · left
+    have h₂ := safeRuntime_block_8880_fallthrough (by simp; omega) hn h₁
+    have h₃ := safeRuntime_block_8898
+      (by simp only [safeRuntime_block_8880_fallthrough_stack, List.length_cons]; omega)
+      (by jump_dest) h₂
+    exact safeRuntime_block_8845
+      (by simp only [safeRuntime_block_8898_stack, safeRuntime_block_8880_fallthrough_stack,
+        List.length_cons]; omega) h₃
+  have h₂ := safeRuntime_block_8880_taken (by simp; omega) hn (by jump_dest) h₁
+  let ptr := memLoad (UInt256.ofNat 64) mem
+  let endPtr := memoryBytesEnd mem n
+  by_cases ha : UInt256.isZero
+      (UInt256.lor (UInt256.lt endPtr ptr) (UInt256.gt endPtr max64)) = UInt256.ofNat 0
+  · left
+    have h₃ := safeRuntime_block_8905_fallthrough (by simp; omega) ha h₂
+    have h₄ := safeRuntime_block_8944
+      (by simp only [safeRuntime_block_8905_fallthrough_stack, List.length_cons]; omega)
+      (by jump_dest) h₃
+    exact safeRuntime_block_8845
+      (by simp only [safeRuntime_block_8944_stack, safeRuntime_block_8905_fallthrough_stack,
+        List.length_cons]; omega) h₄
+  have h₃ := safeRuntime_block_8905_taken (by simp; omega) ha (by jump_dest) h₂
+  by_cases hp : UInt256.isZero (UInt256.lt stop (UInt256.ofNat 32 + (n + off))) =
+      UInt256.ofNat 0
+  · left
+    have h₄ := safeRuntime_block_8951_fallthrough (by simp; omega) hp h₃
+    exact safeRuntime_block_8971
+      (by simp only [safeRuntime_block_8951_fallthrough_stack, List.length_cons]; omega) h₄
+  have h₄ := safeRuntime_block_8951_taken (by simp; omega) hp (by jump_dest) h₃
+  have h₅ := safeRuntime_block_8974 (by simp; omega) hret h₄
+  exact Or.inr ⟨_, _, _, _, _, h₅⟩
+
+end Benchmarks.Safe.V2_0e91d99
