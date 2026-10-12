@@ -1,4 +1,5 @@
 import Benchmarks.EAS.EAS.MultiRevokeSource
+import Benchmarks.EAS.EAS.SpendAndIncrementSource
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 set_option maxRecDepth 10000
@@ -39,9 +40,6 @@ theorem multiRevokeUpdateSource {L imms : Store} {evm : EVM.State} {requests : L
     (hu : used.toNat ≤ available.toNat) :
     ExecBlock config {contract := contract,locals := L,immutables := imms} evm multiRevokeUpdate
       (.ok {contract := contract,locals := multiRevokeNextLocals L available used i,immutables := imms} evm) := by
-  apply ExecBlock.consNormal (ExecStmt.assign (evalExpr_uint256_sub (evalLocalValue h.available) (evalLocalValue hr) hu)
-    (assignLocalValue h.available))
-  apply ExecBlock.consNormal (execLocalCastIncrement ?_ hi) ExecBlock.nil
-  simpa (disch := decide) only [store_get_ne] using h.index
+  exact spendAndIncrementSource h.available hr h.index hi hu
 
 end Benchmarks.EAS.EAS

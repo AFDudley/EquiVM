@@ -41,9 +41,12 @@ theorem MultiAttestLocals.next {L : Store} {requests : List Value} {groups : Lis
   · simpa (disch := decide) only [multiAttestNextLocals,store_get_ne] using h.heap
   · exact store_get_self _ _ _
 
-theorem multiAttestUpdateSource {L imms : Store} {evm : EVM.State} {requests : List Value}
-    {groups : List (List UInt256)} {words : List UInt256} {available used : UInt256} {heap i : Nat}
-    (h : MultiAttestLocals L requests groups available heap i)
+theorem multiAttestUpdateSourceOfFields {L imms : Store} {evm : EVM.State}
+    {groups : List (List UInt256)} {words : List UInt256} {available used : UInt256} {i : Nat}
+    (hg : L.get? "totalUids"=some (.array (groups.map wordListValue)))
+    (hc0 : L.get? "totalUidsCount"=some (.int (Int.ofNat groups.flatten.length)))
+    (ha : L.get? "availableValue"=some (.int (Int.ofNat available.toNat)))
+    (hi0 : L.get? "i"=some (.int (Int.ofNat i)))
     (hr : L.get? "res" = some (attestationsResultValue words used))
     (hi : i<groups.length) (hib : i+1<UInt256.size)
     (hc : groups.flatten.length+words.length<UInt256.size) (hu : used.toNat≤available.toNat) :
@@ -59,8 +62,8 @@ theorem multiAttestUpdateSource {L imms : Store} {evm : EVM.State} {requests : L
       (.assign .localVar {base := "availableValue"}
         (.inRange abiUInt256Int (.binary .sub (.var "availableValue") (.field (.var "res") "usedValue"))))
       (.ok {contract := contract,locals := L1,immutables := imms} evm) :=
-    ExecStmt.assign (evalExpr_uint256_sub (evalLocalValue h.available)
-      (evalRecordField (evalLocalValue hr) rfl) hu) (assignLocalValue h.available)
+    ExecStmt.assign (evalExpr_uint256_sub (evalLocalValue ha)
+      (evalRecordField (evalLocalValue hr) rfl) hu) (assignLocalValue ha)
   have hs2 : ExecStmt config {contract := contract,locals := L1,immutables := imms} evm
       (.assign .localVar {base := "totalUids",steps := [.aindex (.var "i")]} (.field (.var "res") "uids"))
       (.ok {contract := contract,locals := L2,immutables := imms} evm) := by
@@ -68,11 +71,11 @@ theorem multiAttestUpdateSource {L imms : Store} {evm : EVM.State} {requests : L
     simpa only [L2,List.map_set] using assignLocalArrayIndex
       (cfg := config) (solm := {contract := contract,locals := L1,immutables := imms}) (evm := evm)
       (array := "totalUids") (index := "i") (values := groups.map wordListValue) (i := i) (value := wordListValue words)
-      (by simpa (disch := decide) only [L1,store_get_ne] using h.groups)
-      (by simpa (disch := decide) only [L1,store_get_ne] using h.index)
+      (by simpa (disch := decide) only [L1,store_get_ne] using hg)
+      (by simpa (disch := decide) only [L1,store_get_ne] using hi0)
       (by simpa only [List.length_map] using hi)
   have hcount : L2.get? "totalUidsCount" = some (.int (Int.ofNat groups.flatten.length)) := by
-    simpa (disch := decide) only [L2,L1,store_get_ne] using h.count
+    simpa (disch := decide) only [L2,L1,store_get_ne] using hc0
   have hlen : evalExpr? config {contract := contract,locals := L2,immutables := imms} evm
       (.arrayLength .localVar {base := "res",steps := [.field "uids"]}) = .ok (.int (Int.ofNat words.length)) := by
     simp only [evalExpr?,readLocalPath?,hr2,attestationsResultValue,lookupField?,bind,EvalResult.bind,pure]
@@ -84,6 +87,16 @@ theorem multiAttestUpdateSource {L imms : Store} {evm : EVM.State} {requests : L
   apply ExecBlock.consNormal hs2
   apply ExecBlock.consNormal (ExecStmt.assign he (assignLocalValue hcount))
   apply ExecBlock.consNormal (execLocalCastIncrement ?_ hib) ExecBlock.nil
-  simpa (disch := decide) only [L2,L1,store_get_ne] using h.index
+  simpa (disch := decide) only [L2,L1,store_get_ne] using hi0
+
+theorem multiAttestUpdateSource {L imms : Store} {evm : EVM.State} {requests : List Value}
+    {groups : List (List UInt256)} {words : List UInt256} {available used : UInt256} {heap i : Nat}
+    (h : MultiAttestLocals L requests groups available heap i)
+    (hr : L.get? "res" = some (attestationsResultValue words used))
+    (hi : i<groups.length) (hib : i+1<UInt256.size)
+    (hc : groups.flatten.length+words.length<UInt256.size) (hu : used.toNat≤available.toNat) :
+    ExecBlock config {contract := contract,locals := L,immutables := imms} evm multiAttestUpdate
+      (.ok {contract := contract,locals := multiAttestNextLocals L groups words available used i,immutables := imms} evm) :=
+  multiAttestUpdateSourceOfFields h.groups h.count h.available h.index hr hi hib hc hu
 
 end Benchmarks.EAS.EAS

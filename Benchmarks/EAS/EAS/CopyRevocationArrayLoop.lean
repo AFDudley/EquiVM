@@ -13,7 +13,7 @@ theorem wordStride_next (base stride i : Nat) (hb : base+stride*(i+1) < UInt256.
     ulit_toNat' _ (by omega),ulit_toNat' _ hb]
   omega
 
-theorem copyRevocationArrayLoop {ee : ExecutionEnv} {g : Sat256} {s0 : State}
+theorem copyRevocationArrayLoopStrong {ee : ExecutionEnv} {g : Sat256} {s0 : State}
     {mem : ByteArray} {aw : UInt256} {rdata : ByteArray} {σ : AccountMap} {k C : Nat}
     {offset array ret : UInt256} {rs : List RevocationRequestRecord} {i cursor : Nat} {R : List UInt256}
     (v : EASImmutables) (hstack : R.length+15 ≤ 1024)
@@ -27,7 +27,7 @@ theorem copyRevocationArrayLoop {ee : ExecutionEnv} {g : Sat256} {s0 : State}
         UInt256.ofNat (offset.toNat+64*rs.length)::UInt256.ofNat (offset.toNat+64*i)::ret::array::R) mem aw rdata σ k C) :
     if cursor+64*n ≤ 2^64-1 then
       ∃ mem' aw' k' C', MemoryPrefix mem mem' array.toNat ∧
-        RevocationRequestArrayMemoryView mem' array rs (cursor+64*n) ∧
+        CopyRevocationArrayMemory mem' array rs rs.length (cursor+64*n) ∧
         memLoad (UInt256.ofNat 64) mem' = UInt256.ofNat (cursor+64*n) ∧
         RD (deployedRuntime v) ee g s0 ret (array::R) mem' aw' rdata σ k' C'
     else RDrev (deployedRuntime v) g s0 := by
@@ -37,7 +37,7 @@ theorem copyRevocationArrayLoop {ee : ExecutionEnv} {g : Sat256} {s0 : State}
     subst i
     simp only [Nat.mul_zero,Nat.add_zero,if_pos hh]
     obtain ⟨a1,k1,C1,r1⟩ := easCopyRevocationArrayDone v (by omega) hret rd
-    exact ⟨mem,a1,k1,C1,MemoryPrefix.refl _ _,hm.finish,hfree,r1⟩
+    exact ⟨mem,a1,k1,C1,MemoryPrefix.refl _ _,hm,hfree,r1⟩
   | succ n ih =>
     have hi : i < rs.length := by omega
     have hcb := hc.extent
@@ -74,5 +74,30 @@ theorem copyRevocationArrayLoop {ee : ExecutionEnv} {g : Sat256} {s0 : State}
     · rw [if_neg hg] at hrun
       rw [if_neg (by omega : ¬ cursor+64*(n+1) ≤ 2^64-1)]
       exact hrun
+
+theorem copyRevocationArrayLoop {ee : ExecutionEnv} {g : Sat256} {s0 : State}
+    {mem : ByteArray} {aw : UInt256} {rdata : ByteArray} {σ : AccountMap} {k C : Nat}
+    {offset array ret : UInt256} {rs : List RevocationRequestRecord} {i cursor : Nat} {R : List UInt256}
+    (v : EASImmutables) (hstack : R.length+15 ≤ 1024)
+    (hc : RevocationArrayCalldataView ee.calldata offset rs) (hsize : ee.calldata.size < 2^255)
+    (hret : (D_J (deployedRuntime v) 0).contains ret = true)
+    (n : Nat) (hn : i+n = rs.length)
+    (hm : CopyRevocationArrayMemory mem array rs i cursor)
+    (hh : cursor ≤ 2^64-1) (hfree : memLoad (UInt256.ofNat 64) mem = UInt256.ofNat cursor)
+    (rd : RD (deployedRuntime v) ee g s0 ⟨5973⟩
+      (UInt256.ofNat (array.toNat+32+32*i)::UInt256.ofNat ee.calldata.size::
+        UInt256.ofNat (offset.toNat+64*rs.length)::UInt256.ofNat (offset.toNat+64*i)::ret::array::R) mem aw rdata σ k C) :
+    if cursor+64*n ≤ 2^64-1 then
+      ∃ mem' aw' k' C', MemoryPrefix mem mem' array.toNat ∧
+        RevocationRequestArrayMemoryView mem' array rs (cursor+64*n) ∧
+        memLoad (UInt256.ofNat 64) mem' = UInt256.ofNat (cursor+64*n) ∧
+        RD (deployedRuntime v) ee g s0 ret (array::R) mem' aw' rdata σ k' C'
+    else RDrev (deployedRuntime v) g s0 := by
+  have h := copyRevocationArrayLoopStrong v hstack hc hsize hret n hn hm hh hfree rd
+  by_cases hg : cursor+64*n ≤ 2^64-1
+  · rw [if_pos hg] at h ⊢
+    obtain ⟨m,a,j,D,hp,hv,hf,hr⟩ := h
+    exact ⟨m,a,j,D,hp,hv.finish,hf,hr⟩
+  · simpa only [if_neg hg] using h
 
 end Benchmarks.EAS.EAS

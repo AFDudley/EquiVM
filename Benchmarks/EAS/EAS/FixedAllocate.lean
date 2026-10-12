@@ -5,14 +5,14 @@ namespace Benchmarks.EAS.EAS
 set_option maxRecDepth 10000
 
 inductive FixedAllocationSite where
-  | bytes64 | bytes128 | bytes192 | bytes320
+  | bytes64 | bytes96 | bytes128 | bytes192 | bytes320
 
 def FixedAllocationSite.size : FixedAllocationSite → Nat
-  | .bytes64 => 64 | .bytes128 => 128 | .bytes192 => 192 | .bytes320 => 320
+  | .bytes64 => 64 | .bytes96 => 96 | .bytes128 => 128 | .bytes192 => 192 | .bytes320 => 320
 def FixedAllocationSite.pc : FixedAllocationSite → UInt256
-  | .bytes64 => ⟨4798⟩ | .bytes128 => ⟨4695⟩ | .bytes192 => ⟨4770⟩ | .bytes320 => ⟨4854⟩
+  | .bytes64 => ⟨4798⟩ | .bytes96 => ⟨4826⟩ | .bytes128 => ⟨4695⟩ | .bytes192 => ⟨4770⟩ | .bytes320 => ⟨4854⟩
 def FixedAllocationSite.finish : FixedAllocationSite → UInt256
-  | .bytes64 => ⟨4822⟩ | .bytes128 => ⟨4719⟩ | .bytes192 => ⟨4794⟩ | .bytes320 => ⟨4879⟩
+  | .bytes64 => ⟨4822⟩ | .bytes96 => ⟨4850⟩ | .bytes128 => ⟨4719⟩ | .bytes192 => ⟨4794⟩ | .bytes320 => ⟨4879⟩
 
 theorem fixedAllocation_word (site : FixedAllocationSite) (heap : UInt256) :
     heap+UInt256.ofNat site.size = UInt256.ofNat (allocateNext heap.toNat site.size) := by
@@ -49,6 +49,9 @@ theorem easFixedAllocate_ok {ee : ExecutionEnv} {g : Sat256} {s0 : State}
     | bytes64 =>
       exact easBlocks.eas_block_4798_fallthrough_packed (immWords := wordsOf (immStore v))
         (by simp only [List.length_cons]; omega) hc rd
+    | bytes96 =>
+      exact easBlocks.eas_block_4826_fallthrough_packed (immWords := wordsOf (immStore v))
+        (by simp only [List.length_cons]; omega) hc rd
     | bytes128 =>
       exact easBlocks.eas_block_4695_fallthrough_packed (immWords := wordsOf (immStore v))
         (by simp only [List.length_cons]; omega) hc rd
@@ -64,6 +67,8 @@ theorem easFixedAllocate_ok {ee : ExecutionEnv} {g : Sat256} {s0 : State}
     cases site with
     | bytes64 =>
       exact easBlocks.eas_block_4822_packed (immWords := wordsOf (immStore v)) (by omega) hret r1
+    | bytes96 =>
+      exact easBlocks.eas_block_4850_packed (immWords := wordsOf (immStore v)) (by omega) hret r1
     | bytes128 =>
       exact easBlocks.eas_block_4719_packed (immWords := wordsOf (immStore v)) (by omega) hret r1
     | bytes192 =>
@@ -89,6 +94,8 @@ theorem easFixedAllocate_revert {ee : ExecutionEnv} {g : Sat256} {s0 : State}
     cases site with
     | bytes64 =>
       exact easBlocks.eas_block_4798_taken_packed (immWords := wordsOf (immStore v)) hstack hc hdest rd
+    | bytes96 =>
+      exact easBlocks.eas_block_4826_taken_packed (immWords := wordsOf (immStore v)) hstack hc hdest rd
     | bytes128 =>
       exact easBlocks.eas_block_4695_taken_packed (immWords := wordsOf (immStore v)) hstack hc hdest rd
     | bytes192 =>

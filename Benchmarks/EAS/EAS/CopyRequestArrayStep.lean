@@ -24,12 +24,15 @@ theorem wordStride32_next (base i : Nat) (hb : base+32*(i+1) < UInt256.size) :
     ulit_toNat' _ (by omega),ulit_toNat' _ hb]
   omega
 
-theorem copyRequestArrayStep {L : Store} {evm : EVM.State} {ee : ExecutionEnv} {g : Sat256} {s0 : State}
+theorem copyRequestArrayStepOfElement {L : Store} {evm : EVM.State} {ee : ExecutionEnv} {g : Sat256} {s0 : State}
     {mem : ByteArray} {aw : UInt256} {rdata : ByteArray} {σ : AccountMap} {k C : Nat}
     {offset array heap ret : UInt256} {rs : List AttestationRequestRecord} {i : Nat} {R : List UInt256}
     (v : EASImmutables) (hstack : R.length+23 ≤ 1024)
     (hf : CopyRequestArrayLocals L rs heap.toNat i) (hm : CopyRequestArrayMemory mem array rs i heap.toNat)
-    (hc : RequestArrayCalldataView ee.calldata offset rs) (hi : i < rs.length)
+    (hcb : offset.toNat+32*rs.length ≤ ee.calldata.size) (hi : i < rs.length)
+    (hrequest : (calldataWord ee.calldata (offset.toNat+32*i)).toNat ≤ 2^64-1 ∧
+      requestDataValid ee.calldata (requestArrayElement ee.calldata offset i) ∧
+      requestDataRecord ee.calldata (requestArrayElement ee.calldata offset i) = rs[i])
     (hh : heap.toNat ≤ 2^64-1) (hfree : memLoad (UInt256.ofNat 64) mem = heap)
     (hsize : ee.calldata.size < 2^255+4)
     (rd : RD (deployedRuntime v) ee g s0 ⟨5594⟩
@@ -46,14 +49,13 @@ theorem copyRequestArrayStep {L : Store} {evm : EVM.State} {ee : ExecutionEnv} {
           UInt256.ofNat (offset.toNat+32*rs.length)::UInt256.ofNat ee.calldata.size::ret::array::R) mem' aw' rdata σ k' C') ∨
     (ExecBlock config {contract := contract,locals := L,immutables := immStore v} evm copyRequestArrayIteration .reverted ∧
       RDrev (deployedRuntime v) g s0) := by
-  have hcb := hc.extent
   have hspan := hm.span
   have hlo : 96 ≤ heap.toNat := by have := hm.low; omega
   have hlen : rs.length < UInt256.size := by change _ < 2^256; omega
   have hsrc : (UInt256.ofNat (offset.toNat+32*i)).toNat = offset.toNat+32*i := ulit_toNat' _ (by change _ < 2^256; omega)
   have hend : (UInt256.ofNat (offset.toNat+32*rs.length)).toNat = offset.toNat+32*rs.length := ulit_toNat' _ (by change _ < 2^256; omega)
   have hdst : (UInt256.ofNat (array.toNat+32+32*i)).toNat = array.toNat+32+32*i := ulit_toNat' _ (by change _ < 2^256; omega)
-  obtain ⟨ho,hd,he⟩ := hc.requests i hi
+  obtain ⟨ho,hd,he⟩ := hrequest
   obtain ⟨a1,k1,C1,r1⟩ := (easCopyRequestArrayRead v (by omega) (by rw [hsrc,hend]; omega) rd).1
     (by rw [hsrc]; exact ho)
   rw [hsrc] at r1
@@ -98,5 +100,29 @@ theorem copyRequestArrayStep {L : Store} {evm : EVM.State} {ee : ExecutionEnv} {
     exact Or.inl ⟨(allocateBlockLocals L next).insert "i" (.int (Int.ofNat (i+1))),final,a3,k3,C3,next,
       hn,hv.2.2.1,hpre,hf.next,hm2,hfree',hsol.1 hv,r3⟩
   · exact Or.inr ⟨hsol.2 hv,hrun.2 (fun h => hv (hg.mp h))⟩
+
+theorem copyRequestArrayStep {L : Store} {evm : EVM.State} {ee : ExecutionEnv} {g : Sat256} {s0 : State}
+    {mem : ByteArray} {aw : UInt256} {rdata : ByteArray} {σ : AccountMap} {k C : Nat}
+    {offset array heap ret : UInt256} {rs : List AttestationRequestRecord} {i : Nat} {R : List UInt256}
+    (v : EASImmutables) (hstack : R.length+23 ≤ 1024)
+    (hf : CopyRequestArrayLocals L rs heap.toNat i) (hm : CopyRequestArrayMemory mem array rs i heap.toNat)
+    (hc : RequestArrayCalldataView ee.calldata offset rs) (hi : i < rs.length)
+    (hh : heap.toNat ≤ 2^64-1) (hfree : memLoad (UInt256.ofNat 64) mem = heap)
+    (hsize : ee.calldata.size < 2^255+4)
+    (rd : RD (deployedRuntime v) ee g s0 ⟨5594⟩
+      (UInt256.ofNat (array.toNat+32+32*i)::UInt256.ofNat (offset.toNat+32*i)::offset::
+        UInt256.ofNat (offset.toNat+32*rs.length)::UInt256.ofNat ee.calldata.size::ret::array::R) mem aw rdata σ k C) :
+    (∃ L' mem' aw' k' C' next,
+      heap.toNat ≤ next ∧ next ≤ 2^64-1 ∧ MemoryPrefix mem mem' array.toNat ∧
+      CopyRequestArrayLocals L' rs next (i+1) ∧ CopyRequestArrayMemory mem' array rs (i+1) next ∧
+      memLoad (UInt256.ofNat 64) mem' = UInt256.ofNat next ∧
+      ExecBlock config {contract := contract,locals := L,immutables := immStore v} evm copyRequestArrayIteration
+        (.ok {contract := contract,locals := L',immutables := immStore v} evm) ∧
+      RD (deployedRuntime v) ee g s0 ⟨5594⟩
+        (UInt256.ofNat (array.toNat+32+32*(i+1))::UInt256.ofNat (offset.toNat+32*(i+1))::offset::
+          UInt256.ofNat (offset.toNat+32*rs.length)::UInt256.ofNat ee.calldata.size::ret::array::R) mem' aw' rdata σ k' C') ∨
+    (ExecBlock config {contract := contract,locals := L,immutables := immStore v} evm copyRequestArrayIteration .reverted ∧
+      RDrev (deployedRuntime v) g s0) :=
+  copyRequestArrayStepOfElement v hstack hf hm hc.extent hi (hc.requests i hi) hh hfree hsize rd
 
 end Benchmarks.EAS.EAS
