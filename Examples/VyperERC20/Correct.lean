@@ -206,7 +206,7 @@ theorem erc20CtorAssignBalance (evm : EVM.State) (initialSupply : Int)
       evm .storage (balanceOfRef sender) (.int initialSupply) =
         .ok ({ contract := erc20Contract, locals := erc20CtorLocals initialSupply },
           erc20CtorBalancePostState evm (EVM.word initialSupply.toNat)) := by
-  apply assignStorageRef_storage_scalar (hbackend := rfl)
+  apply assignStorageRef_storage_vyper_scalar (hbackend := rfl) (hcheck := by rfl)
       (hleaf := Or.inl ⟨_, rfl⟩) (ty := uint256Storage)
       (hbase := erc20CtorLocals_get_balanceOf initialSupply)
       (her := by
@@ -238,7 +238,7 @@ theorem erc20CtorAssignTotalSupply (evm : EVM.State) (initialSupply : Int)
         .ok ({ contract := erc20Contract, locals := erc20CtorLocals initialSupply },
           Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨2⟩
             (EVM.word initialSupply.toNat)) := by
-  apply assignStorageRef_storage_scalar (hbackend := rfl)
+  apply assignStorageRef_storage_vyper_scalar (hbackend := rfl) (hcheck := by rfl)
       (hleaf := Or.inl ⟨_, rfl⟩) (ty := uint256Storage)
       (hbase := erc20CtorLocals_get_totalSupply initialSupply)
       (her := by

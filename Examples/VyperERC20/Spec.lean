@@ -1,5 +1,5 @@
 import Examples.ERC20.Spec
-import Solm.VyperLayout
+import Solm.MetaVyperLayout
 
 /-!
 # Vyper ERC20 — Solm specification and storage layout
@@ -50,13 +50,8 @@ def erc20AllowanceOwnerSlot (owner : KeyValue) : Ethereum.UInt256 :=
 def erc20AllowanceSlot (owner spender : KeyValue) : Ethereum.UInt256 :=
   vyperMappingSlot (erc20AllowanceOwnerSlot owner) spender
 
-def erc20StorageLayout : StorageLayout := fun ref =>
-    match ref.base, ref.steps with
-    | "balanceOf", [.mindex owner] => some (.leaf (vyperUint256Loc (erc20BalanceOfSlot owner)))
-    | "allowance", [.mindex owner, .mindex spender] =>
-        some (.leaf (vyperUint256Loc (erc20AllowanceSlot owner spender)))
-    | "totalSupply", [] => some (.leaf (vyperUint256Loc ⟨2⟩))
-    | _, _ => none
+def erc20StorageLayout : StorageLayout :=
+  vyperLayout! [erc20StorageDecls]
 
 @[simp] theorem erc20BalanceOfSlot_eq (owner : KeyValue) :
     erc20BalanceOfSlot owner = vyperMappingSlot ⟨0⟩ owner :=
@@ -88,10 +83,10 @@ def erc20StorageLayout : StorageLayout := fun ref =>
 
 end VyperERC20
 
-/-- The ERC20 leaves are full-word integers. Their reads and writes use the Solidity scalar
-operations, while the handwritten Vyper locator determines the mapping slots. -/
+/-- The ERC20 leaves are full-word integers in the generated Vyper layout. -/
 def vyperERC20Config : Config :=
-  { storageBackend := solidityStorageBackend VyperERC20.erc20StorageLayout
+  { storageBackend := vyperStorageBackend VyperERC20.erc20StorageLayout
+      (vyperBounds! [VyperERC20.erc20StorageDecls])
     externalABI := defaultExternalCallABI
     abiDecodeMode := DecodeMode.vyper
     selfDeployment := genSolidityConstructorDeployment VyperERC20.erc20Contract.ctor.params }

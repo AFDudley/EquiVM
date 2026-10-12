@@ -72,6 +72,8 @@ Solm/
 ├── SolidityStorage.lean   operations on Solidity storage through StorageBackend
 ├── TransientStorage.lean  Solidity encoding over the executing account's transient map
 ├── MetaSolidityLayout.lean generated layouts and persistent/transient backend macros
+├── MetaVyperLayout.lean compile-time Vyper layouts, including bounded arrays and strings
+├── VyperStorage.lean      Vyper storage backend with inline bytes and array bounds
 ├── TransientTests.lean    transient packing, isolation, aggregate, and resolution regressions
 ├── VyperLayout.lean       Vyper's storage layout
 ├── Semantics.lean         umbrella for Semantics/

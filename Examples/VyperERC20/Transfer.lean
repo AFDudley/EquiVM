@@ -255,7 +255,7 @@ theorem evalStorageRef_transfer_sender_balance (evm : EVM.State) (I : ExecutionE
 theorem evalExpr_transfer_sender_balance (evm : EVM.State) (I : ExecutionEnv) :
     evalExpr? vyperERC20Config { contract := erc20Contract, locals := transferStore I } evm
       (.storage (balanceOfRef sender)) = .ok (transferFromBalanceValue evm) := by
-  rw [evalExpr_storage_scalar (hbackend := rfl) (t := .int uint256Int)
+  rw [evalExpr_storage_vyper_scalar (hbackend := rfl) (hcheck := by rfl) (t := .int uint256Int)
     (hbase := transferStore_balanceOf I)
     (her := evalStorageRef_transfer_sender_balance evm I)
     (hty := by simp [storageTypeAt?, transferSenderEvaledRef, erc20Contract, ERC20.erc20Contract,
@@ -342,7 +342,7 @@ theorem transferAssignSender (evm : EVM.State) (I : ExecutionEnv) :
         .ok ({ contract := erc20Contract, locals := transferStoreFromBalance evm I },
           transferAfterDebitState evm I) := by
   simp only [balanceOfRef]
-  apply assignStorageRef_storage_scalar (hbackend := rfl)
+  apply assignStorageRef_storage_vyper_scalar (hbackend := rfl) (hcheck := by rfl)
       (hleaf := Or.inl ⟨_, rfl⟩) (ty := uint256Storage)
       (hbase := transferStoreFromBalance_balanceOf evm I)
       (her := evalStorageRef_transfer_sender_balance_fromBalance evm I)
@@ -357,7 +357,7 @@ theorem evalExpr_transfer_to_balance (evm : EVM.State) (I : ExecutionEnv) :
       { contract := erc20Contract, locals := transferStoreFromBalance evm I }
       (transferAfterDebitState evm I) (.storage (balanceOfRef (.var "to"))) =
         .ok (transferToBalanceValue evm I) := by
-  rw [evalExpr_storage_scalar (hbackend := rfl) (t := .int uint256Int)
+  rw [evalExpr_storage_vyper_scalar (hbackend := rfl) (hcheck := by rfl) (t := .int uint256Int)
     (hbase := transferStoreFromBalance_balanceOf evm I)
     (her := evalStorageRef_transfer_to_balance_fromBalance evm (transferAfterDebitState evm I) I)
     (hty := by simp [storageTypeAt?, transferToEvaledRef, erc20Contract, ERC20.erc20Contract,
@@ -436,7 +436,7 @@ theorem transferAssignTo (evm : EVM.State) (I : ExecutionEnv)
       vyperERC20Config_storage_balanceOf
         (.address (AccountAddress.ofNat (transferToWord I).toNat))
   simp only [balanceOfRef]
-  refine assignStorageRef_storage_scalar
+  refine assignStorageRef_storage_vyper_scalar
     (cfg := vyperERC20Config)
     (solm := { contract := erc20Contract, locals := transferStoreNewToBalance evm I })
     (evm := transferAfterDebitState evm I)
@@ -445,7 +445,7 @@ theorem transferAssignTo (evm : EVM.State) (I : ExecutionEnv)
     (er := transferToEvaledRef I)
     (ty := uint256Storage)
     (loc := vyperUint256Loc (transferToSlot I))
-    (hbackend := rfl)
+    (hbackend := rfl) (hcheck := by rfl)
     (n := Int.ofNat (transferNewToNat evm I))
     hbase her hty hloc (Or.inl ⟨_, rfl⟩) ?_
   rw [← transferNewToWord_toNat evm I hfit]

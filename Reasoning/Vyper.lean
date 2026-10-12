@@ -1,7 +1,7 @@
 import Reasoning.MemCascade
 import Reasoning.Storage
 import Reasoning.SolmBody
-import Solm.VyperLayout
+import Solm.VyperStorage
 
 /-!
 # Vyper storage and mapping-hash bridges
@@ -53,39 +53,61 @@ theorem wordAt0Mem_wordAt32Mem_vyperMappingSlot
   rw [wordAt0Mem_wordAt32Mem_read0_64 baseSlot (keyValueToWord key) hmem]
   exact vyperMappingSlot_hash baseSlot key
 
-/-- Read a full-word Vyper scalar leaf using its layout location. -/
-theorem evalExpr_storage_vyper_uint256 {cfg : Config} {layout : StorageLayout}
-    {solm : Frame} {evm : EVM.State} {slot : StorageRef}
+/-- Read a scalar leaf through the Vyper backend after validating its reference path. -/
+theorem evalExpr_storage_vyper_scalar {cfg : Config} {layout : StorageLayout}
+    {bounds : VyperBounds} {solm : Frame} {evm : EVM.State} {slot : StorageRef}
+    {er : EvaledStorageRef} {t : ABI.ElemType} {loc : StorageLoc}
+    (hbase : solm.locals.get? slot.base = none)
+    (her : evalStorageRef cfg solm evm slot = .ok er)
+    (hty : storageTypeAt? solm.contract.storage er = some (.elem t))
+    (hbackend : cfg.storageBackend = vyperStorageBackend layout bounds)
+    (hcheck : vyperCheckRef? layout bounds evm er = .ok ())
+    (hloc : layout er = some (.leaf loc)) :
+    evalExpr? cfg solm evm (.storage slot) = .ok (storageLocLoad evm loc) := by
+  apply evalExpr_storage_scalar_of_read hbase her hty
+  rw [hbackend]
+  simp [vyperStorageBackend, hcheck, vyperReadRaw?, vyperLeafLoc?, hloc,
+    EvalResult.bind, EvalResult.ofOption, bind, pure]
+
+/-- Write an integer scalar through the Vyper backend. -/
+theorem assignStorageRef_storage_vyper_scalar {cfg : Config} {layout : StorageLayout}
+    {bounds : VyperBounds} {solm : Frame} {evm evm' : EVM.State}
+    {slot : StorageRef} {er : EvaledStorageRef} {ty : StorageType}
+    {loc : StorageLoc} {n : Int}
+    (hbase : solm.locals.get? slot.base = none)
+    (her : evalStorageRef cfg solm evm slot = .ok er)
+    (hty : storageTypeAt? solm.contract.storage er = some ty)
+    (hbackend : cfg.storageBackend = vyperStorageBackend layout bounds)
+    (hcheck : vyperCheckRef? layout bounds evm er = .ok ())
+    (hloc : layout er = some (.leaf loc))
+    (hleaf : (∃ t, ty = .elem t) ∨ (∃ name, ty = .contract name))
+    (hstore : storageLocStore evm loc (.int n) = some evm') :
+    assignStorageRef? cfg solm evm .storage slot (.int n) = .ok (solm, evm') := by
+  apply assignStorageRef_storage_of_write hbase her hty
+  rw [hbackend]
+  rcases hleaf with ⟨t, rfl⟩ | ⟨name, rfl⟩
+  · simp [vyperStorageBackend, hcheck, vyperWriteRaw?, vyperLeafLoc?, hloc,
+      hstore, EvalResult.bind, EvalResult.ofOption, bind]
+  · simp [vyperStorageBackend, hcheck, vyperWriteRaw?, vyperLeafLoc?, hloc,
+      hstore, EvalResult.bind, EvalResult.ofOption, bind]
+
+/-- Full-word uint256 read through the Vyper backend. -/
+theorem evalExpr_storage_vyper_uint256_backend {cfg : Config} {layout : StorageLayout}
+    {bounds : VyperBounds} {solm : Frame} {evm : EVM.State} {slot : StorageRef}
     {er : EvaledStorageRef} {physicalSlot : UInt256}
     (hbase : solm.locals.get? slot.base = none)
     (her : evalStorageRef cfg solm evm slot = .ok er)
     (hty : storageTypeAt? solm.contract.storage er =
       some (.elem (.int (.uint ⟨256, by decide⟩))))
-    (hbackend : cfg.storageBackend = solidityStorageBackend layout)
+    (hbackend : cfg.storageBackend = vyperStorageBackend layout bounds)
+    (hcheck : vyperCheckRef? layout bounds evm er = .ok ())
     (hloc : layout er = some (.leaf (vyperUint256Loc physicalSlot))) :
     evalExpr? cfg solm evm (.storage slot) =
       .ok (.int (Int.ofNat
         (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner physicalSlot).toNat)) := by
-  have hread := evalExpr_storage_scalar hbase her hty hbackend hloc
+  have hread := evalExpr_storage_vyper_scalar hbase her hty hbackend hcheck hloc
   have hlocEq : vyperUint256Loc physicalSlot = uint256Loc physicalSlot := rfl
   rw [hlocEq, storageLocLoad_uint256] at hread
   exact hread
-
-/-- Write a full-word Vyper scalar leaf through its configured layout. -/
-theorem assignStorageRef_storage_vyper_uint256 {cfg : Config} {layout : StorageLayout}
-    {solm : Frame} {evm evm' : EVM.State} {slot : StorageRef}
-    {er : EvaledStorageRef} {physicalSlot : UInt256} {value : Value}
-    (hbase : solm.locals.get? slot.base = none)
-    (her : evalStorageRef cfg solm evm slot = .ok er)
-    (hty : storageTypeAt? solm.contract.storage er =
-      some (.elem (.int (.uint ⟨256, by decide⟩))))
-    (hbackend : cfg.storageBackend = solidityStorageBackend layout)
-    (hloc : layout er = some (.leaf (vyperUint256Loc physicalSlot)))
-    (hstore : storageLocStore evm (vyperUint256Loc physicalSlot) value = some evm') :
-    assignStorageRef? cfg solm evm .storage slot value = .ok (solm, evm') := by
-  apply assignStorageRef_storage_of_write hbase her hty
-  rw [hbackend]
-  exact solidityStorageBackend_write_elem layout er _ value evm evm'
-    (vyperUint256Loc physicalSlot) hloc hstore
 
 end Reasoning.Theory

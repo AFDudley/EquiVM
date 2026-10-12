@@ -133,7 +133,7 @@ theorem erc20AllowanceBodyReturns (evm : EVM.State) (I : ExecutionEnv)
       allowanceSpenderValue, erc20AllowanceSlot]
   exact ExecFuncBody.execBlockRet <|
     (ABlock.start.requireStep (evalCallvalueEq_true h)).returns (by
-      rw [evalExpr_storage_scalar (hbackend := rfl) (t := .int uint256Int)
+      rw [evalExpr_storage_vyper_scalar (hbackend := rfl) (hcheck := by rfl) (t := .int uint256Int)
         (hbase := allowanceStore_allowance I)
         (her := her)
         (hty := hty)
