@@ -2,15 +2,15 @@
 
 Source: [`contracts/Safe.sol`](contracts/Safe.sol) from `safe-global/safe-smart-account` commit `77901a5a1ad835b74ad3b72f73a8412cfe491c57` (2026-06-05, `Do Not Propagate Reverts on Signatures (#1115)`).
 
-Compiled with Solidity 0.8.35 and optimizer enabled, from the repository root:
+Compiled with Solidity 0.8.35 through the IR pipeline and optimizer enabled, from the repository root:
 
 ```bash
-solc --optimize --optimize-runs 200 --evm-version shanghai --metadata-hash none --bin --bin-runtime --abi --storage-layout \
-  --base-path . --overwrite -o /tmp/safe-build-current Benchmarks/Safe/ViaIR/contracts/Safe.sol
+solc --via-ir --optimize --optimize-runs 200 --evm-version shanghai --metadata-hash none --bin --bin-runtime --abi --storage-layout \
+  --base-path . --overwrite -o /tmp/safe-viair-build Benchmarks/Safe/ViaIR/contracts/Safe.sol
 ```
 
-Original compiler: `0.8.35+commit.47b9dedd.Darwin.appleclang`. The audit reproduces both
-bytecode files and the ABI exactly with `0.8.35+commit.47b9dedd.Linux.g++`.
+Compiler: `0.8.35+commit.47b9dedd.Linux.g++`. Only `--via-ir` differs from the
+legacy compiler settings. The audit reproduces both bytecode files and the ABI exactly.
 
 The EVM target is pinned to Shanghai to reproduce the original artifacts. The current local
 EVM semantics also implement `MCOPY`; changing the compiler target would still change the
@@ -22,17 +22,17 @@ artifact provenance for this benchmark.
 
 Artifacts:
 
-- `creation.hex`: optimized creation bytecode, 11907 bytes, sha256 `0d94b8c31e4fb2d01d7653b1c53013fba78f5d053014edd9e17c89888d7c7281`
-- `runtime.hex`: optimized deployed runtime bytecode, 11874 bytes, sha256 `99919d79befacfb9210453d4ba1d3193e3b334a5dc6206596b4f48bb55136006`
-- `Safe.abi.json`: ABI emitted by solc, sha256 `c2d916b516f1cf00691d5fe99f62e8bba92e0675e8c25b5e5800d6e53b08053a`
+- `creation.hex`: optimized creation bytecode, 11034 bytes, sha256 `60f584185471210453fd3e9aa6f4f994daf1eec6465f5b5cd3ed3457d966fa26`
+- `runtime.hex`: optimized deployed runtime bytecode, 11003 bytes, sha256 `01ed7613d9170c16d92505d5db5eb71ad2179f9b0435a3bb077b7f4b71833f97`
+- `Safe.abi.json`: ABI emitted by solc, sha256 `40069244550920fc4ecdb4a162f9b45c78b5de06fc7fdcb8f7d4350739bb8682`
 - `sources.sha256`: sha256 manifest for the vendored Solidity source tree
 - `Spec.lean`: Solm AST with ABI surface, solc 0.8.35 decoding, and physical storage layout
 - `SpecSyntax.lean`: syntax-side wrapper checked definitionally against the AST scaffold
 - `Bytecode.lean`: optimized bytecode embedded as `ByteArray`, with `valid_jumps` facts
-- `Constructor.lean`: proved constructor equivalence
-- `Correct.lean`: proved runtime and whole-contract refinement
+- `Constructor.lean`: copied constructor proof, pending IR repair
+- `Correct.lean`: runtime and whole-contract refinement targets, pending IR repair
 - `CorrectProofAudit.lean`: checks the constructor, runtime, and whole-contract axiom footprints
-- `Runtime.lean`: 33 proved entrypoint obligations (31 selectors, receive, fallback)
+- `Runtime.lean`: 33 entrypoint obligations (31 selectors, receive, fallback)
 - `Blocks.lean`, `Blocks/`: generated runtime and constructor instruction summaries and PC indexes
 - `ArtifactChecks.lean`: executable checks of every ABI signature, selector, and return type
 - `Audit.lean`, `AuditSupport.lean`: differential regressions against the actual EVM interpreter
@@ -40,7 +40,11 @@ Artifacts:
 
 Main source sha256: `9f91d9250e18bb0710b7b1f10dcbe2417e9ef8d22eeee98dba2ef48661a060fa`.
 
-## Semantic audit
+## Legacy baseline semantic audit
+
+The following records the copied legacy proof and audit. Its PCs and recorded outcomes refer
+to the legacy bytecode, not the regenerated IR artifacts. IR semantic tests and proof repair
+are pending; these legacy results do not establish correctness of the IR bytecode.
 
 The audit target is the pinned bytecode under the repository's current `Solm.runtimeRefinement`.
 That relation observes the final account map, successful return bytes, reverts, invalid-instruction
@@ -94,18 +98,20 @@ the specification equality check, ABI checks, refinement proofs, and all generat
 
 ## Generated summaries and proof obligations
 
-There are 1,937 runtime summary theorems in 51 shards, plus seven constructor summary theorems.
+There are 1,871 runtime summary theorems in 49 shards, plus seven constructor summary theorems.
 These are generated using the existing RD opcode lemmas. Both sides of every conditional jump
-are indexed. Runtime summaries cover 7,844 instructions; the remaining 20 instruction sites are
+are indexed. Runtime summaries cover 6,974 instructions; the remaining 26 instruction sites are
 explicit boundaries, not assumed transitions:
 
-- `CALL`: 614, 3738, 4235, 7345, 7464, 7565, 7834, 9004.
-- `STATICCALL`: 2554, 2651, 5833, 6083, 7150, 8796.
-- `DELEGATECALL`: 4535, 7445.
-- `ORIGIN`: 7754; `GASPRICE`: 7775, 7782; `EXTCODECOPY`: 9062.
+- `CALL`: 92, 4881, 5080, 5214, 5338, 5650, 9989, 10188, 10344, 10513, 10627.
+- `STATICCALL`: 1637, 1928, 7776, 8460, 8678.
+- `DELEGATECALL`: 3524, 3987, 4708, 10175.
+- `ORIGIN`: 5002, 10450.
+- `GASPRICE`: 5047, 5112, 10482.
+- `EXTCODECOPY`: 10963.
 
 Every analyzed instruction is accounted for by a summary or a recorded boundary. Constructor
-summaries cover only PCs 0–32; the runtime at offset 33 is copied data. They quantify an arbitrary
+summaries cover only PCs 0–30; the runtime at offset 31 is copied data. They quantify an arbitrary
 constructor-argument tail against the full creation bytecode. Solidity CBOR metadata is excluded
 from runtime instruction analysis. Summary hypotheses such as valid jump destinations, stack
 bounds, and static permission are discharged in the entrypoint proofs. Shared routine proofs
@@ -116,7 +122,7 @@ compose the summaries, with separate proofs for internal callees and source-leve
 From the repository root, using the pinned compiler:
 
 ```bash
-python3 -B scripts/audit_safe.py --solc /path/to/solc-0.8.35
+python3 -B scripts/audit_safe.py --dir Benchmarks/Safe/ViaIR --via-ir --solc /path/to/solc-0.8.35
 lake build Benchmarks.Safe.ViaIR.ArtifactChecks Benchmarks.Safe.ViaIR.SpecSyntax
 lake build Benchmarks.Safe.ViaIR.Correct Benchmarks.Safe.ViaIR.Audit
 lake build Benchmarks.Safe.ViaIR.CorrectProofAudit Benchmarks.Safe.ViaIR.GetOwnersModelAudit

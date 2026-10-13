@@ -1,6 +1,7 @@
 {
   "compiler": "0.8.35+commit.47b9dedd",
   "compiler_options": [
+    "--via-ir",
     "--optimize",
     "--optimize-runs",
     "200",
@@ -14,176 +15,176 @@
   "source": "Benchmarks/Safe/ViaIR/contracts/Safe.sol",
   "artifacts": {
     "runtime.hex": {
-      "file_sha256": "99919d79befacfb9210453d4ba1d3193e3b334a5dc6206596b4f48bb55136006",
-      "bytes_sha256": "ef9a77c6bb587d69bb3c440dedac219f5d60ceb2b000254740f622e4eda62398",
-      "bytes": 11874
+      "file_sha256": "01ed7613d9170c16d92505d5db5eb71ad2179f9b0435a3bb077b7f4b71833f97",
+      "bytes_sha256": "d334684bd14bd2fe05c84f4e0c1819bb609709a59e6d49788c587dc559eb09c3",
+      "bytes": 11003
     },
     "creation.hex": {
-      "file_sha256": "0d94b8c31e4fb2d01d7653b1c53013fba78f5d053014edd9e17c89888d7c7281",
-      "bytes_sha256": "6a6141aa65d2a6f30f29026a2f31e8452895a93f829dd0e57ce3acf5ccf68dfe",
-      "bytes": 11907
+      "file_sha256": "60f584185471210453fd3e9aa6f4f994daf1eec6465f5b5cd3ed3457d966fa26",
+      "bytes_sha256": "5af3511c4df30257ee8dfe249e9530d9a6fa6d057127e2eba257fb82ffce9bb6",
+      "bytes": 11034
     }
   },
-  "abi_file_sha256": "c2d916b516f1cf00691d5fe99f62e8bba92e0675e8c25b5e5800d6e53b08053a",
-  "sources_manifest_sha256": "276d268fb696b15a6186efdb6b995105006a3958ddd64211eafd4e03b2929bef",
-  "spec_sha256": "ddd2e7c7075d474ed451b2712ce4c34510c86fe9f2d143a668790fb8d39b0138",
-  "syntax_spec_sha256": "bc4524d9580d826911e55f69b57b0280f5078f0257ec709aaeffc5833455b418",
+  "abi_file_sha256": "40069244550920fc4ecdb4a162f9b45c78b5de06fc7fdcb8f7d4350739bb8682",
+  "sources_manifest_sha256": "eeacfe1072a1ffca5ed286925809ae28dda046a425e3290653c466c6a2d14449",
+  "spec_sha256": "d0164d1dfa5533662a63153e68f50bf0fe5ea3c1501905c7f56e5d7b37001c06",
+  "syntax_spec_sha256": "e48e0dd1618a016ce01dbcde28b2ce9310ff52c8a4ee416b2078df19317cdd38",
   "runtime_entrypoint_obligations": 33,
   "selectors": [
     {
       "signature": "VERSION()",
       "selector": "ffa1ad74",
-      "entry_pc": 1688
+      "entry_pc": 513
     },
     {
       "signature": "addOwnerWithThreshold(address,uint256)",
       "selector": "0d582f13",
-      "entry_pc": 633
+      "entry_pc": 6678
     },
     {
       "signature": "approveHash(bytes32)",
       "selector": "d4d9bdcd",
-      "entry_pc": 1315
+      "entry_pc": 2370
     },
     {
       "signature": "approvedHashes(address,bytes32)",
       "selector": "7d832974",
-      "entry_pc": 1069
+      "entry_pc": 4287
     },
     {
       "signature": "changeThreshold(uint256)",
       "selector": "694e80c3",
-      "entry_pc": 1019
+      "entry_pc": 5693
     },
     {
       "signature": "checkNSignatures(address,bytes32,bytes,uint256)",
       "selector": "1fcac7f3",
-      "entry_pc": 697
+      "entry_pc": 6508
     },
     {
       "signature": "checkNSignatures(bytes32,bytes,bytes,uint256)",
       "selector": "12fb68e0",
-      "entry_pc": 666
+      "entry_pc": 6581
     },
     {
       "signature": "checkSignatures(address,bytes32,bytes)",
       "selector": "f855438b",
-      "entry_pc": 1626
+      "entry_pc": 899
     },
     {
       "signature": "checkSignatures(bytes32,bytes,bytes)",
       "selector": "934f3a11",
-      "entry_pc": 1123
+      "entry_pc": 4193
     },
     {
       "signature": "disableModule(address,address)",
       "selector": "e009cfde",
-      "entry_pc": 1377
+      "entry_pc": 1980
     },
     {
       "signature": "domainSeparator()",
       "selector": "f698da25",
-      "entry_pc": 1552
+      "entry_pc": 977
     },
     {
       "signature": "enableModule(address)",
       "selector": "610b5925",
-      "entry_pc": 988
+      "entry_pc": 5785
     },
     {
       "signature": "execTransaction(address,uint256,bytes,uint8,uint256,uint256,uint256,address,address,bytes)",
       "selector": "6a761202",
-      "entry_pc": 1050
+      "entry_pc": 4354
     },
     {
       "signature": "execTransactionFromModule(address,uint256,bytes,uint8)",
       "selector": "468721a7",
-      "entry_pc": 811
+      "entry_pc": 6323
     },
     {
       "signature": "execTransactionFromModuleReturnData(address,uint256,bytes,uint8)",
       "selector": "5229073f",
-      "entry_pc": 842
+      "entry_pc": 6217
     },
     {
       "signature": "getModulesPaginated(address,uint256)",
       "selector": "cc2f8452",
-      "entry_pc": 1270
+      "entry_pc": 2530
     },
     {
       "signature": "getOwners()",
       "selector": "a0e67e2b",
-      "entry_pc": 1154
+      "entry_pc": 4048
     },
     {
       "signature": "getStorageAt(uint256,uint256)",
       "selector": "5624b25b",
-      "entry_pc": 887
+      "entry_pc": 6090
     },
     {
       "signature": "getThreshold()",
       "selector": "e75235b8",
-      "entry_pc": 1501
+      "entry_pc": 1154
     },
     {
       "signature": "getTransactionHash(address,uint256,bytes,uint8,uint256,uint256,uint256,address,address,uint256)",
       "selector": "d8d11f78",
-      "entry_pc": 1346
+      "entry_pc": 2246
     },
     {
       "signature": "isModuleEnabled(address)",
       "selector": "2d9ad53d",
-      "entry_pc": 728
+      "entry_pc": 6473
     },
     {
       "signature": "isOwner(address)",
       "selector": "2f54bf6e",
-      "entry_pc": 780
+      "entry_pc": 6387
     },
     {
       "signature": "nonce()",
       "selector": "affed0e0",
-      "entry_pc": 1187
+      "entry_pc": 4018
     },
     {
       "signature": "removeOwner(address,address,uint256)",
       "selector": "f8dc5dd9",
-      "entry_pc": 1657
+      "entry_pc": 592
     },
     {
       "signature": "setFallbackHandler(address)",
       "selector": "f08a0323",
-      "entry_pc": 1521
+      "entry_pc": 1063
     },
     {
       "signature": "setGuard(address)",
       "selector": "e19a9dd9",
-      "entry_pc": 1439
+      "entry_pc": 1425
     },
     {
       "signature": "setModuleGuard(address)",
       "selector": "e068df37",
-      "entry_pc": 1408
+      "entry_pc": 1716
     },
     {
       "signature": "setup(address[],uint256,address,bytes,address,address,uint256,address)",
       "selector": "b63e800d",
-      "entry_pc": 1239
+      "entry_pc": 2973
     },
     {
       "signature": "signedMessages(bytes32)",
       "selector": "5ae6bd37",
-      "entry_pc": 931
+      "entry_pc": 6048
     },
     {
       "signature": "simulateAndRevert(address,bytes)",
       "selector": "b4faba09",
-      "entry_pc": 1208
+      "entry_pc": 3917
     },
     {
       "signature": "swapOwner(address,address,address)",
       "selector": "e318b52b",
-      "entry_pc": 1470
+      "entry_pc": 1184
     }
   ],
   "storage_layout": {
@@ -301,586 +302,278 @@
     }
   },
   "function_entry_points": {
-    "@addOwnerWithThreshold_2044": {
-      "entryPoint": 1736,
-      "id": 2044,
-      "parameterSlots": 2,
-      "returnSlots": 0
-    },
-    "@add_2655": {
-      "entryPoint": 7082,
-      "id": 2655,
-      "parameterSlots": 2,
-      "returnSlots": 1
-    },
-    "@approveHash_933": {
-      "entryPoint": 5195,
-      "id": 933,
-      "parameterSlots": 1,
-      "returnSlots": 0
-    },
-    "@changeThreshold_2270": {
-      "entryPoint": 3415,
-      "id": 2270,
-      "parameterSlots": 1,
-      "returnSlots": 0
-    },
-    "@checkContractSignature_539": {
-      "entryPoint": 6935,
-      "id": 539,
-      "parameterSlots": 4,
-      "returnSlots": 0
-    },
-    "@checkNSignatures_853": {
-      "entryPoint": 1959,
-      "id": 853,
-      "parameterSlots": 4,
-      "returnSlots": 0
-    },
-    "@checkNSignatures_896": {
-      "entryPoint": 1940,
-      "id": 896,
-      "parameterSlots": 5,
-      "returnSlots": 0
-    },
-    "@checkSignatures_570": {
-      "entryPoint": 6526,
-      "id": 570,
-      "parameterSlots": 3,
-      "returnSlots": 0
-    },
-    "@checkSignatures_873": {
-      "entryPoint": 4272,
-      "id": 873,
-      "parameterSlots": 4,
-      "returnSlots": 0
-    },
-    "@disableModule_1570": {
-      "entryPoint": 5524,
-      "id": 1570,
-      "parameterSlots": 2,
-      "returnSlots": 0
-    },
-    "@enableModule_1512": {
-      "entryPoint": 3168,
-      "id": 1512,
-      "parameterSlots": 1,
-      "returnSlots": 0
-    },
-    "@execTransactionFromModuleReturnData_1669": {
-      "entryPoint": 2970,
-      "id": 1669,
-      "parameterSlots": 4,
-      "returnSlots": 2
-    },
-    "@execTransactionFromModule_1618": {
-      "entryPoint": 2914,
-      "id": 1618,
-      "parameterSlots": 4,
-      "returnSlots": 1
-    },
-    "@execTransaction_384": {
-      "entryPoint": 3533,
-      "id": 384,
-      "parameterSlots": 11,
-      "returnSlots": 1
-    },
-    "@execute_3056": {
-      "entryPoint": 7408,
-      "id": 3056,
-      "parameterSlots": 5,
-      "returnSlots": 1
-    },
-    "@getModulesPaginated_1791": {
-      "entryPoint": 4815,
-      "id": 1791,
-      "parameterSlots": 2,
-      "returnSlots": 2
-    },
-    "@getOwners_2357": {
-      "entryPoint": 4289,
-      "id": 2357,
-      "parameterSlots": 0,
-      "returnSlots": 1
-    },
-    "@getStorageAt_2560": {
-      "entryPoint": 3053,
-      "id": 2560,
-      "parameterSlots": 2,
-      "returnSlots": 1
-    },
-    "@getTransactionHash_977": {
-      "entryPoint": 5311,
-      "id": 977,
-      "parameterSlots": 11,
-      "returnSlots": 1
-    },
-    "@handlePayment_480": {
-      "entryPoint": 7730,
-      "id": 480,
-      "parameterSlots": 5,
-      "returnSlots": 1
-    },
-    "@internalSetFallbackHandler_1036": {
-      "entryPoint": 8250,
-      "id": 1036,
-      "parameterSlots": 1,
-      "returnSlots": 0
-    },
-    "@isModuleEnabled_1692": {
-      "entryPoint": 2802,
-      "id": 1692,
-      "parameterSlots": 1,
-      "returnSlots": 1
-    },
-    "@isOwner_2305": {
-      "entryPoint": 2859,
-      "id": 2305,
-      "parameterSlots": 1,
-      "returnSlots": 1
-    },
-    "@isThisDelegatedAccount_3172": {
-      "entryPoint": 9055,
-      "id": 3172,
-      "parameterSlots": 0,
-      "returnSlots": 1
-    },
-    "@max_2673": {
-      "entryPoint": 7685,
-      "id": 2673,
-      "parameterSlots": 2,
-      "returnSlots": 1
-    },
-    "@mul_2609": {
-      "entryPoint": 6843,
-      "id": 2609,
-      "parameterSlots": 2,
-      "returnSlots": 1
-    },
-    "@p256Verify_2379": {
-      "entryPoint": 7108,
-      "id": 2379,
-      "parameterSlots": 5,
-      "returnSlots": 1
-    },
-    "@postModuleExecution_1456": {
-      "entryPoint": 7476,
-      "id": 1456,
-      "parameterSlots": 3,
-      "returnSlots": 0
-    },
-    "@preModuleExecution_1417": {
-      "entryPoint": 7172,
-      "id": 1417,
-      "parameterSlots": 4,
-      "returnSlots": 2
-    },
-    "@removeOwner_2101": {
-      "entryPoint": 6566,
-      "id": 2101,
-      "parameterSlots": 3,
-      "returnSlots": 0
-    },
-    "@requireCanAddOwner_2213": {
-      "entryPoint": 6783,
-      "id": 2213,
-      "parameterSlots": 1,
-      "returnSlots": 0
-    },
-    "@requireCanRemoveOwner_2236": {
-      "entryPoint": 8528,
-      "id": 2236,
-      "parameterSlots": 2,
-      "returnSlots": 0
-    },
-    "@requireIsValidOwner_2189": {
-      "entryPoint": 8589,
-      "id": 2189,
-      "parameterSlots": 1,
-      "returnSlots": 0
-    },
-    "@requireSelfCall_2915": {
-      "entryPoint": 6757,
-      "id": 2915,
-      "parameterSlots": 0,
-      "returnSlots": 0
-    },
-    "@revertWithError_3317": {
-      "entryPoint": 6898,
-      "id": 3317,
-      "parameterSlots": 1,
-      "returnSlots": 0
-    },
-    "@setFallbackHandler_1054": {
-      "entryPoint": 6455,
-      "id": 1054,
-      "parameterSlots": 1,
-      "returnSlots": 0
-    },
-    "@setGuard_1183": {
-      "entryPoint": 5998,
-      "id": 1183,
-      "parameterSlots": 1,
-      "returnSlots": 0
-    },
-    "@setModuleGuard_1845": {
-      "entryPoint": 5748,
-      "id": 1845,
-      "parameterSlots": 1,
-      "returnSlots": 0
-    },
-    "@setupModules_1346": {
-      "entryPoint": 8319,
-      "id": 1346,
-      "parameterSlots": 2,
-      "returnSlots": 0
-    },
-    "@setupOwners_1999": {
-      "entryPoint": 7975,
-      "id": 1999,
-      "parameterSlots": 2,
-      "returnSlots": 0
-    },
-    "@setup_167": {
-      "entryPoint": 4561,
-      "id": 167,
-      "parameterSlots": 10,
-      "returnSlots": 0
-    },
-    "@simulateAndRevert_2571": {
-      "entryPoint": 4524,
-      "id": 2571,
-      "parameterSlots": 2,
-      "returnSlots": 0
-    },
-    "@sub_2630": {
-      "entryPoint": 7707,
-      "id": 2630,
-      "parameterSlots": 2,
-      "returnSlots": 1
-    },
-    "@swapOwner_2155": {
-      "entryPoint": 6248,
-      "id": 2155,
-      "parameterSlots": 3,
-      "returnSlots": 0
-    },
-    "@transferToken_2489": {
-      "entryPoint": 8915,
-      "id": 2489,
-      "parameterSlots": 3,
-      "returnSlots": 1
-    },
-    "@validateContractSignature_2462": {
-      "entryPoint": 8677,
-      "id": 2462,
-      "parameterSlots": 3,
-      "returnSlots": 1
-    },
     "abi_decode_address": {
-      "entryPoint": 9096,
+      "entryPoint": 7063,
       "parameterSlots": 1,
+      "returnSlots": 1
+    },
+    "abi_decode_address_18594": {
+      "entryPoint": 6952,
+      "parameterSlots": 0,
+      "returnSlots": 1
+    },
+    "abi_decode_address_18610": {
+      "entryPoint": 6974,
+      "parameterSlots": 0,
+      "returnSlots": 1
+    },
+    "abi_decode_address_18615": {
+      "entryPoint": 6996,
+      "parameterSlots": 0,
+      "returnSlots": 1
+    },
+    "abi_decode_address_18636": {
+      "entryPoint": 7018,
+      "parameterSlots": 0,
+      "returnSlots": 1
+    },
+    "abi_decode_address_18638": {
+      "entryPoint": 7041,
+      "parameterSlots": 0,
+      "returnSlots": 1
+    },
+    "abi_decode_addresst_uint256t_bytest_enum_Operation": {
+      "entryPoint": 7292,
+      "parameterSlots": 1,
+      "returnSlots": 4
+    },
+    "abi_decode_available_length_bytes": {
+      "entryPoint": 7208,
+      "parameterSlots": 3,
+      "returnSlots": 1
+    },
+    "abi_decode_bool_fromMemory": {
+      "entryPoint": 9234,
+      "parameterSlots": 2,
       "returnSlots": 1
     },
     "abi_decode_bytes": {
-      "entryPoint": 9242,
+      "entryPoint": 7262,
       "parameterSlots": 2,
       "returnSlots": 1
     },
     "abi_decode_bytes_calldata": {
-      "entryPoint": 9154,
-      "parameterSlots": 2,
-      "returnSlots": 2
-    },
-    "abi_decode_enum_Operation": {
-      "entryPoint": 9618,
-      "parameterSlots": 1,
-      "returnSlots": 1
-    },
-    "abi_decode_tuple_t_address": {
-      "entryPoint": 9591,
-      "parameterSlots": 2,
-      "returnSlots": 1
-    },
-    "abi_decode_tuple_t_addresst_address": {
-      "entryPoint": 10868,
-      "parameterSlots": 2,
-      "returnSlots": 2
-    },
-    "abi_decode_tuple_t_addresst_addresst_address": {
-      "entryPoint": 10923,
-      "parameterSlots": 2,
-      "returnSlots": 3
-    },
-    "abi_decode_tuple_t_addresst_addresst_uint256": {
-      "entryPoint": 11079,
-      "parameterSlots": 2,
-      "returnSlots": 3
-    },
-    "abi_decode_tuple_t_addresst_bytes32t_bytes_memory_ptr": {
-      "entryPoint": 10995,
-      "parameterSlots": 2,
-      "returnSlots": 3
-    },
-    "abi_decode_tuple_t_addresst_bytes32t_bytes_memory_ptrt_uint256": {
-      "entryPoint": 9499,
-      "parameterSlots": 2,
-      "returnSlots": 4
-    },
-    "abi_decode_tuple_t_addresst_bytes_memory_ptr": {
-      "entryPoint": 10323,
-      "parameterSlots": 2,
-      "returnSlots": 2
-    },
-    "abi_decode_tuple_t_addresst_uint256": {
-      "entryPoint": 9112,
-      "parameterSlots": 2,
-      "returnSlots": 2
-    },
-    "abi_decode_tuple_t_addresst_uint256t_bytes_calldata_ptrt_enum$_Operation_$2681t_uint256t_uint256t_uint256t_addresst_address_payablet_bytes_memory_ptr": {
-      "entryPoint": 9917,
-      "parameterSlots": 2,
-      "returnSlots": 11
-    },
-    "abi_decode_tuple_t_addresst_uint256t_bytes_calldata_ptrt_enum$_Operation_$2681t_uint256t_uint256t_uint256t_addresst_addresst_uint256": {
-      "entryPoint": 10679,
-      "parameterSlots": 2,
-      "returnSlots": 11
-    },
-    "abi_decode_tuple_t_addresst_uint256t_bytes_memory_ptrt_enum$_Operation_$2681": {
-      "entryPoint": 9632,
-      "parameterSlots": 2,
-      "returnSlots": 4
-    },
-    "abi_decode_tuple_t_array$_t_address_$dyn_calldata_ptrt_uint256t_addresst_bytes_calldata_ptrt_addresst_addresst_uint256t_address_payable": {
-      "entryPoint": 10399,
-      "parameterSlots": 2,
-      "returnSlots": 10
-    },
-    "abi_decode_tuple_t_bool_fromMemory": {
-      "entryPoint": 11632,
-      "parameterSlots": 2,
-      "returnSlots": 1
-    },
-    "abi_decode_tuple_t_bytes32": {
-      "entryPoint": 9894,
-      "parameterSlots": 2,
-      "returnSlots": 1
-    },
-    "abi_decode_tuple_t_bytes32_fromMemory": {
-      "entryPoint": 11787,
-      "parameterSlots": 2,
-      "returnSlots": 1
-    },
-    "abi_decode_tuple_t_bytes32t_bytes_calldata_ptrt_bytes_memory_ptr": {
-      "entryPoint": 10125,
-      "parameterSlots": 2,
-      "returnSlots": 4
-    },
-    "abi_decode_tuple_t_bytes32t_bytes_calldata_ptrt_bytes_memory_ptrt_uint256": {
-      "entryPoint": 9379,
-      "parameterSlots": 2,
-      "returnSlots": 5
-    },
-    "abi_decode_tuple_t_uint256t_uint256": {
-      "entryPoint": 9844,
+      "entryPoint": 7083,
       "parameterSlots": 2,
       "returnSlots": 2
     },
     "abi_encode_array_address_dyn": {
-      "entryPoint": 10238,
+      "entryPoint": 7437,
       "parameterSlots": 2,
       "returnSlots": 1
     },
     "abi_encode_bytes": {
-      "entryPoint": 9767,
+      "entryPoint": 7374,
       "parameterSlots": 2,
       "returnSlots": 1
     },
     "abi_encode_enum_Operation": {
-      "entryPoint": 11224,
+      "entryPoint": 8837,
       "parameterSlots": 2,
       "returnSlots": 0
     },
-    "abi_encode_tuple_packed_t_bytes_memory_ptr__to_t_bytes_memory_ptr__nonPadded_inplace_fromStack_reversed": {
-      "entryPoint": 11834,
-      "parameterSlots": 2,
-      "returnSlots": 1
-    },
-    "abi_encode_tuple_t_address_t_uint256_t_bytes_calldata_ptr_t_enum$_Operation_$2681_t_uint256_t_uint256_t_uint256_t_address_t_address_payable_t_bytes_memory_ptr_t_address__to_t_address_t_uint256_t_bytes_memory_ptr_t_uint8_t_uint256_t_uint256_t_uint256_t_address_t_address_payable_t_bytes_memory_ptr_t_address__fromStack_reversed": {
-      "entryPoint": 11256,
-      "parameterSlots": 13,
-      "returnSlots": 1
-    },
-    "abi_encode_tuple_t_address_t_uint256_t_bytes_memory_ptr_t_enum$_Operation_$2681_t_address__to_t_address_t_uint256_t_bytes_memory_ptr_t_uint8_t_address__fromStack_reversed": {
-      "entryPoint": 11707,
-      "parameterSlots": 6,
-      "returnSlots": 1
-    },
-    "abi_encode_tuple_t_array$_t_address_$dyn_calldata_ptr_t_uint256_t_address_t_address__to_t_array$_t_address_$dyn_memory_ptr_t_uint256_t_address_t_address__fromStack_reversed": {
-      "entryPoint": 11525,
-      "parameterSlots": 6,
-      "returnSlots": 1
-    },
-    "abi_encode_tuple_t_array$_t_address_$dyn_memory_ptr__to_t_array$_t_address_$dyn_memory_ptr__fromStack_reversed": {
-      "entryPoint": 10305,
-      "parameterSlots": 2,
-      "returnSlots": 1
-    },
-    "abi_encode_tuple_t_array$_t_address_$dyn_memory_ptr_t_address__to_t_array$_t_address_$dyn_memory_ptr_t_address__fromStack_reversed": {
-      "entryPoint": 10638,
-      "parameterSlots": 3,
-      "returnSlots": 1
-    },
-    "abi_encode_tuple_t_bool_t_bytes_memory_ptr__to_t_bool_t_bytes_memory_ptr__fromStack_reversed": {
-      "entryPoint": 9810,
-      "parameterSlots": 3,
-      "returnSlots": 1
-    },
-    "abi_encode_tuple_t_bytes32_t_bytes_memory_ptr__to_t_bytes32_t_bytes_memory_ptr__fromStack_reversed": {
-      "entryPoint": 11810,
-      "parameterSlots": 3,
-      "returnSlots": 1
-    },
-    "abi_encode_tuple_t_bytes_memory_ptr__to_t_bytes_memory_ptr__fromStack_reversed": {
-      "entryPoint": 9876,
-      "parameterSlots": 2,
-      "returnSlots": 1
-    },
-    "checked_add_t_uint256": {
-      "entryPoint": 11455,
-      "parameterSlots": 2,
-      "returnSlots": 1
-    },
-    "checked_div_t_uint256": {
-      "entryPoint": 11474,
-      "parameterSlots": 2,
-      "returnSlots": 1
-    },
-    "checked_mul_t_uint256": {
-      "entryPoint": 11684,
-      "parameterSlots": 2,
-      "returnSlots": 1
-    },
-    "checked_sub_t_uint256": {
-      "entryPoint": 11185,
-      "parameterSlots": 2,
-      "returnSlots": 1
-    },
-    "copy_memory_to_memory_with_cleanup": {
-      "entryPoint": 9733,
-      "parameterSlots": 3,
-      "returnSlots": 0
-    },
-    "decrement_t_uint256": {
-      "entryPoint": 11663,
+    "allocate_and_zero_memory_array_array_address_dyn": {
+      "entryPoint": 8950,
       "parameterSlots": 1,
       "returnSlots": 1
     },
-    "increment_t_uint256": {
-      "entryPoint": 11161,
+    "array_allocation_size_array_address_dyn": {
+      "entryPoint": 8927,
       "parameterSlots": 1,
       "returnSlots": 1
     },
-    "panic_error_0x11": {
-      "entryPoint": 11141,
+    "array_allocation_size_bytes": {
+      "entryPoint": 7181,
+      "parameterSlots": 1,
+      "returnSlots": 1
+    },
+    "checked_add_uint256": {
+      "entryPoint": 8914,
+      "parameterSlots": 2,
+      "returnSlots": 1
+    },
+    "checked_add_uint256_18741": {
+      "entryPoint": 8900,
+      "parameterSlots": 1,
+      "returnSlots": 1
+    },
+    "checked_div_uint256": {
+      "entryPoint": 8870,
+      "parameterSlots": 2,
+      "returnSlots": 1
+    },
+    "extract_returndata": {
+      "entryPoint": 10382,
       "parameterSlots": 0,
+      "returnSlots": 1
+    },
+    "finalize_allocation": {
+      "entryPoint": 7128,
+      "parameterSlots": 2,
       "returnSlots": 0
     },
-    "panic_error_0x21": {
-      "entryPoint": 11204,
-      "parameterSlots": 0,
+    "fun_checkNSignatures": {
+      "entryPoint": 7531,
+      "id": 853,
+      "parameterSlots": 4,
       "returnSlots": 0
     },
-    "panic_error_0x32": {
-      "entryPoint": 11505,
-      "parameterSlots": 0,
+    "fun_checkSignatures": {
+      "entryPoint": 9258,
+      "id": 570,
+      "parameterSlots": 3,
       "returnSlots": 0
     },
-    "panic_error_0x41": {
-      "entryPoint": 9222,
-      "parameterSlots": 0,
-      "returnSlots": 0
+    "fun_execute": {
+      "entryPoint": 10140,
+      "id": 3056,
+      "parameterSlots": 4,
+      "returnSlots": 1
     },
-    "validator_revert_address": {
-      "entryPoint": 9076,
+    "fun_getTransactionHash": {
+      "entryPoint": 9040,
+      "id": 977,
+      "parameterSlots": 11,
+      "returnSlots": 1
+    },
+    "fun_handlePayment": {
+      "entryPoint": 10429,
+      "id": 480,
+      "parameterSlots": 3,
+      "returnSlots": 1
+    },
+    "fun_internalSetFallbackHandler": {
+      "entryPoint": 10675,
+      "id": 1036,
       "parameterSlots": 1,
       "returnSlots": 0
+    },
+    "fun_isModuleEnabled": {
+      "entryPoint": 8783,
+      "id": 1692,
+      "parameterSlots": 1,
+      "returnSlots": 1
+    },
+    "fun_mul": {
+      "entryPoint": 9466,
+      "id": 2609,
+      "parameterSlots": 2,
+      "returnSlots": 1
+    },
+    "fun_mul_18731": {
+      "entryPoint": 9420,
+      "id": 2609,
+      "parameterSlots": 1,
+      "returnSlots": 1
+    },
+    "fun_postModuleExecution": {
+      "entryPoint": 10191,
+      "id": 1456,
+      "parameterSlots": 3,
+      "returnSlots": 0
+    },
+    "fun_preModuleExecution": {
+      "entryPoint": 9817,
+      "id": 1417,
+      "parameterSlots": 4,
+      "returnSlots": 2
+    },
+    "fun_requireCanAddOwner": {
+      "entryPoint": 9379,
+      "id": 2213,
+      "parameterSlots": 1,
+      "returnSlots": 0
+    },
+    "fun_requireCanRemoveOwner": {
+      "entryPoint": 10772,
+      "id": 2236,
+      "parameterSlots": 2,
+      "returnSlots": 0
+    },
+    "fun_requireIsValidOwner": {
+      "entryPoint": 10862,
+      "id": 2189,
+      "parameterSlots": 1,
+      "returnSlots": 0
+    },
+    "fun_requireSelfCall": {
+      "entryPoint": 9325,
+      "id": 2915,
+      "parameterSlots": 0,
+      "returnSlots": 0
+    },
+    "fun_revertWithError": {
+      "entryPoint": 9727,
+      "id": 3317,
+      "parameterSlots": 0,
+      "returnSlots": 0
+    },
+    "fun_revertWithError_18595": {
+      "entryPoint": 9502,
+      "id": 3317,
+      "parameterSlots": 0,
+      "returnSlots": 0
+    },
+    "fun_revertWithError_18596": {
+      "entryPoint": 9547,
+      "id": 3317,
+      "parameterSlots": 0,
+      "returnSlots": 0
+    },
+    "fun_revertWithError_18605": {
+      "entryPoint": 9592,
+      "id": 3317,
+      "parameterSlots": 0,
+      "returnSlots": 0
+    },
+    "fun_revertWithError_18622": {
+      "entryPoint": 9637,
+      "id": 3317,
+      "parameterSlots": 0,
+      "returnSlots": 0
+    },
+    "fun_revertWithError_18734": {
+      "entryPoint": 9682,
+      "id": 3317,
+      "parameterSlots": 0,
+      "returnSlots": 0
+    },
+    "fun_revertWithError_18816": {
+      "entryPoint": 9772,
+      "id": 3317,
+      "parameterSlots": 0,
+      "returnSlots": 0
+    },
+    "increment_uint256": {
+      "entryPoint": 7497,
+      "parameterSlots": 1,
+      "returnSlots": 1
+    },
+    "memory_array_index_access_address_dyn": {
+      "entryPoint": 9000,
+      "parameterSlots": 2,
+      "returnSlots": 1
     }
   },
-  "runtime_instructions": 7864,
-  "runtime_summarized_instructions": 7844,
-  "runtime_summary_theorems": 1937,
-  "runtime_shards": 51,
-  "creation_runtime_offset": 33,
-  "creation_summarized_instructions": 24,
+  "runtime_instructions": 7000,
+  "runtime_summarized_instructions": 6974,
+  "runtime_summary_theorems": 1871,
+  "runtime_shards": 49,
+  "creation_runtime_offset": 31,
+  "creation_summarized_instructions": 22,
   "creation_summary_theorems": 7,
   "boundaries": [
     {
-      "pc": 614,
+      "pc": 92,
       "opcode": "CALL",
       "source": {
         "file": "Benchmarks/Safe/ViaIR/contracts/base/FallbackManager.sol",
-        "line": 78,
-        "text": "call(gas(), handler, 0, ptr, add(calldatasize(), 20), 0, 0)"
+        "line": 58,
+        "text": "assembly {\n            // When compiled with the optimizer, the compiler relies on certain assumptions on how the\n            // memory is used, therefore we need to guarantee memory safety (keeping the free memory pointer\n            // at memory offset 0x40 intact, not going beyond the scratch space, etc).\n            // See: <https://docs.soliditylang.org/en/latest/assembly.html#memory-safety>\n\n            let handler := sload(FALLBACK_HANDLER_STORAGE_SLOT)\n\n            if iszero(handler) {\n                return(0, 0)\n            }\n\n            let ptr := mload(0x40)\n            calldatacopy(ptr, 0, calldatasize())\n\n            // The `msg.sender` address is shifted to the left by 12 bytes to remove the padding,\n            // then the address without padding is stored right after the calldata.\n            mstore(add(ptr, calldatasize()), shl(96, caller()))\n\n            // Add 20 bytes for the address that appended to the calldata.\n            let success := call(gas(), handler, 0, ptr, add(calldatasize(), 20), 0, 0)\n\n            returndatacopy(ptr, 0, returndatasize())\n            if iszero(success) {\n                revert(ptr, returndatasize())\n            }\n            return(ptr, returndatasize())\n        }"
       }
     },
     {
-      "pc": 2554,
-      "opcode": "STATICCALL",
-      "source": {
-        "file": "Benchmarks/Safe/ViaIR/contracts/Safe.sol",
-        "line": 400,
-        "text": "ecrecover(keccak256(abi.encodePacked(\"\\x19Ethereum Signed Message:\\n32\", dataHash)), uint8(v - 4), r, s)"
-      }
-    },
-    {
-      "pc": 2651,
-      "opcode": "STATICCALL",
-      "source": {
-        "file": "Benchmarks/Safe/ViaIR/contracts/Safe.sol",
-        "line": 403,
-        "text": "ecrecover(dataHash, uint8(v), r, s)"
-      }
-    },
-    {
-      "pc": 3738,
-      "opcode": "CALL",
-      "source": {
-        "file": "Benchmarks/Safe/ViaIR/contracts/Safe.sol",
-        "line": 175,
-        "text": "ITransactionGuard(guard).checkTransaction(\n                    // Transaction info:\n                    to,\n                    value,\n                    data,\n                    operation,\n                    safeTxGas,\n                    // Payment info:\n                    baseGas,\n                    gasPrice,\n                    gasToken,\n                    refundReceiver,\n                    // Signature info:\n                    signatures,\n                    msg.sender\n                )"
-      }
-    },
-    {
-      "pc": 4235,
-      "opcode": "CALL",
-      "source": {
-        "file": "Benchmarks/Safe/ViaIR/contracts/Safe.sol",
-        "line": 227,
-        "text": "ITransactionGuard(guard).checkAfterExecution(txHash, success)"
-      }
-    },
-    {
-      "pc": 4535,
-      "opcode": "DELEGATECALL",
-      "source": {
-        "file": "Benchmarks/Safe/ViaIR/contracts/common/StorageAccessible.sol",
-        "line": 39,
-        "text": "delegatecall(gas(), targetContract, add(calldataPayload, 0x20), mload(calldataPayload), 0, 0)"
-      }
-    },
-    {
-      "pc": 5833,
-      "opcode": "STATICCALL",
-      "source": {
-        "file": "Benchmarks/Safe/ViaIR/contracts/base/ModuleManager.sol",
-        "line": 271,
-        "text": "IModuleGuard(moduleGuard).supportsInterface(type(IModuleGuard).interfaceId)"
-      }
-    },
-    {
-      "pc": 6083,
+      "pc": 1637,
       "opcode": "STATICCALL",
       "source": {
         "file": "Benchmarks/Safe/ViaIR/contracts/base/GuardManager.sol",
@@ -889,52 +582,52 @@
       }
     },
     {
-      "pc": 7150,
+      "pc": 1928,
       "opcode": "STATICCALL",
       "source": {
-        "file": "Benchmarks/Safe/ViaIR/contracts/common/EIP7951.sol",
-        "line": 39,
-        "text": "staticcall(gas(), 0x100, ptr, 0xa0, 0x00, 0x20)"
-      }
-    },
-    {
-      "pc": 7345,
-      "opcode": "CALL",
-      "source": {
         "file": "Benchmarks/Safe/ViaIR/contracts/base/ModuleManager.sol",
-        "line": 120,
-        "text": "IModuleGuard(guard).checkModuleTransaction(to, value, data, operation, msg.sender)"
+        "line": 271,
+        "text": "IModuleGuard(moduleGuard).supportsInterface(type(IModuleGuard).interfaceId)"
       }
     },
     {
-      "pc": 7445,
+      "pc": 3524,
       "opcode": "DELEGATECALL",
       "source": {
         "file": "Benchmarks/Safe/ViaIR/contracts/base/Executor.sol",
-        "line": 33,
-        "text": "delegatecall(txGas, to, add(data, 0x20), mload(data), 0, 0)"
+        "line": 32,
+        "text": "assembly {\n                success := delegatecall(txGas, to, add(data, 0x20), mload(data), 0, 0)\n            }"
       }
     },
     {
-      "pc": 7464,
-      "opcode": "CALL",
+      "pc": 3987,
+      "opcode": "DELEGATECALL",
+      "source": {
+        "file": "Benchmarks/Safe/ViaIR/contracts/common/StorageAccessible.sol",
+        "line": 38,
+        "text": "assembly {\n            let success := delegatecall(gas(), targetContract, add(calldataPayload, 0x20), mload(calldataPayload), 0, 0)\n            // Load free memory location.\n            let ptr := mload(0x40)\n            mstore(ptr, success)\n            mstore(add(ptr, 0x20), returndatasize())\n            returndatacopy(add(ptr, 0x40), 0, returndatasize())\n            revert(ptr, add(returndatasize(), 0x40))\n        }"
+      }
+    },
+    {
+      "pc": 4708,
+      "opcode": "DELEGATECALL",
       "source": {
         "file": "Benchmarks/Safe/ViaIR/contracts/base/Executor.sol",
-        "line": 40,
-        "text": "call(txGas, to, value, add(data, 0x20), mload(data), 0, 0)"
+        "line": 32,
+        "text": "assembly {\n                success := delegatecall(txGas, to, add(data, 0x20), mload(data), 0, 0)\n            }"
       }
     },
     {
-      "pc": 7565,
+      "pc": 4881,
       "opcode": "CALL",
       "source": {
-        "file": "Benchmarks/Safe/ViaIR/contracts/base/ModuleManager.sol",
-        "line": 133,
-        "text": "IModuleGuard(guard).checkAfterModuleExecution(guardHash, success)"
+        "file": "Benchmarks/Safe/ViaIR/contracts/Safe.sol",
+        "line": 227,
+        "text": "ITransactionGuard(guard).checkAfterExecution(txHash, success)"
       }
     },
     {
-      "pc": 7754,
+      "pc": 5002,
       "opcode": "ORIGIN",
       "source": {
         "file": "Benchmarks/Safe/ViaIR/contracts/Safe.sol",
@@ -943,7 +636,7 @@
       }
     },
     {
-      "pc": 7775,
+      "pc": 5047,
       "opcode": "GASPRICE",
       "source": {
         "file": "Benchmarks/Safe/ViaIR/contracts/Safe.sol",
@@ -952,16 +645,7 @@
       }
     },
     {
-      "pc": 7782,
-      "opcode": "GASPRICE",
-      "source": {
-        "file": "Benchmarks/Safe/ViaIR/contracts/Safe.sol",
-        "line": 252,
-        "text": "tx.gasprice"
-      }
-    },
-    {
-      "pc": 7834,
+      "pc": 5080,
       "opcode": "CALL",
       "source": {
         "file": "Benchmarks/Safe/ViaIR/contracts/Safe.sol",
@@ -970,7 +654,43 @@
       }
     },
     {
-      "pc": 8796,
+      "pc": 5112,
+      "opcode": "GASPRICE",
+      "source": {
+        "file": "Benchmarks/Safe/ViaIR/contracts/Safe.sol",
+        "line": 252,
+        "text": "tx.gasprice"
+      }
+    },
+    {
+      "pc": 5214,
+      "opcode": "CALL",
+      "source": {
+        "file": "Benchmarks/Safe/ViaIR/contracts/common/SecuredTokenTransfer.sol",
+        "line": 24,
+        "text": "assembly {\n            // We write the return value to scratch space.\n            // See <https://docs.soliditylang.org/en/v0.7.6/internals/layout_in_memory.html#layout-in-memory>\n            let success := call(sub(gas(), 10000), token, 0, add(data, 0x20), mload(data), 0, 0x20)\n            switch returndatasize()\n            case 0 {\n                transferred := success\n            }\n            case 0x20 {\n                transferred := iszero(or(iszero(success), iszero(mload(0))))\n            }\n            default {\n                transferred := 0\n            }\n        }"
+      }
+    },
+    {
+      "pc": 5338,
+      "opcode": "CALL",
+      "source": {
+        "file": "Benchmarks/Safe/ViaIR/contracts/base/Executor.sol",
+        "line": 39,
+        "text": "assembly {\n                success := call(txGas, to, value, add(data, 0x20), mload(data), 0, 0)\n            }"
+      }
+    },
+    {
+      "pc": 5650,
+      "opcode": "CALL",
+      "source": {
+        "file": "Benchmarks/Safe/ViaIR/contracts/Safe.sol",
+        "line": 175,
+        "text": "ITransactionGuard(guard).checkTransaction(\n                    // Transaction info:\n                    to,\n                    value,\n                    data,\n                    operation,\n                    safeTxGas,\n                    // Payment info:\n                    baseGas,\n                    gasPrice,\n                    gasToken,\n                    refundReceiver,\n                    // Signature info:\n                    signatures,\n                    msg.sender\n                )"
+      }
+    },
+    {
+      "pc": 7776,
       "opcode": "STATICCALL",
       "source": {
         "file": "Benchmarks/Safe/ViaIR/contracts/common/SecuredSignatureValidator.sol",
@@ -979,27 +699,108 @@
       }
     },
     {
-      "pc": 9004,
-      "opcode": "CALL",
+      "pc": 8460,
+      "opcode": "STATICCALL",
       "source": {
-        "file": "Benchmarks/Safe/ViaIR/contracts/common/SecuredTokenTransfer.sol",
-        "line": 27,
-        "text": "call(sub(gas(), 10000), token, 0, add(data, 0x20), mload(data), 0, 0x20)"
+        "file": "Benchmarks/Safe/ViaIR/contracts/common/EIP7951.sol",
+        "line": 26,
+        "text": "assembly {\n            // Get the free memory pointer for writing some temporary data to memory (meaning that we don't need to\n            // actually allocate memory and update the pointer).\n            let ptr := mload(0x40)\n\n            // Now, prepare the call to the precompile: `address(0x100).call(h, r, s, qx, qy)`.\n            mstore(ptr, h)\n            mstore(add(ptr, 0x20), r)\n            mstore(add(ptr, 0x40), s)\n            mstore(add(ptr, 0x60), qx)\n            mstore(add(ptr, 0x80), qy)\n\n            // We write the return data of the call to the scratch space at memory address 0.\n            result := staticcall(gas(), 0x100, ptr, 0xa0, 0x00, 0x20)\n\n            // The precompile is defined to return exactly `uint256(1)` iff the signature is valid; check the return data is\n            // exactly what we expect. Note that in case the precompile is not supported, the `returndatasize` will be 0\n            // making `result` false.\n            result := and(result, and(eq(returndatasize(), 0x20), eq(mload(0x00), 1)))\n        }"
       }
     },
     {
-      "pc": 9062,
+      "pc": 8678,
+      "opcode": "STATICCALL",
+      "source": {
+        "file": "Benchmarks/Safe/ViaIR/contracts/Safe.sol",
+        "line": 400,
+        "text": "ecrecover(keccak256(abi.encodePacked(\"\\x19Ethereum Signed Message:\\n32\", dataHash)), uint8(v - 4), r, s)"
+      }
+    },
+    {
+      "pc": 9989,
+      "opcode": "CALL",
+      "source": {
+        "file": "Benchmarks/Safe/ViaIR/contracts/base/ModuleManager.sol",
+        "line": 120,
+        "text": "IModuleGuard(guard).checkModuleTransaction(to, value, data, operation, msg.sender)"
+      }
+    },
+    {
+      "pc": 10175,
+      "opcode": "DELEGATECALL",
+      "source": {
+        "file": "Benchmarks/Safe/ViaIR/contracts/base/Executor.sol",
+        "line": 32,
+        "text": "assembly {\n                success := delegatecall(txGas, to, add(data, 0x20), mload(data), 0, 0)\n            }"
+      }
+    },
+    {
+      "pc": 10188,
+      "opcode": "CALL",
+      "source": {
+        "file": "Benchmarks/Safe/ViaIR/contracts/base/Executor.sol",
+        "line": 39,
+        "text": "assembly {\n                success := call(txGas, to, value, add(data, 0x20), mload(data), 0, 0)\n            }"
+      }
+    },
+    {
+      "pc": 10344,
+      "opcode": "CALL",
+      "source": {
+        "file": "Benchmarks/Safe/ViaIR/contracts/base/ModuleManager.sol",
+        "line": 133,
+        "text": "IModuleGuard(guard).checkAfterModuleExecution(guardHash, success)"
+      }
+    },
+    {
+      "pc": 10450,
+      "opcode": "ORIGIN",
+      "source": {
+        "file": "Benchmarks/Safe/ViaIR/contracts/Safe.sol",
+        "line": 249,
+        "text": "tx.origin"
+      }
+    },
+    {
+      "pc": 10482,
+      "opcode": "GASPRICE",
+      "source": {
+        "file": "Benchmarks/Safe/ViaIR/contracts/Safe.sol",
+        "line": 252,
+        "text": "tx.gasprice"
+      }
+    },
+    {
+      "pc": 10513,
+      "opcode": "CALL",
+      "source": {
+        "file": "Benchmarks/Safe/ViaIR/contracts/Safe.sol",
+        "line": 253,
+        "text": "receiver.call{value: payment}(\"\")"
+      }
+    },
+    {
+      "pc": 10627,
+      "opcode": "CALL",
+      "source": {
+        "file": "Benchmarks/Safe/ViaIR/contracts/common/SecuredTokenTransfer.sol",
+        "line": 24,
+        "text": "assembly {\n            // We write the return value to scratch space.\n            // See <https://docs.soliditylang.org/en/v0.7.6/internals/layout_in_memory.html#layout-in-memory>\n            let success := call(sub(gas(), 10000), token, 0, add(data, 0x20), mload(data), 0, 0x20)\n            switch returndatasize()\n            case 0 {\n                transferred := success\n            }\n            case 0x20 {\n                transferred := iszero(or(iszero(success), iszero(mload(0))))\n            }\n            default {\n                transferred := 0\n            }\n        }"
+      }
+    },
+    {
+      "pc": 10963,
       "opcode": "EXTCODECOPY",
       "source": {
         "file": "Benchmarks/Safe/ViaIR/contracts/common/EIP7702.sol",
-        "line": 24,
-        "text": "extcodecopy(address(), 0, 0, 3)"
+        "line": 23,
+        "text": "assembly {\n            extcodecopy(address(), 0, 0, 3)\n            result := eq(shr(232, mload(0)), 0xef0100)\n        }"
       }
     }
   ],
   "event_sites": [
     {
-      "pc": 533,
+      "pc": 159,
       "opcode": "LOG2",
       "source": {
         "file": "Benchmarks/Safe/ViaIR/contracts/common/NativeCurrencyPaymentFallback.sol",
@@ -1008,124 +809,7 @@
       }
     },
     {
-      "pc": 1918,
-      "opcode": "LOG2",
-      "source": {
-        "file": "Benchmarks/Safe/ViaIR/contracts/base/OwnerManager.sol",
-        "line": 81,
-        "text": "AddedOwner(owner)"
-      }
-    },
-    {
-      "pc": 3412,
-      "opcode": "LOG2",
-      "source": {
-        "file": "Benchmarks/Safe/ViaIR/contracts/base/ModuleManager.sol",
-        "line": 149,
-        "text": "EnabledModule(module)"
-      }
-    },
-    {
-      "pc": 3530,
-      "opcode": "LOG1",
-      "source": {
-        "file": "Benchmarks/Safe/ViaIR/contracts/base/OwnerManager.sol",
-        "line": 154,
-        "text": "ChangedThreshold(_threshold)"
-      }
-    },
-    {
-      "pc": 4080,
-      "opcode": "LOG2",
-      "source": {
-        "file": "Benchmarks/Safe/ViaIR/contracts/Safe.sol",
-        "line": 222,
-        "text": "ExecutionSuccess(txHash, payment)"
-      }
-    },
-    {
-      "pc": 4143,
-      "opcode": "LOG2",
-      "source": {
-        "file": "Benchmarks/Safe/ViaIR/contracts/Safe.sol",
-        "line": 223,
-        "text": "ExecutionFailure(txHash, payment)"
-      }
-    },
-    {
-      "pc": 4634,
-      "opcode": "LOG2",
-      "source": {
-        "file": "Benchmarks/Safe/ViaIR/contracts/Safe.sol",
-        "line": 121,
-        "text": "SafeSetup(msg.sender, _owners, _threshold, to, fallbackHandler)"
-      }
-    },
-    {
-      "pc": 5308,
-      "opcode": "LOG3",
-      "source": {
-        "file": "Benchmarks/Safe/ViaIR/contracts/Safe.sol",
-        "line": 450,
-        "text": "ApproveHash(hashToApprove, msg.sender)"
-      }
-    },
-    {
-      "pc": 5744,
-      "opcode": "LOG2",
-      "source": {
-        "file": "Benchmarks/Safe/ViaIR/contracts/base/ModuleManager.sol",
-        "line": 161,
-        "text": "DisabledModule(module)"
-      }
-    },
-    {
-      "pc": 5995,
-      "opcode": "LOG2",
-      "source": {
-        "file": "Benchmarks/Safe/ViaIR/contracts/base/ModuleManager.sol",
-        "line": 280,
-        "text": "ChangedModuleGuard(moduleGuard)"
-      }
-    },
-    {
-      "pc": 6245,
-      "opcode": "LOG2",
-      "source": {
-        "file": "Benchmarks/Safe/ViaIR/contracts/base/GuardManager.sol",
-        "line": 87,
-        "text": "ChangedGuard(guard)"
-      }
-    },
-    {
-      "pc": 6399,
-      "opcode": "LOG2",
-      "source": {
-        "file": "Benchmarks/Safe/ViaIR/contracts/base/OwnerManager.sol",
-        "line": 110,
-        "text": "RemovedOwner(oldOwner)"
-      }
-    },
-    {
-      "pc": 6450,
-      "opcode": "LOG2",
-      "source": {
-        "file": "Benchmarks/Safe/ViaIR/contracts/base/OwnerManager.sol",
-        "line": 111,
-        "text": "AddedOwner(newOwner)"
-      }
-    },
-    {
-      "pc": 6523,
-      "opcode": "LOG2",
-      "source": {
-        "file": "Benchmarks/Safe/ViaIR/contracts/base/FallbackManager.sol",
-        "line": 48,
-        "text": "ChangedFallbackHandler(handler)"
-      }
-    },
-    {
-      "pc": 6734,
+      "pc": 783,
       "opcode": "LOG2",
       "source": {
         "file": "Benchmarks/Safe/ViaIR/contracts/base/OwnerManager.sol",
@@ -1134,7 +818,142 @@
       }
     },
     {
-      "pc": 7633,
+      "pc": 866,
+      "opcode": "LOG1",
+      "source": {
+        "file": "Benchmarks/Safe/ViaIR/contracts/base/OwnerManager.sol",
+        "line": 154,
+        "text": "ChangedThreshold(_threshold)"
+      }
+    },
+    {
+      "pc": 1151,
+      "opcode": "LOG2",
+      "source": {
+        "file": "Benchmarks/Safe/ViaIR/contracts/base/FallbackManager.sol",
+        "line": 48,
+        "text": "ChangedFallbackHandler(handler)"
+      }
+    },
+    {
+      "pc": 1386,
+      "opcode": "LOG2",
+      "source": {
+        "file": "Benchmarks/Safe/ViaIR/contracts/base/OwnerManager.sol",
+        "line": 110,
+        "text": "RemovedOwner(oldOwner)"
+      }
+    },
+    {
+      "pc": 1422,
+      "opcode": "LOG2",
+      "source": {
+        "file": "Benchmarks/Safe/ViaIR/contracts/base/OwnerManager.sol",
+        "line": 111,
+        "text": "AddedOwner(newOwner)"
+      }
+    },
+    {
+      "pc": 1553,
+      "opcode": "LOG2",
+      "source": {
+        "file": "Benchmarks/Safe/ViaIR/contracts/base/GuardManager.sol",
+        "line": 87,
+        "text": "ChangedGuard(guard)"
+      }
+    },
+    {
+      "pc": 1844,
+      "opcode": "LOG2",
+      "source": {
+        "file": "Benchmarks/Safe/ViaIR/contracts/base/ModuleManager.sol",
+        "line": 280,
+        "text": "ChangedModuleGuard(moduleGuard)"
+      }
+    },
+    {
+      "pc": 2183,
+      "opcode": "LOG2",
+      "source": {
+        "file": "Benchmarks/Safe/ViaIR/contracts/base/ModuleManager.sol",
+        "line": 161,
+        "text": "DisabledModule(module)"
+      }
+    },
+    {
+      "pc": 2482,
+      "opcode": "LOG3",
+      "source": {
+        "file": "Benchmarks/Safe/ViaIR/contracts/Safe.sol",
+        "line": 450,
+        "text": "ApproveHash(hashToApprove, msg.sender)"
+      }
+    },
+    {
+      "pc": 3264,
+      "opcode": "LOG2",
+      "source": {
+        "file": "Benchmarks/Safe/ViaIR/contracts/Safe.sol",
+        "line": 121,
+        "text": "SafeSetup(msg.sender, _owners, _threshold, to, fallbackHandler)"
+      }
+    },
+    {
+      "pc": 4812,
+      "opcode": "LOG2",
+      "source": {
+        "file": "Benchmarks/Safe/ViaIR/contracts/Safe.sol",
+        "line": 222,
+        "text": "ExecutionSuccess(txHash, payment)"
+      }
+    },
+    {
+      "pc": 4974,
+      "opcode": "LOG2",
+      "source": {
+        "file": "Benchmarks/Safe/ViaIR/contracts/Safe.sol",
+        "line": 223,
+        "text": "ExecutionFailure(txHash, payment)"
+      }
+    },
+    {
+      "pc": 5783,
+      "opcode": "LOG1",
+      "source": {
+        "file": "Benchmarks/Safe/ViaIR/contracts/base/OwnerManager.sol",
+        "line": 154,
+        "text": "ChangedThreshold(_threshold)"
+      }
+    },
+    {
+      "pc": 5991,
+      "opcode": "LOG2",
+      "source": {
+        "file": "Benchmarks/Safe/ViaIR/contracts/base/ModuleManager.sol",
+        "line": 149,
+        "text": "EnabledModule(module)"
+      }
+    },
+    {
+      "pc": 6872,
+      "opcode": "LOG2",
+      "source": {
+        "file": "Benchmarks/Safe/ViaIR/contracts/base/OwnerManager.sol",
+        "line": 81,
+        "text": "AddedOwner(owner)"
+      }
+    },
+    {
+      "pc": 6950,
+      "opcode": "LOG1",
+      "source": {
+        "file": "Benchmarks/Safe/ViaIR/contracts/base/OwnerManager.sol",
+        "line": 154,
+        "text": "ChangedThreshold(_threshold)"
+      }
+    },
+    {
+      "pc": 10254,
       "opcode": "LOG2",
       "source": {
         "file": "Benchmarks/Safe/ViaIR/contracts/base/ModuleManager.sol",
@@ -1143,7 +962,7 @@
       }
     },
     {
-      "pc": 7680,
+      "pc": 10293,
       "opcode": "LOG2",
       "source": {
         "file": "Benchmarks/Safe/ViaIR/contracts/base/ModuleManager.sol",
