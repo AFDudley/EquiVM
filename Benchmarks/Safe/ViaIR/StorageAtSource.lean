@@ -100,8 +100,8 @@ theorem safeStorageAtStep (evm : EVM.State) {locals offset len words}
 
 theorem safeStorageAtLengthGuard (evm : EVM.State) (offset len : UInt256) :
     evalExpr? config { contract := contract, locals := storageAtArgs offset len } evm
-      (leE (shlE (.var "length") (.intLit 5)) maxMemoryLength) =
-      .ok (.bool (decide ((UInt256.shiftLeft len (UInt256.ofNat 5)).toNat ≤ 2 ^ 64 - 1))) := by
+      (leE (shlE (.var "length") (.intLit 5)) (.intLit (2 ^ 64 - 161))) =
+      .ok (.bool (decide ((UInt256.shiftLeft len (UInt256.ofNat 5)).toNat ≤ 2 ^ 64 - 161))) := by
   have hs : (UInt256.shiftLeft len (UInt256.ofNat 5)).toNat =
       (len.toNat * 32) % UInt256.size := by
     change (len.toNat <<< 5) % UInt256.size = _
@@ -125,7 +125,7 @@ theorem safeStorageAtInitialLocals (offset len : UInt256) :
 
 theorem safeStorageAtPrefix (evm : EVM.State) (offset len : UInt256) {result : ExecResult}
     (hv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hl : (UInt256.shiftLeft len (UInt256.ofNat 5)).toNat ≤ 2 ^ 64 - 1)
+    (hl : (UInt256.shiftLeft len (UInt256.ofNat 5)).toNat ≤ 2 ^ 64 - 161)
     (htail : ExecBlock config { contract := contract, locals := storageAtInitialLocals offset len }
       evm [storageAtLoop, .return [.var "result"]] result) :
     ExecBlock config { contract := contract, locals := storageAtArgs offset len }
@@ -139,7 +139,7 @@ theorem safeStorageAtPrefix (evm : EVM.State) (offset len : UInt256) {result : E
 
 theorem safeStorageAtLengthRevert (evm : EVM.State) (offset len : UInt256)
     (hv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hl : ¬(UInt256.shiftLeft len (UInt256.ofNat 5)).toNat ≤ 2 ^ 64 - 1) :
+    (hl : ¬(UInt256.shiftLeft len (UInt256.ofNat 5)).toNat ≤ 2 ^ 64 - 161) :
     ExecTransitionBody config contract evm (storageAtArgs offset len)
       getstorageatTransition.body .reverted :=
   .execBlockRevert (.consNormal (.requireTrue (evalCallvalueEq_true hv))

@@ -8,14 +8,14 @@ formally checked counterexample exposed an absent-account mismatch. The user aut
 account-existence premise on affected runtime claims; that restriction is now implemented in
 the add-owner theorem and the runtime and whole-contract statements, using the existing WF
 refinement relations. Shared storage semantics and the specification are unchanged for it. A third certified
-counterexample now blocks `getStorageAt`: the IR checks the final allocation pointer in
-addition to the requested byte length. The proposed local guard correction below awaits
-approval; it has not been applied.
+counterexample exposed the IR storage reader's final allocation-pointer check. The user
+authorized tightening only the existing `getStorageAt` allocation guard. That change is
+applied, and the complete `getStorageAt` refinement theorem now builds.
 
-Eighteen runtime obligations now build: receive, fallback, `nonce`, `getThreshold`, `signedMessages`,
+Nineteen runtime obligations now build: receive, fallback, `nonce`, `getThreshold`, `signedMessages`,
 `approvedHashes`, `isOwner`, `isModuleEnabled`, `domainSeparator`, `VERSION`, `changeThreshold`,
 `setFallbackHandler`, `approveHash`, `enableModule`, `disableModule`, `swapOwner`,
-`addOwnerWithThreshold`, and `removeOwner`. The zero-argument
+`addOwnerWithThreshold`, `removeOwner`, and `getStorageAt`. The zero-argument
 proofs include the new signed length failure; the mapping getters include short, huge, and
 noncanonical calldata where applicable. Fallback covers handler absence, call success and
 failure, static callers, call-depth failure, and oversized calldata exhausting gas.
@@ -25,8 +25,8 @@ IR entry PCs and stack layouts; removed legacy tuple-decoder paths were replaced
 checks at their callers. The bytes32 decoding lemma keeps its statement and proof in the calldata
 layer. The existing selector-miss fold also proves arrival at the final selector arm, whose
 comparison consumes the selector. The module-membership trace uses the new branch order and
-preserves its memory guarantees. Source evaluation lemmas remain unchanged; the approved public-statement exception is
-described below. The authorization and owner-validation traces now follow the IR's subtraction
+preserves its memory guarantees. Source evaluation lemmas retain their statements except for the approved allocation bound;
+the approved public-statement exception is described below. The authorization and owner-validation traces now follow the IR's subtraction
 tests and changed stack order, including the delegated-account branch. Owner insertion/removal
 guards retain their memory-preservation conclusions. Pair/triple address decoding follows the
 inlined external entry paths and the three shared single-address routines. State-changing
@@ -47,13 +47,13 @@ four gas-observation PCs were updated from the compiler source map; no expected 
 changed. The randomized summary is:
 
 ```text
-Safe_ViaIR: 1775 cases: 1761 agree (578 successful), 0 disagree, 0 stuck, 14 EVM out of gas, 0 spec out of fuel
+Safe_ViaIR: 1775 cases: 1762 agree (580 successful), 0 disagree, 0 stuck, 13 EVM out of gas, 0 spec out of fuel
 ```
 
-The prescribed root invocation printed this result but also reported missing Python precompile
-support. The same built executable was rerun from the EVM dependency directory with an isolated
-Python environment containing `coincurve`, `pycryptodome`, and `typing-extensions`; that run
-completed with the same summary and no precompile errors.
+The current randomized run uses the rebuilt executable from the EVM dependency directory
+with an isolated Python environment containing `coincurve`, `pycryptodome`, and
+`typing-extensions`. It completes without precompile errors. An earlier root invocation
+reported missing Python precompile support; the corrected invocation avoids that issue.
 
 Statement changes so far: `safeCreationRuntime` uses the new code offset, length, and memory
 offset; `safeReachShort` reaches PC 14 instead of 475; `safeReachSelectorGroup` and `safeReachEntry`
@@ -91,7 +91,8 @@ The authorized specification change adds `safeDecodeCalldata` and installs it on
 benchmark's `config.externalABI.decodeCalldata?`. For empty parameter lists it rejects
 `calldata.size - 4 >= 2^255`, matching the generated signed guard under the existing
 `calldata.size < 2^256` premise. All other inputs use the existing `modern` decoder. No shared
-decoding mode or theorem input bound changed. The contract bodies and syntax spec are unchanged.
+decoding mode or theorem input bound changed. That decoder correction did not change the contract bodies or syntax spec; the later
+allocation correction below changes one guard in both specifications.
 
 `safeDecodeCalldata_eq_modern_of_small` proves equality with the original decoder below the
 first rejected length; `safeDecodeCalldata_cons` proves equality for every nonempty parameter
@@ -129,8 +130,8 @@ including the relation's alternative control-flow constructors. Consequently,
 `safeIRAbsentOwnerNotRefines` proves the negation of `runtimeRefinementFor` for this input.
 Build the witness with `lake build Benchmarks.Safe.ViaIR.IRAbsentAccount`.
 The witness builds, and its axiom audit contains the standard three axioms and eight
-native-decision certificates. The combined build of all eighteen repaired entrypoints and both negative regression
-witnesses passes (3,581 build jobs). The newly repaired public proofs pass individual
+native-decision certificates. Before the allocation correction, the combined build of all eighteen repaired entrypoints
+and both negative regression witnesses passed (3,581 build jobs). The newly repaired public proofs pass individual
 axiom scans with only the permitted axioms and native certificates. No proof holes or custom
 axioms were added.
 
@@ -147,7 +148,7 @@ below was found while continuing the remaining runtime obligations.
 
 The allocation counterexample uses an existing account and only 68 bytes of calldata:
 `getStorageAt(0, 2^59 - 1)`, zero call value, write permission, and 100,000 gas. The requested
-byte length is `2^64 - 32`, so the source's `maxMemoryLength = 2^64 - 1` guard accepts it.
+byte length is `2^64 - 32`, so the original source guard `maxMemoryLength = 2^64 - 1` accepted it.
 The IR computes an allocation size of `2^64`, then adds its initial free pointer 128. Its
 `finalize_allocation` check at PC 7128 branches to the allocation panic at PC 7161. The actual
 EVM execution reverts with panic `0x41`, leaving 99,481 gas; it never attempts the enormous
@@ -156,21 +157,36 @@ memory allocation or storage-read loop.
 `safeIRStorageAllocationPremises` checks every original premise and the newly authorized
 account-existence condition. `safeIRStorageAllocationDecoding` proves that the local decoder
 accepts the two words. `safeIRStorageAllocationExecution` certifies the actual revert and gas
-remainder. A structural proof of the source loop's results, including every alternative
-control-flow constructor, establishes `safeIRStorageAllocationSourceCannotRevert`.
-`safeIRStorageAllocationNotRefines` therefore proves the negation of the single-input runtime
-claim. Its axiom scan contains only the standard three axioms and eight native certificates,
-with no proof holes. Rebuild it with `lake build Benchmarks.Safe.ViaIR.IRStorageAllocation`.
-The two-word decoder's EVM trace has also been ported to the inlined entry guard and loads;
-its source decoding lemmas remain unchanged.
+remainder. Before the correction, structural inversion of every source-loop result proved
+that this accepted call could not revert, establishing a certified negative runtime claim.
+That evidence is retained in commit `ef850b76`.
 
-The proposed smallest local specification correction is to replace the bound in
-`getstorageatTransition`'s existing allocation guard by `2^64 - 161`, and mirror that one
-expression in the syntax specification. This requires `requestedBytes + 160 <= 2^64 - 1`,
-accounting for the initial 128-byte pointer and 32-byte header. The shifted byte length is
-already a multiple of 32, so its largest admitted value is `2^64 - 192`.
-`safeIRStorageAllocationCorrectedBound` verifies the arithmetic equivalence, and
-`safeIRStorageAllocationRejectedByCorrectedBound` verifies rejection of the witness.
-The proposal changes no ABI decoding mode, account condition, shared memory bound, or other
-transition. The initial instruction to investigate, report, and wait on an unprovable claim
-requires approval before making this additional specification change.
+The user approved replacing the bound in `getstorageatTransition`'s existing allocation guard
+by `2^64 - 161`, mirrored in the syntax specification. This requires
+`requestedBytes + 160 <= 2^64 - 1`, accounting for the initial 128-byte pointer and 32-byte
+header. The shifted byte length is a multiple of 32, so its largest admitted value is
+`2^64 - 192`. `safeIRStorageAllocationCorrectedBound` verifies the arithmetic equivalence,
+and `safeIRStorageAllocationRejectedByCorrectedBound` verifies rejection of the witness.
+The shared `maxMemoryLength` and ABI decoding modes are unchanged.
+
+`safeIRStorageAllocationSourceReverts` now constructs the matching source revert, and
+`safeIRStorageAllocationRefines` proves refinement for the exact formerly failing input.
+The original bytecode execution certificate and input facts are retained; superseded
+refutations are replaced by this positive regression. Its axiom scan contains the standard
+three axioms and eight native certificates, with no proof holes or other axioms.
+
+The complete `safeGetstorageatRefines` theorem now builds with its original statement. Its
+trace follows the two IR allocation checks, reversed header/free-pointer write order, new
+storage-loop stack, and shared byte-copy return routine. The loop invariant and source
+induction are retained. The gas argument covers shifted lengths that wrap and would require
+at least `2^251` iterations; an explicit opcode derivation preserves its gas lower bound.
+The theorem's axiom scan reports 348 axioms: only the standard three and native certificates.
+The source guard lemmas use the approved bound. Trace helper statements change only to match
+the new PCs, stacks, memory order, and copy-loop header-relative addresses.
+
+After this correction, the 408-case audit reports zero failures and the randomized test
+reports the summary above. The manifest hashes were regenerated and the no-write artifact
+audit reproduces the unchanged bytecode and block summaries. The storage-reader theorem and
+positive regression build together (3,513 build jobs). A combined build of all nineteen
+repaired entrypoints and the three regression witnesses also passes (3,593 build jobs).
+Whole-contract correctness still requires completing the remaining runtime obligations.

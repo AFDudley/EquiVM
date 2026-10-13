@@ -493,7 +493,7 @@ def contractSyntax : ContractDecl :=
     }
 
     function getStorageAt(uint256 offset, uint256 length) external returns (bytes) {
-      require((length <<[uint256] 5) <= ${maxMemoryLength});
+      require((length <<[uint256] 5) <= ${Expr.intLit (2 ^ 64 - 161)});
       bytes memory result = "";
       uint256 index = 0;
       while (index < length) {

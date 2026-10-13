@@ -1065,7 +1065,7 @@ def getstorageatTransition : TransitionDecl :=
     returnType := [bytesTy]
     body :=
       nonpayable ++
-      [ .require (leE (shlE (.var "length") (.intLit 5)) maxMemoryLength),
+      [ .require (leE (shlE (.var "length") (.intLit 5)) (.intLit (2 ^ 64 - 161))),
         .letDecl "result" (some bytesTy) emptyBytes,
         .letDecl "index" (some uint256) (.intLit 0),
         .while (ltE (.var "index") (.var "length"))

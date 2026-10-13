@@ -18,66 +18,75 @@ theorem safeStorageAtIndexAddress (i : Nat) (hi : i ≤ 2 ^ 64 - 1) :
 set_option maxHeartbeats 800000 in
 theorem safeStorageAtLoopNext (evm : EVM.State) {g s0 k C aw mem rdata i n offset}
     {R : List UInt256}
-    (h : RD safeBytecode evm.executionEnv g s0 ⟨3131⟩
-      (UInt256.ofNat i :: ⟨128⟩ :: ⟨96⟩ :: UInt256.ofNat n :: offset :: R)
+    (h : RD safeBytecode evm.executionEnv g s0 ⟨6165⟩
+      (UInt256.ofNat i :: offset :: UInt256.ofNat n :: ⟨128⟩ :: R)
       mem aw rdata evm.accountMap k C)
     (hov : R.length + 9 ≤ 1024) (hn : n ≤ 2 ^ 64 - 1) (hi : i < n) :
-    ∃ aw' k' C', RD safeBytecode evm.executionEnv g s0 ⟨3131⟩
-      (UInt256.ofNat (i + 1) :: ⟨128⟩ :: ⟨96⟩ :: UInt256.ofNat n :: offset :: R)
+    ∃ aw' k' C', RD safeBytecode evm.executionEnv g s0 ⟨6165⟩
+      (UInt256.ofNat (i + 1) :: offset :: UInt256.ofNat n :: ⟨128⟩ :: R)
       (writeWord mem (160 + 32 * i) (storageAtWord evm offset i))
       aw' rdata evm.accountMap k' C' := by
   have hiw := ulit_toNat' i (by change i < 2 ^ 256; omega)
   have hnw := ulit_toNat' n (by change n < 2 ^ 256; omega)
-  have h₁ := safeRuntime_block_3131_fallthrough (by simp; omega)
-    (by rw [ult_one (by rw [hiw, hnw]; exact hi)]; decide) h
-  obtain ⟨aw', k', C', h'⟩ := safeRuntime_block_3140_packed hov (by jump_dest) h₁
+  have h₁ := safeRuntime_block_6165_taken (by simp; omega)
+    (by rw [ult_one (by rw [hiw, hnw]; exact hi)]; decide) (by jump_dest) h
+  obtain ⟨aw', k', C', h'⟩ := safeRuntime_block_6194_packed hov (by jump_dest) h₁
+  have hshift : UInt256.shiftLeft (UInt256.ofNat i) (UInt256.ofNat 5) =
+      UInt256.mul (UInt256.ofNat i) (UInt256.ofNat 32) := by
+    apply u256_inj
+    have hs : (UInt256.shiftLeft (UInt256.ofNat i) (UInt256.ofNat 5)).toNat = 32 * i :=
+      ushl5_ofNat_toNat i (by omega)
+    rw [hs]
+    change 32 * i = ((UInt256.ofNat i).toNat * 32) % UInt256.size
+    rw [hiw, Nat.mod_eq_of_lt (by change i * 32 < 2 ^ 256; omega)]
+    omega
   have hp := safeStorageAtIndexAddress i (by omega)
+  have hslot : (evm.accountMap.get? evm.executionEnv.codeOwner |>.option (⟨0⟩ : UInt256)
+      (fun ac ↦ ac.storage.getD (offset + UInt256.ofNat i) ⟨0⟩)) =
+      storageAtWord evm offset i := by rfl
+  have hinc : UInt256.ofNat i + UInt256.ofNat 1 = UInt256.ofNat (i + 1) := by
+    rw [u256_add_comm]
+    exact u256_one_add_ofNat i
+  simp only [safeRuntime_block_6194_stack, safeRuntime_block_6194_memory,
+    hshift, hslot, hinc] at h'
   change (((⟨128⟩ : UInt256) + UInt256.mul (UInt256.ofNat i) (UInt256.ofNat 32)) +
     UInt256.ofNat 32).toNat = 160 + 32 * i at hp
-  have hslot : (evm.accountMap.get? evm.executionEnv.codeOwner |>.option (⟨0⟩ : UInt256)
-      (fun ac ↦ ac.storage.getD (UInt256.ofNat i + offset) ⟨0⟩)) =
-      storageAtWord evm offset i := by
-    rw [u256_add_comm (UInt256.ofNat i) offset]
-    rfl
-  simp only [safeRuntime_block_3140_stack, safeRuntime_block_3140_memory,
-    hp, hslot, show UInt256.ofNat 1 + UInt256.ofNat i = UInt256.ofNat (i + 1) from
-      u256_one_add_ofNat i] at h'
+  rw [hp] at h'
   exact ⟨_, _, _, h'⟩
 
-theorem safeStorageAtLoopExit {I g s0 σ k C aw mem rdata n offset ret}
+theorem safeStorageAtLoopExit {I g s0 σ k C aw mem rdata n offset}
     {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨3131⟩
-      (UInt256.ofNat n :: ⟨128⟩ :: ⟨96⟩ :: UInt256.ofNat n :: offset :: ret :: R)
-      mem aw rdata σ k C)
-    (hov : R.length + 8 ≤ 1024) (hret : (D_J safeBytecode 0).contains ret = true) :
-    ∃ k' C', RD safeBytecode I g s0 ret (⟨128⟩ :: R) mem aw rdata σ k' C' := by
-  have h₁ := safeRuntime_block_3131_taken (by simp; omega)
-    (by rw [ult_zero (by omega)]; decide) (by jump_dest) h
-  have h₂ := safeRuntime_block_3160 (by omega) hret h₁
-  exact ⟨_, _, h₂⟩
+    (h : RD safeBytecode I g s0 ⟨6165⟩
+      (UInt256.ofNat n :: offset :: UInt256.ofNat n :: ⟨128⟩ :: R) mem aw rdata σ k C)
+    (hov : R.length + 6 ≤ 1024) :
+    ∃ k' C', RD safeBytecode I g s0 ⟨6173⟩
+      (UInt256.ofNat n :: offset :: UInt256.ofNat n :: ⟨128⟩ :: R) mem aw rdata σ k' C' := by
+  have h' := safeRuntime_block_6165_fallthrough (by simp; omega)
+    (ult_zero (by omega)) h
+  exact ⟨_, _, h'⟩
 
 theorem safeStorageAtLoop (evm : EVM.State) {g s0 k C aw mem rdata n offset locals}
-    {doneWords : List UInt256} {fuel : Nat} {ret : UInt256} {R : List UInt256}
-    (h : RD safeBytecode evm.executionEnv g s0 ⟨3131⟩
-      (UInt256.ofNat doneWords.length :: ⟨128⟩ :: ⟨96⟩ :: UInt256.ofNat n :: offset :: ret :: R)
+    {doneWords : List UInt256} {fuel : Nat} {R : List UInt256}
+    (h : RD safeBytecode evm.executionEnv g s0 ⟨6165⟩
+      (UInt256.ofNat doneWords.length :: offset :: UInt256.ofNat n :: ⟨128⟩ :: R)
       mem aw rdata evm.accountMap k C)
     (hov : R.length + 10 ≤ 1024)
     (hm : AddressArrayMemory mem n (doneWords ++ List.replicate fuel ⟨0⟩)
       (UInt256.ofNat (32 * n)))
     (hl : StorageAtLocals locals offset (UInt256.ofNat n) doneWords)
-    (hn : n ≤ 2 ^ 64 - 1) (hf : doneWords.length + fuel = n)
-    (hret : (D_J safeBytecode 0).contains ret = true) :
+    (hn : n ≤ 2 ^ 64 - 1) (hf : doneWords.length + fuel = n) :
     ∃ words' locals' mem' aw' k' C',
       ExecStmt config { contract := contract, locals := locals } evm storageAtLoop
         (.ok { contract := contract, locals := locals' } evm) ∧
       StorageAtLocals locals' offset (UInt256.ofNat n) words' ∧
       AddressArrayMemory mem' n words' (UInt256.ofNat (32 * n)) ∧
-      RD safeBytecode evm.executionEnv g s0 ret (⟨128⟩ :: R)
+      RD safeBytecode evm.executionEnv g s0 ⟨6173⟩
+        (UInt256.ofNat n :: offset :: UInt256.ofNat n :: ⟨128⟩ :: R)
         mem' aw' rdata evm.accountMap k' C' := by
   induction fuel generalizing doneWords locals mem aw k C with
   | zero =>
       have he : doneWords.length = n := by omega
-      obtain ⟨k', C', h'⟩ := safeStorageAtLoopExit (by simpa only [he] using h) (by omega) hret
+      obtain ⟨k', C', h'⟩ := safeStorageAtLoopExit (by simpa only [he] using h) (by omega)
       have hcond := safeStorageAtCondition evm hl
       rw [ulit_toNat' n (by change n < 2 ^ 256; omega)] at hcond
       refine ⟨doneWords, locals, mem, aw, k', C', .whileFalse ?_, hl, ?_, h'⟩
