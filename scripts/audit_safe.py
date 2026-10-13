@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Reproduce Safe artifacts and regenerate/check the proof-support inventory.
 
-Usage: python3 scripts/audit_safe.py --solc /path/to/solc-0.8.35 [--dir Benchmarks/Safe/Main] [--runs 200] [--write]
+Usage: python3 scripts/audit_safe.py --solc /path/to/solc-0.8.35 [--dir Benchmarks/Safe/Main] [--runs 200] [--via-ir] [--write]
 `--dir` is the proof directory (default `Benchmarks/Safe/Main`); its path is the Lean module prefix.
 The compiler must be 0.8.35+commit.47b9dedd. This checks artifact provenance and
 summary coverage; the separate Lean Audit target executes the semantic regressions.
@@ -28,9 +28,10 @@ ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_DIR = "Benchmarks/Safe/Main"
 
 
-def compiler_options(runs: int) -> list[str]:
-    return ["--optimize", "--optimize-runs", str(runs), "--evm-version", "shanghai",
-            "--metadata-hash", "none", "--base-path", "."]
+def compiler_options(runs: int, via_ir: bool) -> list[str]:
+    return (["--via-ir"] if via_ir else []) + [
+        "--optimize", "--optimize-runs", str(runs), "--evm-version", "shanghai",
+        "--metadata-hash", "none", "--base-path", "."]
 
 
 FIELDS = "bin,bin-runtime,abi,storage-layout,srcmap-runtime,hashes,function-debug-runtime"
@@ -53,6 +54,7 @@ def main() -> None:
     parser.add_argument("--solc", type=Path, required=True)
     parser.add_argument("--write", action="store_true")
     parser.add_argument("--runs", type=int, default=200, help="solc --optimize-runs value of the proof's bytecode")
+    parser.add_argument("--via-ir", action="store_true", help="the proof's bytecode was compiled with --via-ir")
     parser.add_argument("--dir", type=Path, default=Path(DEFAULT_DIR),
                         help="proof directory relative to the repository root (its path is the module prefix)")
     args = parser.parse_args()
@@ -63,7 +65,7 @@ def main() -> None:
         raise SystemExit(f"no Safe source at {source}")
     module = ".".join(rel.parts)
     compiler = args.solc.resolve()
-    options = compiler_options(args.runs)
+    options = compiler_options(args.runs, args.via_ir)
     version = subprocess.check_output([str(compiler), "--version"], text=True)
     if "0.8.35+commit.47b9dedd" not in version:
         raise ValueError(f"unexpected compiler version: {version}")
@@ -106,18 +108,22 @@ def main() -> None:
             source_map[ins.pc] = {"file": path, "line": text[:start].count(b"\n") + 1,
                                  "text": text[start:start + length].decode("utf-8")}
 
-    # A runtime selector arm is PUSH4 selector; EQ; PUSH2 entry; JUMPI.
+    # A runtime selector arm is PUSH4 selector; EQ; PUSH2 entry; JUMPI, with an ABI selector.
     instructions = disassemble(strip_solidity_metadata(runtime))
+    selectors = set(artifact["hashes"].values())
     arms = {}
     for i in range(len(instructions) - 3):
         a, b, c, d = instructions[i:i + 4]
-        if a.pc < 475 and (a.opcode, b.opcode, c.opcode, d.opcode) == (0x63, 0x14, 0x61, 0x57):
-            arms[f"{a.argument:08x}"] = c.argument
-    assert set(arms) == set(artifact["hashes"].values()), "ABI/dispatcher selector mismatch"
+        if (a.opcode, b.opcode, c.opcode, d.opcode) == (0x63, 0x14, 0x61, 0x57):
+            selector = f"{a.argument:08x}"
+            if selector in selectors:
+                assert selector not in arms, f"duplicate dispatcher arm for selector {selector}"
+                arms[selector] = c.argument
+    assert set(arms) == selectors, "ABI/dispatcher selector mismatch"
 
     units = generate_unit_records(runtime, "safeRuntime", f"{module}.safeBytecode")
     runtime_offset = len(creation) - len(runtime)
-    assert runtime_offset == 33 and creation[runtime_offset:] == runtime
+    assert runtime_offset > 0 and creation[runtime_offset:] == runtime
     # Generate against the full creation bytes; select only the executable constructor prelude.
     ctor_units = [u for u in generate_unit_records(
         creation, "safeCreation", f"{module}.safeCreationBytecode", creation_code=True)
