@@ -2,7 +2,8 @@ import Benchmarks.Safe.ViaIR.WordArrayMemory
 import Benchmarks.Safe.ViaIR.Memory
 import Benchmarks.Safe.ViaIR.Decoders
 import Reasoning.WordArithmetic
-import Benchmarks.Safe.ViaIR.Blocks.Runtime_045
+import Benchmarks.Safe.ViaIR.Blocks.Runtime_035
+import Benchmarks.Safe.ViaIR.Blocks.Runtime_036
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -14,11 +15,11 @@ set_option maxRecDepth 100000
 -- The compiler's shared address-array encoder, starting at any iteration and source pointer.
 set_option maxHeartbeats 800000 in
 theorem safeAddressArrayCopyLoop (words : List UInt256)
-    {I g s0 σ k C aw mem rdata i n src dst scratch arr ret} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨10256⟩
-      (UInt256.ofNat i :: UInt256.ofNat src :: UInt256.ofNat n :: scratch :: arr ::
+    {I g s0 σ k C aw mem rdata i n src dst ret} {R : List UInt256}
+    (h : RD safeBytecode I g s0 ⟨7453⟩
+      (UInt256.ofNat i :: UInt256.ofNat n :: UInt256.ofNat src ::
         UInt256.ofNat dst :: ret :: R) mem aw rdata σ k C)
-    (hov : R.length + 11 ≤ 1024)
+    (hov : R.length + 9 ≤ 1024)
     (hw : WordArrayMemory mem src words) (hm : mem.size = dst)
     (hsrc : src + 32 * words.length ≤ dst) (hi : i + words.length = n)
     (hn : n < UInt256.size) (hend : dst + 32 * words.length < UInt256.size)
@@ -30,9 +31,9 @@ theorem safeAddressArrayCopyLoop (words : List UInt256)
   induction words generalizing i src dst mem aw k C with
   | nil =>
       have hin : i = n := by simpa using hi
-      have h₁ := safeRuntime_block_10256_taken (by simp; omega)
-        (by rw [hin, ult_zero (by omega)]; decide) (by jump_dest) h
-      have h₂ := safeRuntime_block_10295 (by omega) hret h₁
+      have h₁ := safeRuntime_block_7453_fallthrough (by simp; omega)
+        (by rw [hin]; exact ult_zero (by omega)) h
+      have h₂ := safeRuntime_block_7461 (by omega) hret h₁
       simpa only [List.length_nil, Nat.mul_zero, Nat.add_zero, wordBytes,
         ByteArray.append_empty] using (show ∃ aw' k' C', RD safeBytecode I g s0 ret
           (UInt256.ofNat dst :: R) mem aw' rdata σ k' C' from ⟨_, _, _, h₂⟩)
@@ -46,11 +47,11 @@ theorem safeAddressArrayCopyLoop (words : List UInt256)
         apply mloadWordValue_of_readWithPadding (mem := mem)
           (by rw [hsp]; simp only [List.length_cons] at hsrc; omega)
         simpa only [hsp, Nat.mul_zero, Nat.add_zero] using hw 0 (by simp)
-      have h₁ := safeRuntime_block_10256_fallthrough (by simp; omega)
-        (by rw [ult_one (by rw [hip, hnp]; exact hi')]; decide) h
-      obtain ⟨aw₂, k₂, C₂, h₂⟩ := safeRuntime_block_10265_packed
+      have h₁ := safeRuntime_block_7453_taken (by simp; omega)
+        (by rw [ult_one (by rw [hip, hnp]; exact hi')]; decide) (by jump_dest) h
+      obtain ⟨aw₂, k₂, C₂, h₂⟩ := safeRuntime_block_7466_packed
         (by simp; omega) (by jump_dest) h₁
-      simp only [safeRuntime_block_10265_stack, safeRuntime_block_10265_memory,
+      simp only [safeRuntime_block_7466_stack, safeRuntime_block_7466_memory,
         safeAddressMask, hload, solcAddrMask_clean_left (hc w (by simp)), hdp] at h₂
       have hsadd : UInt256.ofNat src + UInt256.ofNat 32 = UInt256.ofNat (src + 32) := by
         rw [u256_add_comm]

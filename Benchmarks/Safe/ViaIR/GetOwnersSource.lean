@@ -32,14 +32,14 @@ theorem safeGetOwnersInitialLocals (evm : EVM.State) :
 
 theorem safeGetOwnersCountGuard (evm : EVM.State) :
     evalExpr? config { contract := contract, locals := ∅ } evm
-      (leE (.storage ownerCountRef) maxMemoryLength) =
-      .ok (.bool (decide ((ownerCount evm).toNat ≤ 2 ^ 64 - 1))) := by
+      (leE (.storage ownerCountRef) (.intLit (2 ^ 59 - 6))) =
+      .ok (.bool (decide ((ownerCount evm).toNat ≤ 2 ^ 59 - 6))) := by
   rw [leE, evalExpr_binary_nonshort (by decide) (by decide), safeEvalOwnerCount evm ∅ (by simp)]
-  simp [maxMemoryLength, evalExpr?, evalBinaryOp?, EvalResult.bind, bind, pure]
+  simp [evalExpr?, evalBinaryOp?, EvalResult.bind, bind, pure]
 
 theorem safeGetOwnersPrefix (evm : EVM.State) {result : ExecResult}
     (hvalue : evm.executionEnv.weiValue = ⟨0⟩)
-    (hlen : (ownerCount evm).toNat ≤ 2 ^ 64 - 1)
+    (hlen : (ownerCount evm).toNat ≤ 2 ^ 59 - 6)
     (htail : ExecBlock config { contract := contract, locals := getOwnersInitialLocals evm }
       evm [getOwnersLoop, .return [.var "array"]] result) :
     ExecBlock config { contract := contract, locals := ∅ } evm getownersTransition.body
@@ -59,7 +59,7 @@ theorem safeGetOwnersPrefix (evm : EVM.State) {result : ExecResult}
 
 theorem safeGetOwnersCountRevert (evm : EVM.State)
     (hvalue : evm.executionEnv.weiValue = ⟨0⟩)
-    (hlen : ¬(ownerCount evm).toNat ≤ 2 ^ 64 - 1) :
+    (hlen : ¬(ownerCount evm).toNat ≤ 2 ^ 59 - 6) :
     ExecTransitionBody config contract evm ∅ getownersTransition.body .reverted :=
   .execBlockRevert (.consNormal (.requireTrue (evalCallvalueEq_true hvalue))
     (.consRevert (.requireFalse (by

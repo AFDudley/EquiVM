@@ -480,7 +480,7 @@ def contractSyntax : ContractDecl :=
     }
 
     function getOwners() external returns (address[]) {
-      require(ownerCount <= ${maxMemoryLength});
+      require(ownerCount <= ${Expr.intLit (2 ^ 59 - 6)});
       address[] memory array = new address[](ownerCount);
       uint256 index = 0;
       address currentOwner = owners[address(1)];

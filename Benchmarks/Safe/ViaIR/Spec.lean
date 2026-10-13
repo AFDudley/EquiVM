@@ -1048,7 +1048,7 @@ def getownersTransition : TransitionDecl :=
     returnType := [(.dynamicArray addr)]
     body :=
       nonpayable ++
-      [ .require (leE (.storage ownerCountRef) maxMemoryLength),
+      [ .require (leE (.storage ownerCountRef) (.intLit (2 ^ 59 - 6))),
         .letDecl "array" (some (.dynamicArray addr)) (.newArray addrSt (.storage ownerCountRef)),
         .letDecl "index" (some uint256) (.intLit 0),
         .letDecl "currentOwner" (some addr) (.storage (ownersRef sentinelAddr)),

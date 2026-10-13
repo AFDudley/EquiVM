@@ -66,7 +66,7 @@ theorem hugeOwnerReturnNonempty : zeroOwnerReturnBytes hugeOwnerCount ≠ ByteAr
 
 theorem safeGetOwnersEarlyReturn (evm : EVM.State)
     (hvalue : evm.executionEnv.weiValue = ⟨0⟩)
-    (hlen : (ownerCount evm).toNat ≤ 2 ^ 64 - 1)
+    (hlen : (ownerCount evm).toNat ≤ 2 ^ 59 - 6)
     (hcurrent : ownerLink evm ⟨1⟩ = ⟨1⟩) :
     ExecTransitionBody config contract evm ∅ getownersTransition.body
       (.returned { contract := contract, locals := getOwnersInitialLocals evm } evm
@@ -97,28 +97,18 @@ def hugeOwnerAuditState (perm : Bool) : EVM.State :=
 
 theorem hugeOwnerAudit_count (perm : Bool) :
     (ownerCount (hugeOwnerAuditState perm)).toNat = hugeOwnerCount := by
-  have hslot : mapSlot ⟨1⟩ ⟨2⟩ ≠ (⟨3⟩ : UInt256) := by native_decide
-  simp [ownerCount, hugeOwnerAuditState, hugeOwnerAuditAccount, Solm.EVM.storageLoad,
-    State.lookupAccount, Std.ExtTreeMap.get?_eq_getElem?, Std.ExtTreeMap.getElem?_insert,
-    Std.ExtTreeMap.getD, hslot, Ne.symm hslot]
-  decide +kernel
+  cases perm <;> native_decide
 
 theorem hugeOwnerAudit_current (perm : Bool) :
     ownerLink (hugeOwnerAuditState perm) ⟨1⟩ = ⟨1⟩ := by
-  simp [ownerLink, hugeOwnerAuditState, hugeOwnerAuditAccount, Solm.EVM.storageLoad,
-    State.lookupAccount, Std.ExtTreeMap.get?_eq_getElem?, Std.ExtTreeMap.getElem?_insert,
-    Std.ExtTreeMap.getD_insert_self, Option.option, Account.lookupStorage,
-    solcAddrMask_clean (by decide : (⟨1⟩ : UInt256).toNat < EVM.addressModulus)]
+  cases perm <;> native_decide
 
 theorem hugeOwnerAudit_source (perm : Bool) :
-    ExecTransitionBody config contract (hugeOwnerAuditState perm) ∅ getownersTransition.body
-      (.returned { contract := contract, locals := getOwnersInitialLocals (hugeOwnerAuditState
-        perm) }
-        (hugeOwnerAuditState perm)
-        (some [.array ((List.replicate hugeOwnerCount ⟨0⟩).map addressArrayValue)])) := by
-  simpa only [hugeOwnerAudit_count] using safeGetOwnersEarlyReturn
-    (hugeOwnerAuditState perm) rfl (by rw [hugeOwnerAudit_count]; exact hugeOwnerCount_allowed)
-    (hugeOwnerAudit_current perm)
+    ExecTransitionBody config contract (hugeOwnerAuditState perm) ∅
+      getownersTransition.body .reverted := by
+  apply safeGetOwnersCountRevert (hugeOwnerAuditState perm) rfl
+  rw [hugeOwnerAudit_count]
+  norm_num [hugeOwnerCount]
 
 theorem hugeOwnerAudit_noEmptyABI :
     ¬ returnEquiv ByteArray.empty

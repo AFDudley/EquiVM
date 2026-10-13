@@ -6,16 +6,15 @@ open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.Safe.ViaIR
 
 theorem safeGetOwnersLoop (evm : EVM.State) {g s0 k C aw mem rdata n words i current locals}
-    {ret : UInt256} {R : List UInt256}
-    (h : RD safeBytecode evm.executionEnv g s0 ⟨4419⟩
-      (current :: UInt256.ofNat i :: ⟨128⟩ :: ⟨96⟩ :: ret :: R)
+    {R : List UInt256}
+    (h : RD safeBytecode evm.executionEnv g s0 ⟨4105⟩
+      (current :: ⟨0⟩ :: UInt256.ofNat i :: ⟨128⟩ :: R)
       mem aw rdata evm.accountMap k C)
     (hov : R.length + 11 ≤ 1024)
     (hm : AddressArrayMemory mem n words) (hl : GetOwnersLocals locals words i current)
     (hn : n ≤ 2 ^ 64 - 1) (hi : i ≤ n)
     (hc : current.toNat < EVM.addressModulus)
-    (hw : ∀ w ∈ words, w.toNat < EVM.addressModulus)
-    (hret : (D_J safeBytecode 0).contains ret = true) :
+    (hw : ∀ w ∈ words, w.toNat < EVM.addressModulus) :
     (ExecStmt config { contract := contract, locals := locals } evm getOwnersLoop .reverted ∧
       RDrev safeBytecode g s0) ∨
     ∃ words' locals' mem' aw' k' C' j,
@@ -24,14 +23,15 @@ theorem safeGetOwnersLoop (evm : EVM.State) {g s0 k C aw mem rdata n words i cur
       GetOwnersLocals locals' words' j ⟨1⟩ ∧
       AddressArrayMemory mem' n words' ∧
       (∀ w ∈ words', w.toNat < EVM.addressModulus) ∧
-      RD safeBytecode evm.executionEnv g s0 ret (⟨128⟩ :: R)
+      RD safeBytecode evm.executionEnv g s0 ⟨4171⟩
+        (⟨1⟩ :: ⟨0⟩ :: UInt256.ofNat j :: ⟨128⟩ :: R)
         mem' aw' rdata evm.accountMap k' C' := by
   induction hfuel : n - i using Nat.strong_induction_on generalizing i words current locals
       mem aw k C with
   | h fuel ih =>
     by_cases hs : current = ⟨1⟩
     · subst current
-      obtain ⟨k', C', h'⟩ := safeGetOwnersLoopExit h (by omega) hret
+      obtain ⟨k', C', h'⟩ := safeGetOwnersLoopExit h (by omega)
       refine .inr ⟨words, locals, mem, aw, k', C', i, ?_, ?_, hm, hw, h'⟩
       · exact .whileFalse (by simpa only [ne_eq, not_true_eq_false, decide_false] using
           safeGetOwnersCondition evm hl hc)

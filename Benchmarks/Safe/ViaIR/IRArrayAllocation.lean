@@ -59,130 +59,28 @@ theorem safeIROwnerAllocationExecution :
           out == (⟨#[0x4e, 0x48, 0x7b, 0x71]⟩ ++ (⟨0x41⟩ : UInt256).toByteArray)
       | _ => false) = true := by native_decide
 
-theorem safeIROwnerAllocationSourceReturns :
-    ExecTransitionBody config contract safeIROwnerAllocationState ∅ getownersTransition.body
-      (.returned
-        { contract := contract, locals := getOwnersInitialLocals safeIROwnerAllocationState }
-        safeIROwnerAllocationState
-        (some [.array ((List.replicate (ownerCount safeIROwnerAllocationState).toNat ⟨0⟩).map
-          addressArrayValue)])) := by
-  have hl := safeGetOwnersInitialLocals safeIROwnerAllocationState
-  have hc := safeGetOwnersCondition safeIROwnerAllocationState hl
-    (solcAddrMask_result_canonical _)
-  rw [safeIROwnerAllocationStorage.2] at hc
-  apply ExecFuncBody.execBlockRet
-  apply safeGetOwnersPrefix safeIROwnerAllocationState rfl
-    (by rw [safeIROwnerAllocationStorage.1]; decide)
-  exact .consNormal (.whileFalse (by simpa using hc))
-    (safeGetOwnersReturn safeIROwnerAllocationState hl)
-
-private theorem requireResult {cfg f s cond r}
-    (h : ExecStmt cfg f s (.require cond) r)
-    (he : evalExpr? cfg f s cond = .ok (.bool true)) : r = .ok f s := by
-  cases h <;> simp_all
-
-private theorem letResult {cfg f s name ty expr value r}
-    (h : ExecStmt cfg f s (.letDecl name ty expr) r)
-    (he : evalExpr? cfg f s expr = .ok value) :
-    r = .ok { f with locals := f.locals.insert name value } s := by
-  cases h <;> simp_all
-
-private theorem whileFalseResult {cfg f s cond body r}
-    (h : ExecStmt cfg f s (.while cond body) r)
-    (he : evalExpr? cfg f s cond = .ok (.bool false)) : r = .ok f s := by
-  cases h <;> simp_all
-
-private theorem consTail {cfg f s stmt tail r f' s'}
-    (h : ExecBlock cfg f s (stmt :: tail) r)
-    (hs : ∀ result, ExecStmt cfg f s stmt result → result = .ok f' s') :
-    ExecBlock cfg f' s' tail r := by
-  cases h with
-  | consNormal hstmt ht => have he := hs _ hstmt; cases he; exact ht
-  | consReturn hstmt | consBreak hstmt | consContinue hstmt | consRevert hstmt
-      | consStatic hstmt => have he := hs _ hstmt; cases he
-
-private theorem ownerAllocationCannotRevert
-    (h : ExecBlock config { contract := contract, locals := ∅ } safeIROwnerAllocationState
-      getownersTransition.body .reverted) : False := by
-  let evm := safeIROwnerAllocationState
-  let frame : Frame := { contract := contract, locals := ∅ }
-  let words := List.replicate (ownerCount evm).toNat (⟨0⟩ : UInt256)
-  have hvalue := evalCallvalueEq_true (cfg := config) (solm := frame)
-    (evm := evm) (by rfl)
-  have hguard : evalExpr? config frame evm (leE (.storage ownerCountRef) maxMemoryLength) =
-      .ok (.bool true) := by
-    have he := safeGetOwnersCountGuard evm
-    rw [safeIROwnerAllocationStorage.1] at he
-    exact he
-  have hnew : evalExpr? config frame evm (.newArray addrSt (.storage ownerCountRef)) =
-      .ok (.array (words.map addressArrayValue)) := by
-    rw [evalExpr?, safeEvalOwnerCount evm ∅ (by simp)]
-    simp [EvalResult.bind, bind, pure, defaultValue?, addrSt, addressArrayValue, words]
-  have htail := consTail (consTail h (fun _ hs ↦ requireResult hs hvalue))
-    (fun _ hs ↦ requireResult hs hguard)
-  have ha := consTail htail (fun _ hs ↦ letResult hs hnew)
-  have hi := consTail ha (fun _ hs ↦ letResult (value := .int 0) hs
-    (by simp [evalExpr?, pure]))
-  let locals := ((∅ : Store).insert "array" (.array (words.map addressArrayValue))).insert
-    "index" (.int 0)
-  have hc := safeEvalOwnerLink evm locals sentinelAddr ⟨1⟩
-    (by simp [locals]) (by decide) (safeEvalOwnerSentinel evm _)
-  have hl := consTail hi (fun _ hs ↦ letResult hs hc)
-  change ExecBlock config { contract := contract, locals := getOwnersInitialLocals evm }
-    evm [getOwnersLoop, .return [.var "array"]] .reverted at hl
-  have hcond := safeGetOwnersCondition evm (safeGetOwnersInitialLocals evm)
-    (solcAddrMask_result_canonical _)
-  rw [safeIROwnerAllocationStorage.2] at hcond
-  have hr := consTail hl (fun _ hs ↦ whileFalseResult hs (by simpa using hcond))
-  have he := evalExprs?_singleton (evalLocalValue (cfg := config) (evm := evm)
-    (frame := { contract := contract, locals := getOwnersInitialLocals evm })
-    (safeGetOwnersInitialLocals evm).array)
-  cases hr with
-  | consNormal hs _ => cases hs
-  | consRevert hs => cases hs with | returnRevert hf => rw [he] at hf; cases hf
-
-theorem safeIROwnerAllocationSourceCannotRevert :
-    ¬ExecTransitionBody config contract safeIROwnerAllocationState ∅
+theorem safeIROwnerAllocationSourceReverts :
+    ExecTransitionBody config contract safeIROwnerAllocationState ∅
       getownersTransition.body .reverted := by
-  intro h
-  cases h with
-  | execBlockRevert hb => exact ownerAllocationCannotRevert hb
+  apply safeGetOwnersCountRevert safeIROwnerAllocationState rfl
+  rw [safeIROwnerAllocationStorage.1]
+  decide
 
-theorem safeIROwnerAllocationNotRefines :
-    ¬runtimeRefinementFor config contract safeIROwnerAllocationAccounts
+theorem safeIROwnerAllocationRefines :
+    runtimeRefinementFor config contract safeIROwnerAllocationAccounts
       safeIROwnerAllocationAccounts ⟨100000⟩ default safeIROwnerAllocationEnv := by
-  intro h
   have hex := safeIROwnerAllocationExecution
+  have hbody := safeIROwnerAllocationSourceReverts
   have hsel := safeIROwnerAllocationPremises.2.2.2
-  cases h with
-  | execution hxi hsolm hrel =>
-    cases hrel with
-    | revert hevm hsource =>
-      cases hsource
-      cases hsolm with
-      | intro hdispatch hsig hdec hstate hbody =>
-        rw [hsel] at hdispatch
-        cases hdispatch
-        subst hsig
-        rw [safeIROwnerAllocationDecoding] at hdec
-        cases hdec
-        cases hstate
-        exact safeIROwnerAllocationSourceCannotRevert hbody
-      | fallback hdispatch _ _ _ _ _ _ => rw [hsel] at hdispatch; cases hdispatch
-      | receive hrecv _ _ _ _ =>
-        change none = some _ at hrecv
-        cases hrecv
-    | success hevm _ _ _ | invalidHalt hevm _ | staticHalt hevm _ =>
-      rw [hxi, hevm] at hex
-      cases hex
-  | noDispatch hd _ => simp only [dispatchMsg, hsel] at hd; cases hd
-  | decodingFailed hd hsig hdec _ =>
-    rw [hsel] at hd
-    cases hd
-    subst hsig
-    rw [safeIROwnerAllocationDecoding] at hdec
-    cases hdec
-  | outOfGas hevm => rw [hevm] at hex; cases hex
+  cases he : Ξ safeIROwnerAllocationAccounts safeIROwnerAllocationAccounts ⟨100000⟩
+      default safeIROwnerAllocationEnv with
+  | error => rw [he] at hex; cases hex
+  | ok result =>
+    cases result with
+    | success => rw [he] at hex; cases hex
+    | revert gas out =>
+      exact reEquivSelectorExecution hsel safeIROwnerAllocationDecoding hbody
+        (.revert he rfl)
 
 theorem safeIROwnerAllocationCorrectedBound (count : Nat) :
     32 * count + 160 ≤ 2 ^ 64 - 1 ↔ count ≤ 2 ^ 59 - 6 := by omega
