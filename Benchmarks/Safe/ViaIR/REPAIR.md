@@ -380,3 +380,18 @@ The rejection lemma uses only the standard three axioms; no specification change
 needed. The execution, gas-used, and success-check axiom scans report 280, 33, and 70
 permitted axioms, with no proof holes or custom axioms. Refunds, transaction completion,
 setup, and the whole-contract checks remain in progress.
+
+The public `execTransaction` refinement now builds with its original statement. Its
+inlined refund path covers receiver selection, checked arithmetic, native and token
+calls, token return-value validation, and return-buffer allocation. Token calldata
+reserves 128 bytes for its 100-byte buffer. Allocation failures propagate to the
+transaction's existing gas-check rejection proof. The event, post-execution guard,
+zero-length guard allocation, and boolean return follow their new IR paths. No
+specification change was needed.
+
+The return-buffer allocator proof is shared with contract-signature checking; the
+signature entrypoint regression audit also passes. Transaction completion and signature
+audits build together (3,730 jobs). The public transaction theorem uses 3,565 permitted
+axioms; the token-transfer and payment traces use 162 and 624. No proof holes or custom
+axioms were found. Thirty-two of the thirty-three runtime obligations are complete.
+Setup and the final whole-contract checks remain.

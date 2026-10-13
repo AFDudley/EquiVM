@@ -29,7 +29,7 @@ theorem tokenTransferOutputMemory_preserved (mem : ByteArray) (ptr : Nat)
 
 theorem tokenTransferOutputMemory_free (mem : ByteArray) (ptr : Nat)
     (p : TokenTransferInput) (out : ByteArray) (hb : out.size < UInt256.size) (hp : 96 ≤ ptr) :
-    memLoad ⟨64⟩ (tokenTransferOutputMemory mem ptr p out) = UInt256.ofNat (ptr + 100) := by
+    memLoad ⟨64⟩ (tokenTransferOutputMemory mem ptr p out) = UInt256.ofNat (ptr + 128) := by
   rw [memLoadReadWord]
   change uInt256OfByteArray ((tokenTransferOutputMemory mem ptr p out).readWithPadding 64 32) = _
   rw [tokenTransferOutputMemory, callOutput32_read_above _ _ _ _ _ hb
@@ -37,33 +37,36 @@ theorem tokenTransferOutputMemory_free (mem : ByteArray) (ptr : Nat)
     ← show (⟨64⟩ : UInt256).toNat = 64 from rfl, ← memLoadReadWord,
     tokenTransferMemory_free _ _ _ _ hp]
 
-set_option maxRecDepth 100000 in
+set_option maxRecDepth 5000 in
 theorem safeTokenTransferTrace (p : TokenTransferInput) (evm : EVM.State)
-    {I g s0 σ k C aw mem rdata ptr} {ret : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨8915⟩
-      (p.amount :: UInt256.ofNat p.receiver.val :: UInt256.ofNat p.token.val :: ret :: R)
-      mem aw rdata σ k C)
+    {I g s0 σ k C aw mem rdata ptr} {guard success hash flag : UInt256} {R : List UInt256}
+    (h : RD safeBytecode I g s0 ⟨5152⟩
+      (p.amount :: UInt256.ofNat p.token.val :: ⟨0⟩ :: ⟨32⟩ :: UInt256.ofNat p.receiver.val ::
+        guard :: success :: hash :: flag :: ⟨0⟩ :: R) mem aw rdata σ k C)
     (hee : evm.executionEnv = I) (hacc : evm.accountMap = σ) (hworld : evm.σ₀ = s0.σ₀)
     (hf : memLoad ⟨64⟩ mem = UInt256.ofNat ptr) (hm : 128 ≤ mem.size) (hp : 128 ≤ ptr)
-    (hz : memLoad ⟨96⟩ mem = ⟨0⟩) (hb : ptr + 100 < UInt256.size)
-    (hov : R.length + 14 ≤ 1024) (hret : (D_J safeBytecode 0).contains ret = true) :
+    (hz : memLoad ⟨96⟩ mem = ⟨0⟩) (hb : ptr + 128 < UInt256.size)
+    (hov : R.length + 24 ≤ 1024) :
+    RDrev safeBytecode g s0 ∨
     ∃ (evm' : EVM.State) (σ' : AccountMap) (z : Bool) (out : ByteArray)
       (aw' : UInt256) (k' C' : Nat),
       ExecFuncBody config p.frame evm transferTokenFunction.body
         (.returned (p.finalFrame z out) evm' (some [.bool (tokenTransferResult z out)])) ∧
       evm'.executionEnv = I ∧ evm'.accountMap = σ' ∧ evm'.σ₀ = s0.σ₀ ∧
-      RD safeBytecode I g s0 ret ((tokenTransferResult z out).toUInt256 :: R)
-        (tokenTransferOutputMemory mem ptr p out) aw' out σ' k' C' ∧
-      memLoad ⟨64⟩ (tokenTransferOutputMemory mem ptr p out) = UInt256.ofNat (ptr + 100) ∧
+      RD safeBytecode I g s0 ⟨5231⟩
+        ((tokenTransferResult z out).toUInt256 :: p.amount :: guard :: success :: hash ::
+          flag :: ⟨0⟩ :: R) (tokenTransferOutputMemory mem ptr p out) aw' out σ' k' C' ∧
+      memLoad ⟨64⟩ (tokenTransferOutputMemory mem ptr p out) = UInt256.ofNat (ptr + 128) ∧
       memLoad ⟨96⟩ (tokenTransferOutputMemory mem ptr p out) = ⟨0⟩ ∧
       MemoryPreserves mem (tokenTransferOutputMemory mem ptr p out) 96 ptr ∧
       (tokenTransferOutputMemory mem ptr p out).size = max mem.size (ptr + 100) ∧
-      out.size < UInt256.size := by
+      out.size < UInt256.size ∧ ptr + 128 < 2 ^ 64 := by
   have hr : (UInt256.ofNat p.receiver.val).toNat < EVM.addressModulus := by
     rw [ulit_toNat' _ (lt_trans p.receiver.isLt (by decide))]
     exact p.receiver.isLt
-  obtain ⟨gasArg, aw₁, k₁, C₁, h₁⟩ := safeTokenTransferPrepare h hf (by omega) (by omega)
-    hb hr hov
+  obtain hrev | ⟨gasArg, aw₁, k₁, C₁, hcap, h₁⟩ := safeTokenTransferPrepare h hf (by omega)
+    hb hr (by simp; omega)
+  · exact .inl hrev
   obtain ⟨evm', σ', z, out, aw₂, k₂, C₂, hc, hee', hacc', hw', h₂, hout, _⟩ :=
     rawValueCallTraceFrom evm h₁ hee hacc hworld (by native_decide)
       (by simp; omega) (.inr rfl)
@@ -74,14 +77,14 @@ theorem safeTokenTransferTrace (p : TokenTransferInput) (evm : EVM.State)
       show (⟨68⟩ : UInt256).toNat = 68 from rfl, hread, TokenTransferInput.callBytes] using hc
   have hbz : (if z then (⟨1⟩ : UInt256) else ⟨0⟩) = z.toUInt256 := by cases z <;> rfl
   rw [hbz] at h₂
-  obtain ⟨aw₃, k₃, C₃, h₃⟩ := safeTokenTransferReturn z h₂ hout (by omega) hret
+  obtain ⟨aw₃, k₃, C₃, h₃⟩ := safeTokenTransferReturn z h₂ hout (by omega)
   have hpres := tokenTransferOutputMemory_preserved mem ptr p out hout
   have hzero : memLoad ⟨96⟩ (tokenTransferOutputMemory mem ptr p out) = ⟨0⟩ := by
     rw [memLoadReadWord, show (⟨96⟩ : UInt256).toNat = 96 from rfl,
       hpres.read 96 32 (by decide) (by omega) hm,
       ← show (⟨96⟩ : UInt256).toNat = 96 from rfl, ← memLoadReadWord, hz]
-  exact ⟨evm', σ', z, out, aw₃, k₃, C₃, safeTokenTransferSource hc', hee', hacc', hw', h₃,
+  exact .inr ⟨evm', σ', z, out, aw₃, k₃, C₃, safeTokenTransferSource hc', hee', hacc', hw', h₃,
     tokenTransferOutputMemory_free _ _ _ _ hout (by omega), hzero, hpres,
-    tokenTransferOutputMemory_size _ _ _ _ hout, hout⟩
+    tokenTransferOutputMemory_size _ _ _ _ hout, hout, hcap⟩
 
 end Benchmarks.Safe.ViaIR

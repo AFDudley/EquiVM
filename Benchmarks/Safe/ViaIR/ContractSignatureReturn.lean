@@ -31,62 +31,8 @@ theorem safeContractSignatureReturnBuffer {I g s0 σ k C aw mem ptr}
           ptr + 32 + ABI.paddedSize out.size) < 2 ^ 64) := by
   have h₀ := safeRuntime_block_7777 (by simp; omega) (by jump_dest) h
   simp only [safeRuntime_block_7777_stack] at h₀
-  have hlarge : 2 ^ 64 + 128 < UInt256.size := by decide
-  by_cases hz : out.size = 0
-  · have h₁ := safeRuntime_block_10382_taken (by simp; omega)
-      (by rw [hz]; decide) (by jump_dest) h₀
-    have h₂ := safeRuntime_block_10424 (by simp; omega) (by jump_dest) h₁
-    exact .inr ⟨_, _, _, by simpa only [safeRuntime_block_10424_stack,
-      signatureReturnDataPtr, signatureReturnMemory, hz, if_true] using h₂,
-      by simpa only [hz, if_true] using (id : ptr < 2 ^ 64 → ptr < 2 ^ 64)⟩
-  have hne : UInt256.ofNat out.size ≠ ⟨0⟩ := by
-    intro he
-    have he' := congrArg UInt256.toNat he
-    rw [ulit_toNat' out.size (by omega)] at he'
-    exact hz he'
-  have hc : UInt256.isZero (UInt256.ofNat out.size) = ⟨0⟩ := isZero_eq_zero_of_ne hne
-  have h₁ := safeRuntime_block_10382_fallthrough (by simp; omega) hc h₀
-  have h₂ := safeRuntime_block_10389 (by simp; omega) (by jump_dest) h₁
-  have hmax : UInt256.sub (UInt256.shiftLeft (UInt256.ofNat 1) (UInt256.ofNat 64))
-      (UInt256.ofNat 1) = UInt256.ofNat (2 ^ 64 - 1) := by decide +kernel
-  by_cases hsmall : out.size < 2 ^ 64
-  swap
-  · have hg : UInt256.gt (UInt256.ofNat out.size) (UInt256.ofNat (2 ^ 64 - 1)) =
-        ⟨1⟩ := ugt_one (by
-      rw [ulit_toNat' out.size (by omega), ulit_toNat' (2 ^ 64 - 1) (by decide)]; omega)
-    have h₃ := safeRuntime_block_7181_taken (by simp; omega)
-      (by rw [hmax, hg]; decide) (by jump_dest) h₂
-    exact .inl (safeRuntime_block_7161 (by simp; omega) h₃)
-  have hg : UInt256.gt (UInt256.ofNat out.size) (UInt256.ofNat (2 ^ 64 - 1)) =
-      ⟨0⟩ := ugt_zero (by
-    rw [ulit_toNat' out.size (by omega), ulit_toNat' (2 ^ 64 - 1) (by decide)]; omega)
-  have h₃ := safeRuntime_block_7181_fallthrough (by simp; omega) (by rw [hmax]; exact hg) h₂
-  have h₄ := safeRuntime_block_7196 (by simp; omega) (by jump_dest) h₃
-  have hr : UInt256.ofNat 32 + UInt256.land (UInt256.lnot (UInt256.ofNat 31))
-      (UInt256.ofNat 31 + UInt256.ofNat out.size) =
-      UInt256.ofNat (32 + ABI.paddedSize out.size) := by
-    rw [u256_land_comm, u256_add_comm (UInt256.ofNat 31),
-      roundedCalldataLengthMask _ (by omega), wordOfNatAdd _ _ (by
-        dsimp [ABI.paddedSize]; omega)]
-  have h₅ := safeRuntime_block_10399 (by simp; omega) (by jump_dest) h₄
-  change memLoad (UInt256.ofNat 64) mem = UInt256.ofNat ptr at hf
-  simp only [safeRuntime_block_10399_stack, hf, hr] at h₅
-  have hround : ptr + ABI.paddedSize (32 + ABI.paddedSize out.size) =
-      ptr + 32 + ABI.paddedSize out.size := by
-    dsimp [ABI.paddedSize]
-    omega
-  obtain hrev | ⟨_, _, _, hfit, h₆⟩ := safeIRAllocateTrace h₅
-    (by dsimp [ABI.paddedSize]; omega) (by rw [hround]; dsimp [ABI.paddedSize]; omega)
-    (by simp; omega) (by jump_dest)
-  · exact .inl hrev
-  rw [hround] at h₆
-  obtain ⟨aw', k', C', h₇⟩ := safeRuntime_block_10413_packed (by simp; omega)
-    (by rw [ulit_toNat' out.size (by omega)]; change 0 + out.size ≤ out.size; omega)
-    (by jump_dest) h₆
-  rw [safeReturnDataMemory hb] at h₇
-  exact .inr ⟨aw', k', C', by simpa only [safeRuntime_block_10413_stack,
-    signatureReturnDataPtr, signatureReturnMemory, if_neg hz] using h₇,
-    fun _ ↦ by simpa only [if_neg hz, hround] using hfit⟩
+  simpa only [signatureReturnDataPtr, signatureReturnMemory] using
+    safeIRReturnBufferTrace h₀ hf hb (by simp; omega) (by jump_dest)
 
 private theorem safeContractSignatureRequire {I g s0 σ k C aw mem out}
     {scratch : UInt256} {valid : Bool} {R : List UInt256}

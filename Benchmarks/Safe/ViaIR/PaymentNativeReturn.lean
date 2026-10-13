@@ -1,8 +1,8 @@
 import Benchmarks.Safe.ViaIR.ReturnDataMemory
 import Benchmarks.Safe.ViaIR.MemoryPreserves
-import Benchmarks.Safe.ViaIR.Blocks.Runtime_034
-import Benchmarks.Safe.ViaIR.Blocks.Runtime_035
-import Benchmarks.Safe.ViaIR.Blocks.Runtime_030
+import Benchmarks.Safe.ViaIR.Blocks.Runtime_025
+import Benchmarks.Safe.ViaIR.Blocks.Runtime_026
+import Benchmarks.Safe.ViaIR.Blocks.Runtime_044
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -50,81 +50,55 @@ theorem paymentReturnEnd_bounds (ptr : Nat) (out : ByteArray) (hb : out.size < 2
   · omega
   · dsimp [ABI.paddedSize]; omega
 
-set_option maxRecDepth 100000 in
+set_option maxRecDepth 5000 in
 theorem safePaymentReturnBuffer {I g s0 σ k C aw mem ptr out}
-    {z x y w : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨7835⟩ (z :: x :: y :: w :: R) mem aw out σ k C)
+    {ret : UInt256} {R : List UInt256}
+    (h : RD safeBytecode I g s0 ⟨10382⟩ (ret :: R) mem aw out σ k C)
     (hf : memLoad ⟨64⟩ mem = UInt256.ofNat ptr)
-    (hb : ptr + out.size + 64 < UInt256.size) (hov : R.length + 7 ≤ 1024) :
-    ∃ aw' k' C', RD safeBytecode I g s0 ⟨7885⟩
-      (UInt256.ofNat out.size :: (if out.size = 0 then ⟨96⟩ else UInt256.ofNat ptr) :: z :: R)
-      (paymentReturnMemory mem ptr out) aw' out σ k' C' := by
-  by_cases hz : out.size = 0
-  · have h₁ := safeRuntime_block_7835_taken (by omega)
-      (by rw [hz]; decide) (by jump_dest) h
-    simp only [safeRuntime_block_7835_taken_stack] at h₁
-    have h₂ := safeRuntime_block_7880 (by simp; omega) h₁
-    exact ⟨_, _, _, by simpa only [safeRuntime_block_7880_stack, paymentReturnMemory,
-      hz, ite_true] using h₂⟩
-  · have hw : UInt256.ofNat out.size ≠ ⟨0⟩ := by
-      intro he
-      have he' := congrArg UInt256.toNat he
-      rw [ulit_toNat' out.size (by omega)] at he'
-      exact hz he'
-    have h₁ := safeRuntime_block_7835_fallthrough (by omega)
-      (by exact u256_eq_of_ne hw) h
-    simp only [safeRuntime_block_7835_fallthrough_stack] at h₁
-    obtain ⟨aw₂, k₂, C₂, h₂⟩ := safeRuntime_block_7848_packed (by simp; omega)
-      (by rw [ulit_toNat' out.size (by omega)]; change 0 + out.size ≤ out.size; omega)
-      (by jump_dest) h₁
-    have hm : safeRuntime_block_7848_memory (mem := mem) (rdata := out) =
-        returnDataMemory mem ptr out := safeReturnDataMemory hf hb
-    change memLoad (UInt256.ofNat 64) mem = UInt256.ofNat ptr at hf
-    exact ⟨_, _, _, by simpa only [safeRuntime_block_7848_stack, hm, hf,
-      paymentReturnMemory, hz, ite_false] using h₂⟩
+    (hb : ptr + out.size + 64 < UInt256.size) (hov : R.length + 11 ≤ 1024)
+    (hret : (D_J safeBytecode 0).contains ret = true) :
+    RDrev safeBytecode g s0 ∨
+    ∃ aw' k' C', RD safeBytecode I g s0 ret
+      ((if out.size = 0 then ⟨96⟩ else UInt256.ofNat ptr) :: R)
+      (paymentReturnMemory mem ptr out) aw' out σ k' C' ∧
+      (ptr < 2 ^ 64 → paymentReturnEnd ptr out < 2 ^ 64) := by
+  simpa only [paymentReturnMemory, paymentReturnEnd] using
+    safeIRReturnBufferTrace h hf hb hov hret
 
-set_option maxRecDepth 100000 in
+set_option maxRecDepth 5000 in
 theorem safePaymentNativeFinish {I g s0 σ k C aw mem out}
-    {size buf receiver payment refund token price base used ret : UInt256} {R : List UInt256}
-    (z : Bool)
-    (h : RD safeBytecode I g s0 ⟨7885⟩
-      (size :: buf :: z.toUInt256 :: ⟨0⟩ :: receiver :: payment :: refund :: token ::
-        price :: base :: used :: ret :: R) mem aw out σ k C)
-    (hov : R.length + 16 ≤ 1024) (hret : (D_J safeBytecode 0).contains ret = true) :
-    if z then ∃ k' C', RD safeBytecode I g s0 ret (payment :: R) mem aw out σ k' C'
+    {buf payment guard success hash : UInt256} {R : List UInt256} (z : Bool)
+    (h : RD safeBytecode I g s0 ⟨5088⟩
+      (buf :: z.toUInt256 :: payment :: guard :: success :: hash :: R) mem aw out σ k C)
+    (hov : R.length + 12 ≤ 1024) :
+    if z then ∃ k' C', RD safeBytecode I g s0 ⟨5097⟩
+      (payment :: hash :: guard :: success :: hash :: R) mem aw out σ k' C'
     else RDrev safeBytecode g s0 := by
   cases z
-  · have h₁ := safeRuntime_block_7885_fallthrough (by simp; omega) (by rfl) h
-    simp only [safeRuntime_block_7885_fallthrough_stack] at h₁
-    have h₂ := safeRuntime_block_7895 (by simp; omega) (by jump_dest) h₁
-    exact safeRuntime_block_6898 (by
-      simp only [safeRuntime_block_7895_stack, List.length_cons]; omega) h₂
-  · have h₁ := safeRuntime_block_7885_taken (by simp; omega) (by decide) (by jump_dest) h
-    simp only [safeRuntime_block_7885_taken_stack] at h₁
-    have h₂ := safeRuntime_block_7911 (by simp; omega) (by jump_dest) h₁
-    simp only [safeRuntime_block_7911_stack] at h₂
-    have h₃ := safeRuntime_block_7965 (by simp; omega) hret h₂
-    exact ⟨_, _, by simpa only [safeRuntime_block_7965_stack] using h₃⟩
+  · have h₁ := safeRuntime_block_5088_taken (by simp; omega) (by decide) (by jump_dest) h
+    have h₂ := safeRuntime_block_5106 (by simp [safeRuntime_block_5088_taken_stack]; omega)
+      (by jump_dest) h₁
+    exact safeRuntime_block_9772 (by simp [safeRuntime_block_5088_taken_stack]; omega) h₂
+  · have h₁ := safeRuntime_block_5088_fallthrough (by simp; omega) (by decide) h
+    have h₂ := safeRuntime_block_5095 (by simp; omega) h₁
+    exact ⟨_, _, h₂⟩
 
-set_option maxRecDepth 100000 in
+set_option maxRecDepth 5000 in
 theorem safePaymentTokenFinish {I g s0 σ k C aw mem out}
-    {receiver payment refund token price base used ret : UInt256} {R : List UInt256}
-    (z : Bool)
-    (h : RD safeBytecode I g s0 ⟨7944⟩
-      (z.toUInt256 :: receiver :: payment :: refund :: token :: price :: base :: used :: ret :: R)
-      mem aw out σ k C)
-    (hov : R.length + 16 ≤ 1024) (hret : (D_J safeBytecode 0).contains ret = true) :
-    if z then ∃ k' C', RD safeBytecode I g s0 ret (payment :: R) mem aw out σ k' C'
+    {payment guard success hash : UInt256} {R : List UInt256} (z : Bool)
+    (h : RD safeBytecode I g s0 ⟨5231⟩
+      (z.toUInt256 :: payment :: guard :: success :: hash :: R) mem aw out σ k C)
+    (hov : R.length + 12 ≤ 1024) :
+    if z then ∃ k' C', RD safeBytecode I g s0 ⟨5097⟩
+      (payment :: hash :: guard :: success :: hash :: R) mem aw out σ k' C'
     else RDrev safeBytecode g s0 := by
   cases z
-  · have h₁ := safeRuntime_block_7944_fallthrough (by simp; omega) (by rfl) h
-    simp only [safeRuntime_block_7944_fallthrough_stack] at h₁
-    have h₂ := safeRuntime_block_7949 (by simp; omega) (by jump_dest) h₁
-    exact safeRuntime_block_6898 (by
-      simp only [safeRuntime_block_7949_stack, List.length_cons]; omega) h₂
-  · have h₁ := safeRuntime_block_7944_taken (by simp; omega) (by decide) (by jump_dest) h
-    simp only [safeRuntime_block_7944_taken_stack] at h₁
-    have h₂ := safeRuntime_block_7965 (by simp; omega) hret h₁
-    exact ⟨_, _, by simpa only [safeRuntime_block_7965_stack] using h₂⟩
+  · have h₁ := safeRuntime_block_5231_taken (by simp; omega) (by decide) (by jump_dest) h
+    have h₂ := safeRuntime_block_5243 (by simp [safeRuntime_block_5231_taken_stack]; omega)
+      (by jump_dest) h₁
+    exact safeRuntime_block_9727 (by simp [safeRuntime_block_5231_taken_stack]; omega) h₂
+  · have h₁ := safeRuntime_block_5231_fallthrough (by simp; omega) (by decide) h
+    have h₂ := safeRuntime_block_5237 (by simp; omega) (by jump_dest) h₁
+    exact ⟨_, _, h₂⟩
 
 end Benchmarks.Safe.ViaIR

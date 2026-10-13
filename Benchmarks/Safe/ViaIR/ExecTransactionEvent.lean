@@ -1,5 +1,6 @@
-import Benchmarks.Safe.ViaIR.ExecTransactionGasUsed
-import Benchmarks.Safe.ViaIR.Blocks.Runtime_022
+import Benchmarks.Safe.ViaIR.ExecTransactionPaymentTrace
+import Benchmarks.Safe.ViaIR.Blocks.Runtime_023
+import Benchmarks.Safe.ViaIR.Blocks.Runtime_024
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -10,7 +11,7 @@ def execEventStmt : Stmt :=
   .ite (.var "success") [.emit "ExecutionSuccess" [.var "txHash", .var "payment"]]
     [.emit "ExecutionFailure" [.var "txHash", .var "payment"]]
 
-def execEventLogPC (z : Bool) : UInt256 := if z then ⟨4072⟩ else ⟨4135⟩
+def execEventLogPC (z : Bool) : UInt256 := if z then ⟨4770⟩ else ⟨4931⟩
 
 def execEventTopic (z : Bool) : UInt256 :=
   if z then ⟨30839331137535485569665531618491634834793013124148307919264258885536190059886⟩
@@ -43,45 +44,48 @@ theorem safeExecEventSourceStatic {frame : Frame} {evm : EVM.State} {z : Bool}
   · exact .iteFalse he (.consStatic (.emitStatic ha hperm))
   · exact .iteTrue he (.consStatic (.emitStatic ha hperm))
 
-set_option maxRecDepth 100000 in
-theorem safeExecEventPrepare (p : ExecTransactionInput)
-    {I g s0 σ k C aw mem rdata src} {sigPtr guard hash used paid : UInt256}
+set_option maxRecDepth 5000 in
+theorem safeExecEventPrepare {I g s0 σ k C aw mem rdata} {guard hash paid : UInt256}
     {z : Bool} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨4016⟩
-      (paid :: used :: execResultSaved p src sigPtr guard hash z R) mem aw rdata σ k C)
-    (hov : R.length + 22 ≤ 1024) :
-    ∃ aw' k' C', RD safeBytecode I g s0 (execEventLogPC z)
-      ([UInt256.ofNat 32 + memLoad ⟨64⟩ mem, execEventTopic z, hash, paid, used] ++
-        execResultSaved p src sigPtr guard hash z R)
+    (h : RD safeBytecode I g s0 ⟨4763⟩ (execEventSaved guard hash paid z R)
+      mem aw rdata σ k C) (hov : R.length + 12 ≤ 1024) :
+    ∃ k' C', RD safeBytecode I g s0 (execEventLogPC z)
+      (execEventSaved guard hash paid z R) mem aw rdata σ k' C' := by
+  simp only [execEventSaved, List.cons_append, List.nil_append] at h ⊢
+  have h₁ := evm_run h with [dup4, push0, eq, push2 ⟨4931⟩]
+  cases z
+  · exact ⟨_, _, RD.jumpiT h₁ (by native_decide) (by decide) (by jump_dest)
+      (by simp; omega)⟩
+  · exact ⟨_, _, RD.jumpiNT h₁ (by native_decide) (by decide) (by simp; omega)⟩
+
+set_option maxRecDepth 5000 in
+theorem safeExecEventLog {I g s0 σ k C aw mem rdata paid hash}
+    {R : List UInt256} (z : Bool)
+    (h : RD safeBytecode I g s0 (execEventLogPC z) (paid :: hash :: R)
+      mem aw rdata σ k C)
+    (hov : R.length + 6 ≤ 1024) (hp : I.perm = true) :
+    ∃ aw' k' C', RD safeBytecode I g s0 ⟨4813⟩ R
       (writeWord mem (memLoad ⟨64⟩ mem).toNat paid) aw' rdata σ k' C' := by
   cases z
-  · have h₁ := safeRuntime_block_4016_taken (by simp [execResultSaved]; omega)
-      (by decide) (by jump_dest) h
-    exact safeRuntime_block_4085_packed (by simp [execResultSaved]; omega) (by jump_dest) h₁
-  · have h₁ := safeRuntime_block_4016_fallthrough (by simp [execResultSaved]; omega)
-      (by decide) h
-    exact safeRuntime_block_4023_packed (by simp [execResultSaved]; omega) (by jump_dest) h₁
+  · exact safeRuntime_block_4931_packed hov hp (by jump_dest) h
+  · exact safeRuntime_block_4770_packed hov hp h
 
-set_option maxRecDepth 100000 in
-theorem safeExecEventLog {I g s0 σ k C aw mem rdata finish topic hash}
+set_option maxRecDepth 5000 in
+theorem safeExecEventLogStatic {I g s0 σ k C aw mem rdata paid hash}
     {R : List UInt256} (z : Bool)
-    (h : RD safeBytecode I g s0 (execEventLogPC z) (finish :: topic :: hash :: R)
+    (h : RD safeBytecode I g s0 (execEventLogPC z) (paid :: hash :: R)
       mem aw rdata σ k C)
-    (hov : R.length + 5 ≤ 1024) (hp : I.perm = true) :
-    ∃ aw' k' C', RD safeBytecode I g s0 ⟨4144⟩ R mem aw' rdata σ k' C' := by
+    (hov : R.length + 6 ≤ 1024) (hp : I.perm = false) : RDstatic safeBytecode g s0 := by
   cases z
-  · exact safeRuntime_block_4135_packed hov hp h
-  · exact safeRuntime_block_4072_packed hov hp (by jump_dest) h
-
-set_option maxRecDepth 100000 in
-theorem safeExecEventLogStatic {I g s0 σ k C aw mem rdata finish topic hash}
-    {R : List UInt256} (z : Bool)
-    (h : RD safeBytecode I g s0 (execEventLogPC z) (finish :: topic :: hash :: R)
-      mem aw rdata σ k C)
-    (hov : R.length + 5 ≤ 1024) (hp : I.perm = false) : RDstatic safeBytecode g s0 := by
-  cases z <;>
-    have h₁ := evm_run h with [jumpdest, push1 ⟨64⟩, genMload, dup1, swap2, sub, swap1]
-  · exact RD.log2Static h₁ hp (by native_decide) (by omega)
-  · exact RD.log2Static h₁ hp (by native_decide) (by omega)
+  · have h₁ := evm_run h with [jumpdest, push1 ⟨32⟩]
+    have h₂ := RD.pushConst (width := 32) (op := .PUSH32) h₁ (execEventTopic false)
+      (by decide) (by native_decide) (by simp; omega)
+    have h₃ := evm_run h₂ with [swap2, push1 ⟨64⟩, genMload, swap1, dup2, genMstore]
+    exact RD.log2Static h₃ hp (by native_decide) (by omega)
+  · have h₁ := evm_run h with [push1 ⟨32⟩]
+    have h₂ := RD.pushConst (width := 32) (op := .PUSH32) h₁ (execEventTopic true)
+      (by decide) (by native_decide) (by simp; omega)
+    have h₃ := evm_run h₂ with [swap2, push1 ⟨64⟩, genMload, swap1, dup2, genMstore]
+    exact RD.log2Static h₃ hp (by native_decide) (by omega)
 
 end Benchmarks.Safe.ViaIR

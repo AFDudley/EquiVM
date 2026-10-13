@@ -1,7 +1,7 @@
 import Benchmarks.Safe.ViaIR.Dispatch
 import Benchmarks.Safe.ViaIR.ExecTransactionDecoderEvidence
 import Benchmarks.Safe.ViaIR.ExecTransactionBodyTrace
-import Benchmarks.Safe.ViaIR.Blocks.Runtime_009
+import Benchmarks.Safe.ViaIR.Routines
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -19,14 +19,13 @@ theorem safeExectransactionBodyCore
   obtain ⟨hlong, hword⟩ := selectorDispatchFacts 0x6a 0x76 0x12 0x02 ⟨0x6a761202⟩
     hdispatch exectransactionSelectorBytes (by decide)
   obtain ⟨k, C, hentry⟩ := safeReachEntry (σ := σ) (σ₀ := σ₀) (A := A)
-    (g := Sat256.ofUInt256 g) ⟨0x6a761202⟩ 0 ⟨1050⟩ hcode hsize hlong hword (by native_decide)
-  have hdecode := safeRuntime_block_1050 (by simp) (by jump_dest) hentry
+    (g := Sat256.ofUInt256 g) ⟨0x6a761202⟩ 11 ⟨4354⟩ hcode hsize hlong hword (by native_decide)
   let evm := initState σ σ₀ (.ofUInt256 g) A I
   cases hdec : decodeCalldata execTransactionNames execTransactionTypes I.calldata with
   | none =>
     have hr : RDrev safeBytecode (.ofUInt256 g) evm := by
       obtain hr | ⟨dataLen, sigLen, _, _, _, hb, _, _, _⟩ :=
-        safeDecodeExecTransactionEvidence hdecode hlong hsize (by simp) (by jump_dest)
+        safeDecodeExecTransactionEvidence hentry hlong hsize (by simp)
       · exact hr
       rw [decodeExecTransactionValid hb] at hdec
       cases hdec
@@ -40,12 +39,10 @@ theorem safeExectransactionBodyCore
         (transitionSignature exectransactionTransition).paramTypes I.calldata = some p.args :=
       hdec
     by_cases hvalid : sigLen ≤ 2 ^ 64 - 192 ∧ (calldataWord I.calldata 100).toNat < 2
-    · obtain ⟨aw', k', C', h₁⟩ := safeDecodeExecTransactionValid hdecode hb hvalid.2 hvalid.1
-        (by simp) (by jump_dest)
-      have h₂ := safeRuntime_block_1064 (by simp [execTransactionDecodedStack])
-        (by jump_dest) h₁
+    · obtain ⟨aw', k', C', h₁⟩ := safeDecodeExecTransactionValid hentry hb hvalid.2 hvalid.1
+        (by simp)
       obtain ⟨hr, hs⟩ | ⟨hr, hs⟩ | ⟨frame', evm', σ', z, hs, he', ha', hw', hr⟩ :=
-        safeExecTransactionBodyTrace evm h₂ rfl rfl rfl hb hvalid.2 hvalid.1 (by simp)
+        safeExecTransactionBodyTrace evm h₁ rfl rfl rfl hb hvalid.2 hvalid.1 (by simp)
       · exact RDrev.reEquivElim hcode hr fun _ _ hΞ ↦
           reEquivSelectorExecution hdispatch hdec' hs (.revert hΞ rfl)
       · exact RDstatic.reEquivElim hcode hr fun hΞ ↦
@@ -55,7 +52,7 @@ theorem safeExectransactionBodyCore
             (.success hΞ rfl ha'.symm (.abi (returnEquiv_of_encode (boolReturnEncoding z))))
     · have hr : RDrev safeBytecode (.ofUInt256 g) evm := by
         obtain hr | ⟨dataLen', sigLen', _, _, _, hb', ho', hn', _⟩ :=
-          safeDecodeExecTransactionEvidence hdecode hlong hsize (by simp) (by jump_dest)
+          safeDecodeExecTransactionEvidence hentry hlong hsize (by simp)
         · exact hr
         have heq : sigLen = sigLen' := by
           have ht := congrArg UInt256.toNat (hb.sigWord.symm.trans hb'.sigWord)
