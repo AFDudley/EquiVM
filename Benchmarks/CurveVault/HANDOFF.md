@@ -1,4 +1,4 @@
-# Curve lending Vault proof scaffold
+# Curve lending Vault refinement proof
 
 ## 1. Compiler settings and provenance
 
@@ -285,17 +285,148 @@ Default-argument variants share their body after binding defaults:
 | withdraw | 1, 2, or 3 arguments | 4178 | receiver/owner=caller |
 | redeem | 1, 2, or 3 arguments | 5080 | receiver/owner=caller |
 
-## 4. Proof scaffold, storage and ABI configuration
+## 4. Refinement proof, storage and ABI configuration
 
-`lake build Benchmarks.CurveVault.Correct` succeeds; see
-[correct-build.log](correct-build.log). There are exactly **47 sorry sites**: the
-46 generated function-body stubs and `Constructor.lean`. `Common.lean`,
-`Dispatch.lean`, the specification and composition have no holes or added axioms.
-The generator proves dispatch plumbing only; contract bodies remain for the proving
-session. The per-function reach lemmas stop at shared pc **73** with the selected
-record and selector on the stack; the body proof must handle its entry guard and
-the pc 90 computed jump. The table above gives the actual function entry.
-All 32 generated block-summary modules also build; see [blocks-build.log](blocks-build.log).
+All 46 ABI entries and the constructor have complete proofs. The thin capstone is
+`Benchmarks.CurveVault.vaultContractCorrect` in [Correct.lean](Correct.lean).
+It proves `contractRefinementWF storageWF noGasBound config vaultCreationBytecode contract`.
+The final build and axiom audit are recorded below. No specification, bytecode,
+source-closure, or provided block-summary changes were made during this proving pass.
+
+Final verification (2026-10-13), from the repository root:
+
+```sh
+lake build Benchmarks.CurveVault.Correct
+printf '%s\n' 'import Benchmarks.CurveVault.Correct' '#print axioms Benchmarks.CurveVault.vaultContractCorrect' | lake env lean --stdin
+```
+
+The build exited successfully; its final line is:
+
+```text
+Build completed successfully (3754 jobs).
+```
+
+[correct-build.log](correct-build.log) preserves the complete build output,
+including linter warnings. [axiom-audit.log](axiom-audit.log) preserves the complete,
+verbatim capstone axiom output. It lists 7,972 dependencies: `propext`,
+`Classical.choice`, `Quot.sound`, and 7,969 concrete `native_decide` evaluation
+axioms. There are no other axioms and no selector-identity evaluation axioms.
+Both the proof-hole search and the axiom-declaration search across this directory
+returned no output (exit status 1). No differential tests were run.
+
+All new Lean modules are reachable from the capstone imports. The longest authored
+module is `DispatchSolm.lean` at 1,706 lines; all authored modules stay below the
+2,000-line limit. Shared helpers carry 73 library-candidate or generalization tags
+for later promotion to `Reasoning/`.
+
+`Initialize.lean` connects four canonical-address decoders, the uninitialized-state
+guard, and the first-write static halt to `InitializeCore.lean`. That core composes
+opaque `decimals()` and `symbol()` calls, checked precision arithmetic, configuration
+writes, and both bounded string-storage loops. The symbol decoder covers malformed
+and overflowing offsets, truncated data, dirty padding, and memory-expansion failure.
+`InitializeStringSource.lean` proves the exact packed source values and storage order;
+`InitializeStringWrites.lean` reaches the final supply-limit write and empty return.
+
+Deposit and mint share `CreditInternal`, `CreditEntry`, `CreditAfterController`,
+`CreditLimits`, and `CreditTail`. Their internal conversion and supply calls use
+modular `ExecFuncBody` proofs. `MutationTransfer` composes the opaque controller
+hook and token transfer for all four vault flows. Withdrawal and redemption are
+proved through `DebitInternal`/`DebitEntry`, including allowance spending,
+total-assets calls, conversion, minimum liquidity, burn, hooks, transfer, save-rate,
+events, and unlock/return. `MutationEntry` handles public locks/static mode for all
+four flows; `MutationConversion` shares their internal conversion calls.
+`AllowanceSpend` is shared by withdrawal, redemption, and `transferFrom`.
+`UintTwoAddressABI` proves the remaining three-argument calldata cases.
+
+The string getters share the bounded copy loop, memory, ABI encoding, and malformed-header
+proofs in `StringArithmetic`, `StringSource`, `StringBlocks`, `StringLoop`, `StringMemory`,
+`StringEncoding`, `StringReturn`, `StringMalformed`, `StringGas`, and `StringRoutine`.
+Ordinary lengths through 64 return storage bytes with cleared ABI padding. The overflow
+range from `2^256 - 63` through `2^256 - 32` returns the empty string. The final 31 length
+values pass the copy guard but request more return data than EVMLean's proved gas bound
+allows; these executions are proved to run out of gas. A finite concrete header table
+uses `native_decide`; there is no additional gas or storage precondition.
+`Constructor.lean` composes the provided creation summary with the empty-constructor
+library theorem and checks that the returned 8,635 bytes equal the pinned runtime.
+
+`DispatchPrelude.lean` and `DispatchSolm.lean` split the original dispatcher by
+concern to keep files below 2000 lines. `Entry.lean` proves the shared guard at pc
+73 and its computed jump. `Storage.lean`, `Memory.lean`, `Calls.lean`, and
+`Lock.lean` hold the reusable storage, mapping-memory, external-call ABI, and
+transient-lock lemmas. Completed external-call proofs use the library's opaque
+`STATICCALL` bridge and prove both failed/short returns and successful decoding.
+`borrow_apr` additionally proves the checked multiplication overflow branch.
+`StaticWordCalls.lean` factors the scalar static-call bridge shared by the AMM and
+controller helpers. The `Lend` helpers cover the zero-debt return, both checked
+numerator products, the `_total_assets` call and zero denominator, the admin
+percentage call, and the final checked arithmetic.
+`AllowanceStorage.lean`, `ApproveArguments.lean`, and `ApproveInternal.lean` prove
+the nested mapping assignment and modular `_approve` callee, preserving caller
+memory from offset 192. `MutatingLock.lean` handles transient writes and the
+static-mode halt at `TSTORE`, as well as source wrappers that release the lock.
+The `AllowanceAdjust` helpers share the source and EVM proofs for wrapped
+addition/subtraction, clamping to the uint256 maximum or zero, and the conditional
+`_approve` call. Both adjustment entry points handle malformed addresses and static
+mode before entering that routine.
+`TransferGuard.lean`, `TransferTail.lean`, and `TransferInternal.lean` prove the
+modular `_transfer` callee, including recipient checks and both checked balance
+updates. The recipient balance is read after the sender debit, so the proof covers
+equal addresses without a mapping-slot noncollision assumption. `Transfer.lean`
+connects this callee to all public decoding, lock, static-mode, and return paths.
+The `TransferFrom` helpers preserve the saved addresses across the conditional
+`_approve` call, cover allowance underflow and the unlimited sentinel, then reuse
+`_transfer`. `TransferFrom.lean` proves both address-decoding checks and the complete
+public wrapper.
+`FactoryStorage.lean` shares the factory read and admin-call encoding with the
+getters. The `SetMax` helpers prove the opaque admin call, canonical address
+decoding, administrator-or-factory authorization, and supply-limit update.
+`Set_max_supply.lean` connects these to the void-returning mutating wrapper.
+The lock helpers also prove persistent storage preservation across transient
+writes and static calls, so the second factory read retains its address bound.
+`ControllerCalls.lean` and `TotalAssetsCalls.lean` connect the three controller calls
+to `TotalAssetsInternal.lean`, which proves `_total_assets` once with its checked
+arithmetic and caller continuation. Its scratch-memory preservation theorem supports
+callers with saved arguments. `CeilDiv.lean` proves the shared ceiling-division body
+and bytecode routine, including zero-denominator reversion; `Arithmetic.lean` holds
+its reusable cast-after-addition lemma.
+
+`ConversionPrefix.lean` and `ConversionPrepare.lean` prove the optional `_total_assets`
+call and preserve the caller's input words. `ConvertSharesArithmetic.lean` and
+`ConvertAssetsArithmetic.lean` cover checked arithmetic in bytecode order.
+`ConversionFinishSource.lean`, `ConversionFinish.lean`, and `ConvertAssetsFinish.lean`
+connect floor and ceiling division, including zero-denominator reversion and the
+`MCOPY` argument transfer. `ConvertSharesInternal.lean` and `ConvertAssetsInternal.lean`
+assemble full callee-body proofs and preserve words above scratch offset 576.
+The `Forward` helpers use modular internal calls for the public conversion wrappers.
+`Calldata.lean` adds the single-uint256 Vyper decoder facts.
+`Limits.lean` proves the branchless maximum and clamped subtraction used by the
+deposit and mint limits. `MaxDepositInternal.lean`, `MaxMintCapacity.lean`, and
+`MaxMintInternal.lean` preserve the saved supply limit across controller calls and
+reuse the proved total-assets and share-conversion callees.
+`SubOrZero.lean` and `AvailableBalanceInternal.lean` prove the available-balance
+routine with both opaque controller calls. The withdrawal and redemption limits
+reuse this routine and preserve the source order of balance reads; the redemption
+proof carries the saved owner through the compiler's argument `MCOPY`.
+`PriceArithmetic.lean`, `PriceFinishSource.lean`, `PriceFinish.lean`, and
+`PriceInternal.lean` prove the shared price routine, including all overflow checks,
+both rounding modes, the zero-supply constant, and rejection of a zero price.
+
+`MintInternal.lean` and `BurnInternal.lean` prove the shared supply-changing
+callees, including checked balance and supply arithmetic in the bytecode's storage
+order. `TokenInternal.lean` proves the shared token transfer callee, including the
+zero-amount path, the raw three-word calldata encoding, the opaque `CALL`, and
+all return-data checks. `TokenReturnSource.lean` and `TokenReturnEVM.lean` connect
+empty returns and canonical Boolean returns, with explicit rejection of short,
+false, and noncanonical returns. `TokenOutputMemory.lean` preserves the caller's
+saved words above the callee's scratch memory. These three internal routines build
+without proof holes and are reused by the completed public deposit/withdrawal
+callers.
+`VoidCalls.lean` supplies the shared opaque-call bridge for the guarded controller
+hooks and `save_rate` calls.
+
+All 32 provided block-summary modules build; see [blocks-build.log](blocks-build.log).
+The bytecode, source closure, generated summaries, and specification remain unchanged.
+Differential tests were not run during the proving pass.
 
 The runtime theorem is `runtimeRefinementWithWF storageWF noGasBound ...`.
 `storageWF` requires the initial words in slots 0–4 to be below `2^160`.
@@ -357,11 +488,11 @@ logical extent fits, requires length<=32, and does not require padded returndata
 Its retained 32-byte data word is zero-extended beyond the copied return bytes.
 All named-return scalar decoders ignore trailing data, matching the fixed output size.
 
-Expected difficult proofs are initializer padding/partial storage writes, malformed
+The completed proofs cover initializer padding/partial storage writes, malformed
 string getters, external-call/reentrancy boundaries, and ordered mapping writes
-followed by raw controller re-reads. Share helper lemmas for asset accounting,
+followed by raw controller re-reads. Shared helpers cover asset accounting,
 conversions, optional token return decoding, and the lock protocol. The block ledger
-specifies the order needed to avoid a storage-slot-noncollision axiom.
+specifies the order used to avoid a storage-slot-noncollision axiom.
 
 ## 5. Gas bound
 
@@ -372,7 +503,7 @@ the existing call relation witnesses the actual forwarded gas and callee result,
 including EIP-150 behavior. The spec does not replace a gas-sensitive callee result
 with a constant or assume call success.
 
-The low-level details to discharge in the body proofs are:
+The body proofs discharge the following low-level details:
 
 - **Symbol return offsets (pcs 425–475).** Addition of the output base to the offset
   is checked for wrap. A wrapped later length/extent calculation could only evade
@@ -396,5 +527,5 @@ The low-level details to discharge in the body proofs are:
   arbitrary-length source allocations or unbounded storage loops. Failure returndata
   is copied only to revert; exhaustion during that copy is already a refinement case.
 
-No lower artificial gas ceiling is needed. The quantitative arguments above are
-obligations for the body proofs, not additional axioms or restrictions on valid calls.
+No lower artificial gas ceiling is needed. The body proofs establish these
+quantitative arguments without additional axioms or restrictions on valid calls.

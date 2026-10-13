@@ -1,8 +1,8 @@
-⚠ [1218/1241] Replayed Reasoning.EVMWord
+⚠ [1218/1226] Replayed Reasoning.EVMWord
 warning: Reasoning/EVMWord.lean:1146:32: try 'simp' instead of 'simpa'
 
 Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
-⚠ [1224/1241] Replayed Reasoning.Memory
+⚠ [1224/1226] Replayed Reasoning.Memory
 warning: Reasoning/Memory.lean:1888:36: unused variable `hgap`
 
 Note: This linter can be disabled with `set_option linter.unusedVariables false`
@@ -67,7 +67,7 @@ Hint: Omit it from the simp argument list.
   ̵ ̵ ̵ ̵ ̵ ̵ ̵d̵e̵s̵t̵A̵d̵d̵r̵ ̵-̵ ̵b̵a̵s̵e̵.̵s̵i̵z̵e̵ ̵f̵r̵o̵m̵ ̵r̵f̵l̵]̵B̲y̲t̲e̲A̲r̲r̲a̲y̲.̲d̲a̲t̲a̲_̲e̲x̲t̲r̲a̲c̲t̲]̲
 
 Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
-⚠ [1225/1241] Replayed Reasoning.ABI
+⚠ [1225/1226] Replayed Reasoning.ABI
 warning: Reasoning/ABI.lean:4620:28: This simp argument is unused:
   abiUInt256
 
@@ -91,11 +91,11 @@ Hint: Omit it from the simp argument list.
   ̵ ̵ ̵ ̵ ̵fixedBytesSize, hlen]
 
 Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
-⚠ [3474/3540] Replayed Reasoning.Solc
+⚠ [3473/3634] Replayed Reasoning.Solc
 warning: Reasoning/Solc.lean:8246:2: try 'simp' instead of 'simpa'
 
 Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
-⚠ [3477/3540] Replayed Reasoning.Storage
+⚠ [3476/3634] Replayed Reasoning.Storage
 warning: Reasoning/Storage.lean:2027:41: This simp argument is unused:
   Std.ExtTreeMap.getElem?_insert_self
 
@@ -103,7 +103,7 @@ Hint: Omit it from the simp argument list.
   simp [Option.option, State.setAccount,̵ ̵S̵t̵d̵.̵E̵x̵t̵T̵r̵e̵e̵M̵a̵p̵.̵g̵e̵t̵E̵l̵e̵m̵?̵_̵i̵n̵s̵e̵r̵t̵_̵s̵e̵l̵f̵]
 
 Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
-⚠ [3481/3540] Replayed Reasoning.WordArithmetic
+⚠ [3480/3634] Replayed Reasoning.WordArithmetic
 warning: Reasoning/WordArithmetic.lean:884:2: try 'simp' instead of 'simpa'
 
 Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
@@ -123,7 +123,7 @@ warning: Reasoning/WordArithmetic.lean:1982:23: `Int.ofNat_nonneg` has been depr
 warning: Reasoning/WordArithmetic.lean:2385:2: try 'simp' instead of 'simpa'
 
 Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
-⚠ [3482/3540] Replayed Reasoning.ABIComposite
+⚠ [3481/3634] Replayed Reasoning.ABIComposite
 warning: Reasoning/ABIComposite.lean:86:8: try 'simp' instead of 'simpa'
 
 Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
@@ -884,7 +884,7 @@ Hint: Omit it from the simp argument list.
   ̲ a̵b̵i̵U̵I̵n̵t̵2̵5̵6̵,̵  ̲ ̲ ̲ ̲abiAddress]
 
 Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
-⚠ [3483/3540] Replayed Reasoning.ABIViews
+⚠ [3482/3634] Replayed Reasoning.ABIViews
 warning: Reasoning/ABIViews.lean:42:22: This simp argument is unused:
   abiUInt256Int
 
@@ -1309,7 +1309,7 @@ Hint: Omit it from the simp argument list.
   simp [encodePackedValue?,̵ ̵a̵b̵i̵B̵o̵o̵l̵]
 
 Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
-⚠ [3486/3540] Replayed Reasoning.BytecodePatching
+⚠ [3485/3634] Replayed Reasoning.BytecodePatching
 warning: Reasoning/BytecodePatching.lean:328:4: try 'simp' instead of 'simpa'
 
 Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
@@ -1319,7 +1319,7 @@ Note: This linter can be disabled with `set_option linter.unnecessarySimpa false
 warning: Reasoning/BytecodePatching.lean:1166:4: try 'simp' instead of 'simpa'
 
 Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
-⚠ [3488/3540] Replayed Reasoning.VyperDispatch
+⚠ [3487/3634] Replayed Reasoning.VyperDispatch
 warning: Reasoning/VyperDispatch.lean:340:46: This simp argument is unused:
   uint256Value
 
@@ -1334,7 +1334,7 @@ Hint: Omit it from the simp argument list.
   simp [EvalResult.bind, bind, evalBinaryOp?,̵ ̵u̵i̵n̵t̵2̵5̵6̵V̵a̵l̵u̵e̵]
 
 Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
-⚠ [3489/3540] Replayed Benchmarks.CurveVault.Common
+⚠ [3488/3634] Replayed Benchmarks.CurveVault.Common
 warning: Benchmarks/CurveVault/Common.lean:45:16: 'simp [contract, Syntax.contractSyntax]' tactic does nothing
 
 Note: This linter can be disabled with `set_option linter.unusedTactic false`
@@ -2487,102 +2487,473 @@ Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
 warning: Benchmarks/CurveVault/Common.lean:642:4: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
 
 Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
-⚠ [3490/3540] Replayed Benchmarks.CurveVault.Constructor
-warning: Benchmarks/CurveVault/Constructor.lean:14:8: declaration uses `sorry`
-⚠ [3493/3540] Replayed Benchmarks.CurveVault.Dispatch
-warning: Benchmarks/CurveVault/Dispatch.lean:2682:5: unused variable `hsize`
+⚠ [3495/3634] Replayed Benchmarks.CurveVault.Dispatch
+warning: Benchmarks/CurveVault/Dispatch.lean:925:5: unused variable `hsize`
 
 Note: This linter can be disabled with `set_option linter.unusedVariables false`
-⚠ [3494/3540] Replayed Benchmarks.CurveVault.Withdraw_uint256_address
-warning: Benchmarks/CurveVault/Withdraw_uint256_address.lean:19:8: declaration uses `sorry`
-⚠ [3495/3540] Replayed Benchmarks.CurveVault.Withdraw_uint256
-warning: Benchmarks/CurveVault/Withdraw_uint256.lean:19:8: declaration uses `sorry`
-⚠ [3496/3540] Replayed Benchmarks.CurveVault.Withdraw_uint256_address_address
-warning: Benchmarks/CurveVault/Withdraw_uint256_address_address.lean:19:8: declaration uses `sorry`
-⚠ [3497/3540] Replayed Benchmarks.CurveVault.TotalAssets
-warning: Benchmarks/CurveVault/TotalAssets.lean:19:8: declaration uses `sorry`
-⚠ [3498/3540] Replayed Benchmarks.CurveVault.Name
-warning: Benchmarks/CurveVault/Name.lean:19:8: declaration uses `sorry`
-⚠ [3499/3540] Replayed Benchmarks.CurveVault.ConvertToAssets
-warning: Benchmarks/CurveVault/ConvertToAssets.lean:19:8: declaration uses `sorry`
-⚠ [3500/3540] Replayed Benchmarks.CurveVault.Approve
-warning: Benchmarks/CurveVault/Approve.lean:19:8: declaration uses `sorry`
-⚠ [3501/3540] Replayed Benchmarks.CurveVault.PreviewWithdraw
-warning: Benchmarks/CurveVault/PreviewWithdraw.lean:19:8: declaration uses `sorry`
-⚠ [3502/3540] Replayed Benchmarks.CurveVault.TotalSupply
-warning: Benchmarks/CurveVault/TotalSupply.lean:19:8: declaration uses `sorry`
-⚠ [3503/3540] Replayed Benchmarks.CurveVault.TransferFrom
-warning: Benchmarks/CurveVault/TransferFrom.lean:19:8: declaration uses `sorry`
-⚠ [3504/3540] Replayed Benchmarks.CurveVault.Collateral_token
-warning: Benchmarks/CurveVault/Collateral_token.lean:19:8: declaration uses `sorry`
-⚠ [3505/3540] Replayed Benchmarks.CurveVault.PricePerShare_bool
-warning: Benchmarks/CurveVault/PricePerShare_bool.lean:19:8: declaration uses `sorry`
-⚠ [3506/3540] Replayed Benchmarks.CurveVault.PricePerShare_
-warning: Benchmarks/CurveVault/PricePerShare_.lean:19:8: declaration uses `sorry`
-⚠ [3507/3540] Replayed Benchmarks.CurveVault.Amm
-warning: Benchmarks/CurveVault/Amm.lean:19:8: declaration uses `sorry`
-⚠ [3508/3540] Replayed Benchmarks.CurveVault.Decimals
-warning: Benchmarks/CurveVault/Decimals.lean:19:8: declaration uses `sorry`
-⚠ [3509/3540] Replayed Benchmarks.CurveVault.Asset
-warning: Benchmarks/CurveVault/Asset.lean:19:8: declaration uses `sorry`
-⚠ [3510/3540] Replayed Benchmarks.CurveVault.IncreaseAllowance
-warning: Benchmarks/CurveVault/IncreaseAllowance.lean:19:8: declaration uses `sorry`
-⚠ [3511/3540] Replayed Benchmarks.CurveVault.MaxDeposit
-warning: Benchmarks/CurveVault/MaxDeposit.lean:19:8: declaration uses `sorry`
-⚠ [3512/3540] Replayed Benchmarks.CurveVault.PreviewRedeem
-warning: Benchmarks/CurveVault/PreviewRedeem.lean:19:8: declaration uses `sorry`
-⚠ [3513/3540] Replayed Benchmarks.CurveVault.Deposit_uint256_address
-warning: Benchmarks/CurveVault/Deposit_uint256_address.lean:19:8: declaration uses `sorry`
-⚠ [3514/3540] Replayed Benchmarks.CurveVault.Deposit_uint256
-warning: Benchmarks/CurveVault/Deposit_uint256.lean:19:8: declaration uses `sorry`
-⚠ [3515/3540] Replayed Benchmarks.CurveVault.BalanceOf
-warning: Benchmarks/CurveVault/BalanceOf.lean:19:8: declaration uses `sorry`
-⚠ [3516/3540] Replayed Benchmarks.CurveVault.Borrowed_token
-warning: Benchmarks/CurveVault/Borrowed_token.lean:19:8: declaration uses `sorry`
-⚠ [3517/3540] Replayed Benchmarks.CurveVault.Redeem_uint256_address
-warning: Benchmarks/CurveVault/Redeem_uint256_address.lean:19:8: declaration uses `sorry`
-⚠ [3518/3540] Replayed Benchmarks.CurveVault.Redeem_uint256_address_address
-warning: Benchmarks/CurveVault/Redeem_uint256_address_address.lean:19:8: declaration uses `sorry`
-⚠ [3519/3540] Replayed Benchmarks.CurveVault.Redeem_uint256
-warning: Benchmarks/CurveVault/Redeem_uint256.lean:19:8: declaration uses `sorry`
-⚠ [3520/3540] Replayed Benchmarks.CurveVault.Set_max_supply
-warning: Benchmarks/CurveVault/Set_max_supply.lean:19:8: declaration uses `sorry`
-⚠ [3521/3540] Replayed Benchmarks.CurveVault.Mint_uint256_address
-warning: Benchmarks/CurveVault/Mint_uint256_address.lean:19:8: declaration uses `sorry`
-⚠ [3522/3540] Replayed Benchmarks.CurveVault.Mint_uint256
-warning: Benchmarks/CurveVault/Mint_uint256.lean:19:8: declaration uses `sorry`
-⚠ [3523/3540] Replayed Benchmarks.CurveVault.Symbol
-warning: Benchmarks/CurveVault/Symbol.lean:19:8: declaration uses `sorry`
-⚠ [3524/3540] Replayed Benchmarks.CurveVault.DecreaseAllowance
-warning: Benchmarks/CurveVault/DecreaseAllowance.lean:19:8: declaration uses `sorry`
-⚠ [3525/3540] Replayed Benchmarks.CurveVault.Transfer
-warning: Benchmarks/CurveVault/Transfer.lean:19:8: declaration uses `sorry`
-⚠ [3526/3540] Replayed Benchmarks.CurveVault.Lend_apr
-warning: Benchmarks/CurveVault/Lend_apr.lean:19:8: declaration uses `sorry`
-⚠ [3527/3540] Replayed Benchmarks.CurveVault.PreviewMint
-warning: Benchmarks/CurveVault/PreviewMint.lean:19:8: declaration uses `sorry`
-⚠ [3528/3540] Replayed Benchmarks.CurveVault.Borrow_apr
-warning: Benchmarks/CurveVault/Borrow_apr.lean:19:8: declaration uses `sorry`
-⚠ [3529/3540] Replayed Benchmarks.CurveVault.Factory
-warning: Benchmarks/CurveVault/Factory.lean:19:8: declaration uses `sorry`
-⚠ [3530/3540] Replayed Benchmarks.CurveVault.MaxMint
-warning: Benchmarks/CurveVault/MaxMint.lean:19:8: declaration uses `sorry`
-⚠ [3531/3540] Replayed Benchmarks.CurveVault.ConvertToShares
-warning: Benchmarks/CurveVault/ConvertToShares.lean:19:8: declaration uses `sorry`
-⚠ [3532/3540] Replayed Benchmarks.CurveVault.MaxWithdraw
-warning: Benchmarks/CurveVault/MaxWithdraw.lean:19:8: declaration uses `sorry`
-⚠ [3533/3540] Replayed Benchmarks.CurveVault.MaxSupply
-warning: Benchmarks/CurveVault/MaxSupply.lean:19:8: declaration uses `sorry`
-⚠ [3534/3540] Replayed Benchmarks.CurveVault.MaxRedeem
-warning: Benchmarks/CurveVault/MaxRedeem.lean:19:8: declaration uses `sorry`
-⚠ [3535/3540] Replayed Benchmarks.CurveVault.Allowance
-warning: Benchmarks/CurveVault/Allowance.lean:19:8: declaration uses `sorry`
-⚠ [3536/3540] Replayed Benchmarks.CurveVault.PreviewDeposit
-warning: Benchmarks/CurveVault/PreviewDeposit.lean:19:8: declaration uses `sorry`
-⚠ [3537/3540] Replayed Benchmarks.CurveVault.Controller
-warning: Benchmarks/CurveVault/Controller.lean:19:8: declaration uses `sorry`
-⚠ [3538/3540] Replayed Benchmarks.CurveVault.Admin
-warning: Benchmarks/CurveVault/Admin.lean:19:8: declaration uses `sorry`
-⚠ [3539/3540] Replayed Benchmarks.CurveVault.Initialize
-warning: Benchmarks/CurveVault/Initialize.lean:19:8: declaration uses `sorry`
-Build completed successfully (3540 jobs).
+⚠ [3496/3634] Replayed Benchmarks.CurveVault.Storage
+warning: Benchmarks/CurveVault/Storage.lean:68:42: This simp argument is unused:
+  pure
+
+Hint: Omit it from the simp argument list.
+  simp only [vyperCheckRef?, vyperCheckSteps?, vyperWriteRaw?, vyperLeafLoc?, hloc,
+  ̵  ̵ ̵ ̵EvalResult.bind,
+  ̲  ̲ ̲ ̲EvalResult.ofOption, p̵u̵r̵e̵,̵ ̵bind, storageLocStore_uint256]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+⚠ [3497/3634] Replayed Benchmarks.CurveVault.AllowanceStorage
+warning: Benchmarks/CurveVault/AllowanceStorage.lean:49:42: This simp argument is unused:
+  pure
+
+Hint: Omit it from the simp argument list.
+  simp only [vyperCheckRef?, vyperCheckSteps?, vyperWriteRaw?, vyperLeafLoc?, hloc,
+  ̵  ̵ ̵ ̵EvalResult.bind,
+  ̲  ̲ ̲ ̲EvalResult.ofOption, p̵u̵r̵e̵,̵ ̵bind, storageLocStore_uint256]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+⚠ [3500/3634] Replayed Reasoning.ExternalCall
+warning: Reasoning/ExternalCall.lean:720:2: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+warning: Reasoning/ExternalCall.lean:845:23: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+⚠ [3511/3634] Replayed Reasoning.SolmArithmetic
+warning: Reasoning/SolmArithmetic.lean:1175:51: This simp argument is unused:
+  abiUInt256Int
+
+Hint: Omit it from the simp argument list.
+  simp only [castValue?, packedUInt256StorageType,̵ ̵a̵b̵i̵U̵I̵n̵t̵2̵5̵6̵I̵n̵t̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+⚠ [3552/3634] Replayed Benchmarks.CurveVault.BalanceStorage
+warning: Benchmarks/CurveVault/BalanceStorage.lean:40:42: This simp argument is unused:
+  pure
+
+Hint: Omit it from the simp argument list.
+  simp only [vyperCheckRef?, vyperCheckSteps?, vyperWriteRaw?, vyperLeafLoc?, hloc,
+  ̵  ̵ ̵ ̵EvalResult.bind,
+  ̲  ̲ ̲ ̲EvalResult.ofOption, p̵u̵r̵e̵,̵ ̵bind, storageLocStore_uint256]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+⚠ [3556/3634] Replayed Benchmarks.CurveVault.SupplyForward
+warning: Benchmarks/CurveVault/SupplyForward.lean:45:68: This simp argument is unused:
+  Std.HashMap.getElem?_insert
+
+Hint: Omit it from the simp argument list.
+  simp [calleeLocals, vaultSupplyLocals, vaultBurnLocals,̵ ̵S̵t̵d̵.̵H̵a̵s̵h̵M̵a̵p̵.̵g̵e̵t̵E̵l̵e̵m̵?̵_̵i̵n̵s̵e̵r̵t̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/SupplyForward.lean:46:68: This simp argument is unused:
+  Std.HashMap.getElem?_insert
+
+Hint: Omit it from the simp argument list.
+  simp [calleeLocals, vaultSupplyLocals, vaultBurnLocals,̵ ̵S̵t̵d̵.̵H̵a̵s̵h̵M̵a̵p̵.̵g̵e̵t̵E̵l̵e̵m̵?̵_̵i̵n̵s̵e̵r̵t̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/SupplyForward.lean:52:68: This simp argument is unused:
+  Std.HashMap.getElem?_insert
+
+Hint: Omit it from the simp argument list.
+  simp [calleeLocals, vaultSupplyLocals, vaultMintLocals,̵ ̵S̵t̵d̵.̵H̵a̵s̵h̵M̵a̵p̵.̵g̵e̵t̵E̵l̵e̵m̵?̵_̵i̵n̵s̵e̵r̵t̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/SupplyForward.lean:53:68: This simp argument is unused:
+  Std.HashMap.getElem?_insert
+
+Hint: Omit it from the simp argument list.
+  simp [calleeLocals, vaultSupplyLocals, vaultMintLocals,̵ ̵S̵t̵d̵.̵H̵a̵s̵h̵M̵a̵p̵.̵g̵e̵t̵E̵l̵e̵m̵?̵_̵i̵n̵s̵e̵r̵t̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+⚠ [3595/3634] Replayed Benchmarks.CurveVault.MutationEntry
+warning: Benchmarks/CurveVault/MutationEntry.lean:124:56: This simp argument is unused:
+  collapseReturns
+
+Hint: Omit it from the simp argument list.
+  simp only [evalExprs?, evalExpr?, store_get_self, c̵o̵l̵l̵a̵p̵s̵e̵R̵e̵t̵u̵r̵n̵s̵,̵ ̵EvalResult.ofOption, EvalResult.bind, pure,
+  ̲  ̲ ̲ ̲ ̲ ̲ ̲ ̲bind]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+⚠ [3598/3634] Replayed Benchmarks.CurveVault.UintAddressABI
+warning: Benchmarks/CurveVault/UintAddressABI.lean:25:34: This simp argument is unused:
+  Nat.zero_add
+
+Hint: Omit it from the simp argument list.
+  simp only [Option.bind, bind,̵ ̵N̵a̵t̵.̵z̵e̵r̵o̵_̵a̵d̵d̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/UintAddressABI.lean:27:15: This simp argument is unused:
+  Option.bind
+
+Hint: Omit it from the simp argument list.
+  simp only [̵O̵p̵t̵i̵o̵n̵.̵b̵i̵n̵d̵,̵ ̵b̵i̵n̵d̵,̵[̲b̲i̲n̲d̲,̲ hword0, hword32]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/UintAddressABI.lean:27:28: This simp argument is unused:
+  bind
+
+Hint: Omit it from the simp argument list.
+  simp only [Option.bind, b̵i̵n̵d̵,̵ ̵hword0, hword32]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/UintAddressABI.lean:46:34: This simp argument is unused:
+  Nat.zero_add
+
+Hint: Omit it from the simp argument list.
+  simp only [Option.bind, bind,̵ ̵N̵a̵t̵.̵z̵e̵r̵o̵_̵a̵d̵d̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/UintAddressABI.lean:64:36: This simp argument is unused:
+  Nat.zero_add
+
+Hint: Omit it from the simp argument list.
+  simp only [Option.bind, bind,̵ ̵N̵a̵t̵.̵z̵e̵r̵o̵_̵a̵d̵d̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+⚠ [3599/3634] Replayed Benchmarks.CurveVault.Withdraw_uint256_address
+warning: Benchmarks/CurveVault/Withdraw_uint256_address.lean:47:14: This simp argument is unused:
+  vaultBlocks.vault_block_4122_fallthrough_stack
+
+Hint: Omit it from the simp argument list.
+  simp ̵[̵v̵a̵u̵l̵t̵B̵l̵o̵c̵k̵s̵.̵v̵a̵u̵l̵t̵_̵b̵l̵o̵c̵k̵_̵4̵1̵2̵2̵_̵f̵a̵l̵l̵t̵h̵r̵o̵u̵g̵h̵_̵s̵t̵a̵c̵k̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Withdraw_uint256_address.lean:17:35: 'exact selIs_exclusive (by decide +kernel) hsel' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+warning: Benchmarks/CurveVault/Withdraw_uint256_address.lean:17:35: this tactic is never executed
+
+Note: This linter can be disabled with `set_option linter.unreachableTactic false`
+⚠ [3602/3634] Replayed Benchmarks.CurveVault.UintTwoAddressABI
+warning: Benchmarks/CurveVault/UintTwoAddressABI.lean:31:15: This simp argument is unused:
+  Option.bind
+
+Hint: Omit it from the simp argument list.
+  simp only [̵O̵p̵t̵i̵o̵n̵.̵b̵i̵n̵d̵,̵ ̵b̵i̵n̵d̵]̵[̲b̲i̲n̲d̲]̲
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/UintTwoAddressABI.lean:31:28: This simp argument is unused:
+  bind
+
+Hint: Omit it from the simp argument list.
+  simp only [Option.bind,̵ ̵b̵i̵n̵d̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/UintTwoAddressABI.lean:35:17: This simp argument is unused:
+  Option.bind
+
+Hint: Omit it from the simp argument list.
+  simp only [O̵p̵t̵i̵o̵n̵.̵bind, b̵i̵n̵d̵,̵ ̵hword 0 (by omega), hword 32 (by omega), hword 64 (by omega)]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/UintTwoAddressABI.lean:35:30: This simp argument is unused:
+  bind
+
+Hint: Omit it from the simp argument list.
+  simp only [Option.bind, b̵i̵n̵d̵,̵ ̵hword 0 (by omega), hword 32 (by omega), hword 64 (by omega)]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/UintTwoAddressABI.lean:86:19: This simp argument is unused:
+  Option.bind
+
+Hint: Omit it from the simp argument list.
+  simp only [̵O̵p̵t̵i̵o̵n̵.̵b̵i̵n̵d̵,̵ ̵b̵i̵n̵d̵]̵[̲b̲i̲n̲d̲]̲
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/UintTwoAddressABI.lean:86:32: This simp argument is unused:
+  bind
+
+Hint: Omit it from the simp argument list.
+  simp only [Option.bind,̵ ̵b̵i̵n̵d̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+⚠ [3603/3634] Replayed Benchmarks.CurveVault.Withdraw_uint256_address_address
+warning: Benchmarks/CurveVault/Withdraw_uint256_address_address.lean:36:16: This simp argument is unused:
+  vaultBlocks.vault_block_4147_fallthrough_stack
+
+Hint: Omit it from the simp argument list.
+  simp ̵[̵v̵a̵u̵l̵t̵B̵l̵o̵c̵k̵s̵.̵v̵a̵u̵l̵t̵_̵b̵l̵o̵c̵k̵_̵4̵1̵4̵7̵_̵f̵a̵l̵l̵t̵h̵r̵o̵u̵g̵h̵_̵s̵t̵a̵c̵k̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Withdraw_uint256_address_address.lean:53:14: This simp argument is unused:
+  vaultBlocks.vault_block_4147_fallthrough_stack
+
+Hint: Omit it from the simp argument list.
+  simp ̵[̵v̵a̵u̵l̵t̵B̵l̵o̵c̵k̵s̵.̵v̵a̵u̵l̵t̵_̵b̵l̵o̵c̵k̵_̵4̵1̵4̵7̵_̵f̵a̵l̵l̵t̵h̵r̵o̵u̵g̵h̵_̵s̵t̵a̵c̵k̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Withdraw_uint256_address_address.lean:56:14: This simp argument is unused:
+  vaultBlocks.vault_block_4159_fallthrough_stack
+
+Hint: Omit it from the simp argument list.
+  simp ̵[̵v̵a̵u̵l̵t̵B̵l̵o̵c̵k̵s̵.̵v̵a̵u̵l̵t̵_̵b̵l̵o̵c̵k̵_̵4̵1̵5̵9̵_̵f̵a̵l̵l̵t̵h̵r̵o̵u̵g̵h̵_̵s̵t̵a̵c̵k̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+⚠ [3605/3634] Replayed Benchmarks.CurveVault.TotalAssets
+warning: Benchmarks/CurveVault/TotalAssets.lean:35:5: unused variable `hwf`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+⚠ [3637/3754] Replayed Benchmarks.CurveVault.PriceFinishSource
+warning: Benchmarks/CurveVault/PriceFinishSource.lean:35:55: This simp argument is unused:
+  initial
+
+Hint: Omit it from the simp argument list.
+  simp ̵[̵i̵n̵i̵t̵i̵a̵l̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/PriceFinishSource.lean:45:86: This simp argument is unused:
+  vaultConversionResult
+
+Hint: Omit it from the simp argument list.
+  simp [resumeAfterInternalCall, collapseReturns, evalExpr?, EvalResult.ofOption,̵ ̵v̵a̵u̵l̵t̵C̵o̵n̵v̵e̵r̵s̵i̵o̵n̵R̵e̵s̵u̵l̵t̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/PriceFinishSource.lean:47:17: This simp argument is unused:
+  resumeAfterInternalCall
+
+Hint: Omit it from the simp argument list.
+  simp only [̵r̵e̵s̵u̵m̵e̵A̵f̵t̵e̵r̵I̵n̵t̵e̵r̵n̵a̵l̵C̵a̵l̵l̵,̵ ̵c̵o̵l̵l̵a̵p̵s̵e̵R̵e̵t̵u̵r̵n̵s̵,̵[̲c̲o̲l̲l̲a̲p̲s̲e̲R̲e̲t̲u̲r̲n̲s̲,̲ initial, Std.HashMap.get?_eq_getElem?,
+  ̲  ̲ ̲ ̲ ̲ ̲ ̲ ̲Std.HashMap.getElem?_insert]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+⚠ [3640/3754] Replayed Benchmarks.CurveVault.PricePerShare_bool
+warning: Benchmarks/CurveVault/PricePerShare_bool.lean:27:58: This simp argument is unused:
+  vaultBlocks.vault_block_1517_fallthrough_stack
+
+Hint: Omit it from the simp argument list.
+  simp ̵[̵v̵a̵u̵l̵t̵B̵l̵o̵c̵k̵s̵.̵v̵a̵u̵l̵t̵_̵b̵l̵o̵c̵k̵_̵1̵5̵1̵7̵_̵f̵a̵l̵l̵t̵h̵r̵o̵u̵g̵h̵_̵s̵t̵a̵c̵k̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+⚠ [3646/3754] Replayed Benchmarks.CurveVault.AllowanceAdjustSource
+warning: Benchmarks/CurveVault/AllowanceAdjustSource.lean:90:76: This simp argument is unused:
+  pure
+
+Hint: Omit it from the simp argument list.
+  simp [evalExpr?, hevalRaw, hevalOld1, evalBinaryOp?, EvalResult.bind, p̵u̵r̵e̵b̲i̲n̲d̲,
+  ̲ b̵i̵n̵d̵,̵  ̲ ̲ ̲ ̲ ̲ ̲vaultAdjustOverflow]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+⚠ [3653/3754] Replayed Benchmarks.CurveVault.Limits
+warning: Benchmarks/CurveVault/Limits.lean:76:52: This simp argument is unused:
+  pure
+
+Hint: Omit it from the simp argument list.
+  simp only [evalExpr?, ha, hb, bind, EvalResult.bind, evalBinaryOp?, hd, castValue?,
+      normalizeInt_uint256_word, EvalResult.ofOption,̵ ̵p̵u̵r̵e̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+⚠ [3657/3754] Replayed Benchmarks.CurveVault.CreditLimitsEVM
+warning: Benchmarks/CurveVault/CreditLimitsEVM.lean:131:10: 'change
+  UInt256.lt (memLoad (UInt256.ofNat 640) prepared + memLoad (UInt256.ofNat 672) prepared)
+      (memLoad (UInt256.ofNat 640) prepared) =
+    _' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+⚠ [3671/3754] Replayed Benchmarks.CurveVault.Deposit_uint256_address
+warning: Benchmarks/CurveVault/Deposit_uint256_address.lean:43:14: This simp argument is unused:
+  vaultBlocks.vault_block_2143_fallthrough_stack
+
+Hint: Omit it from the simp argument list.
+  simp ̵[̵v̵a̵u̵l̵t̵B̵l̵o̵c̵k̵s̵.̵v̵a̵u̵l̵t̵_̵b̵l̵o̵c̵k̵_̵2̵1̵4̵3̵_̵f̵a̵l̵l̵t̵h̵r̵o̵u̵g̵h̵_̵s̵t̵a̵c̵k̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+⚠ [3675/3754] Replayed Benchmarks.CurveVault.Redeem_uint256_address
+warning: Benchmarks/CurveVault/Redeem_uint256_address.lean:47:14: This simp argument is unused:
+  vaultBlocks.vault_block_5024_fallthrough_stack
+
+Hint: Omit it from the simp argument list.
+  simp ̵[̵v̵a̵u̵l̵t̵B̵l̵o̵c̵k̵s̵.̵v̵a̵u̵l̵t̵_̵b̵l̵o̵c̵k̵_̵5̵0̵2̵4̵_̵f̵a̵l̵l̵t̵h̵r̵o̵u̵g̵h̵_̵s̵t̵a̵c̵k̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+⚠ [3676/3754] Replayed Benchmarks.CurveVault.Redeem_uint256_address_address
+warning: Benchmarks/CurveVault/Redeem_uint256_address_address.lean:36:16: This simp argument is unused:
+  vaultBlocks.vault_block_5049_fallthrough_stack
+
+Hint: Omit it from the simp argument list.
+  simp ̵[̵v̵a̵u̵l̵t̵B̵l̵o̵c̵k̵s̵.̵v̵a̵u̵l̵t̵_̵b̵l̵o̵c̵k̵_̵5̵0̵4̵9̵_̵f̵a̵l̵l̵t̵h̵r̵o̵u̵g̵h̵_̵s̵t̵a̵c̵k̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Redeem_uint256_address_address.lean:53:14: This simp argument is unused:
+  vaultBlocks.vault_block_5049_fallthrough_stack
+
+Hint: Omit it from the simp argument list.
+  simp ̵[̵v̵a̵u̵l̵t̵B̵l̵o̵c̵k̵s̵.̵v̵a̵u̵l̵t̵_̵b̵l̵o̵c̵k̵_̵5̵0̵4̵9̵_̵f̵a̵l̵l̵t̵h̵r̵o̵u̵g̵h̵_̵s̵t̵a̵c̵k̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Redeem_uint256_address_address.lean:56:14: This simp argument is unused:
+  vaultBlocks.vault_block_5061_fallthrough_stack
+
+Hint: Omit it from the simp argument list.
+  simp ̵[̵v̵a̵u̵l̵t̵B̵l̵o̵c̵k̵s̵.̵v̵a̵u̵l̵t̵_̵b̵l̵o̵c̵k̵_̵5̵0̵6̵1̵_̵f̵a̵l̵l̵t̵h̵r̵o̵u̵g̵h̵_̵s̵t̵a̵c̵k̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+⚠ [3684/3754] Replayed Benchmarks.CurveVault.Mint_uint256_address
+warning: Benchmarks/CurveVault/Mint_uint256_address.lean:43:14: This simp argument is unused:
+  vaultBlocks.vault_block_3146_fallthrough_stack
+
+Hint: Omit it from the simp argument list.
+  simp ̵[̵v̵a̵u̵l̵t̵B̵l̵o̵c̵k̵s̵.̵v̵a̵u̵l̵t̵_̵b̵l̵o̵c̵k̵_̵3̵1̵4̵6̵_̵f̵a̵l̵l̵t̵h̵r̵o̵u̵g̵h̵_̵s̵t̵a̵c̵k̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+⚠ [3719/3754] Replayed Benchmarks.CurveVault.InitializeABI
+warning: Benchmarks/CurveVault/InitializeABI.lean:32:62: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+⚠ [3724/3754] Replayed Reasoning.VyperBounded
+warning: Reasoning/VyperBounded.lean:101:27: This simp argument is unused:
+  pure
+
+Hint: Omit it from the simp argument list.
+  simp [vyperCheckRef?, vyperCheckSteps?, hbounds, vyperLength_ok hbounds hanchor, hlt,
+  ̵  ̵ ̵ ̵bind,
+  ̲  ̲ ̲ ̲EvalResult.bind,̵ ̵p̵u̵r̵e̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/VyperBounded.lean:165:57: This simp argument is unused:
+  bind
+
+Hint: Omit it from the simp argument list.
+  simp [show ¬ ̵((Solm.EVM.storageLoad evm evm.executionEnv.codeOwner s).toNat ≥ cap) from by omega,
+      hwrite', vyperAnchor?, hanchor, EvalResult.ofOption, b̵i̵n̵d̵,̵ ̵EvalResult.bind]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/VyperBounded.lean:165:63: This simp argument is unused:
+  EvalResult.bind
+
+Hint: Omit it from the simp argument list.
+  simp [show ¬ ̵((Solm.EVM.storageLoad evm evm.executionEnv.codeOwner s).toNat ≥ cap) from by omega,
+      hwrite', vyperAnchor?, hanchor, EvalResult.ofOption, bind,̵ ̵E̵v̵a̵l̵R̵e̵s̵u̵l̵t̵.̵b̵i̵n̵d̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/VyperBounded.lean:204:48: This simp argument is unused:
+  bind
+
+Hint: Omit it from the simp argument list.
+  simp [show (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner s).toNat ≠ 0 from by omega,
+      vyperAnchor?, hanchor, EvalResult.ofOption, b̵i̵n̵d̵,̵ ̵EvalResult.bind]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/VyperBounded.lean:204:54: This simp argument is unused:
+  EvalResult.bind
+
+Hint: Omit it from the simp argument list.
+  simp [show (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner s).toNat ≠ 0 from by omega,
+      vyperAnchor?, hanchor, EvalResult.ofOption, bind,̵ ̵E̵v̵a̵l̵R̵e̵s̵u̵l̵t̵.̵b̵i̵n̵d̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/VyperBounded.lean:228:25: This simp argument is unused:
+  pure
+
+Hint: Omit it from the simp argument list.
+  simp [vyperWriteRaw?, vyperWriteFields?, vyperLeafLoc?, h1, h2, h3, hs1, hs2, hs3, bind,
+  ̲  ̲ ̲ ̲EvalResult.bind,
+  ̵  ̵ ̵ ̵EvalResult.ofOption,̵ ̵p̵u̵r̵e̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+⚠ [3725/3754] Replayed Benchmarks.CurveVault.InitializeStorage
+warning: Benchmarks/CurveVault/InitializeStorage.lean:22:42: This simp argument is unused:
+  pure
+
+Hint: Omit it from the simp argument list.
+  simp only [vyperCheckRef?, vyperCheckSteps?, vyperWriteRaw?, vyperLeafLoc?, hloc,
+  ̵  ̵ ̵ ̵EvalResult.bind,
+  ̲  ̲ ̲ ̲EvalResult.ofOption, p̵u̵r̵e̵,̵ ̵bind, storageLocStore_vyperWord_address]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/InitializeStorage.lean:50:42: This simp argument is unused:
+  pure
+
+Hint: Omit it from the simp argument list.
+  simp only [vyperCheckRef?, vyperCheckSteps?, vyperWriteRaw?, vyperLeafLoc?, hloc,
+  ̵  ̵ ̵ ̵EvalResult.bind,
+  ̲  ̲ ̲ ̲EvalResult.ofOption, p̵u̵r̵e̵,̵ ̵bind, storageLocStore_uint256]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+⚠ [3729/3754] Replayed Benchmarks.CurveVault.SymbolReturnABI
+warning: Benchmarks/CurveVault/SymbolReturnABI.lean:43:15: This simp argument is unused:
+  List.toList_toArray
+
+Hint: Omit it from the simp argument list.
+  simp only [L̵i̵s̵t̵.̵t̵o̵L̵i̵s̵t̵_̵t̵o̵A̵r̵r̵a̵y̵,̵ ̵← byteArray_toList_eq, byteArray_extract_toList, Nat.add_sub_cancel_left]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/SymbolReturnABI.lean:91:13: This simp argument is unused:
+  Option.bind
+
+Hint: Omit it from the simp argument list.
+  simp only [̵O̵p̵t̵i̵o̵n̵.̵b̵i̵n̵d̵,̵ ̵b̵i̵n̵d̵,̵[̲b̲i̲n̲d̲,̲ Bool.or_eq_true, decide_eq_true_eq]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/SymbolReturnABI.lean:91:26: This simp argument is unused:
+  bind
+
+Hint: Omit it from the simp argument list.
+  simp only [Option.bind, b̵i̵n̵d̵,̵ ̵Bool.or_eq_true, decide_eq_true_eq]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+⚠ [3730/3754] Replayed Benchmarks.CurveVault.SymbolReturnMemory
+warning: Benchmarks/CurveVault/SymbolReturnMemory.lean:57:92: This simp argument is unused:
+  List.take_take
+
+Hint: Omit it from the simp argument list.
+  simp only [← byteArray_toList_eq, byteArray_extract_toList, List.drop_zero, Nat.sub_zero,̵ ̵L̵i̵s̵t̵.̵t̵a̵k̵e̵_̵t̵a̵k̵e̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+⚠ [3733/3754] Replayed Benchmarks.CurveVault.InitializeSymbolDecode
+warning: Benchmarks/CurveVault/InitializeSymbolDecode.lean:72:21: This simp argument is unused:
+  vaultBlocks.vault_block_441_fallthrough_stack
+
+Hint: Omit it from the simp argument list.
+  simp only [v̵a̵u̵l̵t̵B̵l̵o̵c̵k̵s̵.̵v̵a̵u̵l̵t̵_̵b̵l̵o̵c̵k̵_̵4̵4̵1̵_̵f̵a̵l̵l̵t̵h̵r̵o̵u̵g̵h̵_̵s̵t̵a̵c̵k̵,̵ ̵List.length_cons]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/InitializeSymbolDecode.lean:75:21: This simp argument is unused:
+  vaultBlocks.vault_block_441_fallthrough_stack
+
+Hint: Omit it from the simp argument list.
+  simp only [v̵a̵u̵l̵t̵B̵l̵o̵c̵k̵s̵.̵v̵a̵u̵l̵t̵_̵b̵l̵o̵c̵k̵_̵4̵4̵1̵_̵f̵a̵l̵l̵t̵h̵r̵o̵u̵g̵h̵_̵s̵t̵a̵c̵k̵,̵ ̵List.length_cons]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/InitializeSymbolDecode.lean:80:19: This simp argument is unused:
+  vaultBlocks.vault_block_441_fallthrough_stack
+
+Hint: Omit it from the simp argument list.
+  simp only [v̵a̵u̵l̵t̵B̵l̵o̵c̵k̵s̵.̵v̵a̵u̵l̵t̵_̵b̵l̵o̵c̵k̵_̵4̵4̵1̵_̵f̵a̵l̵l̵t̵h̵r̵o̵u̵g̵h̵_̵s̵t̵a̵c̵k̵,̵ ̵List.length_cons]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+⚠ [3742/3754] Replayed Benchmarks.CurveVault.PackedStringValues
+warning: Benchmarks/CurveVault/PackedStringValues.lean:64:21: This simp argument is unused:
+  toByteArray_size
+
+Hint: Omit it from the simp argument list.
+  simp [sliceBytes?,̵ ̵t̵o̵B̵y̵t̵e̵A̵r̵r̵a̵y̵_̵s̵i̵z̵e̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+⚠ [3744/3754] Replayed Benchmarks.CurveVault.InitializeStringStorage
+warning: Benchmarks/CurveVault/InitializeStringStorage.lean:33:70: This simp argument is unused:
+  Bool.false_or
+
+Hint: Omit it from the simp argument list.
+  simp only [config, storageBackend, Bool.false_eq_true, ↓reduceIte,
+  ̵  ̵ ̵ ̵ ̵ ̵Int.ofNat_eq_natCast,
+  ̲  ̲ ̲ ̲ ̲ ̲Int.toNat_natCast, hnonneg, decide_false, B̵o̵o̵l̵.̵f̵a̵l̵s̵e̵_̵o̵r̵,̵ ̵hdata, bne_self_eq_false,
+  ̵  ̵ ̵ ̵ ̵ ̵Bool.or_false,
+  ̲  ̲ ̲ ̲ ̲ ̲decide_eq_true_eq, not_lt.mpr hcap, vaultStringState, beq_self_eq_true,
+        (show ("symbol" == "name") = false from rfl),
+  ̵  ̵ ̵ ̵ ̵ ̵EvalResult.bind, bind, pure]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/InitializeStringStorage.lean:34:21: This simp argument is unused:
+  decide_eq_true_eq
+
+Hint: Omit it from the simp argument list.
+  simp only [config, storageBackend, Bool.false_eq_true, ↓reduceIte,
+  ̵  ̵ ̵ ̵ ̵ ̵Int.ofNat_eq_natCast,
+  ̲  ̲ ̲ ̲ ̲ ̲Int.toNat_natCast, hnonneg, decide_false, Bool.false_or, hdata, bne_self_eq_false,
+        Bool.or_false, d̵e̵c̵i̵d̵e̵_̵e̵q̵_̵t̵r̵u̵e̵_̵e̵q̵,̵ ̵not_lt.mpr hcap, vaultStringState, beq_self_eq_true,
+        (show ("symbol" == "name") = false from rfl),
+  ̵  ̵ ̵ ̵ ̵ ̵EvalResult.bind, bind, pure]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+✔ [3753/3754] Built Benchmarks.CurveVault.Borrow_apr (3.9s)
+Build completed successfully (3754 jobs).
