@@ -18,8 +18,9 @@ open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
 namespace Benchmarks.Safe.ViaIR
 
 theorem safeCorrect :
-    runtimeRefinement config safeBytecode contract := by
-  refine ⟨fun σ σ₀ g A I hcode hsize ↦ ?_⟩
+    runtimeRefinementWithWF (fun σ I ↦ σ.get? I.codeOwner ≠ none) noGasBound
+      config safeBytecode contract := by
+  refine ⟨fun σ σ₀ g A I hcode hsize haccount _ ↦ ?_⟩
   by_cases hempty : I.calldata.size = 0
   · exact safeReceiveRefines hcode hempty
   cases hdispatch : selectorDispatchMsg contract I.calldata with
@@ -32,7 +33,7 @@ theorem safeCorrect :
         rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl |
         rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl
       · exact safeVersionRefines hcode hsize hdispatch
-      · exact safeAddownerwiththresholdRefines hcode hsize hdispatch
+      · exact safeAddownerwiththresholdRefines hcode hsize haccount hdispatch
       · exact safeApprovehashRefines hcode hsize hdispatch
       · exact safeApprovedhashesRefines hcode hsize hdispatch
       · exact safeChangethresholdRefines hcode hsize hdispatch
@@ -64,7 +65,8 @@ theorem safeCorrect :
       · exact safeSwapownerRefines hcode hsize hdispatch
 
 theorem safeContractCorrect :
-    contractRefinement config safeCreationBytecode contract :=
-  contractRefinement.of_constant safeConstructorCorrect safeCorrect
+    contractRefinementWF (fun σ I ↦ σ.get? I.codeOwner ≠ none) noGasBound
+      config safeCreationBytecode contract :=
+  contractRefinementWF.of_constant safeConstructorCorrect safeCorrect
 
 end Benchmarks.Safe.ViaIR

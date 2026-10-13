@@ -1,85 +1,57 @@
-import Benchmarks.Safe.ViaIR.Decoders
-import Benchmarks.Safe.ViaIR.Blocks.Runtime_048
-import Benchmarks.Safe.ViaIR.Blocks.Runtime_049
+import Benchmarks.Safe.ViaIR.PairDecoders
+import Benchmarks.Safe.ViaIR.Blocks.Runtime_005
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.ViaIR
 
-set_option maxRecDepth 100000
+set_option maxRecDepth 100000 in
+theorem safeDecodeAddressAddressWordStart {I g s0 σ k C aw mem rdata} {R : List UInt256}
+    (h : RD safeBytecode I g s0 ⟨611⟩ R mem aw rdata σ k C)
+    (hov : R.length + 5 ≤ 1024) :
+    ∃ k' C', RD safeBytecode I g s0 ⟨6952⟩ (⟨618⟩ :: R) mem aw rdata σ k' C' := by
+  exact ⟨_, _, safeRuntime_block_611 (by omega) (by jump_dest) h⟩
 
-theorem safeDecodeAddressAddressWordStart {I g s0 σ k C aw mem rdata} {head stop : UInt256}
-    {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨11079⟩ (head :: stop :: R) mem aw rdata σ k C)
-    (hov : R.length + 12 ≤ 1024)
-    (hlen : UInt256.slt (UInt256.sub stop head) (UInt256.ofNat 96) = ⟨0⟩) :
-    ∃ k' C', RD safeBytecode I g s0 ⟨9076⟩
-      (calldataWord I.calldata head.toNat :: ⟨11108⟩ :: calldataWord I.calldata head.toNat ::
-        ⟨0⟩ :: ⟨0⟩ :: ⟨0⟩ :: head :: stop :: R) mem aw rdata σ k' C' := by
-  have h11097 := safeRuntime_block_11079_taken (by omega)
-    (by rw [hlen]; decide) (by jump_dest) h
-  exact ⟨_, _, safeRuntime_block_11097 (by simp; omega) (by jump_dest) h11097⟩
+set_option maxRecDepth 100000 in
+theorem safeDecodeAddressAddressWordSecond {I g s0 σ k C aw mem rdata} {R : List UInt256}
+    (h : RD safeBytecode I g s0 ⟨611⟩ R mem aw rdata σ k C)
+    (hov : R.length + 6 ≤ 1024)
+    (hc : (calldataWord I.calldata 4).toNat < EVM.addressModulus) :
+    ∃ k' C', RD safeBytecode I g s0 ⟨7041⟩
+      (⟨626⟩ :: calldataWord I.calldata 4 :: R) mem aw rdata σ k' C' := by
+  obtain ⟨_, _, h6952⟩ := safeDecodeAddressAddressWordStart h (by omega)
+  obtain ⟨_, _, h618⟩ := safeDecodeAddress h6952 (by omega) hc (by jump_dest)
+  exact ⟨_, _, safeRuntime_block_618 (by simp; omega) (by jump_dest) h618⟩
 
-theorem safeDecodeAddressAddressWordSecond {I g s0 σ k C aw mem rdata} {head stop : UInt256}
-    {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨11079⟩ (head :: stop :: R) mem aw rdata σ k C)
-    (hov : R.length + 12 ≤ 1024)
-    (hlen : UInt256.slt (UInt256.sub stop head) (UInt256.ofNat 96) = ⟨0⟩)
-    (hc : (calldataWord I.calldata head.toNat).toNat < EVM.addressModulus) :
-    ∃ k' C', RD safeBytecode I g s0 ⟨9076⟩
-      (calldataWord I.calldata (head + UInt256.ofNat 32).toNat :: ⟨11124⟩ ::
-        calldataWord I.calldata (head + UInt256.ofNat 32).toNat :: ⟨0⟩ :: ⟨0⟩ ::
-        calldataWord I.calldata head.toNat :: head :: stop :: R) mem aw rdata σ k' C' := by
-  obtain ⟨_, _, h9076⟩ := safeDecodeAddressAddressWordStart h hov hlen
-  obtain ⟨_, _, h11108⟩ := safeValidateAddress h9076 (by simp; omega) hc (by jump_dest)
-  exact ⟨_, _, safeRuntime_block_11108 (by simp; omega) (by jump_dest) h11108⟩
+set_option maxRecDepth 100000 in
+theorem safeDecodeAddressAddressWord {I g s0 σ k C aw mem rdata} {R : List UInt256}
+    (h : RD safeBytecode I g s0 ⟨611⟩ R mem aw rdata σ k C)
+    (hov : R.length + 6 ≤ 1024)
+    (hc0 : (calldataWord I.calldata 4).toNat < EVM.addressModulus)
+    (hc1 : (calldataWord I.calldata 36).toNat < EVM.addressModulus) :
+    ∃ k' C', RD safeBytecode I g s0 ⟨626⟩
+      (calldataWord I.calldata 36 :: calldataWord I.calldata 4 :: R) mem aw rdata σ k' C' := by
+  obtain ⟨_, _, h7041⟩ := safeDecodeAddressAddressWordSecond h hov hc0
+  exact safeDecodeSecondAddress h7041 (by simp; omega) hc1 (by jump_dest)
 
-theorem safeDecodeAddressAddressWord {I g s0 σ k C aw mem rdata} {head stop ret : UInt256}
-    {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨11079⟩ (head :: stop :: ret :: R) mem aw rdata σ k C)
-    (hov : R.length + 13 ≤ 1024)
-    (hlen : UInt256.slt (UInt256.sub stop head) (UInt256.ofNat 96) = ⟨0⟩)
-    (hc0 : (calldataWord I.calldata head.toNat).toNat < EVM.addressModulus)
-    (hc1 : (calldataWord I.calldata (head + UInt256.ofNat 32).toNat).toNat < EVM.addressModulus)
-    (hret : (D_J safeBytecode 0).contains ret = true) :
-    ∃ k' C', RD safeBytecode I g s0 ret
-      (calldataWord I.calldata (UInt256.ofNat 64 + head).toNat ::
-        calldataWord I.calldata (head + UInt256.ofNat 32).toNat ::
-        calldataWord I.calldata head.toNat :: R) mem aw rdata σ k' C' := by
-  obtain ⟨_, _, h9076⟩ := safeDecodeAddressAddressWordSecond h (by simp; omega) hlen hc0
-  obtain ⟨_, _, h11124⟩ := safeValidateAddress h9076 (by simp; omega) hc1 (by jump_dest)
-  exact ⟨_, _, safeRuntime_block_11124 (by omega) hret h11124⟩
-
-theorem safeDecodeAddressAddressWordNoncanon0 {I g s0 σ k C aw mem rdata} {head stop : UInt256}
-    {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨11079⟩ (head :: stop :: R) mem aw rdata σ k C)
-    (hov : R.length + 12 ≤ 1024)
-    (hlen : UInt256.slt (UInt256.sub stop head) (UInt256.ofNat 96) = ⟨0⟩)
-    (hc : ¬ (calldataWord I.calldata head.toNat).toNat < EVM.addressModulus) :
+set_option maxRecDepth 100000 in
+theorem safeDecodeAddressAddressWordNoncanon0 {I g s0 σ k C aw mem rdata} {R : List UInt256}
+    (h : RD safeBytecode I g s0 ⟨611⟩ R mem aw rdata σ k C)
+    (hov : R.length + 6 ≤ 1024)
+    (hc : ¬ (calldataWord I.calldata 4).toNat < EVM.addressModulus) :
     RDrev safeBytecode g s0 := by
-  obtain ⟨_, _, h9076⟩ := safeDecodeAddressAddressWordStart h hov hlen
-  exact safeValidateAddressRevert h9076 (by simp; omega) hc
+  obtain ⟨_, _, h6952⟩ := safeDecodeAddressAddressWordStart h (by omega)
+  exact safeDecodeAddressNoncanon h6952 (by omega) hc
 
-theorem safeDecodeAddressAddressWordNoncanon1 {I g s0 σ k C aw mem rdata} {head stop : UInt256}
-    {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨11079⟩ (head :: stop :: R) mem aw rdata σ k C)
-    (hov : R.length + 12 ≤ 1024)
-    (hlen : UInt256.slt (UInt256.sub stop head) (UInt256.ofNat 96) = ⟨0⟩)
-    (hc0 : (calldataWord I.calldata head.toNat).toNat < EVM.addressModulus)
-    (hc1 : ¬ (calldataWord I.calldata (head + UInt256.ofNat 32).toNat).toNat < EVM.addressModulus) :
+set_option maxRecDepth 100000 in
+theorem safeDecodeAddressAddressWordNoncanon1 {I g s0 σ k C aw mem rdata} {R : List UInt256}
+    (h : RD safeBytecode I g s0 ⟨611⟩ R mem aw rdata σ k C)
+    (hov : R.length + 6 ≤ 1024)
+    (hc0 : (calldataWord I.calldata 4).toNat < EVM.addressModulus)
+    (hc1 : ¬ (calldataWord I.calldata 36).toNat < EVM.addressModulus) :
     RDrev safeBytecode g s0 := by
-  obtain ⟨_, _, h9076⟩ := safeDecodeAddressAddressWordSecond h hov hlen hc0
-  exact safeValidateAddressRevert h9076 (by simp; omega) hc1
-
-theorem safeDecodeAddressAddressWordRevert {I g s0 σ k C aw mem rdata} {head stop : UInt256}
-    {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨11079⟩ (head :: stop :: R) mem aw rdata σ k C)
-    (hov : R.length + 8 ≤ 1024)
-    (hlen : UInt256.slt (UInt256.sub stop head) (UInt256.ofNat 96) = ⟨1⟩) :
-    RDrev safeBytecode g s0 := by
-  have h11094 := safeRuntime_block_11079_fallthrough hov (by rw [hlen]; decide) h
-  exact safeRuntime_block_11094
-    (by simp [safeRuntime_block_11079_fallthrough_stack]; omega) h11094
+  obtain ⟨_, _, h7041⟩ := safeDecodeAddressAddressWordSecond h hov hc0
+  exact safeDecodeSecondAddressNoncanon h7041 (by simp; omega) hc1
 
 end Benchmarks.Safe.ViaIR

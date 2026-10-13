@@ -1,7 +1,7 @@
 import Benchmarks.Safe.ViaIR.Common
 import Reasoning.WordArithmetic
-import Benchmarks.Safe.ViaIR.Blocks.Runtime_049
-import Benchmarks.Safe.ViaIR.Blocks.Runtime_051
+import Benchmarks.Safe.ViaIR.Blocks.Runtime_005
+import Benchmarks.Safe.ViaIR.Blocks.Runtime_006
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -10,25 +10,23 @@ namespace Benchmarks.Safe.ViaIR
 
 set_option maxRecDepth 100000
 
-theorem safeDecrementTrace {I g s0 σ k C aw mem rdata} {value ret : UInt256}
-    {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨11663⟩ (value :: ret :: R) mem aw rdata σ k C)
-    (hov : R.length + 5 ≤ 1024) (hnz : value ≠ ⟨0⟩)
-    (hret : (D_J safeBytecode 0).contains ret = true) :
-    ∃ k' C', RD safeBytecode I g s0 ret (UInt256.sub value ⟨1⟩ :: R) mem aw rdata σ k' C' := by
-  have h₁ := safeRuntime_block_11663_taken (by simp; omega) hnz (by jump_dest) h
-  have h₂ := safeRuntime_block_11677 (by omega) hret h₁
-  simpa only [safeRuntime_block_11677_stack, lnot_zero_add] using ⟨_, _, h₂⟩
+-- The IR pipeline checks underflow before the block that decrements and stores the count.
+theorem safeDecrementTrace {I g s0 σ k C aw mem rdata} {R : List UInt256}
+    (h : RD safeBytecode I g s0 ⟨639⟩ R mem aw rdata σ k C)
+    (hov : R.length + 3 ≤ 1024) (hnz : solcSlotWordAt ⟨3⟩ σ I ≠ ⟨0⟩) :
+    ∃ k' C', RD safeBytecode I g s0 ⟨649⟩ (solcSlotWordAt ⟨3⟩ σ I :: R)
+      mem aw rdata σ k' C' := by
+  exact safeRuntime_block_639_fallthrough hov (isZero_eq_zero_of_ne hnz) h
 
-theorem safeDecrementUnderflow {I g s0 σ k C aw mem rdata} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨11663⟩ (⟨0⟩ :: R) mem aw rdata σ k C)
-    (hov : R.length + 5 ≤ 1024) : RDrev safeBytecode g s0 := by
-  have h₁ := safeRuntime_block_11663_fallthrough (by omega) rfl h
-  have h₂ := safeRuntime_block_11670
-    (by simp only [safeRuntime_block_11663_fallthrough_stack, List.length_cons]; omega)
-    (by jump_dest) h₁
-  exact safeRuntime_block_11141
-    (by simp only [safeRuntime_block_11670_stack, safeRuntime_block_11663_fallthrough_stack,
-      List.length_cons]; omega) h₂
+theorem safeDecrementUnderflow {I g s0 σ k C aw mem rdata} {key prev threshold : UInt256}
+    {R : List UInt256}
+    (h : RD safeBytecode I g s0 ⟨639⟩ (key :: prev :: threshold :: ⟨0⟩ :: R)
+      mem aw rdata σ k C)
+    (hov : R.length + 7 ≤ 1024) (hz : solcSlotWordAt ⟨3⟩ σ I = ⟨0⟩) :
+    RDrev safeBytecode g s0 := by
+  obtain ⟨_, _, h879⟩ := safeRuntime_block_639_taken (by simp; omega)
+    (by change UInt256.isZero (solcSlotWordAt ⟨3⟩ σ I) ≠ ⟨0⟩; rw [hz]; decide)
+    (by jump_dest) h
+  exact safeRuntime_block_879 hov h879
 
 end Benchmarks.Safe.ViaIR
