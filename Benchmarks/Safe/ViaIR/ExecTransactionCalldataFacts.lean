@@ -17,6 +17,17 @@ def execTransactionCalldataInput (cd : ByteArray) (dataLen sigLen : Nat) :
     (cd.extract (execTransactionSignaturesStart cd)
       (execTransactionSignaturesStart cd + sigLen))
 
+structure ExecTransactionCalldataFields (cd : ByteArray) (p : ExecTransactionInput) : Prop where
+  value : calldataWord cd 36 = p.tx.value
+  operation : calldataWord cd 100 = p.tx.operation
+  safeTxGas : calldataWord cd 132 = p.tx.safeTxGas
+  baseGas : calldataWord cd 164 = p.tx.baseGas
+  gasPrice : calldataWord cd 196 = p.tx.gasPrice
+
+theorem execTransactionCalldataFields (cd : ByteArray) (dataLen sigLen : Nat) :
+    ExecTransactionCalldataFields cd (execTransactionCalldataInput cd dataLen sigLen) :=
+  ⟨rfl, rfl, rfl, rfl, rfl⟩
+
 structure ExecTransactionCalldataBounds (cd : ByteArray) (dataLen sigLen : Nat) : Prop where
   head : 324 ≤ cd.size
   small : cd.size < 2 ^ 255

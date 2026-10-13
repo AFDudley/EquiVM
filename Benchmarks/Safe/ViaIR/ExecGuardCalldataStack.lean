@@ -24,7 +24,9 @@ theorem execGuardSaved_calldata {cd : ByteArray} {dataLen sigLen : Nat}
     (R : List UInt256) :
     execGuardSaved (execTransactionCalldataInput cd dataLen sigLen)
       (execTransactionDataStart cd) ptr guard hash R =
-      guard :: execSignatureSaved cd dataLen ptr hash R := by
+      [ptr, calldataWord cd 4, UInt256.ofNat (execTransactionDataStart cd),
+        calldataWord cd 260, UInt256.land guard solcAddrMask, calldataWord cd 228,
+        hash, UInt256.ofNat dataLen] ++ R := by
   let p := execTransactionCalldataInput cd dataLen sigLen
   have ht : UInt256.ofNat p.tx.target.val = calldataWord cd 4 :=
     ((canonicalAddress_eq_address_iff _ _ hb.target).mp rfl).symm
@@ -34,6 +36,5 @@ theorem execGuardSaved_calldata {cd : ByteArray} {dataLen sigLen : Nat}
     ((canonicalAddress_eq_address_iff _ _ hb.refundReceiver).mp rfl).symm
   change execGuardSaved p _ _ _ _ _ = _
   rw [execGuardSaved, ht, hk, hr, execTransactionPayloadSize hb]
-  rfl
 
 end Benchmarks.Safe.ViaIR

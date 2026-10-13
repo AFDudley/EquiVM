@@ -365,3 +365,18 @@ this stronger fact is propagated through the signature loop. It is needed by the
 zero-length allocation after the transaction guard call. The source specification and
 public entrypoint statements are unchanged. Transaction execution and setup are still
 being integrated.
+
+The transaction guard, gas checks, calldata allocation, CALL/DELEGATECALL, gas-used
+accounting, and success check now build together (3,643 jobs). Their internal interfaces
+follow the IR's smaller stacks, calldata reloads, checked memory allocation, and new
+branch targets. Guard-call encoding preserves both dynamic byte arrays and the caller
+address, and its successful zero-length allocation retains the free pointer below
+`2^64`. Both execution modes include their static-call rejection paths.
+
+Calldata allocation can fail at the IR's pointer bound. At the enclosing transaction gas
+check, that rejection is covered by the existing source gas abstraction: choosing zero
+gas either overflows the required-gas arithmetic or fails its positive gas requirement.
+The rejection lemma uses only the standard three axioms; no specification change was
+needed. The execution, gas-used, and success-check axiom scans report 280, 33, and 70
+permitted axioms, with no proof holes or custom axioms. Refunds, transaction completion,
+setup, and the whole-contract checks remain in progress.

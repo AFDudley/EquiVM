@@ -1,6 +1,5 @@
 import Benchmarks.Safe.ViaIR.ExecGuardEncode
 import Benchmarks.Safe.ViaIR.ExecGuardCallMemory
-import Benchmarks.Safe.ViaIR.Blocks.Runtime_020
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -9,52 +8,52 @@ namespace Benchmarks.Safe.ViaIR
 
 def execGuardSaved (p : ExecTransactionInput) (src : Nat) (sigPtr guard hash : UInt256)
     (R : List UInt256) : List UInt256 :=
-  [guard, hash, ⟨0⟩, sigPtr, UInt256.ofNat p.tx.refundReceiver.val,
-    UInt256.ofNat p.tx.gasToken.val, p.tx.gasPrice, p.tx.baseGas, p.tx.safeTxGas,
-    p.tx.operation, UInt256.ofNat p.tx.payload.size, UInt256.ofNat src,
-    p.tx.value, UInt256.ofNat p.tx.target.val] ++ R
+  [sigPtr, UInt256.ofNat p.tx.target.val, UInt256.ofNat src,
+    UInt256.ofNat p.tx.refundReceiver.val, UInt256.land guard solcAddrMask,
+    UInt256.ofNat p.tx.gasToken.val, hash, UInt256.ofNat p.tx.payload.size] ++ R
 
-set_option maxRecDepth 100000 in
+set_option maxRecDepth 2000 in
 theorem safeExecGuardCallPrepare (p : ExecTransactionInput)
     {I g s0 σ k C aw mem rdata ptr src sigPtr} {guard hash : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨3647⟩
+    (h : RD safeBytecode I g s0 ⟨5462⟩
       (execGuardSaved p src (UInt256.ofNat sigPtr) guard hash R) mem aw rdata σ k C)
+    (hc : ExecTransactionCalldataFields I.calldata p)
     (hf : memLoad ⟨64⟩ mem = UInt256.ofNat ptr) (hsig : BytesMemory mem sigPtr p.signatures)
     (ha : sigPtr + 32 + p.signatures.size ≤ ptr)
     (hin : src + p.tx.payload.size ≤ I.calldata.size) (hs : src < UInt256.size)
     (hb : ptr + 452 + ABI.paddedSize p.tx.payload.size + ABI.paddedSize p.signatures.size <
       UInt256.size)
-    (ho : p.tx.operation.toNat < 2) (hov : R.length + 48 ≤ 1024) :
-    ∃ words aw' k' C', words.length = (p.signatures.size + 31) / 32 ∧
+    (ho : p.tx.operation.toNat < 2) (hov : R.length + 32 ≤ 1024) :
+    ∃ words gasArg aw' k' C', words.length = (p.signatures.size + 31) / 32 ∧
       (wordBytes words).extract 0 p.signatures.size = p.signatures ∧
-      RD safeBytecode I g s0 ⟨3712⟩
-        ([UInt256.ofNat (ptr + 420 + ABI.paddedSize p.tx.payload.size +
-            ABI.paddedSize p.signatures.size), ⟨1978710866⟩,
-          UInt256.land solcAddrMask guard] ++
-          execGuardSaved p src (UInt256.ofNat sigPtr) guard hash R)
+      RD safeBytecode I g s0 ⟨5650⟩
+        ([gasArg, UInt256.land guard solcAddrMask, ⟨0⟩, UInt256.ofNat ptr,
+          UInt256.ofNat (420 + ABI.paddedSize p.tx.payload.size +
+            ABI.paddedSize p.signatures.size), UInt256.ofNat ptr, ⟨0⟩] ++
+          execGuardSaved p src (UInt256.ofNat ptr) guard hash R)
         (execGuardCallMemory I.calldata mem ptr src p (UInt256.ofNat I.source.val) words)
         aw' rdata σ k' C' := by
-  change memLoad (UInt256.ofNat 64) mem = UInt256.ofNat ptr at hf
-  have ht : (UInt256.ofNat ptr).toNat = ptr := ulit_toNat' _ (by omega)
-  have h4 : UInt256.ofNat 4 + UInt256.ofNat ptr = UInt256.ofNat (ptr + 4) := by
-    apply u256_inj
-    rw [ulit_toNat' _ (by omega)]
-    simpa only [Nat.add_comm] using
-      (uadd_ofNat_toNat (a := 4) (b := ptr) (by decide) (by omega) (by omega))
-  let m := writeWord mem ptr execGuardSelectorWord
-  have hm : mem.size ≤ m.size := by dsimp [m]; rw [writeWord_sparse_size]; omega
-  have hsigs : BytesMemory m sigPtr p.signatures := by
-    apply hsig.preserved (by omega) hm
-    intro off count hlo hhi
-    exact writeWordReadBelow _ _ _ _ _ (by have := hsig.available; omega) (by omega)
-  obtain ⟨_, _, _, h₁⟩ := safeRuntime_block_3647_packed (by simp; omega) (by jump_dest) h
-  simp only [safeRuntime_block_3647_stack, safeRuntime_block_3647_memory,
-    safeAddressMask, hf, ht, h4] at h₁
-  obtain ⟨words, aw', k', C', hn, hp, h₂⟩ := safeExecGuardEncode p.tx p.signatures h₁ hsigs
-    (by omega) hin hs (by omega) ho (by simp [execGuardSaved]; omega) (by jump_dest)
-  have he : ptr + 4 + 416 + ABI.paddedSize p.tx.payload.size + ABI.paddedSize p.signatures.size =
-      ptr + 420 + ABI.paddedSize p.tx.payload.size + ABI.paddedSize p.signatures.size := by omega
-  rw [he] at h₂
-  exact ⟨words, aw', k', C', hn, hp, h₂⟩
+  obtain ⟨words, aw₁, k₁, C₁, hn, hp, h₁⟩ :=
+    safeExecGuardEncode p h hc hf hsig ha hin hs hb ho hov
+  have hsub : UInt256.sub
+      (UInt256.ofNat (ptr + 420 + ABI.paddedSize p.tx.payload.size +
+        ABI.paddedSize p.signatures.size)) (UInt256.ofNat ptr) =
+      UInt256.ofNat (420 + ABI.paddedSize p.tx.payload.size +
+        ABI.paddedSize p.signatures.size) := by
+    rw [show ptr + 420 + ABI.paddedSize p.tx.payload.size + ABI.paddedSize p.signatures.size =
+      ptr + (420 + ABI.paddedSize p.tx.payload.size + ABI.paddedSize p.signatures.size)
+      by omega, ← wordOfNatAdd _ _ (by omega), word_add_sub_left]
+  have hsender : UInt256.land solcAddrMask (UInt256.ofNat I.source.val) =
+      UInt256.ofNat I.source.val := by
+    rw [u256_land_comm]
+    apply solcAddrMask_clean
+    rw [ulit_toNat' _ (lt_trans I.source.isLt (by decide))]
+    exact I.source.isLt
+  obtain ⟨aw₂, k₂, C₂, h₂⟩ := safeRuntime_block_5637_packed (by simp; omega) h₁
+  simp only [safeRuntime_block_5637_stack, safeRuntime_block_5637_memory, hsub,
+    wordOfNatAdd ptr 324 (by omega), ulit_toNat' (ptr + 324) (by omega)] at h₂
+  exact ⟨words, _, aw₂, k₂, C₂, hn, hp, by
+    simpa only [execGuardSaved, execGuardCallMemory, execGuardArgsMemory, hsender,
+      Reasoning.Theory.writeWord, Nat.add_assoc, Nat.reduceAdd] using h₂⟩
 
 end Benchmarks.Safe.ViaIR
