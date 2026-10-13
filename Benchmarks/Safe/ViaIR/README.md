@@ -30,7 +30,7 @@ Artifacts:
 - `SpecSyntax.lean`: syntax-side wrapper checked definitionally against the AST scaffold
 - `Bytecode.lean`: optimized bytecode embedded as `ByteArray`, with `valid_jumps` facts
 - `Constructor.lean`: proved constructor equivalence for the IR bytecode
-- `Correct.lean`: runtime and whole-contract refinement targets, pending IR repair
+- `Correct.lean`: proved runtime and whole-contract refinement for the IR bytecode
 - `CorrectProofAudit.lean`: checks the constructor, runtime, and whole-contract axiom footprints
 - `Runtime.lean`: 33 entrypoint obligations (31 selectors, receive, fallback)
 - `Blocks.lean`, `Blocks/`: generated runtime and constructor instruction summaries and PC indexes
@@ -40,67 +40,51 @@ Artifacts:
 
 Main source sha256: `9f91d9250e18bb0710b7b1f10dcbe2417e9ef8d22eeee98dba2ef48661a060fa`.
 
-## Legacy baseline semantic audit
+## Refinement scope and specification corrections
 
-The following records the copied legacy proof and audit. Its PCs refer to the legacy bytecode,
-not the regenerated IR artifacts. The IR regression audit also passes all 408 cases with the
-same outcome counts. The randomized IR test reports 1,775 cases: 1,761 agree (578 successful),
-0 disagree, 0 stuck, 14 EVM out of gas, and 0 spec out of fuel. The constructor and shared
-dispatcher proofs have been repaired; runtime proof repair remains incomplete. See
-[`REPAIR.md`](REPAIR.md) for the current repair status. A benchmark-local ABI decoder now
-models the zero-argument signed length guard at `2^255 + 4`; the former counterexample is
-retained as an exact execution and refinement regression certificate. These executable tests
-do not establish correctness of the IR bytecode.
+The constructor, all 33 runtime entrypoints, and the whole-contract refinement are proved.
+The runtime and whole-contract claims require the executing account to exist:
+`σ.get? I.codeOwner ≠ none`. This approved premise is needed by owner insertion because the
+model permits code execution independently of account existence, while storage writes to an
+absent account are no-ops. The constructor and the other 32 entrypoint statements retain their
+original premises. No additional gas bound is imposed.
 
-The audit target is the pinned bytecode under the repository's current `Solm.runtimeRefinement`.
-That relation observes the final account map, successful return bytes, reverts, invalid-instruction
-halts, and static-mode violations. Gas exhaustion has its own refinement case. Gas observations
-and call gas/substate inputs are existential witnesses. Log contents and revert payloads are not
-observed. Consequently this is not a claim of equivalence for all observables of a production EVM.
+The port exposed differences between the generated IR checks and the copied specification on
+symbolic inputs. The user approved these benchmark-local corrections:
 
-The constructor and all runtime obligations are proved. The proofs handle gas exhaustion through
-the refinement relation's out-of-gas cases and use the actual EVM call result for external calls.
-No additional well-formed-storage, successful-decoding, nonstatic, or restricted-callee assumptions
-were needed. The trusted base consists of Lean's standard axioms and concrete `native_decide`
-evaluation facts; selector identities use kernel evaluation.
-
-Corrections made during the audit:
-
-| Area | Bytecode evidence and specification behavior |
+| Surface | Correction |
 | --- | --- |
-| Events and static mode | All 17 `LOG` sites now have event statements in source order. Receive emits at PC 533. Setup emits at PC 4634 **before** its threshold/owner checks. Module events follow the post-guard; transaction events precede the post-guard. |
-| Assembly address stores | PCs 5944, 6194, and 8317 perform whole-word `SSTORE` for module guard, guard, and fallback handler. Their locators now have size 32; ordinary address mappings retain 20-byte writes preserving unrelated high bits. |
-| Fallback raw-word check | PCs 581–586 test the entire handler slot. A nonzero word with zero low 160 bits still calls address zero. The spec reads the raw word before converting the call target to an address. |
-| Allocation panics | The explicit `new` size guards for owners, module pages, and raw storage bytes are retained. `getStorageAt` checks the wrapped `length << 5`, not unbounded multiplication. |
-| Memory argument decoding | The decoder at PC 9242 checks its new free-memory pointer. Its sole memory `bytes` argument starts at 0x80, so `0x80 + 32 + ceil32(length) <= 2^64 - 1` requires `length <= 2^64 - 192`. All eight affected entrypoints now check this; calldata-only arguments do not. |
-| Signature short circuit | The P-256 signer-address comparison precedes the precompile call. A mismatched address reverts without invoking the target. |
-| Execution order | Nonce increment precedes transaction hashing, as in the `nonce++` argument evaluation. Raw storage slot addition is explicitly reduced to 256 bits. |
+| Zero-argument decoding | Reject `calldata.size - 4 >= 2^255` for empty parameter lists. Other parameter lists use the existing `modern` decoder. |
+| `getStorageAt` | Bound the wrapped requested byte length by `2^64 - 161`, accounting for the allocation header and initial free pointer. |
+| `getOwners` | Bound the owner count by `2^59 - 6`. |
+| `getModulesPaginated` | Bound the requested page size by `2^59 - 6`. |
+| `setup` | After `SafeSetup`, require `32 * owners.length + data.length <= 2^64 - 352` for positive token payments, and `<= 2^64 - 224` otherwise. |
 
-The remaining behavior was checked against the vendored sources, the exactly reproduced compiler
-output, its generated ABI decoder code, and source-mapped instructions:
+The setup guard accounts for the owner and data buffers and, where needed, the token encoder's
+additional 128 bytes. It preserves the event's position before the allocation and owner checks.
+The shared decoding modes and vendored Solidity sources are unchanged. The AST and syntax
+specifications agree definitionally. See [`REPAIR.md`](REPAIR.md) for the proof and validation
+summary.
 
-| Surface | Checks retained |
-| --- | --- |
-| Dispatcher, receive, fallback | All 31 selectors, short and unknown selectors, per-entrypoint payability, decoding failures, empty calldata, caller suffix, raw success return, and propagated call failure. |
-| Owner management | Authorization, sentinel and zero restrictions, EIP-7702 three-byte code probe, duplicate owners, linked-list rewiring, checked count changes, threshold updates, malformed lists and array bounds. |
-| Module management | Enable/disable authorization, sentinel membership, page allocation and truncation, last-element continuation, broken zero links, cached guard, call/delegatecall distinction, return-data capture before post-guard. |
-| Setup and constructor | Constructor writes only threshold after its value check. Setup event order, single initialization, owner setup, full-word fallback store, code-existence check for setup delegatecall, and optional payment. |
-| Signatures | Both compatibility overloads, ignored data preimages, checked `requiredSignatures * 65`, ordered owners, all `v` branches, dynamic bounds and overflow checks, approved hashes, exact ERC-1271 magic and 32-byte length, P-256 hash-derived address and exact result, ecrecover failure. |
-| Transaction and payment | EIP-712 constants/encoding, nonce timing, enum validation, guard checks, checked additions and wrapping shift in gas check, failure policy, native refund price cap/origin, ERC-20 empty/32-byte/nonzero acceptance, and event/post-guard ordering. |
-| Views and simulation | Scalar and mapping getters, flattened tuple returns, domain/transaction hashes, modulo raw storage addressing, delegatecall effects followed by unconditional revert. |
-| Calls | Correct caller/value/permission inheritance, depth and balance failures, arbitrary target code, raw return data, typed bool validation, missing code on void calls, and callee world effects. |
+The refinement relation observes final account maps, successful return bytes, reverts,
+invalid-instruction halts, and static-mode violations. Gas exhaustion has a separate refinement
+case. Log contents and revert payloads are not observed; external-call gas and input substates
+are existential witnesses. For example, the native-payment allocation-failure proof uses a
+proved failing zero-gas call when the actual call returns nonempty data. These are properties
+of the repository's refinement model, rather than equality of all production-EVM observables.
 
-`Audit.lean` runs every selector in both permission modes and with zero/nonzero call value, then
-checks malformed ABI heads, dirty storage, linked lists, calldata aliases, guard return sizes,
-contract signatures, P-256 results, token return conventions, refunds, delegatecall storage changes,
-depth limits, and construction. It compares success return bytes and the entire final account map.
-Call replay also checks opcode, target, value, calldata, and the account map before every call.
-The harness reports out-of-gas separately and fails on test-fuel exhaustion or unsupported AST
-forms. It is independent of the refinement proofs.
+The executable audit covers all selectors, permission and call-value checks, malformed ABI
+heads, dirty storage, linked lists, calldata aliases, guards, signatures, token return values,
+refunds, delegatecall storage changes, depth limits, and construction. It compares successful
+return bytes and the entire final account map. Call replay checks opcode, target, value,
+calldata, and the account map before each call. This audit is independent of the proofs.
 
-The recorded regression run passed all 408 cases: 104 successes, 292 reverts, 11 static-mode
-violations, and one separately classified out-of-gas result. The targeted Lake build includes
-the specification equality check, ABI checks, refinement proofs, and all generated summaries.
+The regression audit passes 408 cases: 104 successes, 292 reverts, 11 static violations, and
+one separately classified out-of-gas result. The final randomized run reports:
+
+```text
+Safe_ViaIR: 1775 cases: 1762 agree (580 successful), 0 disagree, 0 stuck, 13 EVM out of gas, 0 spec out of fuel
+```
 
 ## Generated summaries and proof obligations
 
