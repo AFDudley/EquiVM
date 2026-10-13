@@ -7,7 +7,10 @@ The remaining runtime proofs and whole-contract axiom audit have not been comple
 formally checked counterexample exposed an absent-account mismatch. The user authorized an
 account-existence premise on affected runtime claims; that restriction is now implemented in
 the add-owner theorem and the runtime and whole-contract statements, using the existing WF
-refinement relations. Shared storage semantics and the specification are unchanged for it.
+refinement relations. Shared storage semantics and the specification are unchanged for it. A third certified
+counterexample now blocks `getStorageAt`: the IR checks the final allocation pointer in
+addition to the requested byte length. The proposed local guard correction below awaits
+approval; it has not been applied.
 
 Eighteen runtime obligations now build: receive, fallback, `nonce`, `getThreshold`, `signedMessages`,
 `approvedHashes`, `isOwner`, `isModuleEnabled`, `domainSeparator`, `VERSION`, `changeThreshold`,
@@ -126,8 +129,8 @@ including the relation's alternative control-flow constructors. Consequently,
 `safeIRAbsentOwnerNotRefines` proves the negation of `runtimeRefinementFor` for this input.
 Build the witness with `lake build Benchmarks.Safe.ViaIR.IRAbsentAccount`.
 The witness builds, and its axiom audit contains the standard three axioms and eight
-native-decision certificates. The sixteen-entrypoint checkpoint builds, and the subsequent
-add-owner and remove-owner builds also pass. The newly repaired public proofs pass individual
+native-decision certificates. The combined build of all eighteen repaired entrypoints and both negative regression
+witnesses passes (3,581 build jobs). The newly repaired public proofs pass individual
 axiom scans with only the permitted axioms and native certificates. No proof holes or custom
 axioms were added.
 
@@ -139,5 +142,35 @@ preserves account existence across its link updates and proves that the incremen
 retained in storage. Remove-owner needs no added premise: its nonzero-count guard already
 implies account existence. Its proof follows the IR's fused decrement/store, two owner-link
 writes, and inlined threshold check. The counterexample is retained as evidence for the domain
-restriction; it does not refute the restricted claim. The port is continuing with the remaining
-runtime obligations.
+restriction; it does not refute the restricted claim. The storage-read allocation discrepancy
+below was found while continuing the remaining runtime obligations.
+
+The allocation counterexample uses an existing account and only 68 bytes of calldata:
+`getStorageAt(0, 2^59 - 1)`, zero call value, write permission, and 100,000 gas. The requested
+byte length is `2^64 - 32`, so the source's `maxMemoryLength = 2^64 - 1` guard accepts it.
+The IR computes an allocation size of `2^64`, then adds its initial free pointer 128. Its
+`finalize_allocation` check at PC 7128 branches to the allocation panic at PC 7161. The actual
+EVM execution reverts with panic `0x41`, leaving 99,481 gas; it never attempts the enormous
+memory allocation or storage-read loop.
+
+`safeIRStorageAllocationPremises` checks every original premise and the newly authorized
+account-existence condition. `safeIRStorageAllocationDecoding` proves that the local decoder
+accepts the two words. `safeIRStorageAllocationExecution` certifies the actual revert and gas
+remainder. A structural proof of the source loop's results, including every alternative
+control-flow constructor, establishes `safeIRStorageAllocationSourceCannotRevert`.
+`safeIRStorageAllocationNotRefines` therefore proves the negation of the single-input runtime
+claim. Its axiom scan contains only the standard three axioms and eight native certificates,
+with no proof holes. Rebuild it with `lake build Benchmarks.Safe.ViaIR.IRStorageAllocation`.
+The two-word decoder's EVM trace has also been ported to the inlined entry guard and loads;
+its source decoding lemmas remain unchanged.
+
+The proposed smallest local specification correction is to replace the bound in
+`getstorageatTransition`'s existing allocation guard by `2^64 - 161`, and mirror that one
+expression in the syntax specification. This requires `requestedBytes + 160 <= 2^64 - 1`,
+accounting for the initial 128-byte pointer and 32-byte header. The shifted byte length is
+already a multiple of 32, so its largest admitted value is `2^64 - 192`.
+`safeIRStorageAllocationCorrectedBound` verifies the arithmetic equivalence, and
+`safeIRStorageAllocationRejectedByCorrectedBound` verifies rejection of the witness.
+The proposal changes no ABI decoding mode, account condition, shared memory bound, or other
+transition. The initial instruction to investigate, report, and wait on an unprovable claim
+requires approval before making this additional specification change.
