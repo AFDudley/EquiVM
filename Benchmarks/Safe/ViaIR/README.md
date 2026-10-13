@@ -29,7 +29,7 @@ Artifacts:
 - `Spec.lean`: Solm AST with ABI surface, solc 0.8.35 decoding, and physical storage layout
 - `SpecSyntax.lean`: syntax-side wrapper checked definitionally against the AST scaffold
 - `Bytecode.lean`: optimized bytecode embedded as `ByteArray`, with `valid_jumps` facts
-- `Constructor.lean`: copied constructor proof, pending IR repair
+- `Constructor.lean`: proved constructor equivalence for the IR bytecode
 - `Correct.lean`: runtime and whole-contract refinement targets, pending IR repair
 - `CorrectProofAudit.lean`: checks the constructor, runtime, and whole-contract axiom footprints
 - `Runtime.lean`: 33 entrypoint obligations (31 selectors, receive, fallback)
@@ -45,8 +45,10 @@ Main source sha256: `9f91d9250e18bb0710b7b1f10dcbe2417e9ef8d22eeee98dba2ef48661a
 The following records the copied legacy proof and audit. Its PCs refer to the legacy bytecode,
 not the regenerated IR artifacts. The IR regression audit also passes all 408 cases with the
 same outcome counts. The randomized IR test reports 1,775 cases: 1,761 agree (578 successful),
-0 disagree, 0 stuck, 14 EVM out of gas, and 0 spec out of fuel. IR proof repair is pending;
-these executable tests do not establish correctness of the IR bytecode.
+0 disagree, 0 stuck, 14 EVM out of gas, and 0 spec out of fuel. The constructor and shared
+dispatcher proofs have been repaired; runtime proof repair remains incomplete. See
+[`REPAIR.md`](REPAIR.md) for the generated-summary blocker. These executable tests do not
+establish correctness of the IR bytecode.
 
 The audit target is the pinned bytecode under the repository's current `Solm.runtimeRefinement`.
 That relation observes the final account map, successful return bytes, reverts, invalid-instruction
