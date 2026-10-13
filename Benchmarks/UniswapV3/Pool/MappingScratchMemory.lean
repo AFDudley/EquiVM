@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.Common
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 -- GENERALIZES Reasoning.Solc.wordAt0Mem_twoWordHashMem_solcMappingSlot to arbitrary memory.

@@ -4,7 +4,7 @@ import Benchmarks.UniswapV3.Pool.Slot0Storage
 import Benchmarks.UniswapV3.Pool.NoDelegateCall
 import Benchmarks.UniswapV3.Pool.BlockTimestamp
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
@@ -44,7 +44,7 @@ theorem observeDelegateCall (v : UniswapV3PoolImmutables) (evm : EVM.State)
     ExecStmt config (observeInitialFrame v secondsAgos) evm
       (.internalCall "checkNotDelegateCall" [] "__c0") (.ok (observeDelegateFrame v secondsAgos) evm) :=
   internalCallFunctionReturn (callee := noDelegateCallFunction) (argVals := []) (locals := ∅)
-    (calleeSolm := noDelegateCallFrame v) (value := none)
+    (calleeStele := noDelegateCallFrame v) (value := none)
     (by simp only [evalExprs?, pure]) noDelegateCallLookup rfl (noDelegateCallReturns v evm hself)
 
 theorem observeTimestampCall (v : UniswapV3PoolImmutables) (evm : EVM.State) (secondsAgos : List UInt256) :
@@ -52,7 +52,7 @@ theorem observeTimestampCall (v : UniswapV3PoolImmutables) (evm : EVM.State) (se
       (.internalCall "_blockTimestamp" [] "__c1")
       (.ok (observeReadyFrame v secondsAgos evm.executionEnv) evm) :=
   internalCallFunctionReturn (callee := blockTimestampFunction) (argVals := []) (locals := ∅)
-    (calleeSolm := {contract := contract, locals := ∅, immutables := immStore v})
+    (calleeStele := {contract := contract, locals := ∅, immutables := immStore v})
     (value := some [.int (Int.ofNat (blockTimestampWord evm.executionEnv).toNat)])
     (by simp only [evalExprs?, pure]) blockTimestampLookup rfl (blockTimestampReturns (immStore v) evm)
 

@@ -2,7 +2,7 @@ import Reasoning.ExternalCall
 import Reasoning.EVMWord
 import Benchmarks.Dss.Flipper.Common
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -95,7 +95,7 @@ theorem evalExpr_flipperStorageVatOfLocals {evm : EVM.State} {locals : Store}
     evalExpr? config { contract := contract, locals := locals } evm (.storage vatRef) =
       .ok (.address (flipperVatAddress evm.accountMap evm.executionEnv)) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
-    (cfg := config) (solm := { contract := contract, locals := locals }) (evm := evm)
+    (cfg := config) (stele := { contract := contract, locals := locals }) (evm := evm)
     (slot := vatRef) (er := ({ base := "vat", steps := [] } : EvaledStorageRef))
     (t := .address) (loc := addrLoc ⟨2⟩)
     (value := .address (flipperVatAddress evm.accountMap evm.executionEnv))
@@ -112,7 +112,7 @@ theorem evalExpr_flipperStorageCatOfLocals {evm : EVM.State} {locals : Store}
     evalExpr? config { contract := contract, locals := locals } evm (.storage catRef) =
       .ok (.address (flipperCatAddress evm.accountMap evm.executionEnv)) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
-    (cfg := config) (solm := { contract := contract, locals := locals }) (evm := evm)
+    (cfg := config) (stele := { contract := contract, locals := locals }) (evm := evm)
     (slot := catRef) (er := ({ base := "cat", steps := [] } : EvaledStorageRef))
     (t := .address) (loc := addrLoc ⟨7⟩)
     (value := .address (flipperCatAddress evm.accountMap evm.executionEnv))

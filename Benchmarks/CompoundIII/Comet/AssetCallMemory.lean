@@ -3,7 +3,7 @@ import Benchmarks.CompoundIII.Comet.CallWordMemory
 import Benchmarks.CompoundIII.Comet.AssetStructMemory
 import Benchmarks.CompoundIII.Comet.PriceMemory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 

@@ -3,10 +3,10 @@ import Benchmarks.Dss.Spot.Selectors
 /-!
 # MakerDAO/Sky DSS Spotter dispatcher facts
 
-Solm dispatch routing facts and the shared non-payable/no-selector runtime paths.
+Stele dispatch routing facts and the shared non-payable/no-selector runtime paths.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 

@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.LiquidityDeltaSource
 import Benchmarks.UniswapV3.Pool.LiquidityDeltaTrace
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
@@ -35,7 +35,7 @@ theorem liquidityDeltaInternalX {σ : AccountMap} {ee : ExecutionEnv} {g : Sat25
     exact liquidityDeltaReverts (immStore v) evm x y hbad
   · refine Or.inr ⟨?_, hv, kr, Cr, rr⟩
     apply internalCallFunctionReturn (callee := liquidityDeltaFunction)
-      (calleeSolm := liquidityDeltaReadyFrame (immStore v) x y)
+      (calleeStele := liquidityDeltaReadyFrame (immStore v) x y)
       (value := some [.int (liquidityDeltaResult x y)]) he hl (liquidityDeltaBind x y)
     rw [hc]
     exact liquidityDeltaReturns (immStore v) evm x y hv

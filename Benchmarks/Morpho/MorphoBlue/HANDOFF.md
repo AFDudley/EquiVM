@@ -86,12 +86,12 @@ Do not overwrite the repaired `SpecSyntax.lean` by rerunning the draft translato
 Lean toolchain: `leanprover/lean4:v4.29.0`. Seed: **2026**. Both commands exit successfully:
 
 ```sh
-lake exe solm-difftest --only Morpho --count 50
+lake exe stele-difftest --only Morpho --count 50
 lake env lean --run Benchmarks/Morpho/MorphoBlue/DiffScenarios.lean
 ```
 
 ```text
-solm-difftest: 1 target(s), seed 2026, 50 cases per transition
+stele-difftest: 1 target(s), seed 2026, 50 cases per transition
 Morpho: 1575 cases: 1575 agree (545 successful), 0 disagree, 0 stuck, 0 EVM out of gas, 0 spec out of fuel
   successful/cases: constructor 15/25, setOwner(address) 4/53, accrueInterest((address,address,address,address,uint256)) 0/52, repay((address,address,address,address,uint256),uint256,uint256,address,bytes) 0/56, supplyCollateral((address,address,address,address,uint256),uint256,address,bytes) 0/52, setFee((address,address,address,address,uint256),uint256) 0/53, DOMAIN_SEPARATOR() 51/55, feeRecipient() 45/55, enableLltv(uint256) 3/53, borrow((address,address,address,address,uint256),uint256,uint256,address,address) 0/55, enableIrm(address) 5/52, withdraw((address,address,address,address,uint256),uint256,uint256,address,address) 0/51, isAuthorized(address,address) 42/55, position(bytes32,address) 43/53, nonce(address) 49/57, extSloads(bytes32[]) 43/52, withdrawCollateral((address,address,address,address,uint256),uint256,address,address) 0/57, createMarket((address,address,address,address,uint256)) 0/53, owner() 44/53, idToMarketParams(bytes32) 38/51, supply((address,address,address,address,uint256),uint256,uint256,address,bytes) 0/54, isLltvEnabled(uint256) 41/54, liquidate((address,address,address,address,uint256),address,uint256,uint256,bytes) 0/54, flashLoan(address,uint256,bytes) 10/52, market(bytes32) 47/56, setFeeRecipient(address) 4/54, setAuthorization(address,bool) 22/55, isIrmEnabled(address) 39/53, stray 0/100
 
@@ -158,7 +158,7 @@ The immutable is `DOMAIN_SEPARATOR : bytes32`, inserted at runtime offsets **628
 `0xec6ac4ec6469375712b671d38548b711c7a4a17b4db99be41e0eb9f28cafdd2d`, derived as
 `keccak256(abi.encode(EIP712Domain typehash, uint256(1), deployment address))`.
 The generic constructor/runtime theorem still quantifies over valuations and patches both sites;
-the bytes32 value in the Solm immutable store must use fixed bytes, not an integer value.
+the bytes32 value in the Stele immutable store must use fixed bytes, not an integer value.
 
 `SpecSyntax.modelExternalABI` contains the nine actual callee ABIs. `MarketParams` below means
 `(address,address,address,address,uint256)`; `Market` means six `uint128` fields in storage order.
@@ -192,7 +192,7 @@ success, nonpayability, malformed lengths, and applicable noncanonical argument 
 Static-mode failures and arithmetic failures are matched at their actual bytecode positions.
 The final build and top-level axiom audits are recorded above.
 
-New local shared modules are `DispatchFacts.lean` (Solm routing), `BodyCommon.lean` (calldata
+New local shared modules are `DispatchFacts.lean` (Stele routing), `BodyCommon.lean` (calldata
 prelude, refinement bridges that accept selector dispatch alongside the raw fallback, and
 return memory), `Storage.lean` (layout/evaluation bridges), and `Routines.lean` (canonical
 address decoders at calldata offsets 4 and 36). `ReturnCommon.lean` handles multiword ABI
@@ -205,7 +205,7 @@ statements supplied by the scaffold are preserved.
 
 The differential suites were rerun before proof work with the results in Section 2. The
 `lake exe` command unexpectedly started rebuilding unrelated Comet modules and was stopped;
-the already-built `.lake/build/bin/solm-difftest --only Morpho --count 50` ran successfully.
+the already-built `.lake/build/bin/stele-difftest --only Morpho --count 50` ran successfully.
 The supplemental scenario suite also reran successfully. No unrelated builds should be run.
 
 `liquidate` covers both rounding directions and the bad-debt branch. `_accrueInterest`

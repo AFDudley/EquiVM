@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.UnlockAllocationBounds
 import Benchmarks.UniswapV4PoolManager.MemoryFootprint
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 -- LIBRARY CANDIDATE: the low byte of an in-bounds ABI word.

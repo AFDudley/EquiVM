@@ -2,7 +2,7 @@ import Reasoning.ExternalCall
 import Benchmarks.Auction.PaymentLocals
 import Benchmarks.Auction.DepositCall
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Auction
 
@@ -13,7 +13,7 @@ theorem wethSourceRead {s0 I σ evm locals}
       .ok (.address (AccountAddress.ofUInt256 (wethWord σ I))) := by
   rw [wethRef, scalarRead evm locals "weth" .address (auctionAddrLoc ⟨202⟩)
     hb (by native_decide) rfl, loadAddress]
-  have hw : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨202⟩ = solcSlotWord σ I ⟨202⟩ := by
+  have hw : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨202⟩ = solcSlotWord σ I ⟨202⟩ := by
     exact hs.storageRead _
   rw [hw, addressOfWord_eq]
   rfl

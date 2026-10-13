@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.OracleWriteMemoryPrefix
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
@@ -50,7 +50,7 @@ theorem oracleWriteInternalRawX {σ : AccountMap} {ee : ExecutionEnv} {g : Sat25
         (hv.2.resolve_left (by simp only [hsame]; decide)) ha (by rw [hs.env]; exact hperm)
     · refine Or.inr (Or.inr ⟨?_, hv, σ', aw', kr, Cr, hs', rr, hm'⟩)
       apply internalCallFunctionReturn (callee := oracleWriteFunction)
-        (calleeSolm := oracleWriteReturnFrame (immStore v) a evm)
+        (calleeStele := oracleWriteReturnFrame (immStore v) a evm)
         (value := some [.int (Int.ofNat (oracleWriteResultIndex a evm).toNat),
           .int (Int.ofNat (oracleWriteResultCardinality a evm).toNat)]) he hl (oracleWriteBind a)
       rw [hc]

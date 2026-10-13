@@ -3,7 +3,7 @@ import Benchmarks.UniswapV3.Pool.BurnAmountsTrace
 import Benchmarks.UniswapV3.Pool.BurnOwedTrace
 import Benchmarks.UniswapV3.Pool.BurnFinishTrace
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000

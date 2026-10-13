@@ -1,7 +1,7 @@
 import Benchmarks.EAS.EAS.RevokeUpdateEVM
 import Benchmarks.EAS.EAS.RevokeRecordRegion
 import Benchmarks.EAS.EAS.ArrayDisjoint
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 theorem revokeUpdateMemory_prefix (mem : ByteArray) (site : RevokeSite) (src heap value word : UInt256) (i : Nat)

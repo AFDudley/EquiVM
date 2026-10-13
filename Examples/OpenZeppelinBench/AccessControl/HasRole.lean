@@ -1,8 +1,8 @@
 import Reasoning.Memory
 import Examples.OpenZeppelinBench.AccessControl.Storage
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 2000000
@@ -167,7 +167,7 @@ theorem evalExpr_hasRole_storage (evm : EVM.State) (I : ExecutionEnv)
       (.storage (roleHasRoleRef (.var "role") (.var "account"))) =
         .ok (wordToElem .bool
           (UInt256.land
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (hasRoleSlot I)) ⟨255⟩)) := by
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (hasRoleSlot I)) ⟨255⟩)) := by
   rw [evalExpr_storage_scalar (hbackend := rfl) (t := .bool)
     (hbase := by simpa [roleHasRoleRef] using hasRoleStore_roles I)
     (her := evalStorageRef_hasRole evm I hsz68)
@@ -188,7 +188,7 @@ theorem accessControlHasRoleBodyReturns (evm : EVM.State) (I : ExecutionEnv)
       (.returned { contract := contract, locals := hasRoleStore I } evm
         (some [(wordToElem .bool
           (UInt256.land
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (hasRoleSlot I)) ⟨255⟩))])) := by
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (hasRoleSlot I)) ⟨255⟩))])) := by
   exact ExecFuncBody.execBlockRet <|
     (ABlock.start.requireStep (evalCallvalueEq_true h)).returns (by
       simpa [roleHasRoleRef] using evalExpr_hasRole_storage evm I hsz68)
@@ -577,7 +577,7 @@ theorem accessControlHasRoleBody {σ σ₀ A I}
                 (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                 (some [(wordToElem .bool (hasRoleMaskedWord σ I))])) := by
           simpa [hasRoleStorageWord, hasRoleMaskedWord, hasRoleSlot, initState,
-            Solm.EVM.storageLoad, State.lookupAccount] using
+            Stele.EVM.storageLoad, State.lookupAccount] using
               accessControlHasRoleBodyReturns
                 (initState σ σ₀ (Sat256.ofUInt256 g) A I) I
                 (by simp only [initState]; exact hwv) hsz68

@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.CallComposition
 import Benchmarks.UniswapV4PoolManager.Values
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 -- LIBRARY CANDIDATE: returning the value bound by an internal call.
@@ -26,7 +26,7 @@ theorem internalCallThenReturn {cfg : Config} {caller : Frame} {evm : EVM.State}
   cases result with
   | ok => cases hbody
   | «break» => cases hbody
-  | «continue» => cases hbody
+  | «continue» | noMatch | decodingFailed => cases hbody
   | reverted => exact .execBlockRevert (ExecBlock.consRevert hc)
   | staticViolation => exact .execBlockStatic (ExecBlock.consStatic hc)
   | returned cf evm' value =>

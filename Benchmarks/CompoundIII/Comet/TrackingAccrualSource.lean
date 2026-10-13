@@ -1,6 +1,6 @@
 import Benchmarks.CompoundIII.Comet.TrackingAccrualModel
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.CompoundIII.Comet.Immutables
 
 namespace Benchmarks.CompoundIII.Comet
@@ -13,16 +13,16 @@ theorem trackingAccrual_source (v : CometWithExtendedAssetListImmutables) (borro
     (ht : evalExpr? config frame evm (.var "timeElapsed") = .ok (.int elapsed.toNat))
     (hp : frame.locals.get? (totalsPrincipalName borrow) = none)
     (hx : frame.locals.get? (trackingIndexName borrow) = none) :
-    let w0 := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩
-    let w1 := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩
+    let w0 := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩
+    let w1 := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩
     ExecBlock config frame evm (trackingAccrualBlock borrow)
       (if TrackingAccrualValid v borrow w0 w1 elapsed then
         .ok (trackingAccrualFrame frame borrow
           (trackingIncrement v borrow (totalsPrincipalWord w1 borrow) elapsed))
           (trackingAccrualState evm v borrow elapsed) else .reverted) := by
   dsimp only
-  let w0 := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩
-  let w1 := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩
+  let w0 := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩
+  let w1 := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩
   let total := totalsPrincipalWord w1 borrow
   let increment := trackingIncrement v borrow total elapsed
   let product := UInt256.mul (trackingSpeed v borrow) elapsed
@@ -105,7 +105,7 @@ theorem trackingBranch_source (v : CometWithExtendedAssetListImmutables) (borrow
           (trackingBranchState evm v borrow elapsed) else .reverted) := by
   have htotal : evalExpr? config frame evm (.storage ⟨totalsPrincipalName borrow, []⟩) =
       .ok (.int (totalsPrincipalWord
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) borrow).toNat) := by
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) borrow).toNat) := by
     simpa only [← hc] using evalTotalsPrincipal evm frame.locals frame.immutables borrow hp
   have hmin : evalExpr? config frame evm (.immutable "baseMinForRewards") =
       .ok (.int v.baseMinForRewards.toNat) := by

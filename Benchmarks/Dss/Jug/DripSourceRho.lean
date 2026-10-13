@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Jug.DripBase
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 open Reasoning.Theory.RpowB
 
@@ -464,7 +464,7 @@ theorem jugDripSourceBodyVatIlksAddOverflowReverts {σ σ₀ A I} {g : UInt256}
     simpa [dripVatIlksPrevLocals] using
       (ExecStmt.letDecl
         (cfg := config)
-        (solm := { contract := contract, locals := dripVatIlksLocals I out })
+        (stele := { contract := contract, locals := dripVatIlksLocals I out })
         (evm := evmVat)
         (name := "prev")
         (ty := some uint256)
@@ -625,7 +625,7 @@ theorem jugDripSourceBodyVatIlksRmulOverflowReverts {σ σ₀ A I} {g : UInt256}
           .intLit one ])
       (argVals := [.int (Int.ofNat fee.toNat), .int 0, .int (Int.ofNat jugRay.toNat)])
       (callee := rpowFunction) (locals := uintTernaryLocals fee ⟨0⟩ jugRay)
-      (calleeSolm := { contract := contract, locals := rpowDoneLocals })
+      (calleeStele := { contract := contract, locals := rpowDoneLocals })
       hrpowArgs hlookupRpow hbindRpow hrpowBody
     simpa [resumeAfterInternalCall, dripPowLocals] using h
   have hrmulArgs :
@@ -662,7 +662,7 @@ theorem jugDripSourceBodyVatIlksRmulOverflowReverts {σ σ₀ A I} {g : UInt256}
     simpa [dripVatIlksPrevLocals] using
       (ExecStmt.letDecl
         (cfg := config)
-        (solm := { contract := contract, locals := dripVatIlksLocals I out })
+        (stele := { contract := contract, locals := dripVatIlksLocals I out })
         (evm := evmVat)
         (name := "prev")
         (ty := some uint256)

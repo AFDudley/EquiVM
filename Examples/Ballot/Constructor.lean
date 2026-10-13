@@ -9,7 +9,7 @@ import Reasoning.ABI
 import Reasoning.Reach
 import Reasoning.Memory
 import Reasoning.Solc
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 import Reasoning.Dispatch
 import Reasoning.JumpDest
 
@@ -17,7 +17,7 @@ import Reasoning.JumpDest
 # Ballot — constructor / creation-code equivalence
 
 This file proves the creation-code half of `Ballot`'s contract equivalence: the real solc
-`--optimize --evm-version shanghai` **creation bytecode** refines the Solm `constructorDecl`.
+`--optimize --evm-version shanghai` **creation bytecode** refines the Stele `constructorDecl`.
 
 The creation code is `ballotCtorPrefix ++ ballotBytecode`: the first 442 bytes are the genuine
 solc constructor (callvalue guard, `bytes32[]` ABI decoder, `chairperson = msg.sender`,
@@ -27,7 +27,7 @@ non-executable trailing metadata hash differs between solc invocations), so the 
 by the constructor is *exactly* the runtime the existing `ballotCorrect` proof is about.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 10000
 

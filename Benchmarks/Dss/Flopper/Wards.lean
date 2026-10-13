@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Flopper.Dispatch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -184,7 +184,7 @@ private theorem wardsRuntimeEquivFromReturn
   · have hxi := Xi_success_of_X (g := g) (by
       rw [← hcode] at hX
       exact hX)
-    let solmRes : ExecResult :=
+    let steleRes : ExecResult :=
       .returned
         { contract := contract,
           locals := (∅ : Store).insert "arg0" (.address (wardsMappingArg I)) }
@@ -201,12 +201,12 @@ private theorem wardsRuntimeEquivFromReturn
           (.ok (.success
             (s.accountMap, s.machineState.gasAvailable.toUInt256, s.substate)
             (UInt256.toByteArray (solcSlotWordAt slot σ I))))
-          solmRes (.abi wardsTransition.returnType) := by
+          steleRes (.abi wardsTransition.returnType) := by
       exact execResultsEquiv.success
         (σ' := s.accountMap) (g' := s.machineState.gasAvailable.toUInt256)
         (A' := s.substate) (o := UInt256.toByteArray (solcSlotWordAt slot σ I))
-        (solmRes := solmRes)
-        (solmState := initState σ σ₀ (Sat256.ofUInt256 g) A I)
+        (steleRes := steleRes)
+        (steleState := initState σ σ₀ (Sat256.ofUInt256 g) A I)
         (retVal := some [(.int (Int.ofNat (solcSlotWordAt slot σ I).toNat))])
         rfl rfl haccounts (.abi (by simpa only [hslot] using henc))
     refine reEquiv_execution hdispatch hdecode hbody' ?_
@@ -242,7 +242,7 @@ theorem flopperWardsBodyCoreOk
           (some [(.int
             (Int.ofNat (solcSlotWordAt (wardsMappingSlotFor I) σ I).toNat))])) := by
     simpa [wardsTransition, solcSlotWordAt, initState,
-      Solm.EVM.storageLoad, State.lookupAccount, locals] using
+      Stele.EVM.storageLoad, State.lookupAccount, locals] using
       flopperUint256GetterBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) locals
         (ref := wardsRef (.var "arg0")) (er := wardsMappingEvaledRef I)

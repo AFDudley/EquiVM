@@ -5,7 +5,7 @@ import Benchmarks.Dss.Clipper.Dispatch
 # MakerDAO/Sky DSS Clipper fallback and global-revert scaffolds
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 namespace Benchmarks.Dss.Clipper
@@ -1047,7 +1047,7 @@ theorem clipperNonPayable (v : ClipperImmutables) {code : ByteArray}
               callargs (by simp only [initState]; exact hwv))
             (by rw [hrev]; exact execResultsEquiv.revert rfl rfl)
 
-/-- `size < 4` or no selector matches: no Solm dispatch and EVM fallthrough reverts. -/
+/-- `size < 4` or no selector matches: no Stele dispatch and EVM fallthrough reverts. -/
 theorem clipperNoDispatch (v : ClipperImmutables) {code : ByteArray}
     (hpatch : patchRuntime clipperBytecode (patches v) = some code)
     {σ σ₀ A I} {g : UInt256}

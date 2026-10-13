@@ -1,6 +1,6 @@
 import Benchmarks.EAS.EAS.StoredRecord
 import Benchmarks.EAS.EAS.RecordPadding
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 -- GENERALIZES memoryPrefix_reserve_write: two writes at the same boundary preserve the prefix regardless of their values.

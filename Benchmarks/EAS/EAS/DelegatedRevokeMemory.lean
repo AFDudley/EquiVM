@@ -1,5 +1,5 @@
 import Benchmarks.EAS.EAS.VerifyRevokeSource
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 structure DelegatedRevokeMemoryView (mem : ByteArray) (ptr dataPtr sigPtr : UInt256)

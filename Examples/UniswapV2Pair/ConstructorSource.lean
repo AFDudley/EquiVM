@@ -1,19 +1,19 @@
 import Examples.UniswapV2Pair.ConstructorDomainSource
 import Examples.UniswapV2Pair.Bytes32WordSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace UniswapV2Pair
 
 set_option maxRecDepth 2000
 
 def constructorDomainState (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨3⟩
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨3⟩
     (constructorDomainHashWord (UInt256.ofNat evm.executionEnv.codeOwner.val))
 
 def constructorFactoryState (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨5⟩
-    (setAddressOffset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨5⟩
+    (setAddressOffset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩)
       (uniswapSourceWord evm.executionEnv))
 
 theorem constructorAssignDomain (evm : EVM.State) :

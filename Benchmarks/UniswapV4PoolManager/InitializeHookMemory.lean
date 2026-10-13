@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.InitializeHookABI
 import Benchmarks.UniswapV4PoolManager.PoolKeyEncodeMemory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 def beforeInitializeSelectorWord : UInt256 :=

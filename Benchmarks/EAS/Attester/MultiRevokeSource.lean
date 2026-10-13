@@ -1,7 +1,7 @@
 import Benchmarks.EAS.Attester.MultiRevokeSourceABI
 import Reasoning.ExternalCall
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.EAS.Attester
 
@@ -25,10 +25,10 @@ def multiRevokeShapeGuard : Expr :=
   .binary .and (.binary .ne (.var "schemaLength") (.intLit 0))
     (.binary .eq (.var "schemaLength") (.arrayLength .localVar ⟨"schemaUids", []⟩))
 
-theorem multiRevokeShapeGuard_eval {cfg solm evm} {n : Nat} {rows : List Value}
-    (hn : solm.locals.get? "schemaLength" = some (.int (Int.ofNat n)))
-    (hr : solm.locals.get? "schemaUids" = some (.array rows)) :
-    evalExpr? cfg solm evm multiRevokeShapeGuard =
+theorem multiRevokeShapeGuard_eval {cfg stele evm} {n : Nat} {rows : List Value}
+    (hn : stele.locals.get? "schemaLength" = some (.int (Int.ofNat n)))
+    (hr : stele.locals.get? "schemaUids" = some (.array rows)) :
+    evalExpr? cfg stele evm multiRevokeShapeGuard =
       .ok (.bool (decide (0 < n ∧ rows.length = n))) := by
   rw [multiRevokeShapeGuard, evalExpr?, evalLocalNatNeZero hn]
   simp only [bind, EvalResult.bind]
@@ -64,7 +64,7 @@ theorem multiRevokeSourceBadShape {imms : Store} {evm : State} {schemas rows : L
   apply ExecBlock.consRevert
   apply ExecStmt.requireFalse
   have he := multiRevokeShapeGuard_eval (cfg := config) (evm := evm)
-    (solm := ⟨contract, (multiRevokeLocals schemas rows).insert "schemaLength"
+    (stele := ⟨contract, (multiRevokeLocals schemas rows).insert "schemaLength"
       (.int (Int.ofNat schemas.length)), imms⟩) (n := schemas.length) (rows := rows)
     (by simp) (by simp [multiRevokeLocals, Std.HashMap.getElem?_insert, Std.HashMap.getElem_insert])
   simpa only [decide_eq_false hbad] using he
@@ -103,7 +103,7 @@ theorem multiRevokeSourceBuild {imms : Store} {evm : State} {cd : ByteArray}
   have hguard : evalExpr? config ⟨contract, l0, imms⟩ evm multiRevokeShapeGuard =
       .ok (.bool true) := by
     have he := multiRevokeShapeGuard_eval (cfg := config) (evm := evm)
-      (solm := ⟨contract, l0, imms⟩) hn0 hr0
+      (stele := ⟨contract, l0, imms⟩) hn0 hr0
     rw [hslen, hrlen, decide_eq_true
       (show 0 < arrayCount cd 4 ∧ arrayCount cd 36 = arrayCount cd 4 from hshape)] at he
     exact he

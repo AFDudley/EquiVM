@@ -1,6 +1,6 @@
 import Benchmarks.EAS.EAS.PackedShift
 import Benchmarks.EAS.EAS.ByteViews
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 -- GENERALIZES Reasoning.Memory.tailMask_toByteArray to a numeric mask, including an empty prefix.

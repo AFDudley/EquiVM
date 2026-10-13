@@ -1,7 +1,7 @@
 import Benchmarks.CompoundIII.Comet.WithdrawAmountsModel
 import Benchmarks.CompoundIII.Comet.PrincipalDifferenceSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 
@@ -52,7 +52,7 @@ theorem withdrawAmounts_source (evm : EVM.State) (imms : Store) (old next : UInt
     simp only [evalExprs?, evalExpr?, pure, bind, EvalResult.bind]; rfl
   · have hle : signed104 next ≤ signed104 old := by omega
     have hi := ExecStmt.iteFalse (cfg := config) (thenB := [.return [.intLit 0, .intLit 0]])
-      (hg.trans (by rw [decide_eq_false hinc])) (ExecBlock.nil (solm := frame) (evm := evm))
+      (hg.trans (by rw [decide_eq_false hinc])) (ExecBlock.nil (stele := frame) (evm := evm))
     have hd := withdrawAmountsDiff_source ho hn hle
     by_cases hp : 0 ≤ signed104 next
     · simp only [WithdrawAmountsFits, withdrawSupplyAmount, withdrawBorrowAmount,

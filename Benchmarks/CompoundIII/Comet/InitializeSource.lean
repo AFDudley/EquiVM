@@ -1,7 +1,7 @@
 import Benchmarks.CompoundIII.Comet.InitializeState
 import Benchmarks.CompoundIII.Comet.GetterSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 
@@ -23,9 +23,9 @@ theorem initializeGuard_eval (evm : EVM.State) (locals imms : Store)
     (hlocal : locals.get? "lastAccrualTime" = none) :
     evalExpr? config { contract := contract, locals := locals, immutables := imms } evm
       initializeGuard = .ok (.bool (decide
-        (lastAccrualWord (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) = ⟨0⟩))) := by
+        (lastAccrualWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) = ⟨0⟩))) := by
   have he := evalLastAccrual evm locals imms hlocal
-  let w := lastAccrualWord (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩)
+  let w := lastAccrualWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩)
   have hbeq : (Value.int (Int.ofNat w.toNat) == Value.int 0) = decide (w = ⟨0⟩) := by
     by_cases hz : w = ⟨0⟩
     · rw [hz]
@@ -41,7 +41,7 @@ theorem initializeGuard_eval (evm : EVM.State) (locals imms : Store)
 theorem initializeReady (evm : EVM.State) (imms : Store)
     (hv : evm.executionEnv.weiValue = ⟨0⟩)
     (hhi : evm.executionEnv.calldata.size < 2^255 + 4)
-    (hz : lastAccrualWord (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) = ⟨0⟩)
+    (hz : lastAccrualWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) = ⟨0⟩)
     (ht : (timestampWord evm.executionEnv).toNat < 2^40) :
     ABlock config evm { contract := contract, locals := ∅, immutables := imms }
       initializeStorageTransition.body (initializeReadyFrame evm imms) initializeWrites := by
@@ -66,7 +66,7 @@ theorem initializeTimeAssign (evm : EVM.State) (imms : Store) :
 theorem initializeStorage_returns (evm : EVM.State) (imms : Store)
     (hv : evm.executionEnv.weiValue = ⟨0⟩)
     (hhi : evm.executionEnv.calldata.size < 2^255 + 4)
-    (hz : lastAccrualWord (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) = ⟨0⟩)
+    (hz : lastAccrualWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) = ⟨0⟩)
     (ht : (timestampWord evm.executionEnv).toNat < 2^40) :
     ExecTransitionBody config contract evm ∅ initializeStorageTransition.body
       (.returned (initializeReadyFrame evm imms) (initializeSourceState evm) none) imms := by
@@ -86,7 +86,7 @@ theorem initializeStorage_returns (evm : EVM.State) (imms : Store)
 theorem initializeStorage_static (evm : EVM.State) (imms : Store)
     (hv : evm.executionEnv.weiValue = ⟨0⟩)
     (hhi : evm.executionEnv.calldata.size < 2^255 + 4)
-    (hz : lastAccrualWord (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) = ⟨0⟩)
+    (hz : lastAccrualWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) = ⟨0⟩)
     (ht : (timestampWord evm.executionEnv).toNat < 2^40)
     (hperm : evm.executionEnv.perm = false) :
     ExecTransitionBody config contract evm ∅ initializeStorageTransition.body .staticViolation imms := by
@@ -97,7 +97,7 @@ theorem initializeStorage_static (evm : EVM.State) (imms : Store)
 theorem initializeStorage_reverts (evm : EVM.State) (imms : Store)
     (hv : evm.executionEnv.weiValue = ⟨0⟩)
     (hhi : evm.executionEnv.calldata.size < 2^255 + 4)
-    (hinvalid : ¬ (lastAccrualWord (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) = ⟨0⟩ ∧
+    (hinvalid : ¬ (lastAccrualWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) = ⟨0⟩ ∧
       (timestampWord evm.executionEnv).toNat < 2^40)) :
     ExecTransitionBody config contract evm ∅ initializeStorageTransition.body .reverted imms := by
   rw [initializeStorage_body]
@@ -105,7 +105,7 @@ theorem initializeStorage_reverts (evm : EVM.State) (imms : Store)
   apply (calldataPrologue_ok hv hhi).run
   have hg := initializeGuard_eval evm
     ((∅ : Store).insert "__calldata" (.bytes evm.executionEnv.calldata)) imms (by simp)
-  by_cases hz : lastAccrualWord (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) = ⟨0⟩
+  by_cases hz : lastAccrualWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) = ⟨0⟩
   · rw [decide_eq_true hz] at hg
     apply ExecBlock.consNormal (ExecStmt.requireTrue hg)
     exact ExecBlock.consRevert (now_call_revert _ evm "__c0" rfl (fun ht ↦ hinvalid ⟨hz, ht⟩))

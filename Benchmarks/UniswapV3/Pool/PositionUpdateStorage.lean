@@ -2,7 +2,7 @@ import Benchmarks.UniswapV3.Pool.PositionUpdateStoreModel
 import Benchmarks.UniswapV3.Pool.PositionSnapshotMemory
 import Benchmarks.UniswapV3.Pool.StorageWordUpdate
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 theorem uint128Word_add_mask (a b : UInt256) :

@@ -1,6 +1,6 @@
 import Benchmarks.CompoundIII.Comet.RateModel
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.CompoundIII.Comet.Immutables
 
 namespace Benchmarks.CompoundIII.Comet
@@ -203,7 +203,7 @@ theorem rate_call_ok (v : CometWithExtendedAssetListImmutables) (b : Bool)
       (.ok { frame with locals := frame.locals.insert ret (.int (rateWord (rateParams v b) u).toNat) }
         evm) := by
   exact ExecStmt.internalCallReturn (callee := rateCallable b)
-    (cfg := config) (solm := frame) (evm := evm) (args := [expr]) (argVals := [.int u.toNat])
+    (cfg := config) (stele := frame) (evm := evm) (args := [expr]) (argVals := [.int u.toNat])
     (by simp only [evalExprs?, hu, pure, bind, EvalResult.bind])
     (by rw [hc]; exact rateCallable_lookup b) rfl
     (by simpa only [hc, hi] using rateCallable_returns v b u evm hvalid)
@@ -215,7 +215,7 @@ theorem rate_call_revert (v : CometWithExtendedAssetListImmutables) (b : Bool)
     (hvalid : ¬ RateValid (rateParams v b) u) :
     ExecStmt config frame evm (.internalCall (rateCallableName b) [expr] ret) .reverted := by
   exact ExecStmt.internalCallRevert (callee := rateCallable b)
-    (cfg := config) (solm := frame) (evm := evm) (args := [expr]) (argVals := [.int u.toNat])
+    (cfg := config) (stele := frame) (evm := evm) (args := [expr]) (argVals := [.int u.toNat])
     (by simp only [evalExprs?, hu, pure, bind, EvalResult.bind])
     (by rw [hc]; exact rateCallable_lookup b) rfl
     (by simpa only [hc, hi] using rateCallable_reverts v b u evm hvalid)

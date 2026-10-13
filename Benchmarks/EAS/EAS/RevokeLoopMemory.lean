@@ -2,7 +2,7 @@ import Benchmarks.EAS.EAS.RevokeUpdateMemory
 import Benchmarks.EAS.EAS.SchemaMemory
 import Benchmarks.EAS.EAS.WordArrayReflect
 import Benchmarks.EAS.EAS.PaddingLowWrite
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 structure RevokeLoopMemory (mem : ByteArray) (site : RevokeSite) (rs : List RevocationRequestRecord)

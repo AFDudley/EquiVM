@@ -2,7 +2,7 @@ import Benchmarks.UniswapV4PoolManager.PoolModifyTwoTicks
 import Benchmarks.UniswapV4PoolManager.TickResultMemory
 import Benchmarks.UniswapV4PoolManager.TickUpperStoreTrace
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 def poolModifyLowerMemory (mem : ByteArray) (ptr id : UInt256) (p : PoolModifyParams) (evm : State) : ByteArray :=

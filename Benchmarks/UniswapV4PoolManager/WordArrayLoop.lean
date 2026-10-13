@@ -4,7 +4,7 @@ import Benchmarks.UniswapV4PoolManager.WordArrayDecode
 import Benchmarks.UniswapV4PoolManager.WordArrayFillLoop
 
 /-! Shared source loop for storage and transient word arrays. -/
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 2000
 
@@ -21,8 +21,8 @@ def wordArrayRead (transient : Bool) (index : Expr) : Expr :=
   if transient then .transient {base := "rawTransient", steps := [.aindex index]}
   else .storage {base := "rawSlots", steps := [.aindex index]}
 def wordArrayLoad (transient : Bool) (evm : EVM.State) (slot : UInt256) : UInt256 :=
-  if transient then Solm.EVM.transientLoad evm evm.executionEnv.codeOwner slot
-  else Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot
+  if transient then Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot
+  else Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot
 
 theorem wordArrayRead_eval (transient : Bool) {f : Frame} {evm : EVM.State} {index : Expr} {slot : UInt256}
     (hf : f.contract = contract) (hraw : f.locals.get? "rawSlots" = none)

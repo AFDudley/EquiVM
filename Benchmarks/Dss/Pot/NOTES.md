@@ -82,7 +82,7 @@ deny  logic1704 authOK->1793 : store wards[guy]=0 @1793 (mask,kec(guy++0),SSTORE
 cage  logic1490 authOK->1579 : live(8)=0 @1580, dsr(3)=ONE @1598, JUMP->ret301
 file_bu logic990  authOK->1079 : then require live==1, require now==rho, if what=="dsr" dsr=data else revert. decode(bytes32,uint256): entry367 decoded 389(=367+22)
 file_ba logic2143 authOK->?    : if what=="vow" vow=addr else revert. decode(bytes32,address): entry637 decoded 659(=637+22)
-_rpow: Pot block @2352 == Jug block @2153 (offset +199), IDENTICAL opcode structure. Jug uses Solm var "b", Pot uses "base".
+_rpow: Pot block @2352 == Jug block @2153 (offset +199), IDENTICAL opcode structure. Jug uses Stele var "b", Pot uses "base".
   Jug _rpow files: Rpow.lean(1593) RpowGeneric.lean(440) ArithmeticRpowLoop.lean(340). Source lemmas rename b->base; bytecode PCs +199.
 ## internal-fn ExecFuncBody pattern: `ExecFuncBody config {contract,locals} evm fn.body (.returned {..} evm (some [val]))` ; callers use internalCallFunctionReturn/Revert
 

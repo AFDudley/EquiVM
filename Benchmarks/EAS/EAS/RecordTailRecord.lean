@@ -1,6 +1,6 @@
 import Benchmarks.EAS.EAS.RecordTailPreserve
 import Benchmarks.EAS.EAS.RecordDisjoint
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 theorem recordTailMemory_record {mem : ByteArray} (site : UIDSite)

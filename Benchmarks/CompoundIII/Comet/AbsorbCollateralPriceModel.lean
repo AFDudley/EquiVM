@@ -2,7 +2,7 @@ import Benchmarks.CompoundIII.Comet.AbsorbCollateralMathModel
 import Benchmarks.CompoundIII.Comet.AbsorbCollateralEvent
 import Benchmarks.CompoundIII.Comet.PriceSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 

@@ -1,7 +1,7 @@
 import Reasoning.ABIViews
 import Benchmarks.Dss.Jug.Dispatch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -388,7 +388,7 @@ theorem jugIlksBodyReturns {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size)
         .ok (.int (Int.ofNat
           (solcSlotWordAt (ilksDutySlotFor I) evm.accountMap evm.executionEnv).toNat)) := by
     exact evalExpr_storage_scalar_value (hbackend := rfl)
-      (cfg := config) (solm := frame) (evm := evm)
+      (cfg := config) (stele := frame) (evm := evm)
       (slot := ilksF (.var "arg0") "duty") (er := ilksDutyEvaledRef I)
       (t := .int uint256Int) (loc := wordLoc (ilksDutySlotFor I))
       (value := .int (Int.ofNat
@@ -410,7 +410,7 @@ theorem jugIlksBodyReturns {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size)
         .ok (.int (Int.ofNat
           (solcSlotWordAt (ilksRhoSlotFor I) evm.accountMap evm.executionEnv).toNat)) := by
     exact evalExpr_storage_scalar_value (hbackend := rfl)
-      (cfg := config) (solm := frame) (evm := evm)
+      (cfg := config) (stele := frame) (evm := evm)
       (slot := ilksF (.var "arg0") "rho") (er := ilksRhoEvaledRef I)
       (t := .int uint256Int) (loc := wordLoc (ilksRhoSlotFor I))
       (value := .int (Int.ofNat

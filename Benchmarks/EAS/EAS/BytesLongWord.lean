@@ -1,6 +1,6 @@
 import Benchmarks.EAS.EAS.BytesLongTail
 import Benchmarks.EAS.EAS.BytesShortWord
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 -- LIBRARY CANDIDATE: the shifted low-byte length mask retains the final bytes prefix.

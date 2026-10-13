@@ -1,14 +1,14 @@
 import Benchmarks.Safe.Main.OwnerStorage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.Main
 
 def ownerCount (evm : EVM.State) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩
 
 def storedThreshold (evm : EVM.State) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨4⟩
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨4⟩
 
 theorem safeEvalOwnerCount (evm : EVM.State) (locals : Store)
     (hb : locals["ownerCount"]? = none) :
@@ -26,7 +26,7 @@ theorem safeAssignOwnerCount (evm : EVM.State) (locals : Store) (value : UInt256
     (hb : locals["ownerCount"]? = none) :
     assignStorageRef? config { contract := contract, locals := locals } evm .storage ownerCountRef
       (.int (Int.ofNat value.toNat)) = .ok ({ contract := contract, locals := locals },
-        Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨3⟩ value) := by
+        Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨3⟩ value) := by
   apply assignStorageRef_storage_scalar_value (er := { base := "ownerCount" })
     (loc := uint256Loc ⟨3⟩)
   · exact hb

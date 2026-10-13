@@ -2,7 +2,7 @@ import Benchmarks.Safe.Main.SetupDecodeOwners
 import Benchmarks.Safe.Main.AddressCalldataRead
 import Benchmarks.Safe.Main.Blocks.Runtime_047
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.Main

@@ -1,7 +1,7 @@
 import Benchmarks.Dss.Clipper.TakeNoAdjustSource
 import Benchmarks.Dss.Clipper.Chost
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 namespace Benchmarks.Dss.Clipper
@@ -412,11 +412,11 @@ theorem clipperTakeOweLtTabSliceLtLotChostNoAdjustIte (v : ClipperImmutables)
     (hlt : (UInt256.mul slice price).toNat < (clipperTakeSalesTabEVMWord evmRead I).toNat)
     (hsliceLt : slice.toNat < (clipperTakeSalesLotEVMWord evmRead I).toNat)
     (hchostLe :
-      (Solm.EVM.storageLoad evmRead evmRead.executionEnv.codeOwner ⟨9⟩).toNat ≤
+      (Stele.EVM.storageLoad evmRead evmRead.executionEnv.codeOwner ⟨9⟩).toNat ≤
         (UInt256.sub (clipperTakeSalesTabEVMWord evmRead I)
           (UInt256.mul slice price)).toNat) :
     let owe0 := UInt256.mul slice price
-    let chost := Solm.EVM.storageLoad evmRead evmRead.executionEnv.codeOwner ⟨9⟩
+    let chost := Stele.EVM.storageLoad evmRead evmRead.executionEnv.codeOwner ⟨9⟩
     let remainingTab := UInt256.sub (clipperTakeSalesTabEVMWord evmRead I) owe0
     ExecStmt config
       (Frame.mk contract (clipperTakeLocalsOwe evmLoc evmRead I false price slice owe0 owe0) (immStore v))
@@ -456,7 +456,7 @@ theorem clipperTakeOweLtTabSliceLtLotChostNoAdjustIte (v : ClipperImmutables)
         (.ok chostFrame evmRead) := by
     simpa [oweFrame, chostFrame, chost, clipperTakeLocalsChost] using
       (ExecStmt.letDecl
-        (cfg := config) (solm := oweFrame) (evm := evmRead) (name := "_chost")
+        (cfg := config) (stele := oweFrame) (evm := evmRead) (name := "_chost")
         (ty := some uint256) (expr := .storage chostRef)
         (value := .int (Int.ofNat chost.toNat))
         (by simpa [oweFrame, chost] using
@@ -469,7 +469,7 @@ theorem clipperTakeOweLtTabSliceLtLotChostNoAdjustIte (v : ClipperImmutables)
         (.ok remainingFrame evmRead) := by
     simpa [chostFrame, remainingFrame, remainingTab, clipperTakeLocalsRemainingTab] using
       (ExecStmt.letDecl
-        (cfg := config) (solm := chostFrame) (evm := evmRead) (name := "remainingTab")
+        (cfg := config) (stele := chostFrame) (evm := evmRead) (name := "remainingTab")
         (ty := some uint256) (expr := wrap256 (.binary .sub (.var "tab") (.var "owe")))
         (value := .int (Int.ofNat remainingTab.toNat))
         (by simpa [chostFrame, remainingTab, owe0] using
@@ -555,13 +555,13 @@ theorem clipperTakeOweLtTabSliceLtLotChostAdjustIte (v : ClipperImmutables)
     (hremainingLt :
       (UInt256.sub (clipperTakeSalesTabEVMWord evmRead I)
           (UInt256.mul slice price)).toNat <
-        (Solm.EVM.storageLoad evmRead evmRead.executionEnv.codeOwner ⟨9⟩).toNat)
+        (Stele.EVM.storageLoad evmRead evmRead.executionEnv.codeOwner ⟨9⟩).toNat)
     (hchostTab :
-      (Solm.EVM.storageLoad evmRead evmRead.executionEnv.codeOwner ⟨9⟩).toNat <
+      (Stele.EVM.storageLoad evmRead evmRead.executionEnv.codeOwner ⟨9⟩).toNat <
         (clipperTakeSalesTabEVMWord evmRead I).toNat)
     (hprice : price ≠ ⟨0⟩) :
     let owe0 := UInt256.mul slice price
-    let chost := Solm.EVM.storageLoad evmRead evmRead.executionEnv.codeOwner ⟨9⟩
+    let chost := Stele.EVM.storageLoad evmRead evmRead.executionEnv.codeOwner ⟨9⟩
     let remainingTab := UInt256.sub (clipperTakeSalesTabEVMWord evmRead I) owe0
     let oweAdjusted := UInt256.sub (clipperTakeSalesTabEVMWord evmRead I) chost
     let sliceAdjusted := UInt256.div oweAdjusted price
@@ -612,7 +612,7 @@ theorem clipperTakeOweLtTabSliceLtLotChostAdjustIte (v : ClipperImmutables)
         (.ok chostFrame evmRead) := by
     simpa [oweFrame, chostFrame, chost, clipperTakeLocalsChost] using
       (ExecStmt.letDecl
-        (cfg := config) (solm := oweFrame) (evm := evmRead) (name := "_chost")
+        (cfg := config) (stele := oweFrame) (evm := evmRead) (name := "_chost")
         (ty := some uint256) (expr := .storage chostRef)
         (value := .int (Int.ofNat chost.toNat))
         (by simpa [oweFrame, chost] using
@@ -625,7 +625,7 @@ theorem clipperTakeOweLtTabSliceLtLotChostAdjustIte (v : ClipperImmutables)
         (.ok remainingFrame evmRead) := by
     simpa [chostFrame, remainingFrame, remainingTab, clipperTakeLocalsRemainingTab] using
       (ExecStmt.letDecl
-        (cfg := config) (solm := chostFrame) (evm := evmRead) (name := "remainingTab")
+        (cfg := config) (stele := chostFrame) (evm := evmRead) (name := "remainingTab")
         (ty := some uint256) (expr := wrap256 (.binary .sub (.var "tab") (.var "owe")))
         (value := .int (Int.ofNat remainingTab.toNat))
         (by simpa [chostFrame, remainingTab, owe0] using
@@ -652,7 +652,7 @@ theorem clipperTakeOweLtTabSliceLtLotChostAdjustIte (v : ClipperImmutables)
       Nat.le_of_lt hchostTab
     simpa [remainingFrame, adjustedFrame, oweAdjusted, clipperTakeLocalsOweAdjusted] using
       (ExecStmt.letDecl
-        (cfg := config) (solm := remainingFrame) (evm := evmRead) (name := "oweAdjusted")
+        (cfg := config) (stele := remainingFrame) (evm := evmRead) (name := "oweAdjusted")
         (ty := some uint256)
         (expr := wrap256 (.binary .sub (.var "tab") (.var "_chost")))
         (value := .int (Int.ofNat oweAdjusted.toNat))
@@ -753,16 +753,16 @@ theorem clipperTakeOweLtTabSliceLtLotChostRequireReverts (v : ClipperImmutables)
     (hremainingLt :
       (UInt256.sub (clipperTakeSalesTabEVMWord evmRead I)
           (UInt256.mul slice price)).toNat <
-        (Solm.EVM.storageLoad evmRead evmRead.executionEnv.codeOwner ⟨9⟩).toNat)
+        (Stele.EVM.storageLoad evmRead evmRead.executionEnv.codeOwner ⟨9⟩).toNat)
     (htabLeChost :
       (clipperTakeSalesTabEVMWord evmRead I).toNat ≤
-        (Solm.EVM.storageLoad evmRead evmRead.executionEnv.codeOwner ⟨9⟩).toNat) :
+        (Stele.EVM.storageLoad evmRead evmRead.executionEnv.codeOwner ⟨9⟩).toNat) :
     let owe0 := UInt256.mul slice price
     ExecStmt config
       (Frame.mk contract (clipperTakeLocalsOwe evmLoc evmRead I false price slice owe0 owe0) (immStore v))
       evmRead clipperTakeOweAdjustmentStmt .reverted := by
   intro owe0
-  let chost := Solm.EVM.storageLoad evmRead evmRead.executionEnv.codeOwner ⟨9⟩
+  let chost := Stele.EVM.storageLoad evmRead evmRead.executionEnv.codeOwner ⟨9⟩
   let remainingTab := UInt256.sub (clipperTakeSalesTabEVMWord evmRead I) owe0
   let oweFrame : Frame :=
     Frame.mk contract (clipperTakeLocalsOwe evmLoc evmRead I false price slice owe0 owe0) (immStore v)
@@ -795,7 +795,7 @@ theorem clipperTakeOweLtTabSliceLtLotChostRequireReverts (v : ClipperImmutables)
         (.ok chostFrame evmRead) := by
     simpa [oweFrame, chostFrame, chost, clipperTakeLocalsChost] using
       (ExecStmt.letDecl
-        (cfg := config) (solm := oweFrame) (evm := evmRead) (name := "_chost")
+        (cfg := config) (stele := oweFrame) (evm := evmRead) (name := "_chost")
         (ty := some uint256) (expr := .storage chostRef)
         (value := .int (Int.ofNat chost.toNat))
         (by simpa [oweFrame, chost] using
@@ -808,7 +808,7 @@ theorem clipperTakeOweLtTabSliceLtLotChostRequireReverts (v : ClipperImmutables)
         (.ok remainingFrame evmRead) := by
     simpa [chostFrame, remainingFrame, remainingTab, clipperTakeLocalsRemainingTab] using
       (ExecStmt.letDecl
-        (cfg := config) (solm := chostFrame) (evm := evmRead) (name := "remainingTab")
+        (cfg := config) (stele := chostFrame) (evm := evmRead) (name := "remainingTab")
         (ty := some uint256) (expr := wrap256 (.binary .sub (.var "tab") (.var "owe")))
         (value := .int (Int.ofNat remainingTab.toNat))
         (by simpa [chostFrame, remainingTab, owe0] using

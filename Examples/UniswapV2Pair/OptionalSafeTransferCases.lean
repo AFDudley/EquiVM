@@ -1,6 +1,6 @@
 import Examples.UniswapV2Pair.SafeTransferMemoryReady
 import Examples.UniswapV2Pair.OptionalSafeTransferFrame
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace UniswapV2Pair
 set_option maxRecDepth 2000000
 

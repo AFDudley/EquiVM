@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.SwapStepFeeWords
 import Benchmarks.UniswapV4PoolManager.WordSubAdd
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 def swapStepRemainingWord (remaining : UInt256) : UInt256 := UInt256.sub ⟨0⟩ remaining

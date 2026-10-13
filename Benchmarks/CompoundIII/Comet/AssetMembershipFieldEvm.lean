@@ -4,7 +4,7 @@ import Benchmarks.CompoundIII.Comet.RuntimeBlocks_065
 import Benchmarks.CompoundIII.Comet.RuntimeBlocks_066
 import Benchmarks.CompoundIII.Comet.RuntimeBlocks_067
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
 open Benchmarks.CompoundIII.Comet.Immutables cometWithExtendedAssetListBlocks
 
 namespace Benchmarks.CompoundIII.Comet
@@ -24,7 +24,7 @@ def assetMembershipFieldResult (evm : EVM.State) (account : AccountAddress)
     (add reserved : Bool) (bit : Nat) : InternalOutcome :=
   if evm.executionEnv.perm then .ok (storePackedWord evm (userBasicSlot account)
     (typedBitUpdateWord add (if reserved then ⟨8, by decide⟩ else ⟨16, by decide⟩)
-      (userBasicFieldWord (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      (userBasicFieldWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (userBasicSlot account)) (if reserved then 3 else 2)) bit)
     (if reserved then 31 else 29) (if reserved then 1 else 2)) else .staticViolation
 
@@ -42,7 +42,7 @@ theorem cometMembershipReadStore {v : CometWithExtendedAssetListImmutables}
   have hstep : ∃ k' C', RD (deployedRuntime v) ee g s0 (assetMembershipStorePc reserved)
       (userBasicSlot account ::
         typedBitUpdateWord add (if reserved then ⟨8, by decide⟩ else ⟨16, by decide⟩)
-          (userBasicFieldWord (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+          (userBasicFieldWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
             (userBasicSlot account)) (if reserved then 3 else 2)) bit :: ⟨3121⟩ :: ret :: R)
       mem aw rdata σ k' C' := by
     cases add <;> cases reserved

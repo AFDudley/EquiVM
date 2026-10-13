@@ -1,5 +1,5 @@
 import Benchmarks.EAS.EAS.RevokeSetup
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 def revokeArgs (schema : UInt256) (rs : List RevocationRequestRecord) (revoker : AccountAddress)
@@ -21,7 +21,7 @@ theorem revokeLengthSource {cfg : Config} {L imms : Store} {evm : EVM.State} {rs
     ExecStmt cfg {contract := contract,locals := L,immutables := imms} evm revokeLengthDecl
       (.ok {contract := contract,locals := L.insert "length" (.int (Int.ofNat rs.length)),immutables := imms} evm) := by
   apply ExecStmt.letDecl
-  simpa only [List.length_map] using evalLocalArrayLength (cfg := cfg) (solm := {contract := contract,locals := L,immutables := imms}) (evm := evm) hd
+  simpa only [List.length_map] using evalLocalArrayLength (cfg := cfg) (stele := {contract := contract,locals := L,immutables := imms}) (evm := evm) hd
 
 theorem revokeSetupLocals_of_schema (site : RevokeSite) (rs : List RevocationRequestRecord) (s : SchemaRecord) (initial : Nat) :
     RevokeSetupLocals ((attestSchemaLocals (revokeArgs site.schema rs site.revoker site.available site.last initial)

@@ -4,7 +4,7 @@ import Benchmarks.Safe.Main.WordArrayBuffer
 import Benchmarks.Safe.Main.Blocks.Runtime_035
 import Benchmarks.Safe.Main.Blocks.Runtime_036
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.Main

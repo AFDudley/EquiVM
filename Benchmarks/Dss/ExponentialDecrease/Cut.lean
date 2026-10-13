@@ -1,6 +1,6 @@
 import Benchmarks.Dss.ExponentialDecrease.Dispatch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.ExponentialDecrease
 
@@ -60,7 +60,7 @@ theorem stairstepCutBodyCore
         (.returned { contract := contract, locals := ∅ }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.int (Int.ofNat (cutWord σ I).toNat))])) := by
-    simpa [cutTransition, cutWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [cutTransition, cutWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       stairstepUint256GetterBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅

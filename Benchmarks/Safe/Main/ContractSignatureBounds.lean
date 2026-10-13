@@ -2,7 +2,7 @@ import Benchmarks.Safe.Main.ContractSignatureCheckSource
 import Benchmarks.Safe.Main.BytesMemory
 import Benchmarks.Safe.Main.SafeAddTrace
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.Main

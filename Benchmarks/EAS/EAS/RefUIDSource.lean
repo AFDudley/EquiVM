@@ -1,6 +1,6 @@
 import Benchmarks.EAS.EAS.ValidUIDSource
 import Benchmarks.EAS.EAS.BoolCallBlock
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 def refUIDExpr : Expr := .field (.var "request") "refUID"

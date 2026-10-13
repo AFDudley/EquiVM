@@ -1,6 +1,6 @@
 import Benchmarks.EAS.EAS.AttestationEncode
 import Benchmarks.EAS.EAS.EncodeAttestationSource
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 -- LIBRARY CANDIDATE: the two usual formulas for ABI byte-string padding coincide.

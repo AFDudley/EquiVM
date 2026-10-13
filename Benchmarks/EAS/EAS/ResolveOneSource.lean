@@ -2,7 +2,7 @@ import Benchmarks.EAS.EAS.BoolCallBlock
 import Benchmarks.EAS.EAS.ResolverOneSource
 import Benchmarks.EAS.EAS.RefundSource
 import Benchmarks.EAS.EAS.WordExpr
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 set_option maxRecDepth 10000
 

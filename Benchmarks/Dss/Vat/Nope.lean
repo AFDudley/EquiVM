@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Vat.Hope
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -9,7 +9,7 @@ namespace Benchmarks.Dss.Vat
 /-! ## `nope(address)` -/
 
 def nopePostState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (hopeStorageSlot I) ⟨0⟩
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (hopeStorageSlot I) ⟨0⟩
 
 theorem vatDecode_nope_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
     config.externalABI.decodeCalldata? (nopeTransition.params.map Param.name)
@@ -270,21 +270,21 @@ theorem vatNopeBodyCoreOk
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1467⟩ [sel]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
   have hbody :
-      ExecTransitionBody config contract evmSolm (hopeStore I)
+      ExecTransitionBody config contract evmStele (hopeStore I)
         nopeTransition.body
         (.returned { contract := contract, locals := hopeStore I }
-          (nopePostState evmSolm I) none) := by
-    simpa [evmSolm] using
-      vatNopeBodyReturns evmSolm I
-        (by simp only [evmSolm, initState]; exact hwv)
-        (by simp [evmSolm, initState])
+          (nopePostState evmStele I) none) := by
+    simpa [evmStele] using
+      vatNopeBodyReturns evmStele I
+        (by simp only [evmStele, initState]; exact hwv)
+        (by simp [evmStele, initState])
   obtain ⟨_, _, rd6131⟩ := vatNopeX_decoded (g := Sat256.ofUInt256 g)
     hsz36 hsize hreach
   exact (vatNopeX_storeOk (I := I) hperm rd6131)
     |>.reEquivExecutionGen hcode hdispatch hdecode hbody
-      (by simp [nopePostState, evmSolm, initState, storageStore_accountMap])
+      (by simp [nopePostState, evmStele, initState, storageStore_accountMap])
       (by
         simpa [nopeTransition] using
           (returnEquiv.fallthrough (o := ByteArray.empty) (r := none) (t := [])
@@ -303,15 +303,15 @@ theorem vatNopeBodyCoreStatic
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1467⟩ [sel]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
   have hbody :
-      ExecTransitionBody config contract evmSolm (hopeStore I)
+      ExecTransitionBody config contract evmStele (hopeStore I)
         nopeTransition.body .staticViolation := by
-    simpa [evmSolm] using
-      vatNopeBodyStatic evmSolm I
-        (by simp only [evmSolm, initState]; exact hwv)
-        (by simp [evmSolm, initState])
-        (by simp only [evmSolm, initState]; exact hperm)
+    simpa [evmStele] using
+      vatNopeBodyStatic evmStele I
+        (by simp only [evmStele, initState]; exact hwv)
+        (by simp [evmStele, initState])
+        (by simp only [evmStele, initState]; exact hperm)
   obtain ⟨_, _, rd6131⟩ := vatNopeX_decoded (g := Sat256.ofUInt256 g)
     hsz36 hsize hreach
   exact (permSplit_false hperm (vatNopeX_storeOkSplit (I := I) rd6131))

@@ -1,8 +1,8 @@
 import Benchmarks.Dss.LinearDecrease.Spec
-import Solm.Notation
+import Stele.Notation
 
 /-!
-# LinearDecrease spec in the Solidity-faithful Solm frontend
+# LinearDecrease spec in the Solidity-faithful Stele frontend
 
 The whole `abaci.sol` `LinearDecrease` spec written with `solidity%` and proven definitionally
 equal to the AST spec in `Spec.lean`.  Checked-math helpers are inlined as surface statements;
@@ -10,7 +10,7 @@ equal to the AST spec in `Spec.lean`.  Checked-math helpers are inlined as surfa
 Transition order matches `contract.transitions` (selector order).
 -/
 
-open Solm Solm.Notation Benchmarks.Dss.LinearDecrease
+open Stele Stele.Notation Benchmarks.Dss.LinearDecrease
 
 namespace Benchmarks.Dss.LinearDecrease.Syntax
 

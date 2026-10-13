@@ -1,5 +1,5 @@
 import Benchmarks.EAS.EAS.StoredWords
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 -- LIBRARY CANDIDATE: normalize the one-word storage-data hash to its base slot.

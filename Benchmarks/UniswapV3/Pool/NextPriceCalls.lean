@@ -2,7 +2,7 @@ import Benchmarks.UniswapV3.Pool.NextPricePrefix
 import Benchmarks.UniswapV3.Pool.NextSqrt0Source
 import Benchmarks.UniswapV3.Pool.NextSqrt1Source
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
 
@@ -42,7 +42,7 @@ theorem nextPriceCallReturns (imms : Store) (evm : EVM.State) (input : Bool)
       simpa only [nextPriceCalleeValid, ho, Bool.false_eq_true, if_false] using hv
     have hc := internalCallFunctionReturn (callee := nextSqrtFunction false)
       (retVar := nextPriceCallName a) (locals := nextSqrtLocals (a.sqrtArgs input))
-      (calleeSolm := nextSqrt0FinalFrame imms (a.sqrtArgs input))
+      (calleeStele := nextSqrt0FinalFrame imms (a.sqrtArgs input))
       (value := some [.int (Int.ofNat (nextSqrt0Result (a.sqrtArgs input)).toNat)])
       (evalNextPriceCallArgs imms evm input a) (nextSqrtLookup false)
       (nextSqrtBind false _) (nextSqrt0Returns imms evm _ hh)
@@ -51,7 +51,7 @@ theorem nextPriceCallReturns (imms : Store) (evm : EVM.State) (input : Bool)
       simpa only [nextPriceCalleeValid, ho, if_true] using hv
     have hc := internalCallFunctionReturn (callee := nextSqrtFunction true)
       (retVar := nextPriceCallName a) (locals := nextSqrtLocals (a.sqrtArgs input))
-      (calleeSolm := nextSqrt1OutputFrame imms (a.sqrtArgs input))
+      (calleeStele := nextSqrt1OutputFrame imms (a.sqrtArgs input))
       (value := some [.int (Int.ofNat (nextSqrt1Result (a.sqrtArgs input)).toNat)])
       (evalNextPriceCallArgs imms evm input a) (nextSqrtLookup true)
       (nextSqrtBind true _) (nextSqrt1Returns imms evm _ ha hh)

@@ -1,6 +1,6 @@
 import Benchmarks.Auction.UnpauseSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Auction
 
@@ -18,7 +18,7 @@ theorem unpauseCreateSource {s0 I σ evm locals} (hs : SourceState s0 I σ evm)
     (ha : locals.get? "auction" = none) :
     evalExpr? auctionConfig { contract := auctionContract, locals := locals } evm
       unpauseCreateExpr = .ok (.bool (decide (UnpauseCreates σ I))) := by
-  have hw (slot : UInt256) : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot =
+  have hw (slot : UInt256) : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot =
       solcSlotWord σ I slot := by
     exact hs.storageRead _
   have ht := auctionFieldRead evm locals "startTime" (.int uint256Int)

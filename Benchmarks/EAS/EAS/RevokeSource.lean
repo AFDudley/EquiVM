@@ -2,7 +2,7 @@ import Benchmarks.EAS.EAS.RevocationRequest
 import Benchmarks.EAS.EAS.RevokeGuards
 import Benchmarks.EAS.EAS.AttestSchemaSource
 import Benchmarks.EAS.EAS.ArrayLoopSource
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 abbrev revokeFunction : FunctionDecl := contract.functions[17]!

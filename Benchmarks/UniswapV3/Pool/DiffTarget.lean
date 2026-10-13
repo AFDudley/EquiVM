@@ -1,4 +1,4 @@
-import Solm.DiffTest.Harness
+import Stele.DiffTest.Harness
 import Benchmarks.UniswapV3.Pool.Spec
 import Benchmarks.UniswapV3.Pool.Bytecode
 import Benchmarks.UniswapV3.Pool.ImmutableCode
@@ -7,12 +7,12 @@ import Benchmarks.UniswapV3.Pool.ImmutableCode
 # UniswapV3Pool differential-test target
 
 Registered in `Tests/DiffTest/Generated.lean`.
-Run with `lake exe solm-difftest --only UniswapV3Pool`.
+Run with `lake exe stele-difftest --only UniswapV3Pool`.
 The two caller fixtures implement the deployer's five-word `parameters()` result and all three
 callbacks. The factory implements `owner()`. Token balances can be raised by callback payments.
 -/
 
-open Solm Solm.DiffTest
+open Stele Stele.DiffTest
 
 namespace Benchmarks.UniswapV3.Pool
 

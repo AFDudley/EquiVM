@@ -1,7 +1,7 @@
 import Benchmarks.CompoundIII.Comet.PrincipalTransferEventSource
 import Benchmarks.CompoundIII.Comet.Unsigned104
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 
@@ -36,7 +36,7 @@ theorem absorbEvents_source (frame : Frame) (evm : State) (absorber account : Ac
   by_cases hpos : 0 < principal.toNat
   · have hu := unsigned104_call frame evm principal (.var "newPrincipal") "__c15" hc he hbound
     let f1 : Frame := { frame with locals := frame.locals.insert "__c15" (.int principal.toNat) }
-    let index := totalsIndexWord (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩) false
+    let index := totalsIndexWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩) false
     have hi1 : f1.locals.get? "baseSupplyIndex" = none := by
       simpa only [f1, Std.HashMap.get?_eq_getElem?, Std.HashMap.getElem?_insert] using hi
     have hei : evalExpr? config f1 evm (.storage ⟨"baseSupplyIndex", []⟩) =

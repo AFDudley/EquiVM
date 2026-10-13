@@ -1,8 +1,8 @@
 import Benchmarks.Dss.Jug.Spec
-import Solm.Notation
+import Stele.Notation
 
 /-!
-# Jug spec in the Solidity-faithful Solm frontend
+# Jug spec in the Solidity-faithful Stele frontend
 
 The whole `jug.sol` spec written with `solidity%` and proven definitionally equal to the AST spec
 in `Spec.lean`.  Checked-math helpers are inlined; the assembly `_rpow` loop is the structural
@@ -11,7 +11,7 @@ the storage `vat` receiver use the `${…}` escape (the surface `x.code.length` 
 resolves locals).  Transition order matches `contract.transitions` (selector order).
 -/
 
-open Solm Solm.Notation Benchmarks.Dss.Jug
+open Stele Stele.Notation Benchmarks.Dss.Jug
 
 namespace Benchmarks.Dss.Jug.Syntax
 

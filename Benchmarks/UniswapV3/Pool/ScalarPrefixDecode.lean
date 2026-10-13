@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.Calldata
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 -- GENERALIZES Reasoning.ABI.decodeABIValues_scalarWordsWithMode_eq to a remaining tuple tail.

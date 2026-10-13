@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MorphoBlue.StaticCallBridge
 import Benchmarks.Morpho.MorphoBlue.OraclePriceABI
 import Benchmarks.Morpho.MorphoBlue.AccrueCall
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MorphoBlue.Immutables
 namespace Benchmarks.Morpho.MorphoBlue

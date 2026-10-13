@@ -1,7 +1,7 @@
 import Benchmarks.EAS.EAS.CopyRequestBytesMemory
 import Benchmarks.EAS.EAS.CopyRequestGuards
 import Benchmarks.EAS.EAS.AllocateBounds
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 theorem requestCopyFieldsMemory_load (mem cd : ByteArray) (src heap : UInt256) (i : Nat)

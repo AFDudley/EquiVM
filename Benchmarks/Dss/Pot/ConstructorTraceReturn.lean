@@ -10,7 +10,7 @@ From the vat store (`pc 109`, stack `[⟨1⟩]`) the constructor writes the four
 program counter needs to be reconciled.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Pot
 

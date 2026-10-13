@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.WordArrayPrefix
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 -- LIBRARY CANDIDATES: array slices and their contiguous byte representation.

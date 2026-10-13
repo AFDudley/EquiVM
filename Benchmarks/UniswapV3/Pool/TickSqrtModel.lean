@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.SourceWordArithmetic
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 -- Constants from the unrolled TickMath square-root routine, in execution order.

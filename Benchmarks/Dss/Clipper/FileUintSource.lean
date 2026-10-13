@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Clipper.FileUintBase
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 namespace Benchmarks.Dss.Clipper
@@ -17,7 +17,7 @@ theorem clipperFileUintAuthSourceReverts {σ σ₀ A I} {g : UInt256}
   have hauthEval :
       evalExpr? config { contract := contract, locals := locals, immutables := immStore v } evm0
         (.binary .eq (.storage (wardsRef sender)) (.intLit 1)) = .ok (.bool false) := by
-    simpa [locals, evm0, clipperRelyAuthWord, solcSlotWord, initState, Solm.EVM.storageLoad,
+    simpa [locals, evm0, clipperRelyAuthWord, solcSlotWord, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       evalExpr_clipperFileUint_auth_false v evm0 I (by simp [evm0, initState]) hauth
   have hblock :
@@ -26,7 +26,7 @@ theorem clipperFileUintAuthSourceReverts {σ σ₀ A I} {g : UInt256}
     simpa [fileUintTransition, nonpayable, auth, lockPrefix] using
       nonpayableSecondRequireReverts
         (cfg := config)
-        (solm := { contract := contract, locals := locals, immutables := immStore v })
+        (stele := { contract := contract, locals := locals, immutables := immStore v })
         (evm := evm0)
         (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
         (rest := lockPrefix ++
@@ -58,13 +58,13 @@ theorem clipperFileUintLockedSourceReverts {σ σ₀ A I} {g : UInt256}
   have hauthEval :
       evalExpr? config { contract := contract, locals := locals, immutables := immStore v } evm0
         (.binary .eq (.storage (wardsRef sender)) (.intLit 1)) = .ok (.bool true) := by
-    simpa [locals, evm0, clipperRelyAuthWord, solcSlotWord, initState, Solm.EVM.storageLoad,
+    simpa [locals, evm0, clipperRelyAuthWord, solcSlotWord, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       evalExpr_clipperFileUint_auth_true v evm0 I (by simp [evm0, initState]) hauth
   have hlockedEval :
       evalExpr? config { contract := contract, locals := locals, immutables := immStore v } evm0
         (.binary .eq (.storage lockedRef) (.intLit 0)) = .ok (.bool false) := by
-    simpa [locals, evm0, solcSlotWord, initState, Solm.EVM.storageLoad, State.lookupAccount] using
+    simpa [locals, evm0, solcSlotWord, initState, Stele.EVM.storageLoad, State.lookupAccount] using
       evalExpr_clipperFileUint_locked_zero_false v evm0 I hlocked
   have hblock :
       ExecBlock config { contract := contract, locals := locals, immutables := immStore v } evm0
@@ -92,17 +92,17 @@ theorem clipperFileUintBufSourceBodySplit {σ σ₀ A I} {g : UInt256}
   intro locals evm0 evm2
   let evmLock := clipperFileUintLockedState evm0
   let evmStore :=
-    Solm.EVM.storageStore evmLock evmLock.executionEnv.codeOwner ⟨5⟩ (clipperFileUintData I)
+    Stele.EVM.storageStore evmLock evmLock.executionEnv.codeOwner ⟨5⟩ (clipperFileUintData I)
   have hauthEval :
       evalExpr? config { contract := contract, locals := locals, immutables := immStore v } evm0
         (.binary .eq (.storage (wardsRef sender)) (.intLit 1)) = .ok (.bool true) := by
-    simpa [locals, evm0, clipperRelyAuthWord, solcSlotWord, initState, Solm.EVM.storageLoad,
+    simpa [locals, evm0, clipperRelyAuthWord, solcSlotWord, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       evalExpr_clipperFileUint_auth_true v evm0 I (by simp [evm0, initState]) hauth
   have hlockedEval :
       evalExpr? config { contract := contract, locals := locals, immutables := immStore v } evm0
         (.binary .eq (.storage lockedRef) (.intLit 0)) = .ok (.bool true) := by
-    simpa [locals, evm0, solcSlotWord, initState, Solm.EVM.storageLoad, State.lookupAccount] using
+    simpa [locals, evm0, solcSlotWord, initState, Stele.EVM.storageLoad, State.lookupAccount] using
       evalExpr_clipperFileUint_locked_zero_true v evm0 I hlocked
   have hlockRhs :
       evalExpr? config { contract := contract, locals := locals, immutables := immStore v } evm0 (.intLit 1) =
@@ -218,17 +218,17 @@ theorem clipperFileUintTailSourceBody {σ σ₀ A I} {g : UInt256}
   intro locals evm0 evm2
   let evmLock := clipperFileUintLockedState evm0
   let evmStore :=
-    Solm.EVM.storageStore evmLock evmLock.executionEnv.codeOwner ⟨6⟩ (clipperFileUintData I)
+    Stele.EVM.storageStore evmLock evmLock.executionEnv.codeOwner ⟨6⟩ (clipperFileUintData I)
   have hauthEval :
       evalExpr? config { contract := contract, locals := locals, immutables := immStore v } evm0
         (.binary .eq (.storage (wardsRef sender)) (.intLit 1)) = .ok (.bool true) := by
-    simpa [locals, evm0, clipperRelyAuthWord, solcSlotWord, initState, Solm.EVM.storageLoad,
+    simpa [locals, evm0, clipperRelyAuthWord, solcSlotWord, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       evalExpr_clipperFileUint_auth_true v evm0 I (by simp [evm0, initState]) hauth
   have hlockedEval :
       evalExpr? config { contract := contract, locals := locals, immutables := immStore v } evm0
         (.binary .eq (.storage lockedRef) (.intLit 0)) = .ok (.bool true) := by
-    simpa [locals, evm0, solcSlotWord, initState, Solm.EVM.storageLoad, State.lookupAccount] using
+    simpa [locals, evm0, solcSlotWord, initState, Stele.EVM.storageLoad, State.lookupAccount] using
       evalExpr_clipperFileUint_locked_zero_true v evm0 I hlocked
   have hlockRhs :
       evalExpr? config { contract := contract, locals := locals, immutables := immStore v } evm0 (.intLit 1) =
@@ -341,17 +341,17 @@ theorem clipperFileUintCuspSourceBody {σ σ₀ A I} {g : UInt256}
   intro locals evm0 evm2
   let evmLock := clipperFileUintLockedState evm0
   let evmStore :=
-    Solm.EVM.storageStore evmLock evmLock.executionEnv.codeOwner ⟨7⟩ (clipperFileUintData I)
+    Stele.EVM.storageStore evmLock evmLock.executionEnv.codeOwner ⟨7⟩ (clipperFileUintData I)
   have hauthEval :
       evalExpr? config { contract := contract, locals := locals, immutables := immStore v } evm0
         (.binary .eq (.storage (wardsRef sender)) (.intLit 1)) = .ok (.bool true) := by
-    simpa [locals, evm0, clipperRelyAuthWord, solcSlotWord, initState, Solm.EVM.storageLoad,
+    simpa [locals, evm0, clipperRelyAuthWord, solcSlotWord, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       evalExpr_clipperFileUint_auth_true v evm0 I (by simp [evm0, initState]) hauth
   have hlockedEval :
       evalExpr? config { contract := contract, locals := locals, immutables := immStore v } evm0
         (.binary .eq (.storage lockedRef) (.intLit 0)) = .ok (.bool true) := by
-    simpa [locals, evm0, solcSlotWord, initState, Solm.EVM.storageLoad, State.lookupAccount] using
+    simpa [locals, evm0, solcSlotWord, initState, Stele.EVM.storageLoad, State.lookupAccount] using
       evalExpr_clipperFileUint_locked_zero_true v evm0 I hlocked
   have hlockRhs :
       evalExpr? config { contract := contract, locals := locals, immutables := immStore v } evm0 (.intLit 1) =
@@ -485,20 +485,20 @@ theorem clipperFileUintChipSourceBody {σ σ₀ A I} {g : UInt256}
   intro locals evm0 evm2
   let evmLock := clipperFileUintLockedState evm0
   let evmStore :=
-    Solm.EVM.storageStore evmLock evmLock.executionEnv.codeOwner ⟨8⟩
+    Stele.EVM.storageStore evmLock evmLock.executionEnv.codeOwner ⟨8⟩
       (clipperFileUintChipWord
-        (Solm.EVM.storageLoad evmLock evmLock.executionEnv.codeOwner ⟨8⟩)
+        (Stele.EVM.storageLoad evmLock evmLock.executionEnv.codeOwner ⟨8⟩)
         (clipperFileUintData I))
   have hauthEval :
       evalExpr? config { contract := contract, locals := locals, immutables := immStore v } evm0
         (.binary .eq (.storage (wardsRef sender)) (.intLit 1)) = .ok (.bool true) := by
-    simpa [locals, evm0, clipperRelyAuthWord, solcSlotWord, initState, Solm.EVM.storageLoad,
+    simpa [locals, evm0, clipperRelyAuthWord, solcSlotWord, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       evalExpr_clipperFileUint_auth_true v evm0 I (by simp [evm0, initState]) hauth
   have hlockedEval :
       evalExpr? config { contract := contract, locals := locals, immutables := immStore v } evm0
         (.binary .eq (.storage lockedRef) (.intLit 0)) = .ok (.bool true) := by
-    simpa [locals, evm0, solcSlotWord, initState, Solm.EVM.storageLoad, State.lookupAccount] using
+    simpa [locals, evm0, solcSlotWord, initState, Stele.EVM.storageLoad, State.lookupAccount] using
       evalExpr_clipperFileUint_locked_zero_true v evm0 I hlocked
   have hlockRhs :
       evalExpr? config { contract := contract, locals := locals, immutables := immStore v } evm0 (.intLit 1) =
@@ -651,20 +651,20 @@ theorem clipperFileUintTipSourceBody {σ σ₀ A I} {g : UInt256}
   intro locals evm0 evm2
   let evmLock := clipperFileUintLockedState evm0
   let evmStore :=
-    Solm.EVM.storageStore evmLock evmLock.executionEnv.codeOwner ⟨8⟩
+    Stele.EVM.storageStore evmLock evmLock.executionEnv.codeOwner ⟨8⟩
       (clipperFileUintTipWord
-        (Solm.EVM.storageLoad evmLock evmLock.executionEnv.codeOwner ⟨8⟩)
+        (Stele.EVM.storageLoad evmLock evmLock.executionEnv.codeOwner ⟨8⟩)
         (clipperFileUintData I))
   have hauthEval :
       evalExpr? config { contract := contract, locals := locals, immutables := immStore v } evm0
         (.binary .eq (.storage (wardsRef sender)) (.intLit 1)) = .ok (.bool true) := by
-    simpa [locals, evm0, clipperRelyAuthWord, solcSlotWord, initState, Solm.EVM.storageLoad,
+    simpa [locals, evm0, clipperRelyAuthWord, solcSlotWord, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       evalExpr_clipperFileUint_auth_true v evm0 I (by simp [evm0, initState]) hauth
   have hlockedEval :
       evalExpr? config { contract := contract, locals := locals, immutables := immStore v } evm0
         (.binary .eq (.storage lockedRef) (.intLit 0)) = .ok (.bool true) := by
-    simpa [locals, evm0, solcSlotWord, initState, Solm.EVM.storageLoad, State.lookupAccount] using
+    simpa [locals, evm0, solcSlotWord, initState, Stele.EVM.storageLoad, State.lookupAccount] using
       evalExpr_clipperFileUint_locked_zero_true v evm0 I hlocked
   have hlockRhs :
       evalExpr? config { contract := contract, locals := locals, immutables := immStore v } evm0 (.intLit 1) =
@@ -834,17 +834,17 @@ theorem clipperFileUintStoppedSourceBody {σ σ₀ A I} {g : UInt256}
   intro locals evm0 evm2
   let evmLock := clipperFileUintLockedState evm0
   let evmStore :=
-    Solm.EVM.storageStore evmLock evmLock.executionEnv.codeOwner ⟨14⟩ (clipperFileUintData I)
+    Stele.EVM.storageStore evmLock evmLock.executionEnv.codeOwner ⟨14⟩ (clipperFileUintData I)
   have hauthEval :
       evalExpr? config { contract := contract, locals := locals, immutables := immStore v } evm0
         (.binary .eq (.storage (wardsRef sender)) (.intLit 1)) = .ok (.bool true) := by
-    simpa [locals, evm0, clipperRelyAuthWord, solcSlotWord, initState, Solm.EVM.storageLoad,
+    simpa [locals, evm0, clipperRelyAuthWord, solcSlotWord, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       evalExpr_clipperFileUint_auth_true v evm0 I (by simp [evm0, initState]) hauth
   have hlockedEval :
       evalExpr? config { contract := contract, locals := locals, immutables := immStore v } evm0
         (.binary .eq (.storage lockedRef) (.intLit 0)) = .ok (.bool true) := by
-    simpa [locals, evm0, solcSlotWord, initState, Solm.EVM.storageLoad, State.lookupAccount] using
+    simpa [locals, evm0, solcSlotWord, initState, Stele.EVM.storageLoad, State.lookupAccount] using
       evalExpr_clipperFileUint_locked_zero_true v evm0 I hlocked
   have hlockRhs :
       evalExpr? config { contract := contract, locals := locals, immutables := immStore v } evm0 (.intLit 1) =
@@ -1028,13 +1028,13 @@ theorem clipperFileUintUnrecognizedSourceBody {σ σ₀ A I} {g : UInt256}
   have hauthEval :
       evalExpr? config { contract := contract, locals := locals, immutables := immStore v } evm0
         (.binary .eq (.storage (wardsRef sender)) (.intLit 1)) = .ok (.bool true) := by
-    simpa [locals, evm0, clipperRelyAuthWord, solcSlotWord, initState, Solm.EVM.storageLoad,
+    simpa [locals, evm0, clipperRelyAuthWord, solcSlotWord, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       evalExpr_clipperFileUint_auth_true v evm0 I (by simp [evm0, initState]) hauth
   have hlockedEval :
       evalExpr? config { contract := contract, locals := locals, immutables := immStore v } evm0
         (.binary .eq (.storage lockedRef) (.intLit 0)) = .ok (.bool true) := by
-    simpa [locals, evm0, solcSlotWord, initState, Solm.EVM.storageLoad, State.lookupAccount] using
+    simpa [locals, evm0, solcSlotWord, initState, Stele.EVM.storageLoad, State.lookupAccount] using
       evalExpr_clipperFileUint_locked_zero_true v evm0 I hlocked
   have hlockRhs :
       evalExpr? config { contract := contract, locals := locals, immutables := immStore v } evm0 (.intLit 1) =

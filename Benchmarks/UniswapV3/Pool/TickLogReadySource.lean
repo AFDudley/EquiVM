@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.TickLogNormalizeSource
 import Benchmarks.UniswapV3.Pool.SourceSignedBits
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
 
@@ -62,7 +62,7 @@ theorem tickLogLogReadySource (imms : Store) (evm : EVM.State) (price : UInt256)
       [tickLogFunction.body[13]!, .letDecl "log_2"
         (some (.elem (.int (.sint ⟨256, by decide⟩)))) tickLogInitialExpr]) _
     apply execBlock_append_ok hs
-    refine ExecBlock.consNormal (solm' := mid) (evm' := evm)
+    refine ExecBlock.consNormal (stele' := mid) (evm' := evm)
       (tickLogNormalizeSource _ _ _ hm hq hr (tickLogMsb_lt price)) ?_
     refine ExecBlock.consNormal (ExecStmt.letDecl ?_) ExecBlock.nil
     exact evalTickLogInitial _ (by rw [hkeep "msb" (by decide)]; exact hm)

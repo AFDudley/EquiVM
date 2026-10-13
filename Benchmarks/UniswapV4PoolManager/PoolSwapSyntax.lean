@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV4PoolManager.Spec
 
-open Solm
+open Stele
 namespace Benchmarks.UniswapV4PoolManager
 
 abbrev poolSwapFunction : FunctionDecl := contract.functions[76]!

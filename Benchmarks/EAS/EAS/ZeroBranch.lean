@@ -1,5 +1,5 @@
 import Benchmarks.EAS.EAS.MappingWordLoad
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 -- LIBRARY CANDIDATE: ISZERO/PUSH2/JUMPI with a word-valued branch operand.

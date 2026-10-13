@@ -2,7 +2,7 @@ import Benchmarks.UniswapV3.Pool.PackedClear
 import Benchmarks.UniswapV3.Pool.TickReferences
 import Reasoning.ExternalCall
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 1000
 

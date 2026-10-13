@@ -1,7 +1,7 @@
 import Benchmarks.EAS.EAS.TryRecoverCallSource
 import Benchmarks.EAS.EAS.ECDSAErrorSource
 import Benchmarks.EAS.EAS.HeapResultBlock
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 abbrev recoverFunction : FunctionDecl := contract.functions[28]!

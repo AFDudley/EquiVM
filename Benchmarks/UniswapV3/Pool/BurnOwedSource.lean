@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.BurnAmountsSource
 import Benchmarks.UniswapV3.Pool.FlashProtocolWords
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
@@ -67,11 +67,11 @@ theorem burnOwedSource (v : UniswapV3PoolImmutables) (a : BurnArgs)
     evalBurnOwedExpr _ (immStore v) evm key a0 a1 true
       (by burn_owed_get) (by burn_owed_get)
   refine ExecBlock.consNormal (ExecStmt.letDecl (name := "__t3") he1) ?_
-  refine ExecBlock.consNormal (solm := burnOwedFrame v a key a0 a1 evm)
+  refine ExecBlock.consNormal (stele := burnOwedFrame v a key a0 a1 evm)
     (ExecStmt.assign (value := .int (Int.ofNat (burnOwedValue key a0 a1 evm false).toNat))
       (evalExpr_var_get (by burn_owed_get))
       (assignPositionOwed _ (immStore v) evm key false _ (by burn_owed_get))) ?_
-  exact ExecBlock.consNormal (solm := burnOwedFrame v a key a0 a1 evm)
+  exact ExecBlock.consNormal (stele := burnOwedFrame v a key a0 a1 evm)
     (ExecStmt.assign (value := .int (Int.ofNat (burnOwedValue key a0 a1 evm true).toNat))
       (evalExpr_var_get (by burn_owed_get))
       (assignPositionOwed _ (immStore v) _ key true _ (by burn_owed_get))) ExecBlock.nil

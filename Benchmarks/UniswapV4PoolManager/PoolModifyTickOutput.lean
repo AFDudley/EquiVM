@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV4PoolManager.PoolModifyTicks
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 theorem poolModifyTickAfterFrame_get (f : Frame) (evm : State) (id : UInt256) (tick delta : Int)

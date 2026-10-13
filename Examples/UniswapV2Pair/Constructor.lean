@@ -3,9 +3,9 @@ import Examples.UniswapV2Pair.ConstructorEntry
 import Examples.UniswapV2Pair.ConstructorLiteralsRuntime
 import Examples.UniswapV2Pair.ConstructorCoupling
 import Examples.UniswapV2Pair.ConstructorStorageCoupling
-import Solm.Refine
+import Stele.Refine
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace UniswapV2Pair
 

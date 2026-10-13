@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.PositionOwedStorage
 import Benchmarks.UniswapV3.Pool.TickLiquidityStorage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 1000
 

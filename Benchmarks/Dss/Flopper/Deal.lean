@@ -2,7 +2,7 @@ import Reasoning.ExternalCall
 import Reasoning.WordArithmetic
 import Benchmarks.Dss.Flopper.AuctionCommon
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -232,14 +232,14 @@ theorem deleteStorage_dealMint_bid (evm : EVM.State) (I : ExecutionEnv) :
 
 theorem evalExpr_deal_live_storage (evm : EVM.State) (I : ExecutionEnv) :
     evalExpr? config { contract := contract, locals := dealLocals I } evm (.storage liveRef) =
-      .ok (.int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩).toNat)) := by
+      .ok (.int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩).toNat)) := by
   let frame : Frame := { contract := contract, locals := dealLocals I }
   exact evalExpr_storage_scalar_value (hbackend := rfl)
-    (cfg := config) (solm := frame) (evm := evm)
+    (cfg := config) (stele := frame) (evm := evm)
     (slot := liveRef) (er := dealLiveEvaledRef)
     (t := .int uint256Int) (loc := wordLoc ⟨8⟩)
     (value := .int (Int.ofNat
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩).toNat))
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩).toNat))
     (by simp [frame, liveRef])
     (by simp [frame, dealLiveEvaledRef, evalStorageRef, evalStorageRefSteps,
       liveRef, EvalResult.bind, bind, pure])
@@ -248,7 +248,7 @@ theorem evalExpr_deal_live_storage (evm : EVM.State) (I : ExecutionEnv) :
     (by exact storageLocLoad_uint256 evm ⟨8⟩)
 
 theorem evalExpr_deal_live_one_true (evm : EVM.State) (I : ExecutionEnv)
-    (hload : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩ = ⟨1⟩) :
+    (hload : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩ = ⟨1⟩) :
     evalExpr? config { contract := contract, locals := dealLocals I } evm
       (.binary .eq (.storage liveRef) (.intLit 1)) = .ok (.bool true) := by
   have hstorage :
@@ -259,13 +259,13 @@ theorem evalExpr_deal_live_one_true (evm : EVM.State) (I : ExecutionEnv)
   rfl
 
 theorem evalExpr_deal_live_one_false (evm : EVM.State) (I : ExecutionEnv)
-    (hload : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩ ≠ ⟨1⟩) :
+    (hload : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩ ≠ ⟨1⟩) :
     evalExpr? config { contract := contract, locals := dealLocals I } evm
       (.binary .eq (.storage liveRef) (.intLit 1)) = .ok (.bool false) := by
   have hstorage := evalExpr_deal_live_storage evm I
   have hne :
       Value.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩).toNat) ≠
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩).toNat) ≠
         Value.int 1 := by
     intro hbad
     rw [Value.int.injEq] at hbad
@@ -274,7 +274,7 @@ theorem evalExpr_deal_live_one_false (evm : EVM.State) (I : ExecutionEnv)
     exact Int.ofNat.inj hbad
   have hbeq :
       (Value.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩).toNat) ==
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩).toNat) ==
         Value.int 1) = false :=
     beq_eq_false_iff_ne.mpr hne
   simp only [evalExpr?, hstorage, EvalResult.bind, bind, pure]
@@ -293,13 +293,13 @@ theorem evalExpr_deal_tic_storage (evm : EVM.State) (I : ExecutionEnv) :
     erw [storageLocLoad_uint48_offset20]
     rw [u256_land_comm
       (UInt256.div
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
           (auctionPackedSlot (dealIdWord I)))
         (UInt256.ofNat (256 ^ 20)))
       uint48Mask]
     rfl
   exact evalExpr_storage_scalar_value (hbackend := rfl)
-    (cfg := config) (solm := frame) (evm := evm)
+    (cfg := config) (stele := frame) (evm := evm)
     (slot := bidsF (.var "id") "tic") (er := dealTicEvaledRef I)
     (t := .int uint48Int)
     (loc := uint48Loc (auctionPackedSlot (dealIdWord I)) ⟨20, by decide⟩ (by decide))
@@ -327,13 +327,13 @@ theorem evalExpr_deal_end_storage (evm : EVM.State) (I : ExecutionEnv) :
     erw [storageLocLoad_uint48_offset26]
     rw [u256_land_comm
       (UInt256.div
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
           (auctionPackedSlot (dealIdWord I)))
         (UInt256.ofNat (256 ^ 26)))
       uint48Mask]
     rfl
   exact evalExpr_storage_scalar_value (hbackend := rfl)
-    (cfg := config) (solm := frame) (evm := evm)
+    (cfg := config) (stele := frame) (evm := evm)
     (slot := bidsF (.var "id") "end") (er := dealEndEvaledRef I)
     (t := .int uint48Int)
     (loc := uint48Loc (auctionPackedSlot (dealIdWord I)) ⟨26, by decide⟩ (by decide))
@@ -355,7 +355,7 @@ theorem evalExpr_deal_guy_storage (evm : EVM.State) (I : ExecutionEnv) :
       .ok (.address (AccountAddress.ofNat (dealGuyWord evm I).toNat)) := by
   let frame : Frame := { contract := contract, locals := dealLocals I }
   exact evalExpr_storage_scalar_value (hbackend := rfl)
-    (cfg := config) (solm := frame) (evm := evm)
+    (cfg := config) (stele := frame) (evm := evm)
     (slot := bidsF (.var "id") "guy") (er := dealGuyEvaledRef I)
     (t := .address) (loc := addrLoc (auctionPackedSlot (dealIdWord I)))
     (value := .address (AccountAddress.ofNat (dealGuyWord evm I).toNat))
@@ -378,7 +378,7 @@ theorem evalExpr_deal_lot_storage (evm : EVM.State) (I : ExecutionEnv) :
       .ok (.int (Int.ofNat (dealLotWord evm I).toNat)) := by
   let frame : Frame := { contract := contract, locals := dealLocals I }
   exact evalExpr_storage_scalar_value (hbackend := rfl)
-    (cfg := config) (solm := frame) (evm := evm)
+    (cfg := config) (stele := frame) (evm := evm)
     (slot := bidsF (.var "id") "lot") (er := dealLotEvaledRef I)
     (t := .int uint256Int) (loc := wordLoc (auctionLotSlot (dealIdWord I)))
     (value := .int (Int.ofNat (dealLotWord evm I).toNat))
@@ -399,7 +399,7 @@ theorem evalExpr_deal_gem_storage (evm : EVM.State) (I : ExecutionEnv) :
       .ok (.address (AccountAddress.ofNat (dealGemWord evm).toNat)) := by
   let frame : Frame := { contract := contract, locals := dealLocals I }
   exact evalExpr_storage_scalar_value (hbackend := rfl)
-    (cfg := config) (solm := frame) (evm := evm)
+    (cfg := config) (stele := frame) (evm := evm)
     (slot := gemRef) (er := dealGemEvaledRef)
     (t := .address) (loc := addrLoc ⟨3⟩)
     (value := .address (AccountAddress.ofNat (dealGemWord evm).toNat))
@@ -583,13 +583,13 @@ theorem evalExpr_deal_extCodeGuard_false {evm : EVM.State} {locals : Store}
 
 theorem flopperDealBodyReverts_notLive (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hlive : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩ ≠ ⟨1⟩) :
+    (hlive : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩ ≠ ⟨1⟩) :
     ExecTransitionBody config contract evm (dealLocals I) dealTransition.body .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
   simpa [dealTransition, nonpayable] using
     nonpayableSecondRequireReverts
       (cfg := config)
-      (solm := { contract := contract, locals := dealLocals I })
+      (stele := { contract := contract, locals := dealLocals I })
       (evm := evm)
       (guard := .binary .eq (.storage liveRef) (.intLit 1))
       (rest :=
@@ -608,7 +608,7 @@ theorem flopperDealBodyReverts_notLive (evm : EVM.State) (I : ExecutionEnv)
 
 theorem flopperDealBodyReverts_ticZero (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hlive : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩ = ⟨1⟩)
+    (hlive : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩ = ⟨1⟩)
     (htic : dealTicWord evm I = ⟨0⟩) :
     ExecTransitionBody config contract evm (dealLocals I) dealTransition.body .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
@@ -621,7 +621,7 @@ theorem flopperDealBodyReverts_ticZero (evm : EVM.State) (I : ExecutionEnv)
 
 theorem flopperDealBodyReverts_notFinished (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hlive : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩ = ⟨1⟩)
+    (hlive : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩ = ⟨1⟩)
     (htic : dealTicWord evm I ≠ ⟨0⟩)
     (hticGe : (dealTimestampWord evm).toNat ≤ (dealTicWord evm I).toNat)
     (hendGe : (dealTimestampWord evm).toNat ≤ (dealEndWord evm I).toNat) :
@@ -637,7 +637,7 @@ theorem flopperDealBodyReverts_notFinished (evm : EVM.State) (I : ExecutionEnv)
 
 theorem flopperDealBodyReverts_mintNoCode (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hlive : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩ = ⟨1⟩)
+    (hlive : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩ = ⟨1⟩)
     (htic : dealTicWord evm I ≠ ⟨0⟩)
     (hfinished :
       (dealTicWord evm I).toNat < (dealTimestampWord evm).toNat ∨
@@ -675,7 +675,7 @@ theorem flopperDealBodyReverts_mintNoCode (evm : EVM.State) (I : ExecutionEnv)
 theorem flopperDealBodyReverts_mintCallFailure
     (evm evm' : EVM.State) (I : ExecutionEnv) (out : ByteArray)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hlive : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩ = ⟨1⟩)
+    (hlive : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩ = ⟨1⟩)
     (htic : dealTicWord evm I ≠ ⟨0⟩)
     (hfinished :
       (dealTicWord evm I).toNat < (dealTimestampWord evm).toNat ∨
@@ -735,7 +735,7 @@ theorem flopperDealBodyReverts_mintCallFailure
 theorem flopperDealBodyReturns_mintCallSuccessSplit
     (evm evm' : EVM.State) (I : ExecutionEnv) (out : ByteArray)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hlive : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩ = ⟨1⟩)
+    (hlive : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩ = ⟨1⟩)
     (htic : dealTicWord evm I ≠ ⟨0⟩)
     (hfinished :
       (dealTicWord evm I).toNat < (dealTimestampWord evm).toNat ∨

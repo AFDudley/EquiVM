@@ -1,7 +1,7 @@
 import Examples.SimpleAuction.Storage
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -18,7 +18,7 @@ theorem simpleAuctionAuctionEndTimeBodyReturns (evm : EVM.State) (locals : Store
     ExecTransitionBody simpleAuctionConfig simpleAuctionContract evm locals auctionEndTimeGetter.body
       (.returned { contract := simpleAuctionContract, locals := locals } evm
         (some [(.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat))])) := by
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat))])) := by
   exact ExecFuncBody.execBlockRet <|
     (ABlock.start.requireStep (evalCallvalueEq_true h)).returns (by
       have her : evalStorageRef simpleAuctionConfig { contract := simpleAuctionContract, locals := locals }
@@ -144,7 +144,7 @@ theorem simpleAuctionAuctionEndTimeBody {σ σ₀ A I}
           (.returned { contract := simpleAuctionContract, locals := ∅ }
             (initState σ σ₀ (Sat256.ofUInt256 g) A I)
             (some [(.int (Int.ofNat (auctionEndTimeWord σ I).toNat))])) := by
-      simpa [auctionEndTimeWord, initState, Solm.EVM.storageLoad, State.lookupAccount] using
+      simpa [auctionEndTimeWord, initState, Stele.EVM.storageLoad, State.lookupAccount] using
         simpleAuctionAuctionEndTimeBodyReturns
           (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
           (by simp only [initState]; exact hwv) (by simp)

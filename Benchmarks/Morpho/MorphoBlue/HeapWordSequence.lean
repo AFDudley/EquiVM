@@ -1,6 +1,6 @@
 import Benchmarks.Morpho.MorphoBlue.HeapWordWrites
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.Morpho.MorphoBlue
 
 -- LIBRARY CANDIDATE: a sequence of reserved writes preserves the heap and earlier memory.

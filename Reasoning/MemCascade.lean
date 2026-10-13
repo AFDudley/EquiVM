@@ -8,7 +8,7 @@ buffer by a chronological list of 32-byte word writes.  The single-write byte fa
 `Reasoning.Memory`; this file composes them over a write list.
 -/
 
-open Ethereum Ethereum.EVM Solm ABI
+open Ethereum Ethereum.EVM Stele ABI
 
 namespace Reasoning.Theory
 
@@ -236,7 +236,7 @@ end Reasoning.Theory
 
 namespace Reasoning.Theory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 set_option autoImplicit false
 set_option maxRecDepth 2000000

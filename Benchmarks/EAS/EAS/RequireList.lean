@@ -1,5 +1,5 @@
 import Benchmarks.EAS.EAS.Common
-open Solm
+open Stele
 namespace Benchmarks.EAS.EAS
 
 -- LIBRARY CANDIDATE: an ordered sequence of pure Boolean guards.

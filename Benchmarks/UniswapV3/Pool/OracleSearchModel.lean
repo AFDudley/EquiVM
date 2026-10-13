@@ -2,7 +2,7 @@ import Benchmarks.UniswapV3.Pool.SourceReverts
 import Benchmarks.UniswapV3.Pool.OracleLteSource
 import Benchmarks.UniswapV3.Pool.OracleObservationStorage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
 
@@ -119,8 +119,8 @@ theorem oracleSearchPrefix (imms : Store) (evm : EVM.State)
         simp [f1, f0, oracleSearchZeroFrame, oracleSearchLocals, Std.HashMap.getElem_insert])
   have htail : ExecBlock config f0 evm (oracleSearchFunction.body.drop 2 |>.take 3)
       (.ok (oracleSearchReadyFrame imms time target index cardinality) evm) := by
-    refine ExecBlock.consNormal (solm' := f1) (evm' := evm) (ExecStmt.letDecl hl) ?_
-    refine ExecBlock.consNormal (solm' := f2) (evm' := evm) (ExecStmt.letDecl hr) ?_
+    refine ExecBlock.consNormal (stele' := f1) (evm' := evm) (ExecStmt.letDecl hl) ?_
+    refine ExecBlock.consNormal (stele' := f2) (evm' := evm) (ExecStmt.letDecl hr) ?_
     exact ExecBlock.consNormal (ExecStmt.letDecl (by simp only [evalExpr?, pure])) ExecBlock.nil
   exact execBlock_append_ok (oracleSearchZeroPrefix imms evm time target index cardinality) htail
 

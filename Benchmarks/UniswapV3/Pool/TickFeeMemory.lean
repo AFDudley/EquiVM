@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.TickFeePrefixTrace
 import Benchmarks.UniswapV3.Pool.TickUpdateMemory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 -- LIBRARY CANDIDATE: a write to the first scratch word preserves the heap invariant.

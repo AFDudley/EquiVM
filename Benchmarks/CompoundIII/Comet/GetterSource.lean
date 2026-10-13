@@ -1,6 +1,6 @@
 import Benchmarks.CompoundIII.Comet.Common
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.CompoundIII.Comet.Immutables
 
 namespace Benchmarks.CompoundIII.Comet
@@ -15,7 +15,7 @@ def calldataPrologue (body : List Stmt) : List Stmt :=
   .require (.binary .eq (.env .callvalue) (.intLit 0)) ::
   .letDecl "__calldata" (some .bytes) (.env .msgData) :: .require calldataBoundExpr :: body
 
--- LIBRARY CANDIDATE: Reasoning.SolmBody — the source counterpart of solc's
+-- LIBRARY CANDIDATE: Reasoning.SteleBody — the source counterpart of solc's
 -- nonpayability and signed calldata-size checks, parameterized by the remaining body.
 theorem calldataBound_eval (cfg : Config) (frame : Frame) (evm : EVM.State) :
     evalExpr? cfg (calldataLocalFrame frame evm) evm calldataBoundExpr =

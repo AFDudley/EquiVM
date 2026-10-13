@@ -1,5 +1,5 @@
 import Benchmarks.Scaffolds.TimelockController.Constructor
-import Solm.Refine
+import Stele.Refine
 
 /-!
 # OpenZeppelin TimelockController benchmark correctness stub
@@ -8,7 +8,7 @@ Runtime equivalence of the 28-selector binary-search dispatcher against its spec
 benchmark target.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM
+open Stele ABI Ethereum Ethereum.EVM
 
 namespace OpenZeppelinBench.TimelockController
 

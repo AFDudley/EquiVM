@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Dai.Common
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -87,7 +87,7 @@ end Benchmarks.Dss.Dai
 
 namespace Reasoning.Reach
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Benchmarks.Dss.Dai
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Benchmarks.Dss.Dai
 
 /-! ## Shared single-mapping getter routine -/
 

@@ -2,7 +2,7 @@ import Benchmarks.EAS.EAS.WordArrayBridge
 import Benchmarks.EAS.EAS.RuntimeBlocks_006
 import Benchmarks.EAS.EAS.RuntimeBlocks_011
 import Benchmarks.EAS.EAS.DelegatedBatchDecode
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.EAS.EAS.Immutables
 namespace Benchmarks.EAS.EAS
 set_option maxRecDepth 10000

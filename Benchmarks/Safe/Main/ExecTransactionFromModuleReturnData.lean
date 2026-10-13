@@ -3,7 +3,7 @@ import Benchmarks.Safe.Main.ModuleArgsDecoder
 import Benchmarks.Safe.Main.ModuleCalldata
 import Benchmarks.Safe.Main.ModuleReturnDataTrace
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.Main

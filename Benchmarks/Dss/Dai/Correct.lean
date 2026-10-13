@@ -30,7 +30,7 @@ selector-size guard, and one branch per ABI selector.  Each matched branch deleg
 function's `…BodyCore` lemma in its own file.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -346,7 +346,7 @@ theorem daiShortRevert {σ σ₀ A I} {g : UInt256}
   exact (daiX_short (g := Sat256.ofUInt256 g) hcode hwv hsz).reEquivNoDispatch hcode
     (daiDispatch_none_short hsz)
 
-/-- No selector matches: Solm dispatch fails and the bytecode falls through to the revert stub. -/
+/-- No selector matches: Stele dispatch fails and the bytecode falls through to the revert stub. -/
 theorem daiNoDispatch {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = daiBytecode) (hsize : I.calldata.size < UInt256.size)
     (hwv : I.weiValue = ⟨0⟩)

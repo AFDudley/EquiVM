@@ -3,7 +3,7 @@ import Benchmarks.Safe.Main.ExecGuardCallPrepare
 import Benchmarks.Safe.Main.SafeAddTrace
 import Benchmarks.Safe.Main.MaximumTrace
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.Main

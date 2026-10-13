@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Flopper.Dent.Part7
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option linter.unusedSimpArgs false
@@ -99,151 +99,151 @@ theorem flopperDentBodyCoreKissCallFailureMoveCallerNeTicZero
       config.externalABI.decodeCalldata? (dentTransition.params.map Param.name)
         (transitionSignature dentTransition).paramTypes I.calldata = some (dentLocals I)) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  let σ'_solm := σ'
-  let A'_solm := A'
-  have hcallSolmRaw := hcall
-  have hpostAccountsCall : σ' = σ'_solm := rfl
-  let evmCallSolm : EVM.State :=
-    { evmSolm with accountMap := σ'_solm, substate := A'_solm }
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let σ'_stele := σ'
+  let A'_stele := A'
+  have hcallSteleRaw := hcall
+  have hpostAccountsCall : σ' = σ'_stele := rfl
+  let evmCallStele : EVM.State :=
+    { evmStele with accountMap := σ'_stele, substate := A'_stele }
   let packedSlot := auctionPackedSlot (dentIdWord I)
   have hsrcEq : AccountAddress.ofNat (UInt256.ofNat I.source.val).toNat = I.source := by
     simpa [solcSourceWord] using solcSource_ofNat I
-  have hcallSolm :
-      typedCallViaEVM config evmSolm
+  have hcallStele :
+      typedCallViaEVM config evmStele
         (EVM.address (AccountAddress.ofNat
           (solcAddressSlotWord ⟨2⟩ σ I).toNat))
         "move" 0
-        [.address evmSolm.executionEnv.source,
+        [.address evmStele.executionEnv.source,
           .address (AccountAddress.ofNat
             (solcAddressSlotWord packedSlot σ I).toNat),
           .int (Int.ofNat (dentBidWord I).toNat)]
-        (true, evmCallSolm, outMove) true := by
-    simpa [evmSolm, evmCallSolm, packedSlot, hsrcEq] using
-      hcallSolmRaw
-  have hcallEnv : evmCallSolm.executionEnv = I := by
-    have h := typedCallViaEVM_executionEnv_eq hcallSolm
-    simpa [evmSolm, initState] using h
-  let evmCallSolmBase : EVM.State := { evmCallSolm with substate := A' }
-  let σAshSolm := σAsh
-  let AAshSolm0 := AAsh
-  have hcallAshSolmBase := hashCall
-  have hpostAsrfl : σAsh = σAshSolm := rfl
+        (true, evmCallStele, outMove) true := by
+    simpa [evmStele, evmCallStele, packedSlot, hsrcEq] using
+      hcallSteleRaw
+  have hcallEnv : evmCallStele.executionEnv = I := by
+    have h := typedCallViaEVM_executionEnv_eq hcallStele
+    simpa [evmStele, initState] using h
+  let evmCallSteleBase : EVM.State := { evmCallStele with substate := A' }
+  let σAshStele := σAsh
+  let AAshStele0 := AAsh
+  have hcallAshSteleBase := hashCall
+  have hpostAsrfl : σAsh = σAshStele := rfl
   have hdepthNeI : I.depth ≠ 1024 := by
     intro hdepthEq
     rw [hdepthEq] at hdepth
     norm_num at hdepth
-  have hdepthNeBase : evmCallSolmBase.executionEnv.depth ≠ 1024 := by
-    simpa [evmCallSolmBase, evmCallSolm, evmSolm, initState, hcallEnv] using hdepthNeI
-  obtain ⟨AAshSolm, hcallAshSolmRaw⟩ :=
-    typedCallViaEVM_zero_setSubstate hcallAshSolmBase hdepthNeBase
-      evmCallSolm.substate
-  let evmAshSolm : EVM.State :=
-    { evmCallSolm with
-        accountMap := σAshSolm, substate := AAshSolm }
+  have hdepthNeBase : evmCallSteleBase.executionEnv.depth ≠ 1024 := by
+    simpa [evmCallSteleBase, evmCallStele, evmStele, initState, hcallEnv] using hdepthNeI
+  obtain ⟨AAshStele, hcallAshSteleRaw⟩ :=
+    typedCallViaEVM_zero_setSubstate hcallAshSteleBase hdepthNeBase
+      evmCallStele.substate
+  let evmAshStele : EVM.State :=
+    { evmCallStele with
+        accountMap := σAshStele, substate := AAshStele }
   have hguyMoveEq :
       solcAddressSlotWord packedSlot σ' I =
-        solcAddressSlotWord packedSlot σ'_solm I :=
+        solcAddressSlotWord packedSlot σ'_stele I :=
     congrArg (fun accounts => solcAddressSlotWord packedSlot accounts I) hpostAccountsCall
-  have hcallAshSolm :
-      typedCallViaEVM config evmCallSolm
-        (EVM.address (AccountAddress.ofNat (dentGuyWord evmCallSolm I).toNat)) "Ash" 0 []
-        (true, evmAshSolm, outAsh) true := by
-    simpa [evmAshSolm, evmCallSolmBase, evmCallSolm, dentGuyWord, packedSlot, hcallEnv,
-      hguyMoveEq] using hcallAshSolmRaw
-  let evmAshSolmBase : EVM.State := { evmAshSolm with substate := Ain }
-  let σKissSolm := σKiss
-  let AKissSolm0 := AKiss
-  have hkissCallSolmBase := hkissCall
-  have hdepthNeKissBase : evmAshSolmBase.executionEnv.depth ≠ 1024 := by
-    simpa [evmAshSolmBase, evmAshSolm, evmCallSolm, evmSolm, initState, hcallEnv]
+  have hcallAshStele :
+      typedCallViaEVM config evmCallStele
+        (EVM.address (AccountAddress.ofNat (dentGuyWord evmCallStele I).toNat)) "Ash" 0 []
+        (true, evmAshStele, outAsh) true := by
+    simpa [evmAshStele, evmCallSteleBase, evmCallStele, dentGuyWord, packedSlot, hcallEnv,
+      hguyMoveEq] using hcallAshSteleRaw
+  let evmAshSteleBase : EVM.State := { evmAshStele with substate := Ain }
+  let σKissStele := σKiss
+  let AKissStele0 := AKiss
+  have hkissCallSteleBase := hkissCall
+  have hdepthNeKissBase : evmAshSteleBase.executionEnv.depth ≠ 1024 := by
+    simpa [evmAshSteleBase, evmAshStele, evmCallStele, evmStele, initState, hcallEnv]
       using hdepthNeI
-  obtain ⟨AKissSolm, hkissCallSolmRaw⟩ :=
-    typedCallViaEVM_zero_setSubstate hkissCallSolmBase hdepthNeKissBase
-      evmAshSolm.substate
-  let evmKissSolm : EVM.State :=
-    { evmAshSolm with
-        accountMap := σKissSolm, substate := AKissSolm }
+  obtain ⟨AKissStele, hkissCallSteleRaw⟩ :=
+    typedCallViaEVM_zero_setSubstate hkissCallSteleBase hdepthNeKissBase
+      evmAshStele.substate
+  let evmKissStele : EVM.State :=
+    { evmAshStele with
+        accountMap := σKissStele, substate := AKissStele }
   have hguyAshEq :
       solcAddressSlotWord packedSlot σAsh I =
-        solcAddressSlotWord packedSlot σAshSolm I :=
+        solcAddressSlotWord packedSlot σAshStele I :=
     congrArg (fun accounts => solcAddressSlotWord packedSlot accounts I) hpostAsrfl
-  have hkissCallSolm :
-      typedCallViaEVM config evmAshSolm
-        (EVM.address (AccountAddress.ofNat (dentGuyWord evmAshSolm I).toNat))
+  have hkissCallStele :
+      typedCallViaEVM config evmAshStele
+        (EVM.address (AccountAddress.ofNat (dentGuyWord evmAshStele I).toNat))
         "kiss" 0 [.int (Int.ofNat (dentKissAmtWord I outAsh).toNat)]
-        (false, evmKissSolm, outKiss) true := by
-    have hraw := hkissCallSolmRaw
+        (false, evmKissStele, outKiss) true := by
+    have hraw := hkissCallSteleRaw
     rw [hguyAshEq] at hraw
-    simpa only [evmKissSolm, evmAshSolmBase, evmAshSolm, dentGuyWord, packedSlot,
+    simpa only [evmKissStele, evmAshSteleBase, evmAshStele, dentGuyWord, packedSlot,
       hcallEnv] using hraw
-  have hliveSolm : dentLiveWord evmSolm = ⟨1⟩ := by
-    simpa [evmSolm, dentLiveWord, initState] using hlive
-  have hguySolm : dentGuyWord evmSolm I ≠ ⟨0⟩ := by
+  have hliveStele : dentLiveWord evmStele = ⟨1⟩ := by
+    simpa [evmStele, dentLiveWord, initState] using hlive
+  have hguyStele : dentGuyWord evmStele I ≠ ⟨0⟩ := by
     intro hzero
     apply hguy
-    simpa [evmSolm, dentGuyWord, initState, packedSlot] using hzero
-  have hticOkSolm :
-      (dentTimestampWord evmSolm).toNat < (dentTicWord evmSolm I).toNat ∨
-        dentTicWord evmSolm I = ⟨0⟩ := by
+    simpa [evmStele, dentGuyWord, initState, packedSlot] using hzero
+  have hticOkStele :
+      (dentTimestampWord evmStele).toNat < (dentTicWord evmStele I).toNat ∨
+        dentTicWord evmStele I = ⟨0⟩ := by
     cases hticOk with
     | inl hgt =>
         left
-        simpa [evmSolm, dentTimestampWord, dentTicWord, initState, packedSlot]
+        simpa [evmStele, dentTimestampWord, dentTicWord, initState, packedSlot]
           using hgt
     | inr hzero =>
         right
-        simpa [evmSolm, dentTicWord, initState, packedSlot] using hzero
-  have hendGtSolm : (dentTimestampWord evmSolm).toNat < (dentEndWord evmSolm I).toNat := by
-    simpa [evmSolm, dentTimestampWord, dentEndWord, initState, packedSlot] using hendGt
-  have hbidSolm : dentBidWord I = dentBidStoredWord evmSolm I := by
-    simpa [evmSolm, dentBidStoredWord, initState] using hbid
-  have hlotLtSolm :
-      (dentLotWord I).toNat < (dentLotStoredWord evmSolm I).toNat := by
-    simpa [evmSolm, dentLotStoredWord, initState] using hlotLt
-  have hbegFitSolm :
-      (dentBegWord evmSolm).toNat * (dentLotWord I).toNat < UInt256.size := by
-    simpa [evmSolm, dentBegWord, initState] using hbegFit
-  have hlotOneFitSolm :
-      (dentLotStoredWord evmSolm I).toNat * dentOneWord.toNat < UInt256.size := by
-    simpa [evmSolm, dentLotStoredWord, initState] using hlotOneFit
-  have hsuffSolm :
-      (dentBegLotWord evmSolm I).toNat ≤ (dentLotOneWord evmSolm I).toNat := by
-    simpa [evmSolm, dentBegLotWord, dentBegWord, dentLotOneWord, dentLotStoredWord,
+        simpa [evmStele, dentTicWord, initState, packedSlot] using hzero
+  have hendGtStele : (dentTimestampWord evmStele).toNat < (dentEndWord evmStele I).toNat := by
+    simpa [evmStele, dentTimestampWord, dentEndWord, initState, packedSlot] using hendGt
+  have hbidStele : dentBidWord I = dentBidStoredWord evmStele I := by
+    simpa [evmStele, dentBidStoredWord, initState] using hbid
+  have hlotLtStele :
+      (dentLotWord I).toNat < (dentLotStoredWord evmStele I).toNat := by
+    simpa [evmStele, dentLotStoredWord, initState] using hlotLt
+  have hbegFitStele :
+      (dentBegWord evmStele).toNat * (dentLotWord I).toNat < UInt256.size := by
+    simpa [evmStele, dentBegWord, initState] using hbegFit
+  have hlotOneFitStele :
+      (dentLotStoredWord evmStele I).toNat * dentOneWord.toNat < UInt256.size := by
+    simpa [evmStele, dentLotStoredWord, initState] using hlotOneFit
+  have hsuffStele :
+      (dentBegLotWord evmStele I).toNat ≤ (dentLotOneWord evmStele I).toNat := by
+    simpa [evmStele, dentBegLotWord, dentBegWord, dentLotOneWord, dentLotStoredWord,
       initState] using hsuff
-  have hcallerSolm :
-      UInt256.ofNat evmSolm.executionEnv.source.val ≠ dentGuyWord evmSolm I := by
+  have hcallerStele :
+      UInt256.ofNat evmStele.executionEnv.source.val ≠ dentGuyWord evmStele I := by
     intro heq
     apply hcaller
-    simpa [evmSolm, dentGuyWord, initState, packedSlot] using heq
-  have hcodeSizeSolm :
+    simpa [evmStele, dentGuyWord, initState, packedSlot] using heq
+  have hcodeSizeStele :
       Reasoning.Theory.extCodeSizeWord σ
         (solcAddressSlotWord ⟨2⟩ σ I) ≠ ⟨0⟩ :=
     hcodeSize
-  have hticMoveSolm : dentTicWord evmCallSolm I = ⟨0⟩ := by
+  have hticMoveStele : dentTicWord evmCallStele I = ⟨0⟩ := by
     have hword := congrArg (fun accounts => uint48Offset20Word packedSlot accounts I) hpostAccountsCall
-    simpa [evmCallSolm, dentTicWord, packedSlot, hcallEnv, hword] using hticMove
-  have hashCodeSizeSolm :
-      Reasoning.Theory.extCodeSizeWord evmCallSolm.accountMap
-        (dentGuyWord evmCallSolm I) ≠ ⟨0⟩ := by
-    simpa [evmCallSolm, dentGuyWord, packedSlot, hcallEnv,
+    simpa [evmCallStele, dentTicWord, packedSlot, hcallEnv, hword] using hticMove
+  have hashCodeSizeStele :
+      Reasoning.Theory.extCodeSizeWord evmCallStele.accountMap
+        (dentGuyWord evmCallStele I) ≠ ⟨0⟩ := by
+    simpa [evmCallStele, dentGuyWord, packedSlot, hcallEnv,
       ← hpostAccountsCall] using hashCodeSize
-  have hkissCodeSizeSolm :
-      Reasoning.Theory.extCodeSizeWord evmAshSolm.accountMap
-        (dentGuyWord evmAshSolm I) ≠ ⟨0⟩ := by
-    simpa [evmAshSolm, dentGuyWord, packedSlot, hcallEnv,
+  have hkissCodeSizeStele :
+      Reasoning.Theory.extCodeSizeWord evmAshStele.accountMap
+        (dentGuyWord evmAshStele I) ≠ ⟨0⟩ := by
+    simpa [evmAshStele, dentGuyWord, packedSlot, hcallEnv,
       ← hpostAsrfl] using hkissCodeSize
   have hbody :
-      ExecTransitionBody config contract evmSolm (dentLocals I) dentTransition.body
+      ExecTransitionBody config contract evmStele (dentLocals I) dentTransition.body
         .reverted := by
     exact flopperDentBodyReverts_kissCallFailure_moveCallerNe_ticZero
-      evmSolm evmCallSolm evmAshSolm evmKissSolm I outMove outAsh outKiss
-      (by simpa [evmSolm, initState] using hwv) hliveSolm hguySolm hticOkSolm
-      hendGtSolm hbidSolm hlotLtSolm hbegFitSolm hlotOneFitSolm hsuffSolm
-      hcallerSolm
-      (by simpa [evmSolm, dentVatWord, initState] using hcodeSizeSolm)
-      hcallSolm hticMoveSolm hashCodeSizeSolm hcallAshSolm houtAsh32
-      hkissCodeSizeSolm hkissCallSolm
+      evmStele evmCallStele evmAshStele evmKissStele I outMove outAsh outKiss
+      (by simpa [evmStele, initState] using hwv) hliveStele hguyStele hticOkStele
+      hendGtStele hbidStele hlotLtStele hbegFitStele hlotOneFitStele hsuffStele
+      hcallerStele
+      (by simpa [evmStele, dentVatWord, initState] using hcodeSizeStele)
+      hcallStele hticMoveStele hashCodeSizeStele hcallAshStele houtAsh32
+      hkissCodeSizeStele hkissCallStele
   have hrev := flopperDentX_kissCallFailure rd2833 houtKissSize
   exact flopperDentBodyCoreRevert hcode hdispatch hdecode hbody hrev
 
@@ -343,154 +343,154 @@ theorem flopperDentBodyCoreAddOverflowMoveCallerNeTicZeroKissSuccess
       config.externalABI.decodeCalldata? (dentTransition.params.map Param.name)
         (transitionSignature dentTransition).paramTypes I.calldata = some (dentLocals I)) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  let σ'_solm := σ'
-  let A'_solm := A'
-  have hcallSolmRaw := hcall
-  have hpostAccountsCall : σ' = σ'_solm := rfl
-  let evmCallSolm : EVM.State :=
-    { evmSolm with accountMap := σ'_solm, substate := A'_solm }
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let σ'_stele := σ'
+  let A'_stele := A'
+  have hcallSteleRaw := hcall
+  have hpostAccountsCall : σ' = σ'_stele := rfl
+  let evmCallStele : EVM.State :=
+    { evmStele with accountMap := σ'_stele, substate := A'_stele }
   let packedSlot := auctionPackedSlot (dentIdWord I)
   have hsrcEq : AccountAddress.ofNat (UInt256.ofNat I.source.val).toNat = I.source := by
     simpa [solcSourceWord] using solcSource_ofNat I
-  have hcallSolm :
-      typedCallViaEVM config evmSolm
+  have hcallStele :
+      typedCallViaEVM config evmStele
         (EVM.address (AccountAddress.ofNat
           (solcAddressSlotWord ⟨2⟩ σ I).toNat))
         "move" 0
-        [.address evmSolm.executionEnv.source,
+        [.address evmStele.executionEnv.source,
           .address (AccountAddress.ofNat
             (solcAddressSlotWord packedSlot σ I).toNat),
           .int (Int.ofNat (dentBidWord I).toNat)]
-        (true, evmCallSolm, outMove) true := by
-    simpa [evmSolm, evmCallSolm, packedSlot, hsrcEq] using
-      hcallSolmRaw
-  have hcallEnv : evmCallSolm.executionEnv = I := by
-    have h := typedCallViaEVM_executionEnv_eq hcallSolm
-    simpa [evmSolm, initState] using h
-  let evmCallSolmBase : EVM.State := { evmCallSolm with substate := A' }
-  let σAshSolm := σAsh
-  let AAshSolm0 := AAsh
-  have hcallAshSolmBase := hashCall
-  have hpostAsrfl : σAsh = σAshSolm := rfl
+        (true, evmCallStele, outMove) true := by
+    simpa [evmStele, evmCallStele, packedSlot, hsrcEq] using
+      hcallSteleRaw
+  have hcallEnv : evmCallStele.executionEnv = I := by
+    have h := typedCallViaEVM_executionEnv_eq hcallStele
+    simpa [evmStele, initState] using h
+  let evmCallSteleBase : EVM.State := { evmCallStele with substate := A' }
+  let σAshStele := σAsh
+  let AAshStele0 := AAsh
+  have hcallAshSteleBase := hashCall
+  have hpostAsrfl : σAsh = σAshStele := rfl
   have hdepthNeI : I.depth ≠ 1024 := by
     intro hdepthEq
     rw [hdepthEq] at hdepth
     norm_num at hdepth
-  have hdepthNeBase : evmCallSolmBase.executionEnv.depth ≠ 1024 := by
-    simpa [evmCallSolmBase, evmCallSolm, evmSolm, initState, hcallEnv] using hdepthNeI
-  obtain ⟨AAshSolm, hcallAshSolmRaw⟩ :=
-    typedCallViaEVM_zero_setSubstate hcallAshSolmBase hdepthNeBase
-      evmCallSolm.substate
-  let evmAshSolm : EVM.State :=
-    { evmCallSolm with
-        accountMap := σAshSolm, substate := AAshSolm }
+  have hdepthNeBase : evmCallSteleBase.executionEnv.depth ≠ 1024 := by
+    simpa [evmCallSteleBase, evmCallStele, evmStele, initState, hcallEnv] using hdepthNeI
+  obtain ⟨AAshStele, hcallAshSteleRaw⟩ :=
+    typedCallViaEVM_zero_setSubstate hcallAshSteleBase hdepthNeBase
+      evmCallStele.substate
+  let evmAshStele : EVM.State :=
+    { evmCallStele with
+        accountMap := σAshStele, substate := AAshStele }
   have hguyMoveEq :
       solcAddressSlotWord packedSlot σ' I =
-        solcAddressSlotWord packedSlot σ'_solm I :=
+        solcAddressSlotWord packedSlot σ'_stele I :=
     congrArg (fun accounts => solcAddressSlotWord packedSlot accounts I) hpostAccountsCall
-  have hcallAshSolm :
-      typedCallViaEVM config evmCallSolm
-        (EVM.address (AccountAddress.ofNat (dentGuyWord evmCallSolm I).toNat)) "Ash" 0 []
-        (true, evmAshSolm, outAsh) true := by
-    simpa [evmAshSolm, evmCallSolmBase, evmCallSolm, dentGuyWord, packedSlot, hcallEnv,
-      hguyMoveEq] using hcallAshSolmRaw
-  let evmAshSolmBase : EVM.State := { evmAshSolm with substate := Ain }
-  let σKissSolm := σKiss
-  let AKissSolm0 := AKiss
-  have hkissCallSolmBase := hkissCall
-  have hpostKissAccounts : σKiss = σKissSolm := rfl
-  have hdepthNeKissBase : evmAshSolmBase.executionEnv.depth ≠ 1024 := by
-    simpa [evmAshSolmBase, evmAshSolm, evmCallSolm, evmSolm, initState, hcallEnv]
+  have hcallAshStele :
+      typedCallViaEVM config evmCallStele
+        (EVM.address (AccountAddress.ofNat (dentGuyWord evmCallStele I).toNat)) "Ash" 0 []
+        (true, evmAshStele, outAsh) true := by
+    simpa [evmAshStele, evmCallSteleBase, evmCallStele, dentGuyWord, packedSlot, hcallEnv,
+      hguyMoveEq] using hcallAshSteleRaw
+  let evmAshSteleBase : EVM.State := { evmAshStele with substate := Ain }
+  let σKissStele := σKiss
+  let AKissStele0 := AKiss
+  have hkissCallSteleBase := hkissCall
+  have hpostKissAccounts : σKiss = σKissStele := rfl
+  have hdepthNeKissBase : evmAshSteleBase.executionEnv.depth ≠ 1024 := by
+    simpa [evmAshSteleBase, evmAshStele, evmCallStele, evmStele, initState, hcallEnv]
       using hdepthNeI
-  obtain ⟨AKissSolm, hkissCallSolmRaw⟩ :=
-    typedCallViaEVM_zero_setSubstate hkissCallSolmBase hdepthNeKissBase
-      evmAshSolm.substate
-  let evmKissSolm : EVM.State :=
-    { evmAshSolm with
-        accountMap := σKissSolm, substate := AKissSolm }
+  obtain ⟨AKissStele, hkissCallSteleRaw⟩ :=
+    typedCallViaEVM_zero_setSubstate hkissCallSteleBase hdepthNeKissBase
+      evmAshStele.substate
+  let evmKissStele : EVM.State :=
+    { evmAshStele with
+        accountMap := σKissStele, substate := AKissStele }
   have hguyAshEq :
       solcAddressSlotWord packedSlot σAsh I =
-        solcAddressSlotWord packedSlot σAshSolm I :=
+        solcAddressSlotWord packedSlot σAshStele I :=
     congrArg (fun accounts => solcAddressSlotWord packedSlot accounts I) hpostAsrfl
-  have hkissCallSolm :
-      typedCallViaEVM config evmAshSolm
-        (EVM.address (AccountAddress.ofNat (dentGuyWord evmAshSolm I).toNat))
+  have hkissCallStele :
+      typedCallViaEVM config evmAshStele
+        (EVM.address (AccountAddress.ofNat (dentGuyWord evmAshStele I).toNat))
         "kiss" 0 [.int (Int.ofNat (dentKissAmtWord I outAsh).toNat)]
-        (true, evmKissSolm, outKiss) true := by
-    have hraw := hkissCallSolmRaw
+        (true, evmKissStele, outKiss) true := by
+    have hraw := hkissCallSteleRaw
     rw [hguyAshEq] at hraw
-    simpa only [evmKissSolm, evmAshSolmBase, evmAshSolm, dentGuyWord, packedSlot,
+    simpa only [evmKissStele, evmAshSteleBase, evmAshStele, dentGuyWord, packedSlot,
       hcallEnv] using hraw
-  have hkissEnv : evmKissSolm.executionEnv = I := by
-    have h := typedCallViaEVM_executionEnv_eq hkissCallSolm
-    simpa [evmKissSolm, evmAshSolm, evmCallSolm, evmSolm, initState, hcallEnv] using h
+  have hkissEnv : evmKissStele.executionEnv = I := by
+    have h := typedCallViaEVM_executionEnv_eq hkissCallStele
+    simpa [evmKissStele, evmAshStele, evmCallStele, evmStele, initState, hcallEnv] using h
   have hAfterGuy :=
     dentRuntimeAfterGuyMap_eq_afterGuyStore
-      (I := I) (σ := σKiss) (evmSolm := evmKissSolm)
-      (by simpa [evmKissSolm] using hpostKissAccounts) hkissEnv
+      (I := I) (σ := σKiss) (evmStele := evmKissStele)
+      (by simpa [evmKissStele] using hpostKissAccounts) hkissEnv
   have httl :=
     dentRuntimeTtlWord_afterGuy_eq (I := I) hAfterGuy hkissEnv
-  have hliveSolm : dentLiveWord evmSolm = ⟨1⟩ := by
-    simpa [evmSolm, dentLiveWord, initState] using hlive
-  have hguySolm : dentGuyWord evmSolm I ≠ ⟨0⟩ := by
+  have hliveStele : dentLiveWord evmStele = ⟨1⟩ := by
+    simpa [evmStele, dentLiveWord, initState] using hlive
+  have hguyStele : dentGuyWord evmStele I ≠ ⟨0⟩ := by
     intro hzero
     apply hguy
-    simpa [evmSolm, dentGuyWord, initState, packedSlot] using hzero
-  have hticOkSolm :
-      (dentTimestampWord evmSolm).toNat < (dentTicWord evmSolm I).toNat ∨
-        dentTicWord evmSolm I = ⟨0⟩ := by
+    simpa [evmStele, dentGuyWord, initState, packedSlot] using hzero
+  have hticOkStele :
+      (dentTimestampWord evmStele).toNat < (dentTicWord evmStele I).toNat ∨
+        dentTicWord evmStele I = ⟨0⟩ := by
     cases hticOk with
     | inl hgt =>
         left
-        simpa [evmSolm, dentTimestampWord, dentTicWord, initState, packedSlot]
+        simpa [evmStele, dentTimestampWord, dentTicWord, initState, packedSlot]
           using hgt
     | inr hzero =>
         right
-        simpa [evmSolm, dentTicWord, initState, packedSlot] using hzero
-  have hendGtSolm : (dentTimestampWord evmSolm).toNat < (dentEndWord evmSolm I).toNat := by
-    simpa [evmSolm, dentTimestampWord, dentEndWord, initState, packedSlot] using hendGt
-  have hbidSolm : dentBidWord I = dentBidStoredWord evmSolm I := by
-    simpa [evmSolm, dentBidStoredWord, initState] using hbid
-  have hlotLtSolm :
-      (dentLotWord I).toNat < (dentLotStoredWord evmSolm I).toNat := by
-    simpa [evmSolm, dentLotStoredWord, initState] using hlotLt
-  have hbegFitSolm :
-      (dentBegWord evmSolm).toNat * (dentLotWord I).toNat < UInt256.size := by
-    simpa [evmSolm, dentBegWord, initState] using hbegFit
-  have hlotOneFitSolm :
-      (dentLotStoredWord evmSolm I).toNat * dentOneWord.toNat < UInt256.size := by
-    simpa [evmSolm, dentLotStoredWord, initState] using hlotOneFit
-  have hsuffSolm :
-      (dentBegLotWord evmSolm I).toNat ≤ (dentLotOneWord evmSolm I).toNat := by
-    simpa [evmSolm, dentBegLotWord, dentBegWord, dentLotOneWord, dentLotStoredWord,
+        simpa [evmStele, dentTicWord, initState, packedSlot] using hzero
+  have hendGtStele : (dentTimestampWord evmStele).toNat < (dentEndWord evmStele I).toNat := by
+    simpa [evmStele, dentTimestampWord, dentEndWord, initState, packedSlot] using hendGt
+  have hbidStele : dentBidWord I = dentBidStoredWord evmStele I := by
+    simpa [evmStele, dentBidStoredWord, initState] using hbid
+  have hlotLtStele :
+      (dentLotWord I).toNat < (dentLotStoredWord evmStele I).toNat := by
+    simpa [evmStele, dentLotStoredWord, initState] using hlotLt
+  have hbegFitStele :
+      (dentBegWord evmStele).toNat * (dentLotWord I).toNat < UInt256.size := by
+    simpa [evmStele, dentBegWord, initState] using hbegFit
+  have hlotOneFitStele :
+      (dentLotStoredWord evmStele I).toNat * dentOneWord.toNat < UInt256.size := by
+    simpa [evmStele, dentLotStoredWord, initState] using hlotOneFit
+  have hsuffStele :
+      (dentBegLotWord evmStele I).toNat ≤ (dentLotOneWord evmStele I).toNat := by
+    simpa [evmStele, dentBegLotWord, dentBegWord, dentLotOneWord, dentLotStoredWord,
       initState] using hsuff
-  have hcallerSolm :
-      UInt256.ofNat evmSolm.executionEnv.source.val ≠ dentGuyWord evmSolm I := by
+  have hcallerStele :
+      UInt256.ofNat evmStele.executionEnv.source.val ≠ dentGuyWord evmStele I := by
     intro heq
     apply hcaller
-    simpa [evmSolm, dentGuyWord, initState, packedSlot] using heq
-  have hcodeSizeSolm :
+    simpa [evmStele, dentGuyWord, initState, packedSlot] using heq
+  have hcodeSizeStele :
       Reasoning.Theory.extCodeSizeWord σ
         (solcAddressSlotWord ⟨2⟩ σ I) ≠ ⟨0⟩ :=
     hcodeSize
-  have hticMoveSolm : dentTicWord evmCallSolm I = ⟨0⟩ := by
+  have hticMoveStele : dentTicWord evmCallStele I = ⟨0⟩ := by
     have hword := congrArg (fun accounts => uint48Offset20Word packedSlot accounts I) hpostAccountsCall
-    simpa [evmCallSolm, dentTicWord, packedSlot, hcallEnv, hword] using hticMove
-  have hashCodeSizeSolm :
-      Reasoning.Theory.extCodeSizeWord evmCallSolm.accountMap
-        (dentGuyWord evmCallSolm I) ≠ ⟨0⟩ := by
-    simpa [evmCallSolm, dentGuyWord, packedSlot, hcallEnv,
+    simpa [evmCallStele, dentTicWord, packedSlot, hcallEnv, hword] using hticMove
+  have hashCodeSizeStele :
+      Reasoning.Theory.extCodeSizeWord evmCallStele.accountMap
+        (dentGuyWord evmCallStele I) ≠ ⟨0⟩ := by
+    simpa [evmCallStele, dentGuyWord, packedSlot, hcallEnv,
       ← hpostAccountsCall] using hashCodeSize
-  have hkissCodeSizeSolm :
-      Reasoning.Theory.extCodeSizeWord evmAshSolm.accountMap
-        (dentGuyWord evmAshSolm I) ≠ ⟨0⟩ := by
-    simpa [evmAshSolm, dentGuyWord, packedSlot, hcallEnv,
+  have hkissCodeSizeStele :
+      Reasoning.Theory.extCodeSizeWord evmAshStele.accountMap
+        (dentGuyWord evmAshStele I) ≠ ⟨0⟩ := by
+    simpa [evmAshStele, dentGuyWord, packedSlot, hcallEnv,
       ← hpostAsrfl] using hkissCodeSize
-  have haddOverflowSolm :
+  have haddOverflowStele :
       2 ^ 48 ≤
-        (dentNow48Word (dentAfterGuyStore evmKissSolm I)).toNat +
-          (dentTtlWord (dentAfterLotStore (dentAfterGuyStore evmKissSolm I) I)).toNat := by
+        (dentNow48Word (dentAfterGuyStore evmKissStele I)).toNat +
+          (dentTtlWord (dentAfterLotStore (dentAfterGuyStore evmKissStele I) I)).toNat := by
     simpa [dentNow48Word, dentTimestampWord, dentAfterGuyStore, storageStore_executionEnv,
       hkissEnv, httl] using haddOverflow
   by_cases hperm : I.perm = true
@@ -499,25 +499,25 @@ theorem flopperDentBodyCoreAddOverflowMoveCallerNeTicZeroKissSuccess
     have hstatic := permSplit_false hp
       (flopperDentX_kissCallSuccessToTailSplit (g := Sat256.ofUInt256 g) rd2833)
     have hsource := (flopperDentBodyReturns_success_moveCallerNe_ticZero_kissSuccessSplit
-        evmSolm evmCallSolm evmAshSolm evmKissSolm I outMove outAsh outKiss
-        (by simpa [evmSolm, initState] using hwv) hliveSolm hguySolm hticOkSolm
-        hendGtSolm hbidSolm hlotLtSolm hbegFitSolm hlotOneFitSolm hsuffSolm
-        hcallerSolm
-        (by simpa [evmSolm, dentVatWord, initState] using hcodeSizeSolm)
-        hcallSolm hticMoveSolm hashCodeSizeSolm hcallAshSolm houtAsh32
-        hkissCodeSizeSolm hkissCallSolm).2 hp
+        evmStele evmCallStele evmAshStele evmKissStele I outMove outAsh outKiss
+        (by simpa [evmStele, initState] using hwv) hliveStele hguyStele hticOkStele
+        hendGtStele hbidStele hlotLtStele hbegFitStele hlotOneFitStele hsuffStele
+        hcallerStele
+        (by simpa [evmStele, dentVatWord, initState] using hcodeSizeStele)
+        hcallStele hticMoveStele hashCodeSizeStele hcallAshStele houtAsh32
+        hkissCodeSizeStele hkissCallStele).2 hp
     exact hstatic.reEquivStaticHalt hcode hdispatch hdecode hsource
   have hbody :
-      ExecTransitionBody config contract evmSolm (dentLocals I) dentTransition.body
+      ExecTransitionBody config contract evmStele (dentLocals I) dentTransition.body
         .reverted := by
     exact flopperDentBodyReverts_addOverflow_moveCallerNe_ticZero_kissSuccess
-      evmSolm evmCallSolm evmAshSolm evmKissSolm I outMove outAsh outKiss
-      (by simpa [evmSolm, initState] using hwv) hliveSolm hguySolm hticOkSolm
-      hendGtSolm hbidSolm hlotLtSolm hbegFitSolm hlotOneFitSolm hsuffSolm
-      hcallerSolm
-      (by simpa [evmSolm, dentVatWord, initState] using hcodeSizeSolm)
-      hcallSolm hticMoveSolm hashCodeSizeSolm hcallAshSolm houtAsh32
-      hkissCodeSizeSolm hkissCallSolm haddOverflowSolm
+      evmStele evmCallStele evmAshStele evmKissStele I outMove outAsh outKiss
+      (by simpa [evmStele, initState] using hwv) hliveStele hguyStele hticOkStele
+      hendGtStele hbidStele hlotLtStele hbegFitStele hlotOneFitStele hsuffStele
+      hcallerStele
+      (by simpa [evmStele, dentVatWord, initState] using hcodeSizeStele)
+      hcallStele hticMoveStele hashCodeSizeStele hcallAshStele houtAsh32
+      hkissCodeSizeStele hkissCallStele haddOverflowStele
   obtain ⟨_, _, _, rd2889⟩ :=
     flopperDentX_kissCallSuccessToTail (g := Sat256.ofUInt256 g) hperm rd2833
   have hrev :=
@@ -621,153 +621,153 @@ theorem flopperDentBodyCoreSuccessMoveCallerNeTicZeroKissSuccess
       config.externalABI.decodeCalldata? (dentTransition.params.map Param.name)
         (transitionSignature dentTransition).paramTypes I.calldata = some (dentLocals I)) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  let σ'_solm := σ'
-  let A'_solm := A'
-  have hcallSolmRaw := hcall
-  have hpostAccountsCall : σ' = σ'_solm := rfl
-  let evmCallSolm : EVM.State :=
-    { evmSolm with accountMap := σ'_solm, substate := A'_solm }
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let σ'_stele := σ'
+  let A'_stele := A'
+  have hcallSteleRaw := hcall
+  have hpostAccountsCall : σ' = σ'_stele := rfl
+  let evmCallStele : EVM.State :=
+    { evmStele with accountMap := σ'_stele, substate := A'_stele }
   let packedSlot := auctionPackedSlot (dentIdWord I)
   have hsrcEq : AccountAddress.ofNat (UInt256.ofNat I.source.val).toNat = I.source := by
     simpa [solcSourceWord] using solcSource_ofNat I
-  have hcallSolm :
-      typedCallViaEVM config evmSolm
+  have hcallStele :
+      typedCallViaEVM config evmStele
         (EVM.address (AccountAddress.ofNat
           (solcAddressSlotWord ⟨2⟩ σ I).toNat))
         "move" 0
-        [.address evmSolm.executionEnv.source,
+        [.address evmStele.executionEnv.source,
           .address (AccountAddress.ofNat
             (solcAddressSlotWord packedSlot σ I).toNat),
           .int (Int.ofNat (dentBidWord I).toNat)]
-        (true, evmCallSolm, outMove) true := by
-    simpa [evmSolm, evmCallSolm, packedSlot, hsrcEq] using
-      hcallSolmRaw
-  have hcallEnv : evmCallSolm.executionEnv = I := by
-    have h := typedCallViaEVM_executionEnv_eq hcallSolm
-    simpa [evmSolm, initState] using h
-  let evmCallSolmBase : EVM.State := { evmCallSolm with substate := A' }
-  let σAshSolm := σAsh
-  let AAshSolm0 := AAsh
-  have hcallAshSolmBase := hashCall
-  have hpostAsrfl : σAsh = σAshSolm := rfl
+        (true, evmCallStele, outMove) true := by
+    simpa [evmStele, evmCallStele, packedSlot, hsrcEq] using
+      hcallSteleRaw
+  have hcallEnv : evmCallStele.executionEnv = I := by
+    have h := typedCallViaEVM_executionEnv_eq hcallStele
+    simpa [evmStele, initState] using h
+  let evmCallSteleBase : EVM.State := { evmCallStele with substate := A' }
+  let σAshStele := σAsh
+  let AAshStele0 := AAsh
+  have hcallAshSteleBase := hashCall
+  have hpostAsrfl : σAsh = σAshStele := rfl
   have hdepthNeI : I.depth ≠ 1024 := by
     intro hdepthEq
     rw [hdepthEq] at hdepth
     norm_num at hdepth
-  have hdepthNeBase : evmCallSolmBase.executionEnv.depth ≠ 1024 := by
-    simpa [evmCallSolmBase, evmCallSolm, evmSolm, initState, hcallEnv] using hdepthNeI
-  obtain ⟨AAshSolm, hcallAshSolmRaw⟩ :=
-    typedCallViaEVM_zero_setSubstate hcallAshSolmBase hdepthNeBase
-      evmCallSolm.substate
-  let evmAshSolm : EVM.State :=
-    { evmCallSolm with
-        accountMap := σAshSolm, substate := AAshSolm }
+  have hdepthNeBase : evmCallSteleBase.executionEnv.depth ≠ 1024 := by
+    simpa [evmCallSteleBase, evmCallStele, evmStele, initState, hcallEnv] using hdepthNeI
+  obtain ⟨AAshStele, hcallAshSteleRaw⟩ :=
+    typedCallViaEVM_zero_setSubstate hcallAshSteleBase hdepthNeBase
+      evmCallStele.substate
+  let evmAshStele : EVM.State :=
+    { evmCallStele with
+        accountMap := σAshStele, substate := AAshStele }
   have hguyMoveEq :
       solcAddressSlotWord packedSlot σ' I =
-        solcAddressSlotWord packedSlot σ'_solm I :=
+        solcAddressSlotWord packedSlot σ'_stele I :=
     congrArg (fun accounts => solcAddressSlotWord packedSlot accounts I) hpostAccountsCall
-  have hcallAshSolm :
-      typedCallViaEVM config evmCallSolm
-        (EVM.address (AccountAddress.ofNat (dentGuyWord evmCallSolm I).toNat)) "Ash" 0 []
-        (true, evmAshSolm, outAsh) true := by
-    simpa [evmAshSolm, evmCallSolmBase, evmCallSolm, dentGuyWord, packedSlot, hcallEnv,
-      hguyMoveEq] using hcallAshSolmRaw
-  let evmAshSolmBase : EVM.State := { evmAshSolm with substate := Ain }
-  let σKissSolm := σKiss
-  let AKissSolm0 := AKiss
-  have hkissCallSolmBase := hkissCall
-  have hpostKissAccounts : σKiss = σKissSolm := rfl
-  have hdepthNeKissBase : evmAshSolmBase.executionEnv.depth ≠ 1024 := by
-    simpa [evmAshSolmBase, evmAshSolm, evmCallSolm, evmSolm, initState, hcallEnv]
+  have hcallAshStele :
+      typedCallViaEVM config evmCallStele
+        (EVM.address (AccountAddress.ofNat (dentGuyWord evmCallStele I).toNat)) "Ash" 0 []
+        (true, evmAshStele, outAsh) true := by
+    simpa [evmAshStele, evmCallSteleBase, evmCallStele, dentGuyWord, packedSlot, hcallEnv,
+      hguyMoveEq] using hcallAshSteleRaw
+  let evmAshSteleBase : EVM.State := { evmAshStele with substate := Ain }
+  let σKissStele := σKiss
+  let AKissStele0 := AKiss
+  have hkissCallSteleBase := hkissCall
+  have hpostKissAccounts : σKiss = σKissStele := rfl
+  have hdepthNeKissBase : evmAshSteleBase.executionEnv.depth ≠ 1024 := by
+    simpa [evmAshSteleBase, evmAshStele, evmCallStele, evmStele, initState, hcallEnv]
       using hdepthNeI
-  obtain ⟨AKissSolm, hkissCallSolmRaw⟩ :=
-    typedCallViaEVM_zero_setSubstate hkissCallSolmBase hdepthNeKissBase
-      evmAshSolm.substate
-  let evmKissSolm : EVM.State :=
-    { evmAshSolm with
-        accountMap := σKissSolm, substate := AKissSolm }
+  obtain ⟨AKissStele, hkissCallSteleRaw⟩ :=
+    typedCallViaEVM_zero_setSubstate hkissCallSteleBase hdepthNeKissBase
+      evmAshStele.substate
+  let evmKissStele : EVM.State :=
+    { evmAshStele with
+        accountMap := σKissStele, substate := AKissStele }
   have hguyAshEq :
       solcAddressSlotWord packedSlot σAsh I =
-        solcAddressSlotWord packedSlot σAshSolm I :=
+        solcAddressSlotWord packedSlot σAshStele I :=
     congrArg (fun accounts => solcAddressSlotWord packedSlot accounts I) hpostAsrfl
-  have hkissCallSolm :
-      typedCallViaEVM config evmAshSolm
-        (EVM.address (AccountAddress.ofNat (dentGuyWord evmAshSolm I).toNat))
+  have hkissCallStele :
+      typedCallViaEVM config evmAshStele
+        (EVM.address (AccountAddress.ofNat (dentGuyWord evmAshStele I).toNat))
         "kiss" 0 [.int (Int.ofNat (dentKissAmtWord I outAsh).toNat)]
-        (true, evmKissSolm, outKiss) true := by
-    have hraw := hkissCallSolmRaw
+        (true, evmKissStele, outKiss) true := by
+    have hraw := hkissCallSteleRaw
     rw [hguyAshEq] at hraw
-    simpa only [evmKissSolm, evmAshSolmBase, evmAshSolm, dentGuyWord, packedSlot,
+    simpa only [evmKissStele, evmAshSteleBase, evmAshStele, dentGuyWord, packedSlot,
       hcallEnv] using hraw
-  have hkissEnv : evmKissSolm.executionEnv = I := by
-    have h := typedCallViaEVM_executionEnv_eq hkissCallSolm
-    simpa [evmKissSolm, evmAshSolm, evmCallSolm, evmSolm, initState, hcallEnv] using h
+  have hkissEnv : evmKissStele.executionEnv = I := by
+    have h := typedCallViaEVM_executionEnv_eq hkissCallStele
+    simpa [evmKissStele, evmAshStele, evmCallStele, evmStele, initState, hcallEnv] using h
   have hAfterGuy :=
     dentRuntimeAfterGuyMap_eq_afterGuyStore
-      (I := I) (σ := σKiss) (evmSolm := evmKissSolm)
-      (by simpa [evmKissSolm] using hpostKissAccounts) hkissEnv
+      (I := I) (σ := σKiss) (evmStele := evmKissStele)
+      (by simpa [evmKissStele] using hpostKissAccounts) hkissEnv
   have httl :=
     dentRuntimeTtlWord_afterGuy_eq (I := I) hAfterGuy hkissEnv
-  have hliveSolm : dentLiveWord evmSolm = ⟨1⟩ := by
-    simpa [evmSolm, dentLiveWord, initState] using hlive
-  have hguySolm : dentGuyWord evmSolm I ≠ ⟨0⟩ := by
+  have hliveStele : dentLiveWord evmStele = ⟨1⟩ := by
+    simpa [evmStele, dentLiveWord, initState] using hlive
+  have hguyStele : dentGuyWord evmStele I ≠ ⟨0⟩ := by
     intro hzero
     apply hguy
-    simpa [evmSolm, dentGuyWord, initState, packedSlot] using hzero
-  have hticOkSolm :
-      (dentTimestampWord evmSolm).toNat < (dentTicWord evmSolm I).toNat ∨
-        dentTicWord evmSolm I = ⟨0⟩ := by
+    simpa [evmStele, dentGuyWord, initState, packedSlot] using hzero
+  have hticOkStele :
+      (dentTimestampWord evmStele).toNat < (dentTicWord evmStele I).toNat ∨
+        dentTicWord evmStele I = ⟨0⟩ := by
     cases hticOk with
     | inl hgt =>
         left
-        simpa [evmSolm, dentTimestampWord, dentTicWord, initState, packedSlot]
+        simpa [evmStele, dentTimestampWord, dentTicWord, initState, packedSlot]
           using hgt
     | inr hzero =>
         right
-        simpa [evmSolm, dentTicWord, initState, packedSlot] using hzero
-  have hendGtSolm : (dentTimestampWord evmSolm).toNat < (dentEndWord evmSolm I).toNat := by
-    simpa [evmSolm, dentTimestampWord, dentEndWord, initState, packedSlot] using hendGt
-  have hbidSolm : dentBidWord I = dentBidStoredWord evmSolm I := by
-    simpa [evmSolm, dentBidStoredWord, initState] using hbid
-  have hlotLtSolm :
-      (dentLotWord I).toNat < (dentLotStoredWord evmSolm I).toNat := by
-    simpa [evmSolm, dentLotStoredWord, initState] using hlotLt
-  have hbegFitSolm :
-      (dentBegWord evmSolm).toNat * (dentLotWord I).toNat < UInt256.size := by
-    simpa [evmSolm, dentBegWord, initState] using hbegFit
-  have hlotOneFitSolm :
-      (dentLotStoredWord evmSolm I).toNat * dentOneWord.toNat < UInt256.size := by
-    simpa [evmSolm, dentLotStoredWord, initState] using hlotOneFit
-  have hsuffSolm :
-      (dentBegLotWord evmSolm I).toNat ≤ (dentLotOneWord evmSolm I).toNat := by
-    simpa [evmSolm, dentBegLotWord, dentBegWord, dentLotOneWord, dentLotStoredWord,
+        simpa [evmStele, dentTicWord, initState, packedSlot] using hzero
+  have hendGtStele : (dentTimestampWord evmStele).toNat < (dentEndWord evmStele I).toNat := by
+    simpa [evmStele, dentTimestampWord, dentEndWord, initState, packedSlot] using hendGt
+  have hbidStele : dentBidWord I = dentBidStoredWord evmStele I := by
+    simpa [evmStele, dentBidStoredWord, initState] using hbid
+  have hlotLtStele :
+      (dentLotWord I).toNat < (dentLotStoredWord evmStele I).toNat := by
+    simpa [evmStele, dentLotStoredWord, initState] using hlotLt
+  have hbegFitStele :
+      (dentBegWord evmStele).toNat * (dentLotWord I).toNat < UInt256.size := by
+    simpa [evmStele, dentBegWord, initState] using hbegFit
+  have hlotOneFitStele :
+      (dentLotStoredWord evmStele I).toNat * dentOneWord.toNat < UInt256.size := by
+    simpa [evmStele, dentLotStoredWord, initState] using hlotOneFit
+  have hsuffStele :
+      (dentBegLotWord evmStele I).toNat ≤ (dentLotOneWord evmStele I).toNat := by
+    simpa [evmStele, dentBegLotWord, dentBegWord, dentLotOneWord, dentLotStoredWord,
       initState] using hsuff
-  have hcallerSolm :
-      UInt256.ofNat evmSolm.executionEnv.source.val ≠ dentGuyWord evmSolm I := by
+  have hcallerStele :
+      UInt256.ofNat evmStele.executionEnv.source.val ≠ dentGuyWord evmStele I := by
     intro heq
     apply hcaller
-    simpa [evmSolm, dentGuyWord, initState, packedSlot] using heq
-  have hcodeSizeSolm :
+    simpa [evmStele, dentGuyWord, initState, packedSlot] using heq
+  have hcodeSizeStele :
       Reasoning.Theory.extCodeSizeWord σ
         (solcAddressSlotWord ⟨2⟩ σ I) ≠ ⟨0⟩ :=
     hcodeSize
-  have hticMoveSolm : dentTicWord evmCallSolm I = ⟨0⟩ := by
+  have hticMoveStele : dentTicWord evmCallStele I = ⟨0⟩ := by
     have hword := congrArg (fun accounts => uint48Offset20Word packedSlot accounts I) hpostAccountsCall
-    simpa [evmCallSolm, dentTicWord, packedSlot, hcallEnv, hword] using hticMove
-  have hashCodeSizeSolm :
-      Reasoning.Theory.extCodeSizeWord evmCallSolm.accountMap
-        (dentGuyWord evmCallSolm I) ≠ ⟨0⟩ := by
-    simpa [evmCallSolm, dentGuyWord, packedSlot, hcallEnv,
+    simpa [evmCallStele, dentTicWord, packedSlot, hcallEnv, hword] using hticMove
+  have hashCodeSizeStele :
+      Reasoning.Theory.extCodeSizeWord evmCallStele.accountMap
+        (dentGuyWord evmCallStele I) ≠ ⟨0⟩ := by
+    simpa [evmCallStele, dentGuyWord, packedSlot, hcallEnv,
       ← hpostAccountsCall] using hashCodeSize
-  have hkissCodeSizeSolm :
-      Reasoning.Theory.extCodeSizeWord evmAshSolm.accountMap
-        (dentGuyWord evmAshSolm I) ≠ ⟨0⟩ := by
-    simpa [evmAshSolm, dentGuyWord, packedSlot, hcallEnv,
+  have hkissCodeSizeStele :
+      Reasoning.Theory.extCodeSizeWord evmAshStele.accountMap
+        (dentGuyWord evmAshStele I) ≠ ⟨0⟩ := by
+    simpa [evmAshStele, dentGuyWord, packedSlot, hcallEnv,
       ← hpostAsrfl] using hkissCodeSize
-  have haddFitSolm :
-      (dentNow48Word (dentAfterGuyStore evmKissSolm I)).toNat +
-          (dentTtlWord (dentAfterLotStore (dentAfterGuyStore evmKissSolm I) I)).toNat <
+  have haddFitStele :
+      (dentNow48Word (dentAfterGuyStore evmKissStele I)).toNat +
+          (dentTtlWord (dentAfterLotStore (dentAfterGuyStore evmKissStele I) I)).toNat <
         2 ^ 48 := by
     simpa [dentNow48Word, dentTimestampWord, dentAfterGuyStore, storageStore_executionEnv,
       hkissEnv, httl] using haddFit
@@ -777,30 +777,30 @@ theorem flopperDentBodyCoreSuccessMoveCallerNeTicZeroKissSuccess
     have hstatic := permSplit_false hp
       (flopperDentX_kissCallSuccessToTailSplit (g := Sat256.ofUInt256 g) rd2833)
     have hsource := (flopperDentBodyReturns_success_moveCallerNe_ticZero_kissSuccessSplit
-        evmSolm evmCallSolm evmAshSolm evmKissSolm I outMove outAsh outKiss
-        (by simpa [evmSolm, initState] using hwv) hliveSolm hguySolm hticOkSolm
-        hendGtSolm hbidSolm hlotLtSolm hbegFitSolm hlotOneFitSolm hsuffSolm
-        hcallerSolm
-        (by simpa [evmSolm, dentVatWord, initState] using hcodeSizeSolm)
-        hcallSolm hticMoveSolm hashCodeSizeSolm hcallAshSolm houtAsh32
-        hkissCodeSizeSolm hkissCallSolm).2 hp
+        evmStele evmCallStele evmAshStele evmKissStele I outMove outAsh outKiss
+        (by simpa [evmStele, initState] using hwv) hliveStele hguyStele hticOkStele
+        hendGtStele hbidStele hlotLtStele hbegFitStele hlotOneFitStele hsuffStele
+        hcallerStele
+        (by simpa [evmStele, dentVatWord, initState] using hcodeSizeStele)
+        hcallStele hticMoveStele hashCodeSizeStele hcallAshStele houtAsh32
+        hkissCodeSizeStele hkissCallStele).2 hp
     exact hstatic.reEquivStaticHalt hcode hdispatch hdecode hsource
   have hbody :
-      ExecTransitionBody config contract evmSolm (dentLocals I) dentTransition.body
+      ExecTransitionBody config contract evmStele (dentLocals I) dentTransition.body
         (.returned
           { contract := contract
-            locals := dentKissRetTicLocals evmSolm
-              (dentAfterGuyStore evmKissSolm I) I outAsh }
-          (dentPostState (dentAfterGuyStore evmKissSolm I) I)
+            locals := dentKissRetTicLocals evmStele
+              (dentAfterGuyStore evmKissStele I) I outAsh }
+          (dentPostState (dentAfterGuyStore evmKissStele I) I)
           none) := by
     exact flopperDentBodyReturns_success_moveCallerNe_ticZero_kissSuccess
-      evmSolm evmCallSolm evmAshSolm evmKissSolm I outMove outAsh outKiss
-      (by simpa [evmSolm, initState] using hwv) hliveSolm hguySolm hticOkSolm
-      hendGtSolm hbidSolm hlotLtSolm hbegFitSolm hlotOneFitSolm hsuffSolm
-      hcallerSolm
-      (by simpa [evmSolm, dentVatWord, initState] using hcodeSizeSolm)
-      hcallSolm hticMoveSolm hashCodeSizeSolm hcallAshSolm houtAsh32
-      hkissCodeSizeSolm hkissCallSolm haddFitSolm
+      evmStele evmCallStele evmAshStele evmKissStele I outMove outAsh outKiss
+      (by simpa [evmStele, initState] using hwv) hliveStele hguyStele hticOkStele
+      hendGtStele hbidStele hlotLtStele hbegFitStele hlotOneFitStele hsuffStele
+      hcallerStele
+      (by simpa [evmStele, dentVatWord, initState] using hcodeSizeStele)
+      hcallStele hticMoveStele hashCodeSizeStele hcallAshStele houtAsh32
+      hkissCodeSizeStele hkissCallStele haddFitStele
   obtain ⟨_, _, _, rd2889⟩ :=
     flopperDentX_kissCallSuccessToTail (g := Sat256.ofUInt256 g) hperm rd2833
   have hret :=
@@ -810,7 +810,7 @@ theorem flopperDentBodyCoreSuccessMoveCallerNeTicZeroKissSuccess
     dentRuntimeTailSuccessAccountMap_afterGuy_eq_postState
       (I := I) hAfterGuy hkissEnv haddFit
   exact hret.reEquivExecutionGen hcode hdispatch hdecode hbody
-    (by simpa [evmKissSolm] using hpostAccounts)
+    (by simpa [evmKissStele] using hpostAccounts)
     (by
       simpa [dentTransition] using
         (returnEquiv.fallthrough (o := ByteArray.empty) (r := none) (t := [])
@@ -878,89 +878,89 @@ theorem flopperDentBodyCoreAddOverflowMoveCallerNeTicNonzero
       config.externalABI.decodeCalldata? (dentTransition.params.map Param.name)
         (transitionSignature dentTransition).paramTypes I.calldata = some (dentLocals I)) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  let σ'_solm := σ'
-  let A'_solm := A'
-  have hcallSolmRaw := hcall
-  have hpostAccountsCall : σ' = σ'_solm := rfl
-  let evmCallSolm : EVM.State :=
-    { evmSolm with accountMap := σ'_solm, substate := A'_solm }
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let σ'_stele := σ'
+  let A'_stele := A'
+  have hcallSteleRaw := hcall
+  have hpostAccountsCall : σ' = σ'_stele := rfl
+  let evmCallStele : EVM.State :=
+    { evmStele with accountMap := σ'_stele, substate := A'_stele }
   let packedSlot := auctionPackedSlot (dentIdWord I)
   have hsrcEq : AccountAddress.ofNat (UInt256.ofNat I.source.val).toNat = I.source := by
     simpa [solcSourceWord] using solcSource_ofNat I
-  have hcallSolm :
-      typedCallViaEVM config evmSolm
+  have hcallStele :
+      typedCallViaEVM config evmStele
         (EVM.address (AccountAddress.ofNat
           (solcAddressSlotWord ⟨2⟩ σ I).toNat))
         "move" 0
-        [.address evmSolm.executionEnv.source,
+        [.address evmStele.executionEnv.source,
           .address (AccountAddress.ofNat
             (solcAddressSlotWord packedSlot σ I).toNat),
           .int (Int.ofNat (dentBidWord I).toNat)]
-        (true, evmCallSolm, out) true := by
-    simpa [evmSolm, evmCallSolm, packedSlot, hsrcEq] using
-      hcallSolmRaw
-  have hcallEnv : evmCallSolm.executionEnv = I := by
-    have h := typedCallViaEVM_executionEnv_eq hcallSolm
-    simpa [evmSolm, initState] using h
+        (true, evmCallStele, out) true := by
+    simpa [evmStele, evmCallStele, packedSlot, hsrcEq] using
+      hcallSteleRaw
+  have hcallEnv : evmCallStele.executionEnv = I := by
+    have h := typedCallViaEVM_executionEnv_eq hcallStele
+    simpa [evmStele, initState] using h
   have hAfterGuy :=
     dentRuntimeAfterGuyMap_eq_afterGuyStore
       (I := I) hpostAccountsCall hcallEnv
   have httl :=
     dentRuntimeTtlWord_afterGuy_eq (I := I) hAfterGuy hcallEnv
-  have hliveSolm : dentLiveWord evmSolm = ⟨1⟩ := by
-    simpa [evmSolm, dentLiveWord, initState] using hlive
-  have hguySolm : dentGuyWord evmSolm I ≠ ⟨0⟩ := by
+  have hliveStele : dentLiveWord evmStele = ⟨1⟩ := by
+    simpa [evmStele, dentLiveWord, initState] using hlive
+  have hguyStele : dentGuyWord evmStele I ≠ ⟨0⟩ := by
     intro hzero
     apply hguy
-    simpa [evmSolm, dentGuyWord, initState, packedSlot] using hzero
-  have hticOkSolm :
-      (dentTimestampWord evmSolm).toNat < (dentTicWord evmSolm I).toNat ∨
-        dentTicWord evmSolm I = ⟨0⟩ := by
+    simpa [evmStele, dentGuyWord, initState, packedSlot] using hzero
+  have hticOkStele :
+      (dentTimestampWord evmStele).toNat < (dentTicWord evmStele I).toNat ∨
+        dentTicWord evmStele I = ⟨0⟩ := by
     cases hticOk with
     | inl hgt =>
         left
-        simpa [evmSolm, dentTimestampWord, dentTicWord, initState, packedSlot]
+        simpa [evmStele, dentTimestampWord, dentTicWord, initState, packedSlot]
           using hgt
     | inr hzero =>
         right
-        simpa [evmSolm, dentTicWord, initState, packedSlot] using hzero
-  have hendGtSolm : (dentTimestampWord evmSolm).toNat < (dentEndWord evmSolm I).toNat := by
-    simpa [evmSolm, dentTimestampWord, dentEndWord, initState, packedSlot] using hendGt
-  have hbidSolm : dentBidWord I = dentBidStoredWord evmSolm I := by
-    simpa [evmSolm, dentBidStoredWord, initState] using hbid
-  have hlotLtSolm :
-      (dentLotWord I).toNat < (dentLotStoredWord evmSolm I).toNat := by
-    simpa [evmSolm, dentLotStoredWord, initState] using hlotLt
-  have hbegFitSolm :
-      (dentBegWord evmSolm).toNat * (dentLotWord I).toNat < UInt256.size := by
-    simpa [evmSolm, dentBegWord, initState] using hbegFit
-  have hlotOneFitSolm :
-      (dentLotStoredWord evmSolm I).toNat * dentOneWord.toNat < UInt256.size := by
-    simpa [evmSolm, dentLotStoredWord, initState] using hlotOneFit
-  have hsuffSolm :
-      (dentBegLotWord evmSolm I).toNat ≤ (dentLotOneWord evmSolm I).toNat := by
-    simpa [evmSolm, dentBegLotWord, dentBegWord, dentLotOneWord, dentLotStoredWord,
+        simpa [evmStele, dentTicWord, initState, packedSlot] using hzero
+  have hendGtStele : (dentTimestampWord evmStele).toNat < (dentEndWord evmStele I).toNat := by
+    simpa [evmStele, dentTimestampWord, dentEndWord, initState, packedSlot] using hendGt
+  have hbidStele : dentBidWord I = dentBidStoredWord evmStele I := by
+    simpa [evmStele, dentBidStoredWord, initState] using hbid
+  have hlotLtStele :
+      (dentLotWord I).toNat < (dentLotStoredWord evmStele I).toNat := by
+    simpa [evmStele, dentLotStoredWord, initState] using hlotLt
+  have hbegFitStele :
+      (dentBegWord evmStele).toNat * (dentLotWord I).toNat < UInt256.size := by
+    simpa [evmStele, dentBegWord, initState] using hbegFit
+  have hlotOneFitStele :
+      (dentLotStoredWord evmStele I).toNat * dentOneWord.toNat < UInt256.size := by
+    simpa [evmStele, dentLotStoredWord, initState] using hlotOneFit
+  have hsuffStele :
+      (dentBegLotWord evmStele I).toNat ≤ (dentLotOneWord evmStele I).toNat := by
+    simpa [evmStele, dentBegLotWord, dentBegWord, dentLotOneWord, dentLotStoredWord,
       initState] using hsuff
-  have hcallerSolm :
-      UInt256.ofNat evmSolm.executionEnv.source.val ≠ dentGuyWord evmSolm I := by
+  have hcallerStele :
+      UInt256.ofNat evmStele.executionEnv.source.val ≠ dentGuyWord evmStele I := by
     intro heq
     apply hcaller
-    simpa [evmSolm, dentGuyWord, initState, packedSlot] using heq
-  have hcodeSizeSolm :
+    simpa [evmStele, dentGuyWord, initState, packedSlot] using heq
+  have hcodeSizeStele :
       Reasoning.Theory.extCodeSizeWord σ
         (solcAddressSlotWord ⟨2⟩ σ I) ≠ ⟨0⟩ :=
     hcodeSize
-  have hticMoveSolm : dentTicWord evmCallSolm I ≠ ⟨0⟩ := by
+  have hticMoveStele : dentTicWord evmCallStele I ≠ ⟨0⟩ := by
     intro hzero
     apply hticMove
-    have hmap : σ' = σ'_solm := by simpa [initState] using hpostAccountsCall
+    have hmap : σ' = σ'_stele := by simpa [initState] using hpostAccountsCall
     rw [hmap]
-    simpa [evmCallSolm, dentTicWord, packedSlot, hcallEnv] using hzero
-  have haddOverflowSolm :
+    simpa [evmCallStele, dentTicWord, packedSlot, hcallEnv] using hzero
+  have haddOverflowStele :
       2 ^ 48 ≤
-        (dentNow48Word (dentAfterGuyStore evmCallSolm I)).toNat +
-          (dentTtlWord (dentAfterLotStore (dentAfterGuyStore evmCallSolm I) I)).toNat := by
+        (dentNow48Word (dentAfterGuyStore evmCallStele I)).toNat +
+          (dentTtlWord (dentAfterLotStore (dentAfterGuyStore evmCallStele I) I)).toNat := by
     simpa [dentNow48Word, dentTimestampWord, dentAfterGuyStore, storageStore_executionEnv,
       hcallEnv, httl] using haddOverflow
   by_cases hperm : I.perm = true
@@ -970,23 +970,23 @@ theorem flopperDentBodyCoreAddOverflowMoveCallerNeTicNonzero
       (flopperDentX_moveSuccessTicNonzeroToTailSplit
         (g := Sat256.ofUInt256 g) hticMove rd2545)
     have hsource := (flopperDentBodyReturns_success_moveCallerNe_ticNonzeroSplit
-        evmSolm evmCallSolm I out
-        (by simpa [evmSolm, initState] using hwv) hliveSolm hguySolm hticOkSolm
-        hendGtSolm hbidSolm hlotLtSolm hbegFitSolm hlotOneFitSolm hsuffSolm
-        hcallerSolm
-        (by simpa [evmSolm, dentVatWord, initState] using hcodeSizeSolm)
-        hcallSolm hticMoveSolm).2 hp
+        evmStele evmCallStele I out
+        (by simpa [evmStele, initState] using hwv) hliveStele hguyStele hticOkStele
+        hendGtStele hbidStele hlotLtStele hbegFitStele hlotOneFitStele hsuffStele
+        hcallerStele
+        (by simpa [evmStele, dentVatWord, initState] using hcodeSizeStele)
+        hcallStele hticMoveStele).2 hp
     exact hstatic.reEquivStaticHalt hcode hdispatch hdecode hsource
   have hbody :
-      ExecTransitionBody config contract evmSolm (dentLocals I) dentTransition.body
+      ExecTransitionBody config contract evmStele (dentLocals I) dentTransition.body
         .reverted := by
     exact flopperDentBodyReverts_addOverflow_moveCallerNe_ticNonzero
-      evmSolm evmCallSolm I out
-      (by simpa [evmSolm, initState] using hwv) hliveSolm hguySolm hticOkSolm
-      hendGtSolm hbidSolm hlotLtSolm hbegFitSolm hlotOneFitSolm hsuffSolm
-      hcallerSolm
-      (by simpa [evmSolm, dentVatWord, initState] using hcodeSizeSolm)
-      hcallSolm hticMoveSolm haddOverflowSolm
+      evmStele evmCallStele I out
+      (by simpa [evmStele, initState] using hwv) hliveStele hguyStele hticOkStele
+      hendGtStele hbidStele hlotLtStele hbegFitStele hlotOneFitStele hsuffStele
+      hcallerStele
+      (by simpa [evmStele, dentVatWord, initState] using hcodeSizeStele)
+      hcallStele hticMoveStele haddOverflowStele
   obtain ⟨_, _, _, rd2889⟩ :=
     flopperDentX_moveSuccessTicNonzeroToTail
       (g := Sat256.ofUInt256 g) hperm hticMove rd2545
@@ -1058,88 +1058,88 @@ theorem flopperDentBodyCoreSuccessMoveCallerNeTicNonzero
       config.externalABI.decodeCalldata? (dentTransition.params.map Param.name)
         (transitionSignature dentTransition).paramTypes I.calldata = some (dentLocals I)) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  let σ'_solm := σ'
-  let A'_solm := A'
-  have hcallSolmRaw := hcall
-  have hpostAccountsCall : σ' = σ'_solm := rfl
-  let evmCallSolm : EVM.State :=
-    { evmSolm with accountMap := σ'_solm, substate := A'_solm }
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let σ'_stele := σ'
+  let A'_stele := A'
+  have hcallSteleRaw := hcall
+  have hpostAccountsCall : σ' = σ'_stele := rfl
+  let evmCallStele : EVM.State :=
+    { evmStele with accountMap := σ'_stele, substate := A'_stele }
   let packedSlot := auctionPackedSlot (dentIdWord I)
   have hsrcEq : AccountAddress.ofNat (UInt256.ofNat I.source.val).toNat = I.source := by
     simpa [solcSourceWord] using solcSource_ofNat I
-  have hcallSolm :
-      typedCallViaEVM config evmSolm
+  have hcallStele :
+      typedCallViaEVM config evmStele
         (EVM.address (AccountAddress.ofNat
           (solcAddressSlotWord ⟨2⟩ σ I).toNat))
         "move" 0
-        [.address evmSolm.executionEnv.source,
+        [.address evmStele.executionEnv.source,
           .address (AccountAddress.ofNat
             (solcAddressSlotWord packedSlot σ I).toNat),
           .int (Int.ofNat (dentBidWord I).toNat)]
-        (true, evmCallSolm, out) true := by
-    simpa [evmSolm, evmCallSolm, packedSlot, hsrcEq] using
-      hcallSolmRaw
-  have hcallEnv : evmCallSolm.executionEnv = I := by
-    have h := typedCallViaEVM_executionEnv_eq hcallSolm
-    simpa [evmSolm, initState] using h
+        (true, evmCallStele, out) true := by
+    simpa [evmStele, evmCallStele, packedSlot, hsrcEq] using
+      hcallSteleRaw
+  have hcallEnv : evmCallStele.executionEnv = I := by
+    have h := typedCallViaEVM_executionEnv_eq hcallStele
+    simpa [evmStele, initState] using h
   have hAfterGuy :=
     dentRuntimeAfterGuyMap_eq_afterGuyStore
       (I := I) hpostAccountsCall hcallEnv
   have httl :=
     dentRuntimeTtlWord_afterGuy_eq (I := I) hAfterGuy hcallEnv
-  have hliveSolm : dentLiveWord evmSolm = ⟨1⟩ := by
-    simpa [evmSolm, dentLiveWord, initState] using hlive
-  have hguySolm : dentGuyWord evmSolm I ≠ ⟨0⟩ := by
+  have hliveStele : dentLiveWord evmStele = ⟨1⟩ := by
+    simpa [evmStele, dentLiveWord, initState] using hlive
+  have hguyStele : dentGuyWord evmStele I ≠ ⟨0⟩ := by
     intro hzero
     apply hguy
-    simpa [evmSolm, dentGuyWord, initState, packedSlot] using hzero
-  have hticOkSolm :
-      (dentTimestampWord evmSolm).toNat < (dentTicWord evmSolm I).toNat ∨
-        dentTicWord evmSolm I = ⟨0⟩ := by
+    simpa [evmStele, dentGuyWord, initState, packedSlot] using hzero
+  have hticOkStele :
+      (dentTimestampWord evmStele).toNat < (dentTicWord evmStele I).toNat ∨
+        dentTicWord evmStele I = ⟨0⟩ := by
     cases hticOk with
     | inl hgt =>
         left
-        simpa [evmSolm, dentTimestampWord, dentTicWord, initState, packedSlot]
+        simpa [evmStele, dentTimestampWord, dentTicWord, initState, packedSlot]
           using hgt
     | inr hzero =>
         right
-        simpa [evmSolm, dentTicWord, initState, packedSlot] using hzero
-  have hendGtSolm : (dentTimestampWord evmSolm).toNat < (dentEndWord evmSolm I).toNat := by
-    simpa [evmSolm, dentTimestampWord, dentEndWord, initState, packedSlot] using hendGt
-  have hbidSolm : dentBidWord I = dentBidStoredWord evmSolm I := by
-    simpa [evmSolm, dentBidStoredWord, initState] using hbid
-  have hlotLtSolm :
-      (dentLotWord I).toNat < (dentLotStoredWord evmSolm I).toNat := by
-    simpa [evmSolm, dentLotStoredWord, initState] using hlotLt
-  have hbegFitSolm :
-      (dentBegWord evmSolm).toNat * (dentLotWord I).toNat < UInt256.size := by
-    simpa [evmSolm, dentBegWord, initState] using hbegFit
-  have hlotOneFitSolm :
-      (dentLotStoredWord evmSolm I).toNat * dentOneWord.toNat < UInt256.size := by
-    simpa [evmSolm, dentLotStoredWord, initState] using hlotOneFit
-  have hsuffSolm :
-      (dentBegLotWord evmSolm I).toNat ≤ (dentLotOneWord evmSolm I).toNat := by
-    simpa [evmSolm, dentBegLotWord, dentBegWord, dentLotOneWord, dentLotStoredWord,
+        simpa [evmStele, dentTicWord, initState, packedSlot] using hzero
+  have hendGtStele : (dentTimestampWord evmStele).toNat < (dentEndWord evmStele I).toNat := by
+    simpa [evmStele, dentTimestampWord, dentEndWord, initState, packedSlot] using hendGt
+  have hbidStele : dentBidWord I = dentBidStoredWord evmStele I := by
+    simpa [evmStele, dentBidStoredWord, initState] using hbid
+  have hlotLtStele :
+      (dentLotWord I).toNat < (dentLotStoredWord evmStele I).toNat := by
+    simpa [evmStele, dentLotStoredWord, initState] using hlotLt
+  have hbegFitStele :
+      (dentBegWord evmStele).toNat * (dentLotWord I).toNat < UInt256.size := by
+    simpa [evmStele, dentBegWord, initState] using hbegFit
+  have hlotOneFitStele :
+      (dentLotStoredWord evmStele I).toNat * dentOneWord.toNat < UInt256.size := by
+    simpa [evmStele, dentLotStoredWord, initState] using hlotOneFit
+  have hsuffStele :
+      (dentBegLotWord evmStele I).toNat ≤ (dentLotOneWord evmStele I).toNat := by
+    simpa [evmStele, dentBegLotWord, dentBegWord, dentLotOneWord, dentLotStoredWord,
       initState] using hsuff
-  have hcallerSolm :
-      UInt256.ofNat evmSolm.executionEnv.source.val ≠ dentGuyWord evmSolm I := by
+  have hcallerStele :
+      UInt256.ofNat evmStele.executionEnv.source.val ≠ dentGuyWord evmStele I := by
     intro heq
     apply hcaller
-    simpa [evmSolm, dentGuyWord, initState, packedSlot] using heq
-  have hcodeSizeSolm :
+    simpa [evmStele, dentGuyWord, initState, packedSlot] using heq
+  have hcodeSizeStele :
       Reasoning.Theory.extCodeSizeWord σ
         (solcAddressSlotWord ⟨2⟩ σ I) ≠ ⟨0⟩ :=
     hcodeSize
-  have hticMoveSolm : dentTicWord evmCallSolm I ≠ ⟨0⟩ := by
+  have hticMoveStele : dentTicWord evmCallStele I ≠ ⟨0⟩ := by
     intro hzero
     apply hticMove
-    have hmap : σ' = σ'_solm := by simpa [initState] using hpostAccountsCall
+    have hmap : σ' = σ'_stele := by simpa [initState] using hpostAccountsCall
     rw [hmap]
-    simpa [evmCallSolm, dentTicWord, packedSlot, hcallEnv] using hzero
-  have haddFitSolm :
-      (dentNow48Word (dentAfterGuyStore evmCallSolm I)).toNat +
-          (dentTtlWord (dentAfterLotStore (dentAfterGuyStore evmCallSolm I) I)).toNat <
+    simpa [evmCallStele, dentTicWord, packedSlot, hcallEnv] using hzero
+  have haddFitStele :
+      (dentNow48Word (dentAfterGuyStore evmCallStele I)).toNat +
+          (dentTtlWord (dentAfterLotStore (dentAfterGuyStore evmCallStele I) I)).toNat <
         2 ^ 48 := by
     simpa [dentNow48Word, dentTimestampWord, dentAfterGuyStore, storageStore_executionEnv,
       hcallEnv, httl] using haddFit
@@ -1150,27 +1150,27 @@ theorem flopperDentBodyCoreSuccessMoveCallerNeTicNonzero
       (flopperDentX_moveSuccessTicNonzeroToTailSplit
         (g := Sat256.ofUInt256 g) hticMove rd2545)
     have hsource := (flopperDentBodyReturns_success_moveCallerNe_ticNonzeroSplit
-        evmSolm evmCallSolm I out
-        (by simpa [evmSolm, initState] using hwv) hliveSolm hguySolm hticOkSolm
-        hendGtSolm hbidSolm hlotLtSolm hbegFitSolm hlotOneFitSolm hsuffSolm
-        hcallerSolm
-        (by simpa [evmSolm, dentVatWord, initState] using hcodeSizeSolm)
-        hcallSolm hticMoveSolm).2 hp
+        evmStele evmCallStele I out
+        (by simpa [evmStele, initState] using hwv) hliveStele hguyStele hticOkStele
+        hendGtStele hbidStele hlotLtStele hbegFitStele hlotOneFitStele hsuffStele
+        hcallerStele
+        (by simpa [evmStele, dentVatWord, initState] using hcodeSizeStele)
+        hcallStele hticMoveStele).2 hp
     exact hstatic.reEquivStaticHalt hcode hdispatch hdecode hsource
   have hbody :
-      ExecTransitionBody config contract evmSolm (dentLocals I) dentTransition.body
+      ExecTransitionBody config contract evmStele (dentLocals I) dentTransition.body
         (.returned
           { contract := contract
-            locals := dentMoveTicLocals evmSolm (dentAfterGuyStore evmCallSolm I) I }
-          (dentPostState (dentAfterGuyStore evmCallSolm I) I)
+            locals := dentMoveTicLocals evmStele (dentAfterGuyStore evmCallStele I) I }
+          (dentPostState (dentAfterGuyStore evmCallStele I) I)
           none) := by
     exact flopperDentBodyReturns_success_moveCallerNe_ticNonzero
-      evmSolm evmCallSolm I out
-      (by simpa [evmSolm, initState] using hwv) hliveSolm hguySolm hticOkSolm
-      hendGtSolm hbidSolm hlotLtSolm hbegFitSolm hlotOneFitSolm hsuffSolm
-      hcallerSolm
-      (by simpa [evmSolm, dentVatWord, initState] using hcodeSizeSolm)
-      hcallSolm hticMoveSolm haddFitSolm
+      evmStele evmCallStele I out
+      (by simpa [evmStele, initState] using hwv) hliveStele hguyStele hticOkStele
+      hendGtStele hbidStele hlotLtStele hbegFitStele hlotOneFitStele hsuffStele
+      hcallerStele
+      (by simpa [evmStele, dentVatWord, initState] using hcodeSizeStele)
+      hcallStele hticMoveStele haddFitStele
   obtain ⟨_, _, _, rd2889⟩ :=
     flopperDentX_moveSuccessTicNonzeroToTail
       (g := Sat256.ofUInt256 g) hperm hticMove rd2545
@@ -1181,7 +1181,7 @@ theorem flopperDentBodyCoreSuccessMoveCallerNeTicNonzero
     dentRuntimeTailSuccessAccountMap_afterGuy_eq_postState
       (I := I) hAfterGuy hcallEnv haddFit
   exact hret.reEquivExecutionGen hcode hdispatch hdecode hbody
-    (by simpa [evmCallSolm] using hpostAccounts)
+    (by simpa [evmCallStele] using hpostAccounts)
     (by
       simpa [dentTransition] using
         (returnEquiv.fallthrough (o := ByteArray.empty) (r := none) (t := [])
@@ -1213,16 +1213,16 @@ theorem flopperDentBodyCoreNotLive
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨533⟩ [sel]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  have hliveSolm : dentLiveWord evmSolm ≠ ⟨1⟩ := by
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  have hliveStele : dentLiveWord evmStele ≠ ⟨1⟩ := by
     intro hbad
     apply hlive
-    simpa [evmSolm, dentLiveWord, initState] using hbad
+    simpa [evmStele, dentLiveWord, initState] using hbad
   have hbody :
-      ExecTransitionBody config contract evmSolm (dentLocals I) dentTransition.body
+      ExecTransitionBody config contract evmStele (dentLocals I) dentTransition.body
         .reverted := by
-    exact flopperDentBodyReverts_notLive evmSolm I
-      (by simpa [evmSolm, initState] using hwv) hliveSolm
+    exact flopperDentBodyReverts_notLive evmStele I
+      (by simpa [evmStele, initState] using hwv) hliveStele
   have hrev :=
     flopperDentX_notLive (g := Sat256.ofUInt256 g) hlive
       (flopperDentX_decoded (g := Sat256.ofUInt256 g) hsz100 hsize hreach)
@@ -1243,17 +1243,17 @@ theorem flopperDentBodyCoreGuyNotSet
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨533⟩ [sel]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
   let packedSlot := auctionPackedSlot (dentIdWord I)
-  have hliveSolm : dentLiveWord evmSolm = ⟨1⟩ := by
-    simpa [evmSolm, dentLiveWord, initState] using hlive
-  have hguySolm : dentGuyWord evmSolm I = ⟨0⟩ := by
-    simpa [evmSolm, dentGuyWord, initState, packedSlot] using hguy
+  have hliveStele : dentLiveWord evmStele = ⟨1⟩ := by
+    simpa [evmStele, dentLiveWord, initState] using hlive
+  have hguyStele : dentGuyWord evmStele I = ⟨0⟩ := by
+    simpa [evmStele, dentGuyWord, initState, packedSlot] using hguy
   have hbody :
-      ExecTransitionBody config contract evmSolm (dentLocals I) dentTransition.body
+      ExecTransitionBody config contract evmStele (dentLocals I) dentTransition.body
         .reverted := by
-    exact flopperDentBodyReverts_guyNotSet evmSolm I
-      (by simpa [evmSolm, initState] using hwv) hliveSolm hguySolm
+    exact flopperDentBodyReverts_guyNotSet evmStele I
+      (by simpa [evmStele, initState] using hwv) hliveStele hguyStele
   have hrev :=
     flopperDentX_guyNotSet (g := Sat256.ofUInt256 g) hlive hguy
       (flopperDentX_decoded (g := Sat256.ofUInt256 g) hsz100 hsize hreach)
@@ -1278,27 +1278,27 @@ theorem flopperDentBodyCoreTicFinished
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨533⟩ [sel]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
   let packedSlot := auctionPackedSlot (dentIdWord I)
-  have hliveSolm : dentLiveWord evmSolm = ⟨1⟩ := by
-    simpa [evmSolm, dentLiveWord, initState] using hlive
-  have hguySolm : dentGuyWord evmSolm I ≠ ⟨0⟩ := by
+  have hliveStele : dentLiveWord evmStele = ⟨1⟩ := by
+    simpa [evmStele, dentLiveWord, initState] using hlive
+  have hguyStele : dentGuyWord evmStele I ≠ ⟨0⟩ := by
     intro hzero
     apply hguy
-    simpa [evmSolm, dentGuyWord, initState, packedSlot] using hzero
-  have hticNeSolm : dentTicWord evmSolm I ≠ ⟨0⟩ := by
+    simpa [evmStele, dentGuyWord, initState, packedSlot] using hzero
+  have hticNeStele : dentTicWord evmStele I ≠ ⟨0⟩ := by
     intro hzero
     apply hticNe
-    simpa [evmSolm, dentTicWord, initState, packedSlot] using hzero
-  have hticLeSolm : (dentTicWord evmSolm I).toNat ≤ (dentTimestampWord evmSolm).toNat := by
-    simpa [evmSolm, dentTicWord, dentTimestampWord, initState, packedSlot]
+    simpa [evmStele, dentTicWord, initState, packedSlot] using hzero
+  have hticLeStele : (dentTicWord evmStele I).toNat ≤ (dentTimestampWord evmStele).toNat := by
+    simpa [evmStele, dentTicWord, dentTimestampWord, initState, packedSlot]
       using hticLe
   have hbody :
-      ExecTransitionBody config contract evmSolm (dentLocals I) dentTransition.body
+      ExecTransitionBody config contract evmStele (dentLocals I) dentTransition.body
         .reverted := by
-    exact flopperDentBodyReverts_ticFinished evmSolm I
-      (by simpa [evmSolm, initState] using hwv) hliveSolm hguySolm
-      hticNeSolm hticLeSolm
+    exact flopperDentBodyReverts_ticFinished evmStele I
+      (by simpa [evmStele, initState] using hwv) hliveStele hguyStele
+      hticNeStele hticLeStele
   have hrev :=
     flopperDentX_ticFinished (g := Sat256.ofUInt256 g) hlive hguy hticNe hticLe
       (flopperDentX_decoded (g := Sat256.ofUInt256 g) hsz100 hsize hreach)
@@ -1327,35 +1327,35 @@ theorem flopperDentBodyCoreEndFinished
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨533⟩ [sel]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
   let id := dentIdWord I
   let packedSlot := auctionPackedSlot id
-  have hliveSolm : dentLiveWord evmSolm = ⟨1⟩ := by
-    simpa [evmSolm, dentLiveWord, initState] using hlive
-  have hguySolm : dentGuyWord evmSolm I ≠ ⟨0⟩ := by
+  have hliveStele : dentLiveWord evmStele = ⟨1⟩ := by
+    simpa [evmStele, dentLiveWord, initState] using hlive
+  have hguyStele : dentGuyWord evmStele I ≠ ⟨0⟩ := by
     intro hzero
     apply hguy
-    simpa [evmSolm, dentGuyWord, initState, packedSlot] using hzero
-  have hticOkSolm :
-      (dentTimestampWord evmSolm).toNat < (dentTicWord evmSolm I).toNat ∨
-        dentTicWord evmSolm I = ⟨0⟩ := by
+    simpa [evmStele, dentGuyWord, initState, packedSlot] using hzero
+  have hticOkStele :
+      (dentTimestampWord evmStele).toNat < (dentTicWord evmStele I).toNat ∨
+        dentTicWord evmStele I = ⟨0⟩ := by
     cases hticOk with
     | inl hgt =>
         left
-        simpa [evmSolm, dentTimestampWord, dentTicWord, initState]
+        simpa [evmStele, dentTimestampWord, dentTicWord, initState]
           using hgt
     | inr hzero =>
         right
-        simpa [evmSolm, dentTicWord, initState] using hzero
-  have hendLeSolm : (dentEndWord evmSolm I).toNat ≤ (dentTimestampWord evmSolm).toNat := by
-    simpa [evmSolm, dentEndWord, dentTimestampWord, initState]
+        simpa [evmStele, dentTicWord, initState] using hzero
+  have hendLeStele : (dentEndWord evmStele I).toNat ≤ (dentTimestampWord evmStele).toNat := by
+    simpa [evmStele, dentEndWord, dentTimestampWord, initState]
       using hendLe
   have hbody :
-      ExecTransitionBody config contract evmSolm (dentLocals I) dentTransition.body
+      ExecTransitionBody config contract evmStele (dentLocals I) dentTransition.body
         .reverted := by
-    exact flopperDentBodyReverts_endFinished evmSolm I
-      (by simpa [evmSolm, initState] using hwv) hliveSolm hguySolm
-      hticOkSolm hendLeSolm
+    exact flopperDentBodyReverts_endFinished evmStele I
+      (by simpa [evmStele, initState] using hwv) hliveStele hguyStele
+      hticOkStele hendLeStele
   have hdecoded :=
     flopperDentX_decoded (g := Sat256.ofUInt256 g) hsz100 hsize hreach
   have hrev : RDrev flopperBytecode (Sat256.ofUInt256 g)
@@ -1447,36 +1447,36 @@ theorem flopperDentBodyCoreBidMismatch
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨533⟩ [sel]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
   let packedSlot := auctionPackedSlot (dentIdWord I)
-  have hliveSolm : dentLiveWord evmSolm = ⟨1⟩ := by
-    simpa [evmSolm, dentLiveWord, initState] using hlive
-  have hguySolm : dentGuyWord evmSolm I ≠ ⟨0⟩ := by
+  have hliveStele : dentLiveWord evmStele = ⟨1⟩ := by
+    simpa [evmStele, dentLiveWord, initState] using hlive
+  have hguyStele : dentGuyWord evmStele I ≠ ⟨0⟩ := by
     intro hzero
     apply hguy
-    simpa [evmSolm, dentGuyWord, initState, packedSlot] using hzero
-  have hticOkSolm :
-      (dentTimestampWord evmSolm).toNat < (dentTicWord evmSolm I).toNat ∨
-        dentTicWord evmSolm I = ⟨0⟩ := by
+    simpa [evmStele, dentGuyWord, initState, packedSlot] using hzero
+  have hticOkStele :
+      (dentTimestampWord evmStele).toNat < (dentTicWord evmStele I).toNat ∨
+        dentTicWord evmStele I = ⟨0⟩ := by
     cases hticOk with
     | inl hgt =>
         left
-        simpa [evmSolm, dentTimestampWord, dentTicWord, initState] using hgt
+        simpa [evmStele, dentTimestampWord, dentTicWord, initState] using hgt
     | inr hzero =>
         right
-        simpa [evmSolm, dentTicWord, initState] using hzero
-  have hendGtSolm : (dentTimestampWord evmSolm).toNat < (dentEndWord evmSolm I).toNat := by
-    simpa [evmSolm, dentEndWord, dentTimestampWord, initState] using hendGt
-  have hbidSolm : dentBidWord I ≠ dentBidStoredWord evmSolm I := by
+        simpa [evmStele, dentTicWord, initState] using hzero
+  have hendGtStele : (dentTimestampWord evmStele).toNat < (dentEndWord evmStele I).toNat := by
+    simpa [evmStele, dentEndWord, dentTimestampWord, initState] using hendGt
+  have hbidStele : dentBidWord I ≠ dentBidStoredWord evmStele I := by
     intro heq
     apply hbid
-    simpa [evmSolm, dentBidStoredWord, initState] using heq
+    simpa [evmStele, dentBidStoredWord, initState] using heq
   have hbody :
-      ExecTransitionBody config contract evmSolm (dentLocals I) dentTransition.body
+      ExecTransitionBody config contract evmStele (dentLocals I) dentTransition.body
         .reverted := by
-    exact flopperDentBodyReverts_bidMismatch evmSolm I
-      (by simpa [evmSolm, initState] using hwv) hliveSolm hguySolm hticOkSolm
-      hendGtSolm hbidSolm
+    exact flopperDentBodyReverts_bidMismatch evmStele I
+      (by simpa [evmStele, initState] using hwv) hliveStele hguyStele hticOkStele
+      hendGtStele hbidStele
   have hdecoded :=
     flopperDentX_decoded (g := Sat256.ofUInt256 g) hsz100 hsize hreach
   obtain ⟨memBid, _, _, hmemBid, hreadBid, rd2099⟩ :=

@@ -1,7 +1,7 @@
 import Benchmarks.EAS.EAS.BytesWordMask
 import Benchmarks.EAS.EAS.WordShiftMul
 import Benchmarks.EAS.EAS.BytesShortEVM
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 theorem bytesShortEVMWord_eq (payload len : UInt256) (hl : len.toNat < 32) :

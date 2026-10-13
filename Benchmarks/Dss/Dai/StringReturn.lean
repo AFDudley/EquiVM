@@ -1,8 +1,8 @@
 import Reasoning.Solc
 import Benchmarks.Dss.Dai.Dispatch
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -19,7 +19,7 @@ def daiSymbolBytes : ByteArray :=
 def daiVersionBytes : ByteArray :=
   String.toByteArray "1"
 
-/-- The Solm body pattern for Dai's constant dynamic string getters. -/
+/-- The Stele body pattern for Dai's constant dynamic string getters. -/
 theorem daiBytesLiteralBodyReturns (evm : EVM.State) (locals : Store) (bytes : ByteArray)
     (h : evm.executionEnv.weiValue = ⟨0⟩) :
     ExecTransitionBody config contract evm locals

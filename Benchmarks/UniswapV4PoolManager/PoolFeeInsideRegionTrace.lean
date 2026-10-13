@@ -3,7 +3,7 @@ import Benchmarks.UniswapV4PoolManager.RuntimeBlocks_017
 import Benchmarks.UniswapV4PoolManager.RuntimeBlocks_020
 import Benchmarks.UniswapV4PoolManager.MemoryGas
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.UniswapV4PoolManager.Immutables
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
@@ -43,7 +43,7 @@ theorem poolFeeInsideRegionExactTrace {I : ExecutionEnv} {g : Sat256} {s0 evm : 
       mem (poolFeeInsideRegionActiveWords aw region) rdata evm.accountMap k' C' := by
   have hread (slot : UInt256) :
       (evm.accountMap.get? I.codeOwner |>.option (⟨0⟩ : UInt256) (fun ac => ac.storage.getD slot ⟨0⟩)) =
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot :=
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot :=
     (storageLoad_codeOwner_eq_solcSlotWordAt evm I slot (by rw [hI])).symm
   cases region
   · obtain ⟨k1, C1, rd1⟩ := poolManager_block_5777 hstack h

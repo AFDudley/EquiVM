@@ -1,6 +1,6 @@
 import Benchmarks.EAS.EAS.RevokeStoreCopyRun
 import Benchmarks.EAS.EAS.RevokeUpdateSource
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 structure RevokeLoopLocals (L : Store) (site : RevokeSite) (rs : List RevocationRequestRecord)

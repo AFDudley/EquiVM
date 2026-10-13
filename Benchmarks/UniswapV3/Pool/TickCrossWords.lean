@@ -2,7 +2,7 @@ import Benchmarks.UniswapV3.Pool.TickCrossStorage
 import Benchmarks.UniswapV3.Pool.TickHistoryWords
 import Benchmarks.UniswapV3.Pool.SnapshotArithmetic
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 1000
 

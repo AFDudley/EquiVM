@@ -3,7 +3,7 @@ import Benchmarks.UniswapV4PoolManager.SignedWordBounds
 import Benchmarks.UniswapV4PoolManager.SignedNormalizeRange
 import Benchmarks.UniswapV4PoolManager.Signed128Range
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 def balanceDeltaAmount0 (word : UInt256) : Int := EVM.signed (UInt256.sar (UInt256.ofNat 128) word)

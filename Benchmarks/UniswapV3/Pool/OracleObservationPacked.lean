@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.OracleObservationStore
 import Benchmarks.UniswapV3.Pool.OracleObservationTypes
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 theorem packedFieldValue_zero32 (word : UInt256) :

@@ -1,6 +1,6 @@
 import Benchmarks.EAS.EAS.BytesWordMask
 import Benchmarks.EAS.EAS.ArrayFrameViews
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 -- LIBRARY CANDIDATE: full word loads inside an initialized dynamic payload.

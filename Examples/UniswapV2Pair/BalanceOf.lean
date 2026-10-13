@@ -1,8 +1,8 @@
 import Examples.UniswapV2Pair.ExternalWrappers
 import Examples.UniswapV2Pair.Dispatch
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -60,13 +60,13 @@ theorem uniswapDecode_balanceOf_none_short {I : ExecutionEnv}
   simpa using decodeCalldata_legacyAddress_none_short (cd := I.calldata) (x := "owner")
     hsz4 hshort
 
-/-- The Solm `balanceOf(address)` body returns `balanceOf[owner]`. -/
+/-- The Stele `balanceOf(address)` body returns `balanceOf[owner]`. -/
 theorem uniswapBalanceOfBodyReturns (evm : EVM.State) (I : ExecutionEnv)
     (h : evm.executionEnv.weiValue = ⟨0⟩) :
     ExecTransitionBody config contract evm (balanceOfStore I) balanceOfTransition.body
       (.returned { contract := contract, locals := balanceOfStore I } evm
         (some [(.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
             (balanceOfStorageSlot I)).toNat))])) := by
   exact ExecFuncBody.execBlockRet <|
     (ABlock.start.requireStep (evalCallvalueEq_true h)).returns (by
@@ -179,7 +179,7 @@ theorem uniswapBalanceOfBodyCoreOk
         (.returned { contract := contract, locals := balanceOfStore I }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.int (Int.ofNat (balanceOfWord σ I).toNat))])) := by
-    simpa [balanceOfWord, balanceOfStorageSlot, initState, Solm.EVM.storageLoad,
+    simpa [balanceOfWord, balanceOfStorageSlot, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       uniswapBalanceOfBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) I

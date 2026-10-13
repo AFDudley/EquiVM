@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Flopper.File.Part1
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -123,7 +123,7 @@ theorem flopperFileBodyCoreBeg
   let locals := fileLocals I
   let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
   let evm1 := fileBegPostState evm0 I
-  have hauthSolm : relyAuthWord σ I = ⟨1⟩ := hauth
+  have hauthStele : relyAuthWord σ I = ⟨1⟩ := hauth
   have hbodySplit :
       (ExecTransitionBody config contract evm0 locals fileTransition.body
         (.returned { contract := contract, locals := locals } evm1 none)) ∧
@@ -131,7 +131,7 @@ theorem flopperFileBodyCoreBeg
         fileTransition.body .staticViolation) := by
     simpa [evm0, evm1, locals, data] using
       (flopperFileBegSourceBodySplit (σ := σ)
-        (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hauthSolm hwhat)
+        (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hauthStele hwhat)
   obtain ⟨_, _, hdecoded⟩ := flopperFileX_decoded (g := Sat256.ofUInt256 g)
     hsz68 hsize hreach
   obtain ⟨_, _, hswitch⟩ := flopperFileX_authorized (I := I) hauth hdecoded
@@ -168,7 +168,7 @@ theorem flopperFileBodyCorePad
   let locals := fileLocals I
   let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
   let evm1 := filePadPostState evm0 I
-  have hauthSolm : relyAuthWord σ I = ⟨1⟩ := hauth
+  have hauthStele : relyAuthWord σ I = ⟨1⟩ := hauth
   have hbodySplit :
       (ExecTransitionBody config contract evm0 locals fileTransition.body
         (.returned { contract := contract, locals := locals } evm1 none)) ∧
@@ -176,7 +176,7 @@ theorem flopperFileBodyCorePad
         fileTransition.body .staticViolation) := by
     simpa [evm0, evm1, locals, data] using
       (flopperFilePadSourceBodySplit (σ := σ)
-        (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hauthSolm hbeg hwhat)
+        (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hauthStele hbeg hwhat)
   obtain ⟨_, _, hdecoded⟩ := flopperFileX_decoded (g := Sat256.ofUInt256 g)
     hsz68 hsize hreach
   obtain ⟨_, _, hswitch⟩ := flopperFileX_authorized (I := I) hauth hdecoded
@@ -215,7 +215,7 @@ theorem flopperFileBodyCoreTtl
   let locals := fileLocals I
   let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
   let evm1 := fileTtlPostState evm0 I
-  have hauthSolm : relyAuthWord σ I = ⟨1⟩ := hauth
+  have hauthStele : relyAuthWord σ I = ⟨1⟩ := hauth
   have hbodySplit :
       (ExecTransitionBody config contract evm0 locals fileTransition.body
         (.returned { contract := contract, locals := locals } evm1 none)) ∧
@@ -223,7 +223,7 @@ theorem flopperFileBodyCoreTtl
         fileTransition.body .staticViolation) := by
     simpa [evm0, evm1, locals] using
       (flopperFileTtlSourceBodySplit (σ := σ)
-        (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hauthSolm hbeg hpad hwhat)
+        (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hauthStele hbeg hpad hwhat)
   obtain ⟨_, _, hdecoded⟩ := flopperFileX_decoded (g := Sat256.ofUInt256 g)
     hsz68 hsize hreach
   obtain ⟨_, _, hswitch⟩ := flopperFileX_authorized (I := I) hauth hdecoded
@@ -241,7 +241,7 @@ theorem flopperFileBodyCoreTtl
     (by
       simp [evm1, evm0, initState, fileTtlPostState, fileTtlPostAccountMap,
         fileTtlStoredWord, fileTtlStoredWordMap, storageStore_accountMap,
-        Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage, solcSlotWord])
+        Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage, solcSlotWord])
     (by
       simpa [fileTransition] using
         (returnEquiv.fallthrough (o := ByteArray.empty) (r := none) (t := [])
@@ -268,7 +268,7 @@ theorem flopperFileBodyCoreTau
   let locals := fileLocals I
   let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
   let evm1 := fileTauPostState evm0 I
-  have hauthSolm : relyAuthWord σ I = ⟨1⟩ := hauth
+  have hauthStele : relyAuthWord σ I = ⟨1⟩ := hauth
   have hbodySplit :
       (ExecTransitionBody config contract evm0 locals fileTransition.body
         (.returned { contract := contract, locals := locals } evm1 none)) ∧
@@ -276,7 +276,7 @@ theorem flopperFileBodyCoreTau
         fileTransition.body .staticViolation) := by
     simpa [evm0, evm1, locals] using
       (flopperFileTauSourceBodySplit (σ := σ)
-        (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hauthSolm hbeg hpad httl hwhat)
+        (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hauthStele hbeg hpad httl hwhat)
   obtain ⟨_, _, hdecoded⟩ := flopperFileX_decoded (g := Sat256.ofUInt256 g)
     hsz68 hsize hreach
   obtain ⟨_, _, hswitch⟩ := flopperFileX_authorized (I := I) hauth hdecoded
@@ -297,7 +297,7 @@ theorem flopperFileBodyCoreTau
     (by
       simp [evm1, evm0, initState, fileTauPostState, fileTauPostAccountMap,
         fileTauStoredWord, fileTauStoredWordMap, storageStore_accountMap,
-        Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage, solcSlotWord])
+        Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage, solcSlotWord])
     (by
       simpa [fileTransition] using
         (returnEquiv.fallthrough (o := ByteArray.empty) (r := none) (t := [])
@@ -319,12 +319,12 @@ theorem flopperFileBodyCoreUnauthorized
     runtimeRefinementFor config contract σ σ₀ g A I := by
   let locals := fileLocals I
   let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  have hauthSolm : relyAuthWord σ I ≠ ⟨1⟩ := hauth
+  have hauthStele : relyAuthWord σ I ≠ ⟨1⟩ := hauth
   have hbody :
       ExecTransitionBody config contract evm0 locals fileTransition.body .reverted := by
     simpa [evm0, locals] using
       (flopperFileSourceBodyAuthReverts (σ := σ)
-        (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hauthSolm)
+        (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hauthStele)
   obtain ⟨_, _, hdecoded⟩ := flopperFileX_decoded (g := Sat256.ofUInt256 g)
     hsz68 hsize hreach
   exact (flopperFileX_unauthorized (I := I) hauth hdecoded)
@@ -350,12 +350,12 @@ theorem flopperFileBodyCoreUnrecognized
     runtimeRefinementFor config contract σ σ₀ g A I := by
   let locals := fileLocals I
   let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  have hauthSolm : relyAuthWord σ I = ⟨1⟩ := hauth
+  have hauthStele : relyAuthWord σ I = ⟨1⟩ := hauth
   have hbody :
       ExecTransitionBody config contract evm0 locals fileTransition.body .reverted := by
     simpa [evm0, locals] using
       (flopperFileSourceBodyUnrecognized (σ := σ)
-        (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hauthSolm hbeg hpad httl htau)
+        (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hauthStele hbeg hpad httl htau)
   obtain ⟨_, _, hdecoded⟩ := flopperFileX_decoded (g := Sat256.ofUInt256 g)
     hsz68 hsize hreach
   obtain ⟨_, _, hswitch⟩ := flopperFileX_authorized (I := I) hauth hdecoded

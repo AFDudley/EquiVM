@@ -1,8 +1,8 @@
 import Examples.UniswapV2Pair.ExternalWrappers
 import Examples.UniswapV2Pair.Dispatch
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -60,13 +60,13 @@ theorem uniswapDecode_nonces_none_short {I : ExecutionEnv}
   simpa using decodeCalldata_legacyAddress_none_short (cd := I.calldata) (x := "owner")
     hsz4 hshort
 
-/-- The Solm `nonces(address)` body returns `nonces[owner]`. -/
+/-- The Stele `nonces(address)` body returns `nonces[owner]`. -/
 theorem uniswapNoncesBodyReturns (evm : EVM.State) (I : ExecutionEnv)
     (h : evm.executionEnv.weiValue = ⟨0⟩) :
     ExecTransitionBody config contract evm (noncesStore I) noncesTransition.body
       (.returned { contract := contract, locals := noncesStore I } evm
         (some [(.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
             (noncesStorageSlot I)).toNat))])) := by
   exact ExecFuncBody.execBlockRet <|
     (ABlock.start.requireStep (evalCallvalueEq_true h)).returns (by
@@ -179,7 +179,7 @@ theorem uniswapNoncesBodyCoreOk
         (.returned { contract := contract, locals := noncesStore I }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.int (Int.ofNat (noncesWord σ I).toNat))])) := by
-    simpa [noncesWord, noncesStorageSlot, initState, Solm.EVM.storageLoad,
+    simpa [noncesWord, noncesStorageSlot, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       uniswapNoncesBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) I

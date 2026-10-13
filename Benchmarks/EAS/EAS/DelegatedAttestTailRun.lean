@@ -2,7 +2,7 @@ import Benchmarks.EAS.EAS.DelegatedAttestTailMemory
 import Benchmarks.EAS.EAS.DelegatedAttestTailEVM
 import Benchmarks.EAS.EAS.DelegatedAttestSource
 import Benchmarks.EAS.EAS.PublicWordRun
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.EAS.EAS.Immutables
 namespace Benchmarks.EAS.EAS
 set_option maxRecDepth 10000

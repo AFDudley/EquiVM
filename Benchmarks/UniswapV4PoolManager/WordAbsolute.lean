@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV4PoolManager.WordOperationsSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 -- LIBRARY CANDIDATE: the magnitude of a signed word always fits in an unsigned word.

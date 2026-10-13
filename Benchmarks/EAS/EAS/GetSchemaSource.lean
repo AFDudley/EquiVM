@@ -1,7 +1,7 @@
 import Benchmarks.EAS.EAS.ResolverOneSource
 import Benchmarks.EAS.EAS.StaticCallBridge
 import Benchmarks.EAS.EAS.BytesAllocation
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.EAS.EAS.Immutables
 namespace Benchmarks.EAS.EAS
 set_option maxRecDepth 10000

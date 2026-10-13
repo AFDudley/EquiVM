@@ -1,6 +1,6 @@
 import Examples.UniswapV2Pair.MintInternalMintRuntime
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -63,7 +63,7 @@ theorem mintFunctionToBalanceNewNat_eq_runtimeMintRecipient
           (sstoreAccountMap I.codeOwner σ ⟨0⟩ (solcSlotWordAt ⟨0⟩ σ I + liquidity))
           (uniswapInternalMintBalanceHashSlot recipientWord mem) := by
     simpa [-Std.ExtTreeMap.get?_eq_getElem?, mintFunctionToBalanceWord,
-      uniswapCodeOwnerStorageWord, Solm.EVM.storageLoad,
+      uniswapCodeOwnerStorageWord, Stele.EVM.storageLoad,
       State.lookupAccount, Account.lookupStorage, henv, henvAfter, hslotSource, hslotRuntime,
       hafterTotal]
   simp [mintFunctionToBalanceNewNat, hbalanceEq]

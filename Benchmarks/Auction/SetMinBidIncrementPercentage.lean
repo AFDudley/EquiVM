@@ -3,7 +3,7 @@ import Benchmarks.Auction.Uint8Decoder
 import Benchmarks.Auction.UIntABI
 import Benchmarks.Auction.Events
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 100000
 
@@ -22,8 +22,8 @@ theorem setMinBidBodySplit (evm : EVM.State) (value : UInt256)
       (.returned
         { contract := auctionContract
           locals := (∅ : Store).insert "_minBidIncrementPercentage" (.int (Int.ofNat value.toNat)) }
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨205⟩
-          (minBidWord (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨205⟩) value))
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨205⟩
+          (minBidWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨205⟩) value))
         none)) ∧
       (evm.executionEnv.perm = false → ExecTransitionBody auctionConfig auctionContract evm
       ((∅ : Store).insert "_minBidIncrementPercentage" (.int (Int.ofNat value.toNat)))
@@ -54,8 +54,8 @@ theorem setMinBidBody (evm : EVM.State) (value : UInt256)
       (.returned
         { contract := auctionContract
           locals := (∅ : Store).insert "_minBidIncrementPercentage" (.int (Int.ofNat value.toNat)) }
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨205⟩
-          (minBidWord (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨205⟩) value))
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨205⟩
+          (minBidWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨205⟩) value))
         none) :=
   (setMinBidBodySplit evm value hwv ho hc).1
 
@@ -149,7 +149,7 @@ theorem setMinBidIncrementPercentageBodyCore {σ σ₀ A I} {g : UInt256}
               (initState σ σ₀ (Sat256.ofUInt256 g) A I)
               (calldataWord I.calldata 4) hwv ho hc
             exact (auctionStop rd413 (by evm_ov)).reEquivExecutionGen
-              hcode hd hdec hbody (by simp [storageStore_accountMap, initState, solcSlotWord, Solm.EVM.storageLoad,
+              hcode hd hdec hbody (by simp [storageStore_accountMap, initState, solcSlotWord, Stele.EVM.storageLoad,
                 State.lookupAccount, Account.lookupStorage])
               (.fallthrough rfl rfl (by native_decide))
           · have hbody : ExecTransitionBody auctionConfig auctionContract

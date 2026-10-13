@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Vow.Arithmetic
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 0
@@ -77,7 +77,7 @@ theorem evalExpr_flogWaitStorage (evm : EVM.State) {locals : Store}
     (hbase : locals.get? "wait" = none) :
     evalExpr? config { contract := contract, locals := locals } evm (.storage waitRef) =
       .ok (.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨7⟩).toNat)) := by
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨7⟩).toNat)) := by
   rw [evalExpr_storage_scalar (hbackend := rfl) (er := flogWaitEvaledRef) (t := .int uint256Int)
     (loc := wordLoc ⟨7⟩)]
   · exact congrArg EvalResult.ok (storageLocLoad_uint256 _ ⟨7⟩)
@@ -92,7 +92,7 @@ theorem evalExpr_flogSinCapitalStorage (evm : EVM.State) {locals : Store}
     (hbase : locals.get? "Sin" = none) :
     evalExpr? config { contract := contract, locals := locals } evm (.storage SinRef) =
       .ok (.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩).toNat)) := by
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩).toNat)) := by
   rw [evalExpr_storage_scalar (hbackend := rfl) (er := flogSinCapitalEvaledRef) (t := .int uint256Int)
     (loc := wordLoc ⟨5⟩)]
   · exact congrArg EvalResult.ok (storageLocLoad_uint256 _ ⟨5⟩)
@@ -111,7 +111,7 @@ theorem evalExpr_flogSinStorageOfLoad (evm : EVM.State) {I : ExecutionEnv}
     evalExpr? config { contract := contract, locals := locals } evm
       (.storage (sinRef (.var "era"))) =
         .ok (.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (flogEraSlot I)).toNat)) := by
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (flogEraSlot I)).toNat)) := by
   rw [evalExpr_storage_scalar (hbackend := rfl) (er := flogSinEvaledRef I) (t := .int uint256Int)
     (loc := wordLoc (flogEraSlot I))]
   · exact congrArg EvalResult.ok (storageLocLoad_uint256 _ (flogEraSlot I))
@@ -128,7 +128,7 @@ theorem evalExpr_flogSinStorageOfLoad (evm : EVM.State) {I : ExecutionEnv}
 
 theorem flogInternalAddReturn (I : ExecutionEnv) (evm : EVM.State)
     {wait doneAt : UInt256}
-    (hwaitLoad : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨7⟩ = wait)
+    (hwaitLoad : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨7⟩ = wait)
     (hdoneAt : doneAt = flogEra I + wait)
     (hfit : (flogEra I).toNat + wait.toNat < UInt256.size) :
     ExecStmt config { contract := contract, locals := flogLocals I } evm
@@ -162,13 +162,13 @@ theorem flogInternalAddReturn (I : ExecutionEnv) (evm : EVM.State)
       (args := [.var "era", .storage waitRef])
       (argVals := [.int (Int.ofNat (flogEra I).toNat), .int (Int.ofNat wait.toNat)])
       (callee := addFunction) (locals := uintBinaryLocals (flogEra I) wait)
-      (calleeSolm :=
+      (calleeStele :=
         { contract := contract, locals := uintBinaryLocalsZ (flogEra I) wait doneAt })
       (value := some [.int (Int.ofNat doneAt.toNat)]) hargs (by rfl) hbind hbody)
 
 theorem flogInternalAddRevert (I : ExecutionEnv) (evm : EVM.State)
     {wait : UInt256}
-    (hwaitLoad : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨7⟩ = wait)
+    (hwaitLoad : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨7⟩ = wait)
     (hover : UInt256.size ≤ (flogEra I).toNat + wait.toNat) :
     ExecStmt config { contract := contract, locals := flogLocals I } evm
       (.internalCall "add" [.var "era", .storage waitRef] "doneAt") .reverted := by
@@ -202,8 +202,8 @@ theorem flogInternalAddRevert (I : ExecutionEnv) (evm : EVM.State)
 
 theorem flogInternalSubReturn (I : ExecutionEnv) (evm : EVM.State)
     {doneAt SinVal sinVal SinNew : UInt256}
-    (hSinLoad : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩ = SinVal)
-    (hsinLoad : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (flogEraSlot I) = sinVal)
+    (hSinLoad : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩ = SinVal)
+    (hsinLoad : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (flogEraSlot I) = sinVal)
     (hdiff : SinNew = UInt256.sub SinVal sinVal)
     (hle : sinVal.toNat ≤ SinVal.toNat) :
     ExecStmt config { contract := contract, locals := flogLocalsDoneAt I doneAt } evm
@@ -241,13 +241,13 @@ theorem flogInternalSubReturn (I : ExecutionEnv) (evm : EVM.State)
       (args := [.storage SinRef, .storage (sinRef (.var "era"))])
       (argVals := [.int (Int.ofNat SinVal.toNat), .int (Int.ofNat sinVal.toNat)])
       (callee := subFunction) (locals := uintBinaryLocals SinVal sinVal)
-      (calleeSolm := { contract := contract, locals := uintBinaryLocalsZ SinVal sinVal SinNew })
+      (calleeStele := { contract := contract, locals := uintBinaryLocalsZ SinVal sinVal SinNew })
       (value := some [.int (Int.ofNat SinNew.toNat)]) hargs (by rfl) hbind hbody)
 
 theorem flogInternalSubRevert (I : ExecutionEnv) (evm : EVM.State)
     {doneAt SinVal sinVal : UInt256}
-    (hSinLoad : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩ = SinVal)
-    (hsinLoad : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (flogEraSlot I) = sinVal)
+    (hSinLoad : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩ = SinVal)
+    (hsinLoad : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (flogEraSlot I) = sinVal)
     (hlt : SinVal.toNat < sinVal.toNat) :
     ExecStmt config { contract := contract, locals := flogLocalsDoneAt I doneAt } evm
       (.internalCall "sub" [.storage SinRef, .storage (sinRef (.var "era"))] "SinNew")
@@ -292,7 +292,7 @@ theorem evalExpr_flogSinStorage
       (initState σ σ₀ (Sat256.ofUInt256 g) A I)
       (.storage (sinRef (.var "era"))) =
         .ok (.int (Int.ofNat (solcSlotWordAt (flogEraSlot I) σ I).toNat)) := by
-  simpa [solcSlotWordAt, solcSlotWord, Solm.EVM.storageLoad, State.lookupAccount,
+  simpa [solcSlotWordAt, solcSlotWord, Stele.EVM.storageLoad, State.lookupAccount,
     Account.lookupStorage, initState] using
       (evalExpr_flogSinStorageOfLoad
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) (I := I)
@@ -300,7 +300,7 @@ theorem evalExpr_flogSinStorage
 
 theorem assign_flogSinCapitalStorage (evm : EVM.State) {locals : Store} (SinNew : UInt256)
     (hbase : locals.get? "Sin" = none) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨5⟩ SinNew
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨5⟩ SinNew
     assignStorageRef? config { contract := contract, locals := locals } evm
       .storage SinRef (.int (Int.ofNat SinNew.toNat)) =
         .ok ({ contract := contract, locals := locals }, evm') := by
@@ -327,7 +327,7 @@ theorem assign_flogSinStorage (evm : EVM.State) {I : ExecutionEnv} {locals : Sto
     (value : UInt256)
     (hbase : locals.get? "sin" = none)
     (hera : locals.get? "era" = some (.int (Int.ofNat (flogEra I).toNat))) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner (flogEraSlot I) value
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner (flogEraSlot I) value
     assignStorageRef? config { contract := contract, locals := locals } evm
       .storage (sinRef (.var "era")) (.int (Int.ofNat value.toNat)) =
         .ok ({ contract := contract, locals := locals }, evm') := by
@@ -371,8 +371,8 @@ theorem vowFlogSourceSuccessSplit
     let locals := flogLocals I
     let locals2 := flogLocalsDoneAtSinNew I doneAt SinNew
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-    let evm1 := Solm.EVM.storageStore evm0 I.codeOwner ⟨5⟩ SinNew
-  let evm2 := Solm.EVM.storageStore evm1 evm1.executionEnv.codeOwner (flogEraSlot I) ⟨0⟩
+    let evm1 := Stele.EVM.storageStore evm0 I.codeOwner ⟨5⟩ SinNew
+  let evm2 := Stele.EVM.storageStore evm1 evm1.executionEnv.codeOwner (flogEraSlot I) ⟨0⟩
   ExecTransitionBody config contract evm0 locals flogTransition.body
       (.returned { contract := contract, locals := locals2 } evm2 none) ∧
     (I.perm = false →
@@ -382,23 +382,23 @@ theorem vowFlogSourceSuccessSplit
   have hwaitWord : wait = solcSlotWordAt ⟨7⟩ σ I := rfl
   have hSinWord : SinVal = solcSlotWordAt ⟨5⟩ σ I := rfl
   have hsinWord : sinVal = solcSlotWordAt (flogEraSlot I) σ I := rfl
-  have hwaitLoad : Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner ⟨7⟩ = wait := by
-    have hload : Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner ⟨7⟩ =
+  have hwaitLoad : Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner ⟨7⟩ = wait := by
+    have hload : Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner ⟨7⟩ =
         solcSlotWordAt ⟨7⟩ σ I := by
-      simp [evm0, initState, solcSlotWordAt, solcSlotWord, Solm.EVM.storageLoad,
+      simp [evm0, initState, solcSlotWordAt, solcSlotWord, Stele.EVM.storageLoad,
         State.lookupAccount, Account.lookupStorage]
     exact hload.trans hwaitWord.symm
-  have hSinLoad : Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner ⟨5⟩ = SinVal := by
-    have hload : Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner ⟨5⟩ =
+  have hSinLoad : Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner ⟨5⟩ = SinVal := by
+    have hload : Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner ⟨5⟩ =
         solcSlotWordAt ⟨5⟩ σ I := by
-      simp [evm0, initState, solcSlotWordAt, solcSlotWord, Solm.EVM.storageLoad,
+      simp [evm0, initState, solcSlotWordAt, solcSlotWord, Stele.EVM.storageLoad,
         State.lookupAccount, Account.lookupStorage]
     exact hload.trans hSinWord.symm
   have hsinLoad :
-      Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (flogEraSlot I) = sinVal := by
-    have hload : Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (flogEraSlot I) =
+      Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (flogEraSlot I) = sinVal := by
+    have hload : Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (flogEraSlot I) =
         solcSlotWordAt (flogEraSlot I) σ I := by
-      simp [evm0, initState, solcSlotWordAt, solcSlotWord, Solm.EVM.storageLoad,
+      simp [evm0, initState, solcSlotWordAt, solcSlotWord, Stele.EVM.storageLoad,
         State.lookupAccount, Account.lookupStorage]
     exact hload.trans hsinWord.symm
   have hcallAdd :
@@ -492,10 +492,10 @@ theorem vowFlogSourceAddOverflow
   let locals := flogLocals I
   let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
   have hwaitWord : wait = solcSlotWordAt ⟨7⟩ σ I := rfl
-  have hwaitLoad : Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner ⟨7⟩ = wait := by
-    have hload : Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner ⟨7⟩ =
+  have hwaitLoad : Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner ⟨7⟩ = wait := by
+    have hload : Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner ⟨7⟩ =
         solcSlotWordAt ⟨7⟩ σ I := by
-      simp [evm0, initState, solcSlotWordAt, solcSlotWord, Solm.EVM.storageLoad,
+      simp [evm0, initState, solcSlotWordAt, solcSlotWord, Stele.EVM.storageLoad,
         State.lookupAccount, Account.lookupStorage]
     exact hload.trans hwaitWord.symm
   have hcallAdd :
@@ -534,10 +534,10 @@ theorem vowFlogSourceWaitNotFinished
   let locals1 := flogLocalsDoneAt I doneAt
   let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
   have hwaitWord : wait = solcSlotWordAt ⟨7⟩ σ I := rfl
-  have hwaitLoad : Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner ⟨7⟩ = wait := by
-    have hload : Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner ⟨7⟩ =
+  have hwaitLoad : Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner ⟨7⟩ = wait := by
+    have hload : Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner ⟨7⟩ =
         solcSlotWordAt ⟨7⟩ σ I := by
-      simp [evm0, initState, solcSlotWordAt, solcSlotWord, Solm.EVM.storageLoad,
+      simp [evm0, initState, solcSlotWordAt, solcSlotWord, Stele.EVM.storageLoad,
         State.lookupAccount, Account.lookupStorage]
     exact hload.trans hwaitWord.symm
   have hcallAdd :
@@ -598,23 +598,23 @@ theorem vowFlogSourceSubUnderflow
   have hwaitWord : wait = solcSlotWordAt ⟨7⟩ σ I := rfl
   have hSinWord : SinVal = solcSlotWordAt ⟨5⟩ σ I := rfl
   have hsinWord : sinVal = solcSlotWordAt (flogEraSlot I) σ I := rfl
-  have hwaitLoad : Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner ⟨7⟩ = wait := by
-    have hload : Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner ⟨7⟩ =
+  have hwaitLoad : Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner ⟨7⟩ = wait := by
+    have hload : Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner ⟨7⟩ =
         solcSlotWordAt ⟨7⟩ σ I := by
-      simp [evm0, initState, solcSlotWordAt, solcSlotWord, Solm.EVM.storageLoad,
+      simp [evm0, initState, solcSlotWordAt, solcSlotWord, Stele.EVM.storageLoad,
         State.lookupAccount, Account.lookupStorage]
     exact hload.trans hwaitWord.symm
-  have hSinLoad : Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner ⟨5⟩ = SinVal := by
-    have hload : Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner ⟨5⟩ =
+  have hSinLoad : Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner ⟨5⟩ = SinVal := by
+    have hload : Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner ⟨5⟩ =
         solcSlotWordAt ⟨5⟩ σ I := by
-      simp [evm0, initState, solcSlotWordAt, solcSlotWord, Solm.EVM.storageLoad,
+      simp [evm0, initState, solcSlotWordAt, solcSlotWord, Stele.EVM.storageLoad,
         State.lookupAccount, Account.lookupStorage]
     exact hload.trans hSinWord.symm
   have hsinLoad :
-      Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (flogEraSlot I) = sinVal := by
-    have hload : Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (flogEraSlot I) =
+      Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (flogEraSlot I) = sinVal := by
+    have hload : Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (flogEraSlot I) =
         solcSlotWordAt (flogEraSlot I) σ I := by
-      simp [evm0, initState, solcSlotWordAt, solcSlotWord, Solm.EVM.storageLoad,
+      simp [evm0, initState, solcSlotWordAt, solcSlotWord, Stele.EVM.storageLoad,
         State.lookupAccount, Account.lookupStorage]
     exact hload.trans hsinWord.symm
   have hcallAdd :
@@ -1184,8 +1184,8 @@ theorem vowFlogBodyCore
         let σ1_evm := sstoreAccountMap I.codeOwner σ ⟨5⟩ SinNew
         let σ2_evm := sstoreAccountMap I.codeOwner σ1_evm (flogEraSlot I) ⟨0⟩
         let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-        let evm1 := Solm.EVM.storageStore evm0 I.codeOwner ⟨5⟩ SinNew
-        let evm2 := Solm.EVM.storageStore evm1 evm1.executionEnv.codeOwner (flogEraSlot I) ⟨0⟩
+        let evm1 := Stele.EVM.storageStore evm0 I.codeOwner ⟨5⟩ SinNew
+        let evm2 := Stele.EVM.storageStore evm1 evm1.executionEnv.codeOwner (flogEraSlot I) ⟨0⟩
         have hboth := vowFlogSourceSuccessSplit (σ := σ)
           (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hfitWait hready hsub
         have hbody :

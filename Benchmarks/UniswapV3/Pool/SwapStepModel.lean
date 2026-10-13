@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.AmountDeltaModel
 import Benchmarks.UniswapV3.Pool.NextPriceModel
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 structure SwapStepArgs where

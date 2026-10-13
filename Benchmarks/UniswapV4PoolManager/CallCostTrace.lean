@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV4PoolManager.Common
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Reasoning.Reach
 
 -- GENERALIZES Reasoning.Reach.RD.call to retain gas spent by the same opaque callee invocation.

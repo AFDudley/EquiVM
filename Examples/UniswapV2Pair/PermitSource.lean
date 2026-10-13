@@ -1,10 +1,10 @@
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 import Reasoning.ABIViews
 import Reasoning.WordArithmetic
 import Examples.UniswapV2Pair.PermitABI
-import Reasoning.SolmArithmetic
+import Reasoning.SteleArithmetic
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 2000000
@@ -517,13 +517,13 @@ theorem evalExpr_permit_domainSeparator_afterNonce_at {σ σ₀ A I} {g : Sat256
     rw [permitNonceStorageSlot_eq_mapSlot_masked]
     exact hne
   have hloadInit :
-      Solm.EVM.storageLoad evmS evmS.executionEnv.codeOwner ⟨3⟩ =
+      Stele.EVM.storageLoad evmS evmS.executionEnv.codeOwner ⟨3⟩ =
         permitDomainSeparatorWord σ I := by
     simpa [evmS, permitDomainSeparatorWord] using
       (codeOwnerStorageWord_initState (σ := σ)
         (σ₀ := σ₀) (A := A) (I := I) (g := g) (slot := ⟨3⟩))
   have hloadNonce :
-      Solm.EVM.storageLoad evmNonceS evmNonceS.executionEnv.codeOwner ⟨3⟩ =
+      Stele.EVM.storageLoad evmNonceS evmNonceS.executionEnv.codeOwner ⟨3⟩ =
         permitDomainSeparatorWord σ I := by
     have hneLoad := storageLoad_storageStore_ne evmS evmS.executionEnv.codeOwner
       (readSlot := ⟨3⟩) (writeSlot := permitNonceStorageSlot I)
@@ -870,7 +870,7 @@ theorem uniswapPermitApproveCallSuccessAt {base cur : EVM.State} {I : ExecutionE
       (argVals := [permitOwnerValue I, permitSpenderValue I, permitValueValue I])
       (callee := approveFunction)
       (locals := permitApproveCallStore I)
-      (calleeSolm := { contract := contract, locals := permitApproveCallStore I })
+      (calleeStele := { contract := contract, locals := permitApproveCallStore I })
       (value := none)
       (evalExprs_permit_approve_args_at base cur I structHash digest recovered)
       uniswapLookupApproveFunction
@@ -878,8 +878,8 @@ theorem uniswapPermitApproveCallSuccessAt {base cur : EVM.State} {I : ExecutionE
       (uniswapPermitApproveFunctionBody cur I))
   exact ExecBlock.consNormal hstmt ExecBlock.nil
 
-theorem evalExpr_permit_zeroAddr (solm : Frame) (evm : EVM.State) :
-    evalExpr? config solm evm zeroAddr = .ok (.address (AccountAddress.ofNat 0)) := by
+theorem evalExpr_permit_zeroAddr (stele : Frame) (evm : EVM.State) :
+    evalExpr? config stele evm zeroAddr = .ok (.address (AccountAddress.ofNat 0)) := by
   simp only [zeroAddr, evalExpr?, castValue?, addrSt, EvalResult.ofOption,
     EvalResult.bind, bind, pure]
   norm_num
@@ -968,14 +968,14 @@ theorem evalExpr_permit_afterEcrecover_require_false_mismatch
     exact beq_false_of_ne hne
   simp [evalBinaryOp?, hneZeroBeq, hneOwnerBeq]
 
-theorem evalExpr_permit_ecrecover_receiver (solm : Frame) (evm : EVM.State) :
-    evalExpr? config solm evm (.cast (.intLit 1) addrSt) =
+theorem evalExpr_permit_ecrecover_receiver (stele : Frame) (evm : EVM.State) :
+    evalExpr? config stele evm (.cast (.intLit 1) addrSt) =
       .ok (.address (AccountAddress.ofNat 1)) := by
   simp only [evalExpr?, castValue?, addrSt, EvalResult.ofOption, EvalResult.bind, bind, pure]
   norm_num
 
-theorem evalExpr_permit_ecrecover_value (solm : Frame) (evm : EVM.State) :
-    evalExpr? config solm evm (.intLit 0) = .ok (.int 0) := by
+theorem evalExpr_permit_ecrecover_value (stele : Frame) (evm : EVM.State) :
+    evalExpr? config stele evm (.intLit 0) = .ok (.int 0) := by
   simp only [evalExpr?, pure]
 
 theorem uniswapPermitEcrecoverCallSuccess {evm evm' : EVM.State} {I : ExecutionEnv}

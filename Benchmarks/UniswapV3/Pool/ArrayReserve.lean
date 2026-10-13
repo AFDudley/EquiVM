@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.ZeroCopy
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 -- LIBRARY CANDIDATE: reserve a scalar array and clear its payload using a past-end copy.

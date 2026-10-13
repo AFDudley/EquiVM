@@ -3,7 +3,7 @@ import Benchmarks.CompoundIII.Comet.SelectorRefinement
 import Benchmarks.CompoundIII.Comet.SourceSelectors
 import Benchmarks.CompoundIII.Comet.RuntimeBlocks_011
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.CompoundIII.Comet.Immutables
 open cometWithExtendedAssetListBlocks

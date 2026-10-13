@@ -1,7 +1,7 @@
 import Benchmarks.EAS.EAS.ConstructorMemoryBase
 import Benchmarks.EAS.EAS.CreationBlocks_001
 import Benchmarks.EAS.EAS.CreationBlocks_002
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables easCreationBlocks
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables easCreationBlocks
 namespace Benchmarks.EAS.EAS
 set_option maxRecDepth 10000
 

@@ -2,7 +2,7 @@ import Benchmarks.UniswapV3.Pool.OracleWriteEntryTrace
 import Benchmarks.UniswapV3.Pool.OracleWriteStoreTrace
 import Benchmarks.UniswapV3.Pool.OracleWriteResult
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000

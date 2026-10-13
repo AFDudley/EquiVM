@@ -1,7 +1,7 @@
 import Benchmarks.Dss.Clipper.TakeContinuationEVM
 import Benchmarks.Dss.Clipper.TakeGeneralDogEVM
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 namespace Benchmarks.Dss.Clipper

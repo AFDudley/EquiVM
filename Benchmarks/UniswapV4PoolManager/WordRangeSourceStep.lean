@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.WordArraySource
 import Benchmarks.UniswapV4PoolManager.WordRangeABI
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 3000
 
@@ -14,10 +14,10 @@ theorem normalizeUint256WordAddNat (word : UInt256) (i : Nat) :
 
 def wordRangeSlot (start : UInt256) (i : Nat) : UInt256 := start + UInt256.ofNat i
 def wordRangeValue (evm : EVM.State) (start : UInt256) (i : Nat) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (wordRangeSlot start i)
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (wordRangeSlot start i)
 
 theorem wordRangeValue_zero (evm : EVM.State) (start : UInt256) :
-    wordRangeValue evm start 0 = Solm.EVM.storageLoad evm evm.executionEnv.codeOwner start := by
+    wordRangeValue evm start 0 = Stele.EVM.storageLoad evm evm.executionEnv.codeOwner start := by
   unfold wordRangeValue wordRangeSlot
   rw [show UInt256.ofNat 0 = (⟨0⟩ : UInt256) from rfl, uadd_zero_r]
 

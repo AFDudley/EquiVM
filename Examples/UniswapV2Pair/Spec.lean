@@ -1,11 +1,11 @@
-import Solm.Semantics
-import Solm.SolidityLayout
-import Solm.MetaSolidityLayout
+import Stele.Semantics
+import Stele.SolidityLayout
+import Stele.MetaSolidityLayout
 
 /-!
 # Uniswap V2 Pair benchmark spec
 
-Solm benchmark spec for the unmodified upstream `UniswapV2Pair` contract from
+Stele benchmark spec for the unmodified upstream `UniswapV2Pair` contract from
 `Uniswap/v2-core` tag `v1.0.1`.
 
 The benchmark intentionally targets the full production Pair runtime, including the inherited
@@ -13,7 +13,7 @@ The benchmark intentionally targets the full production Pair runtime, including 
 events are omitted, as in the other examples.
 -/
 
-open Solm ABI Ethereum
+open Stele ABI Ethereum
 
 namespace UniswapV2Pair
 

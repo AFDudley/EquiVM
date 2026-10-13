@@ -2,7 +2,7 @@ import Benchmarks.UniswapV4PoolManager.PoolSwapScanComputeLocals
 import Benchmarks.UniswapV4PoolManager.PoolSwapAccountingPost
 import Benchmarks.UniswapV4PoolManager.PoolSwapIterationSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 

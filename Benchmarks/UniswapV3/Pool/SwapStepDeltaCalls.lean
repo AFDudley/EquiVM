@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.SwapStepModel
 import Benchmarks.UniswapV3.Pool.AmountDeltaRoutines
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 1000
 
@@ -46,7 +46,7 @@ theorem swapStepDeltaCallReturns (locals imms : Store) (evm : EVM.State) (a : Sw
           (amountDeltaResult (swapStepDeltaOne a input) (swapStepDeltaArgs a price input)).toNat))}
         evm) := by
   exact internalCallFunctionReturn (callee := amountDeltaFunction (swapStepDeltaOne a input))
-    (calleeSolm := amountDeltaReturnFrame imms (swapStepDeltaOne a input)
+    (calleeStele := amountDeltaReturnFrame imms (swapStepDeltaOne a input)
       (swapStepDeltaArgs a price input))
     (locals := amountDeltaLocals (swapStepDeltaArgs a price input))
     (value := some [.int (Int.ofNat (amountDeltaResult (swapStepDeltaOne a input)

@@ -1,5 +1,5 @@
 import Benchmarks.EAS.EAS.MultiAttestFacts
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 set_option maxRecDepth 10000
 
@@ -69,7 +69,7 @@ theorem multiAttestUpdateSourceOfFields {L imms : Store} {evm : EVM.State}
       (.ok {contract := contract,locals := L2,immutables := imms} evm) := by
     apply ExecStmt.assign (evalRecordField (evalLocalValue hr1) (value := wordListValue words) rfl)
     simpa only [L2,List.map_set] using assignLocalArrayIndex
-      (cfg := config) (solm := {contract := contract,locals := L1,immutables := imms}) (evm := evm)
+      (cfg := config) (stele := {contract := contract,locals := L1,immutables := imms}) (evm := evm)
       (array := "totalUids") (index := "i") (values := groups.map wordListValue) (i := i) (value := wordListValue words)
       (by simpa (disch := decide) only [L1,store_get_ne] using hg)
       (by simpa (disch := decide) only [L1,store_get_ne] using hi0)

@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.OracleSearchRead
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
 
@@ -131,7 +131,7 @@ theorem oracleSearchCompareTail (locals imms : Store) (evm : EVM.State)
   have he : evalExpr? config base evm (.var "targetAtOrAfter") = .ok (.bool first) :=
     evalExpr_var_get (by simp [base, oracleSearchConditionFrame, oracleSearchFirstFrame,
       first, Std.HashMap.getElem_insert])
-  refine ExecBlock.consNormal (solm' := base) (evm' := evm)
+  refine ExecBlock.consNormal (stele' := base) (evm' := evm)
     (ExecStmt.letDecl (by simp only [evalExpr?, pure])) ?_
   by_cases hf : first = true
   · simp only [oracleSearchCompareFrame, show oracleSearchFirst time target cardinality left right

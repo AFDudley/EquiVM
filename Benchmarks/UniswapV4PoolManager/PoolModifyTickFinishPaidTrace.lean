@@ -2,7 +2,7 @@ import Benchmarks.UniswapV4PoolManager.PoolModifyLimitsPaidTrace
 import Benchmarks.UniswapV4PoolManager.PoolModifyBitmapsPaidTrace
 import Benchmarks.UniswapV4PoolManager.PoolModifyTickFinish
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.UniswapV4PoolManager.Immutables
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000

@@ -1,7 +1,7 @@
 import Benchmarks.EAS.EAS.RecordTailRecord
 import Benchmarks.EAS.EAS.RecordArrayMemory
 import Mathlib.Data.List.Forall2
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 -- LIBRARY CANDIDATE: simultaneous replacement preserves a pointwise relation between two lists.

@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Flopper.Kick.Part1
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -430,19 +430,19 @@ theorem kickRuntimeIdWord_source_eq
     {σ σ₀ A I} {g : UInt256} :
     kickRuntimeIdWord σ I =
       kickIdWord (initState σ σ₀ (Sat256.ofUInt256 g) A I) := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  simp [kickRuntimeIdWord, kickIdWord, kickKicksWord, evmSolm, initState]
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  simp [kickRuntimeIdWord, kickIdWord, kickKicksWord, evmStele, initState]
 
 theorem kickRuntimeAfterKicksMap_source_eq
     {σ σ₀ A I} {g : UInt256} :
     Eq (kickRuntimeAfterKicksMap I.codeOwner σ I)
       (kickAfterKicksState
         (initState σ σ₀ (Sat256.ofUInt256 g) A I)).accountMap := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
   have hid := kickRuntimeIdWord_source_eq
     (σ := σ) (σ₀ := σ₀) (A := A)
     (I := I) (g := g)
-  simp [evmSolm, initState, storageStore_accountMap, kickAfterKicksState,
+  simp [evmStele, initState, storageStore_accountMap, kickAfterKicksState,
     kickRuntimeAfterKicksMap, hid]
 
 theorem kickRuntimeAfterBidMap_source_eq
@@ -450,7 +450,7 @@ theorem kickRuntimeAfterBidMap_source_eq
     Eq (kickRuntimeAfterBidMap I.codeOwner σ I)
       (kickAfterBidState
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) I).accountMap := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
   have hAfter :=
     kickRuntimeAfterKicksMap_source_eq
       (σ := σ) (σ₀ := σ₀) (A := A)
@@ -458,7 +458,7 @@ theorem kickRuntimeAfterBidMap_source_eq
   have hid := kickRuntimeIdWord_source_eq
     (σ := σ) (σ₀ := σ₀) (A := A)
     (I := I) (g := g)
-  simpa [evmSolm, initState, storageStore_accountMap, kickAfterBidState,
+  simpa [evmStele, initState, storageStore_accountMap, kickAfterBidState,
     kickAfterKicksState_executionEnv, kickRuntimeAfterBidMap, hid] using
     congrArg (fun accounts => sstoreAccountMap I.codeOwner accounts
       (auctionBidSlot (kickRuntimeIdWord σ I)) (kickBidWord I)) hAfter
@@ -468,7 +468,7 @@ theorem kickRuntimeAfterLotMap_source_eq
     Eq (kickRuntimeAfterLotMap I.codeOwner σ I)
       (kickAfterLotState
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) I).accountMap := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
   have hAfter :=
     kickRuntimeAfterBidMap_source_eq
       (σ := σ) (σ₀ := σ₀) (A := A)
@@ -476,7 +476,7 @@ theorem kickRuntimeAfterLotMap_source_eq
   have hid := kickRuntimeIdWord_source_eq
     (σ := σ) (σ₀ := σ₀) (A := A)
     (I := I) (g := g)
-  simpa [evmSolm, initState, storageStore_accountMap, kickAfterLotState,
+  simpa [evmStele, initState, storageStore_accountMap, kickAfterLotState,
     kickAfterBidState_executionEnv, kickRuntimeAfterLotMap, hid] using
     congrArg (fun accounts => sstoreAccountMap I.codeOwner accounts
       (auctionLotSlot (kickRuntimeIdWord σ I)) (kickLotWord I)) hAfter
@@ -486,7 +486,7 @@ theorem kickRuntimeAfterGuyMap_source_eq
     Eq (kickRuntimeAfterGuyMap I.codeOwner σ I)
       (kickAfterGuyState
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) I).accountMap := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
   let packedSlot := auctionPackedSlot (kickRuntimeIdWord σ I)
   have hAfter :=
     kickRuntimeAfterLotMap_source_eq
@@ -497,27 +497,27 @@ theorem kickRuntimeAfterGuyMap_source_eq
     (I := I) (g := g)
   have hold :
       solcSlotWord (kickRuntimeAfterLotMap I.codeOwner σ I) I packedSlot =
-        Solm.EVM.storageLoad (kickAfterLotState evmSolm I)
-          (kickAfterLotState evmSolm I).executionEnv.codeOwner
-          (auctionPackedSlot (kickIdWord evmSolm)) := by
+        Stele.EVM.storageLoad (kickAfterLotState evmStele I)
+          (kickAfterLotState evmStele I).executionEnv.codeOwner
+          (auctionPackedSlot (kickIdWord evmStele)) := by
     have hslot :=
       congrArg (fun accounts => solcSlotWordAt packedSlot accounts I) hAfter
-    simpa [packedSlot, solcSlotWordAt, solcSlotWord, evmSolm, initState,
+    simpa [packedSlot, solcSlotWordAt, solcSlotWord, evmStele, initState,
       kickAfterLotState_executionEnv, hid] using hslot
   have hstored :
-      kickRuntimeGuyStoredWord I.codeOwner σ I = kickGuyStoredWord evmSolm I := by
+      kickRuntimeGuyStoredWord I.codeOwner σ I = kickGuyStoredWord evmStele I := by
     unfold kickRuntimeGuyStoredWord kickGuyStoredWord
     change
       setAddressOffset0Word
           (solcSlotWord (kickRuntimeAfterLotMap I.codeOwner σ I) I packedSlot)
           (kickGalMaskedWord I) =
         setAddressOffset0Word
-          (Solm.EVM.storageLoad (kickAfterLotState evmSolm I)
-            (kickAfterLotState evmSolm I).executionEnv.codeOwner
-            (auctionPackedSlot (kickIdWord evmSolm)))
+          (Stele.EVM.storageLoad (kickAfterLotState evmStele I)
+            (kickAfterLotState evmStele I).executionEnv.codeOwner
+            (auctionPackedSlot (kickIdWord evmStele)))
           (kickGalMaskedWord I)
     rw [hold]
-  simpa [evmSolm, initState, storageStore_accountMap, kickAfterGuyState,
+  simpa [evmStele, initState, storageStore_accountMap, kickAfterGuyState,
     kickAfterLotState_executionEnv, kickRuntimeAfterGuyMap, packedSlot, hid, hstored] using
     congrArg (fun accounts => sstoreAccountMap I.codeOwner accounts packedSlot
       (kickRuntimeGuyStoredWord I.codeOwner σ I)) hAfter
@@ -528,13 +528,13 @@ theorem kickRuntimeTauWord_source_eq
       kickTauWord
         (kickAfterGuyState
           (initState σ σ₀ (Sat256.ofUInt256 g) A I) I) := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
   have hAfter :=
     kickRuntimeAfterGuyMap_source_eq
       (σ := σ) (σ₀ := σ₀) (A := A)
       (I := I) (g := g)
   have h := congrArg (fun accounts => uint48Offset6Word ⟨6⟩ accounts I) hAfter
-  simpa [evmSolm, kickRuntimeTauWord, kickTauWord, kickAfterGuyState_executionEnv,
+  simpa [evmStele, kickRuntimeTauWord, kickTauWord, kickAfterGuyState_executionEnv,
     initState] using h
 
 theorem kickRuntimeSuccessAccountMap_eq_postState
@@ -545,7 +545,7 @@ theorem kickRuntimeSuccessAccountMap_eq_postState
     Eq (kickRuntimeSuccessAccountMap I.codeOwner σ I)
       (kickPostState (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         I).accountMap := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
   let packedSlot := auctionPackedSlot (kickRuntimeIdWord σ I)
   let runtimeOld := solcSlotWord (kickRuntimeAfterGuyMap I.codeOwner σ I) I packedSlot
   let runtimeAdd := kickRuntimeAddWord I.codeOwner σ I
@@ -560,49 +560,49 @@ theorem kickRuntimeSuccessAccountMap_eq_postState
     kickRuntimeTauWord_source_eq
       (σ := σ) (σ₀ := σ₀) (A := A)
       (I := I) (g := g)
-  have haddFitSolm :
-      (kickNow48Word evmSolm).toNat +
-          (kickTauWord (kickAfterGuyState evmSolm I)).toNat < 2 ^ 48 := by
-    simpa [evmSolm, kickNow48Word, kickTimestampWord, initState, htau] using haddFit
+  have haddFitStele :
+      (kickNow48Word evmStele).toNat +
+          (kickTauWord (kickAfterGuyState evmStele I)).toNat < 2 ^ 48 := by
+    simpa [evmStele, kickNow48Word, kickTimestampWord, initState, htau] using haddFit
   have hmaskedRuntime :
-      UInt256.land runtimeAdd uint48Mask = kickEndPostWord evmSolm I := by
+      UInt256.land runtimeAdd uint48Mask = kickEndPostWord evmStele I := by
     apply u256_inj
     change (UInt256.land (kickRuntimeAddWord I.codeOwner σ I) uint48Mask).toNat =
-      (kickEndPostWord evmSolm I).toNat
+      (kickEndPostWord evmStele I).toNat
     rw [kickRuntimeAddWord]
     rw [uint48Mask_add_no_wrap_toNat (UInt256.ofNat I.header.timestamp)
       (kickRuntimeTauWord I.codeOwner σ I) haddFit]
-    rw [kickEndPostWord_toNat evmSolm I haddFitSolm]
-    simpa [evmSolm, kickNow48Word, kickTimestampWord, initState, htau]
+    rw [kickEndPostWord_toNat evmStele I haddFitStele]
+    simpa [evmStele, kickNow48Word, kickTimestampWord, initState, htau]
   have hsourceClean :
-      UInt256.land (kickEndPostWord evmSolm I) uint48Mask =
-        kickEndPostWord evmSolm I := by
+      UInt256.land (kickEndPostWord evmStele I) uint48Mask =
+        kickEndPostWord evmStele I := by
     apply uint48Mask_clean_of_canonical
-    have hendNat := kickEndPostWord_toNat evmSolm I haddFitSolm
+    have hendNat := kickEndPostWord_toNat evmStele I haddFitStele
     rw [hendNat]
-    simpa [EVM.twoPow] using haddFitSolm
+    simpa [EVM.twoPow] using haddFitStele
   have hold :
       runtimeOld =
-        Solm.EVM.storageLoad (kickAfterGuyState evmSolm I)
-          (kickAfterGuyState evmSolm I).executionEnv.codeOwner
-          (auctionPackedSlot (kickIdWord evmSolm)) := by
+        Stele.EVM.storageLoad (kickAfterGuyState evmStele I)
+          (kickAfterGuyState evmStele I).executionEnv.codeOwner
+          (auctionPackedSlot (kickIdWord evmStele)) := by
     have hslot :=
       congrArg (fun accounts => solcSlotWordAt packedSlot accounts I) hAfter
-    simpa [runtimeOld, packedSlot, solcSlotWordAt, solcSlotWord, evmSolm,
+    simpa [runtimeOld, packedSlot, solcSlotWordAt, solcSlotWord, evmStele,
       initState, kickAfterGuyState_executionEnv, hid] using hslot
   have hstored :
-      kickRuntimeEndStoredWord I.codeOwner σ I = kickEndStoredWord evmSolm I := by
+      kickRuntimeEndStoredWord I.codeOwner σ I = kickEndStoredWord evmStele I := by
     unfold kickRuntimeEndStoredWord kickEndStoredWord
     change setUint48Offset26Word runtimeOld runtimeAdd =
       setUint48Offset26Word
-        (Solm.EVM.storageLoad (kickAfterGuyState evmSolm I)
-          (kickAfterGuyState evmSolm I).executionEnv.codeOwner
-          (auctionPackedSlot (kickIdWord evmSolm)))
-        (kickEndPostWord evmSolm I)
+        (Stele.EVM.storageLoad (kickAfterGuyState evmStele I)
+          (kickAfterGuyState evmStele I).executionEnv.codeOwner
+          (auctionPackedSlot (kickIdWord evmStele)))
+        (kickEndPostWord evmStele I)
     apply u256_inj
     rw [setUint48Offset26Word_toNat, setUint48Offset26Word_toNat]
     rw [hold, hmaskedRuntime, hsourceClean]
-  simpa [evmSolm, initState, storageStore_accountMap, kickAfterGuyState_executionEnv,
+  simpa [evmStele, initState, storageStore_accountMap, kickAfterGuyState_executionEnv,
     packedSlot, runtimeOld, runtimeAdd, kickRuntimeSuccessAccountMap, kickPostState,
     hstored, hid] using
     congrArg (fun accounts => sstoreAccountMap I.codeOwner accounts packedSlot
@@ -621,22 +621,22 @@ theorem flopperKickBodyCoreUnauthorized
       [kickBidWord I, kickLotWord I, kickGalMaskedWord I, ⟨644⟩, sel]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  have hauthSolm :
-      Solm.EVM.storageLoad evmSolm evmSolm.executionEnv.codeOwner (relyAuthStorageSlot I) ≠
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  have hauthStele :
+      Stele.EVM.storageLoad evmStele evmStele.executionEnv.codeOwner (relyAuthStorageSlot I) ≠
         ⟨1⟩ := by
     intro hbad
     have hbad' : relyAuthWord σ I = ⟨1⟩ := by
-      simpa [evmSolm, relyAuthWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+      simpa [evmStele, relyAuthWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
         State.lookupAccount] using hbad
     exact hauth hbad'
   have hbody :
-      ExecTransitionBody config contract evmSolm (kickLocals I) kickTransition.body
+      ExecTransitionBody config contract evmStele (kickLocals I) kickTransition.body
         .reverted := by
-    exact flopperKickBodyReverts_unauthorized evmSolm I
-      (by simpa [evmSolm, initState] using hwv)
-      (by simp [evmSolm, initState])
-      hauthSolm
+    exact flopperKickBodyReverts_unauthorized evmStele I
+      (by simpa [evmStele, initState] using hwv)
+      (by simp [evmStele, initState])
+      hauthStele
   obtain ⟨_, _, rd3401'⟩ := rd3401
   exact (flopperKickX_unauthorized (g := Sat256.ofUInt256 g) hauth rd3401')
     |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
@@ -655,24 +655,24 @@ theorem flopperKickBodyCoreNotLive
       [⟨0⟩, kickBidWord I, kickLotWord I, kickGalMaskedWord I, ⟨644⟩, sel]
       (relyAuthHashMem I) (UInt256.ofNat 3) ByteArray.empty σ k C) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  have hauthSolm :
-      Solm.EVM.storageLoad evmSolm evmSolm.executionEnv.codeOwner (relyAuthStorageSlot I) =
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  have hauthStele :
+      Stele.EVM.storageLoad evmStele evmStele.executionEnv.codeOwner (relyAuthStorageSlot I) =
         ⟨1⟩ := by
-    simpa [evmSolm, relyAuthWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [evmStele, relyAuthWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using hauth
-  have hliveSolm : kickLiveWord evmSolm ≠ ⟨1⟩ := by
+  have hliveStele : kickLiveWord evmStele ≠ ⟨1⟩ := by
     intro hbad
     apply hlive
-    simpa [kickLiveWord, evmSolm, initState] using hbad
+    simpa [kickLiveWord, evmStele, initState] using hbad
   have hbody :
-      ExecTransitionBody config contract evmSolm (kickLocals I) kickTransition.body
+      ExecTransitionBody config contract evmStele (kickLocals I) kickTransition.body
         .reverted := by
-    exact flopperKickBodyReverts_notLive evmSolm I
-      (by simpa [evmSolm, initState] using hwv)
-      (by simp [evmSolm, initState])
-      hauthSolm
-      hliveSolm
+    exact flopperKickBodyReverts_notLive evmStele I
+      (by simpa [evmStele, initState] using hwv)
+      (by simp [evmStele, initState])
+      hauthStele
+      hliveStele
   exact (flopperKickX_notLive (g := Sat256.ofUInt256 g) hlive rd3494)
     |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
 
@@ -691,25 +691,25 @@ theorem flopperKickBodyCoreKicksOverflow
       [⟨0⟩, kickBidWord I, kickLotWord I, kickGalMaskedWord I, ⟨644⟩, sel]
       (relyAuthHashMem I) (UInt256.ofNat 3) ByteArray.empty σ k C) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  have hauthSolm :
-      Solm.EVM.storageLoad evmSolm evmSolm.executionEnv.codeOwner (relyAuthStorageSlot I) =
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  have hauthStele :
+      Stele.EVM.storageLoad evmStele evmStele.executionEnv.codeOwner (relyAuthStorageSlot I) =
         ⟨1⟩ := by
-    simpa [evmSolm, relyAuthWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [evmStele, relyAuthWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using hauth
-  have hliveSolm : kickLiveWord evmSolm = ⟨1⟩ := by
-    simpa [kickLiveWord, evmSolm, initState] using hlive
-  have hkicksGeSolm : UInt256.size - 1 ≤ (kickKicksWord evmSolm).toNat := by
-    simpa [kickKicksWord, evmSolm, initState] using hkicksGe
+  have hliveStele : kickLiveWord evmStele = ⟨1⟩ := by
+    simpa [kickLiveWord, evmStele, initState] using hlive
+  have hkicksGeStele : UInt256.size - 1 ≤ (kickKicksWord evmStele).toNat := by
+    simpa [kickKicksWord, evmStele, initState] using hkicksGe
   have hbody :
-      ExecTransitionBody config contract evmSolm (kickLocals I) kickTransition.body
+      ExecTransitionBody config contract evmStele (kickLocals I) kickTransition.body
         .reverted := by
-    exact flopperKickBodyReverts_kicksOverflow evmSolm I
-      (by simpa [evmSolm, initState] using hwv)
-      (by simp [evmSolm, initState])
-      hauthSolm
-      hliveSolm
-      hkicksGeSolm
+    exact flopperKickBodyReverts_kicksOverflow evmStele I
+      (by simpa [evmStele, initState] using hwv)
+      (by simp [evmStele, initState])
+      hauthStele
+      hliveStele
+      hkicksGeStele
   exact (flopperKickX_kicksOverflow (g := Sat256.ofUInt256 g) hkicksGe rd3568)
     |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
 
@@ -732,36 +732,36 @@ theorem flopperKickBodyCoreAddOverflow
       [⟨0⟩, kickBidWord I, kickLotWord I, kickGalMaskedWord I, ⟨644⟩, sel]
       (relyAuthHashMem I) (UInt256.ofNat 3) ByteArray.empty σ k C) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  have hauthSolm :
-      Solm.EVM.storageLoad evmSolm evmSolm.executionEnv.codeOwner (relyAuthStorageSlot I) =
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  have hauthStele :
+      Stele.EVM.storageLoad evmStele evmStele.executionEnv.codeOwner (relyAuthStorageSlot I) =
         ⟨1⟩ := by
-    simpa [evmSolm, relyAuthWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [evmStele, relyAuthWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using hauth
-  have hliveSolm : kickLiveWord evmSolm = ⟨1⟩ := by
-    simpa [kickLiveWord, evmSolm, initState] using hlive
-  have hkicksLtSolm : (kickKicksWord evmSolm).toNat < UInt256.size - 1 := by
-    simpa [kickKicksWord, evmSolm, initState] using hkicksLt
+  have hliveStele : kickLiveWord evmStele = ⟨1⟩ := by
+    simpa [kickLiveWord, evmStele, initState] using hlive
+  have hkicksLtStele : (kickKicksWord evmStele).toNat < UInt256.size - 1 := by
+    simpa [kickKicksWord, evmStele, initState] using hkicksLt
   have htau :=
     kickRuntimeTauWord_source_eq
       (σ := σ) (σ₀ := σ₀) (A := A)
       (I := I) (g := g)
-  have haddOverflowSolm :
+  have haddOverflowStele :
       2 ^ 48 ≤
-        (kickNow48Word evmSolm).toNat +
-          (kickTauWord (kickAfterGuyState evmSolm I)).toNat := by
-    simpa [evmSolm, kickNow48Word, kickTimestampWord, initState, htau]
+        (kickNow48Word evmStele).toNat +
+          (kickTauWord (kickAfterGuyState evmStele I)).toNat := by
+    simpa [evmStele, kickNow48Word, kickTimestampWord, initState, htau]
       using haddOverflow
   have hbody :
-      ExecTransitionBody config contract evmSolm (kickLocals I) kickTransition.body
+      ExecTransitionBody config contract evmStele (kickLocals I) kickTransition.body
         .reverted := by
-    exact flopperKickBodyReverts_addOverflow evmSolm I
-      (by simpa [evmSolm, initState] using hwv)
-      (by simp [evmSolm, initState])
-      hauthSolm
-      hliveSolm
-      hkicksLtSolm
-      haddOverflowSolm
+    exact flopperKickBodyReverts_addOverflow evmStele I
+      (by simpa [evmStele, initState] using hwv)
+      (by simp [evmStele, initState])
+      hauthStele
+      hliveStele
+      hkicksLtStele
+      haddOverflowStele
   exact (flopperKickX_addOverflow (g := Sat256.ofUInt256 g) hperm haddOverflow rd3643)
     |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
 
@@ -784,51 +784,51 @@ theorem flopperKickBodyCoreSuccess
       [⟨0⟩, kickBidWord I, kickLotWord I, kickGalMaskedWord I, ⟨644⟩, sel]
       (relyAuthHashMem I) (UInt256.ofNat 3) ByteArray.empty σ k C) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
   have hid := kickRuntimeIdWord_source_eq
     (σ := σ) (σ₀ := σ₀) (A := A)
     (I := I) (g := g)
-  have hauthSolm :
-      Solm.EVM.storageLoad evmSolm evmSolm.executionEnv.codeOwner (relyAuthStorageSlot I) =
+  have hauthStele :
+      Stele.EVM.storageLoad evmStele evmStele.executionEnv.codeOwner (relyAuthStorageSlot I) =
         ⟨1⟩ := by
-    simpa [evmSolm, relyAuthWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [evmStele, relyAuthWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using hauth
-  have hliveSolm : kickLiveWord evmSolm = ⟨1⟩ := by
-    simpa [kickLiveWord, evmSolm, initState] using hlive
-  have hkicksLtSolm : (kickKicksWord evmSolm).toNat < UInt256.size - 1 := by
-    simpa [kickKicksWord, evmSolm, initState] using hkicksLt
+  have hliveStele : kickLiveWord evmStele = ⟨1⟩ := by
+    simpa [kickLiveWord, evmStele, initState] using hlive
+  have hkicksLtStele : (kickKicksWord evmStele).toNat < UInt256.size - 1 := by
+    simpa [kickKicksWord, evmStele, initState] using hkicksLt
   have htau :=
     kickRuntimeTauWord_source_eq
       (σ := σ) (σ₀ := σ₀) (A := A)
       (I := I) (g := g)
-  have haddFitSolm :
-      (kickNow48Word evmSolm).toNat +
-          (kickTauWord (kickAfterGuyState evmSolm I)).toNat < 2 ^ 48 := by
-    simpa [evmSolm, kickNow48Word, kickTimestampWord, initState, htau] using haddFit
+  have haddFitStele :
+      (kickNow48Word evmStele).toNat +
+          (kickTauWord (kickAfterGuyState evmStele I)).toNat < 2 ^ 48 := by
+    simpa [evmStele, kickNow48Word, kickTimestampWord, initState, htau] using haddFit
   have hbody :
-      ExecTransitionBody config contract evmSolm (kickLocals I) kickTransition.body
-        (.returned { contract := contract, locals := kickEndLocals evmSolm I }
-          (kickPostState evmSolm I)
-          (some [.int (Int.ofNat (kickIdWord evmSolm).toNat)])) := by
-    exact flopperKickBodyReturns_success evmSolm I
-      (by simpa [evmSolm, initState] using hwv)
-      (by simp [evmSolm, initState])
-      hauthSolm
-      hliveSolm
-      hkicksLtSolm
-      haddFitSolm
+      ExecTransitionBody config contract evmStele (kickLocals I) kickTransition.body
+        (.returned { contract := contract, locals := kickEndLocals evmStele I }
+          (kickPostState evmStele I)
+          (some [.int (Int.ofNat (kickIdWord evmStele).toNat)])) := by
+    exact flopperKickBodyReturns_success evmStele I
+      (by simpa [evmStele, initState] using hwv)
+      (by simp [evmStele, initState])
+      hauthStele
+      hliveStele
+      hkicksLtStele
+      haddFitStele
   have hret := flopperKickX_success (g := Sat256.ofUInt256 g) hperm haddFit rd3643
   have hpostAccounts :=
     kickRuntimeSuccessAccountMap_eq_postState
       (σ := σ) (σ₀ := σ₀) (A := A)
       (I := I) (g := g) haddFit
   exact hret.reEquivExecutionGen hcode hdispatch hdecode hbody
-    (by simpa [evmSolm] using hpostAccounts)
+    (by simpa [evmStele] using hpostAccounts)
     (by
       rw [hid]
       simpa [kickTransition] using
         (returnEquiv_of_encode
-          (by simpa [uint256] using uint256ReturnEncoding (kickIdWord evmSolm))))
+          (by simpa [uint256] using uint256ReturnEncoding (kickIdWord evmStele))))
 
 theorem flopperKickBodyCoreDecodeFailed_short
     {σ σ₀ A I} {g : UInt256} {sel : UInt256}
@@ -876,7 +876,7 @@ theorem flopperKickBody {σ σ₀ A I} {g : UInt256}
             have hstatic := permSplit_false hp (flopperKickX_toCheckedAddStartSplit rd3643)
             have hsource := (flopperKickBodyReturns_successSplit
               (initState σ σ₀ (Sat256.ofUInt256 g) A I) I hwv rfl
-              (by simpa [relyAuthWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+              (by simpa [relyAuthWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
                 State.lookupAccount] using hauth)
               (by simpa [kickLiveWord, initState] using hlive)
               (by simpa [kickKicksWord, initState] using hkicksLt)).2 hp

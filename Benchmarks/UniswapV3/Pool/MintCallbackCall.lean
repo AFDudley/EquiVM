@@ -4,7 +4,7 @@ import Benchmarks.UniswapV3.Pool.MintCallbackSource
 import Benchmarks.UniswapV3.Pool.RuntimeBlocks_022
 import Benchmarks.UniswapV3.Pool.FlashCallbackCall
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 open uniswapV3PoolBlocks
 namespace Benchmarks.UniswapV3.Pool

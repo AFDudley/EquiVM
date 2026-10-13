@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Vat.Dispatch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -127,7 +127,7 @@ theorem vatCanBodyCoreOk
         (.returned { contract := contract, locals := canStore I }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.int (Int.ofNat (solcSlotWordAt (canStorageSlot I) σ I).toNat))])) := by
-    simpa [canTransition, canStorageSlot, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [canTransition, canStorageSlot, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       vatUint256GetterBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) (canStore I)

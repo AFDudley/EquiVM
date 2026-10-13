@@ -1,6 +1,6 @@
 import Benchmarks.EAS.EAS.AttestLoopLocals
 import Benchmarks.EAS.EAS.AttestIterationSource
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 def attestResolveArgs : List Expr := [.var "schemaRecord",.var "attestations",.var "values",
@@ -41,7 +41,7 @@ theorem attestFinishSource {L imms : Store} {evm evm' : EVM.State} {old heap : N
     (.returned {contract := contract,locals := L1.insert "res" (attestationsResultValue uids used),immutables := imms}
       evm' (some [attestationsResultValue uids used,.int (Int.ofNat heap)]))
   refine ExecBlock.consNormal (ExecStmt.assign (value := .int (Int.ofNat used.toNat))
-    (solm' := {contract := contract,locals := L1.insert "res" (attestationsResultValue uids used),immutables := imms})
+    (stele' := {contract := contract,locals := L1.insert "res" (attestationsResultValue uids used),immutables := imms})
     (evm' := evm')
     (by simp only [evalExpr?,hv1,EvalResult.ofOption]) ?_) ?_
   · simp only [assignStorageRef?,hr1,updateLocalPath?,attestationsResultValue,lookupField?,

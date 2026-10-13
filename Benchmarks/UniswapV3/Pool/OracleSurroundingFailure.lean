@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.OracleSurroundingSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 inductive OracleSurroundingFailure (time target index card : UInt256)

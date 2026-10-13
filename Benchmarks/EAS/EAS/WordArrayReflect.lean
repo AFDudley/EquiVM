@@ -1,5 +1,5 @@
 import Benchmarks.EAS.EAS.WordArrayMemory
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 -- LIBRARY CANDIDATE: reflect an array view through a preserved prefix when its bytes were already covered.

@@ -4,7 +4,7 @@ import Benchmarks.CompoundIII.Comet.UtilizationEvm
 import Benchmarks.CompoundIII.Comet.SupplyRateRoutine
 import Benchmarks.CompoundIII.Comet.BorrowRateRoutine
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.CompoundIII.Comet.Immutables
 open cometWithExtendedAssetListBlocks

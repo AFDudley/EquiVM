@@ -1,5 +1,5 @@
 import Benchmarks.EAS.EAS.Common
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 -- LIBRARY CANDIDATE: the KECCAK opcode view of the two-word mapping hash routine.

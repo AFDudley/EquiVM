@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV4PoolManager.SparseBytesMemory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 -- LIBRARY CANDIDATE: an in-bounds byte sequence at an arbitrary memory offset.

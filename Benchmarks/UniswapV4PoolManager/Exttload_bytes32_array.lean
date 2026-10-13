@@ -8,7 +8,7 @@ import Benchmarks.UniswapV4PoolManager.ExttloadArrayReturn
 The dynamic ABI decoder, transient-read loop, empty-array read, and return buffer
 are composed from their source and bytecode proofs.
 -/
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.UniswapV4PoolManager.Immutables
 namespace Benchmarks.UniswapV4PoolManager

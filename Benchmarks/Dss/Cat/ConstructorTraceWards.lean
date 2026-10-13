@@ -8,7 +8,7 @@ SSTORE`); the optimizer reuses that `1` as the `live = 1` value later.  So the r
 the wards store is `[⟨1⟩, vat_]`.  Byte-for-byte identical to the Pot constructor's wards store.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Cat
 

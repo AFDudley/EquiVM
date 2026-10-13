@@ -2,7 +2,7 @@ import Benchmarks.UniswapV3.Pool.CheckTicksSource
 import Benchmarks.UniswapV3.Pool.SignedComparison
 import Benchmarks.UniswapV3.Pool.RuntimeBlocks_056
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 open uniswapV3PoolBlocks
 namespace Benchmarks.UniswapV3.Pool

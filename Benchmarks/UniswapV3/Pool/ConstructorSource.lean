@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.ConstructorFieldsSource
 import Benchmarks.UniswapV3.Pool.TickSpacingSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 1000
 
@@ -19,7 +19,7 @@ theorem constructorLiquidityCall (original : AccountAddress) (evm : EVM.State) (
       (.ok (constructorLiquidityFrame original out) evm) := by
   exact internalCallFunctionReturn (callee := tickSpacingFunction)
     (locals := tickSpacingLocals (constructorSpacing out))
-    (calleeSolm := tickSpacingReadyFrame (constructorSpacingImms original out) (constructorSpacing out))
+    (calleeStele := tickSpacingReadyFrame (constructorSpacingImms original out) (constructorSpacing out))
     (value := some [.int (spacingLiquidity (constructorSpacing out))])
     (evalConstructorSpacingArgs original evm out) tickSpacingLookup
     (tickSpacingBind (constructorSpacing out))

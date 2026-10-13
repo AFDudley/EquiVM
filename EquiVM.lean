@@ -1,4 +1,4 @@
-import Solm
+import Stele
 import Reasoning.ABI
 import Reasoning.ABIComposite
 import Reasoning.ABIViews
@@ -17,8 +17,8 @@ import Reasoning.PackedStorage
 import Reasoning.Reach
 import Reasoning.Solc
 import Reasoning.SolcRoutines
-import Reasoning.SolmArithmetic
-import Reasoning.SolmBody
+import Reasoning.SteleArithmetic
+import Reasoning.SteleBody
 import Reasoning.Stepping
 import Reasoning.Storage
 import Reasoning.StorageLoops

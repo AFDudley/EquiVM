@@ -2,7 +2,7 @@ import Benchmarks.EAS.EAS.AttestDecode
 import Benchmarks.EAS.EAS.AllocateBlock
 import Benchmarks.EAS.EAS.LocalArrayStore
 import Benchmarks.EAS.EAS.AttestCall
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 set_option maxRecDepth 10000
 

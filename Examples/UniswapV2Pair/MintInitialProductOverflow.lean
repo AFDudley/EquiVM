@@ -1,7 +1,7 @@
 import Examples.UniswapV2Pair.MintInitialFactoryOverflowCases
 import Examples.UniswapV2Pair.SafeMathMulOverflowRuntime
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -110,8 +110,8 @@ theorem uniswapMintInitialProductOverflowFromAfterFeeCase
     (hdispatch : dispatchMsg contract I.calldata = some mintTransition)
     (hsz36 : 36 ≤ I.calldata.size)
     (hwv : I.weiValue = ⟨0⟩)
-    (hunlockedSolm :
-      Solm.EVM.storageLoad
+    (hunlockedStele :
+      Stele.EVM.storageLoad
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
           ⟨12⟩ =
@@ -227,7 +227,7 @@ theorem uniswapMintInitialProductOverflowFromAfterFeeCase
       ExecTransitionBody config contract
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) (mintStore I)
         mintTransition.body .reverted :=
-    uniswapMintAfterMintFeeInitialBranchStmtReverts_of_call nextLocals hwv hunlockedSolm
+    uniswapMintAfterMintFeeInitialBranchStmtReverts_of_call nextLocals hwv hunlockedStele
       hguard0 hguard1 hcall0 hdec0 hcall1 hdec1 henough0 henough1 hfee hbase
       (by simpa [afterTotalSupplyLocals] using hbranch)
   obtain ⟨_, _, rd3713⟩ :=
@@ -250,8 +250,8 @@ theorem uniswapMintInitialFeeOffKLastZeroProductOverflowFromFactoryCase
     (hdispatch : dispatchMsg contract I.calldata = some mintTransition)
     (hsz36 : 36 ≤ I.calldata.size)
     (hwv : I.weiValue = ⟨0⟩)
-    (hunlockedSolm :
-      Solm.EVM.storageLoad
+    (hunlockedStele :
+      Stele.EVM.storageLoad
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
           ⟨12⟩ =
@@ -412,7 +412,7 @@ theorem uniswapMintInitialFeeOffKLastZeroProductOverflowFromFactoryCase
     simpa [nextFrame, evmL, evmS, mintAmount1Value, hamount1Eq] using
       mintAfterMintFeeCallStore_amount1 evmL I balance0 balance1 false
   exact uniswapMintInitialProductOverflowFromAfterFeeCase nextFrame.locals
-    hcode hdispatch hsz36 hwv hunlockedSolm hguard0 hguard1 hcall0 hdec0 hcall1 hdec1
+    hcode hdispatch hsz36 hwv hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1 hdec1
     hle0Source hle1Source hfee hbase hamount0Get hamount1Get htotalSource htotalZero
     hover (by simpa [memFee] using rd3701) hmem hmem64
 
@@ -428,8 +428,8 @@ theorem uniswapMintInitialFeeOnKLastZeroProductOverflowFromFactoryCase
     (hdispatch : dispatchMsg contract I.calldata = some mintTransition)
     (hsz36 : 36 ≤ I.calldata.size)
     (hwv : I.weiValue = ⟨0⟩)
-    (hunlockedSolm :
-      Solm.EVM.storageLoad
+    (hunlockedStele :
+      Stele.EVM.storageLoad
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
           ⟨12⟩ =
@@ -590,7 +590,7 @@ theorem uniswapMintInitialFeeOnKLastZeroProductOverflowFromFactoryCase
     simpa [nextFrame, evmL, evmS, mintAmount1Value, hamount1Eq] using
       mintAfterMintFeeCallStore_amount1 evmL I balance0 balance1 true
   exact uniswapMintInitialProductOverflowFromAfterFeeCase nextFrame.locals
-    hcode hdispatch hsz36 hwv hunlockedSolm hguard0 hguard1 hcall0 hdec0 hcall1 hdec1
+    hcode hdispatch hsz36 hwv hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1 hdec1
     hle0Source hle1Source hfee hbase hamount0Get hamount1Get htotalSource htotalZero
     hover (by simpa [memFee] using rd3701) hmem hmem64
 
@@ -606,8 +606,8 @@ theorem uniswapMintInitialFeeOffKLastNonzeroProductOverflowFromFactoryCase
     (hdispatch : dispatchMsg contract I.calldata = some mintTransition)
     (hsz36 : 36 ≤ I.calldata.size)
     (hwv : I.weiValue = ⟨0⟩)
-    (hunlockedSolm :
-      Solm.EVM.storageLoad
+    (hunlockedStele :
+      Stele.EVM.storageLoad
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
           ⟨12⟩ =
@@ -789,7 +789,7 @@ theorem uniswapMintInitialFeeOffKLastNonzeroProductOverflowFromFactoryCase
       mintAfterMintFeeCallStore_amount1 evmL I balance0 balance1 false
   exact uniswapMintInitialProductOverflowFromAfterFeeCase
     (σFee := σCleared) (evmAfter := evmAfterFee) nextFrame.locals hcode hdispatch hsz36
-    hwv hunlockedSolm hguard0 hguard1 hcall0 hdec0 hcall1 hdec1 hle0Source hle1Source
+    hwv hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1 hdec1 hle0Source hle1Source
     hfee hbase hamount0Get hamount1Get htotalSource (by simpa [σCleared] using htotalZero)
     hover (by simpa [σCleared, memFee] using rd3701) hmem hmem64
 
@@ -805,8 +805,8 @@ theorem uniswapMintInitialProductOverflowFromFactoryCases
     (hdispatch : dispatchMsg contract I.calldata = some mintTransition)
     (hsz36 : 36 ≤ I.calldata.size)
     (hwv : I.weiValue = ⟨0⟩)
-    (hunlockedSolm :
-      Solm.EVM.storageLoad
+    (hunlockedStele :
+      Stele.EVM.storageLoad
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
           ⟨12⟩ =
@@ -934,20 +934,20 @@ theorem uniswapMintInitialProductOverflowFromFactoryCases
   rcases hcase with hfeeOff | hrest
   · rcases hfeeOff with ⟨hfeeToZero, hkLastZero, htotalZero, hover⟩
     exact uniswapMintInitialFeeOffKLastZeroProductOverflowFromFactoryCase feeTo
-      hcode hdispatch hsz36 hwv hunlockedSolm hguard0 hguard1 hcall0 hdec0 hcall1 hdec1
+      hcode hdispatch hsz36 hwv hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1 hdec1
       hle0Source hle1Source hfeeGuard hfeeCall hfeeDec hfeeToEq rd7781 ho32 hoSize
       ho132 ho1Size houtFeeSize hzFeeTrue houtFee32 hkLastEq htotalEq hamount0Eq
       hamount1Eq hfeeToZero hkLastZero htotalZero hover
   · rcases hrest with hfeeOn | hfeeOffCleared
     · rcases hfeeOn with ⟨hfeeToNonzero, hkLastZero, htotalZero, hover⟩
       exact uniswapMintInitialFeeOnKLastZeroProductOverflowFromFactoryCase feeTo
-        hcode hdispatch hsz36 hwv hunlockedSolm hguard0 hguard1 hcall0 hdec0 hcall1 hdec1
+        hcode hdispatch hsz36 hwv hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1 hdec1
         hle0Source hle1Source hfeeGuard hfeeCall hfeeDec hfeeToEq rd7781 ho32 hoSize
         ho132 ho1Size houtFeeSize hzFeeTrue houtFee32 hkLastEq htotalEq hamount0Eq
         hamount1Eq hfeeToNonzero hkLastZero htotalZero hover
     · rcases hfeeOffCleared with ⟨hfeeToZero, hkLastNonzero, htotalZero, hover⟩
       exact uniswapMintInitialFeeOffKLastNonzeroProductOverflowFromFactoryCase feeTo
-        hcode hdispatch hsz36 hwv hunlockedSolm hguard0 hguard1 hcall0 hdec0 hcall1 hdec1
+        hcode hdispatch hsz36 hwv hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1 hdec1
         hle0Source hle1Source hfeeGuard hfeeCall hfeeDec hfeeToEq hPostAccountsFee henvFeeI
         hperm rd7781 ho32 hoSize ho132 ho1Size houtFeeSize hzFeeTrue houtFee32 hkLastEq
         hamount0Eq hamount1Eq hfeeToZero hkLastNonzero htotalZero hover

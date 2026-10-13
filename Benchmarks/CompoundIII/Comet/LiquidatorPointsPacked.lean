@@ -1,6 +1,6 @@
 import Benchmarks.CompoundIII.Comet.LiquidatorPointsData
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 
@@ -69,15 +69,15 @@ theorem liquidatorPointsPacked_eq (old : UInt256) (p : LiquidatorPointsData) :
 theorem storeLiquidatorPoints_eq (evm : State) (addr : AccountAddress)
     (p : LiquidatorPointsData) :
     storeLiquidatorPoints evm addr p =
-    Solm.EVM.storageStore evm evm.executionEnv.codeOwner (liquidatorSlot addr)
+    Stele.EVM.storageStore evm evm.executionEnv.codeOwner (liquidatorSlot addr)
       (liquidatorPointsPackedWord p) := by
   unfold storeLiquidatorPoints
   change storePackedWord
     (storePackedWord
       (storePackedWord
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner (liquidatorSlot addr)
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner (liquidatorSlot addr)
           (packedWriteWord
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (liquidatorSlot addr))
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (liquidatorSlot addr))
             p.absorbs 0 4))
         (liquidatorSlot addr) p.absorbed 4 8)
       (liquidatorSlot addr) p.spend 12 16)

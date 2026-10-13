@@ -1,6 +1,6 @@
 import Examples.UniswapV2Pair.UpdateCallSource
 import Examples.UniswapV2Pair.SyncDynamicRuntime
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace UniswapV2Pair
 
 set_option maxRecDepth 2000000 in
@@ -52,10 +52,10 @@ theorem uniswapUpdateCallRuntimeCases_dynamic
         exact Int.ofNat_le.mpr hb1
       obtain ⟨_, _, rd7060⟩ := RD.uniswapUpdateOverflowGuardOk rd6959 hb0 hb1
         (by simp only [List.length_cons]; omega)
-      have hslot8 : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩ =
+      have hslot8 : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩ =
           solcSlotWordAt ⟨8⟩ σ I := by
         have h := congrArg (fun accounts => solcSlotWordAt ⟨8⟩ accounts I) hAccounts
-        simpa only [Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
+        simpa only [Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
           solcSlotWordAt, solcSlotWord, henv] using h.symm
       have htime : syncTimeElapsedInt evm = Int.ofNat
           (UInt256.land (uniswapUpdateElapsedWord (solcSlotWordAt ⟨8⟩ σ I) I)

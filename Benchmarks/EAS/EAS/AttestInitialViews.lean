@@ -1,6 +1,6 @@
 import Benchmarks.EAS.EAS.AttestInitialEVM
 import Benchmarks.EAS.EAS.AttestSchemaRun
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 set_option maxRecDepth 10000
 

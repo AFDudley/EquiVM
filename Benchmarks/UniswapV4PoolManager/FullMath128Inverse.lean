@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.FullMath128Reduce
 import Benchmarks.UniswapV4PoolManager.FullMathInverse
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 -- The inverse of the reduced denominator 1 remains 1 through all six source updates.

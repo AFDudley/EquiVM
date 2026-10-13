@@ -1,6 +1,6 @@
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 import Reasoning.BytecodePatching
-import Solm
+import Stele
 import Reasoning.PatchRuntime
 import Reasoning.Immutables
 
@@ -13,7 +13,7 @@ standard-JSON `evm.deployedBytecode.immutableReferences` for solc `0.6.12`, opti
 and `metadata.bytecodeHash = "none"`.
 -/
 
-open Solm ABI
+open Stele ABI
 
 namespace Benchmarks.Dss.Clipper.Immutables
 

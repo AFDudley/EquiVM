@@ -3,12 +3,12 @@ import Benchmarks.Dss.GemJoin.Selectors
 /-!
 # MakerDAO/Sky DSS GemJoin dispatcher scaffold
 
-Solm dispatch routing facts plus the shared runtime-dispatch obligations used by the top-level
+Stele dispatch routing facts plus the shared runtime-dispatch obligations used by the top-level
 correctness theorem. The no-dispatch and non-payable runtime paths are proof leaves for the
 scaffold phase and will be discharged before the benchmark is complete.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 

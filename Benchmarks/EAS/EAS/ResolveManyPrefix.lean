@@ -1,6 +1,6 @@
 import Benchmarks.EAS.EAS.ResolveManyLocals
 import Benchmarks.EAS.EAS.RecordFieldExpr
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 set_option maxRecDepth 10000
 

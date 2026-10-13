@@ -1,7 +1,7 @@
 import Benchmarks.EAS.EAS.RecordPrepare
 import Benchmarks.EAS.EAS.RuntimeBlocks_032
 import Benchmarks.EAS.EAS.RuntimeBlocks_037
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.EAS.EAS.Immutables
 namespace Benchmarks.EAS.EAS
 

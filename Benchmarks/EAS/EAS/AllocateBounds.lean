@@ -1,5 +1,5 @@
 import Benchmarks.EAS.EAS.BytesAllocation
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 -- LIBRARY CANDIDATE: bounded allocation arithmetic does not wrap the EVM word.

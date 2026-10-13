@@ -2,7 +2,7 @@ import Benchmarks.UniswapV3.Pool.UpdatePositionPrefix
 import Benchmarks.UniswapV3.Pool.SnapshotInside
 import Benchmarks.UniswapV3.Pool.OracleObservationTypes
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 1000
 
@@ -43,7 +43,7 @@ theorem updatePositionTimestampSource (imms : Store) (evm : EVM.State) (a : Upda
     ExecStmt config (updatePositionReadyFrame imms a evm) evm
       (.internalCall "_blockTimestamp" [] "time") (.ok (updatePositionTimeFrame imms a evm) evm) := by
   exact internalCallFunctionReturn (callee := blockTimestampFunction) (argVals := []) (locals := ∅)
-    (calleeSolm := {contract := contract, locals := ∅, immutables := imms})
+    (calleeStele := {contract := contract, locals := ∅, immutables := imms})
     (value := some [.int (Int.ofNat (blockTimestampWord evm.executionEnv).toNat)])
     (by simp only [evalExprs?, pure]) blockTimestampLookup rfl (blockTimestampReturns imms evm)
 
@@ -84,7 +84,7 @@ theorem updatePositionObserveCall (imms : Store) (evm : EVM.State) (a : UpdatePo
     (blockTimestampWord evm.executionEnv) (slot0TickValue evm.accountMap evm.executionEnv)
     (slot0FieldWord 23 2 evm.accountMap evm.executionEnv) (poolLiquidityWord evm.accountMap evm.executionEnv)
     (slot0FieldWord 25 2 evm.accountMap evm.executionEnv) hin (slot0TickValue_bounds _ _)
-  exact internalCallFunctionReturn (callee := oracleObserveSingleFunction) (calleeSolm := frame)
+  exact internalCallFunctionReturn (callee := oracleObserveSingleFunction) (calleeStele := frame)
     (locals := oracleObserveSingleLocals (blockTimestampWord evm.executionEnv) ⟨0⟩
       (slot0TickValue evm.accountMap evm.executionEnv) (slot0FieldWord 23 2 evm.accountMap evm.executionEnv)
       (poolLiquidityWord evm.accountMap evm.executionEnv) (slot0FieldWord 25 2 evm.accountMap evm.executionEnv))
@@ -98,7 +98,7 @@ theorem updatePositionObserveSource (imms : Store) (evm : EVM.State) (a : Update
       (.ok (updatePositionOracleFrame imms a evm) evm) := by
   refine ExecBlock.consNormal (updatePositionTimestampSource imms evm a) ?_
   refine ExecBlock.consNormal (updatePositionObserveCall imms evm a hin) ?_
-  refine ExecBlock.consNormal (solm' := updatePositionCumulativeFrame imms a evm) (evm' := evm)
+  refine ExecBlock.consNormal (stele' := updatePositionCumulativeFrame imms a evm) (evm' := evm)
     (ExecStmt.letDecl ?_) ?_
   · simp only [evalExpr?, updatePositionObservedFrame, Std.HashMap.get?_eq_getElem?,
       Std.HashMap.getElem?_insert_self, EvalResult.ofOption, bind, EvalResult.bind,

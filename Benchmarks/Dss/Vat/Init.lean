@@ -1,7 +1,7 @@
 import Reasoning.ABIViews
 import Benchmarks.Dss.Vat.Rely
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 50000000
 set_option maxHeartbeats 0
@@ -83,7 +83,7 @@ theorem evalExpr_initStorageRate (evm : EVM.State) (I : ExecutionEnv)
         .ok (.int (Int.ofNat
           (solcSlotWordAt (initRateSlot I) evm.accountMap evm.executionEnv).toNat)) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
-    (cfg := config) (solm := { contract := contract, locals := initStore I }) (evm := evm)
+    (cfg := config) (stele := { contract := contract, locals := initStore I }) (evm := evm)
     (slot := ilksF (.var "ilk") "rate") (er := initRateEvaledRef I)
     (t := .int uint256Int) (loc := wordLoc (initRateSlot I))
     (value := .int (Int.ofNat
@@ -135,7 +135,7 @@ theorem evalExpr_initRateEqZero_false {evm : EVM.State} {I : ExecutionEnv}
 
 theorem assign_initRateStorage (evm : EVM.State) (I : ExecutionEnv)
     (hsz36 : 36 ≤ I.calldata.size) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner (initRateSlot I)
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner (initRateSlot I)
       initRayWord
     assignStorageRef? config { contract := contract, locals := initStore I } evm
       .storage (ilksF (.var "ilk") "rate") (.int (Int.ofNat initRayWord.toNat)) =
@@ -165,7 +165,7 @@ theorem vatInitSourceBodySplit {σ σ₀ A I} {g : UInt256}
     (hrate : solcSlotWordAt (initRateSlot I) σ I = ⟨0⟩) :
     let locals := initStore I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-    let evm1 := Solm.EVM.storageStore evm0 I.codeOwner (initRateSlot I) initRayWord
+    let evm1 := Stele.EVM.storageStore evm0 I.codeOwner (initRateSlot I) initRayWord
     ExecTransitionBody config contract evm0 locals initTransition.body
       (.returned { contract := contract, locals := locals } evm1 none) ∧
     (I.perm = false →
@@ -226,7 +226,7 @@ theorem vatInitSourceBodyAuthReverts {σ σ₀ A I} {g : UInt256}
   simpa [initTransition, nonpayable, auth] using
     nonpayableSecondRequireReverts
       (cfg := config)
-      (solm := { contract := contract, locals := locals })
+      (stele := { contract := contract, locals := locals })
       (evm := evm0)
       (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
       (rest := [.require (.binary .eq (.storage (ilksF (.var "ilk") "rate")) (.intLit 0)),
@@ -667,7 +667,7 @@ theorem vatInitBodyCoreOk
   let slot := initRateSlot I
   let locals := initStore I
   let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  let evm1 := Solm.EVM.storageStore evm0 I.codeOwner slot initRayWord
+  let evm1 := Stele.EVM.storageStore evm0 I.codeOwner slot initRayWord
   have hboth := vatInitSourceBodySplit (σ := σ)
     (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hsz36 hauth hrate
   have hbody :

@@ -2,7 +2,7 @@ import Benchmarks.EAS.EAS.AttestArraysSource
 import Benchmarks.EAS.EAS.RevokeLoopLocals
 import Benchmarks.EAS.EAS.RevokeLoopMemory
 import Benchmarks.EAS.EAS.AttestArrayMemory
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 structure RevokeSetupLocals (L : Store) (site : RevokeSite) (rs : List RevocationRequestRecord)

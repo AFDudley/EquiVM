@@ -8,15 +8,15 @@ A malformed existing bytes header must not be decoded before the first forbidden
 The aggregate source assignment used to revert in this case; scalar field assignments
 match the bytecode's static halt. Both UID allocation sites are exercised.
 -/
-open Solm Solm.Interp Solm.DiffTest Ethereum Ethereum.EVM Reasoning.Theory
+open Stele Stele.Interp Stele.DiffTest Ethereum Ethereum.EVM Reasoning.Theory
 open Benchmarks.EAS.EAS
 
-private def bytes32 (n : Nat) : Value := .fixedBytes ⟨31,by decide⟩ (Solm.DiffTest.wordBytes n).toList
+private def bytes32 (n : Nat) : Value := .fixedBytes ⟨31,by decide⟩ (Stele.DiffTest.wordBytes n).toList
 
 def main : IO UInt32 := do
   let t := fixtureTarget
   let caller := EVM.address 0x6004
-  let payload := Solm.DiffTest.wordBytes 11
+  let payload := Stele.DiffTest.wordBytes 11
   let a : AttestationRecord := {
     uid := ⟨0⟩, schema := ⟨0⟩,time := UInt256.ofNat 1000,expirationTime := ⟨0⟩,revocationTime := ⟨0⟩,
     refUID := ⟨0⟩,recipient := caller,attester := caller,revocable := true,data := payload }

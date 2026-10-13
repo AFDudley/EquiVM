@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.TickFeeModel
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 1000
 
@@ -46,10 +46,10 @@ theorem tickFeeSideBodySource (locals imms : Store) (evm : EVM.State) (a : TickF
   let firstLocals := locals.insert (tickFeeSideName above false)
     (.int (Int.ofNat (tickFeeSide a evm.accountMap evm.executionEnv above false).toNat))
   let first : Frame := {contract := contract, locals := firstLocals, immutables := imms}
-  refine ExecBlock.consNormal (solm' := first) (evm' := evm)
+  refine ExecBlock.consNormal (stele' := first) (evm' := evm)
     (ExecStmt.assign (evalTickFeeSideExpr locals imms evm a above direct false
       (hglobal false) halias hd) (assignLocalVarBase_frame (hzero false))) ?_
-  refine ExecBlock.consNormal (solm' := tickFeeSideFrame
+  refine ExecBlock.consNormal (stele' := tickFeeSideFrame
     {contract := contract, locals := locals, immutables := imms} a evm above) (evm' := evm)
     (ExecStmt.assign
       (value := .int (Int.ofNat (tickFeeSide a evm.accountMap evm.executionEnv above true).toNat))

@@ -2,7 +2,7 @@ import Benchmarks.EAS.EAS.BuildDomain
 import Benchmarks.EAS.EAS.ArrayEncoding
 import Benchmarks.EAS.EAS.WordSequence
 import Benchmarks.EAS.EAS.ReturnDecode
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 -- LIBRARY CANDIDATE: the bytes32-to-uint256 cast preserves the complete word.

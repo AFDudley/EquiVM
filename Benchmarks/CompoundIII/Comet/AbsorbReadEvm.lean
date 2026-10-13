@@ -2,7 +2,7 @@ import Benchmarks.CompoundIII.Comet.AbsorbReadModel
 import Benchmarks.CompoundIII.Comet.SignedPresentValueEvm
 import Benchmarks.CompoundIII.Comet.RuntimeBlocks_077
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
 open Benchmarks.CompoundIII.Comet.Immutables cometWithExtendedAssetListBlocks
 
 namespace Benchmarks.CompoundIII.Comet
@@ -41,7 +41,7 @@ theorem cometAbsorbRead {v : CometWithExtendedAssetListImmutables}
   have hread : solcSlotWordAt (solcMappingSlot (UInt256.ofNat 5) (EVM.word account.val)) σ ee =
       (withdrawBaseBasic evm account).principal := by
     change solcSlotWordAt (userBasicSlot account) σ ee =
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (userBasicSlot account)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (userBasicSlot account)
     simpa only [hs.env] using (hs.storageRead (userBasicSlot account)).symm
   rw [hread] at hm4 r4
   change UserBasicMemory (withdrawBaseReadMemory mem free evm account) free

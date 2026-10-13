@@ -2,29 +2,29 @@ import Benchmarks.CompoundIII.Comet.InternalOutcome
 import Benchmarks.CompoundIII.Comet.TrackingAccrualModel
 import Benchmarks.CompoundIII.Comet.CurrentIndicesSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.CompoundIII.Comet.Immutables
 
 namespace Benchmarks.CompoundIII.Comet
 
 def accrueElapsed (evm : EVM.State) : UInt256 :=
   currentElapsed (timestampWord evm.executionEnv)
-    (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩)
+    (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩)
 
 abbrev AccrueTimeValid (evm : EVM.State) : Prop :=
   (timestampWord evm.executionEnv).toNat < 2^40 ∧
-    (lastAccrualWord (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩)).toNat ≤
+    (lastAccrualWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩)).toNat ≤
       (timestampWord evm.executionEnv).toNat
 
 abbrev AccrueIndicesValid (v : CometWithExtendedAssetListImmutables)
     (evm : EVM.State) (elapsed : UInt256) : Prop :=
-  AccruedIndicesValid v (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
-    (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) elapsed
+  AccruedIndicesValid v (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
+    (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) elapsed
 
 def accrueIndicesState (evm : EVM.State) (v : CometWithExtendedAssetListImmutables)
     (elapsed : UInt256) : EVM.State :=
-  let w0 := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩
-  let w1 := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩
+  let w0 := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩
+  let w1 := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩
   storeTotalsIndex (storeTotalsIndex evm true (accruedIndex v w0 w1 elapsed true)) false
     (accruedIndex v w0 w1 elapsed false)
 
@@ -86,8 +86,8 @@ def accrueTimeFrame (v : CometWithExtendedAssetListImmutables) (elapsed time : U
 
 def accrueIndicesFrame (v : CometWithExtendedAssetListImmutables)
     (evm : EVM.State) (elapsed time : UInt256) : Frame :=
-  let w0 := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩
-  let w1 := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩
+  let w0 := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩
+  let w1 := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩
   let f := accrueTimeFrame v elapsed time
   { f with locals := f.locals.insert "__c1" (.tuple
       [.int (accruedIndex v w0 w1 elapsed false).toNat,

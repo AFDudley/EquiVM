@@ -1,5 +1,5 @@
 import Benchmarks.EAS.EAS.CopyEncodeViews
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 -- LIBRARY CANDIDATE: a word-copy loop preserves every initialized window below its destination.

@@ -2,7 +2,7 @@ import Benchmarks.Safe.Main.SetupOwnersPrepare
 import Benchmarks.Safe.Main.SetupOwnersLoop
 import Benchmarks.Safe.Main.SetupOwnersFinish
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.Main
 

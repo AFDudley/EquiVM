@@ -2,7 +2,7 @@ import Benchmarks.EAS.EAS.DelegatedAttestDecode
 import Benchmarks.EAS.EAS.DelegatedAttestMemory
 import Benchmarks.EAS.EAS.DelegatedRevokePrepareMemory
 import Benchmarks.EAS.EAS.SignatureCopy
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 set_option maxRecDepth 10000
 

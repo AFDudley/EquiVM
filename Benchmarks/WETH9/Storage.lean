@@ -10,7 +10,7 @@ uint256 store that WETH9's `deposit`/`withdraw`/`transferFrom` perform.  The two
 are general library candidates (`Reasoning.Storage`).
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -31,13 +31,13 @@ theorem evalCallerBal (evm : EVM.State) (I : ExecutionEnv) (locals : Store)
     (hsrc : evm.executionEnv = I) (hbase : locals.get? "balanceOf" = none) :
     evalExpr? config { contract := contract, locals := locals } evm
       (.storage (balanceOfRef sender)) =
-      .ok (.int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      .ok (.int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (callerBalSlot I)).toNat)) := by
   refine evalExpr_storage_scalar_value
-    (solm := { contract := contract, locals := locals })
+    (stele := { contract := contract, locals := locals })
     (slot := balanceOfRef sender) (er := callerBalRef I) (t := .int uint256Int)
     (loc := wordLoc (callerBalSlot I))
-    (value := .int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+    (value := .int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
       (callerBalSlot I)).toNat))
     (hbase := by simpa [balanceOfRef] using hbase) ?_ ?_ (by rfl) ?_
   · simp only [balanceOfRef, sender, evalStorageRef, evalStorageRefSteps, evalStorageRefStep,

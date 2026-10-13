@@ -1,6 +1,6 @@
 import Benchmarks.CompoundIII.Comet.DispatchRules
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 
@@ -88,6 +88,7 @@ theorem selectorDecodeFailure_refines {cfg : Config} {C : ContractDecl} {t : Tra
     (hdec : cfg.externalABI.decodeCalldata? (t.params.map Param.name)
       (transitionSignature t).paramTypes I.calldata = none) :
     runtimeRefinementFor cfg C σ σ₀ g A I imms := by
-  exact h.reEquivElim hcode fun _ _ hxi ↦ .decodingFailed hd rfl hdec hxi
+  exact h.reEquivElim hcode fun _ _ hxi ↦
+    .execution hxi (.decodingFailed hd hdec) (.decodingFailed rfl rfl)
 
 end Benchmarks.CompoundIII.Comet

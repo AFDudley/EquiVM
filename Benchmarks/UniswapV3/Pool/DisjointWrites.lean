@@ -1,6 +1,6 @@
 import Reasoning.MemCascade
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 namespace Benchmarks.UniswapV3.Pool
 
 -- LIBRARY CANDIDATE: one-byte reads determine a byte array of known size.

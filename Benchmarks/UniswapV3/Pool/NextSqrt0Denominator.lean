@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.NextSqrt0Prefix
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
 
@@ -83,7 +83,7 @@ theorem nextSqrt0FullReturns (imms : Store) (evm : EVM.State) (a : NextSqrtArgs)
       (.ok (nextSqrt0FullFrame imms a) evm) :=
   internalCallFunctionReturn (callee := fullMathRoundFunction)
     (locals := fullMathLocals (nextSqrt0Numerator a) a.price (nextSqrt0Denominator a))
-    (calleeSolm := fullMathRoundFinalFrame imms (nextSqrt0Numerator a) a.price
+    (calleeStele := fullMathRoundFinalFrame imms (nextSqrt0Numerator a) a.price
       (nextSqrt0Denominator a))
     (value := some [.int (Int.ofNat (nextSqrt0FullResult a).toNat)])
     (evalNextSqrt0FullArgs imms evm a) fullMathRoundLookup (fullMathRoundBind _ _ _)

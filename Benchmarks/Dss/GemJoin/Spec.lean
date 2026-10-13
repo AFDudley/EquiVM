@@ -1,16 +1,16 @@
-import Solm.SolidityStorage
-import Solm.Semantics
-import Solm.SolidityLayout
+import Stele.SolidityStorage
+import Stele.Semantics
+import Stele.SolidityLayout
 
 /-!
 # MakerDAO/Sky DSS GemJoin benchmark spec
 
-Faithful Solm benchmark scaffold for upstream `dss/src/join.sol` contract `GemJoin`.
+Faithful Stele benchmark scaffold for upstream `dss/src/join.sol` contract `GemJoin`.
 Events are omitted except `Join` and `Exit`: `join` and `exit` write no storage, so under a
 static call their log is the first forbidden operation. Every other event follows a storage write.
 -/
 
-open Solm ABI Ethereum
+open Stele ABI Ethereum
 
 namespace Benchmarks.Dss.GemJoin
 

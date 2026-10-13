@@ -2,7 +2,7 @@ import Benchmarks.UniswapV3.Pool.TickSpacingModel
 import Benchmarks.UniswapV3.Pool.SignedDivisionGeneral
 import Benchmarks.UniswapV3.Pool.ModularMultiplication
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 def spacingMinRaw (word : UInt256) : UInt256 :=

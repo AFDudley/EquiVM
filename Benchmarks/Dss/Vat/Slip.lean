@@ -6,7 +6,7 @@ import Benchmarks.Dss.Vat.Rely
 
 namespace Benchmarks.Dss.Vat
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 0
@@ -215,7 +215,7 @@ theorem evalExpr_slip_gem_old {evm : EVM.State} {I : ExecutionEnv}
     evalExpr? config { contract := contract, locals := slipStore I } evm
       (.storage (gemRef (.var "ilk") (.var "usr"))) =
       .ok (.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (slipStorageSlot I)).toNat)) := by
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (slipStorageSlot I)).toNat)) := by
   rw [evalExpr_storage_scalar (hbackend := rfl)
     (hbase := slipStore_gem I)
     (her := evalStorageRef_slip_gem evm I hsz100)
@@ -229,7 +229,7 @@ theorem evalExpr_slip_gem_old_after_let {evm : EVM.State} {I : ExecutionEnv}
     evalExpr? config { contract := contract, locals := slipStoreGemNew I gemNew } evm
       (.storage (gemRef (.var "ilk") (.var "usr"))) =
       .ok (.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (slipStorageSlot I)).toNat)) := by
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (slipStorageSlot I)).toNat)) := by
   rw [evalExpr_storage_scalar (hbackend := rfl)
     (hbase := slipStoreGemNew_gem I gemNew)
     (her := evalStorageRef_slip_gemNew evm I gemNew hsz100)
@@ -240,7 +240,7 @@ theorem evalExpr_slip_gem_old_after_let {evm : EVM.State} {I : ExecutionEnv}
 theorem evalExpr_slip_gemNew {evm : EVM.State} {I : ExecutionEnv} {old gemNew : UInt256}
     (hsz100 : 100 ≤ I.calldata.size)
     (hload :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (slipStorageSlot I) = old)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (slipStorageSlot I) = old)
     (hwrap :
       (Int.ofNat old.toNat + slipWadInt I) % (Int.ofNat EVM.wordModulus) =
         Int.ofNat gemNew.toNat) :
@@ -265,7 +265,7 @@ theorem assignStorageRef_slip_gemNew {evm evm' : EVM.State} {I : ExecutionEnv}
     {gemNew : UInt256}
     (hsz100 : 100 ≤ I.calldata.size)
     (hevm' :
-      evm' = Solm.EVM.storageStore evm evm.executionEnv.codeOwner (slipStorageSlot I) gemNew) :
+      evm' = Stele.EVM.storageStore evm evm.executionEnv.codeOwner (slipStorageSlot I) gemNew) :
     assignStorageRef? config
       { contract := contract, locals := slipStoreGemNew I gemNew } evm .storage
       (gemRef (.var "ilk") (.var "usr")) (.int (Int.ofNat gemNew.toNat)) =
@@ -413,7 +413,7 @@ theorem vatEvalExpr_or_false_right {evm : EVM.State} {locals : Store}
 
 theorem evalSlipGuardNeg_true {evm : EVM.State} {I : ExecutionEnv} {old gemNew : UInt256}
     (hsz100 : 100 ≤ I.calldata.size)
-    (hload : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (slipStorageSlot I) = old)
+    (hload : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (slipStorageSlot I) = old)
     (hcond : 0 ≤ slipWadInt I ∨ gemNew.toNat ≤ old.toNat) :
     evalExpr? config { contract := contract, locals := slipStoreGemNew I gemNew } evm
       (eitherExpr (.binary .ge (.var "wad") (.intLit 0))
@@ -451,7 +451,7 @@ theorem evalSlipGuardNeg_true {evm : EVM.State} {I : ExecutionEnv} {old gemNew :
 
 theorem evalSlipGuardPos_true {evm : EVM.State} {I : ExecutionEnv} {old gemNew : UInt256}
     (hsz100 : 100 ≤ I.calldata.size)
-    (hload : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (slipStorageSlot I) = old)
+    (hload : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (slipStorageSlot I) = old)
     (hcond : slipWadInt I ≤ 0 ∨ old.toNat ≤ gemNew.toNat) :
     evalExpr? config { contract := contract, locals := slipStoreGemNew I gemNew } evm
       (eitherExpr (.binary .le (.var "wad") (.intLit 0))
@@ -489,7 +489,7 @@ theorem evalSlipGuardPos_true {evm : EVM.State} {I : ExecutionEnv} {old gemNew :
 
 theorem evalSlipGuardNeg_false {evm : EVM.State} {I : ExecutionEnv} {old gemNew : UInt256}
     (hsz100 : 100 ≤ I.calldata.size)
-    (hload : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (slipStorageSlot I) = old)
+    (hload : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (slipStorageSlot I) = old)
     (hcond : slipWadInt I < 0 ∧ old.toNat < gemNew.toNat) :
     evalExpr? config { contract := contract, locals := slipStoreGemNew I gemNew } evm
       (eitherExpr (.binary .ge (.var "wad") (.intLit 0))
@@ -519,7 +519,7 @@ theorem evalSlipGuardNeg_false {evm : EVM.State} {I : ExecutionEnv} {old gemNew 
 
 theorem evalSlipGuardPos_false {evm : EVM.State} {I : ExecutionEnv} {old gemNew : UInt256}
     (hsz100 : 100 ≤ I.calldata.size)
-    (hload : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (slipStorageSlot I) = old)
+    (hload : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (slipStorageSlot I) = old)
     (hcond : 0 < slipWadInt I ∧ gemNew.toNat < old.toNat) :
     evalExpr? config { contract := contract, locals := slipStoreGemNew I gemNew } evm
       (eitherExpr (.binary .le (.var "wad") (.intLit 0))
@@ -1377,15 +1377,15 @@ theorem vatSlipSourceOkSplit
         .ok (.bool true) →
     ExecTransitionBody config contract evm0 (slipStore I) slipTransition.body
       (.returned { contract := contract, locals := slipStoreGemNew I gemNew }
-        (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (slipStorageSlot I) gemNew)
+        (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (slipStorageSlot I) gemNew)
         none) ∧
     (I.perm = false →
       ExecTransitionBody config contract evm0 (slipStore I) slipTransition.body
         .staticViolation) := by
   intro evm0 old gemNew hguardNeg hguardPos
   have hload :
-      Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (slipStorageSlot I) = old := by
-    simp [evm0, old, solcSlotWordAt, solcSlotWord, initState, Solm.EVM.storageLoad,
+      Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (slipStorageSlot I) = old := by
+    simp [evm0, old, solcSlotWordAt, solcSlotWord, initState, Stele.EVM.storageLoad,
       State.lookupAccount, Account.lookupStorage]
   have hwrap :
       (Int.ofNat old.toNat + slipWadInt I) % (Int.ofNat EVM.wordModulus) =
@@ -1402,7 +1402,7 @@ theorem vatSlipSourceOkSplit
         .ok (.int (Int.ofNat gemNew.toNat)) :=
     evalExpr_slip_gemNew (evm := evm0) (I := I) (old := old) (gemNew := gemNew)
       hsz100 hload hwrap
-  let evm1 := Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (slipStorageSlot I) gemNew
+  let evm1 := Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (slipStorageSlot I) gemNew
   have hassign :
       assignStorageRef? config
         { contract := contract, locals := slipStoreGemNew I gemNew } evm0 .storage
@@ -1470,8 +1470,8 @@ theorem vatSlipSourceRevertGuardNeg
     ExecTransitionBody config contract evm0 (slipStore I) slipTransition.body .reverted := by
   intro evm0 old gemNew hguardNeg
   have hload :
-      Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (slipStorageSlot I) = old := by
-    simp [evm0, old, solcSlotWordAt, solcSlotWord, initState, Solm.EVM.storageLoad,
+      Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (slipStorageSlot I) = old := by
+    simp [evm0, old, solcSlotWordAt, solcSlotWord, initState, Stele.EVM.storageLoad,
       State.lookupAccount, Account.lookupStorage]
   have hwrap :
       (Int.ofNat old.toNat + slipWadInt I) % (Int.ofNat EVM.wordModulus) =
@@ -1534,8 +1534,8 @@ theorem vatSlipSourceRevertGuardPos
     ExecTransitionBody config contract evm0 (slipStore I) slipTransition.body .reverted := by
   intro evm0 old gemNew hguardNeg hguardPos
   have hload :
-      Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (slipStorageSlot I) = old := by
-    simp [evm0, old, solcSlotWordAt, solcSlotWord, initState, Solm.EVM.storageLoad,
+      Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (slipStorageSlot I) = old := by
+    simp [evm0, old, solcSlotWordAt, solcSlotWord, initState, Stele.EVM.storageLoad,
       State.lookupAccount, Account.lookupStorage]
   have hwrap :
       (Int.ofNat old.toNat + slipWadInt I) % (Int.ofNat EVM.wordModulus) =
@@ -1606,9 +1606,9 @@ theorem vatSlipBodyCore : VatBodyTheoremAnyPerm 23 := by
         simpa [callerSlot, vatCallerWardsSlot, solcSlotWordAt] using hauthEvm
       let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
       have hloadS :
-          Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner slot = old := by
+          Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner slot = old := by
         simp [evm0, old, slot, solcSlotWordAt, solcSlotWord, initState,
-          Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage]
+          Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage]
       have hslotEq := slipStorageSlot_eq I hsz100
       have holdSolc :
           solcSlotWord σ I
@@ -1699,7 +1699,7 @@ theorem vatSlipBodyCore : VatBodyTheoremAnyPerm 23 := by
             simpa [slot, gemNew, old, solcSlotWordAt, hslotEq] using
               RD.stop hretPc' (by native_decide) (by simp)
           let evm1 :=
-            Solm.EVM.storageStore evm0 I.codeOwner slot gemNew
+            Stele.EVM.storageStore evm0 I.codeOwner slot gemNew
           have haccounts :
               sstoreAccountMap I.codeOwner σ slot gemNew = evm1.accountMap := by
             simp [evm1, evm0, initState, storageStore_accountMap]
@@ -1841,7 +1841,7 @@ theorem vatSlipBodyCore : VatBodyTheoremAnyPerm 23 := by
           (g := Sat256.ofUInt256 g) (locals := slipStore I)
           (slipStore_wards I) (by simpa [callerSlot, vatCallerWardsSlot, solcSlotWordAt] using hauthEvm)
         have hblock := nonpayableSecondRequireReverts
-          (cfg := config) (solm := { contract := contract, locals := slipStore I })
+          (cfg := config) (stele := { contract := contract, locals := slipStore I })
           (evm := evm0)
           (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
           (rest := checkedAddSignedInto "gemNew" (.storage (gemRef (.var "ilk") (.var "usr")))

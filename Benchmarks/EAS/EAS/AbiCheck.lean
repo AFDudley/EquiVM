@@ -4,14 +4,14 @@ import Benchmarks.EAS.EAS.DiffTarget
 Reproduce the calldata-tail mismatch found during the EAS audit.
 
 `lake env lean --run Benchmarks/EAS/EAS/AbiCheck.lean` checks the pinned EAS
-runtime against Solm, including the formerly disagreeing backward tuple tail.
+runtime against Stele, including the formerly disagreeing backward tuple tail.
 Every case must agree; there is no expected-failure exception to refinement.
 
 With `--probes DIR`, check the compiler probes produced by `abi_offset_probe.py`
 instead. They distinguish direct calldata access from materialization in memory.
 -/
 
-open Solm Solm.Interp Solm.DiffTest Ethereum Ethereum.EVM
+open Stele Stele.Interp Stele.DiffTest Ethereum Ethereum.EVM
 
 private def calldataWords (signature : String) (words : List Nat) : ByteArray :=
   words.foldl (fun acc n => acc ++ wordBytes n)

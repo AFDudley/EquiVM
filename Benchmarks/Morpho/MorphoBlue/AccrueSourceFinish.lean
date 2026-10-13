@@ -1,10 +1,10 @@
 import Benchmarks.Morpho.MorphoBlue.AccrueSourceFeeWrites
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.Morpho.MorphoBlue
 set_option maxRecDepth 1000
 
--- LIBRARY CANDIDATE: the nonzero test for a canonical word represented as a Solm integer.
+-- LIBRARY CANDIDATE: the nonzero test for a canonical word represented as a Stele integer.
 theorem evalWordNeZero {cfg : Config} {frame : Frame} {evm : EVM.State} {e : Expr} {w : UInt256}
     (he : evalExpr? cfg frame evm e = .ok (.int (Int.ofNat w.toNat))) :
     evalExpr? cfg frame evm (.binary .ne e (.intLit 0)) = .ok (.bool (decide (w ≠ ⟨0⟩))) := by

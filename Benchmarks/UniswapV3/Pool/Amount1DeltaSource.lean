@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.Amount1DeltaPrefix
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 1000
 
@@ -18,7 +18,7 @@ theorem amount1DeltaCallSource (imms : Store) (evm : EVM.State) (a : AmountDelta
       some (fullMathLocals a.liquidity (amountDeltaDifference a) (UInt256.ofNat (2 ^ 96))) := rfl
   cases hr : a.roundUp
   · have hc := internalCallFunctionReturn (callee := fullMathFunction) (retVar := "__c3")
-      (calleeSolm := fullMathProductFrame imms a.liquidity (amountDeltaDifference a) (UInt256.ofNat (2 ^ 96)))
+      (calleeStele := fullMathProductFrame imms a.liquidity (amountDeltaDifference a) (UInt256.ofNat (2 ^ 96)))
       (locals := fullMathLocals a.liquidity (amountDeltaDifference a) (UInt256.ofNat (2 ^ 96)))
       (value := some [.int (Int.ofNat (fullMathResult a.liquidity
         (amountDeltaDifference a) (UInt256.ofNat (2 ^ 96))).toNat)])
@@ -28,7 +28,7 @@ theorem amount1DeltaCallSource (imms : Store) (evm : EVM.State) (a : AmountDelta
     simpa only [amount1DeltaCallFrame, amount1DeltaCallName, amountDeltaMulResult,
       amountDeltaFactor, amountDeltaDenominator, hr, Bool.false_eq_true, if_false, if_true] using hc
   · have hc := internalCallFunctionReturn (callee := fullMathRoundFunction) (retVar := "__c2")
-      (calleeSolm := fullMathRoundFinalFrame imms a.liquidity (amountDeltaDifference a) (UInt256.ofNat (2 ^ 96)))
+      (calleeStele := fullMathRoundFinalFrame imms a.liquidity (amountDeltaDifference a) (UInt256.ofNat (2 ^ 96)))
       (locals := fullMathLocals a.liquidity (amountDeltaDifference a) (UInt256.ofNat (2 ^ 96)))
       (value := some [.int (Int.ofNat (fullMathRoundResult a.liquidity
         (amountDeltaDifference a) (UInt256.ofNat (2 ^ 96))).toNat)])

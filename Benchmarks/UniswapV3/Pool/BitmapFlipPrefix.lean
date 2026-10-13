@@ -2,7 +2,7 @@ import Benchmarks.UniswapV3.Pool.BitmapPositionSource
 import Benchmarks.UniswapV3.Pool.WordXor
 import Benchmarks.UniswapV3.Pool.SourceWordMask
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 1000
 
@@ -86,7 +86,7 @@ theorem bitmapFlipPositionCall (imms : Store) (evm : EVM.State) (tick spacing : 
   have hs := evalExpr_var_get (cfg := config) (evm := evm) (bitmapFlipInitialGet imms tick spacing).2
   exact internalCallFunctionReturn (callee := bitmapPositionFunction)
     (locals := bitmapPositionLocals (tick.tdiv spacing))
-    (calleeSolm := bitmapPositionReadyFrame imms (tick.tdiv spacing))
+    (calleeStele := bitmapPositionReadyFrame imms (tick.tdiv spacing))
     (value := some [.int (bitmapWordPos (tick.tdiv spacing)), .int (bitmapBitPos (tick.tdiv spacing))])
     (by simp only [evalExprs?, evalExpr?, ht, hs, evalBinaryOp?, hn, if_false,
       bind, EvalResult.bind, pure]) bitmapPositionLookup (bitmapPositionBind (tick.tdiv spacing))
@@ -106,7 +106,7 @@ theorem bitmapFlipReadySource (imms : Store) (evm : EVM.State) (tick spacing : I
   refine ExecBlock.consNormal (ExecStmt.requireTrue
     (by simpa only [hr, decide_true] using evalBitmapFlipGuard imms evm tick spacing hn)) ?_
   refine ExecBlock.consNormal (bitmapFlipPositionCall imms evm tick spacing hn) ?_
-  refine ExecBlock.consNormal (solm' := bitmapFlipWordFrame imms tick spacing)
+  refine ExecBlock.consNormal (stele' := bitmapFlipWordFrame imms tick spacing)
     (ExecStmt.letDecl ?_) ?_
   · have he : evalExpr? config (bitmapFlipCallFrame imms tick spacing) evm (.var "__c0") =
         .ok (.tuple [.int (bitmapWordPos (tick.tdiv spacing)),
@@ -114,7 +114,7 @@ theorem bitmapFlipReadySource (imms : Store) (evm : EVM.State) (tick spacing : I
       evalExpr_var_get Std.HashMap.getElem?_insert_self
     simp only [evalExpr?, he, bind, EvalResult.bind, pure, EvalResult.ofOption]
     rfl
-  · refine ExecBlock.consNormal (solm' := bitmapFlipBitFrame imms tick spacing)
+  · refine ExecBlock.consNormal (stele' := bitmapFlipBitFrame imms tick spacing)
       (ExecStmt.letDecl ?_) ?_
     · have hg : (bitmapFlipWordFrame imms tick spacing).locals.get? "__c0" =
           some (.tuple [.int (bitmapWordPos (tick.tdiv spacing)),

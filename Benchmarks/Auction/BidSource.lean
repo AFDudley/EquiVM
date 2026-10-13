@@ -2,7 +2,7 @@ import Benchmarks.Auction.SnapshotSource
 import Benchmarks.Auction.WordSourceArithmetic
 import Benchmarks.Auction.ReentrancySource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Auction
 
@@ -79,7 +79,7 @@ theorem bidReserveGuardSource {s0 I σ evm locals s noun}
   have hr := scalarRead evm locals "reservePrice" (.int uint256Int) (auctionUint256Loc ⟨204⟩)
     (hv.storage _ (by decide)) (by native_decide) rfl
   rw [loadUint256] at hr
-  have hw : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨204⟩ =
+  have hw : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨204⟩ =
       solcSlotWord σ I ⟨204⟩ := by
     exact hs.storageRead _
   rw [hw] at hr

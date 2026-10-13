@@ -1,7 +1,7 @@
 import Benchmarks.Safe.Main.SignatureBranchResult
 import Benchmarks.Safe.Main.SignatureApprovalTrace
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.Main
 

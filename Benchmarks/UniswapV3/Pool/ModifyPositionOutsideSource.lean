@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.ModifyPositionOutsideModel
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
 
@@ -40,7 +40,7 @@ theorem modifyPositionOutsideSource (imms : Store) (a : ModifyPositionArgs)
       (signedAmountDeltaName second) = some (signedAmountDeltaFunction second).toCallable := by
     rw [hf]; exact signedAmountDeltaLookup second
   have hcall := internalCallFunctionReturn (callee := signedAmountDeltaFunction second)
-    (calleeSolm := signedAmountDeltaReturnFrame imms second (modifyPositionOutsideArgs a))
+    (calleeStele := signedAmountDeltaReturnFrame imms second (modifyPositionOutsideArgs a))
     (retVar := modifyPositionOutsideAmountName second)
     (value := some [.int (signedAmountDeltaResult second (modifyPositionOutsideArgs a))])
     (evalModifyPositionOutsideAmountExprs imms a evm evm' second) hl

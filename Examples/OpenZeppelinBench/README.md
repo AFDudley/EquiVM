@@ -13,7 +13,7 @@ Each benchmark folder contains:
   constructor parameters.
 - `creation.hex`: exact creation bytecode for the benchmark target.
 - `runtime.hex`: exact deployed runtime bytecode for the benchmark target.
-- `Spec.lean`: the Solm-level contract specification and Solidity storage layout.
+- `Spec.lean`: the Stele-level contract specification and Solidity storage layout.
 - `Bytecode.lean`: the same deployed runtime bytecode as a Lean `ByteArray`, plus its `D_J`
   jump-destination theorem.
 

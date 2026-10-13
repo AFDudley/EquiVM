@@ -54,11 +54,11 @@ def main(argv: list[str] | None = None) -> int:
 
     if not args.skip_difftest:
         name = args.contract or args.module.rsplit(".", 1)[-1]
-        print(f"== lake exe solm-difftest --only {name} --count {args.difftest_count}", flush=True)
-        diff = run(["lake", "exe", "solm-difftest", "--only", name, "--count", str(args.difftest_count)])
+        print(f"== lake exe stele-difftest --only {name} --count {args.difftest_count}", flush=True)
+        diff = run(["lake", "exe", "stele-difftest", "--only", name, "--count", str(args.difftest_count)])
         out = (diff.stdout + diff.stderr).strip()
         print("\n".join(out.splitlines()[-25:]))
-        if re.search(r"solm-difftest: 0 target", out):
+        if re.search(r"stele-difftest: 0 target", out):
             failures += 1
             print(f"FAIL no target named {name}: run scripts/scaffold.py difftest --dir {args.dir}")
         elif diff.returncode != 0:

@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.SignedComparison
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 -- LIBRARY CANDIDATE: zero tests are faithful on the signed EVM range.

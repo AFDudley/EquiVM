@@ -1,7 +1,7 @@
 import Benchmarks.CompoundIII.Comet.CurrentIndicesSource
 import Benchmarks.CompoundIII.Comet.CheckedGetter
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.CompoundIII.Comet.Immutables
 
 namespace Benchmarks.CompoundIII.Comet
@@ -29,16 +29,16 @@ theorem totalReadTail_returns (v : CometWithExtendedAssetListImmutables)
     (hi : frame.immutables = immStore v)
     (hp : frame.locals.get? (totalsPrincipalName borrow) = none)
     (hv : CurrentIndicesValid v
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) (timestampWord evm.executionEnv)) :
-    let w0 := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩
-    let w1 := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) (timestampWord evm.executionEnv)) :
+    let w0 := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩
+    let w1 := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩
     ∃ final, ExecBlock config (currentIndicesFrame frame v w0 w1 (timestampWord evm.executionEnv))
       evm (totalReadTail borrow) (.returned final evm
         (some [.int (totalReadWord v w0 w1 (timestampWord evm.executionEnv) borrow).toNat])) := by
   dsimp only
-  let w0 := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩
-  let w1 := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩
+  let w0 := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩
+  let w1 := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩
   let time := timestampWord evm.executionEnv
   let idx := currentIndex v w0 w1 time borrow
   let f0 := currentIndicesFrame frame v w0 w1 time
@@ -85,8 +85,8 @@ theorem getTotal_returns {σ σ₀ A I} {g : Sat256}
   let evm := initState σ σ₀ g A I
   let frame := calldataLocalFrame { contract := contract, locals := ∅, immutables := immStore v } evm
   have hvs : CurrentIndicesValid v
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) (timestampWord evm.executionEnv) := by
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) (timestampWord evm.executionEnv) := by
     simpa only [evm, storageLoad_initState_solcSlotWord, solcSlotWordAt] using hvalid
   obtain ⟨final, hf⟩ := totalReadTail_returns v frame evm borrow rfl rfl
     (by cases borrow <;> simp [frame, calldataLocalFrame, totalsPrincipalName]) hvs
@@ -117,8 +117,8 @@ theorem getTotal_reverts {σ σ₀ A I} {g : Sat256}
     (by simp [frame, calldataLocalFrame])
   dsimp only at hb
   have hvs : ¬ CurrentIndicesValid v
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) (timestampWord evm.executionEnv) := by
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) (timestampWord evm.executionEnv) := by
     simpa only [evm, storageLoad_initState_solcSlotWord, solcSlotWordAt] using hvalid
   rw [if_neg hvs] at hb
   exact execBlockAppendReverted hb

@@ -1,8 +1,8 @@
 # Agent prompt — proving precompile-style bytecode correctness
 
-You are proving a Solm-independent correctness theorem for a concrete EVM
+You are proving a Stele-independent correctness theorem for a concrete EVM
 bytecode artifact that implements a precompile-like pure computation. The goal
-is not to prove refinement against Solm. The goal is to prove a caller-observable
+is not to prove refinement against Stele. The goal is to prove a caller-observable
 bytecode specification against a trusted pure Lean model, including exact gas
 consumption on valid inputs.
 
@@ -40,7 +40,7 @@ This workflow applies to precompile-style code:
   `Θ` boundary;
 - exact success gas is part of the theorem.
 
-Do not introduce Solm refinement unless explicitly requested. A Solm file may
+Do not introduce Stele refinement unless explicitly requested. A Stele file may
 exist as a source artifact or comparison point, but it should not be on the proof
 path for this task.
 

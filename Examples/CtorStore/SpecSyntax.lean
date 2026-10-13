@@ -1,14 +1,14 @@
 import Examples.CtorStore.Spec
-import Solm.Notation
+import Stele.Notation
 
 /-!
-# CtorStore spec in the Solidity-faithful Solm frontend
+# CtorStore spec in the Solidity-faithful Stele frontend
 
 The payable constructor stores its `uint256` argument into the private `stored` field; there are
 no runtime transitions.
 -/
 
-open Solm Solm.Notation
+open Stele Stele.Notation
 
 namespace CtorStore.Syntax
 

@@ -8,7 +8,7 @@ import Examples.UniswapV2Pair.SafeTransferFinalMemory
 import Examples.UniswapV2Pair.BurnTransfersSource
 import Examples.UniswapV2Pair.BurnSecondBalanceRuntime
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 set_option maxRecDepth 2000000
 namespace UniswapV2Pair
 
@@ -42,9 +42,9 @@ theorem uniswapBurnBody
       have hlockEntered := uniswapBurnX_lockEntered (g := Sat256.ofUInt256 g)
         hperm hunlocked hdecoded
       let evmS := initState σ σ₀ (Sat256.ofUInt256 g) A I
-      have hunlockedSolm :
-          Solm.EVM.storageLoad evmS evmS.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩ := by
-        simpa [evmS, initState, Solm.EVM.storageLoad,
+      have hunlockedStele :
+          Stele.EVM.storageLoad evmS evmS.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩ := by
+        simpa [evmS, initState, Stele.EVM.storageLoad,
           Ethereum.State.lookupAccount, Ethereum.Account.lookupStorage] using hunlocked
       obtain ⟨_, _, rd4179⟩ := hlockEntered
       obtain ⟨_, _, rd4267⟩ := uniswapBurnRuntimeFirstBalanceOfExtcodesize rd4179
@@ -66,7 +66,7 @@ theorem uniswapBurnBody
           (UInt256.land solcAddrMask
             (solcSlotWordAt ⟨6⟩ (sstoreAccountMap I.codeOwner σ ⟨12⟩ ⟨0⟩) I)) = ⟨0⟩
       · have hbody := uniswapBurnBodyReverts_firstNoCode evmS I
-          (by simpa only [evmS, initState] using hwv) hunlockedSolm
+          (by simpa only [evmS, initState] using hwv) hunlockedStele
           (by simpa only [hnoCode] using hguard)
         exact (uniswapBurnRuntimeFirstBalanceOfMissingCodeReverts rd4267 hnoCode
           (by simp only [List.length_cons, List.length_nil]; omega)).reEquivExecutionRevert
@@ -104,7 +104,7 @@ theorem uniswapBurnBody
               hguard hreceiver hargs (by simpa only [hz] using hcall)
             exact (hrev hz).reEquivExecutionRevert hcode hdispatch (uniswapDecode_burn_ok hsz36)
               (uniswapBurnBodyReverts_firstBalanceBlock evmS I
-                (by simpa only [evmS, initState] using hwv) hunlockedSolm hfirst)
+                (by simpa only [evmS, initState] using hwv) hunlockedStele hfirst)
           | true =>
             have hcall0 : typedCallViaEVM config evmL
                 (EVM.address (uniswapAddressAtSlot evmL ⟨6⟩)) "balanceOf" 0
@@ -120,7 +120,7 @@ theorem uniswapBurnBody
               exact (hshortRev hz hshort).reEquivExecutionRevert hcode hdispatch
                 (uniswapDecode_burn_ok hsz36)
                 (uniswapBurnBodyReverts_firstBalanceBlock evmS I
-                  (by simpa only [evmS, initState] using hwv) hunlockedSolm hfirst)
+                  (by simpa only [evmS, initState] using hwv) hunlockedStele hfirst)
             · have hout32 : 32 ≤ out.size := by omega
               obtain ⟨_, _, rd4324⟩ := hcont hz hout32
               let balance0 := UInt256.ofNat (fromByteArrayBigEndian (out.extract 0 32))
@@ -159,7 +159,7 @@ theorem uniswapBurnBody
                   (by simp only [List.length_cons, List.length_nil]; omega)).reEquivExecutionRevert
                     hcode hdispatch (uniswapDecode_burn_ok hsz36)
                     (uniswapBurnBodyReverts_secondBalanceBlock evmS evm0 I balance0
-                      (by simpa only [evmS, initState] using hwv) hunlockedSolm hfirst hsecond)
+                      (by simpa only [evmS, initState] using hwv) hunlockedStele hfirst hsecond)
               · have hpos1 : 0 < (extCodeSizeWord σ0 token1).toNat :=
                   Nat.pos_of_ne_zero (fun hz => hnoCode1 (uint256_toNat_eq_zero hz))
                 simp only [hpos1, decide_true] at hguard1
@@ -188,7 +188,7 @@ theorem uniswapBurnBody
                     hguard1 hreceiver1 hargs1 (by simpa only [hz1] using hcall1)
                   exact (hrev1 hz1).reEquivExecutionRevert hcode hdispatch (uniswapDecode_burn_ok hsz36)
                     (uniswapBurnBodyReverts_secondBalanceBlock evmS evm0 I balance0
-                      (by simpa only [evmS, initState] using hwv) hunlockedSolm hfirst hsecond)
+                      (by simpa only [evmS, initState] using hwv) hunlockedStele hfirst hsecond)
                 | true =>
                   have hcall1True : typedCallViaEVM config evm0
                       (EVM.address (uniswapAddressAtSlot evmL ⟨7⟩)) "balanceOf" 0
@@ -204,7 +204,7 @@ theorem uniswapBurnBody
                     exact (hshortRev1 hz1 hshort1).reEquivExecutionRevert hcode hdispatch
                       (uniswapDecode_burn_ok hsz36)
                       (uniswapBurnBodyReverts_secondBalanceBlock evmS evm0 I balance0
-                        (by simpa only [evmS, initState] using hwv) hunlockedSolm hfirst hsecond)
+                        (by simpa only [evmS, initState] using hwv) hunlockedStele hfirst hsecond)
                   · have hout132 : 32 ≤ out1.size := by omega
                     obtain ⟨_, _, rd4444⟩ := hcont1 hz1 hout132
                     let balance1 := UInt256.ofNat (fromByteArrayBigEndian (out1.extract 0 32))
@@ -217,7 +217,7 @@ theorem uniswapBurnBody
                       checkedExternalCallSuccess (value := [uniswapUint256Value balance1])
                         (retVar := "balance1") hguard1 hreceiver1 hargs1 hcall1True hdec1
                     have hprefix := uniswapBurnBeforeFeePrefix evmS evm0 evm1 I balance0 balance1
-                      (by simpa only [evmS, initState] using hwv) hunlockedSolm hfirst hsecond
+                      (by simpa only [evmS, initState] using hwv) hunlockedStele hfirst hsecond
                     have he1I := he1.trans he0I
                     have hbaseSize := balanceOfThisRebuiltStaticcallMem_size_of_size_ge
                       (UInt256.ofNat I.codeOwner.val) out out1 hout32 houtSize hout132 hout1Size
@@ -509,7 +509,7 @@ theorem uniswapBurnBody
             (by simp only [List.length_cons, List.length_nil]; omega)).reEquivExecutionRevert
               hcode hdispatch (uniswapDecode_burn_ok hsz36)
               (uniswapBurnBodyReverts_firstBalanceBlock evmS I
-                (by simpa only [evmS, initState] using hwv) hunlockedSolm hfirst)
+                (by simpa only [evmS, initState] using hwv) hunlockedStele hfirst)
   · exact uniswapBurnBodyDecodeFailed_short hcode hsize hwv hsel (by omega) hdispatch
 
 /-- `burn` with any call permission; a static call halts at the lock-entry `SSTORE`. -/
@@ -541,15 +541,15 @@ theorem uniswapBurnBodyAnyPerm
           σ k C :=
         uniswapReachBurnBody (g := Sat256.ofUInt256 g) hcode hwv hsz4 hsize hsel
       let evmS := initState σ σ₀ (Sat256.ofUInt256 g) A I
-      have hunlockedSolm :
-          Solm.EVM.storageLoad evmS evmS.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩ := by
-        simpa [evmS, initState, Solm.EVM.storageLoad,
+      have hunlockedStele :
+          Stele.EVM.storageLoad evmS evmS.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩ := by
+        simpa [evmS, initState, Stele.EVM.storageLoad,
           Ethereum.State.lookupAccount, Ethereum.Account.lookupStorage] using hunlocked
       exact (uniswapBurnX_lockEnteredStatic (g := Sat256.ofUInt256 g) hperm hunlocked
           (uniswapBurnX_decoded_masked (g := Sat256.ofUInt256 g) hsz36 hsize hreach))
         |>.reEquivStaticHalt hcode hdispatch (uniswapDecode_burn_ok hsz36)
           (uniswapBurnBodyStatic evmS I (by simp only [evmS, initState]; exact hwv)
-            hunlockedSolm (by simp only [evmS, initState]; exact hperm))
+            hunlockedStele (by simp only [evmS, initState]; exact hperm))
   · exact uniswapBurnBodyDecodeFailed_short hcode hsize hwv hsel (by omega) hdispatch
 
 end UniswapV2Pair

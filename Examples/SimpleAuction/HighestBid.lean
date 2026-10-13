@@ -1,7 +1,7 @@
 import Examples.SimpleAuction.Storage
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -16,7 +16,7 @@ theorem simpleAuctionHighestBidBodyReturns (evm : EVM.State) (locals : Store)
     ExecTransitionBody simpleAuctionConfig simpleAuctionContract evm locals highestBidGetter.body
       (.returned { contract := simpleAuctionContract, locals := locals } evm
         (some [(.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩).toNat))])) := by
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩).toNat))])) := by
   exact ExecFuncBody.execBlockRet <|
     (ABlock.start.requireStep (evalCallvalueEq_true h)).returns (by
       have her : evalStorageRef simpleAuctionConfig
@@ -141,7 +141,7 @@ theorem simpleAuctionHighestBidBody {σ σ₀ A I}
           (.returned { contract := simpleAuctionContract, locals := ∅ }
             (initState σ σ₀ (Sat256.ofUInt256 g) A I)
             (some [(.int (Int.ofNat (highestBidWord σ I).toNat))])) := by
-      simpa [highestBidWord, initState, Solm.EVM.storageLoad, State.lookupAccount] using
+      simpa [highestBidWord, initState, Stele.EVM.storageLoad, State.lookupAccount] using
         simpleAuctionHighestBidBodyReturns
           (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
           (by simp only [initState]; exact hwv) (by simp)

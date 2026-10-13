@@ -2,7 +2,7 @@ import Benchmarks.UniswapV3.Pool.FlashRepaymentTrace
 import Benchmarks.UniswapV3.Pool.SwapBalanceBefore
 import Benchmarks.UniswapV3.Pool.SwapBalanceAfter
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
@@ -45,7 +45,7 @@ theorem swapRepayAddReturns (v : UniswapV3PoolImmutables) (locals : Store) (evm 
       (swapRepayTailStmts second)[0]! (.ok (swapRepayFrame v locals second before fee) evm) := by
   exact internalCallFunctionReturn (callee := safeAddFunction) (locals := safeAddLocals before
     (EVM.wordOfInt fee))
-    (calleeSolm := safeAddResultFrame (immStore v) before (EVM.wordOfInt fee))
+    (calleeStele := safeAddResultFrame (immStore v) before (EVM.wordOfInt fee))
     (value := some [.int (Int.ofNat (before + EVM.wordOfInt fee).toNat)])
     (evalSwapRepayArgs v locals evm second before fee hb hf) safeAddLookup
     (safeAddBind before (EVM.wordOfInt fee)) (safeAddReturns (immStore v) evm before (EVM.wordOfInt

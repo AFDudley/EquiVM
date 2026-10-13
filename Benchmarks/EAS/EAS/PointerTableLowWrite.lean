@@ -1,6 +1,6 @@
 import Benchmarks.EAS.EAS.RevocationCopyMemory
 import Benchmarks.EAS.EAS.SignatureArrayMemory
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 -- LIBRARY CANDIDATE: writes before a pointer table preserve its entries and bounded records.

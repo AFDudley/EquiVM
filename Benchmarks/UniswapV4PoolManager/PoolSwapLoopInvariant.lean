@@ -2,7 +2,7 @@ import Benchmarks.UniswapV4PoolManager.PoolSwapIterationPost
 import Benchmarks.UniswapV4PoolManager.PoolSwapIterationTrace
 import Benchmarks.UniswapV4PoolManager.Signed24Bounds
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 structure PoolSwapLoopWords where

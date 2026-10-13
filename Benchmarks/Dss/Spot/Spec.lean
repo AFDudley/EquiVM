@@ -1,18 +1,18 @@
-import Solm.SolidityStorage
-import Solm.Semantics
-import Solm.SolidityLayout
+import Stele.SolidityStorage
+import Stele.Semantics
+import Stele.SolidityLayout
 
 /-!
 # MakerDAO/Sky DSS Spotter benchmark spec
 
-Solm benchmark scaffold for upstream `dss/src/spot.sol`.
+Stele benchmark scaffold for upstream `dss/src/spot.sol`.
 
 The storage layout and public ABI surface follow solc `0.6.12`. The one event, `Poke`, is
 modelled: `poke` writes no storage, so under a static call its log is the first forbidden
 operation. `poke` keeps the source-level oracle call and conditional arithmetic evaluation shape.
 -/
 
-open Solm ABI Ethereum
+open Stele ABI Ethereum
 
 namespace Benchmarks.Dss.Spot
 

@@ -9,11 +9,11 @@ import Benchmarks.CompoundIII.Comet.RuntimeBlocks_031
 # CometWithExtendedAssetList `liquidatorPoints(address)`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 880; reach lemma `cometWithExtendedAssetListReachLiquidatorPointsBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open cometWithExtendedAssetListBlocks
 open Reasoning.Immutables
 open Benchmarks.CompoundIII.Comet.Immutables
@@ -90,7 +90,7 @@ theorem evalLiquidatorField (evm : EVM.State) (locals imms : Store)
     evalExpr? config { contract := contract, locals := locals, immutables := imms }
       evm (liquidatorFieldExpr i) =
       .ok (.int (liquidatorFieldWord
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (liquidatorSlot addr)) i).toNat) := by
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (liquidatorSlot addr)) i).toNat) := by
   have hbound : (liquidatorFieldOffset i).val + (liquidatorFieldSize i).val - 1 < 32 := by
     rcases i with ⟨i, hi⟩; interval_cases i <;> dsimp only [liquidatorFieldSize, liquidatorFieldOffset] <;> decide
   apply evalExpr_storage_scalar_value (hbackend := rfl)

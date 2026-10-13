@@ -1,4 +1,4 @@
 import Benchmarks.EAS.EAS.Common
-open Solm
+open Stele
 open Benchmarks.EAS.EAS
 #eval contract.functions[15]!

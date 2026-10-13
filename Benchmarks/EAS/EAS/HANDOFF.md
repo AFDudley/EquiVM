@@ -81,14 +81,14 @@ lake build Benchmarks.EAS.EAS.Correct Benchmarks.EAS.EAS.DiffTarget
 Required randomized command, seed 2026:
 
 ```sh
-lake exe solm-difftest --only EAS --count 50
+lake exe stele-difftest --only EAS --count 50
 ```
 
 The command was rerun successfully with the isolated `.solc08Calldata` mode,
 with the following output:
 
 ```text
-solm-difftest: 1 target(s), seed 2026, 50 cases per transition
+stele-difftest: 1 target(s), seed 2026, 50 cases per transition
 EAS: 1325 cases: 1325 agree (621 successful), 0 disagree, 0 stuck, 0 EVM out of gas, 0 spec out of fuel
   successful/cases: constructor 12/25, getAttestTypeHash() 44/54, multiRevokeOffchain(bytes32[]) 22/56, getNonce(address) 39/56, multiAttest((bytes32,(address,uint64,bool,bytes32,bytes,uint256)[])[]) 17/54, revoke((bytes32,(bytes32,uint256))) 0/53, multiRevoke((bytes32,(bytes32,uint256)[])[]) 24/56, timestamp(bytes32) 20/57, multiAttestByDelegation((bytes32,(address,uint64,bool,bytes32,bytes,uint256)[],(uint8,bytes32,bytes32)[],address)[]) 13/55, getAttestation(bytes32) 44/53, getRevokeOffchain(address,bytes32) 47/58, getRevokeTypeHash() 44/54, revokeOffchain(bytes32) 18/55, getTimestamp(bytes32) 38/53, attestByDelegation((bytes32,(address,uint64,bool,bytes32,bytes,uint256),(uint8,bytes32,bytes32),address)) 0/51, isAttestationValid(bytes32) 43/52, multiRevokeByDelegation((bytes32,(bytes32,uint256)[],(uint8,bytes32,bytes32)[],address)[]) 20/57, revokeByDelegation((bytes32,(bytes32,uint256),(uint8,bytes32,bytes32),address)) 0/52, multiTimestamp(bytes32[]) 25/55, getDomainSeparator() 49/58, getSchemaRegistry() 52/55, attest((bytes32,(address,uint64,bool,bytes32,bytes,uint256))) 4/52, VERSION() 46/54, stray 0/100
 ```
@@ -115,7 +115,7 @@ lake env lean --run Benchmarks/EAS/EAS/StorageWrapCheck.lean
 The deterministic sequence checks constructor deployment, single and nonempty
 batch attest/revoke, a stored attestation read, timestamp and offchain
 revocations, resolver payments, ETH refunds, and the domain separator. It
-requires successful EVM/Solm agreement for every call. The 0.8.32 sequence passed
+requires successful EVM/Stele agreement for every call. The 0.8.32 sequence passed
 with the saved runner above. Its output was:
 
 ```text
@@ -176,19 +176,19 @@ The compiler upgrade addresses
 The [Solidity advisory](https://www.soliditylang.org/blog/2025/12/18/lost-storage-array-write-on-slot-overflow-bug/)
 identifies 0.8.32 as the first fixed version. The old compiler's bytes-tail
 cleanup compared absolute storage slots, so wrapping its end slot could skip
-clearing. The new compiler iterates by a count, consistent with the Solm
-storage backend. No change to `Solm/` was made.
+clearing. The new compiler iterates by a count, consistent with the Stele
+storage backend. No change to `Stele/` was made.
 
 The preserved 0.8.18 reproducer injects a valid enormous bytes header directly
 into storage and shows successful EVM execution leaving a sentinel at 42 where
-Solm's first required clear writes 0. It does not establish reachability through
+Stele's first required clear writes 0. It does not establish reachability through
 ordinary EAS transactions or an exploit of the deployment. The updated runner
 confirms that 0.8.32 attempts that clear and exhausts gas:
 
 ```text
 Solidity 0.8.32 storage-wrap regression: EVM runs out of gas instead of skipping the clear
 ```
-It does not execute the astronomically large complete Solm loop; EVM out of gas
+It does not execute the astronomically large complete Stele loop; EVM out of gas
 is unconstrained by the refinement relation.
 
 The block walk covers all 22 selector arms, shared runtime routines through
@@ -207,7 +207,7 @@ stays inside the collision loop. Typed return buffers, copied structs/arrays/byt
 EIP-712 buffers, and refund returndata each advance it at their compiled stage.
 Scratch ABI encoding and the precompile input do not advance the free pointer.
 The canonical constructor argument copy and two fixed strings leave pointer 512
-before `_buildDomainSeparator` allocates 192 bytes. No shared Solm change is needed.
+before `_buildDomainSeparator` allocates 192 bytes. No shared Stele change is needed.
 
 Calldata-size comparisons preserve the EVM's uint256 size word, including its
 wrapping subtraction before the signed head-size comparison. No extra input-size
@@ -216,7 +216,7 @@ also explicit.
 
 ## ABI offset investigation (2026-10-08)
 
-The mismatch was accepted noncanonical calldata that Solm's `.modern` decoder
+The mismatch was accepted noncanonical calldata that Stele's `.modern` decoder
 rejects. It is **not evidence of a compiler violation of the official ABI
 specification**. The [formal ABI encoding rules](https://docs.soliditylang.org/en/v0.8.32/abi-spec.html#formal-specification-of-the-encoding)
 produce forward offsets to tails. However, the [strict encoding section](https://docs.soliditylang.org/en/v0.8.32/abi-spec.html#strict-encoding-mode)
@@ -263,7 +263,7 @@ What the pinned 0.8.32 runtime actually does:
 
 `ABI/Decode.lean` already wraps modern *array-element* tail offsets, but its
 `.modern` mode rejects every dynamic *tuple-field* offset above `2^64 - 1`
-before resolving its target. That mode rejects this call before the Solm
+before resolving its target. That mode rejects this call before the Stele
 function can execute. EAS now opts into `.solc08Calldata` to model the differing
 offset policy. The focused regression is:
 
@@ -377,7 +377,7 @@ No EAS correctness proofs have been authored. The permitted 24 `sorry`s are the
 22 generated function stubs, constructor stub, and immutable restriction stub.
 Generated files are regenerated with the repository scripts. `SpecSyntax` and `Correct` build with the isolated mode and allocation guards.
 The final command `lake build Benchmarks.EAS.EAS.Correct Benchmarks.EAS.EAS.DiffTarget
-ABI.CalldataTests solm-difftest` completed successfully (7,242 jobs), including
+ABI.CalldataTests stele-difftest` completed successfully (7,242 jobs), including
 all 55 runtime shards. Both constructor-summary shards build too. Only the expected
 24 generated proof placeholders remain. `python3 scripts/scaffold.py check --dir
 Benchmarks/EAS/EAS` prints seven `ok` lines. The final differential result above

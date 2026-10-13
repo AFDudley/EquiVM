@@ -1,8 +1,8 @@
 import Examples.Ballot.Spec
-import Solm.Semantics
+import Stele.Semantics
 import Reasoning.JumpDest
 
-open Solm Ethereum Ethereum.EVM
+open Stele Ethereum Ethereum.EVM
 
 /-! ## `Ballot`'s deployed runtime bytecode — **optimizer ON**
 
@@ -110,10 +110,10 @@ set_option maxHeartbeats 0 in
 set_option maxRecDepth 1000000 in
 /-- `keccak("vote(uint256)")[0:4] = 0x0121b93f`. -/
 theorem ballotVoteSelectorBytes :
-    (KEC (String.toByteArray (Solm.transitionSigStr Ballot.voteTransition))).extract 0 4
+    (KEC (String.toByteArray (Stele.transitionSigStr Ballot.voteTransition))).extract 0 4
       = ⟨#[0x01, 0x21, 0xb9, 0x3f]⟩ := by
-  have hsig : Solm.transitionSigStr Ballot.voteTransition = "vote(uint256)" := by
-    simp [Solm.transitionSigStr, ABI.printSignature, transitionSignature,
+  have hsig : Stele.transitionSigStr Ballot.voteTransition = "vote(uint256)" := by
+    simp [Stele.transitionSigStr, ABI.printSignature, transitionSignature,
       Ballot.voteTransition, Ballot.uint256, Ballot.uint256Int,
       ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
       show Nat.repr 256 = "256" by decide +kernel]
@@ -125,10 +125,10 @@ set_option maxHeartbeats 0 in
 set_option maxRecDepth 1000000 in
 /-- `keccak("proposals(uint256)")[0:4] = 0x013cf08b`. -/
 theorem ballotProposalsSelectorBytes :
-    (KEC (String.toByteArray (Solm.transitionSigStr Ballot.proposalsGetter))).extract 0 4
+    (KEC (String.toByteArray (Stele.transitionSigStr Ballot.proposalsGetter))).extract 0 4
       = ⟨#[0x01, 0x3c, 0xf0, 0x8b]⟩ := by
-  have hsig : Solm.transitionSigStr Ballot.proposalsGetter = "proposals(uint256)" := by
-    simp [Solm.transitionSigStr, ABI.printSignature, transitionSignature,
+  have hsig : Stele.transitionSigStr Ballot.proposalsGetter = "proposals(uint256)" := by
+    simp [Stele.transitionSigStr, ABI.printSignature, transitionSignature,
       Ballot.proposalsGetter, Ballot.uint256, Ballot.uint256Int,
       ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
       show Nat.repr 256 = "256" by decide +kernel]
@@ -140,7 +140,7 @@ set_option maxHeartbeats 0 in
 set_option maxRecDepth 1000000 in
 /-- `keccak("chairperson()")[0:4] = 0x2e4176cf`. -/
 theorem ballotChairpersonSelectorBytes :
-    (KEC (String.toByteArray (Solm.transitionSigStr Ballot.chairpersonGetter))).extract 0 4
+    (KEC (String.toByteArray (Stele.transitionSigStr Ballot.chairpersonGetter))).extract 0 4
       = ⟨#[0x2e, 0x41, 0x76, 0xcf]⟩ := by
   decide +kernel
 
@@ -148,10 +148,10 @@ set_option maxHeartbeats 0 in
 set_option maxRecDepth 1000000 in
 /-- `keccak("delegate(address)")[0:4] = 0x5c19a95c`. -/
 theorem ballotDelegateSelectorBytes :
-    (KEC (String.toByteArray (Solm.transitionSigStr Ballot.delegateTransition))).extract 0 4
+    (KEC (String.toByteArray (Stele.transitionSigStr Ballot.delegateTransition))).extract 0 4
       = ⟨#[0x5c, 0x19, 0xa9, 0x5c]⟩ := by
-  have hsig : Solm.transitionSigStr Ballot.delegateTransition = "delegate(address)" := by
-    simp [Solm.transitionSigStr, ABI.printSignature, transitionSignature,
+  have hsig : Stele.transitionSigStr Ballot.delegateTransition = "delegate(address)" := by
+    simp [Stele.transitionSigStr, ABI.printSignature, transitionSignature,
       Ballot.delegateTransition, Ballot.addr, ABI.abiToSigStr, ABI.elemToSigStr]
     decide +kernel
   rw [hsig]
@@ -161,7 +161,7 @@ set_option maxHeartbeats 0 in
 set_option maxRecDepth 1000000 in
 /-- `keccak("winningProposal()")[0:4] = 0x609ff1bd`. -/
 theorem ballotWinningProposalSelectorBytes :
-    (KEC (String.toByteArray (Solm.transitionSigStr Ballot.winningProposalTransition))).extract 0 4
+    (KEC (String.toByteArray (Stele.transitionSigStr Ballot.winningProposalTransition))).extract 0 4
       = ⟨#[0x60, 0x9f, 0xf1, 0xbd]⟩ := by
   decide +kernel
 
@@ -169,10 +169,10 @@ set_option maxHeartbeats 0 in
 set_option maxRecDepth 1000000 in
 /-- `keccak("giveRightToVote(address)")[0:4] = 0x9e7b8d61`. -/
 theorem ballotGiveRightToVoteSelectorBytes :
-    (KEC (String.toByteArray (Solm.transitionSigStr Ballot.giveRightToVoteTransition))).extract 0 4
+    (KEC (String.toByteArray (Stele.transitionSigStr Ballot.giveRightToVoteTransition))).extract 0 4
       = ⟨#[0x9e, 0x7b, 0x8d, 0x61]⟩ := by
-  have hsig : Solm.transitionSigStr Ballot.giveRightToVoteTransition = "giveRightToVote(address)" := by
-    simp [Solm.transitionSigStr, ABI.printSignature, transitionSignature,
+  have hsig : Stele.transitionSigStr Ballot.giveRightToVoteTransition = "giveRightToVote(address)" := by
+    simp [Stele.transitionSigStr, ABI.printSignature, transitionSignature,
       Ballot.giveRightToVoteTransition, Ballot.addr, ABI.abiToSigStr, ABI.elemToSigStr]
     decide +kernel
   rw [hsig]
@@ -182,10 +182,10 @@ set_option maxHeartbeats 0 in
 set_option maxRecDepth 1000000 in
 /-- `keccak("voters(address)")[0:4] = 0xa3ec138d`. -/
 theorem ballotVotersSelectorBytes :
-    (KEC (String.toByteArray (Solm.transitionSigStr Ballot.votersGetter))).extract 0 4
+    (KEC (String.toByteArray (Stele.transitionSigStr Ballot.votersGetter))).extract 0 4
       = ⟨#[0xa3, 0xec, 0x13, 0x8d]⟩ := by
-  have hsig : Solm.transitionSigStr Ballot.votersGetter = "voters(address)" := by
-    simp [Solm.transitionSigStr, ABI.printSignature, transitionSignature,
+  have hsig : Stele.transitionSigStr Ballot.votersGetter = "voters(address)" := by
+    simp [Stele.transitionSigStr, ABI.printSignature, transitionSignature,
       Ballot.votersGetter, Ballot.addr, ABI.abiToSigStr, ABI.elemToSigStr]
     decide +kernel
   rw [hsig]
@@ -195,7 +195,7 @@ set_option maxHeartbeats 0 in
 set_option maxRecDepth 1000000 in
 /-- `keccak("winnerName()")[0:4] = 0xe2ba53f0`. -/
 theorem ballotWinnerNameSelectorBytes :
-    (KEC (String.toByteArray (Solm.transitionSigStr Ballot.winnerNameTransition))).extract 0 4
+    (KEC (String.toByteArray (Stele.transitionSigStr Ballot.winnerNameTransition))).extract 0 4
       = ⟨#[0xe2, 0xba, 0x53, 0xf0]⟩ := by
   decide +kernel
 

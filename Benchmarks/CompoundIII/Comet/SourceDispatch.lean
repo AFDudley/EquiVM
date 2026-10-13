@@ -1,6 +1,6 @@
 import Benchmarks.CompoundIII.Comet.SourceSelectors
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.CompoundIII.Comet.Immutables
 
@@ -12,7 +12,7 @@ set_option maxRecDepth 2000000
 -- preceding-selector hypotheses redundant.
 set_option linter.unusedVariables false
 
-/-! ## Solm dispatch: which transition a selector reaches -/
+/-! ## Stele dispatch: which transition a selector reaches -/
 
 theorem cometWithExtendedAssetListDispatch_isLiquidatable {I : ExecutionEnv} 
     (hsel : selIs I (cometWithExtendedAssetListSelBytes 0)) :

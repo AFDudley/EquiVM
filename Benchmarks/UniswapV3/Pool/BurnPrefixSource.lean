@@ -2,7 +2,7 @@ import Benchmarks.UniswapV3.Pool.BurnModel
 import Benchmarks.UniswapV3.Pool.PoolEntrySource
 import Benchmarks.UniswapV3.Pool.SignedCastWords
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
@@ -65,7 +65,7 @@ theorem burnCastSource (v : UniswapV3PoolImmutables) (a : BurnArgs) (evm : EVM.S
     ExecStmt config (burnInitFrame v a) evm (.internalCall "SafeCast_toInt128" burnCastExprs "__c0")
       (.ok (burnCastFrame v a) evm) :=
   internalCallFunctionReturn (callee := safeCast128Function)
-    (calleeSolm := safeCast128ReadyFrame (immStore v) (Int.ofNat a.amount.toNat))
+    (calleeStele := safeCast128ReadyFrame (immStore v) (Int.ofNat a.amount.toNat))
     (value := some [.int (Int.ofNat a.amount.toNat)]) (evalBurnCastExprs v a evm ha)
     safeCast128Lookup (safeCast128Bind _) (safeCast128Returns (immStore v) evm _ hv)
 

@@ -1,7 +1,7 @@
 import Benchmarks.EAS.EAS.BytesWriteRun
 import Benchmarks.EAS.EAS.RecordDataSource
 import Benchmarks.EAS.EAS.BytesWriteState
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.EAS.EAS.Immutables
 namespace Benchmarks.EAS.EAS
 

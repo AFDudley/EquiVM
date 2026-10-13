@@ -1,8 +1,8 @@
 import Benchmarks.Auction.Spec
-import Solm.Notation
+import Stele.Notation
 
 /-!
-# NounsAuctionHouse spec in the Solidity-faithful Solm frontend
+# NounsAuctionHouse spec in the Solidity-faithful Stele frontend
 
 The whole Nouns auction-house spec written with `solidity%` and proven definitionally equal to
 the AST spec in `Spec.lean`.
@@ -17,7 +17,7 @@ Notes mirroring the AST spec:
 * Transition order matches `auctionContract.transitions`.
 -/
 
-open Solm Solm.Notation
+open Stele Stele.Notation
 
 namespace Auction.Syntax
 

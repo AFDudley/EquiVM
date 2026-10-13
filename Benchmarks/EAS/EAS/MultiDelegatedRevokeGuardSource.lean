@@ -1,5 +1,5 @@
 import Benchmarks.EAS.EAS.MultiDelegatedRevokeSource
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 set_option maxRecDepth 10000
 
@@ -11,8 +11,8 @@ theorem multiDelegatedRevokeGuard_eval {L imms : Store} {evm : EVM.State} {r : D
         (.binary .eq (.arrayLength .localVar {base := "data"}) (.intLit 0))
         (.binary .ne (.arrayLength .localVar {base := "data"}) (.arrayLength .localVar {base := "signatures"})))) =
       .ok (.bool (decide (0<r.data.length ∧ r.data.length=r.signatures.length))) := by
-  have hde := evalLocalArrayLength (cfg := config) (solm := {contract := contract,locals := L,immutables := imms}) (evm := evm) hd
-  have hse := evalLocalArrayLength (cfg := config) (solm := {contract := contract,locals := L,immutables := imms}) (evm := evm) hs
+  have hde := evalLocalArrayLength (cfg := config) (stele := {contract := contract,locals := L,immutables := imms}) (evm := evm) hd
+  have hse := evalLocalArrayLength (cfg := config) (stele := {contract := contract,locals := L,immutables := imms}) (evm := evm) hs
   simp only [List.length_map] at hde hse
   simp only [evalExpr?,hde,hse,pure,EvalResult.bind,bind,evalBinaryOp?,evalUnaryOp?]
   by_cases h0 : r.data.length = 0

@@ -1,4 +1,4 @@
-import Solm.DiffTest.Harness
+import Stele.DiffTest.Harness
 import Benchmarks.EAS.EAS.Spec
 import Benchmarks.EAS.EAS.Bytecode
 import Benchmarks.EAS.EAS.ImmutableCode
@@ -14,7 +14,7 @@ The ERC-1271 fixture is supplied as requested, but EAS v0.26 does not call it:
 its delegated paths call the ECDSA precompile at address 1.
 -/
 
-open Solm Solm.DiffTest
+open Stele Stele.DiffTest
 
 namespace Benchmarks.EAS.EAS
 

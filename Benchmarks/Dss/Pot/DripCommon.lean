@@ -7,14 +7,14 @@ import Reasoning.ExternalCall
 # Pot `drip()` — shared foundation
 
 Reach lemma to the `drip` logic block `@1819`, empty-calldata decode, the `now >= rho` guard on both
-the EVM and Solm sides, and the storage-word abbreviations used throughout the `drip` port.
+the EVM and Stele sides, and the storage-word abbreviations used throughout the `drip` port.
 
 `drip()` has no parameters (empty decode → `∅` locals) and returns `[uint256]`. Structure:
 `require now≥rho ; pow=_rpow(dsr,now-rho,ONE) ; tmp=_rmul(pow,chi) ; chi_=_sub(tmp,chi) ;
  chi=tmp ; rho=now ; rad=_mul(Pie,chi_) ; vat.suck(vow,this,rad) ; return tmp`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -162,7 +162,7 @@ theorem potDripX_invalidNow {σ I} {g : Sat256} {s0 : State} {k C : ℕ} {sel : 
     solcFreePtrMem_read64
     (by simp only [List.length_cons, List.length_nil]; omega)
 
-/-! ## Solm-side `now >= rho` guard -/
+/-! ## Stele-side `now >= rho` guard -/
 
 theorem evalExpr_ge_uint256_false {evm : EVM.State} {locals : Store}
     {lhs rhs : Expr} {a b : UInt256}
@@ -181,9 +181,9 @@ theorem evalExpr_ge_uint256_false {evm : EVM.State} {locals : Store}
 theorem evalExpr_dripStorageRho (evm : EVM.State) :
     evalExpr? config { contract := contract, locals := (∅ : Store) } evm (.storage rhoRef) =
       .ok (.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨7⟩).toNat)) := by
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨7⟩).toNat)) := by
   rw [evalExpr_storage_scalar_value (hbackend := rfl)
-    (cfg := config) (solm := { contract := contract, locals := (∅ : Store) })
+    (cfg := config) (stele := { contract := contract, locals := (∅ : Store) })
     (slot := rhoRef) (er := ({ base := "rho", steps := [] } : EvaledStorageRef))
     (t := .int uint256Int) (loc := wordLoc ⟨7⟩)
     (hbase := by simp [rhoRef])
@@ -193,24 +193,24 @@ theorem evalExpr_dripStorageRho (evm : EVM.State) :
     (hload := storageLocLoad_uint256 evm ⟨7⟩)]
 
 theorem evalExpr_dripNowGeRho_true (evm : EVM.State)
-    (hle : (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨7⟩).toNat ≤
+    (hle : (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨7⟩).toNat ≤
         (UInt256.ofNat evm.executionEnv.header.timestamp).toNat) :
     evalExpr? config { contract := contract, locals := (∅ : Store) } evm
       (.binary .ge (.env .timestamp) (.storage rhoRef)) = .ok (.bool true) := by
   refine evalExpr_ge_uint256_true
     (a := UInt256.ofNat evm.executionEnv.header.timestamp)
-    (b := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨7⟩)
+    (b := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨7⟩)
     ?_ (evalExpr_dripStorageRho evm) hle
   simp [evalExpr?, envValue, pure]
 
 theorem evalExpr_dripNowGeRho_false (evm : EVM.State)
     (hlt : (UInt256.ofNat evm.executionEnv.header.timestamp).toNat <
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨7⟩).toNat) :
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨7⟩).toNat) :
     evalExpr? config { contract := contract, locals := (∅ : Store) } evm
       (.binary .ge (.env .timestamp) (.storage rhoRef)) = .ok (.bool false) := by
   refine evalExpr_ge_uint256_false
     (a := UInt256.ofNat evm.executionEnv.header.timestamp)
-    (b := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨7⟩)
+    (b := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨7⟩)
     ?_ (evalExpr_dripStorageRho evm) hlt
   simp [evalExpr?, envValue, pure]
 

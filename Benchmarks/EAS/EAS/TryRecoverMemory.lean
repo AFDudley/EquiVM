@@ -2,7 +2,7 @@ import Benchmarks.EAS.EAS.TryRecoverExpr
 import Benchmarks.EAS.EAS.EcrecoverOutput
 import Benchmarks.EAS.EAS.RecordUID
 import Benchmarks.EAS.EAS.RuntimeBlocks_053
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 -- LIBRARY CANDIDATE: a covered word below a word sequence keeps its loaded value.

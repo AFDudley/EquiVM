@@ -1,8 +1,8 @@
 import Benchmarks.EAS.EAS.Common
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
--- GENERALIZES Reasoning.SolmBody.execWhile_var to state changes, relational invariants, and exceptional exits.
+-- GENERALIZES Reasoning.SteleBody.execWhile_var to state changes, relational invariants, and exceptional exits.
 theorem execWhile_invariant {cfg : Config} {contract : ContractDecl} {imms : Store}
     {cond : Expr} {body : Body} {bound : Nat}
     (Inv : Nat → Store → EVM.State → Prop) (Post : Store → EVM.State → Prop) (Rev Static : Prop)

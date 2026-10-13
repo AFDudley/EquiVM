@@ -4,7 +4,7 @@ import Benchmarks.Dss.Spot.ConstructorTraceVatMaskHigh
 # MakerDAO/Sky DSS Spotter constructor vat mask trace
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Spot
 

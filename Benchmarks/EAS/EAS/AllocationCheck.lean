@@ -4,7 +4,7 @@ import Benchmarks.EAS.EAS.DiffTarget
 Compare the EAS-local allocation counter with the actual EVM free-memory word,
 including repeated UID hashing, storage copies, resolver returns, and refunds.
 -/
-open Solm Solm.Interp Solm.DiffTest Ethereum Ethereum.EVM
+open Stele Stele.Interp Stele.DiffTest Ethereum Ethereum.EVM
 
 private def bytes32 (n : Nat) : Value :=
   .fixedBytes ⟨31, by decide⟩ (wordBytes n).toList
@@ -21,7 +21,7 @@ private def check (accounts : AccountMap) (name : String) (args : List Value)
   let env := t.env t.runtime caller value input true 1000 16756728
   let gas : UInt256 := .ofNat t.gas
   let trace := runTrace (initialState accounts accounts gas default env) (t.gas + 1)
-  let (spec, replay) := solmExecRun t.fuel replayOracle (Replay.ofTrace trace) t.config t.contract
+  let (spec, replay) := steleExecRun t.fuel replayOracle (Replay.ofTrace trace) t.config t.contract
     t.immutables accounts accounts gas default env
   let verdict := compareRuntime trace.xiResult spec
   unless verdict.isSuccess && replay.mismatches.isEmpty && replay.boundaries.isEmpty do

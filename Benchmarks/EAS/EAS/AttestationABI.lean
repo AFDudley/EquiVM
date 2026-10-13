@@ -1,7 +1,7 @@
 import Benchmarks.EAS.EAS.AttestationValues
 import Benchmarks.EAS.EAS.GetAttestationSource
 import Reasoning.ABIViews
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 set_option maxRecDepth 10000
 

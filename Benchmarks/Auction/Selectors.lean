@@ -1,7 +1,7 @@
 import Benchmarks.Auction.Bytecode
 import Benchmarks.Auction.Spec
 
-open Solm ABI Ethereum Ethereum.EVM
+open Stele ABI Ethereum Ethereum.EVM
 
 namespace Auction
 

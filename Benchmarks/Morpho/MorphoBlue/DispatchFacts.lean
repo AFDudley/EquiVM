@@ -1,8 +1,8 @@
 import Benchmarks.Morpho.MorphoBlue.Common
 
-/-! Solm selector dispatch and the raw signature fallback. -/
+/-! Stele selector dispatch and the raw signature fallback. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MorphoBlue
 
@@ -39,7 +39,7 @@ theorem morphoSelectorDispatch_none_of_misses {I : ExecutionEnv}
     setFeeRecipientSelectorOf, setAuthorizationSelectorOf, isIrmEnabledSelectorOf]
   simp (disch := omega) only [hnm, Bool.false_eq_true, ↓reduceIte]
 
-/-! ## Solm dispatch: which transition a selector reaches -/
+/-! ## Stele dispatch: which transition a selector reaches -/
 
 theorem morphoDispatch_setOwner {I : ExecutionEnv} 
     (hsel : selIs I (morphoSelBytes 0)) :

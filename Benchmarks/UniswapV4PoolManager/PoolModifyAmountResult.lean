@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV4PoolManager.PoolModifyAmountFrames
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 def poolModifyRegionDeltaWord (p : PoolModifyParams) (tick : Int) (sqrtPrice : UInt256) : UInt256 :=

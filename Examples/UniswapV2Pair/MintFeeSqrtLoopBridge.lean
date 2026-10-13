@@ -1,7 +1,7 @@
 import Reasoning.WordArithmetic
 import Examples.UniswapV2Pair.MintFeeAfterRootsRuntime
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -466,7 +466,7 @@ theorem uniswapSqrtFunctionCallRuntimeSuccessIntBounded
         (name := "sqrt") (retVar := retVar) (args := args)
         (argVals := [sqrtFunctionYValue y])
         (callee := sqrtFunction) (locals := sqrtFunctionCallStore y)
-        (calleeSolm := { contract := contract, locals := locals' })
+        (calleeStele := { contract := contract, locals := locals' })
         (value := some [.int result])
         hargs
         (by simpa [hcontract, himm] using uniswapLookupSqrtFunction)
@@ -537,7 +537,7 @@ theorem uniswapSqrtFunctionCallRuntimeSuccessIntBoundedInput
         (name := "sqrt") (retVar := retVar) (args := args)
         (argVals := [sqrtFunctionYValue y])
         (callee := sqrtFunction) (locals := sqrtFunctionCallStore y)
-        (calleeSolm := { contract := contract, locals := locals' })
+        (calleeStele := { contract := contract, locals := locals' })
         (value := some [.int result])
         hargs
         (by simpa [hcontract, himm] using uniswapLookupSqrtFunction)

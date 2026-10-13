@@ -1,7 +1,7 @@
 import Benchmarks.EAS.Attester.MultiAttestSource
 import Benchmarks.EAS.Attester.MultiAttestReturnTrace
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.EAS.Attester
 
@@ -54,11 +54,11 @@ def multiAttestReturnGuard : Expr :=
         (.binary .add (.arrayLength .localVar ⟨"uids", []⟩) (.intLit 1))))
     (.intLit 18446744073709551615)
 
-theorem multiAttestReturnGuard_eval {cfg solm evm} {base : Nat} {out : ByteArray}
-    (hbase : solm.locals.get? "allocationEnd" = some (.int (Int.ofNat base)))
-    (hout : solm.locals.get? "rawReturn" = some (.bytes out))
-    (huids : solm.locals.get? "uids" = some (.array (returnArrayValues out))) :
-    evalExpr? cfg solm evm multiAttestReturnGuard =
+theorem multiAttestReturnGuard_eval {cfg stele evm} {base : Nat} {out : ByteArray}
+    (hbase : stele.locals.get? "allocationEnd" = some (.int (Int.ofNat base)))
+    (hout : stele.locals.get? "rawReturn" = some (.bytes out))
+    (huids : stele.locals.get? "uids" = some (.array (returnArrayValues out))) :
+    evalExpr? cfg stele evm multiAttestReturnGuard =
       .ok (.bool (decide (returnArrayEnd base out ≤ solcMaxU64))) := by
   have heq : (base : Int) + 32 * (((out.size : Int) + 31) / 32) +
       32 * ((returnArrayCount out : Int) + 1) = (returnArrayEnd base out : Int) := by
@@ -142,7 +142,7 @@ theorem multiAttestSourceReturn {imms locals : Store} {evm : State} {base : Nat}
         (.returned ⟨contract, locals.insert "uids" (.array (returnArrayValues out)), imms⟩ evm
           (some [.array (returnArrayValues out)]))) := by
   have hguard := multiAttestReturnGuard_eval (cfg := config) (evm := evm)
-    (solm := ⟨contract, locals.insert "uids" (.array (returnArrayValues out)), imms⟩)
+    (stele := ⟨contract, locals.insert "uids" (.array (returnArrayValues out)), imms⟩)
     (base := base) (out := out)
     (by simpa [Std.HashMap.getElem?_insert] using hbase)
     (by simpa [Std.HashMap.getElem?_insert] using hout) (by simp)

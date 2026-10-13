@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.TickUpdateModel
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 1000
 
@@ -13,14 +13,14 @@ macro "tick_update_get" : tactic => `(tactic| (
 theorem tickUpdateBeforeSource (imms : Store) (evm : EVM.State) (a : TickUpdateArgs) :
     ExecBlock config (tickUpdateFrame imms a) evm (tickUpdateFunction.body.take 3)
       (.ok (tickUpdateBeforeFrame imms a evm) evm) := by
-  refine ExecBlock.consNormal (solm' := tickUpdateFalseFrame imms a)
+  refine ExecBlock.consNormal (stele' := tickUpdateFalseFrame imms a)
     (ExecStmt.letDecl (by simp only [evalExpr?, pure])) ?_
-  refine ExecBlock.consNormal (solm' := tickUpdateAliasFrame imms a) (evm' := evm)
+  refine ExecBlock.consNormal (stele' := tickUpdateAliasFrame imms a) (evm' := evm)
     (ExecStmt.letStorage ?_) ?_
   · apply resolveTickReference _ imms evm "tick" a.tick
     · simp [tickUpdateFalseFrame, tickUpdateFrame, tickUpdateLocals]
     · tick_update_get
-  · refine ExecBlock.consNormal (solm' := tickUpdateBeforeFrame imms a evm)
+  · refine ExecBlock.consNormal (stele' := tickUpdateBeforeFrame imms a evm)
       (ExecStmt.letDecl ?_) ExecBlock.nil
     exact evalTickAliasGross (tickUpdateAliasFrame imms a).locals imms evm "info" a.tick
       (by tick_update_get)
@@ -43,7 +43,7 @@ theorem tickUpdateLiquidityCall (imms : Store) (evm : EVM.State) (a : TickUpdate
       (.ok (tickUpdateAfterFrame imms a evm) evm) := by
   exact internalCallFunctionReturn (callee := liquidityDeltaFunction)
     (locals := liquidityDeltaLocals (tickUpdateGrossBefore a evm) a.delta)
-    (calleeSolm := liquidityDeltaReadyFrame imms (tickUpdateGrossBefore a evm) a.delta)
+    (calleeStele := liquidityDeltaReadyFrame imms (tickUpdateGrossBefore a evm) a.delta)
     (value := some [.int (tickUpdateGrossAfter a evm)])
     (tickUpdateLiquidityArgs imms evm a) liquidityDeltaLookup
     (liquidityDeltaBind (tickUpdateGrossBefore a evm) a.delta)

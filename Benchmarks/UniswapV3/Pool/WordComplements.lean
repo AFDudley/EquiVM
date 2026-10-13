@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.SourceSignedBits
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open scoped Fin.CommRing
 namespace Benchmarks.UniswapV3.Pool
 

@@ -3,7 +3,7 @@ import Benchmarks.EAS.EAS.OffchainSource
 import Benchmarks.EAS.EAS.ScalarDecode
 import Benchmarks.EAS.EAS.ReturnWord
 import Benchmarks.EAS.EAS.TimePublic
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.EAS.EAS.Immutables
 namespace Benchmarks.EAS.EAS
 set_option maxRecDepth 10000

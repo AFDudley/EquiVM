@@ -18,10 +18,10 @@ private def direct : DecodeMode := .solc08Calldata [(0, [{ materialize := [] }])
 private def copyRow : DecodeMode := .solc08Calldata [(0, [{ materialize := [[.element]] }])]
 private def copyData : DecodeMode :=
   .solc08Calldata [(0, [{ materialize := [[.element, .field 1]] }])]
-private def getArg (mode : DecodeMode) (ns : List Nat) : Option Solm.Value := do
+private def getArg (mode : DecodeMode) (ns : List Nat) : Option Stele.Value := do
   let store ← decodeCalldata ["r"] params (call ns) mode
   store.get? "r"
-private def emptyRow : Solm.Value := .array [.tuple [.int 0, .array []]]
+private def emptyRow : Stele.Value := .array [.tuple [.int 0, .array []]]
 
 -- Canonical input and noncanonical, in-bounds aliases are distinct cases.
 #guard getArg direct [32, 1, 32, 0, 64, 0] = some emptyRow

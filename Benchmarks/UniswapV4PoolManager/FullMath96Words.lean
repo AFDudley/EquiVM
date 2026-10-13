@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV4PoolManager.FullMathGeneralWords
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 def fullMathQ96 : UInt256 := UInt256.ofNat (2^96)

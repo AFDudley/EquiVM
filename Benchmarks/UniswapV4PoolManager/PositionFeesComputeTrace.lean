@@ -2,7 +2,7 @@ import Benchmarks.UniswapV4PoolManager.PositionFeesSource
 import Benchmarks.UniswapV4PoolManager.FullMath128Trace
 import Benchmarks.UniswapV4PoolManager.RuntimeBlocks_018
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.UniswapV4PoolManager.Immutables
 namespace Benchmarks.UniswapV4PoolManager
@@ -25,7 +25,7 @@ theorem positionFeesComputeTrace {I : ExecutionEnv} {g : Sat256} {s0 evm : State
     else RDrev (deployedRuntime v) g s0 := by
   have hread (slot : UInt256) :
       (evm.accountMap.get? I.codeOwner |>.option (⟨0⟩ : UInt256) (fun ac => ac.storage.getD slot ⟨0⟩)) =
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot :=
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot :=
     (storageLoad_codeOwner_eq_solcSlotWordAt evm I slot (by rw [hI])).symm
   obtain ⟨k1, C1, rd1⟩ := poolManagerBlocks.poolManager_block_5950
     (by change R.length+13 ≤ 1024; omega)

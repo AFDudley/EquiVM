@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.OracleInitializeStorage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 -- LIBRARY CANDIDATE: append one packed field to an already written low prefix.

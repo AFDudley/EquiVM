@@ -1,6 +1,6 @@
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 import Reasoning.BytecodePatching
-import Solm
+import Stele
 import Reasoning.PatchRuntime
 import Reasoning.Immutables
 
@@ -13,7 +13,7 @@ address slots are zeroed in the emitted runtime.  The constructor patches `facto
 the offsets below, re-derived from standard-JSON `evm.deployedBytecode.immutableReferences`.
 -/
 
-open Solm ABI
+open Stele ABI
 
 namespace Benchmarks.UniswapV2Router02.Immutables
 

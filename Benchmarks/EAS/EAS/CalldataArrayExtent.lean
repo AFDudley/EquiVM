@@ -1,6 +1,6 @@
 import Benchmarks.EAS.EAS.CalldataPayload
 import Benchmarks.EAS.EAS.WordShiftMul
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 -- GENERALIZES calldataArrayExtent_complete to any bounded element stride.

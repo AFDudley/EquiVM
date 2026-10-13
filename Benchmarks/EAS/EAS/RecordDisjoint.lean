@@ -1,5 +1,5 @@
 import Benchmarks.EAS.EAS.RecordUID
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 theorem AttestationMemoryView.write_disjoint {mem : ByteArray} {src dataPtr : UInt256}

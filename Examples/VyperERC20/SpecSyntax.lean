@@ -1,10 +1,10 @@
 import Examples.VyperERC20.Spec
-import Solm.Notation
+import Stele.Notation
 
 /-!
-# Vyper ERC20 spec in the Solidity-faithful Solm frontend
+# Vyper ERC20 spec in the Solidity-faithful Stele frontend
 
-The Vyper ERC20 behavior spec is the language-agnostic ERC20 Solm AST
+The Vyper ERC20 behavior spec is the language-agnostic ERC20 Stele AST
 (`VyperERC20.erc20Contract` is `ERC20.erc20Contract`; only the storage layout is
 Vyper-specific).  Written here with `solidity%` and proven definitionally equal.
 
@@ -12,7 +12,7 @@ Vyper-specific).  Written here with `solidity%` and proven definitionally equal.
 Transition order matches `erc20Contract.transitions` exactly.
 -/
 
-open Solm Solm.Notation
+open Stele Stele.Notation
 
 namespace VyperERC20.Syntax
 

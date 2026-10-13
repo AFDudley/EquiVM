@@ -1,6 +1,6 @@
 import Benchmarks.Morpho.MorphoBlue.MarketTransferLocals
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.Morpho.MorphoBlue
 
 theorem MarketTransferLocals.emit {p assets shares account receiver locals}

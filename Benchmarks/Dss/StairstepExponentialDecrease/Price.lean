@@ -1,7 +1,7 @@
 import Reasoning.ABIComposite
 import Benchmarks.Dss.StairstepExponentialDecrease.PriceSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -568,16 +568,16 @@ theorem stairstepPriceBodyCoreStepZero
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) stairstepPriceEntryPc [sel]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  have hloadSolm :
-      Solm.EVM.storageLoad evmSolm evmSolm.executionEnv.codeOwner ⟨1⟩ = ⟨0⟩ := by
-    simpa [evmSolm, priceStepWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  have hloadStele :
+      Stele.EVM.storageLoad evmStele evmStele.executionEnv.codeOwner ⟨1⟩ = ⟨0⟩ := by
+    simpa [evmStele, priceStepWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using hstep
   have hbody :
-      ExecTransitionBody config contract evmSolm (priceLocals I)
+      ExecTransitionBody config contract evmStele (priceLocals I)
         priceTransition.body .reverted :=
     stairstepPriceSourceStepZeroReverts
-      (evm := evmSolm) (I := I) (by simp only [evmSolm, initState]; exact hwv) hloadSolm
+      (evm := evmStele) (I := I) (by simp only [evmStele, initState]; exact hwv) hloadStele
   obtain ⟨_, _, rd665⟩ := stairstepPriceX_decoded
     (g := Sat256.ofUInt256 g) hsz68 hsize hreach
   have hinvalidOr := stairstepPriceX_stepZero_invalid (hstep := hstep) rd665
@@ -612,17 +612,17 @@ theorem stairstepPriceBody {σ σ₀ A I} {g : UInt256}
     · exact stairstepPriceBodyCoreStepZero hcode hsize hwv hsz68 hstep
         hdispatch (stairstepDecode_price_ok hsz68) hreach
     · by_cases hn : priceN σ I = ⟨0⟩
-      · let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
-        have hstepLoadSolm :
-          Solm.EVM.storageLoad evmSolm evmSolm.executionEnv.codeOwner ⟨1⟩ =
+      · let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
+        have hstepLoadStele :
+          Stele.EVM.storageLoad evmStele evmStele.executionEnv.codeOwner ⟨1⟩ =
               priceStepWord σ I := by
-          simp [evmSolm, priceStepWord, solcSlotWordAt, initState,
-            Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage, solcSlotWord]
-        have hcutLoadSolm :
-          Solm.EVM.storageLoad evmSolm evmSolm.executionEnv.codeOwner ⟨2⟩ =
+          simp [evmStele, priceStepWord, solcSlotWordAt, initState,
+            Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage, solcSlotWord]
+        have hcutLoadStele :
+          Stele.EVM.storageLoad evmStele evmStele.executionEnv.codeOwner ⟨2⟩ =
               priceCutWord σ I := by
-          simp [evmSolm, priceCutWord, solcSlotWordAt, initState,
-            Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage, solcSlotWord]
+          simp [evmStele, priceCutWord, solcSlotWordAt, initState,
+            Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage, solcSlotWord]
         obtain ⟨_, _, rd665⟩ := stairstepPriceX_decoded
           (g := Sat256.ofUInt256 g) hsz68 hsize hreach
         obtain ⟨_, _, rd1042⟩ := stairstepPriceX_stepNonzero_toRpow
@@ -632,16 +632,16 @@ theorem stairstepPriceBody {σ σ₀ A I} {g : UInt256}
         obtain ⟨_, _, rd1232⟩ := stairstepPriceRpowReturnToRmul rd707
         by_cases hfit : stairstepRay.toNat * (priceTop I).toNat < UInt256.size
         · have hbody :
-              ExecTransitionBody config contract evmSolm (priceLocals I)
+              ExecTransitionBody config contract evmStele (priceLocals I)
                 priceTransition.body
                 (.returned
                   { contract := contract,
                     locals := priceLocalsOut σ I stairstepRay (priceTop I) }
-                  evmSolm (some [.int (Int.ofNat (priceTop I).toNat)])) :=
+                  evmStele (some [.int (Int.ofNat (priceTop I).toNat)])) :=
             stairstepPriceSourceNZeroReturns
-              (evm := evmSolm) (σ := σ) (I := I)
-              (by simp only [evmSolm, initState]; exact hwv)
-              hstepLoadSolm hcutLoadSolm hstep hn hfit
+              (evm := evmStele) (σ := σ) (I := I)
+              (by simp only [evmStele, initState]; exact hwv)
+              hstepLoadStele hcutLoadStele hstep hn hfit
           obtain ⟨_, _, rd712⟩ := stairstepPriceRmulRayReturns hfit rd1232
           have hret := stairstepPriceFinishReturn rd712
           have henc :
@@ -655,41 +655,41 @@ theorem stairstepPriceBody {σ σ₀ A I} {g : UInt256}
         · have hover : UInt256.size ≤ stairstepRay.toNat * (priceTop I).toNat := by
             omega
           have hbody :
-              ExecTransitionBody config contract evmSolm (priceLocals I)
+              ExecTransitionBody config contract evmStele (priceLocals I)
                 priceTransition.body .reverted :=
             stairstepPriceSourceNZeroRmulOverflowReverts
-              (evm := evmSolm) (σ := σ) (I := I)
-              (by simp only [evmSolm, initState]; exact hwv)
-              hstepLoadSolm hcutLoadSolm hstep hn hover
+              (evm := evmStele) (σ := σ) (I := I)
+              (by simp only [evmStele, initState]; exact hwv)
+              hstepLoadStele hcutLoadStele hstep hn hover
           have hrev := stairstepPriceRmulRayOverflowReverts hover rd1232
           exact hrev.reEquivExecutionRevert hcode hdispatch
             (stairstepDecode_price_ok hsz68) hbody
-      · let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
-        have hstepLoadSolm :
-          Solm.EVM.storageLoad evmSolm evmSolm.executionEnv.codeOwner ⟨1⟩ =
+      · let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
+        have hstepLoadStele :
+          Stele.EVM.storageLoad evmStele evmStele.executionEnv.codeOwner ⟨1⟩ =
               priceStepWord σ I := by
-          simp [evmSolm, priceStepWord, solcSlotWordAt, initState,
-            Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage, solcSlotWord]
-        have hcutLoadSolm :
-          Solm.EVM.storageLoad evmSolm evmSolm.executionEnv.codeOwner ⟨2⟩ =
+          simp [evmStele, priceStepWord, solcSlotWordAt, initState,
+            Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage, solcSlotWord]
+        have hcutLoadStele :
+          Stele.EVM.storageLoad evmStele evmStele.executionEnv.codeOwner ⟨2⟩ =
               priceCutWord σ I := by
-          simp [evmSolm, priceCutWord, solcSlotWordAt, initState,
-            Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage, solcSlotWord]
+          simp [evmStele, priceCutWord, solcSlotWordAt, initState,
+            Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage, solcSlotWord]
         obtain ⟨_, _, rd665⟩ := stairstepPriceX_decoded
           (g := Sat256.ofUInt256 g) hsz68 hsize hreach
         obtain ⟨_, _, rd1042⟩ := stairstepPriceX_stepNonzero_toRpow
           (g := Sat256.ofUInt256 g) hstep rd665
         by_cases hcut : priceCutWord σ I = ⟨0⟩
         · have hbody :
-              ExecTransitionBody config contract evmSolm (priceLocals I)
+              ExecTransitionBody config contract evmStele (priceLocals I)
                 priceTransition.body
                 (.returned
                   { contract := contract, locals := priceLocalsOut σ I ⟨0⟩ ⟨0⟩ }
-                  evmSolm (some [.int 0])) :=
+                  evmStele (some [.int 0])) :=
             stairstepPriceSourceXZeroNNonzeroReturns
-              (evm := evmSolm) (σ := σ) (I := I)
-              (by simp only [evmSolm, initState]; exact hwv)
-              hstepLoadSolm hcutLoadSolm hstep hn hcut
+              (evm := evmStele) (σ := σ) (I := I)
+              (by simp only [evmStele, initState]; exact hwv)
+              hstepLoadStele hcutLoadStele hstep hn hcut
           obtain ⟨_, _, rd707⟩ :=
             stairstepPriceRpowXZeroNNonzero_toRmul hn hcut rd1042
           obtain ⟨_, _, rd1232⟩ := stairstepPriceRpowReturnToRmul rd707
@@ -719,7 +719,7 @@ theorem stairstepPriceBody {σ σ₀ A I} {g : UInt256}
               (I := I) (g := Sat256.ofUInt256 g)
               (s0 := initState σ σ₀ (Sat256.ofUInt256 g) A I)
               (x := priceCutWord σ I) (n := priceN σ I) (b := stairstepRay)
-              (evm := evmSolm)
+              (evm := evmStele)
               (mem := solcFreePtrMem) (out := ByteArray.empty) (aw := UInt256.ofNat 3)
               (acc := σ)
               (R := priceTop I :: ⟨712⟩ :: ⟨0⟩ :: priceDur I ::
@@ -733,12 +733,12 @@ theorem stairstepPriceBody {σ σ₀ A I} {g : UInt256}
           | inr hrev =>
               rcases hrev with ⟨hrpowBody, hrdRev⟩
               have hbody :
-                  ExecTransitionBody config contract evmSolm (priceLocals I)
+                  ExecTransitionBody config contract evmStele (priceLocals I)
                     priceTransition.body .reverted :=
                 stairstepPriceSourceRpowReverts
-                  (evm := evmSolm) (σ := σ) (I := I)
-                  (by simp only [evmSolm, initState]; exact hwv)
-                  hstepLoadSolm hcutLoadSolm hstep hrpowBody
+                  (evm := evmStele) (σ := σ) (I := I)
+                  (by simp only [evmStele, initState]; exact hwv)
+                  hstepLoadStele hcutLoadStele hstep hrpowBody
               exact hrdRev.reEquivExecutionRevert hcode hdispatch
                 (stairstepDecode_price_ok hsz68) hbody
           | inl hretRpow =>
@@ -747,22 +747,22 @@ theorem stairstepPriceBody {σ σ₀ A I} {g : UInt256}
               obtain ⟨_, _, rd1232⟩ := stairstepPriceRpowReturnToRmul rd707
               by_cases hfit : pow.toNat * (priceTop I).toNat < UInt256.size
               · have hbody :
-                    ExecTransitionBody config contract evmSolm (priceLocals I)
+                    ExecTransitionBody config contract evmStele (priceLocals I)
                       priceTransition.body
                       (.returned
                         { contract := contract,
                           locals :=
                             priceLocalsOut σ I pow
                               (UInt256.div (pow * priceTop I) stairstepRay) }
-                        evmSolm
+                        evmStele
                         (some
                           [.int (Int.ofNat
                             (UInt256.div (pow * priceTop I) stairstepRay).toNat)])) :=
                   stairstepPriceSourceRpowReturns
-                    (evm := evmSolm) (σ := σ) (I := I)
+                    (evm := evmStele) (σ := σ) (I := I)
                     (pow := pow) (rpowLocals := rpowLocals)
-                    (by simp only [evmSolm, initState]; exact hwv)
-                    hstepLoadSolm hcutLoadSolm hstep hrpowBody hfit
+                    (by simp only [evmStele, initState]; exact hwv)
+                    hstepLoadStele hcutLoadStele hstep hrpowBody hfit
                 obtain ⟨_, _, rd712⟩ := stairstepPriceRmulReturns hfit rd1232
                 have hret := stairstepPriceFinishReturn rd712
                 have henc :
@@ -784,13 +784,13 @@ theorem stairstepPriceBody {σ σ₀ A I} {g : UInt256}
               · have hover : UInt256.size ≤ pow.toNat * (priceTop I).toNat := by
                   omega
                 have hbody :
-                    ExecTransitionBody config contract evmSolm (priceLocals I)
+                    ExecTransitionBody config contract evmStele (priceLocals I)
                       priceTransition.body .reverted :=
                   stairstepPriceSourceRpowReturnsRmulOverflowReverts
-                    (evm := evmSolm) (σ := σ) (I := I)
+                    (evm := evmStele) (σ := σ) (I := I)
                     (pow := pow) (rpowLocals := rpowLocals)
-                    (by simp only [evmSolm, initState]; exact hwv)
-                    hstepLoadSolm hcutLoadSolm hstep hrpowBody hover
+                    (by simp only [evmStele, initState]; exact hwv)
+                    hstepLoadStele hcutLoadStele hstep hrpowBody hover
                 have hrev := stairstepPriceRmulOverflowReverts hover rd1232
                 exact hrev.reEquivExecutionRevert hcode hdispatch
                   (stairstepDecode_price_ok hsz68) hbody

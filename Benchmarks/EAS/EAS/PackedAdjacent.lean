@@ -1,5 +1,5 @@
 import Benchmarks.EAS.EAS.PackedNormalize
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 -- LIBRARY CANDIDATE: combine adjacent packed stores without assumptions about slot hashes.

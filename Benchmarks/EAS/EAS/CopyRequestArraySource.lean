@@ -1,7 +1,7 @@
 import Benchmarks.EAS.EAS.CopyRequestCall
 import Benchmarks.EAS.EAS.ArrayAllocateSource
 import Benchmarks.EAS.EAS.ResolveManySource
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 set_option maxRecDepth 10000
 
@@ -35,7 +35,7 @@ theorem copyRequestArrayGuardSource {L imms : Store} {evm : EVM.State} {rs : Lis
     (h : CopyRequestArrayLocals L rs heap i) :
     evalExpr? config {contract := contract,locals := L,immutables := imms} evm copyRequestArrayGuard =
       .ok (.bool (decide (i < rs.length))) := by
-  have hl := evalLocalArrayLength (cfg := config) (evm := evm) (solm := {contract := contract,locals := L,immutables := imms}) h.data
+  have hl := evalLocalArrayLength (cfg := config) (evm := evm) (stele := {contract := contract,locals := L,immutables := imms}) h.data
   simp only [List.length_map] at hl
   simp only [copyRequestArrayGuard,evalExpr?,h.index,hl,EvalResult.ofOption,EvalResult.bind,bind,
     copyRequestArrayLength,evalExpr?,h.data,readLocalPath?,pure,List.length_map,evalBinaryOp_lt_int_ok,
@@ -45,7 +45,7 @@ theorem copyRequestArrayCallArgsSource {L imms : Store} {evm : EVM.State} {rs : 
     (h : CopyRequestArrayLocals L rs heap i) (hi : i < rs.length) :
     evalExprs? config {contract := contract,locals := L,immutables := imms} evm copyRequestArrayCallArgs =
       .ok [rs[i].tuple,.int (Int.ofNat heap)] := by
-  have he := evalArrayIndex (evalLocalValue (cfg := config) (evm := evm) (solm := {contract := contract,locals := L,immutables := imms}) h.data)
+  have he := evalArrayIndex (evalLocalValue (cfg := config) (evm := evm) (stele := {contract := contract,locals := L,immutables := imms}) h.data)
     (evalLocalValue h.index) (by simpa only [List.length_map] using hi) (List.getElem_map ..)
     (show normalizeRawBoolWord? rs[i].tuple = .ok rs[i].tuple from rfl)
   simp only [copyRequestArrayCallArgs,evalExprs?,he,evalExpr?,h.heap,EvalResult.ofOption,EvalResult.bind,bind,pure]
@@ -82,7 +82,7 @@ theorem copyRequestArrayPrefixSource {L imms : Store} {evm : EVM.State} {rs : Li
     (¬ (rs.length ≤ 2^64-1 ∧ (next ≤ 2^64-1 ∧ heap ≤ next)) →
       ExecBlock config {contract := contract,locals := L,immutables := imms} evm copyRequestArrayPrefix .reverted) := by
   dsimp only
-  have hl := evalLocalArrayLength (cfg := config) (evm := evm) (solm := {contract := contract,locals := L,immutables := imms}) hd
+  have hl := evalLocalArrayLength (cfg := config) (evm := evm) (stele := {contract := contract,locals := L,immutables := imms}) hd
   simp only [List.length_map] at hl
   have ha := arrayAllocateExprSource (length := copyRequestArrayLength) hl hh 32
   constructor

@@ -1,6 +1,6 @@
 import Benchmarks.Safe.Main.Spec
 
-open Solm ABI Ethereum
+open Stele ABI Ethereum
 
 namespace Benchmarks.Safe.Main
 

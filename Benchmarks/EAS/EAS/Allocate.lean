@@ -2,12 +2,12 @@ import Benchmarks.EAS.EAS.Entry
 
 /-! # EAS memory allocator: source execution and compiled routine -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.EAS.EAS.Immutables
 namespace Benchmarks.EAS.EAS
 set_option maxRecDepth 10000
 
--- GENERALIZES Reasoning.SolmArithmetic.assignLocalVarBase_ok: preserve arbitrary immutables.
+-- GENERALIZES Reasoning.SteleArithmetic.assignLocalVarBase_ok: preserve arbitrary immutables.
 theorem assignLocalBase_ok {cfg : Config} {frame : Frame} {evm : EVM.State}
     {name : Ident} {old value : Value} (hget : frame.locals.get? name = some old) :
     assignStorageRef? cfg frame evm .localVar {base := name} value =

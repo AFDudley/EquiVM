@@ -1,7 +1,7 @@
 import Benchmarks.Dss.Clipper.Common
 import Benchmarks.Dss.Clipper.Fallback
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 namespace Benchmarks.Dss.Clipper
@@ -100,18 +100,18 @@ theorem clipperEvalActiveArray (v : ClipperImmutables) (evm : EVM.State) (locals
 def clipperActiveArrayValuesFrom (evm : EVM.State) : Nat → Nat → List Value
   | _, 0 => []
   | k, n + 1 =>
-      .int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      .int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (activeSlot (.int (Int.ofNat k)))).toNat) ::
       clipperActiveArrayValuesFrom evm (k + 1) n
 
 abbrev clipperActiveArrayValues (evm : EVM.State) : List Value :=
   clipperActiveArrayValuesFrom evm 0
-    (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨11⟩).toNat
+    (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨11⟩).toNat
 
 def clipperActiveArrayWordBytesFrom (evm : EVM.State) : Nat → Nat → List UInt8
   | _, 0 => []
   | k, n + 1 =>
-      EVM.Word.toBytesBE (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      EVM.Word.toBytesBE (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (activeSlot (.int (Int.ofNat k)))) ++
       clipperActiveArrayWordBytesFrom evm (k + 1) n
 
@@ -119,7 +119,7 @@ abbrev clipperActiveArrayReturnBytes (evm : EVM.State) : ByteArray :=
   ⟨(ABI.natBytes 32 ++
     (ABI.natBytes (clipperActiveArrayValues evm).length ++
       clipperActiveArrayWordBytesFrom evm 0
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨11⟩).toNat)).toArray⟩
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨11⟩).toNat)).toArray⟩
 
 theorem clipperActiveArrayValuesFrom_length (evm : EVM.State) :
     ∀ k n, (clipperActiveArrayValuesFrom evm k n).length = n
@@ -168,7 +168,7 @@ theorem clipperReadActiveElemAt (evm : EVM.State) (k : Nat) :
     solidityReadStorage? storageLayoutRaw evm
       ({ base := "active", steps := [.aindex (.int (Int.ofNat k))] } : EvaledStorageRef)
       uint256St =
-      .ok (.int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      .ok (.int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (activeSlot (.int (Int.ofNat k)))).toNat)) := by
   simp [config, storageLayout, solidityStorageBackend, storageLayoutRaw,
     solidityReadStorage?, solidityLeafLoc?, EvalResult.ofOption,
@@ -203,7 +203,7 @@ theorem clipperReadActiveArrayElemsFrom (v : ClipperImmutables) (evm : EVM.State
       have hread : solidityReadStorage? storageLayoutRaw evm
           ({ base := "active", steps := [.aindex (.int (Int.ofNat k))] } : EvaledStorageRef)
           uint256St =
-            .ok (.int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+            .ok (.int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
               (activeSlot (.int (Int.ofNat k)))).toNat)) := by
         exact clipperReadActiveElemAt evm k
       rw [hread]
@@ -224,10 +224,10 @@ theorem clipperReadActiveArray (v : ClipperImmutables) (evm : EVM.State) :
   rw [solidityReadStorage?, clipperActiveDynamicLength]
   have harray : solidityReadArray? storageLayoutRaw evm
       ({ base := "active", steps := [] } : EvaledStorageRef) uint256St 0
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨11⟩).toNat =
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨11⟩).toNat =
         .ok (clipperActiveArrayValues evm) := by
     exact clipperReadActiveArrayElemsFrom v evm 0
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨11⟩).toNat
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨11⟩).toNat
   simp only [harray, EvalResult.bind, bind, pure]
 
 theorem clipperListBodyReturns (v : ClipperImmutables) (evm : EVM.State) (locals : Store)

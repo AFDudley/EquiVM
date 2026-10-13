@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.SwapProtocolSource
 import Benchmarks.UniswapV3.Pool.WordArrayPairUpdate
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 def swapProtocolUpdateMem (mem : ByteArray) (p q : UInt256) (c : SwapCacheData)

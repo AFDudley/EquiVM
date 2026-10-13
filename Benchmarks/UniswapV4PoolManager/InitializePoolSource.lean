@@ -1,11 +1,11 @@
 import Benchmarks.UniswapV4PoolManager.PoolInitializeSource
 import Benchmarks.UniswapV4PoolManager.InitializeFinishSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 
-def initializePoolAlias : Ident := "__solm_storage_ref._@.Benchmarks.UniswapV4PoolManager.SpecSyntax.2010301240._hygCtx._hyg.21"
+def initializePoolAlias : Ident := "__stele_storage_ref._@.Benchmarks.UniswapV4PoolManager.SpecSyntax.2010301240._hygCtx._hyg.21"
 def initializePoolFrame (f : Frame) (key : PoolKeyWords) : Frame :=
   {f with locals := ((f.locals.insert "id" (wordBytes32Value (poolKeyId key))).insert
     initializePoolAlias (poolRefValue (poolKeyId key)))}

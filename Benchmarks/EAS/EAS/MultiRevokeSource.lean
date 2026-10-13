@@ -1,7 +1,7 @@
 import Benchmarks.EAS.EAS.MultiRequestRead
 import Benchmarks.EAS.EAS.MultiRevocationDecode
 import Benchmarks.EAS.EAS.RevokeRun
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 set_option maxRecDepth 10000
 

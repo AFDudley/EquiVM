@@ -1,10 +1,10 @@
-import Solm.Notation
+import Stele.Notation
 
 /-!
 # Xxx surface spec (TEMPLATE)
 
 The contract in `solidity%` surface syntax (surface language:
-`Solm/Notation.lean` header). `Spec.lean` references `contractSyntax` and
+`Stele/Notation.lean` header). `Spec.lean` references `contractSyntax` and
 derives everything else (named handles, layout, `Config`); the proof files never
 look at this file directly.
 
@@ -27,7 +27,7 @@ correspondence), but there is no reason for the user to provide both.
 
 -/
 
-open Solm Solm.Notation
+open Stele Stele.Notation
 
 namespace Benchmarks.Xxx.Syntax
 

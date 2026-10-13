@@ -1,6 +1,6 @@
 import Examples.TinyImmutable.Common
-import Reasoning.SolmBody
-import Solm.Refine
+import Reasoning.SteleBody
+import Stele.Refine
 
 /-!
 # TinyImmutable constructor correctness
@@ -8,10 +8,10 @@ import Solm.Refine
 The constructor has two source paths for `scale`: one assigns `_scale`, and the other leaves the
 immutable at its zero value. The constructor returns a runtime whose bytes depend on the final
 `owner` and `scale`; `typedConstructorRefinement` checks that the EVM-returned runtime is
-`immutableLayout.deployed` of the Solm constructor's final immutables, and that those are well typed.
+`immutableLayout.deployed` of the Stele constructor's final immutables, and that those are well typed.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open TinyImmutable.Immutables
 open Reasoning.Immutables (wordsOf wordsOf_of_get)
 
@@ -712,7 +712,7 @@ theorem tinyCtorBodyReturns (evm : EVM.State)
         tinyCtorArgLocals_get_scale]
         · simp [elemValueFits, uint256Int, h0]; exact lt_of_lt_of_eq hlt' (by norm_num)
 
-theorem tinySolmCtorExecSuccess
+theorem tinySteleCtorExecSuccess
     {σ : AccountMap}
     {σ₀ : AccountMap}
     {g : UInt256}
@@ -721,7 +721,7 @@ theorem tinySolmCtorExecSuccess
     (owner : AccountAddress) (scaleInt : Int) (useScale : Bool)
     (h0 : 0 ≤ scaleInt) (hlt : scaleInt < Int.ofNat (EVM.twoPow 256))
     (hwv : I.weiValue = ⟨0⟩) :
-    solmCtorExec config contract [.address owner, .int scaleInt, .bool useScale]
+    steleCtorExec config contract [.address owner, .int scaleInt, .bool useScale]
       σ σ₀ g A I
       (.returned
         { contract := contract
@@ -729,7 +729,7 @@ theorem tinySolmCtorExecSuccess
           immutables := tinyCtorFinalImms owner scaleInt useScale }
         (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         none) := by
-  refine solmCtorExec.intro
+  refine steleCtorExec.intro
     (evmState := initState σ σ₀ (Sat256.ofUInt256 g) A I)
     (argsStore := tinyCtorArgLocals owner scaleInt useScale)
     ?_ rfl ?_ ?_
@@ -737,7 +737,7 @@ theorem tinySolmCtorExecSuccess
   · simp [tinyCtorArgLocals, contract, constructorDecl]
   · exact tinyCtorBodyReturns _ owner scaleInt useScale h0 hlt (by simp [initState, hwv])
 
-theorem tinySolmCtorExecReverts_nonpayable
+theorem tinySteleCtorExecReverts_nonpayable
     {σ : AccountMap}
     {σ₀ : AccountMap}
     {g : UInt256}
@@ -745,9 +745,9 @@ theorem tinySolmCtorExecReverts_nonpayable
     {I : ExecutionEnv}
     (owner : AccountAddress) (scaleInt : Int) (useScale : Bool)
     (hwv : I.weiValue ≠ ⟨0⟩) :
-    solmCtorExec config contract [.address owner, .int scaleInt, .bool useScale]
+    steleCtorExec config contract [.address owner, .int scaleInt, .bool useScale]
       σ σ₀ g A I .reverted := by
-  refine solmCtorExec.intro
+  refine steleCtorExec.intro
     (evmState := initState σ σ₀ (Sat256.ofUInt256 g) A I)
     (argsStore := tinyCtorArgLocals owner scaleInt useScale)
     ?_ rfl ?_ ?_
@@ -1116,7 +1116,7 @@ theorem tinyImmutableConstructorCorrect :
       rcases hrd.xiResult hcodeCtor with hOOG | ⟨g', A', hsuccess⟩
       · exact .outOfGas (by simpa [Sat256.ofUInt256] using hOOG)
       · refine .execution (by simpa [Sat256.ofUInt256] using hsuccess)
-          (tinySolmCtorExecSuccess (σ := σ) (σ₀ := σ₀) (g := g) (A := A) (I := I)
+          (tinySteleCtorExecSuccess (σ := σ) (σ₀ := σ₀) (g := g) (A := A) (I := I)
             owner scaleInt false h0 hlt hwv)
           (ctorResultEquiv.success rfl rfl rfl ?_)
           (tinyCtorFinalImms_fit owner scaleInt false h0 hlt)
@@ -1130,7 +1130,7 @@ theorem tinyImmutableConstructorCorrect :
       rcases hrd.xiResult hcodeCtor with hOOG | ⟨g', A', hsuccess⟩
       · exact .outOfGas (by simpa [Sat256.ofUInt256] using hOOG)
       · refine .execution (by simpa [Sat256.ofUInt256] using hsuccess)
-          (tinySolmCtorExecSuccess (σ := σ) (σ₀ := σ₀) (g := g) (A := A) (I := I)
+          (tinySteleCtorExecSuccess (σ := σ) (σ₀ := σ₀) (g := g) (A := A) (I := I)
             owner scaleInt true h0 hlt hwv)
           (ctorResultEquiv.success rfl rfl rfl ?_)
           (tinyCtorFinalImms_fit owner scaleInt true h0 hlt)
@@ -1142,7 +1142,7 @@ theorem tinyImmutableConstructorCorrect :
     rcases hrd.xiResult hcode with hOOG | ⟨g', o, hrev⟩
     · exact .outOfGas (by simpa [Sat256.ofUInt256] using hOOG)
     · exact .execution (by simpa [Sat256.ofUInt256] using hrev)
-        (tinySolmCtorExecReverts_nonpayable (σ := σ) (σ₀ := σ₀) (g := g) (A := A) (I := I)
+        (tinySteleCtorExecReverts_nonpayable (σ := σ) (σ₀ := σ₀) (g := g) (A := A) (I := I)
           owner scaleInt useScale hwv)
         (ctorResultEquiv.revert rfl rfl) trivial
 

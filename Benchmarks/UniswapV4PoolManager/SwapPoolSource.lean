@@ -2,7 +2,7 @@ import Benchmarks.UniswapV4PoolManager.SwapAfterSource
 import Benchmarks.UniswapV4PoolManager.PoolSwapValues
 import Benchmarks.UniswapV4PoolManager.PoolStorage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 
@@ -51,7 +51,7 @@ theorem swapPoolCurrency_eval {f : Frame} {evm : State} {key : PoolKeyWords} {p 
       if_false, if_true, h0, h1, swapPoolCurrency]
 
 def swapPoolAlias : Ident :=
-  "__solm_storage_ref._@.Benchmarks.UniswapV4PoolManager.SpecSyntax.2010301240._hygCtx._hyg.28"
+  "__stele_storage_ref._@.Benchmarks.UniswapV4PoolManager.SpecSyntax.2010301240._hygCtx._hyg.28"
 def swapPoolAliasFrame (f : Frame) (id : UInt256) : Frame :=
   {f with locals := f.locals.insert swapPoolAlias (poolRefValue id)}
 def swapPoolCallFrame (f : Frame) (delta : UInt256) : Frame :=

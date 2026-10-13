@@ -1,5 +1,5 @@
 import Benchmarks.EAS.EAS.TryRecoverSource
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 def tryRecoverCallLocals (L : Store) (hash v r s : UInt256) (success : Bool) (out : ByteArray) : Store :=

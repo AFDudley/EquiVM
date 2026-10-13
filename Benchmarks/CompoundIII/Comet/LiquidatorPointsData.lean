@@ -3,7 +3,7 @@ import Benchmarks.CompoundIII.Comet.AggregateStorage
 import Benchmarks.CompoundIII.Comet.UserBasicLocal
 import Benchmarks.CompoundIII.Comet.PackedStateWrites
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 
@@ -62,7 +62,7 @@ theorem readLiquidatorPointsField (evm : State) (addr : AccountAddress) (i : Fin
       ⟨"liquidatorPoints", [.mindex (.address addr), .field (liquidatorFieldName i)]⟩
       (.elem (.int (.uint (liquidatorFieldWidth i)))) evm =
     .ok (.int (liquidatorFieldWord
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (liquidatorSlot addr)) i).toNat) := by
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (liquidatorSlot addr)) i).toNat) := by
   rw [readStorage?_elem (hbackend := rfl)
     (loc := {
       slot := liquidatorSlot addr, offset := liquidatorFieldOffset i,
@@ -79,9 +79,9 @@ theorem readLiquidatorPoints (evm : State) (addr : AccountAddress) :
     config.storageBackend.read ⟨"liquidatorPoints", [.mindex (.address addr)]⟩
       liquidatorPointsType evm =
     .ok (liquidatorPointsValue (liquidatorPointsData
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (liquidatorSlot addr)))) := by
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (liquidatorSlot addr)))) := by
   change solidityReadStorage? config.storageBackend.locate? evm _ _ = _
-  let w := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (liquidatorSlot addr)
+  let w := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (liquidatorSlot addr)
   have hf := solidityReadFields_from_fields config.storageBackend.locate? evm
     ⟨"liquidatorPoints", [.mindex (.address addr)]⟩ liquidatorPointsTypes
     [("numAbsorbs", .int (liquidatorFieldWord w 0).toNat),
@@ -101,7 +101,7 @@ theorem evalLiquidatorPoints (frame : Frame) (evm : State) (addr : AccountAddres
     (harg : evalExpr? config frame evm arg = .ok (.address addr)) :
     evalExpr? config frame evm (.storage ⟨"liquidatorPoints", [.mindex arg]⟩) =
     .ok (liquidatorPointsValue (liquidatorPointsData
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (liquidatorSlot addr)))) := by
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (liquidatorSlot addr)))) := by
   apply evalExpr_storage_typed hlocal
     (er := ⟨"liquidatorPoints", [.mindex (.address addr)]⟩) (ty := liquidatorPointsType)
   · simp only [evalStorageRef, evalStorageRefSteps, evalStorageRefStep, harg,

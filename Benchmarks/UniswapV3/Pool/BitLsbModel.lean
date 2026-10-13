@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.BitScanBounds
 import Benchmarks.UniswapV3.Pool.WordComplements
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 def bitLsbMask (bits : Nat) : UInt256 := UInt256.ofNat (2 ^ bits - 1)

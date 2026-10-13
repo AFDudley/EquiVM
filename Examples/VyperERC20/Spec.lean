@@ -1,10 +1,10 @@
 import Examples.ERC20.Spec
-import Solm.VyperLayout
+import Stele.VyperLayout
 
 /-!
-# Vyper ERC20 — Solm specification and storage layout
+# Vyper ERC20 — Stele specification and storage layout
 
-The source behavior is the same ERC20 Solm AST used by `Examples/ERC20`; the compiler-specific
+The source behavior is the same ERC20 Stele AST used by `Examples/ERC20`; the compiler-specific
 part is the Vyper storage layout.  Vyper 0.4.3's `layout` output for `ERC20.vy` is:
 
 * `balanceOf`: slot 0
@@ -15,7 +15,7 @@ For `HashMap`, Vyper derives entries as `keccak256(baseSlot ++ key)`, unlike Sol
 `keccak256(key ++ baseSlot)`.
 -/
 
-open Solm ABI
+open Stele ABI
 
 namespace VyperERC20
 

@@ -1,6 +1,6 @@
 import Benchmarks.EAS.EAS.ReturnMemory
 import Benchmarks.EAS.EAS.SchemaFields
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 -- LIBRARY CANDIDATE: read a buffer word at an equivalent EVM memory address.

@@ -1,6 +1,6 @@
 import Examples.OpenZeppelinBench.Pausable.Common
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -61,7 +61,7 @@ theorem unpauseAssign (evm : EVM.State) :
       storageLocStore evm (boolLoc ⟨0⟩) (.bool false) = some (unpausePostState evm) := by
     simpa [unpausePostState] using storageLocStore_bool_false_offset0 evm ⟨0⟩
   exact assignStorageRef_storage_scalar_value (hbackend := rfl) (cfg := config)
-    (solm := { contract := contract, locals := ∅ }) (evm := evm) (evm' := unpausePostState evm)
+    (stele := { contract := contract, locals := ∅ }) (evm := evm) (evm' := unpausePostState evm)
     (slot := pausedRef) (er := { base := "_paused", steps := [] }) (ty := boolSt)
     (loc := boolLoc ⟨0⟩) (value := .bool false)
     (hbase := by simp) (her := her) (hty := hty) (hloc := by rfl)
@@ -70,14 +70,14 @@ theorem unpauseAssign (evm : EVM.State) :
 theorem pausableUnpauseBodyReturns (evm : EVM.State)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hnz :
-      UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩) ⟨255⟩ ≠
+      UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩) ⟨255⟩ ≠
         ⟨0⟩) :
     ExecTransitionBody config contract evm ∅ unpauseTransition.body
       (.returned { contract := contract, locals := ∅ } (unpausePostState evm) none) := by
   refine ExecFuncBody.execBlockOK ?_
   refine ExecBlock.consNormal (ExecStmt.requireTrue (evalCallvalueEq_true hwv)) ?_
   have hnzPaused : pausedWord evm.accountMap evm.executionEnv ≠ ⟨0⟩ := by
-    simpa [pausedWord, pausedRawWord, Solm.EVM.storageLoad] using hnz
+    simpa [pausedWord, pausedRawWord, Stele.EVM.storageLoad] using hnz
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue (pausableEvalPausedTrue evm ∅ hnzPaused (by simp))) ?_
   exact ExecBlock.consNormal (ExecStmt.assign (evalExpr_unpause_false evm) (unpauseAssign evm))
@@ -87,14 +87,14 @@ theorem pausableUnpauseBodyReturns (evm : EVM.State)
 theorem pausableUnpauseBodyStatic (evm : EVM.State)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hnz :
-      UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩) ⟨255⟩ ≠
+      UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩) ⟨255⟩ ≠
         ⟨0⟩)
     (hperm : evm.executionEnv.perm = false) :
     ExecTransitionBody config contract evm ∅ unpauseTransition.body .staticViolation := by
   refine ExecFuncBody.execBlockStatic ?_
   refine ExecBlock.consNormal (ExecStmt.requireTrue (evalCallvalueEq_true hwv)) ?_
   have hnzPaused : pausedWord evm.accountMap evm.executionEnv ≠ ⟨0⟩ := by
-    simpa [pausedWord, pausedRawWord, Solm.EVM.storageLoad] using hnz
+    simpa [pausedWord, pausedRawWord, Stele.EVM.storageLoad] using hnz
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue (pausableEvalPausedTrue evm ∅ hnzPaused (by simp))) ?_
   exact ExecBlock.consStatic
@@ -103,13 +103,13 @@ theorem pausableUnpauseBodyStatic (evm : EVM.State)
 theorem pausableUnpauseBodyReverts_notPaused (evm : EVM.State)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hzero :
-      UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩) ⟨255⟩ =
+      UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩) ⟨255⟩ =
         ⟨0⟩) :
     ExecTransitionBody config contract evm ∅ unpauseTransition.body .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
   refine ExecBlock.consNormal (ExecStmt.requireTrue (evalCallvalueEq_true hwv)) ?_
   have hzeroPaused : pausedWord evm.accountMap evm.executionEnv = ⟨0⟩ := by
-    simpa [pausedWord, pausedRawWord, Solm.EVM.storageLoad] using hzero
+    simpa [pausedWord, pausedRawWord, Stele.EVM.storageLoad] using hzero
   exact ExecBlock.consRevert
     (ExecStmt.requireFalse (pausableEvalPausedFalse evm ∅ hzeroPaused (by simp)))
 
@@ -228,13 +228,13 @@ theorem pausableUnpauseBody {σ σ₀ A I}
       (initState σ σ₀ (Sat256.ofUInt256 g) A I)
       (by simp only [initState]; exact hwv)
       (by
-        simpa [pausedWord, pausedRawWord, initState, Solm.EVM.storageLoad, State.lookupAccount]
+        simpa [pausedWord, pausedRawWord, initState, Stele.EVM.storageLoad, State.lookupAccount]
           using hzero)
     exact (pausableX_unpause_revert (g := Sat256.ofUInt256 g) hreach hzero)
       |>.reEquivExecutionRevert hcode hd hdec hbody
-  · have hnzS : UInt256.land (Solm.EVM.storageLoad (initState σ σ₀ (Sat256.ofUInt256 g) A I)
+  · have hnzS : UInt256.land (Stele.EVM.storageLoad (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner ⟨0⟩) ⟨255⟩ ≠ ⟨0⟩ := by
-      simpa [pausedWord, pausedRawWord, initState, Solm.EVM.storageLoad, State.lookupAccount]
+      simpa [pausedWord, pausedRawWord, initState, Stele.EVM.storageLoad, State.lookupAccount]
         using hzero
     by_cases hperm : I.perm = true
     · have hbody := pausableUnpauseBodyReturns
@@ -245,7 +245,7 @@ theorem pausableUnpauseBody {σ σ₀ A I}
         |>.reEquivExecutionGen hcode hd hdec hbody
           (by
             rw [unpausePostState_accountMap]
-            simp [unpausePostMap, initState, pausedRawWord, Solm.EVM.storageLoad,
+            simp [unpausePostMap, initState, pausedRawWord, Stele.EVM.storageLoad,
               State.lookupAccount, Account.lookupStorage])
           (returnEquiv.fallthrough rfl rfl (by native_decide))
     · have hpf : I.perm = false := by simpa using hperm

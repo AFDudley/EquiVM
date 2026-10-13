@@ -1,6 +1,6 @@
 import Benchmarks.EAS.EAS.HeapResultBlock
 import Benchmarks.EAS.EAS.Time
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 def readTimeBlock (tmp result : Ident) : Body :=

@@ -1,6 +1,6 @@
 import Benchmarks.CompoundIII.Comet.Storage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 
@@ -25,7 +25,7 @@ theorem packedUint_load (evm : EVM.State) (slot : UInt256)
     (hwidth : width.val = 8 * size.val) :
     storageLocLoad evm
       { slot := slot, offset := offset, size := size, hbound := hbound, type := .int (.uint width) } =
-      .int (packedUint (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot) offset.val size.val).toNat :=
+      .int (packedUint (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot) offset.val size.val).toNat :=
   storageLocLoad_uint_offset evm slot offset size width hwidth (by omega) (by omega)
 
 theorem divBytePow_eq_shift (w : UInt256) (offset : Fin 32) :

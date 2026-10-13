@@ -91,6 +91,6 @@ Cloning EthereumTests into a submodule.
 Ξ_BN_ADD failed: BN_ADD returned 0 bytes; expected 64
 Ξ_BN_MUL failed: BN_MUL returned 0 bytes; expected 64
 Ξ_SNARKV failed: SNARKV returned 0 bytes; expected 32
-solm-difftest: 1 target(s), seed 2026, 50 cases per transition
+stele-difftest: 1 target(s), seed 2026, 50 cases per transition
 UniswapV3Pool: 1525 cases: 1519 agree (767 successful), 0 disagree, 0 stuck, 6 EVM out of gas, 0 spec out of fuel
   successful/cases: constructor 17/25, token0() 47/51, swap(address,bool,int256,uint160,bytes) 0/52, liquidity() 46/53, protocolFees() 44/55, observations(uint256) 22/56, increaseObservationCardinalityNext(uint16) 10/52, slot0() 45/53, mint(address,int24,int24,uint128,bytes) 1/54, feeGrowthGlobal1X128() 47/55, flash(address,uint256,uint256,bytes) 10/57, collect(address,int24,int24,uint128,uint128) 18/54, positions(bytes32) 46/54, tickBitmap(int16) 38/53, maxLiquidityPerTick() 52/55, setFeeProtocol(uint8,uint8) 0/54, collectProtocol(address,uint128,uint128) 3/52, observe(uint32[]) 29/53, burn(int24,int24,uint128) 0/53, snapshotCumulativesInside(int24,int24) 0/53, factory() 45/55, tickSpacing() 47/54, token1() 47/53, fee() 52/56, feeGrowthGlobal0X128() 47/53, ticks(int24) 49/56, initialize(uint160) 5/54, stray 0/100

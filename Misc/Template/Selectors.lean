@@ -8,7 +8,7 @@ corresponding canonical ABI signature with the pure Keccak implementation. Keep 
 normalization private or local and expose one selector theorem per transition.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM
+open Stele ABI Ethereum Ethereum.EVM
 
 namespace Benchmarks.Xxx
 

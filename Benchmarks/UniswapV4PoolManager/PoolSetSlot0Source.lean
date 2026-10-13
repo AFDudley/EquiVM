@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV4PoolManager.PoolCheckSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 
@@ -17,7 +17,7 @@ def poolSetSlot0Frame (f : Frame) (id word : UInt256) (refName : Ident) : Frame 
 def poolSetSlot0Result (f : Frame) (evm : EVM.State) (id word : UInt256) : ExecResult :=
   if poolSqrtPriceWord evm id = ⟨0⟩ then .reverted else
   if evm.executionEnv.perm = false then .staticViolation else
-    .returned f (Solm.EVM.storageStore evm evm.executionEnv.codeOwner (poolSlot id) word) none
+    .returned f (Stele.EVM.storageStore evm evm.executionEnv.codeOwner (poolSlot id) word) none
 
 theorem poolSetSlot0BodyExec {f : Frame} {evm : EVM.State} {id fee word : UInt256}
     (refName feeName setterName : Ident)

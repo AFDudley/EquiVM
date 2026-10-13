@@ -1,6 +1,6 @@
 import Benchmarks.CompoundIII.Comet.AccrueRewardsSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.CompoundIII.Comet.Immutables
 
 namespace Benchmarks.CompoundIII.Comet
@@ -10,16 +10,16 @@ set_option maxRecDepth 2000
 theorem accrueIndicesAssign (v : CometWithExtendedAssetListImmutables)
     (initial evm : EVM.State) (elapsed time : UInt256) (borrow : Bool) :
     let frame := accrueIndicesFrame v initial elapsed time
-    let w0 := Solm.EVM.storageLoad initial initial.executionEnv.codeOwner ⟨0⟩
-    let w1 := Solm.EVM.storageLoad initial initial.executionEnv.codeOwner ⟨1⟩
+    let w0 := Stele.EVM.storageLoad initial initial.executionEnv.codeOwner ⟨0⟩
+    let w1 := Stele.EVM.storageLoad initial initial.executionEnv.codeOwner ⟨1⟩
     ExecStmt config frame evm
       (.assign .storage ⟨totalsIndexName borrow, []⟩
         (.tupleGet (.var "__c1") (if borrow then 1 else 0)))
       (.ok frame (storeTotalsIndex evm borrow (accruedIndex v w0 w1 elapsed borrow))) := by
   dsimp only
   apply ExecStmt.assign (value := .int (accruedIndex v
-    (Solm.EVM.storageLoad initial initial.executionEnv.codeOwner ⟨0⟩)
-    (Solm.EVM.storageLoad initial initial.executionEnv.codeOwner ⟨1⟩) elapsed borrow).toNat)
+    (Stele.EVM.storageLoad initial initial.executionEnv.codeOwner ⟨0⟩)
+    (Stele.EVM.storageLoad initial initial.executionEnv.codeOwner ⟨1⟩) elapsed borrow).toNat)
   · cases borrow <;>
       simp only [evalExpr?, accrueIndicesFrame, Std.HashMap.get?_eq_getElem?,
         Std.HashMap.getElem?_insert, EvalResult.ofOption, bind, EvalResult.bind, tupleGetValue?,
@@ -34,8 +34,8 @@ theorem accrueThen_source (v : CometWithExtendedAssetListImmutables)
       (accrueThenOutcome v evm elapsed time) := by
   let f0 := accrueTimeFrame v elapsed time
   let f1 := accrueIndicesFrame v evm elapsed time
-  let w0 := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩
-  let w1 := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩
+  let w0 := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩
+  let w1 := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩
   let evmB := storeTotalsIndex evm true (accruedIndex v w0 w1 elapsed true)
   let evmI := accrueIndicesState evm v elapsed
   have he : evalExpr? config f0 evm (.var "timeElapsed") = .ok (.int elapsed.toNat) := by

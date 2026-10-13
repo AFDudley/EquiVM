@@ -1,7 +1,7 @@
 import Benchmarks.EAS.EAS.AttestArrayMemory
 import Benchmarks.EAS.EAS.AttestUIDMemory
 import Benchmarks.EAS.EAS.AttestResultMemory
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 theorem attestUIDMemory_resultView {mem calldata : ByteArray} {result heap schema used : UInt256} {len : Nat}

@@ -1,7 +1,7 @@
 import Benchmarks.EAS.EAS.PointerTableMemory
 import Benchmarks.EAS.EAS.SignatureCopy
 import Benchmarks.EAS.EAS.DelegatedAttestPrepareMemory
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 structure SignatureArrayMemoryView (mem : ByteArray) (array : UInt256) (ss : List SignatureRecord) (heap : Nat) : Prop where

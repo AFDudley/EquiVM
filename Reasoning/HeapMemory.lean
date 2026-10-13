@@ -8,7 +8,7 @@ Free-memory cursors, allocated-prefix preservation, and bounded memory growth fo
 Solidity memory operations. The bounds are explicit hypotheses of the original helper lemmas.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Reach
 
 namespace Reasoning.Theory
 
@@ -607,7 +607,7 @@ end Reasoning.Theory
 
 namespace Reasoning.Theory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option autoImplicit false
 set_option maxRecDepth 2000000

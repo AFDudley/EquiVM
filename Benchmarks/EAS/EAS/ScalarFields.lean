@@ -1,6 +1,6 @@
 import Benchmarks.EAS.EAS.PackedSlice
 import Reasoning.ExternalCall
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 -- LIBRARY CANDIDATE: an ordered scalar prefix of a Solidity struct write.

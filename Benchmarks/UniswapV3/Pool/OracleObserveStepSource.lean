@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.OracleObserveBindings
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
 
@@ -54,7 +54,7 @@ theorem oracleObserveStep (imms : Store) (evm : EVM.State) (locals : Store) (tim
   obtain ⟨callee, hbody⟩ := oracleObserveSingleReturns imms evm time secondsAgos[i] tick
     index liquidity card [.int tickValue, .int secondsValue] hc htick hrun
   have hcall := internalCallFunctionReturn (cfg := config) (caller := f) (evm := evm)
-    (callee := oracleObserveSingleFunction) (calleeSolm := callee) (retVar := "__c0")
+    (callee := oracleObserveSingleFunction) (calleeStele := callee) (retVar := "__c0")
     (value := some [.int tickValue, .int secondsValue]) (oracleObserveCallArgs h hi hib)
     oracleObserveSingleLookup (oracleObserveSingleBind _ _ _ _ _ _) hbody
   have hst : ExecStmt config f1 evm oracleObserveLoopBody[1]! (.ok f2 evm) := by

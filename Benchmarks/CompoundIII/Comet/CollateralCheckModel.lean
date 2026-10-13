@@ -4,13 +4,13 @@ import Benchmarks.CompoundIII.Comet.SignedMulPriceSource
 import Benchmarks.CompoundIII.Comet.UserBasicRead
 import Benchmarks.CompoundIII.Comet.UintCastWord
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.CompoundIII.Comet.Immutables
 
 namespace Benchmarks.CompoundIII.Comet
 
 def collateralBasicWord (evm : EVM.State) (account : AccountAddress) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (userBasicSlot account)
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (userBasicSlot account)
 
 def collateralBaseScale (v : CometWithExtendedAssetListImmutables) : UInt256 :=
   uintCastWord ⟨64, by decide⟩ v.baseScale

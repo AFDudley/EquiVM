@@ -2,7 +2,7 @@ import Benchmarks.UniswapV3.Pool.SwapIterationResultSource
 import Benchmarks.UniswapV3.Pool.SwapMemoryModel
 import Benchmarks.UniswapV3.Pool.WordArrayInPlace
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 def swapIterationResultMem (mem : ByteArray) (p q price amountIn amountOut fee : UInt256) :

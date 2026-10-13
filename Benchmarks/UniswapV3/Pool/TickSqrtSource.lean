@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.TickSqrtReadySource
 import Benchmarks.UniswapV3.Pool.TickSqrtTailSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 theorem tickSqrtReturns (imms : Store) (evm : EVM.State) (tick : Int)

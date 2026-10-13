@@ -1,16 +1,16 @@
 import Benchmarks.Auction.BidSource
 import Benchmarks.Auction.CreateStorage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Auction
 
 def bidAmountState (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨208⟩ evm.executionEnv.weiValue
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨208⟩ evm.executionEnv.weiValue
 
 def bidWinnerState (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨211⟩
-    (setAddressOffset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨211⟩)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨211⟩
+    (setAddressOffset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨211⟩)
       (solcSourceWord evm.executionEnv))
 
 def bidStoredState (evm : EVM.State) : EVM.State := bidWinnerState (bidAmountState evm)

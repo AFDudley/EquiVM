@@ -1,7 +1,7 @@
 import Benchmarks.EAS.EAS.SignatureArrayDecode
 import Benchmarks.EAS.EAS.RevocationArrayDecode
 import Benchmarks.EAS.EAS.ReferenceTail
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach ABI.Solc08Calldata
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach ABI.Solc08Calldata
 namespace Benchmarks.EAS.EAS
 set_option maxRecDepth 10000
 

@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.Calldata
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 -- LIBRARY CANDIDATES: legacy dynamic integer arrays, including dirty scalar words.

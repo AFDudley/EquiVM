@@ -7,11 +7,11 @@ import Benchmarks.UniswapV4PoolManager.RuntimeBlocks_023
 # PoolManager `allowance(address,address,uint256)`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 8163; reach lemma `poolManagerReachAllowanceBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.UniswapV4PoolManager.Immutables
 
@@ -30,7 +30,7 @@ theorem allowanceBodyReturns (evm : EVM.State) (locals imms : Store) (a b id : U
     ExecTransitionBody config contract evm locals allowanceTransition.body
       (.returned (calldataFrame contract locals imms evm) evm
         (some [.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
             (mappingSlotWord id (mappingSlotWord b (mappingSlotWord a ⟨5⟩)))).toNat)])) imms := by
   apply guardedReturnBody hwv hhi
   apply evalExpr_storage_scalar_value (hbackend := rfl) (hloc := allowance_loc a b id hca hcb)

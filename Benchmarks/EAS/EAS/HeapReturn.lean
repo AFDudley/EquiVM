@@ -1,6 +1,6 @@
 import Reasoning.ExternalCall
 import Benchmarks.EAS.EAS.RecordMemory
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 -- A source function returning one value and a heap cursor, paired with its EVM continuation.

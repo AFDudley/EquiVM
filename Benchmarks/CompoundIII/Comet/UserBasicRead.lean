@@ -1,7 +1,7 @@
 import Benchmarks.CompoundIII.Comet.UserBasicData
 import Benchmarks.CompoundIII.Comet.AggregateStorage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 
@@ -10,7 +10,7 @@ theorem readUserBasicPrincipal (evm : EVM.State) (addr : AccountAddress) :
       ⟨"userBasic", [.mindex (.address addr), .field "principal"]⟩
       (.elem (.int (.sint ⟨104, by decide⟩))) evm =
     .ok (.int (signed104
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (userBasicSlot addr)))) := by
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (userBasicSlot addr)))) := by
   rw [readStorage?_elem (hbackend := rfl)
     (loc := { slot := userBasicSlot addr, offset := 0, size := 13, hbound := by decide,
               type := .int (.sint ⟨104, by decide⟩) })
@@ -23,7 +23,7 @@ theorem readUserBasicField (evm : EVM.State) (addr : AccountAddress) (i : Fin 4)
       ⟨"userBasic", [.mindex (.address addr), .field (userBasicFieldName i)]⟩
       (.elem (.int (.uint (userBasicFieldWidth i)))) evm =
     .ok (.int (userBasicFieldWord
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (userBasicSlot addr)) i).toNat) := by
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (userBasicSlot addr)) i).toNat) := by
   have hbound : (userBasicFieldOffset i).val + (userBasicFieldSize i).val - 1 < 32 := by
     fin_cases i <;> decide
   rw [readStorage?_elem (hbackend := rfl)
@@ -39,12 +39,12 @@ theorem readUserBasicField (evm : EVM.State) (addr : AccountAddress) (i : Fin 4)
 theorem readUserBasic (evm : EVM.State) (addr : AccountAddress) :
     config.storageBackend.read ⟨"userBasic", [.mindex (.address addr)]⟩ userBasicType evm =
       .ok (userBasicValue (userBasicData
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (userBasicSlot addr)))) := by
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (userBasicSlot addr)))) := by
   change solidityReadStorage? config.storageBackend.locate? evm _ _ = _
   have hf := solidityReadFields_from_fields config.storageBackend.locate? evm
     ⟨"userBasic", [.mindex (.address addr)]⟩ userBasicTypes
     (userBasicValues (userBasicData
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (userBasicSlot addr))))
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (userBasicSlot addr))))
     (.cons ⟨rfl, readUserBasicPrincipal evm addr⟩
       (.cons ⟨rfl, readUserBasicField evm addr 0⟩
         (.cons ⟨rfl, readUserBasicField evm addr 1⟩
@@ -58,7 +58,7 @@ theorem evalUserBasic (frame : Frame) (evm : EVM.State) (addr : AccountAddress) 
     (harg : evalExpr? config frame evm arg = .ok (.address addr)) :
     evalExpr? config frame evm (.storage ⟨"userBasic", [.mindex arg]⟩) =
       .ok (userBasicValue (userBasicData
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (userBasicSlot addr)))) := by
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (userBasicSlot addr)))) := by
   apply evalExpr_storage_typed hlocal
     (er := ⟨"userBasic", [.mindex (.address addr)]⟩) (ty := userBasicType)
   · simp only [evalStorageRef, evalStorageRefSteps, evalStorageRefStep, harg,
@@ -73,7 +73,7 @@ theorem evalUserBasicFieldOf (frame : Frame) (evm : EVM.State) (addr : AccountAd
     evalExpr? config frame evm
       (.storage ⟨"userBasic", [.mindex arg, .field (userBasicFieldName i)]⟩) =
       .ok (.int (userBasicFieldWord
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (userBasicSlot addr)) i).toNat) := by
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (userBasicSlot addr)) i).toNat) := by
   apply evalExpr_storage_typed hlocal
     (er := ⟨"userBasic", [.mindex (.address addr), .field (userBasicFieldName i)]⟩)
     (ty := .elem (.int (.uint (userBasicFieldWidth i))))

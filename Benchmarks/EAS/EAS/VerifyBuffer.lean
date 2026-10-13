@@ -1,6 +1,6 @@
 import Benchmarks.EAS.EAS.TypedDataMemory
 import Benchmarks.EAS.EAS.GetAttestationEVM
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 def verifyBuffer (mem : ByteArray) (heap : Nat) (ws : List UInt256) : ByteArray :=

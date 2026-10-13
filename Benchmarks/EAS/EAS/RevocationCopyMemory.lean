@@ -3,7 +3,7 @@ import Benchmarks.EAS.EAS.CopyRevocationArrayControl
 import Benchmarks.EAS.EAS.RevocationArrayDecode
 import Benchmarks.EAS.EAS.RevocationRequestMemory
 import Benchmarks.EAS.EAS.RecordUID
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 theorem RevocationRequestMemoryView.write_below {mem : ByteArray} {ptr : UInt256}

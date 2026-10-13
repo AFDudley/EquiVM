@@ -1,5 +1,5 @@
 import Benchmarks.EAS.EAS.RevokeDecode
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach ABI.Solc08Calldata
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach ABI.Solc08Calldata
 namespace Benchmarks.EAS.EAS
 
 -- LIBRARY CANDIDATE: complete static ABI word reads form one contiguous slice.

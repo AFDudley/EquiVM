@@ -2,7 +2,7 @@ import Benchmarks.UniswapV3.Pool.SwapAmountsSource
 import Benchmarks.UniswapV3.Pool.PoolTokenTransfer
 import Benchmarks.UniswapV3.Pool.LiquidityDeltaModel
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
@@ -97,7 +97,7 @@ theorem swapTransferReturns (v : UniswapV3PoolImmutables) (locals : Store)
         (frame := {contract := contract, locals := locals, immutables := immStore v})
         (evm := evm) second amount ha
   · exact internalCallFunctionReturn (callee := safeTransferFunction) (value := none)
-      (calleeSolm := calleeFrame)
+      (calleeStele := calleeFrame)
       (locals := safeTransferLocals (poolToken v second) recipient (swapTransferValue amount))
       (evalSwapTransferArgs v locals evm second recipient amount hr ha) safeTransferLookup rfl hcall
 

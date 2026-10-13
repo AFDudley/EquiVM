@@ -1,6 +1,6 @@
 import Examples.UniswapV2Pair.MintInitialSecondMintReverts
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -19,8 +19,8 @@ theorem uniswapMintInitialFeeOffKLastZeroSecondMintTotalSupplyOverflowFromFactor
     (hsz36 : 36 ≤ I.calldata.size)
     (hperm : I.perm = true)
     (hwv : I.weiValue = ⟨0⟩)
-    (hunlockedSolm :
-      Solm.EVM.storageLoad
+    (hunlockedStele :
+      Stele.EVM.storageLoad
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
           ⟨12⟩ =
@@ -189,7 +189,7 @@ theorem uniswapMintInitialFeeOffKLastZeroSecondMintTotalSupplyOverflowFromFactor
         hfeeToAddr hkLastSource
   exact uniswapMintInitialAfterMintFeeSecondMintTotalSupplyOverflowRevertCase
     nextFrame.locals rootLiquidity (AccountAddress.ofNat (mintToWord I).toNat)
-    hcode hdispatch hsz36 hwv hunlockedSolm hguard0 hguard1 hcall0 hdec0 hcall1
+    hcode hdispatch hsz36 hwv hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1
     hdec1 hle0Source hle1Source hfee
     (by simpa [nextFrame, evmL, evmS] using
       mintAfterMintFeeCallStore_totalSupply evmL I balance0 balance1 false)
@@ -212,8 +212,8 @@ theorem uniswapMintInitialFeeOnKLastZeroSecondMintTotalSupplyOverflowFromFactory
     (hsz36 : 36 ≤ I.calldata.size)
     (hperm : I.perm = true)
     (hwv : I.weiValue = ⟨0⟩)
-    (hunlockedSolm :
-      Solm.EVM.storageLoad
+    (hunlockedStele :
+      Stele.EVM.storageLoad
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
           ⟨12⟩ =
@@ -382,7 +382,7 @@ theorem uniswapMintInitialFeeOnKLastZeroSecondMintTotalSupplyOverflowFromFactory
         hfeeToAddr hkLastSource
   exact uniswapMintInitialAfterMintFeeSecondMintTotalSupplyOverflowRevertCase
     nextFrame.locals rootLiquidity (AccountAddress.ofNat (mintToWord I).toNat)
-    hcode hdispatch hsz36 hwv hunlockedSolm hguard0 hguard1 hcall0 hdec0 hcall1
+    hcode hdispatch hsz36 hwv hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1
     hdec1 hle0Source hle1Source hfee
     (by simpa [nextFrame, evmL, evmS] using
       mintAfterMintFeeCallStore_totalSupply evmL I balance0 balance1 true)
@@ -405,8 +405,8 @@ theorem uniswapMintInitialFeeOffKLastNonzeroSecondMintTotalSupplyOverflowFromFac
     (hsz36 : 36 ≤ I.calldata.size)
     (hperm : I.perm = true)
     (hwv : I.weiValue = ⟨0⟩)
-    (hunlockedSolm :
-      Solm.EVM.storageLoad
+    (hunlockedStele :
+      Stele.EVM.storageLoad
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
           ⟨12⟩ =
@@ -595,7 +595,7 @@ theorem uniswapMintInitialFeeOffKLastNonzeroSecondMintTotalSupplyOverflowFromFac
         hfeeToAddr hkLastSource
   exact uniswapMintInitialAfterMintFeeSecondMintTotalSupplyOverflowRevertCase
     nextFrame.locals rootLiquidity (AccountAddress.ofNat (mintToWord I).toNat)
-    hcode hdispatch hsz36 hwv hunlockedSolm hguard0 hguard1 hcall0 hdec0 hcall1
+    hcode hdispatch hsz36 hwv hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1
     hdec1 hle0Source hle1Source hfee
     (by simpa [nextFrame, evmL, evmS] using
       mintAfterMintFeeCallStore_totalSupply evmL I balance0 balance1 false)

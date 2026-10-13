@@ -1,6 +1,6 @@
 import Benchmarks.Auction.InitializeSourceStores
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 100000
 
@@ -82,8 +82,8 @@ theorem initializeBody (evm : EVM.State) (args : InitializeArgs)
     exact initializeBaseMap_unpaused _ _
   have hpa := pauseBlock evmB (args.bodyLocals (initializeTop evm))
     (by simp [InitializeArgs.bodyLocals, InitializeArgs.locals]) hBp
-  generalize hP : Solm.EVM.storageStore evmB evmB.executionEnv.codeOwner ⟨51⟩
-    (pauseWord (Solm.EVM.storageLoad evmB evmB.executionEnv.codeOwner ⟨51⟩)) = evmP at hpa
+  generalize hP : Stele.EVM.storageStore evmB evmB.executionEnv.codeOwner ⟨51⟩
+    (pauseWord (Stele.EVM.storageLoad evmB evmB.executionEnv.codeOwner ⟨51⟩)) = evmP at hpa
   have hPfull : initializePausedState evm = evmP := by
     rw [initializePausedState, hBfull]; exact hP
   have ha := initializeParamsSource evmP args (initializeTop evm) hc

@@ -1,6 +1,6 @@
 import Benchmarks.EAS.EAS.ResolveManySource
 import Benchmarks.EAS.Attester.LocalArray
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 def localCastIncrement (name : Ident) : Stmt := .assign .localVar {base := name}

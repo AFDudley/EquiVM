@@ -1,6 +1,6 @@
 import Benchmarks.EAS.EAS.RecordTailRun
 import Benchmarks.EAS.EAS.ArrayFrameViews
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 theorem recordResultPtr_preserve {before after : ByteArray} {limit : Nat} (site : UIDSite)

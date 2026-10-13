@@ -2,7 +2,7 @@ import Benchmarks.UniswapV4PoolManager.SwapWrapperReturn
 import Benchmarks.UniswapV4PoolManager.PoolSwapCallCorrect
 import Benchmarks.UniswapV4PoolManager.PoolSwapReturnView
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.UniswapV4PoolManager.Immutables
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
@@ -83,6 +83,6 @@ theorem swapWrapperBodyCorrect {I : ExecutionEnv} {g : Sat256} {s0 evm : State} 
     exact .inr ⟨.reverted, .execBlockRevert (ExecBlock.consNormal halias (ExecBlock.consRevert hcall)), htrace⟩
   | staticViolation =>
     exact .inr ⟨.staticViolation, .execBlockStatic (ExecBlock.consNormal halias (ExecBlock.consStatic hcall)), htrace⟩
-  | ok | «break» | «continue» => exact False.elim htrace
+  | ok | «break» | «continue» | noMatch | decodingFailed => exact False.elim htrace
 
 end Benchmarks.UniswapV4PoolManager

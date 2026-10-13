@@ -1,6 +1,6 @@
 import Benchmarks.EAS.EAS.AttestAllocationMemory
 import Benchmarks.EAS.EAS.RequestRegion
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 theorem attestAllocationMemory_requests {mem : ByteArray} {heap data : UInt256}

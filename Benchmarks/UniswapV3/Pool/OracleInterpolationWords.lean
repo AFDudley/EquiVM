@@ -2,7 +2,7 @@ import Benchmarks.UniswapV3.Pool.OracleInterpolationModel
 import Benchmarks.UniswapV3.Pool.SignedDivision
 import Benchmarks.UniswapV3.Pool.SourceWordArithmetic
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 def oracleInterpolationTickRaw (before after : OracleObservation) (target : UInt256) : UInt256 :=

@@ -2,7 +2,7 @@ import Benchmarks.EAS.EAS.RecordStoreMemory
 import Benchmarks.EAS.EAS.AttestationWriteSource
 import Benchmarks.EAS.EAS.PackedNormalize
 import Benchmarks.EAS.EAS.UIDControl
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.EAS.EAS.Immutables
 namespace Benchmarks.EAS.EAS
 

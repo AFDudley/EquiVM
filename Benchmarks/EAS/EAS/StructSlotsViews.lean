@@ -1,5 +1,5 @@
 import Benchmarks.EAS.Attester.StructAllocMemory
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 -- LIBRARY CANDIDATE: each initialized pointer slot addresses its corresponding fixed-width struct.

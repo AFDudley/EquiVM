@@ -3,7 +3,7 @@ import Benchmarks.UniswapV4PoolManager.PoolModifyValues
 import Benchmarks.UniswapV4PoolManager.PoolStorage
 import Benchmarks.UniswapV4PoolManager.SafeCast128Source
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 
@@ -34,7 +34,7 @@ theorem modifyLiquidityPoolParams_eval {f : Frame} {evm : State} {key : PoolKeyW
   rfl
 
 def modifyLiquidityPoolAlias : Ident :=
-  "__solm_storage_ref._@.Benchmarks.UniswapV4PoolManager.SpecSyntax.2010301240._hygCtx._hyg.25"
+  "__stele_storage_ref._@.Benchmarks.UniswapV4PoolManager.SpecSyntax.2010301240._hygCtx._hyg.25"
 def modifyLiquidityPoolPreludeFrame (f : Frame) (id : UInt256) (p : ModifyLiquidityWords) : Frame :=
   {f with locals := ((f.locals.insert "principalDelta" (.int 0)).insert
     "__c6" (.int (EVM.signed p.delta))).insert modifyLiquidityPoolAlias (poolRefValue id)}

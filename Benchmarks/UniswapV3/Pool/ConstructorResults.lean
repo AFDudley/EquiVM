@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.ConstructorDeployment
 import Benchmarks.UniswapV3.Pool.ConstructorImmutables
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 namespace Benchmarks.UniswapV3.Pool
 
@@ -28,7 +28,7 @@ theorem constructorRefinesRevert {σ σ₀ : AccountMap} {A : Substate} {I : Exe
   rcases rd with hg | ⟨g', out, hr⟩
   · exact .outOfGas (Xi_error_of_X (by simpa only [hcode] using hg))
   · exact .execution (Xi_revert_of_X (by simpa only [hcode] using hr))
-      (constructorSolmExec hs) (.revert rfl rfl) trivial
+      (constructorSteleExec hs) (.revert rfl rfl) trivial
 
 theorem constructorRefinesInvalid {σ σ₀ : AccountMap} {A : Substate} {I : ExecutionEnv}
     {g : UInt256} {code : ByteArray} (hcode : I.code = code)
@@ -40,7 +40,7 @@ theorem constructorRefinesInvalid {σ σ₀ : AccountMap} {A : Substate} {I : Ex
   rcases rd with hg | hi
   · exact .outOfGas (Xi_error_of_X (by simpa only [hcode] using hg))
   · exact .execution (Xi_error_of_X (by simpa only [hcode] using hi))
-      (constructorSolmExec hs) (.invalidHalt rfl rfl) trivial
+      (constructorSteleExec hs) (.invalidHalt rfl rfl) trivial
 
 theorem constructorRefinesReturn {σ σ₀ : AccountMap} {A : Substate} {I : ExecutionEnv}
     {g : UInt256} {code out : ByteArray} {evm' : EVM.State} (hcode : I.code = code)
@@ -52,7 +52,7 @@ theorem constructorRefinesReturn {σ σ₀ : AccountMap} {A : Substate} {I : Exe
       (immutableLayout.deployed uniswapV3PoolBytecode) := by
   rcases constructorReturnXi hcode rd with hg | ⟨g', A', hr⟩
   · exact .outOfGas hg
-  · exact .execution hr (constructorSolmExec hs)
+  · exact .execution hr (constructorSteleExec hs)
       (.success rfl rfl rfl (constructorFinalDeployed I.codeOwner out).symm)
       (constructorFinalFit I.codeOwner out)
 

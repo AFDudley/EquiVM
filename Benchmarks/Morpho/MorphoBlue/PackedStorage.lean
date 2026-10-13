@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MorphoBlue.Common
 
 /-! Shared facts for storage packed into uint128 halves. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MorphoBlue
 
@@ -28,7 +28,7 @@ def uint128HalfLoc (slot : UInt256) (high : Bool) : StorageLoc :=
 theorem storageLocLoad_uint128Half (evm : EVM.State) (slot : UInt256) (high : Bool) :
     storageLocLoad evm (uint128HalfLoc slot high) =
       .int (Int.ofNat (halfWord high
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).toNat) := by
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).toNat) := by
   cases high
   · exact storageLocLoad_uint_offset0 evm slot ⟨16, by decide⟩ ⟨128, by decide⟩
       (by decide) (by decide)
@@ -50,8 +50,8 @@ def setUint128LowWord (old value : UInt256) : UInt256 :=
 theorem storageLocStore_uint128Low (evm : EVM.State) (slot value : UInt256)
     (hc : value.toNat < 2 ^ 128) :
     storageLocStore evm (uint128HalfLoc slot false) (.int (Int.ofNat value.toNat)) =
-      some (Solm.EVM.storageStore evm evm.executionEnv.codeOwner slot
-        (setUint128LowWord (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot) value)) := by
+      some (Stele.EVM.storageStore evm evm.executionEnv.codeOwner slot
+        (setUint128LowWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot) value)) := by
   have hhigh (old : UInt256) : (UInt256.land old (UInt256.lnot uint128Mask)).toNat =
       old.toNat / 2 ^ 128 * 2 ^ 128 := by
     change (UInt256.land old (UInt256.ofNat (2 ^ 256 - 2 ^ 128))).toNat = _
@@ -63,7 +63,7 @@ theorem storageLocStore_uint128Low (evm : EVM.State) (slot value : UInt256)
   apply u256_inj
   change fromBytes' ((EVM.Word.toBytesLEWithSizeProof value).1.take 16 ++
     (EVM.Word.toBytesLEWithSizeProof
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).1.drop 16) = _
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).1.drop 16) = _
   rw [fromBytes'_append, fromBytes'_take_wordLE, fromBytes'_drop_wordLE]
   simp only [setUint128LowWord, u256_lor_toNat_exact, hhigh, List.length_take,
     (EVM.Word.toBytesLEWithSizeProof value).2]

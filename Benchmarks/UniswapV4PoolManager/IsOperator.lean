@@ -8,11 +8,11 @@ import Benchmarks.UniswapV4PoolManager.RuntimeBlocks_010
 # PoolManager `isOperator(address,address)`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 2517; reach lemma `poolManagerReachIsOperatorBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.UniswapV4PoolManager.Immutables
 
@@ -30,7 +30,7 @@ theorem isOperatorBodyReturns (evm : EVM.State) (locals imms : Store) (a b : UIn
     ExecTransitionBody config contract evm locals isOperatorTransition.body
       (.returned (calldataFrame contract locals imms evm) evm
         (some [wordToElem .bool (UInt256.land
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
             (mappingSlotWord b (mappingSlotWord a ⟨3⟩))) ⟨255⟩)])) imms := by
   apply guardedReturnBody hwv hhi
   apply evalExpr_storage_scalar_value (hbackend := rfl) (hloc := isOperator_loc a b hca hcb)

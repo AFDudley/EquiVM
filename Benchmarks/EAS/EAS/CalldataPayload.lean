@@ -1,5 +1,5 @@
 import Benchmarks.EAS.EAS.CalldataBytes
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 -- LIBRARY CANDIDATE: a padded calldata read always has the requested length.

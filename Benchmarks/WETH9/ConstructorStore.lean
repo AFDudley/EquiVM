@@ -9,7 +9,7 @@ stores the short word at `slot`, and clears the stale keccak-data words, returni
 `[slot]`.  It is invoked twice by the creation code (for `name` at slot 0 and `symbol` at slot 1).
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.WETH9
 
@@ -19,7 +19,7 @@ set_option maxHeartbeats 6000000
 /-! ## Active-words and memory-cost helpers (abstract active-words `aw`) -/
 
 
-/-! ## The computed old-word count equals the Solm `solidityBytesDataWordCount` -/
+/-! ## The computed old-word count equals the Stele `solidityBytesDataWordCount` -/
 
 theorem weth9OldWordsWord_eq (S : UInt256) :
     UInt256.div ((⟨31⟩ : UInt256) +
@@ -65,7 +65,7 @@ theorem weth9StringStoreSubroutine
         (clearDataWordsForwardFrom ee.codeOwner
           (sstoreAccountMap ee.codeOwner σ slot
             (UInt256.lor (len + len) (UInt256.land (UInt256.lnot ⟨255⟩) dataword)))
-          (Solm.solidityBytesDataBaseSlot slot) ⟨0⟩
+          (Stele.solidityBytesDataBaseSlot slot) ⟨0⟩
           (solidityBytesDataWordCount
             (weth9DecodeLenWord
               (σ.get? ee.codeOwner |>.option ⟨0⟩ (fun ac => ac.storage.getD slot ⟨0⟩))).toNat))
@@ -75,7 +75,7 @@ theorem weth9StringStoreSubroutine
     σ.get? ee.codeOwner |>.option ⟨0⟩ (fun ac => ac.storage.getD slot ⟨0⟩) with hSdef
   set mem1 : ByteArray := UInt256.toByteArray slot |>.write 0 mem 0 32 with hmem1def
   set ow : Nat := solidityBytesDataWordCount (weth9DecodeLenWord S).toNat with howdef
-  set K : UInt256 := Solm.solidityBytesDataBaseSlot slot with hKdef
+  set K : UInt256 := Stele.solidityBytesDataBaseSlot slot with hKdef
   set V : UInt256 :=
     UInt256.lor (len + len) (UInt256.land (UInt256.lnot ⟨255⟩) dataword) with hVdef
   -- Phase A: SLOAD the old header.
@@ -101,7 +101,7 @@ theorem weth9StringStoreSubroutine
           rw [show (⟨0⟩ : UInt256).toNat = 0 from rfl, show (⟨32⟩ : UInt256).toNat = 32 from rfl,
             hmem1def, write32_read_back (UInt256.toByteArray slot) mem 0 (by rw [toByteArray_size])
               (by omega), toByteArray_extract_all]]
-      rw [hKdef, Solm.solidityBytesDataBaseSlot]
+      rw [hKdef, Stele.solidityBytesDataBaseSlot]
       exact keccakSlot_eq _)
     (by rw [show (⟨0⟩ : UInt256).toNat = 0 from rfl]; exact awM0_eq aw haw1)
     (by evm_ov)

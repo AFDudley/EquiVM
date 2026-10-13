@@ -1,7 +1,7 @@
 import Reasoning.ABI
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.CompoundIII.Comet
 
@@ -117,7 +117,7 @@ theorem solc0815_decodeAddressArrayElems_getElem {n : Nat} {bytes : List UInt8} 
                   congr 1
                   omega
 
--- LIBRARY CANDIDATE (Reasoning/SolmBody): connect the evaluator's lookup to list indexing.
+-- LIBRARY CANDIDATE (Reasoning/SteleBody): connect the evaluator's lookup to list indexing.
 theorem lookupNth_eq_getElem? {α : Type} (values : List α) (i : Nat) :
     lookupNth? values i = values[i]? := by
   induction values generalizing i with

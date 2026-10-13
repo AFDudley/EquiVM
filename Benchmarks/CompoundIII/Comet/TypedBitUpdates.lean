@@ -1,7 +1,7 @@
 import Benchmarks.CompoundIII.Comet.TypedBits
 import Benchmarks.CompoundIII.Comet.UintCastWord
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 

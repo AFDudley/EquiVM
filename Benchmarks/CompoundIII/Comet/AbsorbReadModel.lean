@@ -2,7 +2,7 @@ import Benchmarks.CompoundIII.Comet.WithdrawBaseRead
 import Benchmarks.CompoundIII.Comet.UserBasicNormalized
 import Benchmarks.CompoundIII.Comet.SignedPresentValueModel
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 

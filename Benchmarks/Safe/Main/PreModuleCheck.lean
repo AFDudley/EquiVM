@@ -3,7 +3,7 @@ import Benchmarks.Safe.Main.PreModuleReturn
 import Benchmarks.Safe.Main.PreModuleSource
 import Benchmarks.Safe.Main.RawValueCall
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.Main

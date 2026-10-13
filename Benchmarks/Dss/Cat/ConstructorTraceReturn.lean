@@ -10,7 +10,7 @@ offset 126 and `RETURN`s it.  Kept as a single terminal (`RDret`) so no intermed
 needs to be reconciled.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Cat
 

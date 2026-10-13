@@ -1,7 +1,7 @@
 import Benchmarks.CompoundIII.Comet.AccruedIndicesSource
 import Benchmarks.CompoundIII.Comet.AccrualTime
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.CompoundIII.Comet.Immutables
 
 namespace Benchmarks.CompoundIII.Comet
@@ -43,15 +43,15 @@ def currentIndicesFrame (frame : Frame) (v : CometWithExtendedAssetListImmutable
 theorem currentIndicesBlock_result (v : CometWithExtendedAssetListImmutables)
     (frame : Frame) (evm : EVM.State) (hc : frame.contract = contract)
     (hi : frame.immutables = immStore v) (hl : frame.locals.get? "lastAccrualTime" = none) :
-    let w0 := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩
-    let w1 := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩
+    let w0 := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩
+    let w1 := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩
     let time := timestampWord evm.executionEnv
     ExecBlock config frame evm currentIndicesBlock
       (if CurrentIndicesValid v w0 w1 time then
         .ok (currentIndicesFrame frame v w0 w1 time) evm else .reverted) := by
   dsimp only
-  let w0 := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩
-  let w1 := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩
+  let w0 := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩
+  let w1 := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩
   let time := timestampWord evm.executionEnv
   let f1 : Frame := { frame with locals := frame.locals.insert "__c0" (.int time.toNat) }
   change ExecBlock _ _ _ _ (if CurrentIndicesValid v w0 w1 time then _ else _)

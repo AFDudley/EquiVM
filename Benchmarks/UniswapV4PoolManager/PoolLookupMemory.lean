@@ -2,7 +2,7 @@ import Benchmarks.UniswapV4PoolManager.PoolStorage
 import Benchmarks.UniswapV4PoolManager.PoolKeyView
 import Benchmarks.UniswapV4PoolManager.WordStoreMemory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 /-- The public pool operations hash the id in scratch space and cache its storage slot at 128. -/

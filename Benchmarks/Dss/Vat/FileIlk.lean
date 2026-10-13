@@ -1,7 +1,7 @@
 import Benchmarks.Dss.Vat.FileLine
 import Benchmarks.Dss.Vat.Ilks
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 50000000
 set_option maxHeartbeats 1000000
@@ -256,7 +256,7 @@ theorem evalStorageRef_fileIlkField {evm : EVM.State} {I : ExecutionEnv} {field 
 
 theorem assign_fileIlkSpotStorage (evm : EVM.State) (I : ExecutionEnv)
     (hsz100 : 100 ≤ I.calldata.size) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner
       (fileIlkSpotSlotFor I) (fileIlkData I)
     assignStorageRef? config { contract := contract, locals := fileIlkLocals I } evm
       .storage (ilksF (.var "ilk") "spot") (.int (Int.ofNat (fileIlkData I).toNat)) =
@@ -276,7 +276,7 @@ theorem assign_fileIlkSpotStorage (evm : EVM.State) (I : ExecutionEnv)
 
 theorem assign_fileIlkLineStorage (evm : EVM.State) (I : ExecutionEnv)
     (hsz100 : 100 ≤ I.calldata.size) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner
       (fileIlkLineSlotFor I) (fileIlkData I)
     assignStorageRef? config { contract := contract, locals := fileIlkLocals I } evm
       .storage (ilksF (.var "ilk") "line") (.int (Int.ofNat (fileIlkData I).toNat)) =
@@ -296,7 +296,7 @@ theorem assign_fileIlkLineStorage (evm : EVM.State) (I : ExecutionEnv)
 
 theorem assign_fileIlkDustStorage (evm : EVM.State) (I : ExecutionEnv)
     (hsz100 : 100 ≤ I.calldata.size) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner
       (fileIlkDustSlotFor I) (fileIlkData I)
     assignStorageRef? config { contract := contract, locals := fileIlkLocals I } evm
       .storage (ilksF (.var "ilk") "dust") (.int (Int.ofNat (fileIlkData I).toNat)) =
@@ -331,7 +331,7 @@ theorem vatFileIlkSourceBodySpotSplit {σ σ₀ A I} {g : UInt256}
     (hwhat : fileIlkWhat I = fileIlkSpotBytes) :
     let locals := fileIlkLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-    let evm1 := Solm.EVM.storageStore evm0 I.codeOwner (fileIlkSpotSlotFor I) (fileIlkData I)
+    let evm1 := Stele.EVM.storageStore evm0 I.codeOwner (fileIlkSpotSlotFor I) (fileIlkData I)
     ExecTransitionBody config contract evm0 locals fileIlkTransition.body
       (.returned { contract := contract, locals := locals } evm1 none) ∧
     (I.perm = false →
@@ -385,7 +385,7 @@ theorem vatFileIlkSourceBodyLineSplit {σ σ₀ A I} {g : UInt256}
     (hwhat : fileIlkWhat I = fileIlkLineBytes) :
     let locals := fileIlkLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-    let evm1 := Solm.EVM.storageStore evm0 I.codeOwner (fileIlkLineSlotFor I) (fileIlkData I)
+    let evm1 := Stele.EVM.storageStore evm0 I.codeOwner (fileIlkLineSlotFor I) (fileIlkData I)
     ExecTransitionBody config contract evm0 locals fileIlkTransition.body
       (.returned { contract := contract, locals := locals } evm1 none) ∧
     (I.perm = false →
@@ -447,7 +447,7 @@ theorem vatFileIlkSourceBodyDustSplit {σ σ₀ A I} {g : UInt256}
     (hwhat : fileIlkWhat I = fileIlkDustBytes) :
     let locals := fileIlkLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-    let evm1 := Solm.EVM.storageStore evm0 I.codeOwner (fileIlkDustSlotFor I) (fileIlkData I)
+    let evm1 := Stele.EVM.storageStore evm0 I.codeOwner (fileIlkDustSlotFor I) (fileIlkData I)
     ExecTransitionBody config contract evm0 locals fileIlkTransition.body
       (.returned { contract := contract, locals := locals } evm1 none) ∧
     (I.perm = false →
@@ -1115,7 +1115,7 @@ theorem vatFileIlkBodyCoreOkSpot
     runtimeRefinementFor config contract σ σ₀ g A I := by
   let locals := fileIlkLocals I
   let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  let evm1 := Solm.EVM.storageStore evm0 I.codeOwner (fileIlkSpotSlotFor I) (fileIlkData I)
+  let evm1 := Stele.EVM.storageStore evm0 I.codeOwner (fileIlkSpotSlotFor I) (fileIlkData I)
   have hboth := vatFileIlkSourceBodySpotSplit (σ := σ)
     (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hsz100 hauth hlive hwhat
   have hbody :
@@ -1190,7 +1190,7 @@ theorem vatFileIlkBodyCoreOkLine
     runtimeRefinementFor config contract σ σ₀ g A I := by
   let locals := fileIlkLocals I
   let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  let evm1 := Solm.EVM.storageStore evm0 I.codeOwner (fileIlkLineSlotFor I) (fileIlkData I)
+  let evm1 := Stele.EVM.storageStore evm0 I.codeOwner (fileIlkLineSlotFor I) (fileIlkData I)
   have hspotNe : fileIlkWhat I ≠ fileIlkSpotBytes := by
     intro hbad; exact fileIlkLine_ne_spot (by rw [← hwhat, hbad])
   have hboth := vatFileIlkSourceBodyLineSplit (σ := σ)
@@ -1274,7 +1274,7 @@ theorem vatFileIlkBodyCoreOkDust
     runtimeRefinementFor config contract σ σ₀ g A I := by
   let locals := fileIlkLocals I
   let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  let evm1 := Solm.EVM.storageStore evm0 I.codeOwner (fileIlkDustSlotFor I) (fileIlkData I)
+  let evm1 := Stele.EVM.storageStore evm0 I.codeOwner (fileIlkDustSlotFor I) (fileIlkData I)
   have hspotNe : fileIlkWhat I ≠ fileIlkSpotBytes := by
     intro hbad; exact fileIlkDust_ne_spot (by rw [← hwhat, hbad])
   have hlineNe : fileIlkWhat I ≠ fileIlkLineBytes := by

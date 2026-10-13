@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Dog.Dispatch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Dog.Immutables
 
 namespace Benchmarks.Dss.Dog
@@ -112,7 +112,7 @@ theorem dogHoleBodyCore {v : DogImmutables} {code : ByteArray}
         (.returned { contract := contract, locals := ∅, immutables := immStore v }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.int (Int.ofNat (solcSlotWordAt ⟨4⟩ σ I).toNat))])) (immStore v) := by
-    simpa [HoleTransition, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [HoleTransition, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       dogUint256GetterBodyReturns v
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅

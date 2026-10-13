@@ -1,5 +1,5 @@
 import Benchmarks.EAS.EAS.ConstructorData
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
 namespace Benchmarks.EAS.EAS
 set_option maxRecDepth 10000
 
@@ -83,8 +83,8 @@ theorem easCtorGuard_eval {imms L : Store} {evm : EVM.State} {registry : Account
     evalBinaryOp?,beq_eq_decide,Value.address.injEq,decide_not]
 
 theorem easCtorSourceNonpayable {σ σ₀ A I} {g : UInt256} (registry : AccountAddress)
-    (hv : I.weiValue ≠ ⟨0⟩) : solmCtorExec config contract [.address registry] σ σ₀ g A I .reverted := by
-  refine solmCtorExec.intro (evmState := initState σ σ₀ (Sat256.ofUInt256 g) A I) (argsStore := easCtorArgs registry) rfl rfl rfl ?_
+    (hv : I.weiValue ≠ ⟨0⟩) : steleCtorExec config contract [.address registry] σ σ₀ g A I .reverted := by
+  refine steleCtorExec.intro (evmState := initState σ σ₀ (Sat256.ofUInt256 g) A I) (argsStore := easCtorArgs registry) rfl rfl rfl ?_
   rw [easCtorBody]
   change ExecFuncBody config _ _ (.letDecl "$EAS.freeMemory" none (.intLit 512) :: .require (.binary .eq (.env .callvalue) (.intLit 0)) :: _) _
   apply ExecFuncBody.execBlockRevert
@@ -93,8 +93,8 @@ theorem easCtorSourceNonpayable {σ σ₀ A I} {g : UInt256} (registry : Account
 
 theorem easCtorSource {σ σ₀ A I} {g : UInt256} (registry : AccountAddress)
     (hv : I.weiValue = ⟨0⟩) :
-    if registry = ⟨0,by decide⟩ then solmCtorExec config contract [.address registry] σ σ₀ g A I .reverted else
-      solmCtorExec config contract [.address registry] σ σ₀ g A I
+    if registry = ⟨0,by decide⟩ then steleCtorExec config contract [.address registry] σ σ₀ g A I .reverted else
+      steleCtorExec config contract [.address registry] σ σ₀ g A I
         (.returned {contract := contract,locals := easCtorLocals (easCtorArgs registry) I.codeOwner,immutables := easCtorImms I.codeOwner registry}
           (initState σ σ₀ (Sat256.ofUInt256 g) A I) none) := by
   let evm := initState σ σ₀ (Sat256.ofUInt256 g) A I
@@ -105,7 +105,7 @@ theorem easCtorSource {σ σ₀ A I} {g : UInt256} (registry : AccountAddress)
   have hget := easCtorLocals_registry registry evm.executionEnv.codeOwner
   by_cases hz : registry = ⟨0,by decide⟩
   · rw [if_pos hz]
-    refine solmCtorExec.intro (evmState := evm) (argsStore := easCtorArgs registry) rfl rfl rfl ?_
+    refine steleCtorExec.intro (evmState := evm) (argsStore := easCtorArgs registry) rfl rfl rfl ?_
     rw [easCtorBody]
     apply ExecFuncBody.execBlockRevert
     apply execBlock_append hfront
@@ -114,7 +114,7 @@ theorem easCtorSource {σ σ₀ A I} {g : UInt256} (registry : AccountAddress)
     simpa only [hz,ne_eq,not_true_eq_false,decide_false] using
       easCtorGuard_eval (imms := easCtorImms2 (initialImmutables contract) I.codeOwner) (evm := evm) hget
   · rw [if_neg hz]
-    refine solmCtorExec.intro (evmState := evm) (argsStore := easCtorArgs registry) rfl rfl rfl ?_
+    refine steleCtorExec.intro (evmState := evm) (argsStore := easCtorArgs registry) rfl rfl rfl ?_
     rw [easCtorBody]
     apply ExecFuncBody.execBlockOK
     apply execBlock_append hfront

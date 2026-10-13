@@ -1,5 +1,5 @@
 import Benchmarks.EAS.EAS.StaticArrayDecode
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach ABI.Solc08Calldata
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach ABI.Solc08Calldata
 namespace Benchmarks.EAS.EAS
 
 -- LIBRARY CANDIDATE: a static array succeeds exactly when every element's local check succeeds.

@@ -3,7 +3,7 @@ import Benchmarks.CompoundIII.Comet.TotalsCollateralAllocation
 import Benchmarks.CompoundIII.Comet.MappingScratch
 import Benchmarks.CompoundIII.Comet.RuntimeBlocks_064
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
 open Benchmarks.CompoundIII.Comet.Immutables cometWithExtendedAssetListBlocks
 
 namespace Benchmarks.CompoundIII.Comet
@@ -13,7 +13,7 @@ set_option maxRecDepth 2000
 def supplyCollateralReadMemory (mem : ByteArray) (free : UInt256) (evm : EVM.State)
     (asset : AccountAddress) : ByteArray :=
   totalsCollateralAllocatedMemory (twoWordHashMem (EVM.word asset.val) ⟨2⟩ mem) free
-    (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (totalsCollateralSlot asset))
+    (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (totalsCollateralSlot asset))
 
 theorem supplyCollateralReadMemory_asset {mem ptr free out evm asset}
     (hm : AssetMemory mem ptr free out) (hb : free.toNat + 64 < UInt256.size) :
@@ -60,7 +60,7 @@ theorem cometSupplyCollateralRead {v : CometWithExtendedAssetListImmutables}
     (by change R.length + 7 + 9 ≤ 1024; omega) hm'.freeWord hb
     (by rw [cometWithExtendedAssetListPatchedValidJumps v]; jump_dest) r3
   have hread : solcSlotWordAt (solcMappingSlot (UInt256.ofNat 2) (EVM.word asset.val)) σ ee =
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (totalsCollateralSlot asset) := by
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (totalsCollateralSlot asset) := by
     simpa only [hs.env] using (hs.storageRead (totalsCollateralSlot asset)).symm
   rw [hread] at ht r4
   exact ⟨aw4, k4, C4, ht, supplyCollateralReadMemory_asset hm

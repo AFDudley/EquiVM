@@ -2,7 +2,7 @@ import Benchmarks.UniswapV3.Pool.Slot0Storage
 import Benchmarks.UniswapV3.Pool.PoolLiquidityStorage
 import Benchmarks.UniswapV3.Pool.NoDelegateCall
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
@@ -99,7 +99,7 @@ theorem flashLoadLiquidityPrefix (v : UniswapV3PoolImmutables) (evm : EVM.State)
       (.internalCall "checkNotDelegateCall" [] "__c0")
       (.ok (flashCheckedFrame v a) (storeSlot0Unlocked evm false)) :=
     internalCallFunctionReturn (callee := noDelegateCallFunction) (argVals := []) (locals := ∅)
-      (calleeSolm := noDelegateCallFrame v) (value := none)
+      (calleeStele := noDelegateCallFrame v) (value := none)
       (by simp only [evalExprs?, pure]) noDelegateCallLookup rfl
       (noDelegateCallReturns v _ (by simpa only [storeSlot0Unlocked_executionEnv] using hself))
   refine ExecBlock.consNormal hcall ?_

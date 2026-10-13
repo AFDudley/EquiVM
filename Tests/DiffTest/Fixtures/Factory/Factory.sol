@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-/// Differential-test fixture: the Solm statement forms no example or benchmark exercises
+/// Differential-test fixture: the Stele statement forms no example or benchmark exercises
 /// (contract creation with and without salt, `for` with `break`/`continue`, `try`/`catch`,
 /// array `pop` and `delete`).
 

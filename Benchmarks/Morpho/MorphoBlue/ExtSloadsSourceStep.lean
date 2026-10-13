@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MorphoBlue.WordArrayABI
 import Benchmarks.Morpho.MorphoBlue.Storage
 import Benchmarks.EAS.Attester.LocalArray
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.Morpho.MorphoBlue
 set_option maxRecDepth 1000
 

@@ -6,7 +6,7 @@ Run with `lake env lean --run Benchmarks/EAS/EAS/CalldataOrderCheck.lean`.
 Every case must agree, including malformed input in both permission modes.
 -/
 
-open Solm Solm.Interp Solm.DiffTest Ethereum Ethereum.EVM
+open Stele Stele.Interp Stele.DiffTest Ethereum Ethereum.EVM
 
 private def bytes32 (n : Nat) : Value :=
   .fixedBytes ⟨31, by decide⟩ (wordBytes n).toList

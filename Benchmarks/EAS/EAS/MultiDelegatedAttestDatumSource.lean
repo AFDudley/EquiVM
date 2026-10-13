@@ -1,6 +1,6 @@
 import Benchmarks.EAS.EAS.MultiDelegatedAttestSource
 import Benchmarks.EAS.EAS.DelegatedAttestBuildMemory
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach ABI.Solc08Calldata
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach ABI.Solc08Calldata
 namespace Benchmarks.EAS.EAS
 set_option maxRecDepth 10000
 

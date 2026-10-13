@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.OracleObservationStorage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
 
@@ -93,7 +93,7 @@ theorem oracleObserveZeroTailReturns (imms : Store) (evm : EVM.State) (time : UI
     let final := {called with locals := called.locals.insert "last" result.value}
     refine ⟨final, ?_⟩
     simp only [oracleObserveZeroResult, if_neg heq]
-    refine ExecBlock.consNormal (solm' := final) (evm' := evm) (ExecStmt.iteTrue ?_ ?_) ?_
+    refine ExecBlock.consNormal (stele' := final) (evm' := evm) (ExecStmt.iteTrue ?_ ?_) ?_
     · simpa only [ne_eq, heq, not_false_eq_true, decide_true] using evalOracleObserveTime imms evm time tick index liquidity cardinality last
     · refine ExecBlock.consNormal hcall ?_
       refine ExecBlock.consNormal (ExecStmt.assign (value := result.value) ?_ ?_) ExecBlock.nil

@@ -1,8 +1,8 @@
 import Benchmarks.Dss.Spot.Spec
-import Solm.Notation
+import Stele.Notation
 
 /-!
-# Spotter spec in the Solidity-faithful Solm frontend
+# Spotter spec in the Solidity-faithful Stele frontend
 
 The whole Spotter benchmark spec, written with `solidity%` and proven definitionally equal to the
 AST spec in `Benchmarks/Dss/Spot/Spec.lean`.
@@ -14,7 +14,7 @@ spec's own `checkedExternalCallStmts` (its `peekRet` binder is then referenced v
 Transition order matches `contract.transitions`.
 -/
 
-open Solm Solm.Notation
+open Stele Stele.Notation
 
 namespace Benchmarks.Dss.Spot.Syntax
 

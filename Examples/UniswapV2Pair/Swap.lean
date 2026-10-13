@@ -19,7 +19,7 @@ import Examples.UniswapV2Pair.SwapTailSource
 import Examples.UniswapV2Pair.SwapEventRuntime
 import Examples.UniswapV2Pair.UpdateDynamicCallRuntimeCases
 import Examples.UniswapV2Pair.SwapCallbackInput
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 2000000
 namespace UniswapV2Pair
@@ -47,7 +47,7 @@ theorem uniswapSwapBody
               (uniswapReachSwapBody (σ := σ) (σ₀ := σ₀) (A := A)
                 (g := Sat256.ofUInt256 g) hcode hwv hsz4 hsize hsel)
             let evmS := initState σ σ₀ (Sat256.ofUInt256 g) A I
-            have hstorage : Solm.EVM.storageLoad evmS evmS.executionEnv.codeOwner ⟨12⟩ =
+            have hstorage : Stele.EVM.storageLoad evmS evmS.executionEnv.codeOwner ⟨12⟩ =
                 (σ.get? I.codeOwner |>.option ⟨0⟩ (fun acc => acc.storage.getD ⟨12⟩ ⟨0⟩)) := by
               rfl
             by_cases hlocked : (σ.get? I.codeOwner |>.option ⟨0⟩
@@ -356,7 +356,7 @@ theorem uniswapSwapBodyAnyPerm
               (uniswapReachSwapBody (σ := σ) (σ₀ := σ₀) (A := A)
                 (g := Sat256.ofUInt256 g) hcode hwv hsz4 hsize hsel)
             let evmS := initState σ σ₀ (Sat256.ofUInt256 g) A I
-            have hstorage : Solm.EVM.storageLoad evmS evmS.executionEnv.codeOwner ⟨12⟩ =
+            have hstorage : Stele.EVM.storageLoad evmS evmS.executionEnv.codeOwner ⟨12⟩ =
                 (σ.get? I.codeOwner |>.option ⟨0⟩
                   (fun acc => acc.storage.getD ⟨12⟩ ⟨0⟩)) := by
               rfl

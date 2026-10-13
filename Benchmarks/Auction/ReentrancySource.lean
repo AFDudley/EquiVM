@@ -1,11 +1,11 @@
 import Benchmarks.Auction.SettleStorage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Auction
 
 def statusState (evm : EVM.State) (word : UInt256) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨101⟩ word
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨101⟩ word
 
 theorem statusRead {s0 I σ evm locals} (hs : SourceState s0 I σ evm)
     (hl : locals.get? "_status" = none) :
@@ -13,7 +13,7 @@ theorem statusRead {s0 I σ evm locals} (hs : SourceState s0 I σ evm)
       (.storage statusRef) = .ok (.int (Int.ofNat (solcSlotWord σ I ⟨101⟩).toNat)) := by
   rw [statusRef, scalarRead evm locals "_status" (.int uint256Int) (auctionUint256Loc ⟨101⟩)
     hl (by native_decide) rfl, loadUint256]
-  have hw : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨101⟩ =
+  have hw : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨101⟩ =
       solcSlotWord σ I ⟨101⟩ := by
     exact hs.storageRead _
   rw [hw]

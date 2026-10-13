@@ -13,7 +13,7 @@ preserve the counterexample and the adjacent valid boundary as regression eviden
 
 namespace Benchmarks.CompoundIII.Comet.ScaffoldAudit
 
-open Solm ABI Ethereum Ethereum.EVM Solm.DiffTest
+open Stele ABI Ethereum Ethereum.EVM Stele.DiffTest
 open Benchmarks.CompoundIII.Comet Benchmarks.CompoundIII.Comet.Immutables
 
 -- An explicitly untyped store keeps the original counterexample reproducible after the

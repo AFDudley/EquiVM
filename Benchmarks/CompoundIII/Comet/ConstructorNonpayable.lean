@@ -2,7 +2,7 @@ import Benchmarks.CompoundIII.Comet.ConstructorDeployment
 import Benchmarks.CompoundIII.Comet.CreationBlocks_001
 import Benchmarks.CompoundIII.Comet.CreationBlocks_008
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open cometWithExtendedAssetListCreationBlocks
 
 namespace Benchmarks.CompoundIII.Comet
@@ -18,7 +18,7 @@ theorem cometConstructorNonpayable {σ σ₀ A I} {g : UInt256}
   have r1 := cometWithExtendedAssetListCreation_block_0_taken (by decide) hv
     (by native_decide) r0
   have hr := cometWithExtendedAssetListCreation_block_2684 (by decide) r1
-  have hb : solmCtorExec config contract args σ σ₀ g A I .reverted := by
+  have hb : steleCtorExec config contract args σ σ₀ g A I .reverted := by
     refine .intro rfl hlen rfl ?_
     exact bodyReverts_nonPayable hv
   obtain hoog | ⟨s, out, hX⟩ := hr

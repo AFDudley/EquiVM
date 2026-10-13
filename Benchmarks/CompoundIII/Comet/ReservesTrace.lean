@@ -1,12 +1,12 @@
 import Benchmarks.CompoundIII.Comet.ReservesInternal
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
 open Benchmarks.CompoundIII.Comet.Immutables
 
 namespace Benchmarks.CompoundIII.Comet
 
 def reservesSnapshot (evm : EVM.State) (slot : UInt256) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot
 
 abbrev ReservesIndicesValid (v : CometWithExtendedAssetListImmutables) (evm : EVM.State) :=
   CurrentIndicesValid v (reservesSnapshot evm ⟨0⟩) (reservesSnapshot evm ⟨1⟩)

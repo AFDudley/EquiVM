@@ -2,7 +2,7 @@ import Benchmarks.UniswapV3.Pool.FlashPrefix
 import Benchmarks.UniswapV3.Pool.FullMathRoundSource
 import Benchmarks.UniswapV3.Pool.PoolTokenTransfer
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
@@ -49,7 +49,7 @@ theorem flashFeeReturns (v : UniswapV3PoolImmutables) (locals : Store) (evm : EV
              immutables := immStore v } evm) := by
   exact internalCallFunctionReturn (callee := fullMathRoundFunction)
     (locals := fullMathLocals amount (poolFeeWord v) ⟨1000000⟩)
-    (calleeSolm := fullMathRoundFinalFrame (immStore v) amount (poolFeeWord v) ⟨1000000⟩)
+    (calleeStele := fullMathRoundFinalFrame (immStore v) amount (poolFeeWord v) ⟨1000000⟩)
     (value := some [.int (Int.ofNat (fullMathRoundResult amount (poolFeeWord v) ⟨1000000⟩).toNat)])
     (evalFlashFeeArgs v locals evm second amount ha) fullMathRoundLookup
     (fullMathRoundBind amount (poolFeeWord v) ⟨1000000⟩)

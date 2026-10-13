@@ -2,7 +2,7 @@ import Benchmarks.Dss.Clipper.TakeChostVatFluxSource
 import Benchmarks.Dss.Clipper.TakeOweVatMoveSource
 import Benchmarks.Dss.Clipper.YankSuccessSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 namespace Benchmarks.Dss.Clipper
@@ -547,7 +547,7 @@ theorem clipperTakeGenericAssignSalesTab
     assignStorageRef? config (Frame.mk contract locals (immStore v)) evm
       .storage (salesF (.var "id") "tab") (.int (Int.ofNat tab.toNat)) =
       .ok (Frame.mk contract locals (immStore v),
-        Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+        Stele.EVM.storageStore evm evm.executionEnv.codeOwner
           (clipperTakeSalesTabSlot I) tab) := by
   apply assignStorageRef_storage_scalar (hbackend := rfl)
     (er := clipperTakeSalesTabRef I) (ty := uint256St)
@@ -571,7 +571,7 @@ theorem clipperTakeGenericAssignSalesLot
     assignStorageRef? config (Frame.mk contract locals (immStore v)) evm
       .storage (salesF (.var "id") "lot") (.int (Int.ofNat lot.toNat)) =
       .ok (Frame.mk contract locals (immStore v),
-        Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+        Stele.EVM.storageStore evm evm.executionEnv.codeOwner
           (clipperTakeSalesLotSlot I) lot) := by
   apply assignStorageRef_storage_scalar (hbackend := rfl)
     (er := clipperTakeSalesLotRef I) (ty := uint256St)
@@ -596,9 +596,9 @@ theorem clipperTakeGenericPostDogNonzeroStore
     (hlocked : locals.get? "locked" = none)
     (hsales : locals.get? "sales" = none)
     (htabNe : tab ≠ ⟨0⟩) (hlotNe : lot ≠ ⟨0⟩) :
-    let evmTab := Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+    let evmTab := Stele.EVM.storageStore evm evm.executionEnv.codeOwner
       (clipperTakeSalesTabSlot I) tab
-    let evmLot := Solm.EVM.storageStore evmTab evmTab.executionEnv.codeOwner
+    let evmLot := Stele.EVM.storageStore evmTab evmTab.executionEnv.codeOwner
       (clipperTakeSalesLotSlot I) lot
     ExecBlock config (Frame.mk contract locals (immStore v)) evm
       [ .ite
@@ -613,7 +613,7 @@ theorem clipperTakeGenericPostDogNonzeroStore
                 .assign .storage (salesF (.var "id") "lot") (.var "lot") ] ],
         .assign .storage lockedRef (.intLit 0) ]
       (.ok (Frame.mk contract locals (immStore v))
-        (Solm.EVM.storageStore evmLot evmLot.executionEnv.codeOwner ⟨13⟩ ⟨0⟩)) := by
+        (Stele.EVM.storageStore evmLot evmLot.executionEnv.codeOwner ⟨13⟩ ⟨0⟩)) := by
   intro evmTab evmLot
   have hlotCond := clipperEvalTakeGenericLotEqZeroFalse (v := v) (evm := evm)
     hlot hlotNe
@@ -663,7 +663,7 @@ theorem clipperTakeGenericPostDogNonzeroStore
   have hunlockAssign : assignStorageRef? config
       (Frame.mk contract locals (immStore v)) evmLot .storage lockedRef (.int 0) =
       .ok (Frame.mk contract locals (immStore v),
-        Solm.EVM.storageStore evmLot evmLot.executionEnv.codeOwner ⟨13⟩ ⟨0⟩) := by
+        Stele.EVM.storageStore evmLot evmLot.executionEnv.codeOwner ⟨13⟩ ⟨0⟩) := by
     simpa using assign_clipperLocked v evmLot locals hlocked ⟨0⟩
   have hunlock := ExecStmt.assign hzero hunlockAssign
   exact ExecBlock.consNormal hlotIte (ExecBlock.consNormal hunlock ExecBlock.nil)

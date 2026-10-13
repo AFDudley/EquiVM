@@ -2,7 +2,7 @@ import Benchmarks.EAS.EAS.GetUIDCall
 import Benchmarks.EAS.EAS.UIDControl
 import Benchmarks.EAS.EAS.Time
 import Benchmarks.EAS.EAS.AllocateBounds
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 set_option maxRecDepth 10000
 

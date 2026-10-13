@@ -1,5 +1,5 @@
 import Benchmarks.EAS.EAS.PackedShift
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 -- GENERALIZES Reasoning.PackedStorage's fixed-width setters to arbitrary bit windows.

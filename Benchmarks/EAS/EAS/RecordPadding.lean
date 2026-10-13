@@ -1,6 +1,6 @@
 import Benchmarks.EAS.EAS.Allocate
 import Benchmarks.EAS.EAS.RecordCreateMemory
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 -- The first record write makes the reserved, implicitly zero-filled array payload explicit.

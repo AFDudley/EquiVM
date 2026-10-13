@@ -1,6 +1,6 @@
 import Benchmarks.EAS.EAS.ArrayLoopSource
 import Benchmarks.EAS.EAS.AllocateBlock
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 -- GENERALIZES multiRevokeUpdateSource to any result local.

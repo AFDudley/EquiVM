@@ -1,6 +1,6 @@
 import Benchmarks.EAS.EAS.CalldataArrayExtent
 import Benchmarks.EAS.Attester.NestedBounds
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 -- GENERALIZES calldataArrayExtent_signed to any bounded static element stride.

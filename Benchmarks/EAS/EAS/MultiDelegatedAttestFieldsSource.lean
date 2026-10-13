@@ -1,5 +1,5 @@
 import Benchmarks.EAS.EAS.MultiDelegatedAttestLocals
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach ABI.Solc08Calldata
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach ABI.Solc08Calldata
 namespace Benchmarks.EAS.EAS
 set_option maxRecDepth 10000
 
@@ -10,7 +10,7 @@ theorem localArrayNonempty_eval {L imms : Store} {evm : EVM.State} {name : Ident
     (h : L.get? name=some (.array xs)) :
     evalExpr? config {contract := contract,locals := L,immutables := imms} evm
       (.binary .ne (.arrayLength .localVar {base := name}) (.intLit 0))=.ok (.bool (decide (0<xs.length))) := by
-  have he := evalLocalArrayLength (cfg := config) (solm := {contract := contract,locals := L,immutables := imms}) (evm := evm) h
+  have he := evalLocalArrayLength (cfg := config) (stele := {contract := contract,locals := L,immutables := imms}) (evm := evm) h
   simp only [evalExpr?,he,pure,bind,EvalResult.bind,evalBinaryOp_ne_int_ok]
   congr 2
   apply Bool.eq_iff_iff.mpr
@@ -23,8 +23,8 @@ theorem localArrayLengthsEq_eval {L imms : Store} {evm : EVM.State} {a b : Ident
     evalExpr? config {contract := contract,locals := L,immutables := imms} evm
       (.binary .eq (.arrayLength .localVar {base := a}) (.arrayLength .localVar {base := b}))=
       .ok (.bool (decide (xs.length=ys.length))) := by
-  have he := evalLocalArrayLength (cfg := config) (solm := {contract := contract,locals := L,immutables := imms}) (evm := evm) hx
-  have hf := evalLocalArrayLength (cfg := config) (solm := {contract := contract,locals := L,immutables := imms}) (evm := evm) hy
+  have he := evalLocalArrayLength (cfg := config) (stele := {contract := contract,locals := L,immutables := imms}) (evm := evm) hx
+  have hf := evalLocalArrayLength (cfg := config) (stele := {contract := contract,locals := L,immutables := imms}) (evm := evm) hy
   simp only [evalExpr?,he,hf,pure,bind,EvalResult.bind,evalBinaryOp_eq_int_ok]
   congr 2
   apply Bool.eq_iff_iff.mpr
@@ -75,7 +75,7 @@ theorem multiDelegatedAttestFieldsSource {L imms : Store} {evm : EVM.State} {sch
           have hinit : ExecStmt config {contract := contract,locals := L2,immutables := imms} evm
               (.letDecl "j" (some abiUInt256) (.intLit 0))
               (.ok {contract := contract,locals := multiDelegatedAttestFieldLocals L data sigs,immutables := imms} evm) := by
-            have hinit := ExecStmt.letDecl (cfg := config) (solm := {contract := contract,locals := L2,immutables := imms})
+            have hinit := ExecStmt.letDecl (cfg := config) (stele := {contract := contract,locals := L2,immutables := imms})
               (evm := evm) (name := "j") (ty := some abiUInt256) (by simp only [evalExpr?,pure] : evalExpr? config {contract := contract,locals := L2,immutables := imms} evm (.intLit 0)=.ok (.int 0))
             simpa only [L2,L1,if_pos hdv,if_pos hsv] using hinit
           exact ExecBlock.consNormal hread1 (ExecBlock.consNormal hc1 (ExecBlock.consNormal (ExecStmt.requireTrue he1)

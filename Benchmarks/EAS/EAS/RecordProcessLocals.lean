@@ -2,7 +2,7 @@ import Benchmarks.EAS.EAS.NewRecordRun
 import Benchmarks.EAS.EAS.UIDLoop
 import Benchmarks.EAS.EAS.RecordStoreRun
 import Benchmarks.EAS.EAS.RefUIDRun
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 -- LIBRARY CANDIDATE: transport unaffected local bindings across several source fragments.

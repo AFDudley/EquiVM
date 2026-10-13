@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV4PoolManager.NextPriceSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 def swapStepPriceRet (input : Bool) : Ident := if input then "__c4" else "__c9"

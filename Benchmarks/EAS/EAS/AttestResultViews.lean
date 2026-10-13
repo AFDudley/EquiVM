@@ -1,5 +1,5 @@
 import Benchmarks.EAS.EAS.AttestResultAllocate
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 theorem defaultResultMemory_covers (mem : ByteArray) (heap : UInt256) :

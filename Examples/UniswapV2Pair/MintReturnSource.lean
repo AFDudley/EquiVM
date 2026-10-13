@@ -1,26 +1,26 @@
 import Examples.UniswapV2Pair.MintLiquidityUpdateSource
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
 namespace UniswapV2Pair
 
 theorem evalExpr_mint_feeOn_false
-    {solm : Frame} (evm : EVM.State)
-    (hfeeOn : solm.locals.get? "feeOn" = some (.bool false)) :
-    evalExpr? config solm evm (.var "feeOn") = .ok (.bool false) := by
+    {stele : Frame} (evm : EVM.State)
+    (hfeeOn : stele.locals.get? "feeOn" = some (.bool false)) :
+    evalExpr? config stele evm (.var "feeOn") = .ok (.bool false) := by
   simp only [evalExpr?, EvalResult.ofOption, hfeeOn]
 
 theorem evalExpr_mint_feeOn_true
-    {solm : Frame} (evm : EVM.State)
-    (hfeeOn : solm.locals.get? "feeOn" = some (.bool true)) :
-    evalExpr? config solm evm (.var "feeOn") = .ok (.bool true) := by
+    {stele : Frame} (evm : EVM.State)
+    (hfeeOn : stele.locals.get? "feeOn" = some (.bool true)) :
+    evalExpr? config stele evm (.var "feeOn") = .ok (.bool true) := by
   simp only [evalExpr?, EvalResult.ofOption, hfeeOn]
 
 theorem evalExpr_mint_liquidity_of_get
-    {solm : Frame} (evm : EVM.State) (liquidity : UInt256)
-    (hliq : solm.locals.get? "liquidity" = some (uniswapUint256Value liquidity)) :
-    evalExpr? config solm evm (.var "liquidity") =
+    {stele : Frame} (evm : EVM.State) (liquidity : UInt256)
+    (hliq : stele.locals.get? "liquidity" = some (uniswapUint256Value liquidity)) :
+    evalExpr? config stele evm (.var "liquidity") =
       .ok (uniswapUint256Value liquidity) := by
   simp only [evalExpr?, EvalResult.ofOption, hliq]
 
@@ -28,7 +28,7 @@ abbrev mintKLastProductValue (evm : EVM.State) : Value :=
   mintFeeReserveProductValue (uniswapReserve0Word evm) (uniswapReserve1Word evm)
 
 abbrev mintKLastUpdatedState (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨11⟩
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨11⟩
     (mintFeeReserveProductWord (uniswapReserve0Word evm) (uniswapReserve1Word evm))
 
 theorem evalExpr_mint_kLastReserveProduct_of_storage
@@ -112,7 +112,7 @@ theorem uniswapMintAfterUpdateFeeOffReturn
   have hfee :
       evalExpr? config { contract := contract, locals := locals } evm (.var "feeOn") =
         .ok (.bool false) :=
-    evalExpr_mint_feeOn_false (solm := { contract := contract, locals := locals }) evm hfeeOn
+    evalExpr_mint_feeOn_false (stele := { contract := contract, locals := locals }) evm hfeeOn
   have hiteStmt :
       ExecStmt config { contract := contract, locals := locals } evm
         (.ite (.var "feeOn")
@@ -138,7 +138,7 @@ theorem uniswapMintAfterUpdateFeeOffReturn
     ExecBlock.consReturn
       (ExecStmt.return
         (evalExprs?_singleton (evalExpr_mint_liquidity_of_get
-          (solm := { contract := contract, locals := locals })
+          (stele := { contract := contract, locals := locals })
           (uniswapLockExitedState evm) liquidity hliq)))
   have htail := execBlock_append hlock hret
   simpa [List.append_assoc] using execBlock_append hite htail
@@ -167,7 +167,7 @@ theorem uniswapMintAfterUpdateFeeOnReturn
   have hfee :
       evalExpr? config { contract := contract, locals := locals } evm (.var "feeOn") =
         .ok (.bool true) :=
-    evalExpr_mint_feeOn_true (solm := { contract := contract, locals := locals }) evm hfeeOn
+    evalExpr_mint_feeOn_true (stele := { contract := contract, locals := locals }) evm hfeeOn
   have hassignStmt :
       ExecStmt config { contract := contract, locals := locals } evm
         (.assign .storage kLastRef
@@ -209,7 +209,7 @@ theorem uniswapMintAfterUpdateFeeOnReturn
     ExecBlock.consReturn
       (ExecStmt.return
         (evalExprs?_singleton (evalExpr_mint_liquidity_of_get
-          (solm := { contract := contract, locals := locals })
+          (stele := { contract := contract, locals := locals })
           (uniswapLockExitedState (mintKLastUpdatedState evm)) liquidity hliq)))
   have htail := execBlock_append hlock hret
   simpa [List.append_assoc] using execBlock_append hite htail

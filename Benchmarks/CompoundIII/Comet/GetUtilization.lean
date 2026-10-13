@@ -8,11 +8,11 @@ import Benchmarks.CompoundIII.Comet.RuntimeBlocks_023
 # CometWithExtendedAssetList `getUtilization()`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 1087; reach lemma `cometWithExtendedAssetListReachGetUtilizationBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open cometWithExtendedAssetListBlocks
 open Reasoning.Immutables
 open Benchmarks.CompoundIII.Comet.Immutables

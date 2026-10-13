@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV4PoolManager.PoolSwapLoopLocals
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 structure PoolSwapSetupLocals (f : Frame) (id packed : UInt256) (p : PoolSwapParamsWords)

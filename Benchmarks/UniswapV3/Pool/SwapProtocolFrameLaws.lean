@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.SwapProtocolSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 theorem swapProtocolFrame_parts (frame : Frame) (c : SwapCacheData) (s : SwapStateData)

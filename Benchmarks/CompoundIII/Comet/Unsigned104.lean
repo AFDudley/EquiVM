@@ -1,7 +1,7 @@
 import Benchmarks.CompoundIII.Comet.PrincipalWords
 import Benchmarks.CompoundIII.Comet.RuntimeBlocks_080
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.CompoundIII.Comet.Immutables
 open cometWithExtendedAssetListBlocks
@@ -52,7 +52,7 @@ theorem unsigned104_call (frame : Frame) (evm : EVM.State) (n : UInt256)
     ExecStmt config frame evm (.internalCall "unsigned104" [expr] ret)
       (.ok { frame with locals := frame.locals.insert ret (.int n.toNat) } evm) := by
   exact ExecStmt.internalCallReturn (callee := unsigned104Callable)
-    (cfg := config) (solm := frame) (evm := evm) (args := [expr]) (argVals := [.int n.toNat])
+    (cfg := config) (stele := frame) (evm := evm) (args := [expr]) (argVals := [.int n.toNat])
     (by simp only [evalExprs?, he, pure, bind, EvalResult.bind])
     (by rw [hc]; exact unsigned104Callable_lookup) rfl
     (by simpa only [hc] using unsigned104Callable_returns evm frame.immutables n hn)

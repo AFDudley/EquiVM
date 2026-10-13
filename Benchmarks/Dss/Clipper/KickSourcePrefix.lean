@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Clipper.KickSourceInit
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 namespace Benchmarks.Dss.Clipper
@@ -31,10 +31,10 @@ theorem clipperKickSourcePrefix
     (v : ClipperImmutables) (evm : EVM.State) (I : ExecutionEnv)
     (hvalue : evm.executionEnv.weiValue = ⟨0⟩)
     (hsrc : evm.executionEnv.source = I.source)
-    (hauth : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+    (hauth : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
       (clipperRelyAuthStorageSlot I) = ⟨1⟩)
-    (hlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨13⟩ = ⟨0⟩)
-    (hstopped : (Solm.EVM.storageLoad (clipperKickLockedState evm)
+    (hlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨13⟩ = ⟨0⟩)
+    (hstopped : (Stele.EVM.storageLoad (clipperKickLockedState evm)
       (clipperKickLockedState evm).executionEnv.codeOwner ⟨14⟩).toNat < 1)
     (htab : 0 < (clipperKickTabWord I).toNat)
     (hlot : 0 < (clipperKickLotWord I).toNat)

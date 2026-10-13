@@ -1,5 +1,5 @@
 import Benchmarks.EAS.EAS.CopyEncodeViews
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 -- LIBRARY CANDIDATE: copying from beyond the source clears only the covered destination bytes.

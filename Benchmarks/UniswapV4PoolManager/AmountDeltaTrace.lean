@@ -3,7 +3,7 @@ import Benchmarks.UniswapV4PoolManager.Amount0Trace
 import Benchmarks.UniswapV4PoolManager.Amount1Trace
 import Benchmarks.UniswapV4PoolManager.ReachCost
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.UniswapV4PoolManager.Immutables
 namespace Benchmarks.UniswapV4PoolManager

@@ -3,7 +3,7 @@ import Benchmarks.UniswapV4PoolManager.SignedBytesDecode
 import Benchmarks.UniswapV4PoolManager.BoolWordDecode
 import Benchmarks.UniswapV4PoolManager.ScalarTupleDecode
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 attribute [local irreducible] EVM.signed

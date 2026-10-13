@@ -2,7 +2,7 @@ import Examples.UniswapV2Pair.ExternalWrappers
 import Examples.UniswapV2Pair.BurnRoutines
 import Examples.UniswapV2Pair.MutatorDispatch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -152,7 +152,7 @@ theorem uniswapBurnX_lockEnteredStatic {σ σ₀ A I} {g : Sat256} {sel : UInt25
 
 theorem uniswapBurnBodyReverts_locked (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ ≠ ⟨1⟩) :
+    (hlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ ≠ ⟨1⟩) :
     ExecTransitionBody config contract evm (burnStore I) burnTransition.body .reverted := by
   have hlock :=
     uniswapLockEnterLockedRevert evm (burnStore I) hwv (by simp [burnStore]) hlocked
@@ -162,7 +162,7 @@ theorem uniswapBurnBodyReverts_locked (evm : EVM.State) (I : ExecutionEnv)
 
 theorem uniswapBurnBodyStatic (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hperm : evm.executionEnv.perm = false) :
     ExecTransitionBody config contract evm (burnStore I) burnTransition.body
       .staticViolation := by
@@ -198,15 +198,15 @@ theorem uniswapBurnBodyCoreRevert_locked
      :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   let evmS := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  have hlockedSolm :
-      Solm.EVM.storageLoad evmS evmS.executionEnv.codeOwner ⟨12⟩ ≠ ⟨1⟩ := by
-    simpa [evmS, initState, Solm.EVM.storageLoad, State.lookupAccount,
+  have hlockedStele :
+      Stele.EVM.storageLoad evmS evmS.executionEnv.codeOwner ⟨12⟩ ≠ ⟨1⟩ := by
+    simpa [evmS, initState, Stele.EVM.storageLoad, State.lookupAccount,
       Account.lookupStorage] using hlocked
   have hbody :
       ExecTransitionBody config contract evmS (burnStore I) burnTransition.body .reverted := by
     exact uniswapBurnBodyReverts_locked evmS I
       (by simp only [evmS, initState]; exact hwv)
-      hlockedSolm
+      hlockedStele
   exact (uniswapBurnX_locked (g := Sat256.ofUInt256 g) hlocked
       (uniswapBurnX_decoded_masked (g := Sat256.ofUInt256 g) hsz36 hsize hreach))
     |>.reEquivExecutionRevert hcode hdispatch (uniswapDecode_burn_ok hsz36) hbody

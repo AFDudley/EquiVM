@@ -1,6 +1,6 @@
 import Benchmarks.EAS.EAS.AllocateBlock
 import Benchmarks.EAS.Attester.LocalArray
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 -- LIBRARY CANDIDATE: allocation of a length-prefixed array with a fixed per-element cost.

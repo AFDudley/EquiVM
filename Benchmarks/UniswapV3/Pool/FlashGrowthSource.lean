@@ -2,7 +2,7 @@ import Benchmarks.UniswapV3.Pool.FlashProtocolSource
 import Benchmarks.UniswapV3.Pool.FullMathSource
 import Benchmarks.UniswapV3.Pool.FeeGrowthStorage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
 
@@ -54,7 +54,7 @@ theorem flashGrowthReturns (locals imms : Store) (evm : EVM.State) (second : Boo
         (addFeeGrowth evm second (flashGrowthResult paid fees liquidity))) := by
   have hcall := internalCallFunctionReturn (callee := fullMathFunction)
     (locals := fullMathLocals (UInt256.sub paid fees) (UInt256.ofNat (2 ^ 128)) liquidity)
-    (calleeSolm := fullMathProductFrame imms (UInt256.sub paid fees)
+    (calleeStele := fullMathProductFrame imms (UInt256.sub paid fees)
       (UInt256.ofNat (2 ^ 128)) liquidity)
     (value := some [.int (Int.ofNat (flashGrowthResult paid fees liquidity).toNat)])
     (retVar := flashGrowthCallName second)

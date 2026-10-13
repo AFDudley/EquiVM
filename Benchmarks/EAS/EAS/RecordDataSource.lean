@@ -1,6 +1,6 @@
 import Benchmarks.EAS.EAS.StoredBytesWrite
 import Benchmarks.EAS.EAS.AttestationWriteStatements
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 theorem recordDataAssign {L imms : Store} {evm : EVM.State} {word : UInt256} {bytes : ByteArray}
@@ -11,7 +11,7 @@ theorem recordDataAssign {L imms : Store} {evm : EVM.State} {word : UInt256} {by
         .ok ({contract := contract,locals := L,immutables := imms},
           bytesWriteState evm (dbSlot word+⟨6⟩) bytes (storedBytesLengthWord (attestationHeader evm word)).toNat)
       else .revert := by
-  have hr := resolveStorageRef?_ok (cfg := config) (solm := {contract := contract,locals := L,immutables := imms})
+  have hr := resolveStorageRef?_ok (cfg := config) (stele := {contract := contract,locals := L,immutables := imms})
     (evm := evm) hd (attestationField_evalRef hu "data")
     (show storageTypeAt? contract.storage (attestationFieldER word "data") = some .bytes from rfl)
   simp only [assignStorageRef?,hr,EvalResult.bind,bind,
