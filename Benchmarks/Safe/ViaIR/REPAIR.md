@@ -317,3 +317,21 @@ requirement then reverts. This fact is proved from the precompile semantics. No 
 or public entrypoint statement changed. Axiom scans report 80 permitted axioms for ECDSA
 and 187 for `eth_sign`, with no proof holes or custom axioms. Contract signatures and the
 remaining entrypoint integration are still in progress.
+
+All four public signature-check entrypoints now build with their original statements
+(3,642 jobs). The contract-signature branch follows the IR's specialized bounds checks,
+inlined call encoding, checked allocation, static call, return-buffer allocation, and
+magic-value validation. The obsolete second forward copy is removed from its memory
+model. Allocation failures are covered under the existing source call semantics: a
+zero-gas contract-signature call cannot return an accepted 32-byte magic value. That
+rejection lemma is proved from ordinary EVM and precompile semantics and uses only
+the standard three axioms. No specification change was needed.
+
+The signature iteration and loop retain their source invariant and induction. Internal
+trace interfaces now describe the IR's smaller stack, branch targets, and return paths.
+All signature modes, count and threshold checks, authorization, and decoding-failure
+paths are joined to the four public proofs. Their axiom audits report 2,065 and 1,960
+permitted axioms for the two `checkNSignatures` overloads, and 2,126 and 2,021 for the two
+`checkSignatures` overloads, with no proof holes or custom axioms. Twenty-nine of the
+thirty-three runtime obligations are complete. Module execution, transaction execution,
+and setup remain before the whole-contract validation.

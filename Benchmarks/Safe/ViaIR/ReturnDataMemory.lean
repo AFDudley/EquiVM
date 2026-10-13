@@ -1,6 +1,6 @@
 import Benchmarks.Safe.ViaIR.ByteCopy
 import Benchmarks.Safe.ViaIR.MemoryBytesDecoded
-import Benchmarks.Safe.ViaIR.Blocks.Runtime_038
+import Benchmarks.Safe.ViaIR.Blocks.Runtime_047
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -54,31 +54,15 @@ theorem returnDataMemory_preserved (mem out : ByteArray) (ptr off count : Nat)
     writeWordReadAbove _ _ _ _ _ hin hl]
 
 theorem safeReturnDataMemory {mem out : ByteArray} {ptr : Nat}
-    (hf : memLoad ⟨64⟩ mem = UInt256.ofNat ptr)
     (hb : ptr + out.size + 64 < UInt256.size) :
-    safeRuntime_block_8809_memory (mem := mem) (rdata := out) = returnDataMemory mem ptr out := by
-  have halloc : UInt256.land (UInt256.ofNat out.size + UInt256.ofNat 63)
-      (UInt256.lnot (UInt256.ofNat 31)) = UInt256.ofNat (32 + ABI.paddedSize out.size) := by
-    rw [u256_land_comm]
-    apply u256_inj
-    change (bytesAllocSize out.size).toNat = _
-    rw [bytesAllocSize_toNat (by omega), ulit_toNat' _ (by
-      dsimp [ABI.paddedSize]; omega)]
-    dsimp [ABI.paddedSize]
-    omega
-  have hnext : UInt256.ofNat ptr + UInt256.ofNat (32 + ABI.paddedSize out.size) =
-      UInt256.ofNat (ptr + 32 + ABI.paddedSize out.size) := by
-    apply u256_inj
-    rw [ulit_toNat' _ (by dsimp [ABI.paddedSize]; omega)]
-    simpa only [Nat.add_assoc] using
-      (uadd_ofNat_toNat (a := ptr) (b := 32 + ABI.paddedSize out.size) (by omega)
-        (by dsimp [ABI.paddedSize]; omega) (by dsimp [ABI.paddedSize]; omega))
+    safeRuntime_block_10413_memory
+      (mem := writeWord mem 64 (UInt256.ofNat (ptr + 32 + ABI.paddedSize out.size)))
+      (rdata := out) (x0 := UInt256.ofNat out.size) (x2 := UInt256.ofNat ptr) =
+      returnDataMemory mem ptr out := by
   have h32 : (UInt256.ofNat ptr + UInt256.ofNat 32).toNat = ptr + 32 :=
     uadd_ofNat_toNat (by omega) (by decide) (by omega)
-  change memLoad (UInt256.ofNat 64) mem = UInt256.ofNat ptr at hf
-  simp only [safeRuntime_block_8809_memory, hf, halloc, hnext, h32,
-    ulit_toNat' ptr (by omega), ulit_toNat' out.size (by omega),
-    returnDataMemory, Reasoning.Theory.writeWord]
+  simp only [safeRuntime_block_10413_memory, h32, ulit_toNat' ptr (by omega),
+    ulit_toNat' out.size (by omega), returnDataMemory, Reasoning.Theory.writeWord]
   rfl
 
 end Benchmarks.Safe.ViaIR

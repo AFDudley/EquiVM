@@ -1,5 +1,9 @@
 import Benchmarks.Safe.ViaIR.ReturnDataMemory
 import Benchmarks.Safe.ViaIR.ContractSignatureSource
+import Benchmarks.Safe.ViaIR.IRMemoryAllocation
+import Benchmarks.Safe.ViaIR.Blocks.Runtime_037
+import Benchmarks.Safe.ViaIR.Blocks.Runtime_038
+import Benchmarks.Safe.ViaIR.Blocks.Runtime_046
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -12,92 +16,135 @@ def signatureReturnMemory (mem : ByteArray) (ptr : Nat) (out : ByteArray) : Byte
 def signatureReturnDataPtr (ptr : Nat) (out : ByteArray) : UInt256 :=
   if out.size = 0 then ⟨96⟩ else UInt256.ofNat ptr
 
-set_option maxRecDepth 100000 in
-theorem safeContractSignatureReturnBuffer {I g s0 σ k C aw mem ptr}
-    {out : ByteArray} {z x y : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨8797⟩ (z :: x :: y :: R) mem aw out σ k C)
-    (hf : memLoad ⟨64⟩ mem = UInt256.ofNat ptr)
-    (hb : ptr + out.size + 64 < UInt256.size) (hov : R.length + 7 ≤ 1024) :
-    ∃ aw' k' C', RD safeBytecode I g s0 ⟨8846⟩
-      (UInt256.ofNat out.size :: signatureReturnDataPtr ptr out :: z :: R)
-      (signatureReturnMemory mem ptr out) aw' out σ k' C' := by
-  by_cases hz : out.size = 0
-  · have h₁ := safeRuntime_block_8797_taken (by omega) (by rw [hz]; decide) (by jump_dest) h
-    have h₂ := safeRuntime_block_8841 (by simp; omega) h₁
-    exact ⟨_, _, _, by simpa only [safeRuntime_block_8841_stack,
-      safeRuntime_block_8797_taken_stack, signatureReturnDataPtr, signatureReturnMemory,
-      hz, if_true] using h₂⟩
-  · have hne : UInt256.ofNat out.size ≠ ⟨0⟩ := by
-      intro he
-      have he' := congrArg UInt256.toNat he
-      rw [ulit_toNat' out.size (by omega)] at he'
-      exact hz he'
-    have hcond : UInt256.eq (UInt256.ofNat out.size) ⟨0⟩ = UInt256.ofNat 0 := by
-      simp [UInt256.eq, UInt256.fromBool, hne]
-    have h₁ := safeRuntime_block_8797_fallthrough (by omega) hcond h
-    obtain ⟨aw', k', C', h₂⟩ := safeRuntime_block_8809_packed (by simp; omega)
-      (by rw [ulit_toNat' out.size (by omega)]; change 0 + out.size ≤ out.size; omega)
-      (by jump_dest) h₁
-    rw [safeReturnDataMemory hf hb] at h₂
-    change memLoad (UInt256.ofNat 64) mem = UInt256.ofNat ptr at hf
-    simp only [safeRuntime_block_8809_stack, safeRuntime_block_8797_fallthrough_stack,
-      hf] at h₂
-    exact ⟨aw', k', C', by simpa only [signatureReturnDataPtr,
-      signatureReturnMemory, if_neg hz] using h₂⟩
+set_option maxRecDepth 2000
 
-set_option maxRecDepth 100000 in
+theorem safeContractSignatureReturnBuffer {I g s0 σ k C aw mem ptr}
+    {out : ByteArray} {z : UInt256} {R : List UInt256}
+    (h : RD safeBytecode I g s0 ⟨7777⟩ (z :: R) mem aw out σ k C)
+    (hf : memLoad ⟨64⟩ mem = UInt256.ofNat ptr)
+    (hb : ptr + out.size + 64 < UInt256.size) (hov : R.length + 12 ≤ 1024) :
+    RDrev safeBytecode g s0 ∨
+      ∃ aw' k' C', RD safeBytecode I g s0 ⟨7784⟩
+        (signatureReturnDataPtr ptr out :: z :: R)
+        (signatureReturnMemory mem ptr out) aw' out σ k' C' := by
+  have h₀ := safeRuntime_block_7777 (by simp; omega) (by jump_dest) h
+  simp only [safeRuntime_block_7777_stack] at h₀
+  have hlarge : 2 ^ 64 + 128 < UInt256.size := by decide
+  by_cases hz : out.size = 0
+  · have h₁ := safeRuntime_block_10382_taken (by simp; omega)
+      (by rw [hz]; decide) (by jump_dest) h₀
+    have h₂ := safeRuntime_block_10424 (by simp; omega) (by jump_dest) h₁
+    exact .inr ⟨_, _, _, by simpa only [safeRuntime_block_10424_stack,
+      signatureReturnDataPtr, signatureReturnMemory, hz, if_true] using h₂⟩
+  have hne : UInt256.ofNat out.size ≠ ⟨0⟩ := by
+    intro he
+    have he' := congrArg UInt256.toNat he
+    rw [ulit_toNat' out.size (by omega)] at he'
+    exact hz he'
+  have hc : UInt256.isZero (UInt256.ofNat out.size) = ⟨0⟩ := isZero_eq_zero_of_ne hne
+  have h₁ := safeRuntime_block_10382_fallthrough (by simp; omega) hc h₀
+  have h₂ := safeRuntime_block_10389 (by simp; omega) (by jump_dest) h₁
+  have hmax : UInt256.sub (UInt256.shiftLeft (UInt256.ofNat 1) (UInt256.ofNat 64))
+      (UInt256.ofNat 1) = UInt256.ofNat (2 ^ 64 - 1) := by decide +kernel
+  by_cases hsmall : out.size < 2 ^ 64
+  swap
+  · have hg : UInt256.gt (UInt256.ofNat out.size) (UInt256.ofNat (2 ^ 64 - 1)) =
+        ⟨1⟩ := ugt_one (by
+      rw [ulit_toNat' out.size (by omega), ulit_toNat' (2 ^ 64 - 1) (by decide)]; omega)
+    have h₃ := safeRuntime_block_7181_taken (by simp; omega)
+      (by rw [hmax, hg]; decide) (by jump_dest) h₂
+    exact .inl (safeRuntime_block_7161 (by simp; omega) h₃)
+  have hg : UInt256.gt (UInt256.ofNat out.size) (UInt256.ofNat (2 ^ 64 - 1)) =
+      ⟨0⟩ := ugt_zero (by
+    rw [ulit_toNat' out.size (by omega), ulit_toNat' (2 ^ 64 - 1) (by decide)]; omega)
+  have h₃ := safeRuntime_block_7181_fallthrough (by simp; omega) (by rw [hmax]; exact hg) h₂
+  have h₄ := safeRuntime_block_7196 (by simp; omega) (by jump_dest) h₃
+  have hr : UInt256.ofNat 32 + UInt256.land (UInt256.lnot (UInt256.ofNat 31))
+      (UInt256.ofNat 31 + UInt256.ofNat out.size) =
+      UInt256.ofNat (32 + ABI.paddedSize out.size) := by
+    rw [u256_land_comm, u256_add_comm (UInt256.ofNat 31),
+      roundedCalldataLengthMask _ (by omega), wordOfNatAdd _ _ (by
+        dsimp [ABI.paddedSize]; omega)]
+  have h₅ := safeRuntime_block_10399 (by simp; omega) (by jump_dest) h₄
+  change memLoad (UInt256.ofNat 64) mem = UInt256.ofNat ptr at hf
+  simp only [safeRuntime_block_10399_stack, hf, hr] at h₅
+  have hround : ptr + ABI.paddedSize (32 + ABI.paddedSize out.size) =
+      ptr + 32 + ABI.paddedSize out.size := by
+    dsimp [ABI.paddedSize]
+    omega
+  obtain hrev | ⟨_, _, _, _, h₆⟩ := safeIRAllocateTrace h₅
+    (by dsimp [ABI.paddedSize]; omega) (by rw [hround]; dsimp [ABI.paddedSize]; omega)
+    (by simp; omega) (by jump_dest)
+  · exact .inl hrev
+  rw [hround] at h₆
+  obtain ⟨aw', k', C', h₇⟩ := safeRuntime_block_10413_packed (by simp; omega)
+    (by rw [ulit_toNat' out.size (by omega)]; change 0 + out.size ≤ out.size; omega)
+    (by jump_dest) h₆
+  rw [safeReturnDataMemory hb] at h₇
+  exact .inr ⟨aw', k', C', by simpa only [safeRuntime_block_10413_stack,
+    signatureReturnDataPtr, signatureReturnMemory, if_neg hz] using h₇⟩
+
+private theorem safeContractSignatureRequire {I g s0 σ k C aw mem out}
+    {scratch : UInt256} {valid : Bool} {R : List UInt256}
+    (h : RD safeBytecode I g s0 ⟨7796⟩
+      (scratch :: (if valid then ⟨1⟩ else ⟨0⟩) :: R) mem aw out σ k C)
+    (hov : R.length + 6 ≤ 1024) :
+    if valid then ∃ aw' k' C', RD safeBytecode I g s0 ⟨7803⟩ R mem aw' out σ k' C'
+    else RDrev safeBytecode g s0 := by
+  cases valid with
+  | false =>
+    have h₁ := safeRuntime_block_7796_taken (by simp; omega) (by decide) (by jump_dest) h
+    exact safeRuntime_block_7939 (by simp only [safeRuntime_block_7796_taken_stack]; omega) h₁
+  | true =>
+    exact safeRuntime_block_7796_fallthrough_packed (by simp; omega) (by decide) h
+
 theorem safeContractSignatureFinish {I g s0 σ k C aw mem} {out : ByteArray}
-    {buf x y d0 d1 d2 d3 d4 ret : UInt256} {z : Bool} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨8846⟩
-      (UInt256.ofNat out.size :: buf :: (if z then ⟨1⟩ else ⟨0⟩) :: x :: y ::
-        d0 :: d1 :: d2 :: d3 :: d4 :: ret :: R) mem aw out σ k C)
+    {buf : UInt256} {z : Bool} {R : List UInt256}
+    (h : RD safeBytecode I g s0 ⟨7784⟩
+      (buf :: (if z then ⟨1⟩ else ⟨0⟩) :: R) mem aw out σ k C)
     (hl : memLoad buf mem = UInt256.ofNat out.size)
     (hw : out.size = 32 → memLoad (buf + UInt256.ofNat 32) mem = calldataWord out 0)
-    (hb : out.size < UInt256.size) (hov : R.length + 16 ≤ 1024)
-    (hret : (D_J safeBytecode 0).contains ret = true) :
-    ∃ aw' k' C', RD safeBytecode I g s0 ret
-      ((if contractSignatureResult z out then ⟨1⟩ else ⟨0⟩) :: R) mem aw' out σ k' C' := by
+    (hb : out.size < UInt256.size) (hov : R.length + 8 ≤ 1024) :
+    if contractSignatureResult z out then
+      ∃ aw' k' C', RD safeBytecode I g s0 ⟨7803⟩ R mem aw' out σ k' C'
+    else RDrev safeBytecode g s0 := by
   cases z with
   | false =>
-      have h₁ := safeRuntime_block_8846_taken (by simp; omega) (by decide) (by jump_dest) h
-      have h₂ := safeRuntime_block_8865_taken (by simp; omega) (by decide) (by jump_dest) h₁
-      have h₃ := safeRuntime_block_8904 (by omega) hret h₂
-      exact ⟨_, _, _, by simpa only [safeRuntime_block_8904_stack,
-        safeRuntime_block_8846_taken_stack, contractSignatureResult, Bool.false_and,
-        Bool.false_eq_true, if_false] using h₃⟩
+    have h₁ := safeRuntime_block_7784_fallthrough (by simp; omega) (by rfl) h
+    have h₂ := safeRuntime_block_7790_fallthrough (by simp; omega) (by rfl) h₁
+    exact safeContractSignatureRequire (valid := false) h₂ (by omega)
   | true =>
-      have h₁ := safeRuntime_block_8846_fallthrough (by simp; omega) (by decide) h
-      have h₂ := safeRuntime_block_8859 (by simp; omega) h₁
-      simp only [safeRuntime_block_8859_stack, safeRuntime_block_8846_fallthrough_stack,
-        hl] at h₂
-      by_cases ho : out.size = 32
-      · have h₃ := safeRuntime_block_8865_fallthrough (by simp; omega) (by rw [ho]; decide) h₂
-        have h₄ := safeRuntime_block_8872 (by simp; omega) (by jump_dest) h₃
-        simp only [safeRuntime_block_8872_stack, hl, ho] at h₄
-        rw [u256_add_comm (UInt256.ofNat 32) (buf + UInt256.ofNat 32)] at h₄
-        obtain ⟨_, _, _, h₅⟩ := safeBytes32DecoderValid h₄ (by simp; omega)
-          (by decide) (by decide) (by jump_dest)
-        rw [hw ho] at h₅
-        have h₆ := safeRuntime_block_8902 (by simp; omega) h₅
-        have h₇ := safeRuntime_block_8904 (by omega) hret h₆
-        have hm : UInt256.shiftLeft (UInt256.ofNat 185818431) (UInt256.ofNat 225) =
-            signatureMagicWord := by decide +kernel
-        exact ⟨_, _, _, by simpa only [safeRuntime_block_8904_stack,
-          safeRuntime_block_8902_stack, hm, contractSignatureResult, ho, decide_true,
-          Bool.true_and, UInt256.eq] using h₇⟩
-      · have hn : UInt256.ofNat 32 ≠ UInt256.ofNat out.size := by
-          intro he
-          have he' := congrArg UInt256.toNat he
-          rw [ulit_toNat' out.size hb] at he'
-          exact ho he'.symm
-        have hcond : UInt256.eq (UInt256.ofNat 32) (UInt256.ofNat out.size) = ⟨0⟩ := by
-          simp [UInt256.eq, UInt256.fromBool, hn]
-          rfl
-        rw [hcond] at h₂
-        have h₃ := safeRuntime_block_8865_taken (by simp; omega) (by decide) (by jump_dest) h₂
-        have h₄ := safeRuntime_block_8904 (by omega) hret h₃
-        exact ⟨_, _, _, by simpa only [safeRuntime_block_8904_stack,
-          contractSignatureResult, ho, decide_false, Bool.false_and, Bool.and_false,
-          Bool.false_eq_true, if_false] using h₄⟩
+    have h₁ := safeRuntime_block_7784_taken (by simp; omega) (by decide) (by jump_dest) h
+    have h₂ := safeRuntime_block_8021 (by simp; omega) (by jump_dest) h₁
+    simp only [safeRuntime_block_8021_stack, hl] at h₂
+    by_cases ho : out.size = 32
+    · have h₃ := safeRuntime_block_7790_taken (by simp; omega)
+        (by rw [ho]; decide) (by jump_dest) h₂
+      have h₄ := safeRuntime_block_7984_fallthrough (by simp; omega)
+        (by rw [hl, ho, word_add_sub_left]; decide) h₃
+      have h₅ := safeRuntime_block_8006 (by simp; omega) (by jump_dest) h₄
+      have hm : UInt256.shiftLeft (UInt256.ofNat 185818431) (UInt256.ofNat 225) =
+          signatureMagicWord := by decide +kernel
+      simp only [safeRuntime_block_8006_stack, hw ho, hm] at h₅
+      have hcond : UInt256.eq signatureMagicWord (calldataWord out 0) =
+          (if contractSignatureResult true out then ⟨1⟩ else ⟨0⟩) := by
+        simp only [contractSignatureResult, ho, decide_true, Bool.true_and, UInt256.eq,
+          eq_comm (a := signatureMagicWord) (b := calldataWord out 0)]
+        rfl
+      rw [hcond] at h₅
+      exact safeContractSignatureRequire h₅ (by omega)
+    · have hn : UInt256.ofNat 32 ≠ UInt256.ofNat out.size := by
+        intro he
+        have he' := congrArg UInt256.toNat he
+        rw [ulit_toNat' out.size hb] at he'
+        exact ho he'.symm
+      have hcond : UInt256.eq (UInt256.ofNat 32) (UInt256.ofNat out.size) = ⟨0⟩ := by
+        simp [UInt256.eq, UInt256.fromBool, hn]
+        rfl
+      rw [hcond] at h₂
+      have h₃ := safeRuntime_block_7790_fallthrough (by simp; omega) rfl h₂
+      have hr := safeContractSignatureRequire (valid := false) h₃ (by omega)
+      simpa only [contractSignatureResult, ho, decide_false, Bool.false_and,
+        Bool.and_false, Bool.false_eq_true, if_false] using hr
 
 end Benchmarks.Safe.ViaIR

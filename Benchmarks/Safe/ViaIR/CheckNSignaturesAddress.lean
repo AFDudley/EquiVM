@@ -3,7 +3,8 @@ import Benchmarks.Safe.ViaIR.SignatureAddressDecoder
 import Benchmarks.Safe.ViaIR.SignatureCallerSource
 import Benchmarks.Safe.ViaIR.SignatureDecodedMemory
 import Benchmarks.Safe.ViaIR.CheckNSignaturesTrace
-import Benchmarks.Safe.ViaIR.Blocks.Runtime_006
+
+import Benchmarks.Safe.ViaIR.Blocks.Runtime_031
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -12,7 +13,7 @@ namespace Benchmarks.Safe.ViaIR
 
 variable {σ σ₀ : AccountMap} {g : UInt256} {A : Substate} {I : ExecutionEnv}
 
-set_option maxRecDepth 100000 in
+set_option maxRecDepth 2000 in
 set_option maxHeartbeats 1000000 in
 theorem safeChecknsignaturesAddressBytes32BytesUint256BodyCore
     (hcode : I.code = safeBytecode)
@@ -23,22 +24,20 @@ theorem safeChecknsignaturesAddressBytes32BytesUint256BodyCore
   obtain ⟨hlong, hword⟩ := selectorDispatchFacts 0x1f 0xca 0xc7 0xf3 ⟨0x1fcac7f3⟩
     hdispatch checknsignaturesAddressBytes32BytesUint256SelectorBytes (by decide)
   obtain ⟨k, C, hentry⟩ := safeReachEntry (σ := σ) (σ₀ := σ₀) (A := A)
-    (g := Sat256.ofUInt256 g) ⟨0x1fcac7f3⟩ 2 ⟨697⟩ hcode hsize hlong hword (by native_decide)
+    (g := Sat256.ofUInt256 g) ⟨0x1fcac7f3⟩ 2 ⟨6508⟩ hcode hsize hlong hword (by native_decide)
   by_cases hvalue : I.weiValue = ⟨0⟩
   swap
-  · have h₁ := safeRuntime_block_697_fallthrough (by simp) (isZero_eq_zero_of_ne hvalue) hentry
-    have hr := safeRuntime_block_705 (by simp [safeRuntime_block_697_fallthrough_stack]) h₁
+  · have h₁ := safeRuntime_block_6508_taken (by simp) hvalue (by jump_dest) hentry
+    have hr := safeRuntime_block_111 (by simp) h₁
     exact reEquivSelectorRevert hcode hdispatch hr fun _ ↦ bodyReverts_nonPayable hvalue
-  have h₁ := safeRuntime_block_697_taken (by simp) (by rw [hvalue]; decide)
-    (by jump_dest) hentry
-  have hdecode := safeRuntime_block_708 (by simp) (by jump_dest) h₁
+  have hdecode := safeRuntime_block_6508_fallthrough (by simp) hvalue hentry
   let evm := initState σ σ₀ (.ofUInt256 g) A I
   cases hdec : decodeCalldata (signatureAddressNames true) (signatureAddressTypes true)
       I.calldata with
   | none =>
     have hr : RDrev safeBytecode (.ofUInt256 g) evm := by
       obtain hr | ⟨len, aw', k', C', hh, hs, hc, hoff, hw, hn, hin, hr⟩ :=
-        safeDecodeSignatureAddressEvidence true hdecode hlong hsize (by simp) (by jump_dest)
+        safeDecodeSignatureAddressEvidence true hdecode hlong hsize (by simp)
       · exact hr
       have hd := decodeSignatureAddressValid true hh hs hc hoff hw (by omega) hin
       rw [hdec] at hd
@@ -64,14 +63,13 @@ theorem safeChecknsignaturesAddressBytes32BytesUint256BodyCore
       simpa only [p, accountAddress_ofUInt256_eq_ofNat_toNat] using hdec
     by_cases hvalid : len ≤ 2 ^ 64 - 192
     · obtain ⟨aw', k', C', h₂⟩ := safeDecodeSignatureAddressValid true hdecode hh hs hc hoff hw
-        hvalid hin (by simp) (by jump_dest)
-      have h₃ := safeRuntime_block_723 (by simp [signatureDecodedStack]) (by jump_dest) h₂
+        hvalid hin (by simp)
       have hsmall : p.signatures.size ≤ 2 ^ 64 - 192 := by
         change payload.size ≤ _
         rw [hlen]; exact hvalid
       obtain ⟨hr, hbody⟩ | ⟨f', evm', σ', mem', ptr', aw'', out, k'', C'', hbody,
           hee, hacc, hworld, hstop, _⟩ :=
-        safeCheckNSignaturesTrace p evm h₃ rfl rfl rfl rfl (BytesMemory.decoded payload)
+        safeCheckNSignaturesTrace p evm h₂ rfl rfl rfl rfl (BytesMemory.decoded payload)
           (memoryBytesDecoded_free payload) (memoryBytesDecoded_zero payload) (by decide)
           (memoryBytesInitialEnd_contains payload.size)
           (lt_trans (memoryBytesInitialEnd_bound hsmall) (by decide)) (by omega)
@@ -81,14 +79,14 @@ theorem safeChecknsignaturesAddressBytes32BytesUint256BodyCore
         exact RDrev.reEquivElim hcode hr fun _ _ hΞ ↦
           reEquivSelectorExecution hdispatch hdec'
             hsource (.revert hΞ rfl)
-      · have hr := safeRuntime_block_664 (by simp) hstop
+      · have hr := safeRuntime_block_109 (by simp) hstop
         have hsource := ExecFuncBody.execBlockOK
           (safeCheckNSignaturesAddressSource (p := p) (evm := evm) hvalue hsmall hbody)
         exact reEquivReturnElim hcode hr fun _ _ hΞ ↦
           reEquivSelectorExecution hdispatch hdec' hsource
             (.success hΞ rfl hacc.symm (.abi (.fallthrough rfl rfl encodeReturnValues_nil)))
     · have hr := safeDecodeSignatureAddressTooLarge true hdecode hlong hsize hw
-        (by change len < 2 ^ 256; omega) hvalid (by simp) (by jump_dest)
+        (by change len < 2 ^ 256; omega) hvalid (by simp)
       exact RDrev.reEquivElim hcode hr fun _ _ hΞ ↦
         reEquivSelectorExecution hdispatch hdec'
           (signatureCallerInvalid (payload := payload)
