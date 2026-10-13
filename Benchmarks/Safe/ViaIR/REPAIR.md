@@ -15,10 +15,11 @@ port exposed the analogous owner-array allocation mismatch below. Its separate l
 correction is now approved and applied; the full `getOwners` refinement theorem builds. The separately approved paginated-module guard correction is applied;
 its complete entrypoint refinement theorem now builds.
 
-Twenty-four runtime obligations now build: receive, fallback, `nonce`, `getThreshold`, `signedMessages`,
+Twenty-five runtime obligations now build: receive, fallback, `nonce`, `getThreshold`, `signedMessages`,
 `approvedHashes`, `isOwner`, `isModuleEnabled`, `domainSeparator`, `VERSION`, `changeThreshold`,
 `setFallbackHandler`, `approveHash`, `enableModule`, `disableModule`, `swapOwner`,
-`addOwnerWithThreshold`, `removeOwner`, `getStorageAt`, `getOwners`, `getModulesPaginated`, `setGuard`, `setModuleGuard`, and `simulateAndRevert`. The zero-argument
+`addOwnerWithThreshold`, `removeOwner`, `getStorageAt`, `getOwners`, `getModulesPaginated`,
+`setGuard`, `setModuleGuard`, `simulateAndRevert`, and `getTransactionHash`. The zero-argument
 proofs include the new signed length failure; the mapping getters include short, huge, and
 noncanonical calldata where applicable. Fallback covers handler absence, call success and
 failure, static callers, call-depth failure, and oversized calldata exhausting gas.
@@ -69,6 +70,14 @@ The constructor and the other entrypoint declarations keep their original statem
 `config` incorporates the local decoder correction described below. The constructor axiom check reports only
 `propext`, `Classical.choice`, `Quot.sound`, and native-decide certificates. No proof holes or
 custom axioms were added.
+
+The transaction-hash entrypoint also builds with its original public statement. Its calldata
+bytes decoder and inlined tuple checks follow the IR branches, including rejection of
+noncanonical addresses, invalid operations, and out-of-bounds dynamic data. The hashing trace
+proves the fused transaction-struct stores, domain separation, final preimage, and free-pointer
+preservation. Internal trace statements reflect the new PCs and stack order; the hash and
+calldata specifications are unchanged. The compiled refinement theorem uses the standard
+three axioms and 471 native certificates, with no proof holes or custom axioms.
 
 Generated `safeRuntime_block_4770` initially exceeded Lean's default recursion limit while
 normalizing gas counters. With explicit user approval for the two generator-script edits,

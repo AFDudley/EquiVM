@@ -1,6 +1,5 @@
 import Benchmarks.Safe.ViaIR.TransactionHashSource
 import Benchmarks.Safe.ViaIR.WordWrites
-import Benchmarks.Safe.ViaIR.MemoryBytesDecoded
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
