@@ -3,14 +3,14 @@ import Stele.Refine
 /-!
 # Behavioral inclusion
 
-`runtimeRefinement` is a refinement: on every admissible input, the behavior of the bytecode is
-a behavior of the specification.  The relation is defined by four cases; this file states the
-inclusion as a theorem, so that it can be cited on its own.
+`runtimeRefinement` relates every bytecode result on admissible inputs to a Stele execution,
+except for out-of-gas. This file states the inclusion as a theorem, so that it can be cited on
+its own.
 
-A specification behavior at fixed inputs is either an outcome of the message-level judgment
-`steleExec`, or the rejection of calldata that selects no transition or does not decode.  The
-bytecode's result is captured by the first through `execResultsEquiv`, and by the second by
-reverting.  The only bytecode behavior outside the inclusion is running out of gas.
+A specification behavior at fixed inputs is an outcome of the message-level judgment
+`steleExec`, including `.noMatch` and `.decodingFailed`. The bytecode's result is captured
+through `execResultsEquiv`; these two rejection outcomes match only EVM reverts. The only
+bytecode behavior outside the inclusion is running out of gas.
 -/
 
 namespace Stele
@@ -23,25 +23,15 @@ abbrev EVMResult :=
     (Ethereum.ExecutionResult
       (Ethereum.AccountMap × Ethereum.UInt256 × Ethereum.Substate))
 
-/-- The specification rejects the calldata: no transition (nor `receive`/`fallback`) accepts it,
-    or the selected transition's calldata does not decode. -/
-def specRejects (cfg : Config) (contract : ContractDecl) (calldata : ByteArray) : Prop :=
-  dispatchMsg contract calldata = .none ∨
-  ∃ transition, selectorDispatchMsg contract calldata = .some transition ∧
-    cfg.externalABI.decodeCalldata? (transition.params.map Param.name)
-      (transitionSignature transition).paramTypes calldata = .none
-
 /-- A bytecode result `r` is captured by the specification, run from the Stele-side inputs:
-    either some run of the specification is `execResultsEquiv`-related to `r`, or the
-    specification rejects the calldata and `r` is a revert. -/
+    some run of `steleExec` produces a result `execResultsEquiv`-related to `r`. This includes
+    dispatch and calldata-decoding failures as explicit Stele execution outcomes. -/
 def capturedBySpec (cfg : Config) (contract : ContractDecl)
     (σ σ₀ : Ethereum.AccountMap) (g : Ethereum.UInt256) (A : Ethereum.Substate)
     (I : Ethereum.ExecutionEnv) (r : EVMResult) (immutables : Store := ∅) : Prop :=
-  (∃ steleRes returnConvention,
-      steleExec cfg contract immutables σ σ₀ g A I
-        steleRes returnConvention ∧
-      execResultsEquiv r steleRes returnConvention) ∨
-  (specRejects cfg contract I.calldata ∧ ∃ g' o, r = .ok (.revert g' o))
+  ∃ steleRes returnConvention,
+    steleExec cfg contract immutables σ σ₀ g A I steleRes returnConvention ∧
+    execResultsEquiv r steleRes returnConvention
 
 /-- Behavioral inclusion at fixed inputs: a `runtimeRefinementFor` derivation says that the
     bytecode's result is out of gas or captured by the specification. -/
@@ -54,15 +44,8 @@ theorem runtimeRefinementFor_captured {cfg : Config} {contract : ContractDecl}
       (Ethereum.EVM.Ξ σ σ₀ g A I) immutables := by
   cases h with
   | execution hΞ hstele hequiv =>
-      right; left
+      right
       exact ⟨_, _, hstele, by rw [hΞ]; exact hequiv⟩
-  | noDispatch hdisp hΞ =>
-      right; right
-      exact ⟨Or.inl hdisp, _, _, hΞ⟩
-  | decodingFailed hsel hsig hdec hΞ =>
-      right; right
-      subst hsig
-      exact ⟨Or.inr ⟨_, hsel, hdec⟩, _, _, hΞ⟩
   | outOfGas hΞ =>
       left; exact hΞ
 
@@ -107,13 +90,14 @@ theorem capturedBySpec_error {cfg : Config} {contract : ContractDecl}
     (h : capturedBySpec cfg contract σ_stele σ₀ g A I
       (.error e) immutables) :
     e = .InvalidInstruction ∨ e = .StaticModeViolation := by
-  rcases h with ⟨_, _, _, hequiv⟩ | ⟨_, _, _, hrev⟩
-  · cases hequiv with
-    | success h1 _ _ _ => exact absurd h1 (by simp)
-    | revert h1 _ => exact absurd h1 (by simp)
-    | invalidHalt h1 _ => exact Or.inl (Except.error.inj h1)
-    | staticHalt h1 _ => exact Or.inr (Except.error.inj h1)
-  · exact absurd hrev (by simp)
+  rcases h with ⟨_, _, _, hequiv⟩
+  cases hequiv with
+  | success h1 _ _ _ => exact absurd h1 (by simp)
+  | revert h1 _ => exact absurd h1 (by simp)
+  | noMatch h1 _ => exact absurd h1 (by simp)
+  | decodingFailed h1 _ => exact absurd h1 (by simp)
+  | invalidHalt h1 _ => exact Or.inl (Except.error.inj h1)
+  | staticHalt h1 _ => exact Or.inr (Except.error.inj h1)
 
 /-- A static-mode violation is captured only through a Stele run ending in `.staticViolation`. -/
 theorem capturedBySpec_static {cfg : Config} {contract : ContractDecl}
@@ -122,13 +106,14 @@ theorem capturedBySpec_static {cfg : Config} {contract : ContractDecl}
     (h : capturedBySpec cfg contract σ_stele σ₀ g A I (.error .StaticModeViolation) immutables) :
     ∃ returnConvention,
       steleExec cfg contract immutables σ_stele σ₀ g A I .staticViolation returnConvention := by
-  rcases h with ⟨steleRes, rc, hstele, hequiv⟩ | ⟨_, _, _, hrev⟩
-  · cases hequiv with
-    | success h1 _ _ _ => exact absurd h1 (by simp)
-    | revert h1 _ => exact absurd h1 (by simp)
-    | invalidHalt h1 _ => exact absurd (Except.error.inj h1) (by simp)
-    | staticHalt _ h2 => exact ⟨rc, h2 ▸ hstele⟩
-  · exact absurd hrev (by simp)
+  rcases h with ⟨steleRes, rc, hstele, hequiv⟩
+  cases hequiv with
+  | success h1 _ _ _ => exact absurd h1 (by simp)
+  | revert h1 _ => exact absurd h1 (by simp)
+  | noMatch h1 _ => exact absurd h1 (by simp)
+  | decodingFailed h1 _ => exact absurd h1 (by simp)
+  | invalidHalt h1 _ => exact absurd (Except.error.inj h1) (by simp)
+  | staticHalt _ h2 => exact ⟨rc, h2 ▸ hstele⟩
 
 /-- **No crash.**  A refined bytecode never halts with an exception other than out-of-gas,
     `INVALID`, or a static-mode violation on an admissible input: no stack under- or overflow,

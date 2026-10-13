@@ -92,6 +92,16 @@ inductive execResultsEquiv
     evmRes = .ok (.revert g o) →
     steleRes = .reverted →
     execResultsEquiv evmRes steleRes returnConvention
+  /-- A missing entry point is matched only by an EVM revert. Its payload is unconstrained. -/
+  | noMatch :
+    evmRes = .ok (.revert g o) →
+    steleRes = .noMatch →
+    execResultsEquiv evmRes steleRes returnConvention
+  /-- Rejected calldata is matched only by an EVM revert. Its payload is unconstrained. -/
+  | decodingFailed :
+    evmRes = .ok (.revert g o) →
+    steleRes = .decodingFailed →
+    execResultsEquiv evmRes steleRes returnConvention
   -- `INVALID` (`0xFE`) refines a Stele `.reverted`; legacy solc uses it as the assert/panic failure
   -- path.  Static-mode violations have their own case below; no other EVM exception is matched.
   | invalidHalt :
@@ -141,14 +151,11 @@ inductive ctorResultEquiv
     both run from the given accounts, gas, substate, and environment `I` (which carries the code
     and calldata).
 
-    Holds in exactly one of four ways:
-    * `execution`: Stele dispatches and runs a transition to `steleRes`; the EVM result is
-      `execResultsEquiv`-related to it under the transition's return convention.  This includes
-      the static-mode case (`I.perm = false`): an EVM `StaticModeViolation` pairs with a Stele
-      `.staticViolation`.
-    * `noDispatch`: no Stele transition accepts the calldata, and the EVM reverts.
-    * `decodingFailed`: the selector matches a transition but calldata decoding fails,
-      and the EVM reverts.
+    Holds in exactly one of two ways:
+    * `execution`: `steleExec` produces `steleRes`; the EVM result is `execResultsEquiv`-related
+      to it under the message's return convention. This includes `.noMatch` and `.decodingFailed`,
+      each matched only by an EVM revert, and the static-mode case (`I.perm = false`): an EVM
+      `StaticModeViolation` pairs with a Stele `.staticViolation`.
     * `outOfGas`: the EVM exhausts its gas; the spec side is unconstrained.  (TODO: because
       termination is not forced, a non-terminating EVM program is equivalent to any spec.)
 
@@ -162,24 +169,13 @@ inductive runtimeRefinementFor (cfg : Config)
     (I : Ethereum.ExecutionEnv) /- contains the EVM bytecode -/
     (immutables : Store := ∅)
 : Prop where
-  | execution {Ξ_res steleRes returnConvention} : /- Both executions return -/
+  | execution {Ξ_res steleRes returnConvention} : /- Both executions produce related outcomes -/
     /- Execute EVM transaction-/
     Ethereum.EVM.Ξ σ σ₀ g A I = Ξ_res →
-    /- Stele transition dispatch + execution -/
+    /- Stele message execution, including dispatch and calldata-decoding failures -/
     steleExec cfg contract immutables σ σ₀ g A I steleRes returnConvention →
-    /- Resulting states and return must be equivalent equivalence -/
+    /- The outcomes must be related by result equivalence -/
     execResultsEquiv Ξ_res steleRes returnConvention →
-    runtimeRefinementFor cfg contract σ σ₀ g A I immutables
-  | noDispatch : /- Dispatch fails in Stele, EVM reverts -/
-    dispatchMsg contract I.calldata = .none →
-    Ethereum.EVM.Ξ σ σ₀ g A I = .ok (.revert g' o) →
-    runtimeRefinementFor cfg contract σ σ₀ g A I immutables
-  | decodingFailed {transition transitionSig g' o} : /- Decoding fails in Stele, EVM reverts -/
-    selectorDispatchMsg contract I.calldata = .some transition →
-    transitionSig = transitionSignature transition →
-    cfg.externalABI.decodeCalldata? (transition.params.map Param.name)
-      transitionSig.paramTypes I.calldata = .none →
-    Ethereum.EVM.Ξ σ σ₀ g A I = .ok (.revert g' o) →
     runtimeRefinementFor cfg contract σ σ₀ g A I immutables
   | outOfGas : /- EVM runs out of gas -/
     /- TODO: non-terminating EVM programs are currently equivalent to any spec -/

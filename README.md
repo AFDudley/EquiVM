@@ -203,12 +203,14 @@ calldata, call value, gas, and permission mode (the contract may be entered thro
 `STATICCALL`), provided the deployed code is `erc20Bytecode`.
 For each such state it relates one full execution of the bytecode to one
 execution of the specification: either the bytecode execution runs out of gas
-(in which case the specification side is unconstrained), or both revert (no
-function matches the selector, argument decoding fails, or a `require` fails),
-or both succeed, returning the same ABI-encoded value and leaving
-observationally equal storage. Because the theorem holds for *all* inputs and
-gas values, every behavior of the deployed contract is covered by the six
-transitions of the specification above. The companion `erc20ContractCorrect`
+(in which case the specification side is unconstrained), or its result is
+related to a Stele execution result. Successful executions return the same
+ABI-encoded values and leave equal account maps. An EVM revert can match
+`.reverted`, `.noMatch`, or `.decodingFailed`; the latter two cover missing
+entry points and rejected calldata. An EVM `INVALID` halt can match `.reverted`,
+and a static-mode violation must match `.staticViolation`.
+Because the theorem holds for *all* inputs and gas values, every behavior of
+the deployed contract is covered by this relation. The companion `erc20ContractCorrect`
 bundles this with the constructor equivalence for the creation code.
 
 Checking the proof can be done with:

@@ -4,7 +4,7 @@ import Stele.Refine
 /-!
 # Executable result comparison
 
-`execResultsEquiv`, `ctorResultEquiv`, and the four cases of `runtimeRefinementFor`, as a
+`execResultsEquiv`, `ctorResultEquiv`, and the two cases of `runtimeRefinementFor`, as a
 decision procedure on one EVM result and one interpreter outcome.  A `Verdict.agree` means the
 pair is related by the corresponding constructor; `disagree` names what differs.  Out-of-gas on
 the EVM side and out-of-fuel on the specification side are inconclusive, never agreement.
@@ -106,13 +106,15 @@ def compareExecution (evmRes : EVMResult) (r : ExecResult) (rc : ReturnConventio
             .disagree (describeAccountDiff σ' st.accountMap)
           else .agree "success"
   | .reverted, .ok (.revert _ _) => .agree "revert"                                      -- execResultsEquiv.revert
+  | .noMatch, .ok (.revert _ _) => .agree "no dispatch, revert"                          -- execResultsEquiv.noMatch
+  | .decodingFailed, .ok (.revert _ _) => .agree "decoding failed, revert"                -- execResultsEquiv.decodingFailed
   | .reverted, .error .InvalidInstruction => .agree "invalid"                            -- execResultsEquiv.invalidHalt
   | .staticViolation, .error .StaticModeViolation => .agree "static halt"                -- execResultsEquiv.staticHalt
   | .returned .., e => .disagree s!"spec returned, EVM {describeEvm e}"
   | .reverted, e => .disagree s!"spec reverted, EVM {describeEvm e}"
+  | .noMatch, e => .disagree s!"spec dispatches nothing, EVM {describeEvm e}"
+  | .decodingFailed, e => .disagree s!"spec calldata does not decode, EVM {describeEvm e}"
   | .staticViolation, e => .disagree s!"spec static violation, EVM {describeEvm e}"
-  -- These results are still related by the separate runtime-refinement cases below.
-  | .noMatch, _ | .decodingFailed, _ => .disagree "entry-point outcome has no execution-result equivalence"
   | .ok .., _ | .break .., _ | .continue .., _ => .disagree "spec body ended without a function result"
 
 /-- `runtimeRefinementFor`, decided for one run of each side. -/
@@ -121,14 +123,6 @@ def compareRuntime (evmRes : EVMResult) (spec : DispatchOutcome) : Verdict :=
   | .error .OutOfGass | .error .OutOfFuel => .evmOutOfGas                               -- runtimeRefinementFor.outOfGas
   | _ =>
     match spec with
-    | .ran (.result .noMatch) _ =>                                                       -- runtimeRefinementFor.noDispatch
-        match evmRes with
-        | .ok (.revert _ _) => .agree "no dispatch, revert"
-        | e => .disagree s!"spec dispatches nothing, EVM {describeEvm e}"
-    | .ran (.result .decodingFailed) _ =>                                                 -- runtimeRefinementFor.decodingFailed
-        match evmRes with
-        | .ok (.revert _ _) => .agree "decoding failed, revert"
-        | e => .disagree s!"spec calldata does not decode, EVM {describeEvm e}"
     | .malformed why => .specStuck why
     | .ran .outOfFuel _ => .specOutOfFuel
     | .ran (.stuck why) _ => .specStuck why

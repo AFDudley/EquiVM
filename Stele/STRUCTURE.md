@@ -59,6 +59,12 @@ body runs. The interpreter reports them through the same `ExecResult` type. Miss
 entry points use the empty ABI return convention; decoding failures keep the selected
 transition's return convention.
 
+Runtime refinement has two cases: `execution` relates an EVM result to a `steleExec`
+result through `execResultsEquiv`, and `outOfGas` leaves the Stele side unconstrained.
+Both `.noMatch` and `.decodingFailed` require an EVM revert, with an unconstrained
+payload. The behavioral-inclusion corollaries in `Behaviors.lean` use `capturedBySpec`,
+which requires a Stele execution witnessing the related result.
+
 ```
 Stele/
 ├── Syntax.lean            umbrella: Syntax/Basic + Syntax/DecEq
