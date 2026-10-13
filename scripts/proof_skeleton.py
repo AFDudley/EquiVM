@@ -5,6 +5,8 @@ Inputs (all produced by the other scripts): ``SpecSyntax.lean`` (the specificati
 functions fix the transition order), ``Selectors.lean``, ``Bytecode.lean``, ``runtime.hex``,
 ``<Name>.build.json`` (compiler version, immutables), optionally ``<Name>.spec.json`` (the
 translator's external-call facts) and the generated ``RuntimeBlocks_NNN.lean`` summaries.
+An optional ``def abiDecodeMode : ABI.DecodeMode`` in the specification's ``Syntax`` namespace
+selects a decoder profile explicitly; otherwise compiler-version defaults are preserved.
 
 Outputs (existing files are kept unless ``--force``):
 
@@ -98,6 +100,7 @@ class Contract:
     external_calls: list[dict]
     runtime: bytes
     has_transient: bool = False
+    has_decode_mode: bool = False
     abicoder_v2: bool = False
 
     @property
@@ -150,6 +153,8 @@ def load_contract(directory: Path, module: str | None, namespace: str | None, pr
     spec_text = spec_path.read_text(encoding="utf-8")
     payable, has_fallback, has_receive = spec_syntax_info(spec_text)
     has_transient = re.search(r"\btransient\s+«?[A-Za-z_]", re.sub(r"--[^\n]*", "", spec_text)) is not None
+    has_decode_mode = re.search(r"\bdef\s+abiDecodeMode\s*:\s*(?:ABI\.)?DecodeMode\b",
+                                re.sub(r"/-.*?-/|--[^\n]*", "", spec_text, flags=re.S)) is not None
     selectors_path = directory / "Selectors.lean"
     if not selectors_path.exists():
         raise SystemExit("Selectors.lean is required (scaffold.py lean)")
@@ -173,7 +178,8 @@ def load_contract(directory: Path, module: str | None, namespace: str | None, pr
         text = ast_path.read_text(encoding="utf-8")
         abicoder_v2 = '"abicoder", "v2"' in text or '"experimental", "ABIEncoderV2"' in text
     return Contract(directory, name, module, namespace, prefix, transitions, has_fallback, has_receive,
-                    immutables, version, external_calls, runtime, has_transient, abicoder_v2)
+                    immutables, version, external_calls, runtime, has_transient, has_decode_mode,
+                    abicoder_v2)
 
 
 # --------------------------------------------------------------------------------------------
@@ -267,6 +273,8 @@ def render_spec(c: Contract) -> str:
     else:
         abi_name = "defaultExternalCallABI"
     decode_mode = "" if c.version >= (0, 8, 0) or c.abicoder_v2 else ".withMode DecodeMode.legacySolc05"
+    if c.has_decode_mode:
+        decode_mode = ".withMode Syntax.abiDecodeMode"
     transient = ("\n    transientBackend := solidityTransientStorage! [contract.structs] [contract.transient]"
                  if c.has_transient else "")
     out += ["/-! ## Config -/", "", "def config : Config :=",
