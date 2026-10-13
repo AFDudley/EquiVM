@@ -39,7 +39,7 @@ theorem safeSignatureLoop (fuel : Nat) (p : SignatureInput) (evm : EVM.State)
       RD safeBytecode I g s0 ret R mem' aw' out σ' k' C' ∧
       BytesMemory mem' src p.signatures ∧ memLoad ⟨64⟩ mem' = UInt256.ofNat ptr' ∧
       memLoad ⟨96⟩ mem' = ⟨0⟩ ∧ ptr ≤ ptr' ∧ ptr' ≤ ptr + fuel * 2 ^ 140 ∧
-      mem'.size ≤ max mem.size (ptr + fuel * 2 ^ 140) ∧ MemoryPreserves mem mem' 96 ptr := by
+      mem'.size ≤ max mem.size (ptr + fuel * 2 ^ 140) ∧ MemoryPreserves mem mem' 96 ptr ∧ (ptr < 2 ^ 64 → ptr' < 2 ^ 64) := by
   induction fuel generalizing i f evm σ k C aw mem rdata ptr last old with
   | zero =>
       have hib : i < UInt256.size := by
@@ -50,7 +50,7 @@ theorem safeSignatureLoop (fuel : Nat) (p : SignatureInput) (evm : EVM.State)
       have h₁ := safeRuntime_block_7553_fallthrough (by simp; omega) hlt h
       obtain ⟨aw', k', C', h₂⟩ := safeRuntime_block_7561_packed (by omega) hret h₁
       refine .inr ⟨f, evm, σ, mem, ptr, aw', rdata, k', C', .whileFalse ?_, hee, hacc, hworld,
-        h₂, hm, hf, hz, Nat.le_refl _, by omega, by omega, MemoryPreserves.refl _ _ _⟩
+        h₂, hm, hf, hz, Nat.le_refl _, by omega, by omega, MemoryPreserves.refl _ _ _, id⟩
       simpa only [hcount, Nat.add_zero, lt_self_iff_false, decide_false] using
         evalSignatureLoopCondition (evm := evm) hc
   | succ fuel ih =>
@@ -63,16 +63,16 @@ theorem safeSignatureLoop (fuel : Nat) (p : SignatureInput) (evm : EVM.State)
       have h₁ := safeRuntime_block_7553_taken (by simp; omega)
         (by rw [hlt]; decide) (by jump_dest) h
       obtain ⟨hrev, hbody⟩ | ⟨f', evm', σ', mem', ptr', aw', out, owner, k', C',
-          hbody, hc', ho', hee', hacc', hw', h₂, hm', hf', hz', hpl, hph, hms, hpres⟩ :=
+          hbody, hc', ho', hee', hacc', hw', h₂, hm', hf', hz', hpl, hph, hms, hpres, hcap⟩ :=
         safeSignatureIteration p evm h₁ hc he ho hee hacc hworld hm hf hz hsrc ha (by omega)
           hn hreq hi (by simp; omega)
       · exact .inl ⟨hrev, .whileRevert hcond hbody⟩
       obtain ⟨hrev, htail⟩ | ⟨f'', evm'', σ'', mem'', ptr'', aw'', out', k'', C'', htail,
-          hee'', hacc'', hw'', h₃, hm'', hf'', hz'', hpl', hph', hms', hpres'⟩ :=
+          hee'', hacc'', hw'', h₃, hm'', hf'', hz'', hpl', hph', hms', hpres', hcap'⟩ :=
         ih evm' h₂ hc' ho' hee' hacc' hw' hm' hf' hz' (by omega) (by omega) (by omega)
       · exact .inl ⟨hrev, .whileTrue hcond hbody htail⟩
       exact .inr ⟨f'', evm'', σ'', mem'', ptr'', aw'', out', k'', C'',
         .whileTrue hcond hbody htail, hee'', hacc'', hw'', h₃, hm'', hf'', hz'', hpl.trans hpl',
-        by omega, by omega, hpres.trans hpres' hpl⟩
+        by omega, by omega, hpres.trans hpres' hpl, fun hp ↦ hcap' (hcap hp)⟩
 
 end Benchmarks.Safe.ViaIR

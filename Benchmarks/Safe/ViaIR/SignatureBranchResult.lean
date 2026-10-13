@@ -18,7 +18,7 @@ def SignatureBranchResult (p : SignatureInput) (I : ExecutionEnv) (g : Sat256) (
         p.required :: R) mem' aw' out σ' k' C' ∧
     BytesMemory mem' src p.signatures ∧ memLoad ⟨64⟩ mem' = UInt256.ofNat ptr' ∧
     memLoad ⟨96⟩ mem' = ⟨0⟩ ∧ ptr ≤ ptr' ∧ ptr' ≤ ptr + 2 ^ 140 ∧
-    mem'.size ≤ max mem.size (ptr + 2 ^ 140) ∧ MemoryPreserves mem mem' 96 ptr
+    mem'.size ≤ max mem.size (ptr + 2 ^ 140) ∧ MemoryPreserves mem mem' 96 ptr ∧ (ptr < 2 ^ 64 → ptr' < 2 ^ 64)
 
 theorem SignatureBranchResult.map {p I g s0 f evm i last executor src ptr mem R a b}
     (h : SignatureBranchResult p I g s0 f evm i last executor src ptr mem R a)

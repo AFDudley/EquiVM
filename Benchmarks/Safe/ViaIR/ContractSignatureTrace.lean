@@ -37,14 +37,16 @@ theorem safeContractSignatureTrace (words : List UInt256)
       RD safeBytecode I g s0 ⟨7803⟩ (last :: owner :: sig :: hash :: R)
         (signatureReturnMemory (contractSignatureCallMemory mem ptr signature.size hash words)
           (contractSignatureCallEnd ptr signature.size) out) aw' out σ' k' C' ∧
-      out.size < 2 ^ 138 := by
+      out.size < 2 ^ 138 ∧
+      (if out.size = 0 then contractSignatureCallEnd ptr signature.size else
+        contractSignatureCallEnd ptr signature.size + 32 + ABI.paddedSize out.size) < 2 ^ 64 := by
   have hptr : ptr + 32 < UInt256.size := by
     dsimp [contractSignatureCallEnd] at hb
     omega
   have hlen : contractSignatureCallLength signature.size < UInt256.size := by
     dsimp [contractSignatureCallEnd, contractSignatureCallLength] at hb ⊢
     omega
-  obtain hrev | ⟨_, _, _, _, _, h₁⟩ :=
+  obtain hrev | ⟨_, _, _, _, hcallSmall, h₁⟩ :=
     safeContractSignaturePrepare words h hf hl hw hn (by omega) hin ha hb hov
   · obtain ⟨z, evm', out, hc, hz⟩ :=
       contractSignatureCanReject evm (AccountAddress.ofUInt256 owner) hash signature
@@ -63,7 +65,7 @@ theorem safeContractSignatureTrace (words : List UInt256)
   have hf' := contractSignatureCallMemory_free mem ptr signature.size hash words hn (by omega)
   have hb' : contractSignatureCallEnd ptr signature.size + out.size + 64 < UInt256.size := by
     omega
-  obtain hrev | ⟨_, _, _, h₃⟩ :=
+  obtain hrev | ⟨_, _, _, h₃, hcap⟩ :=
     safeContractSignatureReturnBuffer h₂ hf' hb' (by simp; omega)
   · obtain ⟨z, evm', out, hc, hz⟩ :=
       contractSignatureCanReject evm (AccountAddress.ofUInt256 owner) hash signature
@@ -99,6 +101,7 @@ theorem safeContractSignatureTrace (words : List UInt256)
       using hfinish
     exact .inl ⟨hr, evm', z, out, hc', hv⟩
   · obtain ⟨aw'', k'', C'', h₄⟩ := by simpa only [hv, if_true] using hfinish
-    exact .inr ⟨evm', σ', z, out, aw'', k'', C'', hc', he, hac, hworld', hv, h₄, ho⟩
+    exact .inr ⟨evm', σ', z, out, aw'', k'', C'', hc', he, hac, hworld', hv, h₄, ho,
+      hcap hcallSmall⟩
 
 end Benchmarks.Safe.ViaIR

@@ -26,7 +26,9 @@ theorem safeContractSignatureReturnBuffer {I g s0 σ k C aw mem ptr}
     RDrev safeBytecode g s0 ∨
       ∃ aw' k' C', RD safeBytecode I g s0 ⟨7784⟩
         (signatureReturnDataPtr ptr out :: z :: R)
-        (signatureReturnMemory mem ptr out) aw' out σ k' C' := by
+        (signatureReturnMemory mem ptr out) aw' out σ k' C' ∧
+        (ptr < 2 ^ 64 → (if out.size = 0 then ptr else
+          ptr + 32 + ABI.paddedSize out.size) < 2 ^ 64) := by
   have h₀ := safeRuntime_block_7777 (by simp; omega) (by jump_dest) h
   simp only [safeRuntime_block_7777_stack] at h₀
   have hlarge : 2 ^ 64 + 128 < UInt256.size := by decide
@@ -35,7 +37,8 @@ theorem safeContractSignatureReturnBuffer {I g s0 σ k C aw mem ptr}
       (by rw [hz]; decide) (by jump_dest) h₀
     have h₂ := safeRuntime_block_10424 (by simp; omega) (by jump_dest) h₁
     exact .inr ⟨_, _, _, by simpa only [safeRuntime_block_10424_stack,
-      signatureReturnDataPtr, signatureReturnMemory, hz, if_true] using h₂⟩
+      signatureReturnDataPtr, signatureReturnMemory, hz, if_true] using h₂,
+      by simpa only [hz, if_true] using (id : ptr < 2 ^ 64 → ptr < 2 ^ 64)⟩
   have hne : UInt256.ofNat out.size ≠ ⟨0⟩ := by
     intro he
     have he' := congrArg UInt256.toNat he
@@ -72,7 +75,7 @@ theorem safeContractSignatureReturnBuffer {I g s0 σ k C aw mem ptr}
       ptr + 32 + ABI.paddedSize out.size := by
     dsimp [ABI.paddedSize]
     omega
-  obtain hrev | ⟨_, _, _, _, h₆⟩ := safeIRAllocateTrace h₅
+  obtain hrev | ⟨_, _, _, hfit, h₆⟩ := safeIRAllocateTrace h₅
     (by dsimp [ABI.paddedSize]; omega) (by rw [hround]; dsimp [ABI.paddedSize]; omega)
     (by simp; omega) (by jump_dest)
   · exact .inl hrev
@@ -82,7 +85,8 @@ theorem safeContractSignatureReturnBuffer {I g s0 σ k C aw mem ptr}
     (by jump_dest) h₆
   rw [safeReturnDataMemory hb] at h₇
   exact .inr ⟨aw', k', C', by simpa only [safeRuntime_block_10413_stack,
-    signatureReturnDataPtr, signatureReturnMemory, if_neg hz] using h₇⟩
+    signatureReturnDataPtr, signatureReturnMemory, if_neg hz] using h₇,
+    fun _ ↦ by simpa only [if_neg hz, hround] using hfit⟩
 
 private theorem safeContractSignatureRequire {I g s0 σ k C aw mem out}
     {scratch : UInt256} {valid : Bool} {R : List UInt256}

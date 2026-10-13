@@ -39,7 +39,7 @@ theorem safeSignatureContractTrace (p : SignatureInput) (evm : EVM.State)
         mem' aw' out σ' k' C' ∧
       BytesMemory mem' src p.signatures ∧ memLoad ⟨64⟩ mem' = UInt256.ofNat ptr' ∧
       memLoad ⟨96⟩ mem' = ⟨0⟩ ∧ ptr ≤ ptr' ∧ ptr' ≤ ptr + 2 ^ 140 ∧
-      mem'.size ≤ max mem.size (ptr + 2 ^ 140) ∧ MemoryPreserves mem mem' 96 ptr := by
+      mem'.size ≤ max mem.size (ptr + 2 ^ 140) ∧ MemoryPreserves mem mem' 96 ptr ∧ (ptr < 2 ^ 64 → ptr' < 2 ^ 64) := by
   have hfit : p.requiredBytes < UInt256.size := lt_of_le_of_lt hreq (lt_trans hn (by decide))
   have hmul : (UInt256.mul p.required (UInt256.ofNat 65)).toNat = p.requiredBytes := by
     rw [u256_mul_toNat]
@@ -68,12 +68,12 @@ theorem safeSignatureContractTrace (p : SignatureInput) (evm : EVM.State)
     simpa only [accountAddress_ofUInt256_eq_ofNat_toNat] using
       (addressOfNat_eq_of_masked_word r).symm
   obtain ⟨hrev, hbody⟩ | ⟨evm', σ', mem', ptr', aw', out, k', C', hbody, he, hac, hw,
-      h₅, hm', hf', hz', hpl, hph, hms, hpres⟩ :=
+      h₅, hm', hf', hz', hpl, hph, hms, hpres, hcap⟩ :=
     safeCheckContractTrace (signatureContractInput p r s) evm h₃ hee hacc hworld haddr.symm
       hm hf hz hsrc ha hp hn (by simp; omega)
   · exact .inl ⟨hrev, signatureContractSource hc hr hs ho hb hbody⟩
   exact .inr ⟨evm', σ', mem', ptr', aw', out, _, _,
     signatureContractSource hc hr hs ho hb hbody, he, hac, hw,
-    h₅, hm', hf', hz', hpl, hph, hms, hpres⟩
+    h₅, hm', hf', hz', hpl, hph, hms, hpres, hcap⟩
 
 end Benchmarks.Safe.ViaIR

@@ -39,12 +39,12 @@ theorem safeSignatureBranchTrace (p : SignatureInput) (evm : EVM.State)
     simp only [if_true] at h
     change SignatureBranchResult p I g s0 f evm i last executor src ptr mem R signatureContractBody
     obtain ⟨hrev, hbody⟩ | ⟨evm', σ', mem', ptr', aw', out, k', C', hbody, hee', hacc', hw',
-        h₁, hm', hf', hz', hpl, hph, hms, hpres⟩ :=
+        h₁, hm', hf', hz', hpl, hph, hms, hpres, hcap⟩ :=
       safeSignatureContractTrace p evm h hc.toSignatureCore hr hs ho hee hacc hworld hm hf hz
         hsrc ha hp hn hreq (by simp; omega)
     · exact .inl ⟨hrev, hbody⟩
     refine .inr ⟨_, evm', σ', mem', ptr', aw', out, UInt256.land solcAddrMask r, k', C', hbody,
-      hc.contractBranch r s, ?_, hee', hacc', hw', h₁, hm', hf', hz', hpl, hph, hms, hpres⟩
+      hc.contractBranch r s, ?_, hee', hacc', hw', h₁, hm', hf', hz', hpl, hph, hms, hpres, hcap⟩
     simp [haddr, signatureContractFrame, signatureCurrentFrame, signatureSet,
       Std.HashMap.getElem?_insert, Std.HashMap.getElem_insert]
   have hn₀ : v ≠ ⟨0⟩ := fun hh ↦ h₀ (congrArg UInt256.toNat hh)
@@ -71,7 +71,7 @@ theorem safeSignatureBranchTrace (p : SignatureInput) (evm : EVM.State)
         hsrc ha hp hn hreq (by simp; omega)
     · exact .inl ⟨hrev, hbody⟩
     refine .inr ⟨_, evm', σ', mem', ptr, aw', out, UInt256.land solcAddrMask r, k', C', hbody,
-      hc.p256 r s, ?_, hee', hacc', hw', h₄, hm', hf', hz', Nat.le_refl _, by omega, hms, hpres⟩
+      hc.p256 r s, ?_, hee', hacc', hw', h₄, hm', hf', hz', Nat.le_refl _, by omega, hms, hpres, id⟩
     simp [haddr, signatureP256FinalFrame, signatureP256SignerFrame, signatureP256WordsFrame,
       signatureP256XFrame, signatureP256SFrame, signatureP256RFrame, signatureP256EndFrame,
       signatureP256OffsetFrame, signatureDynamicFrame, signatureCurrentFrame, signatureSet,
@@ -85,12 +85,12 @@ theorem safeSignatureBranchTrace (p : SignatureInput) (evm : EVM.State)
     have hgt : UInt256.gt v (UInt256.ofNat 30) = ⟨1⟩ := ugt_one hh
     have h₄ := safeRuntime_block_8526_fallthrough (by simp; omega) (by rw [hgt]; decide) h₃
     obtain ⟨hrev, hbody⟩ | ⟨evm', σ', mem', ptr', aw', out, owner, k', C', hbody,
-        hee', hacc', hw', h₅, hm', hf', hz', hpl, hph, hms, hpres⟩ :=
+        hee', hacc', hw', h₅, hm', hf', hz', hpl, hph, hms, hpres, hcap⟩ :=
       safeSignatureEthTrace p evm h₄ hc.toSignatureCore hr hs hv ho hee hacc hworld hm hf hz
         hsrc ha hp (by omega) hv8 (by simp; omega)
     · exact .inl ⟨hrev, hbody⟩
     refine .inr ⟨_, evm', σ', mem', ptr', aw', out, owner, k', C', hbody,
-      hc.eth owner, ?_, hee', hacc', hw', h₅, hm', hf', hz', hpl, hph, hms, hpres⟩
+      hc.eth owner, ?_, hee', hacc', hw', h₅, hm', hf', hz', hpl, hph, hms, hpres, hcap⟩
     simp [signatureRecoveredFrame, signatureCurrentFrame, signatureSet,
       Std.HashMap.getElem?_insert]
   · simp only [if_neg hh]
@@ -99,12 +99,12 @@ theorem safeSignatureBranchTrace (p : SignatureInput) (evm : EVM.State)
     have h₄ := safeRuntime_block_8526_taken (by simp; omega) (by rw [hgt]; decide)
       (by jump_dest) h₃
     obtain ⟨hrev, hbody⟩ | ⟨evm', σ', mem', ptr', aw', out, owner, k', C', hbody,
-        hee', hacc', hw', h₅, hm', hf', hz', hpl, hph, hms, hpres⟩ :=
+        hee', hacc', hw', h₅, hm', hf', hz', hpl, hph, hms, hpres, hcap⟩ :=
       safeSignaturePlainTrace p evm h₄ hc.toSignatureCore hr hs hv ho hee hacc hworld hm hf hz
         hsrc ha hp hv8 (by simp; omega)
     · exact .inl ⟨hrev, hbody⟩
     refine .inr ⟨_, evm', σ', mem', ptr', aw', out, owner, k', C', hbody,
-      hc.recovered owner, ?_, hee', hacc', hw', h₅, hm', hf', hz', hpl, hph, hms, hpres⟩
+      hc.recovered owner, ?_, hee', hacc', hw', h₅, hm', hf', hz', hpl, hph, hms, hpres, hcap⟩
     simp [signatureRecoveredFrame, signatureCurrentFrame, signatureSet,
       Std.HashMap.getElem?_insert]
 

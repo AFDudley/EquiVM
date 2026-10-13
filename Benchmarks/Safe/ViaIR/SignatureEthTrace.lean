@@ -32,11 +32,11 @@ theorem safeSignatureEthTrace (p : SignatureInput) (evm : EVM.State)
         mem' aw' out σ' k' C' ∧
       BytesMemory mem' src p.signatures ∧ memLoad ⟨64⟩ mem' = UInt256.ofNat ptr' ∧
       memLoad ⟨96⟩ mem' = ⟨0⟩ ∧ ptr ≤ ptr' ∧ ptr' ≤ ptr + 2 ^ 140 ∧
-      mem'.size ≤ max mem.size (ptr + 2 ^ 140) ∧ MemoryPreserves mem mem' 96 ptr := by
+      mem'.size ≤ max mem.size (ptr + 2 ^ 140) ∧ MemoryPreserves mem mem' 96 ptr ∧ (ptr < 2 ^ 64 → ptr' < 2 ^ 64) := by
   have hptr : 128 ≤ ptr := by omega
   have hmem : 128 ≤ mem.size := by have := hm.available; omega
   have hb : ptr + 224 < UInt256.size := by change _ < 2 ^ 256; omega
-  obtain hrev | ⟨aw₁, k₁, C₁, h₁⟩ := safeEthSignPrepare h hf (by omega)
+  obtain hrev | ⟨aw₁, k₁, C₁, h₁, hcap⟩ := safeEthSignPrepare h hf (by omega)
     (by omega) hvl (by omega)
   · obtain ⟨evm', hcall⟩ := callEcrecoverCanFail evm
       (wordBytes (ecrecoverWords ⟨ethSignWord p.hash, UInt256.sub v ⟨4⟩, r, s⟩))
@@ -59,7 +59,7 @@ theorem safeSignatureEthTrace (p : SignatureInput) (evm : EVM.State)
       ← show (⟨96⟩ : UInt256).toNat = 96 from rfl, ← memLoadReadWord, hz]
   refine .inr ⟨evm', σ', _, ptr + 96, aw', out, calldataWord out 0, k', C',
     signatureEthSource hc hr hs hv ho hvl hv8 hbody, he, hac, hw, h₃,
-    ?_, ?_, ?_, by omega, by omega, ?_, ?_⟩
+    ?_, ?_, ?_, by omega, by omega, ?_, ?_, fun _ ↦ hcap⟩
   · exact ecrecoverOutputMemory_bytes hmeth (by omega) (by omega) (by omega)
   · exact (ecrecoverOutputMemory_free _ _ _ _ (by rw [hethsize]; omega)
       (by omega)).trans (ethSignMemory_free mem ptr p.hash)

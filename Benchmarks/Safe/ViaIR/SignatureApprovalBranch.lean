@@ -57,8 +57,8 @@ theorem safeSignatureApprovalBranch (p : SignatureInput) (evm : EVM.State)
   · simpa only [hv, if_true] using hsource
   · simp [haddr, signatureCurrentFrame, signatureSet]
   rcases hform with rfl | rfl
-  · exact ⟨hm, hf, hz, Nat.le_refl _, by omega, by omega, MemoryPreserves.refl _ _ _⟩
+  · exact ⟨hm, hf, hz, Nat.le_refl _, by omega, by omega, MemoryPreserves.refl _ _ _, id⟩
   · obtain ⟨hm', hf', hz', hsize, hpres⟩ := signatureApprovalMemoryFacts (ptr := ptr) hm hsrc hb r
-    exact ⟨hm', hf'.trans hf, hz'.trans hz, Nat.le_refl _, by omega, by rw [hsize]; omega, hpres⟩
+    exact ⟨hm', hf'.trans hf, hz'.trans hz, Nat.le_refl _, by omega, by rw [hsize]; omega, hpres, id⟩
 
 end Benchmarks.Safe.ViaIR

@@ -42,7 +42,7 @@ theorem safeEthSignPrepare {I g s0 σ k C aw mem rdata ptr}
     RDrev safeBytecode g s0 ∨
     ∃ aw' k' C', RD safeBytecode I g s0 ⟨8619⟩
       (UInt256.sub v ⟨4⟩ :: r :: s :: ethSignWord hash :: last :: src :: hash :: R)
-      (ethSignMemory mem ptr hash) aw' rdata σ k' C' := by
+      (ethSignMemory mem ptr hash) aw' rdata σ k' C' ∧ ptr + 96 < 2 ^ 64 := by
   have hadd (j : Nat) (hj : j ≤ 96) :
       UInt256.ofNat ptr + UInt256.ofNat j = UInt256.ofNat (ptr + j) := by
     apply u256_inj
@@ -97,6 +97,6 @@ theorem safeEthSignPrepare {I g s0 σ k C aw mem rdata ptr}
       ethSignMemory_read _ _ _ hp]
   simp only [safeRuntime_block_8602_fallthrough_stack, hsub,
     ethSignMemory_length _ _ _ hp (by omega), hhash] at h₄
-  exact .inr ⟨aw', k', C', h₄⟩
+  exact .inr ⟨aw', k', C', h₄, halloc⟩
 
 end Benchmarks.Safe.ViaIR

@@ -28,7 +28,7 @@ theorem safeCheckSignaturesTrace (p : SignatureCheckInput) (evm : EVM.State)
       RD safeBytecode I g s0 ret R mem' aw' out σ' k' C' ∧
       BytesMemory mem' src p.signatures ∧ memLoad ⟨64⟩ mem' = UInt256.ofNat ptr' ∧
       memLoad ⟨96⟩ mem' = ⟨0⟩ ∧ ptr ≤ ptr' ∧ ptr' ≤ ptr + 2 ^ 204 ∧
-      mem'.size ≤ max mem.size (ptr + 2 ^ 204) ∧ MemoryPreserves mem mem' 96 ptr := by
+      mem'.size ≤ max mem.size (ptr + 2 ^ 204) ∧ MemoryPreserves mem mem' 96 ptr ∧ (ptr < 2 ^ 64 → ptr' < 2 ^ 64) := by
   have hload : (σ.get? I.codeOwner |>.option (⟨0⟩ : UInt256)
       (fun ac ↦ ac.storage.getD (UInt256.ofNat 4) ⟨0⟩)) = storedThreshold evm := by
     simp only [storedThreshold, Solm.EVM.storageLoad, State.lookupAccount,
@@ -45,13 +45,13 @@ theorem safeCheckSignaturesTrace (p : SignatureCheckInput) (evm : EVM.State)
   simp only [safeRuntime_block_9258_fallthrough_stack, hload] at h₁
   have h₂ := safeRuntime_block_9270 (by simp; omega) (by jump_dest) h₁
   obtain ⟨hrev, hbody⟩ | ⟨f', evm', σ', mem', ptr', aw', out, k', C', hbody, hee', hacc', hw',
-      h₃, hm', hf', hz', hpl, hph, hms, hpres⟩ :=
+      h₃, hm', hf', hz', hpl, hph, hms, hpres, hcap⟩ :=
     safeCheckNSignaturesTrace (p.withRequired (storedThreshold evm)) evm h₂ he hee hacc hworld
       hm hf hz hsrc ha hp hn (by simp; omega) (by jump_dest)
   · exact .inl ⟨hrev, .execBlockRevert (signatureCheckSource p evm ht hbody)⟩
   obtain ⟨aw'', k'', C'', h₄⟩ := safeRuntime_block_9278_packed (by omega) hret h₃
   exact .inr ⟨_, evm', σ', mem', ptr', aw'', out, k'', C'',
     .execBlockOK (signatureCheckSource p evm ht hbody), hee', hacc', hw',
-    h₄, hm', hf', hz', hpl, hph, hms, hpres⟩
+    h₄, hm', hf', hz', hpl, hph, hms, hpres, hcap⟩
 
 end Benchmarks.Safe.ViaIR

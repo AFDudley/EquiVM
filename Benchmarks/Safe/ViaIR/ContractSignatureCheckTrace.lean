@@ -33,7 +33,7 @@ theorem safeCheckContractTrace (p : ContractSignatureInput)
         (last :: owner :: UInt256.ofNat src :: p.hash :: R) mem' aw' out σ' k' C' ∧
       BytesMemory mem' src p.signatures ∧ memLoad ⟨64⟩ mem' = UInt256.ofNat ptr' ∧
       memLoad ⟨96⟩ mem' = ⟨0⟩ ∧ ptr ≤ ptr' ∧ ptr' ≤ ptr + 2 ^ 140 ∧
-      mem'.size ≤ max mem.size (ptr + 2 ^ 140) ∧ MemoryPreserves mem mem' 96 ptr := by
+      mem'.size ≤ max mem.size (ptr + 2 ^ 140) ∧ MemoryPreserves mem mem' 96 ptr ∧ (ptr < 2 ^ 64 → ptr' < 2 ^ 64) := by
   have hmargin : ptr + 2 ^ 141 < UInt256.size := by change _ < 2 ^ 256; omega
   have hbytes := hm.available
   obtain ⟨hr, hbad⟩ | ⟨_, _, _, hstart, hend, h₁⟩ :=
@@ -66,7 +66,7 @@ theorem safeCheckContractTrace (p : ContractSignatureInput)
     dsimp [contractSignatureCallEnd, ABI.paddedSize]
     omega
   obtain ⟨hrev, evm', z, out, hc, hfalse⟩ |
-      ⟨evm', σ', z, out, aw', k', C', hc, he, hac, hw, hv, h₃, hout⟩ :=
+      ⟨evm', σ', z, out, aw', k', C', hc, he, hac, hw, hv, h₃, hout, hcap⟩ :=
     safeContractSignatureTrace words evm h₁ hee hacc hworld hf hz hlen hview hwords hsview
       (by omega) (by omega)
       (by rw [hwords, hsig]; omega)
@@ -89,7 +89,7 @@ theorem safeCheckContractTrace (p : ContractSignatureInput)
     hwords (by omega) hsig64 hout
   have hbnext := contractSignatureNext_bounds ptr p.signature.size out hsig64 hout
   refine Or.inr ⟨evm', σ', _, contractSignatureNext ptr p.signature.size out, _, out, _, _,
-    ?_, he, hac, hw, h₃, ?_, ?_, ?_, hbnext.1, hbnext.2, hbmem.2, ?_⟩
+    ?_, he, hac, hw, h₃, ?_, ?_, ?_, hbnext.1, hbnext.2, hbmem.2, ?_, fun _ ↦ hcap⟩
   · simpa only [hv, if_true] using hsource
   · exact contractSignatureFinalMemory_bytes hwords hm (by omega) ha (by omega)
   · exact contractSignatureFinalMemory_free _ _ _ _ _ _ hwords (by omega)

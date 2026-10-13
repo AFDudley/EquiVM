@@ -352,3 +352,16 @@ and introduces no axioms. No specification or public statement changed. The two 
 axiom scans report 1,024 and 1,063 permitted axioms, with no proof holes or custom axioms.
 Thirty-one of the thirty-three runtime obligations are complete; transaction execution
 and setup remain before whole-contract validation.
+
+The transaction decoding and pre-guard prefix now build together with all four signature
+entrypoints (3,664 jobs). Decoding follows the inlined entry path and specialized address
+readers, retaining the existing malformed-input and size-bound cases. The nonce increment,
+static-write rejection, transaction hash, and signature call use the new stack layouts.
+The prefix and decoder evidence scans report 1,862 and 530 permitted axioms, respectively.
+
+The signature memory invariant now also records that a free pointer below `2^64` remains
+below that bound. Branches either retain the pointer or pass an existing checked allocator;
+this stronger fact is propagated through the signature loop. It is needed by the IR's
+zero-length allocation after the transaction guard call. The source specification and
+public entrypoint statements are unchanged. Transaction execution and setup are still
+being integrated.

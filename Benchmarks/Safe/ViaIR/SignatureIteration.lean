@@ -31,7 +31,7 @@ theorem safeSignatureIteration (p : SignatureInput) (evm : EVM.State)
           p.required :: R) mem' aw' out σ' k' C' ∧
       BytesMemory mem' src p.signatures ∧ memLoad ⟨64⟩ mem' = UInt256.ofNat ptr' ∧
       memLoad ⟨96⟩ mem' = ⟨0⟩ ∧ ptr ≤ ptr' ∧ ptr' ≤ ptr + 2 ^ 140 ∧
-      mem'.size ≤ max mem.size (ptr + 2 ^ 140) ∧ MemoryPreserves mem mem' 96 ptr := by
+      mem'.size ≤ max mem.size (ptr + 2 ^ 140) ∧ MemoryPreserves mem mem' 96 ptr ∧ (ptr < 2 ^ 64 → ptr' < 2 ^ 64) := by
   have hin : 65 * i + 65 ≤ p.signatures.size := by
     dsimp [SignatureInput.requiredBytes] at hreq
     omega
@@ -61,7 +61,7 @@ theorem safeSignatureIteration (p : SignatureInput) (evm : EVM.State)
     simp [signatureVFrame, signatureSFrame, signatureRFrame, signatureOffsetFrame, signatureSet,
       Std.HashMap.getElem?_insert, Std.HashMap.getElem_insert, ho]
   obtain ⟨hrev, hbody⟩ | ⟨f', evm', σ', mem', ptr', aw', out, owner, k', C',
-      hbody, hc', ho'', hee', hacc', hw', h₂, hm', hf', hz', hpl, hph, hms, hpres⟩ :=
+      hbody, hc', ho'', hee', hacc', hw', h₂, hm', hf', hz', hpl, hph, hms, hpres, hcap⟩ :=
     safeSignatureBranchTrace p evm h₁ hc.split he hr hs hv ho' hee hacc hworld hm hf hz hsrc
       ha hp hn hreq (by rw [signatureV_toNat]; exact signatureVNat_bound _ _) hov
   · exact .inl ⟨hrev, hfinish (.consRevert (signatureSwitchSource hv hbody))⟩
@@ -75,7 +75,7 @@ theorem safeSignatureIteration (p : SignatureInput) (evm : EVM.State)
   refine .inr ⟨signatureNextFrame f' owner i, evm', σ', _, ptr', aw'', out, owner,
     k'', C'', hfinish (.consNormal hswitch (signatureOwnerSourceAccepted hc'.toSignatureCore
       ho'' hc'.lastOwner hc'.index hi' (by rwa [hee', hacc']))), hc'.next, ?_, hee', hacc', hw',
-    h₃, hm'.scratch (by omega) (by omega) _ _, ?_, ?_, hpl, hph, ?_, ?_⟩
+    h₃, hm'.scratch (by omega) (by omega) _ _, ?_, ?_, hpl, hph, ?_, ?_, hcap⟩
   · simp [signatureNextFrame, signatureSet, Std.HashMap.getElem?_insert, ho'']
   · exact (twoWordHashMem_load_preserved _ _ ⟨64⟩ (by decide)
       (by change 96 ≤ mem'.size; omega)).trans hf'

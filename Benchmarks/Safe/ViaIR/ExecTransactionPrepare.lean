@@ -18,16 +18,16 @@ def ExecTransactionPrepareOutcome (p : ExecTransactionInput) (evm : EVM.State)
       (exectransactionTransition.body.drop 6) result →
       ExecBlock config p.frame evm exectransactionTransition.body result) ∧
     evm'.executionEnv = I ∧ evm'.σ₀ = s0.σ₀ ∧
-    RD safeBytecode I g s0 ⟨3588⟩
+    RD safeBytecode I g s0 ⟨4534⟩
       (execSignatureSaved I.calldata dataLen ⟨128⟩ (execTransactionHash p evm) R)
       mem' aw' out evm'.accountMap k' C' ∧
     BytesMemory mem' 128 p.signatures ∧ memLoad ⟨64⟩ mem' = UInt256.ofNat ptr' ∧
-    memLoad ⟨96⟩ mem' = ⟨0⟩ ∧ 128 + 32 + p.signatures.size ≤ ptr' ∧ ptr' < 2 ^ 205
+    memLoad ⟨96⟩ mem' = ⟨0⟩ ∧ 128 + 32 + p.signatures.size ≤ ptr' ∧ ptr' < 2 ^ 64
 
-set_option maxRecDepth 100000 in
+set_option maxRecDepth 2000 in
 theorem safeExecTransactionPrepare (evm : EVM.State)
     {I g s0 σ k C aw rdata dataLen sigLen} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨3533⟩ (execTransactionDecodedStack I.calldata dataLen ⟨128⟩ R)
+    (h : RD safeBytecode I g s0 ⟨4469⟩ (execTransactionDecodedStack I.calldata dataLen ⟨128⟩ R)
       (memoryBytesDecoded (execTransactionCalldataInput I.calldata dataLen sigLen).signatures)
       aw rdata σ k C)
     (hee : evm.executionEnv = I) (hacc : evm.accountMap = σ) (hworld : evm.σ₀ = s0.σ₀)
@@ -46,18 +46,18 @@ theorem safeExecTransactionPrepare (evm : EVM.State)
   by_cases hno : (execNonce evm).toNat + 1 < UInt256.size
   swap
   · exact .inl ⟨safeIncrementOverflow h₁
-      (by simp [execHashStack, execHashSaved, execTransactionDecodedStack]; omega) hno,
+      (by simp [execHashSaved]; omega) hno,
       safeExecTransactionNonceOverflow p evm hsig ho hno⟩
   obtain ⟨_, _, h₂⟩ := safeIncrementTrace h₁
-    (by simp [execHashStack, execHashSaved, execTransactionDecodedStack]; omega) hno (by jump_dest)
+    (by simp [execHashSaved]; omega) hno (by jump_dest)
   cases hperm : I.perm with
   | false =>
       exact .inr (.inl ⟨safeExecNonceStatic h₂ hperm
-        (by simp [execHashStack, execHashSaved, execTransactionDecodedStack]; omega),
+        (by simp [execHashSaved]; omega),
         safeExecTransactionNonceStatic p evm hsig ho hno (by rwa [hee])⟩)
   | true =>
-      obtain ⟨_, _, h₃⟩ := safeExecNonceStore evm h₂ hee hacc hperm
-        (by simp [execHashStack, execHashSaved, execTransactionDecodedStack]; omega)
+      obtain ⟨_, _, h₃⟩ := safeExecNonceStore evm h₂ hee hacc hperm hb.refundReceiver
+        (by simp [execHashSaved]; omega)
       let ptr := memoryBytesInitialEnd p.signatures.size
       let mem := memoryBytesDecoded p.signatures
       let tx := { p.tx with nonce := execNonce evm }
@@ -97,16 +97,16 @@ theorem safeExecTransactionPrepare (evm : EVM.State)
           (by change 128 ≤ mem.size; omega)).trans (memoryBytesDecoded_zero _)
       obtain ⟨_, _, h₅⟩ := safeExecSignatureStart h₄ (by omega)
       obtain ⟨hrev, hs⟩ | ⟨f', evm', σ', mem', ptr', aw', out, k', C', hs, hee', hacc', hw',
-          h₆, hsigs', hf', hz', hptrlo, hptrhi, _⟩ :=
+          h₆, hsigs', hf', hz', hptrlo, hptrhi, _, _, hcap⟩ :=
         safeCheckSignaturesTrace (execSignatureInput p evm) (execNonceState evm) h₅
           (by rw [accountAddress_roundtrip]; exact congrArg ExecutionEnv.source hee)
           hee₁ rfl hw₁ hsigs hf hz (by decide) ha (by omega)
           (by change p.signatures.size < 2 ^ 64; omega)
-          (by simp [execSignatureSaved, execTransactionDecodedStack]; omega) (by jump_dest)
+          (by simp [execSignatureSaved]; omega) (by jump_dest)
       · exact .inl ⟨hrev, safeExecSignatureRevert p evm hsig ho hno hs⟩
       · rw [← hacc'] at h₆
         have ha' : 128 + 32 + p.signatures.size ≤ ptr' := by omega
-        have hp' : ptr' < 2 ^ 205 := by omega
+        have hp' : ptr' < 2 ^ 64 := hcap hp
         exact .inr (.inr ⟨evm', mem', ptr', out, aw', k', C',
           fun _ ht ↦ safeExecSignaturePrefix p evm hsig ho hno hs ht,
           hee', hw', h₆, hsigs', hf', hz', ha', hp'⟩)

@@ -32,7 +32,7 @@ theorem safeSignaturePlainTrace (p : SignatureInput) (evm : EVM.State)
         mem' aw' out σ' k' C' ∧
       BytesMemory mem' src p.signatures ∧ memLoad ⟨64⟩ mem' = UInt256.ofNat ptr' ∧
       memLoad ⟨96⟩ mem' = ⟨0⟩ ∧ ptr ≤ ptr' ∧ ptr' ≤ ptr + 2 ^ 140 ∧
-      mem'.size ≤ max mem.size (ptr + 2 ^ 140) ∧ MemoryPreserves mem mem' 96 ptr := by
+      mem'.size ≤ max mem.size (ptr + 2 ^ 140) ∧ MemoryPreserves mem mem' 96 ptr ∧ (ptr < 2 ^ 64 → ptr' < 2 ^ 64) := by
   have hptr : 128 ≤ ptr := by omega
   have hb : ptr + 128 < UInt256.size := by change _ < 2 ^ 256; omega
   obtain ⟨gasArg, aw₁, k₁, C₁, h₁⟩ := safeEcrecoverPlainPrepare
@@ -43,7 +43,7 @@ theorem safeSignaturePlainTrace (p : SignatureInput) (evm : EVM.State)
       (evalLocalValue hv) hr hs hbody⟩
   refine .inr ⟨evm', σ', _, ptr, aw', out, calldataWord out 0, k', C',
     signatureRecoverSource hc (evalLocalValue hc.hash) (evalLocalValue hv) hr hs ho hbody,
-    he, hac, hw, h₂, ?_, ?_, ?_, by omega, by omega, ?_, ?_⟩
+    he, hac, hw, h₂, ?_, ?_, ?_, by omega, by omega, ?_, ?_, id⟩
   · exact ecrecoverOutputMemory_bytes hm (by omega) ha (by omega)
   · exact (ecrecoverOutputMemory_free _ _ _ _ (by have := hm.available; omega)
       (by omega)).trans hf

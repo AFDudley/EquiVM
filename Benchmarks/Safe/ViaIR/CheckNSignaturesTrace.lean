@@ -25,7 +25,7 @@ theorem safeCheckNSignaturesTrace (p : SignatureInput) (evm : EVM.State)
       RD safeBytecode I g s0 ret R mem' aw' out σ' k' C' ∧
       BytesMemory mem' src p.signatures ∧ memLoad ⟨64⟩ mem' = UInt256.ofNat ptr' ∧
       memLoad ⟨96⟩ mem' = ⟨0⟩ ∧ ptr ≤ ptr' ∧ ptr' ≤ ptr + 2 ^ 204 ∧
-      mem'.size ≤ max mem.size (ptr + 2 ^ 204) ∧ MemoryPreserves mem mem' 96 ptr := by
+      mem'.size ≤ max mem.size (ptr + 2 ^ 204) ∧ MemoryPreserves mem mem' 96 ptr ∧ (ptr < 2 ^ 64 → ptr' < 2 ^ 64) := by
   have hn' : p.signatures.size < UInt256.size := lt_trans hn (by decide)
   obtain ⟨hrev, hbody⟩ | ⟨aw₁, k₁, C₁, hreq, h₁⟩ :=
     safeSignatureBoundsTrace p evm h hm hn' (by omega)
@@ -38,12 +38,12 @@ theorem safeCheckNSignaturesTrace (p : SignatureInput) (evm : EVM.State)
       some (.address (AccountAddress.ofNat 0)) := by
     simp [SignatureInput.loopFrame, Std.HashMap.getElem?_insert, Std.HashMap.getElem_insert]
   obtain ⟨hrev, hbody⟩ | ⟨f', evm', σ', mem', ptr', aw', out, k', C', hbody, hee', hacc', hw',
-      h₂, hm', hf', hz', hpl, hph, hms, hpres⟩ :=
+      h₂, hm', hf', hz', hpl, hph, hms, hpres, hcap⟩ :=
     safeSignatureLoop p.required.toNat p evm (i := 0) h₁ (SignatureContext.initial p)
       he hcurrent hee hacc hworld hm hf hz hsrc ha hbudget hn hreq (by simp) hov hret
   · exact .inl ⟨hrev, safeSignatureSourcePrefix p evm hn' hreq (execBlock_singleton hbody)⟩
   exact .inr ⟨f', evm', σ', mem', ptr', aw', out, k', C',
     safeSignatureSourcePrefix p evm hn' hreq (execBlock_singleton hbody), hee', hacc', hw',
-    h₂, hm', hf', hz', hpl, by omega, by omega, hpres⟩
+    h₂, hm', hf', hz', hpl, by omega, by omega, hpres, hcap⟩
 
 end Benchmarks.Safe.ViaIR
