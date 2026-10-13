@@ -47,8 +47,9 @@ not the regenerated IR artifacts. The IR regression audit also passes all 408 ca
 same outcome counts. The randomized IR test reports 1,775 cases: 1,761 agree (578 successful),
 0 disagree, 0 stuck, 14 EVM out of gas, and 0 spec out of fuel. The constructor and shared
 dispatcher proofs have been repaired; runtime proof repair remains incomplete. See
-[`REPAIR.md`](REPAIR.md) for the current repair status. These executable tests do not
-establish correctness of the IR bytecode.
+[`REPAIR.md`](REPAIR.md) for the current repair status and a certified counterexample at a
+symbolic calldata length of `2^255 + 4`. The unchanged runtime correctness statement is false
+at that size. These executable tests do not establish correctness of the IR bytecode.
 
 The audit target is the pinned bytecode under the repository's current `Solm.runtimeRefinement`.
 That relation observes the final account map, successful return bytes, reverts, invalid-instruction
