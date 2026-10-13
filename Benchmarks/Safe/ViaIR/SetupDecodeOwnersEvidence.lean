@@ -1,71 +1,69 @@
 import Benchmarks.Safe.ViaIR.SetupDecodeOwners
+import Benchmarks.Safe.ViaIR.Blocks.Runtime_014
+import Benchmarks.Safe.ViaIR.Blocks.Runtime_007
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.ViaIR
 
-set_option maxRecDepth 100000 in
+set_option maxRecDepth 2000 in
 set_option maxHeartbeats 1000000 in
-theorem safeSetupDecodeOwnersEvidence {I g s0 σ k C aw mem rdata} {ret : UInt256}
-    {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨10399⟩
-      (⟨4⟩ :: UInt256.ofNat I.calldata.size :: ret :: R) mem aw rdata σ k C)
+theorem safeSetupDecodeOwnersEvidence {I g s0 σ k C aw mem rdata} {R : List UInt256}
+    (h : RD safeBytecode I g s0 ⟨2980⟩ (⟨0⟩ :: R) mem aw rdata σ k C)
     (hlong : 4 ≤ I.calldata.size) (hsize : I.calldata.size < UInt256.size)
-    (hov : R.length + 20 ≤ 1024) :
+    (hov : R.length + 22 ≤ 1024) :
     RDrev safeBytecode g s0 ∨
     ∃ n k' C', 260 ≤ I.calldata.size ∧ I.calldata.size < 2 ^ 255 ∧
       (calldataWord I.calldata 4).toNat ≤ 2 ^ 64 - 1 ∧
       calldataWord I.calldata (4 + (calldataWord I.calldata 4).toNat) = UInt256.ofNat n ∧
       n ≤ 2 ^ 64 - 1 ∧ setupOwnersStart I.calldata + 32 * n ≤ I.calldata.size ∧
-      RD safeBytecode I g s0 ⟨10503⟩ (setupDecodeOwnersStack I.calldata n ret R)
+      RD safeBytecode I g s0 ⟨3060⟩ (setupDecodeOwnersStack I.calldata n (⟨0⟩ :: R))
         mem aw rdata σ k' C' := by
   have hu : UInt256.size = 2 ^ 256 := rfl
-  have hfail (hc : UInt256.slt (UInt256.sub (UInt256.ofNat I.calldata.size) ⟨4⟩)
+  have hfail (hc : UInt256.slt (UInt256.sub (UInt256.ofNat I.calldata.size) (UInt256.ofNat 4))
       (UInt256.ofNat 256) = ⟨1⟩) : RDrev safeBytecode g s0 := by
-    have h₁ := safeRuntime_block_10399_fallthrough (by simp; omega)
-      (by rw [hc]; decide) h
-    exact safeRuntime_block_10422 (by
-      simp only [safeRuntime_block_10399_fallthrough_stack, List.length_cons]; omega) h₁
+    have h₁ := safeRuntime_block_2980_taken (by simp; omega) (by
+      rw [safeIRArgumentSizeSub hlong hsize, hc]; decide) (by jump_dest) h
+    exact safeRuntime_block_589 (by simp; omega) h₁
   by_cases hh : 260 ≤ I.calldata.size
   swap
-  · exact Or.inl (hfail (solcDecodeLenCheckShort hlong (by exact Nat.lt_of_not_ge hh)
-      hsize (by decide)))
+  · exact Or.inl (hfail (solcDecodeLenCheckShort hlong
+      (by change I.calldata.size < 260; omega) hsize (by decide)))
   by_cases hs0 : I.calldata.size < 2 ^ 255 + 4
   swap
   · exact Or.inl (hfail (solcDecodeLenCheckHuge
       (by change 2 ^ 255 + 4 ≤ I.calldata.size; omega) hsize (by decide)))
-  have h₁ := safeRuntime_block_10399_taken (by simp; omega) (by
-    rw [solcDecodeLenCheckOk (by exact hh) hs0 hsize (by decide)]
-    decide) (by jump_dest) h
-  simp only [safeRuntime_block_10399_taken_stack] at h₁
+  have h₁ := safeRuntime_block_2980_fallthrough (by simp; omega) (by
+    rw [safeIRArgumentSizeSub hlong hsize, solcDecodeLenCheckOk hh hs0 hsize (by decide)]
+    rfl) h
   have hmax : UInt256.sub (UInt256.shiftLeft (UInt256.ofNat 1) (UInt256.ofNat 64))
       (UInt256.ofNat 1) = UInt256.ofNat (2 ^ 64 - 1) := by decide +kernel
+  have hmaxNat : (UInt256.ofNat (2 ^ 64 - 1)).toNat = 2 ^ 64 - 1 := by decide +kernel
   by_cases ho : (calldataWord I.calldata 4).toNat ≤ 2 ^ 64 - 1
   swap
-  · have h₂ := safeRuntime_block_10425_fallthrough (by simp; omega) (by
-      change UInt256.isZero (UInt256.gt (calldataWord I.calldata 4) _) = _
-      rw [hmax, ugt_one (by exact Nat.lt_of_not_ge ho)]; decide) h₁
-    exact Or.inl (safeRuntime_block_10443 (by
-      simp only [safeRuntime_block_10425_fallthrough_stack, List.length_cons]; omega) h₂)
-  have h₂ := safeRuntime_block_10425_taken (by simp; omega) (by
-    change UInt256.isZero (UInt256.gt (calldataWord I.calldata 4) _) ≠ _
-    rw [hmax, ugt_zero ho]; decide) (by jump_dest) h₁
-  have hoff : (⟨4⟩ : UInt256) + calldataWord I.calldata 4 =
-      UInt256.ofNat (4 + (calldataWord I.calldata 4).toNat) := by
-    simpa only [u256_ofNat_toNat] using
-      wordOfNatAdd 4 (calldataWord I.calldata 4).toNat (by omega)
+  · have h₂ := safeRuntime_block_2993_taken (by simp; omega) (by
+      rw [hmax]
+      change UInt256.gt (calldataWord I.calldata 4) _ ≠ _
+      rw [ugt_one (by rw [hmaxNat]; omega)]; decide) (by jump_dest) h₁
+    exact Or.inl (safeRuntime_block_3913 (by simp; omega) h₂)
+  have h₂ := safeRuntime_block_2993_fallthrough (by simp; omega) (by
+    rw [hmax]
+    change UInt256.gt (calldataWord I.calldata 4) _ = _
+    exact ugt_zero (by rwa [hmaxNat])) h₁
+  change RD safeBytecode I g s0 ⟨3010⟩ (calldataWord I.calldata 4 :: ⟨0⟩ :: R)
+    mem aw rdata σ _ _ at h₂
+  have hoff (a : Nat) (hb : (calldataWord I.calldata 4).toNat + a < UInt256.size) :
+      calldataWord I.calldata 4 + UInt256.ofNat a =
+        UInt256.ofNat ((calldataWord I.calldata 4).toNat + a) := by
+    conv_lhs => lhs; rw [← u256_ofNat_toNat (calldataWord I.calldata 4)]
+    exact wordOfNatAdd _ _ hb
   have hheadFail (hc : UInt256.slt
-      (UInt256.ofNat (4 + (calldataWord I.calldata 4).toNat + 31))
+      (UInt256.ofNat ((calldataWord I.calldata 4).toNat + 35))
       (UInt256.ofNat I.calldata.size) = ⟨0⟩) : RDrev safeBytecode g s0 := by
-    have h₃ := safeRuntime_block_10446_fallthrough (by simp; omega) (by
-      change UInt256.sgt (UInt256.ofNat I.calldata.size)
-        ((⟨4⟩ + calldataWord I.calldata 4) + UInt256.ofNat 31) = _
-      rw [hoff, wordOfNatAdd _ 31 (by omega), wordSgtReverse, hc]
-      rfl) h₂
-    exact safeRuntime_block_10459 (by
-      simp only [safeRuntime_block_10446_fallthrough_stack,
-        safeRuntime_block_10425_taken_stack, List.length_cons]; omega) h₃
+    have h₃ := safeRuntime_block_3010_taken (by simp; omega) (by
+      rw [hoff 35 (by omega), hc]; decide) (by jump_dest) h₂
+    exact safeRuntime_block_3913 (by omega) h₃
   by_cases hs : I.calldata.size < 2 ^ 255
   swap
   · exact Or.inl (hheadFail (slt_zero_low_high (by
@@ -74,49 +72,51 @@ theorem safeSetupDecodeOwnersEvidence {I g s0 σ k C aw mem rdata} {ret : UInt25
   swap
   · exact Or.inl (hheadFail (slt_ofNat_lit_zero hs
       (by dsimp only [setupOwnersStart] at hhead; omega) (by omega)))
-  have h₃ := safeRuntime_block_10446_taken (by simp; omega) (by
-    change UInt256.sgt (UInt256.ofNat I.calldata.size)
-      ((⟨4⟩ + calldataWord I.calldata 4) + UInt256.ofNat 31) ≠ _
-    rw [hoff, wordOfNatAdd _ 31 (by omega), wordSgtReverse,
-      slt_ofNat_lit_one_low hs (by dsimp only [setupOwnersStart] at hhead; omega)]
-    decide) (by jump_dest) h₂
-  change RD safeBytecode I g s0 ⟨10462⟩
-    ((⟨4⟩ + calldataWord I.calldata 4) :: setupDecodeZeros I.calldata ret R)
-    mem aw rdata σ _ _ at h₃
-  rw [hoff] at h₃
+  have h₃ := safeRuntime_block_3010_fallthrough (by simp; omega) (by
+    rw [hoff 35 (by omega), slt_ofNat_lit_one_low hs (by
+      dsimp only [setupOwnersStart] at hhead; omega)]; rfl) h₂
+  have ho4 : ((UInt256.ofNat 4) + calldataWord I.calldata 4).toNat =
+      4 + (calldataWord I.calldata 4).toNat := by
+    rw [uadd_toNat]
+    exact Nat.mod_eq_of_lt (by change 4 + _ < 2 ^ 256; omega)
   let n := (calldataWord I.calldata (4 + (calldataWord I.calldata 4).toNat)).toNat
   have hw : calldataWord I.calldata (4 + (calldataWord I.calldata 4).toNat) =
       UInt256.ofNat n := (u256_ofNat_toNat _).symm
-  have hoNat : (UInt256.ofNat (4 + (calldataWord I.calldata 4).toNat)).toNat =
-      4 + (calldataWord I.calldata 4).toNat := ulit_toNat' _ (by omega)
   by_cases hn : n ≤ 2 ^ 64 - 1
   swap
-  · have h₄ := safeRuntime_block_10462_fallthrough (by simp [setupDecodeZeros]; omega) (by
-      change UInt256.isZero (UInt256.gt (calldataWord I.calldata _) _) = _
-      rw [hoNat, hmax, ugt_one (by exact Nat.lt_of_not_ge hn)]
-      decide) h₃
-    exact Or.inl (safeRuntime_block_10480 (by
-      simp only [safeRuntime_block_10462_fallthrough_stack, setupDecodeZeros,
-        List.length_cons, List.length_append, List.length_nil]; omega) h₄)
+  · have h₄ := safeRuntime_block_3021_taken (by simp; omega) (by
+      rw [hmax]
+      change UInt256.gt (calldataWord I.calldata _) _ ≠ _
+      rw [ho4, ugt_one (by rw [hmaxNat]; change 2 ^ 64 - 1 < n; omega)]
+      decide) (by jump_dest) h₃
+    exact Or.inl (safeRuntime_block_973 (by simp; omega) h₄)
   by_cases hin : setupOwnersStart I.calldata + 32 * n ≤ I.calldata.size
-  · obtain ⟨k', C', hr⟩ := safeSetupDecodeOwnersValid h hh hs ho hw hn hin hov
+  · obtain ⟨k', C', hr⟩ := safeSetupDecodeOwnersValid h hh hs ho hw hn hin (by simp; omega)
     exact Or.inr ⟨n, k', C', hh, hs, ho, hw, hn, hin, hr⟩
-  have h₄ := safeRuntime_block_10462_taken (by simp [setupDecodeZeros]; omega) (by
-    change UInt256.isZero (UInt256.gt (calldataWord I.calldata _) _) ≠ _
-    rw [hoNat, hmax, ugt_zero hn]; decide) (by jump_dest) h₃
-  change RD safeBytecode I g s0 ⟨10483⟩
-    (calldataWord I.calldata (UInt256.ofNat (4 + (calldataWord I.calldata 4).toNat)).toNat ::
-      UInt256.ofNat (4 + (calldataWord I.calldata 4).toNat) ::
-      setupDecodeZeros I.calldata ret R) mem aw rdata σ _ _ at h₄
-  rw [hoNat, hw] at h₄
+  have h₄ := safeRuntime_block_3021_fallthrough (by simp; omega) (by
+    rw [hmax]
+    change UInt256.gt (calldataWord I.calldata _) _ = _
+    rw [ho4]
+    exact ugt_zero (by rw [hmaxNat]; exact hn)) h₃
+  change RD safeBytecode I g s0 ⟨3041⟩
+    (calldataWord I.calldata 4 :: calldataWord I.calldata _ :: ⟨0⟩ :: R)
+    mem aw rdata σ _ _ at h₄
+  rw [ho4, hw] at h₄
   have hshift : UInt256.shiftLeft (UInt256.ofNat n) (UInt256.ofNat 5) =
       UInt256.ofNat (32 * n) := shiftLeft5_ofNat_eq (by omega)
-  have h₅ := safeRuntime_block_10483_fallthrough (by simp; omega) (by
-    rw [hshift, wordOfNatAdd _ _ (by omega), wordOfNatAdd _ 32 (by omega), ugt_one (by
-      rw [ulit_toNat' _ hsize, ulit_toNat' _ (by omega)]
-      dsimp only [setupOwnersStart] at hin
-      omega)]
-    decide) h₄
-  exact Or.inl (safeRuntime_block_10500 (by simp [setupDecodeZeros]; omega) h₅)
+  have hend : (UInt256.shiftLeft (UInt256.ofNat n) (UInt256.ofNat 5) +
+      calldataWord I.calldata 4) + UInt256.ofNat 36 =
+      UInt256.ofNat (setupOwnersStart I.calldata + 32 * n) := by
+    rw [hshift, u256_add_comm (UInt256.ofNat (32 * n)), hoff (32 * n) (by omega),
+      wordOfNatAdd _ 36 (by omega)]
+    apply congrArg UInt256.ofNat
+    dsimp only [setupOwnersStart]
+    omega
+  have h₅ := safeRuntime_block_3041_taken (by simp; omega) (by
+    rw [hend, ugt_one (by
+      rw [ulit_toNat' _ hsize, ulit_toNat' _ (by
+        dsimp only [setupOwnersStart]; omega)]
+      omega)]; decide) (by jump_dest) h₄
+  exact Or.inl (safeRuntime_block_3909 (by omega) h₅)
 
 end Benchmarks.Safe.ViaIR

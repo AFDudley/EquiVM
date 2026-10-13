@@ -80,19 +80,5 @@ theorem safeSetupModulesTrace (p : SetupModulesInput) (evm : EVM.State)
       rw [← hacc'] at h₆
       exact .inr ⟨p.finalFrame true, evm', out, aw₄, _, _, hsource, hee', hw', h₆⟩
 
-theorem safeInternalSetupModules {caller : Frame} {evm : EVM.State}
-    {target payload : Expr} {retVar : Ident} {p : SetupModulesInput} {result : ExecResult}
-    (hc : caller.contract = contract) (him : caller.immutables = ∅)
-    (ht : evalExpr? config caller evm target = .ok (.address (AccountAddress.ofNat p.target.toNat)))
-    (hd : evalExpr? config caller evm payload = .ok (.bytes p.payload))
-    (hb : ExecFuncBody config p.frame evm setupModulesFunction.body result) :
-    ExecStmt config caller evm (.internalCall "setupModules" [target, payload] retVar)
-      (internalCallResult caller retVar result) := by
-  apply internalCallFunctionResult (callee := setupModulesFunction) (locals := p.args)
-    (argVals := [.address (AccountAddress.ofNat p.target.toNat), .bytes p.payload])
-  · simp only [evalExprs?, ht, hd, EvalResult.bind, bind, pure]
-  · rw [hc]; rfl
-  · rfl
-  · simpa only [hc, him] using hb
 
 end Benchmarks.Safe.ViaIR

@@ -1,6 +1,7 @@
 import Benchmarks.Safe.ViaIR.SetupCalldataFacts
 import Benchmarks.Safe.ViaIR.SetupModulesSource
 import Benchmarks.Safe.ViaIR.IRMemoryAllocation
+import Benchmarks.Safe.ViaIR.SetupSource
 
 /-! Boundary evidence for the setup data allocation. The calldata tail is symbolic;
 only its finite ABI prefix is evaluated. -/
@@ -219,6 +220,19 @@ theorem safeIRSetupDataAllocationBound_covers_owners (owners data : Nat)
 theorem safeIRSetupAllocationFirstRejected :
     32 + (safeIRSetupAllocationLength - 1) ≤ 2 ^ 64 - 224 ∧
       ¬32 + safeIRSetupAllocationLength ≤ 2 ^ 64 - 224 := by
+  decide +kernel
+
+/-- The approved local guard rejects the allocation-boundary input in the source semantics. -/
+theorem safeIRSetupAllocationGuardReverts (evm : State)
+    (hv : evm.executionEnv.weiValue = ⟨0⟩) :
+    let p := setupCalldataInput safeIRSetupAllocationCalldata 1 safeIRSetupAllocationLength
+    ExecBlock config p.frame evm setupTransition.body .reverted := by
+  apply safeSetupAllocationRevert _ evm hv
+  rw [safeIRSetupAllocationPayload, ByteArray_zeroes_size]
+  change ¬32 * (calldataWords safeIRSetupAllocationCalldata
+    (setupOwnersStart safeIRSetupAllocationCalldata) 1).length +
+      safeIRSetupAllocationLength ≤ 2 ^ 64 - 224
+  rw [safeIRSetupAllocationOwners]
   decide +kernel
 
 end Benchmarks.Safe.ViaIR

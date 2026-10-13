@@ -416,15 +416,23 @@ negation of the public setup theorem. Separately, Lean verifies successful decod
 the exact symbolic payload and scalar arguments, and that the corresponding
 zero-target `setupModules` source body returns and cannot revert. The new evidence
 module builds; its axiom scans contain only the permitted axioms and native
-certificates. The specification has not been changed for this case.
+certificates.
 
-The proposed local correction is one requirement immediately after `SafeSetup`:
+The approved local correction is one requirement immediately after `SafeSetup`:
 `32 * _owners.length + data.length <= 2^64 - 224`, mirrored in the syntax spec.
 Lean proves this is exactly equivalent to the data allocator's final-pointer
 condition `160 + 32 * owners.length + 32 + paddedSize(data.length) < 2^64`.
 It also implies the earlier input-owner allocation fits. It rejects the example
 while accepting the immediately preceding payload length with one owner. It
 preserves the event's static-mode behavior and leaves shared decoding modes
-unchanged. A reviewable patch is prepared at `/tmp/safe-ir-setup-data-guard.patch`;
-applying this newly identified specification correction requires user direction
-under the initial instruction to investigate, report and wait on unprovable cases.
+unchanged. Both specification representations now include the approved guard,
+and Lean proves that the source rejects the symbolic boundary input. Artifact
+regeneration passes, the audit reports 408 cases and zero failures, and the
+randomized run reports `1775 cases: 1759 agree (579 successful), 0 disagree,
+0 stuck, 16 EVM out of gas, 0 spec out of fuel`.
+
+Setup's inlined decoder is ported through PC 3163, including all malformed-head,
+offset, length, and address-canonicality rejection paths. Its two bytecode proofs
+use 218 and 441 permitted axioms, respectively; both pure decoder proofs use the
+standard three. The decoder audit and guard regression build together (3,589
+jobs). The remaining setup body and final whole-contract checks are in progress.

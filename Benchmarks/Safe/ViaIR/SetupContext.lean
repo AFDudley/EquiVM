@@ -1,6 +1,6 @@
 import Benchmarks.Safe.ViaIR.SetupCalldata
-import Benchmarks.Safe.ViaIR.SetupOwnersTrace
-import Benchmarks.Safe.ViaIR.SetupModulesTrace
+import Benchmarks.Safe.ViaIR.SetupOwnersPrefix
+import Benchmarks.Safe.ViaIR.SetupModulesSource
 import Benchmarks.Safe.ViaIR.InternalSetFallbackHandler
 import Benchmarks.Safe.ViaIR.PaymentTrace
 

@@ -586,6 +586,7 @@ def contractSyntax : ContractDecl :=
         address fallbackHandler, address paymentToken, uint256 payment,
         address paymentReceiver) external {
       emit SafeSetup(msg.sender, _owners, _threshold, «to», fallbackHandler);
+      require(32 * _owners.length + data.length <= ${Expr.intLit (2 ^ 64 - 224)});
       var _ownersSetup = setupOwners(_owners, _threshold);
       if (fallbackHandler != address(0)) {
         var _fallbackSet = internalSetFallbackHandler(fallbackHandler);

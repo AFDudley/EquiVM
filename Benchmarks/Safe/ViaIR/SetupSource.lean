@@ -31,12 +31,45 @@ theorem safeSetupEventValues (p : SetupInput) (evm : EVM.State) :
   simp only [evalExprs?, ho, ht, hto, hf, sender, evalExpr?, envValue,
     EvalResult.bind, bind, pure]
 
+def setupAllocationExpr : Expr :=
+  leE (addE (mulE (.intLit 32) (localLength "_owners")) (localLength "data"))
+    (.intLit (2 ^ 64 - 224))
+
+theorem safeSetupAllocationCondition (p : SetupInput) (evm : EVM.State) :
+    evalExpr? config p.frame evm setupAllocationExpr =
+      .ok (.bool (decide (32 * p.owners.length + p.payload.size ≤ 2 ^ 64 - 224))) := by
+  have hl := SetupLocals.initial p
+  have ho := evalLocalArrayLength (cfg := config) (frame := p.frame) (evm := evm) hl.owners
+  have hd := evalLocalBytesLength (cfg := config) (frame := p.frame) (evm := evm) hl.payload
+  simp only [List.length_map] at ho
+  change evalExpr? config p.frame evm (localLength "_owners") =
+    .ok (.int (Int.ofNat p.owners.length)) at ho
+  change evalExpr? config p.frame evm (localLength "data") =
+    .ok (.int (Int.ofNat p.payload.size)) at hd
+  rw [setupAllocationExpr, leE, evalExpr_binary_nonshort (by decide) (by decide),
+    addE, evalExpr_binary_nonshort (by decide) (by decide),
+    mulE, evalExpr_binary_nonshort (by decide) (by decide), ho, hd]
+  simp [evalExpr?, evalBinaryOp?, EvalResult.bind, bind, pure, Int.ofNat_eq_natCast]
+  omega
+
 theorem safeSetupPrefix (p : SetupInput) (evm : EVM.State) {result : ExecResult}
     (hv : evm.executionEnv.weiValue = ⟨0⟩)
-    (ht : ExecBlock config p.frame evm (setupTransition.body.drop 2) result) :
+    (ha : 32 * p.owners.length + p.payload.size ≤ 2 ^ 64 - 224)
+    (ht : ExecBlock config p.frame evm (setupTransition.body.drop 3) result) :
     ExecBlock config p.frame evm setupTransition.body result :=
   .consNormal (.requireTrue (evalCallvalueEq_true hv))
-    (.consNormal (.emit (safeSetupEventValues p evm)) ht)
+    (.consNormal (.emit (safeSetupEventValues p evm))
+      (.consNormal (.requireTrue (by
+        simpa only [ha, decide_true] using safeSetupAllocationCondition p evm)) ht))
+
+theorem safeSetupAllocationRevert (p : SetupInput) (evm : EVM.State)
+    (hv : evm.executionEnv.weiValue = ⟨0⟩)
+    (ha : ¬32 * p.owners.length + p.payload.size ≤ 2 ^ 64 - 224) :
+    ExecBlock config p.frame evm setupTransition.body .reverted :=
+  .consNormal (.requireTrue (evalCallvalueEq_true hv))
+    (.consNormal (.emit (safeSetupEventValues p evm))
+      (.consRevert (.requireFalse (by
+        simpa only [ha, decide_false] using safeSetupAllocationCondition p evm))))
 
 theorem safeSetupStatic (p : SetupInput) (evm : EVM.State)
     (hv : evm.executionEnv.weiValue = ⟨0⟩) (hp : evm.executionEnv.perm = false) :

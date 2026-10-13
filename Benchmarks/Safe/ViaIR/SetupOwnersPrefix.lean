@@ -92,4 +92,19 @@ theorem safeSetupOwnersThresholdZero (p : SetupOwnersInput) (evm : EVM.State)
         simpa only [hne, ne_eq, not_true_eq_false, decide_false] using
           safeSetupOwnersNonzero p evm)))))
 
+theorem safeInternalSetupOwners {caller : Frame} {evm : EVM.State}
+    {owners threshold : Expr} {retVar : Ident} {p : SetupOwnersInput} {result : ExecResult}
+    (hc : caller.contract = contract) (him : caller.immutables = ∅)
+    (ho : evalExpr? config caller evm owners = .ok (.array (p.owners.map addressArrayValue)))
+    (ht : evalExpr? config caller evm threshold = .ok (uint256Value p.threshold))
+    (hb : ExecFuncBody config p.frame evm setupOwnersFunction.body result) :
+    ExecStmt config caller evm (.internalCall "setupOwners" [owners, threshold] retVar)
+      (internalCallResult caller retVar result) := by
+  apply internalCallFunctionResult (callee := setupOwnersFunction) (locals := p.args)
+    (argVals := [.array (p.owners.map addressArrayValue), uint256Value p.threshold])
+  · simp only [evalExprs?, ho, ht, EvalResult.bind, bind, pure]
+  · rw [hc]; rfl
+  · rfl
+  · simpa only [hc, him] using hb
+
 end Benchmarks.Safe.ViaIR

@@ -27,8 +27,8 @@
   },
   "abi_file_sha256": "40069244550920fc4ecdb4a162f9b45c78b5de06fc7fdcb8f7d4350739bb8682",
   "sources_manifest_sha256": "eeacfe1072a1ffca5ed286925809ae28dda046a425e3290653c466c6a2d14449",
-  "spec_sha256": "61940d662fda3d8e6eafa164e4cb74bbe1d89c589790b16558eb575cfc75bad1",
-  "syntax_spec_sha256": "3a89507bb820ae4a7c7fafef11318801b2a4b4cadaf1baccc820e6fac729a9b2",
+  "spec_sha256": "b1615e6ba4afd727467b6b419a04a7bc05236c1d6ab94cdbdf27d6a06f3bbfa6",
+  "syntax_spec_sha256": "4d0ed642640f00e6d30116f61cb19940e88a0c81c98af98a945c0896e490ee8f",
   "runtime_entrypoint_obligations": 33,
   "selectors": [
     {
