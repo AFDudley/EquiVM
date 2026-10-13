@@ -235,4 +235,33 @@ theorem safeIRSetupAllocationGuardReverts (evm : State)
   rw [safeIRSetupAllocationOwners]
   decide +kernel
 
+/-- The setup token-payment encoder reserves another 128 bytes after the data buffer. -/
+theorem safeIRSetupTokenAllocationBound (owners data : Nat) :
+    160 + 32 * owners + 32 + ABI.paddedSize data + 128 < 2 ^ 64 ↔
+      32 * owners + data ≤ 2 ^ 64 - 352 := by
+  unfold ABI.paddedSize
+  omega
+
+theorem safeIRSetupTokenAllocationBoundary :
+    32 + (2 ^ 64 - 256) ≤ 2 ^ 64 - 224 ∧
+      192 + 32 + ABI.paddedSize (2 ^ 64 - 256) = 2 ^ 64 - 32 ∧
+      (2 ^ 64 - 32) + ABI.paddedSize 100 = 2 ^ 64 + 96 := by
+  decide +kernel
+
+def safeIRSetupTokenAllocationCursor : State :=
+  { (default : State) with
+    executionEnv := { (default : ExecutionEnv) with code := safeBytecode }
+    machineState := { (default : MachineState) with
+      pc := ⟨7128⟩
+      stack := [UInt256.ofNat (2 ^ 64 - 32), ⟨100⟩, ⟨10618⟩]
+      memory := ByteArray.empty
+      gasAvailable := .ofUInt256 ⟨100000⟩ } }
+
+/-- A segment certificate for the later token allocation, not a complete setup execution. -/
+theorem safeIRSetupTokenAllocationExecution :
+    (match X 100001 (D_J safeBytecode 0) safeIRSetupTokenAllocationCursor with
+      | .ok (.revert gas out) => gas.toNat > 99000 &&
+          out == (⟨#[0x4e, 0x48, 0x7b, 0x71]⟩ ++ (⟨0x41⟩ : UInt256).toByteArray)
+      | _ => false) = true := by native_decide
+
 end Benchmarks.Safe.ViaIR

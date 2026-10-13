@@ -436,3 +436,17 @@ offset, length, and address-canonicality rejection paths. Its two bytecode proof
 use 218 and 441 permitted axioms, respectively; both pure decoder proofs use the
 standard three. The decoder audit and guard regression build together (3,589
 jobs). The remaining setup body and final whole-contract checks are in progress.
+
+The event encoder, canonical address-copy loop, and separate input-owner copy now
+follow their inlined IR paths. The input-owner memory model reflects the actual
+word stores, including preservation of the earlier event buffer. Event emission
+covers static rejection, and the owner allocation covers its checked-pointer
+failure. These modules build with the allocation evidence (3,597 jobs); the
+owner-allocation trace uses 160 permitted axioms, with no proof holes or custom
+axioms.
+
+An additional token-payment boundary is under investigation: its 100-byte buffer
+reserves 128 bytes after the data allocation. Lean verifies the corresponding
+arithmetic bound and an allocator-segment panic at the boundary. This is not a
+complete entrypoint counterexample, and no further specification change has
+been made.
