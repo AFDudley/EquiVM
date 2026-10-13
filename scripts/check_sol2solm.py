@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Translate contracts with sol2solm.py and check that every draft parses and elaborates.
+"""Translate contracts with sol2solm.py (or vy2solm.py) and check that every draft elaborates.
 
-Each directory must hold a ``<Name>.build.json`` (from ``scaffold.py compile``) or a
-``<Name>.sol.ast.json``.  Drafts are written with holes as comments so the rest of the file is
+Each directory must hold a ``<Name>.build.json`` (from ``scaffold.py compile``), a
+``<Name>.sol.ast.json`` or a ``<Name>.vy.ast.json``; a Vyper build JSON or ``.vy.ast.json``
+selects ``vy2solm.py``.  Drafts are written with holes as comments so the rest of the file is
 checked; the summary lists the hole count and the first Lean error of each draft.
 
 Example:
@@ -21,6 +22,21 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 TRANSLATOR = ROOT / "scripts" / "sol2solm.py"
+VYPER_TRANSLATOR = ROOT / "scripts" / "vy2solm.py"
+
+
+def translator_for(directory: Path) -> Path:
+    """``vy2solm.py`` for Vyper artifacts, ``sol2solm.py`` otherwise."""
+    import json
+    for build in sorted(directory.glob("*.build.json")):
+        try:
+            if json.loads(build.read_text(encoding="utf-8")).get("compiler", {}).get("kind") == "vyper":
+                return VYPER_TRANSLATOR
+        except (OSError, ValueError):
+            continue
+    if any(directory.glob("*.vy.ast.json")) and not any(directory.glob("*.sol.ast.json")):
+        return VYPER_TRANSLATOR
+    return TRANSLATOR
 
 
 def lean_environment() -> tuple[str, dict[str, str]]:
@@ -50,7 +66,7 @@ def main(argv: list[str] | None = None) -> int:
         for directory in args.directories:
             label = directory.name
             draft = root / "Drafts" / f"{re.sub(r'[^A-Za-z0-9]', '_', label)}.lean"
-            command = [sys.executable, str(TRANSLATOR), str(directory), "--namespace", f"Drafts.{label}",
+            command = [sys.executable, str(translator_for(directory)), str(directory), "--namespace", f"Drafts.{label}",
                        "--comment-holes", "--output", str(draft)]
             if str(directory) in names:
                 command += ["--contract", names[str(directory)]]

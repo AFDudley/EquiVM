@@ -1369,7 +1369,8 @@ def render_vyper_scalar_summary(prefix: str, code_term: str, block: list[Instruc
     if summary.terminal:
         lines.append("  exact hraw")
     elif summary.existential_counters:
-        witnesses = ", ".join([*summary.existential_words, "_", "_", "hraw"])
+        # The gas words come from `RD.genGas` inside `hraw`; Lean infers the witnesses.
+        witnesses = ", ".join(["_"] * len(summary.existential_words) + ["_", "_", "hraw"])
         lines.append(f"  exact ⟨{witnesses}⟩")
     else:
         lines.append("  exact hraw")

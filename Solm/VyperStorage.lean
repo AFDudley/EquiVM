@@ -6,7 +6,8 @@ import Solm.Semantics.ValueOps
 
 Vyper stores bounded dynamic arrays and byte strings inline: a length word followed by
 their reserved data words. Bounds are supplied by the schema-generated `VyperBounds`.
-Index checks use the current length; growth checks use the declared capacity.
+Length headers are read as raw words, mirroring the bytecode: index checks use the current
+length; growth checks use the declared capacity.
 As in Vyper's storage setters, clearing a dynamic value or popping an array only
 changes its length; data beyond the new length can remain in storage.
 -/
@@ -34,15 +35,16 @@ def vyperAnchor? (layout : StorageLayout) (er : EvaledStorageRef) : Option EVM.W
   | some (.anchor slot) => some slot
   | _ => none
 
-/-- Read a length header and reject corrupted lengths beyond the declared bound. -/
+/-- Read a length header as the raw word, as the bytecode does: Vyper validates lengths when it
+stores them and never compares a loaded length with the declared capacity, so a corrupted header
+is used as is (indexing checks it, `append` compares it with the capacity, `pop` with zero). -/
 def vyperLength? (layout : StorageLayout) (bounds : VyperBounds)
     (evm : EVM.State) (er : EvaledStorageRef) : EvalResult Nat := do
-  let cap ← match bounds er with
-    | some (.dynamic n) | some (.bytes n) => .ok n
-    | _ => .error .storageError
+  let _ ← (match bounds er with
+    | some (.dynamic _) | some (.bytes _) => .ok ()
+    | _ => .error .storageError : EvalResult Unit)
   let slot ← EvalResult.ofOption .storageError (vyperAnchor? layout er)
-  let length := (EVM.storageLoad evm evm.executionEnv.codeOwner slot).toNat
-  if length ≤ cap then .ok length else .error .storageError
+  pure (EVM.storageLoad evm evm.executionEnv.codeOwner slot).toNat
 
 /-- Check each index in a reference before the locator can reach outside its allocation. -/
 def vyperCheckSteps? (layout : StorageLayout) (bounds : VyperBounds)

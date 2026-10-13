@@ -3,8 +3,7 @@
 In one session you turn one Solidity or Vyper contract into a proof scaffold: pinned artifacts, generated
 Lean that builds, a Solm specification you have audited against the bytecode and that the
 differential suite cannot tell apart from it, and the proof skeleton the proving session
-(`Misc/prompt.md`) starts from. You write no proofs. The Vyper path currently requires a
-hand-written `SpecSyntax.lean` and proof skeleton; record this limitation in the hand-off.
+(`Misc/prompt.md`) starts from. You write no proofs.
 
 ## Inputs
 
@@ -78,15 +77,22 @@ hand-written `SpecSyntax.lean` and proof skeleton; record this limitation in the
    ```
    The draft encodes checked arithmetic, the compiler's guards, hoisted calls and the getters;
    what it cannot translate is a `${hole …}`, listed in the file header.
-   **Vyper:** `sol2solm.py` accepts solc AST only. Write `SpecSyntax.lean` from the pinned Vyper
-   source and report, using `Examples/VyperERC20/SpecSyntax.lean` as a surface-syntax example.
-   Give each ABI selector its own transition. Vyper default arguments generate several selectors
-   for one source function; model each accepted argument list and its default values. Include
-   public getters, constructor or initializer behavior, compiler guards, and external call effects.
-   Treat external calls and imported modules according to the compiled bytecode, not their names.
+   **Vyper:**
+   ```
+   scripts/vy2solm.py <Dir> --contract <Name> --namespace <Module> \
+       --output <Dir>/SpecSyntax.lean --spec-json <Dir>/<Name>.spec.json
+   ```
+   drafts from the pinned annotated AST: one transition per selector (default-argument variants
+   share the source name and bind the defaults first), public getters, module exports with the
+   module alias as a prefix on module state and functions, checked arithmetic and `convert`, the
+   `@nonreentrant` lock protocol, external calls with Vyper's EXTCODESIZE guard, `send` and
+   `raw_call` as low-level calls. The spec JSON lists the selectors whose parameters carry a
+   capacity (`bounded`), the external calls, and the lock slot. Check the storage declarations
+   against `<Name>.storage.json` and treat external calls and imported modules according to the
+   compiled bytecode, not their names; `Examples/VyperERC20/SpecSyntax.lean` shows the syntax.
 4. **Close the holes.** Replace each hole with the Solm statements the source and the report
-   justify. For Vyper, finish the hand-written spec. `lake build <Module>.SpecSyntax` must succeed
-   before you continue.
+   justify (Vyper drafts: `abi_encode`, `create_*`, bytes literals, decimals, `extract32`, …).
+   `lake build <Module>.SpecSyntax` must succeed before you continue.
 5. **Skeleton.** `scripts/proof_skeleton.py --dir <Dir> --module <Module>` writes `Spec.lean`,
    `Common.lean`, the proved `Dispatch.lean`, one stub per function, `Constructor.lean` and
    `Correct.lean`. Check the external-call ABI table in `Spec.lean` against the callees' ABIs; a
@@ -98,22 +104,32 @@ hand-written `SpecSyntax.lean` and proof skeleton; record this limitation in the
    calldata, including the four-byte selector; dispatch checks the selector separately. Keep
    named external-call return decoding in `decode?`, matched to the callee's ABI. Build the
    resulting `Spec.lean` before accepting the scaffold.
-   **Vyper:** run `scripts/proof_skeleton.py --dir <Dir> --module <Module> --only Spec` after
-   writing `SpecSyntax.lean`. It selects `vyperStorage!` for static state and Vyper calldata mode.
+   **Vyper:** `scripts/proof_skeleton.py --dir <Dir> --module <Module>` writes the same files; its
+   `Spec.lean` selects `vyperStorage!` for static state and Vyper calldata mode.
    Compare the state layout with `<Name>.storage.json`. If state contains `DynArray`, `Bytes`, or
    `String`, replace the static backend with `vyperBoundedStorage!` and explicit
    `VyperStorageDecl` capacities. If an entry parameter is bounded, declare a
-   `List ABI.VyperABIFunction` from the source and use `externalABI.withVyperABI` so oversized
-   values fail; plain `.withMode .vyper` does not check capacities. Include every default-argument
-   selector variant in the list. Explicit `abi_decode`, constructor inputs, and callee return
+   `List ABI.VyperABIFunction` from the source (the `bounded` entries of `<Name>.spec.json` list
+   them) and use `externalABI.withVyperABI` so oversized values fail; plain `.withMode .vyper` does
+   not check capacities. Include every default-argument selector variant in the list. Explicit `abi_decode`, constructor inputs, and callee return
    bounds need separate review: the entry-calldata adapter does not check those sites.
-   The generator does not yet emit Vyper dispatch, constructor, or immutable proof templates;
-   build those from the generated blocks and `Examples/VyperERC20` / `Examples/VyperImmutable`.
+   `Dispatch.lean` proves the jump-table dispatcher from the generated block summaries; the
+   stubs are the `…Body` theorems, `Constructor.lean`, and `deployed_of_fit` in `Common.lean`
+   when the contract has immutables. Vyper returns and compares raw storage words, so a spec
+   with typed storage (`bool`, `address`, bounded arrays) refines the bytecode only on
+   well-formed storage: pass `--wf storageWF` to state the runtime theorems under a storage
+   precondition (`runtimeRefinementWithWF storageWF noGasBound …`; the stubs take
+   `(hwf : storageWF σ I)`), strengthen the placeholder in `Common.lean` to the typed view the
+   proofs need (canonical address words, `bool` words in `{0, 1}`, and whatever a re-read of
+   such a word after an external call needs), and record it in the hand-off; every writer must
+   store validated words so the precondition is preserved.  Bounded arrays and byte strings
+   need no clause: the backend reads length words raw, as the bytecode does, and the spec's
+   `for` loop carries the compiler's bound as a `require`.
 6. **Build.** `lake build <Module>.Correct` succeeds. The only `sorry`s are the generated stubs:
-   the function files, `Constructor.lean`, `restrictImmutables_of_fit` in `Common.lean` when the
-   contract has immutables, and the dispatch facts when it has a `fallback` or `receive`.
-   For Vyper, first build `SpecSyntax` and `Spec`, then the hand-written proof modules as they
-   become available. Do not report a finished ready-to-prove skeleton before `Correct` builds.
+   the function files, `Constructor.lean`, `restrictImmutables_of_fit` (solc) or
+   `deployed_of_fit` (Vyper) in `Common.lean` when the contract has immutables, and the dispatch
+   facts when it has a `fallback`, `receive` or `__default__`.
+   Do not report a finished ready-to-prove skeleton before `Correct` builds.
 7. **Differential test**, before the audit, so the gross errors are gone when you read.
    `lake exe solm-difftest --only <Name> --count 50` (`Tests/DiffTest/README.md`). Every
    `DISAGREE` and every `spec stuck` case is understood: a specification error is fixed in
@@ -174,7 +190,7 @@ hand-written `SpecSyntax.lean` and proof skeleton; record this limitation in the
    sits above `2^24`, and why every path that breaks an abstracted detail within it runs out of gas.
    For Vyper, also list selector variants from default arguments, bound-bearing entry and
    explicit decode sites, source/layout-derived storage capacities, the EVM fork used for locks,
-   and any proof modules still requiring manual scaffolding.
+   and the bucket of each selector in the jump-table dispatcher.
 
 ## Done when
 
@@ -185,5 +201,4 @@ hand-written `SpecSyntax.lean` and proof skeleton; record this limitation in the
 - The audit of step 8 is complete for every function and the constructor, with no finding left.
 - `HANDOFF.md` has the five sections of step 9.
 
-For Vyper, these completion conditions apply after the manual spec and proof skeleton work. If
-only artifact scaffolding is complete, state that narrower result and list the missing modules.
+If a step cannot be completed, state the narrower result and list what is missing.

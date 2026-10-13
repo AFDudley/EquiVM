@@ -31,6 +31,7 @@ scripts/bytecode_report.py $D -o $D/REPORT.md
 
 # 5. the spec draft (holes fail to elaborate until closed; --comment-holes to check the rest)
 scripts/sol2solm.py $D --namespace $M -o $D/SpecSyntax.lean --spec-json $D/Foo.spec.json
+#    (Vyper: scripts/vy2solm.py, same arguments, from the pinned annotated AST)
 
 # 6. the proof skeleton: Spec, Common, Dispatch (proved), <Fn>.lean stubs, Constructor, Correct
 scripts/proof_skeleton.py --dir $D --module $M
@@ -59,9 +60,28 @@ The build JSON records the source `# pragma optimize` mode, including `codesize`
 Vyper's `pc_pos_map` for block-to-source line annotations; solc AST function ranges are unavailable.
 Check the source and `<Name>.storage.json` together before writing `SpecSyntax.lean`.
 
-`sol2solm.py` requires a solc AST, so write a Vyper `SpecSyntax.lean` manually. Use
-`Examples/VyperERC20/SpecSyntax.lean` for the Solm syntax and include a transition for every ABI
-selector, including variants from default arguments. Once it builds, generate the Config shell:
+`compile` also pins the annotated AST (`<Name>.vy.ast.json`, and the `ast` entry of the build
+JSON), from which `vy2solm.py` drafts the specification:
+
+```bash
+scripts/vy2solm.py <Dir> --namespace <Module> -o <Dir>/SpecSyntax.lean --spec-json <Dir>/<Name>.spec.json
+```
+
+The draft has one transition per selector, including the variants Vyper generates for default
+arguments (same surface name, bodies with the defaults bound first), the public getters, and the
+functions a module exports; module state and functions carry the module alias as a prefix
+(`ownable_owner`, `ownable__check_owner`), and the storage declarations follow
+`<Name>.storage.json`. Arithmetic is checked (`as T`), `unsafe_*` wraps, `convert` becomes a
+range assertion or a cast, `@nonreentrant` becomes the compiler's lock protocol around an
+internal `<f>_body` (transient slot from Cancun, a storage word before), `extcall`/`staticcall`
+are bound external calls with the EXTCODESIZE guard Vyper emits for calls without return data,
+`send`/`raw_call` are low-level calls, `range` loops carry their bound checks and `for … in list`
+becomes an index loop. What it cannot translate is a hole (`abi_encode`, `create_*`, decimals,
+bytes literals, …). The spec JSON lists every selector with its parameters, the ones with a
+Vyper capacity (for `externalABI.withVyperABI`), the external calls, and the lock protocol.
+`check_sol2solm.py` elaborates Vyper drafts too; it picks the translator from the build JSON.
+Use `Examples/VyperERC20/SpecSyntax.lean` as a reference when closing holes. Once the spec
+builds, generate the Config shell:
 
 ```bash
 scripts/proof_skeleton.py --dir <Dir> --module <Module> --only Spec
@@ -76,11 +96,21 @@ Review explicit `abi_decode`, constructor inputs, and return decoding separately
 uses Vyper transient state, write its backend explicitly; `proof_skeleton.py` will stop instead
 of generating a Solidity transient layout.
 
-The full `proof_skeleton.py` dispatcher, constructor, and immutable templates currently assume
-solc bytecode. It therefore accepts only `--only Spec` for Vyper. Use `Examples/VyperERC20` for a
-complete Vyper proof and `Examples/VyperImmutable` for generated immutable suffix artifacts;
-write the remaining proof modules against the generated block summaries. A successful `all` run
-is an artifact scaffold, not a finished ready-to-prove contract skeleton.
+`proof_skeleton.py` then writes the Vyper skeleton: `Common.lean` (selector bridges; with
+immutables the `deployed_of_fit` stub, the Vyper analogue of `restrictImmutables_of_fit`), the
+proved `Dispatch.lean` (the jump-table lookup of every bucket from the generated `block_0`
+summary and `Reasoning/VyperDispatch.lean`, the selector-compare chain down to each function's
+guard block, the short-calldata and no-match revert paths by a case split on the bucket), one
+`…Body` stub per selector (the function's own `calldatasize`/`callvalue` guard is part of the
+body: Vyper has no global guard), `Constructor.lean` and `Correct.lean`. With `--wf <name>` the
+runtime theorems are stated under a storage precondition: `Common.lean` declares the placeholder
+`def <name> : StorageWF := fun _ _ => True` (to be strengthened to the typed view the proofs need:
+Vyper returns and compares raw `bool`/`address` storage words; array lengths need no clause, the
+backend reads them raw), the `…Body` stubs take `(hwf : <name> σ I)`, and
+`Correct.lean` proves `runtimeRefinementWithWF <name> noGasBound …` and
+`contractRefinementWF <name> noGasBound …`. Use `Examples/VyperERC20`
+for a complete Vyper proof and `Examples/VyperImmutable` for the immutable suffix artifacts;
+`Tests/Pipeline/Vyper*` are complete runs of the pipeline.
 
 ## What each script produces
 
@@ -93,15 +123,18 @@ is an artifact scaffold, not a finished ready-to-prove contract skeleton.
 | `scaffold.py difftest` | `DiffTarget.lean`, `Tests/DiffTest/Generated.lean` | The contract's `Target` for the differential suite (spec, config, runtime, creation code, immutable plumbing when the contract has immutables) and the registry of every `DiffTarget.lean` in the repository, which `lake exe solm-difftest` runs. Delete a `DiffTarget.lean` and rerun to unregister. |
 | `bytecode_report.py` | Markdown | Opcode census, dispatcher, JUMPDEST set and annotated blocks. Solc reports AST function ranges and internal routines; Vyper reports source lines from `pc_pos_map`. |
 | `sol2solm.py` | `SpecSyntax.lean` draft, optional `.spec.json` | From the solc AST: storage (persistent and `transient`)/structs/events/immutables, constructor with base constructors and initialisers inlined, external functions (modifiers inlined, getters generated), reachable internal and library functions, checked arithmetic from static types, external calls bound with view flags and EXTCODESIZE guards, via-IR calldata guard. Holes for what it cannot translate. |
-| `proof_skeleton.py` | Solidity: `Spec.lean`, `Common.lean`, `Dispatch.lean`, `<Fn>.lean`, `Constructor.lean`, `Correct.lean`; Vyper: `Spec.lean` with `--only Spec` | The full proof template uses solc dispatch and immutable assumptions. Vyper `Spec.lean` selects Vyper storage and ABI defaults, then needs capacity review. |
-| `check_sol2solm.py` | report | Translates every given directory and elaborates the drafts (holes as comments). |
+| `vy2solm.py` | `SpecSyntax.lean` draft, optional `.spec.json` | From the Vyper annotated AST: storage in layout order (modules prefixed), structs/events/immutables, constructor, one transition per selector (default-argument variants, getters, module exports), reachable internal functions, checked arithmetic and `convert` from static types, the `@nonreentrant` lock protocol, external calls bound with view flags and Vyper's EXTCODESIZE guard, `send`/`raw_call` as low-level calls. Holes for what it cannot translate. |
+| `proof_skeleton.py` | `Spec.lean`, `Common.lean`, `Dispatch.lean`, `<Fn>.lean`, `Constructor.lean`, `Correct.lean` | solc: the compare-chain or binary-search dispatcher; Vyper: the jump-table dispatcher (`Reasoning/VyperDispatch.lean`), Vyper storage and ABI defaults in `Spec.lean` that need capacity review, the `deployed_of_fit` stub for immutables, and with `--wf <name>` the storage-precondition form of the runtime theorems. |
+| `check_sol2solm.py` | report | Translates every given directory (solc or Vyper, by the build JSON) and elaborates the drafts (holes as comments). |
 | `finish_check.py` | report | Build, differential suite on the contract (`--difftest-count`, `--skip-difftest`), `sorry`/`admit`/`axiom` grep, `#print axioms` against the accepted trusted base. |
 | `check_all_benchmark_blocks.py` | report | Check that benchmark block summaries compile, excluding temporary contracts under `Benchmarks/Scaffolds/`. CI selects `UniswapV3/Pool`. |
 
 ## Conventions the generators follow
 
 - Transition order is the `SpecSyntax.lean` function order; the translator writes them in selector
-  order, which is the compiled dispatcher order.
+  order, which is the compiled dispatcher order. `vy2solm.py` keeps the selector variants of one
+  source function (default arguments) adjacent, the grouping `scaffold.py` applies when it
+  derives the selector table from an existing `SpecSyntax.lean`.
 - Declarations are prefixed with the lowerCamel contract name (`fooBytecode`, `fooSelBytes`,
   `fooReachTransferBody`, `fooTransferBody`); overloaded functions get their parameter types
   appended (`file_bytes32_uint256`).
@@ -125,6 +158,7 @@ is an artifact scaffold, not a finished ready-to-prove contract skeleton.
 ```bash
 python3 scripts/test_generate_rd_blocks.py
 python3 scripts/test_scaffold_tools.py
+VYPER=/path/to/vyper-0.4.3 python3 -B -m unittest discover -s scripts -p test_vy2solm.py
 ```
 
 `Misc/scaffold-prompt.md` is the agent brief that runs these scripts from a contract to a

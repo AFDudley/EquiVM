@@ -86,7 +86,7 @@ class VyperSpecTests(unittest.TestCase):
         self.assertIn("withVyperABI", text)
         self.assertNotIn("solidityStorage!", text)
 
-    def test_only_spec_skips_solc_dispatch_generation(self) -> None:
+    def test_vyper_skeleton_proves_the_jump_table_dispatcher(self) -> None:
         source = ROOT / "Examples/VyperImmutable"
         with tempfile.TemporaryDirectory() as tmp:
             directory = Path(tmp)
@@ -97,8 +97,35 @@ class VyperSpecTests(unittest.TestCase):
             self.assertEqual(ps.main(["--dir", tmp, "--module", "Test.Vyper", "--only", "Spec"]), 0)
             self.assertIn("vyperStorage!", (directory / "Spec.lean").read_text())
             self.assertFalse((directory / "Dispatch.lean").exists())
-            with self.assertRaisesRegex(SystemExit, "only Spec"):
-                ps.main(["--dir", tmp, "--module", "Test.Vyper"])
+            self.assertEqual(ps.main(["--dir", tmp, "--module", "Test.Vyper"]), 0)
+            correct = (directory / "Correct.lean").read_text()
+            self.assertIn("runtimeRefinement config", correct)
+            self.assertNotIn("runtimeRefinementWithWF", correct)
+            self.assertEqual(ps.main(["--dir", tmp, "--module", "Test.Vyper", "--force", "--wf", "storageWF"]), 0)
+            correct = (directory / "Correct.lean").read_text()
+            self.assertIn("runtimeRefinementWithWF storageWF noGasBound config", correct)
+            self.assertIn("contractRefinementWF storageWF noGasBound config", correct)
+            self.assertIn("hwf hcode hsize", correct)
+            self.assertIn("def storageWF : StorageWF := fun _ _ => True", (directory / "Common.lean").read_text())
+            self.assertIn("(hwf : storageWF σ I)", (directory / "Read.lean").read_text())
+            self.assertEqual(ps.main(["--dir", tmp, "--module", "Test.Vyper", "--force"]), 0)
+            dispatch = (directory / "Dispatch.lean").read_text()
+            table = ps.vyper_table((source / "runtime.hex").read_bytes() and
+                                   bytes.fromhex((source / "runtime.hex").read_text().strip()))
+            self.assertIsNotNone(table)
+            self.assertIn("def immutableDispatchMem", dispatch)
+            for m in range(table.buckets):
+                self.assertIn(f"theorem immutableBucket{m} ", dispatch)
+            self.assertIn("theorem immutableReachReadBody", dispatch)
+            self.assertIn("theorem immutableX_noMatch", dispatch)
+            self.assertIn("theorem immutableX_short", dispatch)
+            self.assertNotIn("sorry", dispatch)
+            common = (directory / "Common.lean").read_text()
+            self.assertIn("deployed_of_fit", common)
+            self.assertIn("import Reasoning.VyperDispatch", common)
+            correct = (directory / "Correct.lean").read_text()
+            self.assertIn(".of_runtime immutableConstructorCorrect immutableCorrect", correct)
+            self.assertNotIn("sorry", correct)
 
 
 class SpellingTests(unittest.TestCase):

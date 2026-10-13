@@ -375,6 +375,21 @@ def cmd_compile_vyper(args: argparse.Namespace) -> int:
     if artifact is None:
         raise SystemExit(f"Vyper combined_json has no artifact for {source}")
     name = args.contract or source.stem
+    # the annotated AST (types on every expression) drives vy2solm.py
+    ast_command = [args.vyper, "-f", "annotated_ast"]
+    if args.evm_version:
+        ast_command += ["--evm-version", args.evm_version]
+    ast_command += ["--path", str(sources_root.resolve()), str(source.resolve())]
+    ast_result = subprocess.run(ast_command, text=True, capture_output=True)
+    if ast_result.returncode:
+        sys.stderr.write(ast_result.stderr)
+        return ast_result.returncode
+    annotated = json.loads(ast_result.stdout)
+    for unit in [annotated.get("ast", {})] + list(annotated.get("imports", [])):
+        for key in ("path", "resolved_path"):   # absolute on the compiling machine
+            if unit.get(key):
+                unit[key] = rel_to_root(Path(unit[key]), sources_root.resolve())
+    (directory / f"{name}.vy.ast.json").write_text(json.dumps(annotated) + "\n", encoding="utf-8")
     layout = artifact.get("layout", {}).get("code_layout", {})
     immutables = []
     for key, info in sorted(layout.items(), key=lambda pair: pair[1]["offset"]):
@@ -403,7 +418,8 @@ def cmd_compile_vyper(args: argparse.Namespace) -> int:
              "methodIdentifiers": artifact.get("method_identifiers", {}),
              "immutables": immutables, "immutableSuffixSize": suffix_size,
              "sourceMap": {"runtime": artifact.get("source_map_runtime", {}),
-                           "creation": artifact.get("source_map", {})}}
+                           "creation": artifact.get("source_map", {})},
+             "ast": annotated}
     (directory / f"{name}.build.json").write_text(json.dumps(build) + "\n", encoding="utf-8")
     write_hashes(directory, name, sources_root, ".vy")
     print(f"compiled {name} with Vyper {version}: runtime {len(runtime_hex)//2} bytes, "
@@ -502,9 +518,12 @@ def render_bytecode_lean(namespace: str, prefix: str, name: str, runtime: bytes,
 def selector_table(directory: Path, name: str, build: dict | None) -> list[tuple[str, bytes]]:
     """(canonical signature, 4-byte selector) for every external function, in table order."""
     if build and build.get("methodIdentifiers"):
-        # Vyper may omit leading zeroes when serializing a selector as hex.
+        # Vyper may omit leading zeroes when serializing a selector as hex.  It also lists
+        # `__default__()`, whose selector the dispatcher never compares: the fallback runs when
+        # no selector matches.
         pairs = [(sig, bytes.fromhex(sel.removeprefix("0x").zfill(8)))
-                 for sig, sel in build["methodIdentifiers"].items()]
+                 for sig, sel in build["methodIdentifiers"].items()
+                 if not (build.get("compiler", {}).get("kind") == "vyper" and sig.startswith("__default__("))]
         if any(len(value) != 4 for _, value in pairs):
             raise SystemExit("compiler emitted a method identifier wider than four bytes")
     else:
@@ -859,7 +878,10 @@ def render_difftarget_lean(namespace: str, module: str, prefix: str, name: str,
 
 
 def difftarget_files(root: Path) -> list[Path]:
-    return sorted(p for p in root.rglob("DiffTarget.lean") if ".lake" not in p.parts)
+    """Every `DiffTarget.lean` of the checkout, skipping hidden directories (`.lake`, git worktrees
+    under `.claude/`, …)."""
+    return sorted(p for p in root.rglob("DiffTarget.lean")
+                  if not any(part.startswith(".") for part in p.relative_to(root).parts))
 
 
 def render_difftest_registry(root: Path) -> str:

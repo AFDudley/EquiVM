@@ -64,8 +64,8 @@ assumption and its justification, and is imported only by modules that use it.
    `Misc/scaffold-prompt.md`). `scripts/scaffold.py`
    compiles and pins the artifacts, writes `Bytecode.lean`, `Selectors.lean` and the
    immutables modules, and generates the block summaries; `scripts/bytecode_report.py`
-   writes the bytecode report the audit works from; `scripts/sol2solm.py` drafts
-   `SpecSyntax.lean` from the solc AST (with holes); `scripts/proof_skeleton.py` writes
+   writes the bytecode report the audit works from; `scripts/sol2solm.py` (solc) or
+   `scripts/vy2solm.py` (Vyper) drafts `SpecSyntax.lean` from the compiler's AST (with holes); `scripts/proof_skeleton.py` writes
    the derived `Spec.lean`, `Common.lean`, the proved `Dispatch.lean`, one `sorry` stub per
    function, `Constructor.lean` and `Correct.lean`; `scripts/scaffold.py difftest` writes
    `DiffTarget.lean` and registers the contract in the differential suite.
