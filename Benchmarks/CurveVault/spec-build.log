@@ -1,0 +1,4 @@
+✔ [1131/1133] Built Benchmarks.CurveVault.SpecSyntax (3.4s)
+✔ [1132/1133] Built Benchmarks.CurveVault.Spec (2.1s)
+✔ [1133/1133] Built Benchmarks.CurveVault.DiffTarget (1.4s)
+Build completed successfully (1133 jobs).
