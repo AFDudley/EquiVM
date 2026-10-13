@@ -1,7 +1,7 @@
 import Benchmarks.Safe.V1_0227664.PaddedWordMemory
 import Reasoning.HeapMemory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Safe.V1_0227664
 

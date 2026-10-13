@@ -3,7 +3,7 @@ import Benchmarks.Safe.ViaIR.CalldataBufferMemory
 import Benchmarks.Safe.ViaIR.WordWrites
 import Benchmarks.Safe.ViaIR.SetupCalldataFacts
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.ViaIR
 

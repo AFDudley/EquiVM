@@ -1,7 +1,7 @@
 import Benchmarks.Safe.V2_0e91d99.OwnerValidation
 import Benchmarks.Safe.V2_0e91d99.OwnerStorage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.V2_0e91d99

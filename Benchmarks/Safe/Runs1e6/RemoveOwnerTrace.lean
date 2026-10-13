@@ -5,7 +5,7 @@ import Benchmarks.Safe.Runs1e6.Blocks.Runtime_028
 import Benchmarks.Safe.Runs1e6.Blocks.Runtime_029
 import Benchmarks.Safe.Runs1e6.Blocks.Runtime_030
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.Runs1e6
@@ -38,7 +38,7 @@ theorem safeRemoveOwnerCountValue (evm : EVM.State) (hnz : ownerCount evm ≠ �
   | none =>
       simp only [Std.ExtTreeMap.get?_eq_getElem?] at hacc
       have hz : ownerCount evm = ⟨0⟩ := by
-        simp [ownerCount, Solm.EVM.storageLoad, State.lookupAccount, hacc, Option.option]
+        simp [ownerCount, Stele.EVM.storageLoad, State.lookupAccount, hacc, Option.option]
       exact False.elim (hnz hz)
   | some acc =>
       simpa only [ownerCount, removeOwnerCountState, storageStore_executionEnv] using

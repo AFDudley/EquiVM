@@ -2,7 +2,7 @@ import Benchmarks.Safe.Runs1e6.SignatureP256BoundsSource
 import Benchmarks.Safe.Runs1e6.P256Source
 import Benchmarks.Safe.Runs1e6.Hashes
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.Runs1e6
 

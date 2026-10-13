@@ -1,8 +1,8 @@
 import Benchmarks.Safe.V3_77901a5.OwnerGuardTraces
 import Benchmarks.Safe.V3_77901a5.ThresholdChange
-import Reasoning.SolmArithmetic
+import Reasoning.SteleArithmetic
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.V3_77901a5
 
@@ -18,7 +18,7 @@ def removeOwnerFrame₁ (prev key threshold : UInt256) : Frame :=
   resumeAfterInternalCall (removeOwnerFrame prev key threshold) "_ok" none
 
 def removeOwnerCountState (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨3⟩ (UInt256.sub (ownerCount evm) ⟨1⟩)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨3⟩ (UInt256.sub (ownerCount evm) ⟨1⟩)
 
 def removeOwnerLinks (evm : EVM.State) (prev key : UInt256) : EVM.State :=
   writeOwnerLink (writeOwnerLink evm prev (ownerLink evm key)) key ⟨0⟩
@@ -117,7 +117,7 @@ theorem safeRemoveOwnerCanRemove (evm : EVM.State) (prev key threshold : UInt256
   apply internalCallFunctionReturn (callee := requireCanRemoveOwnerFunction)
     (argVals := [.address (AccountAddress.ofNat prev.toNat),
       .address (AccountAddress.ofNat key.toNat)]) (locals := canRemoveOwnerArgs prev key)
-    (calleeSolm := canRemoveOwnerFrame prev key)
+    (calleeStele := canRemoveOwnerFrame prev key)
   · simp [removeOwnerFrame, removeOwnerArgs, evalExprs?, evalExpr?, EvalResult.ofOption,
       EvalResult.bind, bind, pure, Std.HashMap.getElem_insert]
   · rfl

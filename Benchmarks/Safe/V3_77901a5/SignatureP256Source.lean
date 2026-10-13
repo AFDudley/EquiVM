@@ -1,7 +1,7 @@
 import Benchmarks.Safe.V3_77901a5.SignatureContext
 import Benchmarks.Safe.V3_77901a5.P256Source
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.V3_77901a5
 

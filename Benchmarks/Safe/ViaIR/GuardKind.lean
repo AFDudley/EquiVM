@@ -1,6 +1,6 @@
 import Benchmarks.Safe.ViaIR.Spec
 
-open Solm ABI Ethereum Ethereum.EVM
+open Stele ABI Ethereum Ethereum.EVM
 
 namespace Benchmarks.Safe.ViaIR
 

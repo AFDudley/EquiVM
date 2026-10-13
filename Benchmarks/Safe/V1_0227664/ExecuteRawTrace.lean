@@ -4,7 +4,7 @@ import Benchmarks.Safe.V1_0227664.RawValueCall
 import Reasoning.WordArithmetic
 import Benchmarks.Safe.V1_0227664.Blocks.Runtime_031
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.V1_0227664

@@ -2,7 +2,7 @@ import Benchmarks.Safe.V0_cdb2eb5.WordCallResult
 import Benchmarks.Safe.V0_cdb2eb5.Bytes4ReturnDecoder
 import Benchmarks.Safe.V0_cdb2eb5.PreModuleCallEncoding
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.V0_cdb2eb5
 

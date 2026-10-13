@@ -1,8 +1,8 @@
 import Benchmarks.Safe.V2_0e91d99.Spec
-import Solm.Notation
+import Stele.Notation
 
 /-!
-# Safe spec in the Solidity-faithful Solm frontend
+# Safe spec in the Solidity-faithful Stele frontend
 
 The whole Safe benchmark spec, written with `solidity%` and proven definitionally equal to the
 AST spec in `Benchmarks/Safe/V2_0e91d99/Spec.lean`.
@@ -20,7 +20,7 @@ Notes mirroring the AST spec:
 * The fallback declares its `bytes` return type with the surface `returns (bytes)` clause.
 -/
 
-open Solm Solm.Notation
+open Stele Stele.Notation
 
 namespace Benchmarks.Safe.V2_0e91d99.Syntax
 

@@ -3,7 +3,7 @@ import Benchmarks.Safe.V0_cdb2eb5.ExecTransactionSignatureSource
 import Benchmarks.Safe.V0_cdb2eb5.CheckSignaturesTrace
 import Benchmarks.Safe.V0_cdb2eb5.SignatureDecodedMemory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.V0_cdb2eb5
 

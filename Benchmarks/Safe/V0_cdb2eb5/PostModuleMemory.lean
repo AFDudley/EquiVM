@@ -3,7 +3,7 @@ import Benchmarks.Safe.V0_cdb2eb5.PostModuleSource
 import Reasoning.WordArithmetic
 import Benchmarks.Safe.V0_cdb2eb5.Blocks.Runtime_033
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.V0_cdb2eb5

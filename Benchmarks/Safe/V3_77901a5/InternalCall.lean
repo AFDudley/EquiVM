@@ -1,6 +1,6 @@
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 
-open Solm Reasoning.Theory
+open Stele Reasoning.Theory
 
 namespace Benchmarks.Safe.V3_77901a5
 
@@ -23,6 +23,6 @@ theorem internalCallFunctionResult {cfg : Config} {caller : Frame} {evm : EVM.St
   | reverted => exact internalCallFunctionRevert hargs hlookup hbind hbody
   | staticViolation =>
     exact ExecStmt.internalCallStatic hargs hlookup hbind hbody
-  | ok _ _ | «break» _ _ | «continue» _ _ => cases hbody
+  | ok _ _ | «break» _ _ | «continue» _ _ | noMatch | decodingFailed => cases hbody
 
 end Benchmarks.Safe.V3_77901a5

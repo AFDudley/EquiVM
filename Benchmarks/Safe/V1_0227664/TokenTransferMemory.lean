@@ -2,7 +2,7 @@ import Benchmarks.Safe.V1_0227664.TokenTransferSource
 import Benchmarks.Safe.V1_0227664.SelectorPatchMemory
 import Benchmarks.Safe.V1_0227664.MemoryPreserves
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.V1_0227664
 

@@ -1,20 +1,20 @@
-import Solm.SolidityStorage
-import Solm.Semantics
-import Solm.SolidityLayout
+import Stele.SolidityStorage
+import Stele.Semantics
+import Stele.SolidityLayout
 
 /-!
 # Safe benchmark spec
 
-Source-shaped Solm spec for upstream `safe-global/safe-smart-account`
+Source-shaped Stele spec for upstream `safe-global/safe-smart-account`
 `Benchmarks/Safe/V2_0e91d99/contracts/Safe.sol`, compiled with solc 0.8.35.
 
 The refinement relation observes successful return values, the final account map, reverts, and
 static-mode violations. Event statements retain their position and static-mode behavior, although
 log contents and revert payloads are not observations of that relation. Gas observations and call
-gas use Solm's existential witnesses. The fallback and receive entrypoints are modeled explicitly.
+gas use Stele's existential witnesses. The fallback and receive entrypoints are modeled explicitly.
 -/
 
-open Solm ABI Ethereum
+open Stele ABI Ethereum
 
 namespace Benchmarks.Safe.V2_0e91d99
 

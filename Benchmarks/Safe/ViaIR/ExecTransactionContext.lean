@@ -1,7 +1,7 @@
 import Benchmarks.Safe.ViaIR.ExecTransactionInput
 import Benchmarks.Safe.ViaIR.LocalArrays
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.ViaIR
 
@@ -33,13 +33,13 @@ theorem ExecTransactionLocals.withNonce {p locals} (h : ExecTransactionLocals p 
     h.tx.gasPrice, h.tx.gasToken, h.tx.refundReceiver⟩
 
 def execNonce (evm : EVM.State) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩
 
 def execNonceFrame (p : ExecTransactionInput) (evm : EVM.State) : Frame :=
   { contract := contract, locals := p.args.insert "nonceBefore" (uint256Value (execNonce evm)) }
 
 def execNonceState (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨5⟩ (execNonce evm + ⟨1⟩)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨5⟩ (execNonce evm + ⟨1⟩)
 
 def execTransactionHash (p : ExecTransactionInput) (evm : EVM.State) : UInt256 :=
   transactionWord evm.executionEnv { p.tx with nonce := execNonce evm }

@@ -1,7 +1,7 @@
 import Benchmarks.Safe.V2_0e91d99.BoundedCalldataWords
 import Benchmarks.Safe.V2_0e91d99.BoundedCalldataBytes
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.V2_0e91d99
 

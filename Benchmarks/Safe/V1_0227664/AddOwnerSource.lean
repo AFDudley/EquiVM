@@ -2,7 +2,7 @@ import Benchmarks.Safe.V1_0227664.OwnerGuardTraces
 import Benchmarks.Safe.V1_0227664.OwnerCount
 import Benchmarks.Safe.V1_0227664.ThresholdChange
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.V1_0227664
 
@@ -20,7 +20,7 @@ def addOwnerLinks (evm : EVM.State) (key : UInt256) : EVM.State :=
   writeOwnerLink (writeOwnerLink evm key (ownerLink evm ⟨1⟩)) ⟨1⟩ key
 
 def addOwnerCountState (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨3⟩ (UInt256.add (ownerCount evm) ⟨1⟩)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨3⟩ (UInt256.add (ownerCount evm) ⟨1⟩)
 
 def addOwnerTail : List Stmt :=
   [ .assign .storage ownerCountRef (inc256 (.storage ownerCountRef)),
@@ -59,7 +59,7 @@ theorem safeAddOwnerCanAdd (evm : EVM.State) (key threshold : UInt256)
       (.ok (addOwnerFrame₁ key threshold) evm) := by
   apply internalCallFunctionReturn (callee := requireCanAddOwnerFunction)
     (argVals := [.address (AccountAddress.ofNat key.toNat)])
-    (locals := canAddOwnerArgs key) (calleeSolm := canAddOwnerFrame key)
+    (locals := canAddOwnerArgs key) (calleeStele := canAddOwnerFrame key)
   · simp [addOwnerFrame, addOwnerArgs, evalExprs?, evalExpr?, EvalResult.ofOption,
       EvalResult.bind, bind, pure, Std.HashMap.getElem_insert]
   · rfl
@@ -125,7 +125,7 @@ theorem safeAddOwnerThresholdChanged (evm : EVM.State) (key threshold : UInt256)
     (hle : threshold.toNat ≤ (ownerCount evm).toNat) (hnz : threshold ≠ ⟨0⟩) :
     ExecStmt config (addOwnerFrame₁ key threshold) evm addOwnerThresholdStmt
       (.ok (resumeAfterInternalCall (addOwnerFrame₁ key threshold) "_thresholdChanged" none)
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨4⟩ threshold)) :=
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨4⟩ threshold)) :=
   safeThresholdChangeChanged evm _ threshold
     (safeAddOwnerLocal key threshold "threshold" (by decide))
     (safeAddOwnerEvalThreshold evm key threshold) ht hle hnz

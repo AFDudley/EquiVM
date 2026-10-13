@@ -4,7 +4,7 @@ import Benchmarks.Safe.V3_77901a5.Routines
 import Benchmarks.Safe.V3_77901a5.Blocks.Runtime_006
 import Benchmarks.Safe.V3_77901a5.Blocks.Runtime_007
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.V3_77901a5
@@ -20,7 +20,7 @@ theorem safeIsModuleEnabledSource (evm : EVM.State) (key : UInt256)
     ExecTransitionBody config contract evm (isModuleEnabledArgs key) ismoduleenabledTransition.body
       (.returned { contract := contract, locals := isModuleEnabledArgs key } evm
         (some [.bool (addressMembership key (UInt256.land
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (mapSlot key ⟨1⟩))
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (mapSlot key ⟨1⟩))
           solcAddrMask))])) := by
   apply nonpayableReturnExprBodyReturns hvalue
   apply evalAddressMembership hcanon (solcAddrMask_result_canonical _)
@@ -79,7 +79,7 @@ theorem safeIsmoduleenabledBodyCore
           refine RDret.reEquivElim hcode hret fun _ _ hsuccess ↦ ?_
           exact reEquivSelectorExecution hdispatch (decodeCalldata_address_ok hlen hbig hcanon)
             hbody (.success hsuccess rfl rfl (.abi (returnEquiv_of_encode
-              (by simpa [bool, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+              (by simpa [bool, solcSlotWordAt, initState, Stele.EVM.storageLoad,
                 State.lookupAccount] using (boolReturnEncoding (addressMembership
                 (calldataWord I.calldata 4) (UInt256.land
                   (solcSlotWordAt (mapSlot (calldataWord I.calldata 4) ⟨1⟩) σ I) solcAddrMask)))))))

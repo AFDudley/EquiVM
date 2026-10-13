@@ -2,7 +2,7 @@ import Benchmarks.Safe.ViaIR.SignatureP256BoundsSource
 import Benchmarks.Safe.ViaIR.P256Source
 import Benchmarks.Safe.ViaIR.Hashes
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.ViaIR
 

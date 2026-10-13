@@ -1,7 +1,7 @@
 import Benchmarks.Safe.V0_cdb2eb5.MemoryBytesEncoding
 import Benchmarks.Safe.V0_cdb2eb5.Decoders
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Safe.V0_cdb2eb5
 

@@ -6,14 +6,14 @@ import Reasoning.Dispatch
 /-!
 # Safe benchmark correctness stub
 
-The upstream Solidity source tree, optimized runtime bytecode, Solm AST spec, and Solm syntax spec
+The upstream Solidity source tree, optimized runtime bytecode, Stele AST spec, and Stele syntax spec
 are present. `Runtime.lean` separates all 31 selectors, receive, and fallback into unconditional
 refinement obligations. `Blocks.lean` imports the generated instruction summaries. The runtime
 assembly proof remains intentionally unproved. This file also exposes the whole-contract wrapper
 that combines the constructor and runtime targets.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Safe.V2_0e91d99
 

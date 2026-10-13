@@ -1,7 +1,7 @@
 import Benchmarks.Safe.ViaIR.ExecGuardCallTrace
 import Benchmarks.Safe.ViaIR.ExecGuardCalldataStack
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.ViaIR
@@ -63,7 +63,7 @@ theorem safeExecTransactionGuard (initial evm : EVM.State)
   have hm : 128 ≤ mem.size := by have := hsig.available; omega
   have hload : (σ.get? I.codeOwner |>.option (⟨0⟩ : UInt256)
       (fun ac ↦ ac.storage.getD guardSlot ⟨0⟩)) = execGuardWord evm := by
-    simp only [execGuardWord, Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
+    simp only [execGuardWord, Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
       hee, hacc]
   have hs := safeExecGuardLoad p initial evm
   have hl := execGuardFrame_locals p initial evm

@@ -2,7 +2,7 @@ import Benchmarks.Safe.ViaIR.CheckSignaturesSource
 import Benchmarks.Safe.ViaIR.CheckNSignaturesTrace
 import Benchmarks.Safe.ViaIR.Blocks.Runtime_042
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.ViaIR
@@ -31,7 +31,7 @@ theorem safeCheckSignaturesTrace (p : SignatureCheckInput) (evm : EVM.State)
       mem'.size ≤ max mem.size (ptr + 2 ^ 204) ∧ MemoryPreserves mem mem' 96 ptr ∧ (ptr < 2 ^ 64 → ptr' < 2 ^ 64) := by
   have hload : (σ.get? I.codeOwner |>.option (⟨0⟩ : UInt256)
       (fun ac ↦ ac.storage.getD (UInt256.ofNat 4) ⟨0⟩)) = storedThreshold evm := by
-    simp only [storedThreshold, Solm.EVM.storageLoad, State.lookupAccount,
+    simp only [storedThreshold, Stele.EVM.storageLoad, State.lookupAccount,
       Account.lookupStorage, hee, hacc]
     rfl
   by_cases ht : storedThreshold evm = ⟨0⟩

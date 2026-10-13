@@ -4,7 +4,7 @@ import Benchmarks.Safe.ViaIR.AddressArrayEncoding
 import Benchmarks.Safe.ViaIR.Blocks.Runtime_020
 import Benchmarks.Safe.ViaIR.Blocks.Runtime_005
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.ViaIR

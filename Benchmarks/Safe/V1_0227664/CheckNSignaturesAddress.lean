@@ -5,7 +5,7 @@ import Benchmarks.Safe.V1_0227664.SignatureDecodedMemory
 import Benchmarks.Safe.V1_0227664.CheckNSignaturesTrace
 import Benchmarks.Safe.V1_0227664.Blocks.Runtime_006
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.V1_0227664

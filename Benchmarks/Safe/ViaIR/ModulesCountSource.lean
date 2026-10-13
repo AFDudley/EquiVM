@@ -2,7 +2,7 @@ import Benchmarks.Safe.ViaIR.ModuleStorage
 import Benchmarks.Safe.ViaIR.LocalArrays
 import Benchmarks.Safe.ViaIR.LinkedPages
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.ViaIR
 

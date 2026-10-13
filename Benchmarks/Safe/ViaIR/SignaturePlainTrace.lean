@@ -3,7 +3,7 @@ import Benchmarks.Safe.ViaIR.EcrecoverTrace
 import Benchmarks.Safe.ViaIR.SignatureRecoveryMemory
 import Benchmarks.Safe.ViaIR.MemoryPreserves
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.ViaIR
 

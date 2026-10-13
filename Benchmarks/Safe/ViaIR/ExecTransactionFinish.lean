@@ -2,7 +2,7 @@ import Benchmarks.Safe.ViaIR.ExecTransactionEvent
 import Benchmarks.Safe.ViaIR.ExecAfterGuardTrace
 import Benchmarks.Safe.ViaIR.BoolReturnMemory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.ViaIR

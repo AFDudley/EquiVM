@@ -2,7 +2,7 @@ import Benchmarks.Safe.ViaIR.Calldata
 import Benchmarks.Safe.ViaIR.Decoders
 import Benchmarks.Safe.ViaIR.Blocks.Runtime_029
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.ViaIR
@@ -10,7 +10,7 @@ namespace Benchmarks.Safe.ViaIR
 set_option maxRecDepth 2000
 
 -- LIBRARY CANDIDATE: the modern ABI decoder for two unrestricted uint256 words.
-theorem decodeWordPairGuard {cd : ByteArray} {x y : Solm.Ident} (hlong : 4 ≤ cd.size) :
+theorem decodeWordPairGuard {cd : ByteArray} {x y : Stele.Ident} (hlong : 4 ≤ cd.size) :
     decodeCalldata [x, y] [abiUInt256, abiUInt256] cd =
       if 2 ^ 255 ≤ cd.size - 4 then none
       else if cd.size - 4 < 64 then none
@@ -22,7 +22,7 @@ theorem decodeWordPairGuard {cd : ByteArray} {x y : Solm.Ident} (hlong : 4 ≤ c
     (by simp [abiTupleHeadSize?, staticABIEncodedSize?, isDynamicABIType,
       abiUInt256, bind, Option.bind])
 
-theorem decodeWordPair {cd : ByteArray} {x y : Solm.Ident}
+theorem decodeWordPair {cd : ByteArray} {x y : Stele.Ident}
     (hlen : 68 ≤ cd.size) (hbig : cd.size < 2 ^ 255 + 4) :
     decodeCalldata [x, y] [abiUInt256, abiUInt256] cd =
       some (((∅ : Store).insert x (.int (Int.ofNat (calldataWord cd 4).toNat))).insert
@@ -44,12 +44,12 @@ theorem decodeWordPair {cd : ByteArray} {x y : Solm.Ident}
     decodeABIValue_uint256_ok (start := 32) htake36]
   simp [decodeCalldata.insertValues, hword4, hword36, List.drop_drop]
 
-theorem decodeWordPairShort {cd : ByteArray} {x y : Solm.Ident}
+theorem decodeWordPairShort {cd : ByteArray} {x y : Stele.Ident}
     (hlong : 4 ≤ cd.size) (hshort : cd.size < 68) :
     decodeCalldata [x, y] [abiUInt256, abiUInt256] cd = none := by
   rw [decodeWordPairGuard hlong, if_neg (by omega), if_pos (by omega)]
 
-theorem decodeWordPairHuge {cd : ByteArray} {x y : Solm.Ident}
+theorem decodeWordPairHuge {cd : ByteArray} {x y : Stele.Ident}
     (hbig : 2 ^ 255 + 4 ≤ cd.size) :
     decodeCalldata [x, y] [abiUInt256, abiUInt256] cd = none := by
   rw [decodeWordPairGuard (by omega), if_pos (by omega)]

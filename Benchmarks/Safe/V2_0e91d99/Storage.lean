@@ -1,7 +1,7 @@
 import Benchmarks.Safe.V2_0e91d99.Common
 import Reasoning.Storage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.V2_0e91d99
 
@@ -20,7 +20,7 @@ theorem uint256GetterBodyReturns {cfg : Config} {c : ContractDecl} {layout : Sto
       [.require (.binary .eq (.env .callvalue) (.intLit 0)), .return [.storage ref]]
       (.returned { contract := c, locals := locals, immutables := imms } evm
         (some [.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot).toNat)])) imms := by
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot).toNat)])) imms := by
   apply nonpayableReturnExprBodyReturns h
   exact evalExpr_storage_scalar_value hbase her hty hbackend hloc
     (storageLocLoad_uint256 evm slot)

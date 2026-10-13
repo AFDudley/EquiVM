@@ -1,6 +1,6 @@
 import Benchmarks.Safe.V1_0227664.Spec
 
-open Solm Ethereum Ethereum.EVM
+open Stele Ethereum Ethereum.EVM
 
 namespace Benchmarks.Safe.V1_0227664
 

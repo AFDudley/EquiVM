@@ -1,9 +1,9 @@
 import Benchmarks.Safe.V1_0227664.ModuleStorage
 import Reasoning.ExternalCall
 import Reasoning.ABIViews
-import Reasoning.SolmArithmetic
+import Reasoning.SteleArithmetic
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.V1_0227664
 
@@ -24,7 +24,7 @@ def preModuleLocals (target : EVM.Address) (value : UInt256) (payload : ByteArra
       "guardHash" (.fixedBytes bytes32Width (EVM.Word.toBytesBE hash))
 
 def preModuleGuardWord (evm : EVM.State) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner moduleGuardSlot
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner moduleGuardSlot
 
 def preModuleCheck : Stmt :=
   .ite (neE (.var "guard") zeroAddr)
@@ -44,20 +44,20 @@ theorem storageLocLoad_address_word (evm : EVM.State) (slot : UInt256) :
     storageLocLoad evm
       { slot := slot, offset := 0, size := 32, hbound := by decide, type := .address } =
       .address (AccountAddress.ofUInt256
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)) := by
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)) := by
   have ht : (EVM.Word.toBytesLEWithSizeProof
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).1.extract 0 32 =
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).1.extract 0 32 =
       (EVM.Word.toBytesLEWithSizeProof
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).1 := by
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).1 := by
     rw [List.extract_eq_take_drop, List.drop_zero]
     exact List.take_of_length_le (le_of_eq
       (EVM.Word.toBytesLEWithSizeProof
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).2)
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).2)
   unfold storageLocLoad wordToElem
   simp only [Fin.val_zero, Nat.zero_add]
   change Value.address (AccountAddress.ofNat (fromBytes'
     ((EVM.Word.toBytesLEWithSizeProof
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).1.extract 0 32))) = _
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).1.extract 0 32))) = _
   rw [ht, fromBytes'_toBytesLEWithSizeProof, accountAddress_ofUInt256_eq_ofNat_toNat]
 
 theorem safePreModuleLoadGuard (evm : EVM.State) (locals : Store)

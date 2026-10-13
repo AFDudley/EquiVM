@@ -2,7 +2,7 @@ import Benchmarks.Safe.V2_0e91d99.ExecGuardEncodingRead
 import Benchmarks.Safe.V2_0e91d99.ExecTransactionInput
 import Benchmarks.Safe.V2_0e91d99.PreModuleCallEncoding
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Safe.V2_0e91d99
 

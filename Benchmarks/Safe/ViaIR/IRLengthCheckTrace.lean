@@ -8,7 +8,7 @@ word are used. The final theorems instantiate the symbolic array from `IRLengthC
 match the bytecode's revert with the artifact-specific decoder's rejection.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.ViaIR
 
@@ -1237,7 +1237,8 @@ theorem safeIRHugeNonceExecution :
 /-- The former counterexample now refines the spec through its ABI decoding-failure case. -/
 theorem safeIRHugeNonceRefines :
     runtimeRefinementFor config contract default default ⟨1000⟩ default safeIRHugeNonceEnv := by
-  exact .decodingFailed safeIRHugeNonceCalldata_dispatch rfl
-    safeIRHugeNonceCalldata_decodingFailed safeIRHugeNonceExecution
+  exact .execution safeIRHugeNonceExecution
+    (.decodingFailed safeIRHugeNonceCalldata_dispatch safeIRHugeNonceCalldata_decodingFailed)
+    (.decodingFailed rfl rfl)
 
 end Benchmarks.Safe.ViaIR

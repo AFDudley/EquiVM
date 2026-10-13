@@ -1,6 +1,6 @@
 import Benchmarks.Safe.V2_0e91d99.Spec
 
-open Solm ABI Ethereum Ethereum.EVM
+open Stele ABI Ethereum Ethereum.EVM
 
 namespace Benchmarks.Safe.V2_0e91d99
 

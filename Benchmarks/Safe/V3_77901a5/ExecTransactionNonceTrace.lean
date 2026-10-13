@@ -3,7 +3,7 @@ import Benchmarks.Safe.V3_77901a5.ExecTransactionDecodeSteps
 import Benchmarks.Safe.V3_77901a5.CheckedIncrement
 import Benchmarks.Safe.V3_77901a5.Blocks.Runtime_019
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.V3_77901a5
@@ -32,7 +32,7 @@ theorem safeExecNonceStart (evm : EVM.State) {I g s0 σ k C aw mem rdata len}
         execHashStack I.calldata len ptr (execNonce evm) R) mem aw rdata σ k' C' := by
   have hload : (σ.get? I.codeOwner |>.option (⟨0⟩ : UInt256)
       (fun ac ↦ ac.storage.getD (UInt256.ofNat 5) ⟨0⟩)) = execNonce evm := by
-    simp only [execNonce, Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
+    simp only [execNonce, Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
       hee, hacc]
     rfl
   obtain ⟨k', C', h₁⟩ := safeRuntime_block_3533 (by simp; omega) (by jump_dest) h

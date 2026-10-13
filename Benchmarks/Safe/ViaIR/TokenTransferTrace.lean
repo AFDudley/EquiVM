@@ -2,7 +2,7 @@ import Benchmarks.Safe.ViaIR.TokenTransferPrepare
 import Benchmarks.Safe.ViaIR.TokenTransferReturn
 import Benchmarks.Safe.ViaIR.RawValueCall
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.ViaIR
 

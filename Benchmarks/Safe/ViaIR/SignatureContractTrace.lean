@@ -5,7 +5,7 @@ import Benchmarks.Safe.ViaIR.Blocks.Runtime_036
 import Benchmarks.Safe.ViaIR.Blocks.Runtime_038
 import Benchmarks.Safe.ViaIR.Blocks.Runtime_044
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.ViaIR

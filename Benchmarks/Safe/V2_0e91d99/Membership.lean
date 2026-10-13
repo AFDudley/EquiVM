@@ -1,7 +1,7 @@
 import Benchmarks.Safe.V2_0e91d99.Storage
 import Benchmarks.Safe.V2_0e91d99.Decoders
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.V2_0e91d99
 

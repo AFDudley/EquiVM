@@ -1,7 +1,7 @@
 import Benchmarks.Safe.V1_0227664.GetOwnersSource
 import Reasoning.ABIViews
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.V1_0227664
 
@@ -98,14 +98,14 @@ def hugeOwnerAuditState (perm : Bool) : EVM.State :=
 theorem hugeOwnerAudit_count (perm : Bool) :
     (ownerCount (hugeOwnerAuditState perm)).toNat = hugeOwnerCount := by
   have hslot : mapSlot ⟨1⟩ ⟨2⟩ ≠ (⟨3⟩ : UInt256) := by native_decide
-  simp [ownerCount, hugeOwnerAuditState, hugeOwnerAuditAccount, Solm.EVM.storageLoad,
+  simp [ownerCount, hugeOwnerAuditState, hugeOwnerAuditAccount, Stele.EVM.storageLoad,
     State.lookupAccount, Std.ExtTreeMap.get?_eq_getElem?, Std.ExtTreeMap.getElem?_insert,
     Std.ExtTreeMap.getD, hslot, Ne.symm hslot]
   decide +kernel
 
 theorem hugeOwnerAudit_current (perm : Bool) :
     ownerLink (hugeOwnerAuditState perm) ⟨1⟩ = ⟨1⟩ := by
-  simp [ownerLink, hugeOwnerAuditState, hugeOwnerAuditAccount, Solm.EVM.storageLoad,
+  simp [ownerLink, hugeOwnerAuditState, hugeOwnerAuditAccount, Stele.EVM.storageLoad,
     State.lookupAccount, Std.ExtTreeMap.get?_eq_getElem?, Std.ExtTreeMap.getElem?_insert,
     Std.ExtTreeMap.getD_insert_self, Option.option, Account.lookupStorage,
     solcAddrMask_clean (by decide : (⟨1⟩ : UInt256).toNat < EVM.addressModulus)]

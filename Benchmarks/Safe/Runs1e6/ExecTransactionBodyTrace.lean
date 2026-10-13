@@ -2,7 +2,7 @@ import Benchmarks.Safe.Runs1e6.ExecTransactionPrepare
 import Benchmarks.Safe.Runs1e6.ExecTransactionGuardTrace
 import Benchmarks.Safe.Runs1e6.ExecTransactionAfterGuard
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.Runs1e6
 

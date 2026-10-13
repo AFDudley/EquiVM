@@ -2,7 +2,7 @@ import Benchmarks.Safe.V1_0227664.PreModuleReturnMemory
 import Benchmarks.Safe.V1_0227664.Bytes32ReturnDecoder
 import Benchmarks.Safe.V1_0227664.Blocks.Runtime_031
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.V1_0227664

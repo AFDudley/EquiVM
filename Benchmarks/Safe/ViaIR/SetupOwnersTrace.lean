@@ -2,7 +2,7 @@ import Benchmarks.Safe.ViaIR.SetupOwnersPrepare
 import Benchmarks.Safe.ViaIR.SetupOwnersLoop
 import Benchmarks.Safe.ViaIR.SetupOwnersFinish
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.ViaIR
 

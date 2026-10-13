@@ -3,7 +3,7 @@ import Benchmarks.Safe.ViaIR.OwnerGuardTraces
 import Benchmarks.Safe.ViaIR.Blocks.Runtime_017
 import Benchmarks.Safe.ViaIR.Blocks.Runtime_042
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.ViaIR

@@ -1,6 +1,6 @@
 import Benchmarks.Safe.ViaIR.Storage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.ViaIR
 
@@ -10,7 +10,7 @@ theorem safeEvalRawStorage (evm : EVM.State) (locals : Store) (expr : Expr) (slo
       .ok (.int (Int.ofNat slot.toNat))) :
     evalExpr? config { contract := contract, locals := locals } evm
       (.storage (rawStorageRef expr)) =
-      .ok (.int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot).toNat)) := by
+      .ok (.int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot).toNat)) := by
   apply evalExpr_storage_scalar_value
     (er := { base := "_rawStorage", steps := [.mindex (.int (Int.ofNat slot.toNat))] })
     (loc := uint256Loc slot)

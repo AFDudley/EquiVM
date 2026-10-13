@@ -1,7 +1,7 @@
 import Benchmarks.Safe.V2_0e91d99.PreModuleEncodingRead
 import Reasoning.ABIViews
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Safe.V2_0e91d99
 

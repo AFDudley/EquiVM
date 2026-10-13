@@ -1,7 +1,7 @@
 import Benchmarks.Safe.ViaIR.SetupSource
 import Benchmarks.Safe.ViaIR.Blocks.Runtime_017
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.ViaIR
@@ -44,7 +44,7 @@ theorem safeSetupFallbackTrace (p : SetupInput) (evm : EVM.State)
   obtain ⟨k', C', h₄⟩ := safeInternalFallbackTrace h₃ (by simp; omega) hperm (by jump_dest)
   have h₅ := safeRuntime_block_3680 (by simp; omega) (by jump_dest) h₄
   refine .inr ⟨locals.insert "_fallbackSet" .unit,
-    Solm.EVM.storageStore evm evm.executionEnv.codeOwner fallbackHandlerSlot p.fallbackHandler,
+    Stele.EVM.storageStore evm evm.executionEnv.codeOwner fallbackHandlerSlot p.fallbackHandler,
     k' + 4, C' + 14, safeSetupFallbackCall p evm hl hc hz
       (safeInternalSetFallbackHandlerSource evm p.fallbackHandler hc (by rwa [hee])),
     hl.set _ _ (by decide), ?_, ?_, ?_⟩

@@ -1,6 +1,6 @@
 import Benchmarks.Safe.V1_0227664.MemoryBytesEncodingInto
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Safe.V1_0227664
 

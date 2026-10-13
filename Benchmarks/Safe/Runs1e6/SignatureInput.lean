@@ -1,7 +1,7 @@
 import Benchmarks.Safe.Runs1e6.SafeMulSource
 import Benchmarks.Safe.Runs1e6.SignatureValues
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.Runs1e6
 
@@ -100,6 +100,8 @@ theorem safeSignatureSourcePrefix (p : SignatureInput) (evm : EVM.State)
       | .continue f e => .returned f e none
       | .returned f e value => .returned f e value
       | .reverted => .reverted
+      | .noMatch => .noMatch
+      | .decodingFailed => .decodingFailed
       | .staticViolation => .staticViolation) := by
   have hz {f : Frame} : evalExpr? config f evm zeroAddr =
       .ok (.address (AccountAddress.ofNat 0)) := by
@@ -117,6 +119,8 @@ theorem safeSignatureSourcePrefix (p : SignatureInput) (evm : EVM.State)
   | «continue» => exact .execBlockContinue hr
   | returned => exact .execBlockRet hr
   | reverted => exact .execBlockRevert hr
+  | noMatch => exact (hr.not_dispatchFailure.1 rfl).elim
+  | decodingFailed => exact (hr.not_dispatchFailure.2 rfl).elim
   | staticViolation => exact .execBlockStatic hr
 
 end Benchmarks.Safe.Runs1e6

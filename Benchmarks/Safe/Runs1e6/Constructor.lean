@@ -1,15 +1,15 @@
 import Benchmarks.Safe.Runs1e6.Bytecode
 import Benchmarks.Safe.Runs1e6.ConstructorTrace
-import Solm.Refine
+import Stele.Refine
 
 /-!
 # Safe constructor correctness stub
 
-The optimized creation bytecode, deployed runtime bytecode, and Solm constructor specification are
+The optimized creation bytecode, deployed runtime bytecode, and Stele constructor specification are
 present. The constructor-equivalence proof is intentionally left as the benchmark target.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM
+open Stele ABI Ethereum Ethereum.EVM
 open Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.Runs1e6

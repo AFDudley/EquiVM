@@ -1,7 +1,7 @@
 import Benchmarks.Safe.V0_cdb2eb5.SetupPaymentTrace
 import Benchmarks.Safe.V0_cdb2eb5.SetupDataAllocate
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.V0_cdb2eb5
 

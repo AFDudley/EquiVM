@@ -1,11 +1,11 @@
 import Benchmarks.Safe.V1_0227664.ModuleStorage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.V1_0227664
 
 def ownerLink (evm : EVM.State) (key : UInt256) : UInt256 :=
-  UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (mapSlot key ⟨2⟩))
+  UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (mapSlot key ⟨2⟩))
     solcAddrMask
 
 def ownerLinkAt (σ : AccountMap) (I : ExecutionEnv) (key : UInt256) : UInt256 :=
@@ -22,9 +22,9 @@ theorem safeOwnerSentinelSlot : mapSlot ⟨1⟩ ⟨2⟩ =
   native_decide
 
 def writeOwnerLink (evm : EVM.State) (key value : UInt256) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (mapSlot key ⟨2⟩)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (mapSlot key ⟨2⟩)
     (setAddressOffset0Word
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (mapSlot key ⟨2⟩)) value)
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (mapSlot key ⟨2⟩)) value)
 
 theorem safeEvalOwnerLink (evm : EVM.State) (locals : Store) (expr : Expr) (key : UInt256)
     (hbase : locals["owners"]? = none)

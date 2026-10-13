@@ -3,7 +3,7 @@ import Benchmarks.Safe.V1_0227664.MemoryPreserves
 import Benchmarks.Safe.V1_0227664.WordArrayBuffer
 import Benchmarks.Safe.V1_0227664.CalldataWords
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.V1_0227664
 

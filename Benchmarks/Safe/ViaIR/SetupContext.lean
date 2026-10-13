@@ -4,7 +4,7 @@ import Benchmarks.Safe.ViaIR.SetupModulesSource
 import Benchmarks.Safe.ViaIR.InternalSetFallbackHandler
 import Benchmarks.Safe.ViaIR.PaymentTrace
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.ViaIR
 

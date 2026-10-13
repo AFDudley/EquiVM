@@ -2,7 +2,7 @@ import Benchmarks.Safe.V2_0e91d99.Spec
 import Ethereum.Semantics
 import Reasoning.JumpDest
 
-open Solm Ethereum Ethereum.EVM
+open Stele Ethereum Ethereum.EVM
 
 namespace Benchmarks.Safe.V2_0e91d99
 

@@ -3,7 +3,7 @@ import Benchmarks.Safe.ViaIR.Calldata
 import Benchmarks.Safe.ViaIR.Blocks.Runtime_028
 import Benchmarks.Safe.ViaIR.Blocks.Runtime_029
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.ViaIR
@@ -18,7 +18,7 @@ theorem safeSignedMessagesSource (evm : EVM.State) (key : UInt256)
     ExecTransitionBody config contract evm (signedMessagesArgs key) signedmessagesTransition.body
       (.returned { contract := contract, locals := signedMessagesArgs key } evm
         (some [.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (mapSlot key ⟨7⟩)).toNat)])) := by
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (mapSlot key ⟨7⟩)).toNat)])) := by
   apply uint256GetterBodyReturns evm (signedMessagesArgs key)
     (er := { base := "signedMessages", steps := [.mindex
       (.fixedBytes abiBytes32Width (EVM.Word.toBytesBE key))] }) hvalue
@@ -84,7 +84,7 @@ theorem safeSignedmessagesBodyCore
         refine RDret.reEquivElim hcode hret fun _ _ hsuccess ↦ ?_
         exact reEquivSelectorExecution hdispatch (decodeCalldataBytes32Word hlen hbig) hbody
           (.success hsuccess rfl rfl (.abi (returnEquiv_of_encode
-            (by simpa [uint256, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+            (by simpa [uint256, solcSlotWordAt, initState, Stele.EVM.storageLoad,
               State.lookupAccount] using
                 (uint256ReturnEncoding
                   (solcSlotWordAt (mapSlot (calldataWord I.calldata 4) ⟨7⟩) σ I))))))

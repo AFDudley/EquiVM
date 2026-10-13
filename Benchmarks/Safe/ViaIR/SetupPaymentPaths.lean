@@ -3,7 +3,7 @@ import Benchmarks.Safe.ViaIR.SetupTokenTransfer
 import Benchmarks.Safe.ViaIR.PaymentNativeReturn
 import Benchmarks.Safe.ViaIR.CallNonemptyReject
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.ViaIR

@@ -3,7 +3,7 @@ import Benchmarks.Safe.ViaIR.AddressAddressWordDecoder
 import Benchmarks.Safe.ViaIR.RemoveOwnerTrace
 import Benchmarks.Safe.ViaIR.IRLengthCheck
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.ViaIR

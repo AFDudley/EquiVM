@@ -1,9 +1,9 @@
 import Benchmarks.Safe.V0_cdb2eb5.AuditSupport
 import Benchmarks.Safe.V0_cdb2eb5.SpecSyntax
 
-/-! Executable regression cases for the pinned Safe bytecode and the actual Solm AST. -/
+/-! Executable regression cases for the pinned Safe bytecode and the actual Stele AST. -/
 
-open Solm ABI Ethereum Ethereum.EVM
+open Stele ABI Ethereum Ethereum.EVM
 
 namespace Benchmarks.Safe.V0_cdb2eb5.Audit
 

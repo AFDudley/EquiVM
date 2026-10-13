@@ -5,7 +5,7 @@ import Benchmarks.Safe.V0_cdb2eb5.Blocks.Runtime_012
 import Benchmarks.Safe.V0_cdb2eb5.Blocks.Runtime_029
 import Benchmarks.Safe.V0_cdb2eb5.Blocks.Runtime_037
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.V0_cdb2eb5
@@ -22,7 +22,7 @@ theorem safeSetFallbackHandlerSource (evm : EVM.State) (handler : UInt256)
     ExecTransitionBody config contract evm (fallbackHandlerArgs handler)
       setfallbackhandlerTransition.body
       (.returned (resumeAfterInternalCall (fallbackHandlerFrame handler) "_ok" none)
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner fallbackHandlerSlot handler) none)
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner fallbackHandlerSlot handler) none)
           := by
   have hcall := internalCallFunctionReturn (caller := fallbackHandlerFrame handler)
     (name := "internalSetFallbackHandler") (retVar := "_ok")
@@ -46,7 +46,7 @@ theorem safeSetFallbackHandlerSourceStatic (evm : EVM.State) (handler : UInt256)
     ExecTransitionBody config contract evm (fallbackHandlerArgs handler)
       setfallbackhandlerTransition.body
       .staticViolation := by
-  have hcall := ExecStmt.internalCallStatic (cfg := config) (solm := fallbackHandlerFrame handler)
+  have hcall := ExecStmt.internalCallStatic (cfg := config) (stele := fallbackHandlerFrame handler)
     (name := "internalSetFallbackHandler") (retVar := "_ok")
     (callee := internalSetFallbackHandlerFunction.toCallable)
     (evalExprs?_singleton (safeEvalHandler evm handler)) rfl rfl

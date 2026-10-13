@@ -2,7 +2,7 @@ import Benchmarks.Safe.V0_cdb2eb5.SetupDecodeScalars
 import Benchmarks.Safe.V0_cdb2eb5.SetupDecodeOwnersEvidence
 import Benchmarks.Safe.V0_cdb2eb5.CalldataBytesDecoder
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.V0_cdb2eb5
 

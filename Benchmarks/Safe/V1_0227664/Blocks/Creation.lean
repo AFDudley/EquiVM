@@ -2,7 +2,7 @@ import Reasoning.Reach
 import Reasoning.Initcode
 import Benchmarks.Safe.V1_0227664.Bytecode
 
-open Solm ABI Ethereum Ethereum.EVM
+open Stele ABI Ethereum Ethereum.EVM
 open Reasoning.Theory Reasoning.Reach
 
 namespace safeCreationBlocks

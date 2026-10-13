@@ -2,7 +2,7 @@ import Benchmarks.Safe.V1_0227664.Dispatch
 import Benchmarks.Safe.V1_0227664.SimulateTrace
 import Benchmarks.Safe.V1_0227664.SimulateSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.V1_0227664
 
@@ -23,7 +23,7 @@ theorem safeSimulateandrevertBodyCore
   refine RDrev.reEquivElim hcode hrev fun _ _ hΞ ↦ ?_
   cases hdec : decodeCalldata ["targetContract", "calldataPayload"] [abiAddress, .bytes]
       I.calldata with
-  | none => exact .decodingFailed hdispatch rfl hdec hΞ
+  | none => exact .execution hΞ (.decodingFailed hdispatch hdec) (.decodingFailed rfl rfl)
   | some args =>
       obtain ⟨target, payload, rfl⟩ := decodeAddressBytesShape hdec
       exact reEquivSelectorExecution hdispatch hdec

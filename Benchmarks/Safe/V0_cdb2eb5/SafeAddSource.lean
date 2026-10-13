@@ -1,6 +1,6 @@
 import Benchmarks.Safe.V0_cdb2eb5.LocalArrays
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.V0_cdb2eb5
 
@@ -44,7 +44,7 @@ theorem safeInternalAdd {caller : Frame} {evm : EVM.State} {lhs rhs : Expr}
       (.ok { caller with locals := caller.locals.insert retVar (uint256Value (a + b)) } evm) := by
   apply internalCallFunctionReturn (callee := addFunction)
     (argVals := [uint256Value a, uint256Value b]) (locals := arithmeticArgs a b)
-    (calleeSolm := arithmeticFrame caller a b) (value := some [uint256Value (a + b)])
+    (calleeStele := arithmeticFrame caller a b) (value := some [uint256Value (a + b)])
   · simp [evalExprs?, ha, hb, bind, EvalResult.bind, pure]
   · rw [hc]
     rfl

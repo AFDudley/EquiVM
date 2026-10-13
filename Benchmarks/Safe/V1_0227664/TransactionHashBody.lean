@@ -1,7 +1,7 @@
 import Benchmarks.Safe.V1_0227664.TransactionArguments
 import Benchmarks.Safe.V1_0227664.Operation
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.V1_0227664
 

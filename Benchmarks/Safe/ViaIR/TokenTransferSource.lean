@@ -1,7 +1,7 @@
 import Benchmarks.Safe.ViaIR.PreModuleCallEncoding
 import Benchmarks.Safe.ViaIR.P256Source
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.ViaIR
 

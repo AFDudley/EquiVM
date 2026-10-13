@@ -3,7 +3,7 @@ import Benchmarks.Safe.ViaIR.MemoryBytesEncodingInto
 import Benchmarks.Safe.ViaIR.TransactionHashSource
 import Benchmarks.Safe.ViaIR.Decoders
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Safe.ViaIR
 

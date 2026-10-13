@@ -3,7 +3,7 @@ import Benchmarks.Safe.V3_77901a5.CalldataBufferMemory
 import Benchmarks.Safe.V3_77901a5.CalldataLengthRounding
 import Benchmarks.Safe.V3_77901a5.Blocks.Runtime_020
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.V3_77901a5

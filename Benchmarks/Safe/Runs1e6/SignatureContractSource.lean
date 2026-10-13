@@ -2,7 +2,7 @@ import Benchmarks.Safe.Runs1e6.SignatureOffsetSource
 import Benchmarks.Safe.Runs1e6.ContractSignatureCheckSource
 import Benchmarks.Safe.Runs1e6.InternalCall
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.Runs1e6
 
@@ -99,7 +99,7 @@ theorem signatureContractSource {p : SignatureInput} {f : Frame} {evm : EVM.Stat
     | returned f' evm' values => exact .consNormal hg (.consNormal hcall .nil)
     | reverted => exact .consNormal hg (.consRevert hcall)
     | staticViolation => exact .consNormal hg (.consStatic hcall)
-    | ok _ _ | «break» _ _ | «continue» _ _ => cases hbody
+    | ok _ _ | «break» _ _ | «continue» _ _ | noMatch | decodingFailed => cases hbody
   simpa only [List.take_append_drop] using execBlock_append_ok hp htail
 
 end Benchmarks.Safe.Runs1e6

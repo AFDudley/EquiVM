@@ -1,6 +1,6 @@
 import Benchmarks.Safe.V1_0227664.SafeAddSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.V1_0227664
 
@@ -39,7 +39,7 @@ theorem safeInternalMul {caller : Frame} {evm : EVM.State} {lhs rhs : Expr}
         evm) := by
   apply internalCallFunctionReturn (callee := mulFunction)
     (argVals := [uint256Value a, uint256Value b]) (locals := arithmeticArgs a b)
-    (calleeSolm := arithmeticFrame caller a b) (value := some [uint256Value (UInt256.mul a b)])
+    (calleeStele := arithmeticFrame caller a b) (value := some [uint256Value (UInt256.mul a b)])
   · simp [evalExprs?, ha, hb, bind, EvalResult.bind, pure]
   · rw [hc]
     rfl

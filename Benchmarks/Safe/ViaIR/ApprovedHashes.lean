@@ -4,7 +4,7 @@ import Benchmarks.Safe.ViaIR.Calldata
 import Benchmarks.Safe.ViaIR.Storage
 import Benchmarks.Safe.ViaIR.Blocks.Runtime_020
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.ViaIR
@@ -21,7 +21,7 @@ theorem safeApprovedHashesSource (evm : EVM.State) (owner key : UInt256)
     ExecTransitionBody config contract evm (approvedHashesArgs owner key)
       approvedhashesTransition.body
       (.returned { contract := contract, locals := approvedHashesArgs owner key } evm
-        (some [.int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+        (some [.int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
           (mapSlot key (mapSlot owner ⟨8⟩))).toNat)])) := by
   apply uint256GetterBodyReturns evm (approvedHashesArgs owner key)
     (er := { base := "approvedHashes", steps :=
@@ -110,7 +110,7 @@ theorem safeApprovedhashesBodyCore
           refine RDret.reEquivElim hcode hret fun _ _ hsuccess ↦ ?_
           exact reEquivSelectorExecution hdispatch (decodeAddressBytes32 hlen hbig hcanon)
             hbody (.success hsuccess rfl rfl (.abi (returnEquiv_of_encode
-              (by simpa [uint256, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+              (by simpa [uint256, solcSlotWordAt, initState, Stele.EVM.storageLoad,
                 State.lookupAccount] using (uint256ReturnEncoding
                 (solcSlotWordAt (mapSlot (calldataWord I.calldata 36)
                   (mapSlot (calldataWord I.calldata 4) ⟨8⟩)) σ I))))))

@@ -1,7 +1,7 @@
 import Benchmarks.Safe.ViaIR.PaymentSource
 import Benchmarks.Safe.ViaIR.ExecuteCallSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.ViaIR
 

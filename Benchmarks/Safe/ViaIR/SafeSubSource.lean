@@ -1,7 +1,7 @@
 import Benchmarks.Safe.ViaIR.SafeAddSource
 import Benchmarks.Safe.ViaIR.WordExpressionSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.ViaIR
 
@@ -40,7 +40,7 @@ theorem safeInternalSub {caller : Frame} {evm : EVM.State} {lhs rhs : Expr}
         locals := caller.locals.insert retVar (uint256Value (UInt256.sub a b)) } evm) := by
   apply internalCallFunctionReturn (callee := subFunction)
     (argVals := [uint256Value a, uint256Value b]) (locals := arithmeticArgs a b)
-    (calleeSolm := arithmeticFrame caller a b) (value := some [uint256Value (UInt256.sub a b)])
+    (calleeStele := arithmeticFrame caller a b) (value := some [uint256Value (UInt256.sub a b)])
   · simp [evalExprs?, ha, hb, bind, EvalResult.bind, pure]
   · rw [hc]; rfl
   · rfl

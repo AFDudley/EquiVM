@@ -4,7 +4,7 @@ import Benchmarks.Safe.ViaIR.AddressArrayMemory
 import Benchmarks.Safe.ViaIR.GetOwnersAllocation
 import Benchmarks.Safe.ViaIR.IRMemoryAllocation
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.ViaIR

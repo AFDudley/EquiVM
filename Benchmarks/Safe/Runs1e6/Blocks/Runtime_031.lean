@@ -1,7 +1,7 @@
 import Reasoning.Reach
 import Benchmarks.Safe.Runs1e6.Bytecode
 
-open Solm ABI Ethereum Ethereum.EVM
+open Stele ABI Ethereum Ethereum.EVM
 open Reasoning.Theory Reasoning.Reach
 
 namespace safeRuntimeBlocks

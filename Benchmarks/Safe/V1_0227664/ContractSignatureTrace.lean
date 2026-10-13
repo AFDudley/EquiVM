@@ -2,7 +2,7 @@ import Benchmarks.Safe.V1_0227664.ContractSignaturePrepare
 import Benchmarks.Safe.V1_0227664.ContractSignatureReturn
 import Benchmarks.Safe.V1_0227664.RawStaticCall
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.V1_0227664
 

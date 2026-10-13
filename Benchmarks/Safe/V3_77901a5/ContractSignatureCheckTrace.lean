@@ -2,7 +2,7 @@ import Benchmarks.Safe.V3_77901a5.ContractSignatureBounds
 import Benchmarks.Safe.V3_77901a5.ContractSignatureState
 import Benchmarks.Safe.V3_77901a5.MemoryPreserves
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.V3_77901a5

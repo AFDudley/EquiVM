@@ -2,7 +2,7 @@ import Benchmarks.Safe.ViaIR.SetupPaymentTrace
 import Benchmarks.Safe.ViaIR.SetupDataAllocate
 import Benchmarks.Safe.ViaIR.SetupModulesTrace
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.ViaIR
 

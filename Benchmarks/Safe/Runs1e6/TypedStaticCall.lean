@@ -3,7 +3,7 @@ import Benchmarks.Safe.Runs1e6.RawStaticCall
 import Reasoning.ExternalCall
 import Reasoning.WordArithmetic
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.Runs1e6
 

@@ -2,7 +2,7 @@ import Benchmarks.Safe.ViaIR.AddressArrayEncoding
 import Benchmarks.Safe.ViaIR.CalldataWords
 import Benchmarks.Safe.ViaIR.MemoryBytesDecoded
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.ViaIR
 

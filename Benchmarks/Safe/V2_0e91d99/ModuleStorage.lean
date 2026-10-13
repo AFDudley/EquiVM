@@ -2,12 +2,12 @@ import Benchmarks.Safe.V2_0e91d99.Membership
 import Benchmarks.Safe.V2_0e91d99.Authorization
 import Reasoning.WordArithmetic
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.V2_0e91d99
 
 def moduleLink (evm : EVM.State) (key : UInt256) : UInt256 :=
-  UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (mapSlot key ⟨1⟩))
+  UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (mapSlot key ⟨1⟩))
     solcAddrMask
 
 def moduleLinkAt (σ : AccountMap) (I : ExecutionEnv) (key : UInt256) : UInt256 :=
@@ -19,9 +19,9 @@ theorem moduleLink_eq_at (evm : EVM.State) (key : UInt256) :
   rfl
 
 def writeModuleLink (evm : EVM.State) (key value : UInt256) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (mapSlot key ⟨1⟩)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (mapSlot key ⟨1⟩)
     (setAddressOffset0Word
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (mapSlot key ⟨1⟩)) value)
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (mapSlot key ⟨1⟩)) value)
 
 theorem safeEvalModuleLink (evm : EVM.State) (locals : Store) (expr : Expr) (key : UInt256)
     (hbase : locals["modules"]? = none)

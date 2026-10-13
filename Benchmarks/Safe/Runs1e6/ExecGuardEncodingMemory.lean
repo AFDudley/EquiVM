@@ -3,7 +3,7 @@ import Benchmarks.Safe.Runs1e6.MemoryBytesEncodingInto
 import Benchmarks.Safe.Runs1e6.TransactionHashSource
 import Benchmarks.Safe.Runs1e6.Decoders
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Safe.Runs1e6
 

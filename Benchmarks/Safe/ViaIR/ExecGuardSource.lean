@@ -3,7 +3,7 @@ import Benchmarks.Safe.ViaIR.ExecTransactionSignatureSource
 import Benchmarks.Safe.ViaIR.OptionalCheckedCall
 import Benchmarks.Safe.ViaIR.PreModuleSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.ViaIR
 
@@ -15,7 +15,7 @@ def execGuardCheck : Stmt :=
   optionalCheckedCall (.var "guard") "checkTransaction" execGuardArgumentExprs "_guardChecked"
 
 def execGuardWord (evm : EVM.State) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner guardSlot
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner guardSlot
 
 def execGuardFrame (p : ExecTransactionInput) (initial current : EVM.State) : Frame :=
   { contract := contract

@@ -3,7 +3,7 @@ import Benchmarks.Safe.V1_0227664.LocalArrays
 import Benchmarks.Safe.V1_0227664.WordArrayMemory
 import Reasoning.ABIViews
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.V1_0227664
 
@@ -50,7 +50,7 @@ theorem safeStorageAtCondition (evm : EVM.State) {locals offset len words}
   simp [EvalResult.bind, bind, pure, evalBinaryOp_lt_int_ok]
 
 def storageAtWord (evm : EVM.State) (offset : UInt256) (i : Nat) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (offset + UInt256.ofNat i)
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (offset + UInt256.ofNat i)
 
 def storageAtNextLocals (locals : Store) (words : List UInt256) (value : UInt256) : Store :=
   (locals.insert "result" (.bytes (wordBytes (words ++ [value])))).insert

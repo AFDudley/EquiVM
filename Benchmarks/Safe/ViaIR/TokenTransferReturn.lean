@@ -3,7 +3,7 @@ import Benchmarks.Safe.ViaIR.Blocks.Runtime_025
 import Benchmarks.Safe.ViaIR.Blocks.Runtime_026
 import Reasoning.HeapMemory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.ViaIR

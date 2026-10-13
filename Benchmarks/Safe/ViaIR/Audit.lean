@@ -1,9 +1,9 @@
 import Benchmarks.Safe.ViaIR.AuditSupport
 import Benchmarks.Safe.ViaIR.SpecSyntax
 
-/-! Executable regression cases for the pinned Safe bytecode and the actual Solm AST. -/
+/-! Executable regression cases for the pinned Safe bytecode and the actual Stele AST. -/
 
-open Solm ABI Ethereum Ethereum.EVM
+open Stele ABI Ethereum Ethereum.EVM
 
 namespace Benchmarks.Safe.ViaIR.Audit
 

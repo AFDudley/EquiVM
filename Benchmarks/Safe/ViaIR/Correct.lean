@@ -12,7 +12,7 @@ predicate required by owner insertion. The constructor proof has no additional a
 `Blocks.lean` imports the generated instruction summaries used by the bytecode traces.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Safe.ViaIR
 

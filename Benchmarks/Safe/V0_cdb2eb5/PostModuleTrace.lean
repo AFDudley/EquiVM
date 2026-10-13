@@ -1,7 +1,7 @@
 import Benchmarks.Safe.V0_cdb2eb5.PostModuleCheck
 import Benchmarks.Safe.V0_cdb2eb5.PostModuleEvent
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.V0_cdb2eb5
 

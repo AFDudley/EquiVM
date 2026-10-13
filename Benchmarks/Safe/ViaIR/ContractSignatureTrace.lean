@@ -3,7 +3,7 @@ import Benchmarks.Safe.ViaIR.ContractSignatureReturn
 import Benchmarks.Safe.ViaIR.RawStaticCall
 import Benchmarks.Safe.ViaIR.ContractSignatureReject
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.ViaIR
 

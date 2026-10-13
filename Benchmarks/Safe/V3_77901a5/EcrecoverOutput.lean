@@ -2,7 +2,7 @@ import Benchmarks.Safe.V3_77901a5.RawStaticCall
 import Benchmarks.Safe.V3_77901a5.Memory
 import Reasoning.WordArithmetic
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.V3_77901a5
 

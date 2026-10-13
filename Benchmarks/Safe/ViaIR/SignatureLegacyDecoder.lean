@@ -1,7 +1,7 @@
 import Benchmarks.Safe.ViaIR.SignatureLegacyMemorySteps
 import Benchmarks.Safe.ViaIR.MemoryBytesDecodeEvidence
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.ViaIR
 

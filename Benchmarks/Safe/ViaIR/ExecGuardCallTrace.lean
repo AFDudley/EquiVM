@@ -3,7 +3,7 @@ import Benchmarks.Safe.ViaIR.ExecGuardSource
 import Benchmarks.Safe.ViaIR.IRMemoryAllocation
 import Benchmarks.Safe.ViaIR.RawValueCall
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.ViaIR

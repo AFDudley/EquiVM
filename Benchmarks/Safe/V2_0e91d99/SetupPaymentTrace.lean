@@ -4,7 +4,7 @@ import Benchmarks.Safe.V2_0e91d99.VoidRoutineOutcome
 import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_017
 import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_024
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.V2_0e91d99

@@ -2,7 +2,7 @@ import Benchmarks.Safe.ViaIR.ExecGuardEncodingRead
 import Benchmarks.Safe.ViaIR.ExecTransactionInput
 import Benchmarks.Safe.ViaIR.PreModuleCallEncoding
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Safe.ViaIR
 

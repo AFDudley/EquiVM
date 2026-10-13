@@ -1,7 +1,7 @@
 import Benchmarks.Safe.ViaIR.StorageAtSource
 import Benchmarks.Safe.ViaIR.StorageAtAllocation
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.ViaIR

@@ -1,7 +1,7 @@
 import Benchmarks.Safe.Runs1e6.BytesMemoryPreserved
 import Benchmarks.Safe.Runs1e6.Hashes
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.Runs1e6
 

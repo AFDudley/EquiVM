@@ -6,7 +6,7 @@ import Benchmarks.Safe.ViaIR.SetupSource
 /-! Boundary evidence for the setup data allocation. The calldata tail is symbolic;
 only its finite ABI prefix is evaluated. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.ViaIR
 

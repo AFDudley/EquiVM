@@ -1,11 +1,11 @@
 import Benchmarks.Safe.V2_0e91d99.Calldata
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.V2_0e91d99
 
 -- LIBRARY CANDIDATE: a three-address static ABI tuple.
-theorem decodeAddressTripleGuard {cd : ByteArray} {x y z : Solm.Ident}
+theorem decodeAddressTripleGuard {cd : ByteArray} {x y z : Stele.Ident}
     (hlong : 4 ≤ cd.size) :
     decodeCalldata [x, y, z] [abiAddress, abiAddress, abiAddress] cd =
       if 2 ^ 255 ≤ cd.size - 4 then none
@@ -35,7 +35,7 @@ theorem decodeAddressTripleValue {cd : ByteArray} {offset : Nat}
   · rw [if_pos hc, decodeABIValue_address_ok ht (by rw [hw]; exact hc), hw]
   · rw [if_neg hc, decodeABIValue_address_none_noncanon ht (by rw [hw]; exact hc)]
 
-theorem decodeAddressTriple {cd : ByteArray} {x y z : Solm.Ident}
+theorem decodeAddressTriple {cd : ByteArray} {x y z : Stele.Ident}
     (hlen : 100 ≤ cd.size) (hbig : cd.size < 2 ^ 255 + 4) :
     decodeCalldata [x, y, z] [abiAddress, abiAddress, abiAddress] cd =
       if (calldataWord cd 4).toNat < EVM.addressModulus ∧
@@ -57,12 +57,12 @@ theorem decodeAddressTriple {cd : ByteArray} {x y z : Solm.Ident}
       by_cases hc2 : (calldataWord cd 68).toNat < EVM.addressModulus <;>
         simp [h₀, h₁, h₂, hc0, hc1, hc2, decodeCalldata.insertValues]
 
-theorem decodeAddressTripleShort {cd : ByteArray} {x y z : Solm.Ident}
+theorem decodeAddressTripleShort {cd : ByteArray} {x y z : Stele.Ident}
     (hlong : 4 ≤ cd.size) (hshort : cd.size < 100) :
     decodeCalldata [x, y, z] [abiAddress, abiAddress, abiAddress] cd = none := by
   rw [decodeAddressTripleGuard hlong, if_neg (by omega), if_pos (by omega)]
 
-theorem decodeAddressTripleHuge {cd : ByteArray} {x y z : Solm.Ident}
+theorem decodeAddressTripleHuge {cd : ByteArray} {x y z : Stele.Ident}
     (hbig : 2 ^ 255 + 4 ≤ cd.size) :
     decodeCalldata [x, y, z] [abiAddress, abiAddress, abiAddress] cd = none := by
   rw [decodeAddressTripleGuard (by omega), if_pos (by omega)]

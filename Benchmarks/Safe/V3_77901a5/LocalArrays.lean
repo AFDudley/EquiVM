@@ -1,7 +1,7 @@
 import Benchmarks.Safe.V3_77901a5.Common
-import Reasoning.SolmArithmetic
+import Reasoning.SteleArithmetic
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.V3_77901a5
 
@@ -53,7 +53,7 @@ theorem evalNatIncrement {cfg : Config} {frame : Frame} {evm : EVM.State}
     exact Nat.mod_eq_of_lt hfit
   simpa only [hsum] using h
 
--- LIBRARY CANDIDATE: relate Solm's checked list lookup to Lean's list indexing.
+-- LIBRARY CANDIDATE: relate Stele's checked list lookup to Lean's list indexing.
 theorem lookupNth_eq_getElem {α : Type} (xs : List α) (i : Nat) (hi : i < xs.length) :
     lookupNth? xs i = some xs[i] := by
   induction xs generalizing i with
@@ -63,7 +63,7 @@ theorem lookupNth_eq_getElem {α : Type} (xs : List α) (i : Nat) (hi : i < xs.l
       | zero => rfl
       | succ i => exact ih i (by simpa using hi)
 
--- LIBRARY CANDIDATE: relate Solm's checked list update to List.set.
+-- LIBRARY CANDIDATE: relate Stele's checked list update to List.set.
 theorem updateNth_eq_set {α : Type} (xs : List α) (i : Nat) (value : α)
     (hi : i < xs.length) : updateNth? xs i value = some (xs.set i value) := by
   induction xs generalizing i with

@@ -5,7 +5,7 @@ import Benchmarks.Safe.ViaIR.InternalCall
 import Benchmarks.Safe.ViaIR.ModuleArguments
 import Benchmarks.Safe.ViaIR.Operation
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.ViaIR
 

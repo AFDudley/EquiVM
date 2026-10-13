@@ -4,7 +4,7 @@ import Benchmarks.Safe.ViaIR.ModulesAllocation
 import Benchmarks.Safe.ViaIR.ModulesLoopFinish
 import Benchmarks.Safe.ViaIR.ModulesReturn
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.ViaIR

@@ -3,7 +3,7 @@ import Benchmarks.Safe.V3_77901a5.Bytes4ReturnDecoder
 import Benchmarks.Safe.V3_77901a5.Bytes32ReturnDecoder
 import Benchmarks.Safe.V3_77901a5.PreModuleCallEncoding
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.V3_77901a5
 

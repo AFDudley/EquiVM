@@ -3,7 +3,7 @@ import Benchmarks.Safe.V0_cdb2eb5.ExecTransactionDecoderEvidence
 import Benchmarks.Safe.V0_cdb2eb5.ExecTransactionBodyTrace
 import Benchmarks.Safe.V0_cdb2eb5.Blocks.Runtime_009
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.V0_cdb2eb5

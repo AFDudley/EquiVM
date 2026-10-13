@@ -1,7 +1,7 @@
 import Benchmarks.Safe.V0_cdb2eb5.WordArrayMemory
 import Reasoning.WordArithmetic
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Safe.V0_cdb2eb5
 

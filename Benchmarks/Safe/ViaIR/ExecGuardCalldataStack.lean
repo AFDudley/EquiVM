@@ -1,7 +1,7 @@
 import Benchmarks.Safe.ViaIR.ExecGuardCallPrepare
 import Benchmarks.Safe.ViaIR.ExecTransactionHashTrace
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Safe.ViaIR
 

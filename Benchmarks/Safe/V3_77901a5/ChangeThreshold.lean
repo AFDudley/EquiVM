@@ -6,7 +6,7 @@ import Benchmarks.Safe.V3_77901a5.Blocks.Runtime_008
 import Benchmarks.Safe.V3_77901a5.Blocks.Runtime_009
 import Benchmarks.Safe.V3_77901a5.Blocks.Runtime_019
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.V3_77901a5
@@ -18,11 +18,11 @@ variable {σ σ₀ : AccountMap} {g : UInt256} {A : Substate} {I : ExecutionEnv}
 theorem safeChangeThresholdSource (evm : EVM.State) (value : UInt256)
     (hvalue : evm.executionEnv.weiValue = ⟨0⟩)
     (hauth : evm.executionEnv.source = evm.executionEnv.codeOwner)
-    (hle : value.toNat ≤ (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩).toNat)
+    (hle : value.toNat ≤ (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩).toNat)
     (hnz : value ≠ ⟨0⟩) :
     ExecTransitionBody config contract evm (thresholdArgs value) changethresholdTransition.body
       (.returned (resumeAfterInternalCall (thresholdFrame value) "_ok" none)
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨4⟩ value) none) := by
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨4⟩ value) none) := by
   have hcall := internalCallFunctionReturn (caller := thresholdFrame value)
     (name := "changeThresholdBody") (retVar := "_ok") (callee := changeThresholdBodyFunction)
     (evalExprs?_singleton (safeEvalThreshold evm value)) rfl rfl
@@ -34,11 +34,11 @@ theorem safeChangeThresholdSource (evm : EVM.State) (value : UInt256)
 theorem safeChangeThresholdSourceStatic (evm : EVM.State) (value : UInt256)
     (hvalue : evm.executionEnv.weiValue = ⟨0⟩)
     (hauth : evm.executionEnv.source = evm.executionEnv.codeOwner)
-    (hle : value.toNat ≤ (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩).toNat)
+    (hle : value.toNat ≤ (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩).toNat)
     (hnz : value ≠ ⟨0⟩) (hperm : evm.executionEnv.perm = false) :
     ExecTransitionBody config contract evm (thresholdArgs value) changethresholdTransition.body
       .staticViolation := by
-  have hcall := ExecStmt.internalCallStatic (cfg := config) (solm := thresholdFrame value)
+  have hcall := ExecStmt.internalCallStatic (cfg := config) (stele := thresholdFrame value)
     (name := "changeThresholdBody") (retVar := "_ok") (callee :=
       changeThresholdBodyFunction.toCallable)
     (evalExprs?_singleton (safeEvalThreshold evm value)) rfl rfl

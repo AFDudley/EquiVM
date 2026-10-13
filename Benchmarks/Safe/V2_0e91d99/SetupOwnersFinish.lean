@@ -1,7 +1,7 @@
 import Benchmarks.Safe.V2_0e91d99.SetupOwnersStore
 import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_036
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.V2_0e91d99
@@ -11,7 +11,7 @@ theorem safeAssignThresholdLocals (evm : EVM.State) (locals : Store) (value : UI
     (hb : locals["threshold"]? = none) :
     assignStorageRef? config { contract := contract, locals := locals } evm .storage thresholdRef
       (uint256Value value) = .ok ({ contract := contract, locals := locals },
-        Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨4⟩ value) := by
+        Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨4⟩ value) := by
   apply assignStorageRef_storage_scalar_value (er := { base := "threshold" })
     (loc := uint256Loc ⟨4⟩)
   · exact hb
@@ -25,9 +25,9 @@ theorem safeAssignThresholdLocals (evm : EVM.State) (locals : Store) (value : UI
 def setupOwnersFinishState (p : SetupOwnersInput) (evm : EVM.State)
     (current : UInt256) : EVM.State :=
   let evm₁ := writeOwnerLink evm current ⟨1⟩
-  let evm₂ := Solm.EVM.storageStore evm₁ evm₁.executionEnv.codeOwner ⟨3⟩
+  let evm₂ := Stele.EVM.storageStore evm₁ evm₁.executionEnv.codeOwner ⟨3⟩
     (UInt256.ofNat p.owners.length)
-  Solm.EVM.storageStore evm₂ evm₂.executionEnv.codeOwner ⟨4⟩ p.threshold
+  Stele.EVM.storageStore evm₂ evm₂.executionEnv.codeOwner ⟨4⟩ p.threshold
 
 theorem safeSetupOwnersFinishSource (evm : EVM.State) {p locals i current}
     (hl : SetupOwnersLocals p locals i current) (hc : current.toNat < EVM.addressModulus)

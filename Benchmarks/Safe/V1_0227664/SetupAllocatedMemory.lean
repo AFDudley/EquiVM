@@ -2,7 +2,7 @@ import Benchmarks.Safe.V1_0227664.SetupEventMemory
 import Benchmarks.Safe.V1_0227664.CalldataBufferMemory
 import Benchmarks.Safe.V1_0227664.SetupCalldataFacts
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.V1_0227664
 

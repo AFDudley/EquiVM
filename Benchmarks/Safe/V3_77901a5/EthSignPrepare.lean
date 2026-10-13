@@ -2,7 +2,7 @@ import Benchmarks.Safe.V3_77901a5.EthSignMemory
 import Benchmarks.Safe.V3_77901a5.CheckedSubtract
 import Benchmarks.Safe.V3_77901a5.Blocks.Runtime_016
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.V3_77901a5

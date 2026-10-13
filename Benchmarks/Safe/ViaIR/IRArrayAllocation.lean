@@ -4,7 +4,7 @@ import Benchmarks.Safe.ViaIR.IRLengthCheck
 
 /-! Regression witness for the IR owner-array allocation-pointer check. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.ViaIR
 

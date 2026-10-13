@@ -1,7 +1,7 @@
 import Benchmarks.Safe.Runs1e6.PreModuleCheck
 import Benchmarks.Safe.Runs1e6.PreModuleAuthorization
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.Runs1e6

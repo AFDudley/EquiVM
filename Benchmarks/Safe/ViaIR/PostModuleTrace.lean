@@ -1,7 +1,7 @@
 import Benchmarks.Safe.ViaIR.PostModuleCheck
 import Benchmarks.Safe.ViaIR.PostModuleEvent
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.ViaIR
 

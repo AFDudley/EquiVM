@@ -2,7 +2,7 @@ import Benchmarks.Safe.Runs1e6.ExecTransactionContext
 import Benchmarks.Safe.Runs1e6.ExecuteCallerSource
 import Benchmarks.Safe.Runs1e6.SignatureSwitchSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.Runs1e6
 

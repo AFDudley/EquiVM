@@ -26,7 +26,7 @@ Artifacts:
 - `runtime.hex`: optimized deployed runtime bytecode, 11749 bytes, sha256 `7d0bd9860acadf2430abf739f082349472fa10d0640ab1db189cbfa6b79e1943`
 - `Safe.abi.json`: ABI emitted by solc, sha256 `40069244550920fc4ecdb4a162f9b45c78b5de06fc7fdcb8f7d4350739bb8682`
 - `sources.sha256`: sha256 manifest for the vendored Solidity source tree
-- `Spec.lean`: Solm AST with ABI surface, solc 0.8.35 decoding, and physical storage layout
+- `Spec.lean`: Stele AST with ABI surface, solc 0.8.35 decoding, and physical storage layout
 - `SpecSyntax.lean`: syntax-side wrapper checked definitionally against the AST scaffold
 - `Bytecode.lean`: optimized bytecode embedded as `ByteArray`, with `valid_jumps` facts
 - `Constructor.lean`: proved constructor equivalence
@@ -42,7 +42,7 @@ Main source sha256: `fb2768bfc940795ba403cc861177ff6abf62733933b573b41ab92337667
 
 ## Semantic audit
 
-The audit target is the pinned bytecode under the repository's current `Solm.runtimeRefinement`.
+The audit target is the pinned bytecode under the repository's current `Stele.runtimeRefinement`.
 That relation observes the final account map, successful return bytes, reverts, invalid-instruction
 halts, and static-mode violations. Gas exhaustion has its own refinement case. Gas observations
 and call gas/substate inputs are existential witnesses. Log contents and revert payloads are not
@@ -149,5 +149,5 @@ directory to `PATH`, and run the randomized suite there (with `-d` pointing to t
 
 ```bash
 cd .lake/packages/evmlean
-lake -d ../../.. exe solm-difftest --only Safe_V2_0e91d99 --count 50
+lake -d ../../.. exe stele-difftest --only Safe_V2_0e91d99 --count 50
 ```

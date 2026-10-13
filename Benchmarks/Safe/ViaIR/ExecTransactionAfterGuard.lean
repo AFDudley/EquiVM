@@ -3,7 +3,7 @@ import Benchmarks.Safe.ViaIR.ExecTransactionPaymentTrace
 import Benchmarks.Safe.ViaIR.ExecTransactionSuccessCheck
 import Benchmarks.Safe.ViaIR.ExecTransactionGasCheck
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.ViaIR
 

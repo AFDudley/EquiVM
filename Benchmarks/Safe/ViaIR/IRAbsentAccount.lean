@@ -7,7 +7,7 @@ The public refinement premises permit this account map. Storage writes leave it 
 so the source's threshold check reads zero, while the IR check uses the incremented value one.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.ViaIR
 
@@ -255,11 +255,11 @@ theorem safeIRAbsentOwnerNotRefines :
   intro h
   have hex := safeIRAbsentOwnerExecution
   cases h with
-  | execution hxi hsolm hrel =>
+  | execution hxi hstele hrel =>
     cases hrel with
     | success hevm hsource _ _ =>
       cases hsource
-      cases hsolm with
+      cases hstele with
       | intro hsel hsig hdec hstate hbody =>
         rw [safeIRAbsentOwnerPremises.2.2] at hsel
         cases hsel

@@ -4,7 +4,7 @@ import Benchmarks.Safe.ViaIR.PreModuleSource
 import Benchmarks.Safe.ViaIR.PreModuleReject
 import Benchmarks.Safe.ViaIR.RawValueCall
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.ViaIR

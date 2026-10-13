@@ -4,7 +4,7 @@ import Benchmarks.Safe.V3_77901a5.SetupModulesTrace
 import Benchmarks.Safe.V3_77901a5.InternalSetFallbackHandler
 import Benchmarks.Safe.V3_77901a5.PaymentTrace
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.V3_77901a5
 

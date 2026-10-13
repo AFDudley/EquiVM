@@ -2,7 +2,7 @@ import Benchmarks.Safe.V2_0e91d99.CheckNSignaturesSource
 import Benchmarks.Safe.V2_0e91d99.SignatureBranchSource
 import Benchmarks.Safe.V2_0e91d99.OwnerCount
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.V2_0e91d99
 

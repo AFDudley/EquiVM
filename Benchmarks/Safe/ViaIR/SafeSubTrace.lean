@@ -2,7 +2,7 @@ import Benchmarks.Safe.ViaIR.CheckedSubtract
 import Benchmarks.Safe.ViaIR.Blocks.Runtime_033
 import Benchmarks.Safe.ViaIR.Blocks.Runtime_030
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.ViaIR

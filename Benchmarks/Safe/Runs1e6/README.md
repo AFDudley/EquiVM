@@ -26,7 +26,7 @@ Artifacts:
 - `runtime.hex`: optimized deployed runtime bytecode, 14838 bytes, sha256 `a20f47a04ed9b915467aa478fbcb0d66b58d7a9d5ccbab6b93150fbc5431afae`
 - `Safe.abi.json`: ABI emitted by solc, sha256 `c2d916b516f1cf00691d5fe99f62e8bba92e0675e8c25b5e5800d6e53b08053a`
 - `sources.sha256`: sha256 manifest for the vendored Solidity source tree
-- `Spec.lean`: Solm AST with ABI surface, solc 0.8.35 decoding, and physical storage layout
+- `Spec.lean`: Stele AST with ABI surface, solc 0.8.35 decoding, and physical storage layout
 - `SpecSyntax.lean`: syntax-side wrapper checked definitionally against the AST scaffold
 - `Bytecode.lean`: optimized bytecode embedded as `ByteArray`, with `valid_jumps` facts
 - `Constructor.lean`: proved constructor equivalence
@@ -42,7 +42,7 @@ Main source sha256: `9f91d9250e18bb0710b7b1f10dcbe2417e9ef8d22eeee98dba2ef48661a
 
 ## Semantic audit
 
-The audit target is the pinned bytecode under the repository's current `Solm.runtimeRefinement`.
+The audit target is the pinned bytecode under the repository's current `Stele.runtimeRefinement`.
 That relation observes the final account map, successful return bytes, reverts, invalid-instruction
 halts, and static-mode violations. Gas exhaustion has its own refinement case. Gas observations
 and call gas/substate inputs are existential witnesses. Log contents and revert payloads are not

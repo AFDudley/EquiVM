@@ -2,7 +2,7 @@ import Benchmarks.Safe.V0_cdb2eb5.PreModuleTrace
 import Benchmarks.Safe.V0_cdb2eb5.MemoryBytesDecoded
 import Benchmarks.Safe.V0_cdb2eb5.ByteCopy
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.V0_cdb2eb5
 

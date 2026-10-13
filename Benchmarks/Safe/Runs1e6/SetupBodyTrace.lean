@@ -1,7 +1,7 @@
 import Benchmarks.Safe.Runs1e6.SetupAfterOwners
 import Benchmarks.Safe.Runs1e6.SetupEventTrace
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.Runs1e6
 

@@ -2,7 +2,7 @@ import Benchmarks.Safe.V2_0e91d99.WordArrayMemory
 import Benchmarks.Safe.V2_0e91d99.Memory
 import Benchmarks.Safe.V2_0e91d99.AddressArrayEncoding
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Safe.V2_0e91d99
 

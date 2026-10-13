@@ -1,7 +1,7 @@
 import Benchmarks.Safe.V1_0227664.OwnerCount
 import Benchmarks.Safe.V1_0227664.Threshold
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.V1_0227664
 
@@ -42,7 +42,7 @@ theorem safeThresholdChangeChanged (evm : EVM.State) (locals : Store) (value : U
     ExecStmt config { contract := contract, locals := locals } evm thresholdChangeStmt
       (.ok (resumeAfterInternalCall { contract := contract, locals := locals }
         "_thresholdChanged" none)
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨4⟩ value)) := by
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨4⟩ value)) := by
   have hcall := internalCallFunctionReturn
     (caller := { contract := contract, locals := locals })
     (name := "changeThresholdBody") (retVar := "_thresholdChanged")

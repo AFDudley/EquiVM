@@ -3,7 +3,7 @@ import Benchmarks.Safe.V1_0227664.MemoryBytesDecodeEvidence
 import Benchmarks.Safe.V1_0227664.Blocks.Runtime_040
 import Benchmarks.Safe.V1_0227664.Blocks.Runtime_041
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.V1_0227664

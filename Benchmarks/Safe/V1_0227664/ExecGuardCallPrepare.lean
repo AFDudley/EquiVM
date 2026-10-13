@@ -2,7 +2,7 @@ import Benchmarks.Safe.V1_0227664.ExecGuardEncode
 import Benchmarks.Safe.V1_0227664.ExecGuardCallMemory
 import Benchmarks.Safe.V1_0227664.Blocks.Runtime_019
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.V1_0227664

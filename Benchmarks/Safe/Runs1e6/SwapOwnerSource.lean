@@ -1,6 +1,6 @@
 import Benchmarks.Safe.Runs1e6.OwnerGuardTraces
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.Runs1e6
 
@@ -29,7 +29,7 @@ theorem safeSwapOwnerCanAdd (evm : EVM.State) (prev old new : UInt256)
       (.ok (swapOwnerFrame₁ prev old new) evm) := by
   apply internalCallFunctionReturn (callee := requireCanAddOwnerFunction)
     (argVals := [.address (AccountAddress.ofNat new.toNat)])
-    (locals := canAddOwnerArgs new) (calleeSolm := canAddOwnerFrame new)
+    (locals := canAddOwnerArgs new) (calleeStele := canAddOwnerFrame new)
   · simp [swapOwnerFrame, swapOwnerArgs, evalExprs?, evalExpr?, EvalResult.ofOption,
       EvalResult.bind, bind, pure]
   · rfl
@@ -45,7 +45,7 @@ theorem safeSwapOwnerCanRemove (evm : EVM.State) (prev old new : UInt256)
   apply internalCallFunctionReturn (callee := requireCanRemoveOwnerFunction)
     (argVals := [.address (AccountAddress.ofNat prev.toNat),
       .address (AccountAddress.ofNat old.toNat)])
-    (locals := canRemoveOwnerArgs prev old) (calleeSolm := canRemoveOwnerFrame prev old)
+    (locals := canRemoveOwnerArgs prev old) (calleeStele := canRemoveOwnerFrame prev old)
   · simp [swapOwnerFrame₁, swapOwnerFrame, swapOwnerArgs, resumeAfterInternalCall,
       evalExprs?, evalExpr?, EvalResult.ofOption, EvalResult.bind, bind, pure,
       Std.HashMap.getElem_insert]

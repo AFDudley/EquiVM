@@ -4,7 +4,7 @@ import Benchmarks.Safe.V1_0227664.Decoders
 import Benchmarks.Safe.V1_0227664.Blocks.Runtime_029
 import Benchmarks.Safe.V1_0227664.Blocks.Runtime_035
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.V1_0227664
@@ -35,7 +35,7 @@ theorem safeAssignFallbackHandler (evm : EVM.State) (handler : UInt256)
     assignStorageRef? config (fallbackHandlerFrame handler) evm .storage fallbackHandlerRef
       (.address (AccountAddress.ofNat handler.toNat)) =
       .ok (fallbackHandlerFrame handler,
-        Solm.EVM.storageStore evm evm.executionEnv.codeOwner fallbackHandlerSlot handler) := by
+        Stele.EVM.storageStore evm evm.executionEnv.codeOwner fallbackHandlerSlot handler) := by
   apply assignStorageRef_storage_scalar_value (er := { base := "_fallbackHandler" })
     (loc := wordLoc fallbackHandlerSlot .address)
   · simp [fallbackHandlerFrame, fallbackHandlerArgs, fallbackHandlerRef]
@@ -53,7 +53,7 @@ theorem safeInternalSetFallbackHandlerSource (evm : EVM.State) (handler : UInt25
     (hne : AccountAddress.ofNat handler.toNat ≠ evm.executionEnv.codeOwner) :
     ExecFuncBody config (fallbackHandlerFrame handler) evm internalSetFallbackHandlerFunction.body
       (.returned (fallbackHandlerFrame handler)
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner fallbackHandlerSlot handler) none)
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner fallbackHandlerSlot handler) none)
           := by
   exact .execBlockOK (.consNormal (.requireTrue (by simpa [hne] using safeHandlerGuard evm handler))
     (.consNormal (.assign (safeEvalHandler evm handler)

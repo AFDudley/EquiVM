@@ -2,7 +2,7 @@ import Benchmarks.Safe.V0_cdb2eb5.WordArrayMemory
 import Benchmarks.Safe.V0_cdb2eb5.Memory
 import Reasoning.ABIViews
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.V0_cdb2eb5
 

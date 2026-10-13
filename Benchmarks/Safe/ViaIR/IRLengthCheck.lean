@@ -4,7 +4,7 @@ import Benchmarks.Safe.ViaIR.Blocks.Runtime_005
 import Benchmarks.Safe.ViaIR.Blocks.Runtime_019
 import Reasoning.WordArithmetic
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.ViaIR
@@ -139,7 +139,7 @@ theorem safeIRNonceSourceReturns {I : ExecutionEnv} {σ σ₀ : AccountMap} {A :
       (.returned { contract := contract, locals := ∅ } (initState σ σ₀ g A I)
         (some [.int (Int.ofNat (solcSlotWordAt ⟨5⟩ σ I).toNat)])) := by
   simpa only [nonceTransition, nonpayable, solcSlotWordAt, initState,
-    Solm.EVM.storageLoad, State.lookupAccount] using
+    Stele.EVM.storageLoad, State.lookupAccount] using
     uint256GetterBodyReturns (cfg := config) (c := contract)
       (initState σ σ₀ g A I) ∅ (ref := nonceRef) (er := { base := "nonce" }) (slot := ⟨5⟩)
       hvalue (by simp)
@@ -176,7 +176,7 @@ theorem safeIRNonceSourceCannotRevert {I : ExecutionEnv} {σ σ₀ : AccountMap}
   apply nonpayableReturnCannotRevert
     (values := [.int (Int.ofNat (solcSlotWordAt ⟨5⟩ σ I).toNat)]) hvalue
   have hload := evalExpr_storage_scalar_value (cfg := config)
-    (solm := { contract := contract, locals := ∅ }) (evm := initState σ σ₀ g A I)
+    (stele := { contract := contract, locals := ∅ }) (evm := initState σ σ₀ g A I)
     (slot := nonceRef) (er := { base := "nonce" }) (loc := uint256Loc ⟨5⟩)
     (t := .int (.uint ⟨256, by decide⟩))
     (by simp)

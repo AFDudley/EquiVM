@@ -40,7 +40,7 @@
        mirroring `safe`, and add it to the same list; this is the one permitted edit outside the
        directory. Then run the differential tests on the spec and the new bytecode:
        `lake build Benchmarks.Safe.ViaIR.Audit` must print `failures 0`, and
-       `lake exe solm-difftest --only Safe_ViaIR --count 50` must print `0 disagree`, before you
+       `lake exe stele-difftest --only Safe_ViaIR --count 50` must print `0 disagree`, before you
        touch any proof. Do not change the statement of `safeContractCorrect`, `safeCorrect`,
        `safeConstructorCorrect` or any of the 33 `safe…Refines` entrypoint theorems.
        Commit: "Benchmarks: Safe spec and audit".
@@ -59,6 +59,6 @@
        list files: the commits record them. Commit: "Benchmarks: Safe repair report".
 
   Rules: work only inside `Benchmarks/Safe/ViaIR/`, plus the registry entry of step 2. No
-  other edits to `Tests/`, and none to `Solm/`, `Reasoning/`, `EVM/`, `scripts/`,
+  other edits to `Tests/`, and none to `Stele/`, `Reasoning/`, `EVM/`, `scripts/`,
   `Benchmarks.lean`, CI or the lakefile; if one seems unavoidable, stop and report. Never
   bypass a problem; if something looks unprovable, investigate, report and wait.

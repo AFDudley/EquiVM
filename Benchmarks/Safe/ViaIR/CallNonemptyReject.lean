@@ -1,8 +1,8 @@
 import Reasoning.Stepping
-import Solm.Semantics.Calls
+import Stele.Semantics.Calls
 import Ethereum.Theory.GasLemmas
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Safe.ViaIR
 

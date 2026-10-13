@@ -3,7 +3,7 @@ import Benchmarks.Safe.Runs1e6.ExecTransactionPaymentTrace
 import Benchmarks.Safe.Runs1e6.ExecTransactionSuccessCheck
 import Benchmarks.Safe.Runs1e6.ExecTransactionGasCheck
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.Runs1e6
 

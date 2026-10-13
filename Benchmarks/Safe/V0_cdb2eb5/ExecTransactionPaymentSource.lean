@@ -2,7 +2,7 @@ import Benchmarks.Safe.V0_cdb2eb5.ExecTransactionContext
 import Benchmarks.Safe.V0_cdb2eb5.PaymentTrace
 import Benchmarks.Safe.V0_cdb2eb5.SignatureBranchSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.V0_cdb2eb5
 

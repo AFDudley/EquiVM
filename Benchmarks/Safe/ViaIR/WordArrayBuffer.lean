@@ -1,7 +1,7 @@
 import Benchmarks.Safe.ViaIR.WordArrayMemory
 import Benchmarks.Safe.ViaIR.MemoryPreserves
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.ViaIR
 

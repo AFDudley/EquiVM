@@ -1,7 +1,7 @@
 import Benchmarks.Safe.ViaIR.ExecGuardEncode
 import Benchmarks.Safe.ViaIR.ExecGuardCallMemory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.ViaIR

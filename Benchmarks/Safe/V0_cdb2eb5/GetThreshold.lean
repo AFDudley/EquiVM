@@ -3,7 +3,7 @@ import Benchmarks.Safe.V0_cdb2eb5.Storage
 import Benchmarks.Safe.V0_cdb2eb5.Routines
 import Benchmarks.Safe.V0_cdb2eb5.Blocks.Runtime_012
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.V0_cdb2eb5
@@ -32,7 +32,7 @@ theorem safeGetthresholdBodyCore
           (initState σ σ₀ (.ofUInt256 g) A I)
           (some [.int (Int.ofNat (solcSlotWordAt ⟨4⟩ σ I).toNat)])) := by
       simpa only [getthresholdTransition, nonpayable, solcSlotWordAt, initState,
-        Solm.EVM.storageLoad, State.lookupAccount] using
+        Stele.EVM.storageLoad, State.lookupAccount] using
         uint256GetterBodyReturns (cfg := config) (c := contract)
           (initState σ σ₀ (.ofUInt256 g) A I) ∅
           (ref := thresholdRef) (er := { base := "threshold" }) (slot := ⟨4⟩)

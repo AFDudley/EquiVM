@@ -3,7 +3,7 @@ import Benchmarks.Safe.ViaIR.PostModuleSource
 import Benchmarks.Safe.ViaIR.Blocks.Runtime_046
 import Reasoning.WordArithmetic
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.ViaIR

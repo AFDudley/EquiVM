@@ -3,7 +3,7 @@ import Benchmarks.Safe.ViaIR.OwnerStorage
 import Benchmarks.Safe.ViaIR.Operation
 import Benchmarks.Safe.ViaIR.ModuleCallerSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.ViaIR
 
@@ -56,7 +56,7 @@ theorem safeAssignExecNonce (evm : EVM.State) (locals : Store) (value : UInt256)
     (hn : locals["nonce"]? = none) :
     assignStorageRef? config { contract := contract, locals := locals } evm .storage nonceRef
       (uint256Value value) = .ok ({ contract := contract, locals := locals },
-        Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨5⟩ value) := by
+        Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨5⟩ value) := by
   apply assignStorageRef_storage_scalar_value (er := { base := "nonce" }) (loc := uint256Loc ⟨5⟩)
   · exact hn
   · simp [evalStorageRef, evalStorageRefSteps, nonceRef, EvalResult.bind, bind, pure]

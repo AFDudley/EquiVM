@@ -1,7 +1,7 @@
 import Benchmarks.Safe.ViaIR.ExecuteSource
 import Benchmarks.Safe.ViaIR.ExecuteRawTrace
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.ViaIR

@@ -6,7 +6,7 @@ import Benchmarks.Safe.Runs1e6.Blocks.Runtime_011
 import Benchmarks.Safe.Runs1e6.Blocks.Runtime_026
 import Benchmarks.Safe.Runs1e6.Blocks.Runtime_030
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.Runs1e6
@@ -50,7 +50,7 @@ theorem safeAssignApprovedHash (evm : EVM.State) (key : UInt256) :
     assignStorageRef? config (approveHashFrame key) evm .storage
       (approvedHashesRef sender (.var "hashToApprove")) (.int 1) =
       .ok (approveHashFrame key,
-        Solm.EVM.storageStore evm evm.executionEnv.codeOwner (approveHashSlot evm.executionEnv
+        Stele.EVM.storageStore evm evm.executionEnv.codeOwner (approveHashSlot evm.executionEnv
           key) ⟨1⟩) := by
   apply assignStorageRef_storage_scalar_value (er := { base := "approvedHashes", steps :=
       [.mindex (.address evm.executionEnv.source),
@@ -77,7 +77,7 @@ theorem safeApproveHashSource (evm : EVM.State) (key : UInt256)
     (howner : approveHashOwnerWord evm.accountMap evm.executionEnv ≠ ⟨0⟩) :
     ExecTransitionBody config contract evm (approveHashArgs key) approvehashTransition.body
       (.returned (approveHashFrame key)
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner (approveHashSlot evm.executionEnv
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner (approveHashSlot evm.executionEnv
           key) ⟨1⟩)
         none) := by
   refine .execBlockOK (.consNormal (.requireTrue (evalCallvalueEq_true hvalue))

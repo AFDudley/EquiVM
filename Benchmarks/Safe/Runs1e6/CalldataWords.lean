@@ -2,7 +2,7 @@ import Benchmarks.Safe.Runs1e6.DynamicCalldata
 import Benchmarks.Safe.Runs1e6.WordArrayMemory
 import Benchmarks.Safe.Runs1e6.LocalArrays
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.Runs1e6
 

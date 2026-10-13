@@ -6,7 +6,7 @@ import Benchmarks.Safe.Runs1e6.BoolReturnMemory
 import Benchmarks.Safe.Runs1e6.Blocks.Runtime_017
 import Benchmarks.Safe.Runs1e6.Blocks.Runtime_018
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.Runs1e6

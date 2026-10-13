@@ -2,7 +2,7 @@ import Benchmarks.Safe.ViaIR.SignatureBranchTrace
 import Benchmarks.Safe.ViaIR.SignatureSplitTrace
 import Benchmarks.Safe.ViaIR.SignatureOwnerTrace
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.ViaIR
 

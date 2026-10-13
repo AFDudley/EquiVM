@@ -2,7 +2,7 @@ import Benchmarks.Safe.ViaIR.ExecTransactionContext
 import Benchmarks.Safe.ViaIR.ExecuteCallerSource
 import Benchmarks.Safe.ViaIR.SignatureSwitchSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.ViaIR
 

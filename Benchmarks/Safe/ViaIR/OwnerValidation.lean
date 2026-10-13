@@ -3,7 +3,7 @@ import Benchmarks.Safe.ViaIR.Membership
 import Benchmarks.Safe.ViaIR.Authorization
 import Benchmarks.Safe.ViaIR.Blocks.Runtime_049
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.ViaIR

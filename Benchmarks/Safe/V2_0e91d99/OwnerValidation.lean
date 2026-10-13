@@ -6,7 +6,7 @@ import Benchmarks.Safe.V2_0e91d99.DelegatedAccount
 import Benchmarks.Safe.V2_0e91d99.Membership
 import Benchmarks.Safe.V2_0e91d99.Authorization
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.V2_0e91d99

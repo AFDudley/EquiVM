@@ -1,7 +1,7 @@
 import Benchmarks.Safe.V1_0227664.LocalArrays
 import Benchmarks.Safe.V1_0227664.Bytes32ReturnDecoder
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.V1_0227664
 

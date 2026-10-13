@@ -2,7 +2,7 @@ import Benchmarks.Safe.Runs1e6.SignatureP256Pieces
 import Benchmarks.Safe.Runs1e6.P256Memory
 import Benchmarks.Safe.Runs1e6.BytesMemoryPreserved
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.Runs1e6
 

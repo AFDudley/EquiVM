@@ -2,7 +2,7 @@ import Benchmarks.Safe.V2_0e91d99.ContractSignatureTrace
 import Benchmarks.Safe.V2_0e91d99.BytesMemory
 import Benchmarks.Safe.V2_0e91d99.ByteCopy
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.V2_0e91d99
 

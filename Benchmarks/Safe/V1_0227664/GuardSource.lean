@@ -4,7 +4,7 @@ import Benchmarks.Safe.V1_0227664.ModuleStorage
 import Reasoning.ExternalCall
 import Reasoning.ABIComposite
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.V1_0227664
 
@@ -107,7 +107,7 @@ theorem safeAssignGuard (evm : EVM.State) (locals : Store) (guard : UInt256)
       (guardStorageRef kind)
       (.address (AccountAddress.ofNat guard.toNat)) =
       .ok ({ contract := contract, locals := locals },
-        Solm.EVM.storageStore evm evm.executionEnv.codeOwner (guardStorageSlot kind) guard) := by
+        Stele.EVM.storageStore evm evm.executionEnv.codeOwner (guardStorageSlot kind) guard) := by
   apply assignStorageRef_storage_scalar_value (er := { base := (guardField kind) })
     (ty := .elem .address) (layout := storageLayout)
     (loc := wordLoc (guardStorageSlot kind) .address)
@@ -130,7 +130,7 @@ theorem safeGuardSourceSuccess {evm evm' : EVM.State} {guard : UInt256} {locals 
       (.ok { contract := contract, locals := locals } evm')) :
     ExecTransitionBody config contract evm (guardArgs kind guard) (guardTransition kind).body
       (.returned { contract := contract, locals := locals }
-        (Solm.EVM.storageStore evm' evm'.executionEnv.codeOwner (guardStorageSlot kind) guard)
+        (Stele.EVM.storageStore evm' evm'.executionEnv.codeOwner (guardStorageSlot kind) guard)
         none) := by
   rw [guardTransition_body]
   have he : evalExpr? config { contract := contract, locals := locals } evm'

@@ -4,7 +4,7 @@ import Benchmarks.Safe.ViaIR.WordPairDecoder
 import Benchmarks.Safe.ViaIR.StorageAtLoop
 import Benchmarks.Safe.ViaIR.StorageAtReturn
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.ViaIR

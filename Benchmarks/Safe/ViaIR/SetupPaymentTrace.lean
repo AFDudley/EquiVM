@@ -2,7 +2,7 @@ import Benchmarks.Safe.ViaIR.SetupOutcome
 import Benchmarks.Safe.ViaIR.SetupPaymentPaths
 import Benchmarks.Safe.ViaIR.Blocks.Runtime_017
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.ViaIR

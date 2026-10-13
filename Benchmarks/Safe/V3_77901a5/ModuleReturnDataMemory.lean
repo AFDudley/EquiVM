@@ -3,7 +3,7 @@ import Benchmarks.Safe.V3_77901a5.PostModuleMemory
 import Benchmarks.Safe.V3_77901a5.ByteCopy
 import Benchmarks.Safe.V3_77901a5.Blocks.Runtime_018
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.V3_77901a5

@@ -2,7 +2,7 @@ import Benchmarks.Safe.V2_0e91d99.ExecTransactionContext
 import Benchmarks.Safe.V2_0e91d99.ExecuteCallerSource
 import Benchmarks.Safe.V2_0e91d99.SignatureSwitchSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.V2_0e91d99
 

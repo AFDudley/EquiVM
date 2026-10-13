@@ -2,7 +2,7 @@ import Benchmarks.Safe.ViaIR.WordCallResult
 import Benchmarks.Safe.ViaIR.Bytes32ReturnDecoder
 import Benchmarks.Safe.ViaIR.PreModuleCallEncoding
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.ViaIR
 

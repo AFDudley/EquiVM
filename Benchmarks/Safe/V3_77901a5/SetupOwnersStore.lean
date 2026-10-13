@@ -3,7 +3,7 @@ import Benchmarks.Safe.V3_77901a5.OwnerHeapTraces
 import Benchmarks.Safe.V3_77901a5.WordArrayBuffer
 import Benchmarks.Safe.V3_77901a5.Blocks.Runtime_036
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.V3_77901a5

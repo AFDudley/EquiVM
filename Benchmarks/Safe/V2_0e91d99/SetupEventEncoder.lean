@@ -3,7 +3,7 @@ import Benchmarks.Safe.V2_0e91d99.AddressCalldataCopy
 import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_049
 import Benchmarks.Safe.V2_0e91d99.Blocks.Runtime_050
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.V2_0e91d99

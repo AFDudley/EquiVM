@@ -26,7 +26,7 @@ Artifacts:
 - `runtime.hex`: optimized deployed runtime bytecode, 11003 bytes, sha256 `01ed7613d9170c16d92505d5db5eb71ad2179f9b0435a3bb077b7f4b71833f97`
 - `Safe.abi.json`: ABI emitted by solc, sha256 `40069244550920fc4ecdb4a162f9b45c78b5de06fc7fdcb8f7d4350739bb8682`
 - `sources.sha256`: sha256 manifest for the vendored Solidity source tree
-- `Spec.lean`: Solm AST with ABI surface, solc 0.8.35 decoding, and physical storage layout
+- `Spec.lean`: Stele AST with ABI surface, solc 0.8.35 decoding, and physical storage layout
 - `SpecSyntax.lean`: syntax-side wrapper checked definitionally against the AST scaffold
 - `Bytecode.lean`: optimized bytecode embedded as `ByteArray`, with `valid_jumps` facts
 - `Constructor.lean`: proved constructor equivalence for the IR bytecode
@@ -117,7 +117,7 @@ lake build Benchmarks.Safe.ViaIR.ArtifactChecks Benchmarks.Safe.ViaIR.SpecSyntax
 lake build Benchmarks.Safe.ViaIR.Correct Benchmarks.Safe.ViaIR.Audit
 lake build Benchmarks.Safe.ViaIR.CorrectProofAudit Benchmarks.Safe.ViaIR.GetOwnersModelAudit
 lake env lean Benchmarks/Safe/ViaIR/Audit.lean
-lake exe solm-difftest --only Safe_ViaIR --count 50
+lake exe stele-difftest --only Safe_ViaIR --count 50
 ```
 
 The EVM dependency's Python precompiles resolve `Ethereum/EllipticCurvesPy/` relative to the

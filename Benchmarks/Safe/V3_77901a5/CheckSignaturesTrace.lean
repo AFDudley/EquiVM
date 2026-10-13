@@ -4,7 +4,7 @@ import Benchmarks.Safe.V3_77901a5.Blocks.Runtime_022
 import Benchmarks.Safe.V3_77901a5.Blocks.Runtime_028
 import Benchmarks.Safe.V3_77901a5.Blocks.Runtime_030
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.V3_77901a5
@@ -33,7 +33,7 @@ theorem safeCheckSignaturesTrace (p : SignatureCheckInput) (evm : EVM.State)
       mem'.size ≤ max mem.size (ptr + 2 ^ 204) ∧ MemoryPreserves mem mem' 96 ptr := by
   have hload : (σ.get? I.codeOwner |>.option (⟨0⟩ : UInt256)
       (fun ac ↦ ac.storage.getD (UInt256.ofNat 4) ⟨0⟩)) = storedThreshold evm := by
-    simp only [storedThreshold, Solm.EVM.storageLoad, State.lookupAccount,
+    simp only [storedThreshold, Stele.EVM.storageLoad, State.lookupAccount,
       Account.lookupStorage, hee, hacc]
     rfl
   by_cases ht : storedThreshold evm = ⟨0⟩
