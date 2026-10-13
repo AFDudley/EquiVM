@@ -1,24 +1,29 @@
 import Benchmarks.Safe.ViaIR.SetupOwnersStore
 import Benchmarks.Safe.ViaIR.OwnerGuardTraces
+import Benchmarks.Safe.ViaIR.Blocks.Runtime_017
+import Benchmarks.Safe.ViaIR.Blocks.Runtime_042
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.ViaIR
 
-set_option maxRecDepth 100000
+set_option maxRecDepth 2000
+set_option maxHeartbeats 800000
 
 theorem safeSetupOwnersIteration (evm : EVM.State) {p locals i current ptr}
-    {I g s0 σ k C aw mem rdata} {ret : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨8066⟩
-      (UInt256.ofNat i :: UInt256.ofNat p.owners.length :: current :: p.threshold ::
-        UInt256.ofNat ptr :: ret :: R) mem aw rdata σ k C)
+    {I g s0 σ k C aw mem rdata}
+    {handler len dataStart target token receiver payment : UInt256} {R : List UInt256}
+    (h : RD safeBytecode I g s0 ⟨3686⟩
+      (UInt256.ofNat ptr :: UInt256.ofNat i :: current :: p.threshold :: handler :: handler ::
+        len :: dataStart :: target :: target :: token :: receiver :: payment ::
+          UInt256.ofNat p.owners.length :: ⟨0⟩ :: R) mem aw rdata σ k C)
     (hl : SetupOwnersLocals p locals i current) (hi : i < p.owners.length)
     (hee : evm.executionEnv = I) (hacc : evm.accountMap = σ)
     (hm : WordArrayBuffer mem ptr p.owners) (hp : 96 ≤ ptr)
     (hb : ptr + 32 + 32 * p.owners.length < UInt256.size)
     (hc : current.toNat < EVM.addressModulus) (ho : p.owners[i].toNat < EVM.addressModulus)
-    (hperm : I.perm = true) (hov : R.length + 20 ≤ 1024) :
+    (hperm : I.perm = true) (hov : R.length + 32 ≤ 1024) :
     (RDrev safeBytecode g s0 ∧
       ExecBlock config { contract := contract, locals := locals } evm setupOwnersLoopBody
         .reverted) ∨
@@ -26,9 +31,10 @@ theorem safeSetupOwnersIteration (evm : EVM.State) {p locals i current ptr}
       ExecBlock config { contract := contract, locals := locals } evm setupOwnersLoopBody
         (.ok { contract := contract, locals := setupOwnersNextLocals locals p.owners[i] i }
           (writeOwnerLink evm current p.owners[i])) ∧
-      RD safeBytecode I g s0 ⟨8057⟩
-        (UInt256.ofNat (i + 1) :: UInt256.ofNat p.owners.length :: p.owners[i] :: p.threshold ::
-          UInt256.ofNat ptr :: ret :: R) mem' aw' rdata
+      RD safeBytecode I g s0 ⟨3333⟩
+        (UInt256.ofNat ptr :: UInt256.ofNat (i + 1) :: p.owners[i] :: p.threshold :: handler ::
+          handler :: len :: dataStart :: target :: target :: token :: receiver :: payment ::
+            UInt256.ofNat p.owners.length :: ⟨0⟩ :: R) mem' aw' rdata
         (writeOwnerLink evm current p.owners[i]).accountMap k' C' ∧
       mem'.size = mem.size ∧
       (∀ off count, 64 ≤ off → off + count ≤ mem.size →
@@ -37,35 +43,43 @@ theorem safeSetupOwnersIteration (evm : EVM.State) {p locals i current ptr}
   have hlt : UInt256.lt (UInt256.ofNat i) (memLoad (UInt256.ofNat ptr) mem) = ⟨1⟩ := by
     rw [hm.lengthWord (by omega)]
     exact ult_one (by rw [ulit_toNat' i (by omega), ulit_toNat' _ hn]; exact hi)
-  have h₁ := safeRuntime_block_8066_taken (by simp; omega)
-    (by rw [hlt]; decide) (by jump_dest) h
-  simp only [safeRuntime_block_8066_taken_stack] at h₁
-  have hword := hm.indexWord i hi hb
-  have hmask : UInt256.land
-      (UInt256.sub (UInt256.shiftLeft (UInt256.ofNat 1) (UInt256.ofNat 160)) (UInt256.ofNat 1))
-      current = current := by rw [safeAddressMask, solcAddrMask_clean_left hc]
-  have howner : UInt256.land
-      (UInt256.sub (UInt256.shiftLeft (UInt256.ofNat 1) (UInt256.ofNat 160)) (UInt256.ofNat 1))
-      p.owners[i] = p.owners[i] := by rw [safeAddressMask, solcAddrMask_clean_left ho]
+  have h₀ := safeRuntime_block_3686 (by simp; omega) (by jump_dest) h
+  simp only [safeRuntime_block_3686_stack, safeAddressMask] at h₀
+  have ha := safeRuntime_block_9000_fallthrough (by simp; omega)
+    (by rw [hlt]; decide) h₀
+  have h₁ := safeRuntime_block_9010 (by simp; omega) (by jump_dest) ha
+  simp only [safeRuntime_block_9010_stack] at h₁
+  have hidx : ((UInt256.shiftLeft (UInt256.ofNat i) (UInt256.ofNat 5) +
+      UInt256.ofNat ptr) + UInt256.ofNat 32).toNat = ptr + 32 + 32 * i := by
+    have hshift : UInt256.shiftLeft (UInt256.ofNat i) (UInt256.ofNat 5) =
+        UInt256.ofNat (32 * i) := shiftLeft5_ofNat_eq (by omega)
+    rw [hshift, uadd3_ofNat_toNat (by omega) (by omega) (by decide) (by omega) (by omega)]
+    omega
+  have hword : memLoad ((UInt256.shiftLeft (UInt256.ofNat i) (UInt256.ofNat 5) +
+      UInt256.ofNat ptr) + UInt256.ofNat 32) mem = p.owners[i] := by
+    rw [memLoadReadWord, hidx, hm.words i hi, uInt256OfByteArray_toByteArray]
   by_cases he : p.owners[i] = current
-  · have h₂ := safeRuntime_block_8084_fallthrough (by simp; omega)
-      (by rw [hword, hmask, howner, he, u256_sub_self]; rfl) h₁
-    simp only [safeRuntime_block_8084_fallthrough_stack, hword] at h₂
-    have h₃ := safeRuntime_block_8120 (by simp; omega) (by jump_dest) h₂
-    exact .inl ⟨safeRuntime_block_6898 (by simp; omega) h₃,
+  · have h₂ := safeRuntime_block_3704_taken (by simp; omega)
+      (by rw [hword, safeAddressMask, solcAddrMask_clean_left hc, solcAddrMask_clean ho, he]
+          simp [UInt256.eq]; decide) (by jump_dest) h₁
+    simp only [safeRuntime_block_3704_taken_stack] at h₂
+    have h₃ := safeRuntime_block_3785 (by simp; omega) (by jump_dest) h₂
+    exact .inl ⟨safeRuntime_block_9637 (by simp; omega) h₃,
       safeSetupOwnersRepeated evm hl hi hc he⟩
-  have h₂ := safeRuntime_block_8084_taken (by simp; omega)
-    (by rw [hword, hmask, howner]; exact u256_sub_ne_zero_of_ne he) (by jump_dest) h₁
-  simp only [safeRuntime_block_8084_taken_stack, hword] at h₂
-  have h₃ := safeRuntime_block_8136 (by simp; omega) (by jump_dest) h₂
-  simp only [safeRuntime_block_8136_stack] at h₃
+  have h₂ := safeRuntime_block_3704_fallthrough (by simp; omega)
+    (by rw [hword, safeAddressMask, solcAddrMask_clean_left hc, solcAddrMask_clean ho]
+        exact u256_eq_of_ne he) h₁
+  simp only [safeRuntime_block_3704_fallthrough_stack, hword, safeAddressMask,
+    solcAddrMask_clean_left hc, solcAddrMask_clean ho] at h₂
+  have h₃ := safeRuntime_block_3724 (by simp; omega) (by jump_dest) h₂
+  simp only [safeRuntime_block_3724_stack] at h₃
   have hsize : 96 ≤ mem.size := by have := hm.size; omega
   by_cases hv : validOwner σ I p.owners[i]
   · by_cases he0 : ownerLinkAt σ I p.owners[i] = ⟨0⟩
     · obtain ⟨mem₄, aw₄, k₄, C₄, hm₄, hr₄, h₄⟩ := safeCanAddOwnerHeapTrace h₃
         (by simp; omega) ho hsize hv he0 (by jump_dest)
-      obtain ⟨aw₅, k₅, C₅, h₅⟩ := safeSetupOwnersStore evm h₄ hee hacc hc
-        (by omega) hperm (by omega)
+      obtain ⟨aw₅, k₅, C₅, h₅⟩ := safeSetupOwnersStore evm h₄ hee hacc
+        (by omega) hperm (by simp; omega)
       refine .inr ⟨twoWordHashMem current ⟨2⟩ mem₄, aw₅, k₅, C₅,
         safeSetupOwnersStep evm hl hi hc ho he (by omega) ?_ ?_, h₅, ?_, ?_⟩
       · simpa only [hee, hacc] using hv

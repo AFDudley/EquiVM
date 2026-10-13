@@ -59,32 +59,44 @@ theorem setupOwnersFinishState_accounts (p : SetupOwnersInput) (evm : EVM.State)
     writeOwnerLink, storageLoad_eq_solcSlotWord]
   rfl
 
-set_option maxRecDepth 100000 in
+set_option maxRecDepth 2000 in
 theorem safeSetupOwnersFinishTrace (p : SetupOwnersInput) (evm : EVM.State)
-    {I g s0 σ k C aw mem rdata i} {current src ret : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨8199⟩
-      (i :: UInt256.ofNat p.owners.length :: current :: p.threshold :: src :: ret :: R)
+    {I g s0 σ k C aw mem rdata i}
+    {current src handler len dataStart target token receiver payment : UInt256} {R : List UInt256}
+    (h : RD safeBytecode I g s0 ⟨3341⟩
+      (src :: i :: current :: p.threshold :: handler :: handler :: len :: dataStart :: target ::
+        target :: token :: receiver :: payment :: UInt256.ofNat p.owners.length :: ⟨0⟩ :: R)
       mem aw rdata σ k C)
     (hee : evm.executionEnv = I) (hacc : evm.accountMap = σ)
     (hc : current.toNat < EVM.addressModulus) (hperm : I.perm = true)
-    (hov : R.length + 9 ≤ 1024) (hret : (D_J safeBytecode 0).contains ret = true) :
-    ∃ aw' k' C', RD safeBytecode I g s0 ret R (twoWordHashMem current ⟨2⟩ mem)
+    (hov : R.length + 18 ≤ 1024) :
+    ∃ aw' k' C', RD safeBytecode I g s0 (if handler = ⟨0⟩ then ⟨3401⟩ else ⟨3671⟩)
+      (handler :: len :: dataStart :: ⟨3409⟩ :: target :: target :: token :: receiver ::
+        payment :: ⟨0⟩ :: R) (twoWordHashMem current ⟨2⟩ mem)
       aw' rdata (setupOwnersFinishState p evm current).accountMap k' C' := by
-  obtain ⟨aw', k', C', h'⟩ := safeRuntime_block_8199_packed hov hperm hret h
-  simp only [safeRuntime_block_8199_stack, safeRuntime_block_8199_memory, safeAddressMask,
-    solcAddrMask_clean hc] at h'
   have hh := twoWordHashMemMapSlotAny current ⟨2⟩ mem
   change keccakWord ⟨0⟩ (UInt256.ofNat 64)
     ((UInt256.ofNat 2).toByteArray.write 0
       (current.toByteArray.write 0 mem (⟨0⟩ : UInt256).toNat 32)
       (UInt256.ofNat 32).toNat 32) = _ at hh
-  have hw (word : UInt256) : UInt256.lor (UInt256.ofNat 1)
-      (UInt256.land (UInt256.lnot solcAddrMask) word) = setAddressOffset0Word word ⟨1⟩ := by
-    simpa only [show UInt256.land (⟨1⟩ : UInt256) solcAddrMask = ⟨1⟩ from by decide] using
-      maskedAddressStoreWord word ⟨1⟩
-  rw [hh] at h'
-  simp only [hw] at h'
+  have hw (word : UInt256) : UInt256.lor (UInt256.land word (UInt256.lnot solcAddrMask))
+      (UInt256.ofNat 1) = setAddressOffset0Word word ⟨1⟩ := by
+    rw [setAddressOffset0Word]
+    congr 1
   rw [setupOwnersFinishState_accounts, hee, hacc]
-  exact ⟨aw', k', C', h'⟩
+  by_cases hz : handler = ⟨0⟩
+  · obtain ⟨aw', k', C', h'⟩ := safeRuntime_block_3341_fallthrough_packed hov hperm hz h
+    simp only [safeRuntime_block_3341_fallthrough_stack, safeRuntime_block_3341_fallthrough_memory,
+      safeAddressMask, solcAddrMask_clean_left hc, safeAddressHighMask] at h'
+    rw [hh] at h'
+    simp only [hw] at h'
+    exact ⟨aw', k', C', by simpa only [hz, ite_true] using h'⟩
+  · obtain ⟨aw', k', C', h'⟩ := safeRuntime_block_3341_taken_packed hov hperm hz
+      (by jump_dest) h
+    simp only [safeRuntime_block_3341_taken_stack, safeRuntime_block_3341_taken_memory,
+      safeAddressMask, solcAddrMask_clean_left hc, safeAddressHighMask] at h'
+    rw [hh] at h'
+    simp only [hw] at h'
+    exact ⟨aw', k', C', by simpa only [hz, ite_false] using h'⟩
 
 end Benchmarks.Safe.ViaIR

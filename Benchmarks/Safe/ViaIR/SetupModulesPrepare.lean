@@ -1,5 +1,6 @@
 import Benchmarks.Safe.ViaIR.SetupModulesSource
 import Benchmarks.Safe.ViaIR.SetupOwnersStore
+import Benchmarks.Safe.ViaIR.Blocks.Runtime_017
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -33,70 +34,83 @@ theorem setupModulesState_accounts (p : SetupModulesInput) (evm : EVM.State) :
     storageStore_accountMap, storageLoad_eq_solcSlotWord]
   rfl
 
-set_option maxRecDepth 100000 in
+set_option maxRecDepth 2000 in
 theorem safeSetupModulesInitStore (p : SetupModulesInput) (evm : EVM.State)
-    {I g s0 σ k C aw mem rdata} {ptr ret : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨8393⟩ (ptr :: p.target :: ret :: R) mem aw rdata σ k C)
+    {I g s0 σ k C aw mem rdata} {ptr token receiver payment : UInt256} {R : List UInt256}
+    (h : RD safeBytecode I g s0 ⟨3439⟩
+      (p.target :: p.target :: ptr :: token :: receiver :: payment :: ⟨0⟩ :: R)
+      mem aw rdata σ k C)
     (hee : evm.executionEnv = I) (hacc : evm.accountMap = σ)
-    (hc : p.target.toNat < EVM.addressModulus) (hperm : I.perm = true)
-    (hov : R.length + 12 ≤ 1024) :
-    ∃ aw' k' C', RD safeBytecode I g s0 (if p.target = ⟨0⟩ then ⟨1936⟩ else ⟨8470⟩)
-      (ptr :: p.target :: ret :: R) (twoWordHashMem ⟨1⟩ ⟨1⟩ mem) aw' rdata
-      (p.state evm).accountMap k' C' := by
-  have hw (word : UInt256) : UInt256.lor (UInt256.ofNat 1)
-      (UInt256.land (UInt256.lnot solcAddrMask) word) = setAddressOffset0Word word ⟨1⟩ := by
-    simpa only [show UInt256.land (⟨1⟩ : UInt256) solcAddrMask = ⟨1⟩ from by decide] using
-      maskedAddressStoreWord word ⟨1⟩
+    (hperm : I.perm = true) (hov : R.length + 12 ≤ 1024) :
+    ∃ aw' k' C', RD safeBytecode I g s0 (if p.target = ⟨0⟩ then ⟨3475⟩ else ⟨3503⟩)
+      (p.target :: ptr :: token :: receiver :: payment :: ⟨0⟩ :: R)
+      (twoWordHashMem ⟨1⟩ ⟨1⟩ mem) aw' rdata (p.state evm).accountMap k' C' := by
+  have hh := twoWordHashMemMapSlotAny ⟨1⟩ ⟨1⟩ mem
+  change keccakWord ⟨0⟩ (UInt256.ofNat 64)
+    ((UInt256.ofNat 1).toByteArray.write 0
+      ((UInt256.ofNat 1).toByteArray.write 0 mem (⟨0⟩ : UInt256).toNat 32)
+      (UInt256.ofNat 32).toNat 32) = _ at hh
+  have hw (word : UInt256) : UInt256.lor (UInt256.land word (UInt256.lnot solcAddrMask))
+      (UInt256.ofNat 1) = setAddressOffset0Word word ⟨1⟩ := by
+    rw [setAddressOffset0Word]
+    congr 1
   have ha : setupModulesAccounts σ I = (p.state evm).accountMap := by
     rw [setupModulesState_accounts, hee, hacc]
   by_cases hz : p.target = ⟨0⟩
-  · obtain ⟨aw', k', C', h'⟩ := safeRuntime_block_8393_taken_packed (by simp; omega) hperm
-      (by rw [safeAddressMask, solcAddrMask_clean hc, hz]; decide) (by jump_dest) h
-    simp only [safeRuntime_block_8393_taken_memory, safeAddressMask,
-      ← safeModuleSentinelSlot, hw] at h'
-    change RD safeBytecode I g s0 ⟨1936⟩ (ptr :: p.target :: ret :: R)
+  · obtain ⟨aw', k', C', h'⟩ := safeRuntime_block_3439_fallthrough_packed hov hperm hz h
+    simp only [safeRuntime_block_3439_fallthrough_stack, safeRuntime_block_3439_fallthrough_memory,
+      safeAddressHighMask, hh, hw] at h'
+    change RD safeBytecode I g s0 ⟨3475⟩
+      (p.target :: ptr :: token :: receiver :: payment :: ⟨0⟩ :: R)
       (twoWordHashMem ⟨1⟩ ⟨1⟩ mem) aw' rdata (setupModulesAccounts σ I) k' C' at h'
     rw [ha] at h'
     exact ⟨aw', k', C', by simpa only [if_pos hz] using h'⟩
-  · obtain ⟨aw', k', C', h'⟩ := safeRuntime_block_8393_fallthrough_packed (by simp; omega)
-      hperm (by rw [safeAddressMask, solcAddrMask_clean hc]; exact isZero_eq_zero_of_ne hz) h
-    simp only [safeRuntime_block_8393_fallthrough_memory, safeAddressMask,
-      ← safeModuleSentinelSlot, hw] at h'
-    change RD safeBytecode I g s0 ⟨8470⟩ (ptr :: p.target :: ret :: R)
+  · obtain ⟨aw', k', C', h'⟩ := safeRuntime_block_3439_taken_packed hov hperm hz
+      (by jump_dest) h
+    simp only [safeRuntime_block_3439_taken_stack, safeRuntime_block_3439_taken_memory,
+      safeAddressHighMask, hh, hw] at h'
+    change RD safeBytecode I g s0 ⟨3503⟩
+      (p.target :: ptr :: token :: receiver :: payment :: ⟨0⟩ :: R)
       (twoWordHashMem ⟨1⟩ ⟨1⟩ mem) aw' rdata (setupModulesAccounts σ I) k' C' at h'
     rw [ha] at h'
     exact ⟨aw', k', C', by simpa only [if_neg hz] using h'⟩
 
-set_option maxRecDepth 100000 in
+set_option maxRecDepth 2000 in
 theorem safeSetupModulesPrepare (p : SetupModulesInput) (evm : EVM.State)
-    {I g s0 σ k C aw mem rdata} {ptr ret : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨8319⟩ (ptr :: p.target :: ret :: R) mem aw rdata σ k C)
+    {I g s0 σ k C aw mem rdata} {ptr token receiver payment : UInt256} {R : List UInt256}
+    (h : RD safeBytecode I g s0 ⟨3409⟩
+      (ptr :: p.target :: p.target :: token :: receiver :: payment :: ⟨0⟩ :: R)
+      mem aw rdata σ k C)
     (hee : evm.executionEnv = I) (hacc : evm.accountMap = σ)
-    (hc : p.target.toNat < EVM.addressModulus) (hperm : I.perm = true)
-    (hov : R.length + 20 ≤ 1024) :
+    (hperm : I.perm = true) (hov : R.length + 12 ≤ 1024) :
     (RDrev safeBytecode g s0 ∧
       ExecFuncBody config p.frame evm setupModulesFunction.body .reverted) ∨
     ∃ aw' k' C', moduleLink evm ⟨1⟩ = ⟨0⟩ ∧
-      RD safeBytecode I g s0 (if p.target = ⟨0⟩ then ⟨1936⟩ else ⟨8470⟩)
-        (ptr :: p.target :: ret :: R) (setupModulesMemory mem) aw' rdata
-        (p.state evm).accountMap k' C' := by
+      RD safeBytecode I g s0 (if p.target = ⟨0⟩ then ⟨3475⟩ else ⟨3503⟩)
+        (p.target :: ptr :: token :: receiver :: payment :: ⟨0⟩ :: R)
+        (setupModulesMemory mem) aw' rdata (p.state evm).accountMap k' C' := by
   have hs : moduleLinkAt σ I ⟨1⟩ = moduleLink evm ⟨1⟩ := by
     rw [moduleLink_eq_at, hee, hacc]
+  have hh := twoWordHashMemMapSlotAny ⟨1⟩ ⟨1⟩ mem
+  change keccakWord ⟨0⟩ (UInt256.ofNat 64)
+    ((UInt256.ofNat 1).toByteArray.write 0
+      ((UInt256.ofNat 1).toByteArray.write 0 mem (⟨0⟩ : UInt256).toNat 32)
+      (UInt256.ofNat 32).toNat 32) = _ at hh
   by_cases he : moduleLink evm ⟨1⟩ = ⟨0⟩
-  · obtain ⟨aw₁, k₁, C₁, h₁⟩ := safeRuntime_block_8319_taken_packed (by simp; omega)
+  · obtain ⟨aw₁, k₁, C₁, h₁⟩ := safeRuntime_block_3409_fallthrough_packed (by omega)
       (by
-        rw [safeAddressMask, ← safeModuleSentinelSlot, u256_land_comm]
-        change UInt256.isZero (moduleLinkAt σ I ⟨1⟩) ≠ UInt256.ofNat 0
-        rw [hs, he]; decide) (by jump_dest) h
-    obtain ⟨aw₂, k₂, C₂, h₂⟩ := safeSetupModulesInitStore p evm h₁ hee hacc hc hperm (by omega)
+        rw [safeAddressMask, hh, u256_land_comm]
+        exact hs.trans he) h
+    simp only [safeRuntime_block_3409_fallthrough_stack,
+      safeRuntime_block_3409_fallthrough_memory] at h₁
+    obtain ⟨aw₂, k₂, C₂, h₂⟩ := safeSetupModulesInitStore p evm h₁ hee hacc hperm hov
     exact .inr ⟨aw₂, k₂, C₂, he, h₂⟩
-  · obtain ⟨aw₁, k₁, C₁, h₁⟩ := safeRuntime_block_8319_fallthrough_packed (by simp; omega)
+  · obtain ⟨aw₁, k₁, C₁, h₁⟩ := safeRuntime_block_3409_taken_packed (by omega)
       (by
-        rw [safeAddressMask, ← safeModuleSentinelSlot, u256_land_comm]
-        change UInt256.isZero (moduleLinkAt σ I ⟨1⟩) = UInt256.ofNat 0
-        rw [hs]; exact isZero_eq_zero_of_ne he) h
-    have h₂ := safeRuntime_block_8377 (by simp; omega) (by jump_dest) h₁
-    exact .inl ⟨safeRuntime_block_6898 (by simp; omega) h₂,
+        rw [safeAddressMask, hh, u256_land_comm]
+        exact fun hz ↦ he (hs.symm.trans hz)) (by jump_dest) h
+    exact .inl ⟨safeRuntime_block_3626
+      (by simp [safeRuntime_block_3409_taken_stack]; omega) h₁,
       safeSetupModulesAlreadyInitialized p evm he⟩
 
 end Benchmarks.Safe.ViaIR

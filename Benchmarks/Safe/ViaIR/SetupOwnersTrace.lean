@@ -7,20 +7,23 @@ open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.Safe.ViaIR
 
 theorem safeSetupOwnersTrace (p : SetupOwnersInput) (evm : EVM.State)
-    {I g s0 σ k C aw mem rdata ptr} {ret : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨7975⟩
-      (p.threshold :: UInt256.ofNat ptr :: ret :: R) mem aw rdata σ k C)
+    {I g s0 σ k C aw mem rdata ptr}
+    {a b c handler len dataStart target token receiver payment : UInt256} {R : List UInt256}
+    (h : RD safeBytecode I g s0 ⟨3302⟩
+      (a :: b :: c :: p.threshold :: handler :: handler :: len :: dataStart :: target :: target ::
+        token :: receiver :: payment :: UInt256.ofNat ptr :: ⟨0⟩ :: R) mem aw rdata σ k C)
     (hee : evm.executionEnv = I) (hacc : evm.accountMap = σ)
     (hm : WordArrayBuffer mem ptr p.owners) (hp : 96 ≤ ptr)
     (hb : ptr + 32 + 32 * p.owners.length < UInt256.size)
     (ho : ∀ j (hj : j < p.owners.length), p.owners[j].toNat < EVM.addressModulus)
-    (hperm : I.perm = true) (hov : R.length + 20 ≤ 1024)
-    (hret : (D_J safeBytecode 0).contains ret = true) :
+    (hperm : I.perm = true) (hov : R.length + 32 ≤ 1024) :
     (RDrev safeBytecode g s0 ∧ ExecFuncBody config p.frame evm setupOwnersFunction.body .reverted) ∨
     ∃ f' evm' mem' aw' k' C',
       ExecFuncBody config p.frame evm setupOwnersFunction.body (.returned f' evm' none) ∧
       evm'.executionEnv = I ∧ evm'.σ₀ = evm.σ₀ ∧
-      RD safeBytecode I g s0 ret R mem' aw' rdata evm'.accountMap k' C' ∧
+      RD safeBytecode I g s0 (if handler = ⟨0⟩ then ⟨3401⟩ else ⟨3671⟩)
+        (handler :: len :: dataStart :: ⟨3409⟩ :: target :: target :: token :: receiver ::
+          payment :: ⟨0⟩ :: R) mem' aw' rdata evm'.accountMap k' C' ∧
       mem'.size = mem.size ∧
       (∀ off count, 64 ≤ off → off + count ≤ mem.size →
         mem'.readWithPadding off count = mem.readWithPadding off count) := by
@@ -35,7 +38,7 @@ theorem safeSetupOwnersTrace (p : SetupOwnersInput) (evm : EVM.State)
   · exact .inl ⟨hrev, .execBlockRevert (safeSetupOwnersPrefix p evm hz hle hnz
       (.consRevert hloop))⟩
   obtain ⟨aw₃, k₃, C₃, h₃⟩ := safeSetupOwnersFinishTrace p evm₂ h₂ hee₂ rfl hc₂
-    hperm (by omega) hret
+    hperm (by omega)
   refine .inr ⟨{ contract := contract, locals := locals₂ },
     setupOwnersFinishState p evm₂ current₂, twoWordHashMem current₂ ⟨2⟩ mem₂, aw₃, k₃, C₃,
     .execBlockOK (safeSetupOwnersPrefix p evm hz hle hnz

@@ -450,3 +450,18 @@ reserves 128 bytes after the data allocation. Lean verifies the corresponding
 arithmetic bound and an allocator-segment panic at the boundary. This is not a
 complete entrypoint counterexample, and no further specification change has
 been made.
+
+Owner initialization now follows the IR threshold checks, array-index helper,
+owner validation, linked-list writes, and final count/threshold stores. The
+fallback-handler and module-setup traces also build, including the direct
+delegate-call path. The source-side owner and module lemmas were reused.
+Setup shares the existing calldata-copy allocator through a length-parametrized
+helper; the transaction allocator's interface is preserved. Setup modules build
+together (3,641 jobs), and the transaction entrypoint and completion audit still
+pass (3,714 jobs). The owner, module, and setup allocation traces use 611, 234,
+and 145 permitted axioms, respectively, with no proof holes or custom axioms.
+
+The token-payment proposal is pending approval: retain the existing `2^64 - 224`
+bound except for positive token payments, where the additional 128-byte encoder
+allocation requires `2^64 - 352`. The proposed change is local to setup and is
+not yet applied. Work on the payment traces continues independently.
