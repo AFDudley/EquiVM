@@ -1,6 +1,11 @@
 # Safe via-IR repair status
 
-The port is incomplete. Artifact regeneration and the executable semantic gates passed;
+The port is incomplete: 32 of 33 runtime obligations now build, including
+`execTransaction`. `setup` and the final whole-contract checks remain. The setup
+investigation has found an additional allocation boundary mismatch; its checked
+evidence and proposed local correction are described at the end of this report.
+
+Artifact regeneration and the executable semantic gates passed;
 constructor, shared dispatcher, and generated block summaries build. The huge-calldata
 counterexample is addressed by a user-authorized decoder correction local to this benchmark.
 The remaining runtime proofs and whole-contract axiom audit have not been completed. A second,
@@ -395,3 +400,31 @@ audits build together (3,730 jobs). The public transaction theorem uses 3,565 pe
 axioms; the token-transfer and payment traces use 162 and 624. No proof holes or custom
 axioms were found. Thirty-two of the thirty-three runtime obligations are complete.
 Setup and the final whole-contract checks remain.
+
+The setup investigation confirms an additional data-allocation mismatch. A symbolic,
+well-formed call has one owner (`0x2000`), threshold one, zero target, fallback and
+payment, and `data.length = 2^64 - 255`. Its calldata size is `2^64 + 101`.
+The benchmark's existing decoder accepts it. The input owner array leaves the free
+pointer at 192; copying the data reserves a 32-byte header and rounds its payload
+up to `2^64 - 224`, making the final pointer exactly `2^64`.
+
+The checked allocator execution starts at the actual data-copy entry PC 7208 with
+that stack and pointer. It reaches panic `0x41` with more than 99,000 of its 100,000
+gas remaining, before attempting the large copy. This is an allocator-segment
+certificate, not a new complete entrypoint execution certificate or a formal
+negation of the public setup theorem. Separately, Lean verifies successful decoding,
+the exact symbolic payload and scalar arguments, and that the corresponding
+zero-target `setupModules` source body returns and cannot revert. The new evidence
+module builds; its axiom scans contain only the permitted axioms and native
+certificates. The specification has not been changed for this case.
+
+The proposed local correction is one requirement immediately after `SafeSetup`:
+`32 * _owners.length + data.length <= 2^64 - 224`, mirrored in the syntax spec.
+Lean proves this is exactly equivalent to the data allocator's final-pointer
+condition `160 + 32 * owners.length + 32 + paddedSize(data.length) < 2^64`.
+It also implies the earlier input-owner allocation fits. It rejects the example
+while accepting the immediately preceding payload length with one owner. It
+preserves the event's static-mode behavior and leaves shared decoding modes
+unchanged. A reviewable patch is prepared at `/tmp/safe-ir-setup-data-guard.patch`;
+applying this newly identified specification correction requires user direction
+under the initial instruction to investigate, report and wait on unprovable cases.
