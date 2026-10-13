@@ -1,6 +1,6 @@
 import Benchmarks.Safe.ViaIR.SelectorWordsMemory
 import Benchmarks.Safe.ViaIR.PostModuleSource
-import Benchmarks.Safe.ViaIR.Blocks.Runtime_032
+import Benchmarks.Safe.ViaIR.Blocks.Runtime_046
 import Reasoning.WordArithmetic
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
@@ -14,14 +14,14 @@ def postModuleMemory (mem : ByteArray) (ptr hash : UInt256) (z : Bool) : ByteArr
 
 theorem safePostModuleMemory {mem : ByteArray} {ptr hash : UInt256} (z : Bool)
     (hf : memLoad ⟨64⟩ mem = ptr) (hb : ptr.toNat + 68 < UInt256.size) :
-    safeRuntime_block_7492_taken_memory (mem := mem) (x0 := z.toUInt256) (x1 := hash) =
+    safeRuntime_block_10303_memory (mem := mem) (x1 := hash) (x2 := z.toUInt256) =
       postModuleMemory mem ptr hash z := by
   change memLoad (UInt256.ofNat 64) mem = ptr at hf
   have ha4 : (ptr + UInt256.ofNat 4).toNat = ptr.toNat + 4 :=
     addWord_toNat ptr ⟨4⟩ (by change ptr.toNat + 4 < UInt256.size; omega)
   have ha36 : (ptr + UInt256.ofNat 36).toNat = ptr.toNat + 36 :=
     addWord_toNat ptr ⟨36⟩ (by change ptr.toNat + 36 < UInt256.size; omega)
-  simp only [safeRuntime_block_7492_taken_memory, hf, ha4, ha36,
+  simp only [safeRuntime_block_10303_memory, hf, ha4, ha36,
     postModuleMemory, selectorWordPairMemory, Reasoning.Theory.writeWord]
   have hz : UInt256.isZero (UInt256.isZero z.toUInt256) = z.toUInt256 := by
     cases z <;> decide
@@ -31,6 +31,14 @@ theorem safePostModuleMemoryFree {mem : ByteArray} {ptr hash : UInt256} (z : Boo
     (hf : memLoad ⟨64⟩ mem = ptr) (hm : 96 ≤ mem.size) (hp : 96 ≤ ptr.toNat) :
     memLoad ⟨64⟩ (postModuleMemory mem ptr hash z) = ptr := by
   rw [postModuleMemory, selectorWordPairMemory_free _ _ _ _ _ hm hp, hf]
+
+def postModuleReturnMemory (mem : ByteArray) (ptr hash : UInt256) (z : Bool) : ByteArray :=
+  writeWord (postModuleMemory mem ptr hash z) 64 ptr
+
+theorem safePostModuleReturnMemoryFree (mem : ByteArray) (ptr hash : UInt256) (z : Bool) :
+    memLoad ⟨64⟩ (postModuleReturnMemory mem ptr hash z) = ptr := by
+  apply memLoad_of_wordRead
+  exact writeWord_sparse_read_back _ _ _
 
 theorem safePostModuleEncoding (mem : ByteArray) (ptr hash : UInt256) (z : Bool) :
     config.externalABI.encode? "checkAfterModuleExecution"

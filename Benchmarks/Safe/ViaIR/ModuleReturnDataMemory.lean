@@ -1,7 +1,7 @@
 import Benchmarks.Safe.ViaIR.ModuleMemory
 import Benchmarks.Safe.ViaIR.PostModuleMemory
 import Benchmarks.Safe.ViaIR.ByteCopy
-import Benchmarks.Safe.ViaIR.Blocks.Runtime_018
+import Benchmarks.Safe.ViaIR.Blocks.Runtime_030
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -15,20 +15,20 @@ def moduleReturnDataMemory (mem : ByteArray) (ptr : Nat) (out : ByteArray) : Byt
 
 theorem safeModuleReturnDataMemory {mem out : ByteArray} {ptr : UInt256}
     (hf : memLoad ⟨64⟩ mem = ptr) (hb : ptr.toNat + 32 + out.size < UInt256.size) :
-    safeRuntime_block_3005_memory (mem := mem) (rdata := out) =
+    safeRuntime_block_6263_memory (mem := mem) (rdata := out) =
       moduleReturnDataMemory mem ptr.toNat out := by
   have h32 : (ptr + UInt256.ofNat 32).toNat = ptr.toNat + 32 :=
     addWord_toNat ptr ⟨32⟩ (by change ptr.toNat + 32 < UInt256.size; omega)
-  have hnext : ptr + (UInt256.ofNat out.size + UInt256.ofNat 32) =
+  have hnext : (ptr + UInt256.ofNat out.size) + UInt256.ofNat 32 =
       UInt256.ofNat (ptr.toNat + 32 + out.size) := by
+    rw [u256_add_assoc, u256_add_comm (UInt256.ofNat out.size)]
+    change ptr + (⟨32⟩ + UInt256.ofNat out.size) = _
+    rw [u256_32_add_ofNat]
     apply u256_inj
-    rw [u256_add_comm (UInt256.ofNat out.size)]
-    change (ptr + (⟨32⟩ + UInt256.ofNat out.size)).toNat = _
-    rw [u256_32_add_ofNat, uadd_word_ofNat_toNat ptr (out.size + 32) (by omega),
-      ulit_toNat' _ hb]
+    rw [uadd_word_ofNat_toNat ptr (out.size + 32) (by omega), ulit_toNat' _ hb]
     omega
   change memLoad (UInt256.ofNat 64) mem = ptr at hf
-  simp only [safeRuntime_block_3005_memory, hf, h32, hnext,
+  simp only [safeRuntime_block_6263_memory, hf, h32, hnext,
     ulit_toNat' out.size (by omega), moduleReturnDataMemory, Reasoning.Theory.writeWord]
   rfl
 
@@ -66,5 +66,14 @@ theorem postModuleMemory_readBelow (mem : ByteArray) (ptr hash : UInt256) (z : B
     writeWordReadBelow _ _ _ _ _ (by simp only [writeWord_sparse_size]; omega) (by omega),
     writeWordReadBelow _ _ _ _ _ (by rw [writeWord_sparse_size]; omega) (by omega),
     writeWordReadBelow _ _ _ _ _ hin hb]
+
+theorem postModuleReturnMemory_readBelow (mem : ByteArray) (ptr hash : UInt256) (z : Bool)
+    (off count : Nat) (hin : off + count ≤ mem.size) (hb : off + count ≤ ptr.toNat)
+    (hoff : 96 ≤ off) :
+    (postModuleReturnMemory mem ptr hash z).readWithPadding off count =
+      mem.readWithPadding off count := by
+  rw [postModuleReturnMemory, writeWordReadAbove _ _ _ _ _
+    (by simp only [postModuleMemory, selectorWordPairMemory, writeWord_sparse_size]; omega) hoff]
+  exact postModuleMemory_readBelow mem ptr hash z off count hin hb
 
 end Benchmarks.Safe.ViaIR

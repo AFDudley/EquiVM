@@ -335,3 +335,20 @@ permitted axioms for the two `checkNSignatures` overloads, and 2,126 and 2,021 f
 `checkSignatures` overloads, with no proof holes or custom axioms. Twenty-nine of the
 thirty-three runtime obligations are complete. Module execution, transaction execution,
 and setup remain before the whole-contract validation.
+
+Both module execution entrypoints now build with their original public statements
+(3,578 jobs). Their proofs follow the IR's shared argument decoder, module authorization,
+optional pre-execution guard, specialized CALL/DELEGATECALL routine, post-execution guard,
+and event/return paths. The returndata variant preserves and encodes the full call output.
+The pre-guard return buffer uses `min 32 out.size`; the post-guard's zero-length allocation
+still validates its free-memory pointer. Internal trace interfaces and memory invariants
+were updated for those instructions and their smaller stacks.
+
+An allocator rejection after a nonzero module guard is covered by a reverting source
+pre-guard call under the existing gas abstraction. A zero-gas call with the encoded
+`checkModuleTransaction` input produces no return bytes, so it cannot satisfy that call's
+bytes32 result decoder. The empty-output fact is proved from EVM and precompile semantics
+and introduces no axioms. No specification or public statement changed. The two entrypoint
+axiom scans report 1,024 and 1,063 permitted axioms, with no proof holes or custom axioms.
+Thirty-one of the thirty-three runtime obligations are complete; transaction execution
+and setup remain before whole-contract validation.

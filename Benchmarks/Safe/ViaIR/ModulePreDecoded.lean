@@ -7,8 +7,8 @@ namespace Benchmarks.Safe.ViaIR
 set_option maxRecDepth 100000 in
 theorem safeModulePreDecodedTrace (evm : EVM.State) (payload : ByteArray)
     {I g s0 σ k C aw rdata} {target value operation ret : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨7172⟩
-      (operation :: ⟨128⟩ :: value :: target :: ret :: R)
+    (h : RD safeBytecode I g s0 ⟨9817⟩
+      (target :: value :: ⟨128⟩ :: operation :: ret :: R)
       (memoryBytesDecoded payload) aw rdata σ k C)
     (hee : evm.executionEnv = I) (hacc : evm.accountMap = σ) (hworld : evm.σ₀ = s0.σ₀)
     (hn : payload.size ≤ 2 ^ 64 - 192) (ho : operation.toNat < 2)

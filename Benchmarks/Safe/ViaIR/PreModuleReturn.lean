@@ -1,52 +1,83 @@
 import Benchmarks.Safe.ViaIR.PreModuleReturnMemory
 import Benchmarks.Safe.ViaIR.Bytes32ReturnDecoder
-import Benchmarks.Safe.ViaIR.Blocks.Runtime_031
-import Benchmarks.Safe.ViaIR.Blocks.Runtime_032
+import Benchmarks.Safe.ViaIR.IRMemoryAllocation
+import Benchmarks.Safe.ViaIR.Blocks.Runtime_027
+import Benchmarks.Safe.ViaIR.Blocks.Runtime_045
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.ViaIR
 
-set_option maxRecDepth 100000
+set_option maxRecDepth 2000
 
-theorem safePreModuleCallFailure {I g s0 σ k C aw mem rdata} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨7346⟩ (⟨0⟩ :: R) mem aw rdata σ k C)
-    (hov : R.length + 4 ≤ 1024) : RDrev safeBytecode g s0 := by
-  have h₁ := safeRuntime_block_7346_fallthrough (by omega) (by decide) h
-  exact safeRuntime_block_7353 (by
-    simp only [safeRuntime_block_7346_fallthrough_stack, List.length_cons]; omega) h₁
+theorem safePreModuleCallFailure {I g s0 σ k C aw mem rdata ptr} {R : List UInt256}
+    (h : RD safeBytecode I g s0 ⟨9990⟩ (⟨0⟩ :: ptr :: R) mem aw rdata σ k C)
+    (hov : R.length + 6 ≤ 1024) : RDrev safeBytecode g s0 := by
+  have h₁ := safeRuntime_block_9990_taken (by omega) (by decide) (by jump_dest) h
+  exact safeRuntime_block_5682 (by
+    simp only [safeRuntime_block_9990_taken_stack, List.length_cons]; omega)
+    (by
+      change 0 + rdata.size % UInt256.size ≤ rdata.size
+      simpa only [Nat.zero_add] using Nat.mod_le rdata.size UInt256.size) h₁
 
 theorem safePreModuleReturn {I g s0 σ k C aw mem out}
-    {ptr a b c oldHash : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨7346⟩ (⟨1⟩ :: a :: b :: c :: oldHash :: R)
+    {ptr : UInt256} {R : List UInt256}
+    (h : RD safeBytecode I g s0 ⟨9990⟩ (⟨1⟩ :: ptr :: R)
       (preModuleOutputMemory mem out ptr) aw out σ k C)
     (hf : memLoad ⟨64⟩ mem = ptr) (hm : ptr.toNat + 32 ≤ mem.size) (hp : 96 ≤ ptr.toNat)
-    (hb : out.size < 2 ^ 255) (hov : R.length + 9 ≤ 1024) :
-    (RDrev safeBytecode g s0 ∧ config.externalABI.decode? "checkModuleTransaction" out = none) ∨
-    ∃ aw' k' C', RD safeBytecode I g s0 ⟨7399⟩ (calldataWord out 0 :: R)
+    (hbptr : ptr.toNat + 32 < UInt256.size)
+    (hb : out.size < 2 ^ 255) (hov : R.length + 13 ≤ 1024) :
+    RDrev safeBytecode g s0 ∨
+    ∃ aw' k' C', RD safeBytecode I g s0 ⟨10003⟩ (⟨0⟩ :: calldataWord out 0 :: R)
       (preModuleReturnMemory mem out ptr) aw' out σ k' C' ∧
       config.externalABI.decode? "checkModuleTransaction" out =
         some [.fixedBytes bytes32Width (EVM.Word.toBytesBE (calldataWord out 0))] := by
-  have h₁ := safeRuntime_block_7346_taken (by simp; omega) (by decide) (by jump_dest) h
-  have h₂ := safeRuntime_block_7360 (by simp; omega) (by jump_dest) h₁
-  have hfree : memLoad (UInt256.ofNat 64) (preModuleOutputMemory mem out ptr) = ptr :=
-    preModuleOutputFree hf (by omega) hp
-  simp only [safeRuntime_block_7360_stack, safeRuntime_block_7360_memory, hfree] at h₂
-  change RD safeBytecode I g s0 _ (ptr :: (ptr + UInt256.ofNat out.size) ::
-    UInt256.ofNat 7396 :: oldHash :: R) (preModuleReturnMemory mem out ptr) _ out σ _ _ at h₂
+  have hout : out.size < UInt256.size := lt_trans hb (by decide)
+  have h₁ := safeRuntime_block_9990_fallthrough (by simp; omega) (by decide) h
+  have h₂ := safeRuntime_block_9997_taken (by simp; omega) (by decide) (by jump_dest) h₁
+  have hstart : ∃ k' C', RD safeBytecode I g s0 ⟨10028⟩
+      (ptr :: UInt256.ofNat (min 32 out.size) :: ptr :: R)
+      (preModuleOutputMemory mem out ptr) aw out σ k' C' := by
+    by_cases hl : 32 ≤ out.size
+    · have ht := safeRuntime_block_10014_fallthrough (by simp; omega)
+        (ugt_zero (by rw [ulit_toNat' _ hout]; exact hl)) h₂
+      rw [Nat.min_eq_left hl]
+      exact ⟨_, _, ht⟩
+    · have ht := safeRuntime_block_10014_taken (by simp; omega) (by
+        rw [ugt_one (by rw [ulit_toNat' _ hout]; change out.size < 32; omega)]; decide)
+        (by jump_dest) h₂
+      have hr := safeRuntime_block_10056 (by simp; omega) (by jump_dest) ht
+      rw [Nat.min_eq_right (by omega)]
+      exact ⟨_, _, hr⟩
+  obtain ⟨_, _, h₃⟩ := hstart
+  have h₄ := safeRuntime_block_10028 (by simp; omega) (by jump_dest) h₃
+  have hpad : ABI.paddedSize (min 32 out.size) ≤ 32 := by unfold ABI.paddedSize; omega
+  have hlen : min 32 out.size + 31 < UInt256.size := by change _ < 2 ^ 256; omega
+  have hbadd : ptr.toNat + ABI.paddedSize (min 32 out.size) < UInt256.size := by omega
+  have hptr : UInt256.ofNat ptr.toNat = ptr := u256_ofNat_toNat _
+  simp only [safeRuntime_block_10028_stack] at h₄
+  rw [← hptr] at h₄
+  obtain hr | ⟨aw', k', C', hfit, h₅⟩ := safeIRAllocateTrace h₄ hlen hbadd
+    (by simp; omega) (by jump_dest)
+  · exact .inl hr
+  rw [hptr] at h₅
+  have hnext : UInt256.ofNat (ptr.toNat + ABI.paddedSize (min 32 out.size)) =
+      preModuleNextPtr ptr out := by
+    rw [preModuleNextPtr, roundedCalldataLengthMask _ hlen,
+      ← wordOfNatAdd _ _ hbadd, hptr]
+  rw [hnext] at h₅
+  change RD safeBytecode I g s0 ⟨10041⟩
+    (UInt256.ofNat (min 32 out.size) :: ptr :: ⟨32⟩ :: ptr :: R)
+    (preModuleReturnMemory mem out ptr) aw' out σ k' C' at h₅
   by_cases hl : 32 ≤ out.size
-  · obtain ⟨aw', k', C', h₃⟩ := safeBytes32DecoderValid h₂ (by simp; omega) hl hb
-      (by jump_dest)
-    rw [preModuleReturnWord hm hp hl] at h₃
-    have h₄ := safeRuntime_block_7396 (by simp; omega) h₃
-    refine Or.inr ⟨_, _, _, h₄, ?_⟩
+  · obtain ⟨aw'', k'', C'', h₆⟩ := safeBytes32DecoderValid h₅ (by omega) (by omega)
+      (by change _ < 2 ^ 255; omega)
+    rw [preModuleReturnWord hm hp hl] at h₆
+    refine .inr ⟨_, _, _, h₆, ?_⟩
     change (ABI.decodeReturnValueWithMode? .modern abiBytes32 out).map (fun v ↦ [v]) = _
     rw [decodeBytes32ReturnLong hl hb]
     rfl
-  · refine Or.inl ⟨safeBytes32DecoderShort h₂ (by simp; omega) (by omega), ?_⟩
-    change (ABI.decodeReturnValueWithMode? .modern abiBytes32 out).map (fun v ↦ [v]) = _
-    rw [decodeBytes32ReturnShort (by omega)]
-    rfl
+  · exact .inl (safeBytes32DecoderShort h₅ (by omega) (by omega))
 
 end Benchmarks.Safe.ViaIR

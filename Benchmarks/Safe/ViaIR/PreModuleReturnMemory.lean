@@ -9,7 +9,7 @@ def preModuleOutputMemory (mem out : ByteArray) (ptr : UInt256) : ByteArray :=
   out.write 0 mem ptr.toNat (min 32 out.size)
 
 def preModuleNextPtr (ptr : UInt256) (out : ByteArray) : UInt256 :=
-  ptr + UInt256.land (UInt256.ofNat out.size + UInt256.ofNat 31)
+  ptr + UInt256.land (UInt256.ofNat (min 32 out.size) + UInt256.ofNat 31)
     (UInt256.lnot (UInt256.ofNat 31))
 
 def preModuleReturnMemory (mem out : ByteArray) (ptr : UInt256) : ByteArray :=
@@ -51,11 +51,11 @@ theorem preModuleReturnSize {mem out : ByteArray} {ptr : UInt256} (hm : 96 ≤ m
 
 theorem preModuleNextPtr_toNat {ptr : UInt256} {out : ByteArray}
     (hb : ptr.toNat + out.size + 31 ≤ 2 ^ 200) :
-    (preModuleNextPtr ptr out).toNat = ptr.toNat + (out.size + 31) / 32 * 32 := by
-  have he : preModuleNextPtr ptr out = returnReservePtr ptr out.size := by
+    (preModuleNextPtr ptr out).toNat = ptr.toNat + (min 32 out.size + 31) / 32 * 32 := by
+  have he : preModuleNextPtr ptr out = returnReservePtr ptr (min 32 out.size) := by
     unfold preModuleNextPtr returnReservePtr returnReserveSize
     rw [u256_land_comm]
     rfl
-  rw [he, returnReservePtr_toNat hb]
+  rw [he, returnReservePtr_toNat (by omega)]
 
 end Benchmarks.Safe.ViaIR

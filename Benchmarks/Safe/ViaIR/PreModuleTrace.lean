@@ -6,12 +6,12 @@ open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.ViaIR
 
-set_option maxRecDepth 100000 in
+set_option maxRecDepth 2000 in
 theorem safePreModuleTrace (words : List UInt256) (payload : ByteArray) (evm : EVM.State)
     {I g s0 σ k C aw mem rdata ptr src} {target value operation ret : UInt256}
     {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨7172⟩
-      (operation :: UInt256.ofNat src :: value :: target :: ret :: R) mem aw rdata σ k C)
+    (h : RD safeBytecode I g s0 ⟨9817⟩
+      (target :: value :: UInt256.ofNat src :: operation :: ret :: R) mem aw rdata σ k C)
     (hee : evm.executionEnv = I) (hacc : evm.accountMap = σ) (hworld : evm.σ₀ = s0.σ₀)
     (hf : memLoad ⟨64⟩ mem = UInt256.ofNat ptr)
     (hl : memLoad (UInt256.ofNat src) mem = UInt256.ofNat payload.size)
@@ -61,12 +61,11 @@ theorem safePreModuleTrace (words : List UInt256) (payload : ByteArray) (evm : E
     exact hw i hi
   rcases safePreModuleCheckTrace words payload evm h₁ hee hacc hworld hf' hl' hw' hn hbytes
     (by rw [hs]; exact hm) (by rw [hs]; exact hu) hp (by rw [hs]; exact hin)
-    ha hb hsmall ho (by simp; omega) with
+    ha hb hsmall ho (by simp; omega) hret with
     ⟨hr, hc⟩ | ⟨frame, evm', σ', mem', aw', rdata', hash, k', C', hc, hg, hh,
       he, hac, hwo, hr, hmem⟩
   · exact Or.inl ⟨hr, safePreModuleSourceRevert hauth hc⟩
-  have h₂ := safeRuntime_block_7399 (by simp; omega) hret hr
   exact Or.inr ⟨frame, evm', σ', mem', _, rdata', hash, _, _,
-    safePreModuleSourceReturn hauth hc hg hh, he, hac, hwo, h₂, hmem⟩
+    safePreModuleSourceReturn hauth hc hg hh, he, hac, hwo, hr, hmem⟩
 
 end Benchmarks.Safe.ViaIR

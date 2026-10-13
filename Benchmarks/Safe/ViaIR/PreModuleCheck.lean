@@ -1,6 +1,7 @@
 import Benchmarks.Safe.ViaIR.PreModuleCallPrepare
 import Benchmarks.Safe.ViaIR.PreModuleReturn
 import Benchmarks.Safe.ViaIR.PreModuleSource
+import Benchmarks.Safe.ViaIR.PreModuleReject
 import Benchmarks.Safe.ViaIR.RawValueCall
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
@@ -8,13 +9,13 @@ open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.ViaIR
 
-set_option maxRecDepth 100000 in
+set_option maxRecDepth 2000 in
 set_option maxHeartbeats 1000000 in
 theorem safePreModuleCheckTrace (words : List UInt256) (payload : ByteArray) (evm : EVM.State)
-    {I g s0 σ k C aw mem rdata ptr src} {guard target value operation : UInt256}
+    {I g s0 σ k C aw mem rdata ptr src} {guard target value operation ret : UInt256}
     {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨7265⟩
-      (⟨0⟩ :: guard :: operation :: UInt256.ofNat src :: value :: target :: R)
+    (h : RD safeBytecode I g s0 ⟨9874⟩
+      (value :: operation :: UInt256.ofNat src :: ret :: ⟨0⟩ :: target :: guard :: R)
       mem aw rdata σ k C)
     (hee : evm.executionEnv = I) (hacc : evm.accountMap = σ) (hworld : evm.σ₀ = s0.σ₀)
     (hf : memLoad ⟨64⟩ mem = UInt256.ofNat ptr)
@@ -26,7 +27,8 @@ theorem safePreModuleCheckTrace (words : List UInt256) (payload : ByteArray) (ev
     (ha : src + 32 + 32 * words.length ≤ ptr)
     (hb : ptr + 228 + 32 * words.length < UInt256.size)
     (hsmall : 196 + 32 * words.length ≤ maxReturnDataSizeByGas)
-    (ho : operation.toNat < 2) (hov : R.length + 29 ≤ 1024) :
+    (ho : operation.toNat < 2) (hov : R.length + 29 ≤ 1024)
+    (hret : (D_J safeBytecode 0).contains ret = true) :
     (RDrev safeBytecode g s0 ∧
       ExecStmt config (preModuleCheckingFrame (AccountAddress.ofUInt256 target)
         value payload operation guard) evm preModuleCheck .reverted) ∨
@@ -36,21 +38,22 @@ theorem safePreModuleCheckTrace (words : List UInt256) (payload : ByteArray) (ev
       frame.locals["guard"]? = some (.address (AccountAddress.ofUInt256 guard)) ∧
       frame.locals["guardHash"]? = some (.fixedBytes bytes32Width (EVM.Word.toBytesBE hash)) ∧
       evm'.executionEnv = I ∧ evm'.accountMap = σ' ∧ evm'.σ₀ = s0.σ₀ ∧
-      RD safeBytecode I g s0 ⟨7399⟩
-        (hash :: guard :: operation :: UInt256.ofNat src :: value :: target :: R)
+      RD safeBytecode I g s0 ret (hash :: guard :: R)
         mem' aw' rdata' σ' k' C' ∧
       (mem' = mem ∨ ∃ out, out.size < 2 ^ 138 ∧ mem' = preModuleReturnMemory
         (preModuleCallMemory mem ptr payload.size target value operation
           (UInt256.ofNat I.source.val) words) out (UInt256.ofNat ptr)) := by
   by_cases hz : UInt256.land guard solcAddrMask = ⟨0⟩
-  · have h₁ := safeRuntime_block_7265_taken (by simp; omega)
-      (by rw [safeAddressMask, hz]; decide) (by jump_dest) h
+  · have h₁ := safeRuntime_block_9874_fallthrough (by simp; omega)
+      (by rw [safeAddressMask]; exact hz) h
+    have h₂ := safeRuntime_block_9890 (by simp; omega) hret h₁
     refine Or.inr ⟨_, evm, σ, mem, _, rdata, ⟨0⟩, _, _,
       safePreModuleCheckZero evm _ value payload operation guard hz, ?_, ?_,
-      hee, hacc, hworld, h₁, Or.inl rfl⟩ <;>
+      hee, hacc, hworld, h₂, Or.inl rfl⟩ <;>
       simp [preModuleCheckingFrame, preModuleLocals, preModuleArgs, Std.HashMap.getElem_insert]
-  have h₁ := safeRuntime_block_7265_fallthrough (by simp; omega)
-    (by rw [safeAddressMask]; exact isZero_eq_zero_of_ne hz) h
+  have h₁ := safeRuntime_block_9874_taken (by simp; omega)
+    (by rw [safeAddressMask]; exact hz) (by jump_dest) h
+  simp only [safeRuntime_block_9874_taken_stack, safeAddressMask] at h₁
   obtain ⟨gasArg, aw₂, k₂, C₂, h₂⟩ := safePreModuleCallPrepare words h₁ hf hl hw hn
     hm hu hp hin ha hb ho hov
   let m := preModuleCallMemory mem ptr payload.size target value operation
@@ -91,11 +94,14 @@ theorem safePreModuleCheckTrace (words : List UInt256) (payload : ByteArray) (ev
     have hsize := preModuleCallMemory_size mem ptr payload.size target value operation
       (UInt256.ofNat I.source.val) words hu hn
     rcases safePreModuleReturn h₃ hfree (by rw [hpt]; omega) (by rw [hpt]; exact hp)
-      (lt_trans hbout (by decide)) (by simp; omega) with
-      ⟨hr, hd⟩ | ⟨aw₄, k₄, C₄, h₄, hd⟩
-    · exact Or.inl ⟨hr, safePreModuleCheckInvalid hz htyped hd⟩
-    · refine Or.inr ⟨_, evm', σ', _, aw₄, out, calldataWord out 0, k₄, C₄,
-        safePreModuleCheckSuccess hz htyped hd, ?_, ?_, he, hac, hwo, h₄,
+      (by rw [hpt]; omega) (lt_trans hbout (by decide)) (by simp; omega) with
+      hr | ⟨aw₄, k₄, C₄, h₄, hd⟩
+    · exact Or.inl ⟨hr, safePreModuleCanReject evm target value operation guard payload hz
+        (by omega)⟩
+    · have h₅ := safeRuntime_block_10003 (by simp; omega) (by jump_dest) h₄
+      obtain ⟨aw₆, k₆, C₆, h₆⟩ := safeRuntime_block_9890_packed (by simp; omega) hret h₅
+      refine Or.inr ⟨_, evm', σ', _, aw₆, out, calldataWord out 0, k₆, C₆,
+        safePreModuleCheckSuccess hz htyped hd, ?_, ?_, he, hac, hwo, h₆,
         Or.inr ⟨out, hbout, rfl⟩⟩ <;>
         simp [preModuleCalledFrame, preModuleLocals, preModuleArgs, Std.HashMap.getElem_insert]
 

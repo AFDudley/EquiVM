@@ -21,15 +21,14 @@ theorem safeExectransactionfrommoduleBodyCore
   obtain ⟨hlong, hword⟩ := selectorDispatchFacts 0x46 0x87 0x21 0xa7 ⟨0x468721a7⟩
     hdispatch exectransactionfrommoduleSelectorBytes (by decide)
   obtain ⟨k, C, hentry⟩ := safeReachEntry (σ := σ) (σ₀ := σ₀) (A := A)
-    (g := Sat256.ofUInt256 g) ⟨0x468721a7⟩ 2 ⟨811⟩ hcode hsize hlong hword (by native_decide)
+    (g := Sat256.ofUInt256 g) ⟨0x468721a7⟩ 5 ⟨6323⟩ hcode hsize hlong hword (by native_decide)
   by_cases hvalue : I.weiValue = ⟨0⟩
   swap
-  · have h₁ := safeRuntime_block_811_fallthrough (by simp) (isZero_eq_zero_of_ne hvalue) hentry
-    have hr := safeRuntime_block_819 (by simp [safeRuntime_block_811_fallthrough_stack]) h₁
+  · have h₁ := safeRuntime_block_6323_taken (by simp) hvalue (by jump_dest) hentry
+    have hr := safeRuntime_block_111 (by simp) h₁
     exact reEquivSelectorRevert hcode hdispatch hr fun _ ↦ bodyReverts_nonPayable hvalue
-  have h₁ := safeRuntime_block_811_taken (by simp) (by rw [hvalue]; decide)
-    (by jump_dest) hentry
-  have hdecode := safeRuntime_block_822 (by simp) (by jump_dest) h₁
+  have h₁ := safeRuntime_block_6323_fallthrough (by simp) hvalue hentry
+  have hdecode := safeRuntime_block_6329 (by simp) (by jump_dest) h₁
   let evm := initState σ σ₀ (.ofUInt256 g) A I
   cases hdec : decodeCalldata ["to", "value", "data", "operation"] moduleCalldataTypes
       I.calldata with
@@ -59,8 +58,7 @@ theorem safeExectransactionfrommoduleBodyCore
     by_cases hvalid : len ≤ 2 ^ 64 - 192 ∧ (calldataWord I.calldata 100).toNat < 2
     · obtain ⟨aw', k', C', h₂⟩ := safeDecodeModuleArgsValid hdecode hh hs hc hoff hw
         hvalid.1 hin hvalid.2 (by simp) (by jump_dest)
-      have h₃ := safeRuntime_block_837 (by simp) (by jump_dest) h₂
-      rcases safeModuleTrace evm payload h₃ rfl rfl rfl hvalue
+      rcases safeModuleTrace evm payload h₂ rfl rfl rfl hvalue
         (by rw [hlen]; exact hvalid.1) hvalid.2 (by simp) with
         ⟨hr, hbody⟩ | ⟨hr, hbody⟩ | ⟨frame, evm', σ', z, hbody, he, ha, hw', hr⟩
       · exact RDrev.reEquivElim hcode hr fun _ _ hΞ ↦

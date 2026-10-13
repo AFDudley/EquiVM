@@ -159,4 +159,85 @@ theorem contractSignatureCanReject (evm : EVM.State) (owner : EVM.Address)
     · have hsize : result.2.2.2.2.size ≠ 32 := thetaZeroGasOutput _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
       simp only [contractSignatureResult, hsize, decide_false, Bool.false_and, Bool.and_false]
 
+set_option maxRecDepth 65536 in
+private theorem precompileZeroGasEmpty (pc : AccountAddress) (σ : AccountMap) (A : Substate)
+    (I : ExecutionEnv) (hinput : I.calldata.size ≠ 213) :
+    (match pc with
+      | 1 => Ξ_ECREC σ ⟨0⟩ A I
+      | 2 => Ξ_SHA256 σ ⟨0⟩ A I
+      | 3 => Ξ_RIP160 σ ⟨0⟩ A I
+      | 4 => Ξ_ID σ ⟨0⟩ A I
+      | 5 => Ξ_EXPMOD σ ⟨0⟩ A I
+      | 6 => Ξ_BN_ADD σ ⟨0⟩ A I
+      | 7 => Ξ_BN_MUL σ ⟨0⟩ A I
+      | 8 => Ξ_SNARKV σ ⟨0⟩ A I
+      | 9 => Ξ_BLAKE2_F σ ⟨0⟩ A I
+      | 10 => Ξ_PointEval σ ⟨0⟩ A I
+      | _ => (default : AccountMap × UInt256 × Substate × ByteArray)).2.2.2 = ByteArray.empty := by
+  have hdispatch := precompile_dispatch_match_eq_if pc
+    (Ξ_ECREC σ ⟨0⟩ A I) (Ξ_SHA256 σ ⟨0⟩ A I) (Ξ_RIP160 σ ⟨0⟩ A I)
+    (Ξ_ID σ ⟨0⟩ A I) (Ξ_EXPMOD σ ⟨0⟩ A I) (Ξ_BN_ADD σ ⟨0⟩ A I)
+    (Ξ_BN_MUL σ ⟨0⟩ A I) (Ξ_SNARKV σ ⟨0⟩ A I) (Ξ_BLAKE2_F σ ⟨0⟩ A I)
+    (Ξ_PointEval σ ⟨0⟩ A I) (default : AccountMap × UInt256 × Substate × ByteArray)
+  have hbound :
+      (if pc = 1 then Ξ_ECREC σ ⟨0⟩ A I
+       else if pc = 2 then Ξ_SHA256 σ ⟨0⟩ A I
+       else if pc = 3 then Ξ_RIP160 σ ⟨0⟩ A I
+       else if pc = 4 then Ξ_ID σ ⟨0⟩ A I
+       else if pc = 5 then Ξ_EXPMOD σ ⟨0⟩ A I
+       else if pc = 6 then Ξ_BN_ADD σ ⟨0⟩ A I
+       else if pc = 7 then Ξ_BN_MUL σ ⟨0⟩ A I
+       else if pc = 8 then Ξ_SNARKV σ ⟨0⟩ A I
+       else if pc = 9 then Ξ_BLAKE2_F σ ⟨0⟩ A I
+       else if pc = 10 then Ξ_PointEval σ ⟨0⟩ A I
+       else (default : AccountMap × UInt256 × Substate × ByteArray)).2.2.2 = ByteArray.empty := by
+    split_ifs
+    · rfl
+    · simp [Ξ_SHA256]
+    · simp [Ξ_RIP160]
+    · simp [Ξ_ID]
+    · unfold Ξ_EXPMOD
+      dsimp only
+      rw [if_pos (by change 0 < max 200 _; omega)]
+    · rfl
+    · rfl
+    · simp [Ξ_SNARKV]
+    · simp [Ξ_BLAKE2_F, ffi.BLAKE2, hinput, bind, Except.bind, dbgTrace]
+    · rfl
+    · rfl
+  exact (congrArg (fun x : AccountMap × UInt256 × Substate × ByteArray ↦ x.2.2.2)
+    hdispatch).symm ▸ hbound
+
+private theorem thetaZeroGasEmpty (σ σ₀ : AccountMap) (A : Substate) (s o r : AccountAddress)
+    (c : ToExecute) (p v v' : UInt256) (d : ByteArray) (e : Fin 1025) (H : BlockHeader)
+    (hashes : List ByteArray) (blocks : ProcessedBlocks) (perm : Bool) (hinput : d.size ≠ 213) :
+    (Θ σ σ₀ A s o r c ⟨0⟩ p v v' d e H hashes blocks perm).2.2.2.2 = ByteArray.empty := by
+  cases c with
+  | Code code =>
+    unfold Θ
+    simp only
+    exact xiZeroGasOutput _ σ₀ A _
+  | Precompiled pc =>
+    unfold Θ
+    simp only
+    exact precompileZeroGasEmpty pc _ A _ hinput
+
+theorem callZeroGasEmptyOutput (evm : EVM.State) (target : EVM.Address) (data : ByteArray)
+    (perm : Bool) (hinput : data.size ≠ 213) :
+    ∃ z evm', callViaEVM evm target 0 data (z, evm', ByteArray.empty) perm := by
+  by_cases hd : evm.executionEnv.depth = 1024
+  · exact ⟨false, _, callViaEVM.callNotMade rfl rfl (fun hh ↦ hh.2 hd)⟩
+  · let result := Θ evm.accountMap evm.σ₀ default evm.executionEnv.codeOwner
+      evm.executionEnv.sender target (toExecute evm.accountMap target) ⟨0⟩
+      (UInt256.ofNat evm.executionEnv.gasPrice) ⟨0⟩ ⟨0⟩ data (evm.executionEnv.depth + 1)
+      evm.executionEnv.header evm.executionEnv.blobVersionedHashes evm.executionEnv.blocks
+      (perm && evm.executionEnv.perm)
+    have hout : result.2.2.2.2 = ByteArray.empty :=
+      thetaZeroGasEmpty _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ hinput
+    refine ⟨result.2.2.2.1, { evm with accountMap := result.1, substate := result.2.2.1 }, ?_⟩
+    rw [← hout]
+    apply callViaEVM.callMade (g' := result.2.1) wordOfInt_zero.symm
+      ⟨⟨0⟩, default, ?_⟩ rfl (Fin.zero_le _) hd
+    rfl
+
 end Benchmarks.Safe.ViaIR
