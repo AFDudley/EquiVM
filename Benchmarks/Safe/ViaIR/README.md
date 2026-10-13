@@ -42,9 +42,11 @@ Main source sha256: `9f91d9250e18bb0710b7b1f10dcbe2417e9ef8d22eeee98dba2ef48661a
 
 ## Legacy baseline semantic audit
 
-The following records the copied legacy proof and audit. Its PCs and recorded outcomes refer
-to the legacy bytecode, not the regenerated IR artifacts. IR semantic tests and proof repair
-are pending; these legacy results do not establish correctness of the IR bytecode.
+The following records the copied legacy proof and audit. Its PCs refer to the legacy bytecode,
+not the regenerated IR artifacts. The IR regression audit also passes all 408 cases with the
+same outcome counts. The randomized IR test reports 1,775 cases: 1,761 agree (578 successful),
+0 disagree, 0 stuck, 14 EVM out of gas, and 0 spec out of fuel. IR proof repair is pending;
+these executable tests do not establish correctness of the IR bytecode.
 
 The audit target is the pinned bytecode under the repository's current `Solm.runtimeRefinement`.
 That relation observes the final account map, successful return bytes, reverts, invalid-instruction
@@ -127,7 +129,14 @@ lake build Benchmarks.Safe.ViaIR.ArtifactChecks Benchmarks.Safe.ViaIR.SpecSyntax
 lake build Benchmarks.Safe.ViaIR.Correct Benchmarks.Safe.ViaIR.Audit
 lake build Benchmarks.Safe.ViaIR.CorrectProofAudit Benchmarks.Safe.ViaIR.GetOwnersModelAudit
 lake env lean Benchmarks/Safe/ViaIR/Audit.lean
+lake exe solm-difftest --only Safe_ViaIR --count 50
 ```
+
+The EVM dependency's Python precompiles resolve `Ethereum/EllipticCurvesPy/` relative to the
+working directory and require `coincurve`, `pycryptodome`, and `typing-extensions`. If the root
+command reports missing precompile scripts, run the built executable from `.lake/packages/evmlean`
+with those Python dependencies on `PATH`. The recorded randomized result was also reproduced
+there without precompile errors, using an isolated Python environment under `/tmp`.
 
 The Python check recompiles source, verifies every source hash and both Lean byte arrays, checks
 the ABI/dispatcher agreement, and checks that generated files match their current generator.
