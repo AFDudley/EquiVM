@@ -10,7 +10,9 @@ the add-owner theorem and the runtime and whole-contract statements, using the e
 refinement relations. Shared storage semantics and the specification are unchanged for it. A third certified
 counterexample exposed the IR storage reader's final allocation-pointer check. The user
 authorized tightening only the existing `getStorageAt` allocation guard. That change is
-applied, and the complete `getStorageAt` refinement theorem now builds.
+applied, and the complete `getStorageAt` refinement theorem now builds. Continuing the
+port exposed the analogous owner-array allocation mismatch below. Its separate local guard
+correction has been prepared but is not applied.
 
 Nineteen runtime obligations now build: receive, fallback, `nonce`, `getThreshold`, `signedMessages`,
 `approvedHashes`, `isOwner`, `isModuleEnabled`, `domainSeparator`, `VERSION`, `changeThreshold`,
@@ -190,3 +192,29 @@ audit reproduces the unchanged bytecode and block summaries. The storage-reader 
 positive regression build together (3,513 build jobs). A combined build of all nineteen
 repaired entrypoints and the three regression witnesses also passes (3,593 build jobs).
 Whole-contract correctness still requires completing the remaining runtime obligations.
+
+The next certified blocker is `getOwners` with an existing executing account, four-byte
+calldata `0xa0e67e2b`, zero call value, and 100,000 gas. Slot 3 contains `2^59 - 1`, and the
+owner sentinel mapping points to itself. The existing specification accepts the count
+(`<= 2^64 - 1`), creates the zero-filled array, skips the traversal, and returns it. The IR
+computes `32 * count + 32 = 2^64`, then its final pointer check rejects the allocation.
+Actual EVM execution returns panic `0x41` and leaves 97,240 gas.
+
+`safeIROwnerAllocationPremises`, `safeIROwnerAllocationStorage`, and
+`safeIROwnerAllocationDecoding` verify the input. `safeIROwnerAllocationExecution` certifies
+the actual bytecode revert. `safeIROwnerAllocationSourceReturns` constructs the symbolic
+source return without allocating the huge list during proof evaluation, while
+`safeIROwnerAllocationSourceCannotRevert` excludes every reverting derivation. Consequently,
+`safeIROwnerAllocationNotRefines` proves that this input does not satisfy the unchanged
+runtime claim. The witness satisfies the approved account-existence condition. Its axiom
+scan contains only the standard three and five native certificates, with no proof holes.
+Build it with `lake build Benchmarks.Safe.ViaIR.IRArrayAllocation`.
+
+The smallest proposed correction for this additional example changes only the existing
+`getOwners` count guard to `ownerCount <= 2^59 - 6`, mirrored in the syntax specification.
+`safeIROwnerAllocationCorrectedBound` proves this is equivalent to
+`32 * ownerCount + 160 <= 2^64 - 1`; `safeIROwnerAllocationRejectedByCorrectedBound` checks
+the witness. A two-line specification patch is prepared at
+`/tmp/safe-ir-getowners-guard.patch`. It does not alter the shared memory bound, decoding
+modes, or other transitions. The original instruction to investigate, report, and wait on
+an unprovable claim applies to this separate specification change; approval is pending.
