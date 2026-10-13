@@ -1,15 +1,15 @@
-import Solm.Semantics
-import Solm.SolidityLayout
-import Solm.MetaSolidityLayout
+import Stele.Semantics
+import Stele.SolidityLayout
+import Stele.MetaSolidityLayout
 
 /-!
 # OpenZeppelin Ownable2Step benchmark spec
 
-Solm specification for the concrete `Ownable2StepBench` wrapper.  The deployed runtime has the
+Stele specification for the concrete `Ownable2StepBench` wrapper.  The deployed runtime has the
 OpenZeppelin `Ownable2Step` storage shape: `_owner` in slot 0 and `_pendingOwner` in slot 1.
 -/
 
-open Solm ABI
+open Stele ABI
 
 namespace OpenZeppelinBench.Ownable2Step
 

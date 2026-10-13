@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.WordArrayExtend
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 -- LIBRARY CANDIDATE: a nonempty word array at the free pointer supplies the heap gap.

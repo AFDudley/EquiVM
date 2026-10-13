@@ -7,7 +7,7 @@ import Reasoning.Dispatch
 The four theorems identify Attester's public ABI selectors.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 open Benchmarks.EAS.Attester.Immutables
 
 namespace Benchmarks.EAS.Attester

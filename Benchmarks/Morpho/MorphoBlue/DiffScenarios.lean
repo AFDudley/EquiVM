@@ -7,7 +7,7 @@ the unchanged contract/config and is compared by the standard trace-replay harne
 Run: lake env lean --run Benchmarks/Morpho/MorphoBlue/DiffScenarios.lean
 -/
 
-open Solm Solm.DiffTest Ethereum Ethereum.EVM
+open Stele Stele.DiffTest Ethereum Ethereum.EVM
 
 namespace Benchmarks.Morpho.MorphoBlue
 

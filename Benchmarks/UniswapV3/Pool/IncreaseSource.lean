@@ -2,7 +2,7 @@ import Benchmarks.UniswapV3.Pool.CardinalityStorage
 import Benchmarks.UniswapV3.Pool.OracleGrow
 import Benchmarks.UniswapV3.Pool.NoDelegateCall
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
@@ -103,7 +103,7 @@ theorem increaseReadyPrefix (v : UniswapV3PoolImmutables) (evm : EVM.State) (nex
       (.internalCall "checkNotDelegateCall" [] "__c0")
       (.ok (increaseCheckedFrame v next) (storeSlot0Unlocked evm false)) :=
     internalCallFunctionReturn (callee := noDelegateCallFunction) (argVals := []) (locals := ∅)
-      (calleeSolm := noDelegateCallFrame v) (value := none)
+      (calleeStele := noDelegateCallFrame v) (value := none)
       (by simp only [evalExprs?, pure]) noDelegateCallLookup rfl
       (noDelegateCallReturns v _ (by simpa only [storeSlot0Unlocked_executionEnv] using hself))
   refine ExecBlock.consNormal hcall ?_
@@ -126,7 +126,7 @@ theorem increaseGrowCall (v : UniswapV3PoolImmutables) (evm : EVM.State) (next c
         (oracleGrowState evm current.toNat (next.toNat - current.toNat))) := by
   obtain ⟨frame, hbody⟩ := oracleGrowReturns (immStore v) evm current next hpos hnext
   exact internalCallFunctionReturn (callee := oracleGrowFunction) (locals := oracleGrowLocals current next)
-    (calleeSolm := frame) (value := some [.int (Int.ofNat (oracleGrowResult current next).toNat)])
+    (calleeStele := frame) (value := some [.int (Int.ofNat (oracleGrowResult current next).toNat)])
     (increaseGrowArgs v evm next current) oracleGrowLookup (oracleGrowBind current next) hbody
 
 theorem increaseGrowZeroReverts (v : UniswapV3PoolImmutables) (evm : EVM.State) (next : UInt256)

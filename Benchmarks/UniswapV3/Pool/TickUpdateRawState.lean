@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.TickUpdateRawModel
 import Benchmarks.UniswapV3.Pool.TickUpdateStorage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 def TickUpdateArgs.withRaw (a : TickUpdateArgs) (time maximum : UInt256) : TickUpdateArgs :=

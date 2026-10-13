@@ -1,15 +1,15 @@
 import Benchmarks.Dss.Spot.ConstructorSource
 import Benchmarks.Dss.Spot.ConstructorTrace
-import Solm.Refine
+import Stele.Refine
 
 /-!
 # MakerDAO/Sky DSS Spotter constructor correctness
 
-The optimized creation bytecode, deployed runtime bytecode, and Solm constructor specification are
+The optimized creation bytecode, deployed runtime bytecode, and Stele constructor specification are
 connected by the constructor-equivalence proof.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Spot
 
@@ -56,8 +56,8 @@ theorem spotConstructorCorrect :
           storageStore_accountMap, storageStore_executionEnv, hslot]
       have hOldVat :
           solcSlotWord σWards I ⟨2⟩ =
-            Solm.EVM.storageLoad evm1s evm1s.executionEnv.codeOwner ⟨2⟩ := by
-        unfold solcSlotWord Solm.EVM.storageLoad
+            Stele.EVM.storageLoad evm1s evm1s.executionEnv.codeOwner ⟨2⟩ := by
+        unfold solcSlotWord Stele.EVM.storageLoad
         rw [hAccountsWards]
         simp [evm1s, evm0s, spotCtorAfterWardsState, initState,
           State.lookupAccount, Account.lookupStorage, storageStore_executionEnv]
@@ -65,7 +65,7 @@ theorem spotConstructorCorrect :
         have hvalue :
             spotCtorVatStored σWards I vat =
               setAddressOffset0Word
-                (Solm.EVM.storageLoad evm1s evm1s.executionEnv.codeOwner ⟨2⟩)
+                (Stele.EVM.storageLoad evm1s evm1s.executionEnv.codeOwner ⟨2⟩)
                 (EVM.word vat.val) := by
           unfold spotCtorVatStored
           rw [hOldVat]
@@ -84,7 +84,7 @@ theorem spotConstructorCorrect :
       refine typedConstructorRefinementFor.execution hsuccess
         (by
           simpa [evm0s, evm1s, evm2s, evm3s, evm4s] using
-            spotSolmCtorExecSuccess
+            spotSteleCtorExecSuccess
               (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
               (g := g) vat hwv)
         ?_
@@ -96,7 +96,7 @@ theorem spotConstructorCorrect :
     rcases hrd.xiResult hcodeCtor with hOOG | ⟨g', out, hRev⟩
     · exact typedConstructorRefinementFor.outOfGas (by simpa [Sat256.ofUInt256] using hOOG)
     · refine typedConstructorRefinementFor.execution (by simpa [Sat256.ofUInt256] using hRev)
-        (spotSolmCtorExecReverts_nonpayable
+        (spotSteleCtorExecReverts_nonpayable
           (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
           (g := g) vat hwv)
         ?_

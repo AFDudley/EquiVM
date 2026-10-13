@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Clipper.Fallback
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 namespace Benchmarks.Dss.Clipper
@@ -59,7 +59,7 @@ theorem clipperEvalCusp (v : ClipperImmutables) (evm : EVM.State) (locals : Stor
     (hbase : locals.get? "cusp" = none) :
     evalExpr? config { contract := contract, locals := locals, immutables := immStore v } evm
       (.storage cuspRef) =
-      .ok (.int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨7⟩).toNat)) := by
+      .ok (.int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨7⟩).toNat)) := by
   let er : EvaledStorageRef := { base := "cusp", steps := [] }
   have her : evalStorageRef config
       { contract := contract, locals := locals, immutables := immStore v } evm cuspRef = .ok er := by
@@ -78,7 +78,7 @@ theorem clipperCuspBodyReturns (v : ClipperImmutables) (evm : EVM.State) (locals
     ExecTransitionBody config contract evm locals cuspTransition.body
       (.returned { contract := contract, locals := locals, immutables := immStore v } evm
         (some [(.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨7⟩).toNat))])) (immStore v) := by
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨7⟩).toNat))])) (immStore v) := by
   simpa [cuspTransition] using
     nonpayableReturnExprBodyReturns (cfg := config) (contract := contract) h
       (clipperEvalCusp v evm locals hbase)
@@ -259,7 +259,7 @@ theorem clipperCuspBody (v : ClipperImmutables) {code : ByteArray}
         (.returned { contract := contract, locals := ∅, immutables := immStore v }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.int (Int.ofNat (solcSlotWord σ I ⟨7⟩).toNat))])) (immStore v) := by
-    simpa [solcSlotWord, initState, Solm.EVM.storageLoad, State.lookupAccount] using
+    simpa [solcSlotWord, initState, Stele.EVM.storageLoad, State.lookupAccount] using
       clipperCuspBodyReturns v
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
         (by simp only [initState]; exact hwv) (by simp)

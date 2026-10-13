@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.SwapObservationSource
 import Benchmarks.UniswapV3.Pool.WordArrayInPlace
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 def swapObservationStoreMem (mem : ByteArray) (cache : UInt256) (tick : Int)

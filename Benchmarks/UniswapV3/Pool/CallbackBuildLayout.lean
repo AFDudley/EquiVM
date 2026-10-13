@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.CallbackMemory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 -- LIBRARY CANDIDATE: offset arithmetic shared by the two-word callback encoders.

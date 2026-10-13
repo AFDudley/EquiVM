@@ -2,14 +2,14 @@ import Benchmarks.UniswapV4PoolManager.TickStorage
 import Benchmarks.UniswapV4PoolManager.CallComposition
 import Reasoning.PackedStorage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 
 def tickClearPost (evm : EVM.State) (id : UInt256) (tick : Int) : EVM.State :=
-  let e0 := Solm.EVM.storageStore evm evm.executionEnv.codeOwner (tickSlot id tick) ⟨0⟩
-  let e1 := Solm.EVM.storageStore e0 e0.executionEnv.codeOwner (tickSlot id tick+⟨1⟩) ⟨0⟩
-  Solm.EVM.storageStore e1 e1.executionEnv.codeOwner (tickSlot id tick+⟨2⟩) ⟨0⟩
+  let e0 := Stele.EVM.storageStore evm evm.executionEnv.codeOwner (tickSlot id tick) ⟨0⟩
+  let e1 := Stele.EVM.storageStore e0 e0.executionEnv.codeOwner (tickSlot id tick+⟨1⟩) ⟨0⟩
+  Stele.EVM.storageStore e1 e1.executionEnv.codeOwner (tickSlot id tick+⟨2⟩) ⟨0⟩
 
 theorem tickClearStorage {f : Frame} {evm : EVM.State} {id : UInt256} {tick : Int}
     (hs : f.locals.get? "self" = some (poolRefValue id))
@@ -24,7 +24,7 @@ theorem tickClearStorage {f : Frame} {evm : EVM.State} {id : UInt256} {tick : In
       solidityClearStorage? config.storageBackend.locate? e
         {tickRef id tick with steps := (tickRef id tick).steps ++ [.field field.name]}
         (.elem (.int (.uint ⟨256, by decide⟩))) =
-          .ok (Solm.EVM.storageStore e e.executionEnv.codeOwner (field.slot (tickSlot id tick)) ⟨0⟩) :=
+          .ok (Stele.EVM.storageStore e e.executionEnv.codeOwner (field.slot (tickSlot id tick)) ⟨0⟩) :=
     clearStorage_uint256_zero (tickField_loc id tick field)
   change solidityClearStorage? config.storageBackend.locate? evm (tickRef id tick)
     (.struct "TickInfo" [("liquidityPacked", .elem (.int (.uint ⟨256, by decide⟩))),

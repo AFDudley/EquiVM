@@ -2,7 +2,7 @@ import Benchmarks.CompoundIII.Comet.ArithmeticSource
 import Benchmarks.CompoundIII.Comet.CheckedDivEvm
 import Benchmarks.CompoundIII.Comet.RuntimeBlocks_052
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
 open Benchmarks.CompoundIII.Comet.Immutables cometWithExtendedAssetListBlocks
 
 namespace Benchmarks.CompoundIII.Comet
@@ -86,13 +86,13 @@ theorem divBaseWei_call (v : CometWithExtendedAssetListImmutables)
   split_ifs with hv
   · rw [if_pos hv] at hbody
     exact ExecStmt.internalCallReturn (callee := divBaseWeiCallable)
-      (cfg := config) (solm := frame) (evm := evm) (args := [nExpr, baseWeiExpr])
+      (cfg := config) (stele := frame) (evm := evm) (args := [nExpr, baseWeiExpr])
       (locals := divBaseWeiLocals n baseWei) (argVals := [.int n.toNat, .int baseWei.toNat])
       (by simp only [evalExprs?, hn, hb, pure, bind, EvalResult.bind])
       (by rw [hc]; exact divBaseWeiCallable_lookup) rfl (by simpa only [hc, hi] using hbody)
   · rw [if_neg hv] at hbody
     exact ExecStmt.internalCallRevert (callee := divBaseWeiCallable)
-      (cfg := config) (solm := frame) (evm := evm) (args := [nExpr, baseWeiExpr])
+      (cfg := config) (stele := frame) (evm := evm) (args := [nExpr, baseWeiExpr])
       (locals := divBaseWeiLocals n baseWei) (argVals := [.int n.toNat, .int baseWei.toNat])
       (by simp only [evalExprs?, hn, hb, pure, bind, EvalResult.bind])
       (by rw [hc]; exact divBaseWeiCallable_lookup) rfl (by simpa only [hc, hi] using hbody)

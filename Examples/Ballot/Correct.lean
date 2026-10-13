@@ -13,7 +13,7 @@ import Reasoning.Stepping
 import Reasoning.Reach
 import Reasoning.Solc
 import Reasoning.Dispatch
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 import Mathlib.Tactic.IntervalCases
 
 /-!
@@ -47,7 +47,7 @@ Body entry PCs (dispatch targets), read off the bytecode disassembly:
 | `0xe2ba53f0` | `winnerName()`               | `417` (`0x1a1`) |
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -591,7 +591,7 @@ theorem ballotNoDispatch {σ σ₀ A I} {g : UInt256}
 
 /-! ## Top-level theorem — drive the dispatcher, route each body to its correctness -/
 
-/-- The deployed Ballot runtime bytecode refines the Solm specification, for every initial state. -/
+/-- The deployed Ballot runtime bytecode refines the Stele specification, for every initial state. -/
 theorem ballotCorrect :
     runtimeRefinement ballotConfig ballotBytecode ballotContract := by
   refine ⟨fun σ σ₀ g A I hcode hsize => ?_⟩

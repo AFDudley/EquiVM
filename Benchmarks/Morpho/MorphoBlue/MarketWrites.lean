@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MorphoBlue.Storage
 import Benchmarks.Morpho.MorphoBlue.PackedHighStorage
 import Reasoning.ExternalCall
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.Morpho.MorphoBlue
 set_option maxRecDepth 1000
 
@@ -12,16 +12,16 @@ def setUint128HalfWord (high : Bool) (old value : UInt256) : UInt256 :=
 theorem storageLocStore_uint128Half (evm : EVM.State) (slot value : UInt256) (high : Bool)
     (hc : value.toNat < 2 ^ 128) :
     storageLocStore evm (uint128HalfLoc slot high) (.int (Int.ofNat value.toNat)) =
-      some (Solm.EVM.storageStore evm evm.executionEnv.codeOwner slot
-        (setUint128HalfWord high (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot) value)) := by
+      some (Stele.EVM.storageStore evm evm.executionEnv.codeOwner slot
+        (setUint128HalfWord high (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot) value)) := by
   cases high
   · exact storageLocStore_uint128Low evm slot value hc
   · exact storageLocStore_uint128High evm slot value hc
 
 def storeMarketField (evm : EVM.State) (id : UInt256) (i : Fin 6) (value : UInt256) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (marketFieldSlot id i)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (marketFieldSlot id i)
     (setUint128HalfWord (decide (i.val % 2 = 1))
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (marketFieldSlot id i)) value)
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (marketFieldSlot id i)) value)
 
 theorem assignMarketField (evm : EVM.State) (locals imms : Store) (key : Expr)
     (id : UInt256) (i : Fin 6) (value : UInt256) (hc : value.toNat < 2 ^ 128)
@@ -66,7 +66,7 @@ theorem storeMarketField_bridge {s0 : State} {I : ExecutionEnv} {σ : AccountMap
 
 -- The fee-share update writes the full supply-share word in the position mapping.
 def storePositionSupplyShares (evm : EVM.State) (id account value : UInt256) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (positionSlot id account) value
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (positionSlot id account) value
 
 theorem assignPositionSupplyShares (evm : EVM.State) (locals imms : Store) (key0 key1 : Expr)
     (id account value : UInt256) (hc : account.toNat < EVM.addressModulus)

@@ -1,6 +1,6 @@
 import Benchmarks.Auction.Snapshot
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 100000
 
@@ -148,7 +148,7 @@ theorem auctionBodyCore {σ σ₀ A I} {g : UInt256}
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some (snapshotOf σ I).values)) := by
       simpa [snapshotOf, snapshotOfState, solcSlotWord, initState,
-        Solm.EVM.storageLoad, State.lookupAccount] using
+        Stele.EVM.storageLoad, State.lookupAccount] using
         auctionBodyReturns (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           ∅ hwv (by simp)
     exact (auctionX hreach hwv).reEquivExecution hcode hd hdec hbody

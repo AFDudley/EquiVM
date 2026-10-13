@@ -1,6 +1,6 @@
 import Examples.OpenZeppelinBench.ERC6909.TransferFrom.Traces.Allowance
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 4000000
@@ -265,7 +265,7 @@ theorem erc6909TransferFromX_from1323_afterLoad {σ σ₀ σcur A I}
   obtain ⟨k1, C1, rd1373₀⟩ := rd1372.sload (by decide) (by evm_ov)
   exact ⟨k1, C1, by
     simpa [transferFromSenderBalanceWord, transferFromSenderBalanceSlot,
-      hslot, initState, Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage]
+      hslot, initState, Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage]
       using rd1373₀⟩
 
 theorem erc6909TransferFromX_from1323_afterRequire {σ σ₀ σcur A I}
@@ -485,7 +485,7 @@ theorem erc6909TransferFromX_from1323_afterLoad_base {σ σ₀ σcur A I}
   obtain ⟨k1, C1, rd1373₀⟩ := rd1372.sload (by decide) (by evm_ov)
   exact ⟨k1, C1, by
     simpa [transferFromSenderBalanceWord, transferFromSenderBalanceSlot,
-      hslot, initState, Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage]
+      hslot, initState, Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage]
       using rd1373₀⟩
 
 theorem erc6909TransferFromX_from1323_afterRequire_base {σ σ₀ σcur A I}
@@ -891,7 +891,7 @@ theorem erc6909TransferFromX_from1323_toCheckedAdd {σ σ₀ σcur A I}
       (sstoreAccountMap I.codeOwner σcur (transferFromSenderBalanceSlot I)
         (transferFromTailSenderDebitWord (initState σcur σ₀ g A I) I)) k1 C1 := by
     simpa [transferFromTailReceiverBalanceWord, transferFromTailAfterSenderBalanceState,
-      transferFromSenderBalanceSlot, hslot, initState, Solm.EVM.storageLoad,
+      transferFromSenderBalanceSlot, hslot, initState, Stele.EVM.storageLoad,
       State.lookupAccount, Account.lookupStorage, storageStore_accountMap, debitMem]
       using rd1526₀
   exact ⟨_, _, evm_run rd1526 with [
@@ -1453,7 +1453,7 @@ theorem erc6909TransferFromX_from1323_toCheckedAdd_base
       (sstoreAccountMap I.codeOwner σcur (transferFromSenderBalanceSlot I)
         (transferFromTailSenderDebitWord (initState σcur σ₀ g A I) I)) k1 C1 := by
     simpa [transferFromTailReceiverBalanceWord, transferFromTailAfterSenderBalanceState,
-      transferFromSenderBalanceSlot, hslot, initState, Solm.EVM.storageLoad,
+      transferFromSenderBalanceSlot, hslot, initState, Stele.EVM.storageLoad,
       State.lookupAccount, Account.lookupStorage, storageStore_accountMap, debitMem]
       using rd1526₀
   exact ⟨_, _, by

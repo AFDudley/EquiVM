@@ -1,9 +1,9 @@
 import Benchmarks.CompoundIII.Comet.FallbackDispatch
 import Benchmarks.CompoundIII.Comet.FallbackEvm
 import Benchmarks.CompoundIII.Comet.FallbackSource
-import Solm.Refine
+import Stele.Refine
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.CompoundIII.Comet.Immutables
 
 namespace Benchmarks.CompoundIII.Comet

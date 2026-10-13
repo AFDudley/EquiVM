@@ -1,8 +1,8 @@
 import Benchmarks.Scaffolds.Klima.Spec
-import Solm.Notation
+import Stele.Notation
 
 /-!
-# KlimaToken spec in the Solidity-faithful Solm frontend
+# KlimaToken spec in the Solidity-faithful Stele frontend
 
 The whole KlimaToken benchmark spec, written with `solidity%` and proven definitionally equal to
 the AST spec in `Benchmarks/Klima/Spec.lean`.
@@ -20,7 +20,7 @@ Notes mirroring the AST spec:
 * Transition order matches `contract.transitions` (selector order).
 -/
 
-open Solm Solm.Notation
+open Stele Stele.Notation
 
 namespace Benchmarks.Klima.Syntax
 

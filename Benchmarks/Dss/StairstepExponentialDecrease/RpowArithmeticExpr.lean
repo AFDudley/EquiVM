@@ -2,13 +2,13 @@ import Reasoning.WordArithmetic
 import Reasoning.EVMWord
 import Benchmarks.Dss.StairstepExponentialDecrease.Dispatch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
 namespace Benchmarks.Dss.StairstepExponentialDecrease
 
-/-! ## Solm-side arithmetic helpers for `drip` -/
+/-! ## Stele-side arithmetic helpers for `drip` -/
 
 abbrev rpowRay : UInt256 :=
   ⟨1000000000000000000000000000⟩

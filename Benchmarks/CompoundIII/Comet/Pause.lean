@@ -5,11 +5,11 @@ import Benchmarks.CompoundIII.Comet.PauseEvm
 # CometWithExtendedAssetList `pause(bool,bool,bool,bool,bool)`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 1159; reach lemma `cometWithExtendedAssetListReachPauseBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.CompoundIII.Comet.Immutables
 

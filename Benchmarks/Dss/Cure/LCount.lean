@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Cure.Common
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Cure
 
@@ -41,7 +41,7 @@ theorem cureLCountBodyCore {σ σ₀ A I} {g : UInt256}
         (.returned { contract := contract, locals := ∅ }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.int (Int.ofNat (lCountWord σ I).toNat))])) := by
-    simpa [lCountTransition, lCountWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [lCountTransition, lCountWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       cureUint256GetterBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅

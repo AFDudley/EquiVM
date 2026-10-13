@@ -1,8 +1,8 @@
 import Benchmarks.Scaffolds.ERC721.Spec
-import Solm.Semantics
+import Stele.Semantics
 import Reasoning.JumpDest
 
-open Solm ABI Ethereum Ethereum.EVM
+open Stele ABI Ethereum Ethereum.EVM
 
 set_option maxHeartbeats 0
 set_option maxRecDepth 1000000
@@ -168,45 +168,45 @@ def erc721CreationBytecode : ByteArray :=
 
 /-- `keccak("approve(address,uint256)")[0:4] = 0x095ea7b3`. -/
 theorem erc721ApproveSelectorBytes :
-    (KEC (String.toByteArray (Solm.transitionSigStr ERC721.approveTransition))).extract 0 4
+    (KEC (String.toByteArray (Stele.transitionSigStr ERC721.approveTransition))).extract 0 4
       = ⟨#[0x09, 0x5e, 0xa7, 0xb3]⟩ := by
-  simp [Solm.transitionSigStr, transitionSignature, ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr, ERC721.approveTransition, ERC721.addr, ERC721.uint256, ERC721.uint256Int]; decide +kernel
+  simp [Stele.transitionSigStr, transitionSignature, ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr, ERC721.approveTransition, ERC721.addr, ERC721.uint256, ERC721.uint256Int]; decide +kernel
 
 /-- `keccak("balanceOf(address)")[0:4] = 0x70a08231`. -/
 theorem erc721BalanceOfSelectorBytes :
-    (KEC (String.toByteArray (Solm.transitionSigStr ERC721.balanceOfTransition))).extract 0 4
+    (KEC (String.toByteArray (Stele.transitionSigStr ERC721.balanceOfTransition))).extract 0 4
       = ⟨#[0x70, 0xa0, 0x82, 0x31]⟩ := by
-  simp [Solm.transitionSigStr, transitionSignature, ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ERC721.balanceOfTransition, ERC721.addr]; decide +kernel
+  simp [Stele.transitionSigStr, transitionSignature, ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ERC721.balanceOfTransition, ERC721.addr]; decide +kernel
 
 /-- `keccak("getApproved(uint256)")[0:4] = 0x081812fc`. -/
 theorem erc721GetApprovedSelectorBytes :
-    (KEC (String.toByteArray (Solm.transitionSigStr ERC721.getApprovedGetter))).extract 0 4
+    (KEC (String.toByteArray (Stele.transitionSigStr ERC721.getApprovedGetter))).extract 0 4
       = ⟨#[0x08, 0x18, 0x12, 0xfc]⟩ := by
-  simp [Solm.transitionSigStr, transitionSignature, ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr, ERC721.getApprovedGetter, ERC721.uint256, ERC721.uint256Int]; decide +kernel
+  simp [Stele.transitionSigStr, transitionSignature, ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr, ERC721.getApprovedGetter, ERC721.uint256, ERC721.uint256Int]; decide +kernel
 
 /-- `keccak("isApprovedForAll(address,address)")[0:4] = 0xe985e9c5`. -/
 theorem erc721IsApprovedForAllSelectorBytes :
-    (KEC (String.toByteArray (Solm.transitionSigStr ERC721.isApprovedForAllGetter))).extract 0 4
+    (KEC (String.toByteArray (Stele.transitionSigStr ERC721.isApprovedForAllGetter))).extract 0 4
       = ⟨#[0xe9, 0x85, 0xe9, 0xc5]⟩ := by
-  simp [Solm.transitionSigStr, transitionSignature, ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ERC721.isApprovedForAllGetter, ERC721.addr]; decide +kernel
+  simp [Stele.transitionSigStr, transitionSignature, ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ERC721.isApprovedForAllGetter, ERC721.addr]; decide +kernel
 
 /-- `keccak("ownerOf(uint256)")[0:4] = 0x6352211e`. -/
 theorem erc721OwnerOfSelectorBytes :
-    (KEC (String.toByteArray (Solm.transitionSigStr ERC721.ownerOfTransition))).extract 0 4
+    (KEC (String.toByteArray (Stele.transitionSigStr ERC721.ownerOfTransition))).extract 0 4
       = ⟨#[0x63, 0x52, 0x21, 0x1e]⟩ := by
-  simp [Solm.transitionSigStr, transitionSignature, ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr, ERC721.ownerOfTransition, ERC721.uint256, ERC721.uint256Int]; decide +kernel
+  simp [Stele.transitionSigStr, transitionSignature, ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr, ERC721.ownerOfTransition, ERC721.uint256, ERC721.uint256Int]; decide +kernel
 
 /-- `keccak("setApprovalForAll(address,bool)")[0:4] = 0xa22cb465`. -/
 theorem erc721SetApprovalForAllSelectorBytes :
-    (KEC (String.toByteArray (Solm.transitionSigStr ERC721.setApprovalForAllTransition))).extract 0 4
+    (KEC (String.toByteArray (Stele.transitionSigStr ERC721.setApprovalForAllTransition))).extract 0 4
       = ⟨#[0xa2, 0x2c, 0xb4, 0x65]⟩ := by
-  simp [Solm.transitionSigStr, transitionSignature, ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ERC721.setApprovalForAllTransition, ERC721.addr, ERC721.boolTy]; decide +kernel
+  simp [Stele.transitionSigStr, transitionSignature, ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ERC721.setApprovalForAllTransition, ERC721.addr, ERC721.boolTy]; decide +kernel
 
 /-- `keccak("transferFrom(address,address,uint256)")[0:4] = 0x23b872dd`. -/
 theorem erc721TransferFromSelectorBytes :
-    (KEC (String.toByteArray (Solm.transitionSigStr ERC721.transferFromTransition))).extract 0 4
+    (KEC (String.toByteArray (Stele.transitionSigStr ERC721.transferFromTransition))).extract 0 4
       = ⟨#[0x23, 0xb8, 0x72, 0xdd]⟩ := by
-  simp [Solm.transitionSigStr, transitionSignature, ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr, ERC721.transferFromTransition, ERC721.addr, ERC721.uint256, ERC721.uint256Int]; decide +kernel
+  simp [Stele.transitionSigStr, transitionSignature, ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr, ERC721.transferFromTransition, ERC721.addr, ERC721.uint256, ERC721.uint256Int]; decide +kernel
 
 /-- The `JUMPDEST` set of `erc721Bytecode` (confirmed from the bytecode disassembly). -/
 @[valid_jumps] theorem erc721ValidJumps :

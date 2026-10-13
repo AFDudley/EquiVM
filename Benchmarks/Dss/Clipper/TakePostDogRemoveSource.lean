@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Clipper.TakePostDogRemove
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 namespace Benchmarks.Dss.Clipper
@@ -149,7 +149,7 @@ theorem clipperTakePostDogTabZeroFluxRemoveSourceOkOfBody
     (v : ClipperImmutables)
     (evmLoc evmRead evmVat evmDog evmFlux evmRemove : EVM.State)
     (I : ExecutionEnv) (price slice owe0 owe slice' tabNew lotNew : UInt256)
-    {outFlux : ByteArray} {calleeSolm : Frame}
+    {outFlux : ByteArray} {calleeStele : Frame}
     (hlotNew : lotNew ≠ ⟨0⟩) (htabNew : tabNew = ⟨0⟩)
     (hvatCode :
       0 <
@@ -164,7 +164,7 @@ theorem clipperTakePostDogTabZeroFluxRemoveSourceOkOfBody
     (hremoveBody :
       ExecFuncBody config
         { contract := contract, locals := clipperYankRemoveStore I, immutables := immStore v } evmFlux
-        removeFunction.body (.returned calleeSolm evmRemove none)) :
+        removeFunction.body (.returned calleeStele evmRemove none)) :
     let frameRemoveRet : Frame :=
       { contract := contract,
         locals :=
@@ -187,7 +187,7 @@ theorem clipperTakePostDogTabZeroFluxRemoveSourceOkOfBody
                 .assign .storage (salesF (.var "id") "lot") (.var "lot") ] ],
         .assign .storage lockedRef (.intLit 0) ]
       (.ok frameRemoveRet
-        (Solm.EVM.storageStore evmRemove evmRemove.executionEnv.codeOwner ⟨13⟩ ⟨0⟩)) := by
+        (Stele.EVM.storageStore evmRemove evmRemove.executionEnv.codeOwner ⟨13⟩ ⟨0⟩)) := by
   intro frameRemoveRet
   let digsRetFrame : Frame :=
     Frame.mk contract (clipperTakeLocalsDigsRet evmLoc evmRead evmVat I price slice owe0 owe
@@ -220,7 +220,7 @@ theorem clipperTakePostDogTabZeroFluxRemoveSourceOkOfBody
         (cfg := config) (caller := fluxRetFrame) (evm := evmFlux)
         (name := "_remove") (retVar := "_removeRet2") (args := [.var "id"])
         (argVals := [clipperYankArgValue I]) (callee := removeFunction)
-        (locals := clipperYankRemoveStore I) (calleeSolm := calleeSolm)
+        (locals := clipperYankRemoveStore I) (calleeStele := calleeStele)
         (calleeEvm := evmRemove) (value := none)
         (by
           simpa [fluxRetFrame, digsRetFrame] using
@@ -259,14 +259,14 @@ theorem clipperTakePostDogTabZeroFluxRemoveSourceOkOfBody
   have hassign :
       assignStorageRef? config frameRemoveRet evmRemove .storage lockedRef (.int 0) =
         .ok (frameRemoveRet,
-          Solm.EVM.storageStore evmRemove evmRemove.executionEnv.codeOwner ⟨13⟩ ⟨0⟩) := by
+          Stele.EVM.storageStore evmRemove evmRemove.executionEnv.codeOwner ⟨13⟩ ⟨0⟩) := by
     simpa [frameRemoveRet] using
       assign_clipperLocked v evmRemove frameRemoveRet.locals hlocked ⟨0⟩
   have hunlock :
       ExecStmt config frameRemoveRet evmRemove
         (.assign .storage lockedRef (.intLit 0))
         (.ok frameRemoveRet
-          (Solm.EVM.storageStore evmRemove evmRemove.executionEnv.codeOwner ⟨13⟩ ⟨0⟩)) := by
+          (Stele.EVM.storageStore evmRemove evmRemove.executionEnv.codeOwner ⟨13⟩ ⟨0⟩)) := by
     exact ExecStmt.assign hzero hassign
   exact ExecBlock.consNormal hlotIte (ExecBlock.consNormal hunlock ExecBlock.nil)
 

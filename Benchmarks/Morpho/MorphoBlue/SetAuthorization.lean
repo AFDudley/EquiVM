@@ -5,11 +5,11 @@ import Benchmarks.Morpho.MorphoBlue.AdminCommon
 # Morpho `setAuthorization(address,bool)`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 443; reach lemma `morphoReachSetAuthorizationBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MorphoBlue.Immutables
 
@@ -66,7 +66,7 @@ theorem morphoSetAuthorizationBodySplit (v : MorphoImmutables) (evm : EVM.State)
     ExecTransitionBody config contract evm (setAuthorizationArgs evm.executionEnv.calldata)
       setAuthorizationTransition.body
       (.returned (setAuthorizationFrame v evm.executionEnv.calldata)
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner
           (authorizationSlot (solcSourceWord evm.executionEnv) (calldataWord evm.executionEnv.calldata 4))
           (setBoolOffset0Word (solcSlotWordAt
             (authorizationSlot (solcSourceWord evm.executionEnv) (calldataWord evm.executionEnv.calldata 4))

@@ -1,7 +1,7 @@
 # Examples
 
 Contracts used to develop and exercise the framework. Each directory holds one contract:
-its Sol⁻ specification (`Spec.lean`, with Solidity-like surface syntax in `SpecSyntax.lean`),
+its Stele specification (`Spec.lean`, with Solidity-like surface syntax in `SpecSyntax.lean`),
 the exact compiled bytecode as a Lean byte array (`Bytecode.lean`), and the refinement proof,
 assembled in `Correct.lean`. The top-level theorem of each example is named in the table.
 
@@ -30,7 +30,7 @@ All proofs are complete.
 
 ## File conventions
 
-- `Spec.lean` — the Sol⁻ contract: storage layout, transitions, external-call hooks.
+- `Spec.lean` — the Stele contract: storage layout, transitions, external-call hooks.
 - `SpecSyntax.lean` — the same spec in Solidity-like surface syntax, proved equal to `Spec.lean`.
 - `Bytecode.lean` — the compiled bytecode as a byte array, with the compiler invocation recorded
   in the header, plus the verified jump-destination table.

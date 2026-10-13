@@ -1,6 +1,6 @@
 import Examples.UniswapV2Pair.MintSourceReturns
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -170,7 +170,7 @@ theorem uniswapMintBalanceCallsPrefix
     (evm evm0 evm1 : EVM.State) (I : ExecutionEnv)
     {out0 out1 : ByteArray} {balance0 balance1 : UInt256}
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 :
       evalExpr? config
         { contract := contract, locals := mintReserveStore (uniswapLockEnteredState evm) I }
@@ -217,7 +217,7 @@ theorem uniswapMintBalanceCallsPrefix
 
 theorem uniswapMintBodyReverts_firstNoCode (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 :
       evalExpr? config
         { contract := contract, locals := mintReserveStore (uniswapLockEnteredState evm) I }
@@ -239,7 +239,7 @@ theorem uniswapMintBodyReverts_firstNoCode (evm : EVM.State) (I : ExecutionEnv)
 theorem uniswapMintBodyReverts_firstCallFailure (evm evm0 : EVM.State) (I : ExecutionEnv)
     {out0 : ByteArray}
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 :
       evalExpr? config
         { contract := contract, locals := mintReserveStore (uniswapLockEnteredState evm) I }
@@ -266,7 +266,7 @@ theorem uniswapMintBodyReverts_firstCallFailure (evm evm0 : EVM.State) (I : Exec
 theorem uniswapMintBodyReverts_firstCallDecode (evm evm0 : EVM.State) (I : ExecutionEnv)
     {out0 : ByteArray}
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 :
       evalExpr? config
         { contract := contract, locals := mintReserveStore (uniswapLockEnteredState evm) I }
@@ -294,7 +294,7 @@ theorem uniswapMintBodyReverts_firstCallDecode (evm evm0 : EVM.State) (I : Execu
 theorem uniswapMintBodyReverts_secondNoCode (evm evm0 : EVM.State) (I : ExecutionEnv)
     {out0 : ByteArray} {balance0 : UInt256}
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 :
       evalExpr? config
         { contract := contract, locals := mintReserveStore (uniswapLockEnteredState evm) I }
@@ -332,7 +332,7 @@ theorem uniswapMintBodyReverts_secondCallFailure
     (evm evm0 evm1 : EVM.State) (I : ExecutionEnv)
     {out0 out1 : ByteArray} {balance0 : UInt256}
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 :
       evalExpr? config
         { contract := contract, locals := mintReserveStore (uniswapLockEnteredState evm) I }
@@ -376,7 +376,7 @@ theorem uniswapMintBodyReverts_secondCallDecode
     (evm evm0 evm1 : EVM.State) (I : ExecutionEnv)
     {out0 out1 : ByteArray} {balance0 : UInt256}
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 :
       evalExpr? config
         { contract := contract, locals := mintReserveStore (uniswapLockEnteredState evm) I }
@@ -421,7 +421,7 @@ theorem uniswapMintBodyReverts_amount0Underflow
     (evm evm0 evm1 : EVM.State) (I : ExecutionEnv)
     {out0 out1 : ByteArray} {balance0 balance1 : UInt256}
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 :
       evalExpr? config
         { contract := contract, locals := mintReserveStore (uniswapLockEnteredState evm) I }
@@ -469,7 +469,7 @@ theorem uniswapMintBodyReverts_amount1Underflow
     (evm evm0 evm1 : EVM.State) (I : ExecutionEnv)
     {out0 out1 : ByteArray} {balance0 balance1 : UInt256}
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 :
       evalExpr? config
         { contract := contract, locals := mintReserveStore (uniswapLockEnteredState evm) I }
@@ -533,7 +533,7 @@ theorem uniswapMintAmountsPrefix
     (evm evm0 evm1 : EVM.State) (I : ExecutionEnv)
     {out0 out1 : ByteArray} {balance0 balance1 : UInt256}
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 :
       evalExpr? config
         { contract := contract, locals := mintReserveStore (uniswapLockEnteredState evm) I }
@@ -609,7 +609,7 @@ theorem uniswapMintBodyReverts_mintFeeNoCode
     (evm evm0 evm1 : EVM.State) (I : ExecutionEnv)
     {out0 out1 : ByteArray} {balance0 balance1 : UInt256}
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 :
       evalExpr? config
         { contract := contract, locals := mintReserveStore (uniswapLockEnteredState evm) I }
@@ -662,7 +662,7 @@ theorem uniswapMintBodyReverts_mintFeeCallFailure
     (evm evm0 evm1 evmFee : EVM.State) (I : ExecutionEnv)
     {out0 out1 outFee : ByteArray} {balance0 balance1 : UInt256}
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 :
       evalExpr? config
         { contract := contract, locals := mintReserveStore (uniswapLockEnteredState evm) I }
@@ -717,7 +717,7 @@ theorem uniswapMintBodyReverts_mintFeeDecode
     (evm evm0 evm1 evmFee : EVM.State) (I : ExecutionEnv)
     {out0 out1 outFee : ByteArray} {balance0 balance1 : UInt256}
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 :
       evalExpr? config
         { contract := contract, locals := mintReserveStore (uniswapLockEnteredState evm) I }
@@ -773,7 +773,7 @@ theorem uniswapMintAfterMintFeePrefix_feeOff_kLastZero
     (evm evm0 evm1 evmFee : EVM.State) (I : ExecutionEnv)
     {out0 out1 outFee : ByteArray} {balance0 balance1 : UInt256} (feeTo : AccountAddress)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 :
       evalExpr? config
         { contract := contract, locals := mintReserveStore (uniswapLockEnteredState evm) I }
@@ -848,7 +848,7 @@ theorem uniswapMintAfterMintFeePrefix_of_call
     (evm evm0 evm1 evmAfter : EVM.State) (I : ExecutionEnv) (nextFrame : Frame)
     {out0 out1 : ByteArray} {balance0 balance1 : UInt256}
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 :
       evalExpr? config
         { contract := contract, locals := mintReserveStore (uniswapLockEnteredState evm) I }
@@ -906,7 +906,7 @@ theorem uniswapMintAfterMintFeeTotalSupplyPrefix_of_call
     (evm evm0 evm1 evmAfter : EVM.State) (I : ExecutionEnv) (nextLocals : Store)
     {out0 out1 : ByteArray} {balance0 balance1 : UInt256}
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 :
       evalExpr? config
         { contract := contract, locals := mintReserveStore (uniswapLockEnteredState evm) I }
@@ -966,7 +966,7 @@ theorem uniswapMintAfterMintFeeInitialSmallRootReverts_of_call
     (evm evm0 evm1 evmAfter : EVM.State) (I : ExecutionEnv) (nextLocals : Store)
     {out0 out1 : ByteArray} {balance0 balance1 amount0 amount1 : UInt256}
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 :
       evalExpr? config
         { contract := contract, locals := mintReserveStore (uniswapLockEnteredState evm) I }
@@ -1050,7 +1050,7 @@ theorem uniswapMintAfterMintFeeProportionalFeeOffReturn_of_call
     {out0 out1 : ByteArray} {balance0 balance1 amount0 amount1 liquidity : UInt256}
     (recipient : AccountAddress)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 :
       evalExpr? config
         { contract := contract, locals := mintReserveStore (uniswapLockEnteredState evm) I }
@@ -1242,7 +1242,7 @@ theorem uniswapMintAfterMintFeeProportionalFeeOffCumulativeReturn_of_call
     {out0 out1 : ByteArray} {balance0 balance1 amount0 amount1 liquidity : UInt256}
     (recipient : AccountAddress)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 :
       evalExpr? config
         { contract := contract, locals := mintReserveStore (uniswapLockEnteredState evm) I }
@@ -1441,7 +1441,7 @@ theorem uniswapMintAfterMintFeeProportionalFeeOnReturn_of_call
     {out0 out1 : ByteArray} {balance0 balance1 amount0 amount1 liquidity : UInt256}
     (recipient : AccountAddress)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 :
       evalExpr? config
         { contract := contract, locals := mintReserveStore (uniswapLockEnteredState evm) I }
@@ -1650,7 +1650,7 @@ theorem uniswapMintAfterMintFeeProportionalFeeOnCumulativeReturn_of_call
     {out0 out1 : ByteArray} {balance0 balance1 amount0 amount1 liquidity : UInt256}
     (recipient : AccountAddress)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 :
       evalExpr? config
         { contract := contract, locals := mintReserveStore (uniswapLockEnteredState evm) I }

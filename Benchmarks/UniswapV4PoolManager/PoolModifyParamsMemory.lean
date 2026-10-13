@@ -4,7 +4,7 @@ import Benchmarks.UniswapV4PoolManager.WordStoreMemory
 import Benchmarks.UniswapV4PoolManager.Signed128Range
 import Benchmarks.UniswapV4PoolManager.RuntimeBlocks_017
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 def poolModifyParamsWords (p : PoolModifyParams) : List UInt256 :=

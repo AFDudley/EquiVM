@@ -2,7 +2,7 @@ import Benchmarks.UniswapV4PoolManager.PoolUpdateTickFees
 import Benchmarks.UniswapV4PoolManager.TickFeeAccounts
 import Benchmarks.UniswapV4PoolManager.RuntimeBlocks_022
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.UniswapV4PoolManager.Immutables
 namespace Benchmarks.UniswapV4PoolManager

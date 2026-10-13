@@ -1,12 +1,12 @@
-import Reasoning.SolmArithmetic
+import Reasoning.SteleArithmetic
 import Benchmarks.Dss.Cat.Common
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
 /-!
-# Cat DSMath / min internal helpers (Solm-side `ExecFuncBody` + `evalExpr` facts)
+# Cat DSMath / min internal helpers (Stele-side `ExecFuncBody` + `evalExpr` facts)
 
 `min` (used by `bite`) and `sub` (used by `claw`) are proved as `ExecFuncBody`; the `add`/`sub`/`mul`
 helpers are also inlined in `bite` (`checkedAddUintInto`/…), so the `evalExpr_*` overflow facts here

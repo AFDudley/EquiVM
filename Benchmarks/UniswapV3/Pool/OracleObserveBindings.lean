@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.OracleObserveModel
 import Benchmarks.UniswapV3.Pool.OracleGrowSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 structure OracleObserveBindings (locals : Store) (time : UInt256) (secondsAgos : List UInt256)

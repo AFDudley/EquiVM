@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Dog.Dispatch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Dog.Immutables
 
 namespace Benchmarks.Dss.Dog

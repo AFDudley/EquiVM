@@ -1,7 +1,7 @@
 import Benchmarks.Dss.Dai.Dispatch
 import Benchmarks.Dss.Dai.Storage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Dai
 
@@ -49,26 +49,26 @@ theorem daiDecode_nonces_none_short {I : ExecutionEnv}
   simpa using decodeCalldata_legacyAddress_none_short (cd := I.calldata) (x := "arg0")
     hsz4 hshort
 
-/-- The Solm `nonces(address)` body returns `nonces[arg0]`. -/
+/-- The Stele `nonces(address)` body returns `nonces[arg0]`. -/
 theorem daiNoncesBodyReturns (evm : EVM.State) (I : ExecutionEnv)
     (h : evm.executionEnv.weiValue = ⟨0⟩) :
     ExecTransitionBody config contract evm (noncesStore I) noncesTransition.body
       (.returned { contract := contract, locals := noncesStore I } evm
         (some [(.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
             (noncesStorageSlot I)).toNat))])) := by
   exact ExecFuncBody.execBlockRet <|
     (ABlock.start.requireStep (evalCallvalueEq_true h)).returns (by
       rw [evalExpr_storage_scalar_value (hbackend := rfl)
         (cfg := config)
-        (solm := { contract := contract, locals := noncesStore I })
+        (stele := { contract := contract, locals := noncesStore I })
         (slot := noncesRef (.var "arg0"))
         (er := ({ base := "nonces", steps := [.mindex (noncesArgKey I)] } :
           EvaledStorageRef))
         (t := .int uint256Int)
         (loc := wordLoc (noncesStorageSlot I) (.int uint256Int))
         (value := .int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
             (noncesStorageSlot I)).toNat))
         (hbase := by
           simp [noncesStore, noncesRef])
@@ -171,7 +171,7 @@ theorem daiNoncesBodyCoreOk
         (.returned { contract := contract, locals := noncesStore I }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.int (Int.ofNat (noncesWord σ I).toNat))])) := by
-    simpa [noncesWord, noncesStorageSlot, initState, Solm.EVM.storageLoad,
+    simpa [noncesWord, noncesStorageSlot, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       daiNoncesBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) I
@@ -194,7 +194,7 @@ theorem daiNoncesBodyCoreDecodeFailed_short
   exact (daiNoncesX_shortarg (g := Sat256.ofUInt256 g) hsz4 hsize hshort hreach)
     |>.reEquivDecodingFailed hcode hdispatch hdec
 
-/-- `nonces(address)` body refines its Solm transition. -/
+/-- `nonces(address)` body refines its Stele transition. -/
 theorem daiNoncesBodyCore {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = daiBytecode) (hsize : I.calldata.size < UInt256.size)
     (hwv : I.weiValue = ⟨0⟩)

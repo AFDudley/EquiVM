@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.WordArrayPrefix
 import Benchmarks.UniswapV3.Pool.MemoryGasBound
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 -- LIBRARY CANDIDATE: copying past the source end preserves existing lower reads.

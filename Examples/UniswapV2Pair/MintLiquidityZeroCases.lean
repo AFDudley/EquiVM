@@ -1,7 +1,7 @@
 import Examples.UniswapV2Pair.MintLiquidityZeroRuntime
 import Examples.UniswapV2Pair.MintSourceCases
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -11,7 +11,7 @@ theorem uniswapMintAfterMintFeeProportionalLiquidityZeroReverts_of_call
     (evm evm0 evm1 evmAfter : EVM.State) (I : ExecutionEnv) (nextLocals : Store)
     {out0 out1 : ByteArray} {balance0 balance1 amount0 amount1 : UInt256}
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 :
       evalExpr? config
         { contract := contract, locals := mintReserveStore (uniswapLockEnteredState evm) I }
@@ -133,8 +133,8 @@ theorem uniswapMintProportionalLiquidityZeroAfterMintFeeCase
     (hdispatch : dispatchMsg contract I.calldata = some mintTransition)
     (hsz36 : 36 ≤ I.calldata.size)
     (hwv : I.weiValue = ⟨0⟩)
-    (hunlockedSolm :
-      Solm.EVM.storageLoad
+    (hunlockedStele :
+      Stele.EVM.storageLoad
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
           ⟨12⟩ =
@@ -262,7 +262,7 @@ theorem uniswapMintProportionalLiquidityZeroAfterMintFeeCase
     exact ExecFuncBody.execBlockRevert
       (uniswapMintAfterMintFeeProportionalLiquidityZeroReverts_of_call
         evmS evm0S evm1S evmFeeS I nextLocals
-        (by simp only [evmS, initState]; exact hwv) hunlockedSolm hguard0 hguard1
+        (by simp only [evmS, initState]; exact hwv) hunlockedStele hguard0 hguard1
         hcall0 hdec0 hcall1 hdec1 hle0Source hle1Source
         (by simpa [evmS] using hfee) htotalBase hamount0 hamount1 hreserve0 hreserve1
         (by simpa [htotalEq] using htotalNonzero)
@@ -296,8 +296,8 @@ theorem uniswapMintProportionalFeeOffKLastZeroLiquidityZeroFromFactoryCase
     (hdispatch : dispatchMsg contract I.calldata = some mintTransition)
     (hsz36 : 36 ≤ I.calldata.size)
     (hwv : I.weiValue = ⟨0⟩)
-    (hunlockedSolm :
-      Solm.EVM.storageLoad
+    (hunlockedStele :
+      Stele.EVM.storageLoad
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
           ⟨12⟩ =
@@ -501,7 +501,7 @@ theorem uniswapMintProportionalFeeOffKLastZeroLiquidityZeroFromFactoryCase
   have hamount1Eq' : mintAmount1Word evmL balance1 = amount1 := by
     simpa [evmL, evmS] using hamount1Eq
   exact uniswapMintProportionalLiquidityZeroAfterMintFeeCase nextFrame.locals hcode
-    hdispatch hsz36 hwv hunlockedSolm hguard0 hguard1 hcall0 hdec0 hcall1 hdec1
+    hdispatch hsz36 hwv hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1 hdec1
     hle0Source hle1Source
     (by
       simpa [nextFrame, evmL, resumeAfterInternalCall] using
@@ -534,8 +534,8 @@ theorem uniswapMintProportionalFeeOffKLastZeroLiquidityZeroCase
     (hdispatch : dispatchMsg contract I.calldata = some mintTransition)
     (hsz36 : 36 ≤ I.calldata.size)
     (hwv : I.weiValue = ⟨0⟩)
-    (hunlockedSolm :
-      Solm.EVM.storageLoad
+    (hunlockedStele :
+      Stele.EVM.storageLoad
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
           ⟨12⟩ =
@@ -675,7 +675,7 @@ theorem uniswapMintProportionalFeeOffKLastZeroLiquidityZeroCase
     exact ExecFuncBody.execBlockRevert
       (uniswapMintAfterMintFeeProportionalLiquidityZeroReverts_of_call
         evmS evm0S evm1S evmFeeS I nextFrame.locals
-        (by simp only [evmS, initState]; exact hwv) hunlockedSolm hguard0 hguard1
+        (by simp only [evmS, initState]; exact hwv) hunlockedStele hguard0 hguard1
         hcall0 hdec0 hcall1 hdec1 hle0Source hle1Source
         (by
           simpa [nextFrame, evmL, resumeAfterInternalCall] using
@@ -724,8 +724,8 @@ theorem uniswapMintProportionalFeeOnKLastZeroLiquidityZeroCase
     (hdispatch : dispatchMsg contract I.calldata = some mintTransition)
     (hsz36 : 36 ≤ I.calldata.size)
     (hwv : I.weiValue = ⟨0⟩)
-    (hunlockedSolm :
-      Solm.EVM.storageLoad
+    (hunlockedStele :
+      Stele.EVM.storageLoad
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
           ⟨12⟩ =
@@ -857,7 +857,7 @@ theorem uniswapMintProportionalFeeOnKLastZeroLiquidityZeroCase
   have hreserve1Eq' : uniswapReserve1Word evmL = reserve1 := by
     simpa [evmL, evmS] using hreserve1Eq
   exact uniswapMintProportionalLiquidityZeroAfterMintFeeCase nextFrame.locals hcode hdispatch
-    hsz36 hwv hunlockedSolm hguard0 hguard1 hcall0 hdec0 hcall1 hdec1 hle0Source hle1Source
+    hsz36 hwv hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1 hdec1 hle0Source hle1Source
     (by
       simpa [nextFrame, evmL, resumeAfterInternalCall] using
         uniswapMintFeeCallFromMint_feeOn_kLastZero evmL evm1S evmFeeS I balance0 balance1
@@ -890,8 +890,8 @@ theorem uniswapMintProportionalFeeOffKLastNonzeroLiquidityZeroCase
     (hdispatch : dispatchMsg contract I.calldata = some mintTransition)
     (hsz36 : 36 ≤ I.calldata.size)
     (hwv : I.weiValue = ⟨0⟩)
-    (hunlockedSolm :
-      Solm.EVM.storageLoad
+    (hunlockedStele :
+      Stele.EVM.storageLoad
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
           ⟨12⟩ =
@@ -1023,7 +1023,7 @@ theorem uniswapMintProportionalFeeOffKLastNonzeroLiquidityZeroCase
   have hreserve1Eq' : uniswapReserve1Word evmL = reserve1 := by
     simpa [evmL, evmS] using hreserve1Eq
   exact uniswapMintProportionalLiquidityZeroAfterMintFeeCase nextFrame.locals hcode hdispatch
-    hsz36 hwv hunlockedSolm hguard0 hguard1 hcall0 hdec0 hcall1 hdec1 hle0Source hle1Source
+    hsz36 hwv hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1 hdec1 hle0Source hle1Source
     (by
       simpa [nextFrame, evmL, resumeAfterInternalCall] using
         uniswapMintFeeCallFromMint_feeOff_kLastNonzero evmL evm1S evmFeeS I balance0

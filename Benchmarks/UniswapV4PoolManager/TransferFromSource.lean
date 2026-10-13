@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV4PoolManager.BalanceTransfer
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 2000000
 
@@ -36,7 +36,7 @@ def transferFromAllowedFrame (f : Frame) (allowed : UInt256) : Frame :=
   {f with locals := f.locals.insert "allowed" (.int (Int.ofNat allowed.toNat))}
 
 def transferFromAllowancePost (evm : EVM.State) (sender id amount : UInt256) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner
     (allowanceSlot sender (accountWord evm.executionEnv.source) id)
     (UInt256.sub (transferFromAllowed evm sender id) amount)
 

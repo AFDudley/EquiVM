@@ -1,7 +1,7 @@
 import Benchmarks.Dss.Clipper.TakeGenericContinuationSource
 import Benchmarks.Dss.Clipper.TakePostDogRemoveSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 namespace Benchmarks.Dss.Clipper
@@ -310,7 +310,7 @@ theorem clipperTakeGenericPostDogLotZeroOk
     ExecBlock config (Frame.mk contract locals (immStore v)) evm
       (clipperTakePostDogStmts)
       (.ok (Frame.mk contract resultLocals (immStore v))
-        (Solm.EVM.storageStore evmRemove evmRemove.executionEnv.codeOwner ⟨13⟩ ⟨0⟩)) := by
+        (Stele.EVM.storageStore evmRemove evmRemove.executionEnv.codeOwner ⟨13⟩ ⟨0⟩)) := by
   intro resultLocals
   have hremoveStmt : ExecStmt config (Frame.mk contract locals (immStore v)) evm
       (.internalCall "_remove" [.var "id"] "_removeRet")
@@ -338,7 +338,7 @@ theorem clipperTakeGenericPostDogLotZeroOk
   have hunlock : ExecStmt config (Frame.mk contract resultLocals (immStore v)) evmRemove
       (.assign .storage lockedRef (.intLit 0))
       (.ok (Frame.mk contract resultLocals (immStore v))
-        (Solm.EVM.storageStore evmRemove evmRemove.executionEnv.codeOwner ⟨13⟩ ⟨0⟩)) := by
+        (Stele.EVM.storageStore evmRemove evmRemove.executionEnv.codeOwner ⟨13⟩ ⟨0⟩)) := by
     apply ExecStmt.assign (value := .int 0)
     · simp [evalExpr?, pure]
     · simpa using assign_clipperLocked v evmRemove resultLocals hlocked' ⟨0⟩
@@ -532,7 +532,7 @@ theorem clipperTakeGenericPostDogTabZeroRemoveOk
     ExecBlock config (Frame.mk contract locals (immStore v)) evm
       (clipperTakePostDogStmts)
       (.ok (Frame.mk contract resultLocals (immStore v))
-        (Solm.EVM.storageStore evmRemove evmRemove.executionEnv.codeOwner ⟨13⟩ ⟨0⟩)) := by
+        (Stele.EVM.storageStore evmRemove evmRemove.executionEnv.codeOwner ⟨13⟩ ⟨0⟩)) := by
   subst tab
   intro resultLocals
   let fluxLocals := locals.insert "_fluxUsrRet" .unit
@@ -584,7 +584,7 @@ theorem clipperTakeGenericPostDogTabZeroRemoveOk
   have hunlock : ExecStmt config (Frame.mk contract resultLocals (immStore v)) evmRemove
       (.assign .storage lockedRef (.intLit 0))
       (.ok (Frame.mk contract resultLocals (immStore v))
-        (Solm.EVM.storageStore evmRemove evmRemove.executionEnv.codeOwner ⟨13⟩ ⟨0⟩)) := by
+        (Stele.EVM.storageStore evmRemove evmRemove.executionEnv.codeOwner ⟨13⟩ ⟨0⟩)) := by
     apply ExecStmt.assign (value := .int 0)
     · simp [evalExpr?, pure]
     · simpa using assign_clipperLocked v evmRemove resultLocals hlocked' ⟨0⟩

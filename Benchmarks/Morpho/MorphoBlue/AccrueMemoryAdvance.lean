@@ -1,7 +1,7 @@
 import Benchmarks.Morpho.MorphoBlue.HeapAdvance
 import Benchmarks.Morpho.MorphoBlue.AccrueMemoryPrefix
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.Morpho.MorphoBlue
 
 theorem heapAdvance_hash (mem : ByteArray) (fp key slot : UInt256) :

@@ -1,7 +1,7 @@
 import Benchmarks.Dss.Dai.Dispatch
 import Benchmarks.Dss.Dai.Storage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Dai
 
@@ -98,25 +98,25 @@ theorem daiDecode_allowance_none_short {I : ExecutionEnv}
   simpa using decodeCalldata_legacyAddress_legacyAddress_none_short
     (cd := I.calldata) (x := "arg0") (y := "arg1") hsz4 hshort
 
-/-- The Solm `allowance(address,address)` body returns `allowance[arg0][arg1]`. -/
+/-- The Stele `allowance(address,address)` body returns `allowance[arg0][arg1]`. -/
 theorem daiAllowanceBodyReturns (evm : EVM.State) (I : ExecutionEnv)
     (h : evm.executionEnv.weiValue = ⟨0⟩) :
     ExecTransitionBody config contract evm (allowanceStore I) allowanceTransition.body
       (.returned { contract := contract, locals := allowanceStore I } evm
         (some [(.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
             (allowanceStorageSlot I)).toNat))])) := by
   exact ExecFuncBody.execBlockRet <|
     (ABlock.start.requireStep (evalCallvalueEq_true h)).returns (by
       rw [evalExpr_storage_scalar_value (hbackend := rfl)
         (cfg := config)
-        (solm := { contract := contract, locals := allowanceStore I })
+        (stele := { contract := contract, locals := allowanceStore I })
         (slot := allowanceRef (.var "arg0") (.var "arg1"))
         (er := allowanceEvaledRef I)
         (t := .int uint256Int)
         (loc := wordLoc (allowanceStorageSlot I) (.int uint256Int))
         (value := .int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
             (allowanceStorageSlot I)).toNat))
         (hbase := by
           simp [allowanceStore, allowanceRef])
@@ -232,7 +232,7 @@ theorem daiAllowanceBodyCoreOk
         (.returned { contract := contract, locals := allowanceStore I }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.int (Int.ofNat (allowanceWord σ I).toNat))])) := by
-    simpa [allowanceWord, allowanceStorageSlot, initState, Solm.EVM.storageLoad,
+    simpa [allowanceWord, allowanceStorageSlot, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       daiAllowanceBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) I
@@ -255,7 +255,7 @@ theorem daiAllowanceBodyCoreDecodeFailed_short
   exact (daiAllowanceX_shortarg (g := Sat256.ofUInt256 g) hsz4 hsize hshort hreach)
     |>.reEquivDecodingFailed hcode hdispatch hdec
 
-/-- `allowance(address,address)` body refines its Solm transition. -/
+/-- `allowance(address,address)` body refines its Stele transition. -/
 theorem daiAllowanceBodyCore {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = daiBytecode) (hsize : I.calldata.size < UInt256.size)
     (hwv : I.weiValue = ⟨0⟩)

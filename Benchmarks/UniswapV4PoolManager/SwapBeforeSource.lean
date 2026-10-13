@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.SwapAfterSource
 import Benchmarks.UniswapV4PoolManager.BeforeSwapSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 def swapBeforeStartFrame (f : Frame) : Frame :=

@@ -1,4 +1,4 @@
-import Solm.DiffTest.Harness
+import Stele.DiffTest.Harness
 import Examples.ERC20.Spec
 import Examples.ERC20.Bytecode
 import Examples.Ballot.Spec
@@ -97,7 +97,7 @@ under the differential suite; `Main.lean` runs them all.
 
 namespace Tests.DiffTest
 
-open Solm Solm.DiffTest Ethereum
+open Stele Stele.DiffTest Ethereum
 
 def erc20 : Target :=
   { name := "ERC20", contract := ERC20.erc20Contract, config := erc20Config,

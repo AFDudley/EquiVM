@@ -1,7 +1,7 @@
 # Refinement proof template
 
 Skeletons for adding a new contract and proving the deployed runtime bytecode
-equivalent to its Solm spec. `Misc/` is not a lake target: these files do not
+equivalent to its Stele spec. `Misc/` is not a lake target: these files do not
 build; they are reference scaffolds for the layout and shapes described below.
 
 The division of labor is deliberate: **the user provides the compiled artifacts
@@ -56,7 +56,7 @@ assumption and its justification, and is imported only by modules that use it.
    up in `Bytecode.lean`'s header). Bytecode provenance is arbitrary — the
    proof targets whatever was actually deployed, optimizer included.
 2. **Specification** (user). Author the contract in `solidity%` surface syntax
-   (see `Solm/Notation.lean` header for the language). For the most part it
+   (see `Stele/Notation.lean` header for the language). For the most part it
    mirrors the Solidity source, when one is available. Events, error payloads,
    and exact gas tracking are not modeled currently. Contracts with immutables
    also get an `Immutables.lean` valuation.
@@ -64,13 +64,13 @@ assumption and its justification, and is imported only by modules that use it.
    `Misc/scaffold-prompt.md`). `scripts/scaffold.py`
    compiles and pins the artifacts, writes `Bytecode.lean`, `Selectors.lean` and the
    immutables modules, and generates the block summaries; `scripts/bytecode_report.py`
-   writes the bytecode report the audit works from; `scripts/sol2solm.py` drafts
+   writes the bytecode report the audit works from; `scripts/sol2stele.py` drafts
    `SpecSyntax.lean` from the solc AST (with holes); `scripts/proof_skeleton.py` writes
    the derived `Spec.lean`, `Common.lean`, the proved `Dispatch.lean`, one `sorry` stub per
    function, `Constructor.lean` and `Correct.lean`; `scripts/scaffold.py difftest` writes
    `DiffTarget.lean` and registers the contract in the differential suite.
 4. **Differential test, then audit** (agent, before any proof). The agent runs
-   `lake exe solm-difftest --only <Name> --count 50` (`Tests/DiffTest/README.md`) and fixes
+   `lake exe stele-difftest --only <Name> --count 50` (`Tests/DiffTest/README.md`) and fixes
    every disagreement in the spec, then audits the spec against the bytecode report block by
    block (step 8 of `Misc/scaffold-prompt.md`). The `successful/cases` line shows which
    transitions the cases reach; raise the count or add words to `DiffTarget.lean` for the ones at

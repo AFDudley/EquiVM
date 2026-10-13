@@ -1,12 +1,12 @@
 import Benchmarks.Xxx.Common
-import Solm.Refine
+import Stele.Refine
 
 /-!
 # Xxx constructor correctness (TEMPLATE)
 
 Creation-code equivalence: the constructor's EVM trace (arg decode, stores, runtime-code
-return) against the Solm constructor body.  For non-trivial constructors split the trace into
-`ConstructorTrace*` files (args / stores / return) and the Solm side into `ConstructorSource`,
+return) against the Stele constructor body.  For non-trivial constructors split the trace into
+`ConstructorTrace*` files (args / stores / return) and the Stele side into `ConstructorSource`,
 then assemble here through direct account-map equality — see
 `Benchmarks/Dss/Pot/Constructor.lean` and `Examples/Ballot`'s creation proof.
 
@@ -20,12 +20,12 @@ theorem xxxConstructorCorrect :
   -- 1. shape of the deployment payload (initcode ++ ABI-encoded args)
   -- 2. by_cases on weiValue: nonzero ⇒ the callvalue guard reverts on both sides
   -- 3. success: run the creation trace, build the stored account map store-by-store,
-  --    and match the Solm constructor evaluation
+  --    and match the Stele constructor evaluation
   sorry
 ```
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Xxx
 

@@ -1,7 +1,7 @@
 import Benchmarks.CompoundIII.Comet.PackedFields
 import Std.Tactic.BVDecide
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 
@@ -31,8 +31,8 @@ theorem storageLocStore_packed_value (evm : EVM.State) (slot data : UInt256)
     storageLocStore evm
       { slot := slot, offset := offset, size := size, hbound := hbound, type := ty }
       value =
-    some (Solm.EVM.storageStore evm evm.executionEnv.codeOwner slot
-      (packedWriteWord (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
+    some (Stele.EVM.storageStore evm evm.executionEnv.codeOwner slot
+      (packedWriteWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
         data offset.val size.val)) := by
   unfold storageLocStore storageLocWriteWord
   simp only [hvalue, bind, Option.bind]
@@ -47,8 +47,8 @@ theorem storageLocStore_packed_int (evm : EVM.State) (slot data : UInt256)
     storageLocStore evm
       { slot := slot, offset := offset, size := size, hbound := hbound, type := ty }
       (.int (Int.ofNat data.toNat)) =
-    some (Solm.EVM.storageStore evm evm.executionEnv.codeOwner slot
-      (packedWriteWord (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
+    some (Stele.EVM.storageStore evm evm.executionEnv.codeOwner slot
+      (packedWriteWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
         data offset.val size.val)) := by
   exact storageLocStore_packed_value evm slot data offset size ty _
     (by simp only [valueToWord, wordOfInt_ofNat_toNat]; rfl)

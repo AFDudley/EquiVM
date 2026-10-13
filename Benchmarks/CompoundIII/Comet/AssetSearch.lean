@@ -1,6 +1,6 @@
 import Benchmarks.CompoundIII.Comet.AssetSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.CompoundIII.Comet.Immutables
 
 namespace Benchmarks.CompoundIII.Comet
@@ -198,7 +198,7 @@ theorem assetSearch_call {v : CometWithExtendedAssetListImmutables}
       have hb : ExecFuncBody config entry evm assetSearchCallable.body
           (.returned f' evm' (some [assetValue out])) := .execBlockRet (.consNormal hi ht)
       exact ExecStmt.internalCallReturn (callee := assetSearchCallable) (locals := locals)
-        (cfg := config) (solm := frame) (evm := evm) (args := [expr])
+        (cfg := config) (stele := frame) (evm := evm) (args := [expr])
         (argVals := [.address asset])
         (by simp only [evalExprs?, he, pure, bind, EvalResult.bind])
         (by rw [hf]; exact assetSearchCallable_lookup) rfl

@@ -2,16 +2,16 @@ import Benchmarks.Morpho.MorphoBlue.Common
 
 /-! Shared source guards and refinement bridges for contracts with fallback entries. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MorphoBlue
 
 def calldataGuard : Expr := .binary .lt (.arrayLength .localVar ⟨"__calldata", []⟩)
   (.binary .add (.binary .exp (.intLit 2) (.intLit 255)) (.intLit 4))
 
-theorem calldataGuard_eval {cfg : Config} {solm : Frame} {evm : EVM.State}
-    (hget : solm.locals.get? "__calldata" = some (.bytes evm.executionEnv.calldata)) :
-    evalExpr? cfg solm evm calldataGuard =
+theorem calldataGuard_eval {cfg : Config} {stele : Frame} {evm : EVM.State}
+    (hget : stele.locals.get? "__calldata" = some (.bytes evm.executionEnv.calldata)) :
+    evalExpr? cfg stele evm calldataGuard =
       .ok (.bool (decide (evm.executionEnv.calldata.size < 2 ^ 255 + 4))) := by
   simp only [calldataGuard, evalExpr?, hget, readLocalPath?, evalBinaryOp?,
     bind, pure, EvalResult.bind]
@@ -23,19 +23,19 @@ def calldataPrelude (rest : List Stmt) : List Stmt :=
   .require calldataGuard :: rest
 
 -- LIBRARY CANDIDATE: the nonpayable calldata-size prelude, over arbitrary frames and tails.
-theorem calldataPrelude_ok {cfg : Config} {solm : Frame} {evm : EVM.State}
+theorem calldataPrelude_ok {cfg : Config} {stele : Frame} {evm : EVM.State}
     {rest : List Stmt} (hcv : evm.executionEnv.weiValue = ⟨0⟩)
     (hsize : evm.executionEnv.calldata.size < 2 ^ 255 + 4) :
-    ABlock cfg evm solm (calldataPrelude rest)
-      { solm with locals := solm.locals.insert "__calldata" (.bytes evm.executionEnv.calldata) }
+    ABlock cfg evm stele (calldataPrelude rest)
+      { stele with locals := stele.locals.insert "__calldata" (.bytes evm.executionEnv.calldata) }
       rest := by
   apply ABlock.requireStep
     ((ABlock.start.requireStep (evalCallvalueEq_true hcv)).letStep
       (value := .bytes evm.executionEnv.calldata) (by simp only [evalExpr?, envValue, pure]))
   simpa only [hsize, decide_true] using calldataGuard_eval
     (cfg := cfg) (evm := evm)
-    (solm := { solm with
-      locals := solm.locals.insert "__calldata" (.bytes evm.executionEnv.calldata) }) (store_get_self _ _ _)
+    (stele := { stele with
+      locals := stele.locals.insert "__calldata" (.bytes evm.executionEnv.calldata) }) (store_get_self _ _ _)
 
 -- LIBRARY CANDIDATE: a failing calldata-size prelude rejects any remaining body.
 theorem calldataPrelude_reverts {cfg : Config} {C : ContractDecl} {evm : EVM.State}
@@ -49,9 +49,10 @@ theorem calldataPrelude_reverts {cfg : Config} {C : ContractDecl} {evm : EVM.Sta
       (value := .bytes evm.executionEnv.calldata) (by simp only [evalExpr?, envValue, pure]))
   simpa only [hsize, decide_false] using calldataGuard_eval
     (cfg := cfg) (evm := evm)
-    (solm := { contract := C
-               locals := locals.insert "__calldata" (.bytes evm.executionEnv.calldata)
-               immutables := imms }) (store_get_self _ _ _)
+    (stele := {
+      contract := C
+      locals := locals.insert "__calldata" (.bytes evm.executionEnv.calldata)
+      immutables := imms }) (store_get_self _ _ _)
 
 -- LIBRARY CANDIDATE: word addition of a modular negation is subtraction.
 theorem word_add_sub_zero (a b : UInt256) :
@@ -142,7 +143,7 @@ theorem reEquivSelectorRevert {cfg : Config} {contract : ContractDecl} {t : Tran
   rw [hxi]
   exact .revert rfl rfl
 
--- LIBRARY CANDIDATE: relate Solm list lookup to Lean list indexing.
+-- LIBRARY CANDIDATE: relate Stele list lookup to Lean list indexing.
 theorem lookupNth_eq_getElem? {α : Type} (xs : List α) (i : Nat) :
     lookupNth? xs i = xs[i]? := by
   induction xs generalizing i with
@@ -202,7 +203,7 @@ theorem reEquivSelectorDecodingFailed {cfg : Config} {contract : ContractDecl}
     runtimeRefinementFor cfg contract σ σ₀ g A I immutables := by
   apply RDrev.reEquivElim hcode h
   intro g' o hxi
-  exact .decodingFailed hd rfl hdec hxi
+  exact .execution hxi (.decodingFailed hd hdec) (.decodingFailed rfl rfl)
 
 -- LIBRARY CANDIDATE: the SUB guard used by solc's canonical-address decoders.
 theorem addressMaskSub_nonzero {w : UInt256} (hnc : ¬ w.toNat < EVM.addressModulus) :

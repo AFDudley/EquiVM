@@ -2,12 +2,12 @@ import Benchmarks.CompoundIII.Comet.PrincipalMagnitudeModel
 import Benchmarks.CompoundIII.Comet.SignedWord
 import Benchmarks.CompoundIII.Comet.TotalsStorage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 
 def principalValueIndex (evm : EVM.State) (borrow : Bool) : UInt256 :=
-  totalsIndexWord (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩) borrow
+  totalsIndexWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩) borrow
 
 def principalValueAmount (present : UInt256) (borrow : Bool) : UInt256 :=
   if borrow then UInt256.sub (UInt256.ofNat 0) present else present

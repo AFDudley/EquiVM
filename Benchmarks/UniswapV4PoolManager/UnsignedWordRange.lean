@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.UnsignedRangeSource
 import Benchmarks.UniswapV4PoolManager.WordSignedRepresentation
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 -- GENERALIZES the uint160 shift guard to arbitrary widths below 256.

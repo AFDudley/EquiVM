@@ -6,7 +6,7 @@ import Benchmarks.UniswapV4PoolManager.MappingMemory
 import Benchmarks.UniswapV4PoolManager.RuntimeBlocks_031
 import Benchmarks.UniswapV4PoolManager.RuntimeBlocks_005
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.UniswapV4PoolManager.Immutables
 /-! ERC-6909 transfer: checked debit, checked credit, event, and boolean return. -/
@@ -209,7 +209,7 @@ theorem poolManagerTransferBodyCore {σ σ₀ A I} {g : UInt256} (v : PoolManage
                     (sstoreAccountMap I.codeOwner σ (balanceSlot (accountWord I.source) id)
                       (UInt256.sub (balanceWord evm0 (accountWord I.source) id) amount)) I := by
                 unfold balanceWord
-                change Solm.EVM.storageLoad (balancePost evm0 (accountWord I.source) id
+                change Stele.EVM.storageLoad (balancePost evm0 (accountWord I.source) id
                   (UInt256.sub (balanceWord evm0 (accountWord I.source) id) amount))
                   (balancePost evm0 (accountWord I.source) id
                     (UInt256.sub (balanceWord evm0 (accountWord I.source) id) amount)).executionEnv.codeOwner _ = _
@@ -233,7 +233,7 @@ theorem poolManagerTransferBodyCore {σ σ₀ A I} {g : UInt256} (v : PoolManage
                     (balanceSlot receiver id) (balanceWord evm1 receiver id + amount) =
                     (transferPost evm0 receiver id amount).accountMap := by
                   rw [hacc1]
-                  change _ = (Solm.EVM.storageStore evm1 evm1.executionEnv.codeOwner
+                  change _ = (Stele.EVM.storageStore evm1 evm1.executionEnv.codeOwner
                     (balanceSlot receiver id) (balanceWord evm1 receiver id + amount)).accountMap
                   rw [show evm1.executionEnv = I from balancePost_env _ _ _ _]
                   exact (storageStore_accountMap evm1 I.codeOwner (balanceSlot receiver id)

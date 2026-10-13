@@ -2,7 +2,7 @@ import Benchmarks.EAS.Attester.Dispatch
 import Benchmarks.EAS.Attester.Decode
 import Benchmarks.EAS.Attester.AttestMemory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.EAS.Attester.Immutables attesterRuntimeBlocks
 
 namespace Benchmarks.EAS.Attester

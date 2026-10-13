@@ -5,7 +5,7 @@ import Benchmarks.Dss.Vat.Hope
 
 namespace Benchmarks.Dss.Vat
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 0
@@ -83,8 +83,8 @@ abbrev fluxWishWord (σ : AccountMap) (I : ExecutionEnv) : UInt256 :=
 
 def fluxPostState (evm : EVM.State) (I : ExecutionEnv)
     (srcGemNew dstGemNew : UInt256) : EVM.State :=
-  Solm.EVM.storageStore
-    (Solm.EVM.storageStore evm evm.executionEnv.codeOwner (fluxSrcGemSlot I) srcGemNew)
+  Stele.EVM.storageStore
+    (Stele.EVM.storageStore evm evm.executionEnv.codeOwner (fluxSrcGemSlot I) srcGemNew)
     evm.executionEnv.codeOwner (fluxDstGemSlot I) dstGemNew
 
 abbrev fluxStoreSrcGemNew (I : ExecutionEnv) (srcGemNew : UInt256) : Store :=
@@ -342,7 +342,7 @@ theorem evalExpr_flux_src_gem_old {evm : EVM.State} {I : ExecutionEnv}
     evalExpr? config { contract := contract, locals := fluxStore I } evm
       (.storage (gemRef (.var "ilk") (.var "src"))) =
       .ok (.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (fluxSrcGemSlot I)).toNat)) := by
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (fluxSrcGemSlot I)).toNat)) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
     (hbase := fluxStore_gem I)
     (her := evalStorageRef_flux_src_gem evm I (by omega))
@@ -356,7 +356,7 @@ theorem evalExpr_flux_dst_gem_after_src {evm : EVM.State} {I : ExecutionEnv}
     evalExpr? config { contract := contract, locals := fluxStoreSrcGemNew I srcGemNew } evm
       (.storage (gemRef (.var "ilk") (.var "dst"))) =
       .ok (.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (fluxDstGemSlot I)).toNat)) := by
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (fluxDstGemSlot I)).toNat)) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
     (hbase := fluxStoreSrcGemNew_gem I srcGemNew)
     (her := evalStorageRef_flux_dst_gem_after_src evm I srcGemNew (by omega))
@@ -371,7 +371,7 @@ theorem evalExpr_flux_dst_gem_after_dst {evm : EVM.State} {I : ExecutionEnv}
       { contract := contract, locals := fluxStoreDstGemNew I srcGemNew dstGemNew } evm
       (.storage (gemRef (.var "ilk") (.var "dst"))) =
       .ok (.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (fluxDstGemSlot I)).toNat)) := by
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (fluxDstGemSlot I)).toNat)) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
     (hbase := fluxStoreDstGemNew_gem I srcGemNew dstGemNew)
     (her := evalStorageRef_flux_dst_gem_after_dst evm I srcGemNew dstGemNew (by omega))
@@ -385,7 +385,7 @@ theorem evalExpr_flux_src_gem_after_src {evm : EVM.State} {I : ExecutionEnv}
     evalExpr? config { contract := contract, locals := fluxStoreSrcGemNew I srcGemNew } evm
       (.storage (gemRef (.var "ilk") (.var "src"))) =
       .ok (.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (fluxSrcGemSlot I)).toNat)) := by
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (fluxSrcGemSlot I)).toNat)) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
     (hbase := fluxStoreSrcGemNew_gem I srcGemNew)
     (her := evalStorageRef_flux_src_gem_after_src evm I srcGemNew (by omega))
@@ -398,7 +398,7 @@ theorem evalExpr_flux_can {evm : EVM.State} {I : ExecutionEnv}
     evalExpr? config { contract := contract, locals := fluxStore I } evm
       (.storage (canRef (.var "src") sender)) =
       .ok (.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (fluxWishSlot I)).toNat)) := by
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (fluxWishSlot I)).toNat)) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
     (hbase := fluxStore_can I)
     (her := evalStorageRef_flux_can evm I hsrc)
@@ -485,7 +485,7 @@ theorem evalExpr_flux_src_sender_eq_false {evm : EVM.State} {I : ExecutionEnv}
 
 theorem evalExpr_flux_can_eq_true {evm : EVM.State} {I : ExecutionEnv}
     (hsrc : evm.executionEnv.source = I.source)
-    (hcan : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (fluxWishSlot I) = ⟨1⟩) :
+    (hcan : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (fluxWishSlot I) = ⟨1⟩) :
     evalExpr? config { contract := contract, locals := fluxStore I } evm
       (.binary .eq (.storage (canRef (.var "src") sender)) (.intLit 1)) =
       .ok (.bool true) := by
@@ -495,12 +495,12 @@ theorem evalExpr_flux_can_eq_true {evm : EVM.State} {I : ExecutionEnv}
 
 theorem evalExpr_flux_can_eq_false {evm : EVM.State} {I : ExecutionEnv}
     (hsrc : evm.executionEnv.source = I.source)
-    (hcan : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (fluxWishSlot I) ≠ ⟨1⟩) :
+    (hcan : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (fluxWishSlot I) ≠ ⟨1⟩) :
     evalExpr? config { contract := contract, locals := fluxStore I } evm
       (.binary .eq (.storage (canRef (.var "src") sender)) (.intLit 1)) =
       .ok (.bool false) := by
   have hneNat :
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (fluxWishSlot I)).toNat ≠ 1 := by
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (fluxWishSlot I)).toNat ≠ 1 := by
     intro hnat
     apply hcan
     apply u256_inj
@@ -522,7 +522,7 @@ theorem evalExpr_flux_wish_true_src {evm : EVM.State} {I : ExecutionEnv}
 theorem evalExpr_flux_wish_true_can {evm : EVM.State} {I : ExecutionEnv}
     (hsrc : evm.executionEnv.source = I.source)
     (hne : fluxSrcMaskedWord I ≠ hopeSourceWord I)
-    (hcan : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (fluxWishSlot I) = ⟨1⟩) :
+    (hcan : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (fluxWishSlot I) = ⟨1⟩) :
     evalExpr? config { contract := contract, locals := fluxStore I } evm
       (wishExpr (.var "src") sender) = .ok (.bool true) := by
   exact fluxEvalExpr_or_false_right
@@ -534,7 +534,7 @@ theorem evalExpr_flux_wish_true_can {evm : EVM.State} {I : ExecutionEnv}
 theorem evalExpr_flux_wish_false {evm : EVM.State} {I : ExecutionEnv}
     (hsrc : evm.executionEnv.source = I.source)
     (hne : fluxSrcMaskedWord I ≠ hopeSourceWord I)
-    (hcan : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (fluxWishSlot I) ≠ ⟨1⟩) :
+    (hcan : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (fluxWishSlot I) ≠ ⟨1⟩) :
     evalExpr? config { contract := contract, locals := fluxStore I } evm
       (wishExpr (.var "src") sender) = .ok (.bool false) := by
   exact fluxEvalExpr_or_false_right
@@ -1348,7 +1348,7 @@ theorem assignStorageRef_flux_src_gem {evm evm' : EVM.State} {I : ExecutionEnv}
     {srcGemNew : UInt256}
     (hsz132 : 132 ≤ I.calldata.size)
     (hevm' :
-      evm' = Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+      evm' = Stele.EVM.storageStore evm evm.executionEnv.codeOwner
         (fluxSrcGemSlot I) srcGemNew) :
     assignStorageRef? config
       { contract := contract, locals := fluxStoreSrcGemNew I srcGemNew } evm .storage
@@ -1370,7 +1370,7 @@ theorem assignStorageRef_flux_dst_gem {evm evm' : EVM.State} {I : ExecutionEnv}
     {srcGemNew dstGemNew : UInt256}
     (hsz132 : 132 ≤ I.calldata.size)
     (hevm' :
-      evm' = Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+      evm' = Stele.EVM.storageStore evm evm.executionEnv.codeOwner
         (fluxDstGemSlot I) dstGemNew) :
     assignStorageRef? config
       { contract := contract, locals := fluxStoreDstGemNew I srcGemNew dstGemNew } evm .storage
@@ -1443,7 +1443,7 @@ theorem vatFluxSourceStoreSrcSplit
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let srcOld := solcSlotWordAt (fluxSrcGemSlot I) σ I
     let srcGemNew := UInt256.sub srcOld (fluxWadWord I)
-    let evm1 := Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner
+    let evm1 := Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner
       (fluxSrcGemSlot I) srcGemNew
     evalExpr? config { contract := contract, locals := fluxStore I } evm0
         (wishExpr (.var "src") sender) = .ok (.bool true) →
@@ -1460,8 +1460,8 @@ theorem vatFluxSourceStoreSrcSplit
         .staticViolation) := by
   intro evm0 srcOld srcGemNew evm1 hwish hsrcEnough
   have hsrcLoad :
-      Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (fluxSrcGemSlot I) = srcOld := by
-    simp [evm0, srcOld, solcSlotWordAt, solcSlotWord, initState, Solm.EVM.storageLoad,
+      Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (fluxSrcGemSlot I) = srcOld := by
+    simp [evm0, srcOld, solcSlotWordAt, solcSlotWord, initState, Stele.EVM.storageLoad,
       State.lookupAccount, Account.lookupStorage]
   have hwad :
       evalExpr? config { contract := contract, locals := fluxStore I } evm0 (.var "wad") =
@@ -1547,9 +1547,9 @@ theorem vatFluxSourceOk
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let srcOld := solcSlotWordAt (fluxSrcGemSlot I) σ I
     let srcGemNew := UInt256.sub srcOld (fluxWadWord I)
-    let evm1 := Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner
+    let evm1 := Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner
       (fluxSrcGemSlot I) srcGemNew
-    let dstOld := Solm.EVM.storageLoad evm1 evm1.executionEnv.codeOwner (fluxDstGemSlot I)
+    let dstOld := Stele.EVM.storageLoad evm1 evm1.executionEnv.codeOwner (fluxDstGemSlot I)
     let dstGemNew := dstOld + fluxWadWord I
     evalExpr? config { contract := contract, locals := fluxStore I } evm0
         (wishExpr (.var "src") sender) = .ok (.bool true) →
@@ -1557,11 +1557,11 @@ theorem vatFluxSourceOk
     dstOld.toNat + (fluxWadWord I).toNat < UInt256.size →
     ExecTransitionBody config contract evm0 (fluxStore I) fluxTransition.body
       (.returned { contract := contract, locals := fluxStoreDstGemNew I srcGemNew dstGemNew }
-        (Solm.EVM.storageStore evm1 evm1.executionEnv.codeOwner
+        (Stele.EVM.storageStore evm1 evm1.executionEnv.codeOwner
           (fluxDstGemSlot I) dstGemNew) none) := by
   intro evm0 srcOld srcGemNew evm1 dstOld dstGemNew hwish hsrcEnough hdstFit
   have hdstLoad :
-      Solm.EVM.storageLoad evm1 evm1.executionEnv.codeOwner (fluxDstGemSlot I) = dstOld := by
+      Stele.EVM.storageLoad evm1 evm1.executionEnv.codeOwner (fluxDstGemSlot I) = dstOld := by
     simp [dstOld]
   have hwadAfterSrc :
       evalExpr? config { contract := contract, locals := fluxStoreSrcGemNew I srcGemNew }
@@ -1610,10 +1610,10 @@ theorem vatFluxSourceOk
         { contract := contract, locals := fluxStoreDstGemNew I srcGemNew dstGemNew } evm1 .storage
         (gemRef (.var "ilk") (.var "dst")) (.int (Int.ofNat dstGemNew.toNat)) =
         .ok ({ contract := contract, locals := fluxStoreDstGemNew I srcGemNew dstGemNew },
-          Solm.EVM.storageStore evm1 evm1.executionEnv.codeOwner
+          Stele.EVM.storageStore evm1 evm1.executionEnv.codeOwner
             (fluxDstGemSlot I) dstGemNew) :=
     assignStorageRef_flux_dst_gem (evm := evm1)
-      (evm' := Solm.EVM.storageStore evm1 evm1.executionEnv.codeOwner
+      (evm' := Stele.EVM.storageStore evm1 evm1.executionEnv.codeOwner
         (fluxDstGemSlot I) dstGemNew)
       (I := I) (srcGemNew := srcGemNew) (dstGemNew := dstGemNew) hsz132 rfl
   simpa [ExecTransitionBody, evm0, evm1] using ExecFuncBody.execBlockOK
@@ -1673,8 +1673,8 @@ theorem vatFluxSourceRevertSrcUnderflow
     ExecTransitionBody config contract evm0 (fluxStore I) fluxTransition.body .reverted := by
   intro evm0 srcOld hwish hunder
   have hsrcLoad :
-      Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (fluxSrcGemSlot I) = srcOld := by
-    simp [evm0, srcOld, solcSlotWordAt, solcSlotWord, initState, Solm.EVM.storageLoad,
+      Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (fluxSrcGemSlot I) = srcOld := by
+    simp [evm0, srcOld, solcSlotWordAt, solcSlotWord, initState, Stele.EVM.storageLoad,
       State.lookupAccount, Account.lookupStorage]
   have hwad :
       evalExpr? config { contract := contract, locals := fluxStore I } evm0 (.var "wad") =
@@ -1729,9 +1729,9 @@ theorem vatFluxSourceRevertDstOverflow
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let srcOld := solcSlotWordAt (fluxSrcGemSlot I) σ I
     let srcGemNew := UInt256.sub srcOld (fluxWadWord I)
-    let evm1 := Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner
+    let evm1 := Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner
       (fluxSrcGemSlot I) srcGemNew
-    let dstOld := Solm.EVM.storageLoad evm1 evm1.executionEnv.codeOwner (fluxDstGemSlot I)
+    let dstOld := Stele.EVM.storageLoad evm1 evm1.executionEnv.codeOwner (fluxDstGemSlot I)
     evalExpr? config { contract := contract, locals := fluxStore I } evm0
         (wishExpr (.var "src") sender) = .ok (.bool true) →
     (fluxWadWord I).toNat ≤ srcOld.toNat →
@@ -1739,11 +1739,11 @@ theorem vatFluxSourceRevertDstOverflow
     ExecTransitionBody config contract evm0 (fluxStore I) fluxTransition.body .reverted := by
   intro evm0 srcOld srcGemNew evm1 dstOld hwish hsrcEnough hover
   have hsrcLoad :
-      Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (fluxSrcGemSlot I) = srcOld := by
-    simp [evm0, srcOld, solcSlotWordAt, solcSlotWord, initState, Solm.EVM.storageLoad,
+      Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (fluxSrcGemSlot I) = srcOld := by
+    simp [evm0, srcOld, solcSlotWordAt, solcSlotWord, initState, Stele.EVM.storageLoad,
       State.lookupAccount, Account.lookupStorage]
   have hdstLoad :
-      Solm.EVM.storageLoad evm1 evm1.executionEnv.codeOwner (fluxDstGemSlot I) = dstOld := by
+      Stele.EVM.storageLoad evm1 evm1.executionEnv.codeOwner (fluxDstGemSlot I) = dstOld := by
     simp [dstOld]
   have hwad :
       evalExpr? config { contract := contract, locals := fluxStore I } evm0 (.var "wad") =
@@ -2022,7 +2022,7 @@ theorem vatFluxAuthorizedPath
       config.externalABI.decodeCalldata? (fluxTransition.params.map Param.name)
         (transitionSignature fluxTransition).paramTypes I.calldata = some (fluxStore I))
     (hmemWish : memWish.size = 96)
-    (hwishSolm :
+    (hwishStele :
       evalExpr? config
         { contract := contract, locals := fluxStore I }
         (initState σ σ₀ (Sat256.ofUInt256 g) A I)
@@ -2042,7 +2042,7 @@ theorem vatFluxAuthorizedPath
       exact vatFluxSourceRevertSrcUnderflow
         (σ := σ) (σ₀ := σ₀)
         (A := A) (I := I) (g := g) hwv hsz132
-        (by simpa [evm0] using hwishSolm)
+        (by simpa [evm0] using hwishStele)
         (by simpa [evm0, srcOld] using hsrcUnder)
     have hsrcUnderSolc :
         (solcSlotWord σ I
@@ -2082,7 +2082,7 @@ theorem vatFluxAuthorizedPath
     swap
     · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode
         ((vatFluxSourceStoreSrcSplit (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hsz132
-          (by simpa [evm0] using hwishSolm) (by simpa [srcOld] using hsrcEnough)).2 hpf)
+          (by simpa [evm0] using hwishStele) (by simpa [srcOld] using hsrcEnough)).2 hpf)
     let σSrc := sstoreAccountMap I.codeOwner σ (fluxSrcGemSlot I) srcGemNew
     have hsrcSlotEq :
         solcMappingSlot (solcMappingSlot ⟨4⟩ (fluxIlkWord I)) (fluxSrcMaskedWord I) =
@@ -2112,40 +2112,40 @@ theorem vatFluxAuthorizedPath
     have hdstClean : UInt256.land (fluxDstMaskedWord I) solcAddrMask = fluxDstMaskedWord I := by
       rw [u256_land_comm]
       exact solcAddrMask_clean_left (fluxDstMaskedWord_canonical I)
-    have hsrcGemNewSolm :
+    have hsrcGemNewStele :
         UInt256.sub (solcSlotWordAt (fluxSrcGemSlot I) σ I) (fluxWadWord I) =
           srcGemNew := by
       simp [srcGemNew, srcOld]
-    have hloadDstSolm :
-        Solm.EVM.storageLoad
-            (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner
+    have hloadDstStele :
+        Stele.EVM.storageLoad
+            (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner
               (fluxSrcGemSlot I)
               (UInt256.sub (solcSlotWordAt (fluxSrcGemSlot I) σ I)
                 (fluxWadWord I)))
-            (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner
+            (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner
               (fluxSrcGemSlot I)
               (UInt256.sub (solcSlotWordAt (fluxSrcGemSlot I) σ I)
                 (fluxWadWord I))).executionEnv.codeOwner
             (fluxDstGemSlot I) =
           solcSlotWordAt (fluxDstGemSlot I) σSrc I := by
-      rw [hsrcGemNewSolm]
-      simp [evm0, σSrc, initState, Solm.EVM.storageLoad,
+      rw [hsrcGemNewStele]
+      simp [evm0, σSrc, initState, Stele.EVM.storageLoad,
         State.lookupAccount, Account.lookupStorage, storageStore_executionEnv,
         storageStore_accountMap, solcSlotWordAt, solcSlotWord]
     by_cases hdstOverflow : UInt256.size ≤ dstOld.toNat + (fluxWadWord I).toNat
-    · have hdstOverflowSolm :
+    · have hdstOverflowStele :
           UInt256.size ≤
-            (Solm.EVM.storageLoad
-                (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner
+            (Stele.EVM.storageLoad
+                (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner
                   (fluxSrcGemSlot I)
                   (UInt256.sub (solcSlotWordAt (fluxSrcGemSlot I) σ I)
                     (fluxWadWord I)))
-                (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner
+                (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner
                   (fluxSrcGemSlot I)
                   (UInt256.sub (solcSlotWordAt (fluxSrcGemSlot I) σ I)
                     (fluxWadWord I))).executionEnv.codeOwner
                 (fluxDstGemSlot I)).toNat + (fluxWadWord I).toNat := by
-        rw [hloadDstSolm]
+        rw [hloadDstStele]
         have htmp :
             UInt256.size ≤
               (solcSlotWordAt (fluxDstGemSlot I) σSrc I).toNat +
@@ -2158,9 +2158,9 @@ theorem vatFluxAuthorizedPath
         exact vatFluxSourceRevertDstOverflow
           (σ := σ) (σ₀ := σ₀)
           (A := A) (I := I) (g := g) hwv hsz132
-          (by simpa [evm0] using hwishSolm)
+          (by simpa [evm0] using hwishStele)
           (by simpa [srcOld] using hsrcEnough)
-          hdstOverflowSolm
+          hdstOverflowStele
       have hdstOverflowSolc :
           UInt256.size ≤
             (solcSlotWord σSrc I
@@ -2214,18 +2214,18 @@ theorem vatFluxAuthorizedPath
             (sstoreAccountMap I.codeOwner σSrc (fluxDstGemSlot I) dstGemNew)
             ByteArray.empty := by
         exact RD.stop hretPc' (by native_decide) (by simp)
-      have hdstFitSolm :
-          (Solm.EVM.storageLoad
-              (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner
+      have hdstFitStele :
+          (Stele.EVM.storageLoad
+              (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner
                 (fluxSrcGemSlot I)
                 (UInt256.sub (solcSlotWordAt (fluxSrcGemSlot I) σ I)
                   (fluxWadWord I)))
-              (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner
+              (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner
                 (fluxSrcGemSlot I)
                 (UInt256.sub (solcSlotWordAt (fluxSrcGemSlot I) σ I)
                   (fluxWadWord I))).executionEnv.codeOwner
               (fluxDstGemSlot I)).toNat + (fluxWadWord I).toNat < UInt256.size := by
-        rw [hloadDstSolm]
+        rw [hloadDstStele]
         have htmp :
             (solcSlotWordAt (fluxDstGemSlot I) σSrc I).toNat +
                 (fluxWadWord I).toNat < UInt256.size := by
@@ -2234,48 +2234,48 @@ theorem vatFluxAuthorizedPath
       have hbody := vatFluxSourceOk
         (σ := σ) (σ₀ := σ₀)
         (A := A) (I := I) (g := g) hwv hsz132
-        (by simpa [evm0] using hwishSolm)
+        (by simpa [evm0] using hwishStele)
         (by simpa [srcOld] using hsrcEnough)
-        hdstFitSolm
+        hdstFitStele
       have haccountsFinal :
           sstoreAccountMap I.codeOwner σSrc (fluxDstGemSlot I) dstGemNew =
-            (Solm.EVM.storageStore
-                (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner
+            (Stele.EVM.storageStore
+                (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner
                   (fluxSrcGemSlot I)
                   (UInt256.sub (solcSlotWordAt (fluxSrcGemSlot I) σ I)
                     (fluxWadWord I)))
-                (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner
+                (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner
                   (fluxSrcGemSlot I)
                   (UInt256.sub (solcSlotWordAt (fluxSrcGemSlot I) σ I)
                     (fluxWadWord I))).executionEnv.codeOwner
                 (fluxDstGemSlot I)
-                ((Solm.EVM.storageLoad
-                    (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner
+                ((Stele.EVM.storageLoad
+                    (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner
                       (fluxSrcGemSlot I)
                       (UInt256.sub (solcSlotWordAt (fluxSrcGemSlot I) σ I)
                         (fluxWadWord I)))
-                    (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner
+                    (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner
                       (fluxSrcGemSlot I)
                       (UInt256.sub (solcSlotWordAt (fluxSrcGemSlot I) σ I)
                         (fluxWadWord I))).executionEnv.codeOwner
                     (fluxDstGemSlot I)) + fluxWadWord I)).accountMap := by
-        have hloadDstSolmOwner :
-            Solm.EVM.storageLoad
-                (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner
+        have hloadDstSteleOwner :
+            Stele.EVM.storageLoad
+                (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner
                   (fluxSrcGemSlot I)
                   (UInt256.sub (solcSlotWordAt (fluxSrcGemSlot I) σ I)
                     (fluxWadWord I)))
                 evm0.executionEnv.codeOwner
                 (fluxDstGemSlot I) =
               solcSlotWordAt (fluxDstGemSlot I) σSrc I := by
-          simpa [storageStore_executionEnv] using hloadDstSolm
-        have hdstGemNewSolmOwner :
+          simpa [storageStore_executionEnv] using hloadDstStele
+        have hdstGemNewSteleOwner :
             solcSlotWordAt (fluxDstGemSlot I) σSrc I + fluxWadWord I = dstGemNew := by
           simp [dstGemNew, dstOld]
         rw [storageStore_accountMap, storageStore_executionEnv]
-        rw [hloadDstSolmOwner, hdstGemNewSolmOwner]
+        rw [hloadDstSteleOwner, hdstGemNewSteleOwner]
         rw [storageStore_accountMap]
-        rw [hsrcGemNewSolm]
+        rw [hsrcGemNewStele]
         change
           (sstoreAccountMap I.codeOwner σSrc (fluxDstGemSlot I) dstGemNew)
             = (sstoreAccountMap evm0.executionEnv.codeOwner σSrc (fluxDstGemSlot I) dstGemNew)
@@ -2323,7 +2323,7 @@ theorem vatFluxBodyCore : VatBodyTheoremAnyPerm 8 := by
         · exact solcFreePtrMem_read64
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     by_cases hsrcEq : fluxSrcMaskedWord I = hopeSourceWord I
-    · have hwishSolm :
+    · have hwishStele :
           evalExpr? config { contract := contract, locals := fluxStore I } evm0
             (wishExpr (.var "src") sender) = .ok (.bool true) :=
         evalExpr_flux_wish_true_src (evm := evm0) (I := I)
@@ -2335,17 +2335,17 @@ theorem vatFluxBodyCore : VatBodyTheoremAnyPerm 8 := by
         (σ := σ)
         (σ₀ := σ₀) (A := A) (I := I) (g := g) hcode hwv hsz132
         hdispatch hdecode hmemWish
-        (by simpa [evm0] using hwishSolm) h2545
+        (by simpa [evm0] using hwishStele) h2545
     · by_cases hcanEvm : solcSlotWordAt (fluxWishSlot I) σ I = ⟨1⟩
-      · have hcanSolm :
-            Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (fluxWishSlot I) = ⟨1⟩ := by
-          simpa [evm0, initState, solcSlotWordAt, solcSlotWord, Solm.EVM.storageLoad,
+      · have hcanStele :
+            Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (fluxWishSlot I) = ⟨1⟩ := by
+          simpa [evm0, initState, solcSlotWordAt, solcSlotWord, Stele.EVM.storageLoad,
             State.lookupAccount, Account.lookupStorage] using hcanEvm
-        have hwishSolm :
+        have hwishStele :
             evalExpr? config { contract := contract, locals := fluxStore I } evm0
               (wishExpr (.var "src") sender) = .ok (.bool true) :=
           evalExpr_flux_wish_true_can (evm := evm0) (I := I)
-            (by simp [evm0, initState]) hsrcEq hcanSolm
+            (by simp [evm0, initState]) hsrcEq hcanStele
         have hwishEvm : fluxWishWord σ I ≠ ⟨0⟩ :=
           fluxWishWord_true_can (σ := σ) (I := I) hcanEvm
         obtain ⟨_, _, h2545⟩ := RD.vatFluxWishBranchOk hloaded hwishEvm
@@ -2353,24 +2353,24 @@ theorem vatFluxBodyCore : VatBodyTheoremAnyPerm 8 := by
           (σ := σ)
           (σ₀ := σ₀) (A := A) (I := I) (g := g) hcode hwv hsz132
           hdispatch hdecode hmemWish
-          (by simpa [evm0] using hwishSolm) h2545
-      · have hcanSolm :
-            Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (fluxWishSlot I) ≠ ⟨1⟩ := by
+          (by simpa [evm0] using hwishStele) h2545
+      · have hcanStele :
+            Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (fluxWishSlot I) ≠ ⟨1⟩ := by
           intro hbad
           apply hcanEvm
-          simpa [evm0, initState, solcSlotWordAt, solcSlotWord, Solm.EVM.storageLoad,
+          simpa [evm0, initState, solcSlotWordAt, solcSlotWord, Stele.EVM.storageLoad,
             State.lookupAccount, Account.lookupStorage] using hbad
-        have hwishSolm :
+        have hwishStele :
             evalExpr? config { contract := contract, locals := fluxStore I } evm0
               (wishExpr (.var "src") sender) = .ok (.bool false) :=
           evalExpr_flux_wish_false (evm := evm0) (I := I)
-            (by simp [evm0, initState]) hsrcEq hcanSolm
+            (by simp [evm0, initState]) hsrcEq hcanStele
         have hbody :
             ExecTransitionBody config contract evm0 (fluxStore I) fluxTransition.body
               .reverted :=
           vatFluxSourceRevertWish
             (σ := σ) (σ₀ := σ₀)
-            (A := A) (I := I) (g := g) hwv hwishSolm
+            (A := A) (I := I) (g := g) hwv hwishStele
         have hrev := RD.vatFluxWishBranchRevert hloaded hmemWish hread64Wish
           (fluxWishWord_false (σ := σ) (I := I) hsrcEq hcanEvm)
         exact hrev.reEquivExecutionRevert hcode hdispatch hdecode hbody

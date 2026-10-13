@@ -1,7 +1,7 @@
 import Benchmarks.CompoundIII.Comet.ScalarWrites
 import Reasoning.ExternalCall
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 
@@ -48,8 +48,8 @@ theorem totalsPrincipalWriteWord_packed (old data : UInt256) (borrow : Bool) :
     rfl
 
 def storeTotalsPrincipal (evm : EVM.State) (borrow : Bool) (value : UInt256) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨1⟩
-    (packedWriteWord (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨1⟩
+    (packedWriteWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩)
       value (totalsPrincipalOffset borrow).val 13)
 
 theorem assignTotalsPrincipal (evm : EVM.State) (locals imms : Store) (borrow : Bool)

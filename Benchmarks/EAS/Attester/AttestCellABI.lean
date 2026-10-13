@@ -1,7 +1,7 @@
 import Benchmarks.EAS.Attester.AttestABI
 import Benchmarks.EAS.Attester.AttestRequestsRead
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.EAS.Attester
 

@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.SignedArithmetic
 import Reasoning.ABIViews
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 -- GENERALIZES encodeABIValue_uint256 to every ABI unsigned width.

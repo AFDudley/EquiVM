@@ -2,7 +2,7 @@ import Benchmarks.UniswapV3.Pool.SwapMemoryModel
 import Benchmarks.UniswapV3.Pool.OracleWriteInternal
 import Benchmarks.UniswapV3.Pool.SnapshotInside
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
 

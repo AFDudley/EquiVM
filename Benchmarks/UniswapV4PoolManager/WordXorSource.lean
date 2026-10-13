@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV4PoolManager.Slot0Source
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 -- LIBRARY CANDIDATE: word XOR has its natural bitwise value without truncation.

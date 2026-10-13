@@ -2,9 +2,9 @@ import Reasoning.ABIComposite
 import Examples.OpenZeppelinBench.ERC6909.BalanceOf
 import Examples.OpenZeppelinBench.ERC6909.Approve
 import Examples.OpenZeppelinBench.ERC6909.Storage
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 2000000
@@ -74,7 +74,7 @@ def transferToSlot (I : ExecutionEnv) : UInt256 :=
     (.int (Int.ofNat (transferIdWord I).toNat))
 
 def transferFromBalanceWord (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (transferFromSlot evm I)
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (transferFromSlot evm I)
 
 abbrev transferFromBalanceValue (evm : EVM.State) (I : ExecutionEnv) : Value :=
   .int (Int.ofNat (transferFromBalanceWord evm I).toNat)
@@ -86,18 +86,18 @@ def transferDebitWord (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
   UInt256.ofNat ((transferFromBalanceWord evm I).toNat - (transferAmountWord I).toNat)
 
 def transferAfterDebitState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (transferFromSlot evm I)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (transferFromSlot evm I)
     (transferDebitWord evm I)
 
 theorem transferAfterDebit_codeOwner (evm : EVM.State) (I : ExecutionEnv) :
     (transferAfterDebitState evm I).executionEnv.codeOwner = evm.executionEnv.codeOwner := by
-  simp only [transferAfterDebitState, Solm.EVM.storageStore, State.lookupAccount]
+  simp only [transferAfterDebitState, Stele.EVM.storageStore, State.lookupAccount]
   cases evm.accountMap.get? evm.executionEnv.codeOwner with
   | none => rfl
   | some acc => simp only [Option.option, State.setAccount, Account.updateStorage]
 
 def transferToBalanceWord (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
-  Solm.EVM.storageLoad (transferAfterDebitState evm I) evm.executionEnv.codeOwner
+  Stele.EVM.storageLoad (transferAfterDebitState evm I) evm.executionEnv.codeOwner
     (transferToSlot I)
 
 abbrev transferToBalanceValue (evm : EVM.State) (I : ExecutionEnv) : Value :=
@@ -119,7 +119,7 @@ abbrev transferStoreNewToBalance (evm : EVM.State) (I : ExecutionEnv) : Store :=
   (transferStoreToBalance evm I).insert "newToBalance" (transferNewToValue evm I)
 
 def transferPostState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore (transferAfterDebitState evm I) evm.executionEnv.codeOwner
+  Stele.EVM.storageStore (transferAfterDebitState evm I) evm.executionEnv.codeOwner
     (transferToSlot I) (transferNewToWord evm I)
 
 theorem transferNewToWord_toNat (evm : EVM.State) (I : ExecutionEnv)
@@ -1681,7 +1681,7 @@ theorem erc6909TransferX_afterRequire {σ σ₀ A I} {g : Sat256}
       (transferOuterHashMem (transferSenderWord I) (transferIdWord I))
       (UInt256.ofNat 3) ByteArray.empty σ k1 C1 := by
     simpa [transferFromBalanceWord, transferFromSlot, transferFromSlotI,
-      hslot, initState, Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage]
+      hslot, initState, Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage]
       using rd1373₀
   have hlt : UInt256.lt (transferFromBalanceWord (initState σ σ₀ g A I) I)
       (transferAmountWord I) = ⟨0⟩ := ult_zero henough
@@ -1814,7 +1814,7 @@ theorem erc6909TransferX_afterLoad {σ σ₀ A I} {g : Sat256}
   obtain ⟨k1, C1, rd1373₀⟩ := rd1372.sload (by decide) (by evm_ov)
   exact ⟨k1, C1, by
     simpa [transferFromBalanceWord, transferFromSlot, transferFromSlotI,
-      hslot, initState, Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage]
+      hslot, initState, Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage]
       using rd1373₀⟩
 
 theorem erc6909TransferX_insufficient {σ σ₀ A I} {g : Sat256}
@@ -2080,7 +2080,7 @@ theorem erc6909TransferX_toCheckedAdd {σ σ₀ A I} {g : Sat256}
       (sstoreAccountMap I.codeOwner σ (transferFromSlotI I)
         (transferDebitWord (initState σ σ₀ g A I) I)) k1 C1 := by
     simpa [transferToBalanceWord, transferAfterDebitState, transferFromSlot, transferFromSlotI,
-      hslot, initState, Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
+      hslot, initState, Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
       storageStore_accountMap, debitMem]
       using rd1526₀
   exact ⟨_, _, evm_run rd1526 with [
@@ -2364,7 +2364,7 @@ theorem erc6909TransferBodyCore
                     (by simp [evmS, initState, transferPostState, transferAfterDebitState,
                       transferFromBalanceWord, transferDebitWord, transferNewToWord,
                       transferFromSlot, transferToSlot, transferFromSlotI,
-                      Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
+                      Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
                       storageStore_accountMap])
                     (returnEquiv_of_encode (by simpa [boolTy] using boolTrueReturnEncoding))
               · have hover :

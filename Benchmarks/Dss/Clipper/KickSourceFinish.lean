@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Clipper.KickSourceIncentive
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 namespace Benchmarks.Dss.Clipper
@@ -36,10 +36,10 @@ theorem clipperKickLocalsSuckRet_get_id (evmLock evmTop : EVM.State)
 
 theorem clipperKickIncentiveWmulReverts (v : ClipperImmutables)
     (evmLock evmTop : EVM.State) (I : ExecutionEnv) (feedPrice top : UInt256)
-    (hactive : clipperRedoTipSolmWord evmTop ≠ ⟨0⟩ ∨
-      clipperRedoChipSolmWord evmTop ≠ ⟨0⟩)
+    (hactive : clipperRedoTipSteleWord evmTop ≠ ⟨0⟩ ∨
+      clipperRedoChipSteleWord evmTop ≠ ⟨0⟩)
     (hover : UInt256.size ≤ (clipperKickTabWord I).toNat *
-      (clipperRedoChipSolmWord evmTop).toNat) :
+      (clipperRedoChipSteleWord evmTop).toNat) :
     ExecBlock config
       { contract := contract,
         locals := clipperKickLocalsCoinZero evmLock evmTop I feedPrice top, immutables := immStore v }
@@ -60,11 +60,11 @@ theorem clipperKickIncentiveWmulReverts (v : ClipperImmutables)
 
 theorem clipperKickIncentiveAddReverts (v : ClipperImmutables)
     (evmLock evmTop : EVM.State) (I : ExecutionEnv) (feedPrice top : UInt256)
-    (hactive : clipperRedoTipSolmWord evmTop ≠ ⟨0⟩ ∨
-      clipperRedoChipSolmWord evmTop ≠ ⟨0⟩)
+    (hactive : clipperRedoTipSteleWord evmTop ≠ ⟨0⟩ ∨
+      clipperRedoChipSteleWord evmTop ≠ ⟨0⟩)
     (hmul : (clipperKickTabWord I).toNat *
-      (clipperRedoChipSolmWord evmTop).toNat < UInt256.size)
-    (hover : UInt256.size ≤ (clipperRedoTipSolmWord evmTop).toNat +
+      (clipperRedoChipSteleWord evmTop).toNat < UInt256.size)
+    (hover : UInt256.size ≤ (clipperRedoTipSteleWord evmTop).toNat +
       (clipperKickSourceChipCoinWord evmTop I).toNat) :
     ExecBlock config
       { contract := contract,
@@ -90,11 +90,11 @@ theorem clipperKickIncentiveAddReverts (v : ClipperImmutables)
 
 theorem clipperKickIncentiveSuckReverts (v : ClipperImmutables)
     (evmLock evmTop : EVM.State) (I : ExecutionEnv) (feedPrice top : UInt256)
-    (hactive : clipperRedoTipSolmWord evmTop ≠ ⟨0⟩ ∨
-      clipperRedoChipSolmWord evmTop ≠ ⟨0⟩)
+    (hactive : clipperRedoTipSteleWord evmTop ≠ ⟨0⟩ ∨
+      clipperRedoChipSteleWord evmTop ≠ ⟨0⟩)
     (hmul : (clipperKickTabWord I).toNat *
-      (clipperRedoChipSolmWord evmTop).toNat < UInt256.size)
-    (hadd : (clipperRedoTipSolmWord evmTop).toNat +
+      (clipperRedoChipSteleWord evmTop).toNat < UInt256.size)
+    (hadd : (clipperRedoTipSteleWord evmTop).toNat +
       (clipperKickSourceChipCoinWord evmTop I).toNat < UInt256.size)
     (hsuck : ExecBlock config
       { contract := contract,
@@ -127,11 +127,11 @@ theorem clipperKickIncentiveSuckReverts (v : ClipperImmutables)
 theorem clipperKickIncentiveSucceeds (v : ClipperImmutables)
     (evmLock evmTop evmAfter : EVM.State) (I : ExecutionEnv)
     (feedPrice top : UInt256)
-    (hactive : clipperRedoTipSolmWord evmTop ≠ ⟨0⟩ ∨
-      clipperRedoChipSolmWord evmTop ≠ ⟨0⟩)
+    (hactive : clipperRedoTipSteleWord evmTop ≠ ⟨0⟩ ∨
+      clipperRedoChipSteleWord evmTop ≠ ⟨0⟩)
     (hmul : (clipperKickTabWord I).toNat *
-      (clipperRedoChipSolmWord evmTop).toNat < UInt256.size)
-    (hadd : (clipperRedoTipSolmWord evmTop).toNat +
+      (clipperRedoChipSteleWord evmTop).toNat < UInt256.size)
+    (hadd : (clipperRedoTipSteleWord evmTop).toNat +
       (clipperKickSourceChipCoinWord evmTop I).toNat < UInt256.size)
     (hsuck : ExecBlock config
       { contract := contract,
@@ -148,7 +148,7 @@ theorem clipperKickIncentiveSucceeds (v : ClipperImmutables)
       (.returned
         { contract := contract,
           locals := clipperKickLocalsSuckRet evmLock evmTop I feedPrice top, immutables := immStore v }
-        (Solm.EVM.storageStore evmAfter evmAfter.executionEnv.codeOwner ⟨13⟩ ⟨0⟩)
+        (Stele.EVM.storageStore evmAfter evmAfter.executionEnv.codeOwner ⟨13⟩ ⟨0⟩)
         (some [.int (Int.ofNat (clipperKickSourceIdWord evmLock).toNat)])) := by
   have hmulStmt :=
     clipperKickWmulCallReturns v evmLock evmTop I feedPrice top hmul

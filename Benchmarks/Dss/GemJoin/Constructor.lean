@@ -8,7 +8,7 @@ import Benchmarks.Dss.GemJoin.ConstructorTrace
 # MakerDAO/Sky DSS GemJoin constructor correctness
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.GemJoin
 
@@ -71,7 +71,7 @@ theorem gemJoinCtorPrefixAccountMapEquiv
   simpa [evm5e, evm4e, evm3e, evm2e, evm1e, evm0e, σGem, gemStored, σIlk,
     σVat, vatStored, σLive, σWards, gemJoinCtorAfterGemState, gemJoinCtorAfterIlkState,
     gemJoinCtorAfterVatState, gemJoinCtorAfterLiveState, gemJoinCtorAfterWardsState, initState,
-    storageStore_accountMap, storageStore_executionEnv, Solm.EVM.storageLoad,
+    storageStore_accountMap, storageStore_executionEnv, Stele.EVM.storageLoad,
     State.lookupAccount, Account.lookupStorage, solcSlotWord, gemJoinCtorGemStored,
     gemJoinCtorVatStored, hslot] using hmap
 
@@ -127,16 +127,16 @@ theorem gemJoinConstructorCorrect :
     · have hrev := gemJoinCtorDecimalsNoCodeReverts vat ilk gem gemTarget hcodeSize rd184
       rcases hrev.xiResult hcodeCtor with hOOG | ⟨g', out, hRev⟩
       · exact typedConstructorRefinementFor.outOfGas (by simpa [Sat256.ofUInt256] using hOOG)
-      · have hcodeSizeSolm : extCodeSizeWord evm5s.accountMap gemTarget = ⟨0⟩ := by
+      · have hcodeSizeStele : extCodeSizeWord evm5s.accountMap gemTarget = ⟨0⟩ := by
           simpa [hAccounts5] using hcodeSize
         have hgemNoCode :
             (UInt256.ofNat ((evm5s.lookupAccount gem).option 0 (fun acc => acc.code.size))).toNat =
               0 := by
           simpa [evm5s, State.lookupAccount] using
             extCodeSizeWord_zero_lookup_code_zero (σ := evm5s.accountMap)
-              (target := gemTarget) (addr := gem) htargetAddr hcodeSizeSolm
+              (target := gemTarget) (addr := gem) htargetAddr hcodeSizeStele
         refine typedConstructorRefinementFor.execution (by simpa [Sat256.ofUInt256] using hRev)
-          (gemJoinSolmCtorExecReverts_noCode
+          (gemJoinSteleCtorExecReverts_noCode
             (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
             vat ilk gem hwv
             (by
@@ -144,7 +144,7 @@ theorem gemJoinConstructorCorrect :
                 evm2s, evm3s, evm4s, evm5s] using hgemNoCode))
           ?_
         exact ctorResultEquiv.revert rfl rfl
-    · have hcodeSizeSolmNe : extCodeSizeWord evm5s.accountMap gemTarget ≠ ⟨0⟩ := by
+    · have hcodeSizeSteleNe : extCodeSizeWord evm5s.accountMap gemTarget ≠ ⟨0⟩ := by
         intro hzero
         have hzero' : extCodeSizeWord σGem gemTarget = ⟨0⟩ := by
           simpa [hAccounts5] using hzero
@@ -154,7 +154,7 @@ theorem gemJoinConstructorCorrect :
             (fun acc => acc.code.size))).toNat := by
         simpa [evm5s, State.lookupAccount] using
           extCodeSizeWord_ne_zero_lookup_code_pos (σ := evm5s.accountMap)
-            (target := gemTarget) (addr := gem) htargetAddr hcodeSizeSolmNe
+            (target := gemTarget) (addr := gem) htargetAddr hcodeSizeSteleNe
       by_cases hdepth : I.depth.val < 1024
       · obtain ⟨σCall, z, out, Ain, callGas, _, _, hΘ, rd200, hout⟩ :=
           gemJoinCtorDecimalsStaticcallReach vat ilk gem gemTarget hcodeSize hdepth rd184
@@ -205,7 +205,7 @@ theorem gemJoinConstructorCorrect :
               gemJoinCtorAfterGemState, gemJoinCtorAfterIlkState, gemJoinCtorAfterVatState,
               gemJoinCtorAfterLiveState, gemJoinCtorAfterWardsState, storageStore_accountMap,
               storageStore_executionEnv,
-              storageStore_σ₀, initState, Solm.EVM.storageLoad,
+              storageStore_σ₀, initState, Stele.EVM.storageLoad,
               State.lookupAccount, Account.lookupStorage, solcSlotWord,
               gemJoinCtorGemStored, gemJoinCtorVatStored, hslot, hperm] using hTheta
         have hstate : evm5e = evm5s := by
@@ -215,26 +215,26 @@ theorem gemJoinConstructorCorrect :
             gemJoinCtorAfterLiveState, gemJoinCtorAfterWardsState,
             storageStore_σ₀, storageStore_accountMap,
             storageStore_executionEnv, initState]
-        have hcallSolm :
+        have hcallStele :
             typedCallViaEVM config evm5s (EVM.address gem) "decimals" 0 []
               (z, evmCallEvm, out) false := by
           simpa [hstate] using hcallEvm
-        let evmDecimalsSolm := evmCallEvm
+        let evmDecimalsStele := evmCallEvm
         cases hz : z
         · have hrev := gemJoinCtorDecimalsStatusFailReverts vat ilk gem gemTarget hz hout rd200
           rcases hrev.xiResult hcodeCtor with hOOG | ⟨g', outRev, hRev⟩
           · exact typedConstructorRefinementFor.outOfGas (by simpa [Sat256.ofUInt256] using hOOG)
           · refine typedConstructorRefinementFor.execution (by simpa [Sat256.ofUInt256] using hRev)
-              (gemJoinSolmCtorExecReverts_decimalsFailure
+              (gemJoinSteleCtorExecReverts_decimalsFailure
                 (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
-                (evmDecimals := evmDecimalsSolm) (outDecimals := out)
+                (evmDecimals := evmDecimalsStele) (outDecimals := out)
                 vat ilk gem hwv
                 (by
                   simpa [gemJoinCtorAfterInitStores, eVM_address_id, evm0s, evm1s,
                     evm2s, evm3s, evm4s, evm5s] using hgemCode)
                 (by
                   simpa [hz, gemJoinCtorAfterInitStores, evm0s, evm1s, evm2s, evm3s, evm4s,
-                    evm5s, evmDecimalsSolm] using hcallSolm))
+                    evm5s, evmDecimalsStele] using hcallStele))
               ?_
             exact ctorResultEquiv.revert rfl rfl
         · obtain ⟨_, _, rd218⟩ := gemJoinCtorDecimalsStatusOkReach vat ilk gem gemTarget hz rd200
@@ -309,8 +309,8 @@ theorem gemJoinConstructorCorrect :
                   using decodeReturnValueWithMode_legacy_uint256_ok (returndata := out) hlo
               have hAccountsDec :
                   (sstoreAccountMap I.codeOwner σCall ⟨4⟩ retWord) =
-                    (gemJoinCtorAfterDecState evmDecimalsSolm retWord).accountMap := by
-                simp only [evmDecimalsSolm, gemJoinCtorAfterDecState,
+                    (gemJoinCtorAfterDecState evmDecimalsStele retWord).accountMap := by
+                simp only [evmDecimalsStele, gemJoinCtorAfterDecState,
                   storageStore_accountMap, evmCallEvm]
                 have howner : evm5e.executionEnv.codeOwner = I.codeOwner := by
                   simp [evm5e, evm4e, evm3e, evm2e, evm1e, evm0e,
@@ -320,16 +320,16 @@ theorem gemJoinConstructorCorrect :
                     initState]
                 rw [howner]
               refine typedConstructorRefinementFor.execution (by simpa [Sat256.ofUInt256] using hSuccess)
-                (gemJoinSolmCtorExecSuccess
+                (gemJoinSteleCtorExecSuccess
                   (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
-                  (evmDecimals := evmDecimalsSolm) (outDecimals := out) (dec := retWord)
+                  (evmDecimals := evmDecimalsStele) (outDecimals := out) (dec := retWord)
                   vat ilk gem hwv
                   (by
                     simpa [gemJoinCtorAfterInitStores, eVM_address_id, evm0s,
                       evm1s, evm2s, evm3s, evm4s, evm5s] using hgemCode)
                   (by
                     simpa [hz, gemJoinCtorAfterInitStores, evm0s, evm1s, evm2s, evm3s,
-                      evm4s, evm5s, evmDecimalsSolm] using hcallSolm)
+                      evm4s, evm5s, evmDecimalsStele] using hcallStele)
                   hdec)
                 ?_
               exact ctorResultEquiv.success rfl rfl hAccountsDec rfl
@@ -369,16 +369,16 @@ theorem gemJoinConstructorCorrect :
                 simp [config, externalABI, decodeReturn?]
                 exact decodeReturnValueWithMode_legacy_uint256_none_short hshort
               refine typedConstructorRefinementFor.execution (by simpa [Sat256.ofUInt256] using hRev)
-                (gemJoinSolmCtorExecReverts_decimalsDecode
+                (gemJoinSteleCtorExecReverts_decimalsDecode
                   (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
-                  (evmDecimals := evmDecimalsSolm) (outDecimals := out)
+                  (evmDecimals := evmDecimalsStele) (outDecimals := out)
                   vat ilk gem hwv
                   (by
                     simpa [gemJoinCtorAfterInitStores, eVM_address_id, evm0s,
                       evm1s, evm2s, evm3s, evm4s, evm5s] using hgemCode)
                   (by
                     simpa [hz, gemJoinCtorAfterInitStores, evm0s, evm1s, evm2s, evm3s,
-                      evm4s, evm5s, evmDecimalsSolm] using hcallSolm)
+                      evm4s, evm5s, evmDecimalsStele] using hcallStele)
                   hdec)
                 ?_
               exact ctorResultEquiv.revert rfl rfl
@@ -410,7 +410,7 @@ theorem gemJoinConstructorCorrect :
                     gemJoinCtorAfterGemState, gemJoinCtorAfterIlkState, gemJoinCtorAfterVatState,
                     gemJoinCtorAfterLiveState, gemJoinCtorAfterWardsState, initState] using hdepthEq))
           refine typedConstructorRefinementFor.execution (by simpa [Sat256.ofUInt256] using hRev)
-            (gemJoinSolmCtorExecReverts_decimalsFailure
+            (gemJoinSteleCtorExecReverts_decimalsFailure
               (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
               (evmDecimals := { evm5s with substate := A_dec }) (outDecimals := ByteArray.empty)
               vat ilk gem hwv
@@ -428,7 +428,7 @@ theorem gemJoinConstructorCorrect :
     rcases hrd.xiResult hcodeCtor with hOOG | ⟨g', out, hRev⟩
     · exact typedConstructorRefinementFor.outOfGas (by simpa [Sat256.ofUInt256] using hOOG)
     · refine typedConstructorRefinementFor.execution (by simpa [Sat256.ofUInt256] using hRev)
-        (gemJoinSolmCtorExecReverts_nonpayable
+        (gemJoinSteleCtorExecReverts_nonpayable
           (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
           vat ilk gem hwv)
         ?_

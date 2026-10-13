@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV4PoolManager.NarrowWords
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 theorem int24Canonical_natAbs_le {w : UInt256} (hc : int24Canonical w) :

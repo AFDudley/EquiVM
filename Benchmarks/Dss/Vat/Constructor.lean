@@ -1,16 +1,16 @@
 import Benchmarks.Dss.Vat.Common
 import Reasoning.Constructor
 import Reasoning.Initcode
-import Solm.Refine
+import Stele.Refine
 
 /-!
 # MakerDAO/Sky DSS Vat constructor correctness stub
 
-The optimized creation bytecode, deployed runtime bytecode, and Solm constructor specification are
+The optimized creation bytecode, deployed runtime bytecode, and Stele constructor specification are
 present. The constructor-equivalence proof is intentionally left as the benchmark target.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Vat
 
@@ -311,11 +311,11 @@ theorem vatCtorInitcodeRevert_nonpayable
 abbrev vatCtorLocals : Store := ∅
 
 abbrev vatCtorAfterWardsState (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner
     (wardsSlot (.address evm.executionEnv.source)) ⟨1⟩
 
 abbrev vatCtorAfterLiveState (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨10⟩ ⟨1⟩
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨10⟩ ⟨1⟩
 
 theorem assign_vatCtorWardsCaller (evm : EVM.State) {locals : Store}
     (hbase : locals.get? "wards" = none) :
@@ -402,17 +402,17 @@ theorem vatCtorBodySuccess
   exact ExecBlock.consNormal (ExecStmt.assign (by simp [evalExpr?, pure]) hassignLive)
     ExecBlock.nil
 
-theorem vatSolmCtorExecSuccess
+theorem vatSteleCtorExecSuccess
     {σ : AccountMap} {σ₀ : AccountMap} {A : Substate} {I : ExecutionEnv}
     {g : UInt256}
     (hwv : I.weiValue = ⟨0⟩) :
-    solmCtorExec config contract [] σ σ₀ g A I
+    steleCtorExec config contract [] σ σ₀ g A I
       (.returned { contract := contract, locals := vatCtorLocals }
         (vatCtorAfterLiveState
           (vatCtorAfterWardsState
             (initState σ σ₀ (Sat256.ofUInt256 g) A I)))
         none) := by
-  refine solmCtorExec.intro
+  refine steleCtorExec.intro
     (evmState := initState σ σ₀
       (Sat256.ofUInt256 g) A I)
     (argsStore := vatCtorLocals)
@@ -424,12 +424,12 @@ theorem vatSolmCtorExecSuccess
         (vatCtorBodySuccess
           (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv)
 
-theorem vatSolmCtorExecReverts_nonpayable
+theorem vatSteleCtorExecReverts_nonpayable
     {σ : AccountMap} {σ₀ : AccountMap} {A : Substate} {I : ExecutionEnv}
     {g : UInt256}
     (hwv : I.weiValue ≠ ⟨0⟩) :
-    solmCtorExec config contract [] σ σ₀ g A I .reverted := by
-  refine solmCtorExec.intro
+    steleCtorExec config contract [] σ σ₀ g A I .reverted := by
+  refine steleCtorExec.intro
     (evmState := initState σ σ₀
       (Sat256.ofUInt256 g) A I)
     (argsStore := vatCtorLocals)
@@ -490,7 +490,7 @@ theorem vatConstructorBodyCore :
           refine typedConstructorRefinementFor.execution hsuccess
             (by
               simpa [evm0s, evm1s, evm2s] using
-                vatSolmCtorExecSuccess
+                vatSteleCtorExecSuccess
                   (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
                   (g := g) hwv)
             ?_
@@ -504,7 +504,7 @@ theorem vatConstructorBodyCore :
             (by simpa [Sat256.ofUInt256] using hOOG)
         · refine typedConstructorRefinementFor.execution
             (by simpa [Sat256.ofUInt256] using hRev)
-            (vatSolmCtorExecReverts_nonpayable
+            (vatSteleCtorExecReverts_nonpayable
               (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
               (g := g) hwv)
             ?_

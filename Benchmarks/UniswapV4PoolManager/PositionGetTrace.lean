@@ -2,7 +2,7 @@ import Benchmarks.UniswapV4PoolManager.PositionGetSource
 import Benchmarks.UniswapV4PoolManager.PositionGetMemory
 import Benchmarks.UniswapV4PoolManager.PositionGetCostBlock
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.UniswapV4PoolManager.Immutables
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000

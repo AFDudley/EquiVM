@@ -4,7 +4,7 @@ import Benchmarks.CompoundIII.Comet.Signed104Source
 import Benchmarks.CompoundIII.Comet.SignedNegation
 import Benchmarks.CompoundIII.Comet.AccountMagnitude
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 
@@ -207,13 +207,13 @@ theorem principalValue_call (frame : Frame) (evm : EVM.State) (present : UInt256
   split_ifs with hf
   · rw [if_pos hf] at hb
     obtain ⟨final, hb⟩ := hb
-    exact ExecStmt.internalCallReturn (cfg := config) (solm := frame) (evm := evm)
+    exact ExecStmt.internalCallReturn (cfg := config) (stele := frame) (evm := evm)
       (args := [expr]) (callee := principalValueCallable)
       (locals := (principalValueEntry frame.immutables present).locals)
       (evalExprs?_singleton he) (by rw [hc]; exact principalValueCallable_lookup) rfl
       (by simpa only [hc] using hb)
   · rw [if_neg hf] at hb
-    exact ExecStmt.internalCallRevert (cfg := config) (solm := frame) (evm := evm)
+    exact ExecStmt.internalCallRevert (cfg := config) (stele := frame) (evm := evm)
       (args := [expr]) (callee := principalValueCallable)
       (locals := (principalValueEntry frame.immutables present).locals)
       (evalExprs?_singleton he) (by rw [hc]; exact principalValueCallable_lookup) rfl

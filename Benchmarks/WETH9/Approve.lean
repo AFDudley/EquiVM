@@ -9,7 +9,7 @@ import Benchmarks.WETH9.Routines
 DappHub/Dai `approve` (caller-keyed outer hash, masked-argument inner hash) over slot 4.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 1000000
@@ -46,7 +46,7 @@ def approveStorageSlot (I : ExecutionEnv) : UInt256 :=
   allowanceSlot (approveOwnerKey I) (approveGuyKey I)
 
 def approvePostState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (approveStorageSlot I) (approveWadWord I)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (approveStorageSlot I) (approveWadWord I)
 
 abbrev approveEvaledRef (I : ExecutionEnv) : EvaledStorageRef :=
   { base := "allowance", steps := [.mindex (approveOwnerKey I), .mindex (approveGuyKey I)] }
@@ -150,7 +150,7 @@ theorem approveAssign (evm : EVM.State) (I : ExecutionEnv)
   simpa [approvePostState, wordLoc, uint256Loc, uint256Int] using
     storageLocStore_uint256 evm (approveStorageSlot I) (approveWadWord I)
 
-/-- The Solm `approve(address,uint256)` body stores `allowance[msg.sender][guy] = wad` and returns
+/-- The Stele `approve(address,uint256)` body stores `allowance[msg.sender][guy] = wad` and returns
     `true`. -/
 theorem weth9ApproveBodyReturnsSplit (evm : EVM.State) (I : ExecutionEnv)
     (h : evm.executionEnv.weiValue = ⟨0⟩)
@@ -559,7 +559,7 @@ theorem weth9ApproveBodyCoreDecodeFailed_short {σ σ₀ A I} {g : UInt256}
   exact weth9ReEquivDecodeFailed hcode hrev (weth9SelectorDispatchApprove hsel)
     (weth9Decode_approve_none_short hsz4 hshort)
 
-/-- `approve(address,uint256)` body refines its Solm transition (all branches). -/
+/-- `approve(address,uint256)` body refines its Stele transition (all branches). -/
 theorem weth9ApproveBodyCoreAnyPerm {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = weth9Bytecode) (hsize : I.calldata.size < UInt256.size)
     (hsel : selIs I (weth9SelBytes 1)) :

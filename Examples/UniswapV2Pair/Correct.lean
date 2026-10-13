@@ -31,16 +31,16 @@ import Examples.UniswapV2Pair.TransferFrom
 import Examples.UniswapV2Pair.TransferFromFinite
 import Examples.UniswapV2Pair.TransferFromSuccess
 import Examples.UniswapV2Pair.TransferFromDecode
-import Solm.Refine
+import Stele.Refine
 
 /-!
 # UniswapV2Pair benchmark correctness stub
 
-The source, ABI, optimized runtime bytecode, and Solm specification are present.  The equivalence
+The source, ABI, optimized runtime bytecode, and Stele specification are present.  The equivalence
 proof is intentionally left as the benchmark target.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace UniswapV2Pair
 

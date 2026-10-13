@@ -2,7 +2,7 @@ import Benchmarks.Safe.Main.ModuleStorage
 import Benchmarks.Safe.Main.LocalArrays
 import Benchmarks.Safe.Main.LinkedPages
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.Main
 

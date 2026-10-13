@@ -2,7 +2,7 @@ import Reasoning.ExternalCall
 import Benchmarks.Dss.Clipper.GetStatusEVMReverts
 import Benchmarks.Dss.Clipper.GetStatusReverts
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 namespace Benchmarks.Dss.Clipper
@@ -359,15 +359,15 @@ theorem clipperGetStatusBody (v : ClipperImmutables) {code : ByteArray}
           ⟨128⟩ := by
       exact mloadFreePtrValue (by rw [hhashMem]; native_decide)
         hhashRead64
-    let evmSolm : EVM.State :=
+    let evmStele : EVM.State :=
       initState σ σ₀ (Sat256.ofUInt256 g) A I
     have hbaseSlot :
         clipperGetStatusSalesBaseSlot I = solcMappingSlot ⟨12⟩ id := by
       simpa [id] using clipperGetStatusSalesBaseSlot_eq I
-    have hpackedSolm :
+    have hpackedStele :
         packed = solcSlotWord σ I (clipperGetStatusSalesPackedSlot I) := by
       simp [packed, clipperGetStatusSalesPackedSlot, hbaseSlot]
-    have htopSolm :
+    have htopStele :
         top = solcSlotWord σ I (clipperGetStatusSalesTopSlot I) := by
       simp [top, clipperGetStatusSalesTopSlot, hbaseSlot]
     have hmask96 : clipperSalesUint96Mask.toNat = 2 ^ 96 - 1 := by
@@ -379,7 +379,7 @@ theorem clipperGetStatusBody (v : ClipperImmutables) {code : ByteArray}
           clipperSalesUint96Mask hmask96
     have hticClean : UInt256.land tic clipperSalesUint96Mask = tic := by
       exact u256LandMaskCleanOfToNat tic clipperSalesUint96Mask hmask96 hticLt
-    have hticCleanSolm :
+    have hticCleanStele :
         UInt256.land
             (clipperSalesPackedTicWord
               (solcSlotWord σ I ((solcMappingSlot ⟨12⟩ id) + ⟨3⟩)))
@@ -413,26 +413,26 @@ theorem clipperGetStatusBody (v : ClipperImmutables) {code : ByteArray}
         (v := v) (hpatch := hpatch) rd8549
         (by simpa [calcAddr] using hcalcCode) hdepth (by simpa [id] using hhashMem)
         (by simp only [List.length_cons, List.length_nil]; omega)
-      have hcalcAddrSolm :
-          clipperStatusCalcAddress evmSolm = AccountAddress.ofUInt256 calcAddr := by
-        simp [evmSolm, clipperStatusCalcAddress, clipperStatusCalcWord, calcAddr,
-          initState, Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
+      have hcalcAddrStele :
+          clipperStatusCalcAddress evmStele = AccountAddress.ofUInt256 calcAddr := by
+        simp [evmStele, clipperStatusCalcAddress, clipperStatusCalcWord, calcAddr,
+          initState, Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
           solcSlotWord]
-      have htopWordSolm : clipperGetStatusTopWord evmSolm I = top := by
-        simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmSolm, initState, clipperGetStatusTopWord, Solm.EVM.storageLoad,
+      have htopWordStele : clipperGetStatusTopWord evmStele I = top := by
+        simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmStele, initState, clipperGetStatusTopWord, Stele.EVM.storageLoad,
           State.lookupAccount, Account.lookupStorage, solcSlotWord,
-          clipperGetStatusSalesTopSlot, hbaseSlot] using htopSolm.symm
+          clipperGetStatusSalesTopSlot, hbaseSlot] using htopStele.symm
       have htopRaw : top = solcSlotWord σ I ((solcMappingSlot ⟨12⟩ id) + ⟨4⟩) := by
-        simpa [clipperGetStatusSalesTopSlot, hbaseSlot] using htopSolm
-      have hticWordSolm : clipperGetStatusTicWord evmSolm I = tic := by
-        have hpackedWord := congrArg clipperSalesPackedTicWord hpackedSolm.symm
-        simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmSolm, initState, clipperGetStatusTicWord, Solm.EVM.storageLoad,
+        simpa [clipperGetStatusSalesTopSlot, hbaseSlot] using htopStele
+      have hticWordStele : clipperGetStatusTicWord evmStele I = tic := by
+        have hpackedWord := congrArg clipperSalesPackedTicWord hpackedStele.symm
+        simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmStele, initState, clipperGetStatusTicWord, Stele.EVM.storageLoad,
           State.lookupAccount, Account.lookupStorage, solcSlotWord,
           clipperGetStatusSalesPackedSlot, hbaseSlot, tic] using hpackedWord
       have hticPacked : tic = clipperSalesPackedTicWord
           (solcSlotWord σ I ((solcMappingSlot ⟨12⟩ id) + ⟨3⟩)) := by
         simpa [tic, packed] using
-          congrArg clipperSalesPackedTicWord hpackedSolm
+          congrArg clipperSalesPackedTicWord hpackedStele
       have hpriceAge :
           UInt256.sub (UInt256.ofNat I.header.timestamp)
               (UInt256.land
@@ -440,55 +440,55 @@ theorem clipperGetStatusBody (v : ClipperImmutables) {code : ByteArray}
                   (solcSlotWord σ I ((solcMappingSlot ⟨12⟩ id) + ⟨3⟩)))
                 clipperSalesUint96Mask) =
             UInt256.sub (UInt256.ofNat I.header.timestamp) tic := by
-        rw [hticCleanSolm, ← hticPacked]
-      have htimestampSolm :
-          clipperTimestampWord evmSolm = UInt256.ofNat I.header.timestamp := by
-        simp [evmSolm, initState, clipperTimestampWord]
+        rw [hticCleanStele, ← hticPacked]
+      have htimestampStele :
+          clipperTimestampWord evmStele = UInt256.ofNat I.header.timestamp := by
+        simp [evmStele, initState, clipperTimestampWord]
       cases z
       · have hrev :=
           Benchmarks.Dss.Clipper.Reasoning.Reach.RD.clipperStatusPriceCallFailure
             (v := v) (hpatch := hpatch) rd8565 hout
             (by simp only [List.length_cons, List.length_nil]; omega)
-        have hcalcCodeSolmNE :
+        have hcalcCodeSteleNE :
             Reasoning.Theory.extCodeSizeWord σ calcAddr ≠ ⟨0⟩ := by
           exact hcalcCode
-        have hcalcCodeSolm :
+        have hcalcCodeStele :
             0 < (UInt256.ofNat
-              ((evmSolm.lookupAccount (clipperStatusCalcAddress evmSolm)).option 0
+              ((evmStele.lookupAccount (clipperStatusCalcAddress evmStele)).option 0
                 (fun acc => acc.code.size))).toNat := by
-          simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmSolm, State.lookupAccount, initState] using
+          simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmStele, State.lookupAccount, initState] using
             extCodeSizeWord_ne_zero_lookup_code_pos
               (σ := σ) (target := calcAddr)
-              (addr := clipperStatusCalcAddress evmSolm)
-              hcalcAddrSolm hcalcCodeSolmNE
-        let σ'_solm := σ'
-        let A'_solm := A'
-        let evmPriceSolm : EVM.State :=
-          { evmSolm with
-            accountMap := σ'_solm
-            substate := A'_solm }
-        have hcallPriceSolm :
-            typedCallViaEVM config evmSolm
-              (EVM.address (clipperStatusCalcAddress evmSolm)) "price" 0
-              [.int (Int.ofNat (clipperGetStatusTopWord evmSolm I).toNat),
+              (addr := clipperStatusCalcAddress evmStele)
+              hcalcAddrStele hcalcCodeSteleNE
+        let σ'_stele := σ'
+        let A'_stele := A'
+        let evmPriceStele : EVM.State :=
+          { evmStele with
+            accountMap := σ'_stele
+            substate := A'_stele }
+        have hcallPriceStele :
+            typedCallViaEVM config evmStele
+              (EVM.address (clipperStatusCalcAddress evmStele)) "price" 0
+              [.int (Int.ofNat (clipperGetStatusTopWord evmStele I).toNat),
                 .int (Int.ofNat
-                  (UInt256.sub (clipperTimestampWord evmSolm)
-                    (clipperGetStatusTicWord evmSolm I)).toNat)]
-              (false, evmPriceSolm, o) false := by
+                  (UInt256.sub (clipperTimestampWord evmStele)
+                    (clipperGetStatusTicWord evmStele I)).toNat)]
+              (false, evmPriceStele, o) false := by
           have hcallPrice' := hcallPrice
-          rw [hpriceAge, ← hcalcAddrSolm, ← htopRaw, ← htopWordSolm,
-            ← htimestampSolm, ← hticWordSolm] at hcallPrice'
+          rw [hpriceAge, ← hcalcAddrStele, ← htopRaw, ← htopWordStele,
+            ← htimestampStele, ← hticWordStele] at hcallPrice'
           exact hcallPrice'
-        have hlePriceSolm :
-            (clipperGetStatusTicWord evmSolm I).toNat ≤
-              (clipperTimestampWord evmSolm).toNat := by
-          rw [hticWordSolm, htimestampSolm, ← hticClean]
+        have hlePriceStele :
+            (clipperGetStatusTicWord evmStele I).toNat ≤
+              (clipperTimestampWord evmStele).toNat := by
+          rw [hticWordStele, htimestampStele, ← hticClean]
           exact hle
         have hbody :=
-          clipperGetStatusBodyRevertsPriceCallFailure v (evm := evmSolm)
-            (evmPrice := evmPriceSolm) I (out := o)
-            (by simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmSolm, initState] using hwv)
-            hlePriceSolm hcalcCodeSolm hcallPriceSolm
+          clipperGetStatusBodyRevertsPriceCallFailure v (evm := evmStele)
+            (evmPrice := evmPriceStele) I (out := o)
+            (by simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmStele, initState] using hwv)
+            hlePriceStele hcalcCodeStele hcallPriceStele
         exact hrev.reEquivExecutionRevert hcode hdispatch hdec hbody
       · obtain ⟨_, _, rd8583⟩ :=
           Benchmarks.Dss.Clipper.Reasoning.Reach.RD.clipperStatusPriceCallSuccessToDecode
@@ -505,46 +505,46 @@ theorem clipperGetStatusBody (v : ClipperImmutables) {code : ByteArray}
           have hpriceDecode :
               config.externalABI.decode? "price" o = none :=
             clipperStatusPriceDecode_none_short hshortOut
-          have hcalcCodeSolmNE :
+          have hcalcCodeSteleNE :
               Reasoning.Theory.extCodeSizeWord σ calcAddr ≠ ⟨0⟩ := by
             exact hcalcCode
-          have hcalcCodeSolm :
+          have hcalcCodeStele :
               0 < (UInt256.ofNat
-                ((evmSolm.lookupAccount (clipperStatusCalcAddress evmSolm)).option 0
+                ((evmStele.lookupAccount (clipperStatusCalcAddress evmStele)).option 0
                   (fun acc => acc.code.size))).toNat := by
-            simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmSolm, State.lookupAccount, initState] using
+            simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmStele, State.lookupAccount, initState] using
               extCodeSizeWord_ne_zero_lookup_code_pos
                 (σ := σ) (target := calcAddr)
-                (addr := clipperStatusCalcAddress evmSolm)
-                hcalcAddrSolm hcalcCodeSolmNE
-          let σ'_solm := σ'
-          let A'_solm := A'
-          let evmPriceSolm : EVM.State :=
-            { evmSolm with
-              accountMap := σ'_solm
-              substate := A'_solm }
-          have hcallPriceSolm :
-              typedCallViaEVM config evmSolm
-                (EVM.address (clipperStatusCalcAddress evmSolm)) "price" 0
-                [.int (Int.ofNat (clipperGetStatusTopWord evmSolm I).toNat),
+                (addr := clipperStatusCalcAddress evmStele)
+                hcalcAddrStele hcalcCodeSteleNE
+          let σ'_stele := σ'
+          let A'_stele := A'
+          let evmPriceStele : EVM.State :=
+            { evmStele with
+              accountMap := σ'_stele
+              substate := A'_stele }
+          have hcallPriceStele :
+              typedCallViaEVM config evmStele
+                (EVM.address (clipperStatusCalcAddress evmStele)) "price" 0
+                [.int (Int.ofNat (clipperGetStatusTopWord evmStele I).toNat),
                   .int (Int.ofNat
-                    (UInt256.sub (clipperTimestampWord evmSolm)
-                      (clipperGetStatusTicWord evmSolm I)).toNat)]
-                (true, evmPriceSolm, o) false := by
+                    (UInt256.sub (clipperTimestampWord evmStele)
+                      (clipperGetStatusTicWord evmStele I)).toNat)]
+                (true, evmPriceStele, o) false := by
             have hcallPrice' := hcallPrice
-            rw [hpriceAge, ← hcalcAddrSolm, ← htopRaw, ← htopWordSolm,
-              ← htimestampSolm, ← hticWordSolm] at hcallPrice'
+            rw [hpriceAge, ← hcalcAddrStele, ← htopRaw, ← htopWordStele,
+              ← htimestampStele, ← hticWordStele] at hcallPrice'
             exact hcallPrice'
-          have hlePriceSolm :
-              (clipperGetStatusTicWord evmSolm I).toNat ≤
-                (clipperTimestampWord evmSolm).toNat := by
-            rw [hticWordSolm, htimestampSolm, ← hticClean]
+          have hlePriceStele :
+              (clipperGetStatusTicWord evmStele I).toNat ≤
+                (clipperTimestampWord evmStele).toNat := by
+            rw [hticWordStele, htimestampStele, ← hticClean]
             exact hle
           have hbody :=
-            clipperGetStatusBodyRevertsPriceDecode v (evm := evmSolm)
-              (evmPrice := evmPriceSolm) I (out := o)
-              (by simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmSolm, initState] using hwv)
-              hlePriceSolm hcalcCodeSolm hcallPriceSolm hpriceDecode
+            clipperGetStatusBodyRevertsPriceDecode v (evm := evmStele)
+              (evmPrice := evmPriceStele) I (out := o)
+              (by simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmStele, initState] using hwv)
+              hlePriceStele hcalcCodeStele hcallPriceStele hpriceDecode
           exact hrev.reEquivExecutionRevert hcode hdispatch hdec hbody
         · have hloOut : 32 ≤ o.size := by omega
           obtain ⟨_, _, _rd8606⟩ :=
@@ -581,37 +581,37 @@ theorem clipperGetStatusBody (v : ClipperImmutables) {code : ByteArray}
                 UInt256.toByteArray ⟨128⟩ := by
             exact twoWordHashMem_read64_of_ge id ⟨12⟩
               (by rw [hpricePostMemSize]; omega) hpricePostRead64
-          have hcalcCodeSolmNE :
+          have hcalcCodeSteleNE :
               Reasoning.Theory.extCodeSizeWord σ calcAddr ≠ ⟨0⟩ := by
             exact hcalcCode
-          have hcalcCodeSolm :
+          have hcalcCodeStele :
               0 < (UInt256.ofNat
-                ((evmSolm.lookupAccount (clipperStatusCalcAddress evmSolm)).option 0
+                ((evmStele.lookupAccount (clipperStatusCalcAddress evmStele)).option 0
                   (fun acc => acc.code.size))).toNat := by
-            simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmSolm, State.lookupAccount, initState] using
+            simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmStele, State.lookupAccount, initState] using
               extCodeSizeWord_ne_zero_lookup_code_pos
                 (σ := σ) (target := calcAddr)
-                (addr := clipperStatusCalcAddress evmSolm)
-                hcalcAddrSolm hcalcCodeSolmNE
-          let σ'_solm := σ'
-          let A'_solm := A'
-          let evmPriceSolm : EVM.State :=
-            { evmSolm with
-              accountMap := σ'_solm
-              substate := A'_solm }
-          have hPostAccounts : σ' = evmPriceSolm.accountMap := by
+                (addr := clipperStatusCalcAddress evmStele)
+                hcalcAddrStele hcalcCodeSteleNE
+          let σ'_stele := σ'
+          let A'_stele := A'
+          let evmPriceStele : EVM.State :=
+            { evmStele with
+              accountMap := σ'_stele
+              substate := A'_stele }
+          have hPostAccounts : σ' = evmPriceStele.accountMap := by
             rfl
-          have hcallPriceSolm :
-              typedCallViaEVM config evmSolm
-                (EVM.address (clipperStatusCalcAddress evmSolm)) "price" 0
-                [.int (Int.ofNat (clipperGetStatusTopWord evmSolm I).toNat),
+          have hcallPriceStele :
+              typedCallViaEVM config evmStele
+                (EVM.address (clipperStatusCalcAddress evmStele)) "price" 0
+                [.int (Int.ofNat (clipperGetStatusTopWord evmStele I).toNat),
                   .int (Int.ofNat
-                    (UInt256.sub (clipperTimestampWord evmSolm)
-                      (clipperGetStatusTicWord evmSolm I)).toNat)]
-                (true, evmPriceSolm, o) false := by
+                    (UInt256.sub (clipperTimestampWord evmStele)
+                      (clipperGetStatusTicWord evmStele I)).toNat)]
+                (true, evmPriceStele, o) false := by
             have hcallPrice' := hcallPrice
-            rw [hpriceAge, ← hcalcAddrSolm, ← htopRaw, ← htopWordSolm,
-              ← htimestampSolm, ← hticWordSolm] at hcallPrice'
+            rw [hpriceAge, ← hcalcAddrStele, ← htopRaw, ← htopWordStele,
+              ← htimestampStele, ← hticWordStele] at hcallPrice'
             exact hcallPrice'
           have _hstatusDoneTailTrue :
               ∀
@@ -663,94 +663,94 @@ theorem clipperGetStatusBody (v : ClipperImmutables) {code : ByteArray}
                 config.externalABI.decode? "price" o =
                   some [.int (Int.ofNat priceWord.toNat)] := by
               simpa [priceWord, clipperStatusPriceValues] using _hdec
-            have hlePriceSolm :
-                (clipperGetStatusTicWord evmSolm I).toNat ≤
-                  (clipperTimestampWord evmSolm).toNat := by
-              simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmSolm, initState, clipperGetStatusTicWord, clipperTimestampWord,
-                Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
+            have hlePriceStele :
+                (clipperGetStatusTicWord evmStele I).toNat ≤
+                  (clipperTimestampWord evmStele).toNat := by
+              simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmStele, initState, clipperGetStatusTicWord, clipperTimestampWord,
+                Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
                 solcSlotWord, clipperGetStatusSalesPackedSlot, hbaseSlot,
-                tic, packed, hticClean, hticCleanSolm] using hle
-            have hleDoneSolm :
-                (clipperGetStatusTicWord evmSolm I).toNat ≤
-                  (clipperTimestampWord evmPriceSolm).toNat := by
-              simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmSolm, evmPriceSolm, initState, clipperGetStatusTicWord,
-                clipperTimestampWord, Solm.EVM.storageLoad, State.lookupAccount,
+                tic, packed, hticClean, hticCleanStele] using hle
+            have hleDoneStele :
+                (clipperGetStatusTicWord evmStele I).toNat ≤
+                  (clipperTimestampWord evmPriceStele).toNat := by
+              simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmStele, evmPriceStele, initState, clipperGetStatusTicWord,
+                clipperTimestampWord, Stele.EVM.storageLoad, State.lookupAccount,
                 Account.lookupStorage, solcSlotWord, clipperGetStatusSalesPackedSlot,
-                hbaseSlot, tic, packed, hticClean, hticCleanSolm] using hleDone
-            have htailSlotSolm :
-                solcSlotWord σ' I ⟨6⟩ = solcSlotWord σ'_solm I ⟨6⟩ := by
+                hbaseSlot, tic, packed, hticClean, hticCleanStele] using hleDone
+            have htailSlotStele :
+                solcSlotWord σ' I ⟨6⟩ = solcSlotWord σ'_stele I ⟨6⟩ := by
               exact congrArg (fun m => solcSlotWord m I ⟨6⟩) hPostAccounts
-            have htailSolm :
-                (clipperStatusTailWord evmPriceSolm).toNat <
-                  (UInt256.sub (clipperTimestampWord evmPriceSolm)
-                    (clipperGetStatusTicWord evmSolm I)).toNat := by
-              simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmSolm, evmPriceSolm, initState, clipperStatusTailWord,
-                clipperTimestampWord, clipperGetStatusTicWord, Solm.EVM.storageLoad,
+            have htailStele :
+                (clipperStatusTailWord evmPriceStele).toNat <
+                  (UInt256.sub (clipperTimestampWord evmPriceStele)
+                    (clipperGetStatusTicWord evmStele I)).toNat := by
+              simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmStele, evmPriceStele, initState, clipperStatusTailWord,
+                clipperTimestampWord, clipperGetStatusTicWord, Stele.EVM.storageLoad,
                 State.lookupAccount, Account.lookupStorage, solcSlotWord,
-                clipperGetStatusSalesPackedSlot, hbaseSlot, htailSlotSolm,
-                tic, packed, hticClean, hticCleanSolm] using htail
+                clipperGetStatusSalesPackedSlot, hbaseSlot, htailSlotStele,
+                tic, packed, hticClean, hticCleanStele] using htail
             have hbody :=
-              clipperGetStatusBodyReturnsDoneTailTrue v (evm := evmSolm)
-                (evmPrice := evmPriceSolm) I priceWord (out := o)
-                (by simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmSolm, initState] using hwv)
-                hlePriceSolm hcalcCodeSolm hcallPriceSolm hdecPrice hleDoneSolm htailSolm
-            have hlotWordSolm :
-                lotWord = clipperGetStatusLotWord evmPriceSolm I := by
+              clipperGetStatusBodyReturnsDoneTailTrue v (evm := evmStele)
+                (evmPrice := evmPriceStele) I priceWord (out := o)
+                (by simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmStele, initState] using hwv)
+                hlePriceStele hcalcCodeStele hcallPriceStele hdecPrice hleDoneStele htailStele
+            have hlotWordStele :
+                lotWord = clipperGetStatusLotWord evmPriceStele I := by
               have hslot :=
                 congrArg (fun m => solcSlotWord m I ((solcMappingSlot ⟨12⟩ id) + ⟨2⟩)) hPostAccounts
-              simpa [lotWord, evmPriceSolm, clipperGetStatusLotWord, initState,
-                Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
+              simpa [lotWord, evmPriceStele, clipperGetStatusLotWord, initState,
+                Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
                 solcSlotWord, clipperGetStatusSalesLotSlot, hbaseSlot] using hslot
-            have htabWordSolm :
-                tabWord = clipperGetStatusTabWord evmPriceSolm I := by
+            have htabWordStele :
+                tabWord = clipperGetStatusTabWord evmPriceStele I := by
               have hslot :=
                 congrArg (fun m => solcSlotWord m I ((solcMappingSlot ⟨12⟩ id) + ⟨1⟩)) hPostAccounts
-              simpa [tabWord, evmPriceSolm, clipperGetStatusTabWord, initState,
-                Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
+              simpa [tabWord, evmPriceStele, clipperGetStatusTabWord, initState,
+                Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
                 solcSlotWord, clipperGetStatusSalesTabSlot, hbaseSlot] using hslot
             have hneedsNorm :
                 UInt256.isZero (UInt256.isZero needsWord) =
-                  (clipperGetStatusNeedsRedo evmSolm I true).toUInt256 := by
-              simpa [needsWord, usrWord, evmSolm, initState, clipperGetStatusNeedsRedo,
-                clipperGetStatusUsrWord, Solm.EVM.storageLoad, State.lookupAccount,
+                  (clipperGetStatusNeedsRedo evmStele I true).toUInt256 := by
+              simpa [needsWord, usrWord, evmStele, initState, clipperGetStatusNeedsRedo,
+                clipperGetStatusUsrWord, Stele.EVM.storageLoad, State.lookupAccount,
                 Account.lookupStorage, solcSlotWord, clipperGetStatusSalesPackedSlot,
                 hbaseSlot, packed] using
                   clipperGetStatusNeedsRedoWord_bool usrWord ⟨1⟩ true (by native_decide)
             have henc :
                 returnEquiv (clipperGetStatusReturnBytes needsWord priceWord lotWord tabWord)
-                  (some [.bool (clipperGetStatusNeedsRedo evmSolm I true),
+                  (some [.bool (clipperGetStatusNeedsRedo evmStele I true),
                     .int (Int.ofNat priceWord.toNat),
-                    .int (Int.ofNat (clipperGetStatusLotWord evmPriceSolm I).toNat),
-                    .int (Int.ofNat (clipperGetStatusTabWord evmPriceSolm I).toNat)])
+                    .int (Int.ofNat (clipperGetStatusLotWord evmPriceStele I).toNat),
+                    .int (Int.ofNat (clipperGetStatusTabWord evmPriceStele I).toNat)])
                   getStatusTransition.returnType := by
-              rw [← hlotWordSolm, ← htabWordSolm]
+              rw [← hlotWordStele, ← htabWordStele]
               exact clipperGetStatusReturnEquiv needsWord
-                (clipperGetStatusNeedsRedo evmSolm I true) priceWord lotWord tabWord hneedsNorm
+                (clipperGetStatusNeedsRedo evmStele I true) priceWord lotWord tabWord hneedsNorm
             exact clipperGetStatusPostCallReturnRuntime hcode hdispatch hdec hret hbody
-              (by simpa [evmPriceSolm] using hPostAccounts)
+              (by simpa [evmPriceStele] using hPostAccounts)
               henc
           let priceWord : UInt256 := clipperStatusPriceWord o
           have hdecPrice :
               config.externalABI.decode? "price" o =
                 some [.int (Int.ofNat priceWord.toNat)] := by
             simpa [priceWord, clipperStatusPriceValues] using _hdec
-          have hlePriceSolm :
-              (clipperGetStatusTicWord evmSolm I).toNat ≤
-                (clipperTimestampWord evmSolm).toNat := by
-            simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmSolm, initState, clipperGetStatusTicWord, clipperTimestampWord,
-              Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
+          have hlePriceStele :
+              (clipperGetStatusTicWord evmStele I).toNat ≤
+                (clipperTimestampWord evmStele).toNat := by
+            simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmStele, initState, clipperGetStatusTicWord, clipperTimestampWord,
+              Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
               solcSlotWord, clipperGetStatusSalesPackedSlot, hbaseSlot,
-              tic, packed, hticClean, hticCleanSolm] using hle
+              tic, packed, hticClean, hticCleanStele] using hle
           by_cases hleDone :
               (UInt256.land tic clipperSalesUint96Mask).toNat ≤
                 (UInt256.ofNat I.header.timestamp).toNat
-          · have hleDoneSolm :
-                (clipperGetStatusTicWord evmSolm I).toNat ≤
-                  (clipperTimestampWord evmPriceSolm).toNat := by
-              simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmSolm, evmPriceSolm, initState, clipperGetStatusTicWord,
-                clipperTimestampWord, Solm.EVM.storageLoad, State.lookupAccount,
+          · have hleDoneStele :
+                (clipperGetStatusTicWord evmStele I).toNat ≤
+                  (clipperTimestampWord evmPriceStele).toNat := by
+              simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmStele, evmPriceStele, initState, clipperGetStatusTicWord,
+                clipperTimestampWord, Stele.EVM.storageLoad, State.lookupAccount,
                 Account.lookupStorage, solcSlotWord, clipperGetStatusSalesPackedSlot,
-                hbaseSlot, tic, packed, hticClean, hticCleanSolm] using
+                hbaseSlot, tic, packed, hticClean, hticCleanStele] using
                 hleDone
             by_cases htailLt :
                 (solcSlotWord σ' I ⟨6⟩).toNat <
@@ -762,18 +762,18 @@ theorem clipperGetStatusBody (v : ClipperImmutables) {code : ByteArray}
                       (UInt256.land tic clipperSalesUint96Mask)).toNat ≤
                     (solcSlotWord σ' I ⟨6⟩).toNat := by
                 exact Nat.le_of_not_gt htailLt
-              have htailSlotSolm :
-                  solcSlotWord σ' I ⟨6⟩ = solcSlotWord σ'_solm I ⟨6⟩ := by
+              have htailSlotStele :
+                  solcSlotWord σ' I ⟨6⟩ = solcSlotWord σ'_stele I ⟨6⟩ := by
                 exact congrArg (fun m => solcSlotWord m I ⟨6⟩) hPostAccounts
-              have htailSolm :
-                  (UInt256.sub (clipperTimestampWord evmPriceSolm)
-                      (clipperGetStatusTicWord evmSolm I)).toNat ≤
-                    (clipperStatusTailWord evmPriceSolm).toNat := by
-                simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmSolm, evmPriceSolm, initState, clipperStatusTailWord,
-                  clipperTimestampWord, clipperGetStatusTicWord, Solm.EVM.storageLoad,
+              have htailStele :
+                  (UInt256.sub (clipperTimestampWord evmPriceStele)
+                      (clipperGetStatusTicWord evmStele I)).toNat ≤
+                    (clipperStatusTailWord evmPriceStele).toNat := by
+                simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmStele, evmPriceStele, initState, clipperStatusTailWord,
+                  clipperTimestampWord, clipperGetStatusTicWord, Stele.EVM.storageLoad,
                   State.lookupAccount, Account.lookupStorage, solcSlotWord,
-                  clipperGetStatusSalesPackedSlot, hbaseSlot, htailSlotSolm,
-                  tic, packed, hticClean, hticCleanSolm] using htailLe
+                  clipperGetStatusSalesPackedSlot, hbaseSlot, htailSlotStele,
+                  tic, packed, hticClean, hticCleanStele] using htailLe
               by_cases hmul :
                   priceWord.toNat * clipperRayWord.toNat < UInt256.size
               · by_cases htopZero : top = ⟨0⟩
@@ -782,17 +782,17 @@ theorem clipperGetStatusBody (v : ClipperImmutables) {code : ByteArray}
                       (v := v) (hpatch := hpatch) _rd8606 hleDone htailLe
                       (by simpa [priceWord] using hmul) htopZero
                       (by simp only [List.length_cons, List.length_nil]; omega)
-                  have htopSolmZero : clipperGetStatusTopWord evmSolm I = ⟨0⟩ := by
-                    simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmSolm, initState, clipperGetStatusTopWord,
-                      Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
+                  have htopSteleZero : clipperGetStatusTopWord evmStele I = ⟨0⟩ := by
+                    simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmStele, initState, clipperGetStatusTopWord,
+                      Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
                       solcSlotWord, clipperGetStatusSalesTopSlot, hbaseSlot,
                       top] using htopZero
                   have hbody :=
-                    clipperGetStatusBodyRevertsRdivDivZero v (evm := evmSolm)
-                      (evmPrice := evmPriceSolm) I priceWord (out := o)
-                      (by simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmSolm, initState] using hwv)
-                      hlePriceSolm hcalcCodeSolm hcallPriceSolm hdecPrice
-                      hleDoneSolm htailSolm hmul htopSolmZero
+                    clipperGetStatusBodyRevertsRdivDivZero v (evm := evmStele)
+                      (evmPrice := evmPriceStele) I priceWord (out := o)
+                      (by simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmStele, initState] using hwv)
+                      hlePriceStele hcalcCodeStele hcallPriceStele hdecPrice
+                      hleDoneStele htailStele hmul htopSteleZero
                   exact RDinvalid.reEquivExecutionInvalid hcode hinv hdispatch hdec hbody
                 · obtain ⟨_, _, _rd3258⟩ :=
                     Benchmarks.Dss.Clipper.Reasoning.Reach.RD.clipperStatusAfterPriceRdivBranch
@@ -833,156 +833,156 @@ theorem clipperGetStatusBody (v : ClipperImmutables) {code : ByteArray}
                         (clipperGetStatusReturnBytes needsWord priceWord lotWord tabWord) := by
                     simpa [needsWord, usrWord, doneWord, ratioWord, cuspWord, priceWord,
                       lotWord, tabWord, packed, id] using _hret
-                  have htopWordSolm : clipperGetStatusTopWord evmSolm I = top := by
-                    simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmSolm, initState, clipperGetStatusTopWord,
-                      Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
-                      solcSlotWord, clipperGetStatusSalesTopSlot, hbaseSlot] using htopSolm.symm
-                  have htopSolmNe : clipperGetStatusTopWord evmSolm I ≠ ⟨0⟩ := by
+                  have htopWordStele : clipperGetStatusTopWord evmStele I = top := by
+                    simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmStele, initState, clipperGetStatusTopWord,
+                      Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
+                      solcSlotWord, clipperGetStatusSalesTopSlot, hbaseSlot] using htopStele.symm
+                  have htopSteleNe : clipperGetStatusTopWord evmStele I ≠ ⟨0⟩ := by
                     intro hzero
-                    exact htopZero (by simpa [htopWordSolm] using hzero)
-                  have hlotWordSolm :
-                      lotWord = clipperGetStatusLotWord evmPriceSolm I := by
+                    exact htopZero (by simpa [htopWordStele] using hzero)
+                  have hlotWordStele :
+                      lotWord = clipperGetStatusLotWord evmPriceStele I := by
                     have hslot :=
                       congrArg (fun m => solcSlotWord m I ((solcMappingSlot ⟨12⟩ id) + ⟨2⟩)) hPostAccounts
-                    simpa [lotWord, evmPriceSolm, clipperGetStatusLotWord, initState,
-                      Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
+                    simpa [lotWord, evmPriceStele, clipperGetStatusLotWord, initState,
+                      Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
                       solcSlotWord, clipperGetStatusSalesLotSlot, hbaseSlot] using hslot
-                  have htabWordSolm :
-                      tabWord = clipperGetStatusTabWord evmPriceSolm I := by
+                  have htabWordStele :
+                      tabWord = clipperGetStatusTabWord evmPriceStele I := by
                     have hslot :=
                       congrArg (fun m => solcSlotWord m I ((solcMappingSlot ⟨12⟩ id) + ⟨1⟩)) hPostAccounts
-                    simpa [tabWord, evmPriceSolm, clipperGetStatusTabWord, initState,
-                      Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
+                    simpa [tabWord, evmPriceStele, clipperGetStatusTabWord, initState,
+                      Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
                       solcSlotWord, clipperGetStatusSalesTabSlot, hbaseSlot] using hslot
-                  have hcuspWordSolm : cuspWord = clipperStatusCuspWord evmPriceSolm := by
+                  have hcuspWordStele : cuspWord = clipperStatusCuspWord evmPriceStele := by
                     have hslot :=
                       congrArg (fun m => solcSlotWord m I ⟨7⟩) hPostAccounts
-                    simpa [cuspWord, evmPriceSolm, clipperStatusCuspWord, initState,
-                      Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
+                    simpa [cuspWord, evmPriceStele, clipperStatusCuspWord, initState,
+                      Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
                       solcSlotWord] using hslot
-                  have hratioWordSolm :
+                  have hratioWordStele :
                       ratioWord =
                         UInt256.div (UInt256.mul priceWord clipperRayWord)
-                          (clipperGetStatusTopWord evmSolm I) := by
-                    simp [ratioWord, htopWordSolm]
-                  by_cases hratio : ratioWord.toNat < (clipperStatusCuspWord evmPriceSolm).toNat
+                          (clipperGetStatusTopWord evmStele I) := by
+                    simp [ratioWord, htopWordStele]
+                  by_cases hratio : ratioWord.toNat < (clipperStatusCuspWord evmPriceStele).toNat
                   · have hdoneEval :
                         evalExpr? config
                           { contract := contract,
                             locals := clipperStatusRatioLocals
-                              (clipperGetStatusTicWord evmSolm I)
-                              (clipperGetStatusTopWord evmSolm I)
-                              (UInt256.sub (clipperTimestampWord evmSolm)
-                                (clipperGetStatusTicWord evmSolm I)) priceWord
-                              (UInt256.sub (clipperTimestampWord evmPriceSolm)
-                                (clipperGetStatusTicWord evmSolm I))
+                              (clipperGetStatusTicWord evmStele I)
+                              (clipperGetStatusTopWord evmStele I)
+                              (UInt256.sub (clipperTimestampWord evmStele)
+                                (clipperGetStatusTicWord evmStele I)) priceWord
+                              (UInt256.sub (clipperTimestampWord evmPriceStele)
+                                (clipperGetStatusTicWord evmStele I))
                               (UInt256.div (UInt256.mul priceWord clipperRayWord)
-                                (clipperGetStatusTopWord evmSolm I)), immutables := immStore v }
-                          evmPriceSolm (.binary .lt (.var "ratio") (.storage cuspRef)) =
+                                (clipperGetStatusTopWord evmStele I)), immutables := immStore v }
+                          evmPriceStele (.binary .lt (.var "ratio") (.storage cuspRef)) =
                             .ok (.bool true) := by
-                      rw [← hratioWordSolm]
-                      exact clipperEvalStatusRatioCuspCond_true v evmPriceSolm
-                        (clipperGetStatusTicWord evmSolm I)
-                        (clipperGetStatusTopWord evmSolm I)
-                        (UInt256.sub (clipperTimestampWord evmSolm)
-                          (clipperGetStatusTicWord evmSolm I)) priceWord
-                        (UInt256.sub (clipperTimestampWord evmPriceSolm)
-                          (clipperGetStatusTicWord evmSolm I)) ratioWord hratio
+                      rw [← hratioWordStele]
+                      exact clipperEvalStatusRatioCuspCond_true v evmPriceStele
+                        (clipperGetStatusTicWord evmStele I)
+                        (clipperGetStatusTopWord evmStele I)
+                        (UInt256.sub (clipperTimestampWord evmStele)
+                          (clipperGetStatusTicWord evmStele I)) priceWord
+                        (UInt256.sub (clipperTimestampWord evmPriceStele)
+                          (clipperGetStatusTicWord evmStele I)) ratioWord hratio
                     have hdoneWordOne : doneWord = ⟨1⟩ := by
                       unfold doneWord
-                      exact ult_one (by simpa [ratioWord, cuspWord, hcuspWordSolm] using hratio)
+                      exact ult_one (by simpa [ratioWord, cuspWord, hcuspWordStele] using hratio)
                     have hdoneNorm :
                         UInt256.isZero (UInt256.isZero doneWord) = true.toUInt256 := by
                       rw [hdoneWordOne]
                       native_decide
                     have hneedsNorm :
                         UInt256.isZero (UInt256.isZero needsWord) =
-                          (clipperGetStatusNeedsRedo evmSolm I true).toUInt256 := by
-                      simpa [needsWord, usrWord, evmSolm, initState, clipperGetStatusNeedsRedo,
-                        clipperGetStatusUsrWord, Solm.EVM.storageLoad, State.lookupAccount,
+                          (clipperGetStatusNeedsRedo evmStele I true).toUInt256 := by
+                      simpa [needsWord, usrWord, evmStele, initState, clipperGetStatusNeedsRedo,
+                        clipperGetStatusUsrWord, Stele.EVM.storageLoad, State.lookupAccount,
                         Account.lookupStorage, solcSlotWord, clipperGetStatusSalesPackedSlot,
                         hbaseSlot, packed] using
                           clipperGetStatusNeedsRedoWord_bool usrWord doneWord true hdoneNorm
                     have hbody :=
-                      clipperGetStatusBodyReturnsRdivBranch v (evm := evmSolm)
-                        (evmPrice := evmPriceSolm) I priceWord (out := o)
-                        (by simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmSolm, initState] using hwv)
-                        hlePriceSolm hcalcCodeSolm hcallPriceSolm hdecPrice hleDoneSolm
-                        htailSolm hmul htopSolmNe true hdoneEval
+                      clipperGetStatusBodyReturnsRdivBranch v (evm := evmStele)
+                        (evmPrice := evmPriceStele) I priceWord (out := o)
+                        (by simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmStele, initState] using hwv)
+                        hlePriceStele hcalcCodeStele hcallPriceStele hdecPrice hleDoneStele
+                        htailStele hmul htopSteleNe true hdoneEval
                     have henc :
                         returnEquiv
                           (clipperGetStatusReturnBytes needsWord priceWord lotWord tabWord)
-                          (some [.bool (clipperGetStatusNeedsRedo evmSolm I true),
+                          (some [.bool (clipperGetStatusNeedsRedo evmStele I true),
                             .int (Int.ofNat priceWord.toNat),
-                            .int (Int.ofNat (clipperGetStatusLotWord evmPriceSolm I).toNat),
-                            .int (Int.ofNat (clipperGetStatusTabWord evmPriceSolm I).toNat)])
+                            .int (Int.ofNat (clipperGetStatusLotWord evmPriceStele I).toNat),
+                            .int (Int.ofNat (clipperGetStatusTabWord evmPriceStele I).toNat)])
                           getStatusTransition.returnType := by
-                      rw [← hlotWordSolm, ← htabWordSolm]
+                      rw [← hlotWordStele, ← htabWordStele]
                       exact clipperGetStatusReturnEquiv needsWord
-                        (clipperGetStatusNeedsRedo evmSolm I true) priceWord lotWord tabWord
+                        (clipperGetStatusNeedsRedo evmStele I true) priceWord lotWord tabWord
                         hneedsNorm
                     exact clipperGetStatusPostCallReturnRuntime hcode hdispatch hdec hret hbody
-                      (by simpa [evmPriceSolm] using hPostAccounts) henc
+                      (by simpa [evmPriceStele] using hPostAccounts) henc
                   · have hratioLe :
-                        (clipperStatusCuspWord evmPriceSolm).toNat ≤ ratioWord.toNat := by
+                        (clipperStatusCuspWord evmPriceStele).toNat ≤ ratioWord.toNat := by
                       exact Nat.le_of_not_gt hratio
                     have hdoneEval :
                         evalExpr? config
                           { contract := contract,
                             locals := clipperStatusRatioLocals
-                              (clipperGetStatusTicWord evmSolm I)
-                              (clipperGetStatusTopWord evmSolm I)
-                              (UInt256.sub (clipperTimestampWord evmSolm)
-                                (clipperGetStatusTicWord evmSolm I)) priceWord
-                              (UInt256.sub (clipperTimestampWord evmPriceSolm)
-                                (clipperGetStatusTicWord evmSolm I))
+                              (clipperGetStatusTicWord evmStele I)
+                              (clipperGetStatusTopWord evmStele I)
+                              (UInt256.sub (clipperTimestampWord evmStele)
+                                (clipperGetStatusTicWord evmStele I)) priceWord
+                              (UInt256.sub (clipperTimestampWord evmPriceStele)
+                                (clipperGetStatusTicWord evmStele I))
                               (UInt256.div (UInt256.mul priceWord clipperRayWord)
-                                (clipperGetStatusTopWord evmSolm I)), immutables := immStore v }
-                          evmPriceSolm (.binary .lt (.var "ratio") (.storage cuspRef)) =
+                                (clipperGetStatusTopWord evmStele I)), immutables := immStore v }
+                          evmPriceStele (.binary .lt (.var "ratio") (.storage cuspRef)) =
                             .ok (.bool false) := by
-                      rw [← hratioWordSolm]
-                      exact clipperEvalStatusRatioCuspCond_false v evmPriceSolm
-                        (clipperGetStatusTicWord evmSolm I)
-                        (clipperGetStatusTopWord evmSolm I)
-                        (UInt256.sub (clipperTimestampWord evmSolm)
-                          (clipperGetStatusTicWord evmSolm I)) priceWord
-                        (UInt256.sub (clipperTimestampWord evmPriceSolm)
-                          (clipperGetStatusTicWord evmSolm I)) ratioWord hratioLe
+                      rw [← hratioWordStele]
+                      exact clipperEvalStatusRatioCuspCond_false v evmPriceStele
+                        (clipperGetStatusTicWord evmStele I)
+                        (clipperGetStatusTopWord evmStele I)
+                        (UInt256.sub (clipperTimestampWord evmStele)
+                          (clipperGetStatusTicWord evmStele I)) priceWord
+                        (UInt256.sub (clipperTimestampWord evmPriceStele)
+                          (clipperGetStatusTicWord evmStele I)) ratioWord hratioLe
                     have hdoneWordZero : doneWord = ⟨0⟩ := by
                       unfold doneWord
-                      exact ult_zero (by simpa [ratioWord, cuspWord, hcuspWordSolm] using hratioLe)
+                      exact ult_zero (by simpa [ratioWord, cuspWord, hcuspWordStele] using hratioLe)
                     have hdoneNorm :
                         UInt256.isZero (UInt256.isZero doneWord) = false.toUInt256 := by
                       rw [hdoneWordZero]
                       native_decide
                     have hneedsNorm :
                         UInt256.isZero (UInt256.isZero needsWord) =
-                          (clipperGetStatusNeedsRedo evmSolm I false).toUInt256 := by
-                      simpa [needsWord, usrWord, evmSolm, initState, clipperGetStatusNeedsRedo,
-                        clipperGetStatusUsrWord, Solm.EVM.storageLoad, State.lookupAccount,
+                          (clipperGetStatusNeedsRedo evmStele I false).toUInt256 := by
+                      simpa [needsWord, usrWord, evmStele, initState, clipperGetStatusNeedsRedo,
+                        clipperGetStatusUsrWord, Stele.EVM.storageLoad, State.lookupAccount,
                         Account.lookupStorage, solcSlotWord, clipperGetStatusSalesPackedSlot,
                         hbaseSlot, packed] using
                           clipperGetStatusNeedsRedoWord_bool usrWord doneWord false hdoneNorm
                     have hbody :=
-                      clipperGetStatusBodyReturnsRdivBranch v (evm := evmSolm)
-                        (evmPrice := evmPriceSolm) I priceWord (out := o)
-                        (by simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmSolm, initState] using hwv)
-                        hlePriceSolm hcalcCodeSolm hcallPriceSolm hdecPrice hleDoneSolm
-                        htailSolm hmul htopSolmNe false hdoneEval
+                      clipperGetStatusBodyReturnsRdivBranch v (evm := evmStele)
+                        (evmPrice := evmPriceStele) I priceWord (out := o)
+                        (by simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmStele, initState] using hwv)
+                        hlePriceStele hcalcCodeStele hcallPriceStele hdecPrice hleDoneStele
+                        htailStele hmul htopSteleNe false hdoneEval
                     have henc :
                         returnEquiv
                           (clipperGetStatusReturnBytes needsWord priceWord lotWord tabWord)
-                          (some [.bool (clipperGetStatusNeedsRedo evmSolm I false),
+                          (some [.bool (clipperGetStatusNeedsRedo evmStele I false),
                             .int (Int.ofNat priceWord.toNat),
-                            .int (Int.ofNat (clipperGetStatusLotWord evmPriceSolm I).toNat),
-                            .int (Int.ofNat (clipperGetStatusTabWord evmPriceSolm I).toNat)])
+                            .int (Int.ofNat (clipperGetStatusLotWord evmPriceStele I).toNat),
+                            .int (Int.ofNat (clipperGetStatusTabWord evmPriceStele I).toNat)])
                           getStatusTransition.returnType := by
-                      rw [← hlotWordSolm, ← htabWordSolm]
+                      rw [← hlotWordStele, ← htabWordStele]
                       exact clipperGetStatusReturnEquiv needsWord
-                        (clipperGetStatusNeedsRedo evmSolm I false) priceWord lotWord tabWord
+                        (clipperGetStatusNeedsRedo evmStele I false) priceWord lotWord tabWord
                         hneedsNorm
                     exact clipperGetStatusPostCallReturnRuntime hcode hdispatch hdec hret hbody
-                      (by simpa [evmPriceSolm] using hPostAccounts)
+                      (by simpa [evmPriceStele] using hPostAccounts)
                       henc
               · have hover :
                     UInt256.size ≤ priceWord.toNat * clipperRayWord.toNat := by
@@ -993,11 +993,11 @@ theorem clipperGetStatusBody (v : ClipperImmutables) {code : ByteArray}
                     (by simpa [priceWord] using hover)
                     (by simp only [List.length_cons, List.length_nil]; omega)
                 have hbody :=
-                  clipperGetStatusBodyRevertsRdivMul v (evm := evmSolm)
-                    (evmPrice := evmPriceSolm) I priceWord (out := o)
-                    (by simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmSolm, initState] using hwv)
-                    hlePriceSolm hcalcCodeSolm hcallPriceSolm hdecPrice
-                    hleDoneSolm htailSolm hover
+                  clipperGetStatusBodyRevertsRdivMul v (evm := evmStele)
+                    (evmPrice := evmPriceStele) I priceWord (out := o)
+                    (by simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmStele, initState] using hwv)
+                    hlePriceStele hcalcCodeStele hcallPriceStele hdecPrice
+                    hleDoneStele htailStele hover
                 exact hrev.reEquivExecutionRevert hcode hdispatch hdec hbody
           · have hltDone :
                 (UInt256.ofNat I.header.timestamp).toNat <
@@ -1007,19 +1007,19 @@ theorem clipperGetStatusBody (v : ClipperImmutables) {code : ByteArray}
               Benchmarks.Dss.Clipper.Reasoning.Reach.RD.clipperStatusAgeForDoneRevert
                 (v := v) (hpatch := hpatch) _rd8606 hltDone
                 (by simp only [List.length_cons, List.length_nil]; omega)
-            have hltDoneSolm :
-                (clipperTimestampWord evmPriceSolm).toNat <
-                  (clipperGetStatusTicWord evmSolm I).toNat := by
-              simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmSolm, evmPriceSolm, initState, clipperGetStatusTicWord,
-                clipperTimestampWord, Solm.EVM.storageLoad, State.lookupAccount,
+            have hltDoneStele :
+                (clipperTimestampWord evmPriceStele).toNat <
+                  (clipperGetStatusTicWord evmStele I).toNat := by
+              simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmStele, evmPriceStele, initState, clipperGetStatusTicWord,
+                clipperTimestampWord, Stele.EVM.storageLoad, State.lookupAccount,
                 Account.lookupStorage, solcSlotWord, clipperGetStatusSalesPackedSlot,
-                hbaseSlot, tic, packed, hticClean, hticCleanSolm] using
+                hbaseSlot, tic, packed, hticClean, hticCleanStele] using
                 hltDone
             have hbody :=
-              clipperGetStatusBodyRevertsAgeForDone v (evm := evmSolm)
-                (evmPrice := evmPriceSolm) I priceWord (out := o)
-                (by simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmSolm, initState] using hwv)
-                hlePriceSolm hcalcCodeSolm hcallPriceSolm hdecPrice hltDoneSolm
+              clipperGetStatusBodyRevertsAgeForDone v (evm := evmStele)
+                (evmPrice := evmPriceStele) I priceWord (out := o)
+                (by simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmStele, initState] using hwv)
+                hlePriceStele hcalcCodeStele hcallPriceStele hdecPrice hltDoneStele
             exact hrev.reEquivExecutionRevert hcode hdispatch hdec hbody
     by_cases hle :
         (UInt256.land tic clipperSalesUint96Mask).toNat ≤
@@ -1035,13 +1035,13 @@ theorem clipperGetStatusBody (v : ClipperImmutables) {code : ByteArray}
           (by simpa [id] using hhashMem)
           (by simpa [id] using hhashRead64)
           (by simp only [List.length_cons, List.length_nil]; omega)
-      have hlePriceSolm :
-          (clipperGetStatusTicWord evmSolm I).toNat ≤
-            (clipperTimestampWord evmSolm).toNat := by
-        simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmSolm, initState, clipperGetStatusTicWord, clipperTimestampWord,
-          Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
+      have hlePriceStele :
+          (clipperGetStatusTicWord evmStele I).toNat ≤
+            (clipperTimestampWord evmStele).toNat := by
+        simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmStele, initState, clipperGetStatusTicWord, clipperTimestampWord,
+          Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
           solcSlotWord, clipperGetStatusSalesPackedSlot, hbaseSlot,
-          tic, packed, hticClean, hticCleanSolm] using hle
+          tic, packed, hticClean, hticCleanStele] using hle
       by_cases hcalcCode :
           Reasoning.Theory.extCodeSizeWord σ calcAddr ≠ ⟨0⟩
       · by_cases hdepth : I.depth.val < 1024
@@ -1065,36 +1065,36 @@ theorem clipperGetStatusBody (v : ClipperImmutables) {code : ByteArray}
             Benchmarks.Dss.Clipper.Reasoning.Reach.RD.clipperStatusPriceCallFailure
               (v := v) (hpatch := hpatch) rd8565 (by native_decide)
               (by simp only [List.length_cons, List.length_nil]; omega)
-          have hcalcAddrSolm :
-              clipperStatusCalcAddress evmSolm = AccountAddress.ofUInt256 calcAddr := by
-            simp [evmSolm, clipperStatusCalcAddress, clipperStatusCalcWord, calcAddr,
-              initState, Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
+          have hcalcAddrStele :
+              clipperStatusCalcAddress evmStele = AccountAddress.ofUInt256 calcAddr := by
+            simp [evmStele, clipperStatusCalcAddress, clipperStatusCalcWord, calcAddr,
+              initState, Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
               solcSlotWord]
-          have hcalcCodeSolmNE :
+          have hcalcCodeSteleNE :
               Reasoning.Theory.extCodeSizeWord σ calcAddr ≠ ⟨0⟩ := by
             exact hcalcCode
-          have hcalcCodeSolm :
+          have hcalcCodeStele :
               0 < (UInt256.ofNat
-                ((evmSolm.lookupAccount (clipperStatusCalcAddress evmSolm)).option 0
+                ((evmStele.lookupAccount (clipperStatusCalcAddress evmStele)).option 0
                   (fun acc => acc.code.size))).toNat := by
-            simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmSolm, State.lookupAccount, initState] using
+            simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmStele, State.lookupAccount, initState] using
               extCodeSizeWord_ne_zero_lookup_code_pos
                 (σ := σ) (target := calcAddr)
-                (addr := clipperStatusCalcAddress evmSolm)
-                hcalcAddrSolm hcalcCodeSolmNE
-          have hdepthInit : evmSolm.executionEnv.depth = 1024 := by
-            simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmSolm, initState] using hdepthEq
-          let evmPriceSolm : EVM.State :=
-            { evmSolm with
+                (addr := clipperStatusCalcAddress evmStele)
+                hcalcAddrStele hcalcCodeSteleNE
+          have hdepthInit : evmStele.executionEnv.depth = 1024 := by
+            simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmStele, initState] using hdepthEq
+          let evmPriceStele : EVM.State :=
+            { evmStele with
               substate :=
-                (evmSolm.addAccessedAccount
-                  (EVM.address (clipperStatusCalcAddress evmSolm))).substate }
+                (evmStele.addAccessedAccount
+                  (EVM.address (clipperStatusCalcAddress evmStele))).substate }
           have hcd :
               config.externalABI.encode? "price"
-                [.int (Int.ofNat (clipperGetStatusTopWord evmSolm I).toNat),
+                [.int (Int.ofNat (clipperGetStatusTopWord evmStele I).toNat),
                   .int (Int.ofNat
-                    (UInt256.sub (clipperTimestampWord evmSolm)
-                      (clipperGetStatusTicWord evmSolm I)).toNat)] =
+                    (UInt256.sub (clipperTimestampWord evmStele)
+                      (clipperGetStatusTicWord evmStele I)).toNat)] =
                 some ((clipperStatusPriceCalldataMem top ageForPrice priceCallMem)
                   |>.readWithPadding 128 68) := by
             have hcdRaw :
@@ -1104,51 +1104,51 @@ theorem clipperGetStatusBody (v : ClipperImmutables) {code : ByteArray}
                     |>.readWithPadding 128 68) := by
               simpa [priceCallMem, ageForPrice, top, id] using
                 clipperStatusPriceEncode_eq top ageForPrice hhashMem
-            have htopWordSolm : clipperGetStatusTopWord evmSolm I = top := by
-              simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmSolm, initState, clipperGetStatusTopWord, Solm.EVM.storageLoad,
+            have htopWordStele : clipperGetStatusTopWord evmStele I = top := by
+              simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmStele, initState, clipperGetStatusTopWord, Stele.EVM.storageLoad,
                 State.lookupAccount, Account.lookupStorage, solcSlotWord,
-                clipperGetStatusSalesTopSlot, hbaseSlot] using htopSolm.symm
-            have hticWordSolm : clipperGetStatusTicWord evmSolm I = tic := by
-              have hpackedWord := congrArg clipperSalesPackedTicWord hpackedSolm.symm
-              simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmSolm, initState, clipperGetStatusTicWord, Solm.EVM.storageLoad,
+                clipperGetStatusSalesTopSlot, hbaseSlot] using htopStele.symm
+            have hticWordStele : clipperGetStatusTicWord evmStele I = tic := by
+              have hpackedWord := congrArg clipperSalesPackedTicWord hpackedStele.symm
+              simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmStele, initState, clipperGetStatusTicWord, Stele.EVM.storageLoad,
                 State.lookupAccount, Account.lookupStorage, solcSlotWord,
                 clipperGetStatusSalesPackedSlot, hbaseSlot, tic] using hpackedWord
-            have htimestampSolm :
-                clipperTimestampWord evmSolm = UInt256.ofNat I.header.timestamp := by
-              simp [evmSolm, initState, clipperTimestampWord]
-            have hageForPriceSolm :
-                UInt256.sub (clipperTimestampWord evmSolm) (clipperGetStatusTicWord evmSolm I) =
+            have htimestampStele :
+                clipperTimestampWord evmStele = UInt256.ofNat I.header.timestamp := by
+              simp [evmStele, initState, clipperTimestampWord]
+            have hageForPriceStele :
+                UInt256.sub (clipperTimestampWord evmStele) (clipperGetStatusTicWord evmStele I) =
                   ageForPrice := by
-              simp [htimestampSolm, hticWordSolm, ageForPrice, hticClean]
-            rw [htopWordSolm, hageForPriceSolm]
+              simp [htimestampStele, hticWordStele, ageForPrice, hticClean]
+            rw [htopWordStele, hageForPriceStele]
             exact hcdRaw
-          have hcallPriceSolm :
-              typedCallViaEVM config evmSolm
-                (EVM.address (clipperStatusCalcAddress evmSolm)) "price" 0
-                [.int (Int.ofNat (clipperGetStatusTopWord evmSolm I).toNat),
+          have hcallPriceStele :
+              typedCallViaEVM config evmStele
+                (EVM.address (clipperStatusCalcAddress evmStele)) "price" 0
+                [.int (Int.ofNat (clipperGetStatusTopWord evmStele I).toNat),
                   .int (Int.ofNat
-                    (UInt256.sub (clipperTimestampWord evmSolm)
-                      (clipperGetStatusTicWord evmSolm I)).toNat)]
-                (false, evmPriceSolm, ByteArray.empty) false := by
-            simpa [evmPriceSolm] using
-              (callNotMade_depthLimit (cfg := config) (evm := evmSolm)
-                (tgt := EVM.address (clipperStatusCalcAddress evmSolm))
+                    (UInt256.sub (clipperTimestampWord evmStele)
+                      (clipperGetStatusTicWord evmStele I)).toNat)]
+                (false, evmPriceStele, ByteArray.empty) false := by
+            simpa [evmPriceStele] using
+              (callNotMade_depthLimit (cfg := config) (evm := evmStele)
+                (tgt := EVM.address (clipperStatusCalcAddress evmStele))
                 (name := "price")
                 (args :=
-                  [.int (Int.ofNat (clipperGetStatusTopWord evmSolm I).toNat),
+                  [.int (Int.ofNat (clipperGetStatusTopWord evmStele I).toNat),
                     .int (Int.ofNat
-                      (UInt256.sub (clipperTimestampWord evmSolm)
-                        (clipperGetStatusTicWord evmSolm I)).toNat)])
+                      (UInt256.sub (clipperTimestampWord evmStele)
+                        (clipperGetStatusTicWord evmStele I)).toNat)])
                 (callPerm := false)
                 (calldata :=
                   (clipperStatusPriceCalldataMem top ageForPrice priceCallMem)
                     |>.readWithPadding 128 68)
                 hcd hdepthInit)
           have hbody :=
-            clipperGetStatusBodyRevertsPriceCallFailure v (evm := evmSolm)
-              (evmPrice := evmPriceSolm) I (out := ByteArray.empty)
-              (by simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmSolm, initState] using hwv)
-              hlePriceSolm hcalcCodeSolm hcallPriceSolm
+            clipperGetStatusBodyRevertsPriceCallFailure v (evm := evmStele)
+              (evmPrice := evmPriceStele) I (out := ByteArray.empty)
+              (by simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmStele, initState] using hwv)
+              hlePriceStele hcalcCodeStele hcallPriceStele
           exact hrev.reEquivExecutionRevert hcode hdispatch hdec hbody
       · have hcalcZero :
             Reasoning.Theory.extCodeSizeWord σ calcAddr = ⟨0⟩ :=
@@ -1158,31 +1158,31 @@ theorem clipperGetStatusBody (v : ClipperImmutables) {code : ByteArray}
             (v := v) hpatch rd8549
             (by simpa [calcAddr] using hcalcZero)
             (by simp only [List.length_cons, List.length_nil]; omega)
-        have hcalcAddrSolm :
-            clipperStatusCalcAddress evmSolm = AccountAddress.ofUInt256 calcAddr := by
-          simp [evmSolm, clipperStatusCalcAddress, clipperStatusCalcWord, calcAddr,
-            initState, Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
+        have hcalcAddrStele :
+            clipperStatusCalcAddress evmStele = AccountAddress.ofUInt256 calcAddr := by
+          simp [evmStele, clipperStatusCalcAddress, clipperStatusCalcWord, calcAddr,
+            initState, Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
             solcSlotWord]
-        have hcalcZeroSolm :
+        have hcalcZeroStele :
             Reasoning.Theory.extCodeSizeWord σ calcAddr = ⟨0⟩ := by
           exact hcalcZero
-        have hnoCodeSolm :
+        have hnoCodeStele :
             (UInt256.ofNat
-              ((evmSolm.lookupAccount (clipperStatusCalcAddress evmSolm)).option 0
+              ((evmStele.lookupAccount (clipperStatusCalcAddress evmStele)).option 0
                 (fun acc => acc.code.size))).toNat = 0 := by
-          rw [hcalcAddrSolm]
-          unfold Reasoning.Theory.extCodeSizeWord at hcalcZeroSolm
-          simp [-Std.ExtTreeMap.get?_eq_getElem?, evmSolm, State.lookupAccount, initState] at hcalcZeroSolm ⊢
+          rw [hcalcAddrStele]
+          unfold Reasoning.Theory.extCodeSizeWord at hcalcZeroStele
+          simp [-Std.ExtTreeMap.get?_eq_getElem?, evmStele, State.lookupAccount, initState] at hcalcZeroStele ⊢
           cases hacc : σ.get? (AccountAddress.ofUInt256 calcAddr) with
           | none =>
               native_decide
           | some acc =>
-              simp [-Std.ExtTreeMap.get?_eq_getElem?, hacc] at hcalcZeroSolm ⊢
-              exact congrArg UInt256.toNat hcalcZeroSolm
+              simp [-Std.ExtTreeMap.get?_eq_getElem?, hacc] at hcalcZeroStele ⊢
+              exact congrArg UInt256.toNat hcalcZeroStele
         have hbody :=
-          clipperGetStatusBodyRevertsPriceNoCode v evmSolm I
-            (by simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmSolm, initState] using hwv)
-            hlePriceSolm hnoCodeSolm
+          clipperGetStatusBodyRevertsPriceNoCode v evmStele I
+            (by simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmStele, initState] using hwv)
+            hlePriceStele hnoCodeStele
         exact hrev.reEquivExecutionRevert hcode hdispatch hdec hbody
     · have hlt :
           (UInt256.ofNat I.header.timestamp).toNat <
@@ -1193,17 +1193,17 @@ theorem clipperGetStatusBody (v : ClipperImmutables) {code : ByteArray}
           (v := v) (hpatch := hpatch) rd8460
           (by simpa [tic, packed, id] using hlt)
           (by simp only [List.length_cons, List.length_nil]; omega)
-      have hltSolm :
-          (clipperTimestampWord evmSolm).toNat <
-            (clipperGetStatusTicWord evmSolm I).toNat := by
-        simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmSolm, initState, clipperGetStatusTicWord, clipperTimestampWord,
-          Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
+      have hltStele :
+          (clipperTimestampWord evmStele).toNat <
+            (clipperGetStatusTicWord evmStele I).toNat := by
+        simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmStele, initState, clipperGetStatusTicWord, clipperTimestampWord,
+          Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
           solcSlotWord, clipperGetStatusSalesPackedSlot, hbaseSlot,
-          tic, packed, hticClean, hticCleanSolm] using hlt
+          tic, packed, hticClean, hticCleanStele] using hlt
       have hbody :=
-        clipperGetStatusBodyRevertsAgeForPrice v evmSolm I
-          (by simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmSolm, initState] using hwv)
-          hltSolm
+        clipperGetStatusBodyRevertsAgeForPrice v evmStele I
+          (by simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmStele, initState] using hwv)
+          hltStele
       exact hrev.reEquivExecutionRevert hcode hdispatch hdec hbody
   · exact clipperGetStatusBodyCoreDecodeFailed_short (v := v) hpatch hcode hsize hsz4
       (by omega) hdispatch hreach

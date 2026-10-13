@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV4PoolManager.DynamicDecode
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 -- LIBRARY CANDIDATE: expose the modern calldata guard and arbitrary dynamic head.

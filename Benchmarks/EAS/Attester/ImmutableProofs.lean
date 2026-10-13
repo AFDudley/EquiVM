@@ -1,6 +1,6 @@
 import Benchmarks.EAS.Attester.Bytecode
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Immutables
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Immutables
 open Benchmarks.EAS.Attester.Immutables
 
 namespace Benchmarks.EAS.Attester

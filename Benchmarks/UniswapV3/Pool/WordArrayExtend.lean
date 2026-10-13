@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.WordArrayBytes
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 -- LIBRARY CANDIDATES: append words to a memory region and preserve disjoint regions.

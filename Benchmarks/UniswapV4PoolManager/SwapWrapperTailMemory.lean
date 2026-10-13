@@ -2,7 +2,7 @@ import Benchmarks.UniswapV4PoolManager.SwapWrapperEventMemory
 import Benchmarks.UniswapV4PoolManager.ProtocolFeesUpdateTrace
 import Benchmarks.UniswapV4PoolManager.MemorySliceHash
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 def swapWrapperFeeMemory (mem : ByteArray) (currency : AccountAddress) (amount : UInt256) : ByteArray :=

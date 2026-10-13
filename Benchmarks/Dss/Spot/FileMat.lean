@@ -2,7 +2,7 @@ import Benchmarks.Dss.Spot.FilePar
 import Benchmarks.Dss.Spot.Ilks
 import Benchmarks.Dss.Jug.FileDuty
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -222,7 +222,7 @@ theorem evalExpr_fileMatWhatEq_false {evm : EVM.State} {I : ExecutionEnv} {local
 set_option maxHeartbeats 1000000 in
 theorem assign_fileMatStorage (evm : EVM.State) (I : ExecutionEnv)
     (hsz36 : 36 ≤ I.calldata.size) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner (fileMatSlotFor I)
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner (fileMatSlotFor I)
       (fileMatData I)
     assignStorageRef? config { contract := contract, locals := fileMatLocals I } evm
       .storage (ilksF (.var "ilk") "mat") (.int (Int.ofNat (fileMatData I).toNat)) =
@@ -255,7 +255,7 @@ theorem spotFileMatSourceBodySplit {σ σ₀ A I} {g : UInt256}
     (hwhat : fileMatWhatBytes I = fileMatBytes) :
     let locals := fileMatLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-    let evm1 := Solm.EVM.storageStore evm0 I.codeOwner (fileMatSlotFor I) (fileMatData I)
+    let evm1 := Stele.EVM.storageStore evm0 I.codeOwner (fileMatSlotFor I) (fileMatData I)
     (ExecTransitionBody config contract evm0 locals fileMatTransition.body
       (.returned { contract := contract, locals := locals } evm1 none)) ∧
       (I.perm = false → ExecTransitionBody config contract evm0 locals
@@ -268,7 +268,7 @@ theorem spotFileMatSourceBodySplit {σ σ₀ A I} {g : UInt256}
       (by simpa [locals] using fileMatLocals_get_wards I)
       (by simp [evm0, initState])
       (by
-        simpa [evm0, relyAuthWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+        simpa [evm0, relyAuthWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
           State.lookupAccount] using hauth)
   have hliveGuard :
       evalExpr? config { contract := contract, locals := locals } evm0
@@ -276,7 +276,7 @@ theorem spotFileMatSourceBodySplit {σ σ₀ A I} {g : UInt256}
     exact evalExpr_live_true_of_none evm0 locals
       (by simpa [locals] using fileMatLocals_get_live I)
       (by
-        simpa [evm0, spotLiveWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+        simpa [evm0, spotLiveWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
           State.lookupAccount] using hlive)
   have hcond :
       evalExpr? config { contract := contract, locals := locals } evm0
@@ -326,13 +326,13 @@ theorem spotFileMatSourceBodyAuthReverts {σ σ₀ A I} {g : UInt256}
       (by simpa [locals] using fileMatLocals_get_wards I)
       (by simp [evm0, initState])
       (by
-        simpa [evm0, relyAuthWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+        simpa [evm0, relyAuthWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
           State.lookupAccount] using hauth)
   refine ExecFuncBody.execBlockRevert ?_
   simpa [fileMatTransition, nonpayable, auth, requireLive] using
     nonpayableSecondRequireReverts
       (cfg := config)
-      (solm := { contract := contract, locals := locals })
+      (stele := { contract := contract, locals := locals })
       (evm := evm0)
       (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
       (rest := [.require (.binary .eq (.storage liveRef) (.intLit 1)),
@@ -357,7 +357,7 @@ theorem spotFileMatSourceBodyNotLive {σ σ₀ A I} {g : UInt256}
       (by simpa [locals] using fileMatLocals_get_wards I)
       (by simp [evm0, initState])
       (by
-        simpa [evm0, relyAuthWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+        simpa [evm0, relyAuthWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
           State.lookupAccount] using hauth)
   have hliveGuard :
       evalExpr? config { contract := contract, locals := locals } evm0
@@ -365,7 +365,7 @@ theorem spotFileMatSourceBodyNotLive {σ σ₀ A I} {g : UInt256}
     exact evalExpr_live_false_of_none evm0 locals
       (by simpa [locals] using fileMatLocals_get_live I)
       (by
-        simpa [evm0, spotLiveWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+        simpa [evm0, spotLiveWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
           State.lookupAccount] using hlive)
   have hblock :
       ExecBlock config { contract := contract, locals := locals } evm0 fileMatTransition.body
@@ -392,7 +392,7 @@ theorem spotFileMatSourceBodyUnrecognized {σ σ₀ A I} {g : UInt256}
       (by simpa [locals] using fileMatLocals_get_wards I)
       (by simp [evm0, initState])
       (by
-        simpa [evm0, relyAuthWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+        simpa [evm0, relyAuthWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
           State.lookupAccount] using hauth)
   have hliveGuard :
       evalExpr? config { contract := contract, locals := locals } evm0
@@ -400,7 +400,7 @@ theorem spotFileMatSourceBodyUnrecognized {σ σ₀ A I} {g : UInt256}
     exact evalExpr_live_true_of_none evm0 locals
       (by simpa [locals] using fileMatLocals_get_live I)
       (by
-        simpa [evm0, spotLiveWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+        simpa [evm0, spotLiveWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
           State.lookupAccount] using hlive)
   have hcond :
       evalExpr? config { contract := contract, locals := locals } evm0
@@ -829,9 +829,9 @@ theorem spotFileMatBodyCoreOk
   let matSlot := fileMatSlotFor I
   let locals := fileMatLocals I
   let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  let evm1 := Solm.EVM.storageStore evm0 I.codeOwner matSlot data
-  have hauthSolm : relyAuthWord σ I = ⟨1⟩ := hauth
-  have hliveSolm : spotLiveWord σ I = ⟨1⟩ := hlive
+  let evm1 := Stele.EVM.storageStore evm0 I.codeOwner matSlot data
+  have hauthStele : relyAuthWord σ I = ⟨1⟩ := hauth
+  have hliveStele : spotLiveWord σ I = ⟨1⟩ := hlive
   have hbodySplit :
       (ExecTransitionBody config contract evm0 locals fileMatTransition.body
         (.returned { contract := contract, locals := locals } evm1 none)) ∧
@@ -839,8 +839,8 @@ theorem spotFileMatBodyCoreOk
         fileMatTransition.body .staticViolation) := by
     simpa [evm0, evm1, locals, matSlot, data] using
       (spotFileMatSourceBodySplit (σ := σ)
-        (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv (by omega) hauthSolm
-        hliveSolm hwhat)
+        (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv (by omega) hauthStele
+        hliveStele hwhat)
   obtain ⟨_, _, hdecoded⟩ := spotFileMatX_decoded (g := Sat256.ofUInt256 g)
     hsz100 hsize hreach
   obtain ⟨_, _, hauthz⟩ := spotFileMatX_authorized (I := I) hauth hdecoded
@@ -874,12 +874,12 @@ theorem spotFileMatBodyCoreUnauthorized
     runtimeRefinementFor config contract σ σ₀ g A I := by
   let locals := fileMatLocals I
   let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  have hauthSolm : relyAuthWord σ I ≠ ⟨1⟩ := hauth
+  have hauthStele : relyAuthWord σ I ≠ ⟨1⟩ := hauth
   have hbody :
       ExecTransitionBody config contract evm0 locals fileMatTransition.body .reverted := by
     simpa [evm0, locals] using
       (spotFileMatSourceBodyAuthReverts (σ := σ)
-        (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hauthSolm)
+        (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hauthStele)
   obtain ⟨_, _, hdecoded⟩ := spotFileMatX_decoded (g := Sat256.ofUInt256 g)
     hsz100 hsize hreach
   exact (spotFileMatX_unauthorized (I := I) hauth hdecoded)
@@ -902,13 +902,13 @@ theorem spotFileMatBodyCoreNotLive
     runtimeRefinementFor config contract σ σ₀ g A I := by
   let locals := fileMatLocals I
   let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  have hauthSolm : relyAuthWord σ I = ⟨1⟩ := hauth
-  have hliveSolm : spotLiveWord σ I ≠ ⟨1⟩ := hlive
+  have hauthStele : relyAuthWord σ I = ⟨1⟩ := hauth
+  have hliveStele : spotLiveWord σ I ≠ ⟨1⟩ := hlive
   have hbody :
       ExecTransitionBody config contract evm0 locals fileMatTransition.body .reverted := by
     simpa [evm0, locals] using
       (spotFileMatSourceBodyNotLive (σ := σ)
-        (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hauthSolm hliveSolm)
+        (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hauthStele hliveStele)
   obtain ⟨_, _, hdecoded⟩ := spotFileMatX_decoded (g := Sat256.ofUInt256 g)
     hsz100 hsize hreach
   obtain ⟨_, _, hauthz⟩ := spotFileMatX_authorized (I := I) hauth hdecoded
@@ -933,13 +933,13 @@ theorem spotFileMatBodyCoreUnrecognized
     runtimeRefinementFor config contract σ σ₀ g A I := by
   let locals := fileMatLocals I
   let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  have hauthSolm : relyAuthWord σ I = ⟨1⟩ := hauth
-  have hliveSolm : spotLiveWord σ I = ⟨1⟩ := hlive
+  have hauthStele : relyAuthWord σ I = ⟨1⟩ := hauth
+  have hliveStele : spotLiveWord σ I = ⟨1⟩ := hlive
   have hbody :
       ExecTransitionBody config contract evm0 locals fileMatTransition.body .reverted := by
     simpa [evm0, locals] using
       (spotFileMatSourceBodyUnrecognized (σ := σ)
-        (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hauthSolm hliveSolm hwhat)
+        (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hauthStele hliveStele hwhat)
   obtain ⟨_, _, hdecoded⟩ := spotFileMatX_decoded (g := Sat256.ofUInt256 g)
     hsz100 hsize hreach
   obtain ⟨_, _, hauthz⟩ := spotFileMatX_authorized (I := I) hauth hdecoded

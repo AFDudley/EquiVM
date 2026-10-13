@@ -1,13 +1,13 @@
-import Solm.Semantics
-import Solm.SolidityLayout
-import Solm.MetaSolidityLayout
+import Stele.Semantics
+import Stele.SolidityLayout
+import Stele.MetaSolidityLayout
 
 /-!
-# SimpleAuction — Solm specification for `SimpleAuction.sol`
+# SimpleAuction — Stele specification for `SimpleAuction.sol`
 
-A faithful (events-aside) Solm spec of the classic Solidity `SimpleAuction` example.
+A faithful (events-aside) Stele spec of the classic Solidity `SimpleAuction` example.
 
-Notable Solm features exercised:
+Notable Stele features exercised:
 
 * the value/time environment — `msg.value` (`env .callvalue`), `msg.sender` (`env .caller`),
   `block.timestamp` (`env .timestamp`);
@@ -25,7 +25,7 @@ The generated storage layout matches the deployed solc bytecode: scalar slots 0.
 The external-call ABI uses the generic empty-call helper.
 -/
 
-open Solm ABI Ethereum
+open Stele ABI Ethereum
 
 namespace SimpleAuction
 

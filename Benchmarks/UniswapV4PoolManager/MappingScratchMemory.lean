@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV4PoolManager.MappingMemory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 -- GENERALIZES the free-pointer preservation rule to every word above mapping scratch space.

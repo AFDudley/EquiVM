@@ -9,11 +9,11 @@ import Benchmarks.CompoundIII.Comet.RuntimeBlocks_017
 # CometWithExtendedAssetList `userNonce(address)`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 1258; reach lemma `cometWithExtendedAssetListReachUserNonceBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.CompoundIII.Comet.Immutables
 open cometWithExtendedAssetListBlocks
@@ -33,7 +33,7 @@ theorem evalUserNonce (evm : EVM.State) (locals imms : Store) (addr : AccountAdd
     (harg : locals.get? "arg0" = some (.address addr)) :
     evalExpr? config { contract := contract, locals := locals, immutables := imms }
       evm (.storage ⟨"userNonce", [.mindex (.var "arg0")]⟩) =
-      .ok (.int (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (userNonceSlot addr)).toNat) := by
+      .ok (.int (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (userNonceSlot addr)).toNat) := by
   apply evalExpr_storage_scalar_value (hbackend := rfl)
     (loc := uint256Loc (userNonceSlot addr))
     (er := ⟨"userNonce", [.mindex (.address addr)]⟩)

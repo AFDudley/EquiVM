@@ -3,7 +3,7 @@ import Benchmarks.CompoundIII.Comet.AbsorbSettlementSource
 import Benchmarks.CompoundIII.Comet.PrincipalValueSource
 import Benchmarks.CompoundIII.Comet.UpdateBaseSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.CompoundIII.Comet.Immutables
 
 namespace Benchmarks.CompoundIII.Comet

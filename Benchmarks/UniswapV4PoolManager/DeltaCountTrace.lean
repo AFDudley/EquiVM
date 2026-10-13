@@ -3,7 +3,7 @@ import Benchmarks.UniswapV4PoolManager.TransientTrace
 import Benchmarks.UniswapV4PoolManager.RuntimeBlocks_036
 
 /-! Bytecode counter updates, reading the counter after the currency delta write. -/
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.UniswapV4PoolManager.Immutables
 namespace Benchmarks.UniswapV4PoolManager

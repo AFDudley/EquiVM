@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.ReturnDataMemory
 import Benchmarks.UniswapV4PoolManager.SelectorMemory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 theorem hookReplyMemory_selector {mem data out : ByteArray} {ptr free : UInt256}

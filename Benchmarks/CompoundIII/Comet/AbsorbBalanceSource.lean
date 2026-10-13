@@ -2,7 +2,7 @@ import Benchmarks.CompoundIII.Comet.AbsorbBalanceModel
 import Benchmarks.CompoundIII.Comet.Signed256
 import Benchmarks.CompoundIII.Comet.IndexAccrual
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.CompoundIII.Comet.Immutables
 
 namespace Benchmarks.CompoundIII.Comet

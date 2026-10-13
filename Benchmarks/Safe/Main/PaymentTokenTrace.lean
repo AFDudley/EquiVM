@@ -2,7 +2,7 @@ import Benchmarks.Safe.Main.PaymentOutcome
 import Benchmarks.Safe.Main.PaymentNativeReturn
 import Benchmarks.Safe.Main.TokenTransferTrace
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.Main

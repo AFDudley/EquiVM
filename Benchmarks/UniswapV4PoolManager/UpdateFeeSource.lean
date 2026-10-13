@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV4PoolManager.PoolLPFeeSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 
@@ -9,7 +9,7 @@ def dynamicFeeAuthorized (I : ExecutionEnv) (key : PoolKeyWords) : Prop :=
 instance (I : ExecutionEnv) (key : PoolKeyWords) : Decidable (dynamicFeeAuthorized I key) :=
   inferInstanceAs (Decidable (_ ∧ _))
 
-def updateFeeAlias : Ident := "__solm_storage_ref._@.Benchmarks.UniswapV4PoolManager.SpecSyntax.2010301240._hygCtx._hyg.26"
+def updateFeeAlias : Ident := "__stele_storage_ref._@.Benchmarks.UniswapV4PoolManager.SpecSyntax.2010301240._hygCtx._hyg.26"
 def updateFeeFinalFrame (f : Frame) (key : PoolKeyWords) : Frame :=
   let locals := f.locals.insert "key" (poolKeyValue key)
   let locals := locals.insert "__c0" (.bool (decide (key.fee.toNat = 8388608)))

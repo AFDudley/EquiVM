@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Jug.DripEVM
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Jug
 
@@ -77,7 +77,7 @@ theorem jugDripBodyCoreVatIlksNoCode
     runtimeRefinementFor config contract σ σ₀ g A I := by
   let locals := dripLocals I
   let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  have hvatNoCodeSolm :
+  have hvatNoCodeStele :
       (UInt256.ofNat
         (((initState σ σ₀ (Sat256.ofUInt256 g) A I).lookupAccount
           (dripVatAddress σ I)).option 0 (fun acc => acc.code.size))).toNat = 0 :=
@@ -87,7 +87,7 @@ theorem jugDripBodyCoreVatIlksNoCode
       ExecTransitionBody config contract evm0 locals dripTransition.body .reverted := by
     simpa [evm0, locals] using
       (jugDripSourceBodyVatIlksNoCode (σ := σ)
-        (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hsz36 hle hvatNoCodeSolm)
+        (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hsz36 hle hvatNoCodeStele)
   obtain ⟨_, _, hdecoded⟩ := jugDripX_decoded (g := Sat256.ofUInt256 g)
     hsz36 hsize hreach
   obtain ⟨_, _, hnowOk⟩ := jugDripX_nowOk (I := I) hsz36 hle hdecoded
@@ -130,7 +130,7 @@ theorem jugDripBodyCoreVatIlksCallFailed
     runtimeRefinementFor config contract σ σ₀ g A I := by
   let locals := dripLocals I
   let evm := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  have hvatCodeSolm :
+  have hvatCodeStele :
       0 <
         (UInt256.ofNat
           (((initState σ σ₀ (Sat256.ofUInt256 g) A I).lookupAccount
@@ -173,7 +173,7 @@ theorem jugDripBodyCoreVatIlksCallFailed
       (jugDripSourceBodyVatIlksCallFailed
         (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
         (evmVat := { evm with accountMap := σ', substate := A' })
-        (out := out) hwv hsz36 hle hvatCodeSolm (by simpa [evm] using hcall))
+        (out := out) hwv hsz36 hle hvatCodeStele (by simpa [evm] using hcall))
   have hrev := RD.jugDripVatIlksCallFailed rd1400 hout
   exact hrev.reEquivExecutionRevert hcode hdispatch hdecode hbody
 
@@ -202,7 +202,7 @@ theorem jugDripBodyCoreVatIlksCallDepthLimit
     runtimeRefinementFor config contract σ σ₀ g A I := by
   let locals := dripLocals I
   let evm := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  have hvatCodeSolm :
+  have hvatCodeStele :
       0 <
         (UInt256.ofNat
           (((initState σ σ₀ (Sat256.ofUInt256 g) A I).lookupAccount
@@ -212,7 +212,7 @@ theorem jugDripBodyCoreVatIlksCallDepthLimit
   let A_vat := (evm.addAccessedAccount (EVM.address (dripVatAddress σ I))).substate
   have hdepthInit : evm.executionEnv.depth = 1024 := by
     simpa [evm, initState] using hdepth
-  have hcallSolm :
+  have hcallStele :
       typedCallViaEVM config evm (EVM.address (dripVatAddress σ I)) "ilks" 0
         [.fixedBytes bytes32Width (fileDutyIlkBytes I)]
         (false, { evm with substate := A_vat }, ByteArray.empty) true := by
@@ -231,7 +231,7 @@ theorem jugDripBodyCoreVatIlksCallDepthLimit
       (jugDripSourceBodyVatIlksCallFailed
         (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
         (evmVat := { evm with substate := A_vat }) (out := ByteArray.empty)
-        hwv hsz36 hle hvatCodeSolm (by simpa [evm] using hcallSolm))
+        hwv hsz36 hle hvatCodeStele (by simpa [evm] using hcallStele))
   have hrev := RD.jugDripVatIlksCallFailed rd1400 (by native_decide)
   exact hrev.reEquivExecutionRevert hcode hdispatch hdecode hbody
 
@@ -272,7 +272,7 @@ theorem jugDripBodyCoreVatIlksReturnDecodeShort
     runtimeRefinementFor config contract σ σ₀ g A I := by
   let locals := dripLocals I
   let evm := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  have hvatCodeSolm :
+  have hvatCodeStele :
       0 <
         (UInt256.ofNat
           (((initState σ σ₀ (Sat256.ofUInt256 g) A I).lookupAccount
@@ -315,7 +315,7 @@ theorem jugDripBodyCoreVatIlksReturnDecodeShort
       (jugDripSourceBodyVatIlksReturnDecodeReverts
         (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
         (evmVat := { evm with accountMap := σ', substate := A' })
-        (out := out) hwv hsz36 hle hvatCodeSolm (by simpa [evm] using hcall)
+        (out := out) hwv hsz36 hle hvatCodeStele (by simpa [evm] using hcall)
         (dripVatIlksDecode_none_short hshort))
   obtain ⟨_, _, rd1418⟩ := RD.jugDripVatIlksCallSucceeded rd1400
   have hrev := RD.jugDripVatIlksReturnDecodeShortReverts rd1418 hshort hout
@@ -363,7 +363,7 @@ theorem jugDripBodyCoreVatIlksAddOverflow
     runtimeRefinementFor config contract σ σ₀ g A I := by
   let locals := dripLocals I
   let evm := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  have hvatCodeSolm :
+  have hvatCodeStele :
       0 <
         (UInt256.ofNat
           (((initState σ σ₀ (Sat256.ofUInt256 g) A I).lookupAccount
@@ -402,7 +402,7 @@ theorem jugDripBodyCoreVatIlksAddOverflow
       (jugDripSourceBodyVatIlksAddOverflowReverts
         (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
         (evmVat := { evm with accountMap := σ', substate := A' })
-        (out := out) hwv hsz36 hle hvatCodeSolm
+        (out := out) hwv hsz36 hle hvatCodeStele
         (by simpa [evm] using hcall) hdec
         (by simpa [evm, initState, solcSlotWordAt] using haddOverflow))
   have hrev := RD.jugDripAddOverflowReverts haddOverflow rd2131

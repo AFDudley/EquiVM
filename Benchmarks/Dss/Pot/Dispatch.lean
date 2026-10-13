@@ -3,7 +3,7 @@ import Benchmarks.Dss.Pot.Selectors
 /-!
 # MakerDAO/Sky DSS Pot dispatcher facts
 
-Solm dispatch routing facts, the shared non-payable body result, and the runtime dispatcher
+Stele dispatch routing facts, the shared non-payable body result, and the runtime dispatcher
 reachability for the optimized depth-2 binary-search dispatcher.
 
 Dispatch tree (pivots read off the bytecode):
@@ -18,7 +18,7 @@ Linear-scan groups (arm order = bytecode order):
 * `54` : deny, drip, wards, chi, file(bytes32,address) (`sel ≥ 0x9c52a7f1`)
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -30,7 +30,7 @@ attribute [local simp]
   liveSelectorBytes pieSelectorBytes relySelectorBytes rhoSelectorBytes vatSelectorBytes
   vowSelectorBytes wardsSelectorBytes
 
-/-! ## Solm dispatch routing facts (selector → transition) -/
+/-! ## Stele dispatch routing facts (selector → transition) -/
 
 theorem potDispatchPie {I : ExecutionEnv} (hsel : selIs I (potSelBytes 0)) :
     dispatchMsg contract I.calldata = some PieTransition := by

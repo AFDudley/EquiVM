@@ -1,5 +1,5 @@
 import Examples.UniswapV2Pair.Common
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace UniswapV2Pair
 
 theorem uniswapUint256PairReturnEncoding (word0 word1 : UInt256) :

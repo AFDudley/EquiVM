@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MorphoBlue.WithdrawPositionRefine
 import Benchmarks.Morpho.MorphoBlue.MarketSubtract
 import Benchmarks.Morpho.MorphoBlue.RepayMathReach
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MorphoBlue.Immutables
 namespace Benchmarks.Morpho.MorphoBlue

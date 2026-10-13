@@ -1,11 +1,11 @@
 import Benchmarks.Safe.Main.Common
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.Main
 
 -- LIBRARY CANDIDATE: expose the guards and value decoder for a nonempty static ABI tuple.
-theorem decodeStaticCalldata {cd : ByteArray} {names : List Solm.Ident}
+theorem decodeStaticCalldata {cd : ByteArray} {names : List Stele.Ident}
     {ty : ABIType} {types : List ABIType} {headSize : ℕ}
     (hlong : 4 ≤ cd.size)
     (hdyn : (ty :: types).any isDynamicABIType = false)
@@ -36,7 +36,7 @@ theorem decodeStaticCalldata {cd : ByteArray} {names : List Solm.Ident}
           simp only []
           cases decodeCalldata.insertValues names values ∅ <;> rfl
 
-theorem decodeAddressBytes32Guard {cd : ByteArray} {x y : Solm.Ident}
+theorem decodeAddressBytes32Guard {cd : ByteArray} {x y : Stele.Ident}
     (hlong : 4 ≤ cd.size) :
     decodeCalldata [x, y] [abiAddress, abiBytes32] cd =
       if 2 ^ 255 ≤ cd.size - 4 then none
@@ -50,7 +50,7 @@ theorem decodeAddressBytes32Guard {cd : ByteArray} {x y : Solm.Ident}
       abiBytes32, abiBytes32Width, bind, Option.bind])
 
 -- LIBRARY CANDIDATE: modern address/bytes32 tuple decoding, including malformed branches.
-theorem decodeAddressBytes32 {cd : ByteArray} {x y : Solm.Ident}
+theorem decodeAddressBytes32 {cd : ByteArray} {x y : Stele.Ident}
     (hlen : 68 ≤ cd.size) (hbig : cd.size < 2 ^ 255 + 4)
     (hcanon : (calldataWord cd 4).toNat < EVM.addressModulus) :
     decodeCalldata [x, y] [abiAddress, abiBytes32] cd =
@@ -79,7 +79,7 @@ theorem decodeAddressBytes32 {cd : ByteArray} {x y : Solm.Ident}
   rw [decodeABIValue_bytes32_ok (start := 32) htake36]
   simp [decodeCalldata.insertValues, wordBytes32Value, hbytes, hword4, List.drop_drop]
 
-theorem decodeAddressBytes32Noncanon {cd : ByteArray} {x y : Solm.Ident}
+theorem decodeAddressBytes32Noncanon {cd : ByteArray} {x y : Stele.Ident}
     (hlen : 68 ≤ cd.size) (hbig : cd.size < 2 ^ 255 + 4)
     (hcanon : ¬ (calldataWord cd 4).toNat < EVM.addressModulus) :
     decodeCalldata [x, y] [abiAddress, abiBytes32] cd = none := by
@@ -94,12 +94,12 @@ theorem decodeAddressBytes32Noncanon {cd : ByteArray} {x y : Solm.Ident}
     staticABIEncodedSize?, bind, Option.bind, Nat.zero_add]
   rw [decodeABIValue_address_none_noncanon (start := 0) (by simpa using htake4)
     (by simpa only [List.drop_zero, hword4] using hcanon)]
-theorem decodeAddressBytes32Short {cd : ByteArray} {x y : Solm.Ident}
+theorem decodeAddressBytes32Short {cd : ByteArray} {x y : Stele.Ident}
     (hlong : 4 ≤ cd.size) (hshort : cd.size < 68) :
     decodeCalldata [x, y] [abiAddress, abiBytes32] cd = none := by
   rw [decodeAddressBytes32Guard hlong, if_neg (by omega), if_pos (by omega)]
 
-theorem decodeAddressBytes32Huge {cd : ByteArray} {x y : Solm.Ident}
+theorem decodeAddressBytes32Huge {cd : ByteArray} {x y : Stele.Ident}
     (hbig : 2 ^ 255 + 4 ≤ cd.size) :
     decodeCalldata [x, y] [abiAddress, abiBytes32] cd = none := by
   rw [decodeAddressBytes32Guard (by omega), if_pos (by omega)]

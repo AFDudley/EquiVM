@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.ScalarPrefixDecode
 import Benchmarks.UniswapV3.Pool.LegacyScalarsBytes
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 -- LIBRARY CANDIDATE: the exact legacy dynamic-bytes decoder, with every failure branch.

@@ -3,7 +3,7 @@ import Benchmarks.UniswapV3.Pool.ModularMultiplication
 import Benchmarks.UniswapV3.Pool.TickSpacingModel
 import Benchmarks.UniswapV3.Pool.LiquidityDeltaModel
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 def bitmapNextDistance (compressed : Int) (lte : Bool) (masked : UInt256) : Int :=

@@ -1,9 +1,9 @@
 import Examples.BlindAuction.Storage
 import Examples.SimpleAuction.Withdraw
 import Reasoning.ExternalCall
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -27,7 +27,7 @@ def withdrawZeroMap (σ : AccountMap) (I : ExecutionEnv) : AccountMap :=
   sstoreAccountMap I.codeOwner σ (withdrawAmountSlot I) ⟨0⟩
 
 def withdrawClearedState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (withdrawAmountSlot I) ⟨0⟩
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (withdrawAmountSlot I) ⟨0⟩
 
 def withdrawZeroState (evm : EVM.State) : EVM.State :=
   withdrawClearedState evm evm.executionEnv
@@ -338,7 +338,7 @@ theorem withdrawRehashMappingKeccak (I : ExecutionEnv) :
 
 theorem withdrawStorageLocLoad_uint256 (evm : EVM.State) (slot : UInt256) :
     storageLocLoad evm (blindAuctionUint256Loc slot)
-      = .int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot).toNat) := by
+      = .int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot).toNat) := by
   exact storageLocLoad_uint256 evm slot
 
 theorem withdrawPendingReturns_evalStorageRef
@@ -360,7 +360,7 @@ theorem withdrawPendingReturns_load (evm : EVM.State) (locals : Store)
     (hbase : locals[(pendingReturnsRef sender).base]? = none) :
     evalExpr? blindAuctionConfig { contract := blindAuctionContract, locals := locals } evm
       (.storage (pendingReturnsRef sender)) =
-    .ok (.int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+    .ok (.int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
       (withdrawAmountSlot evm.executionEnv)).toNat)) := by
   rw [evalExpr_storage_scalar (hbackend := rfl) (t := .int uint256Int) (hbase := hbase)
     (her := withdrawPendingReturns_evalStorageRef evm locals)
@@ -389,12 +389,12 @@ theorem withdrawPendingReturns_clear (evm : EVM.State) (locals : Store)
 
 theorem withdrawZeroState_originalMap (evm : EVM.State) :
     (withdrawZeroState evm).σ₀ = evm.σ₀ := by
-  unfold withdrawZeroState withdrawClearedState Solm.EVM.storageStore State.lookupAccount
+  unfold withdrawZeroState withdrawClearedState Stele.EVM.storageStore State.lookupAccount
   cases evm.accountMap.get? evm.executionEnv.codeOwner <;> simp [Option.option, State.setAccount]
 
 theorem withdrawZeroState_substate (evm : EVM.State) :
     (withdrawZeroState evm).substate = evm.substate := by
-  unfold withdrawZeroState withdrawClearedState Solm.EVM.storageStore State.lookupAccount
+  unfold withdrawZeroState withdrawClearedState Stele.EVM.storageStore State.lookupAccount
   cases evm.accountMap.get? evm.executionEnv.codeOwner <;> simp [Option.option, State.setAccount]
 
 theorem withdrawCallStore_success_get (amount : UInt256) (success : Bool) (out : ByteArray) :
@@ -485,7 +485,7 @@ theorem withdrawAssignZero (evm : EVM.State) (amount : UInt256) :
 theorem blindAuctionWithdrawBodyReturns_zero (evm : EVM.State) (amount : UInt256)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hamount :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
           (withdrawAmountSlot evm.executionEnv) =
         amount)
     (hzero : amount = ⟨0⟩) :
@@ -511,7 +511,7 @@ theorem blindAuctionWithdrawBodyReturns_callSuccess
     (evm evm' : EVM.State) (amount : UInt256) (out : ByteArray)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hamount :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
           (withdrawAmountSlot evm.executionEnv) =
         amount)
     (hpos : amount ≠ ⟨0⟩)
@@ -558,7 +558,7 @@ theorem blindAuctionWithdrawBodyReverts_callFailure
     (evm evm' : EVM.State) (amount : UInt256) (out : ByteArray)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hamount :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
           (withdrawAmountSlot evm.executionEnv) =
         amount)
     (hpos : amount ≠ ⟨0⟩)
@@ -600,7 +600,7 @@ theorem blindAuctionWithdrawBodyStatic
     (evm : EVM.State) (amount : UInt256)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hamount :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
           (withdrawAmountSlot evm.executionEnv) =
         amount)
     (hpos : amount ≠ ⟨0⟩)
@@ -1129,10 +1129,10 @@ theorem blindAuctionWithdrawBodyCore {σ σ₀ A I}
     · have hzeroS : withdrawAmountWord σ I = ⟨0⟩ := hzero
       let evmS := initState σ σ₀ (Sat256.ofUInt256 g) A I
       have hamountS :
-          Solm.EVM.storageLoad evmS evmS.executionEnv.codeOwner
+          Stele.EVM.storageLoad evmS evmS.executionEnv.codeOwner
               (withdrawAmountSlot evmS.executionEnv) =
             withdrawAmountWord σ I := by
-        simp [evmS, initState, withdrawAmountWord, Solm.EVM.storageLoad,
+        simp [evmS, initState, withdrawAmountWord, Stele.EVM.storageLoad,
           State.lookupAccount, Account.lookupStorage]
       have hbody :
           ExecTransitionBody blindAuctionConfig blindAuctionContract evmS ∅
@@ -1151,10 +1151,10 @@ theorem blindAuctionWithdrawBodyCore {σ σ₀ A I}
       let evmS := initState σ σ₀ (Sat256.ofUInt256 g) A I
       let evmSZero := withdrawZeroState evmS
       have hamountS :
-          Solm.EVM.storageLoad evmS evmS.executionEnv.codeOwner
+          Stele.EVM.storageLoad evmS evmS.executionEnv.codeOwner
               (withdrawAmountSlot evmS.executionEnv) =
             withdrawAmountWord σ I := by
-        simp [evmS, initState, withdrawAmountWord, Solm.EVM.storageLoad,
+        simp [evmS, initState, withdrawAmountWord, Stele.EVM.storageLoad,
           State.lookupAccount, Account.lookupStorage]
       have hZeroMap : withdrawZeroMap σ I = withdrawZeroMap σ I := rfl
       by_cases hperm : I.perm = true
@@ -1241,7 +1241,7 @@ theorem blindAuctionWithdrawBodyCore {σ σ₀ A I}
           have hZeroState : evmEZero = evmSZero := by
             have hMap : evmEZero.accountMap = evmSZero.accountMap := by
               change withdrawZeroMap σ I =
-                (Solm.EVM.storageStore (initState σ σ₀ (Sat256.ofUInt256 g) A I)
+                (Stele.EVM.storageStore (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                   I.codeOwner (withdrawAmountSlot I) ⟨0⟩).accountMap
               rw [withdrawZeroMap, storageStore_accountMap]
               rfl
@@ -1250,7 +1250,7 @@ theorem blindAuctionWithdrawBodyCore {σ σ₀ A I}
               _ = {evmS with accountMap := evmSZero.accountMap} := by
                 exact congrArg (fun accounts => {evmS with accountMap := accounts}) hMap
               _ = evmSZero := by
-                unfold evmSZero withdrawZeroState withdrawClearedState Solm.EVM.storageStore
+                unfold evmSZero withdrawZeroState withdrawClearedState Stele.EVM.storageStore
                 cases evmS.lookupAccount evmS.executionEnv.codeOwner <;>
                   simp [Option.option, State.setAccount]
           let evmSCall : EVM.State :=

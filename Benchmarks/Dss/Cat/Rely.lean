@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Cat.Storage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 0
@@ -137,10 +137,10 @@ theorem catRelyBodyCore
     (by native_decide) (by native_decide) (by native_decide) (by native_decide)
     (by native_decide) (by native_decide) (by native_decide) (by jump_dest) (by simp)
   by_cases hauthEvm : solcSlotWordAt callerSlot σ I = ⟨1⟩
-  · have hauthSolm : solcSlotWordAt callerSlot σ I = ⟨1⟩ := by
+  · have hauthStele : solcSlotWordAt callerSlot σ I = ⟨1⟩ := by
       exact hauthEvm
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-    let evm1 := Solm.EVM.storageStore evm0 I.codeOwner (relySlotFor I) ⟨1⟩
+    let evm1 := Stele.EVM.storageStore evm0 I.codeOwner (relySlotFor I) ⟨1⟩
     have hbodySplit :
         ExecTransitionBody config contract evm0 locals relyTransition.body
           (.returned { contract := contract, locals := locals } evm1 none) ∧
@@ -150,7 +150,7 @@ theorem catRelyBodyCore
       have hguard := catAuthGuardEval_true
         (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
         (g := Sat256.ofUInt256 g) (locals := locals)
-        (by simp [locals]) hauthSolm
+        (by simp [locals]) hauthStele
       have hassign :
           assignStorageRef? config { contract := contract, locals := locals } evm0
             .storage (wardsRef (.var "usr")) (.int 1) =
@@ -175,7 +175,7 @@ theorem catRelyBodyCore
           (hstore := hstore)
       constructor
       · have hblock := nonpayableRequireAssignStorageBlock
-          (cfg := config) (solm := { contract := contract, locals := locals })
+          (cfg := config) (stele := { contract := contract, locals := locals })
           (evm := evm0) (evm' := evm1)
           (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
           (rhs := .intLit 1) (ref := wardsRef (.var "usr")) (value := .int 1)
@@ -185,7 +185,7 @@ theorem catRelyBodyCore
           ExecFuncBody.execBlockOK hblock
       · intro hperm
         have hblock := nonpayableRequireAssignStorageBlockStatic
-          (cfg := config) (solm := { contract := contract, locals := locals })
+          (cfg := config) (stele := { contract := contract, locals := locals })
           (evm := evm0)
           (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
           (rhs := .intLit 1) (ref := wardsRef (.var "usr")) (value := .int 1)
@@ -235,16 +235,16 @@ theorem catRelyBodyCore
       exact returnEquiv.fallthrough rfl (by rfl) (by native_decide)
     exact hret.reEquivExecutionGen hcode hdispatch hdecode hbodySplit.1
       haccounts henc
-  · have hauthSolm : solcSlotWordAt callerSlot σ I ≠ ⟨1⟩ := by
+  · have hauthStele : solcSlotWordAt callerSlot σ I ≠ ⟨1⟩ := by
       exact hauthEvm
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     have hbody : ExecTransitionBody config contract evm0 locals relyTransition.body .reverted := by
       have hguard := catAuthGuardEval_false
         (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
         (g := Sat256.ofUInt256 g) (locals := locals)
-        (by simp [locals]) hauthSolm
+        (by simp [locals]) hauthStele
       have hblock := nonpayableSecondRequireReverts
-        (cfg := config) (solm := { contract := contract, locals := locals })
+        (cfg := config) (stele := { contract := contract, locals := locals })
         (evm := evm0)
         (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
         (rest := [.assign .storage (wardsRef (.var "usr")) (.intLit 1)])

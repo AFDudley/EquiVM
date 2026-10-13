@@ -1,6 +1,6 @@
 import Examples.BlindAuction.Reveal.FakeFalse
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 10000000
@@ -167,7 +167,7 @@ theorem scratch_revealLoopBody_decoded_inBounds_fromLoopStart {I} {g : Sat256}
     (hlenL : L.get? "length" = some (.int (Int.ofNat loopLen.toNat)))
     (hrefundL : L.get? "refund" = some (.int (Int.ofNat a.refund.toNat)))
     (hlenSrc :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (bidsBase (.address evm.executionEnv.source)) = curLen)
     (hboundValues : a.idx.toNat < values.length)
     (hboundFakes : a.idx.toNat < fakes.length)

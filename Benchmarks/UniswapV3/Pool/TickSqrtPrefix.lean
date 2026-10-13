@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.TickSqrtModel
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
 
@@ -72,7 +72,7 @@ theorem tickSqrtPrefixSource (imms : Store) (evm : EVM.State) (tick : Int)
     (hlo : -(2 ^ 23 : Int) ≤ tick) (hhi : tick < 2 ^ 23) :
     ExecBlock config (tickSqrtFrame imms tick) evm (tickSqrtFunction.body.take 2)
       (.ok (tickSqrtAbsFrame imms tick) evm) := by
-  refine ExecBlock.consNormal (solm' := tickSqrtZeroFrame imms tick)
+  refine ExecBlock.consNormal (stele' := tickSqrtZeroFrame imms tick)
     (ExecStmt.letDecl (by simp only [evalExpr?, pure])) ?_
   refine ExecBlock.consNormal (ExecStmt.letDecl ?_) ExecBlock.nil
   exact evalTickSqrtAbs tick

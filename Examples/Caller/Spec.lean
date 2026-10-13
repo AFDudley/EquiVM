@@ -1,14 +1,14 @@
-import Solm.Semantics
-import Solm.SolidityLayout
-import Solm.SolidityStorage
-import Solm.MetaSolidityLayout
+import Stele.Semantics
+import Stele.SolidityLayout
+import Stele.SolidityStorage
+import Stele.MetaSolidityLayout
 import Examples.Pow.Spec
 
 /-!
-# Caller — Solm specification for `Caller.sol`'s `run(address t, uint256 n)`
+# Caller — Stele specification for `Caller.sol`'s `run(address t, uint256 n)`
 
 `run` makes an **external call** to a `Pow` contract's `pow2(n)` and caches the result in a
-single `uint256` storage slot (`stored`, slot 0).  This is the Solm-level spec only (pure data).
+single `uint256` storage slot (`stored`, slot 0).  This is the Stele-level spec only (pure data).
 
 Two pieces are example-specific configuration (the default ABI / empty layout used by `Pow`/`Truth`
 do not suffice here):
@@ -19,14 +19,14 @@ do not suffice here):
 * `callerStorageLayout` — `stored` lives whole-slot at slot 0 (`offset 0`, `size 32`).
 -/
 
-open Solm ABI Ethereum
+open Stele ABI Ethereum
 
 namespace Caller
 
-/-- The ABI/Solm type `address`. -/
+/-- The ABI/Stele type `address`. -/
 def addr : ABIType := .elem .address
 
-/-- The ABI/Solm type `uint256`. -/
+/-- The ABI/Stele type `uint256`. -/
 abbrev uint256 : ABIType := .elem (.int (.uint ⟨256, by decide⟩))
 
 /-- `keccak("pow2(uint256)")[0:4]` — the selector of the callee function. -/
@@ -57,7 +57,7 @@ def runTransition : TransitionDecl :=
         .externalCall (.var "t") "pow2" (.intLit 0) [.var "n"] "tmp",
         .assign .storage { base := "stored" } (.var "tmp") ] }
 
-/-- Solm spec of the `Caller` contract: one `uint256` storage field, no constructor body,
+/-- Stele spec of the `Caller` contract: one `uint256` storage field, no constructor body,
     a single transition. -/
 def callerContract : ContractDecl :=
   { name := "Caller"

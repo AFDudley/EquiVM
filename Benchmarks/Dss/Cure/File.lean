@@ -1,14 +1,14 @@
 import Benchmarks.Dss.Cure.Rely
 import Reasoning.ABIComposite
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxHeartbeats 0
 
 section
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 2000000
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Cure
 
@@ -572,7 +572,7 @@ theorem evalExpr_fileWhatEq_false {evm : EVM.State} {I : ExecutionEnv} {locals :
   all_goals decide
 
 theorem assign_fileWaitStorage (evm : EVM.State) (I : ExecutionEnv) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨3⟩ (fileData I)
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨3⟩ (fileData I)
     assignStorageRef? config { contract := contract, locals := fileLocals I } evm
       .storage waitRef (.int (Int.ofNat (fileData I).toNat)) =
         .ok ({ contract := contract, locals := fileLocals I }, evm') := by
@@ -594,7 +594,7 @@ theorem cureFileSourceBodyOkSplit {σ σ₀ A I} {g : UInt256}
     (hwhat : fileWhat I = fileWaitBytes) :
     let locals := fileLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-    let evm1 := Solm.EVM.storageStore evm0 I.codeOwner ⟨3⟩ (fileData I)
+    let evm1 := Stele.EVM.storageStore evm0 I.codeOwner ⟨3⟩ (fileData I)
     (ExecTransitionBody config contract evm0 locals fileTransition.body
       (.returned { contract := contract, locals := locals } evm1 none)) ∧
     (I.perm = false →
@@ -656,7 +656,7 @@ theorem cureFileSourceBodyAuthReverts {σ σ₀ A I} {g : UInt256}
     (g := Sat256.ofUInt256 g) (locals := locals)
     (by simpa [locals] using fileLocals_get_wards I) hauth
   have hblock := nonpayableSecondRequireReverts
-    (cfg := config) (solm := { contract := contract, locals := locals })
+    (cfg := config) (stele := { contract := contract, locals := locals })
     (evm := evm0)
     (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
     (rest := [
@@ -760,7 +760,7 @@ theorem cureFileBodyCore {σ σ₀ A I} {g : UInt256}
     obtain ⟨_, _, hdecoded⟩ := cureFileX_decoded (g := Sat256.ofUInt256 g)
       (sel := sel) hsz68 hsize hreach
     by_cases hauthEvm : solcSlotWordAt callerSlot σ I = ⟨1⟩
-    · have hauthSolm : solcSlotWordAt callerSlot σ I = ⟨1⟩ := by
+    · have hauthStele : solcSlotWordAt callerSlot σ I = ⟨1⟩ := by
         rw [← hcallerWord]
         exact hauthEvm
       have hauthSolc :
@@ -775,7 +775,7 @@ theorem cureFileBodyCore {σ σ₀ A I} {g : UInt256}
           repeat' first | apply And.intro | native_decide)
         hauthSolc (by jump_dest) (by simp)
       by_cases hliveEvm : solcSlotWordAt ⟨1⟩ σ I = ⟨1⟩
-      · have hliveSolm : solcSlotWordAt ⟨1⟩ σ I = ⟨1⟩ := by
+      · have hliveStele : solcSlotWordAt ⟨1⟩ σ I = ⟨1⟩ := by
           rw [← hliveWord]
           exact hliveEvm
         obtain ⟨_, _, hafterLive⟩ := RD.cureLiveGuardOk
@@ -788,7 +788,7 @@ theorem cureFileBodyCore {σ σ₀ A I} {g : UInt256}
           (by simpa [solcSlotWordAt] using hliveEvm) (by jump_dest) (by simp)
         by_cases hwhat : fileWhat I = fileWaitBytes
         · let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-          let evm1 := Solm.EVM.storageStore evm0 I.codeOwner ⟨3⟩ (fileData I)
+          let evm1 := Stele.EVM.storageStore evm0 I.codeOwner ⟨3⟩ (fileData I)
           have hbodySplit :
               (ExecTransitionBody config contract evm0 locals fileTransition.body
                 (.returned { contract := contract, locals := locals } evm1 none)) ∧
@@ -798,7 +798,7 @@ theorem cureFileBodyCore {σ σ₀ A I} {g : UInt256}
             simpa [evm0, evm1, locals] using
               (cureFileSourceBodyOkSplit
                 (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
-                hwv hauthSolm hliveSolm hwhat)
+                hwv hauthStele hliveStele hwhat)
           have hmatch : calldataWord I.calldata 4 = ABI.bytesToWord fileWaitBytes :=
             fileWhatWord_eq_of_bytes_eq (by omega) hwhat
           rcases cureFileX_storeWaitSplit (I := I) hmatch hafterLive with
@@ -820,21 +820,21 @@ theorem cureFileBodyCore {σ σ₀ A I} {g : UInt256}
             simpa [evm0, locals] using
               (cureFileSourceBodyUnrecognized
                 (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
-                hwv hauthSolm hliveSolm hwhat)
+                hwv hauthStele hliveStele hwhat)
           have hneq : calldataWord I.calldata 4 ≠ ABI.bytesToWord fileWaitBytes :=
             fileWhatWord_ne_of_bytes_ne (by omega) hwhat (by native_decide)
           exact (cureFileX_unrecognized (I := I) hneq hafterLive)
             |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
-      · have hliveSolm : solcSlotWordAt ⟨1⟩ σ I ≠ ⟨1⟩ := by
-          intro hsolm
-          exact hliveEvm (by rw [hliveWord, hsolm])
+      · have hliveStele : solcSlotWordAt ⟨1⟩ σ I ≠ ⟨1⟩ := by
+          intro hstele
+          exact hliveEvm (by rw [hliveWord, hstele])
         let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
         have hbody :
             ExecTransitionBody config contract evm0 locals fileTransition.body .reverted := by
           simpa [evm0, locals] using
             (cureFileSourceBodyLiveReverts
               (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
-              hwv hauthSolm hliveSolm)
+              hwv hauthStele hliveStele)
         have hmemAuth :
             (twoWordHashMem (solcSourceWord I) ⟨0⟩ solcFreePtrMem).size = 96 :=
           twoWordHashMem_size_96 (solcSourceWord I) ⟨0⟩ solcFreePtrMem_size
@@ -855,16 +855,16 @@ theorem cureFileBodyCore {σ σ₀ A I} {g : UInt256}
             repeat' first | apply And.intro | native_decide)
           (by simpa [solcSlotWordAt] using hliveEvm) hmemAuth hread64 (by simp)
         exact hrev.reEquivExecutionRevert hcode hdispatch hdecode hbody
-    · have hauthSolm : solcSlotWordAt callerSlot σ I ≠ ⟨1⟩ := by
-        intro hsolm
-        exact hauthEvm (by rw [hcallerWord, hsolm])
+    · have hauthStele : solcSlotWordAt callerSlot σ I ≠ ⟨1⟩ := by
+        intro hstele
+        exact hauthEvm (by rw [hcallerWord, hstele])
       let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
       have hbody :
           ExecTransitionBody config contract evm0 locals fileTransition.body .reverted := by
         simpa [evm0, locals] using
           (cureFileSourceBodyAuthReverts
             (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
-            hwv hauthSolm)
+            hwv hauthStele)
       have hauthSolc :
           solcSlotWord σ I (solcMappingSlot ⟨0⟩ (solcSourceWord I)) ≠ ⟨1⟩ := by
         simpa [callerSlot, cureCallerWardsSlot, solcSlotWordAt] using hauthEvm

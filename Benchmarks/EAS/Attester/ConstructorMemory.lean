@@ -1,7 +1,7 @@
 import Benchmarks.EAS.Attester.ConstructorSource
 import Benchmarks.EAS.Attester.PairAllocMemory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
 open Benchmarks.EAS.Attester.Immutables attesterCreationBlocks
 
 namespace Benchmarks.EAS.Attester

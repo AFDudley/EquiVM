@@ -3,7 +3,7 @@ import Benchmarks.UniswapV4PoolManager.Routines
 import Benchmarks.UniswapV4PoolManager.Authorization
 import Benchmarks.UniswapV4PoolManager.RuntimeBlocks_008
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.UniswapV4PoolManager.Immutables
 
@@ -11,8 +11,8 @@ namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 2000000
 
 def transferOwnershipPost (evm : EVM.State) (newOwner : UInt256) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨0⟩
-    (setAddressOffset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩) newOwner)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨0⟩
+    (setAddressOffset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩) newOwner)
 
 theorem transferOwnershipAssign (evm : EVM.State) (locals imms : Store) (newOwner : UInt256)
     (hc : newOwner.toNat < EVM.addressModulus) (hbase : locals.get? "owner" = none) :

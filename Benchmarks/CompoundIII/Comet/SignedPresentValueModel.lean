@@ -2,13 +2,13 @@ import Benchmarks.CompoundIII.Comet.PresentValue
 import Benchmarks.CompoundIII.Comet.NegativePrincipal
 import Benchmarks.CompoundIII.Comet.SignedWord
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 
 def signedPresentMagnitude (evm : EVM.State) (principal : UInt256) (borrow : Bool) : UInt256 :=
   presentValueWord
-    (totalsIndexWord (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩) borrow)
+    (totalsIndexWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩) borrow)
     (if borrow then negativePrincipal principal else positivePrincipal principal)
 
 def signedPresentValueInt (evm : EVM.State) (principal : UInt256) : Int :=

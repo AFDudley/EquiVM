@@ -3,7 +3,7 @@ import Benchmarks.Safe.Main.CalldataBytesDecoder
 import Benchmarks.Safe.Main.Blocks.Runtime_041
 import Benchmarks.Safe.Main.Blocks.Runtime_044
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.Main

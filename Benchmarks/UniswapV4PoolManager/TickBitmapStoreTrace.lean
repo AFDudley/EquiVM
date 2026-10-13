@@ -3,7 +3,7 @@ import Benchmarks.UniswapV4PoolManager.TickBitmapStoreStatic
 import Benchmarks.UniswapV4PoolManager.MappingScratchMemory
 import Benchmarks.UniswapV4PoolManager.TransientTrace
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.UniswapV4PoolManager.Immutables
 namespace Benchmarks.UniswapV4PoolManager

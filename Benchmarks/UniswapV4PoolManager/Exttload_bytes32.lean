@@ -8,11 +8,11 @@ import Benchmarks.UniswapV4PoolManager.RuntimeBlocks_009
 # PoolManager `exttload(bytes32)`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 2292; reach lemma `poolManagerReachExttload_bytes32Body`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.UniswapV4PoolManager.Immutables
 
@@ -26,7 +26,7 @@ theorem exttloadWordBodyReturns (evm : EVM.State) (locals imms : Store) (slot : 
     (hslot : locals.get? "slot" = some (wordBytes32Value slot)) :
     ExecTransitionBody config contract evm locals exttload_bytes32Transition.body
       (.returned (calldataFrame contract locals imms evm) evm
-        (some [wordBytes32Value (Solm.EVM.transientLoad evm evm.executionEnv.codeOwner slot)]))
+        (some [wordBytes32Value (Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot)]))
       imms := by
   apply guardedReturnBody hwv hhi
   apply evalCastValue (rawTransient_read rfl ?_) (castUint256ToBytes32 _)

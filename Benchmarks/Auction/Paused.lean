@@ -1,6 +1,6 @@
 import Benchmarks.Auction.Storage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 100000
 
@@ -11,7 +11,7 @@ theorem pausedBodyReturns (evm : EVM.State) (locals : Store)
     ExecTransitionBody auctionConfig auctionContract evm locals pausedGetter.body
       (.returned { contract := auctionContract, locals := locals } evm
         (some [wordToElem .bool
-          (UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨51⟩) ⟨255⟩)])) := by
+          (UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨51⟩) ⟨255⟩)])) := by
   exact ExecFuncBody.execBlockRet <|
     (ABlock.start.requireStep (evalCallvalueEq_true hwv)).returns (by
       rw [pausedRef, scalarRead evm locals "_paused" .bool (auctionBoolLoc ⟨51⟩)
@@ -56,7 +56,7 @@ theorem pausedBodyCore {σ σ₀ A I} {g : UInt256}
         (.returned { contract := auctionContract, locals := ∅ }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [wordToElem .bool (UInt256.land (solcSlotWord σ I ⟨51⟩) ⟨255⟩)])) := by
-      simpa [solcSlotWord, initState, Solm.EVM.storageLoad, State.lookupAccount] using
+      simpa [solcSlotWord, initState, Stele.EVM.storageLoad, State.lookupAccount] using
         pausedBodyReturns (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           ∅ hwv (by simp)
     exact (pausedX hreach hwv).reEquivExecution hcode hd hdec hbody

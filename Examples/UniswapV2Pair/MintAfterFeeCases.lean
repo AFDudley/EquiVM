@@ -1,7 +1,7 @@
 import Examples.UniswapV2Pair.MintProportionalRuntimeCases
 import Examples.UniswapV2Pair.MintInitialAfterFeeCases
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace UniswapV2Pair
 
@@ -17,8 +17,8 @@ theorem uniswapMintAfterMintFeeCases
     (hdispatch : dispatchMsg contract I.calldata = some mintTransition)
     (hsz36 : 36 ≤ I.calldata.size)
     (hwv : I.weiValue = ⟨0⟩)
-    (hunlockedSolm :
-      Solm.EVM.storageLoad
+    (hunlockedStele :
+      Stele.EVM.storageLoad
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
           ⟨12⟩ =
@@ -113,14 +113,14 @@ theorem uniswapMintAfterMintFeeCases
     runtimeRefinementFor config contract σ σ₀ g A I := by
   by_cases htotalZero : totalSupply = ⟨0⟩
   · exact uniswapMintInitialAfterMintFeeCases nextLocals recipient fee hcode hdispatch hsz36
-      hwv hunlockedSolm hguard0 hguard1 hcall0 hdec0 hcall1 hdec1 hle0Source hle1Source
+      hwv hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1 hdec1 hle0Source hle1Source
       hfee rd3701 htotalBase hamount0 hamount1 hreserve0 hreserve1 htotalEq htotalSlot
       htotalZero hclean0 hclean1 hmem hmem64 hAccounts henv hrecipient hto hflag
       hfeeOnGet hbalance0 hbalance1 hreserve0Base hreserve1Base hkLast hunlocked hperm
   · let evmS := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let locals := nextLocals.insert "_totalSupply" (uniswapUint256Value totalSupply)
     have hprefix := uniswapMintAfterMintFeeTotalSupplyPrefix_of_call
-      evmS evm0S evm1S evmFeeS I nextLocals hwv hunlockedSolm hguard0 hguard1
+      evmS evm0S evm1S evmFeeS I nextLocals hwv hunlockedStele hguard0 hguard1
       hcall0 hdec0 hcall1 hdec1 hle0Source hle1Source hfee htotalBase
     have hruntime := uniswapMintProportionalRuntimeCases (locals := locals) evmFeeS recipient fee
       rd3701 hAccounts henv hrecipient

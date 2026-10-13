@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.TickUpdateNetCalls
 import Benchmarks.UniswapV3.Pool.TickUpdateStaticSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 1000
 
@@ -82,7 +82,7 @@ theorem tickUpdateReturns (imms : Store) (evm : EVM.State) (a : TickUpdateArgs)
   apply execBlock_append_ok (tickUpdateNetStartSource imms evm a hv hm)
   refine ExecBlock.consNormal (tickUpdateNetChoiceSource imms evm a hdlo hdhi hn) ?_
   have hg := tickUpdateNetReadyGet imms evm a a.upper
-  refine ExecBlock.consNormal (solm' := tickUpdateNetReadyFrame imms a evm a.upper)
+  refine ExecBlock.consNormal (stele' := tickUpdateNetReadyFrame imms a evm a.upper)
     (evm' := tickUpdateFinalState a evm)
     (ExecStmt.assign (evalExpr_var_get hg.2.2)
       (assignTickLiquidity (tickUpdateNetReadyFrame imms a evm a.upper).locals imms _ "info"

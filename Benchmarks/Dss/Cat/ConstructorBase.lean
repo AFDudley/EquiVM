@@ -3,7 +3,7 @@ import Reasoning.Memory
 import Benchmarks.Dss.Cat.Common
 import Reasoning.ExternalCall
 import Reasoning.Initcode
-import Solm.Refine
+import Stele.Refine
 
 /-!
 # MakerDAO/Sky DSS Cat constructor shared helpers
@@ -14,12 +14,12 @@ slots — `wards[sender] = 1`, `vat = vat_` (address slot 3), `live = 1` (scalar
 Pot's four extra scalar stores and packs `vat` into slot 3 (not slot 5).
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 section
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 2000000
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Cat
 
@@ -105,7 +105,7 @@ theorem catCtorDeployment_shape {args : List Value} {deployedInitcode : ByteArra
     (hdeploy : config.selfDeployment catCreationBytecode args = some deployedInitcode) :
     ∃ vat : AccountAddress,
       args = [.address vat] ∧ deployedInitcode = catCtorCode vat := by
-  simp [config, contract, constructorDecl, Solm.genSolidityConstructorDeployment] at hdeploy
+  simp [config, contract, constructorDecl, Stele.genSolidityConstructorDeployment] at hdeploy
   cases args with
   | nil =>
       simp [ABI.encodeABIValues?, ABI.encodeABIValuesFrom?, addr] at hdeploy

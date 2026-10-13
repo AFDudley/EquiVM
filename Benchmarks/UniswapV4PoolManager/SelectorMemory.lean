@@ -2,7 +2,7 @@ import Benchmarks.UniswapV4PoolManager.Bytes4
 import Benchmarks.UniswapV4PoolManager.BytesObjectMemory
 import Benchmarks.UniswapV4PoolManager.MemorySlice
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 -- LIBRARY CANDIDATE: a subwindow of a bytes-object payload.

@@ -1,6 +1,6 @@
 import Benchmarks.Morpho.MorphoBlue.BodyCommon
 import Benchmarks.Morpho.MorphoBlue.Storage
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MorphoBlue.Immutables
 namespace Benchmarks.Morpho.MorphoBlue
@@ -29,8 +29,8 @@ theorem addressAdminBodySplit (v : MorphoImmutables) (evm : EVM.State)
     (hne : value ≠ solcAddressSlotWord slot evm.accountMap evm.executionEnv) :
     ExecTransitionBody config contract evm locals (addressAdminBody name arg event)
       (.returned (addressAdminFrame v locals evm.executionEnv.calldata)
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner slot
-          (setAddressOffset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot) value))
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner slot
+          (setAddressOffset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot) value))
         none) (immStore v) ∧
     (evm.executionEnv.perm = false →
       ExecTransitionBody config contract evm locals (addressAdminBody name arg event)

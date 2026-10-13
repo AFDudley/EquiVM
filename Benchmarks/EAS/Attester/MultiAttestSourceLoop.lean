@@ -1,6 +1,6 @@
 import Benchmarks.EAS.Attester.MultiAttestSourceRow
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.EAS.Attester
 
@@ -53,12 +53,12 @@ theorem attestOuterRun {C : ContractDecl} {imms : Store} {evm : State}
       refine .inr ⟨by intro k hk hk'; omega, locals, ExecForLoop.falseDone ?_,
         by simpa only [hrequests] using hq, ha, by intro name _; rfl⟩
       simpa only [attestOuterCond, hin, Nat.lt_irrefl, decide_false] using
-        (evalLocalNatLt (cfg := config) (solm := ⟨C, locals, imms⟩) (evm := evm) hindex hcount)
+        (evalLocalNatLt (cfg := config) (stele := ⟨C, locals, imms⟩) (evm := evm) hindex hcount)
   | succ remaining ih =>
       have hin : i < n := by omega
       have hcond : evalExpr? config ⟨C, locals, imms⟩ evm attestOuterCond = .ok (.bool true) := by
         simpa only [attestOuterCond, hin, decide_true] using
-          (evalLocalNatLt (cfg := config) (solm := ⟨C, locals, imms⟩) (evm := evm) hindex hcount)
+          (evalLocalNatLt (cfg := config) (stele := ⟨C, locals, imms⟩) (evm := evm) hindex hcount)
       obtain ⟨schema, inputs, hsch, hrow, hexp, hlenRow, hfit, hsnormal, hinputs⟩ := hviews i hin
       by_cases hempty : inputs = []
       · subst inputs

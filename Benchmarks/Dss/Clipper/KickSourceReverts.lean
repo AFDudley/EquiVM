@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Clipper.KickSourcePrefix
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 namespace Benchmarks.Dss.Clipper
@@ -65,7 +65,7 @@ theorem clipperKickSourceRevertsUnauthorized (v : ClipperImmutables)
     (evm : EVM.State) (I : ExecutionEnv)
     (hvalue : evm.executionEnv.weiValue = ⟨0⟩)
     (hsrc : evm.executionEnv.source = I.source)
-    (hauth : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+    (hauth : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
       (clipperRelyAuthStorageSlot I) ≠ ⟨1⟩) :
     ExecBlock config { contract := contract, locals := clipperKickStore I, immutables := immStore v }
       evm kickTransition.body .reverted := by
@@ -79,9 +79,9 @@ theorem clipperKickSourceRevertsLocked (v : ClipperImmutables)
     (evm : EVM.State) (I : ExecutionEnv)
     (hvalue : evm.executionEnv.weiValue = ⟨0⟩)
     (hsrc : evm.executionEnv.source = I.source)
-    (hauth : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+    (hauth : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
       (clipperRelyAuthStorageSlot I) = ⟨1⟩)
-    (hlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨13⟩ ≠ ⟨0⟩) :
+    (hlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨13⟩ ≠ ⟨0⟩) :
     ExecBlock config { contract := contract, locals := clipperKickStore I, immutables := immStore v }
       evm kickTransition.body .reverted := by
   have hauthEval := evalExpr_clipperAuth_true v evm I (clipperKickStore I) hsrc
@@ -97,10 +97,10 @@ theorem clipperKickSourceRevertsStoppedSplit (v : ClipperImmutables)
     (evm : EVM.State) (I : ExecutionEnv)
     (hvalue : evm.executionEnv.weiValue = ⟨0⟩)
     (hsrc : evm.executionEnv.source = I.source)
-    (hauth : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+    (hauth : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
       (clipperRelyAuthStorageSlot I) = ⟨1⟩)
-    (hlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨13⟩ = ⟨0⟩) :
-    (1 ≤ (Solm.EVM.storageLoad (clipperKickLockedState evm)
+    (hlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨13⟩ = ⟨0⟩) :
+    (1 ≤ (Stele.EVM.storageLoad (clipperKickLockedState evm)
       (clipperKickLockedState evm).executionEnv.codeOwner ⟨14⟩).toNat →
     ExecBlock config { contract := contract, locals := clipperKickStore I, immutables := immStore v }
       evm kickTransition.body .reverted) ∧
@@ -134,10 +134,10 @@ theorem clipperKickSourceRevertsStopped (v : ClipperImmutables)
     (evm : EVM.State) (I : ExecutionEnv)
     (hvalue : evm.executionEnv.weiValue = ⟨0⟩)
     (hsrc : evm.executionEnv.source = I.source)
-    (hauth : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+    (hauth : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
       (clipperRelyAuthStorageSlot I) = ⟨1⟩)
-    (hlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨13⟩ = ⟨0⟩)
-    (hstopped : 1 ≤ (Solm.EVM.storageLoad (clipperKickLockedState evm)
+    (hlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨13⟩ = ⟨0⟩)
+    (hstopped : 1 ≤ (Stele.EVM.storageLoad (clipperKickLockedState evm)
       (clipperKickLockedState evm).executionEnv.codeOwner ⟨14⟩).toNat) :
     ExecBlock config { contract := contract, locals := clipperKickStore I, immutables := immStore v }
       evm kickTransition.body .reverted :=
@@ -147,10 +147,10 @@ theorem clipperKickSourceRevertsTab (v : ClipperImmutables)
     (evm : EVM.State) (I : ExecutionEnv)
     (hvalue : evm.executionEnv.weiValue = ⟨0⟩)
     (hsrc : evm.executionEnv.source = I.source)
-    (hauth : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+    (hauth : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
       (clipperRelyAuthStorageSlot I) = ⟨1⟩)
-    (hlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨13⟩ = ⟨0⟩)
-    (hstopped : (Solm.EVM.storageLoad (clipperKickLockedState evm)
+    (hlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨13⟩ = ⟨0⟩)
+    (hstopped : (Stele.EVM.storageLoad (clipperKickLockedState evm)
       (clipperKickLockedState evm).executionEnv.codeOwner ⟨14⟩).toNat < 1)
     (htab : ¬ 0 < (clipperKickTabWord I).toNat) :
     ExecBlock config { contract := contract, locals := clipperKickStore I, immutables := immStore v }
@@ -174,10 +174,10 @@ theorem clipperKickSourceRevertsLot (v : ClipperImmutables)
     (evm : EVM.State) (I : ExecutionEnv)
     (hvalue : evm.executionEnv.weiValue = ⟨0⟩)
     (hsrc : evm.executionEnv.source = I.source)
-    (hauth : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+    (hauth : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
       (clipperRelyAuthStorageSlot I) = ⟨1⟩)
-    (hlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨13⟩ = ⟨0⟩)
-    (hstopped : (Solm.EVM.storageLoad (clipperKickLockedState evm)
+    (hlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨13⟩ = ⟨0⟩)
+    (hstopped : (Stele.EVM.storageLoad (clipperKickLockedState evm)
       (clipperKickLockedState evm).executionEnv.codeOwner ⟨14⟩).toNat < 1)
     (htab : 0 < (clipperKickTabWord I).toNat)
     (hlot : ¬ 0 < (clipperKickLotWord I).toNat) :
@@ -204,10 +204,10 @@ theorem clipperKickSourceRevertsUsr (v : ClipperImmutables)
     (evm : EVM.State) (I : ExecutionEnv)
     (hvalue : evm.executionEnv.weiValue = ⟨0⟩)
     (hsrc : evm.executionEnv.source = I.source)
-    (hauth : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+    (hauth : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
       (clipperRelyAuthStorageSlot I) = ⟨1⟩)
-    (hlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨13⟩ = ⟨0⟩)
-    (hstopped : (Solm.EVM.storageLoad (clipperKickLockedState evm)
+    (hlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨13⟩ = ⟨0⟩)
+    (hstopped : (Stele.EVM.storageLoad (clipperKickLockedState evm)
       (clipperKickLockedState evm).executionEnv.codeOwner ⟨14⟩).toNat < 1)
     (htab : 0 < (clipperKickTabWord I).toNat)
     (hlot : 0 < (clipperKickLotWord I).toNat)
@@ -237,10 +237,10 @@ theorem clipperKickSourceRevertsId (v : ClipperImmutables)
     (evm : EVM.State) (I : ExecutionEnv)
     (hvalue : evm.executionEnv.weiValue = ⟨0⟩)
     (hsrc : evm.executionEnv.source = I.source)
-    (hauth : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+    (hauth : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
       (clipperRelyAuthStorageSlot I) = ⟨1⟩)
-    (hlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨13⟩ = ⟨0⟩)
-    (hstopped : (Solm.EVM.storageLoad (clipperKickLockedState evm)
+    (hlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨13⟩ = ⟨0⟩)
+    (hstopped : (Stele.EVM.storageLoad (clipperKickLockedState evm)
       (clipperKickLockedState evm).executionEnv.codeOwner ⟨14⟩).toNat < 1)
     (htab : 0 < (clipperKickTabWord I).toNat)
     (hlot : 0 < (clipperKickLotWord I).toNat)

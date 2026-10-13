@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV4PoolManager.WordPow2
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 def simpleMulDiv (a b denominator : UInt256) : UInt256 := UInt256.div (UInt256.mul a b) denominator

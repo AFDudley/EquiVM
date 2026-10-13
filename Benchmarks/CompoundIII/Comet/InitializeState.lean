@@ -1,7 +1,7 @@
 import Benchmarks.CompoundIII.Comet.ScalarWrites
 import Benchmarks.CompoundIII.Comet.InitializeWords
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 
@@ -23,7 +23,7 @@ theorem storeInitialIndices_accountMap (evm : EVM.State) :
     (storeTotalsIndex (storeTotalsIndex evm false ⟨1000000000000000⟩)
       true ⟨1000000000000000⟩).accountMap =
     sstoreAccountMap evm.executionEnv.codeOwner evm.accountMap ⟨0⟩
-      (initializeIndicesWord (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)) := by
+      (initializeIndicesWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)) := by
   unfold storeTotalsIndex
   simp only [totalsIndexOffset, Bool.false_eq_true, if_false, if_true, storageStore_executionEnv]
   cases he : evm.accountMap.get? evm.executionEnv.codeOwner with
@@ -45,8 +45,8 @@ theorem initializeSourceState_accountMap {σ σ₀ A I} {g : Sat256} :
   change sstoreAccountMap I.codeOwner
     (sstoreAccountMap I.codeOwner σ ⟨1⟩
       (initializeTimeWord (solcSlotWordAt ⟨1⟩ σ I) (timestampWord I))) ⟨0⟩
-    (initializeIndicesWord (Solm.EVM.storageLoad
-      (Solm.EVM.storageStore (initState σ σ₀ g A I) I.codeOwner ⟨1⟩
+    (initializeIndicesWord (Stele.EVM.storageLoad
+      (Stele.EVM.storageStore (initState σ σ₀ g A I) I.codeOwner ⟨1⟩
         (initializeTimeWord (solcSlotWordAt ⟨1⟩ σ I) (timestampWord I))) I.codeOwner ⟨0⟩)) = _
   rw [storageLoad_after_initState_store]
   rfl

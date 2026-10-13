@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MorphoBlue.MarketParamsStorage
 import Benchmarks.Morpho.MorphoBlue.MarketStorageCommon
 import Benchmarks.Morpho.MorphoBlue.BorrowRateABI
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Morpho.MorphoBlue.Immutables
 namespace Benchmarks.Morpho.MorphoBlue
 set_option maxRecDepth 1000

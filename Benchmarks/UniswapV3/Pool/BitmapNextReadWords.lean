@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.BitmapNextModel
 import Benchmarks.UniswapV3.Pool.BitmapPositionLaws
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 def bitmapNextMemory (mem : ByteArray) (compressed : Int) (lte : Bool) : ByteArray :=

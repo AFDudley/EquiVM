@@ -5,18 +5,18 @@ import Reasoning.Initcode
 import Reasoning.Memory
 import Reasoning.Reach
 import Reasoning.Solc
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 import Reasoning.Storage
-import Solm.Refine
+import Stele.Refine
 
 /-!
 # MakerDAO/Sky DSS Flipper constructor correctness stub
 
-The optimized creation bytecode, deployed runtime bytecode, and Solm constructor specification are
+The optimized creation bytecode, deployed runtime bytecode, and Stele constructor specification are
 present. The constructor-equivalence proof is intentionally left as the benchmark target.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Flipper
 
@@ -32,7 +32,7 @@ def flipperCtorArgsTail (vat cat : Ethereum.AccountAddress) (ilk : List UInt8) :
 theorem flipperCtorArgsTail_encode (vat cat : Ethereum.AccountAddress) (ilk : List UInt8)
     (hilk : ilk.length = 32) :
     ABI.encodeABIValues? [addr, addr, bytes32]
-      [Solm.Value.address vat, Solm.Value.address cat, Solm.Value.fixedBytes bytes32Width ilk] =
+      [Stele.Value.address vat, Stele.Value.address cat, Stele.Value.fixedBytes bytes32Width ilk] =
       some (flipperCtorArgsTail vat cat ilk).toList := by
   simp [flipperCtorArgsTail, addr, bytes32, bytes32Width, hilk, ABI.encodeABIValues?,
     ABI.encodeABIValuesFrom?, ABI.encodeABIValue?, ABI.encodeABIWord?,
@@ -42,21 +42,21 @@ theorem flipperCtorArgsTail_encode (vat cat : Ethereum.AccountAddress) (ilk : Li
 theorem flipperCtorDeployment_eq (vat cat : Ethereum.AccountAddress) (ilk : List UInt8)
     (hilk : ilk.length = 32) :
     config.selfDeployment flipperCreationBytecode
-      [Solm.Value.address vat, Solm.Value.address cat, Solm.Value.fixedBytes bytes32Width ilk] =
+      [Stele.Value.address vat, Stele.Value.address cat, Stele.Value.fixedBytes bytes32Width ilk] =
       some (flipperCreationBytecode ++ flipperCtorArgsTail vat cat ilk) := by
-  simp [config, contract, constructorDecl, Solm.genSolidityConstructorDeployment]
+  simp [config, contract, constructorDecl, Stele.genSolidityConstructorDeployment]
   simp [flipperCtorArgsTail, addr, bytes32, bytes32Width, hilk, ABI.encodeABIValues?,
     ABI.encodeABIValuesFrom?, ABI.encodeABIValue?, ABI.encodeABIWord?, ABI.abiTupleHeadSize?,
     ABI.staticABIEncodedSize?, ABI.isDynamicABIType, ABI.zeroBytes, List.append_assoc]
 
-theorem flipperCtorDeployment_shape {args : List Solm.Value} {deployedInitcode : ByteArray}
+theorem flipperCtorDeployment_shape {args : List Stele.Value} {deployedInitcode : ByteArray}
     (hdeploy : config.selfDeployment flipperCreationBytecode args = some deployedInitcode) :
     ∃ vat cat : Ethereum.AccountAddress, ∃ ilk : List UInt8,
       args =
-        [Solm.Value.address vat, Solm.Value.address cat, Solm.Value.fixedBytes bytes32Width ilk] ∧
+        [Stele.Value.address vat, Stele.Value.address cat, Stele.Value.fixedBytes bytes32Width ilk] ∧
       ilk.length = 32 ∧
       deployedInitcode = flipperCreationBytecode ++ flipperCtorArgsTail vat cat ilk := by
-  simp [config, contract, constructorDecl, Solm.genSolidityConstructorDeployment] at hdeploy
+  simp [config, contract, constructorDecl, Stele.genSolidityConstructorDeployment] at hdeploy
   cases args with
   | nil => simp [ABI.encodeABIValues?, ABI.encodeABIValuesFrom?, addr, bytes32] at hdeploy
   | cons a rest =>
@@ -459,7 +459,7 @@ private theorem evalExpr_flipperCtorLocalIlk {evm : EVM.State}
 
 theorem assign_flipperCtorBegStorage (evm : EVM.State) {locals : Store}
     (hbase : locals.get? "beg" = none) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨4⟩
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨4⟩
       (⟨1050000000000000000⟩ : UInt256)
     assignStorageRef? config { contract := contract, locals := locals } evm
       .storage begRef (.int defaultBeg) =
@@ -484,8 +484,8 @@ theorem assign_flipperCtorBegStorage (evm : EVM.State) {locals : Store}
 
 theorem assign_flipperCtorTtlStorage (evm : EVM.State) {locals : Store}
     (hbase : locals.get? "ttl" = none) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨5⟩
-      (setUint48Offset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩)
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨5⟩
+      (setUint48Offset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩)
         (⟨10800⟩ : UInt256))
     assignStorageRef? config { contract := contract, locals := locals } evm
       .storage ttlRef (.int defaultTtl) =
@@ -512,8 +512,8 @@ theorem assign_flipperCtorTtlStorage (evm : EVM.State) {locals : Store}
 
 theorem assign_flipperCtorTauStorage (evm : EVM.State) {locals : Store}
     (hbase : locals.get? "tau" = none) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨5⟩
-      (setUint48Offset6Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩)
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨5⟩
+      (setUint48Offset6Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩)
         (⟨172800⟩ : UInt256))
     assignStorageRef? config { contract := contract, locals := locals } evm
       .storage tauRef (.int defaultTau) =
@@ -540,7 +540,7 @@ theorem assign_flipperCtorTauStorage (evm : EVM.State) {locals : Store}
 
 theorem assign_flipperCtorKicksStorage (evm : EVM.State) {locals : Store}
     (hbase : locals.get? "kicks" = none) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨6⟩ (⟨0⟩ : UInt256)
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨6⟩ (⟨0⟩ : UInt256)
     assignStorageRef? config { contract := contract, locals := locals } evm
       .storage kicksRef (.int 0) =
         .ok ({ contract := contract, locals := locals }, evm') := by
@@ -567,8 +567,8 @@ private theorem assign_flipperCtorAddressStorage (evm : EVM.State) (locals : Sto
     (her : evalStorageRef config { contract := contract, locals := locals } evm ref = .ok er)
     (hty : storageTypeAt? contract.storage er = some (.elem .address))
     (hloc : config.storageBackend.locate? er = some (.leaf (addrLoc slot))) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner slot
-      (setAddressOffset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner slot
+      (setAddressOffset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
         (EVM.word addrValue.val))
     assignStorageRef? config { contract := contract, locals := locals } evm
       .storage ref (.address addrValue) =
@@ -597,8 +597,8 @@ private theorem assign_flipperCtorAddressStorage (evm : EVM.State) (locals : Sto
 
 theorem assign_flipperCtorVatStorage (evm : EVM.State) (locals : Store)
     (vat : AccountAddress) (hbase : locals.get? "vat" = none) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨2⟩
-      (setAddressOffset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩)
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨2⟩
+      (setAddressOffset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩)
         (EVM.word vat.val))
     assignStorageRef? config { contract := contract, locals := locals } evm
       .storage vatRef (.address vat) =
@@ -612,8 +612,8 @@ theorem assign_flipperCtorVatStorage (evm : EVM.State) (locals : Store)
 
 theorem assign_flipperCtorCatStorage (evm : EVM.State) (locals : Store)
     (cat : AccountAddress) (hbase : locals.get? "cat" = none) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨7⟩
-      (setAddressOffset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨7⟩)
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨7⟩
+      (setAddressOffset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨7⟩)
         (EVM.word cat.val))
     assignStorageRef? config { contract := contract, locals := locals } evm
       .storage catRef (.address cat) =
@@ -633,7 +633,7 @@ theorem valueToWord_flipperIlk (ilk : List UInt8) (hilk : ilk.length = 32) :
 
 theorem assign_flipperCtorIlkStorage (evm : EVM.State) {locals : Store}
     (ilk : List UInt8) (hilk : ilk.length = 32) (hbase : locals.get? "ilk" = none) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨3⟩ (flipperIlkWord ilk)
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨3⟩ (flipperIlkWord ilk)
     assignStorageRef? config { contract := contract, locals := locals } evm
       .storage ilkRef (.fixedBytes bytes32Width ilk) =
         .ok ({ contract := contract, locals := locals }, evm') := by
@@ -659,7 +659,7 @@ theorem assign_flipperCtorIlkStorage (evm : EVM.State) {locals : Store}
 
 theorem assign_flipperCtorWardsCaller (evm : EVM.State) {locals : Store}
     (hbase : locals.get? "wards" = none) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner
       (wardsSlot (.address evm.executionEnv.source)) ⟨1⟩
     assignStorageRef? config { contract := contract, locals := locals } evm
       .storage (wardsRef sender) (.int 1) =
@@ -686,40 +686,40 @@ theorem assign_flipperCtorWardsCaller (evm : EVM.State) {locals : Store}
     (hstore := hstore)
 
 abbrev flipperCtorAfterBegState (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨4⟩
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨4⟩
     (⟨1050000000000000000⟩ : UInt256)
 
 abbrev flipperCtorAfterTtlState (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨5⟩
-    (setUint48Offset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨5⟩
+    (setUint48Offset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩)
       (⟨10800⟩ : UInt256))
 
 abbrev flipperCtorAfterTauState (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨5⟩
-    (setUint48Offset6Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨5⟩
+    (setUint48Offset6Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩)
       (⟨172800⟩ : UInt256))
 
 abbrev flipperCtorAfterKicksState (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨6⟩ (⟨0⟩ : UInt256)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨6⟩ (⟨0⟩ : UInt256)
 
 abbrev flipperCtorAfterVatState (evm : EVM.State) (vat : AccountAddress) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨2⟩
-    (setAddressOffset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨2⟩
+    (setAddressOffset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩)
       (EVM.word vat.val))
 
 abbrev flipperCtorAfterCatState (evm : EVM.State) (cat : AccountAddress) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨7⟩
-    (setAddressOffset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨7⟩)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨7⟩
+    (setAddressOffset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨7⟩)
       (EVM.word cat.val))
 
 abbrev flipperCtorAfterIlkState (evm : EVM.State) (ilk : List UInt8) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨3⟩ (flipperIlkWord ilk)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨3⟩ (flipperIlkWord ilk)
 
 abbrev flipperCtorAfterWardsState (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner
     (wardsSlot (.address evm.executionEnv.source)) ⟨1⟩
 
-theorem flipperCtorSolmExecSuccess
+theorem flipperCtorSteleExecSuccess
     {σ : AccountMap} {σ₀ : AccountMap} {A : Substate} {I : ExecutionEnv}
     {g : UInt256} (vat cat : AccountAddress) (ilk : List UInt8)
     (hilk : ilk.length = 32) (hwv : I.weiValue = ⟨0⟩) :
@@ -733,13 +733,13 @@ theorem flipperCtorSolmExecSuccess
     let evm6 := flipperCtorAfterCatState evm5 cat
     let evm7 := flipperCtorAfterIlkState evm6 ilk
     let evm8 := flipperCtorAfterWardsState evm7
-    solmCtorExec config contract
+    steleCtorExec config contract
       [.address vat, .address cat, .fixedBytes bytes32Width ilk]
       σ σ₀ g A I
       (.returned { contract := contract, locals := flipperCtorLocals vat cat ilk } evm8 none) := by
   intro evm0 evm1 evm2 evm3 evm4 evm5 evm6 evm7 evm8
   let locals := flipperCtorLocals vat cat ilk
-  refine solmCtorExec.intro (evmState := evm0) (argsStore := locals) ?_ rfl ?_ ?_
+  refine steleCtorExec.intro (evmState := evm0) (argsStore := locals) ?_ rfl ?_ ?_
   · rfl
   · rfl
   · refine ?_
@@ -814,14 +814,14 @@ theorem flipperCtorSolmExecSuccess
     simpa [ExecTransitionBody, contract, constructorDecl, locals, evm0, evm8] using
       ExecFuncBody.execBlockOK hblock
 
-theorem flipperSolmCtorExecReverts_nonpayable
+theorem flipperSteleCtorExecReverts_nonpayable
     {σ : AccountMap} {σ₀ : AccountMap} {A : Substate} {I : ExecutionEnv}
     {g : UInt256} (vat cat : AccountAddress) (ilk : List UInt8)
     (hwv : I.weiValue ≠ ⟨0⟩) :
-    solmCtorExec config contract
+    steleCtorExec config contract
       [.address vat, .address cat, .fixedBytes bytes32Width ilk]
       σ σ₀ g A I .reverted := by
-  refine solmCtorExec.intro
+  refine steleCtorExec.intro
     (evmState := initState σ σ₀
       (Sat256.ofUInt256 g) A I)
     (argsStore := flipperCtorLocals vat cat ilk)
@@ -971,49 +971,49 @@ theorem flipperCtorPacked_accountMap_eq {σBeg : AccountMap} {evm1s : EVM.State}
     Eq σPacked evm3s.accountMap := by
   intro slot5Old slot5New σPacked evm2s evm3s
   by_cases hmissing : σBeg.get? I.codeOwner = none
-  · have hmissingSolm : evm1s.accountMap.get? I.codeOwner = none :=
+  · have hmissingStele : evm1s.accountMap.get? I.codeOwner = none :=
       by rw [← hAccountsBeg]; exact hmissing
-    have hmissingSolmOwner :
+    have hmissingSteleOwner :
         evm1s.accountMap.get? evm1s.executionEnv.codeOwner = none := by
       rw [hExec]
-      exact hmissingSolm
+      exact hmissingStele
     have hevm2 : evm2s = evm1s := by
       simp [-Std.ExtTreeMap.get?_eq_getElem?, evm2s,
-        flipperCtorAfterTtlState, storageStore_absent, hmissingSolmOwner]
+        flipperCtorAfterTtlState, storageStore_absent, hmissingSteleOwner]
     have hevm3 : evm3s = evm1s := by
       simp [-Std.ExtTreeMap.get?_eq_getElem?, evm3s, flipperCtorAfterTauState,
         hevm2, storageStore_absent,
-        hmissingSolmOwner]
+        hmissingSteleOwner]
     simpa [σPacked, sstoreAccountMap_absent_same hmissing, hevm3] using hAccountsBeg
   · cases hfind : σBeg.get? I.codeOwner with
     | none => exact False.elim (hmissing hfind)
     | some acc =>
-        have hfindSolm : evm1s.accountMap.get? I.codeOwner = some acc := by
+        have hfindStele : evm1s.accountMap.get? I.codeOwner = some acc := by
           rw [← hAccountsBeg]
           exact hfind
-        have hfindSolmOwner :
+        have hfindSteleOwner :
             evm1s.accountMap.get? evm1s.executionEnv.codeOwner = some acc := by
           rw [hExec]
-          exact hfindSolm
+          exact hfindStele
         have hOld5 :
-            slot5Old = Solm.EVM.storageLoad evm1s evm1s.executionEnv.codeOwner ⟨5⟩ := by
-          simpa [slot5Old, solcSlotWord, Solm.EVM.storageLoad, State.lookupAccount,
+            slot5Old = Stele.EVM.storageLoad evm1s evm1s.executionEnv.codeOwner ⟨5⟩ := by
+          simpa [slot5Old, solcSlotWord, Stele.EVM.storageLoad, State.lookupAccount,
             Account.lookupStorage, hExec, hAccountsBeg]
         let ttlWord :=
           setUint48Offset0Word
-            (Solm.EVM.storageLoad evm1s evm1s.executionEnv.codeOwner ⟨5⟩)
+            (Stele.EVM.storageLoad evm1s evm1s.executionEnv.codeOwner ⟨5⟩)
             (⟨10800⟩ : UInt256)
         have hTtlLoad :
-            Solm.EVM.storageLoad evm2s evm2s.executionEnv.codeOwner ⟨5⟩ =
+            Stele.EVM.storageLoad evm2s evm2s.executionEnv.codeOwner ⟨5⟩ =
               setUint48Offset0Word slot5Old (⟨10800⟩ : UInt256) := by
           have hload := storageLoad_storageStore_same_present evm1s
-            evm1s.executionEnv.codeOwner hfindSolmOwner ⟨5⟩ ttlWord
+            evm1s.executionEnv.codeOwner hfindSteleOwner ⟨5⟩ ttlWord
           simpa [evm2s, flipperCtorAfterTtlState, ttlWord, hOld5,
             storageStore_executionEnv] using hload
         have hPackedVal :
             slot5New =
               setUint48Offset6Word
-                (Solm.EVM.storageLoad evm2s evm2s.executionEnv.codeOwner ⟨5⟩)
+                (Stele.EVM.storageLoad evm2s evm2s.executionEnv.codeOwner ⟨5⟩)
                 (⟨172800⟩ : UInt256) := by
           rw [hTtlLoad]
           exact flipperCtorPackedWord_eq slot5Old
@@ -1728,14 +1728,14 @@ theorem flipperConstructorCorrect :
         simpa [evm4s, flipperCtorAfterKicksState, storageStore_executionEnv] using hEvm3Exec
       have hOldVat :
           solcSlotWord σKicks I ⟨2⟩ =
-            Solm.EVM.storageLoad evm4s evm4s.executionEnv.codeOwner ⟨2⟩ := by
-        simpa [Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage, solcSlotWord,
+            Stele.EVM.storageLoad evm4s evm4s.executionEnv.codeOwner ⟨2⟩ := by
+        simpa [Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage, solcSlotWord,
           hEvm4Exec, hAccountsKicks]
       have hAccountsVat : Eq σVat evm5s.accountMap := by
         have hbase := congrArg
           (fun accounts => sstoreAccountMap I.codeOwner accounts ⟨2⟩
             (setAddressOffset0Word
-              (Solm.EVM.storageLoad evm4s evm4s.executionEnv.codeOwner ⟨2⟩)
+              (Stele.EVM.storageLoad evm4s evm4s.executionEnv.codeOwner ⟨2⟩)
               (EVM.word vat.val)))
           hAccountsKicks
         simpa [σVat, vatStored, evm5s, evm4s, flipperCtorAfterVatState,
@@ -1745,14 +1745,14 @@ theorem flipperConstructorCorrect :
         simpa [evm5s, flipperCtorAfterVatState, storageStore_executionEnv] using hEvm4Exec
       have hOldCat :
           solcSlotWord σVat I ⟨7⟩ =
-            Solm.EVM.storageLoad evm5s evm5s.executionEnv.codeOwner ⟨7⟩ := by
-        simpa [Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage, solcSlotWord,
+            Stele.EVM.storageLoad evm5s evm5s.executionEnv.codeOwner ⟨7⟩ := by
+        simpa [Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage, solcSlotWord,
           hEvm5Exec, hAccountsVat]
       have hAccountsCat : Eq σCat evm6s.accountMap := by
         have hbase := congrArg
           (fun accounts => sstoreAccountMap I.codeOwner accounts ⟨7⟩
             (setAddressOffset0Word
-              (Solm.EVM.storageLoad evm5s evm5s.executionEnv.codeOwner ⟨7⟩)
+              (Stele.EVM.storageLoad evm5s evm5s.executionEnv.codeOwner ⟨7⟩)
               (EVM.word cat.val)))
           hAccountsVat
         simpa [σCat, catStored, evm6s, evm5s, flipperCtorAfterCatState,
@@ -1781,7 +1781,7 @@ theorem flipperConstructorCorrect :
         (by simpa [Sat256.ofUInt256] using hsuccess)
         (by
           simpa [evm0s, evm1s, evm2s, evm3s, evm4s, evm5s, evm6s, evm7s, evm8s]
-            using flipperCtorSolmExecSuccess
+            using flipperCtorSteleExecSuccess
               (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
               (g := g) vat cat ilk hilk hwv)
         ?_
@@ -1792,7 +1792,7 @@ theorem flipperConstructorCorrect :
     rcases hrd.xiResult hcodeTail with hOOG | ⟨g', o, hrev⟩
     · exact typedConstructorRefinementFor.outOfGas (by simpa [Sat256.ofUInt256] using hOOG)
     · refine typedConstructorRefinementFor.execution (by simpa [Sat256.ofUInt256] using hrev)
-        (flipperSolmCtorExecReverts_nonpayable
+        (flipperSteleCtorExecReverts_nonpayable
           (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
           (g := g) vat cat ilk hwv) ?_
       exact ctorResultEquiv.revert rfl rfl

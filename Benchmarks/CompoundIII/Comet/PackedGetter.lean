@@ -1,7 +1,7 @@
 import Benchmarks.CompoundIII.Comet.MappingGetter
 import Benchmarks.CompoundIII.Comet.Storage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 
@@ -29,7 +29,7 @@ theorem low128_load (evm : EVM.State) (slot : UInt256) :
     storageLocLoad evm
       { slot := slot, offset := 0, size := ⟨16, by decide⟩, hbound := by decide,
         type := .int (.uint ⟨128, by decide⟩) } =
-      .int (low128 (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).toNat := by
+      .int (low128 (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).toNat := by
   exact storageLocLoad_uint_offset0 evm slot ⟨16, by decide⟩ ⟨128, by decide⟩
     rfl (by decide)
 
@@ -37,12 +37,12 @@ theorem high128_load (evm : EVM.State) (slot : UInt256) :
     storageLocLoad evm
       { slot := slot, offset := ⟨16, by decide⟩, size := ⟨16, by decide⟩, hbound := by decide,
         type := .int (.uint ⟨128, by decide⟩) } =
-      .int (high128 (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).toNat := by
+      .int (high128 (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).toNat := by
   rw [storageLocLoad_uint_offset evm slot ⟨16, by decide⟩ ⟨16, by decide⟩
     ⟨128, by decide⟩ rfl (by decide) (by decide)]
-  have hdiv : UInt256.div (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
+  have hdiv : UInt256.div (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
       (UInt256.ofNat (256 ^ 16)) =
-      high128 (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot) := by
+      high128 (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot) := by
     apply u256_inj
     simp [high128, UInt256.shiftRight, UInt256.div, UInt256.toNat, Fin.shiftRight_val,
       Nat.shiftRight_eq_div_pow, UInt256.ofNat]

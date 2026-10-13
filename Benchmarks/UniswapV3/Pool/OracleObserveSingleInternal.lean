@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.OracleObserveSingleSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
 
@@ -24,7 +24,7 @@ theorem oracleObserveSingleInternalSource (caller : Frame) (evm : EVM.State)
     simp_all only [oracleObserveSingleFrame]
   obtain ⟨out, hbody⟩ := oracleObserveSingleReturns caller.immutables evm time secondsAgo tick
     index liquidity card values hc ht hrun
-  exact internalCallFunctionReturn (callee := oracleObserveSingleFunction) (calleeSolm := out)
+  exact internalCallFunctionReturn (callee := oracleObserveSingleFunction) (calleeStele := out)
     (value := some values) he (by rw [hf]; exact oracleObserveSingleLookup)
     (oracleObserveSingleBind _ _ _ _ _ _) (by rw [hframe]; exact hbody)
 

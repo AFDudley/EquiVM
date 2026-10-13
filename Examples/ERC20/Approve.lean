@@ -2,7 +2,7 @@ import Reasoning.Storage
 import Examples.ERC20.Allowance
 import Examples.ERC20.Storage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -36,7 +36,7 @@ def approveSlotI (I : ExecutionEnv) : UInt256 :=
     (.address (AccountAddress.ofNat (approveSpenderWord I).toNat))
 
 def approvePostState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (approveSlot evm I) (approveValueWord I)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (approveSlot evm I) (approveValueWord I)
 
 theorem erc20Decode_approve_ok {I : ExecutionEnv}
     (hsz68 : 68 ≤ I.calldata.size) (hbig : I.calldata.size < 2 ^ 255 + 4)

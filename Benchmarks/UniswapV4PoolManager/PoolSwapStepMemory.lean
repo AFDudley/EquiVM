@@ -2,7 +2,7 @@ import Benchmarks.UniswapV4PoolManager.PoolSwapStepInitSource
 import Benchmarks.UniswapV4PoolManager.PoolSwapMemory
 import Benchmarks.UniswapV4PoolManager.PoolKeyMemory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 def poolSwapStepZeroMem (mem : ByteArray) (step : UInt256) : ByteArray :=

@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.SwapStepModel
 import Benchmarks.UniswapV3.Pool.LiquidityDeltaModel
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 def swapStepComplementExpr : Expr :=

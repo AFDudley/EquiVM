@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Jug.DripSourceRho
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 open Reasoning.Theory.RpowB
 
@@ -156,7 +156,7 @@ theorem jugDripSourceBodyVatIlksRmulOverflowRevertsNOne
         [.int (Int.ofNat fee.toNat), .int (Int.ofNat (⟨1⟩ : UInt256).toNat),
           .int (Int.ofNat jugRay.toNat)])
       (callee := rpowFunction) (locals := uintTernaryLocals fee ⟨1⟩ jugRay)
-      (calleeSolm :=
+      (calleeStele :=
         { contract := contract,
           locals := rpowLocalsZHN fee ⟨1⟩ jugRay fee (UInt256.div jugRay ⟨2⟩) ⟨0⟩ })
       hrpowArgs hlookupRpow hbindRpow hrpowBody
@@ -196,7 +196,7 @@ theorem jugDripSourceBodyVatIlksRmulOverflowRevertsNOne
     simpa [dripVatIlksPrevLocals] using
       (ExecStmt.letDecl
         (cfg := config)
-        (solm := { contract := contract, locals := dripVatIlksLocals I out })
+        (stele := { contract := contract, locals := dripVatIlksLocals I out })
         (evm := evmVat)
         (name := "prev")
         (ty := some uint256)
@@ -388,7 +388,7 @@ theorem jugDripSourceBodyVatIlksDiffXBoundRevertsNOne
         [.int (Int.ofNat fee.toNat), .int (Int.ofNat (⟨1⟩ : UInt256).toNat),
           .int (Int.ofNat jugRay.toNat)])
       (callee := rpowFunction) (locals := uintTernaryLocals fee ⟨1⟩ jugRay)
-      (calleeSolm :=
+      (calleeStele :=
         { contract := contract,
           locals := rpowLocalsZHN fee ⟨1⟩ jugRay fee (UInt256.div jugRay ⟨2⟩) ⟨0⟩ })
       hrpowArgs hlookupRpow hbindRpow hrpowBody
@@ -482,7 +482,7 @@ theorem jugDripSourceBodyVatIlksDiffXBoundRevertsNOne
     simpa [dripVatIlksPrevLocals, prev] using
       (ExecStmt.letDecl
         (cfg := config)
-        (solm := { contract := contract, locals := dripVatIlksLocals I out })
+        (stele := { contract := contract, locals := dripVatIlksLocals I out })
         (evm := evmVat)
         (name := "prev")
         (ty := some uint256)
@@ -676,7 +676,7 @@ theorem jugDripSourceBodyVatIlksDiffYBoundRevertsNOne
         [.int (Int.ofNat fee.toNat), .int (Int.ofNat (⟨1⟩ : UInt256).toNat),
           .int (Int.ofNat jugRay.toNat)])
       (callee := rpowFunction) (locals := uintTernaryLocals fee ⟨1⟩ jugRay)
-      (calleeSolm :=
+      (calleeStele :=
         { contract := contract,
           locals := rpowLocalsZHN fee ⟨1⟩ jugRay fee (UInt256.div jugRay ⟨2⟩) ⟨0⟩ })
       hrpowArgs hlookupRpow hbindRpow hrpowBody
@@ -764,7 +764,7 @@ theorem jugDripSourceBodyVatIlksDiffYBoundRevertsNOne
     simpa [dripVatIlksPrevLocals, prev] using
       (ExecStmt.letDecl
         (cfg := config)
-        (solm := { contract := contract, locals := dripVatIlksLocals I out })
+        (stele := { contract := contract, locals := dripVatIlksLocals I out })
         (evm := evmVat)
         (name := "prev")
         (ty := some uint256)
@@ -965,7 +965,7 @@ theorem jugDripSourceBodyVatFoldNoCodeRevertsNOne
         [.int (Int.ofNat fee.toNat), .int (Int.ofNat (⟨1⟩ : UInt256).toNat),
           .int (Int.ofNat jugRay.toNat)])
       (callee := rpowFunction) (locals := uintTernaryLocals fee ⟨1⟩ jugRay)
-      (calleeSolm :=
+      (calleeStele :=
         { contract := contract,
           locals := rpowLocalsZHN fee ⟨1⟩ jugRay fee (UInt256.div jugRay ⟨2⟩) ⟨0⟩ })
       hrpowArgs hlookupRpow hbindRpow hrpowBody
@@ -1046,7 +1046,7 @@ theorem jugDripSourceBodyVatFoldNoCodeRevertsNOne
     simpa [dripVatIlksPrevLocals, prev] using
       (ExecStmt.letDecl
         (cfg := config)
-        (solm := { contract := contract, locals := dripVatIlksLocals I out })
+        (stele := { contract := contract, locals := dripVatIlksLocals I out })
         (evm := evmVat)
         (name := "prev")
         (ty := some uint256)
@@ -1265,7 +1265,7 @@ theorem jugDripSourceBodyVatFoldCallFailedRevertsNOne
         [.int (Int.ofNat fee.toNat), .int (Int.ofNat (⟨1⟩ : UInt256).toNat),
           .int (Int.ofNat jugRay.toNat)])
       (callee := rpowFunction) (locals := uintTernaryLocals fee ⟨1⟩ jugRay)
-      (calleeSolm :=
+      (calleeStele :=
         { contract := contract,
           locals := rpowLocalsZHN fee ⟨1⟩ jugRay fee (UInt256.div jugRay ⟨2⟩) ⟨0⟩ })
       hrpowArgs hlookupRpow hbindRpow hrpowBody
@@ -1355,7 +1355,7 @@ theorem jugDripSourceBodyVatFoldCallFailedRevertsNOne
     simpa [dripVatIlksPrevLocals, prev] using
       (ExecStmt.letDecl
         (cfg := config)
-        (solm := { contract := contract, locals := dripVatIlksLocals I out })
+        (stele := { contract := contract, locals := dripVatIlksLocals I out })
         (evm := evmVat)
         (name := "prev")
         (ty := some uint256)
@@ -1464,7 +1464,7 @@ theorem jugDripSourceBodyVatFoldCallSucceededReturnsNOneSplit
     let delta : Int := (rate.toNat : Int) - (prev.toNat : Int)
     let foldLocals := (dripDeltaLocalsInt I out fee fee rate delta).insert "_foldRet" .unit
     let timestamp := UInt256.ofNat evmFold.executionEnv.header.timestamp
-    let evmRho := Solm.EVM.storageStore evmFold evmFold.executionEnv.codeOwner
+    let evmRho := Stele.EVM.storageStore evmFold evmFold.executionEnv.codeOwner
       (fileDutyRhoSlotFor I) timestamp
     ExecTransitionBody config contract evm0 locals dripTransition.body
       (.returned { contract := contract, locals := foldLocals } evmRho
@@ -1583,7 +1583,7 @@ theorem jugDripSourceBodyVatFoldCallSucceededReturnsNOneSplit
         [.int (Int.ofNat fee.toNat), .int (Int.ofNat (⟨1⟩ : UInt256).toNat),
           .int (Int.ofNat jugRay.toNat)])
       (callee := rpowFunction) (locals := uintTernaryLocals fee ⟨1⟩ jugRay)
-      (calleeSolm :=
+      (calleeStele :=
         { contract := contract,
           locals := rpowLocalsZHN fee ⟨1⟩ jugRay fee (UInt256.div jugRay ⟨2⟩) ⟨0⟩ })
       hrpowArgs hlookupRpow hbindRpow hrpowBody
@@ -1676,7 +1676,7 @@ theorem jugDripSourceBodyVatFoldCallSucceededReturnsNOneSplit
             [.var "ilk", .storage vowRef, .var "delta"] "_foldRet" (perm := true))
           (.ok { contract := contract, locals := foldLocals } evmFold) := by
     have h := ExecStmt.externalCallSuccess (cfg := config)
-      (solm := { contract := contract, locals := dripDeltaLocalsInt I out fee fee rate delta })
+      (stele := { contract := contract, locals := dripDeltaLocalsInt I out fee fee rate delta })
       (evm := evmVat) (receiver := .storage vatRef) (name := "fold") (eth := .intLit 0)
       (args := [.var "ilk", .storage vowRef, .var "delta"]) (retVar := "_foldRet")
       (perm := true) (target := dripVatAddress evmVat.accountMap evmVat.executionEnv)
@@ -1742,7 +1742,7 @@ theorem jugDripSourceBodyVatFoldCallSucceededReturnsNOneSplit
     simpa [dripVatIlksPrevLocals, prev] using
       (ExecStmt.letDecl
         (cfg := config)
-        (solm := { contract := contract, locals := dripVatIlksLocals I out })
+        (stele := { contract := contract, locals := dripVatIlksLocals I out })
         (evm := evmVat)
         (name := "prev")
         (ty := some uint256)

@@ -2,7 +2,7 @@ import Benchmarks.UniswapV4PoolManager.LeastSignificantBit
 import Benchmarks.UniswapV4PoolManager.Routines
 import Benchmarks.UniswapV4PoolManager.RuntimeBlocks_061
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.UniswapV4PoolManager.Immutables
 namespace Benchmarks.UniswapV4PoolManager

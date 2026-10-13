@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Dog.Dispatch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Dog.Immutables
 
 namespace Benchmarks.Dss.Dog
@@ -202,7 +202,7 @@ theorem dogVowBodyCore {v : DogImmutables} {code : ByteArray}
           (some [(.address (AccountAddress.ofNat
             (solcAddressSlotWord ⟨2⟩ σ I).toNat))])) (immStore v) := by
     simpa [vowTransition, solcAddressSlotWord, solcSlotWordAt, initState,
-      Solm.EVM.storageLoad, State.lookupAccount] using
+      Stele.EVM.storageLoad, State.lookupAccount] using
       dogAddressGetterBodyReturns v
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
         (ref := vowRef) (er := ({ base := "vow", steps := [] } : EvaledStorageRef))

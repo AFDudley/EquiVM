@@ -2,7 +2,7 @@ import Benchmarks.Dss.Vow.Arithmetic
 import Benchmarks.Dss.Vow.Cage
 import Benchmarks.Dss.Vow.FlopAsh
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -85,7 +85,7 @@ abbrev cageLocalsAfterHealRet
 abbrev cageVatAddressOf (evm : EVM.State) : AccountAddress :=
   AccountAddress.ofNat
     (UInt256.land
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩)
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩)
       solcAddrMask).toNat
 
 def cageFlopperCageStmts : List Stmt :=
@@ -633,7 +633,7 @@ theorem cageMinLeft
         (args := [.var "vatDai", .var "vatSin"])
         (argVals := [.int (Int.ofNat vatDai.toNat), .int (Int.ofNat vatSin.toNat)])
         (callee := minFunction) (locals := uintBinaryLocals vatDai vatSin)
-        (calleeSolm := { contract := contract, locals := uintBinaryLocalsZ vatDai vatSin vatDai })
+        (calleeStele := { contract := contract, locals := uintBinaryLocalsZ vatDai vatSin vatDai })
         (value := some [.int (Int.ofNat vatDai.toNat)])
         hargs (by rfl) hbind hbody)
   simp only [cageMinStmts]
@@ -687,7 +687,7 @@ theorem cageMinRight
         (args := [.var "vatDai", .var "vatSin"])
         (argVals := [.int (Int.ofNat vatDai.toNat), .int (Int.ofNat vatSin.toNat)])
         (callee := minFunction) (locals := uintBinaryLocals vatDai vatSin)
-        (calleeSolm := { contract := contract, locals := uintBinaryLocalsZ vatDai vatSin vatSin })
+        (calleeStele := { contract := contract, locals := uintBinaryLocalsZ vatDai vatSin vatSin })
         (value := some [.int (Int.ofNat vatSin.toNat)])
         hargs (by rfl) hbind hbody)
   simp only [cageMinStmts]

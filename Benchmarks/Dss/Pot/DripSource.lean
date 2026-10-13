@@ -1,7 +1,7 @@
 import Benchmarks.Dss.Pot.DripCommon
 
 /-!
-# MakerDAO/Sky DSS Pot `drip()` — Solm-source-side `ExecTransitionBody` leaf lemmas
+# MakerDAO/Sky DSS Pot `drip()` — Stele-source-side `ExecTransitionBody` leaf lemmas
 
 For each control-flow leaf of `dripTransition.body`, a fact
 `ExecTransitionBody config contract evm0 ∅ dripTransition.body <result>` where
@@ -15,7 +15,7 @@ mutate the EVM state, so the later `Pie`/`vat`/`vow` reads are threaded through 
 state and reduced back to the original words with the storage-store/load preservation lemmas.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -60,11 +60,11 @@ abbrev dripSuckFrameLocals (σ : AccountMap) (I : ExecutionEnv) (pow : UInt256) 
 
 /-- After `chi := tmp` (slot 4). -/
 abbrev dripEvmChi (evm0 : EVM.State) (tmp : UInt256) : EVM.State :=
-  Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner ⟨4⟩ tmp
+  Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner ⟨4⟩ tmp
 
 /-- After `chi := tmp` then `rho := now` (slot 7). -/
 abbrev dripEvmRho (evm0 : EVM.State) (tmp now : UInt256) : EVM.State :=
-  Solm.EVM.storageStore (dripEvmChi evm0 tmp)
+  Stele.EVM.storageStore (dripEvmChi evm0 tmp)
     (dripEvmChi evm0 tmp).executionEnv.codeOwner ⟨7⟩ now
 
 /-! ## Frame `get?` projections -/
@@ -85,7 +85,7 @@ theorem dripSuckFrameLocals_get_tmp (σ : AccountMap) (I : ExecutionEnv) (pow : 
 theorem dripEvmRho_load {σ σ₀ A I} {g : UInt256} {tmp now : UInt256} (slot : UInt256)
     (h4 : slot ≠ (⟨4⟩ : UInt256)) (h7 : slot ≠ (⟨7⟩ : UInt256)) :
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-    Solm.EVM.storageLoad (dripEvmRho evm0 tmp now) (dripEvmRho evm0 tmp now).executionEnv.codeOwner
+    Stele.EVM.storageLoad (dripEvmRho evm0 tmp now) (dripEvmRho evm0 tmp now).executionEnv.codeOwner
         slot = solcSlotWordAt slot σ I := by
   intro evm0
   have hChiEnv : (dripEvmChi evm0 tmp).executionEnv.codeOwner = evm0.executionEnv.codeOwner := by
@@ -96,21 +96,21 @@ theorem dripEvmRho_load {σ σ₀ A I} {g : UInt256} {tmp now : UInt256} (slot :
   rw [hRhoEnv]
   -- peel the slot-7 store
   rw [show dripEvmRho evm0 tmp now =
-        Solm.EVM.storageStore (dripEvmChi evm0 tmp) evm0.executionEnv.codeOwner ⟨7⟩ now by
+        Stele.EVM.storageStore (dripEvmChi evm0 tmp) evm0.executionEnv.codeOwner ⟨7⟩ now by
     simp only [dripEvmRho, hChiEnv]]
   rw [storageLoad_storageStore_ne _ _ h7]
   -- peel the slot-4 store
   rw [show dripEvmChi evm0 tmp =
-        Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner ⟨4⟩ tmp from rfl]
+        Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner ⟨4⟩ tmp from rfl]
   rw [storageLoad_storageStore_ne _ _ h4]
   exact storageLoad_initState_ofUInt256_solcSlotWordAt slot
 
-/-! ## Solm-side scalar storage reads (parameterized over the locals frame) -/
+/-! ## Stele-side scalar storage reads (parameterized over the locals frame) -/
 
 theorem evalExpr_potDsrOfLocals {evm : EVM.State} {locals : Store}
     (hbase : locals.get? "dsr" = none) :
     evalExpr? config { contract := contract, locals := locals } evm (.storage dsrRef) =
-      .ok (.int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩).toNat)) :=
+      .ok (.int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩).toNat)) :=
   evalExpr_storage_scalar_value (hbackend := rfl) (slot := dsrRef)
     (er := ({ base := "dsr", steps := [] } : EvaledStorageRef))
     (t := .int uint256Int) (loc := wordLoc ⟨3⟩)
@@ -123,7 +123,7 @@ theorem evalExpr_potDsrOfLocals {evm : EVM.State} {locals : Store}
 theorem evalExpr_potChiOfLocals {evm : EVM.State} {locals : Store}
     (hbase : locals.get? "chi" = none) :
     evalExpr? config { contract := contract, locals := locals } evm (.storage chiRef) =
-      .ok (.int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨4⟩).toNat)) :=
+      .ok (.int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨4⟩).toNat)) :=
   evalExpr_storage_scalar_value (hbackend := rfl) (slot := chiRef)
     (er := ({ base := "chi", steps := [] } : EvaledStorageRef))
     (t := .int uint256Int) (loc := wordLoc ⟨4⟩)
@@ -136,7 +136,7 @@ theorem evalExpr_potChiOfLocals {evm : EVM.State} {locals : Store}
 theorem evalExpr_potPieOfLocals {evm : EVM.State} {locals : Store}
     (hbase : locals.get? "Pie" = none) :
     evalExpr? config { contract := contract, locals := locals } evm (.storage PieRef) =
-      .ok (.int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩).toNat)) :=
+      .ok (.int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩).toNat)) :=
   evalExpr_storage_scalar_value (hbackend := rfl) (slot := PieRef)
     (er := ({ base := "Pie", steps := [] } : EvaledStorageRef))
     (t := .int uint256Int) (loc := wordLoc ⟨2⟩)
@@ -146,13 +146,13 @@ theorem evalExpr_potPieOfLocals {evm : EVM.State} {locals : Store}
     (by rfl)
     (storageLocLoad_uint256 evm ⟨2⟩)
 
-/-! ## Solm-side address storage reads -/
+/-! ## Stele-side address storage reads -/
 
 theorem evalExpr_potVatOfLocals {evm : EVM.State} {locals : Store}
     (hbase : locals.get? "vat" = none) :
     evalExpr? config { contract := contract, locals := locals } evm (.storage vatRef) =
       .ok (.address (AccountAddress.ofNat
-        (UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩)
+        (UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩)
           solcAddrMask).toNat)) :=
   evalExpr_storage_scalar_value (hbackend := rfl) (slot := vatRef)
     (er := ({ base := "vat", steps := [] } : EvaledStorageRef))
@@ -167,7 +167,7 @@ theorem evalExpr_potVowOfLocals {evm : EVM.State} {locals : Store}
     (hbase : locals.get? "vow" = none) :
     evalExpr? config { contract := contract, locals := locals } evm (.storage vowRef) =
       .ok (.address (AccountAddress.ofNat
-        (UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨6⟩)
+        (UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨6⟩)
           solcAddrMask).toNat)) :=
   evalExpr_storage_scalar_value (hbackend := rfl) (slot := vowRef)
     (er := ({ base := "vow", steps := [] } : EvaledStorageRef))
@@ -178,7 +178,7 @@ theorem evalExpr_potVowOfLocals {evm : EVM.State} {locals : Store}
     (by rfl)
     (storageLocLoad_address_offset0 evm ⟨6⟩)
 
-/-! ## Solm-side scalar storage writes (`chi := tmp`, `rho := now`) -/
+/-! ## Stele-side scalar storage writes (`chi := tmp`, `rho := now`) -/
 
 theorem evalStorageRef_drip_chi (evm : EVM.State) {locals : Store} :
     evalStorageRef config { contract := contract, locals := locals } evm chiRef =
@@ -195,7 +195,7 @@ theorem dripAssignChi (evm : EVM.State) {locals : Store} (tmp : UInt256)
     assignStorageRef? config { contract := contract, locals := locals } evm
         .storage chiRef (.int (Int.ofNat tmp.toNat)) =
       .ok ({ contract := contract, locals := locals },
-        Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨4⟩ tmp) := by
+        Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨4⟩ tmp) := by
   apply assignStorageRef_storage_scalar (hbackend := rfl) (ty := uint256St) (loc := wordLoc ⟨4⟩) (hleaf := by first | exact Or.inl ⟨_, rfl⟩ | exact Or.inr ⟨_, rfl⟩)
     hbase (evalStorageRef_drip_chi evm)
     (by simp [storageTypeAt?, contract, storageDecls, uint256St]) (by rfl)
@@ -206,7 +206,7 @@ theorem dripAssignRho (evm : EVM.State) {locals : Store} (now : UInt256)
     assignStorageRef? config { contract := contract, locals := locals } evm
         .storage rhoRef (.int (Int.ofNat now.toNat)) =
       .ok ({ contract := contract, locals := locals },
-        Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨7⟩ now) := by
+        Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨7⟩ now) := by
   apply assignStorageRef_storage_scalar (hbackend := rfl) (ty := uint256St) (loc := wordLoc ⟨7⟩) (hleaf := by first | exact Or.inl ⟨_, rfl⟩ | exact Or.inr ⟨_, rfl⟩)
     hbase (evalStorageRef_drip_rho evm)
     (by simp [storageTypeAt?, contract, storageDecls, uint256St]) (by rfl)

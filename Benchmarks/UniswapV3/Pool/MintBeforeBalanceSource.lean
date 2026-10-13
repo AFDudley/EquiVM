@@ -2,7 +2,7 @@ import Benchmarks.UniswapV3.Pool.MintAmountsSource
 import Benchmarks.UniswapV3.Pool.BalanceCaller
 import Benchmarks.UniswapV3.Pool.FlashTransferSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
@@ -18,7 +18,7 @@ theorem mintBalancesInitSource (v : UniswapV3PoolImmutables) (a : MintArgs)
   unfold mintBalancesInitFrame
   generalize mintAmountsFrame v a a0 a1 = frame
   refine ExecBlock.consNormal
-    (solm' := {frame with locals := frame.locals.insert "balance0Before" (.int 0)}) (evm' := evm)
+    (stele' := {frame with locals := frame.locals.insert "balance0Before" (.int 0)}) (evm' := evm)
     (ExecStmt.letDecl (name := "balance0Before") (value := .int 0)
       (by simp only [evalExpr?, pure])) ?_
   exact ExecBlock.consNormal (ExecStmt.letDecl (name := "balance1Before") (value := .int 0)

@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.BitmapNextModel
 import Benchmarks.UniswapV3.Pool.SignedQuotientBounds
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 theorem bitmapNextCompressed_eq (tick spacing : Int)

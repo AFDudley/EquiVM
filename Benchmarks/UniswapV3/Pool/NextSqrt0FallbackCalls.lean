@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.NextSqrt0Denominator
 import Benchmarks.UniswapV3.Pool.LowGasSafeAdd
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
 
@@ -57,7 +57,7 @@ theorem nextSqrt0FallbackAddReturns (imms : Store) (evm : EVM.State) (a : NextSq
       (.ok (nextSqrt0FallbackAddFrame imms a) evm) :=
   internalCallFunctionReturn (callee := safeAddFunction)
     (locals := safeAddLocals (nextSqrt0FallbackQuotient a) a.amount)
-    (calleeSolm := safeAddResultFrame imms (nextSqrt0FallbackQuotient a) a.amount)
+    (calleeStele := safeAddResultFrame imms (nextSqrt0FallbackQuotient a) a.amount)
     (value := some [.int (Int.ofNat (nextSqrt0FallbackSum a).toNat)])
     (evalNextSqrt0FallbackArgs imms evm a hv.1) safeAddLookup (safeAddBind _ _)
     (safeAddReturns imms evm _ _ hv.2)
@@ -95,7 +95,7 @@ theorem nextSqrt0FallbackDivReturns (imms : Store) (evm : EVM.State) (a : NextSq
     evalExpr_var_get Std.HashMap.getElem?_insert_self
   apply internalCallFunctionReturn (callee := unsafeDivRoundFunction)
     (locals := unsafeDivRoundLocals (nextSqrt0Numerator a) (nextSqrt0FallbackSum a))
-    (calleeSolm := unsafeDivRoundFrame imms (nextSqrt0Numerator a) (nextSqrt0FallbackSum a))
+    (calleeStele := unsafeDivRoundFrame imms (nextSqrt0Numerator a) (nextSqrt0FallbackSum a))
     (value := some [.int (Int.ofNat
       (unsafeDivRoundResult (nextSqrt0Numerator a) (nextSqrt0FallbackSum a)).toNat)])
     _ unsafeDivRoundLookup (unsafeDivRoundBind _ _) (unsafeDivRoundReturns imms evm _ _)

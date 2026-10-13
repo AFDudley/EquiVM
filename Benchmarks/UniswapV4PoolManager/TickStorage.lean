@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV4PoolManager.ResolvedStorage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 
@@ -28,7 +28,7 @@ def TickField.slot (base : UInt256) : TickField → UInt256
 def tickFieldRef (id : UInt256) (tick : Int) (field : TickField) : EvaledStorageRef :=
   {base := "_pools", steps := (tickRef id tick).steps ++ [.field field.name]}
 def tickFieldWord (evm : EVM.State) (id : UInt256) (tick : Int) (field : TickField) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (field.slot (tickSlot id tick))
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (field.slot (tickSlot id tick))
 
 theorem tickField_type (field : TickField) : storageTypeStep? tickInfoType (.field field.name) =
     some (.elem (.int (.uint ⟨256, by decide⟩))) := by cases field <;> rfl
@@ -62,7 +62,7 @@ theorem tickField_read {f : Frame} {evm : EVM.State} {name : Ident} {id : UInt25
 theorem tickField_write {f : Frame} {evm : EVM.State} {name : Ident} {id : UInt256} {tick : Int}
     (hs : f.locals.get? name = some (tickRefValue id tick)) (field : TickField) (word : UInt256) :
     assignStorageRef? config f evm .storage {base := name, steps := [.field field.name]}
-      (.int (Int.ofNat word.toNat)) = .ok (f, Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+      (.int (Int.ofNat word.toNat)) = .ok (f, Stele.EVM.storageStore evm evm.executionEnv.codeOwner
         (field.slot (tickSlot id tick)) word) :=
   assignResolvedStorageScalar (resolveStorageAliasField hs (tickField_type field)) rfl
     (tickField_loc id tick field) (storageLocStore_uint256 evm _ word)

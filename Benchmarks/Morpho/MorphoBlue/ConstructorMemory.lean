@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MorphoBlue.ConstructorSource
 import Benchmarks.Morpho.MorphoBlue.MarketParamsMemory
 import Benchmarks.Morpho.MorphoBlue.ErrorMemory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 namespace Benchmarks.Morpho.MorphoBlue
 set_option maxRecDepth 1000

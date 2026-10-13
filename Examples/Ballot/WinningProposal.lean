@@ -1,7 +1,7 @@
 import Examples.Ballot.Common
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -22,10 +22,10 @@ def winningProposalVoteCountWord (sigma : AccountMap) (I : ExecutionEnv) (p : UI
     (fun acc => acc.storage.getD (winningProposalVoteCountSlot p) ⟨0⟩)
 
 def winningProposalLengthCurrent (evm : EVM.State) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩
 
 def winningProposalVoteCountCurrent (evm : EVM.State) (p : UInt256) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (winningProposalVoteCountSlot p)
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (winningProposalVoteCountSlot p)
 
 def winningProposalCountEvaledRef (p : UInt256) : EvaledStorageRef :=
   { base := "proposals",
@@ -68,7 +68,7 @@ theorem winningProposalArrayIndexInBounds_ok (evm : EVM.State) (p : UInt256)
       (.int (Int.ofNat p.toNat)) = .ok () := by
   have hboundStorage :
       p.toNat <
-        UInt256.toNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩) := by
+        UInt256.toNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩) := by
     simpa [winningProposalLengthCurrent] using hbound
   simp [arrayIndexInBounds?, storageTypeAt?, ballotContract, ballotStorageDecls]
   rw [ballotProposalsLength]

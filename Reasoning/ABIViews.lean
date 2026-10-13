@@ -8,7 +8,7 @@ Reusable tuple encoders, raw and padded word views, and bounds connecting compil
 checks to strict and legacy ABI decoders.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Reach
 
 set_option autoImplicit false
 set_option maxRecDepth 2000000
@@ -566,7 +566,7 @@ theorem addressUint256PairReturnEncoding (first second : UInt256) :
   apply ByteArray.ext
   simp [ByteArray.data_append]
 
-theorem decodeCalldata_legacyBytes32_legacyAddress_ok {cd : ByteArray} {x y : Solm.Ident}
+theorem decodeCalldata_legacyBytes32_legacyAddress_ok {cd : ByteArray} {x y : Stele.Ident}
     (hsz68 : 68 ≤ cd.size) :
     decodeCalldataWithMode DecodeMode.legacySolc05 [x, y] [abiBytes32, abiAddress] cd =
       some (((∅ : Store).insert x
@@ -743,7 +743,7 @@ theorem uint256PowerOfTwoReturnEncoding {N : ℕ} (hN : N < 256) :
     decide
   exact scalarReturnEncoding hdyn hhead hval
 
-theorem decodeCalldata_string_some {cd : ByteArray} {x : Solm.Ident}
+theorem decodeCalldata_string_some {cd : ByteArray} {x : Stele.Ident}
     (hsz36 : 36 ≤ cd.size) (hsizeSign : cd.size < 2 ^ 255)
     (hoffMax : ¬ ABI.solcMaxU64 < (calldataWord cd 4).toNat)
     (hlenWord : 4 + (calldataWord cd 4).toNat + 32 ≤ cd.size)
@@ -2481,7 +2481,7 @@ end Reasoning.Theory
 
 namespace Reasoning.Theory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option autoImplicit false
 set_option maxRecDepth 2000000

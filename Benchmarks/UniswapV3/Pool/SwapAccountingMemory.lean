@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.SwapAccountingModel
 import Benchmarks.UniswapV3.Pool.WordArrayPairUpdate
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 theorem swapAccountingRemaining_word (exactInput : Bool) (s : SwapStateData)

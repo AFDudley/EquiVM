@@ -2,7 +2,7 @@ import Benchmarks.Dss.Clipper.TakeFluxCallbackEVM
 import Benchmarks.Dss.Clipper.TakeNonzeroStoreContinuationEquiv
 import Benchmarks.Dss.Clipper.TakeGenericCallbackSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 namespace Benchmarks.Dss.Clipper
@@ -213,7 +213,7 @@ theorem clipperTakeFromFluxEquiv
       rw [hwhoClean, hdogClean]
       exact haddr)
     simpa [hdogClean] using hmasked
-  have hvatCodeSolmOf
+  have hvatCodeSteleOf
       (hne : Reasoning.Theory.extCodeSizeWord σPost (clipperTakeVatTarget v) ≠ ⟨0⟩) :
       0 < (UInt256.ofNat ((evmPrice.lookupAccount v.vat).option 0
         (fun acc => acc.code.size))).toNat := by
@@ -248,34 +248,34 @@ theorem clipperTakeFromFluxEquiv
   apply RD.clipperTakeFluxCallbackElim v hpatch rd4223 hbaseSize hbaseRead64
     hdataLen hdataLenEq hdataStartEq hlenMax hpayload hdepth hperm (by simp)
   · intro hnoCode hrev
-    have hnoCodeSolm : (UInt256.ofNat ((evmPrice.lookupAccount v.vat).option 0
+    have hnoCodeStele : (UInt256.ofNat ((evmPrice.lookupAccount v.vat).option 0
         (fun acc => acc.code.size))).toNat = 0 := by
       simpa [State.lookupAccount] using
         extCodeSizeWord_zero_lookup_code_zero
           (clipperTakeVatTargetAddress v).symm
           (by simpa only [← hAccountsPost] using hnoCode)
-    exact closeRevert hrev (hsourceVatNoCode hnoCodeSolm)
+    exact closeRevert hrev (hsourceVatNoCode hnoCodeStele)
   · intro σVat outVat AVat hcall hvatCode hrev
-    obtain ⟨evmVat, hcallSolm, _, _, _⟩ := syncFlux (by simpa [evmPriceEvm] using hcall)
-    exact closeRevert hrev (hsourceVatFailure (hvatCodeSolmOf hvatCode)
-      (by simpa [hevmPriceEnv] using hcallSolm))
+    obtain ⟨evmVat, hcallStele, _, _, _⟩ := syncFlux (by simpa [evmPriceEvm] using hcall)
+    exact closeRevert hrev (hsourceVatFailure (hvatCodeSteleOf hvatCode)
+      (by simpa [hevmPriceEnv] using hcallStele))
   · intro σVat outVat AVat memVat awVat kVat CVat hcall hvatCode hskip hmem
       rd4701
-    obtain ⟨evmVat, hcallSolm, hAccountsVat, hevmVatSigma0, hevmVatEnv⟩ :=
+    obtain ⟨evmVat, hcallStele, hAccountsVat, hevmVatSigma0, hevmVatEnv⟩ :=
       syncFlux (by simpa [evmPriceEvm] using hcall)
-    have hcallSolm' : typedCallViaEVM config evmPrice (EVM.address v.vat)
+    have hcallStele' : typedCallViaEVM config evmPrice (EVM.address v.vat)
         "flux" 0 [v.ilk, .address evmPrice.executionEnv.codeOwner,
           .address (AccountAddress.ofNat who.toNat), .int (Int.ofNat slice.toNat)]
         (true, evmVat, outVat) true := by
-      simpa [hevmPriceEnv] using hcallSolm
-    have hflux := hsourceFluxSuccess (hvatCodeSolmOf hvatCode) hcallSolm'
+      simpa [hevmPriceEnv] using hcallStele
+    have hflux := hsourceFluxSuccess (hvatCodeSteleOf hvatCode) hcallStele'
     let dogLocals := fluxLocals.insert "dog_"
       (.address (AccountAddress.ofNat (clipperTakeDogEVMWord evmVat).toNat))
     have hletDog : ExecStmt config (Frame.mk contract fluxLocals (immStore v)) evmVat
         (.letDecl "dog_" (some addr) (.storage dogRef))
         (.ok (Frame.mk contract dogLocals (immStore v)) evmVat) := by
       simpa [dogLocals] using
-        (ExecStmt.letDecl (cfg := config) (solm := Frame.mk contract fluxLocals (immStore v))
+        (ExecStmt.letDecl (cfg := config) (stele := Frame.mk contract fluxLocals (immStore v))
           (evm := evmVat) (name := "dog_") (ty := some addr) (expr := .storage dogRef)
           (value := .address (AccountAddress.ofNat (clipperTakeDogEVMWord evmVat).toNat))
           (by simpa [clipperTakeDogEVMWord] using
@@ -351,22 +351,22 @@ theorem clipperTakeFromFluxEquiv
     · exact sourceReverted
     · exact sourceReturned
   · intro σVat outVat AVat hcall hvatCode hwhoVat hwhoDog hnoCode hrev
-    obtain ⟨evmVat, hcallSolm, hAccountsVat, hevmVatSigma0, hevmVatEnv⟩ :=
+    obtain ⟨evmVat, hcallStele, hAccountsVat, hevmVatSigma0, hevmVatEnv⟩ :=
       syncFlux (by simpa [evmPriceEvm] using hcall)
-    have hflux := hsourceFluxSuccess (hvatCodeSolmOf hvatCode)
-      (by simpa [hevmPriceEnv] using hcallSolm)
+    have hflux := hsourceFluxSuccess (hvatCodeSteleOf hvatCode)
+      (by simpa [hevmPriceEnv] using hcallStele)
     let dogLocals := fluxLocals.insert "dog_"
       (.address (AccountAddress.ofNat (clipperTakeDogEVMWord evmVat).toNat))
     have hletDog : ExecStmt config (Frame.mk contract fluxLocals (immStore v)) evmVat
         (.letDecl "dog_" (some addr) (.storage dogRef))
         (.ok (Frame.mk contract dogLocals (immStore v)) evmVat) := by
       simpa [dogLocals] using
-        (ExecStmt.letDecl (cfg := config) (solm := Frame.mk contract fluxLocals (immStore v))
+        (ExecStmt.letDecl (cfg := config) (stele := Frame.mk contract fluxLocals (immStore v))
           (evm := evmVat) (name := "dog_") (ty := some addr) (expr := .storage dogRef)
           (value := .address (AccountAddress.ofNat (clipperTakeDogEVMWord evmVat).toNat))
           (by simpa [clipperTakeDogEVMWord] using
             clipperEvalDog v evmVat fluxLocals hfluxDogAbsent))
-    have hnoCodeSolm : (UInt256.ofNat
+    have hnoCodeStele : (UInt256.ofNat
         ((evmVat.lookupAccount (AccountAddress.ofNat who.toNat)).option 0
           (fun acc => acc.code.size))).toNat = 0 := by
       simpa [State.lookupAccount, hwhoClean] using
@@ -402,7 +402,7 @@ theorem clipperTakeFromFluxEquiv
         (hwhoAddressNeDog hdogClean hwhoDogWord)
     have hcodeEval : evalExpr? config (Frame.mk contract dogLocals (immStore v)) evmVat
         (.binary .gt (.extCodeSize (.var "who")) (.intLit 0)) = .ok (.bool false) := by
-      simpa [hnoCodeSolm] using
+      simpa [hnoCodeStele] using
         (clipperEvalTakeGenericCallbackCodeGuard (v := v) (evm := evmVat) hwhoLocal)
     have hcb := clipperTakeCallbackNoCodeOfEvals hguard hcodeEval
     exact closeRevert hrev
@@ -411,7 +411,7 @@ theorem clipperTakeFromFluxEquiv
           (by simpa [clipperTakeCallbackStmt, dogLocals] using hcb)))
   · intro σVat outVat AVat σCb outCb ACb hcall hvatCode hwhoVat hwhoDog
       hcallbackCode hcallCb hrev
-    obtain ⟨evmVat, hcallSolm, hAccountsVat, hevmVatSigma0, hevmVatEnv⟩ :=
+    obtain ⟨evmVat, hcallStele, hAccountsVat, hevmVatSigma0, hevmVatEnv⟩ :=
       syncFlux (by simpa [evmPriceEvm] using hcall)
     let evmVatEvm : EVM.State :=
       { initState σ σ₀ (Sat256.ofUInt256 g) A I with
@@ -420,11 +420,11 @@ theorem clipperTakeFromFluxEquiv
       { initState σ σ₀ (Sat256.ofUInt256 g) A I with
         accountMap := σCb, substate := ACb }
     obtain ⟨evmCb,
-      hcallCbSolm,
+      hcallCbStele,
       _,
       _,
       _⟩ :=
-      typedCallViaEVM_syncFromState (evmEvm := evmVatEvm) (evmSolm := evmVat)
+      typedCallViaEVM_syncFromState (evmEvm := evmVatEvm) (evmStele := evmVat)
         (evmEvm' := evmCbEvm) hAccountsVat
         (by simp [evmVatEvm, hevmVatSigma0])
 
@@ -432,26 +432,26 @@ theorem clipperTakeFromFluxEquiv
 
         (by simp [evmVatEvm, hevmVatEnv])
         (by simpa [evmVatEvm, evmCbEvm, hwhoClean] using hcallCb)
-    have hflux := hsourceFluxSuccess (hvatCodeSolmOf hvatCode)
-      (by simpa [hevmPriceEnv] using hcallSolm)
+    have hflux := hsourceFluxSuccess (hvatCodeSteleOf hvatCode)
+      (by simpa [hevmPriceEnv] using hcallStele)
     let dogLocals := fluxLocals.insert "dog_"
       (.address (AccountAddress.ofNat (clipperTakeDogEVMWord evmVat).toNat))
     have hletDog : ExecStmt config (Frame.mk contract fluxLocals (immStore v)) evmVat
         (.letDecl "dog_" (some addr) (.storage dogRef))
         (.ok (Frame.mk contract dogLocals (immStore v)) evmVat) := by
       simpa [dogLocals] using
-        (ExecStmt.letDecl (cfg := config) (solm := Frame.mk contract fluxLocals (immStore v))
+        (ExecStmt.letDecl (cfg := config) (stele := Frame.mk contract fluxLocals (immStore v))
           (evm := evmVat) (name := "dog_") (ty := some addr) (expr := .storage dogRef)
           (value := .address (AccountAddress.ofNat (clipperTakeDogEVMWord evmVat).toNat))
           (by simpa [clipperTakeDogEVMWord] using
             clipperEvalDog v evmVat fluxLocals hfluxDogAbsent))
-    have hcallCbSolm' : typedCallViaEVM config evmVat
+    have hcallCbStele' : typedCallViaEVM config evmVat
         (EVM.address (AccountAddress.ofNat who.toNat)) "clipperCall" 0
         [.address evmVat.executionEnv.source, .int (Int.ofNat owe.toNat),
           .int (Int.ofNat slice.toNat), clipperTakeDataValue I]
         (false, evmCb, outCb) true := by
       simpa [evmVatEvm, evmCbEvm, initState, hwhoClean, hevmVatEnv,
-        u256_land_comm] using hcallCbSolm
+        u256_land_comm] using hcallCbStele
     have hdogWord : UInt256.land (solcSlotWord σVat I ⟨1⟩) solcAddrMask =
         clipperTakeDogEVMWord evmVat :=
       clipperTakeDogWord_eq hAccountsVat (by simpa [initState] using hevmVatEnv)
@@ -483,7 +483,7 @@ theorem clipperTakeFromFluxEquiv
       hdataLocal hwhoLocal hdogLocal
       hdataBytesPos (hwhoAddressNeVat hwhoVat)
         (hwhoAddressNeDog hdogClean hwhoDogWord)
-    have hcallbackCodeSolm : 0 < (UInt256.ofNat
+    have hcallbackCodeStele : 0 < (UInt256.ofNat
         ((evmVat.lookupAccount (AccountAddress.ofNat who.toNat)).option 0
           (fun acc => acc.code.size))).toNat := by
       simpa [State.lookupAccount] using
@@ -495,19 +495,19 @@ theorem clipperTakeFromFluxEquiv
           (by simpa only [← hAccountsVat] using hcallbackCode)
     have hcodeEval : evalExpr? config (Frame.mk contract dogLocals (immStore v)) evmVat
         (.binary .gt (.extCodeSize (.var "who")) (.intLit 0)) = .ok (.bool true) := by
-      simpa [hcallbackCodeSolm] using
+      simpa [hcallbackCodeStele] using
         (clipperEvalTakeGenericCallbackCodeGuard (v := v) (evm := evmVat) hwhoLocal)
     have hargs := clipperEvalTakeGenericCallbackArgs (v := v) (I := I) (evm := evmVat)
       howeLocal hsliceLocal hdataLocal
     have hcb := clipperTakeCallbackFailureOfEvals hguard hcodeEval hwhoLocal hargs
-      hcallCbSolm'
+      hcallCbStele'
     exact closeRevert hrev
       (hsourceCloseReverted
         (clipperTakeAfterSliceOfPrefixAndCallbackRevert hflux hletDog
           (by simpa [clipperTakeCallbackStmt, dogLocals] using hcb)))
   · intro σVat outVat AVat σCb outCb ACb memCb awCb kCb CCb
       hcall hvatCode hwhoVat hwhoDog hcallbackCode hcallCb rd4701 hmem
-    obtain ⟨evmVat, hcallSolm, hAccountsVat, hevmVatSigma0, hevmVatEnv⟩ :=
+    obtain ⟨evmVat, hcallStele, hAccountsVat, hevmVatSigma0, hevmVatEnv⟩ :=
       syncFlux (by simpa [evmPriceEvm] using hcall)
     let evmVatEvm : EVM.State :=
       { initState σ σ₀ (Sat256.ofUInt256 g) A I with
@@ -516,11 +516,11 @@ theorem clipperTakeFromFluxEquiv
       { initState σ σ₀ (Sat256.ofUInt256 g) A I with
         accountMap := σCb, substate := ACb }
     obtain ⟨evmCb,
-      hcallCbSolm,
+      hcallCbStele,
       hAccountsCb,
       hevmCbSigma0,
       hevmCbEnv⟩ :=
-      typedCallViaEVM_syncFromState (evmEvm := evmVatEvm) (evmSolm := evmVat)
+      typedCallViaEVM_syncFromState (evmEvm := evmVatEvm) (evmStele := evmVat)
         (evmEvm' := evmCbEvm) hAccountsVat
         (by simp [evmVatEvm, hevmVatSigma0])
 
@@ -528,8 +528,8 @@ theorem clipperTakeFromFluxEquiv
 
         (by simp [evmVatEvm, hevmVatEnv])
         (by simpa [evmVatEvm, evmCbEvm, hwhoClean] using hcallCb)
-    have hflux := hsourceFluxSuccess (hvatCodeSolmOf hvatCode)
-      (by simpa [hevmPriceEnv] using hcallSolm)
+    have hflux := hsourceFluxSuccess (hvatCodeSteleOf hvatCode)
+      (by simpa [hevmPriceEnv] using hcallStele)
     let dogLocals := fluxLocals.insert "dog_"
       (.address (AccountAddress.ofNat (clipperTakeDogEVMWord evmVat).toNat))
     let cbLocals := dogLocals.insert "_clipperCallRet" .unit
@@ -537,18 +537,18 @@ theorem clipperTakeFromFluxEquiv
         (.letDecl "dog_" (some addr) (.storage dogRef))
         (.ok (Frame.mk contract dogLocals (immStore v)) evmVat) := by
       simpa [dogLocals] using
-        (ExecStmt.letDecl (cfg := config) (solm := Frame.mk contract fluxLocals (immStore v))
+        (ExecStmt.letDecl (cfg := config) (stele := Frame.mk contract fluxLocals (immStore v))
           (evm := evmVat) (name := "dog_") (ty := some addr) (expr := .storage dogRef)
           (value := .address (AccountAddress.ofNat (clipperTakeDogEVMWord evmVat).toNat))
           (by simpa [clipperTakeDogEVMWord] using
             clipperEvalDog v evmVat fluxLocals hfluxDogAbsent))
-    have hcallCbSolm' : typedCallViaEVM config evmVat
+    have hcallCbStele' : typedCallViaEVM config evmVat
         (EVM.address (AccountAddress.ofNat who.toNat)) "clipperCall" 0
         [.address evmVat.executionEnv.source, .int (Int.ofNat owe.toNat),
           .int (Int.ofNat slice.toNat), clipperTakeDataValue I]
         (true, evmCb, outCb) true := by
       simpa [evmVatEvm, evmCbEvm, initState, hwhoClean, hevmVatEnv,
-        u256_land_comm] using hcallCbSolm
+        u256_land_comm] using hcallCbStele
     have hdogWord : UInt256.land (solcSlotWord σVat I ⟨1⟩) solcAddrMask =
         clipperTakeDogEVMWord evmVat :=
       clipperTakeDogWord_eq hAccountsVat (by simpa [initState] using hevmVatEnv)
@@ -580,7 +580,7 @@ theorem clipperTakeFromFluxEquiv
       hdataLocal hwhoLocal hdogLocal
       hdataBytesPos (hwhoAddressNeVat hwhoVat)
         (hwhoAddressNeDog hdogClean hwhoDogWord)
-    have hcallbackCodeSolm : 0 < (UInt256.ofNat
+    have hcallbackCodeStele : 0 < (UInt256.ofNat
         ((evmVat.lookupAccount (AccountAddress.ofNat who.toNat)).option 0
           (fun acc => acc.code.size))).toNat := by
       simpa [State.lookupAccount] using
@@ -592,12 +592,12 @@ theorem clipperTakeFromFluxEquiv
           (by simpa only [← hAccountsVat] using hcallbackCode)
     have hcodeEval : evalExpr? config (Frame.mk contract dogLocals (immStore v)) evmVat
         (.binary .gt (.extCodeSize (.var "who")) (.intLit 0)) = .ok (.bool true) := by
-      simpa [hcallbackCodeSolm] using
+      simpa [hcallbackCodeStele] using
         (clipperEvalTakeGenericCallbackCodeGuard (v := v) (evm := evmVat) hwhoLocal)
     have hargs := clipperEvalTakeGenericCallbackArgs (v := v) (I := I) (evm := evmVat)
       howeLocal hsliceLocal hdataLocal
     have hcb := clipperTakeCallbackSuccessOfEvals hguard hcodeEval hwhoLocal hargs
-      hcallCbSolm'
+      hcallCbStele'
     have sourceReverted
         (htail : ExecBlock config (Frame.mk contract cbLocals (immStore v)) evmCb
           (checkedExternalCallStmts vatExpr "move" (.intLit 0)

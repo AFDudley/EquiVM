@@ -2,7 +2,7 @@ import Benchmarks.CompoundIII.Comet.CollateralStorage
 import Benchmarks.CompoundIII.Comet.AggregateStorage
 import Benchmarks.CompoundIII.Comet.UserBasicLocal
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 
@@ -29,7 +29,7 @@ theorem readTotalsCollateralField (evm : EVM.State) (asset : AccountAddress) (up
         .field (if upper then "_reserved" else "totalSupplyAsset")]⟩
       (.elem (.int (.uint ⟨128, by decide⟩))) evm =
     .ok (.int ((if upper then high128 else low128)
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (totalsCollateralSlot asset))).toNat) := by
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (totalsCollateralSlot asset))).toNat) := by
   cases upper <;> simp only [Bool.false_eq_true, if_false, if_true]
   · rw [readStorage?_elem (hbackend := rfl)
       (loc := {
@@ -48,14 +48,14 @@ theorem readTotalsCollateral (evm : EVM.State) (asset : AccountAddress) :
     config.storageBackend.read ⟨"totalsCollateral", [.mindex (.address asset)]⟩
       totalsCollateralType evm =
     .ok (totalsCollateralValue
-      (low128 (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (totalsCollateralSlot asset)))
-      (high128 (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (totalsCollateralSlot asset)))) := by
+      (low128 (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (totalsCollateralSlot asset)))
+      (high128 (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (totalsCollateralSlot asset)))) := by
   change solidityReadStorage? config.storageBackend.locate? evm _ _ = _
   have hf := solidityReadFields_from_fields config.storageBackend.locate? evm
     ⟨"totalsCollateral", [.mindex (.address asset)]⟩ totalsCollateralTypes
-    [("totalSupplyAsset", .int (low128 (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+    [("totalSupplyAsset", .int (low128 (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (totalsCollateralSlot asset))).toNat),
-      ("_reserved", .int (high128 (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      ("_reserved", .int (high128 (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (totalsCollateralSlot asset))).toNat)]
     (.cons ⟨rfl, readTotalsCollateralField evm asset false⟩
       (.cons ⟨rfl, readTotalsCollateralField evm asset true⟩ .nil))
@@ -68,8 +68,8 @@ theorem evalTotalsCollateral (frame : Frame) (evm : EVM.State) (asset : AccountA
     (harg : evalExpr? config frame evm arg = .ok (.address asset)) :
     evalExpr? config frame evm (.storage ⟨"totalsCollateral", [.mindex arg]⟩) =
     .ok (totalsCollateralValue
-      (low128 (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (totalsCollateralSlot asset)))
-      (high128 (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (totalsCollateralSlot asset)))) := by
+      (low128 (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (totalsCollateralSlot asset)))
+      (high128 (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (totalsCollateralSlot asset)))) := by
   apply evalExpr_storage_typed hlocal
     (er := ⟨"totalsCollateral", [.mindex (.address asset)]⟩) (ty := totalsCollateralType)
   · simp only [evalStorageRef, evalStorageRefSteps, evalStorageRefStep, harg,

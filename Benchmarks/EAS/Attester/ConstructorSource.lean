@@ -2,7 +2,7 @@ import Benchmarks.EAS.Attester.Common
 import Benchmarks.EAS.Attester.ABIHelpers
 import Benchmarks.EAS.Attester.LocalArray
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
 open Benchmarks.EAS.Attester.Immutables
 
 namespace Benchmarks.EAS.Attester
@@ -63,15 +63,15 @@ theorem constructorGuard_eval {imms : Store} {evm : State} (eas : AccountAddress
 
 theorem constructorSourceNonpayable {σ σ₀ A I} {g : UInt256} (eas : AccountAddress)
     (hv : I.weiValue ≠ ⟨0⟩) :
-    solmCtorExec config contract [.address eas] σ σ₀ g A I .reverted := by
-  refine solmCtorExec.intro (evmState := initState σ σ₀ (Sat256.ofUInt256 g) A I)
+    steleCtorExec config contract [.address eas] σ σ₀ g A I .reverted := by
+  refine steleCtorExec.intro (evmState := initState σ σ₀ (Sat256.ofUInt256 g) A I)
     (argsStore := constructorArgsStore eas) rfl rfl rfl ?_
   exact ExecFuncBody.execBlockRevert (blockReverts_nonPayable hv)
 
 theorem constructorSourceZero {σ σ₀ A I} {g : UInt256} (eas : AccountAddress)
     (hv : I.weiValue = ⟨0⟩) (hz : eas = ⟨0, by decide⟩) :
-    solmCtorExec config contract [.address eas] σ σ₀ g A I .reverted := by
-  refine solmCtorExec.intro (evmState := initState σ σ₀ (Sat256.ofUInt256 g) A I)
+    steleCtorExec config contract [.address eas] σ σ₀ g A I .reverted := by
+  refine steleCtorExec.intro (evmState := initState σ σ₀ (Sat256.ofUInt256 g) A I)
     (argsStore := constructorArgsStore eas) rfl rfl rfl ?_
   apply ExecFuncBody.execBlockRevert
   refine ExecBlock.consNormal (ExecStmt.requireTrue (evalCallvalueEq_true hv)) ?_
@@ -83,10 +83,10 @@ theorem constructorSourceZero {σ σ₀ A I} {g : UInt256} (eas : AccountAddress
 
 theorem constructorSourceSuccess {σ σ₀ A I} {g : UInt256} (eas : AccountAddress)
     (hv : I.weiValue = ⟨0⟩) (hz : eas ≠ ⟨0, by decide⟩) :
-    solmCtorExec config contract [.address eas] σ σ₀ g A I
+    steleCtorExec config contract [.address eas] σ σ₀ g A I
       (.returned ⟨contract, constructorArgsStore eas, constructorFinalImms eas⟩
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) none) := by
-  refine solmCtorExec.intro (evmState := initState σ σ₀ (Sat256.ofUInt256 g) A I)
+  refine steleCtorExec.intro (evmState := initState σ σ₀ (Sat256.ofUInt256 g) A I)
     (argsStore := constructorArgsStore eas) rfl rfl rfl ?_
   apply ExecFuncBody.execBlockOK
   refine ExecBlock.consNormal (ExecStmt.requireTrue (evalCallvalueEq_true hv)) ?_

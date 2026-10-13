@@ -2,7 +2,7 @@ import Benchmarks.UniswapV4PoolManager.PoolSwapFinishStorage
 import Benchmarks.UniswapV4PoolManager.SimpleMulDivWords
 import Benchmarks.UniswapV4PoolManager.BalanceDeltaSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 abbrev poolDonateFunction : FunctionDecl := contract.functions[21]!
@@ -15,7 +15,7 @@ def poolDonateGrowth (amount liquidity : UInt256) : UInt256 :=
 
 def poolDonateStep (evm : State) (id : UInt256) (second : Bool) (amount liquidity : UInt256) : State :=
   if amount = ⟨0⟩ then evm else
-    Solm.EVM.storageStore evm evm.executionEnv.codeOwner (poolFeeGrowthSlot id second)
+    Stele.EVM.storageStore evm evm.executionEnv.codeOwner (poolFeeGrowthSlot id second)
       (poolFeeGrowthWord evm id second + poolDonateGrowth amount liquidity)
 
 def poolDonatePost (evm : State) (id amount0 amount1 : UInt256) : State :=

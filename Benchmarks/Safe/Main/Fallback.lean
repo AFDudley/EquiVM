@@ -5,7 +5,7 @@ import Benchmarks.Safe.Main.FallbackRefinement
 import Benchmarks.Safe.Main.FallbackGas
 import Benchmarks.Safe.Main.RawZeroCall
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.Main

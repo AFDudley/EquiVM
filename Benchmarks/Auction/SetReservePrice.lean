@@ -1,7 +1,7 @@
 import Benchmarks.Auction.SetterSource
 import Benchmarks.Auction.Uint256Setter
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 100000
 
@@ -16,7 +16,7 @@ theorem setReservePriceBodySplit (evm : EVM.State) (value : UInt256)
       (.returned
         { contract := auctionContract
           locals := (∅ : Store).insert "_reservePrice" (.int (Int.ofNat value.toNat)) }
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨204⟩ value) none)) ∧
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨204⟩ value) none)) ∧
       (evm.executionEnv.perm = false → ExecTransitionBody auctionConfig auctionContract evm
       ((∅ : Store).insert "_reservePrice" (.int (Int.ofNat value.toNat)))
       setReservePriceTransition.body .staticViolation) := by
@@ -32,7 +32,7 @@ theorem setReservePriceBody (evm : EVM.State) (value : UInt256)
       (.returned
         { contract := auctionContract
           locals := (∅ : Store).insert "_reservePrice" (.int (Int.ofNat value.toNat)) }
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨204⟩ value) none) :=
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨204⟩ value) none) :=
   (setReservePriceBodySplit evm value hwv ho).1
 
 theorem setReservePriceBodyCore {σ σ₀ A I} {g : UInt256}

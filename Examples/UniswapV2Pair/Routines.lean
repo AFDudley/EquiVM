@@ -1,6 +1,6 @@
 import Examples.UniswapV2Pair.Storage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -635,7 +635,7 @@ abbrev uniswapCodeOwnerStorageWord (ee : ExecutionEnv) (σ : AccountMap)
 
 theorem uniswapCodeOwnerStorageWord_initState {σ σ₀ A I} {g : Sat256}
     (slot : UInt256) :
-    Solm.EVM.storageLoad (initState σ σ₀ g A I) I.codeOwner slot =
+    Stele.EVM.storageLoad (initState σ σ₀ g A I) I.codeOwner slot =
       uniswapCodeOwnerStorageWord I σ slot := by
   exact codeOwnerStorageWord_initState slot
 

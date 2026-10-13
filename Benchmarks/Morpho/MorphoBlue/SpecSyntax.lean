@@ -1,6 +1,6 @@
-import Solm.Notation
-import Solm.Semantics
-import Solm.MetaSolidityLayout
+import Stele.Notation
+import Stele.Semantics
+import Stele.MetaSolidityLayout
 
 /-!
 # Morpho specification
@@ -10,7 +10,7 @@ ABI structs are tuples at call boundaries; storage structs retain their named fi
 `rawSlots` is an alias for the complete physical storage space, used only by `extSloads`.
 -/
 
-open Solm Solm.Notation
+open Stele Stele.Notation
 
 namespace Benchmarks.Morpho.MorphoBlue.Syntax
 

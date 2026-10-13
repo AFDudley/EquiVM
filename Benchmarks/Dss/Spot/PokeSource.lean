@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Spot.PokeCalls
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Spot
 
@@ -192,7 +192,7 @@ theorem spotPokeSourceBodyPeekHasFalseVatNoCode {σ σ₀ A I} {g : UInt256}
     simpa [pokeValLocals] using
       (ExecStmt.letDecl
         (cfg := config)
-        (solm := { contract := contract, locals := pokePeekLocals I out })
+        (stele := { contract := contract, locals := pokePeekLocals I out })
         (evm := evmPip)
         (name := "val")
         (ty := some bytes32)
@@ -206,7 +206,7 @@ theorem spotPokeSourceBodyPeekHasFalseVatNoCode {σ σ₀ A I} {g : UInt256}
     simpa [pokeHasLocals] using
       (ExecStmt.letDecl
         (cfg := config)
-        (solm := { contract := contract, locals := pokeValLocals I out })
+        (stele := { contract := contract, locals := pokeValLocals I out })
         (evm := evmPip)
         (name := "has")
         (ty := some boolTy)
@@ -224,7 +224,7 @@ theorem spotPokeSourceBodyPeekHasFalseVatNoCode {σ σ₀ A I} {g : UInt256}
     simpa [pokeSpotLocals] using
       (ExecStmt.letDecl
         (cfg := config)
-        (solm := { contract := contract, locals := pokeHasLocals I out })
+        (stele := { contract := contract, locals := pokeHasLocals I out })
         (evm := evmPip)
         (name := "spot")
         (ty := some uint256)
@@ -325,7 +325,7 @@ theorem spotPokeSourceBodyPeekHasFalseVatCallFailed {σ σ₀ A I} {g : UInt256}
     simpa [pokeValLocals] using
       (ExecStmt.letDecl
         (cfg := config)
-        (solm := { contract := contract, locals := pokePeekLocals I out })
+        (stele := { contract := contract, locals := pokePeekLocals I out })
         (evm := evmPip)
         (name := "val")
         (ty := some bytes32)
@@ -339,7 +339,7 @@ theorem spotPokeSourceBodyPeekHasFalseVatCallFailed {σ σ₀ A I} {g : UInt256}
     simpa [pokeHasLocals] using
       (ExecStmt.letDecl
         (cfg := config)
-        (solm := { contract := contract, locals := pokeValLocals I out })
+        (stele := { contract := contract, locals := pokeValLocals I out })
         (evm := evmPip)
         (name := "has")
         (ty := some boolTy)
@@ -357,7 +357,7 @@ theorem spotPokeSourceBodyPeekHasFalseVatCallFailed {σ σ₀ A I} {g : UInt256}
     simpa [pokeSpotLocals] using
       (ExecStmt.letDecl
         (cfg := config)
-        (solm := { contract := contract, locals := pokeHasLocals I out })
+        (stele := { contract := contract, locals := pokeHasLocals I out })
         (evm := evmPip)
         (name := "spot")
         (ty := some uint256)
@@ -485,7 +485,7 @@ theorem spotPokeSourceBodyPeekHasFalseVatCallSucceededReturnsSplit
     simpa [pokeValLocals] using
       (ExecStmt.letDecl
         (cfg := config)
-        (solm := { contract := contract, locals := pokePeekLocals I out })
+        (stele := { contract := contract, locals := pokePeekLocals I out })
         (evm := evmPip)
         (name := "val")
         (ty := some bytes32)
@@ -499,7 +499,7 @@ theorem spotPokeSourceBodyPeekHasFalseVatCallSucceededReturnsSplit
     simpa [pokeHasLocals] using
       (ExecStmt.letDecl
         (cfg := config)
-        (solm := { contract := contract, locals := pokeValLocals I out })
+        (stele := { contract := contract, locals := pokeValLocals I out })
         (evm := evmPip)
         (name := "has")
         (ty := some boolTy)
@@ -517,7 +517,7 @@ theorem spotPokeSourceBodyPeekHasFalseVatCallSucceededReturnsSplit
     simpa [pokeSpotLocals] using
       (ExecStmt.letDecl
         (cfg := config)
-        (solm := { contract := contract, locals := pokeHasLocals I out })
+        (stele := { contract := contract, locals := pokeHasLocals I out })
         (evm := evmPip)
         (name := "spot")
         (ty := some uint256)
@@ -553,7 +553,7 @@ theorem spotPokeSourceBodyPeekHasFalseVatCallSucceededReturnsSplit
           [.var "ilk", spotParamLit, .var "spot"] "_fileRet" (perm := true))
         (.ok { contract := contract, locals := fileLocals } evmFile) := by
     have h := ExecStmt.externalCallSuccess (cfg := config)
-      (solm := { contract := contract, locals := pokeSpotLocals I out ⟨0⟩ })
+      (stele := { contract := contract, locals := pokeSpotLocals I out ⟨0⟩ })
       (evm := evmPip) (receiver := .storage vatRef) (name := "file") (eth := .intLit 0)
       (args := [.var "ilk", spotParamLit, .var "spot"]) (retVar := "_fileRet")
       (perm := true) (target := pokeVatAddress evmPip.accountMap evmPip.executionEnv)
@@ -645,7 +645,7 @@ theorem spotPokeSourceBodyPeekHasTrueTailReverts {σ σ₀ A I} {g : UInt256}
     simpa [pokeValLocals] using
       (ExecStmt.letDecl
         (cfg := config)
-        (solm := { contract := contract, locals := pokePeekLocals I out })
+        (stele := { contract := contract, locals := pokePeekLocals I out })
         (evm := evmPip)
         (name := "val")
         (ty := some bytes32)
@@ -659,7 +659,7 @@ theorem spotPokeSourceBodyPeekHasTrueTailReverts {σ σ₀ A I} {g : UInt256}
     simpa [pokeHasLocals] using
       (ExecStmt.letDecl
         (cfg := config)
-        (solm := { contract := contract, locals := pokeValLocals I out })
+        (stele := { contract := contract, locals := pokeValLocals I out })
         (evm := evmPip)
         (name := "has")
         (ty := some boolTy)
@@ -677,7 +677,7 @@ theorem spotPokeSourceBodyPeekHasTrueTailReverts {σ σ₀ A I} {g : UInt256}
     simpa [pokeSpotLocals] using
       (ExecStmt.letDecl
         (cfg := config)
-        (solm := { contract := contract, locals := pokeHasLocals I out })
+        (stele := { contract := contract, locals := pokeHasLocals I out })
         (evm := evmPip)
         (name := "spot")
         (ty := some uint256)
@@ -754,7 +754,7 @@ theorem spotPokeSourceBlockPeekHasTrueTail {σ σ₀ A I} {g : UInt256}
     simpa [pokeValLocals] using
       (ExecStmt.letDecl
         (cfg := config)
-        (solm := { contract := contract, locals := pokePeekLocals I out })
+        (stele := { contract := contract, locals := pokePeekLocals I out })
         (evm := evmPip)
         (name := "val")
         (ty := some bytes32)
@@ -768,7 +768,7 @@ theorem spotPokeSourceBlockPeekHasTrueTail {σ σ₀ A I} {g : UInt256}
     simpa [pokeHasLocals] using
       (ExecStmt.letDecl
         (cfg := config)
-        (solm := { contract := contract, locals := pokeValLocals I out })
+        (stele := { contract := contract, locals := pokeValLocals I out })
         (evm := evmPip)
         (name := "has")
         (ty := some boolTy)
@@ -786,7 +786,7 @@ theorem spotPokeSourceBlockPeekHasTrueTail {σ σ₀ A I} {g : UInt256}
     simpa [pokeSpotLocals] using
       (ExecStmt.letDecl
         (cfg := config)
-        (solm := { contract := contract, locals := pokeHasLocals I out })
+        (stele := { contract := contract, locals := pokeHasLocals I out })
         (evm := evmPip)
         (name := "spot")
         (ty := some uint256)
@@ -1055,7 +1055,7 @@ theorem spotPokeTrueTailVatCallSucceededReturnsSplit {evm evmFile : EVM.State}
           [.var "ilk", spotParamLit, .var "spot"] "_fileRet" (perm := true))
         (.ok { contract := contract, locals := fileLocals } evmFile) := by
     have h := ExecStmt.externalCallSuccess (cfg := config)
-      (solm := { contract := contract, locals := localsA })
+      (stele := { contract := contract, locals := localsA })
       (evm := evm) (receiver := .storage vatRef) (name := "file") (eth := .intLit 0)
       (args := [.var "ilk", spotParamLit, .var "spot"]) (retVar := "_fileRet")
       (perm := true) (target := pokeVatAddress evm.accountMap evm.executionEnv)

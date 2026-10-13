@@ -2,7 +2,7 @@ import Examples.UniswapV2Pair.BurnTailSource
 import Examples.UniswapV2Pair.BurnKLastRuntime
 import Examples.UniswapV2Pair.BurnEventRuntime
 import Examples.UniswapV2Pair.BurnReturnRuntime
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace UniswapV2Pair
 set_option maxRecDepth 2000000
 
@@ -42,8 +42,8 @@ theorem uniswapBurnAfterUpdateRuntimeReturns {g : Sat256} {s0 : State} {I : Exec
       obtain ⟨_, _, rd4933⟩ := RD.uniswapBurnAfterUpdateFeeOff rd hflag (by simp only [List.length_cons]; omega)
       exact ⟨σ, _, _, hAccounts, rd4933⟩
     | true =>
-      have hslot8 : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩ = solcSlotWordAt ⟨8⟩ σ I := by
-        simp [Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
+      have hslot8 : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩ = solcSlotWordAt ⟨8⟩ σ I := by
+        simp [Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
           solcSlotWordAt, solcSlotWord, henv, hAccounts]
       have hkValue : mintFeeReserveProductWord (uniswapReserve0Word evm) (uniswapReserve1Word evm) =
           UInt256.mul (UInt256.land (solcSlotWordAt ⟨8⟩ σ I) reserve112Mask)

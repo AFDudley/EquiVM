@@ -1,7 +1,7 @@
 import Examples.UniswapV2Pair.BurnFeeEntryRuntime
 import Examples.UniswapV2Pair.BurnInitialSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace UniswapV2Pair
 set_option maxRecDepth 2000000
 
@@ -94,7 +94,7 @@ abbrev burnBeforeFeePrefix : List Stmt :=
 theorem uniswapBurnBeforeFeePrefix
     (evm evm0 evm1 : EVM.State) (I : ExecutionEnv) (balance0 balance1 : UInt256)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hfirst : ExecBlock config
       { contract := contract, locals := burnCacheStore (uniswapLockEnteredState evm) I }
       (uniswapLockEnteredState evm) (balanceOfThisStmts (.var "_token0") "balance0")

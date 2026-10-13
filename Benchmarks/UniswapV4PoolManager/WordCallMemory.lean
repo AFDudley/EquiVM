@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.MemorySlice
 import Benchmarks.UniswapV4PoolManager.BytesObjectMemory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 -- GENERALIZES singleWordCallMemory to an arbitrary static ABI word sequence and sparse writes.

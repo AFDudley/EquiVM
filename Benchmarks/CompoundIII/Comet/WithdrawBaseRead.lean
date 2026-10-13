@@ -4,7 +4,7 @@ import Benchmarks.CompoundIII.Comet.RuntimeBlocks_057
 import Benchmarks.CompoundIII.Comet.RuntimeBlocks_072
 import Reasoning.ExternalCall
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
 open Benchmarks.CompoundIII.Comet.Immutables cometWithExtendedAssetListBlocks
 
 namespace Benchmarks.CompoundIII.Comet
@@ -12,7 +12,7 @@ namespace Benchmarks.CompoundIII.Comet
 set_option maxRecDepth 2000
 
 def withdrawBaseBasic (evm : EVM.State) (src : AccountAddress) : UserBasicData :=
-  userBasicData (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (userBasicSlot src))
+  userBasicData (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (userBasicSlot src))
 
 def withdrawBaseReadMemory (mem : ByteArray) (free : UInt256) (evm : EVM.State)
     (src : AccountAddress) : ByteArray :=
@@ -57,7 +57,7 @@ theorem cometWithdrawBaseRead {v : CometWithExtendedAssetListImmutables}
   have hread : solcSlotWordAt (solcMappingSlot (UInt256.ofNat 5) (EVM.word src.val)) σ ee =
       (withdrawBaseBasic evm src).principal := by
     change solcSlotWordAt (userBasicSlot src) σ ee =
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (userBasicSlot src)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (userBasicSlot src)
     simpa only [hs.env] using (hs.storageRead (userBasicSlot src)).symm
   rw [hread] at hm4 r4
   change UserBasicMemory (withdrawBaseReadMemory mem free evm src) free

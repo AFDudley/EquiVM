@@ -1,6 +1,6 @@
 import Benchmarks.EAS.Attester.MultiRevokeSourceInner
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.EAS.Attester
 
@@ -36,7 +36,7 @@ theorem revokeSourceRowEmpty {cfg : Config} {C : ContractDecl} {imms : Store} {e
   have hn : ((locals.insert "uids" (.array [])).insert "uidLength" (.int (Int.ofNat 0))).get?
       "uidLength" = some (.int (Int.ofNat 0)) := by simp
   exact evalLocalNatNeZero (cfg := cfg) (evm := evm)
-    (solm := ⟨C, (locals.insert "uids" (.array [])).insert "uidLength" (.int (Int.ofNat 0)), imms⟩)
+    (stele := ⟨C, (locals.insert "uids" (.array [])).insert "uidLength" (.int (Int.ofNat 0)), imms⟩)
     hn
 
 def revokeRowUntouched (name : Ident) : Prop :=
@@ -74,7 +74,7 @@ theorem revokeSourceRow {cfg : Config} {C : ContractDecl} {imms : Store} {evm : 
   have h2 : ExecStmt cfg ⟨C, l1, imms⟩ evm
       (.require (.binary .ne (.var "uidLength") (.intLit 0))) (.ok ⟨C, l1, imms⟩ evm) :=
     ExecStmt.requireTrue (by simpa only [decide_eq_true (by omega : uids.length ≠ 0)] using
-      (evalLocalNatNeZero (cfg := cfg) (solm := ⟨C, l1, imms⟩) (evm := evm) hn1))
+      (evalLocalNatNeZero (cfg := cfg) (stele := ⟨C, l1, imms⟩) (evm := evm) hn1))
   have h3 : ExecStmt cfg ⟨C, l1, imms⟩ evm
       (.letDecl "data" (some (.dynamicArray revocationRequestDataTy))
         (.newArray revocationRequestDataSt (.var "uidLength"))) (.ok ⟨C, l2, imms⟩ evm) :=
@@ -97,7 +97,7 @@ theorem revokeSourceRow {cfg : Config} {C : ContractDecl} {imms : Store} {evm : 
   have hvalue : evalExpr? cfg ⟨C, l3, imms⟩ evm
       (.tupleLit [.index (.var "schemas") (.var "i"), .var "data"]) =
         .ok (.tuple [schema, .array (revokePairValues uids)]) := by
-    have he := evalLocalArrayIndex (cfg := cfg) (solm := ⟨C, l3, imms⟩) (evm := evm)
+    have he := evalLocalArrayIndex (cfg := cfg) (stele := ⟨C, l3, imms⟩) (evm := evm)
       hs3 hi3 hsch hsnorm
     simp only [evalExpr?, evalExprList?, he, hdata, EvalResult.ofOption, bind, EvalResult.bind,
         pure]

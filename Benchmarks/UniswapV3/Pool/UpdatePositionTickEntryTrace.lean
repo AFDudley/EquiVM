@@ -2,7 +2,7 @@ import Benchmarks.UniswapV3.Pool.UpdatePositionTickModel
 import Benchmarks.UniswapV3.Pool.UpdatePositionObserveTrace
 import Benchmarks.UniswapV3.Pool.TickUpdateMaskedTrace
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 open uniswapV3PoolBlocks
 namespace Benchmarks.UniswapV3.Pool

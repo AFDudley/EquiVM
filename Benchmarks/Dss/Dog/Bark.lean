@@ -10,7 +10,7 @@ import Benchmarks.Dss.Dog.Dispatch
 import Reasoning.MemCascade
 import Reasoning.ExternalCall
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Dog.Immutables
 
 set_option maxRecDepth 2000000
@@ -19,7 +19,7 @@ set_option maxHeartbeats 0
 section
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 2000000
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Dog
 
@@ -5001,7 +5001,7 @@ theorem dogLiveGuardEval_false {v : DogImmutables}
         (initState σ σ₀ g A I) liveRef =
           .ok ({ base := "live", steps := [] } : EvaledStorageRef) := by
     simp [liveRef, evalStorageRef, evalStorageRefSteps, EvalResult.bind, pure, bind]
-  let w := Solm.EVM.storageLoad (initState σ σ₀ g A I) I.codeOwner ⟨3⟩
+  let w := Stele.EVM.storageLoad (initState σ σ₀ g A I) I.codeOwner ⟨3⟩
   have hload : w ≠ ⟨1⟩ := by
     intro hw
     exact hlive (by simpa [w, solcSlotWordAt] using hw)
@@ -5035,7 +5035,7 @@ theorem dogLiveGuardEval_true {v : DogImmutables}
         (initState σ σ₀ g A I) liveRef =
           .ok ({ base := "live", steps := [] } : EvaledStorageRef) := by
     simp [liveRef, evalStorageRef, evalStorageRefSteps, EvalResult.bind, pure, bind]
-  let w := Solm.EVM.storageLoad (initState σ σ₀ g A I) I.codeOwner ⟨3⟩
+  let w := Stele.EVM.storageLoad (initState σ σ₀ g A I) I.codeOwner ⟨3⟩
   have hload : w = ⟨1⟩ := by
     simpa [w, solcSlotWordAt] using hlive
   rw [evalExpr?]
@@ -5049,7 +5049,7 @@ theorem dogLiveGuardEval_true {v : DogImmutables}
       simp [config, storageLayout, solidityStorageBackend, storageLayoutRaw])]
   rw [show wordLoc = uint256Loc from rfl, storageLocLoad_uint256]
   have hload' :
-      Solm.EVM.storageLoad (initState σ σ₀ g A I) I.codeOwner ⟨3⟩ = ⟨1⟩ := by
+      Stele.EVM.storageLoad (initState σ σ₀ g A I) I.codeOwner ⟨3⟩ = ⟨1⟩ := by
     simpa [w] using hload
   simp only [initState] at hload' ⊢
   rw [hload']
@@ -5616,7 +5616,7 @@ theorem evalExpr_barkStorageMilkClip {v : DogImmutables} {evm : EVM.State}
           (solcAddressSlotWord (barkIlksClipSlotFor I) evm.accountMap
             evm.executionEnv).toNat)) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
-    (cfg := config) (solm := { contract := contract, locals := locals, immutables := immStore v }) (evm := evm)
+    (cfg := config) (stele := { contract := contract, locals := locals, immutables := immStore v }) (evm := evm)
     (slot := ilksF (.var "ilk") "clip") (er := barkIlksClipEvaledRef I)
     (t := .address) (loc := addrLoc (barkIlksClipSlotFor I))
     (value := .address (AccountAddress.ofNat
@@ -5646,7 +5646,7 @@ theorem evalExpr_barkStorageMilkChop {v : DogImmutables} {evm : EVM.State}
         .ok (.int (Int.ofNat
           (solcSlotWordAt (barkIlksChopSlotFor I) evm.accountMap evm.executionEnv).toNat)) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
-    (cfg := config) (solm := { contract := contract, locals := locals, immutables := immStore v }) (evm := evm)
+    (cfg := config) (stele := { contract := contract, locals := locals, immutables := immStore v }) (evm := evm)
     (slot := ilksF (.var "ilk") "chop") (er := barkIlksChopEvaledRef I)
     (t := .int uint256Int) (loc := wordLoc (barkIlksChopSlotFor I))
     (value := .int (Int.ofNat
@@ -5674,7 +5674,7 @@ theorem evalExpr_barkStorageMilkHole {v : DogImmutables} {evm : EVM.State}
         .ok (.int (Int.ofNat
           (solcSlotWordAt (barkIlksHoleSlotFor I) evm.accountMap evm.executionEnv).toNat)) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
-    (cfg := config) (solm := { contract := contract, locals := locals, immutables := immStore v }) (evm := evm)
+    (cfg := config) (stele := { contract := contract, locals := locals, immutables := immStore v }) (evm := evm)
     (slot := ilksF (.var "ilk") "hole") (er := barkIlksHoleEvaledRef I)
     (t := .int uint256Int) (loc := wordLoc (barkIlksHoleSlotFor I))
     (value := .int (Int.ofNat
@@ -5702,7 +5702,7 @@ theorem evalExpr_barkStorageMilkDirt {v : DogImmutables} {evm : EVM.State}
         .ok (.int (Int.ofNat
           (solcSlotWordAt (barkIlksDirtSlotFor I) evm.accountMap evm.executionEnv).toNat)) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
-    (cfg := config) (solm := { contract := contract, locals := locals, immutables := immStore v }) (evm := evm)
+    (cfg := config) (stele := { contract := contract, locals := locals, immutables := immStore v }) (evm := evm)
     (slot := ilksF (.var "ilk") "dirt") (er := barkIlksDirtEvaledRef I)
     (t := .int uint256Int) (loc := wordLoc (barkIlksDirtSlotFor I))
     (value := .int (Int.ofNat
@@ -5727,7 +5727,7 @@ theorem evalExpr_barkStorageHole {v : DogImmutables} {evm : EVM.State}
       (.storage HoleRef) =
         .ok (.int (Int.ofNat (solcSlotWordAt ⟨4⟩ evm.accountMap evm.executionEnv).toNat)) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
-    (cfg := config) (solm := { contract := contract, locals := locals, immutables := immStore v }) (evm := evm)
+    (cfg := config) (stele := { contract := contract, locals := locals, immutables := immStore v }) (evm := evm)
     (slot := HoleRef) (er := ({ base := "Hole", steps := [] } : EvaledStorageRef))
     (t := .int uint256Int) (loc := wordLoc ⟨4⟩)
     (value := .int (Int.ofNat (solcSlotWordAt ⟨4⟩ evm.accountMap evm.executionEnv).toNat))
@@ -5744,7 +5744,7 @@ theorem evalExpr_barkStorageDirt {v : DogImmutables} {evm : EVM.State}
       (.storage DirtRef) =
         .ok (.int (Int.ofNat (solcSlotWordAt ⟨5⟩ evm.accountMap evm.executionEnv).toNat)) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
-    (cfg := config) (solm := { contract := contract, locals := locals, immutables := immStore v }) (evm := evm)
+    (cfg := config) (stele := { contract := contract, locals := locals, immutables := immStore v }) (evm := evm)
     (slot := DirtRef) (er := ({ base := "Dirt", steps := [] } : EvaledStorageRef))
     (t := .int uint256Int) (loc := wordLoc ⟨5⟩)
     (value := .int (Int.ofNat (solcSlotWordAt ⟨5⟩ evm.accountMap evm.executionEnv).toNat))
@@ -5760,7 +5760,7 @@ theorem evalExpr_barkStorageVow {v : DogImmutables} {evm : EVM.State}
     evalExpr? config { contract := contract, locals := locals, immutables := immStore v } evm vowAddr =
       .ok (.address (AccountAddress.ofNat (barkVowWord evm.accountMap evm.executionEnv).toNat)) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
-    (cfg := config) (solm := { contract := contract, locals := locals, immutables := immStore v }) (evm := evm)
+    (cfg := config) (stele := { contract := contract, locals := locals, immutables := immStore v }) (evm := evm)
     (slot := vowRef) (er := ({ base := "vow", steps := [] } : EvaledStorageRef))
     (t := .address) (loc := addrLoc ⟨2⟩)
     (value := .address (AccountAddress.ofNat
@@ -5996,7 +5996,7 @@ theorem dogBarkDueCheckedMulOkSource {v : DogImmutables} (evm : EVM.State)
         (.ok { contract := contract, locals := locals1, immutables := immStore v } evm) := by
     simpa [locals1, due, barkLocalsDue] using
       (ExecStmt.letDecl
-        (cfg := config) (solm := { contract := contract, locals := locals, immutables := immStore v })
+        (cfg := config) (stele := { contract := contract, locals := locals, immutables := immStore v })
         (evm := evm) (name := "due") (ty := some uint256)
         (expr := mul256 (.var "dart") (.var "rate"))
         (value := .int (Int.ofNat due.toNat)) hmul)
@@ -6183,7 +6183,7 @@ theorem dogBarkVowFessCallSuccessBlock {v : DogImmutables} {evm evm' : EVM.State
 
 theorem assign_barkDirtStorage {v : DogImmutables} (evm : EVM.State)
     {locals : Store} (dirtNew : UInt256) (hbase : locals.get? "Dirt" = none) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨5⟩ dirtNew
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨5⟩ dirtNew
     assignStorageRef? config { contract := contract, locals := locals, immutables := immStore v } evm
       .storage DirtRef (.int (Int.ofNat dirtNew.toNat)) =
         .ok ({ contract := contract, locals := locals, immutables := immStore v }, evm') := by
@@ -6206,7 +6206,7 @@ theorem assign_barkIlkDirtStorage {v : DogImmutables} (evm : EVM.State)
     (ilkDirtNew : UInt256)
     (hbase : locals.get? "ilks" = none)
     (hilk : locals.get? "ilk" = some (barkIlkValue I)) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner
       (barkIlksDirtSlotFor I) ilkDirtNew
     assignStorageRef? config { contract := contract, locals := locals, immutables := immStore v } evm
       .storage (ilksF (.var "ilk") "dirt") (.int (Int.ofNat ilkDirtNew.toNat)) =
@@ -7448,7 +7448,7 @@ theorem dogBarkInkSpotCheckedMulOk {v : DogImmutables}
         (.ok { contract := contract, locals := locals1, immutables := immStore v } evm) := by
     simpa [locals0, locals1, inkSpot, barkLocalsInkSpot] using
       (ExecStmt.letDecl
-        (cfg := config) (solm := { contract := contract, locals := locals0, immutables := immStore v })
+        (cfg := config) (stele := { contract := contract, locals := locals0, immutables := immStore v })
         (evm := evm) (name := "inkSpot") (ty := some uint256)
         (expr := mul256 (.var "ink") (.var "spot"))
         (value := .int (Int.ofNat inkSpot.toNat)) hmul)
@@ -7605,7 +7605,7 @@ theorem dogBarkArtRateUnsafeCheckedMulOk {v : DogImmutables}
         (.ok { contract := contract, locals := locals1, immutables := immStore v } evm) := by
     simpa [locals0, locals1, artRate, barkLocalsArtRateUnsafe] using
       (ExecStmt.letDecl
-        (cfg := config) (solm := { contract := contract, locals := locals0, immutables := immStore v })
+        (cfg := config) (stele := { contract := contract, locals := locals0, immutables := immStore v })
         (evm := evm) (name := "artRateUnsafe") (ty := some uint256)
         (expr := mul256 (.var "art") (.var "rate"))
         (value := .int (Int.ofNat artRate.toNat)) hmul)
@@ -8373,7 +8373,7 @@ theorem dogBarkGlobalRoomCheckedSubOk {v : DogImmutables}
         (.ok { contract := contract, locals := locals1, immutables := immStore v } evmIlks) := by
     simpa [locals0, locals1, globalRoom, barkLocalsGlobalRoom] using
       (ExecStmt.letDecl (cfg := config)
-        (solm := { contract := contract, locals := locals0, immutables := immStore v }) (evm := evmIlks)
+        (stele := { contract := contract, locals := locals0, immutables := immStore v }) (evm := evmIlks)
         (name := "globalRoom") (ty := some uint256)
         (expr := sub256 (.storage HoleRef) (.storage DirtRef))
         (value := .int (Int.ofNat globalRoom.toNat)) hsub)
@@ -8451,7 +8451,7 @@ theorem dogBarkIlkRoomCheckedSubOk {v : DogImmutables}
         (.ok { contract := contract, locals := locals1, immutables := immStore v } evmIlks) := by
     simpa [locals0, locals1, ilkRoom, barkLocalsIlkRoom] using
       (ExecStmt.letDecl (cfg := config)
-        (solm := { contract := contract, locals := locals0, immutables := immStore v }) (evm := evmIlks)
+        (stele := { contract := contract, locals := locals0, immutables := immStore v }) (evm := evmIlks)
         (name := "ilkRoom") (ty := some uint256)
         (expr := sub256 (.var "milkHole") (.var "milkDirt"))
         (value := .int (Int.ofNat ilkRoom.toNat)) hsub)
@@ -8536,7 +8536,7 @@ theorem dogBarkRoomMinCallOk {v : DogImmutables}
       (args := [.var "globalRoom", .var "ilkRoom"])
       (argVals := [.int (Int.ofNat globalRoom.toNat), .int (Int.ofNat ilkRoom.toNat)])
       (callee := minFunction) (locals := barkBinaryLocals globalRoom ilkRoom)
-      (calleeSolm := { contract := contract, locals := barkBinaryLocals globalRoom ilkRoom, immutables := immStore v })
+      (calleeStele := { contract := contract, locals := barkBinaryLocals globalRoom ilkRoom, immutables := immStore v })
       (value := some [.int (Int.ofNat (barkSourceRoomWord evmUrns evmIlks I).toNat)])
       hargs (by rfl) hbind hbody)
 
@@ -8845,7 +8845,7 @@ theorem dogBarkRoomWadCheckedMulOk {v : DogImmutables}
         (.ok { contract := contract, locals := locals1, immutables := immStore v } evmIlks) := by
     simpa [locals0, locals1, roomWad, barkLocalsRoomWad] using
       (ExecStmt.letDecl
-        (cfg := config) (solm := { contract := contract, locals := locals0, immutables := immStore v })
+        (cfg := config) (stele := { contract := contract, locals := locals0, immutables := immStore v })
         (evm := evmIlks) (name := "roomWad") (ty := some uint256)
         (expr := mul256 (.var "room") (.intLit WAD))
         (value := .int (Int.ofNat roomWad.toNat)) hmul)
@@ -8961,7 +8961,7 @@ theorem dogBarkDartByRateLetOk {v : DogImmutables}
         (.ok { contract := contract, locals := locals1, immutables := immStore v } evmIlks) := by
     simpa [locals0, locals1, dartByRate, barkLocalsDartByRate] using
       (ExecStmt.letDecl
-        (cfg := config) (solm := { contract := contract, locals := locals0, immutables := immStore v })
+        (cfg := config) (stele := { contract := contract, locals := locals0, immutables := immStore v })
         (evm := evmIlks) (name := "dartByRate") (ty := some uint256)
         (expr := .binary .div (.var "roomWad") (.var "rate"))
         (value := .int (Int.ofNat dartByRate.toNat)) hdiv)
@@ -9012,7 +9012,7 @@ theorem dogBarkDartCandidateLetOk {v : DogImmutables}
         (.ok { contract := contract, locals := locals1, immutables := immStore v } evmIlks) := by
     simpa [locals0, locals1, dartCandidate, barkLocalsDartCandidate] using
       (ExecStmt.letDecl
-        (cfg := config) (solm := { contract := contract, locals := locals0, immutables := immStore v })
+        (cfg := config) (stele := { contract := contract, locals := locals0, immutables := immStore v })
         (evm := evmIlks) (name := "dartCandidate") (ty := some uint256)
         (expr := .binary .div (.var "dartByRate") (.var "milkChop"))
         (value := .int (Int.ofNat dartCandidate.toNat)) hdiv)
@@ -9072,7 +9072,7 @@ theorem dogBarkDartMinCallOk {v : DogImmutables}
       (args := [.var "art", .var "dartCandidate"])
       (argVals := [.int (Int.ofNat art.toNat), .int (Int.ofNat dartCandidate.toNat)])
       (callee := minFunction) (locals := barkBinaryLocals art dartCandidate)
-      (calleeSolm := { contract := contract, locals := barkBinaryLocals art dartCandidate, immutables := immStore v })
+      (calleeStele := { contract := contract, locals := barkBinaryLocals art dartCandidate, immutables := immStore v })
       (value := some [.int (Int.ofNat
         (barkSourceDartWord evmUrns evmIlks I out outIlks).toNat)])
       hargs (by rfl) hbind hbody)
@@ -9299,7 +9299,7 @@ theorem dogBarkInkDartCheckedMulOk {v : DogImmutables} (evm : EVM.State)
         (.ok { contract := contract, locals := locals1, immutables := immStore v } evm) := by
     simpa [locals1, inkDart, barkLocalsInkDart] using
       (ExecStmt.letDecl
-        (cfg := config) (solm := { contract := contract, locals := locals, immutables := immStore v })
+        (cfg := config) (stele := { contract := contract, locals := locals, immutables := immStore v })
         (evm := evm) (name := "inkDart") (ty := some uint256)
         (expr := mul256 (.var "ink") (.var "dart"))
         (value := .int (Int.ofNat inkDart.toNat)) hmul)
@@ -9431,7 +9431,7 @@ theorem dogBarkCheckedSubOk {v : DogImmutables} (evm : EVM.State)
         (.ok { contract := contract, locals := locals1, immutables := immStore v } evm) := by
     simpa [locals1, diff] using
       (ExecStmt.letDecl
-        (cfg := config) (solm := { contract := contract, locals := locals, immutables := immStore v })
+        (cfg := config) (stele := { contract := contract, locals := locals, immutables := immStore v })
         (evm := evm) (name := name) (ty := some uint256) (expr := sub256 x y)
         (value := .int (Int.ofNat diff.toNat)) hsub)
   have hname :
@@ -9481,7 +9481,7 @@ theorem dogBarkCheckedAddOk {v : DogImmutables} (evm : EVM.State)
         (.ok { contract := contract, locals := locals1, immutables := immStore v } evm) := by
     simpa [locals1, sum] using
       (ExecStmt.letDecl
-        (cfg := config) (solm := { contract := contract, locals := locals, immutables := immStore v })
+        (cfg := config) (stele := { contract := contract, locals := locals, immutables := immStore v })
         (evm := evm) (name := name) (ty := some uint256) (expr := add256 x y)
         (value := .int (Int.ofNat sum.toNat)) hadd)
   have hname :
@@ -9536,7 +9536,7 @@ theorem dogBarkCheckedMulOk {v : DogImmutables} (evm : EVM.State)
         (.ok { contract := contract, locals := locals1, immutables := immStore v } evm) := by
     simpa [locals1, prod] using
       (ExecStmt.letDecl
-        (cfg := config) (solm := { contract := contract, locals := locals, immutables := immStore v })
+        (cfg := config) (stele := { contract := contract, locals := locals, immutables := immStore v })
         (evm := evm) (name := name) (ty := some uint256) (expr := mul256 x y)
         (value := .int (Int.ofNat prod.toNat)) hmul)
   have hname :
@@ -9727,7 +9727,7 @@ theorem dogBarkTabLetOk {v : DogImmutables} (evm : EVM.State)
         (.ok { contract := contract, locals := barkLocalsTab locals tab, immutables := immStore v } evm) := by
     simpa [tab, barkLocalsTab] using
       (ExecStmt.letDecl
-        (cfg := config) (solm := { contract := contract, locals := locals, immutables := immStore v })
+        (cfg := config) (stele := { contract := contract, locals := locals, immutables := immStore v })
         (evm := evm) (name := "tab") (ty := some uint256)
         (expr := .binary .div (.var "tabBase") (.intLit WAD))
         (value := .int (Int.ofNat tab.toNat)) hdiv)
@@ -9808,11 +9808,11 @@ theorem dogBarkDirtAssignOkSourceSplit {v : DogImmutables} (evm : EVM.State)
     (ExecBlock config { contract := contract, locals := locals, immutables := immStore v } evm
       [ .assign .storage DirtRef (.var "DirtNew") ]
       (.ok { contract := contract, locals := locals, immutables := immStore v }
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨5⟩ dirtNew))) ∧
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨5⟩ dirtNew))) ∧
       (evm.executionEnv.perm = false →
         ExecBlock config { contract := contract, locals := locals, immutables := immStore v } evm
           [.assign .storage DirtRef (.var "DirtNew")] .staticViolation) := by
-  let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨5⟩ dirtNew
+  let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨5⟩ dirtNew
   have hval :
       evalExpr? config { contract := contract, locals := locals, immutables := immStore v } evm
         (.var "DirtNew") = .ok (.int (Int.ofNat dirtNew.toNat)) :=
@@ -9893,9 +9893,9 @@ theorem dogBarkIlkDirtAssignOkSource {v : DogImmutables} (evm : EVM.State)
     ExecBlock config { contract := contract, locals := locals, immutables := immStore v } evm
       [ .assign .storage (ilksF (.var "ilk") "dirt") (.var "ilkDirtNew") ]
       (.ok { contract := contract, locals := locals, immutables := immStore v }
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner
           (barkIlksDirtSlotFor I) ilkDirtNew)) := by
-  let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+  let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner
     (barkIlksDirtSlotFor I) ilkDirtNew
   have hval :
       evalExpr? config { contract := contract, locals := locals, immutables := immStore v } evm
@@ -10814,7 +10814,7 @@ theorem dogBarkDinkLetOk {v : DogImmutables} (evm : EVM.State)
         (.ok { contract := contract, locals := barkLocalsDink locals0 dink, immutables := immStore v } evm) := by
     simpa [locals0, dink, barkLocalsDink] using
       (ExecStmt.letDecl
-        (cfg := config) (solm := { contract := contract, locals := locals0, immutables := immStore v })
+        (cfg := config) (stele := { contract := contract, locals := locals0, immutables := immStore v })
         (evm := evm) (name := "dink") (ty := some uint256)
         (expr := .binary .div (.var "inkDart") (.var "art"))
         (value := .int (Int.ofNat dink.toNat)) hdiv)
@@ -24259,7 +24259,7 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
     · have hslotWord :
           solcSlotWordAt ⟨3⟩ σ I = solcSlotWordAt ⟨3⟩ σ I :=
         rfl
-      have hliveSolm : solcSlotWordAt ⟨3⟩ σ I = ⟨1⟩ := by
+      have hliveStele : solcSlotWordAt ⟨3⟩ σ I = ⟨1⟩ := by
         rw [← hslotWord]
         exact hliveEvm
       have hliveSolc : solcSlotWord σ I ⟨3⟩ = ⟨1⟩ := by
@@ -24272,7 +24272,7 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
           (v := v) (code := code) (ret := ⟨448⟩) (sel := solcSelectorWord I) (R := [])
           hpatch h2885 solcFreePtrMem_size solcFreePtrMem_read64 hvatCodeSize
           (by simp)
-        have hvatCodeSizeSolm :
+        have hvatCodeSizeStele :
             Reasoning.Theory.extCodeSizeWord σ (barkVatWord v) = ⟨0⟩ :=
           hvatCodeSize
         have hvatNoCode :
@@ -24281,7 +24281,7 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                 (AccountAddress.ofNat v.vat.toNat)).option 0
                   (fun acc => acc.code.size))).toNat = 0 :=
           barkVatCode_zero_of_codeSize_zero (v := v)
-            (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) hvatCodeSizeSolm
+            (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) hvatCodeSizeStele
         let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
         have hbody :
             ExecTransitionBody config contract evm0 (barkLocals I)
@@ -24289,12 +24289,12 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
           simpa [evm0] using
             (dogBarkVatUrnsNoCodeSourceBody (v := v)
               (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
-              hwv hliveSolm hvatNoCode)
+              hwv hliveStele hvatNoCode)
         exact hrev.reEquivExecutionRevert hcode hdispatch hdecode hbody
       · have hvatCodeSizeNe :
             Reasoning.Theory.extCodeSizeWord σ (barkVatWord v) ≠ ⟨0⟩ :=
           hvatCodeSize
-        have hvatCodeSizeSolmNe :
+        have hvatCodeSizeSteleNe :
             Reasoning.Theory.extCodeSizeWord σ (barkVatWord v) ≠ ⟨0⟩ :=
           hvatCodeSizeNe
         have hvatCode :
@@ -24303,7 +24303,7 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                 (AccountAddress.ofNat v.vat.toNat)).option 0
                   (fun acc => acc.code.size))).toNat :=
           barkVatCode_pos_of_codeSize_ne (v := v)
-            (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) hvatCodeSizeSolmNe
+            (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) hvatCodeSizeSteleNe
         by_cases hdepthLt : I.depth.val < 1024
         · obtain ⟨σ', z, out, A', _k', _C', rd3008, hcallEvmRaw, hosz⟩ :=
             RD.dogBarkVatUrnsPostStaticcall
@@ -24311,7 +24311,7 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
               (R := []) hpatch h2885 hsz100 solcFreePtrMem_size solcFreePtrMem_read64
               hvatCodeSizeNe hdepthLt (by simp)
           let evmEvm := initState σ σ₀ (Sat256.ofUInt256 g) A I
-          let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+          let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
           let evmPostEvm :=
             { evmEvm with accountMap := σ', substate := A' }
           have hcallEvm :
@@ -24320,28 +24320,28 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                 [.fixedBytes bytes32Width (barkIlkBytes I), .address (barkUrn I)]
                 (z, evmPostEvm, out) false := by
             simpa [evmEvm, evmPostEvm] using hcallEvmRaw
-          let evmPostSolm :=
-            { evmSolm with
+          let evmPostStele :=
+            { evmStele with
               accountMap := evmPostEvm.accountMap, substate := evmPostEvm.substate }
-          have hcallSolm :
-              typedCallViaEVM config evmSolm
+          have hcallStele :
+              typedCallViaEVM config evmStele
                 (EVM.address (AccountAddress.ofNat v.vat.toNat)) "urns" 0
                 [.fixedBytes bytes32Width (barkIlkBytes I), .address (barkUrn I)]
-                (z, evmPostSolm, out) false := by
-            simpa [evmPostSolm, evmSolm, evmEvm] using hcallEvm
+                (z, evmPostStele, out) false := by
+            simpa [evmPostStele, evmStele, evmEvm] using hcallEvm
           cases z
-          · simp only [Bool.false_eq_true, if_false] at rd3008 hcallSolm
+          · simp only [Bool.false_eq_true, if_false] at rd3008 hcallStele
             have hrev := RD.dogBarkVatUrnsCallFailure hpatch rd3008 hosz (by simp)
             have hbody :
-                ExecTransitionBody config contract evmSolm (barkLocals I)
+                ExecTransitionBody config contract evmStele (barkLocals I)
                   barkTransition.body .reverted (immStore v) := by
-              simpa [evmSolm] using
+              simpa [evmStele] using
                 (dogBarkVatUrnsCallFailureSourceBody (v := v)
                   (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
-                  (g := g) (evmCall := evmPostSolm) (out := out)
-                  hwv hliveSolm hvatCode hcallSolm)
+                  (g := g) (evmCall := evmPostStele) (out := out)
+                  hwv hliveStele hvatCode hcallStele)
             exact hrev.reEquivExecutionRevert hcode hdispatch hdecode hbody
-          · simp only [Bool.true_eq_false, if_true] at rd3008 hcallSolm
+          · simp only [Bool.true_eq_false, if_true] at rd3008 hcallStele
             obtain ⟨_, _, rd3026⟩ :=
               RD.dogBarkVatUrnsCallSuccessToDecode hpatch rd3008
                 (by simp only [List.length_cons, List.length_nil]; omega)
@@ -24362,7 +24362,7 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                 RD.dogBarkLoadIlkFields hpatch rd3070
                   solcFreePtrMem_size hretLong hosz
                   (by simp only [List.length_cons, List.length_nil]; omega)
-              have hStateCall : EVMStateEquiv evmPostEvm evmPostSolm := ⟨rfl, rfl⟩
+              have hStateCall : EVMStateEquiv evmPostEvm evmPostStele := ⟨rfl, rfl⟩
               by_cases hvatIlksCodeSize :
                   Reasoning.Theory.extCodeSizeWord σ' (barkVatWord v) = ⟨0⟩
               · have hrev := RD.dogBarkVatIlksNoCodeRevert hpatch rd3139
@@ -24372,25 +24372,25 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                     Reasoning.Theory.extCodeSizeWord evmPostEvm.accountMap
                       (barkVatWord v) = ⟨0⟩ := by
                   simpa [evmPostEvm] using hvatIlksCodeSize
-                have hvatIlksCodeSizeSolm :
-                    Reasoning.Theory.extCodeSizeWord evmPostSolm.accountMap
+                have hvatIlksCodeSizeStele :
+                    Reasoning.Theory.extCodeSizeWord evmPostStele.accountMap
                       (barkVatWord v) = ⟨0⟩ :=
                   hStateCall.accountMap ▸ hvatIlksCodeSizeEvm
                 have hvatNoCode :
                     (UInt256.ofNat
-                      ((evmPostSolm.lookupAccount
+                      ((evmPostStele.lookupAccount
                         (AccountAddress.ofNat v.vat.toNat)).option 0
                           (fun acc => acc.code.size))).toNat = 0 :=
-                  barkVatCode_zero_of_state_codeSize_zero (v := v) (evm := evmPostSolm)
-                    hvatIlksCodeSizeSolm
+                  barkVatCode_zero_of_state_codeSize_zero (v := v) (evm := evmPostStele)
+                    hvatIlksCodeSizeStele
                 have hbody :
-                    ExecTransitionBody config contract evmSolm (barkLocals I)
+                    ExecTransitionBody config contract evmStele (barkLocals I)
                       barkTransition.body .reverted (immStore v) := by
-                  simpa [evmSolm] using
+                  simpa [evmStele] using
                     (dogBarkVatIlksNoCodeSourceBody (v := v)
                       (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
-                      (g := g) (evmUrns := evmPostSolm) (out := out)
-                      hwv hliveSolm hvatCode hcallSolm hdecUrns hvatNoCode hsz100)
+                      (g := g) (evmUrns := evmPostStele) (out := out)
+                      hwv hliveStele hvatCode hcallStele hdecUrns hvatNoCode hsz100)
                 exact hrev.reEquivExecutionRevert hcode hdispatch hdecode hbody
               · obtain ⟨σ'', zIlks, outIlks, A'', _k'', _C'', rd3245,
                     hcallIlksEvmRaw, hoszIlks⟩ :=
@@ -24413,55 +24413,55 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                       [.fixedBytes bytes32Width (barkIlkBytes I)]
                       (zIlks, evmIlksPostEvm, outIlks) false := by
                   simpa [evmIlksPostEvm] using hcallIlksEvmRaw
-                obtain ⟨σIlksSolmPost, AIlksSolmPost, hcallIlksSolmRaw,
+                obtain ⟨σIlksStelePost, AIlksStelePost, hcallIlksSteleRaw,
                     hAccountsIlks⟩ :=
                   Reasoning.Theory.typedCallViaEVM_sameInputs
-                    (evm_solm := evmPostSolm) hcallIlksEvm
+                    (evm_stele := evmPostStele) hcallIlksEvm
                     hStateCall.accountMap
-                    (by simp [evmPostEvm, evmPostSolm, evmEvm, evmSolm, initState])
-                    (by simpa [evmPostEvm, evmPostSolm] using hStateCall.executionEnv.symm)
-                let evmIlksPostSolm :=
-                  { evmPostSolm with
-                    accountMap := σIlksSolmPost, substate := AIlksSolmPost }
-                have hcallIlksSolm :
-                    typedCallViaEVM config evmPostSolm
+                    (by simp [evmPostEvm, evmPostStele, evmEvm, evmStele, initState])
+                    (by simpa [evmPostEvm, evmPostStele] using hStateCall.executionEnv.symm)
+                let evmIlksPostStele :=
+                  { evmPostStele with
+                    accountMap := σIlksStelePost, substate := AIlksStelePost }
+                have hcallIlksStele :
+                    typedCallViaEVM config evmPostStele
                       (EVM.address (AccountAddress.ofNat v.vat.toNat)) "ilks" 0
                       [.fixedBytes bytes32Width (barkIlkBytes I)]
-                      (zIlks, evmIlksPostSolm, outIlks) false := by
-                  simpa [evmIlksPostEvm, evmIlksPostSolm] using hcallIlksSolmRaw
+                      (zIlks, evmIlksPostStele, outIlks) false := by
+                  simpa [evmIlksPostEvm, evmIlksPostStele] using hcallIlksSteleRaw
                 cases zIlks
                 · simp only [Bool.false_eq_true, if_false] at rd3245 hcallIlksEvm
-                  simp only [Bool.false_eq_true, if_false] at hcallIlksSolm
+                  simp only [Bool.false_eq_true, if_false] at hcallIlksStele
                   have hrev := RD.dogBarkVatIlksCallFailure hpatch rd3245 hoszIlks
                     (by simp only [List.length_cons, List.length_nil]; omega)
                   have hvatIlksCodeSizeEvmNe :
                       Reasoning.Theory.extCodeSizeWord evmPostEvm.accountMap
                         (barkVatWord v) ≠ ⟨0⟩ := by
                     simpa [evmPostEvm] using hvatIlksCodeSize
-                  have hvatIlksCodeSizeSolmNe :
-                      Reasoning.Theory.extCodeSizeWord evmPostSolm.accountMap
+                  have hvatIlksCodeSizeSteleNe :
+                      Reasoning.Theory.extCodeSizeWord evmPostStele.accountMap
                         (barkVatWord v) ≠ ⟨0⟩ :=
                     hStateCall.accountMap ▸ hvatIlksCodeSizeEvmNe
                   have hvatIlksCode :
                       0 < (UInt256.ofNat
-                        ((evmPostSolm.lookupAccount
+                        ((evmPostStele.lookupAccount
                           (AccountAddress.ofNat v.vat.toNat)).option 0
                             (fun acc => acc.code.size))).toNat :=
-                    barkVatCode_pos_of_state_codeSize_ne (v := v) (evm := evmPostSolm)
-                      hvatIlksCodeSizeSolmNe
+                    barkVatCode_pos_of_state_codeSize_ne (v := v) (evm := evmPostStele)
+                      hvatIlksCodeSizeSteleNe
                   have hbody :
-                      ExecTransitionBody config contract evmSolm (barkLocals I)
+                      ExecTransitionBody config contract evmStele (barkLocals I)
                         barkTransition.body .reverted (immStore v) := by
-                    simpa [evmSolm] using
+                    simpa [evmStele] using
                       (dogBarkVatIlksCallFailureSourceBody (v := v)
                         (σ := σ) (σ₀ := σ₀) (A := A)
-                        (I := I) (g := g) (evmUrns := evmPostSolm)
-                        (evmIlks := evmIlksPostSolm) (out := out) (outIlks := outIlks)
-                        hwv hliveSolm hvatCode hcallSolm hdecUrns hvatIlksCode
-                        hcallIlksSolm hsz100)
+                        (I := I) (g := g) (evmUrns := evmPostStele)
+                        (evmIlks := evmIlksPostStele) (out := out) (outIlks := outIlks)
+                        hwv hliveStele hvatCode hcallStele hdecUrns hvatIlksCode
+                        hcallIlksStele hsz100)
                   exact hrev.reEquivExecutionRevert hcode hdispatch hdecode hbody
                 · simp only [Bool.true_eq_false, if_true] at rd3245 hcallIlksEvm
-                  simp only [Bool.true_eq_false, if_true] at hcallIlksSolm
+                  simp only [Bool.true_eq_false, if_true] at hcallIlksStele
                   obtain ⟨_, _, rd3263⟩ :=
                     RD.dogBarkVatIlksCallSuccessToDecode hpatch rd3245
                       (by simp only [List.length_cons, List.length_nil]; omega)
@@ -24469,17 +24469,17 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                       Reasoning.Theory.extCodeSizeWord evmPostEvm.accountMap
                         (barkVatWord v) ≠ ⟨0⟩ := by
                     simpa [evmPostEvm] using hvatIlksCodeSize
-                  have hvatIlksCodeSizeSolmNe :
-                      Reasoning.Theory.extCodeSizeWord evmPostSolm.accountMap
+                  have hvatIlksCodeSizeSteleNe :
+                      Reasoning.Theory.extCodeSizeWord evmPostStele.accountMap
                         (barkVatWord v) ≠ ⟨0⟩ :=
                     hStateCall.accountMap ▸ hvatIlksCodeSizeEvmNe
                   have hvatIlksCode :
                       0 < (UInt256.ofNat
-                        ((evmPostSolm.lookupAccount
+                        ((evmPostStele.lookupAccount
                           (AccountAddress.ofNat v.vat.toNat)).option 0
                             (fun acc => acc.code.size))).toNat :=
-                    barkVatCode_pos_of_state_codeSize_ne (v := v) (evm := evmPostSolm)
-                      hvatIlksCodeSizeSolmNe
+                    barkVatCode_pos_of_state_codeSize_ne (v := v) (evm := evmPostStele)
+                      hvatIlksCodeSizeSteleNe
                   by_cases hretIlksLong : 160 ≤ outIlks.size
                   · have hdecIlks :
                         config.externalABI.decode? "ilks" outIlks =
@@ -24503,15 +24503,15 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                           norm_num [UInt256.size]
                         omega
                       have hbody :
-                          ExecTransitionBody config contract evmSolm (barkLocals I)
+                          ExecTransitionBody config contract evmStele (barkLocals I)
                             barkTransition.body .reverted (immStore v) := by
-                        simpa [evmSolm] using
+                        simpa [evmStele] using
                           (dogBarkVatIlksInkSpotOverflowSourceBody (v := v)
                             (σ := σ) (σ₀ := σ₀) (A := A)
-                            (I := I) (g := g) (evmUrns := evmPostSolm)
-                            (evmIlks := evmIlksPostSolm) (out := out)
-                            (outIlks := outIlks) hwv hliveSolm hvatCode hcallSolm
-                            hdecUrns hvatIlksCode hcallIlksSolm hdecIlks hoverInk hsz100)
+                            (I := I) (g := g) (evmUrns := evmPostStele)
+                            (evmIlks := evmIlksPostStele) (out := out)
+                            (outIlks := outIlks) hwv hliveStele hvatCode hcallStele
+                            hdecUrns hvatIlksCode hcallIlksStele hdecIlks hoverInk hsz100)
                       by_cases hoverArt :
                           UInt256.size ≤
                             (barkVatUrnsArtWord out).toNat *
@@ -24539,15 +24539,15 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                             (barkVatUrnsArtWord out).toNat *
                               (barkVatIlksRateWord outIlks).toNat
                       · have hbody :
-                            ExecTransitionBody config contract evmSolm (barkLocals I)
+                            ExecTransitionBody config contract evmStele (barkLocals I)
                               barkTransition.body .reverted (immStore v) := by
-                          simpa [evmSolm] using
+                          simpa [evmStele] using
                             (dogBarkVatIlksArtRateOverflowSourceBody (v := v)
                               (σ := σ) (σ₀ := σ₀) (A := A)
-                              (I := I) (g := g) (evmUrns := evmPostSolm)
-                              (evmIlks := evmIlksPostSolm) (out := out)
-                              (outIlks := outIlks) hwv hliveSolm hvatCode hcallSolm
-                              hdecUrns hvatIlksCode hcallIlksSolm hdecIlks hfitInk
+                              (I := I) (g := g) (evmUrns := evmPostStele)
+                              (evmIlks := evmIlksPostStele) (out := out)
+                              (outIlks := outIlks) hwv hliveStele hvatCode hcallStele
+                              hdecUrns hvatIlksCode hcallIlksStele hdecIlks hfitInk
                               hoverArt hsz100)
                         by_cases hspotZero : barkVatIlksSpotWord outIlks = ⟨0⟩
                         · have hpostMemSize :
@@ -24596,15 +24596,15 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                               simp [hspotZero]
                             omega
                           have hbody :
-                              ExecTransitionBody config contract evmSolm
+                              ExecTransitionBody config contract evmStele
                                 (barkLocals I) barkTransition.body .reverted (immStore v) := by
-                            simpa [evmSolm] using
+                            simpa [evmStele] using
                               (dogBarkVatIlksNotUnsafeSourceBody (v := v)
                                 (σ := σ) (σ₀ := σ₀)
-                                (A := A) (I := I) (g := g) (evmUrns := evmPostSolm)
-                                (evmIlks := evmIlksPostSolm) (out := out)
-                                (outIlks := outIlks) hwv hliveSolm hvatCode hcallSolm
-                                hdecUrns hvatIlksCode hcallIlksSolm hdecIlks hfitInk
+                                (A := A) (I := I) (g := g) (evmUrns := evmPostStele)
+                                (evmIlks := evmIlksPostStele) (out := out)
+                                (outIlks := outIlks) hwv hliveStele hvatCode hcallStele
+                                hdecUrns hvatIlksCode hcallIlksStele hdecIlks hfitInk
                                 hfitArt hnotSafe hsz100)
                           have hrev := RD.dogBarkSpotZeroReverts
                             (v := v) (code := code) (ret := ⟨448⟩)
@@ -24899,98 +24899,98 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                     UInt256.size
                               · by_cases hchopNe : barkIlksChopWord σ' I ≠ ⟨0⟩
                                 · have hslot5 :
-                                      solcSlotWordAt ⟨5⟩ evmIlksPostSolm.accountMap
-                                          evmIlksPostSolm.executionEnv =
+                                      solcSlotWordAt ⟨5⟩ evmIlksPostStele.accountMap
+                                          evmIlksPostStele.executionEnv =
                                         solcSlotWordAt ⟨5⟩ σ'' I := by
                                     have h :=
                                       congrArg (fun m => solcSlotWordAt ⟨5⟩ m I) hAccountsIlks
-                                    simpa [evmIlksPostSolm, evmPostSolm, evmSolm, initState]
+                                    simpa [evmIlksPostStele, evmPostStele, evmStele, initState]
                                       using h.symm
                                   have hslot4 :
-                                      solcSlotWordAt ⟨4⟩ evmIlksPostSolm.accountMap
-                                          evmIlksPostSolm.executionEnv =
+                                      solcSlotWordAt ⟨4⟩ evmIlksPostStele.accountMap
+                                          evmIlksPostStele.executionEnv =
                                         solcSlotWordAt ⟨4⟩ σ'' I := by
                                     have h :=
                                       congrArg (fun m => solcSlotWordAt ⟨4⟩ m I) hAccountsIlks
-                                    simpa [evmIlksPostSolm, evmPostSolm, evmSolm, initState]
+                                    simpa [evmIlksPostStele, evmPostStele, evmStele, initState]
                                       using h.symm
                                   have hAccountsUrns :
-                                      Eq σ' evmPostSolm.accountMap := by
+                                      Eq σ' evmPostStele.accountMap := by
                                     simpa [evmPostEvm] using hStateCall.accountMap
                                   have hmilkDirt :
                                       solcSlotWordAt (barkIlksDirtSlotFor I)
-                                          evmPostSolm.accountMap evmPostSolm.executionEnv =
+                                          evmPostStele.accountMap evmPostStele.executionEnv =
                                         barkIlksDirtWord σ' I := by
                                     have h :=
                                       congrArg (fun m => solcSlotWordAt (barkIlksDirtSlotFor I) m I) hAccountsUrns
                                     rw [barkIlksDirtWord_eq_slotFor (σ := σ') (I := I)
                                       hsz100]
-                                    simpa [evmPostSolm, evmSolm, initState] using h.symm
+                                    simpa [evmPostStele, evmStele, initState] using h.symm
                                   have hmilkHole :
                                       solcSlotWordAt (barkIlksHoleSlotFor I)
-                                          evmPostSolm.accountMap evmPostSolm.executionEnv =
+                                          evmPostStele.accountMap evmPostStele.executionEnv =
                                         barkIlksHoleWord σ' I := by
                                     have h :=
                                       congrArg (fun m => solcSlotWordAt (barkIlksHoleSlotFor I) m I) hAccountsUrns
                                     rw [barkIlksHoleWord_eq_slotFor (σ := σ') (I := I)
                                       hsz100]
-                                    simpa [evmPostSolm, evmSolm, initState] using h.symm
+                                    simpa [evmPostStele, evmStele, initState] using h.symm
                                   have hmilkChop :
                                       solcSlotWordAt (barkIlksChopSlotFor I)
-                                          evmPostSolm.accountMap evmPostSolm.executionEnv =
+                                          evmPostStele.accountMap evmPostStele.executionEnv =
                                         barkIlksChopWord σ' I := by
                                     have h :=
                                       congrArg (fun m => solcSlotWordAt (barkIlksChopSlotFor I) m I) hAccountsUrns
                                     rw [barkIlksChopWord_eq_slotFor (σ := σ') (I := I)
                                       hsz100]
-                                    simpa [evmPostSolm, evmSolm, initState] using h.symm
+                                    simpa [evmPostStele, evmStele, initState] using h.symm
                                   have hmilkClip :
                                       solcAddressSlotWord (barkIlksClipSlotFor I)
-                                          evmPostSolm.accountMap evmPostSolm.executionEnv =
+                                          evmPostStele.accountMap evmPostStele.executionEnv =
                                         barkIlksClipWord σ' I := by
                                     have h :=
                                       congrArg (fun m => solcSlotWordAt (barkIlksClipSlotFor I) m I) hAccountsUrns
                                     rw [barkIlksClipWord_eq_slotFor (σ := σ') (I := I)
                                       hsz100]
-                                    simpa [solcAddressSlotWord, evmPostSolm, evmSolm,
+                                    simpa [solcAddressSlotWord, evmPostStele, evmStele,
                                       initState] using
                                       congrArg (fun word => UInt256.land word solcAddrMask)
                                         h.symm
                                   have hlimitSource :
-                                      (solcSlotWordAt ⟨5⟩ evmIlksPostSolm.accountMap
-                                          evmIlksPostSolm.executionEnv).toNat <
-                                        (solcSlotWordAt ⟨4⟩ evmIlksPostSolm.accountMap
-                                          evmIlksPostSolm.executionEnv).toNat ∧
+                                      (solcSlotWordAt ⟨5⟩ evmIlksPostStele.accountMap
+                                          evmIlksPostStele.executionEnv).toNat <
+                                        (solcSlotWordAt ⟨4⟩ evmIlksPostStele.accountMap
+                                          evmIlksPostStele.executionEnv).toNat ∧
                                       (solcSlotWordAt (barkIlksDirtSlotFor I)
-                                          evmPostSolm.accountMap
-                                          evmPostSolm.executionEnv).toNat <
+                                          evmPostStele.accountMap
+                                          evmPostStele.executionEnv).toNat <
                                         (solcSlotWordAt (barkIlksHoleSlotFor I)
-                                          evmPostSolm.accountMap
-                                          evmPostSolm.executionEnv).toNat := by
+                                          evmPostStele.accountMap
+                                          evmPostStele.executionEnv).toNat := by
                                     exact
                                       ⟨by simpa [hslot5, hslot4] using hlimit.1,
                                         by simpa [hmilkDirt, hmilkHole] using hlimit.2⟩
                                   have hglobalRoom :
-                                      barkSourceGlobalRoomWord evmIlksPostSolm =
+                                      barkSourceGlobalRoomWord evmIlksPostStele =
                                         barkGlobalRoomWord σ'' I := by
                                     simp [barkSourceGlobalRoomWord, barkGlobalRoomWord, hslot4,
                                       hslot5]
                                   have hilkRoom :
-                                      barkSourceIlkRoomWord evmPostSolm I =
+                                      barkSourceIlkRoomWord evmPostStele I =
                                         barkIlkRoomWord σ' I := by
                                     simp [barkSourceIlkRoomWord, barkIlkRoomWord, hmilkHole,
                                       hmilkDirt]
                                   have hroom :
-                                      barkSourceRoomWord evmPostSolm evmIlksPostSolm I =
+                                      barkSourceRoomWord evmPostStele evmIlksPostStele I =
                                         barkRoomWord σ'' σ' I := by
                                     simp [barkSourceRoomWord, barkRoomWord, hglobalRoom, hilkRoom]
                                   have hfitRoomSource :
-                                      (barkSourceRoomWord evmPostSolm evmIlksPostSolm I).toNat *
+                                      (barkSourceRoomWord evmPostStele evmIlksPostStele I).toNat *
                                           dogWadWord.toNat <
                                         UInt256.size := by
                                     simpa [hroom] using hfitRoom
                                   have hchopNeSource :
-                                      barkSourceMilkChopWord evmPostSolm I ≠ ⟨0⟩ := by
+                                      barkSourceMilkChopWord evmPostStele I ≠ ⟨0⟩ := by
                                     simpa [barkSourceMilkChopWord, hmilkChop] using hchopNe
                                   obtain ⟨k3594Base, C3594Base, rd3594⟩ :=
                                     RD.dogBarkComputeDart
@@ -25000,7 +25000,7 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                       hpatch hfitRoom hrateNe hchopNe hmload288 rd3543
                                       (by simp)
                                   have hdartSource :
-                                      barkSourceDartWord evmPostSolm evmIlksPostSolm I out
+                                      barkSourceDartWord evmPostStele evmIlksPostStele I out
                                           outIlks =
                                         barkDartWord σ'' σ' I (barkVatUrnsArtWord out)
                                           (barkVatIlksRateWord outIlks)
@@ -25015,9 +25015,9 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                         ExecBlock config
                                           { contract := contract,
                                             locals :=
-                                              barkLocalsDart evmPostSolm evmIlksPostSolm I
+                                              barkLocalsDart evmPostStele evmIlksPostStele I
                                                 out outIlks, immutables := immStore v }
-                                          evmIlksPostSolm
+                                          evmIlksPostStele
                                           ([ .ite
                                               (.binary .gt (.var "art") (.var "dart"))
                                               (checkedSubUintInto "leftoverArt" (.var "art")
@@ -25078,19 +25078,19 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                           result) :
                                       ExecBlock config
                                         { contract := contract, locals := barkLocals I, immutables := immStore v }
-                                        evmSolm barkTransition.body result := by
+                                        evmStele barkTransition.body result := by
                                     have hblock :=
                                       dogBarkVatIlksDartTailSourceBlock (v := v)
                                         (σ := σ) (σ₀ := σ₀)
                                         (A := A) (I := I) (g := g)
-                                        (evmUrns := evmPostSolm)
-                                        (evmIlks := evmIlksPostSolm) (out := out)
-                                        (outIlks := outIlks) hwv hliveSolm hvatCode
-                                        hcallSolm hdecUrns hvatIlksCode hcallIlksSolm
+                                        (evmUrns := evmPostStele)
+                                        (evmIlks := evmIlksPostStele) (out := out)
+                                        (outIlks := outIlks) hwv hliveStele hvatCode
+                                        hcallStele hdecUrns hvatIlksCode hcallIlksStele
                                         hdecIlks hfitInk hfitArt hspotPos hsafeLt
                                         hlimitSource hfitRoomSource hrateNe hchopNeSource
                                         hsz100 htail
-                                    simpa [evmSolm] using hblock
+                                    simpa [evmStele] using hblock
                                   have hbodyRevertOfTail := fun htail ↦
                                     ExecFuncBody.execBlockRevert
                                       (hbodyBlockOfTail (result := .reverted) htail)
@@ -25123,7 +25123,7 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                       mem0] using rd3594
                                   obtain ⟨k3594, C3594, rd3594Local⟩ := hrd3594Local
                                   have hdartSourceLocal :
-                                      barkSourceDartWord evmPostSolm evmIlksPostSolm I out
+                                      barkSourceDartWord evmPostStele evmIlksPostStele I out
                                           outIlks = dart0 := by
                                     simpa [dart0, art, rate, milkChop] using hdartSource
                                   have finishFromDartEntry (dart : UInt256)
@@ -25132,9 +25132,9 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                         ExecBlock config
                                           { contract := contract,
                                             locals :=
-                                              barkLocalsDart evmPostSolm evmIlksPostSolm I
+                                              barkLocalsDart evmPostStele evmIlksPostStele I
                                                 out outIlks, immutables := immStore v }
-                                          evmIlksPostSolm
+                                          evmIlksPostStele
                                           [ .ite
                                               (.binary .gt (.var "art") (.var "dart"))
                                               (checkedSubUintInto "leftoverArt" (.var "art")
@@ -25153,7 +25153,7 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                                             (.var "dust")) ]) ])
                                               [] ]
                                           (.ok { contract := contract, locals := localsAfter, immutables := immStore v }
-                                            evmIlksPostSolm))
+                                            evmIlksPostStele))
                                       (hink :
                                         localsAfter.get? "ink" =
                                           some (.int (Int.ofNat ink.toNat)))
@@ -25301,7 +25301,7 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                                 (by simp)
                                             have hprefixOk :=
                                               dogBarkPostLeftoverIntGuardOkSource (v := v)
-                                                evmIlksPostSolm hink hdart hart hfitInkDart
+                                                evmIlksPostStele hink hdart hart hfitInkDart
                                                 hartNe (by simpa [dink] using hdinkPos)
                                                 hdartBound (by simpa [dink] using hdinkBound)
                                             have _hprefixFull :=
@@ -25427,49 +25427,49 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                                   (by simpa [mem0] using hpostMemSize)
                                                   (by simpa [mem0] using hpostMemRead64)
                                                   hmload256Grab rd3885 (by simp)
-                                              have hvatGrabZeroSolm :
+                                              have hvatGrabZeroStele :
                                                   Reasoning.Theory.extCodeSizeWord
-                                                    evmIlksPostSolm.accountMap
+                                                    evmIlksPostStele.accountMap
                                                     (barkVatWord v) = ⟨0⟩ := by
-                                                simpa [evmIlksPostEvm, evmIlksPostSolm,
+                                                simpa [evmIlksPostEvm, evmIlksPostStele,
                                                   ← hAccountsIlks] using hvatGrabCodeZero
                                               have hvatNoCode :
                                                   (UInt256.ofNat
-                                                    ((evmIlksPostSolm.lookupAccount
+                                                    ((evmIlksPostStele.lookupAccount
                                                       (AccountAddress.ofNat v.vat.toNat)).option
                                                         0 (fun acc => acc.code.size))).toNat =
                                                     0 :=
                                                 barkVatCode_zero_of_state_codeSize_zero
-                                                  (v := v) (evm := evmIlksPostSolm)
-                                                  hvatGrabZeroSolm
+                                                  (v := v) (evm := evmIlksPostStele)
+                                                  hvatGrabZeroStele
                                               have hvatExpr :
                                                   evalExpr? config
                                                     { contract := contract,
                                                       locals := localsDink, immutables := immStore v }
-                                                    evmIlksPostSolm vatExpr =
+                                                    evmIlksPostStele vatExpr =
                                                     .ok (.address
                                                       (AccountAddress.ofNat v.vat.toNat)) :=
                                                 evalExpr_barkVat_state (v := v)
-                                                  (evm := evmIlksPostSolm)
+                                                  (evm := evmIlksPostStele)
                                                   (locals := localsDink)
                                               have hguardFalse :
                                                   evalExpr? config
                                                     { contract := contract,
                                                       locals := localsDink, immutables := immStore v }
-                                                    evmIlksPostSolm
+                                                    evmIlksPostStele
                                                     (.binary .gt (.extCodeSize vatExpr)
                                                       (.intLit 0)) = .ok (.bool false) :=
                                                 evalExpr_barkVatCodeGuard_false (v := v)
                                                   (locals := localsDink) hvatExpr hvatNoCode
                                               have hgrabRev :=
                                                 dogBarkVatGrabNoCodeBlock (v := v)
-                                                  (evm := evmIlksPostSolm)
+                                                  (evm := evmIlksPostStele)
                                                   (locals := localsDink) hguardFalse
                                               have htailPrefix :=
                                                 execBlock_append hprefixOk hgrabRev
                                               have htailBody :
                                                   ExecTransitionBody config contract
-                                                    evmSolm (barkLocals I)
+                                                    evmStele (barkLocals I)
                                                     barkTransition.body .reverted (immStore v) := by
                                                 apply hbodyRevertOfTail
                                                 refine dogBarkDartTailFromLeftoverBlock
@@ -25522,35 +25522,35 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                                     (zGrab, evmGrabEvm, outGrab) true := by
                                                 simpa [evmGrabEvm] using hcallGrabEvmRaw
                                               have hvowWordIlks :
-                                                  barkVowWord evmIlksPostSolm.accountMap
-                                                      evmIlksPostSolm.executionEnv =
+                                                  barkVowWord evmIlksPostStele.accountMap
+                                                      evmIlksPostStele.executionEnv =
                                                     barkVowWord σ'' I := by
                                                 have hslot :=
                                                   congrArg (fun m => solcSlotWordAt ⟨2⟩ m I) hAccountsIlks
-                                                simpa [barkVowWord, evmIlksPostSolm,
-                                                  evmPostSolm, evmSolm, initState] using
+                                                simpa [barkVowWord, evmIlksPostStele,
+                                                  evmPostStele, evmStele, initState] using
                                                   congrArg
                                                     (fun word => UInt256.land solcAddrMask word)
                                                     hslot.symm
-                                              obtain ⟨σGrabSolm, AGrabSolm,
-                                                  hcallGrabSolmRaw, hAccountsGrabRaw⟩ :=
+                                              obtain ⟨σGrabStele, AGrabStele,
+                                                  hcallGrabSteleRaw, hAccountsGrabRaw⟩ :=
                                                 Reasoning.Theory.typedCallViaEVM_sameInputs
-                                                  (evm_solm := evmIlksPostSolm)
+                                                  (evm_stele := evmIlksPostStele)
                                                   hcallGrabEvm
                                                   (by simpa [evmIlksPostEvm] using
                                                     hAccountsIlks)
                                                   (by simp [evmIlksPostEvm,
-                                                    evmIlksPostSolm, evmPostEvm, evmPostSolm,
-                                                    evmEvm, evmSolm, initState])
+                                                    evmIlksPostStele, evmPostEvm, evmPostStele,
+                                                    evmEvm, evmStele, initState])
                                                   (by simp [evmIlksPostEvm,
-                                                    evmIlksPostSolm, evmPostEvm, evmPostSolm,
-                                                    evmEvm, evmSolm, initState])
-                                              let evmGrabSolm :=
-                                                { evmIlksPostSolm with
-                                                  accountMap := σGrabSolm,
-                                                  substate := AGrabSolm }
-                                              have hcallGrabSolm :
-                                                  typedCallViaEVM config evmIlksPostSolm
+                                                    evmIlksPostStele, evmPostEvm, evmPostStele,
+                                                    evmEvm, evmStele, initState])
+                                              let evmGrabStele :=
+                                                { evmIlksPostStele with
+                                                  accountMap := σGrabStele,
+                                                  substate := AGrabStele }
+                                              have hcallGrabStele :
+                                                  typedCallViaEVM config evmIlksPostStele
                                                     (EVM.address
                                                       (AccountAddress.ofNat v.vat.toNat))
                                                     "grab" 0
@@ -25559,53 +25559,53 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                                       .address (AccountAddress.ofNat
                                                         (barkIlksClipWord σ' I).toNat),
                                                       .address (AccountAddress.ofNat
-                                                        (barkVowWord evmIlksPostSolm.accountMap
-                                                          evmIlksPostSolm.executionEnv).toNat),
+                                                        (barkVowWord evmIlksPostStele.accountMap
+                                                          evmIlksPostStele.executionEnv).toNat),
                                                       .int (-(Int.ofNat dink.toNat)),
                                                       .int (-(Int.ofNat dart.toNat))]
-                                                    (zGrab, evmGrabSolm, outGrab) true := by
-                                                simpa [evmGrabSolm, hvowWordIlks] using
-                                                  hcallGrabSolmRaw
-                                              have hvatGrabNonzeroSolm :
+                                                    (zGrab, evmGrabStele, outGrab) true := by
+                                                simpa [evmGrabStele, hvowWordIlks] using
+                                                  hcallGrabSteleRaw
+                                              have hvatGrabNonzeroStele :
                                                   Reasoning.Theory.extCodeSizeWord
-                                                    evmIlksPostSolm.accountMap
+                                                    evmIlksPostStele.accountMap
                                                     (barkVatWord v) ≠ ⟨0⟩ := by
-                                                simpa [evmIlksPostEvm, evmIlksPostSolm,
+                                                simpa [evmIlksPostEvm, evmIlksPostStele,
                                                   ← hAccountsIlks] using hvatGrabCodeZero
-                                              have hvatCodePosSolm :
+                                              have hvatCodePosStele :
                                                   0 < (UInt256.ofNat
-                                                    ((evmIlksPostSolm.lookupAccount
+                                                    ((evmIlksPostStele.lookupAccount
                                                       (AccountAddress.ofNat v.vat.toNat)).option
                                                         0 (fun acc => acc.code.size))).toNat :=
                                                 barkVatCode_pos_of_state_codeSize_ne (v := v)
-                                                  (evm := evmIlksPostSolm)
-                                                  hvatGrabNonzeroSolm
+                                                  (evm := evmIlksPostStele)
+                                                  hvatGrabNonzeroStele
                                               have hvatExpr :
                                                   evalExpr? config
                                                     { contract := contract,
                                                       locals := localsDink, immutables := immStore v }
-                                                    evmIlksPostSolm vatExpr =
+                                                    evmIlksPostStele vatExpr =
                                                     .ok (.address
                                                       (AccountAddress.ofNat v.vat.toNat)) :=
                                                 evalExpr_barkVat_state (v := v)
-                                                  (evm := evmIlksPostSolm)
+                                                  (evm := evmIlksPostStele)
                                                   (locals := localsDink)
                                               have hguardTrue :
                                                   evalExpr? config
                                                     { contract := contract,
                                                       locals := localsDink, immutables := immStore v }
-                                                    evmIlksPostSolm
+                                                    evmIlksPostStele
                                                     (.binary .gt (.extCodeSize vatExpr)
                                                       (.intLit 0)) = .ok (.bool true) :=
                                                 evalExpr_barkVatCodeGuard_true (v := v)
                                                   (locals := localsDink) hvatExpr
-                                                  hvatCodePosSolm
+                                                  hvatCodePosStele
                                               cases zGrab
-                                              · simp only [Bool.false_eq_true, if_false] at rd4039 hcallGrabEvm hcallGrabSolm
+                                              · simp only [Bool.false_eq_true, if_false] at rd4039 hcallGrabEvm hcallGrabStele
                                                 have hgrabRev :=
                                                   dogBarkVatGrabCallFailureBlock (v := v)
-                                                    (evm := evmIlksPostSolm)
-                                                    (evm' := evmGrabSolm)
+                                                    (evm := evmIlksPostStele)
+                                                    (evm' := evmGrabStele)
                                                     (locals := localsDink) (I := I)
                                                     (outGrab := outGrab)
                                                     (milkClip := barkIlksClipWord σ' I)
@@ -25613,12 +25613,12 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                                     hguardTrue hilkDink hurnDink
                                                     hmilkClipDink hvowDink hdinkGet
                                                     hdartDinkGet hdinkBound hdartBound
-                                                    hcallGrabSolm
+                                                    hcallGrabStele
                                                 have htailPrefix :=
                                                   execBlock_append hprefixOk hgrabRev
                                                 have htailBody :
                                                     ExecTransitionBody config contract
-                                                      evmSolm (barkLocals I)
+                                                      evmStele (barkLocals I)
                                                       barkTransition.body .reverted (immStore v) := by
                                                   apply hbodyRevertOfTail
                                                   refine dogBarkDartTailFromLeftoverBlock
@@ -25633,14 +25633,14 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                                     houtGrabSize (by simp)
                                                 exact hrev.reEquivExecutionRevert hcode
                                                   hdispatch hdecode htailBody
-                                              · simp only [Bool.true_eq_false, if_true] at rd4039 hcallGrabEvm hcallGrabSolm
+                                              · simp only [Bool.true_eq_false, if_true] at rd4039 hcallGrabEvm hcallGrabStele
                                                 obtain ⟨_, _, rd4057⟩ :=
                                                   RD.dogBarkVatGrabCallSuccess hpatch rd4039
                                                     (by simp)
                                                 have hgrabOk :=
                                                   dogBarkVatGrabCallSuccessBlock (v := v)
-                                                    (evm := evmIlksPostSolm)
-                                                    (evm' := evmGrabSolm)
+                                                    (evm := evmIlksPostStele)
+                                                    (evm' := evmGrabStele)
                                                     (locals := localsDink) (I := I)
                                                     (outGrab := outGrab)
                                                     (milkClip := barkIlksClipWord σ' I)
@@ -25648,7 +25648,7 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                                     hguardTrue hilkDink hurnDink
                                                     hmilkClipDink hvowDink hdinkGet
                                                     hdartDinkGet hdinkBound hdartBound
-                                                    hcallGrabSolm
+                                                    hcallGrabStele
                                                 have _hprefixGrab :=
                                                   execBlock_append _hprefixFull hgrabOk
                                                 have _hprefixGrabTail :=
@@ -25732,20 +25732,20 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                                   exact hDirtGrab
                                                 have hdueOk :=
                                                   dogBarkDueCheckedMulOkSource (v := v)
-                                                    evmGrabSolm hdartGrab hrateGrab hfitDue
+                                                    evmGrabStele hdartGrab hrateGrab hfitDue
                                                 have hAccountsGrab :
                                                     Eq σGrab
-                                                      evmGrabSolm.accountMap := by
-                                                  simpa [evmGrabEvm, evmGrabSolm] using
+                                                      evmGrabStele.accountMap := by
+                                                  simpa [evmGrabEvm, evmGrabStele] using
                                                     hAccountsGrabRaw
                                                 have hvowWordGrab :
-                                                    barkVowWord evmGrabSolm.accountMap
-                                                        evmGrabSolm.executionEnv =
+                                                    barkVowWord evmGrabStele.accountMap
+                                                        evmGrabStele.executionEnv =
                                                       barkVowWord σGrab I := by
                                                   have hslot :=
                                                     congrArg (fun m => solcSlotWordAt ⟨2⟩ m I) hAccountsGrab
-                                                  simpa [barkVowWord, evmGrabSolm,
-                                                    evmIlksPostSolm, evmPostSolm, evmSolm,
+                                                  simpa [barkVowWord, evmGrabStele,
+                                                    evmIlksPostStele, evmPostStele, evmStele,
                                                     initState] using
                                                     congrArg
                                                       (fun word =>
@@ -25801,45 +25801,45 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                                       (σ := σGrab)
                                                       hpatch hmemGrabSize hmemGrabRead64
                                                       rd4071 (by simp)
-                                                  have hvowCodeZeroSolm :
+                                                  have hvowCodeZeroStele :
                                                       Reasoning.Theory.extCodeSizeWord
-                                                        evmGrabSolm.accountMap
-                                                        (barkVowWord evmGrabSolm.accountMap
-                                                          evmGrabSolm.executionEnv) = ⟨0⟩ := by
+                                                        evmGrabStele.accountMap
+                                                        (barkVowWord evmGrabStele.accountMap
+                                                          evmGrabStele.executionEnv) = ⟨0⟩ := by
                                                     have hzero :
                                                         Reasoning.Theory.extCodeSizeWord
-                                                          evmGrabSolm.accountMap
+                                                          evmGrabStele.accountMap
                                                           (barkVowWord σGrab I) = ⟨0⟩ := by
                                                       simpa only [← hAccountsGrab] using
                                                         hvowCodeZero
                                                     simpa [hvowWordGrab] using hzero
                                                   have hvowNoCode :
                                                       (UInt256.ofNat
-                                                        ((evmGrabSolm.lookupAccount
+                                                        ((evmGrabStele.lookupAccount
                                                           (AccountAddress.ofNat
                                                             (barkVowWord
-                                                              evmGrabSolm.accountMap
-                                                              evmGrabSolm.executionEnv).toNat)).option
+                                                              evmGrabStele.accountMap
+                                                              evmGrabStele.executionEnv).toNat)).option
                                                             0 (fun acc => acc.code.size))).toNat =
                                                         0 :=
                                                     code_zero_of_state_codeSize_zero
-                                                      hvowCodeZeroSolm
+                                                      hvowCodeZeroStele
                                                   have hvowReceiver :=
                                                     evalExpr_barkStorageVow (v := v)
-                                                      (evm := evmGrabSolm)
+                                                      (evm := evmGrabStele)
                                                       (locals := localsDue) hvowDue
                                                   have hfessGuardFalse :
                                                       evalExpr? config
                                                         { contract := contract,
                                                           locals := localsDue, immutables := immStore v }
-                                                        evmGrabSolm
+                                                        evmGrabStele
                                                         (.binary .gt (.extCodeSize vowAddr)
                                                           (.intLit 0)) = .ok (.bool false) :=
                                                     evalExpr_barkAddressCodeGuard_false
                                                       hvowReceiver hvowNoCode
                                                   have hfessRev :=
                                                     dogBarkVowFessNoCodeBlock (v := v)
-                                                      (evm := evmGrabSolm)
+                                                      (evm := evmGrabStele)
                                                       (locals := localsDue) hfessGuardFalse
                                                   have htailPrefix :=
                                                     execBlock_append
@@ -25847,7 +25847,7 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                                       hfessRev
                                                   have htailBody :
                                                       ExecTransitionBody config
-                                                        contract evmSolm (barkLocals I)
+                                                        contract evmStele (barkLocals I)
                                                         barkTransition.body .reverted (immStore v) := by
                                                     apply hbodyRevertOfTail
                                                     refine dogBarkDartTailFromLeftoverBlock
@@ -25894,99 +25894,99 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                                         (zFess, evmFessEvm, outFess)
                                                         true := by
                                                     simpa [evmFessEvm] using hcallFessEvmRaw
-                                                  obtain ⟨σFessSolm, AFessSolm,
-                                                      hcallFessSolmRaw,
+                                                  obtain ⟨σFessStele, AFessStele,
+                                                      hcallFessSteleRaw,
                                                       hAccountsFessRaw⟩ :=
                                                     Reasoning.Theory.typedCallViaEVM_sameInputs
-                                                      (evm_solm := evmGrabSolm)
+                                                      (evm_stele := evmGrabStele)
                                                       hcallFessEvm
-                                                      (by simpa [evmGrabEvm, evmGrabSolm] using
+                                                      (by simpa [evmGrabEvm, evmGrabStele] using
                                                         hAccountsGrab)
-                                                      (by simp [evmGrabEvm, evmGrabSolm,
-                                                        evmIlksPostEvm, evmIlksPostSolm,
-                                                        evmPostEvm, evmPostSolm, evmEvm,
-                                                        evmSolm, initState])
-                                                      (by simp [evmGrabEvm, evmGrabSolm,
-                                                        evmIlksPostEvm, evmIlksPostSolm,
-                                                        evmPostEvm, evmPostSolm, evmEvm,
-                                                        evmSolm, initState])
-                                                  let evmFessSolm :=
-                                                    { evmGrabSolm with
-                                                      accountMap := σFessSolm,
-                                                      substate := AFessSolm }
-                                                  have hcallFessSolm :
-                                                      typedCallViaEVM config evmGrabSolm
+                                                      (by simp [evmGrabEvm, evmGrabStele,
+                                                        evmIlksPostEvm, evmIlksPostStele,
+                                                        evmPostEvm, evmPostStele, evmEvm,
+                                                        evmStele, initState])
+                                                      (by simp [evmGrabEvm, evmGrabStele,
+                                                        evmIlksPostEvm, evmIlksPostStele,
+                                                        evmPostEvm, evmPostStele, evmEvm,
+                                                        evmStele, initState])
+                                                  let evmFessStele :=
+                                                    { evmGrabStele with
+                                                      accountMap := σFessStele,
+                                                      substate := AFessStele }
+                                                  have hcallFessStele :
+                                                      typedCallViaEVM config evmGrabStele
                                                         (EVM.address
                                                           (AccountAddress.ofNat
                                                             (barkVowWord
-                                                              evmGrabSolm.accountMap
-                                                              evmGrabSolm.executionEnv).toNat))
+                                                              evmGrabStele.accountMap
+                                                              evmGrabStele.executionEnv).toNat))
                                                         "fess" 0
                                                         [.int (Int.ofNat due.toNat)]
-                                                        (zFess, evmFessSolm, outFess)
+                                                        (zFess, evmFessStele, outFess)
                                                         true := by
-                                                    simpa [evmFessEvm, evmFessSolm,
-                                                      hvowWordGrab] using hcallFessSolmRaw
+                                                    simpa [evmFessEvm, evmFessStele,
+                                                      hvowWordGrab] using hcallFessSteleRaw
                                                   have hAccountsFess :
                                                       Eq σFess
-                                                        evmFessSolm.accountMap := by
-                                                    simpa [evmFessEvm, evmFessSolm] using
+                                                        evmFessStele.accountMap := by
+                                                    simpa [evmFessEvm, evmFessStele] using
                                                       hAccountsFessRaw
-                                                  have hvowCodeNonzeroSolm :
+                                                  have hvowCodeNonzeroStele :
                                                       Reasoning.Theory.extCodeSizeWord
-                                                        evmGrabSolm.accountMap
+                                                        evmGrabStele.accountMap
                                                         (barkVowWord
-                                                          evmGrabSolm.accountMap
-                                                          evmGrabSolm.executionEnv) ≠
+                                                          evmGrabStele.accountMap
+                                                          evmGrabStele.executionEnv) ≠
                                                           ⟨0⟩ := by
                                                     have hne :
                                                         Reasoning.Theory.extCodeSizeWord
-                                                          evmGrabSolm.accountMap
+                                                          evmGrabStele.accountMap
                                                           (barkVowWord σGrab I) ≠ ⟨0⟩ := by
                                                       simpa only [← hAccountsGrab] using
                                                         hvowCodeZero
                                                     simpa [hvowWordGrab] using hne
-                                                  have hvowCodePosSolm :
+                                                  have hvowCodePosStele :
                                                       0 < (UInt256.ofNat
-                                                        ((evmGrabSolm.lookupAccount
+                                                        ((evmGrabStele.lookupAccount
                                                           (AccountAddress.ofNat
                                                             (barkVowWord
-                                                              evmGrabSolm.accountMap
-                                                              evmGrabSolm.executionEnv).toNat)).option
+                                                              evmGrabStele.accountMap
+                                                              evmGrabStele.executionEnv).toNat)).option
                                                             0 (fun acc => acc.code.size))).toNat :=
                                                     code_pos_of_state_codeSize_ne
-                                                      hvowCodeNonzeroSolm
+                                                      hvowCodeNonzeroStele
                                                   have hvowReceiver :=
                                                     evalExpr_barkStorageVow (v := v)
-                                                      (evm := evmGrabSolm)
+                                                      (evm := evmGrabStele)
                                                       (locals := localsDue) hvowDue
                                                   have hfessGuardTrue :
                                                       evalExpr? config
                                                         { contract := contract,
                                                           locals := localsDue, immutables := immStore v }
-                                                        evmGrabSolm
+                                                        evmGrabStele
                                                         (.binary .gt (.extCodeSize vowAddr)
                                                           (.intLit 0)) = .ok (.bool true) :=
                                                     evalExpr_barkAddressCodeGuard_true
-                                                      hvowReceiver hvowCodePosSolm
+                                                      hvowReceiver hvowCodePosStele
                                                   cases zFess
-                                                  · simp only [Bool.false_eq_true, if_false] at rd4155 hcallFessEvm hcallFessSolm
+                                                  · simp only [Bool.false_eq_true, if_false] at rd4155 hcallFessEvm hcallFessStele
                                                     have hfessRev :=
                                                       dogBarkVowFessCallFailureBlock (v := v)
-                                                        (evm := evmGrabSolm)
-                                                        (evm' := evmFessSolm)
+                                                        (evm := evmGrabStele)
+                                                        (evm' := evmFessStele)
                                                         (locals := localsDue)
                                                         (outFess := outFess)
                                                         (due := due)
                                                         hfessGuardTrue hvowDue hdueGet
-                                                        hcallFessSolm
+                                                        hcallFessStele
                                                     have htailPrefix :=
                                                       execBlock_append
                                                         (execBlock_append _hprefixGrabTail hdueOk)
                                                         hfessRev
                                                     have htailBody :
                                                         ExecTransitionBody config
-                                                          contract evmSolm (barkLocals I)
+                                                          contract evmStele (barkLocals I)
                                                           barkTransition.body .reverted (immStore v) := by
                                                       apply hbodyRevertOfTail
                                                       refine dogBarkDartTailFromLeftoverBlock
@@ -26003,19 +26003,19 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                                         houtFessSize (by simp)
                                                     exact hrev.reEquivExecutionRevert hcode
                                                       hdispatch hdecode htailBody
-                                                  · simp only [Bool.true_eq_false, if_true] at rd4155 hcallFessEvm hcallFessSolm
+                                                  · simp only [Bool.true_eq_false, if_true] at rd4155 hcallFessEvm hcallFessStele
                                                     obtain ⟨_, _, rd4176⟩ :=
                                                       RD.dogBarkFessCallSuccess hpatch rd4155
                                                         (by simp)
                                                     have hfessOk :=
                                                       dogBarkVowFessCallSuccessBlock (v := v)
-                                                        (evm := evmGrabSolm)
-                                                        (evm' := evmFessSolm)
+                                                        (evm := evmGrabStele)
+                                                        (evm' := evmFessStele)
                                                         (locals := localsDue)
                                                         (outFess := outFess)
                                                         (due := due)
                                                         hfessGuardTrue hvowDue hdueGet
-                                                        hcallFessSolm
+                                                        hcallFessStele
                                                     have _hprefixFess :=
                                                       execBlock_append
                                                         (execBlock_append _hprefixGrab hdueOk)
@@ -26222,7 +26222,7 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                                           rd4176 (by simp)
                                                       have htabBaseOk :=
                                                         dogBarkTabBaseCheckedMulOkSource
-                                                          (v := v) evmFessSolm hdueFess
+                                                          (v := v) evmFessStele hdueFess
                                                           hmilkChopFess hfitTabBase
                                                       have _hprefixTabBase :=
                                                         execBlock_append _hprefixFess
@@ -26277,7 +26277,7 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                                         RD.dogBarkTabDivOk hpatch rd4200
                                                           (by simp)
                                                       have htabOk :=
-                                                        dogBarkTabLetOk (v := v) evmFessSolm
+                                                        dogBarkTabLetOk (v := v) evmFessStele
                                                           htabBaseGet
                                                       have _hprefixTab :=
                                                         execBlock_append _hprefixTabBase htabOk
@@ -26356,14 +26356,14 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                                             hilksFess)
                                                       have hDirtSlotFess :
                                                           solcSlotWordAt ⟨5⟩
-                                                              evmFessSolm.accountMap
-                                                              evmFessSolm.executionEnv =
+                                                              evmFessStele.accountMap
+                                                              evmFessStele.executionEnv =
                                                             solcSlotWordAt ⟨5⟩ σFess I := by
                                                         have hslot :=
                                                           congrArg (fun m => solcSlotWordAt ⟨5⟩ m I) hAccountsFess
-                                                        simpa [evmFessSolm, evmGrabSolm,
-                                                          evmIlksPostSolm, evmPostSolm,
-                                                          evmSolm, initState] using hslot.symm
+                                                        simpa [evmFessStele, evmGrabStele,
+                                                          evmIlksPostStele, evmPostStele,
+                                                          evmStele, initState] using hslot.symm
                                                       let afterTab : List Stmt :=
                                                         checkedAddUintInto "DirtNew"
                                                           (.storage DirtRef) (.var "tab") ++
@@ -26403,17 +26403,17 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                                       · obtain ⟨_, _, rd4222⟩ :=
                                                           RD.dogBarkDirtAddOk hpatch hfitDirt
                                                             rd4211 (by simp)
-                                                        have hfitDirtSolm :
+                                                        have hfitDirtStele :
                                                             (solcSlotWordAt ⟨5⟩
-                                                                  evmFessSolm.accountMap
-                                                                  evmFessSolm.executionEnv).toNat +
+                                                                  evmFessStele.accountMap
+                                                                  evmFessStele.executionEnv).toNat +
                                                                 tab.toNat <
                                                               UInt256.size := by
                                                           simpa [hDirtSlotFess] using hfitDirt
                                                         have hdirtAddOk :=
                                                           dogBarkDirtAddOkSource (v := v)
-                                                            evmFessSolm hDirtTab htabGet
-                                                            hfitDirtSolm
+                                                            evmFessStele hDirtTab htabGet
+                                                            hfitDirtStele
                                                         have _hprefixDirtNew :=
                                                           execBlock_append _hprefixTab
                                                             hdirtAddOk
@@ -26423,8 +26423,8 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                                         let dirtNew :=
                                                           barkDirtNewWord
                                                             (solcSlotWordAt ⟨5⟩
-                                                              evmFessSolm.accountMap
-                                                              evmFessSolm.executionEnv) tab
+                                                              evmFessStele.accountMap
+                                                              evmFessStele.executionEnv) tab
                                                         let dirtNewEvm :=
                                                           barkDirtNewWord
                                                             (solcSlotWordAt ⟨5⟩ σFess I) tab
@@ -26443,8 +26443,8 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                                               localsTab
                                                               (barkDirtNewWord
                                                                 (solcSlotWordAt ⟨5⟩
-                                                                  evmFessSolm.accountMap
-                                                                  evmFessSolm.executionEnv)
+                                                                  evmFessStele.accountMap
+                                                                  evmFessStele.executionEnv)
                                                                 tab)
                                                         have hDirtDirtNew :
                                                             localsDirtNew.get? "Dirt" = none := by
@@ -26460,22 +26460,22 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                                             rd4222 (by simp)
                                                         have hsourceSplit :=
                                                           dogBarkDirtAssignOkSourceSplit
-                                                            (v := v) evmFessSolm
+                                                            (v := v) evmFessStele
                                                             hDirtDirtNew hDirtNewGet
                                                         by_cases _hperm : I.perm = true
                                                         swap
                                                         · have hpf : I.perm = false := by
                                                             simpa using _hperm
                                                           have hdirtStatic := hsourceSplit.2
-                                                            (by simpa [evmFessSolm,
-                                                              evmGrabSolm, evmIlksPostSolm,
-                                                              evmPostSolm, evmSolm, initState]
+                                                            (by simpa [evmFessStele,
+                                                              evmGrabStele, evmIlksPostStele,
+                                                              evmPostStele, evmStele, initState]
                                                               using hpf)
                                                           have htailPrefix := execBlock_append
                                                             _hprefixDirtNewTail hdirtStatic
                                                           have hbodyStatic :
                                                               ExecTransitionBody config
-                                                                contract evmSolm
+                                                                contract evmStele
                                                                 (barkLocals I)
                                                                 barkTransition.body
                                                                 .staticViolation (immStore v) := by
@@ -26513,18 +26513,18 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                                             ⟨5⟩ dirtNewEvm
                                                         let evmDirtEvm :=
                                                           { evmFessEvm with accountMap := σDirt }
-                                                        let evmDirtSolm :=
-                                                          Solm.EVM.storageStore evmFessSolm
-                                                            evmFessSolm.executionEnv.codeOwner
+                                                        let evmDirtStele :=
+                                                          Stele.EVM.storageStore evmFessStele
+                                                            evmFessStele.executionEnv.codeOwner
                                                             ⟨5⟩ dirtNew
                                                         have hAccountsDirt :
                                                             Eq σDirt
-                                                              evmDirtSolm.accountMap := by
-                                                          simpa [σDirt, evmDirtSolm,
+                                                              evmDirtStele.accountMap := by
+                                                          simpa [σDirt, evmDirtStele,
                                                             hdirtNew_eq,
-                                                            evmFessSolm, evmGrabSolm,
-                                                            evmIlksPostSolm, evmPostSolm,
-                                                            evmSolm, initState,
+                                                            evmFessStele, evmGrabStele,
+                                                            evmIlksPostStele, evmPostStele,
+                                                            evmStele, initState,
                                                             storageStore_accountMap,
                                                             storageStore_executionEnv] using
                                                             congrArg
@@ -26640,7 +26640,7 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                                               hfitIlkDirt rd4226 (by simp)
                                                           have hilkDirtAddOk :=
                                                             dogBarkIlkDirtAddOkSource
-                                                              (v := v) evmDirtSolm
+                                                              (v := v) evmDirtStele
                                                               hmilkDirtDirtNew htabDirtNew
                                                               hfitIlkDirt
                                                           have _hprefixIlkDirtNew :=
@@ -26761,7 +26761,7 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                                                 omega)
                                                           have hilkDirtAssignOk :=
                                                             dogBarkIlkDirtAssignOkSource
-                                                              (v := v) evmDirtSolm hsz100
+                                                              (v := v) evmDirtStele hsz100
                                                               hilksIlkDirtNew hilkIlkDirtNew
                                                               hIlkDirtNewGet
                                                           have _hprefixIlkDirtStore :=
@@ -26779,22 +26779,22 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                                           let evmIlkDirtEvm :=
                                                             { evmDirtEvm with
                                                               accountMap := σIlkDirt }
-                                                          let evmIlkDirtSolm :=
-                                                            Solm.EVM.storageStore evmDirtSolm
-                                                              evmDirtSolm.executionEnv.codeOwner
+                                                          let evmIlkDirtStele :=
+                                                            Stele.EVM.storageStore evmDirtStele
+                                                              evmDirtStele.executionEnv.codeOwner
                                                               (barkIlksDirtSlotFor I)
                                                               ilkDirtNew
                                                           have hDirtCodeOwner :
-                                                              evmDirtSolm.executionEnv.codeOwner =
+                                                              evmDirtStele.executionEnv.codeOwner =
                                                                 I.codeOwner := by
-                                                            simp [evmDirtSolm, evmFessSolm,
-                                                              evmGrabSolm, evmIlksPostSolm,
-                                                              evmPostSolm, evmSolm, initState,
+                                                            simp [evmDirtStele, evmFessStele,
+                                                              evmGrabStele, evmIlksPostStele,
+                                                              evmPostStele, evmStele, initState,
                                                               storageStore_executionEnv]
                                                           have hAccountsIlkDirt :
                                                               Eq σIlkDirt
-                                                                evmIlkDirtSolm.accountMap := by
-                                                            simpa [σIlkDirt, evmIlkDirtSolm,
+                                                                evmIlkDirtStele.accountMap := by
+                                                            simpa [σIlkDirt, evmIlkDirtStele,
                                                               storageStore_accountMap,
                                                               hDirtCodeOwner] using
                                                               congrArg
@@ -26983,7 +26983,7 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                                               evalExpr? config
                                                                 { contract := contract,
                                                                   locals := localsIlkDirtNew, immutables := immStore v }
-                                                                evmIlkDirtSolm (.var "milkClip") =
+                                                                evmIlkDirtStele (.var "milkClip") =
                                                                 .ok (.address
                                                                   (AccountAddress.ofNat
                                                                     (barkIlksClipWord σ' I).toNat)) := by
@@ -27013,25 +27013,25 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                                                 hmemKickPreRead64
                                                                 hmload256KickPre rd4267
                                                                 (by simp)
-                                                            have hclipZeroSolm :
+                                                            have hclipZeroStele :
                                                                 Reasoning.Theory.extCodeSizeWord
-                                                                  evmIlkDirtSolm.accountMap
+                                                                  evmIlkDirtStele.accountMap
                                                                   (barkIlksClipWord σ' I) = ⟨0⟩ :=
                                                               hAccountsIlkDirt ▸ hclipCodeZero
                                                             have hclipNoCode :
                                                                 (UInt256.ofNat
-                                                                  ((evmIlkDirtSolm.lookupAccount
+                                                                  ((evmIlkDirtStele.lookupAccount
                                                                     (AccountAddress.ofNat
                                                                       (barkIlksClipWord σ' I).toNat)).option
                                                                       0 (fun acc => acc.code.size))).toNat =
                                                                   0 :=
                                                               code_zero_of_state_codeSize_zero
-                                                                hclipZeroSolm
+                                                                hclipZeroStele
                                                             have hkickGuardFalse :
                                                                 evalExpr? config
                                                                   { contract := contract,
                                                                     locals := localsIlkDirtNew, immutables := immStore v }
-                                                                  evmIlkDirtSolm
+                                                                  evmIlkDirtStele
                                                                   (.binary .gt
                                                                     (.extCodeSize
                                                                       (.var "milkClip"))
@@ -27041,7 +27041,7 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                                                 hclipReceiver hclipNoCode
                                                             have hkickRev :=
                                                               dogBarkKickNoCodeBlock (v := v)
-                                                                (evm := evmIlkDirtSolm)
+                                                                (evm := evmIlkDirtStele)
                                                                 (locals := localsIlkDirtNew)
                                                                 hkickGuardFalse
                                                             have htailPrefix :=
@@ -27049,7 +27049,7 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                                                 _hprefixIlkDirtStoreTail hkickRev
                                                             have htailBody :
                                                                 ExecTransitionBody config
-                                                                  contract evmSolm
+                                                                  contract evmStele
                                                                   (barkLocals I)
                                                                   barkTransition.body
                                                                   .reverted (immStore v) := by
@@ -27077,31 +27077,31 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                                                 (by simp)
                                                             exact hrev.reEquivExecutionRevert
                                                               hcode hdispatch hdecode htailBody
-                                                          · have hclipNonzeroSolm :
+                                                          · have hclipNonzeroStele :
                                                                 Reasoning.Theory.extCodeSizeWord
-                                                                  evmIlkDirtSolm.accountMap
+                                                                  evmIlkDirtStele.accountMap
                                                                   (barkIlksClipWord σ' I) ≠ ⟨0⟩ :=
                                                               hAccountsIlkDirt ▸ hclipCodeZero
-                                                            have hclipCodePosSolm :
+                                                            have hclipCodePosStele :
                                                                 0 < (UInt256.ofNat
-                                                                  ((evmIlkDirtSolm.lookupAccount
+                                                                  ((evmIlkDirtStele.lookupAccount
                                                                     (AccountAddress.ofNat
                                                                       (barkIlksClipWord σ' I).toNat)).option
                                                                       0 (fun acc => acc.code.size))).toNat :=
                                                               code_pos_of_state_codeSize_ne
-                                                                hclipNonzeroSolm
+                                                                hclipNonzeroStele
                                                             have hkickGuardTrue :
                                                                 evalExpr? config
                                                                   { contract := contract,
                                                                     locals := localsIlkDirtNew, immutables := immStore v }
-                                                                  evmIlkDirtSolm
+                                                                  evmIlkDirtStele
                                                                   (.binary .gt
                                                                     (.extCodeSize
                                                                       (.var "milkClip"))
                                                                     (.intLit 0)) =
                                                                   .ok (.bool true) :=
                                                               evalExpr_barkAddressCodeGuard_true
-                                                                hclipReceiver hclipCodePosSolm
+                                                                hclipReceiver hclipCodePosStele
                                                             have hIlkDirtEvmEnv :
                                                                 evmIlkDirtEvm.executionEnv = I := by
                                                               simp [evmIlkDirtEvm, evmDirtEvm,
@@ -27113,7 +27113,7 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                                               simp [evmIlkDirtEvm]
                                                             have hIlkDirtAccounts :
                                                                 evmIlkDirtEvm.accountMap =
-                                                                  evmIlkDirtSolm.accountMap := by
+                                                                  evmIlkDirtStele.accountMap := by
                                                               exact hIlkDirtEvmMap.trans
                                                                 hAccountsIlkDirt
                                                             have hIlkDirtEvmOrig :
@@ -27122,38 +27122,38 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                                                 evmFessEvm, evmGrabEvm,
                                                                 evmIlksPostEvm, evmPostEvm,
                                                                 evmEvm, initState]
-                                                            have hIlkDirtSolmEnv :
-                                                                evmIlkDirtSolm.executionEnv = I := by
-                                                              simp [evmIlkDirtSolm, evmDirtSolm,
-                                                                evmFessSolm, evmGrabSolm,
-                                                                evmIlksPostSolm, evmPostSolm,
-                                                                evmSolm, initState,
+                                                            have hIlkDirtSteleEnv :
+                                                                evmIlkDirtStele.executionEnv = I := by
+                                                              simp [evmIlkDirtStele, evmDirtStele,
+                                                                evmFessStele, evmGrabStele,
+                                                                evmIlksPostStele, evmPostStele,
+                                                                evmStele, initState,
                                                                 storageStore_executionEnv]
-                                                            have hIlkDirtSolmOrig :
-                                                                evmIlkDirtSolm.σ₀ = evmEvm.σ₀ := by
+                                                            have hIlkDirtSteleOrig :
+                                                                evmIlkDirtStele.σ₀ = evmEvm.σ₀ := by
                                                               calc
-                                                                evmIlkDirtSolm.σ₀ = evmDirtSolm.σ₀ := by
-                                                                  simpa [evmIlkDirtSolm] using
-                                                                    storageStore_σ₀ evmDirtSolm
-                                                                      evmDirtSolm.executionEnv.codeOwner
+                                                                evmIlkDirtStele.σ₀ = evmDirtStele.σ₀ := by
+                                                                  simpa [evmIlkDirtStele] using
+                                                                    storageStore_σ₀ evmDirtStele
+                                                                      evmDirtStele.executionEnv.codeOwner
                                                                       (barkIlksDirtSlotFor I)
                                                                       ilkDirtNew
-                                                                _ = evmFessSolm.σ₀ := by
-                                                                  simpa [evmDirtSolm] using
-                                                                    storageStore_σ₀ evmFessSolm
-                                                                      evmFessSolm.executionEnv.codeOwner
+                                                                _ = evmFessStele.σ₀ := by
+                                                                  simpa [evmDirtStele] using
+                                                                    storageStore_σ₀ evmFessStele
+                                                                      evmFessStele.executionEnv.codeOwner
                                                                       ⟨5⟩ dirtNew
                                                                 _ = evmEvm.σ₀ := by
-                                                                  simp [evmFessSolm, evmGrabSolm,
-                                                                    evmIlksPostSolm, evmPostSolm,
-                                                                    evmSolm, evmEvm, initState]
+                                                                  simp [evmFessStele, evmGrabStele,
+                                                                    evmIlksPostStele, evmPostStele,
+                                                                    evmStele, evmEvm, initState]
                                                             have hIlkDirtOriginalAccounts :
-                                                                evmIlkDirtEvm.σ₀ = evmIlkDirtSolm.σ₀ := by
-                                                              rw [hIlkDirtEvmOrig, hIlkDirtSolmOrig]
+                                                                evmIlkDirtEvm.σ₀ = evmIlkDirtStele.σ₀ := by
+                                                              rw [hIlkDirtEvmOrig, hIlkDirtSteleOrig]
                                                             have hIlkDirtEnvEq :
-                                                                evmIlkDirtSolm.executionEnv =
+                                                                evmIlkDirtStele.executionEnv =
                                                                   evmIlkDirtEvm.executionEnv := by
-                                                              rw [hIlkDirtSolmEnv, hIlkDirtEvmEnv]
+                                                              rw [hIlkDirtSteleEnv, hIlkDirtEvmEnv]
                                                             obtain ⟨σKick, zKick, outKick, AKick,
                                                                 _, _, rd4386, hcallKickEvmRaw,
                                                                 houtKickSize⟩ :=
@@ -27189,22 +27189,22 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                                                   (zKick, evmKickEvm, outKick)
                                                                   true := by
                                                               simpa [evmKickEvm] using hcallKickEvmRaw
-                                                            obtain ⟨σKickSolm, AKickSolm,
-                                                                hcallKickSolmRaw,
+                                                            obtain ⟨σKickStele, AKickStele,
+                                                                hcallKickSteleRaw,
                                                                 hAccountsKickRaw⟩ :=
                                                               Reasoning.Theory.typedCallViaEVM_sameInputs
-                                                                (evm_solm := evmIlkDirtSolm)
+                                                                (evm_stele := evmIlkDirtStele)
                                                                 hcallKickEvm
                                                                 hIlkDirtAccounts
                                                                 hIlkDirtOriginalAccounts
                                                                 hIlkDirtEnvEq.symm
-                                                            let evmKickSolm :=
-                                                              { evmIlkDirtSolm with
-                                                                accountMap := σKickSolm,
-                                                                substate := AKickSolm }
-                                                            have hcallKickSolm :
+                                                            let evmKickStele :=
+                                                              { evmIlkDirtStele with
+                                                                accountMap := σKickStele,
+                                                                substate := AKickStele }
+                                                            have hcallKickStele :
                                                                 typedCallViaEVM config
-                                                                  evmIlkDirtSolm
+                                                                  evmIlkDirtStele
                                                                   (EVM.address
                                                                     (AccountAddress.ofNat
                                                                       (barkIlksClipWord σ' I).toNat))
@@ -27213,22 +27213,22 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                                                     .int (Int.ofNat dink.toNat),
                                                                     .address (barkUrn I),
                                                                     .address (barkKpr I)]
-                                                                  (zKick, evmKickSolm, outKick)
+                                                                  (zKick, evmKickStele, outKick)
                                                                   true := by
-                                                              simpa [evmKickEvm, evmKickSolm]
-                                                                using hcallKickSolmRaw
+                                                              simpa [evmKickEvm, evmKickStele]
+                                                                using hcallKickSteleRaw
                                                             have hAccountsKick :
                                                                 Eq σKick
-                                                                  evmKickSolm.accountMap := by
-                                                              simpa [evmKickEvm, evmKickSolm]
+                                                                  evmKickStele.accountMap := by
+                                                              simpa [evmKickEvm, evmKickStele]
                                                                 using hAccountsKickRaw
                                                             cases zKick
-                                                            · simp only [Bool.false_eq_true, if_false] at rd4386 hcallKickEvm hcallKickSolm
+                                                            · simp only [Bool.false_eq_true, if_false] at rd4386 hcallKickEvm hcallKickStele
                                                               have hkickRev :=
                                                                 dogBarkKickCallFailureBlock
                                                                   (v := v)
-                                                                  (evm := evmIlkDirtSolm)
-                                                                  (evm' := evmKickSolm)
+                                                                  (evm := evmIlkDirtStele)
+                                                                  (evm' := evmKickStele)
                                                                   (locals := localsIlkDirtNew)
                                                                   (outKick := outKick)
                                                                   (milkClip :=
@@ -27242,14 +27242,14 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                                                   hdinkIlkDirtNew
                                                                   hurnIlkDirtNew
                                                                   hkprIlkDirtNew
-                                                                  hcallKickSolm
+                                                                  hcallKickStele
                                                               have htailPrefix :=
                                                                 execBlock_append
                                                                   _hprefixIlkDirtStoreTail
                                                                   hkickRev
                                                               have htailBody :
                                                                   ExecTransitionBody config
-                                                                    contract evmSolm
+                                                                    contract evmStele
                                                                     (barkLocals I)
                                                                     barkTransition.body
                                                                     .reverted (immStore v) := by
@@ -27278,7 +27278,7 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                                                   (by simp)
                                                               exact hrev.reEquivExecutionRevert
                                                                 hcode hdispatch hdecode htailBody
-                                                            · simp only [Bool.true_eq_false, if_true] at rd4386 hcallKickEvm hcallKickSolm
+                                                            · simp only [Bool.true_eq_false, if_true] at rd4386 hcallKickEvm hcallKickStele
                                                               obtain ⟨_, _, rd4404⟩ :=
                                                                 RD.dogBarkKickCallSuccessToDecode
                                                                   hpatch rd4386 (by simp)
@@ -27312,8 +27312,8 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                                                 have hkickOk :=
                                                                   dogBarkKickCallSuccessBlock
                                                                     (v := v)
-                                                                    (evm := evmIlkDirtSolm)
-                                                                    (evm' := evmKickSolm)
+                                                                    (evm := evmIlkDirtStele)
+                                                                    (evm' := evmKickStele)
                                                                     (locals := localsIlkDirtNew)
                                                                     (outKick := outKick)
                                                                     (milkClip :=
@@ -27328,7 +27328,7 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                                                     hdinkIlkDirtNew
                                                                     hurnIlkDirtNew
                                                                     hkprIlkDirtNew
-                                                                    hcallKickSolm hdecKick
+                                                                    hcallKickStele hdecKick
                                                                 have _hprefixKick :=
                                                                   execBlock_append
                                                                     _hprefixIlkDirtStore
@@ -27485,20 +27485,20 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                                                       localsIlkDirtNew id
                                                                 have hreturn :=
                                                                   dogBarkReturnIdBlock (v := v)
-                                                                    (evm := evmKickSolm)
+                                                                    (evm := evmKickStele)
                                                                     (locals := localsId) hidGet
                                                                 have htailReturn :=
                                                                   execBlock_append _hprefixKickTail
                                                                     hreturn
                                                                 have htailBody :
                                                                     ExecTransitionBody config
-                                                                      contract evmSolm
+                                                                      contract evmStele
                                                                       (barkLocals I)
                                                                       barkTransition.body
                                                                       (.returned
                                                                         { contract := contract,
                                                                           locals := localsId, immutables := immStore v }
-                                                                        evmKickSolm
+                                                                        evmKickStele
                                                                         (some [.int
                                                                   (Int.ofNat
                                                                             id.toNat)])) (immStore v) := by
@@ -27524,9 +27524,9 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                                                 have haccounts :
                                                                     Eq
                                                                       σKick
-                                                                      evmKickSolm.accountMap := by
+                                                                      evmKickStele.accountMap := by
                                                                   simpa [evmKickEvm,
-                                                                    evmKickSolm] using
+                                                                    evmKickStele] using
                                                                     hAccountsKick
                                                                 have henc :
                                                                     returnEquiv
@@ -27553,8 +27553,8 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                                                 have hkickRev :=
                                                                   dogBarkKickDecodeRevertBlock
                                                                     (v := v)
-                                                                    (evm := evmIlkDirtSolm)
-                                                                    (evm' := evmKickSolm)
+                                                                    (evm := evmIlkDirtStele)
+                                                                    (evm' := evmKickStele)
                                                                     (locals := localsIlkDirtNew)
                                                                     (outKick := outKick)
                                                                     (milkClip :=
@@ -27568,14 +27568,14 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                                                     hdinkIlkDirtNew
                                                                     hurnIlkDirtNew
                                                                     hkprIlkDirtNew
-                                                                    hcallKickSolm hdecKick
+                                                                    hcallKickStele hdecKick
                                                                 have htailPrefix :=
                                                                   execBlock_append
                                                                     _hprefixIlkDirtStoreTail
                                                                     hkickRev
                                                                 have htailBody :
                                                                     ExecTransitionBody config
-                                                                      contract evmSolm
+                                                                      contract evmStele
                                                                       (barkLocals I)
                                                                       barkTransition.body
                                                                       .reverted (immStore v) := by
@@ -27643,7 +27643,7 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                                             Nat.le_of_not_gt hfitIlkDirt
                                                           have hilkDirtRev :=
                                                             dogBarkIlkDirtAddOverflowSource
-                                                              (v := v) evmDirtSolm
+                                                              (v := v) evmDirtStele
                                                               hmilkDirtDirtNew htabDirtNew
                                                               hoverIlkDirt
                                                           have htailPrefix :=
@@ -27651,7 +27651,7 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                                               _hprefixDirtStoreTail hilkDirtRev
                                                           have htailBody :
                                                               ExecTransitionBody config
-                                                                contract evmSolm
+                                                                contract evmStele
                                                                 (barkLocals I)
                                                                 barkTransition.body
                                                                 .reverted (immStore v) := by
@@ -27683,23 +27683,23 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                                               (solcSlotWordAt ⟨5⟩ σFess I).toNat +
                                                                 tab.toNat :=
                                                           Nat.le_of_not_gt hfitDirt
-                                                        have hoverDirtSolm :
+                                                        have hoverDirtStele :
                                                             UInt256.size ≤
                                                               (solcSlotWordAt ⟨5⟩
-                                                                    evmFessSolm.accountMap
-                                                                    evmFessSolm.executionEnv).toNat +
+                                                                    evmFessStele.accountMap
+                                                                    evmFessStele.executionEnv).toNat +
                                                                   tab.toNat := by
                                                           simpa [hDirtSlotFess] using hoverDirt
                                                         have hdirtRev :=
                                                           dogBarkDirtAddOverflowSource
-                                                            (v := v) evmFessSolm hDirtTab
-                                                            htabGet hoverDirtSolm
+                                                            (v := v) evmFessStele hDirtTab
+                                                            htabGet hoverDirtStele
                                                         have htailPrefix :=
                                                           execBlock_append _hprefixTabTail
                                                             hdirtRev
                                                         have htailBody :
                                                             ExecTransitionBody config
-                                                              contract evmSolm
+                                                              contract evmStele
                                                               (barkLocals I)
                                                               barkTransition.body
                                                               .reverted (immStore v) := by
@@ -27727,13 +27727,13 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                                         Nat.le_of_not_gt hfitTabBase
                                                       have htabRev :=
                                                         dogBarkTabBaseCheckedMulOverflowSource
-                                                          (v := v) evmFessSolm hdueFess
+                                                          (v := v) evmFessStele hdueFess
                                                           hmilkChopFess hoverTabBase
                                                       have htailPrefix :=
                                                         execBlock_append _hprefixFessTail htabRev
                                                       have htailBody :
                                                           ExecTransitionBody config
-                                                            contract evmSolm (barkLocals I)
+                                                            contract evmStele (barkLocals I)
                                                             barkTransition.body
                                                             .reverted (immStore v) := by
                                                         apply hbodyRevertOfTail
@@ -27759,16 +27759,16 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                               Nat.lt_of_not_ge hdinkBound
                                             have hprefixGuard :=
                                               dogBarkPostLeftoverDinkGuardOkSource (v := v)
-                                                evmIlksPostSolm hink hdart hart hfitInkDart
+                                                evmIlksPostStele hink hdart hart hfitInkDart
                                                 hartNe (by simpa [dink] using hdinkPos)
                                             have hintRev :=
                                               dogBarkInt256GuardDinkOverflowSource (v := v)
-                                                evmIlksPostSolm hdartDinkGet hdinkGet hdartBound
+                                                evmIlksPostStele hdartDinkGet hdinkGet hdartBound
                                                 (by simpa [dink] using hdinkOverflow)
                                             have htailPrefix :
                                                 ExecBlock config
                                                   { contract := contract, locals := localsAfter, immutables := immStore v }
-                                                  evmIlksPostSolm
+                                                  evmIlksPostStele
                                                   (checkedMulUintInto "inkDart" (.var "ink")
                                                       (.var "dart") ++
                                                     [ .letDecl "dink" (some uint256)
@@ -27788,7 +27788,7 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                                 execBlock_append hprefixGuard hintRev
                                             have htailBody :
                                                 ExecTransitionBody config contract
-                                                  evmSolm (barkLocals I)
+                                                  evmStele (barkLocals I)
                                                   barkTransition.body .reverted (immStore v) := by
                                               apply hbodyRevertOfTail
                                               refine dogBarkDartTailFromLeftoverBlock hleftover ?_
@@ -27812,16 +27812,16 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                             Nat.lt_of_not_ge hdartBound
                                           have hprefixGuard :=
                                             dogBarkPostLeftoverDinkGuardOkSource (v := v)
-                                              evmIlksPostSolm hink hdart hart hfitInkDart
+                                              evmIlksPostStele hink hdart hart hfitInkDart
                                               hartNe (by simpa [dink] using hdinkPos)
                                           have hintRev :=
                                             dogBarkInt256GuardDartOverflowSource (v := v)
-                                              evmIlksPostSolm hdartDinkGet hdinkGet
+                                              evmIlksPostStele hdartDinkGet hdinkGet
                                               hdartOverflow
                                           have htailPrefix :
                                               ExecBlock config
                                                 { contract := contract, locals := localsAfter, immutables := immStore v }
-                                                evmIlksPostSolm
+                                                evmIlksPostStele
                                                 (checkedMulUintInto "inkDart" (.var "ink")
                                                     (.var "dart") ++
                                                   [ .letDecl "dink" (some uint256)
@@ -27840,7 +27840,7 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                               execBlock_append hprefixGuard hintRev
                                           have htailBody :
                                               ExecTransitionBody config contract
-                                                evmSolm (barkLocals I)
+                                                evmStele (barkLocals I)
                                                 barkTransition.body .reverted (immStore v) := by
                                             apply hbodyRevertOfTail
                                             refine dogBarkDartTailFromLeftoverBlock hleftover ?_
@@ -27860,15 +27860,15 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                             hdecode htailBody
                                       · have hprefixDink :=
                                           dogBarkPostLeftoverDinkLetOkSource (v := v)
-                                            evmIlksPostSolm hink hdart hart hfitInkDart hartNe
+                                            evmIlksPostStele hink hdart hart hfitInkDart hartNe
                                         have hguardRev :=
                                           dogBarkDinkGuardRevertSource (v := v)
-                                            evmIlksPostSolm hdinkGet
+                                            evmIlksPostStele hdinkGet
                                             (by simpa [dink] using hdinkPos)
                                         have htailPrefix :
                                             ExecBlock config
                                               { contract := contract, locals := localsAfter, immutables := immStore v }
-                                              evmIlksPostSolm
+                                              evmIlksPostStele
                                               (checkedMulUintInto "inkDart" (.var "ink")
                                                   (.var "dart") ++
                                                 [ .letDecl "dink" (some uint256)
@@ -27881,7 +27881,7 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                             execBlock_append hprefixDink hguardRev
                                         have htailBody :
                                             ExecTransitionBody config contract
-                                              evmSolm (barkLocals I) barkTransition.body
+                                              evmStele (barkLocals I) barkTransition.body
                                               .reverted (immStore v) := by
                                           apply hbodyRevertOfTail
                                           refine dogBarkDartTailFromLeftoverBlock hleftover ?_
@@ -27904,10 +27904,10 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                         not_lt.mp hfitInkDart
                                       have htailPrefix :=
                                         dogBarkInkDartCheckedMulOverflow (v := v)
-                                          evmIlksPostSolm hink hdart hoverInkDart
+                                          evmIlksPostStele hink hdart hoverInkDart
                                       have htailBody :
                                           ExecTransitionBody config contract
-                                            evmSolm (barkLocals I) barkTransition.body
+                                            evmStele (barkLocals I) barkTransition.body
                                             .reverted (immStore v) := by
                                         apply hbodyRevertOfTail
                                         refine dogBarkDartTailFromLeftoverBlock hleftover ?_
@@ -27924,81 +27924,81 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                       exact hrev.reEquivExecutionRevert hcode hdispatch hdecode
                                         htailBody
                                   have hrateDartBase :
-                                      (barkLocalsDart evmPostSolm evmIlksPostSolm I out
+                                      (barkLocalsDart evmPostStele evmIlksPostStele I out
                                           outIlks).get? "rate" =
                                         some (.int (Int.ofNat rate.toNat)) := by
                                     simpa [rate] using
-                                      barkLocalsDart_get_rate evmPostSolm evmIlksPostSolm I
+                                      barkLocalsDart_get_rate evmPostStele evmIlksPostStele I
                                         out outIlks
                                   have hmilkClipDartBase :
-                                      (barkLocalsDart evmPostSolm evmIlksPostSolm I out
+                                      (barkLocalsDart evmPostStele evmIlksPostStele I out
                                           outIlks).get? "milkClip" =
                                         some (.address (AccountAddress.ofNat
                                           (barkIlksClipWord σ' I).toNat)) := by
                                     simpa [hmilkClip] using
-                                      barkLocalsDart_get_milkClip evmPostSolm evmIlksPostSolm I
+                                      barkLocalsDart_get_milkClip evmPostStele evmIlksPostStele I
                                         out outIlks
                                   have hmilkChopDartBase :
-                                      (barkLocalsDart evmPostSolm evmIlksPostSolm I out
+                                      (barkLocalsDart evmPostStele evmIlksPostStele I out
                                           outIlks).get? "milkChop" =
                                         some (.int (Int.ofNat milkChop.toNat)) := by
                                     simpa [milkChop, hmilkChop] using
-                                      barkLocalsDart_get_milkChop evmPostSolm evmIlksPostSolm I
+                                      barkLocalsDart_get_milkChop evmPostStele evmIlksPostStele I
                                         out outIlks
                                   have hmilkDirtDartBase :
-                                      (barkLocalsDart evmPostSolm evmIlksPostSolm I out
+                                      (barkLocalsDart evmPostStele evmIlksPostStele I out
                                           outIlks).get? "milkDirt" =
                                         some (.int (Int.ofNat
                                           (barkIlksDirtWord σ' I).toNat)) := by
                                     simpa [hmilkDirt] using
-                                      barkLocalsDart_get_milkDirt evmPostSolm evmIlksPostSolm I
+                                      barkLocalsDart_get_milkDirt evmPostStele evmIlksPostStele I
                                         out outIlks
                                   have hilkDartBase :
-                                      (barkLocalsDart evmPostSolm evmIlksPostSolm I out
+                                      (barkLocalsDart evmPostStele evmIlksPostStele I out
                                           outIlks).get? "ilk" =
                                         some (.fixedBytes bytes32Width (barkIlkBytes I)) :=
-                                    barkLocalsDart_get_ilk evmPostSolm evmIlksPostSolm I out
+                                    barkLocalsDart_get_ilk evmPostStele evmIlksPostStele I out
                                       outIlks
                                   have hurnDartBase :
-                                      (barkLocalsDart evmPostSolm evmIlksPostSolm I out
+                                      (barkLocalsDart evmPostStele evmIlksPostStele I out
                                           outIlks).get? "urn" =
                                         some (.address (barkUrn I)) :=
-                                    barkLocalsDart_get_urn evmPostSolm evmIlksPostSolm I out
+                                    barkLocalsDart_get_urn evmPostStele evmIlksPostStele I out
                                       outIlks
                                   have hkprDartBase :
-                                      (barkLocalsDart evmPostSolm evmIlksPostSolm I out
+                                      (barkLocalsDart evmPostStele evmIlksPostStele I out
                                           outIlks).get? "kpr" =
                                         some (.address (barkKpr I)) :=
-                                    barkLocalsDart_get_kpr evmPostSolm evmIlksPostSolm I out
+                                    barkLocalsDart_get_kpr evmPostStele evmIlksPostStele I out
                                       outIlks
                                   have hvowDartBase :
-                                      (barkLocalsDart evmPostSolm evmIlksPostSolm I out
+                                      (barkLocalsDart evmPostStele evmIlksPostStele I out
                                           outIlks).get? "vow" = none :=
-                                    barkLocalsDart_get_vow evmPostSolm evmIlksPostSolm I out
+                                    barkLocalsDart_get_vow evmPostStele evmIlksPostStele I out
                                       outIlks
                                   have hDirtDartBase :
-                                      (barkLocalsDart evmPostSolm evmIlksPostSolm I out
+                                      (barkLocalsDart evmPostStele evmIlksPostStele I out
                                           outIlks).get? "Dirt" = none :=
-                                    barkLocalsDart_get_Dirt evmPostSolm evmIlksPostSolm I out
+                                    barkLocalsDart_get_Dirt evmPostStele evmIlksPostStele I out
                                       outIlks
                                   have hilksDartBase :
-                                      (barkLocalsDart evmPostSolm evmIlksPostSolm I out
+                                      (barkLocalsDart evmPostStele evmIlksPostStele I out
                                           outIlks).get? "ilks" = none :=
-                                    barkLocalsDart_get_ilks evmPostSolm evmIlksPostSolm I out
+                                    barkLocalsDart_get_ilks evmPostStele evmIlksPostStele I out
                                       outIlks
                                   have hpresDusty {name : Ident} {value : Value}
                                       (hname : ("dart" == name) = false)
                                       (hleftoverDueName : ("leftoverDue" == name) = false)
                                       (hleftoverArtName : ("leftoverArt" == name) = false)
                                       (hget :
-                                        (barkLocalsDart evmPostSolm evmIlksPostSolm I out
+                                        (barkLocalsDart evmPostStele evmIlksPostStele I out
                                             outIlks).get? name = some value) :
-                                      (barkLocalsDustyDart evmPostSolm evmIlksPostSolm I out
+                                      (barkLocalsDustyDart evmPostStele evmIlksPostStele I out
                                           outIlks).get? name = some value := by
                                     exact
                                       barkLocalsDustyDart_get_preserved
-                                        (evmUrns := evmPostSolm)
-                                        (evmIlks := evmIlksPostSolm) (I := I)
+                                        (evmUrns := evmPostStele)
+                                        (evmIlks := evmIlksPostStele) (I := I)
                                         (out := out) (outIlks := outIlks)
                                         (name := name) (value := value) hname
                                         (barkLocalsLeftoverDue_get_preserved
@@ -28010,9 +28010,9 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                       (hleftoverDueName : ("leftoverDue" == name) = false)
                                       (hleftoverArtName : ("leftoverArt" == name) = false)
                                       (hget :
-                                        (barkLocalsDart evmPostSolm evmIlksPostSolm I out
+                                        (barkLocalsDart evmPostStele evmIlksPostStele I out
                                             outIlks).get? name = none) :
-                                      (barkLocalsDustyDart evmPostSolm evmIlksPostSolm I out
+                                      (barkLocalsDustyDart evmPostStele evmIlksPostStele I out
                                           outIlks).get? name = none := by
                                     rw [barkLocalsDustyDart, store_get_ne _ _ hname,
                                       barkLocalsLeftoverDue, store_get_ne _ _ hleftoverDueName,
@@ -28023,14 +28023,14 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                       (hleftoverDueName : ("leftoverDue" == name) = false)
                                       (hleftoverArtName : ("leftoverArt" == name) = false)
                                       (hget :
-                                        (barkLocalsDart evmPostSolm evmIlksPostSolm I out
+                                        (barkLocalsDart evmPostStele evmIlksPostStele I out
                                             outIlks).get? name = some value) :
-                                      (barkLocalsPartialDue evmPostSolm evmIlksPostSolm I out
+                                      (barkLocalsPartialDue evmPostStele evmIlksPostStele I out
                                           outIlks).get? name = some value := by
                                     exact
                                       barkLocalsPartialDue_get_preserved
-                                        (evmUrns := evmPostSolm)
-                                        (evmIlks := evmIlksPostSolm) (I := I)
+                                        (evmUrns := evmPostStele)
+                                        (evmIlks := evmIlksPostStele) (I := I)
                                         (out := out) (outIlks := outIlks)
                                         (name := name) (value := value) hname
                                         (barkLocalsLeftoverDue_get_preserved
@@ -28042,9 +28042,9 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                       (hleftoverDueName : ("leftoverDue" == name) = false)
                                       (hleftoverArtName : ("leftoverArt" == name) = false)
                                       (hget :
-                                        (barkLocalsDart evmPostSolm evmIlksPostSolm I out
+                                        (barkLocalsDart evmPostStele evmIlksPostStele I out
                                             outIlks).get? name = none) :
-                                      (barkLocalsPartialDue evmPostSolm evmIlksPostSolm I out
+                                      (barkLocalsPartialDue evmPostStele evmIlksPostStele I out
                                           outIlks).get? name = none := by
                                     rw [barkLocalsPartialDue, store_get_ne _ _ hname,
                                       barkLocalsLeftoverDue, store_get_ne _ _ hleftoverDueName,
@@ -28060,37 +28060,37 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                         (ink := ink) hpatch hnoLeftover rd3594Local
                                         (by simp)
                                     have hleftoverBlock :=
-                                      dogBarkNoLeftoverIteOk (v := v) evmPostSolm
-                                        evmIlksPostSolm I out outIlks
+                                      dogBarkNoLeftoverIteOk (v := v) evmPostStele
+                                        evmIlksPostStele I out outIlks
                                         (by simpa [art, dart0, hdartSourceLocal] using
                                           hnoLeftover)
                                     have hinkAfter :
-                                        (barkLocalsDart evmPostSolm evmIlksPostSolm I out
+                                        (barkLocalsDart evmPostStele evmIlksPostStele I out
                                             outIlks).get? "ink" =
                                           some (.int (Int.ofNat ink.toNat)) := by
                                       simpa [ink] using
-                                        barkLocalsDart_get_ink evmPostSolm evmIlksPostSolm I
+                                        barkLocalsDart_get_ink evmPostStele evmIlksPostStele I
                                           out outIlks
                                     have hdartAfter :
-                                        (barkLocalsDart evmPostSolm evmIlksPostSolm I out
+                                        (barkLocalsDart evmPostStele evmIlksPostStele I out
                                             outIlks).get? "dart" =
                                           some (.int (Int.ofNat dart0.toNat)) := by
                                       simpa [dart0, hdartSourceLocal] using
-                                        barkLocalsDart_get_dart evmPostSolm evmIlksPostSolm I
+                                        barkLocalsDart_get_dart evmPostStele evmIlksPostStele I
                                           out outIlks
                                     have hartAfter :
-                                        (barkLocalsDart evmPostSolm evmIlksPostSolm I out
+                                        (barkLocalsDart evmPostStele evmIlksPostStele I out
                                             outIlks).get? "art" =
                                           some (.int (Int.ofNat art.toNat)) := by
                                       simpa [art] using
-                                        barkLocalsDart_get_art evmPostSolm evmIlksPostSolm I
+                                        barkLocalsDart_get_art evmPostStele evmIlksPostStele I
                                           out outIlks
                                     have hdartLeArt :
                                         dart0.toNat ≤ art.toNat := by
                                       simpa [dart0, art, rate, milkChop] using
                                         barkDartWord_toNat_le_art σ'' σ' I art rate milkChop
                                     exact finishFromDartEntry dart0
-                                      (barkLocalsDart evmPostSolm evmIlksPostSolm I out outIlks)
+                                      (barkLocalsDart evmPostStele evmIlksPostStele I out outIlks)
                                       hleftoverBlock hinkAfter hdartAfter hartAfter
                                       hrateDartBase hmilkClipDartBase hmilkChopDartBase
                                       hmilkDirtDartBase hilkDartBase hurnDartBase
@@ -28116,8 +28116,8 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                           (ink := ink) hpatch hleftover hfitLeftoverDue
                                           hdusty rd3594Local (by simp)
                                       have hleftoverBlock :=
-                                        dogBarkDustyLeftoverIteOk (v := v) evmPostSolm
-                                          evmIlksPostSolm I out outIlks
+                                        dogBarkDustyLeftoverIteOk (v := v) evmPostStele
+                                          evmIlksPostStele I out outIlks
                                           (by simpa [art, dart0, hdartSourceLocal] using
                                             hleftover)
                                           (by simpa [art, dart0, rate, hdartSourceLocal] using
@@ -28125,13 +28125,13 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                           (by simpa [art, dart0, rate, dust,
                                             hdartSourceLocal] using hdusty)
                                       have hinkAfter :
-                                          (barkLocalsDustyDart evmPostSolm evmIlksPostSolm I
+                                          (barkLocalsDustyDart evmPostStele evmIlksPostStele I
                                               out outIlks).get? "ink" =
                                             some (.int (Int.ofNat ink.toNat)) := by
                                         simpa [ink] using
                                           barkLocalsDustyDart_get_preserved
-                                            (evmUrns := evmPostSolm)
-                                            (evmIlks := evmIlksPostSolm) (I := I)
+                                            (evmUrns := evmPostStele)
+                                            (evmIlks := evmIlksPostStele) (I := I)
                                             (out := out) (outIlks := outIlks)
                                             (name := "ink")
                                             (value := .int (Int.ofNat ink.toNat))
@@ -28142,23 +28142,23 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                                 (by decide)
                                                 (by
                                                   simpa [ink] using
-                                                    (barkLocalsDart_get_ink evmPostSolm
-                                                      evmIlksPostSolm I out outIlks))))
+                                                    (barkLocalsDart_get_ink evmPostStele
+                                                      evmIlksPostStele I out outIlks))))
                                       have hdartAfter :
-                                          (barkLocalsDustyDart evmPostSolm evmIlksPostSolm I
+                                          (barkLocalsDustyDart evmPostStele evmIlksPostStele I
                                               out outIlks).get? "dart" =
                                             some (.int (Int.ofNat art.toNat)) := by
                                         simpa [art] using
-                                          barkLocalsDustyDart_get_dart evmPostSolm
-                                            evmIlksPostSolm I out outIlks
+                                          barkLocalsDustyDart_get_dart evmPostStele
+                                            evmIlksPostStele I out outIlks
                                       have hartAfter :
-                                          (barkLocalsDustyDart evmPostSolm evmIlksPostSolm I
+                                          (barkLocalsDustyDart evmPostStele evmIlksPostStele I
                                               out outIlks).get? "art" =
                                             some (.int (Int.ofNat art.toNat)) := by
                                         simpa [art] using
                                           barkLocalsDustyDart_get_preserved
-                                            (evmUrns := evmPostSolm)
-                                            (evmIlks := evmIlksPostSolm) (I := I)
+                                            (evmUrns := evmPostStele)
+                                            (evmIlks := evmIlksPostStele) (I := I)
                                             (out := out) (outIlks := outIlks)
                                             (name := "art")
                                             (value := .int (Int.ofNat art.toNat))
@@ -28169,10 +28169,10 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                                 (by decide)
                                                 (by
                                                   simpa [art] using
-                                                    (barkLocalsDart_get_art evmPostSolm
-                                                      evmIlksPostSolm I out outIlks))))
+                                                    (barkLocalsDart_get_art evmPostStele
+                                                      evmIlksPostStele I out outIlks))))
                                       exact finishFromDartEntry art
-                                        (barkLocalsDustyDart evmPostSolm evmIlksPostSolm I
+                                        (barkLocalsDustyDart evmPostStele evmIlksPostStele I
                                           out outIlks)
                                         hleftoverBlock hinkAfter hdartAfter hartAfter
                                         (hpresDusty (by decide) (by decide) (by decide)
@@ -28218,8 +28218,8 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                             hnotDusty hfitPartialDue hpartialDueOk
                                             rd3594Local (by simp)
                                         have hleftoverBlock :=
-                                          dogBarkPartialLeftoverIteOk (v := v) evmPostSolm
-                                            evmIlksPostSolm I out outIlks
+                                          dogBarkPartialLeftoverIteOk (v := v) evmPostStele
+                                            evmIlksPostStele I out outIlks
                                             (by simpa [art, dart0, hdartSourceLocal] using
                                               hleftover)
                                             (by simpa [art, dart0, rate, hdartSourceLocal] using
@@ -28231,13 +28231,13 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                             (by simpa [dart0, rate, dust, hdartSourceLocal] using
                                               hpartialDueOk)
                                         have hinkAfter :
-                                            (barkLocalsPartialDue evmPostSolm evmIlksPostSolm I
+                                            (barkLocalsPartialDue evmPostStele evmIlksPostStele I
                                                 out outIlks).get? "ink" =
                                               some (.int (Int.ofNat ink.toNat)) := by
                                           simpa [ink] using
                                             barkLocalsPartialDue_get_preserved
-                                              (evmUrns := evmPostSolm)
-                                              (evmIlks := evmIlksPostSolm) (I := I)
+                                              (evmUrns := evmPostStele)
+                                              (evmIlks := evmIlksPostStele) (I := I)
                                               (out := out) (outIlks := outIlks)
                                               (name := "ink")
                                               (value := .int (Int.ofNat ink.toNat))
@@ -28248,16 +28248,16 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                                   (by decide)
                                                   (by
                                                     simpa [ink] using
-                                                      (barkLocalsDart_get_ink evmPostSolm
-                                                        evmIlksPostSolm I out outIlks))))
+                                                      (barkLocalsDart_get_ink evmPostStele
+                                                        evmIlksPostStele I out outIlks))))
                                         have hdartAfter :
-                                            (barkLocalsPartialDue evmPostSolm evmIlksPostSolm I
+                                            (barkLocalsPartialDue evmPostStele evmIlksPostStele I
                                                 out outIlks).get? "dart" =
                                               some (.int (Int.ofNat dart0.toNat)) := by
                                           simpa [dart0, hdartSourceLocal] using
                                             barkLocalsPartialDue_get_preserved
-                                              (evmUrns := evmPostSolm)
-                                              (evmIlks := evmIlksPostSolm) (I := I)
+                                              (evmUrns := evmPostStele)
+                                              (evmIlks := evmIlksPostStele) (I := I)
                                               (out := out) (outIlks := outIlks)
                                               (name := "dart")
                                               (value := .int (Int.ofNat dart0.toNat))
@@ -28268,16 +28268,16 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                                   (by decide)
                                                   (by
                                                     simpa [dart0, hdartSourceLocal] using
-                                                      (barkLocalsDart_get_dart evmPostSolm
-                                                        evmIlksPostSolm I out outIlks))))
+                                                      (barkLocalsDart_get_dart evmPostStele
+                                                        evmIlksPostStele I out outIlks))))
                                         have hartAfter :
-                                            (barkLocalsPartialDue evmPostSolm evmIlksPostSolm I
+                                            (barkLocalsPartialDue evmPostStele evmIlksPostStele I
                                                 out outIlks).get? "art" =
                                               some (.int (Int.ofNat art.toNat)) := by
                                           simpa [art] using
                                             barkLocalsPartialDue_get_preserved
-                                              (evmUrns := evmPostSolm)
-                                              (evmIlks := evmIlksPostSolm) (I := I)
+                                              (evmUrns := evmPostStele)
+                                              (evmIlks := evmIlksPostStele) (I := I)
                                               (out := out) (outIlks := outIlks)
                                               (name := "art")
                                               (value := .int (Int.ofNat art.toNat))
@@ -28288,15 +28288,15 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                                   (by decide)
                                                   (by
                                                     simpa [art] using
-                                                      (barkLocalsDart_get_art evmPostSolm
-                                                        evmIlksPostSolm I out outIlks))))
+                                                      (barkLocalsDart_get_art evmPostStele
+                                                        evmIlksPostStele I out outIlks))))
                                         have hdartLeArt :
                                             dart0.toNat ≤ art.toNat := by
                                           simpa [dart0, art, rate, milkChop] using
                                             barkDartWord_toNat_le_art σ'' σ' I art rate
                                               milkChop
                                         exact finishFromDartEntry dart0
-                                          (barkLocalsPartialDue evmPostSolm evmIlksPostSolm I
+                                          (barkLocalsPartialDue evmPostStele evmIlksPostStele I
                                             out outIlks)
                                           hleftoverBlock hinkAfter hdartAfter hartAfter
                                           (hpresPartial (by decide) (by decide) (by decide)
@@ -28324,8 +28324,8 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                             (barkPartialDueWord dart0 rate).toNat < dust.toNat :=
                                           Nat.lt_of_not_ge hpartialDueOk
                                         have hleftoverBlock :=
-                                          dogBarkPartialLeftoverIteRevert (v := v) evmPostSolm
-                                            evmIlksPostSolm I out outIlks
+                                          dogBarkPartialLeftoverIteRevert (v := v) evmPostStele
+                                            evmIlksPostStele I out outIlks
                                             (by simpa [art, dart0, hdartSourceLocal] using
                                               hleftover)
                                             (by simpa [art, dart0, rate, hdartSourceLocal] using
@@ -28338,7 +28338,7 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                               hpartialDueBad)
                                         have htailBody :
                                             ExecTransitionBody config contract
-                                              evmSolm (barkLocals I)
+                                              evmStele (barkLocals I)
                                               barkTransition.body .reverted (immStore v) := by
                                           let afterLeftover : List Stmt :=
                                             checkedMulUintInto "inkDart" (.var "ink")
@@ -28401,81 +28401,81 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                         exact hrev.reEquivExecutionRevert hcode hdispatch
                                           hdecode htailBody
                                 · have hslot5 :
-                                      solcSlotWordAt ⟨5⟩ evmIlksPostSolm.accountMap
-                                          evmIlksPostSolm.executionEnv =
+                                      solcSlotWordAt ⟨5⟩ evmIlksPostStele.accountMap
+                                          evmIlksPostStele.executionEnv =
                                         solcSlotWordAt ⟨5⟩ σ'' I := by
                                     have h :=
                                       congrArg (fun m => solcSlotWordAt ⟨5⟩ m I) hAccountsIlks
-                                    simpa [evmIlksPostSolm, evmPostSolm, evmSolm, initState]
+                                    simpa [evmIlksPostStele, evmPostStele, evmStele, initState]
                                       using h.symm
                                   have hslot4 :
-                                      solcSlotWordAt ⟨4⟩ evmIlksPostSolm.accountMap
-                                          evmIlksPostSolm.executionEnv =
+                                      solcSlotWordAt ⟨4⟩ evmIlksPostStele.accountMap
+                                          evmIlksPostStele.executionEnv =
                                         solcSlotWordAt ⟨4⟩ σ'' I := by
                                     have h :=
                                       congrArg (fun m => solcSlotWordAt ⟨4⟩ m I) hAccountsIlks
-                                    simpa [evmIlksPostSolm, evmPostSolm, evmSolm, initState]
+                                    simpa [evmIlksPostStele, evmPostStele, evmStele, initState]
                                       using h.symm
                                   have hAccountsUrns :
-                                      Eq σ' evmPostSolm.accountMap := by
+                                      Eq σ' evmPostStele.accountMap := by
                                     simpa [evmPostEvm] using hStateCall.accountMap
                                   have hmilkDirt :
                                       solcSlotWordAt (barkIlksDirtSlotFor I)
-                                          evmPostSolm.accountMap evmPostSolm.executionEnv =
+                                          evmPostStele.accountMap evmPostStele.executionEnv =
                                         barkIlksDirtWord σ' I := by
                                     have h :=
                                       congrArg (fun m => solcSlotWordAt (barkIlksDirtSlotFor I) m I) hAccountsUrns
                                     rw [barkIlksDirtWord_eq_slotFor (σ := σ') (I := I)
                                       hsz100]
-                                    simpa [evmPostSolm, evmSolm, initState] using h.symm
+                                    simpa [evmPostStele, evmStele, initState] using h.symm
                                   have hmilkHole :
                                       solcSlotWordAt (barkIlksHoleSlotFor I)
-                                          evmPostSolm.accountMap evmPostSolm.executionEnv =
+                                          evmPostStele.accountMap evmPostStele.executionEnv =
                                         barkIlksHoleWord σ' I := by
                                     have h :=
                                       congrArg (fun m => solcSlotWordAt (barkIlksHoleSlotFor I) m I) hAccountsUrns
                                     rw [barkIlksHoleWord_eq_slotFor (σ := σ') (I := I)
                                       hsz100]
-                                    simpa [evmPostSolm, evmSolm, initState] using h.symm
+                                    simpa [evmPostStele, evmStele, initState] using h.symm
                                   have hmilkChop :
                                       solcSlotWordAt (barkIlksChopSlotFor I)
-                                          evmPostSolm.accountMap evmPostSolm.executionEnv =
+                                          evmPostStele.accountMap evmPostStele.executionEnv =
                                         barkIlksChopWord σ' I := by
                                     have h :=
                                       congrArg (fun m => solcSlotWordAt (barkIlksChopSlotFor I) m I) hAccountsUrns
                                     rw [barkIlksChopWord_eq_slotFor (σ := σ') (I := I)
                                       hsz100]
-                                    simpa [evmPostSolm, evmSolm, initState] using h.symm
+                                    simpa [evmPostStele, evmStele, initState] using h.symm
                                   have hlimitSource :
-                                      (solcSlotWordAt ⟨5⟩ evmIlksPostSolm.accountMap
-                                          evmIlksPostSolm.executionEnv).toNat <
-                                        (solcSlotWordAt ⟨4⟩ evmIlksPostSolm.accountMap
-                                          evmIlksPostSolm.executionEnv).toNat ∧
+                                      (solcSlotWordAt ⟨5⟩ evmIlksPostStele.accountMap
+                                          evmIlksPostStele.executionEnv).toNat <
+                                        (solcSlotWordAt ⟨4⟩ evmIlksPostStele.accountMap
+                                          evmIlksPostStele.executionEnv).toNat ∧
                                       (solcSlotWordAt (barkIlksDirtSlotFor I)
-                                          evmPostSolm.accountMap
-                                          evmPostSolm.executionEnv).toNat <
+                                          evmPostStele.accountMap
+                                          evmPostStele.executionEnv).toNat <
                                         (solcSlotWordAt (barkIlksHoleSlotFor I)
-                                          evmPostSolm.accountMap
-                                          evmPostSolm.executionEnv).toNat := by
+                                          evmPostStele.accountMap
+                                          evmPostStele.executionEnv).toNat := by
                                     exact
                                       ⟨by simpa [hslot5, hslot4] using hlimit.1,
                                         by simpa [hmilkDirt, hmilkHole] using hlimit.2⟩
                                   have hglobalRoom :
-                                      barkSourceGlobalRoomWord evmIlksPostSolm =
+                                      barkSourceGlobalRoomWord evmIlksPostStele =
                                         barkGlobalRoomWord σ'' I := by
                                     simp [barkSourceGlobalRoomWord, barkGlobalRoomWord, hslot4,
                                       hslot5]
                                   have hilkRoom :
-                                      barkSourceIlkRoomWord evmPostSolm I =
+                                      barkSourceIlkRoomWord evmPostStele I =
                                         barkIlkRoomWord σ' I := by
                                     simp [barkSourceIlkRoomWord, barkIlkRoomWord, hmilkHole,
                                       hmilkDirt]
                                   have hroom :
-                                      barkSourceRoomWord evmPostSolm evmIlksPostSolm I =
+                                      barkSourceRoomWord evmPostStele evmIlksPostStele I =
                                         barkRoomWord σ'' σ' I := by
                                     simp [barkSourceRoomWord, barkRoomWord, hglobalRoom, hilkRoom]
                                   have hfitRoomSource :
-                                      (barkSourceRoomWord evmPostSolm evmIlksPostSolm I).toNat *
+                                      (barkSourceRoomWord evmPostStele evmIlksPostStele I).toNat *
                                           dogWadWord.toNat <
                                         UInt256.size := by
                                     simpa [hroom] using hfitRoom
@@ -28484,20 +28484,20 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                     exact hchopNe hne
                                   have hchopZeroSource :
                                       solcSlotWordAt (barkIlksChopSlotFor I)
-                                          evmPostSolm.accountMap evmPostSolm.executionEnv =
+                                          evmPostStele.accountMap evmPostStele.executionEnv =
                                         ⟨0⟩ := by
                                     rw [hmilkChop, hchopZeroRuntime]
                                   have hbody :
-                                      ExecTransitionBody config contract evmSolm
+                                      ExecTransitionBody config contract evmStele
                                         (barkLocals I) barkTransition.body .reverted (immStore v) := by
-                                    simpa [evmSolm] using
+                                    simpa [evmStele] using
                                       (dogBarkVatIlksMilkChopZeroSourceBody (v := v)
                                         (σ := σ)
                                         (σ₀ := σ₀) (A := A) (I := I) (g := g)
-                                        (evmUrns := evmPostSolm)
-                                        (evmIlks := evmIlksPostSolm) (out := out)
-                                        (outIlks := outIlks) hwv hliveSolm hvatCode
-                                        hcallSolm hdecUrns hvatIlksCode hcallIlksSolm
+                                        (evmUrns := evmPostStele)
+                                        (evmIlks := evmIlksPostStele) (out := out)
+                                        (outIlks := outIlks) hwv hliveStele hvatCode
+                                        hcallStele hdecUrns hvatIlksCode hcallIlksStele
                                         hdecIlks hfitInk hfitArt hspotPos hsafeLt
                                         hlimitSource hfitRoomSource hrateNe hchopZeroSource
                                         hsz100)
@@ -28520,85 +28520,85 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                     exact reEquiv_execution hdispatch hdecode hbody
                                       (execResultsEquiv.invalidHalt hxi rfl)
                               · have hslot5 :
-                                    solcSlotWordAt ⟨5⟩ evmIlksPostSolm.accountMap
-                                        evmIlksPostSolm.executionEnv =
+                                    solcSlotWordAt ⟨5⟩ evmIlksPostStele.accountMap
+                                        evmIlksPostStele.executionEnv =
                                       solcSlotWordAt ⟨5⟩ σ'' I := by
                                   have h :=
                                     congrArg (fun m => solcSlotWordAt ⟨5⟩ m I) hAccountsIlks
-                                  simpa [evmIlksPostSolm, evmPostSolm, evmSolm, initState]
+                                  simpa [evmIlksPostStele, evmPostStele, evmStele, initState]
                                     using h.symm
                                 have hslot4 :
-                                    solcSlotWordAt ⟨4⟩ evmIlksPostSolm.accountMap
-                                        evmIlksPostSolm.executionEnv =
+                                    solcSlotWordAt ⟨4⟩ evmIlksPostStele.accountMap
+                                        evmIlksPostStele.executionEnv =
                                       solcSlotWordAt ⟨4⟩ σ'' I := by
                                   have h :=
                                     congrArg (fun m => solcSlotWordAt ⟨4⟩ m I) hAccountsIlks
-                                  simpa [evmIlksPostSolm, evmPostSolm, evmSolm, initState]
+                                  simpa [evmIlksPostStele, evmPostStele, evmStele, initState]
                                     using h.symm
                                 have hAccountsUrns :
-                                    Eq σ' evmPostSolm.accountMap := by
+                                    Eq σ' evmPostStele.accountMap := by
                                   simpa [evmPostEvm] using hStateCall.accountMap
                                 have hmilkDirt :
                                     solcSlotWordAt (barkIlksDirtSlotFor I)
-                                        evmPostSolm.accountMap evmPostSolm.executionEnv =
+                                        evmPostStele.accountMap evmPostStele.executionEnv =
                                       barkIlksDirtWord σ' I := by
                                   have h :=
                                     congrArg (fun m => solcSlotWordAt (barkIlksDirtSlotFor I) m I) hAccountsUrns
                                   rw [barkIlksDirtWord_eq_slotFor (σ := σ') (I := I)
                                     hsz100]
-                                  simpa [evmPostSolm, evmSolm, initState] using h.symm
+                                  simpa [evmPostStele, evmStele, initState] using h.symm
                                 have hmilkHole :
                                     solcSlotWordAt (barkIlksHoleSlotFor I)
-                                        evmPostSolm.accountMap evmPostSolm.executionEnv =
+                                        evmPostStele.accountMap evmPostStele.executionEnv =
                                       barkIlksHoleWord σ' I := by
                                   have h :=
                                     congrArg (fun m => solcSlotWordAt (barkIlksHoleSlotFor I) m I) hAccountsUrns
                                   rw [barkIlksHoleWord_eq_slotFor (σ := σ') (I := I)
                                     hsz100]
-                                  simpa [evmPostSolm, evmSolm, initState] using h.symm
+                                  simpa [evmPostStele, evmStele, initState] using h.symm
                                 have hlimitSource :
-                                    (solcSlotWordAt ⟨5⟩ evmIlksPostSolm.accountMap
-                                        evmIlksPostSolm.executionEnv).toNat <
-                                      (solcSlotWordAt ⟨4⟩ evmIlksPostSolm.accountMap
-                                        evmIlksPostSolm.executionEnv).toNat ∧
+                                    (solcSlotWordAt ⟨5⟩ evmIlksPostStele.accountMap
+                                        evmIlksPostStele.executionEnv).toNat <
+                                      (solcSlotWordAt ⟨4⟩ evmIlksPostStele.accountMap
+                                        evmIlksPostStele.executionEnv).toNat ∧
                                     (solcSlotWordAt (barkIlksDirtSlotFor I)
-                                        evmPostSolm.accountMap
-                                        evmPostSolm.executionEnv).toNat <
+                                        evmPostStele.accountMap
+                                        evmPostStele.executionEnv).toNat <
                                       (solcSlotWordAt (barkIlksHoleSlotFor I)
-                                        evmPostSolm.accountMap
-                                        evmPostSolm.executionEnv).toNat := by
+                                        evmPostStele.accountMap
+                                        evmPostStele.executionEnv).toNat := by
                                   exact
                                     ⟨by simpa [hslot5, hslot4] using hlimit.1,
                                       by simpa [hmilkDirt, hmilkHole] using hlimit.2⟩
                                 have hglobalRoom :
-                                    barkSourceGlobalRoomWord evmIlksPostSolm =
+                                    barkSourceGlobalRoomWord evmIlksPostStele =
                                       barkGlobalRoomWord σ'' I := by
                                   simp [barkSourceGlobalRoomWord, barkGlobalRoomWord, hslot4,
                                     hslot5]
                                 have hilkRoom :
-                                    barkSourceIlkRoomWord evmPostSolm I =
+                                    barkSourceIlkRoomWord evmPostStele I =
                                       barkIlkRoomWord σ' I := by
                                   simp [barkSourceIlkRoomWord, barkIlkRoomWord, hmilkHole,
                                     hmilkDirt]
                                 have hroom :
-                                    barkSourceRoomWord evmPostSolm evmIlksPostSolm I =
+                                    barkSourceRoomWord evmPostStele evmIlksPostStele I =
                                       barkRoomWord σ'' σ' I := by
                                   simp [barkSourceRoomWord, barkRoomWord, hglobalRoom, hilkRoom]
                                 have hoverRoomSource :
                                     UInt256.size ≤
-                                      (barkSourceRoomWord evmPostSolm evmIlksPostSolm I).toNat *
+                                      (barkSourceRoomWord evmPostStele evmIlksPostStele I).toNat *
                                         dogWadWord.toNat := by
                                   simpa [hroom] using (not_lt.mp hfitRoom)
                                 have hbody :
-                                    ExecTransitionBody config contract evmSolm
+                                    ExecTransitionBody config contract evmStele
                                       (barkLocals I) barkTransition.body .reverted (immStore v) := by
-                                  simpa [evmSolm] using
+                                  simpa [evmStele] using
                                     (dogBarkVatIlksRoomWadOverflowSourceBody (v := v)
                                       (σ := σ)
                                       (σ₀ := σ₀) (A := A) (I := I) (g := g)
-                                      (evmUrns := evmPostSolm) (evmIlks := evmIlksPostSolm)
-                                      (out := out) (outIlks := outIlks) hwv hliveSolm
-                                      hvatCode hcallSolm hdecUrns hvatIlksCode hcallIlksSolm
+                                      (evmUrns := evmPostStele) (evmIlks := evmIlksPostStele)
+                                      (out := out) (outIlks := outIlks) hwv hliveStele
+                                      hvatCode hcallStele hdecUrns hvatIlksCode hcallIlksStele
                                       hdecIlks hfitInk hfitArt hspotPos hsafeLt hlimitSource
                                       hoverRoomSource hsz100)
                                 have hoverRoomEvm :
@@ -28618,67 +28618,67 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                   exact hspotZero (uint256_toNat_eq_zero hnat)
                                 exact Nat.pos_of_ne_zero hnatNe
                               have hslot5 :
-                                  solcSlotWordAt ⟨5⟩ evmIlksPostSolm.accountMap
-                                      evmIlksPostSolm.executionEnv =
+                                  solcSlotWordAt ⟨5⟩ evmIlksPostStele.accountMap
+                                      evmIlksPostStele.executionEnv =
                                     solcSlotWordAt ⟨5⟩ σ'' I := by
                                 have h :=
                                   congrArg (fun m => solcSlotWordAt ⟨5⟩ m I) hAccountsIlks
-                                simpa [evmIlksPostSolm, evmPostSolm, evmSolm, initState]
+                                simpa [evmIlksPostStele, evmPostStele, evmStele, initState]
                                   using h.symm
                               have hslot4 :
-                                  solcSlotWordAt ⟨4⟩ evmIlksPostSolm.accountMap
-                                      evmIlksPostSolm.executionEnv =
+                                  solcSlotWordAt ⟨4⟩ evmIlksPostStele.accountMap
+                                      evmIlksPostStele.executionEnv =
                                     solcSlotWordAt ⟨4⟩ σ'' I := by
                                 have h :=
                                   congrArg (fun m => solcSlotWordAt ⟨4⟩ m I) hAccountsIlks
-                                simpa [evmIlksPostSolm, evmPostSolm, evmSolm, initState]
+                                simpa [evmIlksPostStele, evmPostStele, evmStele, initState]
                                   using h.symm
                               have hAccountsUrns :
-                                  Eq σ' evmPostSolm.accountMap := by
+                                  Eq σ' evmPostStele.accountMap := by
                                 simpa [evmPostEvm] using hStateCall.accountMap
                               have hmilkDirt :
                                   solcSlotWordAt (barkIlksDirtSlotFor I)
-                                      evmPostSolm.accountMap evmPostSolm.executionEnv =
+                                      evmPostStele.accountMap evmPostStele.executionEnv =
                                     barkIlksDirtWord σ' I := by
                                 have h :=
                                   congrArg (fun m => solcSlotWordAt (barkIlksDirtSlotFor I) m I) hAccountsUrns
                                 rw [barkIlksDirtWord_eq_slotFor (σ := σ') (I := I)
                                   hsz100]
-                                simpa [evmPostSolm, evmSolm, initState] using h.symm
+                                simpa [evmPostStele, evmStele, initState] using h.symm
                               have hmilkHole :
                                   solcSlotWordAt (barkIlksHoleSlotFor I)
-                                      evmPostSolm.accountMap evmPostSolm.executionEnv =
+                                      evmPostStele.accountMap evmPostStele.executionEnv =
                                     barkIlksHoleWord σ' I := by
                                 have h :=
                                   congrArg (fun m => solcSlotWordAt (barkIlksHoleSlotFor I) m I) hAccountsUrns
                                 rw [barkIlksHoleWord_eq_slotFor (σ := σ') (I := I)
                                   hsz100]
-                                simpa [evmPostSolm, evmSolm, initState] using h.symm
+                                simpa [evmPostStele, evmStele, initState] using h.symm
                               have hlimitSource :
-                                  ¬ ((solcSlotWordAt ⟨5⟩ evmIlksPostSolm.accountMap
-                                          evmIlksPostSolm.executionEnv).toNat <
-                                        (solcSlotWordAt ⟨4⟩ evmIlksPostSolm.accountMap
-                                          evmIlksPostSolm.executionEnv).toNat ∧
+                                  ¬ ((solcSlotWordAt ⟨5⟩ evmIlksPostStele.accountMap
+                                          evmIlksPostStele.executionEnv).toNat <
+                                        (solcSlotWordAt ⟨4⟩ evmIlksPostStele.accountMap
+                                          evmIlksPostStele.executionEnv).toNat ∧
                                       (solcSlotWordAt (barkIlksDirtSlotFor I)
-                                          evmPostSolm.accountMap
-                                          evmPostSolm.executionEnv).toNat <
+                                          evmPostStele.accountMap
+                                          evmPostStele.executionEnv).toNat <
                                         (solcSlotWordAt (barkIlksHoleSlotFor I)
-                                          evmPostSolm.accountMap
-                                          evmPostSolm.executionEnv).toNat) := by
+                                          evmPostStele.accountMap
+                                          evmPostStele.executionEnv).toNat) := by
                                 intro hsrc
                                 exact hlimit
                                   ⟨by simpa [hslot5, hslot4] using hsrc.1,
                                     by simpa [hmilkDirt, hmilkHole] using hsrc.2⟩
                               have hbody :
-                                  ExecTransitionBody config contract evmSolm
+                                  ExecTransitionBody config contract evmStele
                                     (barkLocals I) barkTransition.body .reverted (immStore v) := by
-                                simpa [evmSolm] using
+                                simpa [evmStele] using
                                   (dogBarkVatIlksLiquidationLimitHitSourceBody (v := v)
                                     (σ := σ)
                                     (σ₀ := σ₀) (A := A) (I := I) (g := g)
-                                    (evmUrns := evmPostSolm) (evmIlks := evmIlksPostSolm)
-                                    (out := out) (outIlks := outIlks) hwv hliveSolm
-                                    hvatCode hcallSolm hdecUrns hvatIlksCode hcallIlksSolm
+                                    (evmUrns := evmPostStele) (evmIlks := evmIlksPostStele)
+                                    (out := out) (outIlks := outIlks) hwv hliveStele
+                                    hvatCode hcallStele hdecUrns hvatIlksCode hcallIlksStele
                                     hdecIlks hfitInk hfitArt hspotPos hsafeLt hlimitSource
                                     hsz100)
                               have hsafeEvm :
@@ -28708,15 +28708,15 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                               intro hsafe
                               exact hsafeLt hsafe.2
                             have hbody :
-                                ExecTransitionBody config contract evmSolm
+                                ExecTransitionBody config contract evmStele
                                   (barkLocals I) barkTransition.body .reverted (immStore v) := by
-                              simpa [evmSolm] using
+                              simpa [evmStele] using
                                 (dogBarkVatIlksNotUnsafeSourceBody (v := v)
                                   (σ := σ) (σ₀ := σ₀)
-                                  (A := A) (I := I) (g := g) (evmUrns := evmPostSolm)
-                                  (evmIlks := evmIlksPostSolm) (out := out)
-                                  (outIlks := outIlks) hwv hliveSolm hvatCode hcallSolm
-                                  hdecUrns hvatIlksCode hcallIlksSolm hdecIlks hfitInk
+                                  (A := A) (I := I) (g := g) (evmUrns := evmPostStele)
+                                  (evmIlks := evmIlksPostStele) (out := out)
+                                  (outIlks := outIlks) hwv hliveStele hvatCode hcallStele
+                                  hdecUrns hvatIlksCode hcallIlksStele hdecIlks hfitInk
                                   hfitArt hnotSafe hsz100)
                             have hnotLtEvm :
                                 ((barkVatUrnsArtWord out) *
@@ -28740,15 +28740,15 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                     have hdecIlks : config.externalABI.decode? "ilks" outIlks = none :=
                       barkVatIlksDecode_none_short hretIlksShort
                     have hbody :
-                        ExecTransitionBody config contract evmSolm (barkLocals I)
+                        ExecTransitionBody config contract evmStele (barkLocals I)
                           barkTransition.body .reverted (immStore v) := by
-                      simpa [evmSolm] using
+                      simpa [evmStele] using
                         (dogBarkVatIlksDecodeRevertSourceBody (v := v)
                           (σ := σ) (σ₀ := σ₀) (A := A)
-                          (I := I) (g := g) (evmUrns := evmPostSolm)
-                          (evmIlks := evmIlksPostSolm) (out := out)
-                          (outIlks := outIlks) hwv hliveSolm hvatCode hcallSolm
-                          hdecUrns hvatIlksCode hcallIlksSolm hdecIlks hsz100)
+                          (I := I) (g := g) (evmUrns := evmPostStele)
+                          (evmIlks := evmIlksPostStele) (out := out)
+                          (outIlks := outIlks) hwv hliveStele hvatCode hcallStele
+                          hdecUrns hvatIlksCode hcallIlksStele hdecIlks hsz100)
                     exact hrev.reEquivExecutionRevert hcode hdispatch hdecode hbody
             · have hretShort : out.size < 64 := Nat.lt_of_not_ge hretLong
               have hrev := RD.dogBarkVatUrnsReturnDecodeShortReverts hpatch rd3026
@@ -28757,13 +28757,13 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
               have hdec : config.externalABI.decode? "urns" out = none :=
                 barkVatUrnsDecode_none_short hretShort
               have hbody :
-                  ExecTransitionBody config contract evmSolm (barkLocals I)
+                  ExecTransitionBody config contract evmStele (barkLocals I)
                     barkTransition.body .reverted (immStore v) := by
-                simpa [evmSolm] using
+                simpa [evmStele] using
                   (dogBarkVatUrnsDecodeRevertSourceBody (v := v)
                     (σ := σ) (σ₀ := σ₀) (A := A)
-                    (I := I) (g := g) (evmCall := evmPostSolm) (out := out)
-                    hwv hliveSolm hvatCode hcallSolm hdec)
+                    (I := I) (g := g) (evmCall := evmPostStele) (out := out)
+                    hwv hliveStele hvatCode hcallStele hdec)
               exact hrev.reEquivExecutionRevert hcode hdispatch hdecode hbody
         · have hdepth1024 : I.depth = 1024 := by
             apply Fin.ext
@@ -28800,14 +28800,14 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
               (dogBarkVatUrnsCallFailureSourceBody (v := v)
                 (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
                 (g := g) (evmCall := evmCall) (out := ByteArray.empty)
-                hwv hliveSolm hvatCode hcallDepth)
+                hwv hliveStele hvatCode hcallDepth)
           exact hrev.reEquivExecutionRevert hcode hdispatch hdecode hbody
     · have hslotWord :
           solcSlotWordAt ⟨3⟩ σ I = solcSlotWordAt ⟨3⟩ σ I :=
         rfl
-      have hliveSolm : solcSlotWordAt ⟨3⟩ σ I ≠ ⟨1⟩ := by
-        intro hsolm
-        exact hliveEvm (by rw [hslotWord, hsolm])
+      have hliveStele : solcSlotWordAt ⟨3⟩ σ I ≠ ⟨1⟩ := by
+        intro hstele
+        exact hliveEvm (by rw [hslotWord, hstele])
       let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
       have hbody :
           ExecTransitionBody config contract evm0 (barkLocals I)
@@ -28817,7 +28817,7 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
             (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
             (g := Sat256.ofUInt256 g) (locals := barkLocals I)
             (rest := barkBodyRest.drop 1)
-            (barkLocals_get_live I) hwv hliveSolm
+            (barkLocals_get_live I) hwv hliveStele
       have hrev := RD.dogBarkLiveRevert hpatch hbodyReach
         (by simpa [solcSlotWordAt] using hliveEvm)
         (by simp only [List.length_cons, List.length_nil]; omega)

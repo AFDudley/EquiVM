@@ -1,14 +1,14 @@
 import Benchmarks.UniswapV4PoolManager.PositionStorage
 import Benchmarks.UniswapV4PoolManager.PositionKeySource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 
 abbrev positionGetFunction : FunctionDecl := contract.functions[65]!
 theorem positionGet_lookup : lookupCallable? contract "Position_get" = some positionGetFunction.toCallable := rfl
 def positionGetReturnAlias : Ident :=
-  "__solm_storage_ref._@.Benchmarks.UniswapV4PoolManager.SpecSyntax.2010301240._hygCtx._hyg.18"
+  "__stele_storage_ref._@.Benchmarks.UniswapV4PoolManager.SpecSyntax.2010301240._hygCtx._hyg.18"
 
 theorem positionGetBody {f : Frame} {evm : EVM.State} {id : UInt256} {owner : AccountAddress}
     {lower upper salt : UInt256} (hf : f.contract = contract)

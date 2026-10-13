@@ -3,7 +3,7 @@ import Benchmarks.UniswapV3.Pool.TickSqrtModel
 import Benchmarks.UniswapV3.Pool.WordComplements
 import Benchmarks.UniswapV3.Pool.SignedComparison
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
 

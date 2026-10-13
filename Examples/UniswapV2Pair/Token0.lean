@@ -1,7 +1,7 @@
 import Examples.UniswapV2Pair.Dispatch
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -15,14 +15,14 @@ def token0Word (σ : AccountMap) (I : ExecutionEnv) : UInt256 :=
 abbrev token0ReturnWord (σ : AccountMap) (I : ExecutionEnv) : UInt256 :=
   solcAddressSlotWord ⟨6⟩ σ I
 
-/-- The Solm `token0()` body returns the address stored in slot 6. -/
+/-- The Stele `token0()` body returns the address stored in slot 6. -/
 theorem uniswapToken0BodyReturns (evm : EVM.State) (locals : Store)
     (h : evm.executionEnv.weiValue = ⟨0⟩)
     (hlocals : locals.get? "token0" = none) :
     ExecTransitionBody config contract evm locals token0Transition.body
       (.returned { contract := contract, locals := locals } evm
         (some [(.address (AccountAddress.ofNat
-          (UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨6⟩)
+          (UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨6⟩)
             solcAddrMask).toNat))])) := by
   simpa [token0Transition] using
     uniswapAddressGetterBodyReturns (slot := ⟨6⟩) (ref := token0Ref)
@@ -66,7 +66,7 @@ theorem uniswapToken0BodyCore
         (.returned { contract := contract, locals := ∅ }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.address (AccountAddress.ofNat (token0ReturnWord σ I).toNat))])) := by
-    simpa [token0Word, token0ReturnWord, initState, Solm.EVM.storageLoad, State.lookupAccount]
+    simpa [token0Word, token0ReturnWord, initState, Stele.EVM.storageLoad, State.lookupAccount]
       using uniswapToken0BodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
         (by simp only [initState]; exact hwv) (by simp)

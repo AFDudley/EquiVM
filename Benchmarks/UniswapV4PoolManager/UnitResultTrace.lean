@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.CallComposition
 import Reasoning.Dispatch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 -- LIBRARY CANDIDATE: continuation and complete traces for source functions returning no values.

@@ -4,14 +4,14 @@ import Benchmarks.Auction.InitializerStorage
 import Benchmarks.Auction.CallState
 import Benchmarks.Auction.SettleSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Auction
 
 
 def settledState (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨211⟩
-    (setBoolTrueOffset20Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨211⟩))
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨211⟩
+    (setBoolTrueOffset20Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨211⟩))
 
 def settledAccounts (σ : AccountMap) (I : ExecutionEnv) : AccountMap :=
   sstoreAccountMap I.codeOwner σ ⟨211⟩ (setBoolTrueOffset20Word (solcSlotWord σ I ⟨211⟩))
@@ -35,7 +35,7 @@ theorem settleStoreSource {evm locals} (ha : locals.get? "auction" = none) :
 
 theorem SourceState.settled {s0 I σ evm} (hs : SourceState s0 I σ evm) :
     SourceState s0 I (settledAccounts σ I) (settledState evm) := by
-  have hw : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨211⟩ =
+  have hw : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨211⟩ =
       solcSlotWord σ I ⟨211⟩ := by
     exact hs.storageRead _
   unfold settledState settledAccounts

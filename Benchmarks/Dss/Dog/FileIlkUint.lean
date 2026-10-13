@@ -2,7 +2,7 @@ import Benchmarks.Dss.Dog.Dispatch
 import Reasoning.MemCascade
 import Reasoning.ABIComposite
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Dog.Immutables
 
 set_option maxHeartbeats 0
@@ -266,7 +266,7 @@ theorem assign_fileIlkUintChopStorage {v : DogImmutables} (evm : EVM.State)
     (data : UInt256)
     (hbase : locals.get? "ilks" = none)
     (hilk : locals.get? "ilk" = some (fileIlkUintIlkValue I)) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner
       (fileIlkUintChopSlotFor I) data
     assignStorageRef? config { contract := contract, locals := locals, immutables := immStore v } evm
       .storage (ilksF (.var "ilk") "chop") (.int (Int.ofNat data.toNat)) =
@@ -304,7 +304,7 @@ theorem assign_fileIlkUintHoleStorage {v : DogImmutables} (evm : EVM.State)
     (data : UInt256)
     (hbase : locals.get? "ilks" = none)
     (hilk : locals.get? "ilk" = some (fileIlkUintIlkValue I)) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner
       (fileIlkUintHoleSlotFor I) data
     assignStorageRef? config { contract := contract, locals := locals, immutables := immStore v } evm
       .storage (ilksF (.var "ilk") "hole") (.int (Int.ofNat data.toNat)) =
@@ -346,7 +346,7 @@ theorem fileIlkUintChopSourceBodySplit {v : DogImmutables} {σ σ₀ A I}
     (hge : (1000000000000000000 : Nat) ≤ (fileIlkUintData I).toNat) :
     let locals := fileIlkUintLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-    let evm1 := Solm.EVM.storageStore evm0 I.codeOwner
+    let evm1 := Stele.EVM.storageStore evm0 I.codeOwner
       (fileIlkUintChopSlotFor I) (fileIlkUintData I)
     (ExecTransitionBody config contract evm0 locals fileIlkUintTransition.body
       (.returned { contract := contract, locals := locals, immutables := immStore v } evm1 none) (immStore v)) ∧
@@ -411,7 +411,7 @@ theorem fileIlkUintChopSourceBody {v : DogImmutables} {σ σ₀ A I}
     (hge : (1000000000000000000 : Nat) ≤ (fileIlkUintData I).toNat) :
     let locals := fileIlkUintLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-    let evm1 := Solm.EVM.storageStore evm0 I.codeOwner
+    let evm1 := Stele.EVM.storageStore evm0 I.codeOwner
       (fileIlkUintChopSlotFor I) (fileIlkUintData I)
     ExecTransitionBody config contract evm0 locals fileIlkUintTransition.body
       (.returned { contract := contract, locals := locals, immutables := immStore v } evm1 none) (immStore v) :=
@@ -467,7 +467,7 @@ theorem fileIlkUintHoleSourceBodySplit {v : DogImmutables} {σ σ₀ A I}
     (hwhat : fileIlkUintWhat I = fileIlkUintHoleBytes) :
     let locals := fileIlkUintLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-    let evm1 := Solm.EVM.storageStore evm0 I.codeOwner
+    let evm1 := Stele.EVM.storageStore evm0 I.codeOwner
       (fileIlkUintHoleSlotFor I) (fileIlkUintData I)
     (ExecTransitionBody config contract evm0 locals fileIlkUintTransition.body
       (.returned { contract := contract, locals := locals, immutables := immStore v } evm1 none) (immStore v)) ∧
@@ -1503,7 +1503,7 @@ theorem dogFileIlkUintBodyCoreOk
     rw [show fileIlkUintTransition.returnType = [] by rfl]
     exact returnEquiv.fallthrough rfl (by rfl) (by native_decide)
   by_cases hauthEvm : solcSlotWordAt callerSlot σ I = ⟨1⟩
-  · have hauthSolm : solcSlotWordAt callerSlot σ I = ⟨1⟩ := hauthEvm
+  · have hauthStele : solcSlotWordAt callerSlot σ I = ⟨1⟩ := hauthEvm
     have hauthSolc :
         solcSlotWord σ I (solcMappingSlot ⟨0⟩ (solcSourceWord I)) = ⟨1⟩ := by
       simpa [callerSlot, dogCallerWardsSlot, solcSlotWordAt] using hauthEvm
@@ -1529,7 +1529,7 @@ theorem dogFileIlkUintBodyCoreOk
           simpa [evm0, locals, data] using
             (fileIlkUintChopLtWadSourceBody (v := v)
               (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
-              hwv hauthSolm hwhatChop (by simpa [data] using hltWad))
+              hwv hauthStele hwhatChop (by simpa [data] using hltWad))
         have hrev := RD.dogFileIlkUintChopLtWadRevert
           (v := v) (code := code) (data := data) (what := fileIlkUintWhatWord I)
           (ilk := fileIlkUintIlkWord I) (ret := ⟨313⟩) (sel := sel) (R := [])
@@ -1540,7 +1540,7 @@ theorem dogFileIlkUintBodyCoreOk
         let actualSlot := solcMappingSlot ⟨1⟩ (fileIlkUintIlkWord I) + ⟨1⟩
         let sourceSlot := fileIlkUintChopSlotFor I
         let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-        let evm1 := Solm.EVM.storageStore evm0 I.codeOwner sourceSlot data
+        let evm1 := Stele.EVM.storageStore evm0 I.codeOwner sourceSlot data
         have hslotEq : actualSlot = sourceSlot := by
           simpa [actualSlot, sourceSlot] using
             (fileIlkUintChopSlotFor_eq (I := I) hsz100).symm
@@ -1553,7 +1553,7 @@ theorem dogFileIlkUintBodyCoreOk
           simpa [evm0, evm1, locals, data, sourceSlot] using
             (fileIlkUintChopSourceBodySplit (v := v)
               (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
-              hwv hsz100 hauthSolm hwhatChop (by simpa [data] using hgeWad))
+              hwv hsz100 hauthStele hwhatChop (by simpa [data] using hgeWad))
         rcases RD.dogFileIlkUintStoreChopLogSplit
           (v := v) (code := code) (data := data) (what := fileIlkUintWhatWord I)
           (ilk := fileIlkUintIlkWord I) (ret := ⟨313⟩) (sel := sel) (R := [])
@@ -1596,7 +1596,7 @@ theorem dogFileIlkUintBodyCoreOk
         let actualSlot := solcMappingSlot ⟨1⟩ (fileIlkUintIlkWord I) + ⟨2⟩
         let sourceSlot := fileIlkUintHoleSlotFor I
         let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-        let evm1 := Solm.EVM.storageStore evm0 I.codeOwner sourceSlot data
+        let evm1 := Stele.EVM.storageStore evm0 I.codeOwner sourceSlot data
         have hslotEq : actualSlot = sourceSlot := by
           simpa [actualSlot, sourceSlot] using
             (fileIlkUintHoleSlotFor_eq (I := I) hsz100).symm
@@ -1609,7 +1609,7 @@ theorem dogFileIlkUintBodyCoreOk
           simpa [evm0, evm1, locals, data, sourceSlot] using
             (fileIlkUintHoleSourceBodySplit (v := v)
               (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
-              hwv hsz100 hauthSolm hwhatChop hwhatHole)
+              hwv hsz100 hauthStele hwhatChop hwhatHole)
         rcases RD.dogFileIlkUintStoreHoleLogSplit
           (v := v) (code := code) (data := data) (what := fileIlkUintWhatWord I)
           (ilk := fileIlkUintIlkWord I) (ret := ⟨313⟩) (sel := sel) (R := [])
@@ -1652,15 +1652,15 @@ theorem dogFileIlkUintBodyCoreOk
           simpa [evm0, locals] using
             (fileIlkUintUnrecognizedSourceBody (v := v)
               (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
-              hwv hauthSolm hwhatChop hwhatHole)
+              hwv hauthStele hwhatChop hwhatHole)
         have hrev := RD.dogFileIlkUintUnrecognizedRevert
           (v := v) (code := code) (data := data) (what := fileIlkUintWhatWord I)
           (ilk := fileIlkUintIlkWord I) (ret := ⟨313⟩) (sel := sel) (R := [])
           hpatch hswitch hnotChopWord hnotHoleWord hmemAuth hread64Auth (by simp)
         exact hrev.reEquivExecutionRevert hcode hdispatch hdecode hbody
-  · have hauthSolm : solcSlotWordAt callerSlot σ I ≠ ⟨1⟩ := by
-      intro hsolm
-      exact hauthEvm hsolm
+  · have hauthStele : solcSlotWordAt callerSlot σ I ≠ ⟨1⟩ := by
+      intro hstele
+      exact hauthEvm hstele
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     have hbody :
         ExecTransitionBody config contract evm0 locals fileIlkUintTransition.body
@@ -1668,9 +1668,9 @@ theorem dogFileIlkUintBodyCoreOk
       have hguard := dogAuthGuardEval_false (v := v)
         (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
         (g := Sat256.ofUInt256 g) (locals := locals)
-        (by simp [locals, fileIlkUintLocals]) hauthSolm
+        (by simp [locals, fileIlkUintLocals]) hauthStele
       have hblock := nonpayableSecondRequireReverts
-        (cfg := config) (solm := { contract := contract, locals := locals, immutables := immStore v })
+        (cfg := config) (stele := { contract := contract, locals := locals, immutables := immStore v })
         (evm := evm0)
         (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
         (rest := [

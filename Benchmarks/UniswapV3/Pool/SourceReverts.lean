@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.SourceWordArithmetic
 import Benchmarks.UniswapV3.Pool.ArrayStorage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 -- LIBRARY CANDIDATE: zero-denominator remainder in arbitrary source frames.

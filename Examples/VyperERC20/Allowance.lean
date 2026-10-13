@@ -1,7 +1,7 @@
 import Reasoning.WordArithmetic
 import Examples.VyperERC20.BalanceOf
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option linter.unusedSimpArgs false
@@ -105,7 +105,7 @@ theorem erc20AllowanceBodyReturns (evm : EVM.State) (I : ExecutionEnv)
       ERC20.allowanceTransition.body
       (.returned { contract := erc20Contract, locals := allowanceStore I } evm
         (some [(.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (allowanceSlot I)).toNat))])) := by
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (allowanceSlot I)).toNat))])) := by
   have hgowner := allowanceStore_owner_getElem? I
   have hgspender := allowanceStore_spender_getElem? I
   have her : evalStorageRef vyperERC20Config { contract := erc20Contract, locals := allowanceStore I }
@@ -790,7 +790,7 @@ theorem erc20AllowanceBodyCore
         (.returned { contract := erc20Contract, locals := allowanceStore I }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.int (Int.ofNat (allowanceWord σ I).toNat))])) := by
-    simpa [allowanceWord, allowanceSlot, initState, Solm.EVM.storageLoad,
+    simpa [allowanceWord, allowanceSlot, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using erc20AllowanceBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) I
         (by simp only [initState]; exact hwv)

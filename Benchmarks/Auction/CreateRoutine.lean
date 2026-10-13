@@ -3,7 +3,7 @@ import Benchmarks.Auction.CreateCatch
 import Benchmarks.Auction.MintRoutine
 import Benchmarks.Auction.NounSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Auction
 

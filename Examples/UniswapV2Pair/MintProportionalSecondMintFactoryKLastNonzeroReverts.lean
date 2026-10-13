@@ -1,6 +1,6 @@
 import Examples.UniswapV2Pair.MintProportionalSecondMintFactoryReverts
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -21,8 +21,8 @@ theorem uniswapMintProportionalFeeOffKLastNonzeroSecondMintTotalSupplyOverflowFr
     (hsz36 : 36 ≤ I.calldata.size)
     (hperm : I.perm = true)
     (hwv : I.weiValue = ⟨0⟩)
-    (hunlockedSolm :
-      Solm.EVM.storageLoad
+    (hunlockedStele :
+      Stele.EVM.storageLoad
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
           ⟨12⟩ =
@@ -239,7 +239,7 @@ theorem uniswapMintProportionalFeeOffKLastNonzeroSecondMintTotalSupplyOverflowFr
     simpa [evmL, evmS] using hamount1Eq
   exact uniswapMintProportionalSecondMintTotalSupplyOverflowFromAfterFeeCase
     nextFrame.locals (AccountAddress.ofNat (mintToWord I).toNat)
-    hcode hdispatch hsz36 hwv hunlockedSolm hguard0 hguard1 hcall0 hdec0 hcall1
+    hcode hdispatch hsz36 hwv hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1
     hdec1 hle0Source hle1Source
     (by
       simpa [nextFrame, evmL, evmS, evmAfterFee, resumeAfterInternalCall] using
@@ -278,8 +278,8 @@ theorem uniswapMintProportionalFeeOffKLastNonzeroSecondMintBalanceOverflowFromFa
     (hsz36 : 36 ≤ I.calldata.size)
     (hperm : I.perm = true)
     (hwv : I.weiValue = ⟨0⟩)
-    (hunlockedSolm :
-      Solm.EVM.storageLoad
+    (hunlockedStele :
+      Stele.EVM.storageLoad
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
           ⟨12⟩ =
@@ -507,7 +507,7 @@ theorem uniswapMintProportionalFeeOffKLastNonzeroSecondMintBalanceOverflowFromFa
     simpa [evmL, evmS] using hamount1Eq
   exact uniswapMintProportionalSecondMintBalanceOverflowFromAfterFeeCase
     nextFrame.locals (AccountAddress.ofNat (mintToWord I).toNat)
-    hcode hdispatch hsz36 hperm hwv hunlockedSolm hguard0 hguard1 hcall0 hdec0 hcall1
+    hcode hdispatch hsz36 hperm hwv hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1
     hdec1 hle0Source hle1Source
     (by
       simpa [nextFrame, evmL, evmS, evmAfterFee, resumeAfterInternalCall] using
@@ -547,8 +547,8 @@ theorem uniswapMintProportionalFeeOffKLastNonzeroUpdateBoundFromFactoryCases
     (hsz36 : 36 ≤ I.calldata.size)
     (hperm : I.perm = true)
     (hwv : I.weiValue = ⟨0⟩)
-    (hunlockedSolm :
-      Solm.EVM.storageLoad
+    (hunlockedStele :
+      Stele.EVM.storageLoad
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
           ⟨12⟩ =
@@ -818,7 +818,7 @@ theorem uniswapMintProportionalFeeOffKLastNonzeroUpdateBoundFromFactoryCases
   rcases hupdateBound with hfail0 | ⟨hfit0, hfail1⟩
   · exact uniswapMintProportionalUpdateFirstBoundFromAfterFeeCase
       nextFrame.locals (AccountAddress.ofNat (mintToWord I).toNat)
-      hcode hdispatch hsz36 hwv hunlockedSolm hguard0 hguard1 hcall0 hdec0 hcall1
+      hcode hdispatch hsz36 hwv hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1
       hdec1 hle0Source hle1Source hfee hbase hto hamount0 hamount1 hbalance0 hbalance1
       hreserve0 hreserve1 htotalEq htotalSlot htotalNonzero hmulFit0 hmulFit1
       hreserve0Nonzero hreserve1Nonzero (by simpa using hliquidity) hliqNonzero
@@ -827,7 +827,7 @@ theorem uniswapMintProportionalFeeOffKLastNonzeroUpdateBoundFromFactoryCases
       hruntimeSupplyFit hruntimeBalanceFit hfail0 hmem hmem64
   · exact uniswapMintProportionalUpdateSecondBoundFromAfterFeeCase
       nextFrame.locals (AccountAddress.ofNat (mintToWord I).toNat)
-      hcode hdispatch hsz36 hwv hunlockedSolm hguard0 hguard1 hcall0 hdec0 hcall1
+      hcode hdispatch hsz36 hwv hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1
       hdec1 hle0Source hle1Source hfee hbase hto hamount0 hamount1 hbalance0 hbalance1
       hreserve0 hreserve1 htotalEq htotalSlot htotalNonzero hmulFit0 hmulFit1
       hreserve0Nonzero hreserve1Nonzero (by simpa using hliquidity) hliqNonzero

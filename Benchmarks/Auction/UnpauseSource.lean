@@ -1,21 +1,21 @@
 import Benchmarks.Auction.PausableSource
 import Benchmarks.Auction.SettleStorage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Auction
 
 def unpauseWord (word : UInt256) : UInt256 := UInt256.land word (UInt256.lnot ⟨255⟩)
 
 def unpauseState (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨51⟩
-    (unpauseWord (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨51⟩))
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨51⟩
+    (unpauseWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨51⟩))
 
 theorem SourceState.unpause {s0 I σ evm} (hs : SourceState s0 I σ evm) :
     SourceState s0 I
       (sstoreAccountMap I.codeOwner σ ⟨51⟩ (unpauseWord (solcSlotWord σ I ⟨51⟩)))
       (unpauseState evm) := by
-  have hw : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨51⟩ =
+  have hw : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨51⟩ =
       solcSlotWord σ I ⟨51⟩ := by
     exact hs.storageRead _
   unfold unpauseState

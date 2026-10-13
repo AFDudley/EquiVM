@@ -1,19 +1,19 @@
-import Solm.SolidityStorage
+import Stele.SolidityStorage
 import Reasoning.EVMWord
-import Solm.Semantics
-import Solm.SolidityLayout
+import Stele.Semantics
+import Stele.SolidityLayout
 
 /-!
 # MakerDAO/Sky DSS Jug benchmark spec
 
-Solm benchmark scaffold for upstream `dss/src/jug.sol`.
+Stele benchmark scaffold for upstream `dss/src/jug.sol`.
 
 The source includes a hand-written assembly `_rpow` loop. The scaffold models that loop
-structurally with Solm statements instead of replacing it by an abstract exponentiation. Events are
+structurally with Stele statements instead of replacing it by an abstract exponentiation. Events are
 omitted.
 -/
 
-open Solm ABI Ethereum
+open Stele ABI Ethereum
 
 namespace Benchmarks.Dss.Jug
 

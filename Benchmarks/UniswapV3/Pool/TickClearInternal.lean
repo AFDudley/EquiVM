@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.TickClearTrace
 import Benchmarks.UniswapV3.Pool.TickUpdateMemory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
@@ -38,7 +38,7 @@ theorem tickClearInternalX {σ : AccountMap} {ee : ExecutionEnv} {g : Sat256}
   · obtain ⟨k', C', r'⟩ := tickClearWriteExactX (v := v) tick rd ht.1 ht.2 hp hret hov
     refine Or.inr ⟨?_, k', C', SourceState.tickClear hs tick, ?_, HeapMemory.twoWordHash hm _ _⟩
     · exact internalCallFunctionReturn (callee := tickClearFunction)
-        (calleeSolm := tickClearFrame (immStore v) tick) (value := none)
+        (calleeStele := tickClearFrame (immStore v) tick) (value := none)
         he hl (tickClearBind tick) (by rw [hc]; exact tickClearReturns (immStore v) evm tick)
     · change RD (deployedRuntime v) ee g s0 ret R (twoWordHashMem (EVM.wordOfInt tick) ⟨5⟩ mem)
         (tickUpdateMemoryWords aw) rdata _ k' C' at r'

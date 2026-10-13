@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.TickCrossModel
 import Benchmarks.UniswapV3.Pool.TickUpdateStorage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 def tickCrossOutsideWord (a : TickCrossArgs) (old : UInt256) : UInt256 :=

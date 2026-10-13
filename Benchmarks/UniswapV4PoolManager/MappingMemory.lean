@@ -3,7 +3,7 @@ import Benchmarks.UniswapV4PoolManager.EntryTrace
 
 /-! Scratch memory used by PoolManager mapping getters. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.UniswapV4PoolManager.Immutables
 

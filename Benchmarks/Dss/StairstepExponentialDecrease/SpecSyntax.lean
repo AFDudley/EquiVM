@@ -1,8 +1,8 @@
 import Benchmarks.Dss.StairstepExponentialDecrease.Spec
-import Solm.Notation
+import Stele.Notation
 
 /-!
-# StairstepExponentialDecrease spec in the Solidity-faithful Solm frontend
+# StairstepExponentialDecrease spec in the Solidity-faithful Stele frontend
 
 The whole `abaci.sol` `StairstepExponentialDecrease` spec (including the `rpow` while-loop and
 the two-way `file`) written with `solidity%` and proven definitionally equal to the AST spec in
@@ -10,7 +10,7 @@ the two-way `file`) written with `solidity%` and proven definitionally equal to 
 literals; `#RAY` is the spec's `RAY` constant.  Transition order matches `contract.transitions`.
 -/
 
-open Solm Solm.Notation Benchmarks.Dss.StairstepExponentialDecrease
+open Stele Stele.Notation Benchmarks.Dss.StairstepExponentialDecrease
 
 namespace Benchmarks.Dss.StairstepExponentialDecrease.Syntax
 

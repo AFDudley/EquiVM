@@ -1,7 +1,7 @@
 import Benchmarks.CompoundIII.Comet.ConstructorRuntimeEvm
 import Benchmarks.CompoundIII.Comet.ConstructorAssetsSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
 
 namespace Benchmarks.CompoundIII.Comet
 

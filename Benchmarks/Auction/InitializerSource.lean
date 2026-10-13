@@ -2,7 +2,7 @@ import Reasoning.Storage
 import Benchmarks.Auction.InitializerStorage
 import Benchmarks.Auction.SetterSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Auction
 
@@ -61,12 +61,12 @@ theorem evalInitializerGuardFalse (evm : EVM.State) (locals : Store)
     EvalResult.bind, bind, evalUnaryOp?, EvalResult.ofOption, pure]
 
 def setInitializingState (evm : EVM.State) (value : Bool) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨0⟩
-    (setBoolOffset1Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩) value)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨0⟩
+    (setBoolOffset1Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩) value)
 
 def setInitializedState (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨0⟩
-    (UInt256.lor (UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨0⟩
+    (UInt256.lor (UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
       (UInt256.lnot ⟨255⟩)) ⟨1⟩)
 
 def initializerEnteredState (evm : EVM.State) : EVM.State :=

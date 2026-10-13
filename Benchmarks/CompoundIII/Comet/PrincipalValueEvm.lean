@@ -3,7 +3,7 @@ import Benchmarks.CompoundIII.Comet.PrincipalBorrowEvm
 import Benchmarks.CompoundIII.Comet.SignedNegation
 import Reasoning.ExternalCall
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
 open Benchmarks.CompoundIII.Comet.Immutables cometWithExtendedAssetListBlocks
 
 namespace Benchmarks.CompoundIII.Comet
@@ -20,14 +20,14 @@ theorem cometPrincipalValue {v : CometWithExtendedAssetListImmutables}
       (principalValueWord evm present :: R) mem aw rdata σ k' C') ∨
     (¬ PrincipalValueFits evm present ∧ RDrev (deployedRuntime v) g s0) := by
   have hw0 : solcSlotWordAt (UInt256.ofNat 0) σ ee =
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩ := by
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩ := by
     simpa only [hs.env] using (hs.storageRead ⟨0⟩).symm
   have hiS : principalValueIndex evm false = UInt256.land
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
       (UInt256.sub (UInt256.shiftLeft (UInt256.ofNat 1) (UInt256.ofNat 64))
         (UInt256.ofNat 1)) := totalsIndexWord_eq _ false
   have hiB : principalValueIndex evm true = UInt256.land
-      (UInt256.shiftRight (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
+      (UInt256.shiftRight (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
         (UInt256.ofNat 64))
       (UInt256.sub (UInt256.shiftLeft (UInt256.ofNat 1) (UInt256.ofNat 64))
         (UInt256.ofNat 1)) := totalsIndexWord_eq _ true

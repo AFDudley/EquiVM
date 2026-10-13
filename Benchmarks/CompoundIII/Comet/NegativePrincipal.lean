@@ -1,7 +1,7 @@
 import Benchmarks.CompoundIII.Comet.PrincipalWords
 import Benchmarks.CompoundIII.Comet.NarrowArithmetic
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 
@@ -114,10 +114,10 @@ theorem signextend104_eq_min_iff (w : UInt256) :
     omega
 
 -- LIBRARY CANDIDATE: checked negation of a bounded signed integer.
-theorem checkedPrincipalNegSource {cfg solm evm expr w}
-    (he : evalExpr? cfg solm evm expr = .ok (.int (signed104 w)))
+theorem checkedPrincipalNegSource {cfg stele evm expr w}
+    (he : evalExpr? cfg stele evm expr = .ok (.int (signed104 w)))
     (hp : signed104 w < 0) (hmin : -(2^103 : Int) < signed104 w) :
-    evalExpr? cfg solm evm
+    evalExpr? cfg stele evm
       (.inRange (.sint ⟨104, by decide⟩) (.binary .sub (.intLit 0) expr)) =
       .ok (.int (negativePrincipal w).toNat) := by
   have h0 : ¬ (0 - signed104 w) < -(2^103 : Int) := by omega
@@ -130,10 +130,10 @@ theorem checkedPrincipalNegSource {cfg solm evm expr w}
   rw [negativePrincipal_int (le_of_lt hp)]
   omega
 
-theorem checkedPrincipalNegSource_revert {cfg solm evm expr w}
-    (he : evalExpr? cfg solm evm expr = .ok (.int (signed104 w)))
+theorem checkedPrincipalNegSource_revert {cfg stele evm expr w}
+    (he : evalExpr? cfg stele evm expr = .ok (.int (signed104 w)))
     (hmin : signed104 w = -(2^103 : Int)) :
-    evalExpr? cfg solm evm
+    evalExpr? cfg stele evm
       (.inRange (.sint ⟨104, by decide⟩) (.binary .sub (.intLit 0) expr)) = .revert := by
   simp only [evalExpr?, he, pure, bind, EvalResult.bind, evalBinaryOp?, hmin]
   rfl

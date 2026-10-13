@@ -3,7 +3,7 @@ import Reasoning.Immutables
 import Tests.Pipeline.Vault.Bytecode
 import Tests.Pipeline.Vault.ImmutableCode
 
-open Solm ABI Ethereum Ethereum.EVM
+open Stele ABI Ethereum Ethereum.EVM
 open Reasoning.Theory Reasoning.Reach
 
 namespace vaultBlocks

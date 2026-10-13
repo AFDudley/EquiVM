@@ -2,7 +2,7 @@ import Benchmarks.Dss.Vow.HealSuccess
 import Benchmarks.Dss.Vow.VatDaiCall
 import Benchmarks.Dss.Vow.VatSinCall
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -55,7 +55,7 @@ theorem evalExpr_flopSumpStorage (evm : EVM.State) {locals : Store}
     (hbase : locals.get? "sump" = none) :
     evalExpr? config { contract := contract, locals := locals } evm (.storage sumpRef) =
       .ok (.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨9⟩).toNat)) := by
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨9⟩).toNat)) := by
   rw [evalExpr_storage_scalar (hbackend := rfl) (er := flopSumpEvaledRef) (t := .int uint256Int)
     (loc := wordLoc ⟨9⟩)]
   · exact congrArg EvalResult.ok (storageLocLoad_uint256 _ ⟨9⟩)
@@ -928,7 +928,7 @@ theorem vowFlopSourceFreeSinUnderflow
       config.externalABI.decode? "sin" outSin =
         some [.int (Int.ofNat vatSin.toNat)])
     (hSinLoad :
-      Solm.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨5⟩ = SinVal)
+      Stele.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨5⟩ = SinVal)
     (hlt : vatSin.toNat < SinVal.toNat) :
     let locals := (∅ : Store)
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
@@ -1015,11 +1015,11 @@ theorem vowFlopSourceDebtUnderflow
       config.externalABI.decode? "sin" outSin =
         some [.int (Int.ofNat vatSin.toNat)])
     (hSinLoad :
-      Solm.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨5⟩ = SinVal)
+      Stele.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨5⟩ = SinVal)
     (hfree : freeSin = UInt256.sub vatSin SinVal)
     (hfreeOk : SinVal.toNat ≤ vatSin.toNat)
     (hAshLoad :
-      Solm.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨6⟩ = AshVal)
+      Stele.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨6⟩ = AshVal)
     (hlt : freeSin.toNat < AshVal.toNat) :
     let locals := (∅ : Store)
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
@@ -1082,7 +1082,7 @@ theorem vowFlopSourceDebtUnderflow
         (args := [.var "vatSin", .storage SinRef])
         (argVals := [.int (Int.ofNat vatSin.toNat), .int (Int.ofNat SinVal.toNat)])
         (callee := subFunction) (locals := uintBinaryLocals vatSin SinVal)
-        (calleeSolm := { contract := contract, locals := uintBinaryLocalsZ vatSin SinVal freeSin })
+        (calleeStele := { contract := contract, locals := uintBinaryLocalsZ vatSin SinVal freeSin })
         (value := some [.int (Int.ofNat freeSin.toNat)]) hargsFree (by rfl) hbindFree hbody)
   have hfreeVar :
       evalExpr? config { contract := contract, locals := locals2 } evmSin (.var "freeSin") =
@@ -1148,15 +1148,15 @@ theorem vowFlopSourceInsufficientDebt
       config.externalABI.decode? "sin" outSin =
         some [.int (Int.ofNat vatSin.toNat)])
     (hSinLoad :
-      Solm.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨5⟩ = SinVal)
+      Stele.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨5⟩ = SinVal)
     (hfree : freeSin = UInt256.sub vatSin SinVal)
     (hfreeOk : SinVal.toNat ≤ vatSin.toNat)
     (hAshLoad :
-      Solm.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨6⟩ = AshVal)
+      Stele.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨6⟩ = AshVal)
     (hdebt : flopDebt = UInt256.sub freeSin AshVal)
     (hdebtOk : AshVal.toNat ≤ freeSin.toNat)
     (hSumpLoad :
-      Solm.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨9⟩ = SumpVal)
+      Stele.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨9⟩ = SumpVal)
     (hinsuff : flopDebt.toNat < SumpVal.toNat) :
     let locals := (∅ : Store)
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
@@ -1220,7 +1220,7 @@ theorem vowFlopSourceInsufficientDebt
         (args := [.var "vatSin", .storage SinRef])
         (argVals := [.int (Int.ofNat vatSin.toNat), .int (Int.ofNat SinVal.toNat)])
         (callee := subFunction) (locals := uintBinaryLocals vatSin SinVal)
-        (calleeSolm := { contract := contract, locals := uintBinaryLocalsZ vatSin SinVal freeSin })
+        (calleeStele := { contract := contract, locals := uintBinaryLocalsZ vatSin SinVal freeSin })
         (value := some [.int (Int.ofNat freeSin.toNat)]) hargsFree (by rfl) hbindFree hbody)
   have hfreeVar :
       evalExpr? config { contract := contract, locals := locals2 } evmSin (.var "freeSin") =
@@ -1259,7 +1259,7 @@ theorem vowFlopSourceInsufficientDebt
         (args := [.var "freeSin", .storage AshRef])
         (argVals := [.int (Int.ofNat freeSin.toNat), .int (Int.ofNat AshVal.toNat)])
         (callee := subFunction) (locals := uintBinaryLocals freeSin AshVal)
-        (calleeSolm := { contract := contract, locals := uintBinaryLocalsZ freeSin AshVal flopDebt })
+        (calleeStele := { contract := contract, locals := uintBinaryLocalsZ freeSin AshVal flopDebt })
         (value := some [.int (Int.ofNat flopDebt.toNat)]) hargsDebt (by rfl) hbindDebt hbody)
   have hsump :
       evalExpr? config { contract := contract, locals := locals3 } evmSin (.storage sumpRef) =
@@ -1307,7 +1307,7 @@ theorem vowFlopVatSin0NoCodeBodyCore
       Reasoning.Theory.extCodeSizeWord σ (kissDaiTargetWord σ I) = ⟨0⟩) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   have hrev := RD.vowFlopVatSin0NoCode hreach hcodeSize
-  have hcodeSizeSolm :
+  have hcodeSizeStele :
       Reasoning.Theory.extCodeSizeWord σ (kissDaiTargetWord σ I) = ⟨0⟩ := hcodeSize
   have haddr :
       kissVatAddress σ I =
@@ -1320,7 +1320,7 @@ theorem vowFlopVatSin0NoCodeBodyCore
     simpa [initState, State.lookupAccount] using
       extCodeSizeWord_zero_lookup_code_zero
         (σ := σ) (target := kissDaiTargetWord σ I)
-        (addr := kissVatAddress σ I) haddr hcodeSizeSolm
+        (addr := kissVatAddress σ I) haddr hcodeSizeStele
   have hbody := vowFlopSourceVatSin0NoCode
     (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hvatNoCode
   exact hrev.reEquivExecutionRevert hcode hdispatch hdecode (by simpa using hbody)
@@ -1448,7 +1448,7 @@ theorem vowFlopFreeSinUnderflowBodyCore
         (((initState σ σ₀ (Sat256.ofUInt256 g) A I).lookupAccount
           (kissVatAddress σ I)).option 0 (fun acc => acc.code.size))).toNat)
     (hSinLoad :
-      Solm.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨5⟩ = SinVal)
+      Stele.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨5⟩ = SinVal)
     (hSinEvm : solcSlotWordAt ⟨5⟩ σ'_evm I = SinVal)
     (hlt : vatSin.toNat < SinVal.toNat)
     (hvatSin :
@@ -1533,12 +1533,12 @@ theorem vowFlopDebtUnderflowBodyCore
       config.externalABI.decode? "sin" outSin =
         some [.int (Int.ofNat vatSin.toNat)])
     (hSinLoad :
-      Solm.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨5⟩ =
+      Stele.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨5⟩ =
         solcSlotWordAt ⟨5⟩ acc I)
     (hfree : freeSin = UInt256.sub vatSin (solcSlotWordAt ⟨5⟩ acc I))
     (hfreeOk : (solcSlotWordAt ⟨5⟩ acc I).toNat ≤ vatSin.toNat)
     (hAshLoad :
-      Solm.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨6⟩ =
+      Stele.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨6⟩ =
         solcSlotWordAt ⟨6⟩ acc I) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   have hrev := RD.vowFlopDebtSubUnderflow rd1325 hunder
@@ -1578,17 +1578,17 @@ theorem vowFlopInsufficientDebtBodyCore
       config.externalABI.decode? "sin" outSin =
         some [.int (Int.ofNat vatSin.toNat)])
     (hSinLoad :
-      Solm.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨5⟩ =
+      Stele.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨5⟩ =
         solcSlotWordAt ⟨5⟩ acc I)
     (hfree : freeSin = UInt256.sub vatSin (solcSlotWordAt ⟨5⟩ acc I))
     (hfreeOk : (solcSlotWordAt ⟨5⟩ acc I).toNat ≤ vatSin.toNat)
     (hAshLoad :
-      Solm.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨6⟩ =
+      Stele.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨6⟩ =
         solcSlotWordAt ⟨6⟩ acc I)
     (hdebt : flopDebt = UInt256.sub freeSin (solcSlotWordAt ⟨6⟩ acc I))
     (hdebtOk : (solcSlotWordAt ⟨6⟩ acc I).toNat ≤ freeSin.toNat)
     (hSumpLoad :
-      Solm.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨9⟩ =
+      Stele.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨9⟩ =
         solcSlotWordAt ⟨9⟩ acc I) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   have hrev := RD.vowFlopInsufficientDebt rd3675 hinsuff hmem hread64

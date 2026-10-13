@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.SourceExpressions
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 -- LIBRARY CANDIDATE: narrowing casts checked by equality with the original integer.
@@ -21,7 +21,7 @@ theorem checkedCastReadySource {cfg : Config} (frame : Frame) (evm : EVM.State)
     (hne : output ≠ input) (hy : frame.locals.get? input = some (.int y)) :
     ExecBlock cfg frame evm ((checkedCastBody input output ty).take 2)
       (.ok (checkedCastFrame frame output ty y) evm) := by
-  refine ExecBlock.consNormal (solm' := checkedCastZeroFrame frame output)
+  refine ExecBlock.consNormal (stele' := checkedCastZeroFrame frame output)
     (ExecStmt.letDecl (value := .int 0) (by simp only [evalExpr?, pure])) ?_
   refine ExecBlock.consNormal (ExecStmt.assign (value := .int (normalizeInt ty y)) ?_
     (assignLocalVarBase_frame Std.HashMap.getElem?_insert_self)) ExecBlock.nil

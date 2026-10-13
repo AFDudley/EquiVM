@@ -1,6 +1,6 @@
 import Benchmarks.CompoundIII.Comet.ConstructorSourceChecks
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 
@@ -35,7 +35,7 @@ theorem constructorDecimalsSource_exists (evm : EVM.State) (asset : AccountAddre
 
 theorem cometConstructorOversized_source {σ σ₀ A I} {g : UInt256} {c : ConstructorConfig}
     (hv : I.weiValue = ⟨0⟩) (hn : 24 < c.assetConfigs.length) :
-    solmCtorExec config contract [c.value] σ σ₀ g A I .reverted := by
+    steleCtorExec config contract [c.value] σ σ₀ g A I .reverted := by
   obtain ⟨evm', z, out, hc, ho⟩ :=
     constructorDecimalsSource_exists (initState σ σ₀ (Sat256.ofUInt256 g) A I) c.baseToken
   refine .intro rfl rfl (constructorSourceArgs_bind c) (.execBlockRevert ?_)
@@ -46,7 +46,7 @@ theorem cometConstructorRevert {σ σ₀ A I} {g : UInt256} {c : ConstructorConf
     (hcode : I.code = cometWithExtendedAssetListCreationBytecode ++ c.encodedArgs.toByteArray)
     (hevm : RDrev (cometWithExtendedAssetListCreationBytecode ++ c.encodedArgs.toByteArray)
       (Sat256.ofUInt256 g) (initState σ σ₀ (Sat256.ofUInt256 g) A I))
-    (hsource : solmCtorExec config contract [c.value] σ σ₀ g A I .reverted) :
+    (hsource : steleCtorExec config contract [c.value] σ σ₀ g A I .reverted) :
     typedConstructorRefinementFor config contract [c.value] σ σ₀ g A I
       (immutableLayout.deployed cometWithExtendedAssetListBytecode) := by
   obtain hoog | ⟨s, out, hX⟩ := hevm

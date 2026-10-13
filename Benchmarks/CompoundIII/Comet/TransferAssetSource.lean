@@ -4,7 +4,7 @@ import Benchmarks.CompoundIII.Comet.TransferCollateralSource
 import Benchmarks.CompoundIII.Comet.SafeUintSource
 import Benchmarks.CompoundIII.Comet.AssetDispatchSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.CompoundIII.Comet.Immutables
 
 namespace Benchmarks.CompoundIII.Comet

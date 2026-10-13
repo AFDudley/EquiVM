@@ -3,7 +3,7 @@ import Benchmarks.Safe.Main.WordPairDecoder
 import Benchmarks.Safe.Main.StorageAtLoop
 import Benchmarks.Safe.Main.StorageAtReturn
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.Main

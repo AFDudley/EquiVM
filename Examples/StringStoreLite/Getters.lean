@@ -8,7 +8,7 @@ import Reasoning.Dispatch
 import Reasoning.EVMWord
 import Reasoning.Memory
 import Reasoning.Reach
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 import Reasoning.Solc
 import Reasoning.Storage
 import Mathlib.Tactic.IntervalCases
@@ -22,12 +22,12 @@ The reduced example keeps only one Solidity `string` slot:
 * `clearCurrent()` exercises whole-value storage read plus clear;
 * `currentLength()` exercises the string length read.
 
-This module intentionally stops at cheap Solm-side and dispatch facts. Runtime equivalence proofs
+This module intentionally stops at cheap Stele-side and dispatch facts. Runtime equivalence proofs
 can now be added one function at a time without making the default string smoke test carry the
 old `bytes` duplicate path.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -508,7 +508,7 @@ theorem setSelector_size {I : ExecutionEnv}
   rw [hleft, ByteArray.size_extract] at hs
   omega
 
-/-! ## Solm-side string length facts -/
+/-! ## Stele-side string length facts -/
 
 theorem currentLengthResolve (evm : EVM.State) :
     resolveStorageRef? stringStoreLiteConfig
@@ -545,7 +545,7 @@ theorem currentLengthBodyReverts {evm : EVM.State}
   exact ExecFuncBody.execBlockRevert <|
     (ABlock.start.requireStep (evalCallvalueEq_true hwv)).run
       (ExecBlock.consRevert (ExecStmt.returnRevert (by
-        simp only [Solm.evalExprs?.eq_def, evalExpr?, hresolve,
+        simp only [Stele.evalExprs?.eq_def, evalExpr?, hresolve,
           EvalResult.bind, bind, hlen, pure])))
 
 theorem currentLengthBodyReturnsOfLength {evm : EVM.State} {n : Nat}
@@ -604,17 +604,17 @@ theorem clearCurrentBodyReturnsZero {evm evm' : EVM.State}
         { contract := stringStoreLiteContract,
           locals := (∅ : Store).insert "copy" (.bytes ByteArray.empty) }
         evm' (some [(.int 0)])) := by
-  let solm1 : Frame :=
+  let stele1 : Frame :=
     { contract := stringStoreLiteContract,
       locals := (∅ : Store).insert "copy" (.bytes ByteArray.empty) }
   have hret :
-      evalExpr? stringStoreLiteConfig solm1 evm'
+      evalExpr? stringStoreLiteConfig stele1 evm'
         (.arrayLength .localVar { base := "copy" }) = .ok (.int 0) := by
-    simp [solm1, evalExpr?, readLocalPath?, EvalResult.bind, bind, pure]
+    simp [stele1, evalExpr?, readLocalPath?, EvalResult.bind, bind, pure]
   exact ExecFuncBody.execBlockRet <|
     ExecBlock.consNormal (ExecStmt.requireTrue (evalCallvalueEq_true hwv)) <|
       ExecBlock.consNormal (ExecStmt.letDecl hread) <|
-        ExecBlock.consNormal (ExecStmt.delete (by simpa [solm1] using hdel)) <|
+        ExecBlock.consNormal (ExecStmt.delete (by simpa [stele1] using hdel)) <|
           ExecBlock.consReturn (ExecStmt.return (evalExprs?_singleton hret))
 
 theorem clearCurrentBodyReturnsBytes {evm evm' : EVM.State} {copy : ByteArray}
@@ -632,17 +632,17 @@ theorem clearCurrentBodyReturnsBytes {evm evm' : EVM.State} {copy : ByteArray}
         { contract := stringStoreLiteContract,
           locals := (∅ : Store).insert "copy" (.bytes copy) }
         evm' (some [(.int copy.size)])) := by
-  let solm1 : Frame :=
+  let stele1 : Frame :=
     { contract := stringStoreLiteContract,
       locals := (∅ : Store).insert "copy" (.bytes copy) }
   have hret :
-      evalExpr? stringStoreLiteConfig solm1 evm'
+      evalExpr? stringStoreLiteConfig stele1 evm'
         (.arrayLength .localVar { base := "copy" }) = .ok (.int copy.size) := by
-    simp [solm1, evalExpr?, readLocalPath?, EvalResult.bind, bind, pure]
+    simp [stele1, evalExpr?, readLocalPath?, EvalResult.bind, bind, pure]
   exact ExecFuncBody.execBlockRet <|
     ExecBlock.consNormal (ExecStmt.requireTrue (evalCallvalueEq_true hwv)) <|
       ExecBlock.consNormal (ExecStmt.letDecl hread) <|
-        ExecBlock.consNormal (ExecStmt.delete (by simpa [solm1] using hdel)) <|
+        ExecBlock.consNormal (ExecStmt.delete (by simpa [stele1] using hdel)) <|
           ExecBlock.consReturn (ExecStmt.return (evalExprs?_singleton hret))
 
 theorem setBodyReturns {evm evmCurrent : EVM.State} {value : ByteArray}
@@ -663,20 +663,20 @@ theorem setBodyReturns {evm evmCurrent : EVM.State} {value : ByteArray}
         evmCurrent (some [(.int value.size)])) := by
   let locals0 : Store := (∅ : Store).insert "value" (.bytes value)
   let locals1 : Store := locals0.insert "copy" (.bytes value)
-  let solm0 : Frame := { contract := stringStoreLiteContract, locals := locals0 }
-  let solm1 : Frame := { contract := stringStoreLiteContract, locals := locals1 }
-  have hvalue : evalExpr? stringStoreLiteConfig solm0 evm (.var "value") = .ok (.bytes value) := by
-    simp [solm0, locals0, evalExpr?, EvalResult.ofOption]
-  have hcopy : evalExpr? stringStoreLiteConfig solm1 evm (.var "copy") = .ok (.bytes value) := by
-    simp [solm1, locals1, locals0, evalExpr?, EvalResult.ofOption]
+  let stele0 : Frame := { contract := stringStoreLiteContract, locals := locals0 }
+  let stele1 : Frame := { contract := stringStoreLiteContract, locals := locals1 }
+  have hvalue : evalExpr? stringStoreLiteConfig stele0 evm (.var "value") = .ok (.bytes value) := by
+    simp [stele0, locals0, evalExpr?, EvalResult.ofOption]
+  have hcopy : evalExpr? stringStoreLiteConfig stele1 evm (.var "copy") = .ok (.bytes value) := by
+    simp [stele1, locals1, locals0, evalExpr?, EvalResult.ofOption]
   have hret :
-      evalExpr? stringStoreLiteConfig solm1 evmCurrent (.arrayLength .localVar { base := "copy" }) =
+      evalExpr? stringStoreLiteConfig stele1 evmCurrent (.arrayLength .localVar { base := "copy" }) =
         .ok (.int value.size) := by
-    simp [solm1, locals1, locals0, evalExpr?, readLocalPath?, EvalResult.bind, bind, pure]
+    simp [stele1, locals1, locals0, evalExpr?, readLocalPath?, EvalResult.bind, bind, pure]
   exact ExecFuncBody.execBlockRet <|
     ExecBlock.consNormal (ExecStmt.requireTrue (evalCallvalueEq_true hwv)) <|
       ExecBlock.consNormal (ExecStmt.letDecl hvalue) <|
-        ExecBlock.consNormal (ExecStmt.assign hcopy (by simpa [solm1, locals1, locals0] using hassignCurrent)) <|
+        ExecBlock.consNormal (ExecStmt.assign hcopy (by simpa [stele1, locals1, locals0] using hassignCurrent)) <|
           ExecBlock.consReturn (ExecStmt.return (evalExprs?_singleton hret))
 
 theorem assignCurrentOfWrite {evm evmCurrent : EVM.State} {value : ByteArray}
@@ -737,11 +737,11 @@ theorem setRuntimeOfWriteAccountMapEq
     (henc : returnEquiv o (some [.int value.size]) setTransition.returnType) :
     runtimeRefinementFor stringStoreLiteConfig stringStoreLiteContract
       σ σ₀ g A I := by
-  let evmSolm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
   have hbody := setBodyReturnsOfWrite
-    (evm := evmSolm0) (evmCurrent := evmCurrent) (value := value)
-    (by simp [evmSolm0, initState]; exact hwv)
-    (by simpa [evmSolm0] using hwrite)
+    (evm := evmStele0) (evmCurrent := evmCurrent) (value := value)
+    (by simp [evmStele0, initState]; exact hwv)
+    (by simpa [evmStele0] using hwrite)
   exact hret.reEquivExecutionGen hcode hd hdec hbody
     hAccounts henc
 
@@ -766,11 +766,11 @@ theorem setRuntimeOfWriteEVMStateEq
     (henc : returnEquiv o (some [.int value.size]) setTransition.returnType) :
     runtimeRefinementFor stringStoreLiteConfig stringStoreLiteContract
       σ σ₀ g A I := by
-  let evmSolm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
   have hbody := setBodyReturnsOfWrite
-    (evm := evmSolm0) (evmCurrent := evmCurrent) (value := value)
-    (by simp [evmSolm0, initState]; exact hwv)
-    (by simpa [evmSolm0] using hwrite)
+    (evm := evmStele0) (evmCurrent := evmCurrent) (value := value)
+    (by simp [evmStele0, initState]; exact hwv)
+    (by simpa [evmStele0] using hwrite)
   exact hret.reEquivExecutionGen hcode hd hdec hbody
     (hAccounts.trans hPostAccounts) henc
 
@@ -783,17 +783,17 @@ theorem setBodyStaticOfWrite {evm evmCurrent : EVM.State} {value : ByteArray}
       ((∅ : Store).insert "value" (.bytes value)) setTransition.body .staticViolation := by
   let locals0 : Store := (∅ : Store).insert "value" (.bytes value)
   let locals1 : Store := locals0.insert "copy" (.bytes value)
-  let solm0 : Frame := { contract := stringStoreLiteContract, locals := locals0 }
-  let solm1 : Frame := { contract := stringStoreLiteContract, locals := locals1 }
-  have hvalue : evalExpr? stringStoreLiteConfig solm0 evm (.var "value") = .ok (.bytes value) := by
-    simp [solm0, locals0, evalExpr?, EvalResult.ofOption]
-  have hcopy : evalExpr? stringStoreLiteConfig solm1 evm (.var "copy") = .ok (.bytes value) := by
-    simp [solm1, locals1, locals0, evalExpr?, EvalResult.ofOption]
+  let stele0 : Frame := { contract := stringStoreLiteContract, locals := locals0 }
+  let stele1 : Frame := { contract := stringStoreLiteContract, locals := locals1 }
+  have hvalue : evalExpr? stringStoreLiteConfig stele0 evm (.var "value") = .ok (.bytes value) := by
+    simp [stele0, locals0, evalExpr?, EvalResult.ofOption]
+  have hcopy : evalExpr? stringStoreLiteConfig stele1 evm (.var "copy") = .ok (.bytes value) := by
+    simp [stele1, locals1, locals0, evalExpr?, EvalResult.ofOption]
   exact ExecFuncBody.execBlockStatic <|
     ExecBlock.consNormal (ExecStmt.requireTrue (evalCallvalueEq_true hwv)) <|
       ExecBlock.consNormal (ExecStmt.letDecl hvalue) <|
         ExecBlock.consStatic (ExecStmt.assignStatic hcopy
-          (by simpa [solm1, locals1, locals0] using assignCurrentOfWrite hwrite) hperm)
+          (by simpa [stele1, locals1, locals0] using assignCurrentOfWrite hwrite) hperm)
 
 theorem setRuntimeStaticOfWrite
     {σ σ₀ A I} {g : UInt256} {value : ByteArray} {evmCurrent : EVM.State}
@@ -841,22 +841,22 @@ theorem setBodyRevertsOfWrite {evm : EVM.State} {value : ByteArray}
       ((∅ : Store).insert "value" (.bytes value)) setTransition.body .reverted := by
   let locals0 : Store := (∅ : Store).insert "value" (.bytes value)
   let locals1 : Store := locals0.insert "copy" (.bytes value)
-  let solm0 : Frame := { contract := stringStoreLiteContract, locals := locals0 }
-  let solm1 : Frame := { contract := stringStoreLiteContract, locals := locals1 }
-  have hvalue : evalExpr? stringStoreLiteConfig solm0 evm (.var "value") = .ok (.bytes value) := by
-    simp [solm0, locals0, evalExpr?, EvalResult.ofOption]
-  have hcopy : evalExpr? stringStoreLiteConfig solm1 evm (.var "copy") = .ok (.bytes value) := by
-    simp [solm1, locals1, locals0, evalExpr?, EvalResult.ofOption]
+  let stele0 : Frame := { contract := stringStoreLiteContract, locals := locals0 }
+  let stele1 : Frame := { contract := stringStoreLiteContract, locals := locals1 }
+  have hvalue : evalExpr? stringStoreLiteConfig stele0 evm (.var "value") = .ok (.bytes value) := by
+    simp [stele0, locals0, evalExpr?, EvalResult.ofOption]
+  have hcopy : evalExpr? stringStoreLiteConfig stele1 evm (.var "copy") = .ok (.bytes value) := by
+    simp [stele1, locals1, locals0, evalExpr?, EvalResult.ofOption]
   have hresolve :
-      resolveStorageRef? stringStoreLiteConfig solm1 evm currentRef =
+      resolveStorageRef? stringStoreLiteConfig stele1 evm currentRef =
         .ok ({ base := "current", steps := [] }, .string) := by
     simp [resolveStorageRef?, evalStorageRef, evalStorageRefSteps, currentRef,
       storageTypeAt?, stringStoreLiteConfig, stringStoreLiteContract, storageDecls, stringSt,
-      EvalResult.ofOption, EvalResult.bind, bind, pure, solm1, locals1, locals0]
+      EvalResult.ofOption, EvalResult.bind, bind, pure, stele1, locals1, locals0]
   change stringStoreLiteConfig.storageBackend.write { base := "current" } .string
     (.bytes value) evm = .revert at hwrite
   have hassign :
-      assignStorageRef? stringStoreLiteConfig solm1 evm .storage currentRef (.bytes value) =
+      assignStorageRef? stringStoreLiteConfig stele1 evm .storage currentRef (.bytes value) =
         .revert := by
     simp [assignStorageRef?, hresolve, hwrite, EvalResult.bind, bind, pure]
   exact ExecFuncBody.execBlockRevert <|
@@ -875,28 +875,28 @@ theorem currentLengthBaseSlot :
   stringStoreLiteLayout_current
 
 theorem deleteCurrentShortZero {evm : EVM.State}
-    (hload : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩ = ⟨0⟩) :
+    (hload : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩ = ⟨0⟩) :
     deleteStorage? stringStoreLiteConfig
       { contract := stringStoreLiteContract,
         locals := (∅ : Store).insert "copy" (.bytes ByteArray.empty) }
       evm currentRef =
-        .ok (Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨0⟩ ⟨0⟩) := by
-  let solm : Frame :=
+        .ok (Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨0⟩ ⟨0⟩) := by
+  let stele : Frame :=
     { contract := stringStoreLiteContract, locals := (∅ : Store).insert "copy" (.bytes ByteArray.empty) }
   have hresolve :
-      resolveStorageRef? stringStoreLiteConfig solm evm currentRef =
+      resolveStorageRef? stringStoreLiteConfig stele evm currentRef =
         .ok ({ base := "current", steps := [] }, .string) := by
     simp [resolveStorageRef?, evalStorageRef, evalStorageRefSteps, currentRef,
       storageTypeAt?, stringStoreLiteConfig, stringStoreLiteContract, storageDecls, stringSt,
-      EvalResult.ofOption, EvalResult.bind, bind, pure, solm]
+      EvalResult.ofOption, EvalResult.bind, bind, pure, stele]
   exact deleteSolidityStringShortZero
     (cfg := stringStoreLiteConfig) (layout := stringStoreLiteLayout)
-    (solm := solm)
+    (stele := stele)
     (evm := evm) (ref := currentRef) (er := { base := "current", steps := [] })
     (baseSlot := ⟨0⟩) rfl hresolve currentLengthBaseSlot hload
 
 theorem deleteCurrentShortPacked {evm : EVM.State} {header len : UInt256} {copy : ByteArray}
-    (hload : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩ = header)
+    (hload : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩ = header)
     (hpacked : checkBytesPacked ⟨0⟩ evm = true)
     (hflag : UInt256.land header ⟨1⟩ = ⟨0⟩)
     (hlen : len = UInt256.land (UInt256.div header ⟨2⟩) ⟨127⟩)
@@ -905,24 +905,24 @@ theorem deleteCurrentShortPacked {evm : EVM.State} {header len : UInt256} {copy 
       { contract := stringStoreLiteContract,
         locals := (∅ : Store).insert "copy" (.bytes copy) }
       evm currentRef =
-        .ok (Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨0⟩ ⟨0⟩) := by
-  let solm : Frame :=
+        .ok (Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨0⟩ ⟨0⟩) := by
+  let stele : Frame :=
     { contract := stringStoreLiteContract, locals := (∅ : Store).insert "copy" (.bytes copy) }
   have hresolve :
-      resolveStorageRef? stringStoreLiteConfig solm evm currentRef =
+      resolveStorageRef? stringStoreLiteConfig stele evm currentRef =
         .ok ({ base := "current", steps := [] }, .string) := by
     simp [resolveStorageRef?, evalStorageRef, evalStorageRefSteps, currentRef,
       storageTypeAt?, stringStoreLiteConfig, stringStoreLiteContract, storageDecls, stringSt,
-      EvalResult.ofOption, EvalResult.bind, bind, pure, solm]
+      EvalResult.ofOption, EvalResult.bind, bind, pure, stele]
   exact deleteSolidityStringShortPacked
     (cfg := stringStoreLiteConfig) (layout := stringStoreLiteLayout)
-    (solm := solm)
+    (stele := stele)
     (evm := evm) (ref := currentRef) (er := { base := "current", steps := [] })
     (baseSlot := ⟨0⟩) (header := header) (len := len)
     rfl hresolve currentLengthBaseSlot hload hpacked hflag hlen hvalid
 
 theorem deleteCurrentLongPrepared {evm : EVM.State} {header len : UInt256} {copy : ByteArray}
-    (hload : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩ = header)
+    (hload : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩ = header)
     (hflag : UInt256.land header ⟨1⟩ ≠ ⟨0⟩)
     (hlen : len = UInt256.div header ⟨2⟩)
     (hvalid : UInt256.sub (UInt256.land header ⟨1⟩) (UInt256.lt len ⟨32⟩) ≠ ⟨0⟩) :
@@ -931,19 +931,19 @@ theorem deleteCurrentLongPrepared {evm : EVM.State} {header len : UInt256} {copy
         locals := (∅ : Store).insert "copy" (.bytes copy) }
       evm currentRef =
         .ok (clearSolidityBytesDataWordsFrom
-          (Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨0⟩ ⟨0⟩)
+          (Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨0⟩ ⟨0⟩)
           ⟨0⟩ 0 ((len.toNat + 31) / 32)) := by
-  let solm : Frame :=
+  let stele : Frame :=
     { contract := stringStoreLiteContract, locals := (∅ : Store).insert "copy" (.bytes copy) }
   have hresolve :
-      resolveStorageRef? stringStoreLiteConfig solm evm currentRef =
+      resolveStorageRef? stringStoreLiteConfig stele evm currentRef =
         .ok ({ base := "current", steps := [] }, .string) := by
     simp [resolveStorageRef?, evalStorageRef, evalStorageRefSteps, currentRef,
       storageTypeAt?, stringStoreLiteConfig, stringStoreLiteContract, storageDecls, stringSt,
-      EvalResult.ofOption, EvalResult.bind, bind, pure, solm]
+      EvalResult.ofOption, EvalResult.bind, bind, pure, stele]
   exact deleteSolidityStringLongPrepared
     (cfg := stringStoreLiteConfig) (layout := stringStoreLiteLayout)
-    (solm := solm)
+    (stele := stele)
     (evm := evm) (ref := currentRef) (er := { base := "current", steps := [] })
     (baseSlot := ⟨0⟩) (header := header) (len := len)
     rfl hresolve currentLengthBaseSlot hload hflag hlen hvalid
@@ -951,14 +951,14 @@ theorem deleteCurrentLongPrepared {evm : EVM.State} {header len : UInt256} {copy
 theorem writeCurrentShortPacked {evm : EVM.State} {header len : UInt256}
     {value : ByteArray}
     (hvalueSize : value.size < 32)
-    (hload : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩ = header)
+    (hload : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩ = header)
     (hpacked : checkBytesPacked ⟨0⟩ evm = true)
     (hflag : UInt256.land header ⟨1⟩ = ⟨0⟩)
     (hlen : len = UInt256.land (UInt256.div header ⟨2⟩) ⟨127⟩)
     (hvalid : UInt256.sub (UInt256.land header ⟨1⟩) (UInt256.lt len ⟨32⟩) ≠ ⟨0⟩) :
     stringWrite? stringStoreLiteConfig evm { base := "current", steps := [] }
       .string (.bytes value) =
-        .ok (Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨0⟩
+        .ok (Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨0⟩
           (solidityShortBytesWord value)) := by
   exact writeSolidityStringShortPacked
     (cfg := stringStoreLiteConfig) (layout := stringStoreLiteLayout)
@@ -969,13 +969,13 @@ theorem writeCurrentShortPacked {evm : EVM.State} {header len : UInt256}
 theorem writeCurrentShortFromLongPrepared {evm : EVM.State} {header len : UInt256}
     {value : ByteArray}
     (hvalueSize : value.size < 32)
-    (hload : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩ = header)
+    (hload : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩ = header)
     (hflag : UInt256.land header ⟨1⟩ ≠ ⟨0⟩)
     (hlen : len = UInt256.div header ⟨2⟩)
     (hvalid : UInt256.sub (UInt256.land header ⟨1⟩) (UInt256.lt len ⟨32⟩) ≠ ⟨0⟩) :
     stringWrite? stringStoreLiteConfig evm { base := "current", steps := [] }
       .string (.bytes value) =
-        .ok (Solm.EVM.storageStore
+        .ok (Stele.EVM.storageStore
           (clearSolidityBytesDataWordsFrom evm ⟨0⟩ 0 ((len.toNat + 31) / 32))
           (clearSolidityBytesDataWordsFrom evm ⟨0⟩ 0
             ((len.toNat + 31) / 32)).executionEnv.codeOwner
@@ -989,14 +989,14 @@ theorem writeCurrentShortFromLongPrepared {evm : EVM.State} {header len : UInt25
 theorem writeCurrentLongPacked {evm : EVM.State} {header len : UInt256}
     {value : ByteArray}
     (hvalueSize : ¬ value.size < 32)
-    (hload : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩ = header)
+    (hload : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩ = header)
     (hpacked : checkBytesPacked ⟨0⟩ evm = true)
     (hflag : UInt256.land header ⟨1⟩ = ⟨0⟩)
     (hlen : len = UInt256.land (UInt256.div header ⟨2⟩) ⟨127⟩)
     (hvalid : UInt256.sub (UInt256.land header ⟨1⟩) (UInt256.lt len ⟨32⟩) ≠ ⟨0⟩) :
     stringWrite? stringStoreLiteConfig evm { base := "current", steps := [] }
       .string (.bytes value) =
-        .ok (Solm.EVM.storageStore
+        .ok (Stele.EVM.storageStore
           (writeSolidityBytesDataWordsFrom evm ⟨0⟩ value 0
             (solidityBytesDataWordCount value.size))
           (writeSolidityBytesDataWordsFrom evm ⟨0⟩ value 0
@@ -1011,7 +1011,7 @@ theorem writeCurrentLongPacked {evm : EVM.State} {header len : UInt256}
 theorem writeCurrentLongPackedAbsent {evm : EVM.State} {header len : UInt256}
     {value : ByteArray}
     (hvalueSize : ¬ value.size < 32)
-    (hload : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩ = header)
+    (hload : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩ = header)
     (hpacked : checkBytesPacked ⟨0⟩ evm = true)
     (hflag : UInt256.land header ⟨1⟩ = ⟨0⟩)
     (hlen : len = UInt256.land (UInt256.div header ⟨2⟩) ⟨127⟩)
@@ -1028,13 +1028,13 @@ theorem writeCurrentLongPackedAbsent {evm : EVM.State} {header len : UInt256}
 theorem writeCurrentLongFromLongPrepared {evm : EVM.State} {header len : UInt256}
     {value : ByteArray}
     (hvalueSize : ¬ value.size < 32)
-    (hload : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩ = header)
+    (hload : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩ = header)
     (hflag : UInt256.land header ⟨1⟩ ≠ ⟨0⟩)
     (hlen : len = UInt256.div header ⟨2⟩)
     (hvalid : UInt256.sub (UInt256.land header ⟨1⟩) (UInt256.lt len ⟨32⟩) ≠ ⟨0⟩) :
     stringWrite? stringStoreLiteConfig evm { base := "current", steps := [] }
       .string (.bytes value) =
-        .ok (Solm.EVM.storageStore
+        .ok (Stele.EVM.storageStore
           (writeSolidityBytesDataWordsFrom
             (clearSolidityBytesDataWordsFrom evm ⟨0⟩
               (solidityBytesDataWordCount value.size)
@@ -1053,7 +1053,7 @@ theorem writeCurrentLongFromLongPrepared {evm : EVM.State} {header len : UInt256
     rfl currentLengthBaseSlot hvalueSize hload hflag hlen hvalid
 
 theorem writeCurrentMalformedLong {evm : EVM.State} {header : UInt256} {value : ByteArray}
-    (hload : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩ = header)
+    (hload : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩ = header)
     (hflag : UInt256.land header ⟨1⟩ ≠ ⟨0⟩)
     (hbad : UInt256.sub (UInt256.land header ⟨1⟩)
         (UInt256.lt (UInt256.div header ⟨2⟩) ⟨32⟩) = ⟨0⟩) :
@@ -1069,7 +1069,7 @@ theorem writeCurrentMalformedLong {evm : EVM.State} {header : UInt256} {value : 
     rfl hbase hload hflag hbad
 
 theorem writeCurrentMalformedShort {evm : EVM.State} {header : UInt256} {value : ByteArray}
-    (hload : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩ = header)
+    (hload : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩ = header)
     (hflag : UInt256.land header ⟨1⟩ = ⟨0⟩)
     (hbad : UInt256.sub (UInt256.land header ⟨1⟩)
         (UInt256.lt (UInt256.land (UInt256.div header ⟨2⟩) ⟨127⟩) ⟨32⟩) = ⟨0⟩) :
@@ -1085,17 +1085,17 @@ theorem writeCurrentMalformedShort {evm : EVM.State} {header : UInt256} {value :
     rfl hbase hload hflag hbad
 
 theorem writeCurrentEmptyFromZero {evm : EVM.State}
-    (hload : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩ = ⟨0⟩) :
+    (hload : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩ = ⟨0⟩) :
     stringWrite? stringStoreLiteConfig evm { base := "current", steps := [] }
       .string (.bytes ByteArray.empty) =
-        .ok (Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨0⟩ ⟨0⟩) := by
+        .ok (Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨0⟩ ⟨0⟩) := by
   exact writeSolidityStringEmptyFromZero
     (cfg := stringStoreLiteConfig) (layout := stringStoreLiteLayout)
     (evm := evm) (er := { base := "current", steps := [] }) (baseSlot := ⟨0⟩)
     rfl currentLengthBaseSlot hload
 
 theorem assignCurrentEmptyFromZero {evm : EVM.State}
-    (hload : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩ = ⟨0⟩) :
+    (hload : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩ = ⟨0⟩) :
     assignStorageRef? stringStoreLiteConfig
       { contract := stringStoreLiteContract
         locals := ((∅ : Store).insert "value" (.bytes ByteArray.empty)).insert "copy"
@@ -1105,20 +1105,20 @@ theorem assignCurrentEmptyFromZero {evm : EVM.State}
           ({ contract := stringStoreLiteContract
              locals := ((∅ : Store).insert "value" (.bytes ByteArray.empty)).insert "copy"
                (.bytes ByteArray.empty) },
-           Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨0⟩ ⟨0⟩) := by
-  let solm : Frame :=
+           Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨0⟩ ⟨0⟩) := by
+  let stele : Frame :=
     { contract := stringStoreLiteContract
       locals := ((∅ : Store).insert "value" (.bytes ByteArray.empty)).insert "copy"
         (.bytes ByteArray.empty) }
   have hresolve :
-      resolveStorageRef? stringStoreLiteConfig solm evm currentRef =
+      resolveStorageRef? stringStoreLiteConfig stele evm currentRef =
         .ok ({ base := "current", steps := [] }, .string) := by
     simp [resolveStorageRef?, evalStorageRef, evalStorageRefSteps, currentRef,
       storageTypeAt?, stringStoreLiteConfig, stringStoreLiteContract, storageDecls, stringSt,
-      EvalResult.ofOption, EvalResult.bind, bind, pure, solm]
+      EvalResult.ofOption, EvalResult.bind, bind, pure, stele]
   exact assignSolidityStringEmptyFromZero
     (cfg := stringStoreLiteConfig) (layout := stringStoreLiteLayout)
-    (solm := solm)
+    (stele := stele)
     (evm := evm) (ref := currentRef) (er := { base := "current", steps := [] })
     (baseSlot := ⟨0⟩) rfl hresolve currentLengthBaseSlot hload
 
@@ -1277,7 +1277,7 @@ theorem currentLengthFreePtr_eq_192_of_short_nonzero {len : UInt256}
   exact solcBytesReturnFreePtr_eq_192_of_short_nonzero hnonzero hlt32
 
 theorem readCurrentShortPackedExists {evm : EVM.State} {header len : UInt256}
-    (hload : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩ = header)
+    (hload : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩ = header)
     (hflag : UInt256.land header ⟨1⟩ = ⟨0⟩)
     (hlen : len = UInt256.land (UInt256.div header ⟨2⟩) ⟨127⟩)
     (hvalid : UInt256.sub (UInt256.land header ⟨1⟩) (UInt256.lt len ⟨32⟩) ≠ ⟨0⟩) :
@@ -1286,13 +1286,13 @@ theorem readCurrentShortPackedExists {evm : EVM.State} {header len : UInt256}
         evm (.storage currentRef) = .ok (.bytes copy) ∧ copy.size = len.toNat := by
   exact evalSolidityStringShortPackedExists
     (cfg := stringStoreLiteConfig) (layout := stringStoreLiteLayout)
-    (solm := { contract := stringStoreLiteContract, locals := ∅ })
+    (stele := { contract := stringStoreLiteContract, locals := ∅ })
     (evm := evm) (ref := currentRef) (er := { base := "current", steps := [] })
     (baseSlot := ⟨0⟩) (header := header) (len := len)
     rfl (currentLengthResolve evm) currentLengthBaseSlot hload hflag hlen hvalid
 
 theorem readCurrentLongExists {evm : EVM.State} {header len : UInt256}
-    (hload : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩ = header)
+    (hload : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩ = header)
     (hflag : UInt256.land header ⟨1⟩ ≠ ⟨0⟩)
     (hlen : len = UInt256.div header ⟨2⟩)
     (hvalid : UInt256.sub (UInt256.land header ⟨1⟩) (UInt256.lt len ⟨32⟩) ≠ ⟨0⟩) :
@@ -1301,7 +1301,7 @@ theorem readCurrentLongExists {evm : EVM.State} {header len : UInt256}
         evm (.storage currentRef) = .ok (.bytes copy) ∧ copy.size = len.toNat := by
   exact evalSolidityStringLongExists
     (cfg := stringStoreLiteConfig) (layout := stringStoreLiteLayout)
-    (solm := { contract := stringStoreLiteContract, locals := ∅ })
+    (stele := { contract := stringStoreLiteContract, locals := ∅ })
     (evm := evm) (ref := currentRef) (er := { base := "current", steps := [] })
     (baseSlot := ⟨0⟩) (header := header) (len := len)
     rfl (currentLengthResolve evm) currentLengthBaseSlot hload hflag hlen hvalid
@@ -5244,13 +5244,13 @@ theorem stringStoreLiteCurrentLengthLongMalformedBodyCore {σ σ₀ A I}
   have hd := stringStoreLiteDispatch_currentLength (cd := I.calldata) hsel'
   have hdec := stringStoreLiteDecode_currentLength (I := I) hsz
   have hload :
-      Solm.EVM.storageLoad
+      Stele.EVM.storageLoad
         (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         I.codeOwner ⟨0⟩ = currentLengthHeaderWord σ I := by
-    simp [Solm.EVM.storageLoad, initState, State.lookupAccount, Account.lookupStorage,
+    simp [Stele.EVM.storageLoad, initState, State.lookupAccount, Account.lookupStorage,
       currentLengthHeaderWord]
   have hload' :
-      Solm.EVM.storageLoad
+      Stele.EVM.storageLoad
         { (default : EVM.State) with
           accountMap := σ
           σ₀ := σ₀
@@ -5299,13 +5299,13 @@ theorem stringStoreLiteCurrentLengthShortMalformedBodyCore {σ σ₀ A I}
   have hd := stringStoreLiteDispatch_currentLength (cd := I.calldata) hsel'
   have hdec := stringStoreLiteDecode_currentLength (I := I) hsz
   have hload :
-      Solm.EVM.storageLoad
+      Stele.EVM.storageLoad
         (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         I.codeOwner ⟨0⟩ = currentLengthHeaderWord σ I := by
-    simp [Solm.EVM.storageLoad, initState, State.lookupAccount, Account.lookupStorage,
+    simp [Stele.EVM.storageLoad, initState, State.lookupAccount, Account.lookupStorage,
       currentLengthHeaderWord]
   have hload' :
-      Solm.EVM.storageLoad
+      Stele.EVM.storageLoad
         { (default : EVM.State) with
           accountMap := σ
           σ₀ := σ₀
@@ -5358,13 +5358,13 @@ theorem stringStoreLiteCurrentLengthLongValidBodyCore {σ σ₀ A I}
   have hd := stringStoreLiteDispatch_currentLength (cd := I.calldata) hsel'
   have hdec := stringStoreLiteDecode_currentLength (I := I) hsz
   have hload :
-      Solm.EVM.storageLoad
+      Stele.EVM.storageLoad
         (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         I.codeOwner ⟨0⟩ = currentLengthHeaderWord σ I := by
-    simp [Solm.EVM.storageLoad, initState, State.lookupAccount, Account.lookupStorage,
+    simp [Stele.EVM.storageLoad, initState, State.lookupAccount, Account.lookupStorage,
       currentLengthHeaderWord]
   have hload' :
-      Solm.EVM.storageLoad
+      Stele.EVM.storageLoad
         { (default : EVM.State) with
           accountMap := σ
           σ₀ := σ₀
@@ -5418,13 +5418,13 @@ theorem stringStoreLiteCurrentLengthShortValidBodyCore {σ σ₀ A I}
   have hd := stringStoreLiteDispatch_currentLength (cd := I.calldata) hsel'
   have hdec := stringStoreLiteDecode_currentLength (I := I) hsz
   have hload :
-      Solm.EVM.storageLoad
+      Stele.EVM.storageLoad
         (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         I.codeOwner ⟨0⟩ = currentLengthHeaderWord σ I := by
-    simp [Solm.EVM.storageLoad, initState, State.lookupAccount, Account.lookupStorage,
+    simp [Stele.EVM.storageLoad, initState, State.lookupAccount, Account.lookupStorage,
       currentLengthHeaderWord]
   have hload' :
-      Solm.EVM.storageLoad
+      Stele.EVM.storageLoad
         { (default : EVM.State) with
           accountMap := σ
           σ₀ := σ₀
@@ -5529,13 +5529,13 @@ theorem stringStoreLiteClearCurrentLongMalformedRuntime {σ σ₀ A I}
     hcode hwv hsz hsize hsel
   have hrev := stringStoreLiteX_clearCurrentLongMalformed hreach hflag hbad
   have hload :
-      Solm.EVM.storageLoad
+      Stele.EVM.storageLoad
         (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         I.codeOwner ⟨0⟩ = currentLengthHeaderWord σ I := by
-    simp [Solm.EVM.storageLoad, initState, State.lookupAccount, Account.lookupStorage,
+    simp [Stele.EVM.storageLoad, initState, State.lookupAccount, Account.lookupStorage,
       currentLengthHeaderWord]
   have hload' :
-      Solm.EVM.storageLoad
+      Stele.EVM.storageLoad
         { (default : EVM.State) with
           accountMap := σ
           σ₀ := σ₀
@@ -5582,13 +5582,13 @@ theorem stringStoreLiteClearCurrentShortMalformedRuntime {σ σ₀ A I}
     hcode hwv hsz hsize hsel
   have hrev := stringStoreLiteX_clearCurrentShortMalformed hreach hflag hbad
   have hload :
-      Solm.EVM.storageLoad
+      Stele.EVM.storageLoad
         (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         I.codeOwner ⟨0⟩ = currentLengthHeaderWord σ I := by
-    simp [Solm.EVM.storageLoad, initState, State.lookupAccount, Account.lookupStorage,
+    simp [Stele.EVM.storageLoad, initState, State.lookupAccount, Account.lookupStorage,
       currentLengthHeaderWord]
   have hload' :
-      Solm.EVM.storageLoad
+      Stele.EVM.storageLoad
         { (default : EVM.State) with
           accountMap := σ
           σ₀ := σ₀
@@ -5626,8 +5626,8 @@ theorem stringStoreLiteClearCurrentShortZeroRuntime {σ σ₀ A I}
     (hheader : currentLengthHeaderWord σ I = ⟨0⟩) :
     runtimeRefinementFor stringStoreLiteConfig stringStoreLiteContract
       σ σ₀ g A I := by
-  let evmSolm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  let evmSolm1 := Solm.EVM.storageStore evmSolm0 I.codeOwner ⟨0⟩ ⟨0⟩
+  let evmStele0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele1 := Stele.EVM.storageStore evmStele0 I.codeOwner ⟨0⟩ ⟨0⟩
   have hsel' : ((⟨#[0xa6, 0xdf, 0xa2, 0x62]⟩ : ByteArray) == I.calldata.extract 0 4) =
       true := by
     simpa [selIs] using hsel
@@ -5652,24 +5652,24 @@ theorem stringStoreLiteClearCurrentShortZeroRuntime {σ σ₀ A I}
   have hsplit := stringStoreLiteX_clearCurrentShortZeroValid
     (g := Sat256.ofUInt256 g) hreach hflag hvalid hzero
   have hload :
-      Solm.EVM.storageLoad evmSolm0 I.codeOwner ⟨0⟩ = ⟨0⟩ := by
+      Stele.EVM.storageLoad evmStele0 I.codeOwner ⟨0⟩ = ⟨0⟩ := by
     have hload' :
-        Solm.EVM.storageLoad evmSolm0 I.codeOwner ⟨0⟩ =
+        Stele.EVM.storageLoad evmStele0 I.codeOwner ⟨0⟩ =
           currentLengthHeaderWord σ I := by
-      simp [evmSolm0, Solm.EVM.storageLoad, initState, State.lookupAccount,
+      simp [evmStele0, Stele.EVM.storageLoad, initState, State.lookupAccount,
         Account.lookupStorage, currentLengthHeaderWord]
     simpa [hheader] using hload'
   have hloadBytes :
-      Solm.EVM.storageLoad evmSolm0 evmSolm0.executionEnv.codeOwner ⟨0⟩ = ⟨0⟩ := by
-    simpa [evmSolm0, initState] using hload
+      Stele.EVM.storageLoad evmStele0 evmStele0.executionEnv.codeOwner ⟨0⟩ = ⟨0⟩ := by
+    simpa [evmStele0, initState] using hload
   have hlen :
-      stringLength? stringStoreLiteConfig evmSolm0 { base := "current" } = .ok 0 := by
+      stringLength? stringStoreLiteConfig evmStele0 { base := "current" } = .ok 0 := by
     simp [stringLength?, solidityNatResultToEval, stringStoreLiteConfig, solidityStorageBackend, solidityStorageLength?, stringStoreLiteGeneratedLayout,
       solidityReadBytesLength?, solidityDecodeBytesLengthHeader_zero, stringStoreLiteLayout,
       hloadBytes]
   have hread :
       evalExpr? stringStoreLiteConfig { contract := stringStoreLiteContract, locals := ∅ }
-        evmSolm0 (.storage currentRef) = .ok (.bytes ByteArray.empty) := by
+        evmStele0 (.storage currentRef) = .ok (.bytes ByteArray.empty) := by
     rw [evalExpr?, currentLengthResolve]
     set_option linter.unusedSimpArgs false in
     simp [solidityReadStorage?, stringStoreLiteConfig,
@@ -5681,27 +5681,27 @@ theorem stringStoreLiteClearCurrentShortZeroRuntime {σ σ₀ A I}
       deleteStorage? stringStoreLiteConfig
         { contract := stringStoreLiteContract,
           locals := (∅ : Store).insert "copy" (.bytes ByteArray.empty) }
-        evmSolm0 currentRef = .ok evmSolm1 := by
-    simpa [evmSolm0, evmSolm1, initState] using deleteCurrentShortZero (evm := evmSolm0) hload
+        evmStele0 currentRef = .ok evmStele1 := by
+    simpa [evmStele0, evmStele1, initState] using deleteCurrentShortZero (evm := evmStele0) hload
   have hbody :
-      ExecTransitionBody stringStoreLiteConfig stringStoreLiteContract evmSolm0 ∅
+      ExecTransitionBody stringStoreLiteConfig stringStoreLiteContract evmStele0 ∅
         clearCurrentTransition.body
         (.returned
           { contract := stringStoreLiteContract,
             locals := (∅ : Store).insert "copy" (.bytes ByteArray.empty) }
-          evmSolm1 (some [(.int 0)])) := by
-    exact clearCurrentBodyReturnsZero (evm := evmSolm0) (evm' := evmSolm1)
-      (by simp [evmSolm0, initState]; exact hwv) hread hdel
+          evmStele1 (some [(.int 0)])) := by
+    exact clearCurrentBodyReturnsZero (evm := evmStele0) (evm' := evmStele1)
+      (by simp [evmStele0, initState]; exact hwv) hread hdel
   by_cases hperm : I.perm = true
   swap
   · have hpf : I.perm = false := by simpa using hperm
     exact (permSplit_false hpf hsplit).reEquivStaticHalt hcode hd hdec
-      (clearCurrentBodyStatic (evm := evmSolm0) (by simp [evmSolm0, initState]; exact hwv)
-        hread hdel (by simp [evmSolm0, initState]; exact hpf))
+      (clearCurrentBodyStatic (evm := evmStele0) (by simp [evmStele0, initState]; exact hwv)
+        hread hdel (by simp [evmStele0, initState]; exact hpf))
   exact (permSplit_true hperm hsplit).reEquivExecutionGen
     (cfg := stringStoreLiteConfig) hcode hd hdec hbody
     (by
-      simp [evmSolm1, evmSolm0, initState, storageStore_accountMap])
+      simp [evmStele1, evmStele0, initState, storageStore_accountMap])
     (returnEquiv_of_encode (uint256ReturnEncoding (⟨0⟩ : UInt256)))
 
 theorem stringStoreLiteClearCurrentShortDecodedZeroRuntime {σ σ₀ A I}
@@ -5717,8 +5717,8 @@ theorem stringStoreLiteClearCurrentShortDecodedZeroRuntime {σ σ₀ A I}
         ⟨0⟩) :
     runtimeRefinementFor stringStoreLiteConfig stringStoreLiteContract
       σ σ₀ g A I := by
-  let evmSolm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  let evmSolm1 := Solm.EVM.storageStore evmSolm0 I.codeOwner ⟨0⟩ ⟨0⟩
+  let evmStele0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele1 := Stele.EVM.storageStore evmStele0 I.codeOwner ⟨0⟩ ⟨0⟩
   have hsel' : ((⟨#[0xa6, 0xdf, 0xa2, 0x62]⟩ : ByteArray) == I.calldata.extract 0 4) =
       true := by
     simpa [selIs] using hsel
@@ -5731,53 +5731,53 @@ theorem stringStoreLiteClearCurrentShortDecodedZeroRuntime {σ σ₀ A I}
   have hsplit := stringStoreLiteX_clearCurrentShortZeroValid
     (g := Sat256.ofUInt256 g) hreach hflag hvalid hzero
   have hload :
-      Solm.EVM.storageLoad evmSolm0 I.codeOwner ⟨0⟩ =
+      Stele.EVM.storageLoad evmStele0 I.codeOwner ⟨0⟩ =
         currentLengthHeaderWord σ I := by
-    simp [evmSolm0, Solm.EVM.storageLoad, initState, State.lookupAccount,
+    simp [evmStele0, Stele.EVM.storageLoad, initState, State.lookupAccount,
       Account.lookupStorage, currentLengthHeaderWord]
   have hloadBytes :
-      Solm.EVM.storageLoad evmSolm0 evmSolm0.executionEnv.codeOwner ⟨0⟩ =
+      Stele.EVM.storageLoad evmStele0 evmStele0.executionEnv.codeOwner ⟨0⟩ =
         currentLengthHeaderWord σ I := by
-    simpa [evmSolm0, initState] using hload
+    simpa [evmStele0, initState] using hload
   have hvalidLen :
       UInt256.sub (UInt256.land (currentLengthHeaderWord σ I) ⟨1⟩)
         (UInt256.lt (⟨0⟩ : UInt256) ⟨32⟩) ≠ ⟨0⟩ := by
     simpa [hzero] using hvalid
   obtain ⟨copy, hread, hcopySize⟩ :=
-    readCurrentShortPackedExists (evm := evmSolm0)
+    readCurrentShortPackedExists (evm := evmStele0)
       (header := currentLengthHeaderWord σ I) (len := ⟨0⟩)
       hloadBytes hflag hzero.symm hvalidLen
-  have hpacked : checkBytesPacked ⟨0⟩ evmSolm0 = true :=
+  have hpacked : checkBytesPacked ⟨0⟩ evmStele0 = true :=
     checkBytesPacked_of_storageLoad_land_one_zero hloadBytes hflag
   have hdel :
       deleteStorage? stringStoreLiteConfig
         { contract := stringStoreLiteContract,
           locals := (∅ : Store).insert "copy" (.bytes copy) }
-        evmSolm0 currentRef = .ok evmSolm1 := by
-    simpa [evmSolm0, evmSolm1, initState] using
-      deleteCurrentShortPacked (evm := evmSolm0)
+        evmStele0 currentRef = .ok evmStele1 := by
+    simpa [evmStele0, evmStele1, initState] using
+      deleteCurrentShortPacked (evm := evmStele0)
         (header := currentLengthHeaderWord σ I) (len := ⟨0⟩) (copy := copy)
         hloadBytes hpacked hflag hzero.symm hvalidLen
-  have hbodyBytes := clearCurrentBodyReturnsBytes (evm := evmSolm0) (evm' := evmSolm1)
-    (copy := copy) (by simp [evmSolm0, initState]; exact hwv) hread hdel
+  have hbodyBytes := clearCurrentBodyReturnsBytes (evm := evmStele0) (evm' := evmStele1)
+    (copy := copy) (by simp [evmStele0, initState]; exact hwv) hread hdel
   have hbody :
-      ExecTransitionBody stringStoreLiteConfig stringStoreLiteContract evmSolm0 ∅
+      ExecTransitionBody stringStoreLiteConfig stringStoreLiteContract evmStele0 ∅
         clearCurrentTransition.body
         (.returned
           { contract := stringStoreLiteContract,
             locals := (∅ : Store).insert "copy" (.bytes copy) }
-          evmSolm1 (some [(.int 0)])) := by
+          evmStele1 (some [(.int 0)])) := by
     simpa [hcopySize] using hbodyBytes
   by_cases hperm : I.perm = true
   swap
   · have hpf : I.perm = false := by simpa using hperm
     exact (permSplit_false hpf hsplit).reEquivStaticHalt hcode hd hdec
-      (clearCurrentBodyStatic (evm := evmSolm0) (by simp [evmSolm0, initState]; exact hwv)
-        hread hdel (by simp [evmSolm0, initState]; exact hpf))
+      (clearCurrentBodyStatic (evm := evmStele0) (by simp [evmStele0, initState]; exact hwv)
+        hread hdel (by simp [evmStele0, initState]; exact hpf))
   exact (permSplit_true hperm hsplit).reEquivExecutionGen
     (cfg := stringStoreLiteConfig) hcode hd hdec hbody
     (by
-      simp [evmSolm1, evmSolm0, initState, storageStore_accountMap])
+      simp [evmStele1, evmStele0, initState, storageStore_accountMap])
     (returnEquiv_of_encode (uint256ReturnEncoding (⟨0⟩ : UInt256)))
 
 theorem stringStoreLiteClearCurrentShortNonzeroRuntime {σ σ₀ A I}
@@ -5793,8 +5793,8 @@ theorem stringStoreLiteClearCurrentShortNonzeroRuntime {σ σ₀ A I}
     (hnonzero : len ≠ ⟨0⟩) :
     runtimeRefinementFor stringStoreLiteConfig stringStoreLiteContract
       σ σ₀ g A I := by
-  let evmSolm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  let evmSolm1 := Solm.EVM.storageStore evmSolm0 I.codeOwner ⟨0⟩ ⟨0⟩
+  let evmStele0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele1 := Stele.EVM.storageStore evmStele0 I.codeOwner ⟨0⟩ ⟨0⟩
   have hsel' : ((⟨#[0xa6, 0xdf, 0xa2, 0x62]⟩ : ByteArray) == I.calldata.extract 0 4) =
       true := by
     simpa [selIs] using hsel
@@ -5807,49 +5807,49 @@ theorem stringStoreLiteClearCurrentShortNonzeroRuntime {σ σ₀ A I}
   have hsplit := stringStoreLiteX_clearCurrentShortValid
     (g := Sat256.ofUInt256 g) hreach hflag hlen hvalid hnonzero
   have hload :
-      Solm.EVM.storageLoad evmSolm0 I.codeOwner ⟨0⟩ =
+      Stele.EVM.storageLoad evmStele0 I.codeOwner ⟨0⟩ =
         currentLengthHeaderWord σ I := by
-    simp [evmSolm0, Solm.EVM.storageLoad, initState, State.lookupAccount,
+    simp [evmStele0, Stele.EVM.storageLoad, initState, State.lookupAccount,
       Account.lookupStorage, currentLengthHeaderWord]
   have hloadBytes :
-      Solm.EVM.storageLoad evmSolm0 evmSolm0.executionEnv.codeOwner ⟨0⟩ =
+      Stele.EVM.storageLoad evmStele0 evmStele0.executionEnv.codeOwner ⟨0⟩ =
         currentLengthHeaderWord σ I := by
-    simpa [evmSolm0, initState] using hload
+    simpa [evmStele0, initState] using hload
   obtain ⟨copy, hread, hcopySize⟩ :=
-    readCurrentShortPackedExists (evm := evmSolm0)
+    readCurrentShortPackedExists (evm := evmStele0)
       (header := currentLengthHeaderWord σ I) (len := len)
       hloadBytes hflag hlen hvalid
-  have hpacked : checkBytesPacked ⟨0⟩ evmSolm0 = true :=
+  have hpacked : checkBytesPacked ⟨0⟩ evmStele0 = true :=
     checkBytesPacked_of_storageLoad_land_one_zero hloadBytes hflag
   have hdel :
       deleteStorage? stringStoreLiteConfig
         { contract := stringStoreLiteContract,
           locals := (∅ : Store).insert "copy" (.bytes copy) }
-        evmSolm0 currentRef = .ok evmSolm1 := by
-    simpa [evmSolm0, evmSolm1, initState] using
-      deleteCurrentShortPacked (evm := evmSolm0)
+        evmStele0 currentRef = .ok evmStele1 := by
+    simpa [evmStele0, evmStele1, initState] using
+      deleteCurrentShortPacked (evm := evmStele0)
         (header := currentLengthHeaderWord σ I) (len := len) (copy := copy)
         hloadBytes hpacked hflag hlen hvalid
-  have hbodyBytes := clearCurrentBodyReturnsBytes (evm := evmSolm0) (evm' := evmSolm1)
-    (copy := copy) (by simp [evmSolm0, initState]; exact hwv) hread hdel
+  have hbodyBytes := clearCurrentBodyReturnsBytes (evm := evmStele0) (evm' := evmStele1)
+    (copy := copy) (by simp [evmStele0, initState]; exact hwv) hread hdel
   have hbody :
-      ExecTransitionBody stringStoreLiteConfig stringStoreLiteContract evmSolm0 ∅
+      ExecTransitionBody stringStoreLiteConfig stringStoreLiteContract evmStele0 ∅
         clearCurrentTransition.body
         (.returned
           { contract := stringStoreLiteContract,
             locals := (∅ : Store).insert "copy" (.bytes copy) }
-          evmSolm1 (some [(.int len.toNat)])) := by
+          evmStele1 (some [(.int len.toNat)])) := by
     simpa [hcopySize] using hbodyBytes
   by_cases hperm : I.perm = true
   swap
   · have hpf : I.perm = false := by simpa using hperm
     exact (permSplit_false hpf hsplit).reEquivStaticHalt hcode hd hdec
-      (clearCurrentBodyStatic (evm := evmSolm0) (by simp [evmSolm0, initState]; exact hwv)
-        hread hdel (by simp [evmSolm0, initState]; exact hpf))
+      (clearCurrentBodyStatic (evm := evmStele0) (by simp [evmStele0, initState]; exact hwv)
+        hread hdel (by simp [evmStele0, initState]; exact hpf))
   exact (permSplit_true hperm hsplit).reEquivExecutionGen
     (cfg := stringStoreLiteConfig) hcode hd hdec hbody
     (by
-      simp [evmSolm1, evmSolm0, initState, storageStore_accountMap])
+      simp [evmStele1, evmStele0, initState, storageStore_accountMap])
     (returnEquiv_of_encode (uint256ReturnEncoding len))
 
 theorem stringStoreLiteSetShortEmptyRuntime {σ σ₀ A I}
@@ -5868,8 +5868,8 @@ theorem stringStoreLiteSetShortEmptyRuntime {σ σ₀ A I}
     (hheader : currentLengthHeaderWord σ I = ⟨0⟩) :
     runtimeRefinementFor stringStoreLiteConfig stringStoreLiteContract
       σ σ₀ g A I := by
-  let evmSolm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  let evmSolm1 := Solm.EVM.storageStore evmSolm0 I.codeOwner ⟨0⟩ ⟨0⟩
+  let evmStele0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele1 := Stele.EVM.storageStore evmStele0 I.codeOwner ⟨0⟩ ⟨0⟩
   have hsel' : ((⟨#[0x4e, 0xd3, 0x88, 0x5e]⟩ : ByteArray) == I.calldata.extract 0 4) =
       true := by
     simpa [selIs] using hsel
@@ -5884,28 +5884,28 @@ theorem stringStoreLiteSetShortEmptyRuntime {σ σ₀ A I}
     (g := Sat256.ofUInt256 g) hcode hsize hwv hsel hsz36 hhi hoffMax hlenWord
     hsizeSign hlenZero hheader
   have hload :
-      Solm.EVM.storageLoad evmSolm0 I.codeOwner ⟨0⟩ = ⟨0⟩ := by
+      Stele.EVM.storageLoad evmStele0 I.codeOwner ⟨0⟩ = ⟨0⟩ := by
     have hload' :
-        Solm.EVM.storageLoad evmSolm0 I.codeOwner ⟨0⟩ =
+        Stele.EVM.storageLoad evmStele0 I.codeOwner ⟨0⟩ =
           currentLengthHeaderWord σ I := by
-      simp [evmSolm0, Solm.EVM.storageLoad, initState, State.lookupAccount,
+      simp [evmStele0, Stele.EVM.storageLoad, initState, State.lookupAccount,
         Account.lookupStorage, currentLengthHeaderWord]
     simpa [hheader] using hload'
   have hloadBytes :
-      Solm.EVM.storageLoad evmSolm0 evmSolm0.executionEnv.codeOwner ⟨0⟩ = ⟨0⟩ := by
-    simpa [evmSolm0, initState] using hload
+      Stele.EVM.storageLoad evmStele0 evmStele0.executionEnv.codeOwner ⟨0⟩ = ⟨0⟩ := by
+    simpa [evmStele0, initState] using hload
   have hwrite :
-      stringWrite? stringStoreLiteConfig evmSolm0 { base := "current", steps := [] }
-        .string (.bytes ByteArray.empty) = .ok evmSolm1 := by
-    simpa [evmSolm0, evmSolm1, initState] using
-      writeCurrentEmptyFromZero (evm := evmSolm0) hloadBytes
+      stringWrite? stringStoreLiteConfig evmStele0 { base := "current", steps := [] }
+        .string (.bytes ByteArray.empty) = .ok evmStele1 := by
+    simpa [evmStele0, evmStele1, initState] using
+      writeCurrentEmptyFromZero (evm := evmStele0) hloadBytes
   by_cases hperm : I.perm = true
   swap
   · have hpf : I.perm = false := by simpa using hperm
     exact setRuntimeStaticOfWrite hcode hwv hpf (permSplit_false hpf hsplit) hd hdec hwrite
   exact setRuntimeOfWriteAccountMapEq hcode hwv (permSplit_true hperm hsplit) hd hdec hwrite
     (by
-      simp [evmSolm1, evmSolm0, initState, storageStore_accountMap])
+      simp [evmStele1, evmStele0, initState, storageStore_accountMap])
     (returnEquiv_of_encode (uint256ReturnEncoding (⟨0⟩ : UInt256)))
 
 theorem stringStoreLiteSetEmptyShortValidRuntime {σ σ₀ A I}
@@ -5928,8 +5928,8 @@ theorem stringStoreLiteSetEmptyShortValidRuntime {σ σ₀ A I}
         ⟨0⟩) :
     runtimeRefinementFor stringStoreLiteConfig stringStoreLiteContract
       σ σ₀ g A I := by
-  let evmSolm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  let evmSolm1 := Solm.EVM.storageStore evmSolm0 I.codeOwner ⟨0⟩ ⟨0⟩
+  let evmStele0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele1 := Stele.EVM.storageStore evmStele0 I.codeOwner ⟨0⟩ ⟨0⟩
   let len : UInt256 :=
     UInt256.land (UInt256.div (currentLengthHeaderWord σ I) ⟨2⟩) ⟨127⟩
   let payloadStart : UInt256 :=
@@ -5979,33 +5979,33 @@ theorem stringStoreLiteSetEmptyShortValidRuntime {σ σ₀ A I}
       (by simpa [len] using hvalid))
     fun _ h => stringStoreLiteX_setEmptyReturnFromWrite (payloadStart := payloadStart) h
   have hload :
-      Solm.EVM.storageLoad evmSolm0 I.codeOwner ⟨0⟩ =
+      Stele.EVM.storageLoad evmStele0 I.codeOwner ⟨0⟩ =
         currentLengthHeaderWord σ I := by
-    simp [evmSolm0, Solm.EVM.storageLoad, initState, State.lookupAccount,
+    simp [evmStele0, Stele.EVM.storageLoad, initState, State.lookupAccount,
       Account.lookupStorage, currentLengthHeaderWord]
   have hloadBytes :
-      Solm.EVM.storageLoad evmSolm0 evmSolm0.executionEnv.codeOwner ⟨0⟩ =
+      Stele.EVM.storageLoad evmStele0 evmStele0.executionEnv.codeOwner ⟨0⟩ =
         currentLengthHeaderWord σ I := by
-    simpa [evmSolm0, initState] using hload
-  have hpacked : checkBytesPacked ⟨0⟩ evmSolm0 = true :=
+    simpa [evmStele0, initState] using hload
+  have hpacked : checkBytesPacked ⟨0⟩ evmStele0 = true :=
     checkBytesPacked_of_storageLoad_land_one_zero hloadBytes hflag
   have hshortEmpty : solidityShortBytesWord ByteArray.empty = ⟨0⟩ := by
     rw [solidityShortBytesWord, empty_readWithPadding_word_zero]
     rfl
   have hwrite :
-      stringWrite? stringStoreLiteConfig evmSolm0 { base := "current", steps := [] }
-        .string (.bytes ByteArray.empty) = .ok evmSolm1 := by
-    have hwrite₀ := writeCurrentShortPacked (evm := evmSolm0)
+      stringWrite? stringStoreLiteConfig evmStele0 { base := "current", steps := [] }
+        .string (.bytes ByteArray.empty) = .ok evmStele1 := by
+    have hwrite₀ := writeCurrentShortPacked (evm := evmStele0)
       (header := currentLengthHeaderWord σ I) (len := len) (value := ByteArray.empty)
       (by decide) hloadBytes hpacked hflag rfl (by simpa [len] using hvalid)
-    simpa [evmSolm1, hshortEmpty] using hwrite₀
+    simpa [evmStele1, hshortEmpty] using hwrite₀
   by_cases hperm : I.perm = true
   swap
   · have hpf : I.perm = false := by simpa using hperm
     exact setRuntimeStaticOfWrite hcode hwv hpf (permSplit_false hpf hsplit) hd hdec hwrite
   exact setRuntimeOfWriteAccountMapEq hcode hwv (permSplit_true hperm hsplit) hd hdec hwrite
     (by
-      simp [evmSolm1, evmSolm0, initState, storageStore_accountMap])
+      simp [evmStele1, evmStele0, initState, storageStore_accountMap])
     (returnEquiv_of_encode (uint256ReturnEncoding (⟨0⟩ : UInt256)))
 
 theorem stringStoreLiteSetEmptyLongMalformedRuntime {σ σ₀ A I}
@@ -6026,7 +6026,7 @@ theorem stringStoreLiteSetEmptyLongMalformedRuntime {σ σ₀ A I}
         (UInt256.lt (UInt256.div (currentLengthHeaderWord σ I) ⟨2⟩) ⟨32⟩) = ⟨0⟩) :
     runtimeRefinementFor stringStoreLiteConfig stringStoreLiteContract
       σ σ₀ g A I := by
-  let evmSolm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
   let payloadStart : UInt256 :=
     (((⟨4⟩ : UInt256) + calldataWord I.calldata 4) + ⟨32⟩)
   have hsel' : ((⟨#[0x4e, 0xd3, 0x88, 0x5e]⟩ : ByteArray) == I.calldata.extract 0 4) =
@@ -6072,20 +6072,20 @@ theorem stringStoreLiteSetEmptyLongMalformedRuntime {σ σ₀ A I}
   have hrev := stringStoreLiteX_setEmptyWriteLongMalformed
     (payloadStart := payloadStart) rd1350 hflag hbad
   have hload :
-      Solm.EVM.storageLoad evmSolm0 evmSolm0.executionEnv.codeOwner ⟨0⟩ =
+      Stele.EVM.storageLoad evmStele0 evmStele0.executionEnv.codeOwner ⟨0⟩ =
         currentLengthHeaderWord σ I := by
-    simp [evmSolm0, Solm.EVM.storageLoad, initState, State.lookupAccount,
+    simp [evmStele0, Stele.EVM.storageLoad, initState, State.lookupAccount,
       Account.lookupStorage, currentLengthHeaderWord]
   have hwrite :
-      stringWrite? stringStoreLiteConfig evmSolm0 { base := "current", steps := [] }
+      stringWrite? stringStoreLiteConfig evmStele0 { base := "current", steps := [] }
         .string (.bytes ByteArray.empty) = .revert :=
-    writeCurrentMalformedLong (evm := evmSolm0) (header := currentLengthHeaderWord σ I)
+    writeCurrentMalformedLong (evm := evmStele0) (header := currentLengthHeaderWord σ I)
       (value := ByteArray.empty) hload hflag hbad
   have hbody :
-      ExecTransitionBody stringStoreLiteConfig stringStoreLiteContract evmSolm0
+      ExecTransitionBody stringStoreLiteConfig stringStoreLiteContract evmStele0
         ((∅ : Store).insert "value" (.bytes ByteArray.empty)) setTransition.body .reverted :=
-    setBodyRevertsOfWrite (evm := evmSolm0) (value := ByteArray.empty)
-      (by simp [evmSolm0, initState]; exact hwv) hwrite
+    setBodyRevertsOfWrite (evm := evmStele0) (value := ByteArray.empty)
+      (by simp [evmStele0, initState]; exact hwv) hwrite
   exact hrev.reEquivExecutionRevert hcode hd hdec hbody
 
 theorem stringStoreLiteSetEmptyShortMalformedRuntime {σ σ₀ A I}
@@ -6108,7 +6108,7 @@ theorem stringStoreLiteSetEmptyShortMalformedRuntime {σ σ₀ A I}
         ⟨0⟩) :
     runtimeRefinementFor stringStoreLiteConfig stringStoreLiteContract
       σ σ₀ g A I := by
-  let evmSolm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
   let payloadStart : UInt256 :=
     (((⟨4⟩ : UInt256) + calldataWord I.calldata 4) + ⟨32⟩)
   have hsel' : ((⟨#[0x4e, 0xd3, 0x88, 0x5e]⟩ : ByteArray) == I.calldata.extract 0 4) =
@@ -6154,20 +6154,20 @@ theorem stringStoreLiteSetEmptyShortMalformedRuntime {σ σ₀ A I}
   have hrev := stringStoreLiteX_setEmptyWriteShortMalformed
     (payloadStart := payloadStart) rd1350 hflag hbad
   have hload :
-      Solm.EVM.storageLoad evmSolm0 evmSolm0.executionEnv.codeOwner ⟨0⟩ =
+      Stele.EVM.storageLoad evmStele0 evmStele0.executionEnv.codeOwner ⟨0⟩ =
         currentLengthHeaderWord σ I := by
-    simp [evmSolm0, Solm.EVM.storageLoad, initState, State.lookupAccount,
+    simp [evmStele0, Stele.EVM.storageLoad, initState, State.lookupAccount,
       Account.lookupStorage, currentLengthHeaderWord]
   have hwrite :
-      stringWrite? stringStoreLiteConfig evmSolm0 { base := "current", steps := [] }
+      stringWrite? stringStoreLiteConfig evmStele0 { base := "current", steps := [] }
         .string (.bytes ByteArray.empty) = .revert :=
-    writeCurrentMalformedShort (evm := evmSolm0) (header := currentLengthHeaderWord σ I)
+    writeCurrentMalformedShort (evm := evmStele0) (header := currentLengthHeaderWord σ I)
       (value := ByteArray.empty) hload hflag hbad
   have hbody :
-      ExecTransitionBody stringStoreLiteConfig stringStoreLiteContract evmSolm0
+      ExecTransitionBody stringStoreLiteConfig stringStoreLiteContract evmStele0
         ((∅ : Store).insert "value" (.bytes ByteArray.empty)) setTransition.body .reverted :=
-    setBodyRevertsOfWrite (evm := evmSolm0) (value := ByteArray.empty)
-      (by simp [evmSolm0, initState]; exact hwv) hwrite
+    setBodyRevertsOfWrite (evm := evmStele0) (value := ByteArray.empty)
+      (by simp [evmStele0, initState]; exact hwv) hwrite
   exact hrev.reEquivExecutionRevert hcode hd hdec hbody
 
 theorem stringStoreLiteSetShortNonemptyLongMalformedRuntime
@@ -6197,7 +6197,7 @@ theorem stringStoreLiteSetShortNonemptyLongMalformedRuntime
         (UInt256.lt (UInt256.div (currentLengthHeaderWord σ I) ⟨2⟩) ⟨32⟩) = ⟨0⟩) :
     runtimeRefinementFor stringStoreLiteConfig stringStoreLiteContract
       σ σ₀ g A I := by
-  let evmSolm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
   let len : UInt256 :=
     uInt256OfByteArray
       (I.calldata.readBytes
@@ -6263,21 +6263,21 @@ theorem stringStoreLiteSetShortNonemptyLongMalformedRuntime
   have hrev := stringStoreLiteX_setShortNonemptyWriteLongMalformed
     (payloadStart := payloadStart) (len := len) hnz hlenMaxLen hsrc rd1350 hflag hbad
   have hload :
-      Solm.EVM.storageLoad evmSolm0 evmSolm0.executionEnv.codeOwner ⟨0⟩ =
+      Stele.EVM.storageLoad evmStele0 evmStele0.executionEnv.codeOwner ⟨0⟩ =
         currentLengthHeaderWord σ I := by
-    simp [evmSolm0, Solm.EVM.storageLoad, initState, State.lookupAccount,
+    simp [evmStele0, Stele.EVM.storageLoad, initState, State.lookupAccount,
       Account.lookupStorage, currentLengthHeaderWord]
   have hwrite :
-      stringWrite? stringStoreLiteConfig evmSolm0 { base := "current", steps := [] }
+      stringWrite? stringStoreLiteConfig evmStele0 { base := "current", steps := [] }
         .string (.bytes (setDecodedValueBytes I)) = .revert :=
-    writeCurrentMalformedLong (evm := evmSolm0) (header := currentLengthHeaderWord σ I)
+    writeCurrentMalformedLong (evm := evmStele0) (header := currentLengthHeaderWord σ I)
       (value := setDecodedValueBytes I) hload hflag hbad
   have hbody :
-      ExecTransitionBody stringStoreLiteConfig stringStoreLiteContract evmSolm0
+      ExecTransitionBody stringStoreLiteConfig stringStoreLiteContract evmStele0
         ((∅ : Store).insert "value" (.bytes (setDecodedValueBytes I))) setTransition.body
         .reverted :=
-    setBodyRevertsOfWrite (evm := evmSolm0) (value := setDecodedValueBytes I)
-      (by simp [evmSolm0, initState]; exact hwv) hwrite
+    setBodyRevertsOfWrite (evm := evmStele0) (value := setDecodedValueBytes I)
+      (by simp [evmStele0, initState]; exact hwv) hwrite
   exact hrev.reEquivExecutionRevert hcode hd hdec hbody
 
 theorem stringStoreLiteSetShortNonemptyShortMalformedRuntime
@@ -6309,7 +6309,7 @@ theorem stringStoreLiteSetShortNonemptyShortMalformedRuntime
           ⟨32⟩) = ⟨0⟩) :
     runtimeRefinementFor stringStoreLiteConfig stringStoreLiteContract
       σ σ₀ g A I := by
-  let evmSolm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
   let len : UInt256 :=
     uInt256OfByteArray
       (I.calldata.readBytes
@@ -6375,21 +6375,21 @@ theorem stringStoreLiteSetShortNonemptyShortMalformedRuntime
   have hrev := stringStoreLiteX_setShortNonemptyWriteShortMalformed
     (payloadStart := payloadStart) (len := len) hnz hlenMaxLen hsrc rd1350 hflag hbad
   have hload :
-      Solm.EVM.storageLoad evmSolm0 evmSolm0.executionEnv.codeOwner ⟨0⟩ =
+      Stele.EVM.storageLoad evmStele0 evmStele0.executionEnv.codeOwner ⟨0⟩ =
         currentLengthHeaderWord σ I := by
-    simp [evmSolm0, Solm.EVM.storageLoad, initState, State.lookupAccount,
+    simp [evmStele0, Stele.EVM.storageLoad, initState, State.lookupAccount,
       Account.lookupStorage, currentLengthHeaderWord]
   have hwrite :
-      stringWrite? stringStoreLiteConfig evmSolm0 { base := "current", steps := [] }
+      stringWrite? stringStoreLiteConfig evmStele0 { base := "current", steps := [] }
         .string (.bytes (setDecodedValueBytes I)) = .revert :=
-    writeCurrentMalformedShort (evm := evmSolm0) (header := currentLengthHeaderWord σ I)
+    writeCurrentMalformedShort (evm := evmStele0) (header := currentLengthHeaderWord σ I)
       (value := setDecodedValueBytes I) hload hflag hbad
   have hbody :
-      ExecTransitionBody stringStoreLiteConfig stringStoreLiteContract evmSolm0
+      ExecTransitionBody stringStoreLiteConfig stringStoreLiteContract evmStele0
         ((∅ : Store).insert "value" (.bytes (setDecodedValueBytes I))) setTransition.body
         .reverted :=
-    setBodyRevertsOfWrite (evm := evmSolm0) (value := setDecodedValueBytes I)
-      (by simp [evmSolm0, initState]; exact hwv) hwrite
+    setBodyRevertsOfWrite (evm := evmStele0) (value := setDecodedValueBytes I)
+      (by simp [evmStele0, initState]; exact hwv) hwrite
   exact hrev.reEquivExecutionRevert hcode hd hdec hbody
 
 theorem stringStoreLiteSetHeadShortRuntime {σ σ₀ A I}

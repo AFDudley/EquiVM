@@ -2,7 +2,7 @@ import Reasoning.Storage
 import Benchmarks.Dss.Clipper.KickFeedPriceSimulation
 import Benchmarks.Dss.Clipper.RedoSuccessBridge
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 namespace Benchmarks.Dss.Clipper
@@ -19,8 +19,8 @@ theorem clipperKickVowAddress_eq_of_aligned
     clipperKickSourceVowAddress evm =
       AccountAddress.ofNat (clipperRedoVowTarget σ I).toNat := by
   have hword : solcSlotWord σ I ⟨2⟩ =
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩ := by
-    simpa [solcSlotWord, Solm.EVM.storageLoad, State.lookupAccount,
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩ := by
+    simpa [solcSlotWord, Stele.EVM.storageLoad, State.lookupAccount,
       Account.lookupStorage, halign.executionEnv, halign.accounts]
   simp only [clipperKickSourceVowAddress, clipperRedoVowTarget]
   rw [← hword]
@@ -63,11 +63,11 @@ theorem clipperKickAfterFeedTopPrefix
       sourceInit (.internalCall "getFeedPrice" [] "feedPrice")
       (.ok (Frame.mk contract (clipperKickLocalsFeedPrice evmLock I feedPrice) (immStore v)) sourceAfter))
     (hmul : feedPrice.toNat *
-      (Solm.EVM.storageLoad sourceAfter
+      (Stele.EVM.storageLoad sourceAfter
         sourceAfter.executionEnv.codeOwner ⟨5⟩).toNat < UInt256.size)
     (htopEq : UInt256.div
       (UInt256.mul feedPrice
-        (Solm.EVM.storageLoad sourceAfter
+        (Stele.EVM.storageLoad sourceAfter
           sourceAfter.executionEnv.codeOwner ⟨5⟩)) clipperRayWord = top)
     (htopPos : 0 < top.toNat) {result : ExecResult}
     (htail : ExecBlock config
@@ -119,16 +119,16 @@ theorem clipperKickFinishActive
     ClipperKickTailOutcome v code g
       (initState σStart σ₀ (Sat256.ofUInt256 g) A I) I
       evmLock sourceInit id := by
-  have htip : clipperKickTipWord σTop I = clipperRedoTipSolmWord evmTop := by
+  have htip : clipperKickTipWord σTop I = clipperRedoTipSteleWord evmTop := by
     simpa [clipperKickTipWord, clipperRedoTipWord] using
       clipperRedoTipWord_eq_of_accounts_eq evmTop I
         halignTop.executionEnv halignTop.accounts
-  have hchip : clipperKickChipWord σTop I = clipperRedoChipSolmWord evmTop := by
+  have hchip : clipperKickChipWord σTop I = clipperRedoChipSteleWord evmTop := by
     simpa [clipperKickChipWord, clipperRedoChipWord] using
       clipperRedoChipWord_eq_of_accounts_eq evmTop I
         halignTop.executionEnv halignTop.accounts
-  have hactiveSource : clipperRedoTipSolmWord evmTop ≠ ⟨0⟩ ∨
-      clipperRedoChipSolmWord evmTop ≠ ⟨0⟩ := by
+  have hactiveSource : clipperRedoTipSteleWord evmTop ≠ ⟨0⟩ ∨
+      clipperRedoChipSteleWord evmTop ≠ ⟨0⟩ := by
     rcases hactive with htipNe | hchipNe
     · exact Or.inl (by simpa [← htip] using htipNe)
     · exact Or.inr (by simpa [← hchip] using hchipNe)
@@ -142,7 +142,7 @@ theorem clipperKickFinishActive
       v hpatch rd8238 hoverWmul
         (by simp only [List.length_cons]; omega)
     have hoverSource : UInt256.size ≤ (clipperKickTabWord I).toNat *
-        (clipperRedoChipSolmWord evmTop).toNat := by
+        (clipperRedoChipSteleWord evmTop).toNat := by
       rw [← hchip, Nat.mul_comm]
       exact hoverWmul
     have htail := clipperKickIncentiveWmulReverts
@@ -166,11 +166,11 @@ theorem clipperKickFinishActive
         v hpatch (by simpa [chipCoin] using rd9258) hoverAdd
           (by simp only [List.length_cons]; omega)
       have hoverSource : UInt256.size ≤
-          (clipperRedoTipSolmWord evmTop).toNat +
+          (clipperRedoTipSteleWord evmTop).toNat +
             (clipperKickSourceChipCoinWord evmTop I).toNat := by
         simpa [← htip, hchipCoin] using hoverAdd
       have hwmulSource : (clipperKickTabWord I).toNat *
-          (clipperRedoChipSolmWord evmTop).toNat < UInt256.size := by
+          (clipperRedoChipSteleWord evmTop).toNat < UInt256.size := by
         rw [← hchip, Nat.mul_comm]
         exact hmulWmul
       have htail := clipperKickIncentiveAddReverts
@@ -185,10 +185,10 @@ theorem clipperKickFinishActive
       obtain ⟨k6357, C6357, rd6357⟩ := RD.clipperKickIncentiveToSuckGuard
         v hpatch (by simpa [coin] using rd6240) hmemTop hreadTop (by omega)
       have hwmulSource : (clipperKickTabWord I).toNat *
-          (clipperRedoChipSolmWord evmTop).toNat < UInt256.size := by
+          (clipperRedoChipSteleWord evmTop).toNat < UInt256.size := by
         rw [← hchip, Nat.mul_comm]
         exact hmulWmul
-      have haddSource : (clipperRedoTipSolmWord evmTop).toNat +
+      have haddSource : (clipperRedoTipSteleWord evmTop).toNat +
           (clipperKickSourceChipCoinWord evmTop I).toNat < UInt256.size := by
         simpa [← htip, hchipCoin] using hfitAdd
       have hcoin : clipperKickSourceCoinWord evmTop I = coin := by
@@ -208,7 +208,7 @@ theorem clipperKickFinishActive
             rd6373, hcallSuck, houtSuck⟩ := RD.clipperKickSuckPostCall
           v hpatch (by simpa [coin] using rd6357) hvat hdepth hperm hmemTop
             (by omega)
-        obtain ⟨σSuckSolm, ASuckSolm, evmSuck, hevmeq, hcallSuckSolm,
+        obtain ⟨σSuckStele, ASuckStele, evmSuck, hevmeq, hcallSuckStele,
             halignSuck⟩ := clipperKickCallAligned_transport halignTop hcallSuck
         have hvow := clipperKickVowAddress_eq_of_aligned halignTop
         have hkpr := clipperKickKprValue_eq_masked I
@@ -218,7 +218,7 @@ theorem clipperKickFinishActive
               clipperKickKprValue I,
               .int (Int.ofNat (clipperKickSourceCoinWord evmTop I).toNat)]
             (zSuck, evmSuck, outSuck) true := by
-          simpa [hvow, hkpr, hcoin, coin] using hcallSuckSolm
+          simpa [hvow, hkpr, hcoin, coin] using hcallSuckStele
         have hcodeVat := clipperKickHasCode_of_aligned halignTop
           (clipperRedoVatTargetAddress v).symm hvat
         cases zSuck
@@ -252,7 +252,7 @@ theorem clipperKickFinishActive
           have htail := clipperKickIncentiveSucceeds
             v evmLock evmTop evmSuck I feedPrice top hactiveSource
               hwmulSource haddSource hsuck
-          let sourceFinal := Solm.EVM.storageStore evmSuck
+          let sourceFinal := Stele.EVM.storageStore evmSuck
             evmSuck.executionEnv.codeOwner ⟨13⟩ ⟨0⟩
           have hFinalAccounts := clipperKickUnlockedState_accounts_eq
             evmSuck I halignSuck.executionEnv halignSuck.accounts
@@ -302,7 +302,7 @@ theorem clipperKickFinishAfterFeedPrice
         v hpatch rd9233 hoverRmul
           (by simp only [List.length_cons]; omega)
       have hoverSource : UInt256.size ≤ feedPrice.toNat *
-          (Solm.EVM.storageLoad sourceAfter sourceAfter.executionEnv.codeOwner ⟨5⟩).toNat := by
+          (Stele.EVM.storageLoad sourceAfter sourceAfter.executionEnv.codeOwner ⟨5⟩).toNat := by
         rw [← hbuf, Nat.mul_comm]
         exact hoverRmul
       exact .reverted
@@ -318,11 +318,11 @@ theorem clipperKickFinishAfterFeedPrice
         clipperRayWord
       have htopSource : UInt256.div
           (UInt256.mul feedPrice
-            (Solm.EVM.storageLoad sourceAfter sourceAfter.executionEnv.codeOwner ⟨5⟩))
+            (Stele.EVM.storageLoad sourceAfter sourceAfter.executionEnv.codeOwner ⟨5⟩))
           clipperRayWord = top := by
         simp only [top, ← hbuf, u256_mul_comm]
       have hmulSource : feedPrice.toNat *
-          (Solm.EVM.storageLoad sourceAfter sourceAfter.executionEnv.codeOwner ⟨5⟩).toNat <
+          (Stele.EVM.storageLoad sourceAfter sourceAfter.executionEnv.codeOwner ⟨5⟩).toNat <
           UInt256.size := by
         rw [← hbuf, Nat.mul_comm]
         exact hmulRmul
@@ -358,11 +358,11 @@ theorem clipperKickFinishAfterFeedPrice
                 evmTop.executionEnv = sourceAfter.executionEnv :=
                   storageStore_executionEnv _ _ _ _
                 _ = I := halign.executionEnv }
-        have htip : clipperKickTipWord σTop I = clipperRedoTipSolmWord evmTop := by
+        have htip : clipperKickTipWord σTop I = clipperRedoTipSteleWord evmTop := by
           simpa [clipperKickTipWord, clipperRedoTipWord] using
             clipperRedoTipWord_eq_of_accounts_eq evmTop I
               halignTop.executionEnv halignTop.accounts
-        have hchip : clipperKickChipWord σTop I = clipperRedoChipSolmWord evmTop := by
+        have hchip : clipperKickChipWord σTop I = clipperRedoChipSteleWord evmTop := by
           simpa [clipperKickChipWord, clipperRedoChipWord] using
             clipperRedoChipWord_eq_of_accounts_eq evmTop I
               halignTop.executionEnv halignTop.accounts
@@ -395,7 +395,7 @@ theorem clipperKickFinishAfterFeedPrice
               v evmLock evmTop I feedPrice top (htip.symm.trans htipZero)
                 (hchip.symm.trans hchipZero)
             have hsource := hprefix htail
-            let sourceFinal := Solm.EVM.storageStore evmTop
+            let sourceFinal := Stele.EVM.storageStore evmTop
               evmTop.executionEnv.codeOwner ⟨13⟩ ⟨0⟩
             have hFinalAccounts := clipperKickUnlockedState_accounts_eq
               evmTop I halignTop.executionEnv halignTop.accounts

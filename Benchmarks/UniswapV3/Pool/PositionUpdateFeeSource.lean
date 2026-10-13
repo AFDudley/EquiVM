@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.PositionUpdatePrefix
 import Benchmarks.UniswapV3.Pool.PositionScalarStorage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 1000
 
@@ -86,7 +86,7 @@ theorem positionUpdateFeeSource (locals imms : Store) (evm : EVM.State)
     internalCallFunctionReturn (callee := fullMathFunction)
       (locals := fullMathLocals (positionUpdateFeeDelta a evm second)
         (positionUpdateLiquidityWord a evm) (UInt256.ofNat (2 ^ 128)))
-      (calleeSolm := fullMathProductFrame imms (positionUpdateFeeDelta a evm second)
+      (calleeStele := fullMathProductFrame imms (positionUpdateFeeDelta a evm second)
         (positionUpdateLiquidityWord a evm) (UInt256.ofNat (2 ^ 128)))
       (value := some [.int (Int.ofNat (positionUpdateFeeRaw a evm second).toNat)])
       (evalPositionUpdateFeeArgs locals imms evm a second hself hgrowth) fullMathLookup

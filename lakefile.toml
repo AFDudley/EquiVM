@@ -1,7 +1,7 @@
 name = "EquiVM"
 version = "0.1.0"
 # defaultTargets = ["evmlean"] this currently does no correspond to anything
-defaultTargets = ["Solm"]
+defaultTargets = ["Stele"]
 
 [[lean_lib]]
 name = "EquiVM"
@@ -13,7 +13,7 @@ name = "EVM"
 name = "ABI"
 
 [[lean_lib]]
-name = "Solm"
+name = "Stele"
 
 [[lean_lib]]
 name = "Examples"
@@ -35,9 +35,9 @@ globs = ["Benchmarks.+"]
 name = "Tests"
 globs = ["Tests.+"]
 
-# Differential tests of Solm specifications against their compiled bytecode (`Tests/DiffTest/README.md`).
+# Differential tests of Stele specifications against their compiled bytecode (`Tests/DiffTest/README.md`).
 [[lean_exe]]
-name = "solm-difftest"
+name = "stele-difftest"
 root = "Tests.DiffTest.Main"
 
 # [[lean_exe]]

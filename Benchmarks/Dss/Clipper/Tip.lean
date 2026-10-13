@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Clipper.Fallback
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 namespace Benchmarks.Dss.Clipper
@@ -95,7 +95,7 @@ theorem clipperEvalTip (v : ClipperImmutables) (evm : EVM.State) (locals : Store
     (hbase : locals.get? "tip" = none) :
     evalExpr? config { contract := contract, locals := locals, immutables := immStore v } evm (.storage tipRef) =
       .ok (.int (Int.ofNat (UInt256.land
-        (UInt256.div (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩)
+        (UInt256.div (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩)
           (UInt256.shiftLeft (⟨1⟩ : UInt256) ⟨64⟩))
         (UInt256.sub (UInt256.shiftLeft (⟨1⟩ : UInt256) ⟨192⟩) ⟨1⟩)).toNat)) := by
   let er : EvaledStorageRef := { base := "tip", steps := [] }
@@ -118,7 +118,7 @@ theorem clipperTipBodyReturns (v : ClipperImmutables) (evm : EVM.State) (locals 
     ExecTransitionBody config contract evm locals tipTransition.body
       (.returned { contract := contract, locals := locals, immutables := immStore v } evm
         (some [(.int (Int.ofNat (UInt256.land
-          (UInt256.div (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩)
+          (UInt256.div (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩)
             (UInt256.shiftLeft (⟨1⟩ : UInt256) ⟨64⟩))
           (UInt256.sub (UInt256.shiftLeft (⟨1⟩ : UInt256) ⟨192⟩) ⟨1⟩)).toNat))])) (immStore v) := by
   simpa [tipTransition] using
@@ -399,7 +399,7 @@ theorem clipperTipBody (v : ClipperImmutables) {code : ByteArray}
             (UInt256.div (solcSlotWord σ I ⟨8⟩)
               (UInt256.shiftLeft (⟨1⟩ : UInt256) ⟨64⟩))
             (UInt256.sub (UInt256.shiftLeft (⟨1⟩ : UInt256) ⟨192⟩) ⟨1⟩)).toNat))])) (immStore v) := by
-    simpa [solcSlotWord, initState, Solm.EVM.storageLoad, State.lookupAccount] using
+    simpa [solcSlotWord, initState, Stele.EVM.storageLoad, State.lookupAccount] using
       clipperTipBodyReturns v
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
         (by simp only [initState]; exact hwv) (by simp)

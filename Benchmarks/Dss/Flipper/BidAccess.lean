@@ -1,7 +1,7 @@
 import Reasoning.WordArithmetic
 import Benchmarks.Dss.Flipper.BidStorage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 0
@@ -118,7 +118,7 @@ theorem evalExpr_bidLot_of_get_id_evm {evm : EVM.State} {locals : Store}
     evalExpr? config { contract := contract, locals := locals } evm
       (.storage (bidsF (.var "id") "lot")) =
         .ok (.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (bidSlotOfWord id ⟨1⟩)).toNat)) := by
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (bidSlotOfWord id ⟨1⟩)).toNat)) := by
   rw [evalExpr_storage_scalar (hbackend := rfl)
     (t := .int uint256Int)
     (loc := wordLoc (bidSlotOfWord id ⟨1⟩))
@@ -169,7 +169,7 @@ theorem evalExpr_bidGuy_of_get_id_evm {evm : EVM.State} {locals : Store}
       (.storage (bidsF (.var "id") "guy")) =
         .ok (.address (AccountAddress.ofNat
           (UInt256.land
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (bidPackedSlotOfWord id))
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (bidPackedSlotOfWord id))
             solcAddrMask).toNat)) := by
   rw [evalExpr_storage_scalar (hbackend := rfl)
     (t := .address)
@@ -300,7 +300,7 @@ theorem evalExpr_bidGal_of_get_id_evm {evm : EVM.State} {locals : Store}
       (.storage (bidsF (.var "id") "gal")) =
         .ok (.address (AccountAddress.ofNat
           (UInt256.land
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (bidSlotOfWord id ⟨4⟩))
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (bidSlotOfWord id ⟨4⟩))
             solcAddrMask).toNat)) := by
   rw [evalExpr_storage_scalar (hbackend := rfl)
     (t := .address)
@@ -352,7 +352,7 @@ theorem evalExpr_bidTab_of_get_id_evm {evm : EVM.State} {locals : Store}
     evalExpr? config { contract := contract, locals := locals } evm
       (.storage (bidsF (.var "id") "tab")) =
         .ok (.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (bidSlotOfWord id ⟨5⟩)).toNat)) := by
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (bidSlotOfWord id ⟨5⟩)).toNat)) := by
   rw [evalExpr_storage_scalar (hbackend := rfl)
     (t := .int uint256Int)
     (loc := wordLoc (bidSlotOfWord id ⟨5⟩))
@@ -372,7 +372,7 @@ theorem evalExpr_bidTab_of_get_id_evm {evm : EVM.State} {locals : Store}
 theorem assign_bidBidStorage (evm : EVM.State) (id value : UInt256) {locals : Store}
     (hid : locals.get? "id" = some (.int (Int.ofNat id.toNat)))
     (hbids : locals.get? "bids" = none) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner
       (bidBaseOfWord id) value
     assignStorageRef? config { contract := contract, locals := locals } evm
       .storage (bidsF (.var "id") "bid") (.int (Int.ofNat value.toNat)) =
@@ -395,7 +395,7 @@ theorem assign_bidBidStorage (evm : EVM.State) (id value : UInt256) {locals : St
 theorem assign_bidLotStorage (evm : EVM.State) (id value : UInt256) {locals : Store}
     (hid : locals.get? "id" = some (.int (Int.ofNat id.toNat)))
     (hbids : locals.get? "bids" = none) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner
       (bidSlotOfWord id ⟨1⟩) value
     assignStorageRef? config { contract := contract, locals := locals } evm
       .storage (bidsF (.var "id") "lot") (.int (Int.ofNat value.toNat)) =
@@ -418,10 +418,10 @@ theorem assign_bidLotStorage (evm : EVM.State) (id value : UInt256) {locals : St
 theorem assign_bidGuyStorage (evm : EVM.State) (id : UInt256) {locals : Store}
     (hid : locals.get? "id" = some (.int (Int.ofNat id.toNat)))
     (hbids : locals.get? "bids" = none) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner
       (bidPackedSlotOfWord id)
       (setAddressOffset0Word
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (bidPackedSlotOfWord id))
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (bidPackedSlotOfWord id))
         (solcSourceWord evm.executionEnv))
     assignStorageRef? config { contract := contract, locals := locals } evm
       .storage (bidsF (.var "id") "guy") (.address evm.executionEnv.source) =
@@ -453,10 +453,10 @@ theorem assign_bidTicStorage (evm : EVM.State) (id value : UInt256) {locals : St
     (hvalue : value.toNat < 2 ^ 48)
     (hid : locals.get? "id" = some (.int (Int.ofNat id.toNat)))
     (hbids : locals.get? "bids" = none) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner
       (bidPackedSlotOfWord id)
       (setUint48Offset20Word
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (bidPackedSlotOfWord id))
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (bidPackedSlotOfWord id))
         value)
     assignStorageRef? config { contract := contract, locals := locals } evm
       .storage (bidsF (.var "id") "tic") (.int (Int.ofNat value.toNat)) =

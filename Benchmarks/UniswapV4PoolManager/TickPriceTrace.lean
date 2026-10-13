@@ -4,7 +4,7 @@ import Benchmarks.UniswapV4PoolManager.TickLogTrace
 import Benchmarks.UniswapV4PoolManager.TickPriceFinishTrace
 import Benchmarks.UniswapV4PoolManager.MostSignificantBitTrace
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.UniswapV4PoolManager.Immutables
 namespace Benchmarks.UniswapV4PoolManager

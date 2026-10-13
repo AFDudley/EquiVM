@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.PoolSwapIterationCorrect
 import Benchmarks.UniswapV4PoolManager.PoolSwapLoopConditionTrace
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.UniswapV4PoolManager.Immutables
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
@@ -68,7 +68,7 @@ theorem poolSwapLoopFuel {I : ExecutionEnv} {g : Sat256} {s0 : State} {rdata : B
           exact (ha3 (by rw [h2]; exact ha)).trans h2
       | reverted => exact .inr ⟨.reverted, ExecStmt.whileRevert hcond hbody, hbodyTrace⟩
       | staticViolation => exact .inr ⟨.staticViolation, ExecStmt.whileStatic hcond hbody, hbodyTrace⟩
-      | returned | «break» | «continue» => exact False.elim hbodyTrace
+      | returned | «break» | «continue» | noMatch | decodingFailed => exact False.elim hbodyTrace
     · rw [if_neg hgo] at rd1
       rw [decide_eq_false hgo] at hcond
       exact .inr ⟨.ok f evm, ExecStmt.whileFalse hcond,

@@ -3,7 +3,7 @@ import Benchmarks.CompoundIII.Comet.ArithmeticSource
 import Benchmarks.CompoundIII.Comet.NarrowArithmetic
 import Benchmarks.CompoundIII.Comet.PriceSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.CompoundIII.Comet.Immutables
 
 namespace Benchmarks.CompoundIII.Comet

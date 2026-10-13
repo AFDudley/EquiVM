@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.ModularWords
 import Benchmarks.UniswapV3.Pool.SourceExpressions
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 -- LIBRARY CANDIDATE: the full-width unsigned cast is the EVM word representation.
@@ -9,7 +9,7 @@ theorem normalizeUInt256_int (i : Int) :
     normalizeInt (.uint ⟨256, by decide⟩) i = Int.ofNat (EVM.wordOfInt i).toNat := by
   rw [← normalizeInt_wordOfInt (.uint ⟨256, by decide⟩) i, normalizeInt_uint256_word]
 
--- GENERALIZES Reasoning.SolmArithmetic wrapping arithmetic to arbitrary frames.
+-- GENERALIZES Reasoning.SteleArithmetic wrapping arithmetic to arbitrary frames.
 theorem evalExpr_word_add {cfg : Config} {frame : Frame} {evm : EVM.State}
     {lhs rhs : Expr} {a b : UInt256}
     (ha : evalExpr? cfg frame evm lhs = .ok (.int (Int.ofNat a.toNat)))
@@ -31,7 +31,7 @@ theorem evalExpr_word_sub {cfg : Config} {frame : Frame} {evm : EVM.State}
     normalizeUInt256_int, wordOfInt_sub, wordOfInt_ofNat_toNat]
   rfl
 
--- GENERALIZES Reasoning.SolmArithmetic.evalExpr_div_uint256_ok to arbitrary frames.
+-- GENERALIZES Reasoning.SteleArithmetic.evalExpr_div_uint256_ok to arbitrary frames.
 theorem evalExpr_word_div {cfg : Config} {frame : Frame} {evm : EVM.State}
     {lhs rhs : Expr} {a b : UInt256}
     (ha : evalExpr? cfg frame evm lhs = .ok (.int (Int.ofNat a.toNat)))
@@ -49,7 +49,7 @@ theorem umod_toNat_of_ne_zero (a b : UInt256) (hn : b.toNat ≠ 0) :
   simp only [UInt256.mod, beq_iff_eq, if_neg hz]
   rfl
 
--- GENERALIZES Reasoning.SolmArithmetic.evalExpr_mod_int_ok to arbitrary frames.
+-- GENERALIZES Reasoning.SteleArithmetic.evalExpr_mod_int_ok to arbitrary frames.
 theorem evalExpr_word_mod {cfg : Config} {frame : Frame} {evm : EVM.State}
     {lhs rhs : Expr} {a b : UInt256}
     (ha : evalExpr? cfg frame evm lhs = .ok (.int (Int.ofNat a.toNat)))

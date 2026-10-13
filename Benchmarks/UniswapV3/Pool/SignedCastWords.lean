@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.SourceSignedBits
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 -- LIBRARY CANDIDATE: a nonnegative word below a signed type's sign bit is unchanged by casting.

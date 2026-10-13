@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV4PoolManager.PoolSwapSyntax
 
-open Solm
+open Stele
 namespace Benchmarks.UniswapV4PoolManager
 
 def poolSwapCrossStmts : List Stmt :=

@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MorphoBlue.ReturnBlockRefines
 import Benchmarks.Morpho.MorphoBlue.SupplySourceStart
 import Benchmarks.Morpho.MorphoBlue.SafeTransferPair
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MorphoBlue.Immutables
 namespace Benchmarks.Morpho.MorphoBlue

@@ -5,9 +5,9 @@ import Examples.BlindAuction.Storage
 import Examples.BlindAuction.Bids
 import Examples.BlindAuction.BiddingEnd
 import Reasoning.ABI
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -87,15 +87,15 @@ abbrev bidStructValue (I : ExecutionEnv) : Value :=
   .struct "Bid" [("blindedBid", bidBlindedValue I), ("deposit", bidCallValue I)]
 
 def bidAfterLengthState (evm : EVM.State) (I : ExecutionEnv) (len : UInt256) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (bidLengthSlot I) (len + ⟨1⟩)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (bidLengthSlot I) (len + ⟨1⟩)
 
 def bidAfterBlindedState (evm : EVM.State) (I : ExecutionEnv) (len : UInt256) : EVM.State :=
-  Solm.EVM.storageStore (bidAfterLengthState evm I len)
+  Stele.EVM.storageStore (bidAfterLengthState evm I len)
     (bidAfterLengthState evm I len).executionEnv.codeOwner (bidElementSlot I len)
     (bidBlindedWord I)
 
 def bidPostState (evm : EVM.State) (I : ExecutionEnv) (len : UInt256) : EVM.State :=
-  Solm.EVM.storageStore (bidAfterBlindedState evm I len)
+  Stele.EVM.storageStore (bidAfterBlindedState evm I len)
     (bidAfterBlindedState evm I len).executionEnv.codeOwner (bidDepositSlot I len) I.weiValue
 
 theorem bidLengthSlot_spec (I : ExecutionEnv) :
@@ -482,11 +482,11 @@ theorem bidBlindedValue_toWord (I : ExecutionEnv) (hsz36 : 36 ≤ I.calldata.siz
 
 theorem bidStorageLocStore_uint256_succ (evm : EVM.State) (slot val : UInt256) :
     storageLocStore evm (blindAuctionUint256Loc slot) (.int (Int.ofNat val.toNat + 1)) =
-      some (Solm.EVM.storageStore evm evm.executionEnv.codeOwner slot (val + ⟨1⟩)) := by
+      some (Stele.EVM.storageStore evm evm.executionEnv.codeOwner slot (val + ⟨1⟩)) := by
   unfold storageLocStore storageLocWriteWord blindAuctionUint256Loc
   simp only [valueToWord, wordOfInt_natCast_succ, bind, Option.bind, pure]
   have hslen := (EVM.Word.toBytesLEWithSizeProof
-    (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).2
+    (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).2
   have hvlen := (EVM.Word.toBytesLEWithSizeProof (val + ⟨1⟩)).2
   congr 2
   apply u256_inj
@@ -519,7 +519,7 @@ theorem bidPushArray_ok (evm : EVM.State) (hsz36 : 36 ≤ evm.executionEnv.calld
     have h := bidsArrayLength evm (.address evm.executionEnv.source)
     change solidityDynamicLength? blindAuctionStorageLayout evm
       { base := "bids", steps := [.mindex (.address evm.executionEnv.source)] } = _ at h
-    simpa [bidLengthWord, bidLengthSlot, bidSenderKey, Solm.EVM.storageLoad,
+    simpa [bidLengthWord, bidLengthSlot, bidSenderKey, Stele.EVM.storageLoad,
       State.lookupAccount, Account.lookupStorage] using h
   have hlenLoc : solidityLengthLoc? blindAuctionStorageLayout
       { base := "bids", steps := [.mindex (.address evm.executionEnv.source)] } =
@@ -586,7 +586,7 @@ theorem evalExpr_bid_biddingEnd (evm : EVM.State) :
     evalExpr? blindAuctionConfig
       { contract := blindAuctionContract, locals := bidStore evm.executionEnv } evm
       (.storage biddingEndRef) =
-        .ok (.int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat)) := by
+        .ok (.int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat)) := by
   have her : evalStorageRef blindAuctionConfig
       { contract := blindAuctionContract, locals := bidStore evm.executionEnv } evm biddingEndRef =
       .ok { base := "biddingEnd", steps := [] } := by
@@ -604,7 +604,7 @@ theorem evalExpr_bid_biddingEnd (evm : EVM.State) :
 theorem evalExpr_bid_time_true (evm : EVM.State)
     (htime :
       (UInt256.ofNat evm.executionEnv.header.timestamp).toNat <
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat) :
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat) :
     evalExpr? blindAuctionConfig
       { contract := blindAuctionContract, locals := bidStore evm.executionEnv } evm
       (.binary .lt now (.storage biddingEndRef)) = .ok (.bool true) := by
@@ -613,7 +613,7 @@ theorem evalExpr_bid_time_true (evm : EVM.State)
 
 theorem evalExpr_bid_time_false (evm : EVM.State)
     (htime :
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat ≤
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat ≤
         (UInt256.ofNat evm.executionEnv.header.timestamp).toNat) :
     evalExpr? blindAuctionConfig
       { contract := blindAuctionContract, locals := bidStore evm.executionEnv } evm
@@ -623,7 +623,7 @@ theorem evalExpr_bid_time_false (evm : EVM.State)
 
 theorem blindAuctionBidBodyReverts_time (evm : EVM.State)
     (htime :
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat ≤
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat ≤
         (UInt256.ofNat evm.executionEnv.header.timestamp).toNat) :
     ExecTransitionBody blindAuctionConfig blindAuctionContract evm (bidStore evm.executionEnv)
       bidTransition.body .reverted := by
@@ -635,7 +635,7 @@ theorem blindAuctionBidBodyReturns (evm : EVM.State)
     (hsz36 : 36 ≤ evm.executionEnv.calldata.size)
     (htime :
       (UInt256.ofNat evm.executionEnv.header.timestamp).toNat <
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat) :
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat) :
     ExecTransitionBody blindAuctionConfig blindAuctionContract evm (bidStore evm.executionEnv)
       bidTransition.body
       (.returned { contract := blindAuctionContract, locals := bidStore evm.executionEnv }
@@ -657,7 +657,7 @@ theorem blindAuctionBidBodyStatic (evm : EVM.State)
     (hsz36 : 36 ≤ evm.executionEnv.calldata.size)
     (htime :
       (UInt256.ofNat evm.executionEnv.header.timestamp).toNat <
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat)
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat)
     (hperm : evm.executionEnv.perm = false) :
     ExecTransitionBody blindAuctionConfig blindAuctionContract evm (bidStore evm.executionEnv)
       bidTransition.body .staticViolation := by
@@ -958,7 +958,7 @@ theorem blindAuctionBidBodyCore {σ σ₀ A I} {g : UInt256}
           blindAuctionBidBodyReturns evmS
             (by simpa [evmS, initState] using hsz36)
             (by
-              simpa [evmS, initState, biddingEndWord, bidTimestampWord, Solm.EVM.storageLoad,
+              simpa [evmS, initState, biddingEndWord, bidTimestampWord, Stele.EVM.storageLoad,
                 State.lookupAccount] using htimeS')
         by_cases hperm : I.perm = true
         swap
@@ -968,7 +968,7 @@ theorem blindAuctionBidBodyCore {σ σ₀ A I} {g : UInt256}
             (blindAuctionBidBodyStatic evmS
               (by simpa [evmS, initState] using hsz36)
               (by
-                simpa [evmS, initState, biddingEndWord, bidTimestampWord, Solm.EVM.storageLoad,
+                simpa [evmS, initState, biddingEndWord, bidTimestampWord, Stele.EVM.storageLoad,
                   State.lookupAccount] using htimeS')
               (by simpa [evmS, initState] using hpf))
         exact (permSplit_true hperm (blindAuctionBidX_ok (g := Sat256.ofUInt256 g) hsz36 hsize
@@ -984,7 +984,7 @@ theorem blindAuctionBidBodyCore {σ σ₀ A I} {g : UInt256}
             ExecTransitionBody blindAuctionConfig blindAuctionContract evmS (bidStore I)
               bidTransition.body .reverted :=
           blindAuctionBidBodyReverts_time evmS (by
-            simpa [evmS, initState, biddingEndWord, bidTimestampWord, Solm.EVM.storageLoad,
+            simpa [evmS, initState, biddingEndWord, bidTimestampWord, Stele.EVM.storageLoad,
               State.lookupAccount] using htimeS')
         exact (blindAuctionBidX_timeRevert (g := Sat256.ofUInt256 g) hsz36 hsize hbig
             htimeLe hreach)

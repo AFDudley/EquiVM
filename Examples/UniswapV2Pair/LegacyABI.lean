@@ -1,7 +1,7 @@
 import Examples.UniswapV2Pair.Spec
 import Reasoning.ABI
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 set_option maxRecDepth 2000000
 

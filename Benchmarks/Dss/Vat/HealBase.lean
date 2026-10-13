@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Vat.Dispatch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 0
@@ -207,10 +207,10 @@ abbrev healDebtSlot : UInt256 :=
 
 def healPostState (evm : EVM.State) (I : ExecutionEnv)
     (sinNew daiNew viceNew debtNew : UInt256) : EVM.State :=
-  Solm.EVM.storageStore
-    (Solm.EVM.storageStore
-      (Solm.EVM.storageStore
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner (healSinSlot I) sinNew)
+  Stele.EVM.storageStore
+    (Stele.EVM.storageStore
+      (Stele.EVM.storageStore
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner (healSinSlot I) sinNew)
         evm.executionEnv.codeOwner (healDaiSlot I) daiNew)
       evm.executionEnv.codeOwner healViceSlot viceNew)
     evm.executionEnv.codeOwner healDebtSlot debtNew
@@ -274,7 +274,7 @@ theorem vatEvalExpr_heal_sin_sender (evm : EVM.State) (I : ExecutionEnv) (locals
     (hsrc : evm.executionEnv.source = I.source)
     (hbase : locals.get? "sin" = none) :
     evalExpr? config { contract := contract, locals := locals } evm (.storage (sinRef sender)) =
-      .ok (.int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      .ok (.int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (healSinSlot I)).toNat)) := by
   rw [evalExpr_storage_scalar (hbackend := rfl) (t := .int uint256Int) (hbase := hbase)
     (her := evalStorageRef_heal_sin_sender evm I locals hsrc)
@@ -286,7 +286,7 @@ theorem vatEvalExpr_heal_dai_sender (evm : EVM.State) (I : ExecutionEnv) (locals
     (hsrc : evm.executionEnv.source = I.source)
     (hbase : locals.get? "dai" = none) :
     evalExpr? config { contract := contract, locals := locals } evm (.storage (daiRef sender)) =
-      .ok (.int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      .ok (.int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (healDaiSlot I)).toNat)) := by
   rw [evalExpr_storage_scalar (hbackend := rfl) (t := .int uint256Int) (hbase := hbase)
     (her := evalStorageRef_heal_dai_sender evm I locals hsrc)
@@ -297,7 +297,7 @@ theorem vatEvalExpr_heal_dai_sender (evm : EVM.State) (I : ExecutionEnv) (locals
 theorem vatEvalExpr_heal_vice (evm : EVM.State) (locals : Store)
     (hbase : locals.get? "vice" = none) :
     evalExpr? config { contract := contract, locals := locals } evm (.storage viceRef) =
-      .ok (.int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      .ok (.int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         healViceSlot).toNat)) := by
   rw [evalExpr_storage_scalar (hbackend := rfl) (t := .int uint256Int) (hbase := hbase)
     (her := evalStorageRef_heal_vice evm locals)
@@ -308,7 +308,7 @@ theorem vatEvalExpr_heal_vice (evm : EVM.State) (locals : Store)
 theorem vatEvalExpr_heal_debt (evm : EVM.State) (locals : Store)
     (hbase : locals.get? "debt" = none) :
     evalExpr? config { contract := contract, locals := locals } evm (.storage debtRef) =
-      .ok (.int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      .ok (.int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         healDebtSlot).toNat)) := by
   rw [evalExpr_storage_scalar (hbackend := rfl) (t := .int uint256Int) (hbase := hbase)
     (her := evalStorageRef_heal_debt evm locals)
@@ -320,7 +320,7 @@ theorem assign_heal_sin_sender (evm : EVM.State) (I : ExecutionEnv)
     (locals : Store) (sinNew : UInt256)
     (hsrc : evm.executionEnv.source = I.source)
     (hbase : locals.get? "sin" = none) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner (healSinSlot I) sinNew
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner (healSinSlot I) sinNew
     assignStorageRef? config { contract := contract, locals := locals } evm
       .storage (sinRef sender) (.int (Int.ofNat sinNew.toNat)) =
         .ok ({ contract := contract, locals := locals }, evm') := by
@@ -337,7 +337,7 @@ theorem assign_heal_dai_sender (evm : EVM.State) (I : ExecutionEnv)
     (locals : Store) (daiNew : UInt256)
     (hsrc : evm.executionEnv.source = I.source)
     (hbase : locals.get? "dai" = none) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner (healDaiSlot I) daiNew
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner (healDaiSlot I) daiNew
     assignStorageRef? config { contract := contract, locals := locals } evm
       .storage (daiRef sender) (.int (Int.ofNat daiNew.toNat)) =
         .ok ({ contract := contract, locals := locals }, evm') := by
@@ -352,7 +352,7 @@ theorem assign_heal_dai_sender (evm : EVM.State) (I : ExecutionEnv)
 
 theorem assign_heal_vice (evm : EVM.State) (locals : Store) (viceNew : UInt256)
     (hbase : locals.get? "vice" = none) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner healViceSlot viceNew
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner healViceSlot viceNew
     assignStorageRef? config { contract := contract, locals := locals } evm
       .storage viceRef (.int (Int.ofNat viceNew.toNat)) =
         .ok ({ contract := contract, locals := locals }, evm') := by
@@ -367,7 +367,7 @@ theorem assign_heal_vice (evm : EVM.State) (locals : Store) (viceNew : UInt256)
 
 theorem assign_heal_debt (evm : EVM.State) (locals : Store) (debtNew : UInt256)
     (hbase : locals.get? "debt" = none) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner healDebtSlot debtNew
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner healDebtSlot debtNew
     assignStorageRef? config { contract := contract, locals := locals } evm
       .storage debtRef (.int (Int.ofNat debtNew.toNat)) =
         .ok ({ contract := contract, locals := locals }, evm') := by
@@ -384,7 +384,7 @@ theorem vatHealSinSubBlockOk (evm : EVM.State) (I : ExecutionEnv)
     {sinVal sinNew : UInt256}
     (hsrc : evm.executionEnv.source = I.source)
     (hsinLoad :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (healSinSlot I) = sinVal)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (healSinSlot I) = sinVal)
     (hsinNew : sinNew = UInt256.sub sinVal (healRad I))
     (hsinEnough : (healRad I).toNat ≤ sinVal.toNat) :
     ExecBlock config { contract := contract, locals := healLocals I } evm
@@ -434,7 +434,7 @@ theorem vatHealDaiSubBlockOk (evm : EVM.State) (I : ExecutionEnv)
     {sinNew daiVal daiNew : UInt256}
     (hsrc : evm.executionEnv.source = I.source)
     (hdaiLoad :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (healDaiSlot I) = daiVal)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (healDaiSlot I) = daiVal)
     (hdaiNew : daiNew = UInt256.sub daiVal (healRad I))
     (hdaiEnough : (healRad I).toNat ≤ daiVal.toNat) :
     ExecBlock config { contract := contract, locals := healLocalsSinNew I sinNew } evm
@@ -485,7 +485,7 @@ theorem vatHealDaiSubBlockOk (evm : EVM.State) (I : ExecutionEnv)
 theorem vatHealViceSubBlockOk (evm : EVM.State) (I : ExecutionEnv)
     {sinNew daiNew viceVal viceNew : UInt256}
     (hviceLoad :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner healViceSlot = viceVal)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner healViceSlot = viceVal)
     (hviceNew : viceNew = UInt256.sub viceVal (healRad I))
     (hviceEnough : (healRad I).toNat ≤ viceVal.toNat) :
     ExecBlock config { contract := contract, locals := healLocalsDaiNew I sinNew daiNew } evm
@@ -540,7 +540,7 @@ theorem vatHealViceSubBlockOk (evm : EVM.State) (I : ExecutionEnv)
 theorem vatHealDebtSubBlockOk (evm : EVM.State) (I : ExecutionEnv)
     {sinNew daiNew viceNew debtVal debtNew : UInt256}
     (hdebtLoad :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner healDebtSlot = debtVal)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner healDebtSlot = debtVal)
     (hdebtNew : debtNew = UInt256.sub debtVal (healRad I))
     (hdebtEnough : (healRad I).toNat ≤ debtVal.toNat) :
     ExecBlock config { contract := contract, locals := healLocalsViceNew I sinNew daiNew viceNew }
@@ -603,7 +603,7 @@ theorem vatHealSinSubBlockRevert (evm : EVM.State) (I : ExecutionEnv)
     {sinVal : UInt256}
     (hsrc : evm.executionEnv.source = I.source)
     (hsinLoad :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (healSinSlot I) = sinVal)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (healSinSlot I) = sinVal)
     (hsinUnderflow : sinVal.toNat < (healRad I).toNat) :
     ExecBlock config { contract := contract, locals := healLocals I } evm
       (checkedSubUintInto "sinNew" (.storage (sinRef sender)) (.var "rad"))
@@ -629,7 +629,7 @@ theorem vatHealDaiSubBlockRevert (evm : EVM.State) (I : ExecutionEnv)
     {sinNew daiVal : UInt256}
     (hsrc : evm.executionEnv.source = I.source)
     (hdaiLoad :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (healDaiSlot I) = daiVal)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (healDaiSlot I) = daiVal)
     (hdaiUnderflow : daiVal.toNat < (healRad I).toNat) :
     ExecBlock config { contract := contract, locals := healLocalsSinNew I sinNew } evm
       (checkedSubUintInto "daiNew" (.storage (daiRef sender)) (.var "rad"))
@@ -656,7 +656,7 @@ theorem vatHealDaiSubBlockRevert (evm : EVM.State) (I : ExecutionEnv)
 theorem vatHealViceSubBlockRevert (evm : EVM.State) (I : ExecutionEnv)
     {sinNew daiNew viceVal : UInt256}
     (hviceLoad :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner healViceSlot = viceVal)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner healViceSlot = viceVal)
     (hviceUnderflow : viceVal.toNat < (healRad I).toNat) :
     ExecBlock config { contract := contract, locals := healLocalsDaiNew I sinNew daiNew } evm
       (checkedSubUintInto "viceNew" (.storage viceRef) (.var "rad"))
@@ -683,7 +683,7 @@ theorem vatHealViceSubBlockRevert (evm : EVM.State) (I : ExecutionEnv)
 theorem vatHealDebtSubBlockRevert (evm : EVM.State) (I : ExecutionEnv)
     {sinNew daiNew viceNew debtVal : UInt256}
     (hdebtLoad :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner healDebtSlot = debtVal)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner healDebtSlot = debtVal)
     (hdebtUnderflow : debtVal.toNat < (healRad I).toNat) :
     ExecBlock config { contract := contract, locals := healLocalsViceNew I sinNew daiNew viceNew }
         evm
@@ -719,9 +719,9 @@ theorem vatHealAssignSinOk (evm : EVM.State) (I : ExecutionEnv)
       { contract := contract, locals := healLocalsSinNew I sinNew } evm
       [ .assign .storage (sinRef sender) (.var "sinNew") ]
       (.ok { contract := contract, locals := healLocalsSinNew I sinNew }
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner (healSinSlot I) sinNew)) := by
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner (healSinSlot I) sinNew)) := by
   let locals := healLocalsSinNew I sinNew
-  let evmSin := Solm.EVM.storageStore evm evm.executionEnv.codeOwner (healSinSlot I) sinNew
+  let evmSin := Stele.EVM.storageStore evm evm.executionEnv.codeOwner (healSinSlot I) sinNew
   have hsinNewEval :
       evalExpr? config { contract := contract, locals := locals } evm (.var "sinNew") =
         .ok (.int (Int.ofNat sinNew.toNat)) :=
@@ -744,9 +744,9 @@ theorem vatHealAssignDaiOk (evm : EVM.State) (I : ExecutionEnv)
       { contract := contract, locals := healLocalsDaiNew I sinNew daiNew } evm
       [ .assign .storage (daiRef sender) (.var "daiNew") ]
       (.ok { contract := contract, locals := healLocalsDaiNew I sinNew daiNew }
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner (healDaiSlot I) daiNew)) := by
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner (healDaiSlot I) daiNew)) := by
   let locals := healLocalsDaiNew I sinNew daiNew
-  let evmDai := Solm.EVM.storageStore evm evm.executionEnv.codeOwner (healDaiSlot I) daiNew
+  let evmDai := Stele.EVM.storageStore evm evm.executionEnv.codeOwner (healDaiSlot I) daiNew
   have hdaiNewEval :
       evalExpr? config { contract := contract, locals := locals } evm (.var "daiNew") =
         .ok (.int (Int.ofNat daiNew.toNat)) :=
@@ -769,9 +769,9 @@ theorem vatHealAssignViceOk (evm : EVM.State) (I : ExecutionEnv)
       { contract := contract, locals := healLocalsViceNew I sinNew daiNew viceNew } evm
       [ .assign .storage viceRef (.var "viceNew") ]
       (.ok { contract := contract, locals := healLocalsViceNew I sinNew daiNew viceNew }
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner healViceSlot viceNew)) := by
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner healViceSlot viceNew)) := by
   let locals := healLocalsViceNew I sinNew daiNew viceNew
-  let evmVice := Solm.EVM.storageStore evm evm.executionEnv.codeOwner healViceSlot viceNew
+  let evmVice := Stele.EVM.storageStore evm evm.executionEnv.codeOwner healViceSlot viceNew
   have hviceNewEval :
       evalExpr? config { contract := contract, locals := locals } evm (.var "viceNew") =
         .ok (.int (Int.ofNat viceNew.toNat)) :=
@@ -794,9 +794,9 @@ theorem vatHealAssignDebtOk (evm : EVM.State) (I : ExecutionEnv)
       { contract := contract, locals := healLocalsDebtNew I sinNew daiNew viceNew debtNew } evm
       [ .assign .storage debtRef (.var "debtNew") ]
       (.ok { contract := contract, locals := healLocalsDebtNew I sinNew daiNew viceNew debtNew }
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner healDebtSlot debtNew)) := by
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner healDebtSlot debtNew)) := by
   let locals := healLocalsDebtNew I sinNew daiNew viceNew debtNew
-  let evmDebt := Solm.EVM.storageStore evm evm.executionEnv.codeOwner healDebtSlot debtNew
+  let evmDebt := Stele.EVM.storageStore evm evm.executionEnv.codeOwner healDebtSlot debtNew
   have hdebtNewEval :
       evalExpr? config { contract := contract, locals := locals } evm (.var "debtNew") =
         .ok (.int (Int.ofNat debtNew.toNat)) :=
@@ -817,24 +817,24 @@ theorem vatHealSourceSuccess (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hsrc : evm.executionEnv.source = I.source)
     (hsinEnough : (healRad I).toNat ≤
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (healSinSlot I)).toNat) :
-    let sinVal := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (healSinSlot I)
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (healSinSlot I)).toNat) :
+    let sinVal := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (healSinSlot I)
     let sinNew := UInt256.sub sinVal (healRad I)
-    let evmSin := Solm.EVM.storageStore evm evm.executionEnv.codeOwner (healSinSlot I) sinNew
-    let daiVal := Solm.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner (healDaiSlot I)
+    let evmSin := Stele.EVM.storageStore evm evm.executionEnv.codeOwner (healSinSlot I) sinNew
+    let daiVal := Stele.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner (healDaiSlot I)
     let daiNew := UInt256.sub daiVal (healRad I)
-    let evmDai := Solm.EVM.storageStore evmSin evmSin.executionEnv.codeOwner (healDaiSlot I) daiNew
-    let viceVal := Solm.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner healViceSlot
+    let evmDai := Stele.EVM.storageStore evmSin evmSin.executionEnv.codeOwner (healDaiSlot I) daiNew
+    let viceVal := Stele.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner healViceSlot
     let viceNew := UInt256.sub viceVal (healRad I)
-    let evmVice := Solm.EVM.storageStore evmDai evmDai.executionEnv.codeOwner healViceSlot viceNew
-    let debtVal := Solm.EVM.storageLoad evmVice evmVice.executionEnv.codeOwner healDebtSlot
+    let evmVice := Stele.EVM.storageStore evmDai evmDai.executionEnv.codeOwner healViceSlot viceNew
+    let debtVal := Stele.EVM.storageLoad evmVice evmVice.executionEnv.codeOwner healDebtSlot
     let debtNew := UInt256.sub debtVal (healRad I)
-    (healRad I).toNat ≤ (Solm.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner
+    (healRad I).toNat ≤ (Stele.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner
       (healDaiSlot I)).toNat →
     (healRad I).toNat ≤
-      (Solm.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner healViceSlot).toNat →
+      (Stele.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner healViceSlot).toNat →
     (healRad I).toNat ≤
-      (Solm.EVM.storageLoad evmVice evmVice.executionEnv.codeOwner healDebtSlot).toNat →
+      (Stele.EVM.storageLoad evmVice evmVice.executionEnv.codeOwner healDebtSlot).toNat →
     ExecTransitionBody config contract evm (healLocals I) healTransition.body
       (.returned { contract := contract, locals := healLocalsDebtNew I sinNew daiNew viceNew debtNew }
         (healPostState evm I sinNew daiNew viceNew debtNew) none) := by
@@ -851,7 +851,7 @@ theorem vatHealSourceSuccess (evm : EVM.State) (I : ExecutionEnv)
   have hassignSin := vatHealAssignSinOk (evm := evm) (I := I) (sinNew := sinNew) hsrc
   have hdaiEnough' :
       (healRad I).toNat ≤
-        (Solm.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner (healDaiSlot I)).toNat := by
+        (Stele.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner (healDaiSlot I)).toNat := by
     exact hdaiEnough
   have hdai := vatHealDaiSubBlockOk (evm := evmSin) (I := I)
     (sinNew := sinNew) (daiVal := daiVal) (daiNew := daiNew) hsrcSin rfl rfl hdaiEnough'
@@ -859,7 +859,7 @@ theorem vatHealSourceSuccess (evm : EVM.State) (I : ExecutionEnv)
     (sinNew := sinNew) (daiNew := daiNew) hsrcSin
   have hviceEnough' :
       (healRad I).toNat ≤
-        (Solm.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner healViceSlot).toNat := by
+        (Stele.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner healViceSlot).toNat := by
     exact hviceEnough
   have hvice := vatHealViceSubBlockOk (evm := evmDai) (I := I)
     (sinNew := sinNew) (daiNew := daiNew) (viceVal := viceVal) (viceNew := viceNew)
@@ -868,7 +868,7 @@ theorem vatHealSourceSuccess (evm : EVM.State) (I : ExecutionEnv)
     (sinNew := sinNew) (daiNew := daiNew) (viceNew := viceNew)
   have hdebtEnough' :
       (healRad I).toNat ≤
-        (Solm.EVM.storageLoad evmVice evmVice.executionEnv.codeOwner healDebtSlot).toNat := by
+        (Stele.EVM.storageLoad evmVice evmVice.executionEnv.codeOwner healDebtSlot).toNat := by
     exact hdebtEnough
   have hdebt := vatHealDebtSubBlockOk (evm := evmVice) (I := I)
     (sinNew := sinNew) (daiNew := daiNew) (viceNew := viceNew)
@@ -903,27 +903,27 @@ theorem vatHealSourceSuccessNamed (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hsrc : evm.executionEnv.source = I.source)
     (hsinNew :
-      UInt256.sub (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (healSinSlot I))
+      UInt256.sub (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (healSinSlot I))
         (healRad I) = sinNew)
     (hsinEnough : (healRad I).toNat ≤
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (healSinSlot I)).toNat) :
-    let evmSin := Solm.EVM.storageStore evm evm.executionEnv.codeOwner (healSinSlot I) sinNew
-    (UInt256.sub (Solm.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner (healDaiSlot I))
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (healSinSlot I)).toNat) :
+    let evmSin := Stele.EVM.storageStore evm evm.executionEnv.codeOwner (healSinSlot I) sinNew
+    (UInt256.sub (Stele.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner (healDaiSlot I))
         (healRad I) = daiNew) →
     (healRad I).toNat ≤
-      (Solm.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner (healDaiSlot I)).toNat →
-    let evmDai := Solm.EVM.storageStore evmSin evmSin.executionEnv.codeOwner
+      (Stele.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner (healDaiSlot I)).toNat →
+    let evmDai := Stele.EVM.storageStore evmSin evmSin.executionEnv.codeOwner
       (healDaiSlot I) daiNew
-    (UInt256.sub (Solm.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner healViceSlot)
+    (UInt256.sub (Stele.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner healViceSlot)
         (healRad I) = viceNew) →
     (healRad I).toNat ≤
-      (Solm.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner healViceSlot).toNat →
-    let evmVice := Solm.EVM.storageStore evmDai evmDai.executionEnv.codeOwner
+      (Stele.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner healViceSlot).toNat →
+    let evmVice := Stele.EVM.storageStore evmDai evmDai.executionEnv.codeOwner
       healViceSlot viceNew
-    (UInt256.sub (Solm.EVM.storageLoad evmVice evmVice.executionEnv.codeOwner healDebtSlot)
+    (UInt256.sub (Stele.EVM.storageLoad evmVice evmVice.executionEnv.codeOwner healDebtSlot)
         (healRad I) = debtNew) →
     (healRad I).toNat ≤
-      (Solm.EVM.storageLoad evmVice evmVice.executionEnv.codeOwner healDebtSlot).toNat →
+      (Stele.EVM.storageLoad evmVice evmVice.executionEnv.codeOwner healDebtSlot).toNat →
     ExecTransitionBody config contract evm (healLocals I) healTransition.body
       (.returned { contract := contract, locals := healLocalsDebtNew I sinNew daiNew viceNew debtNew }
         (healPostState evm I sinNew daiNew viceNew debtNew) none) := by
@@ -935,24 +935,24 @@ theorem vatHealSourceSuccessNamed (evm : EVM.State) (I : ExecutionEnv)
   have hsrcVice : evmVice.executionEnv.source = I.source := by
     simp [evmVice, storageStore_executionEnv, hsrcDai]
   have hsin := vatHealSinSubBlockOk (evm := evm) (I := I)
-    (sinVal := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (healSinSlot I))
+    (sinVal := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (healSinSlot I))
     (sinNew := sinNew) hsrc rfl hsinNew.symm hsinEnough
   have hassignSin := vatHealAssignSinOk (evm := evm) (I := I) (sinNew := sinNew) hsrc
   have hdai := vatHealDaiSubBlockOk (evm := evmSin) (I := I)
     (sinNew := sinNew)
-    (daiVal := Solm.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner (healDaiSlot I))
+    (daiVal := Stele.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner (healDaiSlot I))
     (daiNew := daiNew) hsrcSin rfl hdaiNew.symm hdaiEnough
   have hassignDai := vatHealAssignDaiOk (evm := evmSin) (I := I)
     (sinNew := sinNew) (daiNew := daiNew) hsrcSin
   have hvice := vatHealViceSubBlockOk (evm := evmDai) (I := I)
     (sinNew := sinNew) (daiNew := daiNew)
-    (viceVal := Solm.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner healViceSlot)
+    (viceVal := Stele.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner healViceSlot)
     (viceNew := viceNew) rfl hviceNew.symm hviceEnough
   have hassignVice := vatHealAssignViceOk (evm := evmDai) (I := I)
     (sinNew := sinNew) (daiNew := daiNew) (viceNew := viceNew)
   have hdebt := vatHealDebtSubBlockOk (evm := evmVice) (I := I)
     (sinNew := sinNew) (daiNew := daiNew) (viceNew := viceNew)
-    (debtVal := Solm.EVM.storageLoad evmVice evmVice.executionEnv.codeOwner healDebtSlot)
+    (debtVal := Stele.EVM.storageLoad evmVice evmVice.executionEnv.codeOwner healDebtSlot)
     (debtNew := debtNew) rfl hdebtNew.symm hdebtEnough
   have hassignDebt := vatHealAssignDebtOk (evm := evmVice) (I := I)
     (sinNew := sinNew) (daiNew := daiNew) (viceNew := viceNew) (debtNew := debtNew)
@@ -983,10 +983,10 @@ theorem vatHealSourceSinUnderflow (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hsrc : evm.executionEnv.source = I.source)
     (hsinUnderflow :
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (healSinSlot I)).toNat <
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (healSinSlot I)).toNat <
         (healRad I).toNat) :
     ExecTransitionBody config contract evm (healLocals I) healTransition.body .reverted := by
-  let sinVal := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (healSinSlot I)
+  let sinVal := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (healSinSlot I)
   have hsinRev := vatHealSinSubBlockRevert (evm := evm) (I := I)
     (sinVal := sinVal) hsrc rfl hsinUnderflow
   have htail :
@@ -1012,11 +1012,11 @@ theorem vatHealSourceStatic (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hsrc : evm.executionEnv.source = I.source)
     (hsinEnough : (healRad I).toNat ≤
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (healSinSlot I)).toNat)
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (healSinSlot I)).toNat)
     (hperm : evm.executionEnv.perm = false) :
     ExecTransitionBody config contract evm (healLocals I) healTransition.body
       .staticViolation := by
-  let sinVal := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (healSinSlot I)
+  let sinVal := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (healSinSlot I)
   let sinNew := UInt256.sub sinVal (healRad I)
   have hsin := vatHealSinSubBlockOk (evm := evm) (I := I)
     (sinVal := sinVal) (sinNew := sinNew) hsrc rfl rfl hsinEnough
@@ -1049,12 +1049,12 @@ theorem vatHealSourceDaiUnderflow (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hsrc : evm.executionEnv.source = I.source)
     (hsinEnough : (healRad I).toNat ≤
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (healSinSlot I)).toNat) :
-    let sinVal := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (healSinSlot I)
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (healSinSlot I)).toNat) :
+    let sinVal := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (healSinSlot I)
     let sinNew := UInt256.sub sinVal (healRad I)
-    let evmSin := Solm.EVM.storageStore evm evm.executionEnv.codeOwner (healSinSlot I) sinNew
-    let daiVal := Solm.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner (healDaiSlot I)
-    (Solm.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner (healDaiSlot I)).toNat <
+    let evmSin := Stele.EVM.storageStore evm evm.executionEnv.codeOwner (healSinSlot I) sinNew
+    let daiVal := Stele.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner (healDaiSlot I)
+    (Stele.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner (healDaiSlot I)).toNat <
       (healRad I).toNat →
     ExecTransitionBody config contract evm (healLocals I) healTransition.body .reverted := by
   intro sinVal sinNew evmSin daiVal hdaiUnderflow
@@ -1064,7 +1064,7 @@ theorem vatHealSourceDaiUnderflow (evm : EVM.State) (I : ExecutionEnv)
     (sinVal := sinVal) (sinNew := sinNew) hsrc rfl rfl hsinEnough
   have hassignSin := vatHealAssignSinOk (evm := evm) (I := I) (sinNew := sinNew) hsrc
   have hdaiUnderflow' :
-      (Solm.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner (healDaiSlot I)).toNat <
+      (Stele.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner (healDaiSlot I)).toNat <
         (healRad I).toNat := by
     exact hdaiUnderflow
   have hdaiRev := vatHealDaiSubBlockRevert (evm := evmSin) (I := I)
@@ -1093,17 +1093,17 @@ theorem vatHealSourceViceUnderflow (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hsrc : evm.executionEnv.source = I.source)
     (hsinEnough : (healRad I).toNat ≤
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (healSinSlot I)).toNat) :
-    let sinVal := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (healSinSlot I)
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (healSinSlot I)).toNat) :
+    let sinVal := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (healSinSlot I)
     let sinNew := UInt256.sub sinVal (healRad I)
-    let evmSin := Solm.EVM.storageStore evm evm.executionEnv.codeOwner (healSinSlot I) sinNew
-    let daiVal := Solm.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner (healDaiSlot I)
+    let evmSin := Stele.EVM.storageStore evm evm.executionEnv.codeOwner (healSinSlot I) sinNew
+    let daiVal := Stele.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner (healDaiSlot I)
     let daiNew := UInt256.sub daiVal (healRad I)
-    let evmDai := Solm.EVM.storageStore evmSin evmSin.executionEnv.codeOwner (healDaiSlot I) daiNew
-    let viceVal := Solm.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner healViceSlot
-    (healRad I).toNat ≤ (Solm.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner
+    let evmDai := Stele.EVM.storageStore evmSin evmSin.executionEnv.codeOwner (healDaiSlot I) daiNew
+    let viceVal := Stele.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner healViceSlot
+    (healRad I).toNat ≤ (Stele.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner
       (healDaiSlot I)).toNat →
-    (Solm.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner healViceSlot).toNat <
+    (Stele.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner healViceSlot).toNat <
       (healRad I).toNat →
     ExecTransitionBody config contract evm (healLocals I) healTransition.body .reverted := by
   intro sinVal sinNew evmSin daiVal daiNew evmDai viceVal hdaiEnough hviceUnderflow
@@ -1116,14 +1116,14 @@ theorem vatHealSourceViceUnderflow (evm : EVM.State) (I : ExecutionEnv)
   have hassignSin := vatHealAssignSinOk (evm := evm) (I := I) (sinNew := sinNew) hsrc
   have hdaiEnough' :
       (healRad I).toNat ≤
-        (Solm.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner (healDaiSlot I)).toNat := by
+        (Stele.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner (healDaiSlot I)).toNat := by
     exact hdaiEnough
   have hdai := vatHealDaiSubBlockOk (evm := evmSin) (I := I)
     (sinNew := sinNew) (daiVal := daiVal) (daiNew := daiNew) hsrcSin rfl rfl hdaiEnough'
   have hassignDai := vatHealAssignDaiOk (evm := evmSin) (I := I)
     (sinNew := sinNew) (daiNew := daiNew) hsrcSin
   have hviceUnderflow' :
-      (Solm.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner healViceSlot).toNat <
+      (Stele.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner healViceSlot).toNat <
         (healRad I).toNat := by
     exact hviceUnderflow
   have hviceRev := vatHealViceSubBlockRevert (evm := evmDai) (I := I)
@@ -1152,22 +1152,22 @@ theorem vatHealSourceDebtUnderflow (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hsrc : evm.executionEnv.source = I.source)
     (hsinEnough : (healRad I).toNat ≤
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (healSinSlot I)).toNat) :
-    let sinVal := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (healSinSlot I)
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (healSinSlot I)).toNat) :
+    let sinVal := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (healSinSlot I)
     let sinNew := UInt256.sub sinVal (healRad I)
-    let evmSin := Solm.EVM.storageStore evm evm.executionEnv.codeOwner (healSinSlot I) sinNew
-    let daiVal := Solm.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner (healDaiSlot I)
+    let evmSin := Stele.EVM.storageStore evm evm.executionEnv.codeOwner (healSinSlot I) sinNew
+    let daiVal := Stele.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner (healDaiSlot I)
     let daiNew := UInt256.sub daiVal (healRad I)
-    let evmDai := Solm.EVM.storageStore evmSin evmSin.executionEnv.codeOwner (healDaiSlot I) daiNew
-    let viceVal := Solm.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner healViceSlot
+    let evmDai := Stele.EVM.storageStore evmSin evmSin.executionEnv.codeOwner (healDaiSlot I) daiNew
+    let viceVal := Stele.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner healViceSlot
     let viceNew := UInt256.sub viceVal (healRad I)
-    let evmVice := Solm.EVM.storageStore evmDai evmDai.executionEnv.codeOwner healViceSlot viceNew
-    let debtVal := Solm.EVM.storageLoad evmVice evmVice.executionEnv.codeOwner healDebtSlot
-    (healRad I).toNat ≤ (Solm.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner
+    let evmVice := Stele.EVM.storageStore evmDai evmDai.executionEnv.codeOwner healViceSlot viceNew
+    let debtVal := Stele.EVM.storageLoad evmVice evmVice.executionEnv.codeOwner healDebtSlot
+    (healRad I).toNat ≤ (Stele.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner
       (healDaiSlot I)).toNat →
     (healRad I).toNat ≤
-      (Solm.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner healViceSlot).toNat →
-    (Solm.EVM.storageLoad evmVice evmVice.executionEnv.codeOwner healDebtSlot).toNat <
+      (Stele.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner healViceSlot).toNat →
+    (Stele.EVM.storageLoad evmVice evmVice.executionEnv.codeOwner healDebtSlot).toNat <
       (healRad I).toNat →
     ExecTransitionBody config contract evm (healLocals I) healTransition.body .reverted := by
   intro sinVal sinNew evmSin daiVal daiNew evmDai viceVal viceNew evmVice debtVal
@@ -1183,7 +1183,7 @@ theorem vatHealSourceDebtUnderflow (evm : EVM.State) (I : ExecutionEnv)
   have hassignSin := vatHealAssignSinOk (evm := evm) (I := I) (sinNew := sinNew) hsrc
   have hdaiEnough' :
       (healRad I).toNat ≤
-        (Solm.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner (healDaiSlot I)).toNat := by
+        (Stele.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner (healDaiSlot I)).toNat := by
     exact hdaiEnough
   have hdai := vatHealDaiSubBlockOk (evm := evmSin) (I := I)
     (sinNew := sinNew) (daiVal := daiVal) (daiNew := daiNew) hsrcSin rfl rfl hdaiEnough'
@@ -1191,7 +1191,7 @@ theorem vatHealSourceDebtUnderflow (evm : EVM.State) (I : ExecutionEnv)
     (sinNew := sinNew) (daiNew := daiNew) hsrcSin
   have hviceEnough' :
       (healRad I).toNat ≤
-        (Solm.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner healViceSlot).toNat := by
+        (Stele.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner healViceSlot).toNat := by
     exact hviceEnough
   have hvice := vatHealViceSubBlockOk (evm := evmDai) (I := I)
     (sinNew := sinNew) (daiNew := daiNew) (viceVal := viceVal) (viceNew := viceNew)
@@ -1199,7 +1199,7 @@ theorem vatHealSourceDebtUnderflow (evm : EVM.State) (I : ExecutionEnv)
   have hassignVice := vatHealAssignViceOk (evm := evmDai) (I := I)
     (sinNew := sinNew) (daiNew := daiNew) (viceNew := viceNew)
   have hdebtUnderflow' :
-      (Solm.EVM.storageLoad evmVice evmVice.executionEnv.codeOwner healDebtSlot).toNat <
+      (Stele.EVM.storageLoad evmVice evmVice.executionEnv.codeOwner healDebtSlot).toNat <
         (healRad I).toNat := by
     exact hdebtUnderflow
   have hdebtRev := vatHealDebtSubBlockRevert (evm := evmVice) (I := I)

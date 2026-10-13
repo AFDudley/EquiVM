@@ -1,7 +1,7 @@
 import Benchmarks.CompoundIII.Comet.AssetDecode
 import Reasoning.HeapMemory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 

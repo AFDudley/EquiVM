@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.SourceWordArithmetic
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
 attribute [local instance] Classical.propDecidable
@@ -76,7 +76,7 @@ theorem fullMathReturns (imms : Store) (evm : EVM.State) (a b denominator : UInt
       (.returned (fullMathProductFrame imms a b denominator) evm
         (some [.int (Int.ofNat (fullMathResult a b denominator).toNat)])) := by
   apply ExecFuncBody.execBlockRet
-  refine ExecBlock.consNormal (solm' := fullMathProductFrame imms a b denominator)
+  refine ExecBlock.consNormal (stele' := fullMathProductFrame imms a b denominator)
     (evm' := evm) (ExecStmt.letDecl (evalFullMathProduct imms evm a b denominator)) ?_
   refine ExecBlock.consNormal (ExecStmt.requireTrue ?_) ?_
   · simpa only [h, decide_true] using evalFullMathGuard imms evm a b denominator
@@ -92,7 +92,7 @@ theorem fullMathReverts (imms : Store) (evm : EVM.State) (a b denominator : UInt
     ExecFuncBody config (fullMathFrame imms a b denominator) evm fullMathFunction.body
       .reverted := by
   apply ExecFuncBody.execBlockRevert
-  refine ExecBlock.consNormal (solm' := fullMathProductFrame imms a b denominator)
+  refine ExecBlock.consNormal (stele' := fullMathProductFrame imms a b denominator)
     (evm' := evm) (ExecStmt.letDecl (evalFullMathProduct imms evm a b denominator)) ?_
   apply ExecBlock.consRevert
   apply ExecStmt.requireFalse

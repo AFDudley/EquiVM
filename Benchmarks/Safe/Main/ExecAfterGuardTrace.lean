@@ -2,7 +2,7 @@ import Benchmarks.Safe.Main.ExecAfterGuardMemory
 import Benchmarks.Safe.Main.RawValueCall
 import Benchmarks.Safe.Main.LocalArrays
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.Main

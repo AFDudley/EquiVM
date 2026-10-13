@@ -2,7 +2,7 @@ import Reasoning.Storage
 import Benchmarks.Dss.Clipper.KickDepthLimit
 import Benchmarks.Dss.Clipper.Invalid
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 namespace Benchmarks.Dss.Clipper
@@ -108,46 +108,46 @@ theorem clipperKickBody (v : ClipperImmutables) {code : ByteArray}
   · have hdecode := clipperDecode_kick_ok (I := I) hsz132
     obtain ⟨_, _, rd5361⟩ := clipperKickX_decoded
       (v := v) (g := Sat256.ofUInt256 g) hpatch hsz132 hsize hreachEntry
-    let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
-    have hvalue : evmSolm.executionEnv.weiValue = ⟨0⟩ := by
-      simpa [evmSolm, initState] using hwv
-    have hsrc : evmSolm.executionEnv.source = I.source := by
-      simp [evmSolm, initState]
-    have hInitialAccounts : σ = evmSolm.accountMap := by
-      simp [evmSolm, initState]
+    let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
+    have hvalue : evmStele.executionEnv.weiValue = ⟨0⟩ := by
+      simpa [evmStele, initState] using hwv
+    have hsrc : evmStele.executionEnv.source = I.source := by
+      simp [evmStele, initState]
+    have hInitialAccounts : σ = evmStele.accountMap := by
+      simp [evmStele, initState]
     have hauthEq : clipperRelyAuthWord σ I =
-        Solm.EVM.storageLoad evmSolm evmSolm.executionEnv.codeOwner
+        Stele.EVM.storageLoad evmStele evmStele.executionEnv.codeOwner
           (clipperRelyAuthStorageSlot I) := by
       simpa [clipperRelyAuthWord] using
-        slotWord_eq_of_accounts_eq evmSolm I
-          (clipperRelyAuthStorageSlot I) (by simp [evmSolm, initState])
+        slotWord_eq_of_accounts_eq evmStele I
+          (clipperRelyAuthStorageSlot I) (by simp [evmStele, initState])
           hInitialAccounts
     have connectRevert
         (hsource : ExecBlock config
-          (Frame.mk contract (clipperKickStore I) (immStore v)) evmSolm
+          (Frame.mk contract (clipperKickStore I) (immStore v)) evmStele
           kickTransition.body .reverted)
         (hevm : RDrev code (Sat256.ofUInt256 g)
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)) :
         runtimeRefinementFor config contract
           σ σ₀ g A I (immStore v) := by
-      have hbody : ExecTransitionBody config contract evmSolm
+      have hbody : ExecTransitionBody config contract evmStele
           (clipperKickStore I) kickTransition.body .reverted (immStore v) :=
         ExecFuncBody.execBlockRevert hsource
-      simpa [evmSolm] using
+      simpa [evmStele] using
         hevm.reEquivExecutionRevert hcode hdispatch hdecode hbody
     by_cases hauth : clipperRelyAuthWord σ I = ⟨1⟩
-    · have hauthSource : Solm.EVM.storageLoad evmSolm
-          evmSolm.executionEnv.codeOwner (clipperRelyAuthStorageSlot I) = ⟨1⟩ := by
+    · have hauthSource : Stele.EVM.storageLoad evmStele
+          evmStele.executionEnv.codeOwner (clipperRelyAuthStorageSlot I) = ⟨1⟩ := by
         rw [← hauthEq]
         exact hauth
       obtain ⟨_, _, rd5443⟩ := clipperKickX_authorized v hpatch hauth rd5361
       have hlockEq : solcSlotWord σ I ⟨13⟩ =
-          Solm.EVM.storageLoad evmSolm evmSolm.executionEnv.codeOwner ⟨13⟩ :=
-        slotWord_eq_of_accounts_eq evmSolm I ⟨13⟩
-          (by simp [evmSolm, initState]) hInitialAccounts
+          Stele.EVM.storageLoad evmStele evmStele.executionEnv.codeOwner ⟨13⟩ :=
+        slotWord_eq_of_accounts_eq evmStele I ⟨13⟩
+          (by simp [evmStele, initState]) hInitialAccounts
       by_cases hlocked : solcSlotWord σ I ⟨13⟩ = ⟨0⟩
-      · have hlockedSource : Solm.EVM.storageLoad evmSolm
-            evmSolm.executionEnv.codeOwner ⟨13⟩ = ⟨0⟩ := by
+      · have hlockedSource : Stele.EVM.storageLoad evmStele
+            evmStele.executionEnv.codeOwner ⟨13⟩ = ⟨0⟩ := by
           rw [← hlockEq]
           exact hlocked
         obtain ⟨_, _, rd5520⟩ := clipperKickX_lockOpen v hpatch hlocked rd5443
@@ -158,25 +158,25 @@ theorem clipperKickBody (v : ClipperImmutables) {code : ByteArray}
             (clipperKickX_lockAndStoppedOpenSplit v hpatch rd5520)
           exact hstatic.reEquivStaticHalt hcode hdispatch hdecode
             (ExecFuncBody.execBlockStatic
-              ((clipperKickSourceRevertsStoppedSplit v evmSolm I hvalue hsrc
+              ((clipperKickSourceRevertsStoppedSplit v evmStele I hvalue hsrc
                 hauthSource hlockedSource).2 hstaticPerm))
         let σLock := sstoreAccountMap I.codeOwner σ ⟨13⟩ ⟨1⟩
-        let evmLock := clipperKickLockedState evmSolm
+        let evmLock := clipperKickLockedState evmStele
         have hLockAccounts : σLock = evmLock.accountMap := by
           simpa [σLock, evmLock, clipperKickLockedState, storageStore_accountMap,
-            evmSolm, initState] using
+            evmStele, initState] using
             congrArg (fun m => sstoreAccountMap I.codeOwner m ⟨13⟩ ⟨1⟩)
               hInitialAccounts
         have henvLock : evmLock.executionEnv = I := by
-          simp [evmLock, clipperKickLockedState, evmSolm, initState,
+          simp [evmLock, clipperKickLockedState, evmStele, initState,
             storageStore_executionEnv]
         have hstoppedEq : solcSlotWord σLock I ⟨14⟩ =
-            Solm.EVM.storageLoad evmLock evmLock.executionEnv.codeOwner ⟨14⟩ :=
+            Stele.EVM.storageLoad evmLock evmLock.executionEnv.codeOwner ⟨14⟩ :=
           slotWord_eq_of_accounts_eq evmLock I ⟨14⟩
             henvLock hLockAccounts
         by_cases hstopped : (solcSlotWord σLock I ⟨14⟩).toNat < 1
         · have hstoppedSource :
-              (Solm.EVM.storageLoad evmLock evmLock.executionEnv.codeOwner ⟨14⟩).toNat < 1 := by
+              (Stele.EVM.storageLoad evmLock evmLock.executionEnv.codeOwner ⟨14⟩).toNat < 1 := by
             rw [← hstoppedEq]
             exact hstopped
           obtain ⟨_, _, rd5609⟩ := clipperKickX_lockAndStoppedOpen
@@ -205,7 +205,7 @@ theorem clipperKickBody (v : ClipperImmutables) {code : ByteArray}
                       solcSlotWord σ I ⟨11⟩ := by
                     calc
                       clipperKickSourceActiveLengthWord evmLock =
-                          Solm.EVM.storageLoad evmLock
+                          Stele.EVM.storageLoad evmLock
                             evmLock.executionEnv.codeOwner ⟨11⟩ := by
                         simp only [clipperKickSourceActiveLengthWord,
                           clipperKickSourceIdState]
@@ -223,33 +223,33 @@ theorem clipperKickBody (v : ClipperImmutables) {code : ByteArray}
                     rw [hlenEq]
                     unfold clipperStorageWF at hStorageWF
                     omega
-                  have hpresentSolm : ∃ acc,
-                      evmSolm.accountMap.get? I.codeOwner = some acc := by
-                    cases hacc : evmSolm.accountMap.get? I.codeOwner with
+                  have hpresentStele : ∃ acc,
+                      evmStele.accountMap.get? I.codeOwner = some acc := by
+                    cases hacc : evmStele.accountMap.get? I.codeOwner with
                     | none =>
                         exfalso
-                        have hownerSolm : evmSolm.executionEnv.codeOwner =
-                            I.codeOwner := by simp [evmSolm, initState]
-                        have hacc' : evmSolm.accountMap.get?
-                            evmSolm.executionEnv.codeOwner = none := by
-                          simpa [hownerSolm] using hacc
-                        have hzeroLoad : Solm.EVM.storageLoad evmSolm
-                            evmSolm.executionEnv.codeOwner
+                        have hownerStele : evmStele.executionEnv.codeOwner =
+                            I.codeOwner := by simp [evmStele, initState]
+                        have hacc' : evmStele.accountMap.get?
+                            evmStele.executionEnv.codeOwner = none := by
+                          simpa [hownerStele] using hacc
+                        have hzeroLoad : Stele.EVM.storageLoad evmStele
+                            evmStele.executionEnv.codeOwner
                               (clipperRelyAuthStorageSlot I) = ⟨0⟩ := by
-                          unfold Solm.EVM.storageLoad State.lookupAccount
+                          unfold Stele.EVM.storageLoad State.lookupAccount
                           rw [hacc']
                           rfl
                         rw [hzeroLoad] at hauthSource
                         exact (by decide : (⟨0⟩ : UInt256) ≠ ⟨1⟩) hauthSource
                     | some acc => exact ⟨acc, rfl⟩
-                  obtain ⟨accSolm, haccSolm⟩ := hpresentSolm
+                  obtain ⟨accStele, haccStele⟩ := hpresentStele
                   obtain ⟨accLock, haccLock⟩ := storageStore_present
-                    evmSolm evmSolm.executionEnv.codeOwner ⟨13⟩ ⟨1⟩
-                      (by simpa [evmSolm, initState] using haccSolm)
+                    evmStele evmStele.executionEnv.codeOwner ⟨13⟩ ⟨1⟩
+                      (by simpa [evmStele, initState] using haccStele)
                   have hpresentLock : ∃ acc,
                       evmLock.accountMap.get? I.codeOwner = some acc := by
                     exact ⟨accLock, by
-                      simpa [evmLock, clipperKickLockedState, evmSolm, initState,
+                      simpa [evmLock, clipperKickLockedState, evmStele, initState,
                         storageStore_executionEnv] using haccLock⟩
                   have hInitAccounts :
                       clipperKickInitializedMap σLock I = sourceInit.accountMap := by
@@ -264,11 +264,11 @@ theorem clipperKickBody (v : ClipperImmutables) {code : ByteArray}
                         calc
                           (initState σ σ₀ (Sat256.ofUInt256 g) A I).σ₀ =
                               σ₀ := rfl
-                          _ = evmSolm.σ₀ := rfl
+                          _ = evmStele.σ₀ := rfl
                           _ = evmLock.σ₀ := by
                             simpa [evmLock, clipperKickLockedState] using
-                              (storageStore_σ₀ evmSolm
-                                evmSolm.executionEnv.codeOwner ⟨13⟩ ⟨1⟩).symm
+                              (storageStore_σ₀ evmStele
+                                evmStele.executionEnv.codeOwner ⟨13⟩ ⟨1⟩).symm
                           _ = sourceInit.σ₀ := by
                             simpa [sourceInit] using
                               (clipperKickSourceInitializedState_originalAccounts
@@ -288,9 +288,9 @@ theorem clipperKickBody (v : ClipperImmutables) {code : ByteArray}
                           (Frame.mk contract (clipperKickLocalsActivePos evmLock I) (immStore v))
                           sourceInit (clipperKickAfterInitializationBody) result →
                         ExecBlock config (Frame.mk contract (clipperKickStore I) (immStore v))
-                          evmSolm kickTransition.body result := by
+                          evmStele kickTransition.body result := by
                     intro result hafter
-                    exact clipperKickSourcePrefix v evmSolm I hvalue hsrc hauthSource
+                    exact clipperKickSourcePrefix v evmStele I hvalue hsrc hauthSource
                       hlockedSource hstoppedSource htab hlot husr
                       (by rw [hidEq]; exact hid) hlen hafter
                   have houtcome : ClipperKickTailOutcome v code g
@@ -335,11 +335,11 @@ theorem clipperKickBody (v : ClipperImmutables) {code : ByteArray}
                   exact clipperKickConnectOutcome v hcode hdispatch hdecode
                     (by
                       intro result hafter
-                      simpa [evmSolm] using hprefix hafter)
+                      simpa [evmStele] using hprefix hafter)
                     hidEq houtcome
                 · have hidZero : clipperKickIdWord σLock I = ⟨0⟩ := by
                     simpa using hid
-                  have hsource := clipperKickSourceRevertsId v evmSolm I hvalue hsrc
+                  have hsource := clipperKickSourceRevertsId v evmStele I hvalue hsrc
                     hauthSource hlockedSource hstoppedSource htab hlot husr
                     (by rw [hidEq]; exact hidZero)
                   have hevm := clipperKickX_idZero (σ := σLock) v hpatch hperm
@@ -347,38 +347,38 @@ theorem clipperKickBody (v : ClipperImmutables) {code : ByteArray}
                   exact connectRevert hsource hevm
               · have husrZero : clipperKickUsrMaskedWord I = ⟨0⟩ := by
                   simpa using husr
-                have hsource := clipperKickSourceRevertsUsr v evmSolm I hvalue hsrc
+                have hsource := clipperKickSourceRevertsUsr v evmStele I hvalue hsrc
                   hauthSource hlockedSource hstoppedSource htab hlot husrZero
                 have hevm := clipperKickX_usrZero (σ := σLock) v hpatch husrZero rd5753
                 exact connectRevert hsource hevm
-            · have hsource := clipperKickSourceRevertsLot v evmSolm I hvalue hsrc
+            · have hsource := clipperKickSourceRevertsLot v evmStele I hvalue hsrc
                 hauthSource hlockedSource hstoppedSource htab hlot
               have hevm := clipperKickX_lotZero (σ := σLock) v hpatch hlot rd5681
               exact connectRevert hsource hevm
-          · have hsource := clipperKickSourceRevertsTab v evmSolm I hvalue hsrc
+          · have hsource := clipperKickSourceRevertsTab v evmStele I hvalue hsrc
               hauthSource hlockedSource hstoppedSource htab
             have hevm := clipperKickX_tabZero (σ := σLock) v hpatch htab
               (by simpa [σLock] using rd5609)
             exact connectRevert hsource hevm
         · have hstoppedGe : 1 ≤ (solcSlotWord σLock I ⟨14⟩).toNat := by omega
-          have hsource := clipperKickSourceRevertsStopped v evmSolm I hvalue hsrc
+          have hsource := clipperKickSourceRevertsStopped v evmStele I hvalue hsrc
             hauthSource hlockedSource (by rw [← hstoppedEq]; exact hstoppedGe)
           have hevm := clipperKickX_stopped (σ := σ) v hpatch hperm
             (by simpa [σLock] using hstoppedGe) rd5520
           exact connectRevert hsource hevm
-      · have hlockedSource : Solm.EVM.storageLoad evmSolm
-            evmSolm.executionEnv.codeOwner ⟨13⟩ ≠ ⟨0⟩ := by
+      · have hlockedSource : Stele.EVM.storageLoad evmStele
+            evmStele.executionEnv.codeOwner ⟨13⟩ ≠ ⟨0⟩ := by
           intro hz
           exact hlocked (by rw [hlockEq, hz])
-        have hsource := clipperKickSourceRevertsLocked v evmSolm I hvalue hsrc
+        have hsource := clipperKickSourceRevertsLocked v evmStele I hvalue hsrc
           hauthSource hlockedSource
         have hevm := clipperKickX_locked v hpatch hlocked rd5443
         exact connectRevert hsource hevm
-    · have hauthSource : Solm.EVM.storageLoad evmSolm
-          evmSolm.executionEnv.codeOwner (clipperRelyAuthStorageSlot I) ≠ ⟨1⟩ := by
+    · have hauthSource : Stele.EVM.storageLoad evmStele
+          evmStele.executionEnv.codeOwner (clipperRelyAuthStorageSlot I) ≠ ⟨1⟩ := by
         intro hone
         exact hauth (by rw [hauthEq, hone])
-      have hsource := clipperKickSourceRevertsUnauthorized v evmSolm I hvalue hsrc
+      have hsource := clipperKickSourceRevertsUnauthorized v evmStele I hvalue hsrc
         hauthSource
       have hevm := clipperKickX_unauthorized v hpatch hauth rd5361
       exact connectRevert hsource hevm

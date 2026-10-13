@@ -4,7 +4,7 @@ import Benchmarks.Safe.Main.SetupDecodeScalars
 import Benchmarks.Safe.Main.AddressArrayMemory
 import Benchmarks.Safe.Main.Blocks.Runtime_023
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.Main

@@ -2,7 +2,7 @@ import Reasoning.ExternalCall
 import Benchmarks.Dss.Flipper.DealTicEVM
 import Benchmarks.Dss.Flipper.Dispatch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Flipper
 
@@ -163,7 +163,7 @@ theorem flipperDealBodyCoreCatNoCodeEndExpired {σ σ₀ A I}
   let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
   obtain ⟨_, _, rd5558⟩ :=
     flipperDealX_endExpired hticNeEvm hticGeEvm hendLtEvm hdecoded
-  have hfinishedSolm :
+  have hfinishedStele :
       evalExpr? config { contract := contract, locals := dealLocals I }
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) dealFinishedGuard =
           .ok (.bool true) :=
@@ -178,7 +178,7 @@ theorem flipperDealBodyCoreCatNoCodeEndExpired {σ σ₀ A I}
     simpa [evm0, locals] using
       (flipperDealSourceBodyCatNoCode
         (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
-        hwv hfinishedSolm hcatNoCode)
+        hwv hfinishedStele hcatNoCode)
   exact (flipperDealX_catNoCode hcatZero rd5558)
     |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
 
@@ -209,7 +209,7 @@ theorem flipperDealBodyCoreCatNoCodeTicExpired {σ σ₀ A I}
   let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
   obtain ⟨_, _, rd5558⟩ :=
     flipperDealX_ticExpired_catMem hticNeEvm hticLtEvm hdecoded
-  have hfinishedSolm :
+  have hfinishedStele :
       evalExpr? config { contract := contract, locals := dealLocals I }
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) dealFinishedGuard =
           .ok (.bool true) :=
@@ -224,7 +224,7 @@ theorem flipperDealBodyCoreCatNoCodeTicExpired {σ σ₀ A I}
     simpa [evm0, locals] using
       (flipperDealSourceBodyCatNoCode
         (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
-        hwv hfinishedSolm hcatNoCode)
+        hwv hfinishedStele hcatNoCode)
   exact (flipperDealX_catNoCode hcatZero rd5558)
     |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
 
@@ -266,7 +266,7 @@ theorem flipperDealBodyCoreCatCallDepthLimit {σ σ₀ A I}
     rcases hfinishedEvm with ⟨hticNe, hticLt⟩ | ⟨hticNe, hticGe, hendLt⟩
     · exact flipperDealX_ticExpired_catMem hticNe hticLt hdecoded
     · exact flipperDealX_endExpired hticNe hticGe hendLt hdecoded
-  have hfinishedSolm :
+  have hfinishedStele :
       evalExpr? config { contract := contract, locals := dealLocals I }
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) dealFinishedGuard =
           .ok (.bool true) := by
@@ -284,7 +284,7 @@ theorem flipperDealBodyCoreCatCallDepthLimit {σ σ₀ A I}
         (dealClawArgVals (initState σ σ₀ (Sat256.ofUInt256 g) A I)) =
           some ((dealCatCallMem σ I).readWithPadding 128 36) := by
     simpa [dealClawArgVals, dealClawArgValsOf, initState, solcSlotWordAt,
-      solcSlotWord, Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
+      solcSlotWord, Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
       bidTabWord, bidSlotOfWord, bidBaseOfWord] using dealCatCallMem_encode σ I
   have hcallCat :=
     Reasoning.Theory.callNotMade_depthLimit (cfg := config)
@@ -300,7 +300,7 @@ theorem flipperDealBodyCoreCatCallDepthLimit {σ σ₀ A I}
     simpa using
       (flipperDealSourceBodyCatCallFailure
         (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
-        hwv hfinishedSolm hcatCode hcallCat)
+        hwv hfinishedStele hcatCode hcallCat)
   exact (flipperDealX_catCallDepthLimit hcatNe hdepthEq rd5558)
     |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
 
@@ -342,7 +342,7 @@ theorem flipperDealBodyCoreCatPostCall {σ σ₀ A I}
     rcases hfinishedEvm with ⟨hticNe, hticLt⟩ | ⟨hticNe, hticGe, hendLt⟩
     · exact flipperDealX_ticExpired_catMem hticNe hticLt hdecoded
     · exact flipperDealX_endExpired hticNe hticGe hendLt hdecoded
-  have hfinishedSolm :
+  have hfinishedStele :
       evalExpr? config { contract := contract, locals := dealLocals I }
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) dealFinishedGuard =
           .ok (.bool true) := by
@@ -370,7 +370,7 @@ theorem flipperDealBodyCoreCatPostCall {σ σ₀ A I}
       [Value.int (Int.ofNat (bidTabWord (dealId I) σ I).toNat)] =
         dealClawArgVals evm0 := by
     simpa [dealClawArgVals, dealClawArgValsOf, evm0, initState,
-      Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
+      Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
       bidTabWord, solcSlotWordAt, solcSlotWord] using
       (rfl : [Value.int (Int.ofNat (bidTabWord (dealId I) σ I).toNat)] =
         [Value.int (Int.ofNat (bidTabWord (dealId I) σ I).toNat)])
@@ -392,7 +392,7 @@ theorem flipperDealBodyCoreCatPostCall {σ σ₀ A I}
       simpa [evm0] using
         (flipperDealSourceBodyCatCallFailure
           (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
-          hwv hfinishedSolm hcatCode hcallCatFalse)
+          hwv hfinishedStele hcatCode hcallCatFalse)
     exact (flipperDealX_catCallFailure (by simpa using rd5654) houtCat)
       |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
   · have rd5654True : RD flipperBytecode I (Sat256.ofUInt256 g)
@@ -427,10 +427,10 @@ theorem flipperDealBodyCoreCatPostCall {σ σ₀ A I}
           (flipperDealSourceBodyVatNoCode
             (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
             (evmCat := evmCat) (outCat := outCat)
-            hwv hfinishedSolm hcatCode hcallCatTrue hvatNoCode)
+            hwv hfinishedStele hcatCode hcallCatTrue hvatNoCode)
       exact (flipperDealX_vatNoCode hvatZero rd5673)
         |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
-    · have hvatCodeSolm :
+    · have hvatCodeStele :
           0 <
             (UInt256.ofNat
               ((evmCat.lookupAccount
@@ -474,7 +474,7 @@ theorem flipperDealBodyCoreCatPostCall {σ σ₀ A I}
               (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
               (evmCat := evmCat) (evmVat := evmVat)
               (outCat := outCat) (outVat := outVat)
-              hwv hfinishedSolm hcatCode hcallCatTrue hvatCodeSolm
+              hwv hfinishedStele hcatCode hcallCatTrue hvatCodeStele
               hcallVatFalse)
         exact (flipperDealX_vatCallFailure rd1615False houtVat)
           |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
@@ -513,7 +513,7 @@ theorem flipperDealBodyCoreCatPostCall {σ σ₀ A I}
               (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
               (evmCat := evmCat) (evmVat := evmVat)
               (outCat := outCat) (outVat := outVat)
-              hwv hfinishedSolm hcatCode hcallCatTrue hvatCodeSolm hcallVatTrue)
+              hwv hfinishedStele hcatCode hcallCatTrue hvatCodeStele hcallVatTrue)
         rcases hretSplit with ⟨_hperm, hret⟩ | ⟨hperm, hstatic⟩
         swap
         · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode (hbodySplit.2 hperm)

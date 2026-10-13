@@ -4,7 +4,7 @@ import Benchmarks.Dss.Spot.ConstructorBase
 # MakerDAO/Sky DSS Spotter constructor vat slot load trace
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Spot
 

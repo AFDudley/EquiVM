@@ -5,7 +5,7 @@ import Benchmarks.CompoundIII.Comet.WithdrawBaseTailModel
 import Benchmarks.CompoundIII.Comet.UpdateBaseModel
 import Benchmarks.CompoundIII.Comet.AccrueInternalModel
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.CompoundIII.Comet.Immutables
 
 namespace Benchmarks.CompoundIII.Comet

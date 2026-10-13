@@ -2,7 +2,7 @@ import Benchmarks.UniswapV3.Pool.InitializeSlot0Model
 import Benchmarks.UniswapV3.Pool.PackedPrefixMask
 import Benchmarks.UniswapV3.Pool.TickLogBoundsModel
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 def initializeCompiledPrice (old price : UInt256) : UInt256 :=

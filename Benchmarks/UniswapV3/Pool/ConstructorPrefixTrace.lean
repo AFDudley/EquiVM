@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.ConstructorInputMemory
 import Benchmarks.UniswapV3.Pool.CreationBlocks_001
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open uniswapV3PoolCreationBlocks
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 1000

@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Flapper.Dispatch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Flapper
 
@@ -70,7 +70,7 @@ theorem flapperTtlBodyCore {σ σ₀ A I} {g : UInt256}
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.int (Int.ofNat (ttlWord σ I).toNat))])) := by
     simpa [ttlTransition, ttlWord, uint48Offset0Word, initState,
-      Solm.EVM.storageLoad, State.lookupAccount] using
+      Stele.EVM.storageLoad, State.lookupAccount] using
       flapperUint48GetterBodyReturns_offset0
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
         (ref := ttlRef) (er := ({ base := "ttl", steps := [] } : EvaledStorageRef))

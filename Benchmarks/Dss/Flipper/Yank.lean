@@ -5,7 +5,7 @@ import Benchmarks.Dss.Flipper.ExternalTargets
 import Reasoning.ExternalCall
 import Reasoning.MemCascade
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxHeartbeats 0
 
@@ -545,7 +545,7 @@ theorem evalExpr_yankBidLtTab_true {σ σ₀ A I} {g : Sat256}
 
 abbrev yankClawArgValsOf (evm : EVM.State) (id : UInt256) : List Value :=
   [.int (Int.ofNat
-    (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+    (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
       (bidSlotOfWord id ⟨5⟩)).toNat)]
 
 abbrev yankClawArgVals (evm : EVM.State) : List Value :=
@@ -597,7 +597,7 @@ theorem evalExpr_yankIlk_ofLocals {evm : EVM.State} {locals : Store}
     evalExpr? config { contract := contract, locals := locals } evm
       (.storage ilkRef) =
         .ok (.fixedBytes bytes32Width
-          (EVM.Word.toBytesBE (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩))) := by
+          (EVM.Word.toBytesBE (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩))) := by
   rw [evalExpr_storage_scalar (hbackend := rfl)
     (t := .bytes bytes32Width)
     (er := ({ base := "ilk", steps := [] } : EvaledStorageRef))
@@ -612,11 +612,11 @@ theorem evalExpr_yankIlk_ofLocals {evm : EVM.State} {locals : Store}
 
 abbrev yankFluxArgValsOf (evm : EVM.State) (id : UInt256) : List Value :=
   [.fixedBytes bytes32Width
-      (EVM.Word.toBytesBE (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩)),
+      (EVM.Word.toBytesBE (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩)),
     .address evm.executionEnv.codeOwner,
     .address evm.executionEnv.source,
     .int (Int.ofNat
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (bidSlotOfWord id ⟨1⟩)).toNat)]
 
 theorem evalExprs_yankFluxArgs_ofLocals {evm : EVM.State} {locals : Store} {id : UInt256}

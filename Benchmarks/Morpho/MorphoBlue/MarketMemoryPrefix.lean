@@ -1,7 +1,7 @@
 import Benchmarks.Morpho.MorphoBlue.ReturnDataMemory
 import Benchmarks.Morpho.MorphoBlue.MarketParamsMemory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.Morpho.MorphoBlue
 
 -- LIBRARY CANDIDATE: a fixed-width tuple survives preservation of its allocated word window.

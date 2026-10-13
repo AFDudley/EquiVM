@@ -7,7 +7,7 @@ import Examples.StringStoreLite.SetLongNewLong
 This file dispatches the valid `set(string)` branch to the new-short and new-long proofs.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 20000000

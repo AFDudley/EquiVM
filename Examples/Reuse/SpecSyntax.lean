@@ -1,8 +1,8 @@
 import Examples.Reuse.Spec
-import Solm.Notation
+import Stele.Notation
 
 /-!
-# Reuse spec in the Solidity-faithful Solm frontend
+# Reuse spec in the Solidity-faithful Stele frontend
 
 The `C` contract from `Examples/Reuse/Spec.lean` written with `solidity%` and proven
 definitionally equal to the AST spec.
@@ -12,7 +12,7 @@ definitionally equal to the AST spec.
 * `g` calls the public `f` internally, written as the bound internal call `var r = f(v);`.
 -/
 
-open Solm Solm.Notation
+open Stele Stele.Notation
 
 namespace Reuse.Syntax
 

@@ -1,8 +1,8 @@
 import Reasoning.ABIViews
 import Benchmarks.Dss.Cat.Common
-import Solm.Refine
+import Stele.Refine
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -549,7 +549,7 @@ theorem catReachIlksBody {σ σ₀ A I} {g : Sat256}
   exact catReachHighHighBody 1 (by omega) ⟨635⟩ hcode hwv hsz hsize hroot hhigh heq0 htake
     (by jump_dest) (by native_decide)
 
-/-! ### Solm-side body execution -/
+/-! ### Stele-side body execution -/
 
 theorem catIlksBodyReturns {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size)
     (evm : EVM.State) (locals : Store)
@@ -573,7 +573,7 @@ theorem catIlksBodyReturns {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size)
           (UInt256.land (solcSlotWordAt (ilksFlipSlotFor I) evm.accountMap evm.executionEnv)
             solcAddrMask).toNat)) := by
     exact evalExpr_storage_scalar_value (hbackend := rfl)
-      (cfg := config) (solm := frame) (evm := evm)
+      (cfg := config) (stele := frame) (evm := evm)
       (slot := ilksF (.var "arg0") "flip") (er := ilksFlipEvaledRef I)
       (t := .address) (loc := addrLoc (ilksFlipSlotFor I))
       (value := .address (AccountAddress.ofNat
@@ -596,7 +596,7 @@ theorem catIlksBodyReturns {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size)
         .ok (.int (Int.ofNat
           (solcSlotWordAt (ilksChopSlotFor I) evm.accountMap evm.executionEnv).toNat)) := by
     exact evalExpr_storage_scalar_value (hbackend := rfl)
-      (cfg := config) (solm := frame) (evm := evm)
+      (cfg := config) (stele := frame) (evm := evm)
       (slot := ilksF (.var "arg0") "chop") (er := ilksChopEvaledRef I)
       (t := .int uint256Int) (loc := wordLoc (ilksChopSlotFor I))
       (value := .int (Int.ofNat
@@ -618,7 +618,7 @@ theorem catIlksBodyReturns {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size)
         .ok (.int (Int.ofNat
           (solcSlotWordAt (ilksDunkSlotFor I) evm.accountMap evm.executionEnv).toNat)) := by
     exact evalExpr_storage_scalar_value (hbackend := rfl)
-      (cfg := config) (solm := frame) (evm := evm)
+      (cfg := config) (stele := frame) (evm := evm)
       (slot := ilksF (.var "arg0") "dunk") (er := ilksDunkEvaledRef I)
       (t := .int uint256Int) (loc := wordLoc (ilksDunkSlotFor I))
       (value := .int (Int.ofNat

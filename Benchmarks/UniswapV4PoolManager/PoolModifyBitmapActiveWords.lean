@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.PoolModifyBitmapsTrace
 import Benchmarks.UniswapV4PoolManager.MemoryGas
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 theorem tickBitmapActiveWords_eq_self {aw : UInt256} (ha : 2 ≤ aw.toNat) :

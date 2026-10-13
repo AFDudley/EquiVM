@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.BeforeLiquidityMemory
 import Benchmarks.UniswapV4PoolManager.WordBytesCallAllocationGas
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.UniswapV4PoolManager.Immutables
 namespace Benchmarks.UniswapV4PoolManager
 

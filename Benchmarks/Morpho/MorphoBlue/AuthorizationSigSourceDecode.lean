@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MorphoBlue.RawCalldataSource
 import Benchmarks.Morpho.MorphoBlue.AuthorizationABI
 import Benchmarks.Morpho.MorphoBlue.Fallback
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Morpho.MorphoBlue.Immutables
 namespace Benchmarks.Morpho.MorphoBlue
 set_option maxRecDepth 1000
@@ -27,7 +27,7 @@ theorem morphoAuthorizationSigPrelude (evm : EVM.State) (v : MorphoImmutables)
       evm.executionEnv.calldata[i] = (morphoSelBytes 27)[i]'(by decide +revert) :=
     selectorPrefix_get hi hs he
   have p0 := (ABlock.start (cfg := config) (evm := evm)
-    (solm := authorizationSigFrame evm.executionEnv.calldata v)
+    (stele := authorizationSigFrame evm.executionEnv.calldata v)
     (stmts := setAuthorizationWithSigTransition.body)).requireStep (evalCallvalueEq_true hcv)
   have p1 := p0.requireStep (by simpa only [hs, decide_true] using fallbackSize_eval evm v)
   have p2 := p1.requireStep (by
@@ -75,7 +75,7 @@ theorem morphoAuthorizationSigBoundsPrelude (evm : EVM.State) (v : MorphoImmutab
   have p0 := morphoAuthorizationSigPrelude evm v hcv hsel
   have p1 := p0.requireStep (by
     simpa only [hh, decide_true] using calldataGuard_eval
-      (cfg := config) (solm := authorizationSigFrame evm.executionEnv.calldata v)
+      (cfg := config) (stele := authorizationSigFrame evm.executionEnv.calldata v)
       (store_get_self _ _ _))
   exact p1.requireStep (by
     simpa only [hl, decide_true] using evalCalldataLengthGe
@@ -125,7 +125,7 @@ theorem morphoAuthorizationSigSourceDecodeRevert (evm : EVM.State) (v : MorphoIm
   apply ExecFuncBody.execBlockRevert
   have p0 := morphoAuthorizationSigPrelude evm v hcv hsel
   have hg := calldataGuard_eval (cfg := config) (evm := evm)
-    (solm := authorizationSigFrame evm.executionEnv.calldata v) (store_get_self _ _ _)
+    (stele := authorizationSigFrame evm.executionEnv.calldata v) (store_get_self _ _ _)
   by_cases hh : evm.executionEnv.calldata.size < 2 ^ 255 + 4
   swap
   · exact p0.requireRevert (by simpa only [hh, decide_false] using hg)

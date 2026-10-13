@@ -5,7 +5,7 @@ import Benchmarks.UniswapV4PoolManager.LiquidityAddWords
 import Benchmarks.UniswapV4PoolManager.SignedNormalizeRange
 import Benchmarks.UniswapV4PoolManager.WordSignextend128
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 def poolSwapCrossGrowth0 (evm : State) (id : UInt256) (s : PoolSwapStepWords) (zeroForOne : Bool) : UInt256 :=

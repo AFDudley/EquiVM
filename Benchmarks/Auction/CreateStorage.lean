@@ -1,7 +1,7 @@
 import Benchmarks.Auction.SettleStorage
 import Benchmarks.Auction.InitializeState
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Auction
 
@@ -21,32 +21,32 @@ theorem clearAuctionPackedWord_toNat (old : UInt256) :
 set_option maxRecDepth 2048 in
 theorem storageLocStore_settledFalse (evm : EVM.State) (slot : UInt256) :
     storageLocStore evm (auctionBoolLocAt slot 20) (.bool false) =
-      some (Solm.EVM.storageStore evm evm.executionEnv.codeOwner slot
-        (clearSettledWord (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot))) := by
+      some (Stele.EVM.storageStore evm evm.executionEnv.codeOwner slot
+        (clearSettledWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot))) := by
   unfold storageLocStore storageLocWriteWord auctionBoolLocAt
   simp only [valueToWord, bind, Option.bind]
   congr 2
   apply u256_inj
   change fromBytes'
     ((EVM.Word.toBytesLEWithSizeProof
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).1.take 20 ++
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).1.take 20 ++
       (EVM.Word.toBytesLEWithSizeProof false.toUInt256).1.take 1 ++
       (EVM.Word.toBytesLEWithSizeProof
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).1.drop 21) = _
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).1.drop 21) = _
   rw [fromBytes'_append, fromBytes'_append, fromBytes'_take_wordLE,
     fromBytes'_take_wordLE, fromBytes'_drop_wordLE]
   simp only [List.length_append, List.length_take,
     (EVM.Word.toBytesLEWithSizeProof
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).2,
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).2,
     (EVM.Word.toBytesLEWithSizeProof false.toUInt256).2]
   change _ % 2 ^ 160 + 2 ^ 160 * 0 + 2 ^ 168 * (_ / 2 ^ 168) =
     (_ % 2 ^ 160 + 2 ^ 168 * (_ / 2 ^ 168)) % UInt256.size
   rw [Nat.mul_zero, Nat.add_zero]
   apply (Nat.mod_eq_of_lt _).symm
-  have hb : (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot).toNat < 2 ^ 256 :=
-    (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot).val.isLt
+  have hb : (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot).toNat < 2 ^ 256 :=
+    (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot).val.isLt
   have hlo := Nat.mod_lt
-    (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot).toNat (by decide : 0 < 2 ^ 160)
+    (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot).toNat (by decide : 0 < 2 ^ 160)
   change _ < 2 ^ 256
   omega
 
@@ -80,19 +80,19 @@ theorem auctionFieldWrite (evm evm' : EVM.State) (locals : Store) (name : Ident)
     bind]
 
 def clearBidderState (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨211⟩
-    (setAddressOffset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨211⟩) ⟨0⟩)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨211⟩
+    (setAddressOffset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨211⟩) ⟨0⟩)
 
 def clearSettledState (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨211⟩
-    (clearSettledWord (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨211⟩))
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨211⟩
+    (clearSettledWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨211⟩))
 
 def clearAuctionPackedState (evm : EVM.State) : EVM.State :=
   clearSettledState (clearBidderState evm)
 
 theorem clearAuctionPackedState_accounts (evm : EVM.State) :
     sstoreAccountMap evm.executionEnv.codeOwner evm.accountMap ⟨211⟩
-      (clearAuctionPackedWord (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨211⟩)) =
+      (clearAuctionPackedWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨211⟩)) =
       (clearAuctionPackedState evm).accountMap := by
   unfold clearAuctionPackedState clearSettledState clearBidderState
   rw [storageStore_executionEnv]
@@ -110,9 +110,9 @@ theorem SourceState.clearAuctionPacked {s0 I σ evm} (hs : SourceState s0 I σ e
       (sstoreAccountMap I.codeOwner σ ⟨211⟩ (clearAuctionPackedWord (solcSlotWord σ I ⟨211⟩)))
       (clearAuctionPackedState evm) := by
   have hs1 := hs.storageWrite ⟨211⟩
-    (setAddressOffset0Word (Solm.EVM.storageLoad evm I.codeOwner ⟨211⟩) ⟨0⟩)
+    (setAddressOffset0Word (Stele.EVM.storageLoad evm I.codeOwner ⟨211⟩) ⟨0⟩)
   have hs2 := hs1.storageWrite ⟨211⟩
-    (clearSettledWord (Solm.EVM.storageLoad (clearBidderState evm) I.codeOwner ⟨211⟩))
+    (clearSettledWord (Stele.EVM.storageLoad (clearBidderState evm) I.codeOwner ⟨211⟩))
   refine ⟨?_, ?_, ?_⟩
   · simpa only [clearAuctionPackedState, clearSettledState, clearBidderState,
       storageStore_executionEnv, hs.env] using hs2.world
@@ -120,6 +120,6 @@ theorem SourceState.clearAuctionPacked {s0 I σ evm} (hs : SourceState s0 I σ e
       storageStore_executionEnv, hs.env]
   · have he := clearAuctionPackedState_accounts evm
     rw [hs.accounts, ← hs.env]
-    simpa [solcSlotWord, Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage] using he
+    simpa [solcSlotWord, Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage] using he
 
 end Auction

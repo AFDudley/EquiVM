@@ -4,7 +4,7 @@ import Benchmarks.UniswapV4PoolManager.LiquidityAddWords
 import Benchmarks.UniswapV4PoolManager.LiquidityAddSource
 import Benchmarks.UniswapV4PoolManager.WordLocals
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 def poolModifyLiquidityBlock : List Stmt :=

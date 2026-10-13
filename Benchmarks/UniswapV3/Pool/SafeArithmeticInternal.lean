@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.SafeArithmeticCost
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
@@ -29,7 +29,7 @@ theorem safeCast256InternalMonoX {σ : AccountMap} {ee : ExecutionEnv} {g : Sat2
     exact safeCast256Reverts caller.immutables evm y hb
   · refine Or.inr ⟨?_, hv, hr⟩
     apply internalCallFunctionReturn (callee := safeCast256Function)
-      (calleeSolm := safeCast256ReadyFrame caller.immutables y)
+      (calleeStele := safeCast256ReadyFrame caller.immutables y)
       (value := some [.int (Int.ofNat y.toNat)]) he hl (safeCast256Bind y)
     rw [hc]
     exact safeCast256Returns caller.immutables evm y hv
@@ -68,7 +68,7 @@ theorem safeSignedMathInternalMonoX {σ : AccountMap} {ee : ExecutionEnv} {g : S
     exact safeSignedMathReverts subtract caller.immutables evm x y hb
   · refine Or.inr ⟨?_, hv, hr⟩
     apply internalCallFunctionReturn (callee := safeSignedMathFunction subtract)
-      (calleeSolm := safeSignedMathReadyFrame subtract caller.immutables x y)
+      (calleeStele := safeSignedMathReadyFrame subtract caller.immutables x y)
       (value := some [.int (safeSignedMathResult subtract x y)]) he hl
       (safeSignedMathBind subtract x y)
     rw [hc]

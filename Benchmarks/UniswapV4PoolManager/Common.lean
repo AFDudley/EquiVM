@@ -6,7 +6,7 @@ import Reasoning.Constructor
 import Reasoning.Solc
 import Reasoning.Storage
 import Reasoning.Dispatch
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 import Reasoning.WordArithmetic
 import Reasoning.Initcode
 import Reasoning.MemCascade
@@ -21,7 +21,7 @@ Single import point for the proof files; selector bridges, selector-word facts, 
 immutables plumbing.  Contract-specific helpers shared by several proof files go here too.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.UniswapV4PoolManager.Immutables
 

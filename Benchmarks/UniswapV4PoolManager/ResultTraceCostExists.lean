@@ -2,7 +2,7 @@ import Benchmarks.UniswapV4PoolManager.ReachCostExists
 import Benchmarks.UniswapV4PoolManager.BlockResultTrace
 import Benchmarks.UniswapV4PoolManager.FunctionTraceMono
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 -- LIBRARY CANDIDATE: preserve costs with existential stack or result witnesses.
@@ -22,7 +22,7 @@ theorem blockResultTrace_retainCost_exists {α : Type} {code : ByteArray} {I J :
   cases result with
   | ok f post => exact RD_retainCost_exists (fun budget start hin => routine budget start 0 0 hin) h
   | reverted | staticViolation => exact hr
-  | returned | «break» | «continue» => exact False.elim hr
+  | returned | «break» | «continue» | noMatch | decodingFailed => exact False.elim hr
 
 theorem functionResultTrace_retainCost_exists {α : Type} {code : ByteArray} {I J : ExecutionEnv}
     {g : Sat256} {s0 : State} {entry : Cursor} {k C : Nat} {result : ExecResult}
@@ -41,6 +41,6 @@ theorem functionResultTrace_retainCost_exists {α : Type} {code : ByteArray} {I 
   cases result with
   | returned f post values => exact RD_retainCost_exists (fun budget start hin => routine budget start 0 0 hin) h
   | reverted | staticViolation => exact hr
-  | ok | «break» | «continue» => exact False.elim hr
+  | ok | «break» | «continue» | noMatch | decodingFailed => exact False.elim hr
 
 end Benchmarks.UniswapV4PoolManager

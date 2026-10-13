@@ -1,9 +1,9 @@
-import Solm.Notation
+import Stele.Notation
 
 /-!
 # CometWithExtendedAssetList specification
 
-Drafted by `scripts/sol2solm.py`; assembly effects and ABI adapters are explicit below.
+Drafted by `scripts/sol2stele.py`; assembly effects and ABI adapters are explicit below.
 
 Source contract `CometWithExtendedAssetList`, solc 0.8.15, via-IR; linearisation: CometWithExtendedAssetList → CometMainInterface → CometCore → CometMath → CometStorage → CometConfiguration.
 Transitions are in selector order (the dispatcher order).
@@ -44,7 +44,7 @@ External calls (for the spec's `ExternalCallABI`):
   - transfer(address, uint256) returns ()
 -/
 
-open Solm Solm.Notation
+open Stele Stele.Notation
 
 namespace Benchmarks.CompoundIII.Comet.Syntax
 

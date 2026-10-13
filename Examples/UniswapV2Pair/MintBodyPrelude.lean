@@ -1,6 +1,6 @@
 import Examples.UniswapV2Pair.MintProportionalFinish
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -32,15 +32,15 @@ theorem uniswapMintBodyCoreRevert_locked
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   let evmS := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  have hlockedSolm :
-      Solm.EVM.storageLoad evmS evmS.executionEnv.codeOwner ⟨12⟩ ≠ ⟨1⟩ := by
-    simpa [evmS, initState, Solm.EVM.storageLoad, State.lookupAccount,
+  have hlockedStele :
+      Stele.EVM.storageLoad evmS evmS.executionEnv.codeOwner ⟨12⟩ ≠ ⟨1⟩ := by
+    simpa [evmS, initState, Stele.EVM.storageLoad, State.lookupAccount,
       Account.lookupStorage] using hlocked
   have hbody :
       ExecTransitionBody config contract evmS (mintStore I) mintTransition.body .reverted := by
     exact uniswapMintBodyReverts_locked evmS I
       (by simp only [evmS, initState]; exact hwv)
-      hlockedSolm
+      hlockedStele
   exact (uniswapMintX_locked (g := Sat256.ofUInt256 g) hlocked
       (uniswapMintX_decoded_masked (g := Sat256.ofUInt256 g) hsz36 hsize hreach))
     |>.reEquivExecutionRevert hcode hdispatch (uniswapDecode_mint_ok hsz36) hbody

@@ -1,7 +1,7 @@
 import Benchmarks.Auction.ErrorSelectorMemory
 import Benchmarks.Auction.RevertData
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Auction
 

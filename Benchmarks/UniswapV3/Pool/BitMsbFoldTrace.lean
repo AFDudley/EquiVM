@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.BitMsbSource
 import Benchmarks.UniswapV3.Pool.BitMsbStepTrace
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 namespace Benchmarks.UniswapV3.Pool
 

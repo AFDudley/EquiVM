@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.WordXor
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 open scoped Fin.IntCast Fin.CommRing
 

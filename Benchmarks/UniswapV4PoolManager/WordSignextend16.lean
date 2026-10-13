@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV4PoolManager.WordSignedField
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 -- LIBRARY CANDIDATE: int16 normalization and byte-index-one sign extension agree.

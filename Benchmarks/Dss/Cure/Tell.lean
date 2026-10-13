@@ -1,7 +1,7 @@
 import Reasoning.Solc
 import Benchmarks.Dss.Cure.Common
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Cure
 
@@ -138,7 +138,7 @@ theorem evalExpr_tellSrcsLength {σ σ₀ A I} {g : Sat256} :
     evalStorageRefSteps, wordLoc, EvalResult.ofOption, EvalResult.bind, pure, bind]
   rw [cureSrcsLength]
   simp [storageLocLoad_uint256, solcSlotWordAt, solcSlotWord, initState,
-    Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage]
+    Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage]
 
 theorem evalExpr_tellTimestamp {σ σ₀ A I} {g : Sat256} {locals : Store} :
     evalExpr? config { contract := contract, locals := locals }
@@ -309,7 +309,7 @@ theorem cureTellSourceBodyReverts {σ σ₀ A I} {g : UInt256}
           .return [.storage sayRef] ]
         .reverted := by
     exact nonpayableSecondRequireReverts
-      (cfg := config) (solm := { contract := contract, locals := ∅ }) (evm := evm0)
+      (cfg := config) (stele := { contract := contract, locals := ∅ }) (evm := evm0)
       (guard := tellGuardExpr) (rest := [.return [.storage sayRef]])
       (by simp [evm0, initState]; exact hwv) (by simpa [evm0] using hguard)
   simpa [ExecTransitionBody, tellTransition, nonpayable, tellGuardExpr, evm0] using
@@ -966,14 +966,14 @@ theorem cureTellBodyCore {σ σ₀ A I} {g : UInt256}
     repeat' first | apply And.intro | native_decide
   obtain ⟨_, _, hroutine⟩ := RD.solcGetterThunk hreach hentry (by jump_dest)
   by_cases hliveEvm : tellLiveWord σ I = ⟨0⟩
-  · have hliveSolm : tellLiveWord σ I = ⟨0⟩ := by
+  · have hliveStele : tellLiveWord σ I = ⟨0⟩ := by
       exact hliveEvm
     by_cases hcountEvm : tellLCountWord σ I = tellSrcsLenWord σ I
-    · have hcountSolm : tellLCountWord σ I = tellSrcsLenWord σ I := by
+    · have hcountStele : tellLCountWord σ I = tellSrcsLenWord σ I := by
         exact hcountEvm
       have hguard := cureTellGuardEval_countTrue
         (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := Sat256.ofUInt256 g)
-        hliveSolm hcountSolm
+        hliveStele hcountStele
       have hbody := cureTellSourceBodyOk
         (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv
         (by simpa [tellGuardExpr] using hguard)
@@ -981,15 +981,15 @@ theorem cureTellBodyCore {σ σ₀ A I} {g : UInt256}
         (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
         hcode hwv hsize hsel hliveEvm hcountEvm
       exact hret.reEquivExecution hcode hdispatch hdecode hbody henc
-    · have hcountSolm : tellLCountWord σ I ≠ tellSrcsLenWord σ I := by
+    · have hcountStele : tellLCountWord σ I ≠ tellSrcsLenWord σ I := by
         intro hbad
         exact hcountEvm hbad
       by_cases htimeEvm : (tellWhenWord σ I).toNat ≤ (tellTimestampWord I).toNat
-      · have htimeSolm : (tellWhenWord σ I).toNat ≤ (tellTimestampWord I).toNat := by
+      · have htimeStele : (tellWhenWord σ I).toNat ≤ (tellTimestampWord I).toNat := by
           exact htimeEvm
         have hguard := cureTellGuardEval_timeTrue
           (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := Sat256.ofUInt256 g)
-          hliveSolm hcountSolm htimeSolm
+          hliveStele hcountStele htimeStele
         have hbody := cureTellSourceBodyOk
           (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv
           (by simpa [tellGuardExpr] using hguard)
@@ -997,11 +997,11 @@ theorem cureTellBodyCore {σ σ₀ A I} {g : UInt256}
           (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
           hcode hwv hsize hsel hliveEvm hcountEvm htimeEvm
         exact hret.reEquivExecution hcode hdispatch hdecode hbody henc
-      · have htimeSolm : (tellTimestampWord I).toNat < (tellWhenWord σ I).toNat := by
+      · have htimeStele : (tellTimestampWord I).toNat < (tellWhenWord σ I).toNat := by
           exact Nat.lt_of_not_ge htimeEvm
         have hguard := cureTellGuardEval_false
           (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := Sat256.ofUInt256 g)
-          hliveSolm hcountSolm htimeSolm
+          hliveStele hcountStele htimeStele
         have hbody := cureTellSourceBodyReverts
           (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv
           (by simpa [tellGuardExpr] using hguard)
@@ -1024,12 +1024,12 @@ theorem cureTellBodyCore {σ σ₀ A I} {g : UInt256}
           (by simp)
         have hrev := RD.cureTellRevertTail hrevPc (by simp)
         exact hrev.reEquivExecutionRevert hcode hdispatch hdecode hbody
-  · have hliveSolm : tellLiveWord σ I ≠ ⟨0⟩ := by
+  · have hliveStele : tellLiveWord σ I ≠ ⟨0⟩ := by
       intro hbad
       exact hliveEvm hbad
     have hguard := cureTellGuardEval_liveFalse
       (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := Sat256.ofUInt256 g)
-      hliveSolm
+      hliveStele
     have hbody := cureTellSourceBodyReverts
       (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv
       (by simpa [tellGuardExpr] using hguard)

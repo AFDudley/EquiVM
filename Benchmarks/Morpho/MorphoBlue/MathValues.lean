@@ -1,6 +1,6 @@
 import Benchmarks.Morpho.MorphoBlue.Common
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.Morpho.MorphoBlue
 
 def wad : UInt256 := UInt256.ofNat 1000000000000000000

@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.SourceWordBits
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 -- GENERALIZES shiftLeft_toNat_of_noOverflow to include wrapping shifts.

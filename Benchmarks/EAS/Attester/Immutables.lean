@@ -1,6 +1,6 @@
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 import Reasoning.BytecodePatching
-import Solm
+import Stele
 import Reasoning.PatchRuntime
 import Reasoning.Immutables
 
@@ -12,7 +12,7 @@ address is zeroed in the emitted runtime. The constructor patches `_eas` at the 
 re-derived from standard-JSON `evm.deployedBytecode.immutableReferences` for solc `0.8.26`.
 -/
 
-open Solm ABI
+open Stele ABI
 
 namespace Benchmarks.EAS.Attester.Immutables
 

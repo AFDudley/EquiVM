@@ -16,7 +16,7 @@ import Benchmarks.Dss.Pot.Rho
 import Benchmarks.Dss.Pot.Vat
 import Benchmarks.Dss.Pot.Vow
 import Benchmarks.Dss.Pot.Wards
-import Solm.Refine
+import Stele.Refine
 
 /-!
 # MakerDAO/Sky DSS Pot benchmark correctness
@@ -26,7 +26,7 @@ adds the shared revert paths (non-payable guard, no-dispatch), and packages the 
 the runtime target into the whole-contract equivalence.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 

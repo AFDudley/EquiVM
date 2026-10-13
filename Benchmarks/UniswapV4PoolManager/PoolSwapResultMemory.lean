@@ -2,7 +2,7 @@ import Benchmarks.UniswapV4PoolManager.PoolSwapPreludeMemory
 import Benchmarks.UniswapV4PoolManager.WordStructInitMemory
 import Benchmarks.UniswapV4PoolManager.PoolSwapMemory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 theorem poolSwapResultZeroMem_eq (mem : ByteArray) (state : UInt256) (hf : state.toNat+96 < UInt256.size) :

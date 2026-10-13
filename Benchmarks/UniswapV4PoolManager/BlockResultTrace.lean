@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.BlockContinuation
 import Benchmarks.UniswapV4PoolManager.CallContinuation
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 -- LIBRARY CANDIDATE: trace a block's normal and return continuations separately.
@@ -22,7 +22,7 @@ theorem blockResultTrace_mono {code : ByteArray} {g : Sat256} {s0 : State}
   cases result with
   | ok f post => exact hn f post rfl hr
   | returned | reverted | staticViolation => exact hr
-  | «break» | «continue» => exact False.elim hr
+  | «break» | «continue» | noMatch | decodingFailed => exact False.elim hr
 
 -- LIBRARY CANDIDATE: compose a block trace without losing its terminal outcomes.
 theorem blockResultTrace_continueBlock {code : ByteArray} {g : Sat256} {s0 : State}
@@ -35,7 +35,7 @@ theorem blockResultTrace_continueBlock {code : ByteArray} {g : Sat256} {s0 : Sta
   cases result with
   | ok f post => exact hn f post rfl hr
   | returned | reverted | staticViolation => exact hr
-  | «break» | «continue» => exact False.elim hr
+  | «break» | «continue» | noMatch | decodingFailed => exact False.elim hr
 
 -- LIBRARY CANDIDATE: connect a callee's return trace to the remaining source block.
 theorem blockResultTrace_continueCall {code : ByteArray} {g : Sat256} {s0 : State}
@@ -49,7 +49,7 @@ theorem blockResultTrace_continueCall {code : ByteArray} {g : Sat256} {s0 : Stat
   cases result with
   | returned f post values => exact hn f post values rfl hr
   | reverted | staticViolation => exact hr
-  | ok | «break» | «continue» => exact False.elim hr
+  | ok | «break» | «continue» | noMatch | decodingFailed => exact False.elim hr
 
 -- LIBRARY CANDIDATE: trace an internal call after binding its return in the caller.
 theorem blockResultTrace_resumeCall {code : ByteArray} {g : Sat256} {s0 : State}
@@ -62,7 +62,7 @@ theorem blockResultTrace_resumeCall {code : ByteArray} {g : Sat256} {s0 : State}
   cases result with
   | returned f post values => exact hn f post values rfl hr
   | reverted | staticViolation => exact hr
-  | ok | «break» | «continue» => exact False.elim hr
+  | ok | «break» | «continue» | noMatch | decodingFailed => exact False.elim hr
 
 -- LIBRARY CANDIDATE: finish a block with a function trace while retaining its terminal outcomes.
 theorem functionResultTrace_continueBlock {code : ByteArray} {g : Sat256} {s0 : State}
@@ -75,7 +75,7 @@ theorem functionResultTrace_continueBlock {code : ByteArray} {g : Sat256} {s0 : 
   cases result with
   | ok f post => exact hn f post rfl hr
   | reverted | staticViolation => exact hr
-  | returned | «break» | «continue» => exact False.elim hr
+  | returned | «break» | «continue» | noMatch | decodingFailed => exact False.elim hr
 
 -- LIBRARY CANDIDATE: turn normal block completion into a void function return.
 theorem functionResultTrace_finishNormal {code : ByteArray} {g : Sat256} {s0 : State}
@@ -86,6 +86,6 @@ theorem functionResultTrace_finishNormal {code : ByteArray} {g : Sat256} {s0 : S
   cases result with
   | ok f post => exact hn f post rfl hr
   | reverted | staticViolation => exact hr
-  | returned | «break» | «continue» => exact False.elim hr
+  | returned | «break» | «continue» | noMatch | decodingFailed => exact False.elim hr
 
 end Benchmarks.UniswapV4PoolManager

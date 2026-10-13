@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV4PoolManager.TickSqrtWords
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 def tickSqrtStageStmt (mask factor : UInt256) : Stmt :=

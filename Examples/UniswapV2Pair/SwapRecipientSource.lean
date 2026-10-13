@@ -1,7 +1,7 @@
 import Examples.UniswapV2Pair.SwapReserveSource
 import Examples.UniswapV2Pair.BurnInitialSource
 import Examples.UniswapV2Pair.AddressComparison
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace UniswapV2Pair
 set_option maxRecDepth 2000000
 

@@ -2,7 +2,7 @@ import Benchmarks.UniswapV3.Pool.TickLogTrace
 import Benchmarks.UniswapV3.Pool.TickLogSource
 import Benchmarks.UniswapV3.Pool.ReachRoutineCost
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
@@ -56,7 +56,7 @@ theorem tickLogInternalX {σ : AccountMap} {ee : ExecutionEnv} {g : Sat256}
     · exact tickLogReverts caller.immutables evm price hv
   · obtain ⟨out, hbody⟩ := tickLogReturns caller.immutables evm price hp hv hs
     refine Or.inr ⟨?_, hr⟩
-    exact internalCallFunctionReturn (callee := tickLogFunction) (calleeSolm := out)
+    exact internalCallFunctionReturn (callee := tickLogFunction) (calleeStele := out)
       (value := some [.int (tickLogChoice (tickLogResult price) price)])
       he hl (tickLogBind price) (by rw [hc]; exact hbody)
 

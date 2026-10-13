@@ -4,7 +4,7 @@ import Reasoning.EVMWord
 import Benchmarks.Auction.DynamicMemory
 import Reasoning.MemCascade
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Auction
 

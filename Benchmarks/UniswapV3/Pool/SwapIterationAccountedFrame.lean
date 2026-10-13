@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.SwapIterationAccountingPrefix
 import Benchmarks.UniswapV3.Pool.SwapAccountingFinalFrame
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 namespace Benchmarks.UniswapV3.Pool
 

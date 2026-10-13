@@ -3,10 +3,10 @@ import Benchmarks.Dss.DaiJoin.Selectors
 /-!
 # MakerDAO/Sky DSS DaiJoin dispatcher facts
 
-Solm dispatch routing facts and shared dispatcher-level proof obligations.
+Stele dispatch routing facts and shared dispatcher-level proof obligations.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 

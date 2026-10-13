@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.SwapStepModel
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 1000
 
@@ -16,11 +16,11 @@ theorem swapStepZerosSource (imms : Store) (evm : EVM.State) (a : SwapStepArgs) 
     locals := (swapStepLocals a).insert "sqrtRatioNextX96" (.int 0)}
   let f2 : Frame := {f1 with locals := f1.locals.insert "amountIn" (.int 0)}
   let f3 : Frame := {f2 with locals := f2.locals.insert "amountOut" (.int 0)}
-  refine ExecBlock.consNormal (solm' := f1) (evm' := evm)
+  refine ExecBlock.consNormal (stele' := f1) (evm' := evm)
     (ExecStmt.letDecl (by simp only [evalExpr?, pure])) ?_
-  refine ExecBlock.consNormal (solm' := f2) (evm' := evm)
+  refine ExecBlock.consNormal (stele' := f2) (evm' := evm)
     (ExecStmt.letDecl (by simp only [evalExpr?, pure])) ?_
-  refine ExecBlock.consNormal (solm' := f3) (evm' := evm)
+  refine ExecBlock.consNormal (stele' := f3) (evm' := evm)
     (ExecStmt.letDecl (by simp only [evalExpr?, pure])) ?_
   exact ExecBlock.consNormal (ExecStmt.letDecl (by simp only [evalExpr?, pure])) ExecBlock.nil
 

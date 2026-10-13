@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.BytesObjectMemory
 import Benchmarks.UniswapV4PoolManager.MemorySlice
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 -- LIBRARY CANDIDATE: loading an arbitrary in-bounds word from a known memory slice.

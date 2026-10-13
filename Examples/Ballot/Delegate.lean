@@ -2,10 +2,10 @@ import Reasoning.WordArithmetic
 import Examples.Ballot.Common
 import Examples.Ballot.Vote
 import Reasoning.Memory
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 import Reasoning.Storage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 1000000
@@ -133,19 +133,19 @@ abbrev delegateWithDelegateStore (I : ExecutionEnv) : Store :=
   (delegateWithSenderStore I).insert "delegate_" (.storageRef (delegateVoterRef I) voterStructTy)
 
 def delegateSenderPackedCurrent (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (delegateSenderPackedSlot I)
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (delegateSenderPackedSlot I)
 
 def delegateSenderVotedByteCurrent (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
   UInt256.land (delegateSenderPackedCurrent evm I) ⟨255⟩
 
 def delegateSenderWeightCurrent (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (delegateSenderSlot I)
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (delegateSenderSlot I)
 
 def delegateSenderVotedStoreCurrent (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
   UInt256.lor (UInt256.land (delegateSenderPackedCurrent evm I) (UInt256.lnot ⟨255⟩)) ⟨1⟩
 
 def delegateAfterVotedState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (delegateSenderPackedSlot I)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (delegateSenderPackedSlot I)
     (delegateSenderVotedStoreCurrent evm I)
 
 def delegateSenderPackedStoreCurrent (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
@@ -158,7 +158,7 @@ def delegateSenderPackedStoreCurrent (evm : EVM.State) (I : ExecutionEnv) : UInt
         (delegateSenderPackedCurrent evm I)))
 
 def delegateAfterSenderState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore (delegateAfterVotedState evm I) evm.executionEnv.codeOwner
+  Stele.EVM.storageStore (delegateAfterVotedState evm I) evm.executionEnv.codeOwner
     (delegateSenderPackedSlot I)
     (delegateSenderPackedStoreCurrent evm I)
 
@@ -171,10 +171,10 @@ def delegateAfterSenderState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
   simp [delegateAfterSenderState]
 
 def delegateVoterWeightCurrent (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (delegateVoterSlot (delegateToWord I))
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (delegateVoterSlot (delegateToWord I))
 
 def delegateVoterPackedCurrent (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (delegateVoterPackedSlot (delegateToWord I))
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (delegateVoterPackedSlot (delegateToWord I))
 
 def delegateVoterVotedByteCurrent (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
   UInt256.land ⟨255⟩ (delegateVoterPackedCurrent evm I)
@@ -183,19 +183,19 @@ def delegateVoterDelegateWordCurrent (evm : EVM.State) (I : ExecutionEnv) : UInt
   UInt256.land (UInt256.div (delegateVoterPackedCurrent evm I) ⟨256⟩) solcAddrMask
 
 def delegateVoterVoteCurrent (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (delegateVoterVoteSlot (delegateToWord I))
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (delegateVoterVoteSlot (delegateToWord I))
 
 def delegateUpdatedVoterWeightCurrent (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
   UInt256.add (delegateVoterWeightCurrent (delegateAfterSenderState evm I) I)
     (delegateSenderWeightCurrent (delegateAfterSenderState evm I) I)
 
 def delegateFalseSuccessState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore (delegateAfterSenderState evm I)
+  Stele.EVM.storageStore (delegateAfterSenderState evm I)
     (delegateAfterSenderState evm I).executionEnv.codeOwner (delegateVoterSlot (delegateToWord I))
     (delegateUpdatedVoterWeightCurrent evm I)
 
 def delegateProposalsLengthCurrent (evm : EVM.State) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩
 
 def delegateProposalCountSlotCurrent (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
   (⟨1⟩ : UInt256) +
@@ -203,7 +203,7 @@ def delegateProposalCountSlotCurrent (evm : EVM.State) (I : ExecutionEnv) : UInt
       proposalsDataBase)
 
 def delegateProposalCountCurrent (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
-  Solm.EVM.storageLoad (delegateAfterSenderState evm I)
+  Stele.EVM.storageLoad (delegateAfterSenderState evm I)
     (delegateAfterSenderState evm I).executionEnv.codeOwner (delegateProposalCountSlotCurrent evm I)
 
 def delegateProposalCountEvaledRef (evm : EVM.State) (I : ExecutionEnv) : EvaledStorageRef :=
@@ -217,7 +217,7 @@ def delegateUpdatedProposalCountCurrent (evm : EVM.State) (I : ExecutionEnv) : U
     (delegateSenderWeightCurrent (delegateAfterSenderState evm I) I)
 
 def delegateTrueSuccessState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore (delegateAfterSenderState evm I)
+  Stele.EVM.storageStore (delegateAfterSenderState evm I)
     (delegateAfterSenderState evm I).executionEnv.codeOwner (delegateProposalCountSlotCurrent evm I)
     (delegateUpdatedProposalCountCurrent evm I)
 
@@ -345,12 +345,12 @@ theorem evalExpr_delegate_sender_weight (evm : EVM.State) (I : ExecutionEnv) :
     evalExpr? ballotConfig { contract := ballotContract, locals := delegateWithSenderStore I } evm
       (.storage (aliasF "sender" "weight")) =
         .ok (.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (delegateSenderSlot I)).toNat)) := by
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (delegateSenderSlot I)).toNat)) := by
   have hresolve := resolveStorageRef_delegate_senderWeight evm I
   have hread :
       ballotConfig.storageBackend.read (delegateSenderFieldRef I "weight") (.elem (.int uint256Int)) evm =
         .ok (.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (delegateSenderSlot I)).toNat)) := by
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (delegateSenderSlot I)).toNat)) := by
     rw [readStorage?_elem (hbackend := rfl) (hloc := by rfl)]
     change EvalResult.ok (storageLocLoad evm (uint256Loc (delegateSenderSlot I))) = _
     rw [storageLocLoad_uint256]
@@ -358,16 +358,16 @@ theorem evalExpr_delegate_sender_weight (evm : EVM.State) (I : ExecutionEnv) :
   simp only [hresolve, hread, bind, EvalResult.bind]
 
 theorem evalExpr_delegate_sender_weight_zero_false (evm : EVM.State) (I : ExecutionEnv)
-    (hweight : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (delegateSenderSlot I) ≠ ⟨0⟩) :
+    (hweight : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (delegateSenderSlot I) ≠ ⟨0⟩) :
     evalExpr? ballotConfig { contract := ballotContract, locals := delegateWithSenderStore I } evm
       (.binary .ne (.storage (aliasF "sender" "weight")) (.intLit 0)) = .ok (.bool true) := by
   have hstorage :
       evalExpr? ballotConfig { contract := ballotContract, locals := delegateWithSenderStore I } evm
         (.storage (aliasF "sender" "weight")) =
           .ok (.int (Int.ofNat
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (delegateSenderSlot I)).toNat)) :=
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (delegateSenderSlot I)).toNat)) :=
     evalExpr_delegate_sender_weight evm I
-  have hnat : (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (delegateSenderSlot I)).toNat ≠
+  have hnat : (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (delegateSenderSlot I)).toNat ≠
       0 := by
     intro hz
     apply hweight
@@ -376,17 +376,17 @@ theorem evalExpr_delegate_sender_weight_zero_false (evm : EVM.State) (I : Execut
   simp [EvalResult.bind, bind, pure, hstorage, evalExpr?, evalBinaryOp?, hnat]
 
 theorem evalExpr_delegate_sender_weight_zero_true (evm : EVM.State) (I : ExecutionEnv)
-    (hweight : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (delegateSenderSlot I) = ⟨0⟩) :
+    (hweight : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (delegateSenderSlot I) = ⟨0⟩) :
     evalExpr? ballotConfig { contract := ballotContract, locals := delegateWithSenderStore I } evm
       (.binary .ne (.storage (aliasF "sender" "weight")) (.intLit 0)) = .ok (.bool false) := by
   have hstorage :
       evalExpr? ballotConfig { contract := ballotContract, locals := delegateWithSenderStore I } evm
         (.storage (aliasF "sender" "weight")) =
           .ok (.int (Int.ofNat
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (delegateSenderSlot I)).toNat)) :=
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (delegateSenderSlot I)).toNat)) :=
     evalExpr_delegate_sender_weight evm I
   have hnat :
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (delegateSenderSlot I)).toNat = 0 := by
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (delegateSenderSlot I)).toNat = 0 := by
     rw [hweight]
     rfl
   simp [EvalResult.bind, bind, pure, hstorage, evalExpr?, evalBinaryOp?, hnat]
@@ -394,7 +394,7 @@ theorem evalExpr_delegate_sender_weight_zero_true (evm : EVM.State) (I : Executi
 
 theorem evalExpr_delegate_sender_voted_false (evm : EVM.State) (I : ExecutionEnv)
     (hvoted : UInt256.land
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (delegateSenderPackedSlot I))
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (delegateSenderPackedSlot I))
         ⟨255⟩ = ⟨0⟩) :
     evalExpr? ballotConfig { contract := ballotContract, locals := delegateWithSenderStore I } evm
       (.storage (aliasF "sender" "voted")) = .ok (.bool false) := by
@@ -415,7 +415,7 @@ theorem evalExpr_delegate_sender_voted_false (evm : EVM.State) (I : ExecutionEnv
 
 theorem evalExpr_delegate_sender_voted_true (evm : EVM.State) (I : ExecutionEnv)
     (hvoted : UInt256.land
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (delegateSenderPackedSlot I))
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (delegateSenderPackedSlot I))
         ⟨255⟩ ≠ ⟨0⟩) :
     evalExpr? ballotConfig { contract := ballotContract, locals := delegateWithSenderStore I } evm
       (.storage (aliasF "sender" "voted")) = .ok (.bool true) := by
@@ -436,7 +436,7 @@ theorem evalExpr_delegate_sender_voted_true (evm : EVM.State) (I : ExecutionEnv)
 
 theorem evalExpr_delegate_sender_not_voted_true (evm : EVM.State) (I : ExecutionEnv)
     (hvoted : UInt256.land
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (delegateSenderPackedSlot I))
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (delegateSenderPackedSlot I))
         ⟨255⟩ = ⟨0⟩) :
     evalExpr? ballotConfig { contract := ballotContract, locals := delegateWithSenderStore I } evm
       (.unary .not (.storage (aliasF "sender" "voted"))) = .ok (.bool true) := by
@@ -445,7 +445,7 @@ theorem evalExpr_delegate_sender_not_voted_true (evm : EVM.State) (I : Execution
 
 theorem evalExpr_delegate_sender_not_voted_false (evm : EVM.State) (I : ExecutionEnv)
     (hvoted : UInt256.land
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (delegateSenderPackedSlot I))
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (delegateSenderPackedSlot I))
         ⟨255⟩ ≠ ⟨0⟩) :
     evalExpr? ballotConfig { contract := ballotContract, locals := delegateWithSenderStore I } evm
       (.unary .not (.storage (aliasF "sender" "voted"))) = .ok (.bool false) := by
@@ -504,7 +504,7 @@ theorem evalExpr_delegate_to_ne_sender_true (evm : EVM.State) (I : ExecutionEnv)
 theorem ballotDelegateBodyReverts_weight (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hsrc : evm.executionEnv.source = I.source)
-    (hweight : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (delegateSenderSlot I) = ⟨0⟩) :
+    (hweight : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (delegateSenderSlot I) = ⟨0⟩) :
     ExecTransitionBody ballotConfig ballotContract evm (delegateStore I)
       delegateTransition.body .reverted := by
   exact ExecFuncBody.execBlockRevert <|
@@ -516,9 +516,9 @@ theorem ballotDelegateBodyReverts_weight (evm : EVM.State) (I : ExecutionEnv)
 theorem ballotDelegateBodyReverts_voted (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hsrc : evm.executionEnv.source = I.source)
-    (hweight : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (delegateSenderSlot I) ≠ ⟨0⟩)
+    (hweight : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (delegateSenderSlot I) ≠ ⟨0⟩)
     (hvoted : UInt256.land
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (delegateSenderPackedSlot I))
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (delegateSenderPackedSlot I))
         ⟨255⟩ ≠ ⟨0⟩) :
     ExecTransitionBody ballotConfig ballotContract evm (delegateStore I)
       delegateTransition.body .reverted := by
@@ -533,9 +533,9 @@ theorem ballotDelegateBodyReverts_voted (evm : EVM.State) (I : ExecutionEnv)
 theorem ballotDelegateBodyReverts_self (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hsrc : evm.executionEnv.source = I.source)
-    (hweight : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (delegateSenderSlot I) ≠ ⟨0⟩)
+    (hweight : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (delegateSenderSlot I) ≠ ⟨0⟩)
     (hvoted : UInt256.land
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (delegateSenderPackedSlot I))
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (delegateSenderPackedSlot I))
         ⟨255⟩ = ⟨0⟩)
     (hself : delegateToWord I = delegateSourceWord I) :
     ExecTransitionBody ballotConfig ballotContract evm (delegateStore I)
@@ -957,7 +957,7 @@ theorem delegateArrayIndexInBounds_ok (evm : EVM.State) (I : ExecutionEnv)
         .ok () := by
   have hboundStorage :
       (delegateVoterVoteCurrent (delegateAfterSenderState evm I) I).toNat <
-        UInt256.toNat (Solm.EVM.storageLoad (delegateAfterSenderState evm I)
+        UInt256.toNat (Stele.EVM.storageLoad (delegateAfterSenderState evm I)
           evm.executionEnv.codeOwner ⟨2⟩) := by
     simpa [delegateProposalsLengthCurrent] using hbound
   simp [arrayIndexInBounds?, storageTypeAt?, ballotContract, ballotStorageDecls]
@@ -974,11 +974,11 @@ theorem delegateArrayIndexInBounds_revert (evm : EVM.State) (I : ExecutionEnv)
         .revert := by
   have hboundStorage :
       ¬ (delegateVoterVoteCurrent (delegateAfterSenderState evm I) I).toNat <
-        UInt256.toNat (Solm.EVM.storageLoad (delegateAfterSenderState evm I)
+        UInt256.toNat (Stele.EVM.storageLoad (delegateAfterSenderState evm I)
           evm.executionEnv.codeOwner ⟨2⟩) := by
     simpa [delegateProposalsLengthCurrent] using hbound
   have hleStorage :
-      UInt256.toNat (Solm.EVM.storageLoad (delegateAfterSenderState evm I)
+      UInt256.toNat (Stele.EVM.storageLoad (delegateAfterSenderState evm I)
           evm.executionEnv.codeOwner ⟨2⟩) ≤
         (delegateVoterVoteCurrent (delegateAfterSenderState evm I) I).toNat :=
     Nat.le_of_not_gt hboundStorage
@@ -1054,7 +1054,7 @@ theorem evalExpr_delegate_proposal_count (evm : EVM.State) (I : ExecutionEnv)
           (delegateProposalCountCurrent evm I).toNat) := by
     change storageLocLoad (delegateAfterSenderState evm I)
         (wordLoc (delegateProposalCountSlotCurrent evm I)) =
-      .int (Int.ofNat (Solm.EVM.storageLoad (delegateAfterSenderState evm I)
+      .int (Int.ofNat (Stele.EVM.storageLoad (delegateAfterSenderState evm I)
         (delegateAfterSenderState evm I).executionEnv.codeOwner
         (delegateProposalCountSlotCurrent evm I)).toNat)
     exact storageLocLoad_uint256 (delegateAfterSenderState evm I)
@@ -1192,7 +1192,7 @@ theorem delegateSenderWeightCurrent_ne_zero_account (evm : EVM.State) (I : Execu
     evm.lookupAccount evm.executionEnv.codeOwner ≠ none := by
   intro hnone
   apply hweight
-  unfold delegateSenderWeightCurrent Solm.EVM.storageLoad
+  unfold delegateSenderWeightCurrent Stele.EVM.storageLoad
   rw [hnone]
   rfl
 
@@ -1482,7 +1482,7 @@ theorem delegateSenderVotedByteCurrent_init {σ σ₀ A I} {g : Sat256} :
       delegateSenderVotedByte σ I := by
   unfold delegateSenderVotedByteCurrent delegateSenderVotedByte delegateSenderPackedCurrent
     delegateSenderPackedWord
-  simp [Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage, initState,
+  simp [Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage, initState,
     u256_land_comm]
 
 theorem delegateVoterWeightCurrent_init {σ σ₀ A I} {g : Sat256} :
@@ -1513,7 +1513,7 @@ theorem delegateAfterSenderState_getD_init {σ σ₀ A I} {g : Sat256}
       (delegateSenderPackedStoreWord σ I)).symm
   simpa [delegateAfterSenderState, delegateAfterVotedState, delegateAfterSenderMap,
     delegateSenderPackedStoreCurrent, delegateSenderPackedStoreWord, delegateSenderVotedStoreCurrent,
-    delegateSenderPackedCurrent, delegateSenderPackedWord, initState, Solm.EVM.storageLoad,
+    delegateSenderPackedCurrent, delegateSenderPackedWord, initState, Stele.EVM.storageLoad,
     State.lookupAccount, Account.lookupStorage, storageStore_accountMap, storageStore_executionEnv'']
     using hlookup
 
@@ -1522,7 +1522,7 @@ theorem delegateVoterVotedByteCurrent_afterSenderState_init {σ σ₀ A I} {g : 
         (delegateAfterSenderState (initState σ σ₀ g A I) I) I =
       delegateVoterVotedByte (delegateAfterSenderMap σ I) I (delegateToWord I) := by
   simpa [delegateVoterVotedByteCurrent, delegateVoterVotedByte, delegateVoterPackedCurrent,
-    delegateVoterPackedWord, Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage]
+    delegateVoterPackedWord, Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage]
     using congrArg (fun w => UInt256.land ⟨255⟩ w)
       (delegateAfterSenderState_getD_init (σ := σ)
         (σ₀ := σ₀) (A := A) (I := I) (g := g)
@@ -1532,7 +1532,7 @@ theorem delegateVoterWeightCurrent_afterSenderState_init {σ σ₀ A I} {g : Sat
     delegateVoterWeightCurrent
         (delegateAfterSenderState (initState σ σ₀ g A I) I) I =
       delegateVoterWeightWord (delegateAfterSenderMap σ I) I (delegateToWord I) := by
-  simpa [delegateVoterWeightCurrent, delegateVoterWeightWord, Solm.EVM.storageLoad,
+  simpa [delegateVoterWeightCurrent, delegateVoterWeightWord, Stele.EVM.storageLoad,
     State.lookupAccount, Account.lookupStorage]
     using delegateAfterSenderState_getD_init (σ := σ)
       (σ₀ := σ₀) (A := A) (I := I) (g := g) (delegateVoterSlot (delegateToWord I))
@@ -1541,7 +1541,7 @@ theorem delegateSenderWeightCurrent_afterSenderState_init {σ σ₀ A I} {g : Sa
     delegateSenderWeightCurrent
         (delegateAfterSenderState (initState σ σ₀ g A I) I) I =
       delegateSenderWeightWord (delegateAfterSenderMap σ I) I := by
-  simpa [delegateSenderWeightCurrent, delegateSenderWeightWord, Solm.EVM.storageLoad,
+  simpa [delegateSenderWeightCurrent, delegateSenderWeightWord, Stele.EVM.storageLoad,
     State.lookupAccount, Account.lookupStorage]
     using delegateAfterSenderState_getD_init (σ := σ)
       (σ₀ := σ₀) (A := A) (I := I) (g := g) (delegateSenderSlot I)
@@ -1550,7 +1550,7 @@ theorem delegateVoterVoteCurrent_afterSenderState_init {σ σ₀ A I} {g : Sat25
     delegateVoterVoteCurrent
         (delegateAfterSenderState (initState σ σ₀ g A I) I) I =
       delegateVoterVoteWord (delegateAfterSenderMap σ I) I (delegateToWord I) := by
-  simpa [delegateVoterVoteCurrent, delegateVoterVoteWord, Solm.EVM.storageLoad,
+  simpa [delegateVoterVoteCurrent, delegateVoterVoteWord, Stele.EVM.storageLoad,
     State.lookupAccount, Account.lookupStorage]
     using delegateAfterSenderState_getD_init (σ := σ)
       (σ₀ := σ₀) (A := A) (I := I) (g := g)
@@ -1560,7 +1560,7 @@ theorem delegateProposalsLengthCurrent_afterSenderState_init {σ σ₀ A I} {g :
     delegateProposalsLengthCurrent
         (delegateAfterSenderState (initState σ σ₀ g A I) I) =
       delegateProposalsLengthWord σ I := by
-  simpa [delegateProposalsLengthCurrent, delegateProposalsLengthWord, Solm.EVM.storageLoad,
+  simpa [delegateProposalsLengthCurrent, delegateProposalsLengthWord, Stele.EVM.storageLoad,
     State.lookupAccount, Account.lookupStorage]
     using delegateAfterSenderState_getD_init (σ := σ)
       (σ₀ := σ₀) (A := A) (I := I) (g := g) ⟨2⟩
@@ -1570,7 +1570,7 @@ theorem delegateProposalCountCurrent_init {σ σ₀ A I} {g : Sat256} :
       delegateProposalCountWord σ I := by
   unfold delegateProposalCountCurrent delegateProposalCountSlotCurrent
   rw [delegateVoterVoteCurrent_afterSenderState_init]
-  simpa [delegateProposalCountWord, delegateProposalCountSlot, Solm.EVM.storageLoad,
+  simpa [delegateProposalCountWord, delegateProposalCountSlot, Stele.EVM.storageLoad,
     State.lookupAccount, Account.lookupStorage, initState, storageStore_executionEnv'']
     using delegateAfterSenderState_getD_init (σ := σ)
       (σ₀ := σ₀) (A := A) (I := I) (g := g) (delegateProposalCountSlot σ I)
@@ -1623,7 +1623,7 @@ theorem delegateAfterSenderState_accountMap_eq_init {σ σ₀ A I} {g : Sat256} 
     (delegateSenderPackedStoreWord σ I)
   simpa [delegateAfterSenderState, delegateAfterVotedState, delegateAfterSenderMap,
     delegateSenderPackedStoreCurrent, delegateSenderPackedStoreWord, delegateSenderVotedStoreCurrent,
-    delegateSenderPackedCurrent, delegateSenderPackedWord, initState, Solm.EVM.storageLoad,
+    delegateSenderPackedCurrent, delegateSenderPackedWord, initState, Stele.EVM.storageLoad,
     State.lookupAccount, Account.lookupStorage, storageStore_accountMap, storageStore_executionEnv'']
     using h
 
@@ -2327,7 +2327,7 @@ end Ballot
 
 namespace Reasoning.Reach
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Ballot
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Ballot
 
 /-! ### Delegate-local decoder routines -/
 
@@ -3576,9 +3576,9 @@ theorem ballotDelegateWeightRevertEquiv
     (by simp only [initState]; exact hwv)
     (by simp [initState])
     (by
-      have hweightSolm : delegateSenderWeightWord σ I = ⟨0⟩ := by
+      have hweightStele : delegateSenderWeightWord σ I = ⟨0⟩ := by
         exact hweight
-      simpa [delegateSenderWeightWord, delegateSenderSlot, initState] using hweightSolm)
+      simpa [delegateSenderWeightWord, delegateSenderSlot, initState] using hweightStele)
   exact (ballotDelegateX_weightRevert (g := Sat256.ofUInt256 g)
       hsz36 hsize hbig hcanon hweight hreach)
     |>.reEquivExecutionRevert hcode hd hdec hbody
@@ -3604,14 +3604,14 @@ theorem ballotDelegateVotedRevertEquiv
     (by simp only [initState]; exact hwv)
     (by simp [initState])
     (by
-      have hweightSolm : delegateSenderWeightWord σ I ≠ ⟨0⟩ := by
+      have hweightStele : delegateSenderWeightWord σ I ≠ ⟨0⟩ := by
         exact hweight
-      simpa [delegateSenderWeightWord, delegateSenderSlot, initState] using hweightSolm)
+      simpa [delegateSenderWeightWord, delegateSenderSlot, initState] using hweightStele)
     (by
-      have hvotedSolm : delegateSenderVotedByte σ I ≠ ⟨0⟩ := by
+      have hvotedStele : delegateSenderVotedByte σ I ≠ ⟨0⟩ := by
         exact hvoted
       intro hz
-      apply hvotedSolm
+      apply hvotedStele
       have hcomm :
           UInt256.land ⟨255⟩ (delegateSenderPackedWord σ I) =
             UInt256.land (delegateSenderPackedWord σ I) ⟨255⟩ :=
@@ -3646,15 +3646,15 @@ theorem ballotDelegateSelfRevertEquiv
     (by simp only [initState]; exact hwv)
     (by simp [initState])
     (by
-      have hweightSolm : delegateSenderWeightWord σ I ≠ ⟨0⟩ := by
+      have hweightStele : delegateSenderWeightWord σ I ≠ ⟨0⟩ := by
         exact hweight
-      simpa [delegateSenderWeightWord, delegateSenderSlot, initState] using hweightSolm)
+      simpa [delegateSenderWeightWord, delegateSenderSlot, initState] using hweightStele)
     (by
-      have hvotedSolm : delegateSenderVotedByte σ I = ⟨0⟩ := by
+      have hvotedStele : delegateSenderVotedByte σ I = ⟨0⟩ := by
         exact hvoted
       change UInt256.land (delegateSenderPackedWord σ I) ⟨255⟩ = ⟨0⟩
       rw [u256_land_comm (delegateSenderPackedWord σ I) ⟨255⟩]
-      exact hvotedSolm)
+      exact hvotedStele)
     hself
   exact (ballotDelegateX_selfRevert (g := Sat256.ofUInt256 g)
       hsz36 hsize hbig hcanon hweight hvoted hself hreach)
@@ -3771,9 +3771,9 @@ theorem ballotDelegateNotVotedSuccessEquiv
   have hd := ballotDispatch_delegate (cd := I.calldata) hsel
   have hdec := ballotDecode_delegate_ok (I := I) hsz36 hbig hcanon
   have hafter : delegateAfterSenderMap σ I = delegateAfterSenderMap σ I := rfl
-  have hweightSolm : delegateSenderWeightWord σ I ≠ ⟨0⟩ := by
+  have hweightStele : delegateSenderWeightWord σ I ≠ ⟨0⟩ := by
     exact hweight
-  have hfitSolm :
+  have hfitStele :
       (delegateVoterWeightWord (delegateAfterSenderMap σ I) I (delegateToWord I)).toNat +
           (delegateSenderWeightWord (delegateAfterSenderMap σ I) I).toNat <
         UInt256.size := by
@@ -3783,7 +3783,7 @@ theorem ballotDelegateNotVotedSuccessEquiv
     (by simp only [initState]; exact hwv)
     (by simp [initState])
     hcanon
-    (by rw [delegateSenderWeightCurrent_init]; exact hweightSolm)
+    (by rw [delegateSenderWeightCurrent_init]; exact hweightStele)
     (by
       rw [delegateSenderVotedByteCurrent_init]
       exact hvoted)
@@ -3800,7 +3800,7 @@ theorem ballotDelegateNotVotedSuccessEquiv
     (by
       rw [delegateVoterWeightCurrent_afterSenderState_init,
         delegateSenderWeightCurrent_afterSenderState_init]
-      exact hfitSolm)
+      exact hfitStele)
   exact (ballotDelegateX_delegateNotVotedSuccess (g := Sat256.ofUInt256 g)
       hsz36 hsize hbig hperm hcanon hweight hvoted hnotself hdelegate hdelegateWeight
       hdelegateNotVoted hfit hreach)
@@ -3840,12 +3840,12 @@ theorem ballotDelegateVotedSuccessEquiv
   have hd := ballotDispatch_delegate (cd := I.calldata) hsel
   have hdec := ballotDecode_delegate_ok (I := I) hsz36 hbig hcanon
   have hafter : delegateAfterSenderMap σ I = delegateAfterSenderMap σ I := rfl
-  have hweightSolm : delegateSenderWeightWord σ I ≠ ⟨0⟩ := by
+  have hweightStele : delegateSenderWeightWord σ I ≠ ⟨0⟩ := by
     exact hweight
-  have hboundSolm :
+  have hboundStele :
       (delegateVoterVoteWord (delegateAfterSenderMap σ I) I (delegateToWord I)).toNat <
         (delegateProposalsLengthWord σ I).toNat := hbound
-  have hfitSolm :
+  have hfitStele :
       (delegateProposalCountWord σ I).toNat +
           (delegateSenderWeightWord (delegateAfterSenderMap σ I) I).toNat <
         UInt256.size := hfit
@@ -3854,7 +3854,7 @@ theorem ballotDelegateVotedSuccessEquiv
     (by simp only [initState]; exact hwv)
     (by simp [initState])
     hcanon
-    (by rw [delegateSenderWeightCurrent_init]; exact hweightSolm)
+    (by rw [delegateSenderWeightCurrent_init]; exact hweightStele)
     (by
       rw [delegateSenderVotedByteCurrent_init]
       exact hvoted)
@@ -3871,11 +3871,11 @@ theorem ballotDelegateVotedSuccessEquiv
     (by
       rw [delegateVoterVoteCurrent_afterSenderState_init,
         delegateProposalsLengthCurrent_afterSenderState_init]
-      exact hboundSolm)
+      exact hboundStele)
     (by
       rw [delegateProposalCountCurrent_init,
         delegateSenderWeightCurrent_afterSenderState_init]
-      exact hfitSolm)
+      exact hfitStele)
   exact (ballotDelegateX_delegateVotedSuccess (g := Sat256.ofUInt256 g)
       hsz36 hsize hbig hperm hcanon hweight hvoted hnotself hdelegate hdelegateWeight
       hdelegateVoted hbound hfit hreach)

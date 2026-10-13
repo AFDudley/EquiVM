@@ -2,7 +2,7 @@ import Benchmarks.CompoundIII.Comet.ScalarWrites
 import Benchmarks.CompoundIII.Comet.InitializeWords
 import Reasoning.ExternalCall
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 
@@ -92,15 +92,15 @@ theorem trackingIndexWord_eq (w : UInt256) (borrow : Bool) :
     exact (Nat.div_lt_iff_lt_mul (by decide)).mpr w.val.isLt
 
 def storeTrackingIndex (evm : EVM.State) (borrow : Bool) (value : UInt256) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨0⟩
-    (packedWriteWord (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨0⟩
+    (packedWriteWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
       value (trackingIndexOffset borrow).val 8)
 
 theorem evalTrackingIndex (evm : EVM.State) (locals imms : Store) (borrow : Bool)
     (hlocal : locals.get? (trackingIndexName borrow) = none) :
     evalExpr? config { contract := contract, locals := locals, immutables := imms }
       evm (.storage ⟨trackingIndexName borrow, []⟩) =
-      .ok (.int (trackingIndexWord (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
+      .ok (.int (trackingIndexWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
         borrow).toNat) := by
   apply evalExpr_storage_scalar_value (hbackend := rfl)
     (loc := { slot := ⟨0⟩, offset := trackingIndexOffset borrow, size := 8,

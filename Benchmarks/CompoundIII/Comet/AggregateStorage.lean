@@ -1,10 +1,10 @@
 import Benchmarks.CompoundIII.Comet.Common
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 
--- GENERALIZES Reasoning.SolmBody.evalExpr_storage_scalar_value to aggregate values.
+-- GENERALIZES Reasoning.SteleBody.evalExpr_storage_scalar_value to aggregate values.
 theorem evalExpr_storage_typed {cfg : Config} {frame : Frame} {evm : EVM.State}
     {slot : StorageRef} {er : EvaledStorageRef} {ty : StorageType} {value : Value}
     (hbase : frame.locals.get? slot.base = none)
@@ -41,7 +41,7 @@ theorem solidityWriteFields_cons {layout : StorageLayout} {evm evm' evm'' : EVM.
   rw [solidityWriteFields?]
   simpa only [if_pos rfl, hhead, bind, EvalResult.bind] using htail
 
--- GENERALIZES Reasoning.SolmBody.assignStorageRef_storage_scalar to aggregate values.
+-- GENERALIZES Reasoning.SteleBody.assignStorageRef_storage_scalar to aggregate values.
 theorem assignStorageRef_storage_typed {cfg : Config} {frame : Frame}
     {evm evm' : EVM.State} {slot : StorageRef} {er : EvaledStorageRef}
     {ty : StorageType} {value : Value}

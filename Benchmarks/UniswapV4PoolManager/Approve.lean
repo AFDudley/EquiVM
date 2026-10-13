@@ -4,7 +4,7 @@ import Benchmarks.UniswapV4PoolManager.Dispatch
 import Benchmarks.UniswapV4PoolManager.RuntimeBlocks_027
 import Benchmarks.UniswapV4PoolManager.RuntimeBlocks_026
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.UniswapV4PoolManager.Immutables
 
@@ -16,7 +16,7 @@ def approveSlot (evm : EVM.State) (spender id : UInt256) : UInt256 :=
   mappingSlotWord id (mappingSlotWord spender (mappingSlotWord (accountWord evm.executionEnv.source) ⟨5⟩))
 
 def approvePost (evm : EVM.State) (spender id amount : UInt256) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (approveSlot evm spender id) amount
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (approveSlot evm spender id) amount
 
 theorem approveAssign (evm : EVM.State) (locals imms : Store) (spender id amount : UInt256)
     (hcanon : spender.toNat < EVM.addressModulus)

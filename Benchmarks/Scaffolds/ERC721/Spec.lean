@@ -1,11 +1,11 @@
-import Solm.SolidityStorage
-import Solm.Semantics
-import Solm.SolidityLayout
+import Stele.SolidityStorage
+import Stele.Semantics
+import Stele.SolidityLayout
 
 /-!
-# ERC721 — Solm specification for `ERC721.sol`
+# ERC721 — Stele specification for `ERC721.sol`
 
-A faithful (events-aside) Solm spec of a Solmate-style **ERC721 core**: the IERC721
+A faithful (events-aside) Stele spec of a Solmate-style **ERC721 core**: the IERC721
 transfer/approval/ownership surface over four mappings.
 
 Deliberately **out of scope** (see `ERC721.sol` header) and therefore not modelled here:
@@ -27,7 +27,7 @@ This is spec-level data only; bytecode/jump facts live in `Bytecode.lean`, proof
 files / `Correct.lean`.
 -/
 
-open Solm ABI Ethereum
+open Stele ABI Ethereum
 
 namespace ERC721
 

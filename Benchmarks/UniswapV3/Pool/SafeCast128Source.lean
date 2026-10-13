@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.SourceSignedBits
 import Benchmarks.UniswapV3.Pool.CheckedCastSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 1000
 attribute [local instance] Classical.propDecidable

@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV4PoolManager.PoolKeySource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 
@@ -14,7 +14,7 @@ def poolSlot0Ref (id : UInt256) : EvaledStorageRef :=
 def poolRefValue (id : UInt256) : Value := .storageRef (poolRef id) poolStateType
 def poolSlot (id : UInt256) : UInt256 := mappingSlotWord id ⟨6⟩
 def poolSlot0Word (evm : EVM.State) (id : UInt256) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (poolSlot id)
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (poolSlot id)
 
 theorem poolRef_type (id : UInt256) : storageTypeAt? contract.storage (poolRef id) = some poolStateType := rfl
 theorem poolState_slot0_type : storageTypeStep? poolStateType (.field "slot0") =
@@ -80,7 +80,7 @@ theorem assignResolvedStorageScalar {cfg : Config} {layout : StorageLayout} {f :
 theorem poolSlot0_write {f : Frame} {evm : EVM.State} {name : Ident} {id : UInt256}
     (hs : f.locals.get? name = some (poolRefValue id)) (word : UInt256) :
     assignStorageRef? config f evm .storage {base := name, steps := [.field "slot0"]} (wordBytes32Value word) =
-      .ok (f, Solm.EVM.storageStore evm evm.executionEnv.codeOwner (poolSlot id) word) := by
+      .ok (f, Stele.EVM.storageStore evm evm.executionEnv.codeOwner (poolSlot id) word) := by
   exact assignResolvedStorageScalar (resolveStorageAliasField hs poolState_slot0_type) rfl
     (poolSlot0_loc id) (storageLocStore_bytes32 evm _ word _ (valueToWord_bytes32_word word))
 

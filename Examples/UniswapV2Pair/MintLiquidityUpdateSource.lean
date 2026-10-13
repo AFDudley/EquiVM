@@ -2,7 +2,7 @@ import Reasoning.WordArithmetic
 import Examples.UniswapV2Pair.MintCommon
 import Examples.UniswapV2Pair.SyncBody
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -124,10 +124,10 @@ theorem uniswapMintProportionalLiquidityBranchMin
     ExecBlock.nil
 
 theorem evalExpr_mint_liquidity_gt_zero_true
-    {solm : Frame} (evm : EVM.State) (liquidity : UInt256)
-    (hliq : solm.locals.get? "liquidity" = some (uniswapUint256Value liquidity))
+    {stele : Frame} (evm : EVM.State) (liquidity : UInt256)
+    (hliq : stele.locals.get? "liquidity" = some (uniswapUint256Value liquidity))
     (hzero : liquidity ≠ ⟨0⟩) :
-    evalExpr? config solm evm (.binary .gt (.var "liquidity") (.intLit 0)) =
+    evalExpr? config stele evm (.binary .gt (.var "liquidity") (.intLit 0)) =
       .ok (.bool true) := by
   have hnat : 0 < liquidity.toNat := by
     by_contra h
@@ -137,9 +137,9 @@ theorem evalExpr_mint_liquidity_gt_zero_true
   simp [evalBinaryOp?, hnat]
 
 theorem evalExpr_mint_liquidity_gt_zero_false
-    {solm : Frame} (evm : EVM.State)
-    (hliq : solm.locals.get? "liquidity" = some (uniswapUint256Value (⟨0⟩ : UInt256))) :
-    evalExpr? config solm evm (.binary .gt (.var "liquidity") (.intLit 0)) =
+    {stele : Frame} (evm : EVM.State)
+    (hliq : stele.locals.get? "liquidity" = some (uniswapUint256Value (⟨0⟩ : UInt256))) :
+    evalExpr? config stele evm (.binary .gt (.var "liquidity") (.intLit 0)) =
       .ok (.bool false) := by
   simp only [evalExpr?, EvalResult.ofOption, hliq, EvalResult.bind, bind, pure]
   simp [evalBinaryOp?]
@@ -170,7 +170,7 @@ theorem uniswapMintLiquidityMintPrefix
           "_mintResult" none)
         (mintFunctionPostState evm recipient liquidity)) := by
   have hreq := evalExpr_mint_liquidity_gt_zero_true
-    (solm := { contract := contract, locals := locals }) evm liquidity (by simpa using hliq)
+    (stele := { contract := contract, locals := locals }) evm liquidity (by simpa using hliq)
     hliqNonzero
   have hargs :
       evalExprs? config { contract := contract, locals := locals } evm
@@ -374,7 +374,7 @@ theorem uniswapMintUpdateCallReturns_conditionFalse_packed
     (argVals := syncUpdateCallArgVals evm balance0 balance1)
     (callee := updateFunction)
     (locals := syncUpdateCallStore evm balance0 balance1)
-    (calleeSolm :=
+    (calleeStele :=
       { contract := contract, locals := syncUpdateTimeElapsedStore evm balance0 balance1 })
     (value := none)
     hargs
@@ -488,7 +488,7 @@ theorem uniswapMintUpdateCallReturns_elapsedZero_packed_with
     (argVals := syncUpdateCallArgValsWith balance0 balance1 reserve0 reserve1)
     (callee := updateFunction)
     (locals := syncUpdateCallStoreWith balance0 balance1 reserve0 reserve1)
-    (calleeSolm :=
+    (calleeStele :=
       { contract := contract,
         locals := syncUpdateTimeElapsedStoreWith evm balance0 balance1 reserve0 reserve1 })
     (value := none)
@@ -532,7 +532,7 @@ theorem uniswapMintUpdateCallReturns_conditionTrue_packed
     (argVals := syncUpdateCallArgVals evm balance0 balance1)
     (callee := updateFunction)
     (locals := syncUpdateCallStore evm balance0 balance1)
-    (calleeSolm :=
+    (calleeStele :=
       { contract := contract, locals := syncUpdateTimeElapsedStore evm balance0 balance1 })
     (value := none)
     hargs
@@ -578,7 +578,7 @@ theorem uniswapMintUpdateCallReturns_conditionTrue_packed_with
     (argVals := syncUpdateCallArgValsWith balance0 balance1 reserve0 reserve1)
     (callee := updateFunction)
     (locals := syncUpdateCallStoreWith balance0 balance1 reserve0 reserve1)
-    (calleeSolm :=
+    (calleeStele :=
       { contract := contract,
         locals := syncUpdateTimeElapsedStoreWith evm balance0 balance1 reserve0 reserve1 })
     (value := none)

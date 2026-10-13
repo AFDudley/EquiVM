@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Dai.StringReturn
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -21,7 +21,7 @@ theorem daiNameReturnEncoding :
     encodeReturnValue? stringTy (.bytes daiNameBytes) = some daiNameReturnBytes := by
   native_decide
 
-/-- The Solm `name()` body returns `"Dai Stablecoin"` as a dynamic string value. -/
+/-- The Stele `name()` body returns `"Dai Stablecoin"` as a dynamic string value. -/
 theorem daiNameBodyReturns (evm : EVM.State)
     (h : evm.executionEnv.weiValue = ⟨0⟩) :
     ExecTransitionBody config contract evm nameStore nameTransition.body
@@ -166,7 +166,7 @@ theorem daiDecode_name_ok {I : ExecutionEnv} (hsz4 : 4 ≤ I.calldata.size) :
     some (∅ : Store)
   exact decodeCalldataWithMode_empty_ok hsz4
 
-/-- `name()` body refines its Solm transition. -/
+/-- `name()` body refines its Stele transition. -/
 theorem daiNameBodyCore {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = daiBytecode) (hsize : I.calldata.size < UInt256.size)
     (hwv : I.weiValue = ⟨0⟩)

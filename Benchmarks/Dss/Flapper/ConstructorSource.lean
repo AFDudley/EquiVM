@@ -4,10 +4,10 @@ import Benchmarks.Dss.Flapper.File
 import Reasoning.ExternalCall
 
 /-!
-# MakerDAO/Sky DSS Flapper constructor Solm source semantics
+# MakerDAO/Sky DSS Flapper constructor Stele source semantics
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Flapper
 
@@ -17,37 +17,37 @@ abbrev flapperCtorLocals (vat gem : AccountAddress) : Store :=
   ((∅ : Store).insert "vat_" (.address vat)).insert "gem_" (.address gem)
 
 abbrev flapperCtorAfterBegState (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨4⟩ flapperCtorBegWord
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨4⟩ flapperCtorBegWord
 
 abbrev flapperCtorAfterTtlState (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨5⟩
-    (setUint48Offset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨5⟩
+    (setUint48Offset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩)
       flapperCtorTtlWord)
 
 abbrev flapperCtorAfterTauState (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨5⟩
-    (setUint48Offset6Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨5⟩
+    (setUint48Offset6Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩)
       flapperCtorTauWord)
 
 abbrev flapperCtorAfterKicksState (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨6⟩ ⟨0⟩
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨6⟩ ⟨0⟩
 
 abbrev flapperCtorAfterWardsState (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner
     (wardsSlot (.address evm.executionEnv.source)) ⟨1⟩
 
 abbrev flapperCtorAfterVatState (evm : EVM.State) (vat : AccountAddress) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨2⟩
-    (setAddressOffset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨2⟩
+    (setAddressOffset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩)
       (EVM.word vat.val))
 
 abbrev flapperCtorAfterGemState (evm : EVM.State) (gem : AccountAddress) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨3⟩
-    (setAddressOffset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨3⟩
+    (setAddressOffset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩)
       (EVM.word gem.val))
 
 abbrev flapperCtorAfterLiveState (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨7⟩ ⟨1⟩
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨7⟩ ⟨1⟩
 
 
 theorem evalExpr_flapperCtorLocalVat {evm : EVM.State} (vat gem : AccountAddress) :
@@ -95,7 +95,7 @@ private theorem assign_flapperCtorUint256Storage (evm : EVM.State) (locals : Sto
     (her : evalStorageRef config { contract := contract, locals := locals } evm ref = .ok er)
     (hty : storageTypeAt? contract.storage er = some uint256St)
     (hloc : config.storageBackend.locate? er = some (.leaf (wordLoc slot))) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner slot value
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner slot value
     assignStorageRef? config { contract := contract, locals := locals } evm
       .storage ref (.int (Int.ofNat value.toNat)) =
         .ok ({ contract := contract, locals := locals }, evm') := by
@@ -169,8 +169,8 @@ private theorem assign_flapperCtorAddressStorage (evm : EVM.State) (locals : Sto
     (her : evalStorageRef config { contract := contract, locals := locals } evm ref = .ok er)
     (hty : storageTypeAt? contract.storage er = some (.elem .address))
     (hloc : config.storageBackend.locate? er = some (.leaf (addrLoc slot))) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner slot
-      (setAddressOffset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner slot
+      (setAddressOffset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
         (EVM.word addrValue.val))
     assignStorageRef? config { contract := contract, locals := locals } evm
       .storage ref (.address addrValue) =
@@ -335,11 +335,11 @@ theorem flapperCtorBodySuccess
   exact ExecBlock.consNormal (ExecStmt.assign (by simp [evalExpr?, pure]) hassignLive)
     ExecBlock.nil
 
-theorem flapperSolmCtorExecSuccess
+theorem flapperSteleCtorExecSuccess
     {σ : AccountMap} {σ₀ : AccountMap} {A : Substate} {I : ExecutionEnv}
     {g : UInt256} (vat gem : AccountAddress)
     (hwv : I.weiValue = ⟨0⟩) :
-    solmCtorExec config contract [.address vat, .address gem] σ σ₀ g A I
+    steleCtorExec config contract [.address vat, .address gem] σ σ₀ g A I
       (.returned { contract := contract, locals := flapperCtorLocals vat gem }
         (flapperCtorAfterLiveState
           (flapperCtorAfterGemState
@@ -354,7 +354,7 @@ theorem flapperSolmCtorExecSuccess
               vat)
             gem))
         none) := by
-  refine solmCtorExec.intro
+  refine steleCtorExec.intro
     (evmState := initState σ σ₀
       (Sat256.ofUInt256 g) A I)
     (argsStore := flapperCtorLocals vat gem)
@@ -367,12 +367,12 @@ theorem flapperSolmCtorExecSuccess
           (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
           vat gem hwv)
 
-theorem flapperSolmCtorExecReverts_nonpayable
+theorem flapperSteleCtorExecReverts_nonpayable
     {σ : AccountMap} {σ₀ : AccountMap} {A : Substate} {I : ExecutionEnv}
     {g : UInt256} (vat gem : AccountAddress)
     (hwv : I.weiValue ≠ ⟨0⟩) :
-    solmCtorExec config contract [.address vat, .address gem] σ σ₀ g A I .reverted := by
-  refine solmCtorExec.intro
+    steleCtorExec config contract [.address vat, .address gem] σ σ₀ g A I .reverted := by
+  refine steleCtorExec.intro
     (evmState := initState σ σ₀
       (Sat256.ofUInt256 g) A I)
     (argsStore := flapperCtorLocals vat gem)

@@ -3,7 +3,7 @@ import Reasoning.TransientStorage
 
 /-! PoolManager storage reads, using the concrete Solidity layout. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.UniswapV4PoolManager
 
@@ -15,7 +15,7 @@ theorem addressScalarRead {f : Frame} {evm : EVM.State} {name : Ident} {slot : U
     (hloc : config.storageBackend.locate? {base := name} = some (.leaf (addressOffset0Loc slot))) :
     evalExpr? config f evm (.storage {base := name}) =
       .ok (.address (AccountAddress.ofNat
-        (UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot) solcAddrMask).toNat)) := by
+        (UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot) solcAddrMask).toNat)) := by
   apply evalExpr_storage_scalar_value hbase
     (er := {base := name}) (loc := addressOffset0Loc slot) (t := .address)
     (hbackend := rfl) (hloc := hloc)
@@ -30,8 +30,8 @@ theorem addressScalarWrite {f : Frame} {evm : EVM.State} {name : Ident} {slot : 
     (hloc : config.storageBackend.locate? {base := name} = some (.leaf (addressOffset0Loc slot))) :
     assignStorageRef? config f evm .storage {base := name}
       (.address (AccountAddress.ofNat value.toNat)) =
-      .ok (f, Solm.EVM.storageStore evm evm.executionEnv.codeOwner slot
-        (setAddressOffset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot) value)) := by
+      .ok (f, Stele.EVM.storageStore evm evm.executionEnv.codeOwner slot
+        (setAddressOffset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot) value)) := by
   apply assignStorageRef_storage_scalar_value (slot := {base := name}) hbase
     (er := {base := name}) (hbackend := rfl) (hloc := hloc) (hleaf := Or.inl ⟨_, rfl⟩)
   · simp only [evalStorageRef, evalStorageRefSteps, pure, bind, EvalResult.bind]
@@ -52,7 +52,7 @@ theorem addressGetterBodyReturns (evm : EVM.State) (locals imms : Store)
       (nonpayableCalldataPrefix ++ [.return [.storage {base := name}]])
       (.returned (calldataFrame contract locals imms evm) evm
         (some [.address (AccountAddress.ofNat
-          (UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
+          (UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
             solcAddrMask).toNat)])) imms := by
   apply guardedReturnBody hwv hhi
   exact addressScalarRead rfl ((store_get_ne locals _ hname).trans hbase) hty hloc
@@ -97,7 +97,7 @@ theorem rawSlots_read {f : Frame} {evm : EVM.State} {index : Expr} {slot : UInt2
     (hf : f.contract = contract) (hbase : f.locals.get? "rawSlots" = none)
     (he : evalExpr? config f evm index = .ok (.int (Int.ofNat slot.toNat))) :
     evalExpr? config f evm (.storage {base := "rawSlots", steps := [.aindex index]}) =
-      .ok (.int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot).toNat)) := by
+      .ok (.int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot).toNat)) := by
   apply evalExpr_storage_scalar_value hbase (rawSlots_ref hf he)
     (hbackend := rfl) (hloc := rawSlots_loc slot)
   · rw [hf]; exact rawSlots_type slot
@@ -142,7 +142,7 @@ theorem rawTransient_read {f : Frame} {evm : EVM.State} {index : Expr} {slot : U
     (hf : f.contract = contract)
     (he : evalExpr? config f evm index = .ok (.int (Int.ofNat slot.toNat))) :
     evalExpr? config f evm (.transient {base := "rawTransient", steps := [.aindex index]}) =
-      .ok (.int (Int.ofNat (Solm.EVM.transientLoad evm evm.executionEnv.codeOwner slot).toNat)) := by
+      .ok (.int (Int.ofNat (Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot).toNat)) := by
   apply evalExpr_transient_scalar_value (rawTransient_ref hf he)
     (hbackend := rfl) (hloc := rawTransient_loc slot)
   · rw [hf]; exact rawTransient_type slot
@@ -246,7 +246,7 @@ theorem allowanceWrite {f : Frame} {evm : EVM.State} {e0 e1 e2 : Expr}
     assignStorageRef? config f evm .storage
       {base := "allowance", steps := [.mindex e0, .mindex e1, .mindex e2]}
       (.int (Int.ofNat amount.toNat)) =
-      .ok (f, Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+      .ok (f, Stele.EVM.storageStore evm evm.executionEnv.codeOwner
         (mappingSlotWord id (mappingSlotWord b (mappingSlotWord a ⟨5⟩))) amount) := by
   apply assignStorageRef_storage_scalar
     (slot := {base := "allowance", steps := [.mindex e0, .mindex e1, .mindex e2]})
@@ -264,9 +264,9 @@ theorem isOperatorWrite {f : Frame} {evm : EVM.State} {e0 e1 : Expr}
     assignStorageRef? config f evm .storage
       {base := "isOperator", steps := [.mindex e0, .mindex e1]}
       (wordToElem .bool approved) =
-      .ok (f, Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+      .ok (f, Stele.EVM.storageStore evm evm.executionEnv.codeOwner
         (mappingSlotWord b (mappingSlotWord a ⟨3⟩))
-        (setBoolOffset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+        (setBoolOffset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
           (mappingSlotWord b (mappingSlotWord a ⟨3⟩))) approved)) := by
   apply assignStorageRef_storage_scalar_value
     (slot := {base := "isOperator", steps := [.mindex e0, .mindex e1]})
@@ -278,10 +278,10 @@ theorem isOperatorWrite {f : Frame} {evm : EVM.State} {e0 e1 : Expr}
 def balanceSlot (owner id : UInt256) : UInt256 := mappingSlotWord id (mappingSlotWord owner ⟨4⟩)
 
 def balanceWord (evm : EVM.State) (owner id : UInt256) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (balanceSlot owner id)
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (balanceSlot owner id)
 
 def balancePost (evm : EVM.State) (owner id value : UInt256) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (balanceSlot owner id) value
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (balanceSlot owner id) value
 
 theorem balancePost_env (evm : EVM.State) (owner id value : UInt256) :
     (balancePost evm owner id value).executionEnv = evm.executionEnv :=
@@ -314,7 +314,7 @@ theorem balanceOfWrite {f : Frame} {evm : EVM.State} {e0 e1 : Expr}
   · exact storageLocStore_uint256 _ _ _
 
 def operatorWord (evm : EVM.State) (owner operator : UInt256) : UInt256 :=
-  UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+  UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
     (mappingSlotWord operator (mappingSlotWord owner ⟨3⟩))) ⟨255⟩
 
 theorem isOperatorRead {f : Frame} {evm : EVM.State} {e0 e1 : Expr}
@@ -334,7 +334,7 @@ def allowanceSlot (owner spender id : UInt256) : UInt256 :=
   mappingSlotWord id (mappingSlotWord spender (mappingSlotWord owner ⟨5⟩))
 
 def allowanceWord (evm : EVM.State) (owner spender id : UInt256) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (allowanceSlot owner spender id)
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (allowanceSlot owner spender id)
 
 theorem allowanceRead {f : Frame} {evm : EVM.State} {e0 e1 e2 : Expr}
     (owner spender id : UInt256) (hf : f.contract = contract)

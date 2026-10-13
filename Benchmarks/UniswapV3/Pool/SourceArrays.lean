@@ -1,9 +1,9 @@
 import Benchmarks.UniswapV3.Pool.SourceExpressions
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
--- LIBRARY CANDIDATE: relate Solm's list accessors to Lean's list operations.
+-- LIBRARY CANDIDATE: relate Stele's list accessors to Lean's list operations.
 theorem lookupNth_eq_getElem? {α : Type} (xs : List α) (i : Nat) :
     lookupNth? xs i = xs[i]? := by
   induction xs generalizing i with
