@@ -83,6 +83,6 @@ theorem swapWrapperBodyCorrect {I : ExecutionEnv} {g : Sat256} {s0 evm : State} 
     exact .inr ⟨.reverted, .execBlockRevert (ExecBlock.consNormal halias (ExecBlock.consRevert hcall)), htrace⟩
   | staticViolation =>
     exact .inr ⟨.staticViolation, .execBlockStatic (ExecBlock.consNormal halias (ExecBlock.consStatic hcall)), htrace⟩
-  | ok | «break» | «continue» => exact False.elim htrace
+  | ok | «break» | «continue» | noMatch | decodingFailed => exact False.elim htrace
 
 end Benchmarks.UniswapV4PoolManager

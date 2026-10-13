@@ -10,6 +10,6 @@ theorem functionResultTrace_finishBlock {code : ByteArray} {g : Sat256} {s0 : St
     functionResultTrace code g s0 onReturn (finishBlockResult result) := by
   cases result with
   | returned | reverted | staticViolation => exact h
-  | ok | «break» | «continue» => exact False.elim h
+  | ok | «break» | «continue» | noMatch | decodingFailed => exact False.elim h
 
 end Benchmarks.UniswapV4PoolManager

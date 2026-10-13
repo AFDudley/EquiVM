@@ -13,7 +13,7 @@ theorem execFuncBody_of_trace {cfg : Config} {f : Frame} {evm : State}
   | returned => exact .execBlockRet hs
   | reverted => exact .execBlockRevert hs
   | staticViolation => exact .execBlockStatic hs
-  | ok | «break» | «continue» => exact False.elim ht
+  | ok | «break» | «continue» | noMatch | decodingFailed => exact False.elim ht
 
 -- LIBRARY CANDIDATE: append a proved function tail to a block with existential normal continuations.
 theorem execBlock_trace_append {cfg : Config} {f : Frame} {evm : State}
@@ -33,6 +33,6 @@ theorem execBlock_trace_append {cfg : Config} {f : Frame} {evm : State}
       · exact .inr ⟨final, execBlock_append hs hfinal, htrace⟩
   | reverted => exact .inr ⟨.reverted, execBlock_reverted_append hs, ht⟩
   | staticViolation => exact .inr ⟨.staticViolation, execBlock_append_term hs (by intros; intro he; cases he), ht⟩
-  | returned | «break» | «continue» => exact False.elim ht
+  | returned | «break» | «continue» | noMatch | decodingFailed => exact False.elim ht
 
 end Benchmarks.UniswapV4PoolManager

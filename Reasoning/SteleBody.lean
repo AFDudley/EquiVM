@@ -667,13 +667,15 @@ lemma below lists how a block starting with the given statement kind can have pr
 result.  Every premise of these statements is an equation about a function (`evalExpr?`,
 `assignStorageRef?`), so the successful alternative pins the intermediate values. -/
 
-/-- The EVM state a result carries, if any (`.reverted` / `.staticViolation` carry none). -/
+/-- The EVM state a result carries, if any. Rejections and exceptional outcomes carry none. -/
 def resultState? : ExecResult → Option EVM.State
   | .returned _ evm _ => some evm
   | .ok _ evm => some evm
   | .break _ evm => some evm
   | .continue _ evm => some evm
   | .reverted => none
+  | .noMatch => none
+  | .decodingFailed => none
   | .staticViolation => none
 
 @[simp] theorem resultState?_returned (stele : Frame) (evm : EVM.State) (v : Option (List Value)) :
@@ -685,6 +687,8 @@ def resultState? : ExecResult → Option EVM.State
 @[simp] theorem resultState?_continue (stele : Frame) (evm : EVM.State) :
     resultState? (.continue stele evm) = some evm := rfl
 @[simp] theorem resultState?_reverted : resultState? .reverted = none := rfl
+@[simp] theorem resultState?_noMatch : resultState? .noMatch = none := rfl
+@[simp] theorem resultState?_decodingFailed : resultState? .decodingFailed = none := rfl
 @[simp] theorem resultState?_staticViolation : resultState? .staticViolation = none := rfl
 
 /-- A function body's result carries the state of its block's result. -/
@@ -810,6 +814,8 @@ theorem execBlock_singleton {cfg : Config} {stele : Frame} {evm : EVM.State} {st
   | «break» => exact ExecBlock.consBreak h
   | «continue» => exact ExecBlock.consContinue h
   | reverted => exact ExecBlock.consRevert h
+  | noMatch => exact (h.not_dispatchFailure.1 rfl).elim
+  | decodingFailed => exact (h.not_dispatchFailure.2 rfl).elim
   | staticViolation => exact ExecBlock.consStatic h
 
 /-! ## Forward block builder

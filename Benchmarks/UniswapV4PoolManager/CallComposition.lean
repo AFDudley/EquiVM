@@ -59,6 +59,8 @@ theorem execFuncBody_block {cfg : Config} {f : Frame} {evm : EVM.State} {stmts :
   | ok => exact .execBlockOK h
   | returned => exact .execBlockRet h
   | reverted => exact .execBlockRevert h
+  | noMatch => exact (h.not_dispatchFailure.1 rfl).elim
+  | decodingFailed => exact (h.not_dispatchFailure.2 rfl).elim
   | «break» => exact .execBlockBreak h
   | «continue» => exact .execBlockContinue h
   | staticViolation => exact .execBlockStatic h

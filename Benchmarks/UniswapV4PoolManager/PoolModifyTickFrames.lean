@@ -26,7 +26,7 @@ theorem poolModifyTickResult_normal {f f' : Frame} {evm post : State} {id : UInt
     cases h
     have hv := poolUpdateTickReturnedValues hr
     exact ⟨by rw [hv]; rfl, poolUpdateTickReturnedState hr⟩
-  | ok | reverted | «break» | «continue» | staticViolation => cases h
+  | ok | reverted | «break» | «continue» | staticViolation | noMatch | decodingFailed => cases h
 
 theorem poolModifyTickAfterFrame_context {f : Frame} {p : PoolModifyParams} {id : UInt256}
     (h : PoolModifyContext f id p) (evm : State) (tick delta : Int)

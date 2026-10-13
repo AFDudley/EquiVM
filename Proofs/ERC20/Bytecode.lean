@@ -70,10 +70,10 @@ theorem erc20_bytecode_preserves_inv (hinj : InjectiveLayout erc20Config)
       rw [inv_iff_invAt, henv] at hInv'
       exact hInv'
     | revert h1 _ => cases h1
+    | noMatch h1 _ => cases h1
+    | decodingFailed h1 _ => cases h1
     | invalidHalt h1 _ => cases h1
     | staticHalt h1 _ => cases h1
-  | noDispatch _ hΞ' => cases hΞ'.symm.trans hΞ
-  | decodingFailed _ _ _ hΞ' => cases hΞ'.symm.trans hΞ
   | outOfGas hΞ' => cases hΞ'.symm.trans hΞ
 
 /-! ## Deployment -/

@@ -261,12 +261,14 @@ theorem exec_sound {o : Oracle Ω} (hs : o.Sound) (fuel : Nat) :
         · next hc =>
           generalize hb : execBlock fuel o ω cfg stele evm body = p at h
           obtain ⟨oc, ω''⟩ := p
-          rcases oc with (⟨s, e, v⟩ | ⟨s, e⟩ | ⟨s, e⟩ | ⟨s, e⟩ | _ | _) | _ | _ | _ <;> dsimp only at h
+          rcases oc with (⟨s, e, v⟩ | ⟨s, e⟩ | ⟨s, e⟩ | ⟨s, e⟩ | _ | _ | _ | _) | _ | _ | _ <;> dsimp only at h
           · cases h; exact ExecStmt.whileReturn hc (ihB hb)
           · exact ExecStmt.whileTrue hc (ihB hb) (ihS h)
           · cases h; exact ExecStmt.whileBreak hc (ihB hb)
           · exact ExecStmt.whileContinue hc (ihB hb) (ihS h)
           · cases h; exact ExecStmt.whileRevert hc (ihB hb)
+          · exact ((ihB hb).not_dispatchFailure.1 rfl).elim
+          · exact ((ihB hb).not_dispatchFailure.2 rfl).elim
           · cases h; exact ExecStmt.whileStatic hc (ihB hb)
           · cases h
           · cases h
@@ -276,12 +278,14 @@ theorem exec_sound {o : Oracle Ω} (hs : o.Sound) (fuel : Nat) :
       case «for» init cond post body =>
         generalize hb : execBlock fuel o ω cfg stele evm init = p at h
         obtain ⟨oc, ω''⟩ := p
-        rcases oc with (⟨s, e, v⟩ | ⟨s, e⟩ | ⟨s, e⟩ | ⟨s, e⟩ | _ | _) | _ | _ | _ <;> dsimp only at h
+        rcases oc with (⟨s, e, v⟩ | ⟨s, e⟩ | ⟨s, e⟩ | ⟨s, e⟩ | _ | _ | _ | _) | _ | _ | _ <;> dsimp only at h
         · cases h; exact ExecStmt.forInitReturn (ihB hb)
         · exact ExecStmt.for (ihB hb) (ihL h)
         · cases h
         · cases h
         · cases h; exact ExecStmt.forInitRevert (ihB hb)
+        · cases h
+        · cases h
         · cases h; exact ExecStmt.forInitStatic (ihB hb)
         · cases h
         · cases h
@@ -307,12 +311,14 @@ theorem exec_sound {o : Oracle Ω} (hs : o.Sound) (fuel : Nat) :
               generalize hbody :
                 execFuncBody fuel o ω cfg { stele with locals := locals } evm callee.body = p at h
               obtain ⟨oc, ω''⟩ := p
-              rcases oc with (⟨s, e, v⟩ | ⟨s, e⟩ | ⟨s, e⟩ | ⟨s, e⟩ | _ | _) | _ | _ | _ <;> dsimp only at h
+              rcases oc with (⟨s, e, v⟩ | ⟨s, e⟩ | ⟨s, e⟩ | ⟨s, e⟩ | _ | _ | _ | _) | _ | _ | _ <;> dsimp only at h
               · cases h; exact ExecStmt.internalCallReturn hargs hcallee hbind (ihF hbody)
               · cases h
               · cases h
               · cases h
               · cases h; exact ExecStmt.internalCallRevert hargs hcallee hbind (ihF hbody)
+              · cases h
+              · cases h
               · cases h; exact ExecStmt.internalCallStatic hargs hcallee hbind (ihF hbody)
               · cases h
               · cases h
@@ -527,16 +533,18 @@ theorem exec_sound {o : Oracle Ω} (hs : o.Sound) (fuel : Nat) :
       · next hc =>
         generalize hb : execBlock fuel o ω cfg stele evm body = p at h
         obtain ⟨oc, ω''⟩ := p
-        rcases oc with (⟨s, e, v⟩ | ⟨s, e⟩ | ⟨s, e⟩ | ⟨s, e⟩ | _ | _) | _ | _ | _ <;> dsimp only at h
+        rcases oc with (⟨s, e, v⟩ | ⟨s, e⟩ | ⟨s, e⟩ | ⟨s, e⟩ | _ | _ | _ | _) | _ | _ | _ <;> dsimp only at h
         · cases h; exact ExecForLoop.bodyReturn hc (ihB hb)
         · generalize hp : execBlock fuel o ω'' cfg s e post = q at h
           obtain ⟨oc, ω₃⟩ := q
-          rcases oc with (⟨s₂, e₂, v₂⟩ | ⟨s₂, e₂⟩ | ⟨s₂, e₂⟩ | ⟨s₂, e₂⟩ | _ | _) | _ | _ | _ <;> dsimp only at h
+          rcases oc with (⟨s₂, e₂, v₂⟩ | ⟨s₂, e₂⟩ | ⟨s₂, e₂⟩ | ⟨s₂, e₂⟩ | _ | _ | _ | _) | _ | _ | _ <;> dsimp only at h
           · cases h
           · exact ExecForLoop.iterate hc (ihB hb) (ihB hp) (ihL h)
           · cases h
           · cases h
           · cases h; exact ExecForLoop.iteratePostRevert hc (ihB hb) (ihB hp)
+          · cases h
+          · cases h
           · cases h; exact ExecForLoop.iteratePostStatic hc (ihB hb) (ihB hp)
           · cases h
           · cases h
@@ -544,17 +552,21 @@ theorem exec_sound {o : Oracle Ω} (hs : o.Sound) (fuel : Nat) :
         · cases h; exact ExecForLoop.bodyBreak hc (ihB hb)
         · generalize hp : execBlock fuel o ω'' cfg s e post = q at h
           obtain ⟨oc, ω₃⟩ := q
-          rcases oc with (⟨s₂, e₂, v₂⟩ | ⟨s₂, e₂⟩ | ⟨s₂, e₂⟩ | ⟨s₂, e₂⟩ | _ | _) | _ | _ | _ <;> dsimp only at h
+          rcases oc with (⟨s₂, e₂, v₂⟩ | ⟨s₂, e₂⟩ | ⟨s₂, e₂⟩ | ⟨s₂, e₂⟩ | _ | _ | _ | _) | _ | _ | _ <;> dsimp only at h
           · cases h
           · exact ExecForLoop.continueIter hc (ihB hb) (ihB hp) (ihL h)
           · cases h
           · cases h
           · cases h; exact ExecForLoop.continuePostRevert hc (ihB hb) (ihB hp)
+          · cases h
+          · cases h
           · cases h; exact ExecForLoop.continuePostStatic hc (ihB hb) (ihB hp)
           · cases h
           · cases h
           · cases h
         · cases h; exact ExecForLoop.bodyRevert hc (ihB hb)
+        · exact ((ihB hb).not_dispatchFailure.1 rfl).elim
+        · exact ((ihB hb).not_dispatchFailure.2 rfl).elim
         · cases h; exact ExecForLoop.bodyStatic hc (ihB hb)
         · cases h
         · cases h
@@ -569,12 +581,14 @@ theorem exec_sound {o : Oracle Ω} (hs : o.Sound) (fuel : Nat) :
         rw [execBlock] at h
         generalize hst : execStmt fuel o ω cfg stele evm stmt = p at h
         obtain ⟨oc, ω''⟩ := p
-        rcases oc with (⟨s, e, v⟩ | ⟨s, e⟩ | ⟨s, e⟩ | ⟨s, e⟩ | _ | _) | _ | _ | _ <;> dsimp only at h
+        rcases oc with (⟨s, e, v⟩ | ⟨s, e⟩ | ⟨s, e⟩ | ⟨s, e⟩ | _ | _ | _ | _) | _ | _ | _ <;> dsimp only at h
         · cases h; exact ExecBlock.consReturn (ihS hst)
         · exact ExecBlock.consNormal (ihS hst) (ihB h)
         · cases h; exact ExecBlock.consBreak (ihS hst)
         · cases h; exact ExecBlock.consContinue (ihS hst)
         · cases h; exact ExecBlock.consRevert (ihS hst)
+        · exact ((ihS hst).not_dispatchFailure.1 rfl).elim
+        · exact ((ihS hst).not_dispatchFailure.2 rfl).elim
         · cases h; exact ExecBlock.consStatic (ihS hst)
         · cases h
         · cases h
@@ -584,12 +598,14 @@ theorem exec_sound {o : Oracle Ω} (hs : o.Sound) (fuel : Nat) :
       rw [execFuncBody] at h
       generalize hb : execBlock fuel o ω cfg stele evm body = p at h
       obtain ⟨oc, ω''⟩ := p
-      rcases oc with (⟨s, e, v⟩ | ⟨s, e⟩ | ⟨s, e⟩ | ⟨s, e⟩ | _ | _) | _ | _ | _ <;> dsimp only at h
+      rcases oc with (⟨s, e, v⟩ | ⟨s, e⟩ | ⟨s, e⟩ | ⟨s, e⟩ | _ | _ | _ | _) | _ | _ | _ <;> dsimp only at h
       · cases h; exact ExecFuncBody.execBlockRet (ihB hb)
       · cases h; exact ExecFuncBody.execBlockOK (ihB hb)
       · cases h; exact ExecFuncBody.execBlockBreak (ihB hb)
       · cases h; exact ExecFuncBody.execBlockContinue (ihB hb)
       · cases h; exact ExecFuncBody.execBlockRevert (ihB hb)
+      · exact ((ihB hb).not_dispatchFailure.1 rfl).elim
+      · exact ((ihB hb).not_dispatchFailure.2 rfl).elim
       · cases h; exact ExecFuncBody.execBlockStatic (ihB hb)
       · cases h
       · cases h
@@ -635,7 +651,9 @@ theorem steleExecRun_sound {o : Oracle Ω} (hs : o.Sound) {fuel : Nat} {ω ω' :
       obtain ⟨oc, ω₀⟩ := p
       cases h
       exact steleExec.intro hsel rfl hdec rfl (execFuncBody_sound hs hbody)
-    · cases h
+    · next hdec =>
+      cases h
+      exact steleExec.decodingFailed hsel hdec
   · next hsel =>
     split at h
     · next transition hrecv =>
@@ -659,7 +677,9 @@ theorem steleExecRun_sound {o : Oracle Ω} (hs : o.Sound) {fuel : Nat} {ω ω' :
           cases h
           exact steleExec.fallback hsel hrecv hfb hargs hrc rfl (execFuncBody_sound hs hbody)
         · cases h
-      · cases h
+      · next hfb =>
+        cases h
+        exact steleExec.noMatch (by simp [dispatchMsg, hsel, hrecv, hfb])
 
 theorem steleCtorExecRun_sound {o : Oracle Ω} (hs : o.Sound) {fuel : Nat} {ω ω' : Ω}
     {cfg : Config} {contract : ContractDecl} {args : List Value} {σ σ₀ : AccountMap}

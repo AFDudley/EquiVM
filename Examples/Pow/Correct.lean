@@ -847,14 +847,14 @@ private def powCallargs (I : Ethereum.ExecutionEnv) : Stele.Store :=
   (∅ : Stele.Store).insert "n"
     (.int (Int.ofNat (uInt256OfByteArray (I.calldata.readBytes 4 32)).toNat))
 
-/-- **`callvalue = 0` case**: split on calldata size and the selector to land in one of
-    `noDispatch` / `decodingFailed` / `execution`. -/
+/-- **`callvalue = 0` case**: split on calldata size and the selector to produce `.noMatch`,
+    `.decodingFailed`, or a function-body result. -/
 theorem powReEquiv_callvalueZero {σ σ₀ A I} {g : Sat256}
     (hcode : I.code = powBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hsize : I.calldata.size < UInt256.size) :
     runtimeRefinementFor powConfig Pow.powContract σ σ₀ g.toUInt256 A I := by
   by_cases hsz4 : I.calldata.size < 4
-  · -- short calldata ⇒ noDispatch
+  · -- short calldata ⇒ noMatch
     exact (powX_short hcode hwv hsz4).reEquivNoDispatch hcode (powDispatch.none_short hsz4)
   · rw [not_lt] at hsz4
     by_cases hmatch : ((⟨#[0x44, 0x2b, 0x7f, 0xfb]⟩ : ByteArray) == I.calldata.extract 0 4) = true
@@ -884,7 +884,7 @@ theorem powReEquiv_callvalueZero {σ σ₀ A I} {g : Sat256}
               (powDecode_n hsz36 hbig)
               (powBodyReverts_n (initState σ σ₀ g A I) (powCallargs I)
                 (by simp only [initState]; exact hwv) hn (by rw [powCallargs, store_get_self]))
-    · -- wrong selector ⇒ noDispatch
+    · -- wrong selector ⇒ noMatch
       rw [Bool.not_eq_true] at hmatch
       exact (powX_nomatch hcode hwv hsz4 hsize hmatch).reEquivNoDispatch hcode
         (powDispatch.none_nomatch hmatch)

@@ -119,6 +119,6 @@ theorem swapPoolCorrect {I : ExecutionEnv} {g : Sat256} {s0 evm : State} {f : Fr
         (ExecBlock.consNormal hassign hafter)), htrace⟩
   | reverted => exact .inr ⟨.reverted, ExecBlock.consNormal halias (ExecBlock.consRevert hcall), ht⟩
   | staticViolation => exact .inr ⟨.staticViolation, ExecBlock.consNormal halias (ExecBlock.consStatic hcall), ht⟩
-  | ok | «break» | «continue» => exact False.elim ht
+  | ok | «break» | «continue» | noMatch | decodingFailed => exact False.elim ht
 
 end Benchmarks.UniswapV4PoolManager

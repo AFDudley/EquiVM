@@ -12,7 +12,7 @@ theorem continueCallResult_ok {next : State → Option (List Value) → ExecResu
     ∃ callee before values, result = .returned callee before values ∧ next before values = .ok f post := by
   cases result with
   | returned callee before values => exact ⟨callee, before, values, rfl, h⟩
-  | ok | reverted | «break» | «continue» | staticViolation => cases h
+  | ok | reverted | «break» | «continue» | staticViolation | noMatch | decodingFailed => cases h
 
 -- LIBRARY CANDIDATE: compose an internal call with its successful continuation.
 theorem execBlock_continueCall {cfg : Config} {f : Frame} {evm : State} {stmt : Stmt} {ret : Ident}
@@ -24,7 +24,7 @@ theorem execBlock_continueCall {cfg : Config} {f : Frame} {evm : State} {stmt : 
   cases result with
   | returned cf post values => exact ExecBlock.consNormal hc (hn cf post values rfl)
   | staticViolation => exact ExecBlock.consStatic hc
-  | ok | reverted | «break» | «continue» => exact ExecBlock.consRevert hc
+  | ok | reverted | «break» | «continue» | noMatch | decodingFailed => exact ExecBlock.consRevert hc
 
 -- LIBRARY CANDIDATE: compose a callee trace with its return continuation.
 theorem functionResultTrace_continueCall {code : ByteArray} {g : Sat256} {s0 : State}
@@ -36,5 +36,5 @@ theorem functionResultTrace_continueCall {code : ByteArray} {g : Sat256} {s0 : S
   cases result with
   | returned cf post values => exact hn post values hr
   | reverted | staticViolation => exact hr
-  | ok | «break» | «continue» => exact False.elim hr
+  | ok | «break» | «continue» | noMatch | decodingFailed => exact False.elim hr
 end Benchmarks.UniswapV4PoolManager

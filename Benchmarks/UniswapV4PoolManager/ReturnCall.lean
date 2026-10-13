@@ -26,7 +26,7 @@ theorem internalCallThenReturn {cfg : Config} {caller : Frame} {evm : EVM.State}
   cases result with
   | ok => cases hbody
   | «break» => cases hbody
-  | «continue» => cases hbody
+  | «continue» | noMatch | decodingFailed => cases hbody
   | reverted => exact .execBlockRevert (ExecBlock.consRevert hc)
   | staticViolation => exact .execBlockStatic (ExecBlock.consStatic hc)
   | returned cf evm' value =>

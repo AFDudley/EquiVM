@@ -269,8 +269,8 @@ namespace Reasoning.Reach
 /-- **The whole `callvalue ≠ 0` Stele coupling**, generic over a single-transition contract.  Given the
     non-payable guard's revert (`h : RDrev …`) and the contract body's revert under non-zero call
     value (`hbody`), produce the `runtimeRefinementFor` case: the OOG alternative folds via
-    `reEquivElim`, and the Stele side is dispatched abstractly into `noDispatch` / `decodingFailed` /
-    `execution`-with-revert.  Each example's `callvalue ≠ 0` branch is a single call to this. -/
+    `reEquivElim`, and the Stele execution produces `.noMatch`, `.decodingFailed`, or `.reverted`.
+    Each example's `callvalue ≠ 0` branch is a single call to this. -/
 theorem RDrev.reEquivNonPayable {cfg : Config} {contract : ContractDecl} {transition : TransitionDecl}
     {immutables : Store}
     {σ σ₀ A I} {g : Sat256} {code : ByteArray}

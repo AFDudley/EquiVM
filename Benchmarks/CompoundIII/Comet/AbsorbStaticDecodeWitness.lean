@@ -1,6 +1,7 @@
 import Benchmarks.CompoundIII.Comet.DiffTarget
 import Benchmarks.CompoundIII.Comet.Common
 import Benchmarks.CompoundIII.Comet.GasBound
+import Stele.Behaviors
 
 /-!
 Reproducer for the original modern mode's eager decoding versus lazy element validation.
@@ -73,19 +74,18 @@ theorem no_refinement_of_static_decode_failure
     (hevm : Ξ σ σ₀ gas A I = .error .StaticModeViolation) :
     ¬ runtimeRefinementFor cfg contract σ σ₀ gas A I imms := by
   intro h
-  cases h with
-  | execution _ hstele _ =>
-      cases hstele with
-      | intro hd hsig hargs _ _ =>
-          cases Option.some.inj (hdispatch.symm.trans hd)
-          subst_vars
-          rw [hdecode] at hargs
-          cases hargs
-      | fallback hd _ _ _ _ _ _ => rw [hdispatch] at hd; cases hd
-      | receive hd _ _ _ _ => rw [hreceive] at hd; cases hd
-  | noDispatch _ hrev => rw [hevm] at hrev; cases hrev
-  | decodingFailed _ _ _ hrev => rw [hevm] at hrev; cases hrev
-  | outOfGas hoog => rw [hevm] at hoog; cases hoog
+  rcases runtimeRefinementFor_captured h with hoog | hcaptured
+  · rw [hevm] at hoog; cases hoog
+  · rw [hevm] at hcaptured
+    obtain ⟨_, hstele⟩ := capturedBySpec_static hcaptured
+    cases hstele with
+    | intro hd hsig hargs _ _ =>
+        cases Option.some.inj (hdispatch.symm.trans hd)
+        subst_vars
+        rw [hdecode] at hargs
+        cases hargs
+    | fallback hd _ _ _ _ _ _ => rw [hdispatch] at hd; cases hd
+    | receive hd _ _ _ _ => rw [hreceive] at hd; cases hd
 
 theorem refinement_fails :
     ¬ runtimeRefinementFor baselineConfig contract zeroTarget.world zeroTarget.world

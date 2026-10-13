@@ -125,7 +125,7 @@ theorem weth9ReEquivDecodeFailed {cfg : Config} {contract : ContractDecl} {t : T
   · have hxi := Xi_revert_of_X (g := g.toUInt256) (by
       rw [← hcode] at hrev
       simpa [initState, Sat256.ofUInt256, Sat256.toUInt256] using hrev)
-    exact runtimeRefinementFor.decodingFailed hsel rfl hdec hxi
+    exact .execution hxi (.decodingFailed hsel hdec) (.decodingFailed rfl rfl)
 
 /-- Non-payable function, `callvalue != 0` branch: the EVM reverts at the function's own callvalue
     guard.  On the Stele side the body reverts at its `require(msg.value == 0)` (when the calldata

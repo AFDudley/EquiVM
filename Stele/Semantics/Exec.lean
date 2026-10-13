@@ -688,6 +688,27 @@ inductive ExecFuncBody (cfg : Config) :
 
 end
 
+/-- Dispatch and calldata-decoding failures cannot arise while executing a statement. -/
+theorem ExecStmt.not_dispatchFailure {cfg : Config} {stele : Frame} {evm : EVM.State}
+    {stmt : Stmt} {r : ExecResult} (h : ExecStmt cfg stele evm stmt r) :
+    r ≠ .noMatch ∧ r ≠ .decodingFailed := by
+  induction h using ExecStmt.rec
+    (motive_2 := fun _ _ _ _ _ r _ => r ≠ .noMatch ∧ r ≠ .decodingFailed)
+    (motive_3 := fun _ _ _ r _ => r ≠ .noMatch ∧ r ≠ .decodingFailed)
+    (motive_4 := fun _ _ _ r _ => r ≠ .noMatch ∧ r ≠ .decodingFailed)
+  all_goals simp_all
+
+/-- A block propagates body outcomes only; dispatch failures happen before its execution. -/
+theorem ExecBlock.not_dispatchFailure {cfg : Config} {stele : Frame} {evm : EVM.State}
+    {body : List Stmt} {r : ExecResult} (h : ExecBlock cfg stele evm body r) :
+    r ≠ .noMatch ∧ r ≠ .decodingFailed := by
+  induction body generalizing stele evm with
+  | nil => cases h; simp
+  | cons stmt rest ih =>
+      cases h with
+      | consNormal _ hrest => exact ih hrest
+      | _ => simp
+
 /-- Run a transition (or constructor) body from a fresh frame with the given locals and
     immutables. -/
 def ExecTransitionBody (cfg : Config) (contract : ContractDecl) (evm : EVM.State)

@@ -5014,13 +5014,12 @@ theorem selectorDispatchMsg_eq_some_of_dispatchMsg_eq_some
       rw [hsel] at h
       simpa using h
 
-/-- Stele fails to dispatch and `Ξ` reverts ⇒ the `noDispatch` case. This path never runs
-    `steleExec`. -/
+/-- Stele fails to dispatch and `Ξ` reverts ⇒ an execution producing `.noMatch`. -/
 theorem reEquiv_noDispatch {immutables : Store} {cfg contract σ σ₀ g A I} {g' o}
     (hd : dispatchMsg contract I.calldata = none)
     (h : Ξ σ σ₀ g A I = .ok (.revert g' o)) :
     runtimeRefinementFor cfg contract σ σ₀ g A I immutables :=
-  .noDispatch hd h
+  .execution h (.noMatch hd) (.noMatch rfl rfl)
 
 /-- Stele dispatches but decoding fails and `Ξ` reverts ⇒ `decodingFailed`. The Stele body does
     not execute. -/
@@ -5033,8 +5032,10 @@ theorem reEquiv_decodingFailed {immutables : Store}
     (hfallback : contract.fallback = none := by rfl)
     (hreceive : contract.receive = none := by rfl) :
     runtimeRefinementFor cfg contract σ σ₀ g A I immutables :=
-  .decodingFailed (selectorDispatchMsg_eq_some_of_dispatchMsg_eq_some hreceive hfallback hd)
-    rfl hdec h
+  .execution h
+    (.decodingFailed
+      (selectorDispatchMsg_eq_some_of_dispatchMsg_eq_some hreceive hfallback hd) hdec)
+    (.decodingFailed rfl rfl)
 
 /-- The Stele transition executes (to `actRes`) and `Ξ`'s result matches ⇒ the `execution` case.
     Both executions start from `σ`; `hequiv` carries their result coupling, including account-map
@@ -5102,7 +5103,7 @@ theorem RDrev.reEquivElim {immutables : Store}
   · exact reEquiv_outOfGas (Xi_error_of_X_sat (by rw [← hcode] at hoog; exact hoog))
   · exact k g' o (Xi_revert_of_X_sat (by rw [← hcode] at hX; exact hX))
 
-/-- `RDrev ⇒ noDispatch`: revert with Act failing to dispatch; the Stele body does not run. -/
+/-- `RDrev ⇒ noMatch`: revert with Stele failing to dispatch; the Stele body does not run. -/
 theorem RDrev.reEquivNoDispatch {immutables : Store}
     {cfg contract σ σ₀ A I} {g : Sat256}
     {code : ByteArray}
@@ -5112,7 +5113,7 @@ theorem RDrev.reEquivNoDispatch {immutables : Store}
       g.toUInt256 A I immutables :=
   h.reEquivElim hcode fun _ _ hrev => reEquiv_noDispatch hd hrev
 
-/-- `RDrev ⇒ decodingFailed`: Act dispatches to `t` but calldata-decoding fails; the Stele body
+/-- `RDrev ⇒ decodingFailed`: Stele dispatches to `t` but calldata-decoding fails; the Stele body
     does not run. -/
 theorem RDrev.reEquivDecodingFailed {immutables : Store}
     {cfg contract σ σ₀ A I} {g : Sat256}

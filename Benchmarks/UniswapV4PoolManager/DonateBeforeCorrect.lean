@@ -81,6 +81,6 @@ theorem donateBeforeCorrect {I : ExecutionEnv} {g : Sat256} {s0 evm : State}
     · exact .inr ⟨final, ExecBlock.consNormal hstmt hbody, htrace⟩
   | reverted => exact .inr ⟨.reverted, ExecBlock.consRevert hstmt, ht⟩
   | staticViolation => exact .inr ⟨.staticViolation, ExecBlock.consStatic hstmt, ht⟩
-  | ok | «break» | «continue» => exact False.elim ht
+  | ok | «break» | «continue» | noMatch | decodingFailed => exact False.elim ht
 
 end Benchmarks.UniswapV4PoolManager

@@ -59,6 +59,6 @@ theorem modifyLiquidityCallerCorrect {I : ExecutionEnv} {g : Sat256} {s0 evm : S
         wordBytes [caller, fees], hr, returnEquiv.returned rfl (signedPairReturnEncoding caller fees)⟩
   | reverted => exact ⟨.reverted, ExecBlock.consRevert hs, ht⟩
   | staticViolation => exact ⟨.staticViolation, ExecBlock.consStatic hs, ht⟩
-  | returned | «break» | «continue» => exact False.elim ht
+  | returned | «break» | «continue» | noMatch | decodingFailed => exact False.elim ht
 
 end Benchmarks.UniswapV4PoolManager

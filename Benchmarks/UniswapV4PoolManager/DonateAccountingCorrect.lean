@@ -63,6 +63,6 @@ theorem donateAccountingCorrect {I : ExecutionEnv} {g : Sat256} {s0 evm : State}
     · exact .inr ⟨result, ExecBlock.consNormal hs hbody, htrace⟩
   | reverted => exact .inr ⟨.reverted, ExecBlock.consRevert hs, ht⟩
   | staticViolation => exact .inr ⟨.staticViolation, ExecBlock.consStatic hs, ht⟩
-  | returned | «break» | «continue» => exact False.elim ht
+  | returned | «break» | «continue» | noMatch | decodingFailed => exact False.elim ht
 
 end Benchmarks.UniswapV4PoolManager

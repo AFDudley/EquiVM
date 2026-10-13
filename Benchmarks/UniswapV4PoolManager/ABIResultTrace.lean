@@ -23,6 +23,6 @@ theorem abiResultTrace_refinement {cfg : Config} {contract : ContractDecl} {t : 
       exact hr.reEquivExecutionGen hcode hd hdec hbody rfl he hfallback hreceive
   | reverted => exact htrace.reEquivExecutionRevert hcode hd hdec hbody hfallback hreceive
   | staticViolation => exact htrace.reEquivStaticHalt hcode hd hdec hbody hfallback hreceive
-  | ok | «break» | «continue» => exact False.elim htrace
+  | ok | «break» | «continue» | noMatch | decodingFailed => exact False.elim htrace
 
 end Benchmarks.UniswapV4PoolManager

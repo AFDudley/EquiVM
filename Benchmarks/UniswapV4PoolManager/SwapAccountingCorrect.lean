@@ -70,6 +70,6 @@ theorem swapAccountingCorrect {I : ExecutionEnv} {g : Sat256} {s0 evm : State}
         exact ⟨result, ExecBlock.consNormal hs hbody, htrace⟩
     | reverted => exact ⟨.reverted, ExecBlock.consRevert hs, ht⟩
     | staticViolation => exact ⟨.staticViolation, ExecBlock.consStatic hs, ht⟩
-    | returned | «break» | «continue» => exact False.elim ht
+    | returned | «break» | «continue» | noMatch | decodingFailed => exact False.elim ht
 
 end Benchmarks.UniswapV4PoolManager

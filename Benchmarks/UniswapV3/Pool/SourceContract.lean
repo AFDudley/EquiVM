@@ -6,7 +6,7 @@ namespace Benchmarks.UniswapV3.Pool
 -- LIBRARY CANDIDATE: execution changes locals and immutables, but never the contract declaration.
 def execResultContract (C : ContractDecl) : ExecResult → Prop
   | .ok frame _ | .returned frame _ _ | .break frame _ | .continue frame _ => frame.contract = C
-  | .reverted | .staticViolation => True
+  | .reverted | .noMatch | .decodingFailed | .staticViolation => True
 
 theorem assignStorageRef_contract {cfg : Config} {frame out : Frame} {evm evm' : EVM.State}
     {origin : VarOrigin} {ref : StorageRef} {value : Value}

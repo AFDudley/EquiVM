@@ -23,6 +23,6 @@ theorem internalCallFunctionResult {cfg : Config} {caller : Frame} {evm : EVM.St
   | reverted => exact internalCallFunctionRevert hargs hlookup hbind hbody
   | staticViolation =>
     exact ExecStmt.internalCallStatic hargs hlookup hbind hbody
-  | ok _ _ | «break» _ _ | «continue» _ _ => cases hbody
+  | ok _ _ | «break» _ _ | «continue» _ _ | noMatch | decodingFailed => cases hbody
 
 end Benchmarks.Safe.Main

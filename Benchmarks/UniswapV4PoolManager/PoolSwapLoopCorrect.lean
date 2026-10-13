@@ -68,7 +68,7 @@ theorem poolSwapLoopFuel {I : ExecutionEnv} {g : Sat256} {s0 : State} {rdata : B
           exact (ha3 (by rw [h2]; exact ha)).trans h2
       | reverted => exact .inr ⟨.reverted, ExecStmt.whileRevert hcond hbody, hbodyTrace⟩
       | staticViolation => exact .inr ⟨.staticViolation, ExecStmt.whileStatic hcond hbody, hbodyTrace⟩
-      | returned | «break» | «continue» => exact False.elim hbodyTrace
+      | returned | «break» | «continue» | noMatch | decodingFailed => exact False.elim hbodyTrace
     · rw [if_neg hgo] at rd1
       rw [decide_eq_false hgo] at hcond
       exact .inr ⟨.ok f evm, ExecStmt.whileFalse hcond,
