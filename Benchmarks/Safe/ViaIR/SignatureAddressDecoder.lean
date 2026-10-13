@@ -4,12 +4,12 @@ open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.ViaIR
 
-set_option maxRecDepth 100000
+set_option maxRecDepth 2000
 
 theorem safeDecodeSignatureAddressValid (counted : Bool)
-    {I g s0 σ k C aw rdata len} {ret : UInt256} {R : List UInt256}
+    {I g s0 σ k C aw rdata len} {scratch : UInt256} {R : List UInt256}
     (h : RD safeBytecode I g s0 (signatureDecodePC counted)
-      (⟨4⟩ :: UInt256.ofNat I.calldata.size :: ret :: R) solcFreePtrMem aw rdata σ k C)
+      (scratch :: R) solcFreePtrMem aw rdata σ k C)
     (hh : 4 + signatureAddressHead counted ≤ I.calldata.size)
     (hs : I.calldata.size < 2 ^ 255)
     (hc : (calldataWord I.calldata 4).toNat < EVM.addressModulus)
@@ -18,8 +18,9 @@ theorem safeDecodeSignatureAddressValid (counted : Bool)
       UInt256.ofNat len)
     (hn : len ≤ 2 ^ 64 - 192)
     (hin : 4 + (calldataWord I.calldata 68).toNat + 32 + len ≤ I.calldata.size)
-    (hov : R.length + 18 ≤ 1024) (hret : (D_J safeBytecode 0).contains ret = true) :
-    ∃ aw' k' C', RD safeBytecode I g s0 ret (signatureDecodedStack counted I.calldata R)
+    (hov : R.length + 18 ≤ 1024) :
+    ∃ aw' k' C', RD safeBytecode I g s0 (signatureBodyPC counted)
+      (signatureDecodedStack counted I.calldata (scratch :: R))
       (memoryBytesDecoded (I.calldata.extract (4 + (calldataWord I.calldata 68).toNat + 32)
         (4 + (calldataWord I.calldata 68).toNat + 32 + len))) aw' rdata σ k' C' := by
   have hsize : I.calldata.size < UInt256.size := lt_size_of_lt_sign hs
@@ -28,9 +29,9 @@ theorem safeDecodeSignatureAddressValid (counted : Bool)
   obtain ⟨_, _, h₁⟩ := safeSignatureDecodeAddress counted h
     (solcDecodeLenCheckOk (by simpa only [hhead] using hh) (by simpa using
       (show I.calldata.size < 2 ^ 255 + 4 by omega)) hsize
-      (by cases counted <;> decide +kernel)) hov
-  obtain ⟨_, _, h₂⟩ := safeValidateAddress h₁ (by
-    cases counted <;> simp [signatureAddressStack] <;> omega) hc
+      (by cases counted <;> decide +kernel))
+    (by cases counted <;> simp [signatureAddressHead] at hh <;> omega) hsize hov
+  obtain ⟨_, _, h₂⟩ := safeDecodeAddress h₁ (by simp; omega) hc
     (by cases counted <;> simp only [signatureAddressPC, Bool.false_eq_true, if_false, if_true]
         <;> jump_dest)
   obtain ⟨_, _, h₃⟩ := safeSignatureDecodeBytes counted h₂ hoff hov
@@ -38,15 +39,15 @@ theorem safeDecodeSignatureAddressValid (counted : Bool)
     cases counted <;> simp [signatureBytesSaved] <;> omega)
     (by cases counted <;> simp only [signatureBytesPC, Bool.false_eq_true, if_false, if_true]
         <;> jump_dest)
-  obtain ⟨_, _, h₅⟩ := safeSignatureDecodeFinish counted h₄ hov hret
+  obtain ⟨_, _, h₅⟩ := safeSignatureDecodeFinish counted h₄ hov
   exact ⟨_, _, _, h₅⟩
 
 theorem safeDecodeSignatureAddressEvidence (counted : Bool)
-    {I g s0 σ k C aw rdata} {ret : UInt256} {R : List UInt256}
+    {I g s0 σ k C aw rdata} {scratch : UInt256} {R : List UInt256}
     (h : RD safeBytecode I g s0 (signatureDecodePC counted)
-      (⟨4⟩ :: UInt256.ofNat I.calldata.size :: ret :: R) solcFreePtrMem aw rdata σ k C)
+      (scratch :: R) solcFreePtrMem aw rdata σ k C)
     (hlong : 4 ≤ I.calldata.size) (hsize : I.calldata.size < UInt256.size)
-    (hov : R.length + 18 ≤ 1024) (hret : (D_J safeBytecode 0).contains ret = true) :
+    (hov : R.length + 18 ≤ 1024) :
     RDrev safeBytecode g s0 ∨
     ∃ len aw' k' C', 4 + signatureAddressHead counted ≤ I.calldata.size ∧
       I.calldata.size < 2 ^ 255 ∧
@@ -55,7 +56,8 @@ theorem safeDecodeSignatureAddressEvidence (counted : Bool)
       calldataWord I.calldata (4 + (calldataWord I.calldata 68).toNat) =
         UInt256.ofNat len ∧ len ≤ 2 ^ 64 - 192 ∧
       4 + (calldataWord I.calldata 68).toNat + 32 + len ≤ I.calldata.size ∧
-      RD safeBytecode I g s0 ret (signatureDecodedStack counted I.calldata R)
+      RD safeBytecode I g s0 (signatureBodyPC counted)
+        (signatureDecodedStack counted I.calldata (scratch :: R))
         (memoryBytesDecoded (I.calldata.extract (4 + (calldataWord I.calldata 68).toNat + 32)
           (4 + (calldataWord I.calldata 68).toNat + 32 + len))) aw' rdata σ k' C' := by
   have hhead : (UInt256.ofNat (signatureAddressHead counted)).toNat =
@@ -66,19 +68,17 @@ theorem safeDecodeSignatureAddressEvidence (counted : Bool)
   swap
   · exact Or.inl (safeSignatureDecodeHeaderRevert counted h
       (solcDecodeLenCheckShort hlong (by simpa only [hhead] using Nat.lt_of_not_ge hh)
-        hsize hsmall) hov)
+        hsize hsmall) hlong hsize hov)
   by_cases hhi : I.calldata.size < 2 ^ 255 + 4
   swap
   · exact Or.inl (safeSignatureDecodeHeaderRevert counted h
-      (solcDecodeLenCheckHuge (by simpa using Nat.le_of_not_gt hhi) hsize hsmall) hov)
+      (solcDecodeLenCheckHuge (by simpa using Nat.le_of_not_gt hhi) hsize hsmall) hlong hsize hov)
   obtain ⟨_, _, h₁⟩ := safeSignatureDecodeAddress counted h
-    (solcDecodeLenCheckOk (by simpa only [hhead] using hh) hhi hsize hsmall) hov
+    (solcDecodeLenCheckOk (by simpa only [hhead] using hh) hhi hsize hsmall) hlong hsize hov
   by_cases hc : (calldataWord I.calldata 4).toNat < EVM.addressModulus
   swap
-  · exact Or.inl (safeValidateAddressRevert h₁ (by
-      cases counted <;> simp [signatureAddressStack] <;> omega) hc)
-  obtain ⟨_, _, h₂⟩ := safeValidateAddress h₁ (by
-    cases counted <;> simp [signatureAddressStack] <;> omega) hc
+  · exact Or.inl (safeDecodeAddressNoncanon h₁ (by simp; omega) hc)
+  obtain ⟨_, _, h₂⟩ := safeDecodeAddress h₁ (by simp; omega) hc
     (by cases counted <;> simp only [signatureAddressPC, Bool.false_eq_true, if_false, if_true]
         <;> jump_dest)
   by_cases hoff : (calldataWord I.calldata 68).toNat ≤ 2 ^ 64 - 1
@@ -90,21 +90,21 @@ theorem safeDecodeSignatureAddressEvidence (counted : Bool)
     (by cases counted <;> simp only [signatureBytesPC, Bool.false_eq_true, if_false, if_true]
         <;> jump_dest) with hr | ⟨len, aw', k', C', hw, hn, hs, hin, h₄⟩
   · exact Or.inl hr
-  obtain ⟨_, _, h₅⟩ := safeSignatureDecodeFinish counted h₄ hov hret
+  obtain ⟨_, _, h₅⟩ := safeSignatureDecodeFinish counted h₄ hov
   exact Or.inr ⟨len, _, _, _, hh, hs, hc, hoff, hw, hn, hin, h₅⟩
 
 theorem safeDecodeSignatureAddressTooLarge (counted : Bool)
-    {I g s0 σ k C aw rdata len} {ret : UInt256} {R : List UInt256}
+    {I g s0 σ k C aw rdata len} {scratch : UInt256} {R : List UInt256}
     (h : RD safeBytecode I g s0 (signatureDecodePC counted)
-      (⟨4⟩ :: UInt256.ofNat I.calldata.size :: ret :: R) solcFreePtrMem aw rdata σ k C)
+      (scratch :: R) solcFreePtrMem aw rdata σ k C)
     (hlong : 4 ≤ I.calldata.size) (hsize : I.calldata.size < UInt256.size)
     (hw : calldataWord I.calldata (4 + (calldataWord I.calldata 68).toNat) =
       UInt256.ofNat len)
     (hn : len < UInt256.size) (hbad : ¬len ≤ 2 ^ 64 - 192)
-    (hov : R.length + 18 ≤ 1024) (hret : (D_J safeBytecode 0).contains ret = true) :
+    (hov : R.length + 18 ≤ 1024) :
     RDrev safeBytecode g s0 := by
   obtain hr | ⟨len', aw', k', C', hh, hs, hc, hoff, hw', hn', hin, hr⟩ :=
-    safeDecodeSignatureAddressEvidence counted h hlong hsize hov hret
+    safeDecodeSignatureAddressEvidence counted h hlong hsize hov
   · exact hr
   have ht := congrArg UInt256.toNat (hw.symm.trans hw')
   rw [ulit_toNat' _ hn, ulit_toNat' _ (by change len' < 2 ^ 256; omega)] at ht

@@ -10,10 +10,10 @@ def signatureP256FinalFrame (f : Frame) (p : SignatureInput) (r s : UInt256) : F
     (signatureP256Input p s)) "p256Ok" (.bool true)
 
 theorem safeSignatureP256Trace (p : SignatureInput) (evm : EVM.State)
-    {I g s0 σ k C aw mem rdata ptr src} {i s r v current last : UInt256}
+    {I g s0 σ k C aw mem rdata ptr src} {i s r v executor last : UInt256}
     {R : List UInt256} {f : Frame} {old : Value}
-    (h : RD safeBytecode I g s0 ⟨2218⟩
-      (i :: s :: r :: v :: current :: last :: p.required :: UInt256.ofNat src :: p.hash :: R)
+    (h : RD safeBytecode I g s0 ⟨8265⟩
+      (v :: r :: last :: s :: UInt256.ofNat src :: p.hash :: i :: executor :: p.required :: R)
       mem aw rdata σ k C)
     (hc : SignatureCore p f) (hr : f.locals["r"]? = some (wordBytes32Value r))
     (hs : f.locals["s"]? = some (wordBytes32Value s))
@@ -28,9 +28,9 @@ theorem safeSignatureP256Trace (p : SignatureInput) (evm : EVM.State)
     ∃ evm' σ' mem' aw' out k' C',
       ExecBlock config f evm signatureP256Body (.ok (signatureP256FinalFrame f p r s) evm') ∧
       evm'.executionEnv = I ∧ evm'.accountMap = σ' ∧ evm'.σ₀ = s0.σ₀ ∧
-      RD safeBytecode I g s0 ⟨2679⟩
-        (i :: (signatureP256Input p s).s :: (signatureP256Input p s).r :: v :: r :: last ::
-          p.required :: UInt256.ofNat src :: p.hash :: R) mem' aw' out σ' k' C' ∧
+      RD safeBytecode I g s0 ⟨7803⟩
+        (last :: UInt256.land solcAddrMask r :: UInt256.ofNat src :: p.hash :: i ::
+          executor :: p.required :: R) mem' aw' out σ' k' C' ∧
       BytesMemory mem' src p.signatures ∧ memLoad ⟨64⟩ mem' = UInt256.ofNat ptr ∧
       memLoad ⟨96⟩ mem' = ⟨0⟩ ∧ mem'.size ≤ max mem.size (ptr + 2 ^ 140) ∧
       MemoryPreserves mem mem' 96 ptr := by
@@ -42,15 +42,15 @@ theorem safeSignatureP256Trace (p : SignatureInput) (evm : EVM.State)
   have hoff : (signatureP256EndFrame f r s).locals["p256Offset"]? =
       some (uint256Value s) := by
     simp [signatureP256EndFrame, signatureP256OffsetFrame, signatureDynamicFrame,
-      signatureSet, Std.HashMap.getElem?_insert, Std.HashMap.getElem_insert]
+      signatureSet, Std.HashMap.getElem_insert]
   have howner : (signatureP256EndFrame f r s).locals["currentOwner"]? =
       some (.address (AccountAddress.ofUInt256 r)) := by
     simp [signatureP256EndFrame, signatureP256OffsetFrame, signatureDynamicFrame,
-      signatureCurrentFrame, signatureSet, Std.HashMap.getElem?_insert, Std.HashMap.getElem_insert]
+      signatureCurrentFrame, signatureSet, Std.HashMap.getElem_insert]
   obtain ⟨hrev, hbody⟩ | ⟨evm', σ', mem', aw', out, k', C', hbody, he, hac, hw,
       h₂, hm', hf', hz', hms, hpres⟩ :=
     safeSignatureP256Check p evm h₁ (hc.p256End r s) hoff howner hee hacc hworld
-      hm hf hz hsrc ha hp hh hov
+      hm hf hz hsrc ha hp hh (by simp; omega)
   · exact .inl ⟨hrev, by simpa only [List.take_append_drop] using
       execBlock_append_ok hprefix hbody⟩
   exact .inr ⟨evm', σ', mem', aw', out, k', C', by

@@ -1,45 +1,48 @@
 import Benchmarks.Safe.ViaIR.P256Memory
 import Benchmarks.Safe.ViaIR.RawStaticCall
-import Benchmarks.Safe.ViaIR.Blocks.Runtime_031
+import Benchmarks.Safe.ViaIR.Blocks.Runtime_040
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.ViaIR
 
+set_option maxRecDepth 2000
+
 theorem safeP256InputMemory {mem : ByteArray} {ptr : Nat} {p : P256Input}
     (hf : memLoad ⟨64⟩ mem = UInt256.ofNat ptr) (hb : ptr + 160 < UInt256.size) :
-    safeRuntime_block_7108_memory (mem := mem) (x0 := p.qy) (x1 := p.qx)
-      (x2 := p.s) (x3 := p.r) (x4 := p.h) = p256InputMemory mem ptr p := by
+    safeRuntime_block_8418_memory (mem := mem) (x0 := p.s) (x1 := p.qx)
+      (x2 := p.qy) (x3 := p.r) (x8 := p.h) = p256InputMemory mem ptr p := by
   have hadd (j : Nat) (hj : j ≤ 160) :
       (UInt256.ofNat ptr + UInt256.ofNat j).toNat = ptr + j :=
     uadd_ofNat_toNat (by omega) (by omega) (by omega)
   change memLoad (UInt256.ofNat 64) mem = UInt256.ofNat ptr at hf
-  simp only [safeRuntime_block_7108_memory, hf, hadd 32 (by decide), hadd 64 (by decide),
+  simp only [safeRuntime_block_8418_memory, hf, hadd 32 (by decide), hadd 64 (by decide),
     hadd 96 (by decide), hadd 128 (by decide), ulit_toNat' ptr (by omega),
     p256InputMemory, p256Words, writeWords, Reasoning.Theory.writeWord, Nat.add_assoc]
 
 theorem safeP256Prepare {I g s0 σ k C aw mem rdata ptr} {p : P256Input}
-    {ret : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨7108⟩ (p.qy :: p.qx :: p.s :: p.r :: p.h :: ret :: R)
+    {scratch last owner src : UInt256} {R : List UInt256}
+    (h : RD safeBytecode I g s0 ⟨8418⟩
+      (p.s :: p.qx :: p.qy :: p.r :: scratch :: last :: owner :: src :: p.h :: R)
       mem aw rdata σ k C)
     (hf : memLoad ⟨64⟩ mem = UInt256.ofNat ptr) (hb : ptr + 160 < UInt256.size)
     (hov : R.length + 14 ≤ 1024) :
-    ∃ gasArg aw' k' C', RD safeBytecode I g s0 ⟨7150⟩
+    ∃ gasArg aw' k' C', RD safeBytecode I g s0 ⟨8460⟩
       (gasArg :: ⟨256⟩ :: UInt256.ofNat ptr :: ⟨160⟩ :: ⟨0⟩ :: ⟨32⟩ ::
-        UInt256.ofNat ptr :: ⟨0⟩ :: p.qy :: p.qx :: p.s :: p.r :: p.h :: ret :: R)
+        last :: owner :: src :: p.h :: R)
       (p256InputMemory mem ptr p) aw' rdata σ k' C' := by
-  obtain ⟨aw', k', C', hr⟩ := safeRuntime_block_7108_packed (by simp; omega) h
+  obtain ⟨aw', k', C', hr⟩ := safeRuntime_block_8418_packed (by simp; omega) h
   rw [safeP256InputMemory hf hb] at hr
   change memLoad (UInt256.ofNat 64) mem = UInt256.ofNat ptr at hf
-  simp only [safeRuntime_block_7108_stack, hf] at hr
+  simp only [safeRuntime_block_8418_stack, hf] at hr
   exact ⟨_, aw', k', C', hr⟩
 
 theorem safeP256ResultStack {mem out : ByteArray} {ptr : Nat} {p : P256Input}
     {z : Bool} {R : List UInt256} (hb : out.size < UInt256.size) :
-    safeRuntime_block_7151_stack (mem := p256OutputMemory mem ptr p out)
+    safeRuntime_block_8461_stack (mem := p256OutputMemory mem ptr p out)
       (rdata := out) (x0 := if z then ⟨1⟩ else ⟨0⟩) (R := R) =
-      (if p256Result z out then ⟨1⟩ else ⟨0⟩) :: R := by
+      (⟨0⟩ :: ⟨0⟩ :: ⟨0⟩ :: ⟨0⟩ :: (if p256Result z out then ⟨0⟩ else ⟨1⟩) :: R) := by
   have hs : (UInt256.ofNat out.size = UInt256.ofNat 32) ↔ out.size = 32 := by
     constructor
     · intro he
@@ -48,35 +51,44 @@ theorem safeP256ResultStack {mem out : ByteArray} {ptr : Nat} {p : P256Input}
         using hh
     · intro he
       rw [he]
-  cases z with
-  | false => simp [safeRuntime_block_7151_stack, p256Result, u256_land_zero_right]
-  | true =>
+  have he : UInt256.land
+      (UInt256.land (UInt256.eq (UInt256.ofNat out.size) (UInt256.ofNat 32))
+        (UInt256.eq (memLoad ⟨0⟩ (p256OutputMemory mem ptr p out)) (UInt256.ofNat 1)))
+      (if z then ⟨1⟩ else ⟨0⟩) = if p256Result z out then ⟨1⟩ else ⟨0⟩ := by
+    cases z with
+    | false =>
+      simp only [Bool.false_eq_true, if_false, u256_land_zero_right]
+      rfl
+    | true =>
       by_cases ho : out.size = 32
-      · rw [safeRuntime_block_7151_stack, p256OutputMemory_word _ _ _ _ (by omega)]
+      · rw [p256OutputMemory_word _ _ _ _ (by omega)]
         by_cases hw : calldataWord out 0 = ⟨1⟩
         · simp [p256Result, ho, hw, UInt256.eq, UInt256.fromBool]
           rfl
-        · have hw' : UInt256.ofNat 1 ≠ calldataWord out 0 := fun h ↦ hw h.symm
+        · have hw' : calldataWord out 0 ≠ UInt256.ofNat 1 := hw
           simp [p256Result, ho, hw, hw', UInt256.eq, UInt256.fromBool]
           rfl
       · have hn : UInt256.ofNat out.size ≠ UInt256.ofNat 32 := fun h ↦ ho (hs.mp h)
-        simp [safeRuntime_block_7151_stack, p256Result, ho, hn, UInt256.eq,
-          UInt256.fromBool, u256_land_zero_left]
-        change UInt256.land (UInt256.land ⟨0⟩ _) ⟨1⟩ = ⟨0⟩
-        rw [u256_land_zero_left, u256_land_zero_left]
+        rw [u256_eq_of_ne hn, u256_land_zero_left, u256_land_zero_left]
+        simp [p256Result, ho]
+  simp only [safeRuntime_block_8461_stack, he]
+  cases p256Result z out <;> rfl
 
 theorem safeP256Trace {I g s0 σ k C aw mem rdata ptr} {p : P256Input}
-    {ret : UInt256} {R : List UInt256} (evm : EVM.State)
-    (h : RD safeBytecode I g s0 ⟨7108⟩ (p.qy :: p.qx :: p.s :: p.r :: p.h :: ret :: R)
+    {scratch last owner src : UInt256} {R : List UInt256} (evm : EVM.State)
+    (h : RD safeBytecode I g s0 ⟨8418⟩
+      (p.s :: p.qx :: p.qy :: p.r :: scratch :: last :: owner :: src :: p.h :: R)
       mem aw rdata σ k C)
     (hee : evm.executionEnv = I) (hacc : evm.accountMap = σ) (hworld : evm.σ₀ = s0.σ₀)
     (hf : memLoad ⟨64⟩ mem = UInt256.ofNat ptr) (hb : ptr + 160 < UInt256.size)
-    (hov : R.length + 14 ≤ 1024) (hret : (D_J safeBytecode 0).contains ret = true) :
+    (hov : R.length + 14 ≤ 1024) :
     ∃ evm' σ' z out aw' k' C',
       callViaEVM evm (AccountAddress.ofNat 256) 0 (wordBytes (p256Words p))
         (z, evm', out) false ∧
       evm'.executionEnv = I ∧ evm'.accountMap = σ' ∧ evm'.σ₀ = s0.σ₀ ∧
-      RD safeBytecode I g s0 ret ((if p256Result z out then ⟨1⟩ else ⟨0⟩) :: R)
+      RD safeBytecode I g s0 ⟨8364⟩
+        (⟨0⟩ :: ⟨0⟩ :: ⟨0⟩ :: ⟨0⟩ :: (if p256Result z out then ⟨0⟩ else ⟨1⟩) ::
+          last :: owner :: src :: p.h :: R)
         (p256OutputMemory mem ptr p out) aw' out σ' k' C' := by
   obtain ⟨_, _, _, _, h₁⟩ := safeP256Prepare h hf hb hov
   obtain ⟨evm', σ', z, out, aw', k', C', hc, he, ha, hw, h₂, hout, _⟩ :=
@@ -88,7 +100,7 @@ theorem safeP256Trace {I g s0 σ k C aw mem rdata ptr} {p : P256Input}
     rw [callOutputLength hout]
     rfl
   rw [hm] at h₂
-  obtain ⟨aw'', k'', C'', h₃⟩ := safeRuntime_block_7151_packed (by omega) hret h₂
+  obtain ⟨aw'', k'', C'', h₃⟩ := safeRuntime_block_8461_packed (by simp; omega) (by jump_dest) h₂
   rw [safeP256ResultStack hout] at h₃
   refine ⟨evm', σ', z, out, aw'', k'', C'', ?_, he, ha, hw, h₃⟩
   simpa only [ulit_toNat' ptr (by omega), show (⟨160⟩ : UInt256).toNat = 160 from rfl,

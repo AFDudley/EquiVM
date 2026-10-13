@@ -1,12 +1,12 @@
 import Benchmarks.Safe.ViaIR.SignaturePiece
-import Benchmarks.Safe.ViaIR.Blocks.Runtime_014
+import Benchmarks.Safe.ViaIR.Blocks.Runtime_036
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.ViaIR
 
-set_option maxRecDepth 100000
+set_option maxRecDepth 2000
 
 theorem signaturePieceReads {mem bytes : ByteArray} {src i : Nat}
     (hm : BytesMemory mem src bytes) (hin : 65 * i + 65 ≤ bytes.size)
@@ -49,25 +49,26 @@ theorem signaturePieceReads {mem bytes : ByteArray} {src i : Nat}
     rfl
 
 theorem safeSignatureSplit {I g s0 σ k C aw mem rdata src i} {bytes : ByteArray}
-    {oldS oldR oldV current last required : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨2011⟩
-      (UInt256.ofNat i :: oldS :: oldR :: oldV :: current :: last :: required ::
-        UInt256.ofNat src :: R) mem aw rdata σ k C)
+    {hash last : UInt256} {R : List UInt256}
+    (h : RD safeBytecode I g s0 ⟨7568⟩
+      (last :: UInt256.ofNat src :: hash :: UInt256.ofNat i :: R) mem aw rdata σ k C)
     (hm : BytesMemory mem src bytes) (hin : 65 * i + 65 ≤ bytes.size)
     (hb : src + 64 + bytes.size < UInt256.size) (hov : R.length + 13 ≤ 1024) :
     ∃ aw' k' C', RD safeBytecode I g s0
-      (if signatureV bytes i = ⟨0⟩ then ⟨2052⟩ else ⟨2108⟩)
-      (UInt256.ofNat i :: signatureS bytes i :: signatureR bytes i :: signatureV bytes i ::
-        current :: last :: required :: UInt256.ofNat src :: R) mem aw' rdata σ k' C' := by
+      (if signatureV bytes i = ⟨0⟩ then ⟨7607⟩ else ⟨8128⟩)
+      (signatureV bytes i :: signatureR bytes i :: signatureS bytes i :: signatureR bytes i ::
+        last :: signatureS bytes i :: UInt256.ofNat src :: hash :: UInt256.ofNat i :: R)
+      mem aw' rdata σ k' C' := by
   obtain ⟨hr, hs, hv⟩ := signaturePieceReads hm hin hb
+  rw [u256_mul_comm (UInt256.ofNat i)] at hr hs hv
   by_cases hz : signatureV bytes i = ⟨0⟩
-  · obtain ⟨aw', k', C', h₂⟩ := safeRuntime_block_2011_fallthrough_packed hov
+  · obtain ⟨aw', k', C', h₂⟩ := safeRuntime_block_7568_fallthrough_packed (by omega)
       (by rw [hv, hz]; decide) h
     refine ⟨aw', k', C', ?_⟩
-    simpa only [if_pos hz, safeRuntime_block_2011_fallthrough_stack, hr, hs, hv] using h₂
-  · obtain ⟨aw', k', C', h₂⟩ := safeRuntime_block_2011_taken_packed hov
-      (by rw [hv]; exact u256_zero_sub_ne_zero hz) (by jump_dest) h
+    simpa only [if_pos hz, safeRuntime_block_7568_fallthrough_stack, hr, hs, hv] using h₂
+  · obtain ⟨aw', k', C', h₂⟩ := safeRuntime_block_7568_taken_packed (by omega)
+      (by rw [hv, isZero_eq_zero_of_ne hz]; decide) (by jump_dest) h
     refine ⟨aw', k', C', ?_⟩
-    simpa only [if_neg hz, safeRuntime_block_2011_taken_stack, hr, hs, hv] using h₂
+    simpa only [if_neg hz, safeRuntime_block_7568_taken_stack, hr, hs, hv] using h₂
 
 end Benchmarks.Safe.ViaIR

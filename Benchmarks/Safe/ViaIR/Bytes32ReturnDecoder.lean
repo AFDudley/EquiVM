@@ -1,5 +1,6 @@
 import Benchmarks.Safe.ViaIR.Memory
-import Benchmarks.Safe.ViaIR.Blocks.Runtime_051
+import Benchmarks.Safe.ViaIR.Blocks.Runtime_001
+import Benchmarks.Safe.ViaIR.Blocks.Runtime_045
 import Reasoning.ABIComposite
 import Reasoning.WordArithmetic
 
@@ -8,36 +9,39 @@ open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.ViaIR
 
-set_option maxRecDepth 100000
+set_option maxRecDepth 2000
 
-theorem safeBytes32DecoderShort {I g s0 σ k C aw mem rdata} {start ret : UInt256}
+theorem safeBytes32DecoderShort {I g s0 σ k C aw mem rdata} {start : UInt256}
     {len : Nat} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨11787⟩
-      (start :: (start + UInt256.ofNat len) :: ret :: R) mem aw rdata σ k C)
+    (h : RD safeBytecode I g s0 ⟨10041⟩
+      (UInt256.ofNat len :: start :: ⟨32⟩ :: start :: R) mem aw rdata σ k C)
     (hov : R.length + 7 ≤ 1024) (hl : len < 32) : RDrev safeBytecode g s0 := by
   have hlt : UInt256.slt (UInt256.ofNat len) (UInt256.ofNat 32) = ⟨1⟩ := by
     apply slt_lit_one_low (by decide)
     rw [ulit_toNat' len (by change len < 2 ^ 256; omega)]
     exact hl
-  have hr := safeRuntime_block_11787_fallthrough (by simp; omega)
-    (by rw [word_add_sub_left, hlt]; decide) h
-  exact safeRuntime_block_11800 (by
-    simp only [safeRuntime_block_11787_fallthrough_stack, List.length_cons]; omega) hr
+  have hr := safeRuntime_block_10041_taken (by simp; omega)
+    (by
+      rw [word_add_sub_left]
+      change UInt256.slt (UInt256.ofNat len) (UInt256.ofNat 32) ≠ ⟨0⟩
+      rw [hlt]; decide) (by jump_dest) h
+  exact safeRuntime_block_111 (by
+    simp only [safeRuntime_block_10041_taken_stack, List.length_cons]; omega) hr
 
-theorem safeBytes32DecoderValid {I g s0 σ k C aw mem rdata} {start ret : UInt256}
+theorem safeBytes32DecoderValid {I g s0 σ k C aw mem rdata} {start : UInt256}
     {len : Nat} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨11787⟩
-      (start :: (start + UInt256.ofNat len) :: ret :: R) mem aw rdata σ k C)
-    (hov : R.length + 7 ≤ 1024) (hl : 32 ≤ len) (hb : len < 2 ^ 255)
-    (hret : (D_J safeBytecode 0).contains ret = true) :
-    ∃ aw' k' C', RD safeBytecode I g s0 ret (memLoad start mem :: R) mem aw' rdata σ k' C' := by
+    (h : RD safeBytecode I g s0 ⟨10041⟩
+      (UInt256.ofNat len :: start :: ⟨32⟩ :: start :: R) mem aw rdata σ k C)
+    (hov : R.length + 7 ≤ 1024) (hl : 32 ≤ len) (hb : len < 2 ^ 255) :
+    ∃ aw' k' C', RD safeBytecode I g s0 ⟨10003⟩ (⟨0⟩ :: memLoad start mem :: R)
+      mem aw' rdata σ k' C' := by
   have hlt : UInt256.slt (UInt256.ofNat len) (UInt256.ofNat 32) = ⟨0⟩ := by
     apply slt_lit_zero (by decide)
     · rw [ulit_toNat' len (by change len < 2 ^ 256; omega)]; exact hl
     · rw [ulit_toNat' len (by change len < 2 ^ 256; omega)]; exact hb
-  have hr := safeRuntime_block_11787_taken (by simp; omega)
-    (by rw [word_add_sub_left, hlt]; decide) (by jump_dest) h
-  exact safeRuntime_block_11803_packed (by omega) hret hr
+  have hr := safeRuntime_block_10041_fallthrough (by simp; omega)
+    (by rw [word_add_sub_left]; exact hlt) h
+  exact safeRuntime_block_10050_packed (by omega) (by jump_dest) hr
 
 -- GENERALIZES decodeReturnValue_bytes32_ok to the modern decoder's signed-size guard.
 theorem decodeBytes32ReturnLong {out : ByteArray} (hl : 32 ≤ out.size) (hb : out.size < 2 ^ 255) :

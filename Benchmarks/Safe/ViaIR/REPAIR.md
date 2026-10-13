@@ -289,3 +289,20 @@ the standard three axioms and 374 native certificates. The two guard setters and
 build together (3,529 jobs), with no proof holes or custom axioms.
 All twenty-four repaired entrypoints and the regression modules build together
 (3,647 jobs). Nine runtime obligations remain before the whole-contract check.
+
+The signature-decoder and loop-foundation checkpoint builds successfully (3,594 jobs).
+Both counted and uncounted overloads, with explicit or implicit executor addresses, now
+follow the inlined IR entry decoders. The memory-bytes decoder and encoder retain their
+source-level bounds and memory contents; their PCs, stack interfaces, and stack-height
+premises match the new routines. The return-word decoder now describes its inlined module
+return path. Unused transitive imports of legacy module traces were removed.
+
+The signature loop's initial bounds check, signature splitting, owner ordering and membership,
+approved-hash branch, and full P-256 branch are repaired. The IR drops unused signature words
+between iterations, specializes multiplication by 65, and inlines P-256 verification. Internal
+trace interfaces and the branch-result invariant reflect those changes. The removed generic
+checked-multiplication subroutine is replaced by proofs of the actual generic and specialized
+IR multiplication paths. No public entrypoint statement or specification changed in this
+checkpoint. Axiom scans found 508 permitted axioms for legacy decoder evidence and 379 for the
+P-256 branch, with no proof holes or custom axioms. The remaining signature branches and the
+whole-contract proof are still in progress.

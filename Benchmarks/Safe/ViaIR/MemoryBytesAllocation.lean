@@ -5,6 +5,15 @@ open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.ViaIR
 
+theorem memoryBytesEnd_ir (mem : ByteArray) (n : UInt256) :
+    memLoad (UInt256.ofNat 64) mem +
+      UInt256.land ((UInt256.ofNat 32 + UInt256.land (UInt256.lnot (UInt256.ofNat 31))
+        (UInt256.ofNat 31 + n)) + UInt256.ofNat 31) (UInt256.lnot (UInt256.ofNat 31)) =
+      memoryBytesEnd mem n := by
+  rw [u256_add_comm (UInt256.ofNat 31) n, u256_add_assoc,
+    u256_add_comm (UInt256.land _ _) (UInt256.ofNat 31), ← u256_add_assoc]
+  rfl
+
 def memoryBytesInitialEnd (len : Nat) : Nat := 160 + ABI.paddedSize len
 
 theorem memoryBytesInitialEnd_bound {len : Nat} (hn : len ≤ 2 ^ 64 - 192) :

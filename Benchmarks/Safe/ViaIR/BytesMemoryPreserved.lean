@@ -1,5 +1,5 @@
 import Benchmarks.Safe.ViaIR.BytesMemory
-import Benchmarks.Safe.ViaIR.ModuleMemory
+import Benchmarks.Safe.ViaIR.ByteCopy
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 

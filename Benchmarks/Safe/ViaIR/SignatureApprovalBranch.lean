@@ -28,11 +28,11 @@ theorem signatureApprovalMemoryFacts {mem : ByteArray} {src ptr : Nat} {p : Sign
       (Nat.le_refl _)
 
 theorem safeSignatureApprovalBranch (p : SignatureInput) (evm : EVM.State)
-    {I g s0 σ k C aw mem rdata ptr src i} {s r current last executor : UInt256}
+    {I g s0 σ k C aw mem rdata ptr src i} {s r last executor : UInt256}
     {R : List UInt256} {f : Frame} {old : Value}
-    (h : RD safeBytecode I g s0 ⟨2108⟩
-      (UInt256.ofNat i :: s :: r :: ⟨1⟩ :: current :: last :: p.required :: UInt256.ofNat src ::
-        p.hash :: executor :: R) mem aw rdata σ k C)
+    (h : RD safeBytecode I g s0 ⟨8128⟩
+      (⟨1⟩ :: r :: s :: r :: last :: s :: UInt256.ofNat src :: p.hash ::
+        UInt256.ofNat i :: executor :: p.required :: R) mem aw rdata σ k C)
     (hc : SignatureContext p f i last) (he : p.executor = AccountAddress.ofUInt256 executor)
     (hr : f.locals["r"]? = some (wordBytes32Value r))
     (ho : f.locals["currentOwner"]? = some old)
@@ -46,10 +46,16 @@ theorem safeSignatureApprovalBranch (p : SignatureInput) (evm : EVM.State)
   obtain ⟨hrev, hbad⟩ | ⟨mem', aw', k', C', hv, h₁, hform⟩ :=
     safeSignatureApprovalTrace h (by have := hm.available; omega) hov
   · exact .inl ⟨hrev, by simpa only [hbad, if_false] using hsource⟩
-  refine .inr ⟨signatureCurrentFrame f r, evm, σ, mem', ptr, aw', rdata, s, r, ⟨1⟩, r, k', C',
+  have haddr : AccountAddress.ofUInt256 (UInt256.land solcAddrMask r) =
+      AccountAddress.ofUInt256 r := by
+    rw [u256_land_comm]
+    simpa only [accountAddress_ofUInt256_eq_ofNat_toNat] using
+      (addressOfNat_eq_of_masked_word r).symm
+  refine .inr ⟨signatureCurrentFrame f r, evm, σ, mem', ptr, aw', rdata,
+    UInt256.land solcAddrMask r, k', C',
     ?_, hc.current r, ?_, hee, hacc, hworld, h₁, ?_⟩
   · simpa only [hv, if_true] using hsource
-  · simp [signatureCurrentFrame, signatureSet, Std.HashMap.getElem?_insert]
+  · simp [haddr, signatureCurrentFrame, signatureSet]
   rcases hform with rfl | rfl
   · exact ⟨hm, hf, hz, Nat.le_refl _, by omega, by omega, MemoryPreserves.refl _ _ _⟩
   · obtain ⟨hm', hf', hz', hsize, hpres⟩ := signatureApprovalMemoryFacts (ptr := ptr) hm hsrc hb r
