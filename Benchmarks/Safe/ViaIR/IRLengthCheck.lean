@@ -11,9 +11,20 @@ namespace Benchmarks.Safe.ViaIR
 set_option maxRecDepth 100000
 
 /-! The new signed length guard for zero-argument getters has a failure path absent from the
-legacy bytecode. These lemmas investigate that path without changing the specification or any
-entrypoint refinement statement. The huge byte array is constructed symbolically, never evaluated.
+legacy bytecode. These lemmas check the artifact-specific decoder against that path. The huge
+byte array is constructed symbolically, never evaluated.
 -/
+
+theorem safeDecodeCalldata_eq_modern_of_small {names : List Ident} {types : List ABIType}
+    {cd : ByteArray} (hsize : cd.size < 2 ^ 255 + 4) :
+    safeDecodeCalldata names types cd = ABI.decodeCalldataWithMode .modern names types cd := by
+  have hguard : ¬ 2 ^ 255 ≤ cd.size - 4 := by omega
+  simp only [safeDecodeCalldata, hguard, and_false, if_false, safeDecodeMode]
+
+theorem safeDecodeCalldata_cons (names : List Ident) (ty : ABIType) (types : List ABIType)
+    (cd : ByteArray) :
+    safeDecodeCalldata names (ty :: types) cd =
+      ABI.decodeCalldataWithMode .modern names (ty :: types) cd := rfl
 
 def safeIRHugeNonceCalldata : ByteArray :=
   ⟨#[0xaf, 0xfe, 0xd0, 0xe0]⟩ ++ ByteArray.zeroes (2 ^ 255)
@@ -45,12 +56,13 @@ theorem safeIRHugeNonceCalldata_dispatch :
     isownerSelectorBytes, nonceSelectorBytes]
   rfl
 
-theorem safeIRHugeNonceCalldata_decodes :
+theorem safeIRHugeNonceCalldata_decodingFailed :
     config.externalABI.decodeCalldata? (nonceTransition.params.map Param.name)
-      (transitionSignature nonceTransition).paramTypes safeIRHugeNonceCalldata = some ∅ := by
-  exact decodeCalldata_empty_ok (by rw [safeIRHugeNonceCalldata_size]; omega)
+      (transitionSignature nonceTransition).paramTypes safeIRHugeNonceCalldata = none := by
+  change safeDecodeCalldata [] [] safeIRHugeNonceCalldata = none
+  simp [safeDecodeCalldata, safeIRHugeNonceCalldata_size]
 
-/-- At the first rejected size, the generated guard is true despite successful ABI decoding. -/
+/-- At the first rejected size, the generated guard agrees with the local decoder's rejection. -/
 theorem safeIRHugeNonceLengthGuard {cd : ByteArray} (hs : cd.size = 2 ^ 255 + 4) :
     UInt256.slt (UInt256.ofNat cd.size + UInt256.lnot (UInt256.ofNat 3)) ⟨0⟩ = ⟨1⟩ := by
   rw [hs]

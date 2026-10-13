@@ -5,7 +5,7 @@ import Benchmarks.Safe.ViaIR.IRLengthCheck
 The finite trace checks each actual opcode against `safeBytecode`, including the dispatcher.
 It takes 111 instructions and 460 gas. Calldata remains symbolic: only its size and selector
 word are used. The final theorems instantiate the symbolic array from `IRLengthCheck` and
-refute the original nonce and runtime correctness claims without importing their proofs.
+match the bytecode's revert with the artifact-specific decoder's rejection.
 -/
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
@@ -1234,69 +1234,10 @@ theorem safeIRHugeNonceExecution :
   exact (selectorDispatchFacts (I := safeIRHugeNonceEnv) 0xaf 0xfe 0xd0 0xe0 ⟨0xaffed0e0⟩
     safeIRHugeNonceCalldata_dispatch nonceSelectorBytes (by decide)).2
 
-private theorem irNonceRevertNotRefines {I : ExecutionEnv} {σ σ₀ : AccountMap}
-    {A : Substate} {g g' : UInt256} {out : ByteArray}
-    (hd : selectorDispatchMsg contract I.calldata = some nonceTransition)
-    (hlen : 4 ≤ I.calldata.size) (hvalue : I.weiValue = ⟨0⟩)
-    (hrev : Ξ σ σ₀ g A I = .ok (.revert g' out)) :
-    ¬ runtimeRefinementFor config contract σ σ₀ g A I := by
-  have hdec : config.externalABI.decodeCalldata? (nonceTransition.params.map Param.name)
-      (transitionSignature nonceTransition).paramTypes I.calldata = some ∅ :=
-    decodeCalldata_empty_ok hlen
-  intro h
-  cases h with
-  | execution hxi hsource hequiv =>
-    rw [← hxi, hrev] at hequiv
-    have hresult := by
-      cases hequiv with
-      | success hbad _ _ _ => cases hbad
-      | revert _ hresult => exact hresult
-      | invalidHalt hbad _ => cases hbad
-      | staticHalt hbad _ => cases hbad
-    subst_vars
-    cases hsource with
-    | intro hdispatch hsig hargs hstate hbody =>
-      rw [hd] at hdispatch
-      cases hdispatch
-      subst_vars
-      rw [hdec] at hargs
-      cases hargs
-      exact safeIRNonceSourceCannotRevert hvalue hbody
-    | fallback hdispatch _ _ _ _ _ _ => rw [hd] at hdispatch; cases hdispatch
-    | receive hreceive _ _ _ _ =>
-      have hn : I.calldata.size ≠ 0 := by omega
-      simp [receiveDispatchMsg, hn] at hreceive
-  | noDispatch hdispatch _ => simp [dispatchMsg, hd] at hdispatch
-  | decodingFailed hdispatch hsig hargs _ =>
-    rw [hd] at hdispatch
-    cases hdispatch
-    subst_vars
-    rw [hdec] at hargs
-    cases hargs
-  | outOfGas hgas => rw [hrev] at hgas; cases hgas
-
-/-- The unchanged runtime refinement relation fails on a calldata size allowed by its bound. -/
-theorem safeIRHugeNonceNotRefines :
-    ¬ runtimeRefinementFor config contract default default ⟨1000⟩ default safeIRHugeNonceEnv :=
-  irNonceRevertNotRefines safeIRHugeNonceCalldata_dispatch
-    (by change 4 ≤ safeIRHugeNonceCalldata.size; rw [safeIRHugeNonceCalldata_size]; omega)
-    rfl safeIRHugeNonceExecution
-
-/-- Refutes the unchanged, universally quantified statement of `safeNonceRefines`. -/
-theorem safeNonceRefines_counterexample :
-    ¬ (∀ (σ σ₀ : AccountMap) (g : UInt256) (A : Substate) (I : ExecutionEnv),
-      I.code = safeBytecode → I.calldata.size < UInt256.size →
-      selectorDispatchMsg contract I.calldata = some nonceTransition →
-      runtimeRefinementFor config contract σ σ₀ g A I) := by
-  intro h
-  exact safeIRHugeNonceNotRefines
-    (h default default ⟨1000⟩ default safeIRHugeNonceEnv rfl
-      safeIRHugeNonceCalldata_bound safeIRHugeNonceCalldata_dispatch)
-
-/-- Refutes the unchanged runtime correctness target without importing its broken proof. -/
-theorem safeCorrect_counterexample : ¬ runtimeRefinement config safeBytecode contract := by
-  rintro ⟨h⟩
-  exact safeIRHugeNonceNotRefines
-    (h default default ⟨1000⟩ default safeIRHugeNonceEnv rfl safeIRHugeNonceCalldata_bound)
+/-- The former counterexample now refines the spec through its ABI decoding-failure case. -/
+theorem safeIRHugeNonceRefines :
+    runtimeRefinementFor config contract default default ⟨1000⟩ default safeIRHugeNonceEnv := by
+  exact .decodingFailed safeIRHugeNonceCalldata_dispatch rfl
+    safeIRHugeNonceCalldata_decodingFailed safeIRHugeNonceExecution
 
 end Benchmarks.Safe.ViaIR

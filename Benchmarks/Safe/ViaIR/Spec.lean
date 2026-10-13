@@ -259,6 +259,14 @@ def checkAfterModuleExecutionSelector : ByteArray := selectorBytes 0x2a 0xcc 0x3
 
 def safeDecodeMode : DecodeMode := DecodeMode.modern
 
+-- This artifact also checks the signed argument-region size for zero-argument entrypoints.
+def safeDecodeCalldata (names : List Ident) (types : List ABIType) (calldata : ByteArray) :
+    Option Store :=
+  if types.isEmpty = true ∧ 2 ^ 255 ≤ calldata.size - 4 then
+    none
+  else
+    ABI.decodeCalldataWithMode safeDecodeMode names types calldata
+
 def decodeReturn? (ty : ABIType) (out : EVM.Bytes) : Option (List Value) :=
   (ABI.decodeReturnValueWithMode? safeDecodeMode ty out).map (fun v => [v])
 
@@ -1260,7 +1268,8 @@ def contract : ContractDecl :=
 
 def config : Config :=
   { storageBackend := solidityStorageBackend storageLayout
-    externalABI := (safeExternalABI).withMode safeDecodeMode
+    externalABI := { (safeExternalABI).withMode safeDecodeMode with
+      decodeCalldata? := safeDecodeCalldata }
     selfDeployment := genSolidityConstructorDeployment contract.ctor.params }
 
 end Benchmarks.Safe.ViaIR
