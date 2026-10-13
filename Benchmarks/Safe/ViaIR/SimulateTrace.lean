@@ -1,34 +1,32 @@
 import Benchmarks.Safe.ViaIR.AddressMemoryBytesDecoder
 import Benchmarks.Safe.ViaIR.RawDelegateCall
-import Benchmarks.Safe.ViaIR.Blocks.Runtime_010
-import Benchmarks.Safe.ViaIR.Blocks.Runtime_023
+import Benchmarks.Safe.ViaIR.Blocks.Runtime_018
+import Benchmarks.Safe.ViaIR.Blocks.Runtime_019
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.ViaIR
 
-set_option maxRecDepth 100000 in
-theorem safeSimulateReverts {σ σ₀ A I} {g : Sat256} {k C aw mem rdata} {R : List UInt256}
-    (h : RD safeBytecode I g (initState σ σ₀ g A I) ⟨1208⟩ R mem aw rdata σ k C)
+set_option maxRecDepth 2000 in
+theorem safeSimulateReverts {σ σ₀ A I} {g : Sat256} {k C aw mem rdata selector} {R : List UInt256}
+    (h : RD safeBytecode I g (initState σ σ₀ g A I) ⟨3917⟩ (selector :: ⟨0⟩ :: R) mem aw rdata σ k C)
     (hov : R.length + 17 ≤ 1024) :
     RDrev safeBytecode g (initState σ σ₀ g A I) := by
-  by_cases hv : UInt256.isZero I.weiValue = UInt256.ofNat 0
-  · have h₁ := safeRuntime_block_1208_fallthrough (by omega) hv h
-    exact safeRuntime_block_1216
-      (by simp only [safeRuntime_block_1208_fallthrough_stack, List.length_cons]; omega) h₁
-  have h₁ := safeRuntime_block_1208_taken (by omega) hv (by jump_dest) h
-  have h₂ := safeRuntime_block_1219 (by omega) (by jump_dest) h₁
-  rcases safeDecodeAddressMemoryBytesOrRevert h₂ (by simp; omega) (by jump_dest) with
-    hrev | ⟨ptr, target, mem', aw', k', C', h₃⟩
+  by_cases hv : I.weiValue = UInt256.ofNat 0
+  swap
+  · have hr := safeRuntime_block_3917_taken (by simp; omega) hv (by jump_dest) h
+    exact safeRuntime_block_589 (by simp; omega) hr
+  have h3924 := safeRuntime_block_3917_fallthrough (by simp; omega) hv h
+  rcases safeDecodeAddressMemoryBytesOrRevert h3924 hov with
+    hrev | ⟨ptr, target, mem', aw', k', C', h3977⟩
   · exact hrev
-  have h₄ := safeRuntime_block_1234 (by simp; omega) (by jump_dest) h₃
-  have h₅ := safeRuntime_block_4524 (by simp; omega) h₄
-  obtain ⟨evm', σ', z, out, aw'', k'', C'', _, _, _, h₆, hout⟩ :=
-    rawDelegateCallTrace h₅ (by native_decide) (by simp; omega)
-  exact safeRuntime_block_4536 (by simp; omega) (by
+  have h3987 := safeRuntime_block_3977 (by simp; omega) h3977
+  obtain ⟨evm', σ', z, out, aw'', k'', C'', _, _, _, h3988, hout⟩ :=
+    rawDelegateCallTrace h3987 (by native_decide) (by simp; omega)
+  exact safeRuntime_block_3988 (by simp; omega) (by
     rw [ulit_toNat' out.size hout]
     change 0 + out.size ≤ out.size
-    omega) h₆
+    omega) h3988
 
 end Benchmarks.Safe.ViaIR

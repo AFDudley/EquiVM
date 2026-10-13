@@ -8,7 +8,7 @@ namespace Benchmarks.Safe.ViaIR
 
 variable {σ σ₀ : AccountMap} {g : UInt256} {A : Substate} {I : ExecutionEnv}
 
-set_option maxRecDepth 100000 in
+set_option maxRecDepth 2000 in
 theorem safeSimulateandrevertBodyCore
     (hcode : I.code = safeBytecode)
     (hsize : I.calldata.size < UInt256.size)
@@ -17,7 +17,7 @@ theorem safeSimulateandrevertBodyCore
   obtain ⟨hlong, hword⟩ := selectorDispatchFacts 0xb4 0xfa 0xba 0x09 ⟨0xb4faba09⟩
     hdispatch simulateandrevertSelectorBytes (by decide)
   obtain ⟨k, C, hentry⟩ := safeReachEntry (σ := σ) (σ₀ := σ₀) (A := A)
-    (g := Sat256.ofUInt256 g) ⟨0xb4faba09⟩ 1 ⟨1208⟩ hcode hsize hlong hword
+    (g := Sat256.ofUInt256 g) ⟨0xb4faba09⟩ 16 ⟨3917⟩ hcode hsize hlong hword
     (by native_decide)
   have hrev := safeSimulateReverts hentry (by simp)
   refine RDrev.reEquivElim hcode hrev fun _ _ hΞ ↦ ?_

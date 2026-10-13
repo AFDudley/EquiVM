@@ -15,10 +15,10 @@ port exposed the analogous owner-array allocation mismatch below. Its separate l
 correction is now approved and applied; the full `getOwners` refinement theorem builds. The separately approved paginated-module guard correction is applied;
 its complete entrypoint refinement theorem now builds.
 
-Twenty-one runtime obligations now build: receive, fallback, `nonce`, `getThreshold`, `signedMessages`,
+Twenty-four runtime obligations now build: receive, fallback, `nonce`, `getThreshold`, `signedMessages`,
 `approvedHashes`, `isOwner`, `isModuleEnabled`, `domainSeparator`, `VERSION`, `changeThreshold`,
 `setFallbackHandler`, `approveHash`, `enableModule`, `disableModule`, `swapOwner`,
-`addOwnerWithThreshold`, `removeOwner`, `getStorageAt`, `getOwners`, and `getModulesPaginated`. The zero-argument
+`addOwnerWithThreshold`, `removeOwner`, `getStorageAt`, `getOwners`, `getModulesPaginated`, `setGuard`, `setModuleGuard`, and `simulateAndRevert`. The zero-argument
 proofs include the new signed length failure; the mapping getters include short, huge, and
 noncanonical calldata where applicable. Fallback covers handler absence, call success and
 failure, static callers, call-depth failure, and oversized calldata exhausting gas.
@@ -263,3 +263,20 @@ After this correction, artifact reproduction passes and the executable audit rep
 ```text
 Safe_ViaIR: 1775 cases: 1762 agree (580 successful), 0 disagree, 0 stuck, 13 EVM out of gas, 0 spec out of fuel
 ```
+
+Both guard setters now build with unchanged public statements. Their traces use the new
+inlined external entry paths, shared authorization routine, fixed 32-byte static-call
+output buffer, checked allocation, canonical bool decoder, storage write, and event/return.
+The return-memory invariant now uses `min 32 out.size`, matching the IR's bounded buffer.
+Source call and state-update proofs are retained. False, short, and noncanonical return
+values, failed calls, unauthorized callers, and static writes are covered. Direct axiom
+audits report 426 permitted axioms for `setGuard` and 433 for `setModuleGuard`.
+
+`simulateAndRevert` also builds with its original public statement. The dynamic-memory
+bytes decoder and address/bytes entry trace were ported in place, preserving the proof
+that decoding either reverts or reaches the delegate call. Every delegate-call outcome
+reaches the final revert; the source proof is unchanged. Its axiom audit reports only
+the standard three axioms and 374 native certificates. The two guard setters and simulation
+build together (3,529 jobs), with no proof holes or custom axioms.
+All twenty-four repaired entrypoints and the regression modules build together
+(3,647 jobs). Nine runtime obligations remain before the whole-contract check.

@@ -21,8 +21,8 @@ theorem safeGuardFinish {σ σ₀ σ' : AccountMap} {g : UInt256} {A : Substate}
     (hcheck : ExecStmt config (guardFrame .transaction guard) (initState σ σ₀ (.ofUInt256 g) A I)
       (guardCheck .transaction)
       (.ok { contract := contract, locals := locals } evm'))
-    (h : RD safeBytecode I (.ofUInt256 g) (initState σ σ₀ (.ofUInt256 g) A I) ⟨6158⟩
-      (guard :: ⟨664⟩ :: R) mem aw out σ' k C)
+    (h : RD safeBytecode I (.ofUInt256 g) (initState σ σ₀ (.ofUInt256 g) A I) ⟨1484⟩
+      (guard :: guard :: ⟨0⟩ :: R) mem aw out σ' k C)
     (hov : R.length + 6 ≤ 1024) : runtimeRefinementFor config contract σ σ₀ g A I := by
   exact guardFinish (kind := .transaction) hcode hdispatch hdec hc hv ha hg hb hee hacc hcheck
     (fun hp ↦ safeGuardStoreStatic h (by simp; omega) hp)

@@ -84,7 +84,7 @@ theorem guardOutputMemory_word (out : ByteArray) (hl : 32 ≤ out.size) :
 
 def guardDecodedMemory (kind : GuardKind) (out : ByteArray) : ByteArray :=
   writeWord (guardOutputMemory kind out) 64
-    (⟨128⟩ + UInt256.land (UInt256.ofNat out.size + UInt256.ofNat 31)
+    (⟨128⟩ + UInt256.land (UInt256.ofNat (min 32 out.size) + UInt256.ofNat 31)
       (UInt256.lnot (UInt256.ofNat 31)))
 
 theorem guardDecodedMemory_word (out : ByteArray) (hl : 32 ≤ out.size) :
