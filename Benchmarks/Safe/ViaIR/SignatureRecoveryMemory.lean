@@ -9,7 +9,7 @@ theorem ecrecoverOutputMemory_bytes {mem out bytes : ByteArray} {ptr src : Nat}
     {input : EcrecoverInput} (hm : BytesMemory mem src bytes) (hs : 96 ≤ src)
     (ha : src + 32 + bytes.size ≤ ptr) (hb : src < UInt256.size) :
     BytesMemory (ecrecoverOutputMemory mem ptr input out) src bytes := by
-  apply hm.preserved hb (by rw [ecrecoverOutputMemory_size _ _ _ _ (by omega)]; omega)
+  apply hm.preserved hb (by rw [ecrecoverOutputMemory_size _ _ _ _]; omega)
   intro off count hlo hin
   exact ecrecoverOutputMemory_preserved _ _ _ _ _ _ (by have := hm.available; omega)
     (by omega) (by omega)

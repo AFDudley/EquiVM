@@ -306,3 +306,14 @@ IR multiplication paths. No public entrypoint statement or specification changed
 checkpoint. Axiom scans found 508 permitted axioms for legacy decoder evidence and 379 for the
 P-256 branch, with no proof holes or custom axioms. The remaining signature branches and the
 whole-contract proof are still in progress.
+
+The ECDSA and `eth_sign` branch checkpoint builds successfully (3,545 jobs). The IR uses
+the free-memory pointer directly for the ECRECOVER input and a zeroed scratch word for
+its output. The memory and call traces now describe that layout, including call failure
+and empty output. The `eth_sign` prefix allocation rounds its 92 bytes up to 96 and checks
+the resulting pointer. Its allocation-failure path is covered under the existing source
+call semantics, which abstracts call gas: a zero-gas ECRECOVER call fails, and the source
+requirement then reverts. This fact is proved from the precompile semantics. No specification
+or public entrypoint statement changed. Axiom scans report 80 permitted axioms for ECDSA
+and 187 for `eth_sign`, with no proof holes or custom axioms. Contract signatures and the
+remaining entrypoint integration are still in progress.

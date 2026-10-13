@@ -68,4 +68,17 @@ theorem callEcrecoverOutput {evm evm' : EVM.State} {d out : ByteArray} {z perm :
       rw [← hΘ] at hs
       exact hs
 
+-- The source semantics abstracts call gas; zero gas witnesses a failed recovery call.
+set_option maxRecDepth 2000 in
+theorem callEcrecoverCanFail (evm : EVM.State) (d : ByteArray) :
+    ∃ evm', callViaEVM evm (AccountAddress.ofNat 1) 0 d (false, evm', ByteArray.empty) false := by
+  by_cases hd : evm.executionEnv.depth = 1024
+  · exact ⟨_, callViaEVM.callNotMade rfl rfl (fun hh ↦ hh.2 hd)⟩
+  · refine ⟨{ evm with substate := default },
+      callViaEVM.callMade (g' := ⟨0⟩) wordOfInt_zero.symm ⟨⟨0⟩, default, ?_⟩ rfl
+        (Fin.zero_le _) hd⟩
+    change (_, _, _, _, _) = Θ _ _ _ _ _ _ (.Precompiled 1) ⟨0⟩ _ _ _ _ _ _ _ _ _
+    unfold Θ
+    rfl
+
 end Benchmarks.Safe.ViaIR

@@ -9,88 +9,85 @@ open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.Safe.ViaIR
 
 def ecrecoverInputMemory (mem : ByteArray) (ptr : Nat) (p : EcrecoverInput) : ByteArray :=
-  writeWords (writeWord (writeWord mem ptr ⟨0⟩) 64 (UInt256.ofNat (ptr + 32)))
-    (ptr + 32) (ecrecoverWords p)
+  writeWord (writeWords mem ptr (ecrecoverWords p)) 0 ⟨0⟩
 
 def ecrecoverOutputMemory (mem : ByteArray) (ptr : Nat) (p : EcrecoverInput)
     (out : ByteArray) : ByteArray :=
-  out.write 0 (ecrecoverInputMemory mem ptr p) ptr (min 32 out.size)
+  out.write 0 (ecrecoverInputMemory mem ptr p) 0 (min 32 out.size)
 
-theorem ecrecoverInputMemory_size (mem : ByteArray) (ptr : Nat) (p : EcrecoverInput)
-    (hp : 96 ≤ ptr) :
-    (ecrecoverInputMemory mem ptr p).size = max mem.size (ptr + 160) := by
-  rw [ecrecoverInputMemory, writeWords_size_nonempty _ _ _ (by simp [ecrecoverWords])]
-  simp only [writeWord_sparse_size, ecrecoverWords, List.length_cons, List.length_nil]
+theorem ecrecoverInputMemory_size (mem : ByteArray) (ptr : Nat) (p : EcrecoverInput) :
+    (ecrecoverInputMemory mem ptr p).size = max mem.size (ptr + 128) := by
+  rw [ecrecoverInputMemory, writeWord_sparse_size,
+    writeWords_size_nonempty _ _ _ (by simp [ecrecoverWords])]
+  simp only [ecrecoverWords, List.length_cons, List.length_nil]
   omega
 
-theorem ecrecoverInputMemory_read (mem : ByteArray) (ptr : Nat) (p : EcrecoverInput) :
-    (ecrecoverInputMemory mem ptr p).readWithPadding (ptr + 32) 128 =
-      wordBytes (ecrecoverWords p) := writeWords_read _ _ _
+theorem ecrecoverInputMemory_read (mem : ByteArray) (ptr : Nat) (p : EcrecoverInput)
+    (hp : 32 ≤ ptr) :
+    (ecrecoverInputMemory mem ptr p).readWithPadding ptr 128 = wordBytes (ecrecoverWords p) := by
+  rw [ecrecoverInputMemory, writeWordReadAbove _ _ _ _ _ (by
+    rw [writeWords_size_nonempty _ _ _ (by simp [ecrecoverWords])]
+    simp [ecrecoverWords]) hp]
+  exact writeWords_read _ _ _
 
 theorem ecrecoverInputMemory_free (mem : ByteArray) (ptr : Nat) (p : EcrecoverInput)
-    (hp : 96 ≤ ptr) :
-    memLoad ⟨64⟩ (ecrecoverInputMemory mem ptr p) = UInt256.ofNat (ptr + 32) := by
-  apply memLoad_of_wordRead
-  change (ecrecoverInputMemory mem ptr p).readWithPadding 64 32 = _
-  rw [ecrecoverInputMemory, writeWords_readBelow _ _ _ _ _ (by
-    simp only [writeWord_sparse_size]; omega) (by omega), writeWord_sparse_read_back]
+    (hm : 96 ≤ mem.size) (hp : 96 ≤ ptr) :
+    memLoad ⟨64⟩ (ecrecoverInputMemory mem ptr p) = memLoad ⟨64⟩ mem := by
+  rw [memLoadReadWord, show (⟨64⟩ : UInt256).toNat = 64 from rfl,
+    ecrecoverInputMemory, writeWordReadAbove _ _ _ _ _ (by
+      rw [writeWords_size_nonempty _ _ _ (by simp [ecrecoverWords])]; omega) (by decide),
+    writeWords_readBelow _ _ _ _ _ hm hp]
+  rw [memLoadReadWord]
+  rfl
 
-theorem ecrecoverInputMemory_zero (mem : ByteArray) (ptr : Nat) (p : EcrecoverInput)
-    (hp : 96 ≤ ptr) :
-    (ecrecoverInputMemory mem ptr p).readWithPadding ptr 32 = (⟨0⟩ : UInt256).toByteArray := by
-  rw [ecrecoverInputMemory, writeWords_readBelow _ _ _ _ _ (by
-    simp only [writeWord_sparse_size]; omega) (by omega),
-    writeWordReadAbove _ _ _ _ _ (by rw [writeWord_sparse_size]; omega) hp,
-    writeWord_sparse_read_back]
+theorem ecrecoverInputMemory_zero (mem : ByteArray) (ptr : Nat) (p : EcrecoverInput) :
+    (ecrecoverInputMemory mem ptr p).readWithPadding 0 32 = (⟨0⟩ : UInt256).toByteArray :=
+  writeWord_sparse_read_back _ _ _
 
 theorem ecrecoverInputMemory_preserved (mem : ByteArray) (ptr off count : Nat)
-    (p : EcrecoverInput) (hin : off + count ≤ mem.size) (hl : 96 ≤ off)
+    (p : EcrecoverInput) (hin : off + count ≤ mem.size) (hl : 32 ≤ off)
     (hh : off + count ≤ ptr) :
     (ecrecoverInputMemory mem ptr p).readWithPadding off count =
       mem.readWithPadding off count := by
-  rw [ecrecoverInputMemory, writeWords_readBelow _ _ _ _ _ (by
-    simp only [writeWord_sparse_size]; omega) (by omega),
-    writeWordReadAbove _ _ _ _ _ (by rw [writeWord_sparse_size]; omega) hl,
-    writeWordReadBelow _ _ _ _ _ hin hh]
+  rw [ecrecoverInputMemory, writeWordReadAbove _ _ _ _ _ (by
+    rw [writeWords_size_nonempty _ _ _ (by simp [ecrecoverWords])]; omega) hl,
+    writeWords_readBelow _ _ _ _ _ hin hh]
 
-theorem ecrecoverOutputMemory_size (mem out : ByteArray) (ptr : Nat) (p : EcrecoverInput)
-    (hp : 96 ≤ ptr) :
-    (ecrecoverOutputMemory mem ptr p out).size = max mem.size (ptr + 160) := by
+theorem ecrecoverOutputMemory_size (mem out : ByteArray) (ptr : Nat) (p : EcrecoverInput) :
+    (ecrecoverOutputMemory mem ptr p out).size = max mem.size (ptr + 128) := by
   by_cases hz : out.size = 0
   · simp only [ecrecoverOutputMemory, hz, Nat.min_zero, byteArray_write_zero_length,
-      ecrecoverInputMemory_size _ _ _ hp]
+      ecrecoverInputMemory_size]
   rw [ecrecoverOutputMemory, copyWindow_size _ _ _ _ _ (by omega) (by omega)
-    (by rw [ecrecoverInputMemory_size _ _ _ hp]; omega), ecrecoverInputMemory_size _ _ _ hp]
+    (Nat.zero_le _), ecrecoverInputMemory_size]
   omega
 
 theorem ecrecoverOutputMemory_preserved (mem out : ByteArray) (ptr off count : Nat)
-    (p : EcrecoverInput) (hin : off + count ≤ mem.size) (hl : 96 ≤ off)
+    (p : EcrecoverInput) (hin : off + count ≤ mem.size) (hl : 32 ≤ off)
     (hh : off + count ≤ ptr) :
     (ecrecoverOutputMemory mem ptr p out).readWithPadding off count =
       mem.readWithPadding off count := by
-  rw [ecrecoverOutputMemory, copyWindowReadBelow _ _ _ _ _ _ _ (by omega)
-    (by rw [ecrecoverInputMemory_size _ _ _ (by omega)]; omega) hh,
+  rw [ecrecoverOutputMemory, copyWindowReadAbove _ _ _ _ _ _ _ (by omega)
+    (Nat.zero_le _) (by rw [ecrecoverInputMemory_size]; omega) (by omega),
     ecrecoverInputMemory_preserved _ _ _ _ _ hin hl hh]
 
 theorem ecrecoverOutputMemory_free (mem out : ByteArray) (ptr : Nat) (p : EcrecoverInput)
-    (hp : 96 ≤ ptr) :
-    memLoad ⟨64⟩ (ecrecoverOutputMemory mem ptr p out) = UInt256.ofNat (ptr + 32) := by
-  rw [ecrecoverOutputMemory, memLoadReadWord, show (⟨64⟩ : UInt256).toNat = 64 from rfl,
-    copyWindowReadBelow _ _ _ _ _ _ _ (by omega)
-      (by rw [ecrecoverInputMemory_size _ _ _ hp]; omega) hp,
-    ← show (⟨64⟩ : UInt256).toNat = 64 from rfl, ← memLoadReadWord,
-    ecrecoverInputMemory_free _ _ _ hp]
+    (hm : 96 ≤ mem.size) (hp : 96 ≤ ptr) :
+    memLoad ⟨64⟩ (ecrecoverOutputMemory mem ptr p out) = memLoad ⟨64⟩ mem := by
+  rw [memLoadReadWord, show (⟨64⟩ : UInt256).toNat = 64 from rfl,
+    ecrecoverOutputMemory_preserved _ _ _ _ _ _ hm (by decide) hp]
+  rw [memLoadReadWord]
+  rfl
 
 theorem ecrecoverOutputMemory_word (mem out : ByteArray) (ptr : Nat) (p : EcrecoverInput)
-    (hp : 96 ≤ ptr) (hb : ptr < UInt256.size) (ho : EcrecoverOutput out) :
-    memLoad (UInt256.ofNat ptr) (ecrecoverOutputMemory mem ptr p out) = calldataWord out 0 := by
+    (ho : EcrecoverOutput out) :
+    memLoad ⟨0⟩ (ecrecoverOutputMemory mem ptr p out) = calldataWord out 0 := by
   apply memLoad_of_wordRead
-  rw [ulit_toNat' ptr hb]
+  change (ecrecoverOutputMemory mem ptr p out).readWithPadding 0 32 = _
   rcases ho with rfl | ⟨hs, _⟩
   · simp only [ecrecoverOutputMemory, ByteArray.size_empty, Nat.min_zero,
-      byteArray_write_zero_length, ecrecoverInputMemory_zero _ _ _ hp]
+      byteArray_write_zero_length, ecrecoverInputMemory_zero]
     decide +kernel
-  · exact callOutputWordAt _ out ptr (by rw [ecrecoverInputMemory_size _ _ _ hp]; omega)
-      (by omega)
+  · exact callOutputWordAt _ out 0 (Nat.zero_le _) (by omega)
 
 end Benchmarks.Safe.ViaIR

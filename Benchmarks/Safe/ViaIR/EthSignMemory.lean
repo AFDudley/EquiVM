@@ -21,7 +21,7 @@ def ethSignPayloadMemory (mem : ByteArray) (ptr : Nat) (hash : UInt256) : ByteAr
 
 def ethSignMemory (mem : ByteArray) (ptr : Nat) (hash : UInt256) : ByteArray :=
   writeWord (writeWord (ethSignPayloadMemory mem ptr hash) ptr ⟨60⟩) 64
-    (UInt256.ofNat (ptr + 92))
+    (UInt256.ofNat (ptr + 96))
 
 theorem ethSignPayloadMemory_size (mem : ByteArray) (ptr : Nat) (hash : UInt256) :
     (ethSignPayloadMemory mem ptr hash).size = max mem.size (ptr + 92) := by
@@ -66,7 +66,7 @@ theorem ethSignPayloadMemory_free {mem : ByteArray} {ptr : Nat} {hash : UInt256}
     ← show (⟨64⟩ : UInt256).toNat = 64 from rfl, ← memLoadReadWord, hf]
 
 theorem ethSignMemory_free (mem : ByteArray) (ptr : Nat) (hash : UInt256) :
-    memLoad ⟨64⟩ (ethSignMemory mem ptr hash) = UInt256.ofNat (ptr + 92) := by
+    memLoad ⟨64⟩ (ethSignMemory mem ptr hash) = UInt256.ofNat (ptr + 96) := by
   apply memLoad_of_wordRead
   exact writeWord_sparse_read_back _ _ _
 
