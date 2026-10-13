@@ -6,6 +6,8 @@ open Reasoning.Theory Reasoning.Reach
 
 namespace safeRuntimeBlocks
 
+set_option maxRecDepth 10000
+
 /-- Final stack for bytecode block summary `safeRuntime_block_2672`. -/
 def safeRuntime_block_2672_stack {ee : ExecutionEnv} {mem : ByteArray} {σ : AccountMap} {x0 : UInt256} {x1 : UInt256} {x2 : UInt256} {x3 : UInt256} {x4 : UInt256} {x5 : UInt256} {x6 : UInt256} {R : List UInt256} : List UInt256 :=
   (x5 :: (UInt256.ofNat 2704) :: x3 :: x4 :: (UInt256.land (UInt256.sub (UInt256.shiftLeft (UInt256.ofNat 1) (UInt256.ofNat 160)) (UInt256.ofNat 1)) (σ.get? ee.codeOwner |>.option (⟨0⟩ : UInt256) (fun ac => ac.storage.getD (keccakWord x6 (UInt256.ofNat 64) ((UInt256.ofNat 1).toByteArray.write 0 (x2.toByteArray.write 0 (x1.toByteArray.write 0 mem x0.toNat 32) x6.toNat 32) (UInt256.ofNat 32).toNat 32)) (⟨0⟩ : UInt256)))) :: x6 :: R)

@@ -1296,7 +1296,8 @@ def render_module(prefix: str, imports: list[str], units: list[Unit],
                   immutable_sites: dict[int, tuple[int, str]] | None = None,
                   code: bytes | None = None,
                   layout_term: str | None = None,
-                  runtime_suffix: bool = False) -> str:
+                  runtime_suffix: bool = False,
+                  max_rec_depth: int | None = None) -> str:
     """Wrap generated units as an independently elaboratable Lean module."""
     prefix = lean_ident(prefix)
     output = ["import Reasoning.Reach"]
@@ -1308,7 +1309,9 @@ def render_module(prefix: str, imports: list[str], units: list[Unit],
     output += ["", "open Solm ABI Ethereum Ethereum.EVM",
                "open Reasoning.Theory Reasoning.Reach", "",
                f"namespace {prefix}Blocks", ""]
-    if runtime_suffix:
+    if max_rec_depth is not None:
+        output += [f"set_option maxRecDepth {max_rec_depth}", ""]
+    elif runtime_suffix:
         output += ["set_option maxRecDepth 10000", ""]
     if immutable_sites is not None:
         if code_term is None or code is None or not layout_term:
@@ -1433,12 +1436,13 @@ def write_outputs(output: Path, prefix: str, imports: list[str], units: list[Uni
                   immutable_sites: dict[int, tuple[int, str]] | None = None,
                   code: bytes | None = None,
                   layout_term: str | None = None,
-                  runtime_suffix: bool = False) -> list[Path]:
+                  runtime_suffix: bool = False,
+                  max_rec_depth: int | None = None) -> list[Path]:
     index_entries: list[IndexEntry] = []
     if shard_size is None:
         module_text = render_module(prefix, imports, units, creation_code,
                                     code_term, immutable_sites, code, layout_term,
-                                    runtime_suffix)
+                                    runtime_suffix, max_rec_depth)
         output.write_text(module_text, encoding="utf-8")
         index_entries.extend(module_index_entries(output.name, module_text, units))
         (index_output or default_index_output(output)).write_text(
@@ -1454,7 +1458,7 @@ def write_outputs(output: Path, prefix: str, imports: list[str], units: list[Uni
         path = output.with_name(f"{output.stem}_{index:0{width}d}{suffix}")
         module_text = render_module(prefix, imports, shard, creation_code,
                                     code_term, immutable_sites, code, layout_term,
-                                    runtime_suffix)
+                                    runtime_suffix, max_rec_depth)
         path.write_text(module_text, encoding="utf-8")
         index_entries.extend(module_index_entries(path.name, module_text, shard))
         paths.append(path)

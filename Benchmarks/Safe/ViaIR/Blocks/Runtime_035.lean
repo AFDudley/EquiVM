@@ -6,6 +6,8 @@ open Reasoning.Theory Reasoning.Reach
 
 namespace safeRuntimeBlocks
 
+set_option maxRecDepth 10000
+
 /-- Final stack for bytecode block summary `safeRuntime_block_7275`. -/
 def safeRuntime_block_7275_stack {ee : ExecutionEnv} {x0 : UInt256} {x1 : UInt256} {R : List UInt256} : List UInt256 :=
   ((x1 + (UInt256.ofNat 32)) :: (uInt256OfByteArray (ee.calldata.readBytes x1.toNat 32)) :: x0 :: (UInt256.ofNat 7289) :: R)

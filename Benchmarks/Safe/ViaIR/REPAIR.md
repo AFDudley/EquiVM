@@ -34,17 +34,10 @@ new summaries and existing opcode lemmas. All three top-level correctness statem
 `propext`, `Classical.choice`, `Quot.sound`, and native-decide certificates. No proof holes or
 custom axioms were added.
 
-The current blocker is generated `safeRuntime_block_4770`, whose gas-counter normalization
-hits Lean's default recursion limit at `Blocks/Runtime_023.lean:330`. The unchanged shard passes
-with `lake env lean -DmaxRecDepth=10000 Benchmarks/Safe/ViaIR/Blocks/Runtime_023.lean`.
-An isolated generator proposal also emits a shard that passes with the default Lean command.
-It adds an optional recursion limit to the block renderer and enables 10,000 only for the
-Safe audit's `--via-ir` runtime output. Default generation was checked byte-for-byte unchanged;
-the IR proposal only adds the option and updates index line numbers. The proposed patch is
-saved at `/tmp/safe-viair-generator-recdepth.patch` and has not been applied.
-
-The prescribed artifact audit currently passes without `--write`, but it compares generated
-text exactly, so manually adding the option to a shard would fail that check. Applying the
-proposal requires a scope exception for `scripts/generate_rd_blocks.py` and `scripts/audit_safe.py`.
-The compiler-port instructions forbid those edits and require stopping to report them. `Main`,
-the source tree, source manifest, specifications, and shared libraries remain untouched.
+Generated `safeRuntime_block_4770` initially exceeded Lean's default recursion limit while
+normalizing gas counters. With explicit user approval for the two generator-script edits,
+the block renderer now accepts an optional recursion limit and the Safe audit enables 10,000
+for `--via-ir` runtime output. Default generation was checked byte-for-byte unchanged; the IR
+change only adds the option and updates index line numbers. All 49 regenerated runtime shards
+and the aggregate `Blocks` target now build successfully. `Main`, the source tree, source
+manifest, specifications, and shared libraries remain untouched.

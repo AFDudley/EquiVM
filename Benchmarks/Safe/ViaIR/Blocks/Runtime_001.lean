@@ -6,6 +6,8 @@ open Reasoning.Theory Reasoning.Reach
 
 namespace safeRuntimeBlocks
 
+set_option maxRecDepth 10000
+
 /-- Final memory for bytecode block summary `safeRuntime_block_0_taken`. -/
 def safeRuntime_block_0_taken_memory {mem : ByteArray} : ByteArray :=
   ((UInt256.ofNat 128).toByteArray.write 0 mem (UInt256.ofNat 64).toNat 32)
