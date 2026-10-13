@@ -1,8 +1,8 @@
-import Reasoning.SolmArithmetic
+import Reasoning.SteleArithmetic
 import Benchmarks.Dss.Clipper.Deny
 import Benchmarks.Dss.Clipper.FileDecode
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 namespace Benchmarks.Dss.Clipper
@@ -40,14 +40,14 @@ abbrev clipperFileUintLocals (I : ExecutionEnv) : Store :=
     "data" (.int (Int.ofNat (clipperFileUintData I).toNat))
 
 def clipperFileUintPostState (evm : EVM.State) (slot value : UInt256) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner slot value
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner slot value
 
 def clipperFileUintLockedState (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨13⟩ ⟨1⟩
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨13⟩ ⟨1⟩
 
 def clipperFileUintWordPostState (evm : EVM.State) (slot value : UInt256) : EVM.State :=
-  Solm.EVM.storageStore
-    (Solm.EVM.storageStore (clipperFileUintLockedState evm) evm.executionEnv.codeOwner slot value)
+  Stele.EVM.storageStore
+    (Stele.EVM.storageStore (clipperFileUintLockedState evm) evm.executionEnv.codeOwner slot value)
     evm.executionEnv.codeOwner ⟨13⟩ ⟨0⟩
 
 abbrev clipperFileUintUint64Mask : UInt256 :=
@@ -78,19 +78,19 @@ def clipperFileUintTipWord (old data : UInt256) : UInt256 :=
 
 def clipperFileUintChipPostState (evm : EVM.State) (data : UInt256) : EVM.State :=
   let evmLock := clipperFileUintLockedState evm
-  let old := Solm.EVM.storageLoad evmLock evmLock.executionEnv.codeOwner ⟨8⟩
+  let old := Stele.EVM.storageLoad evmLock evmLock.executionEnv.codeOwner ⟨8⟩
   let evmStore :=
-    Solm.EVM.storageStore evmLock evmLock.executionEnv.codeOwner ⟨8⟩
+    Stele.EVM.storageStore evmLock evmLock.executionEnv.codeOwner ⟨8⟩
       (clipperFileUintChipWord old data)
-  Solm.EVM.storageStore evmStore evmStore.executionEnv.codeOwner ⟨13⟩ ⟨0⟩
+  Stele.EVM.storageStore evmStore evmStore.executionEnv.codeOwner ⟨13⟩ ⟨0⟩
 
 def clipperFileUintTipPostState (evm : EVM.State) (data : UInt256) : EVM.State :=
   let evmLock := clipperFileUintLockedState evm
-  let old := Solm.EVM.storageLoad evmLock evmLock.executionEnv.codeOwner ⟨8⟩
+  let old := Stele.EVM.storageLoad evmLock evmLock.executionEnv.codeOwner ⟨8⟩
   let evmStore :=
-    Solm.EVM.storageStore evmLock evmLock.executionEnv.codeOwner ⟨8⟩
+    Stele.EVM.storageStore evmLock evmLock.executionEnv.codeOwner ⟨8⟩
       (clipperFileUintTipWord old data)
-  Solm.EVM.storageStore evmStore evmStore.executionEnv.codeOwner ⟨13⟩ ⟨0⟩
+  Stele.EVM.storageStore evmStore evmStore.executionEnv.codeOwner ⟨13⟩ ⟨0⟩
 
 theorem clipperFileUintWhat_length {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
     (clipperFileUintWhat I).length = 32 := by
@@ -474,7 +474,7 @@ theorem evalStorageRef_clipperFileUint_auth (v : ClipperImmutables) (evm : EVM.S
 theorem evalExpr_clipperFileUint_auth_true (v : ClipperImmutables) (evm : EVM.State)
     (I : ExecutionEnv) (hsrc : evm.executionEnv.source = I.source)
     (hload :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (clipperRelyAuthStorageSlot I) = ⟨1⟩) :
     evalExpr? config { contract := contract, locals := clipperFileUintLocals I, immutables := immStore v } evm
       (.binary .eq (.storage (wardsRef sender)) (.intLit 1)) = .ok (.bool true) := by
@@ -483,7 +483,7 @@ theorem evalExpr_clipperFileUint_auth_true (v : ClipperImmutables) (evm : EVM.St
         (.storage (wardsRef sender)) = .ok (.int 1) := by
     rw [evalExpr_storage_scalar_value (hbackend := rfl)
       (cfg := config)
-      (solm := { contract := contract, locals := clipperFileUintLocals I, immutables := immStore v })
+      (stele := { contract := contract, locals := clipperFileUintLocals I, immutables := immStore v })
       (slot := wardsRef sender)
       (er := clipperRelyAuthEvaledRef I)
       (t := .int uint256Int)
@@ -503,7 +503,7 @@ theorem evalExpr_clipperFileUint_auth_true (v : ClipperImmutables) (evm : EVM.St
 theorem evalExpr_clipperFileUint_auth_false (v : ClipperImmutables) (evm : EVM.State)
     (I : ExecutionEnv) (hsrc : evm.executionEnv.source = I.source)
     (hload :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (clipperRelyAuthStorageSlot I) ≠ ⟨1⟩) :
     evalExpr? config { contract := contract, locals := clipperFileUintLocals I, immutables := immStore v } evm
       (.binary .eq (.storage (wardsRef sender)) (.intLit 1)) = .ok (.bool false) := by
@@ -511,11 +511,11 @@ theorem evalExpr_clipperFileUint_auth_false (v : ClipperImmutables) (evm : EVM.S
       evalExpr? config { contract := contract, locals := clipperFileUintLocals I, immutables := immStore v } evm
         (.storage (wardsRef sender)) =
           .ok (.int (Int.ofNat
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
               (clipperRelyAuthStorageSlot I)).toNat)) := by
     exact evalExpr_storage_scalar_value (hbackend := rfl)
       (cfg := config)
-      (solm := { contract := contract, locals := clipperFileUintLocals I, immutables := immStore v })
+      (stele := { contract := contract, locals := clipperFileUintLocals I, immutables := immStore v })
       (slot := wardsRef sender)
       (er := clipperRelyAuthEvaledRef I)
       (t := .int uint256Int)
@@ -529,7 +529,7 @@ theorem evalExpr_clipperFileUint_auth_false (v : ClipperImmutables) (evm : EVM.S
         exact storageLocLoad_uint256 evm (clipperRelyAuthStorageSlot I))
   have hne :
       Value.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
             (clipperRelyAuthStorageSlot I)).toNat) ≠ Value.int 1 := by
     intro hbad
     rw [Value.int.injEq] at hbad
@@ -537,13 +537,13 @@ theorem evalExpr_clipperFileUint_auth_false (v : ClipperImmutables) (evm : EVM.S
     exact uInt256_toNat_eq_one (Int.ofNat.inj hbad)
   have hbeq :
       (Value.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
             (clipperRelyAuthStorageSlot I)).toNat) == Value.int 1) = false := by
     exact beq_eq_false_iff_ne.mpr hne
   simp only [evalExpr?, hstorage, EvalResult.bind, bind, pure]
   change evalBinaryOp? BinaryOp.eq
       (Value.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
           (clipperRelyAuthStorageSlot I)).toNat))
       (Value.int 1) = .ok (.bool false)
   simp only [evalBinaryOp?]
@@ -557,7 +557,7 @@ theorem evalStorageRef_clipperFileUint_locked (v : ClipperImmutables) (evm : EVM
 
 theorem evalExpr_clipperFileUint_locked_zero_true (v : ClipperImmutables) (evm : EVM.State)
     (I : ExecutionEnv)
-    (hload : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨13⟩ = ⟨0⟩) :
+    (hload : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨13⟩ = ⟨0⟩) :
     evalExpr? config { contract := contract, locals := clipperFileUintLocals I, immutables := immStore v } evm
       (.binary .eq (.storage lockedRef) (.intLit 0)) = .ok (.bool true) := by
   have hstorage :
@@ -565,7 +565,7 @@ theorem evalExpr_clipperFileUint_locked_zero_true (v : ClipperImmutables) (evm :
         (.storage lockedRef) = .ok (.int 0) := by
     rw [evalExpr_storage_scalar_value (hbackend := rfl)
       (cfg := config)
-      (solm := { contract := contract, locals := clipperFileUintLocals I, immutables := immStore v })
+      (stele := { contract := contract, locals := clipperFileUintLocals I, immutables := immStore v })
       (slot := lockedRef)
       (er := { base := "locked", steps := [] })
       (t := .int uint256Int)
@@ -582,17 +582,17 @@ theorem evalExpr_clipperFileUint_locked_zero_true (v : ClipperImmutables) (evm :
 
 theorem evalExpr_clipperFileUint_locked_zero_false (v : ClipperImmutables) (evm : EVM.State)
     (I : ExecutionEnv)
-    (hload : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨13⟩ ≠ ⟨0⟩) :
+    (hload : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨13⟩ ≠ ⟨0⟩) :
     evalExpr? config { contract := contract, locals := clipperFileUintLocals I, immutables := immStore v } evm
       (.binary .eq (.storage lockedRef) (.intLit 0)) = .ok (.bool false) := by
   have hstorage :
       evalExpr? config { contract := contract, locals := clipperFileUintLocals I, immutables := immStore v } evm
         (.storage lockedRef) =
           .ok (.int (Int.ofNat
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨13⟩).toNat)) := by
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨13⟩).toNat)) := by
     exact evalExpr_storage_scalar_value (hbackend := rfl)
       (cfg := config)
-      (solm := { contract := contract, locals := clipperFileUintLocals I, immutables := immStore v })
+      (stele := { contract := contract, locals := clipperFileUintLocals I, immutables := immStore v })
       (slot := lockedRef)
       (er := { base := "locked", steps := [] })
       (t := .int uint256Int)
@@ -605,7 +605,7 @@ theorem evalExpr_clipperFileUint_locked_zero_false (v : ClipperImmutables) (evm 
       (hload := by exact storageLocLoad_uint256 evm ⟨13⟩)
   have hne :
       Value.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨13⟩).toNat) ≠
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨13⟩).toNat) ≠
         Value.int 0 := by
     intro hbad
     rw [Value.int.injEq] at hbad
@@ -613,13 +613,13 @@ theorem evalExpr_clipperFileUint_locked_zero_false (v : ClipperImmutables) (evm 
     exact uint256_toNat_eq_zero (Int.ofNat.inj hbad)
   have hbeq :
       (Value.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨13⟩).toNat) ==
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨13⟩).toNat) ==
         Value.int 0) = false := by
     exact beq_eq_false_iff_ne.mpr hne
   simp only [evalExpr?, hstorage, EvalResult.bind, bind, pure]
   change evalBinaryOp? BinaryOp.eq
       (Value.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨13⟩).toNat))
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨13⟩).toNat))
       (Value.int 0) = .ok (.bool false)
   simp only [evalBinaryOp?]
   rw [hbeq]
@@ -629,7 +629,7 @@ theorem assign_clipperFileUint_locked (v : ClipperImmutables) (evm : EVM.State)
     assignStorageRef? config { contract := contract, locals := clipperFileUintLocals I, immutables := immStore v } evm
       .storage lockedRef (.int (Int.ofNat value.toNat)) =
         .ok ({ contract := contract, locals := clipperFileUintLocals I, immutables := immStore v },
-          Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨13⟩ value) := by
+          Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨13⟩ value) := by
   apply assignStorageRef_storage_scalar (hbackend := rfl)
       (ty := uint256St)
       (loc := wordLoc ⟨13⟩) (hleaf := by first | exact Or.inl ⟨_, rfl⟩ | exact Or.inr ⟨_, rfl⟩)
@@ -651,7 +651,7 @@ theorem assign_clipperFileUint_buf (v : ClipperImmutables) (evm : EVM.State)
     assignStorageRef? config { contract := contract, locals := clipperFileUintLocals I, immutables := immStore v } evm
       .storage bufRef (.int (Int.ofNat data.toNat)) =
         .ok ({ contract := contract, locals := clipperFileUintLocals I, immutables := immStore v },
-          Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨5⟩ data) := by
+          Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨5⟩ data) := by
   apply assignStorageRef_storage_scalar (hbackend := rfl)
       (ty := uint256St)
       (loc := wordLoc ⟨5⟩) (hleaf := by first | exact Or.inl ⟨_, rfl⟩ | exact Or.inr ⟨_, rfl⟩)
@@ -673,7 +673,7 @@ theorem assign_clipperFileUint_tail (v : ClipperImmutables) (evm : EVM.State)
     assignStorageRef? config { contract := contract, locals := clipperFileUintLocals I, immutables := immStore v } evm
       .storage tailRef (.int (Int.ofNat data.toNat)) =
         .ok ({ contract := contract, locals := clipperFileUintLocals I, immutables := immStore v },
-          Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨6⟩ data) := by
+          Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨6⟩ data) := by
   apply assignStorageRef_storage_scalar (hbackend := rfl)
       (ty := uint256St)
       (loc := wordLoc ⟨6⟩) (hleaf := by first | exact Or.inl ⟨_, rfl⟩ | exact Or.inr ⟨_, rfl⟩)
@@ -695,7 +695,7 @@ theorem assign_clipperFileUint_cusp (v : ClipperImmutables) (evm : EVM.State)
     assignStorageRef? config { contract := contract, locals := clipperFileUintLocals I, immutables := immStore v } evm
       .storage cuspRef (.int (Int.ofNat data.toNat)) =
         .ok ({ contract := contract, locals := clipperFileUintLocals I, immutables := immStore v },
-          Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨7⟩ data) := by
+          Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨7⟩ data) := by
   apply assignStorageRef_storage_scalar (hbackend := rfl)
       (ty := uint256St)
       (loc := wordLoc ⟨7⟩) (hleaf := by first | exact Or.inl ⟨_, rfl⟩ | exact Or.inr ⟨_, rfl⟩)
@@ -717,7 +717,7 @@ theorem assign_clipperFileUint_stopped (v : ClipperImmutables) (evm : EVM.State)
     assignStorageRef? config { contract := contract, locals := clipperFileUintLocals I, immutables := immStore v } evm
       .storage stoppedRef (.int (Int.ofNat data.toNat)) =
         .ok ({ contract := contract, locals := clipperFileUintLocals I, immutables := immStore v },
-          Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨14⟩ data) := by
+          Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨14⟩ data) := by
   apply assignStorageRef_storage_scalar (hbackend := rfl)
       (ty := uint256St)
       (loc := wordLoc ⟨14⟩) (hleaf := by first | exact Or.inl ⟨_, rfl⟩ | exact Or.inr ⟨_, rfl⟩)
@@ -812,13 +812,13 @@ theorem clipperFileUintTipWord_toNat (old data : UInt256) :
 theorem storageLocStore_clipperFileUint_chip (evm : EVM.State) (data : UInt256) :
     storageLocStore evm (uint64Loc ⟨8⟩ ⟨0, by decide⟩ (by decide))
         (.int (Int.ofNat (UInt256.land data clipperFileUintUint64Mask).toNat)) =
-      some (Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨8⟩
+      some (Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨8⟩
         (clipperFileUintChipWord
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩) data)) := by
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩) data)) := by
   unfold storageLocStore storageLocWriteWord uint64Loc
   simp only [valueToWord, wordOfInt_ofNat_toNat, bind, Option.bind, pure]
   have hslen := (EVM.Word.toBytesLEWithSizeProof
-    (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩)).2
+    (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩)).2
   have hvlen := (EVM.Word.toBytesLEWithSizeProof
     (UInt256.land data clipperFileUintUint64Mask)).2
   congr 2
@@ -827,7 +827,7 @@ theorem storageLocStore_clipperFileUint_chip (evm : EVM.State) (data : UInt256) 
       (List.take (0 : Fin 32).val _ ++ List.take (8 : Fin 33).val _
         ++ List.drop ((0 : Fin 32).val + (8 : Fin 33).val) _) =
         (clipperFileUintChipWord
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩) data).toNat
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩) data).toNat
   rw [show (0 : Fin 32).val = 0 from rfl, show (8 : Fin 33).val = 8 from rfl,
     List.take_zero, List.nil_append]
   rw [fromBytes'_append, fromBytes'_take_wordLE, fromBytes'_drop_wordLE]
@@ -850,13 +850,13 @@ theorem storageLocStore_clipperFileUint_chip (evm : EVM.State) (data : UInt256) 
 theorem storageLocStore_clipperFileUint_tip (evm : EVM.State) (data : UInt256) :
     storageLocStore evm (uint192Loc ⟨8⟩ ⟨8, by decide⟩ (by decide))
         (.int (Int.ofNat (UInt256.land data clipperFileUintUint192Mask).toNat)) =
-      some (Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨8⟩
+      some (Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨8⟩
         (clipperFileUintTipWord
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩) data)) := by
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩) data)) := by
   unfold storageLocStore storageLocWriteWord uint192Loc
   simp only [valueToWord, wordOfInt_ofNat_toNat, bind, Option.bind, pure]
   have hslen := (EVM.Word.toBytesLEWithSizeProof
-    (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩)).2
+    (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩)).2
   have hvlen := (EVM.Word.toBytesLEWithSizeProof
     (UInt256.land data clipperFileUintUint192Mask)).2
   congr 2
@@ -865,13 +865,13 @@ theorem storageLocStore_clipperFileUint_tip (evm : EVM.State) (data : UInt256) :
       (List.take (8 : Fin 32).val _ ++ List.take (24 : Fin 33).val _
         ++ List.drop ((8 : Fin 32).val + (24 : Fin 33).val) _) =
         (clipperFileUintTipWord
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩) data).toNat
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩) data).toNat
   rw [show (8 : Fin 32).val = 8 from rfl, show (24 : Fin 33).val = 24 from rfl]
   rw [show 8 + 24 = 32 by norm_num, List.drop_eq_nil_of_le (by rw [hslen]),
     List.append_nil]
   rw [fromBytes'_append, fromBytes'_take_wordLE, fromBytes'_take_wordLE]
   have holdLowLt :
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩).toNat % 256 ^ 8 <
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩).toNat % 256 ^ 8 <
         256 ^ 8 := Nat.mod_lt _ (by norm_num)
   have hmaskedLt :
       (UInt256.land data clipperFileUintUint192Mask).toNat < 2 ^ 192 := by
@@ -879,7 +879,7 @@ theorem storageLocStore_clipperFileUint_tip (evm : EVM.State) (data : UInt256) :
     exact Nat.mod_lt _ (by norm_num)
   have hlen8 :
       ((EVM.Word.toBytesLEWithSizeProof
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩)).1.take 8).length =
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩)).1.take 8).length =
         8 := by
     rw [List.length_take, hslen]
     norm_num
@@ -912,9 +912,9 @@ theorem assign_clipperFileUint_chip (v : ClipperImmutables) (evm : EVM.State)
     assignStorageRef? config { contract := contract, locals := clipperFileUintLocals I, immutables := immStore v } evm
       .storage chipRef (.int (Int.ofNat (clipperFileUintChipData I).toNat)) =
         .ok ({ contract := contract, locals := clipperFileUintLocals I, immutables := immStore v },
-          Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨8⟩
+          Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨8⟩
             (clipperFileUintChipWord
-              (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩)
+              (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩)
               (clipperFileUintData I))) := by
   apply assignStorageRef_storage_scalar (hbackend := rfl)
       (ty := uint64St)
@@ -949,9 +949,9 @@ theorem assign_clipperFileUint_tip (v : ClipperImmutables) (evm : EVM.State)
     assignStorageRef? config { contract := contract, locals := clipperFileUintLocals I, immutables := immStore v } evm
       .storage tipRef (.int (Int.ofNat (clipperFileUintTipData I).toNat)) =
         .ok ({ contract := contract, locals := clipperFileUintLocals I, immutables := immStore v },
-          Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨8⟩
+          Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨8⟩
             (clipperFileUintTipWord
-              (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩)
+              (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩)
               (clipperFileUintData I))) := by
   apply assignStorageRef_storage_scalar (hbackend := rfl)
       (ty := uint192St)

@@ -1,6 +1,6 @@
 import Benchmarks.Auction.Storage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 100000
 
@@ -11,7 +11,7 @@ theorem reservePriceBodyReturns (evm : EVM.State) (locals : Store)
     ExecTransitionBody auctionConfig auctionContract evm locals reservePriceGetter.body
       (.returned { contract := auctionContract, locals := locals } evm
         (some [.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨204⟩).toNat)])) := by
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨204⟩).toNat)])) := by
   exact ExecFuncBody.execBlockRet <|
     (ABlock.start.requireStep (evalCallvalueEq_true hwv)).returns (by
       rw [reservePriceRef, scalarRead evm locals "reservePrice" (.int uint256Int)
@@ -48,7 +48,7 @@ theorem reservePriceBodyCore {σ σ₀ A I} {g : UInt256}
         (.returned { contract := auctionContract, locals := ∅ }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [.int (Int.ofNat (solcSlotWord σ I ⟨204⟩).toNat)])) := by
-      simpa [solcSlotWord, initState, Solm.EVM.storageLoad, State.lookupAccount] using
+      simpa [solcSlotWord, initState, Stele.EVM.storageLoad, State.lookupAccount] using
         reservePriceBodyReturns (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           ∅ hwv (by simp)
     exact (reservePriceX hreach hwv).reEquivExecution hcode hd hdec hbody

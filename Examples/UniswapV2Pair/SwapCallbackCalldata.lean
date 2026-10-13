@@ -2,7 +2,7 @@ import Reasoning.ABI
 import Examples.UniswapV2Pair.SwapCallbackCopyMemory
 import Examples.UniswapV2Pair.SwapCallbackHeadMemory
 import Examples.UniswapV2Pair.SwapCallbackABI
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace UniswapV2Pair
 set_option maxRecDepth 2000000
 

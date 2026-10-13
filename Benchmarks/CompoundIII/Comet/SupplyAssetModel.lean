@@ -2,7 +2,7 @@ import Benchmarks.CompoundIII.Comet.SupplyBaseModel
 import Benchmarks.CompoundIII.Comet.SupplyCollateralModel
 import Benchmarks.CompoundIII.Comet.BorrowBalanceSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.CompoundIII.Comet.Immutables
 
 namespace Benchmarks.CompoundIII.Comet
@@ -10,18 +10,18 @@ namespace Benchmarks.CompoundIII.Comet
 def supplyBorrowValid (v : CometWithExtendedAssetListImmutables) (evm : EVM.State)
     (dst : AccountAddress) : Prop :=
   BorrowBalanceValid v
-    (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
-    (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) (timestampWord evm.executionEnv)
-    (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (userBasicSlot dst))
+    (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
+    (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) (timestampWord evm.executionEnv)
+    (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (userBasicSlot dst))
 
 instance (v : CometWithExtendedAssetListImmutables) (evm : EVM.State) (dst : AccountAddress) :
     Decidable (supplyBorrowValid v evm dst) := by unfold supplyBorrowValid; infer_instance
 
 def supplyBorrowWord (v : CometWithExtendedAssetListImmutables) (evm : EVM.State)
     (dst : AccountAddress) : UInt256 :=
-  borrowBalanceWord v (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
-    (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) (timestampWord evm.executionEnv)
-    (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (userBasicSlot dst))
+  borrowBalanceWord v (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
+    (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) (timestampWord evm.executionEnv)
+    (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (userBasicSlot dst))
 
 inductive SupplyAssetTrace (v : CometWithExtendedAssetListImmutables)
     (sender dst asset : AccountAddress) (amount : UInt256) (evm : EVM.State) :

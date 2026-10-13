@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.PackedPrefixStore
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 -- LIBRARY CANDIDATE: a masked write extends a previously written low prefix.

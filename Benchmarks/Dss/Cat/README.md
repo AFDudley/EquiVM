@@ -35,8 +35,8 @@ Generated artifacts and scaffold files:
 - `runtime.hex`: optimized deployed runtime bytecode/template.
 - `Cat.abi.json`: ABI emitted by solc.
 - `Bytecode.lean`: creation/runtime bytecode as Lean `ByteArray`s plus verified `JUMPDEST` sets.
-- `Spec.lean`: Solm benchmark spec entrypoint.
-- `SpecSyntax.lean`: Solm notation companion wired to the AST spec.
+- `Spec.lean`: Stele benchmark spec entrypoint.
+- `SpecSyntax.lean`: Stele notation companion wired to the AST spec.
 - `Constructor.lean`: top-level constructor-equivalence theorem target.
 - `Correct.lean`: top-level runtime-equivalence theorem target plus whole-contract wrapper.
 
@@ -54,6 +54,6 @@ runtime.hex              sha256 8702bb359876e13ae7d71e8c7a0b53633280aebc56c780d0
 Scaffold notes:
 
 - This file was generated as part of the DSS coverage expansion pass on 2026-07-06.
-- Events are intentionally omitted from the Solm specs, matching the existing event-bearing DSS
+- Events are intentionally omitted from the Stele specs, matching the existing event-bearing DSS
   benchmarks whose equivalence relation ignores logs/substate.
 - Proof status is tracked by `catContractCorrect` in `Correct.lean`.

@@ -1,7 +1,7 @@
 import Benchmarks.Dss.Dai.Dispatch
 import Benchmarks.Dss.Dai.Storage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Dai
 
@@ -50,26 +50,26 @@ theorem daiDecode_wards_none_short {I : ExecutionEnv}
   simpa using decodeCalldata_legacyAddress_none_short (cd := I.calldata) (x := "arg0")
     hsz4 hshort
 
-/-- The Solm `wards(address)` body returns `wards[arg0]`. -/
+/-- The Stele `wards(address)` body returns `wards[arg0]`. -/
 theorem daiWardsBodyReturns (evm : EVM.State) (I : ExecutionEnv)
     (h : evm.executionEnv.weiValue = ⟨0⟩) :
     ExecTransitionBody config contract evm (wardsStore I) wardsTransition.body
       (.returned { contract := contract, locals := wardsStore I } evm
         (some [(.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
             (wardsStorageSlot I)).toNat))])) := by
   exact ExecFuncBody.execBlockRet <|
     (ABlock.start.requireStep (evalCallvalueEq_true h)).returns (by
       rw [evalExpr_storage_scalar_value (hbackend := rfl)
         (cfg := config)
-        (solm := { contract := contract, locals := wardsStore I })
+        (stele := { contract := contract, locals := wardsStore I })
         (slot := wardsRef (.var "arg0"))
         (er := ({ base := "wards", steps := [.mindex (wardsArgKey I)] } :
           EvaledStorageRef))
         (t := .int uint256Int)
         (loc := wordLoc (wardsStorageSlot I) (.int uint256Int))
         (value := .int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (wardsStorageSlot I)).toNat))
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (wardsStorageSlot I)).toNat))
         (hbase := by
           simp [wardsStore, wardsRef])
         (her := by
@@ -171,7 +171,7 @@ theorem daiWardsBodyCoreOk
         (.returned { contract := contract, locals := wardsStore I }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.int (Int.ofNat (wardsWord σ I).toNat))])) := by
-    simpa [wardsWord, wardsStorageSlot, initState, Solm.EVM.storageLoad,
+    simpa [wardsWord, wardsStorageSlot, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       daiWardsBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) I
@@ -194,7 +194,7 @@ theorem daiWardsBodyCoreDecodeFailed_short
   exact (daiWardsX_shortarg (g := Sat256.ofUInt256 g) hsz4 hsize hshort hreach)
     |>.reEquivDecodingFailed hcode hdispatch hdec
 
-/-- `wards(address)` body refines its Solm transition. -/
+/-- `wards(address)` body refines its Stele transition. -/
 theorem daiWardsBodyCore {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = daiBytecode) (hsize : I.calldata.size < UInt256.size)
     (hwv : I.weiValue = ⟨0⟩)

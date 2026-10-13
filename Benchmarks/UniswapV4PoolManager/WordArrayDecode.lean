@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.DynamicDecode
 import Reasoning.ABIViews
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 1000
 

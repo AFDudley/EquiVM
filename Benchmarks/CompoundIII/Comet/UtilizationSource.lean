@@ -1,6 +1,6 @@
 import Benchmarks.CompoundIII.Comet.PresentValue
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 
@@ -25,8 +25,8 @@ def utilizationWord (w0 w1 : UInt256) : UInt256 :=
     (totalPresentValue w0 w1 false)
 
 def utilizationAt (evm : EVM.State) : UInt256 :=
-  utilizationWord (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
-    (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩)
+  utilizationWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
+    (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩)
 
 def utilizationCallable : CallableDecl :=
   { params := [], returnType := [.elem (.int (.uint ⟨256, by decide⟩))]
@@ -48,8 +48,8 @@ theorem utilizationCallable_lookup :
 theorem utilizationCallable_returns (evm : EVM.State) (imms : Store) :
     ∃ frame, ExecFuncBody config { contract := contract, locals := ∅, immutables := imms }
       evm utilizationCallable.body (.returned frame evm (some [.int (utilizationAt evm).toNat])) := by
-  let w0 := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩
-  let w1 := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩
+  let w0 := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩
+  let w1 := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩
   let supply := totalPresentValue w0 w1 false
   let borrow := totalPresentValue w0 w1 true
   let f0 : Frame := { contract := contract, locals := ∅, immutables := imms }
@@ -115,7 +115,7 @@ theorem utilization_call (frame : Frame) (evm : EVM.State) (ret : Ident)
       (.ok { frame with locals := frame.locals.insert ret (.int (utilizationAt evm).toNat) } evm) := by
   obtain ⟨calleeFrame, hb⟩ := utilizationCallable_returns evm frame.immutables
   exact ExecStmt.internalCallReturn (callee := utilizationCallable) (locals := ∅)
-    (cfg := config) (solm := frame) (evm := evm) (args := []) (argVals := [])
+    (cfg := config) (stele := frame) (evm := evm) (args := []) (argVals := [])
     rfl (by rw [hc]; exact utilizationCallable_lookup) rfl (by simpa only [hc] using hb)
 
 end Benchmarks.CompoundIII.Comet

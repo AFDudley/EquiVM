@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.SourceWordBits
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
 
@@ -60,7 +60,7 @@ theorem tickLogGuardSource (imms : Store) (evm : EVM.State) (price : UInt256)
     (hv : tickLogValid price) :
     ExecBlock config (tickLogFrame imms price) evm (tickLogFunction.body.take 2)
       (.ok (tickLogZeroFrame imms price) evm) := by
-  refine ExecBlock.consNormal (solm' := tickLogZeroFrame imms price)
+  refine ExecBlock.consNormal (stele' := tickLogZeroFrame imms price)
     (ExecStmt.letDecl (by simp only [evalExpr?, pure])) ?_
   refine ExecBlock.consNormal (ExecStmt.requireTrue ?_) ExecBlock.nil
   simpa only [hv, decide_true] using evalTickLogGuard (evm := evm) price
@@ -71,7 +71,7 @@ theorem tickLogReverts (imms : Store) (evm : EVM.State) (price : UInt256)
     (hv : ¬ tickLogValid price) :
     ExecFuncBody config (tickLogFrame imms price) evm tickLogFunction.body .reverted := by
   apply ExecFuncBody.execBlockRevert
-  refine ExecBlock.consNormal (solm' := tickLogZeroFrame imms price)
+  refine ExecBlock.consNormal (stele' := tickLogZeroFrame imms price)
     (ExecStmt.letDecl (by simp only [evalExpr?, pure])) ?_
   apply ExecBlock.consRevert
   apply ExecStmt.requireFalse
@@ -101,7 +101,7 @@ theorem tickLogReadySource (imms : Store) (evm : EVM.State) (price : UInt256)
       (.ok (tickLogReadyFrame imms price) evm) := by
   change ExecBlock _ _ _ (tickLogFunction.body.take 2 ++ (tickLogFunction.body.drop 2).take 3) _
   apply execBlock_append_ok (tickLogGuardSource imms evm price hv)
-  refine ExecBlock.consNormal (solm' := tickLogRatioFrame imms price) (ExecStmt.letDecl ?_) ?_
+  refine ExecBlock.consNormal (stele' := tickLogRatioFrame imms price) (ExecStmt.letDecl ?_) ?_
   · have he : evalExpr? config (tickLogZeroFrame imms price) evm
         (.cast (.var "sqrtPriceX96") (.elem (.int (.uint ⟨256, by decide⟩)))) =
         .ok (.int (Int.ofNat price.toNat)) := by
@@ -115,7 +115,7 @@ theorem tickLogReadySource (imms : Store) (evm : EVM.State) (price : UInt256)
     exact evalExpr_uintShiftLeft ⟨256, by decide⟩ price.toNat 32 he (by decide)
       (by change price.toNat * 2 ^ 32 < 2 ^ 256; omega)
   refine ExecBlock.consNormal
-    (solm' := {tickLogRatioFrame imms price with
+    (stele' := {tickLogRatioFrame imms price with
       locals := (tickLogRatioFrame imms price).locals.insert "r"
         (.int (Int.ofNat (tickLogRatio price).toNat))})
     (ExecStmt.letDecl (value := .int (Int.ofNat (tickLogRatio price).toNat)) ?_) ?_

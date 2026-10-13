@@ -1,6 +1,6 @@
 import Examples.UniswapV2Pair.SkimDecoded
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace UniswapV2Pair
 
@@ -58,14 +58,14 @@ theorem uniswapSkimBodyAnyPerm
           (toWord := skimToMaskedWord I) hlocked hdecoded)
     · have hunlocked := not_not.mp hlocked
       let evmS := initState σ σ₀ (Sat256.ofUInt256 g) A I
-      have hunlockedSolm :
-          Solm.EVM.storageLoad evmS evmS.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩ := by
-        simpa [evmS, initState, Solm.EVM.storageLoad, State.lookupAccount,
+      have hunlockedStele :
+          Stele.EVM.storageLoad evmS evmS.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩ := by
+        simpa [evmS, initState, Stele.EVM.storageLoad, State.lookupAccount,
           Account.lookupStorage] using hunlocked
       exact (uniswapSkimX_lockEnteredStatic hperm hunlocked hdecoded).reEquivStaticHalt
         hcode hdispatch hdecode
         (uniswapSkimBodyStatic evmS I (by simp only [evmS, initState]; exact hwv)
-          hunlockedSolm (by simp only [evmS, initState]; exact hperm))
+          hunlockedStele (by simp only [evmS, initState]; exact hperm))
   · exact uniswapSkimBodyDecodeFailed_short hcode hsize hwv hsel (by omega) hdispatch
 
 end UniswapV2Pair

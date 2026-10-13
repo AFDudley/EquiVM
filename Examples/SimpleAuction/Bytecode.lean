@@ -1,9 +1,9 @@
 import Examples.SimpleAuction.Spec
-import Solm.Semantics
+import Stele.Semantics
 import Ethereum.Semantics
 import Reasoning.JumpDest
 
-open Solm Ethereum Ethereum.EVM
+open Stele Ethereum Ethereum.EVM
 
 /-! ## `SimpleAuction`'s deployed runtime bytecode — **optimizer ON**
 

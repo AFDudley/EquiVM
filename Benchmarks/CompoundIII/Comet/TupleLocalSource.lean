@@ -1,6 +1,6 @@
 import Benchmarks.CompoundIII.Comet.Common
 
-open Solm Reasoning.Theory
+open Stele Reasoning.Theory
 
 namespace Benchmarks.CompoundIII.Comet
 

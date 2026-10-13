@@ -1,5 +1,5 @@
 import Benchmarks.Scaffolds.Klima.Bytecode
-import Solm.Refine
+import Stele.Refine
 
 /-!
 # KlimaDAO KlimaToken constructor correctness stub
@@ -10,7 +10,7 @@ so the creation bytecode returns the deployed runtime verbatim.  The constructor
 intentionally left as the benchmark target.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM
+open Stele ABI Ethereum Ethereum.EVM
 
 namespace Benchmarks.Klima
 

@@ -1,7 +1,7 @@
 import Benchmarks.EAS.EAS.AttestLoopMemory
 import Benchmarks.EAS.EAS.AttestRecordRegionsTail
 import Benchmarks.EAS.EAS.SchemaTailMemory
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 theorem AttestLoopMemory.next {before mid : ByteArray} {site : UIDSite} {src dp t3 t4 uidPtr value word : UInt256}

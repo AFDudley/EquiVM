@@ -1,7 +1,7 @@
 import Examples.UniswapV2Pair.ConstructorSource
 import Examples.UniswapV2Pair.ConstructorStoreRuntime
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace UniswapV2Pair
 
@@ -21,8 +21,8 @@ theorem constructorStoredAccountMap_eq {σ : AccountMap} {evm : EVM.State} {I : 
   have heD : (constructorDomainState evm).executionEnv = I := by
     simp only [constructorDomainState, storageStore_executionEnv, he]
   have hslot : solcSlotWordAt ⟨5⟩ σD I =
-      Solm.EVM.storageLoad (constructorDomainState evm) I.codeOwner ⟨5⟩ := by
-    simpa only [solcSlotWordAt, solcSlotWord, Solm.EVM.storageLoad, State.lookupAccount,
+      Stele.EVM.storageLoad (constructorDomainState evm) I.codeOwner ⟨5⟩ := by
+    simpa only [solcSlotWordAt, solcSlotWord, Stele.EVM.storageLoad, State.lookupAccount,
       Account.lookupStorage]
       using congrArg (fun accounts => solcSlotWordAt ⟨5⟩ accounts I) haD
   unfold constructorStoredAccountMap constructorFactoryState

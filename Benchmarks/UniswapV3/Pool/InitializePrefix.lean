@@ -2,7 +2,7 @@ import Benchmarks.UniswapV3.Pool.TickLogSource
 import Benchmarks.UniswapV3.Pool.BlockTimestamp
 import Benchmarks.UniswapV3.Pool.Slot0Storage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
@@ -66,7 +66,7 @@ theorem initializeTickCall (v : UniswapV3PoolImmutables) (evm : EVM.State) (pric
       (.internalCall "TickMath_getTickAtSqrtRatio" [.var "sqrtPriceX96"] "tick")
       (.ok (initializeTickFrame v price (tickLogChoice (tickLogResult price) price)) evm) := by
   obtain ⟨out, hbody⟩ := tickLogReturns (immStore v) evm price hp hv hs
-  exact internalCallFunctionReturn (callee := tickLogFunction) (calleeSolm := out)
+  exact internalCallFunctionReturn (callee := tickLogFunction) (calleeStele := out)
     (evalInitializeTickArgs v evm price) tickLogLookup (tickLogBind price) hbody
 
 theorem initializeRevertsTick (v : UniswapV3PoolImmutables) (evm : EVM.State) (price : UInt256)
@@ -93,7 +93,7 @@ theorem initializeTimestampCall (v : UniswapV3PoolImmutables) (evm : EVM.State)
       (.internalCall "_blockTimestamp" [] "__c1")
       (.ok (initializeTimeFrame v price tick evm.executionEnv) evm) :=
   internalCallFunctionReturn (callee := blockTimestampFunction) (argVals := []) (locals := ∅)
-    (calleeSolm := {contract := contract, locals := ∅, immutables := immStore v})
+    (calleeStele := {contract := contract, locals := ∅, immutables := immStore v})
     (value := some [.int (Int.ofNat (blockTimestampWord evm.executionEnv).toNat)])
     (by simp only [evalExprs?, pure]) blockTimestampLookup rfl (blockTimestampReturns (immStore v) evm)
 

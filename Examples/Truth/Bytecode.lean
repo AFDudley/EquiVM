@@ -1,9 +1,9 @@
 import Examples.Truth.Spec
-import Solm.Semantics
+import Stele.Semantics
 import Ethereum.Semantics
 import Reasoning.JumpDest
 
-open Solm Ethereum Ethereum.EVM
+open Stele Ethereum Ethereum.EVM
 
 /-! ## 1. The contract's runtime bytecode -/
 
@@ -29,7 +29,7 @@ set_option maxHeartbeats 0 in
 set_option maxRecDepth 1000000 in
 /-- The 4-byte function selector of `truth()` is `0x9e9f51d2` (keccak of `"truth()"`). -/
 theorem truthSelectorBytes :
-    (KEC (String.toByteArray (Solm.transitionSigStr truthTransition))).extract 0 4
+    (KEC (String.toByteArray (Stele.transitionSigStr truthTransition))).extract 0 4
       = ⟨#[0x9e, 0x9f, 0x51, 0xd2]⟩ := by
   decide +kernel
 

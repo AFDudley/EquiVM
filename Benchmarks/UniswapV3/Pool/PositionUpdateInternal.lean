@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.PositionUpdateTrace
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
@@ -47,7 +47,7 @@ theorem positionUpdateInternalX {σ : AccountMap} {ee : ExecutionEnv} {g : Sat25
       exact positionUpdateStatic (immStore v) evm a hv (by rw [hs.env]; exact hp)
     · refine Or.inr (Or.inr ⟨?_, σ', aw', k', C', hs', r', hm'⟩)
       exact internalCallFunctionReturn (callee := positionUpdateFunction)
-        (calleeSolm := positionUpdateReadyFrame (immStore v) a evm) (value := none)
+        (calleeStele := positionUpdateReadyFrame (immStore v) a evm) (value := none)
         he hl (positionUpdateBind a) (by rw [hc]; exact positionUpdateReturns (immStore v) evm a hv)
 
 end Benchmarks.UniswapV3.Pool

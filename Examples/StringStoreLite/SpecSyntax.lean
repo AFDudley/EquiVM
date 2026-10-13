@@ -1,8 +1,8 @@
 import Examples.StringStoreLite.Spec
-import Solm.Notation
+import Stele.Notation
 
 /-!
-# StringStoreLite spec in the Solidity-faithful Solm frontend
+# StringStoreLite spec in the Solidity-faithful Stele frontend
 
 The `StringStoreLite` contract from `Examples/StringStoreLite/Spec.lean` written with
 `solidity%` and proven definitionally equal to the AST spec.
@@ -13,7 +13,7 @@ The `StringStoreLite` contract from `Examples/StringStoreLite/Spec.lean` written
   `copy.length` / `current.length` give the local/storage `arrayLength` reads.
 -/
 
-open Solm Solm.Notation
+open Stele Stele.Notation
 
 namespace StringStoreLite.Syntax
 

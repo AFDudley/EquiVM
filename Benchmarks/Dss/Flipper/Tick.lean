@@ -2,7 +2,7 @@ import Reasoning.ABIComposite
 import Benchmarks.Dss.Flipper.Dispatch
 import Benchmarks.Dss.Flipper.BidStorage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 0
@@ -405,9 +405,9 @@ theorem evalExpr_tickEndNewGeNow_false {σ σ₀ A I} {g : Sat256}
   exact tickEndNewWord_lt_now48_overflow hover
 
 theorem assign_tickEndStorage (evm : EVM.State) (σ : AccountMap) (I : ExecutionEnv) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner (tickBidPackedSlot I)
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner (tickBidPackedSlot I)
       (setUint48Offset26Word
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (tickBidPackedSlot I))
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (tickBidPackedSlot I))
         (tickEndNewWord σ I))
     assignStorageRef? config { contract := contract, locals := tickLocalsWithEnd σ I } evm
       .storage (bidsF (.var "id") "end")
@@ -1314,7 +1314,7 @@ theorem flipperTickSourceBodySuccessSplit {σ σ₀ A I} {g : UInt256}
     (hfit : (tickNow48 I).toNat + (tickTauWord σ I).toNat < 2 ^ 48) :
     let locals := tickLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-    let evm1 := Solm.EVM.storageStore evm0 I.codeOwner (tickBidPackedSlot I)
+    let evm1 := Stele.EVM.storageStore evm0 I.codeOwner (tickBidPackedSlot I)
       (tickEndStoredWord σ I)
     (ExecTransitionBody config contract evm0 locals tickTransition.body
       (.returned { contract := contract, locals := tickLocalsWithEnd σ I } evm1 none)) ∧
@@ -1353,7 +1353,7 @@ theorem flipperTickSourceBodySuccessSplit {σ σ₀ A I} {g : UInt256}
         .storage (bidsF (.var "id") "end")
         (.int (Int.ofNat (tickEndNewWord σ I).toNat)) =
           .ok ({ contract := contract, locals := tickLocalsWithEnd σ I }, evm1) := by
-    simpa [evm1, evm0, initState, tickEndStoredWord, solcSlotWordAt, Solm.EVM.storageLoad] using
+    simpa [evm1, evm0, initState, tickEndStoredWord, solcSlotWordAt, Stele.EVM.storageLoad] using
       assign_tickEndStorage evm0 σ I
   have hprefix {result : ExecResult}
       (htail : ExecBlock config { contract := contract, locals := tickLocalsWithEnd σ I } evm0
@@ -1416,7 +1416,7 @@ theorem flipperTickBodyCore {σ σ₀ A I} {g : UInt256}
         by_cases hfitEvm :
             (tickNow48 I).toNat + (tickTauWord σ I).toNat < 2 ^ 48
         · obtain ⟨_, _, rd6216⟩ := flipperTickX_add48Success hfitEvm rd6272
-          let evm1 := Solm.EVM.storageStore evm0 I.codeOwner (tickBidPackedSlot I)
+          let evm1 := Stele.EVM.storageStore evm0 I.codeOwner (tickBidPackedSlot I)
             (tickEndStoredWord σ I)
           have hbodySplit :
               (ExecTransitionBody config contract evm0 locals tickTransition.body

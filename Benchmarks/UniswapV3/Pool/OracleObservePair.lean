@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.OracleObserveNonzeroModel
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
 
@@ -26,7 +26,7 @@ theorem oracleObservePairPrefix (imms : Store) (evm : EVM.State)
   obtain ⟨calleeFrame, hbody⟩ := oracleSurroundingReturns imms evm time (oracleDelta time secondsAgo)
     tick index liquidity cardinality before after hin (oracleDelta_lt _ _) hc htick hrun
   have hcall := internalCallFunctionReturn (cfg := config) (caller := f) (evm := evm)
-    (callee := oracleSurroundingFunction) (calleeSolm := calleeFrame)
+    (callee := oracleSurroundingFunction) (calleeStele := calleeFrame)
     (retVar := "__c1") (value := some [before.value, after.value])
     (oracleObserveSurroundingArgs imms evm time secondsAgo tick index liquidity cardinality)
     oracleSurroundingLookup (oracleSurroundingBind time (oracleDelta time secondsAgo)

@@ -83,7 +83,7 @@ are exact, including the metadata trailer.
 Required gate, passed on 2026-10-08:
 
 ```sh
-lake exe solm-difftest --only UniswapV3Pool --count 50
+lake exe stele-difftest --only UniswapV3Pool --count 50
 ```
 
 Default seed: 2026. The run exited with code 0 after about 3 hours 9 minutes. Its complete output
@@ -151,7 +151,7 @@ It also includes `2^23 - 10`, `2^23`, and `2^23 + 10`, which the signed-int24 ge
 to ticks -10, 0, and 10.
 The runtime valuation is obtained from an actual constructor execution.
 
-The user approved one framework exception: `Solm/DiffTest/Gen.lean` now builds aggregate
+The user approved one framework exception: `Stele/DiffTest/Gen.lean` now builds aggregate
 values and value pools with reverse accumulators and deduplicates pools with an order-preserving
 hash set. The generated values, RNG consumption, and encounter order are unchanged; the full
 65,535-element observation array remains in the specification and generated pre-states.

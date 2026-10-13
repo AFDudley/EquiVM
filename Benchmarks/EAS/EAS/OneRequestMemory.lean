@@ -1,7 +1,7 @@
 import Benchmarks.EAS.EAS.OneRequestAllocate
 import Benchmarks.EAS.EAS.RecordUID
 import Benchmarks.EAS.EAS.RequestRegion
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 theorem oneRequestArrayMemory_views (mem : ByteArray) (heap : UInt256) (hlo : 96 ≤ heap.toNat) :

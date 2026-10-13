@@ -1,6 +1,6 @@
 import Examples.UniswapV2Pair.MintProportionalArithmetic
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace UniswapV2Pair
 
@@ -16,8 +16,8 @@ theorem uniswapMintProportionalArithmeticAfterMintFeeCases
     (hdispatch : dispatchMsg contract I.calldata = some mintTransition)
     (hsz36 : 36 ≤ I.calldata.size)
     (hwv : I.weiValue = ⟨0⟩)
-    (hunlockedSolm :
-      Solm.EVM.storageLoad
+    (hunlockedStele :
+      Stele.EVM.storageLoad
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
           ⟨12⟩ =
@@ -113,7 +113,7 @@ theorem uniswapMintProportionalArithmeticAfterMintFeeCases
       (by rw [store_get_ne _ _ (by decide), hreserve1]) with hfits | ⟨hbranch, hfail⟩
   · exact Or.inl hfits
   · have hprefix := uniswapMintAfterMintFeeTotalSupplyPrefix_of_call
-      evmS evm0S evm1S evmFeeS I nextLocals hwv hunlockedSolm hguard0 hguard1
+      evmS evm0S evm1S evmFeeS I nextLocals hwv hunlockedStele hguard0 hguard1
       hcall0 hdec0 hcall1 hdec1 hle0Source hle1Source hfee htotalBase
     have htail : ExecBlock config { contract := contract, locals := locals } evmFeeS
         ([mintLiquidityBranchStmt] ++ mintAfterLiquidityTailStmts) .reverted :=

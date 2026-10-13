@@ -1,12 +1,12 @@
 import Benchmarks.UniswapV4PoolManager.PoolUpdateTickFees
 import Benchmarks.UniswapV4PoolManager.TickLiquidityWords
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 
 def tickLiquidityStore (evm : EVM.State) (id : UInt256) (tick : Int) (gross : UInt256) (net : Int) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (tickSlot id tick)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (tickSlot id tick)
     (tickLiquidityPacked gross (EVM.wordOfInt net))
 def poolUpdateTickTailResult (f : Frame) (evm : EVM.State) (id packed gross : UInt256)
     (tick delta : Int) (upper flipped : Bool) : ExecResult :=

@@ -1,5 +1,5 @@
 import Benchmarks.EAS.EAS.HeapReturn
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 -- LIBRARY CANDIDATE: lift a terminating branch into its enclosing conditional and continuation.

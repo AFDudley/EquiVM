@@ -1,7 +1,7 @@
 import Benchmarks.EAS.EAS.MultiDelegatedAttestCallSource
 import Benchmarks.EAS.EAS.MultiAttestMemory
 import Benchmarks.EAS.EAS.MultiDelegatedAttestUpdate
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.EAS.EAS.Immutables
 namespace Benchmarks.EAS.EAS
 set_option maxRecDepth 10000

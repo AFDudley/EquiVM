@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.MintModel
 import Benchmarks.UniswapV3.Pool.SignedCastWords
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
@@ -76,7 +76,7 @@ theorem mintCastSource (v : UniswapV3PoolImmutables) (a : MintArgs) (evm : EVM.S
     ExecStmt config (mintInitFrame v a) evm (.internalCall "SafeCast_toInt128" mintCastExprs "__c0")
       (.ok (mintCastFrame v a) evm) :=
   internalCallFunctionReturn (callee := safeCast128Function)
-    (calleeSolm := safeCast128ReadyFrame (immStore v) (Int.ofNat a.amount.toNat))
+    (calleeStele := safeCast128ReadyFrame (immStore v) (Int.ofNat a.amount.toNat))
     (value := some [.int (Int.ofNat a.amount.toNat)]) (evalMintCastExprs v a evm ha)
     safeCast128Lookup (safeCast128Bind _) (safeCast128Returns (immStore v) evm _ hv)
 

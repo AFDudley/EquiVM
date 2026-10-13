@@ -1,6 +1,6 @@
 import Benchmarks.EAS.EAS.RevocationRequest
 import Benchmarks.EAS.EAS.WordArrayMemory
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 structure RevocationRequestMemoryView (mem : ByteArray) (ptr : UInt256) (r : RevocationRequestRecord) : Prop where

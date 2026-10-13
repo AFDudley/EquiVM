@@ -3,7 +3,7 @@ import Benchmarks.Auction.AddressDecoder
 import Benchmarks.Auction.AddressSource
 import Benchmarks.Auction.ErrorMemory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 100000
 
@@ -19,9 +19,9 @@ theorem transferOwnershipBodySplit (evm : EVM.State) (value : UInt256)
       (.returned
         { contract := auctionContract
           locals := (∅ : Store).insert "newOwner" (.address (AccountAddress.ofNat value.toNat)) }
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨151⟩
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨151⟩
           (setAddressOffset0Word
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨151⟩) value)) none)) ∧
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨151⟩) value)) none)) ∧
       (evm.executionEnv.perm = false → ExecTransitionBody auctionConfig auctionContract evm
       ((∅ : Store).insert "newOwner" (.address (AccountAddress.ofNat value.toNat)))
       transferOwnershipTransition.body .staticViolation) := by
@@ -57,9 +57,9 @@ theorem transferOwnershipBody (evm : EVM.State) (value : UInt256)
       (.returned
         { contract := auctionContract
           locals := (∅ : Store).insert "newOwner" (.address (AccountAddress.ofNat value.toNat)) }
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨151⟩
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨151⟩
           (setAddressOffset0Word
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨151⟩) value)) none) :=
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨151⟩) value)) none) :=
   (transferOwnershipBodySplit evm value hwv ho hc hz).1
 
 theorem transferOwnershipZeroBodyReverts (evm : EVM.State) (value : UInt256)

@@ -1,6 +1,6 @@
 import Benchmarks.EAS.EAS.SchemaMemory
 import Benchmarks.EAS.EAS.RecordTailPreserve
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 theorem SchemaMemoryView.write_disjoint {mem : ByteArray} {ptr : UInt256} {s : SchemaRecord}

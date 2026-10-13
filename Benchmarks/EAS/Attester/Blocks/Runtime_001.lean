@@ -3,7 +3,7 @@ import Reasoning.Immutables
 import Benchmarks.EAS.Attester.Bytecode
 import Benchmarks.EAS.Attester.Immutables
 
-open Solm ABI Ethereum Ethereum.EVM
+open Stele ABI Ethereum Ethereum.EVM
 open Reasoning.Theory Reasoning.Reach
 
 namespace attesterRuntimeBlocks

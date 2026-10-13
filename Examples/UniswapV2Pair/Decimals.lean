@@ -1,7 +1,7 @@
 import Examples.UniswapV2Pair.Dispatch
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -14,7 +14,7 @@ def decimalsWord : UInt256 := ⟨18⟩
 def decimalsReturnWord : UInt256 :=
   UInt256.land decimalsWord ⟨255⟩
 
-/-- The Solm `decimals()` body returns the uint8 literal `18`. -/
+/-- The Stele `decimals()` body returns the uint8 literal `18`. -/
 theorem uniswapDecimalsBodyReturns (evm : EVM.State) (locals : Store)
     (h : evm.executionEnv.weiValue = ⟨0⟩) :
     ExecTransitionBody config contract evm locals decimalsTransition.body

@@ -1,6 +1,6 @@
 import Benchmarks.EAS.EAS.DefaultArrayAllocate
 import Benchmarks.EAS.EAS.StructSlotsViews
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 def defaultArrayPointers (heap : UInt256) (len : Nat) : List UInt256 :=

@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.ConstructorSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 theorem constructorDeploymentShape (args : List Value) (code : ByteArray)
@@ -20,12 +20,12 @@ theorem constructorDeploymentShape (args : List Value) (code : ByteArray)
       encodeABIValuesFrom?, bind, Option.bind, pure] at hdeploy
     cases hdeploy
 
-theorem constructorSolmExec {σ σ₀ : AccountMap} {g : UInt256} {A : Substate}
+theorem constructorSteleExec {σ σ₀ : AccountMap} {g : UInt256} {A : Substate}
     {I : ExecutionEnv} {result : ExecResult}
     (hbody : ExecFuncBody config constructorInitialFrame
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) contract.ctor.body result) :
-    solmCtorExec config contract [] σ σ₀ g A I result := by
-  refine solmCtorExec.intro
+    steleCtorExec config contract [] σ σ₀ g A I result := by
+  refine steleCtorExec.intro
     (evmState := initState σ σ₀ (Sat256.ofUInt256 g) A I)
     (argsStore := ∅) rfl rfl ?_ hbody
   rfl

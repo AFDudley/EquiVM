@@ -1,6 +1,6 @@
 import Examples.Ballot.Delegate
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 1000000
@@ -52,7 +52,7 @@ theorem delegateCurrentWithDelegateStore_to (I : ExecutionEnv) (w : UInt256) :
     delegateCurrentWithSenderStore_to]
 
 def delegateCurrentVoterPackedCurrent (evm : EVM.State) (w : UInt256) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (delegateVoterPackedSlot w)
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (delegateVoterPackedSlot w)
 
 abbrev delegateCurrentVoterDelegateWordCurrent (evm : EVM.State) (w : UInt256) : UInt256 :=
   UInt256.land (UInt256.div (delegateCurrentVoterPackedCurrent evm w) ⟨256⟩) solcAddrMask
@@ -241,7 +241,7 @@ theorem evalExpr_delegate_current_next_ne_sender_false (evm : EVM.State) (I : Ex
   simp [evalExpr?, EvalResult.bind, bind, htoExpr, hsenderExpr, delegateCurrentNextValue, haddr,
     evalBinaryOp?]
 
-theorem ballotDelegateSolm_loopExitCurrent (evm : EVM.State) (I : ExecutionEnv) (w : UInt256)
+theorem ballotDelegateStele_loopExitCurrent (evm : EVM.State) (I : ExecutionEnv) (w : UInt256)
     (hdelegate : delegateCurrentVoterDelegateWordCurrent evm w = ⟨0⟩) :
     ExecStmt ballotConfig { contract := ballotContract, locals := delegateCurrentWithSenderStore I w }
       evm
@@ -251,7 +251,7 @@ theorem ballotDelegateSolm_loopExitCurrent (evm : EVM.State) (I : ExecutionEnv) 
       (.ok { contract := ballotContract, locals := delegateCurrentWithSenderStore I w } evm) := by
   exact ExecStmt.whileFalse (evalExpr_delegate_current_loop_done evm I w hdelegate)
 
-theorem ballotDelegateSolm_loopContinueBodyCurrent (evm : EVM.State) (I : ExecutionEnv)
+theorem ballotDelegateStele_loopContinueBodyCurrent (evm : EVM.State) (I : ExecutionEnv)
     (w : UInt256) (hsrc : evm.executionEnv.source = I.source)
     (hnotSender : delegateCurrentVoterDelegateWordCurrent evm w ≠ delegateSourceWord I) :
     ExecBlock ballotConfig { contract := ballotContract, locals := delegateCurrentWithSenderStore I w }
@@ -267,7 +267,7 @@ theorem ballotDelegateSolm_loopContinueBodyCurrent (evm : EVM.State) (I : Execut
         (evalExpr_delegate_current_next_ne_sender_true evm I w hsrc hnotSender))
       ExecBlock.nil)
 
-theorem ballotDelegateSolm_loopRevertSenderCurrent (evm : EVM.State) (I : ExecutionEnv)
+theorem ballotDelegateStele_loopRevertSenderCurrent (evm : EVM.State) (I : ExecutionEnv)
     (w : UInt256) (hsrc : evm.executionEnv.source = I.source)
     (hdelegate : delegateCurrentVoterDelegateWordCurrent evm w ≠ ⟨0⟩)
     (hSender : delegateCurrentVoterDelegateWordCurrent evm w = delegateSourceWord I) :
@@ -743,9 +743,9 @@ theorem ballotDelegateBodyReverts_loopSender (evm : EVM.State) (I : ExecutionEnv
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hsrc : evm.executionEnv.source = I.source)
     (hcanon : (delegateToWord I).toNat < EVM.addressModulus)
-    (hweight : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (delegateSenderSlot I) ≠ ⟨0⟩)
+    (hweight : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (delegateSenderSlot I) ≠ ⟨0⟩)
     (hvoted : UInt256.land
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (delegateSenderPackedSlot I))
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (delegateSenderPackedSlot I))
         ⟨255⟩ = ⟨0⟩)
     (hnotself : delegateToWord I ≠ delegateSourceWord I)
     (hnext : delegateCurrentVoterDelegateWordCurrent evm (delegateToWord I) ≠ ⟨0⟩)
@@ -766,7 +766,7 @@ theorem ballotDelegateBodyReverts_loopSender (evm : EVM.State) (I : ExecutionEnv
                 simpa [delegateCurrentWithSenderStore, delegateCurrentStore,
                   delegateWithSenderStore, delegateStore, delegateCurrentToValue,
                   delegateToValue] using
-                  ballotDelegateSolm_loopRevertSenderCurrent evm I (delegateToWord I) hsrc
+                  ballotDelegateStele_loopRevertSenderCurrent evm I (delegateToWord I) hsrc
                     hnext hcycle
 
 theorem ballotDelegateLoopSenderRevertEquiv
@@ -789,33 +789,33 @@ theorem ballotDelegateLoopSenderRevertEquiv
       σ σ₀ g A I := by
   have hd := ballotDispatch_delegate (cd := I.calldata) hsel
   have hdec := ballotDecode_delegate_ok (I := I) hsz36 hbig hcanon
-  have hweightSolm : delegateSenderWeightWord σ I ≠ ⟨0⟩ := hweight
-  have hvotedSolm : delegateSenderVotedByte σ I = ⟨0⟩ := hvoted
-  have hnextSolm : delegateVoterDelegateWord σ I (delegateToWord I) ≠ ⟨0⟩ := hnext
-  have hcycleSolm :
+  have hweightStele : delegateSenderWeightWord σ I ≠ ⟨0⟩ := hweight
+  have hvotedStele : delegateSenderVotedByte σ I = ⟨0⟩ := hvoted
+  have hnextStele : delegateVoterDelegateWord σ I (delegateToWord I) ≠ ⟨0⟩ := hnext
+  have hcycleStele :
       delegateVoterDelegateWord σ I (delegateToWord I) = delegateSourceWord I := hcycle
   have hnextCurrent :
       delegateCurrentVoterDelegateWordCurrent
           (initState σ σ₀ (Sat256.ofUInt256 g) A I) (delegateToWord I) ≠
         ⟨0⟩ := by
     rw [delegateCurrentVoterDelegateWordCurrent_init]
-    exact hnextSolm
+    exact hnextStele
   have hcycleCurrent :
       delegateCurrentVoterDelegateWordCurrent
           (initState σ σ₀ (Sat256.ofUInt256 g) A I) (delegateToWord I) =
         delegateSourceWord I := by
     rw [delegateCurrentVoterDelegateWordCurrent_init]
-    exact hcycleSolm
+    exact hcycleStele
   have hbody := ballotDelegateBodyReverts_loopSender
     (initState σ σ₀ (Sat256.ofUInt256 g) A I) I
     (by simp only [initState]; exact hwv)
     (by simp [initState])
     hcanon
-    (by simpa [delegateSenderWeightWord, delegateSenderSlot, initState] using hweightSolm)
+    (by simpa [delegateSenderWeightWord, delegateSenderSlot, initState] using hweightStele)
     (by
       change UInt256.land (delegateSenderPackedWord σ I) ⟨255⟩ = ⟨0⟩
       rw [u256_land_comm (delegateSenderPackedWord σ I) ⟨255⟩]
-      exact hvotedSolm)
+      exact hvotedStele)
     hnotself
     hnextCurrent
     hcycleCurrent

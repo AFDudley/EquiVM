@@ -1,5 +1,5 @@
-import Solm.Semantics
-import Solm.MetaSolidityLayout
+import Stele.Semantics
+import Stele.MetaSolidityLayout
 
 /-!
 # StringStoreLite — focused string storage example
@@ -14,7 +14,7 @@ such as `string[]` and keeps the default proof target on one Solidity single-slo
 The heavier `Examples.StringStore` directory remains the stress test for dynamic arrays of strings.
 -/
 
-open Solm ABI Ethereum
+open Stele ABI Ethereum
 
 namespace StringStoreLite
 

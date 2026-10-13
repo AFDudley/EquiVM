@@ -1,11 +1,11 @@
 import Examples.ERC20.Spec
-import Solm.Notation
+import Stele.Notation
 
 /-!
-# ERC20 — the same spec, written in the Solidity-faithful Solm frontend
+# ERC20 — the same spec, written in the Solidity-faithful Stele frontend
 
 This regenerates the entire `ERC20.erc20Contract` (storage, constructor, all six transitions)
-using `solidity%` from `Solm.Notation`, then proves the result is **definitionally equal** to the
+using `solidity%` from `Stele.Notation`, then proves the result is **definitionally equal** to the
 hand-written AST in `Examples/ERC20/Spec.lean`.
 
 Notes:
@@ -15,7 +15,7 @@ Notes:
 * Transition order matches `erc20Contract.transitions` exactly (needed for `rfl`).
 -/
 
-open Solm Solm.Notation
+open Stele Stele.Notation
 
 namespace ERC20.Syntax
 

@@ -4,7 +4,7 @@ import Benchmarks.EAS.EAS.RequestGuards
 import Benchmarks.EAS.EAS.ReadTimeBlock
 import Benchmarks.EAS.EAS.SchemaMemory
 import Reasoning.ExternalCall
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.EAS.EAS.Immutables
 namespace Benchmarks.EAS.EAS
 

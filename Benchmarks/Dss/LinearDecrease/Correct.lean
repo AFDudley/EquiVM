@@ -5,7 +5,7 @@ import Benchmarks.Dss.LinearDecrease.Price
 import Benchmarks.Dss.LinearDecrease.Rely
 import Benchmarks.Dss.LinearDecrease.Tau
 import Benchmarks.Dss.LinearDecrease.Wards
-import Solm.Refine
+import Stele.Refine
 
 /-!
 # MakerDAO/Sky DSS LinearDecrease benchmark correctness
@@ -14,7 +14,7 @@ The runtime proof dispatches to the function proofs and combines with the constr
 whole-contract equivalence.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM
+open Stele ABI Ethereum Ethereum.EVM
 
 namespace Benchmarks.Dss.LinearDecrease
 

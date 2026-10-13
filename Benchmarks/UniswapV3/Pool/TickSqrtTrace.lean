@@ -2,7 +2,7 @@ import Benchmarks.UniswapV3.Pool.TickSqrtInitialTrace
 import Benchmarks.UniswapV3.Pool.TickSqrtFactorsTrace
 import Benchmarks.UniswapV3.Pool.TickSqrtTailTrace
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 namespace Benchmarks.UniswapV3.Pool
 

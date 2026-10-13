@@ -2,7 +2,7 @@ import Benchmarks.EAS.EAS.DelegatedRevokeMemory
 import Benchmarks.EAS.EAS.AttestPublicMemory
 import Benchmarks.EAS.EAS.RecordUID
 import Benchmarks.EAS.EAS.SignatureDecode
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 set_option maxRecDepth 10000
 

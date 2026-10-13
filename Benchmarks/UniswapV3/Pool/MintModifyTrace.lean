@@ -3,7 +3,7 @@ import Benchmarks.UniswapV3.Pool.MintAmountTrace
 import Benchmarks.UniswapV3.Pool.MintAmountsSource
 import Benchmarks.UniswapV3.Pool.ModifyPositionInternal
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000

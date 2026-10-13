@@ -3,10 +3,10 @@ import Reasoning.WordArithmetic
 import Benchmarks.Dss.GemJoin.ConstructorBase
 
 /-!
-# MakerDAO/Sky DSS GemJoin constructor Solm source semantics
+# MakerDAO/Sky DSS GemJoin constructor Stele source semantics
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.GemJoin
 
@@ -100,8 +100,8 @@ private theorem assign_gemJoinCtorAddressStorage (evm : EVM.State) (locals : Sto
     (her : evalStorageRef config { contract := contract, locals := locals } evm ref = .ok er)
     (hty : storageTypeAt? contract.storage er = some (.elem .address))
     (hloc : config.storageBackend.locate? er = some (.leaf (addrLoc slot))) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner slot
-      (setAddressOffset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner slot
+      (setAddressOffset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
         (EVM.word addrValue.val))
     assignStorageRef? config { contract := contract, locals := locals } evm
       .storage ref (.address addrValue) =
@@ -134,7 +134,7 @@ private theorem assign_gemJoinCtorUint256Storage (evm : EVM.State) (locals : Sto
     (her : evalStorageRef config { contract := contract, locals := locals } evm ref = .ok er)
     (hty : storageTypeAt? contract.storage er = some uint256St)
     (hloc : config.storageBackend.locate? er = some (.leaf (wordLoc slot))) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner slot value
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner slot value
     assignStorageRef? config { contract := contract, locals := locals } evm
       .storage ref (.int (Int.ofNat value.toNat)) =
         .ok ({ contract := contract, locals := locals }, evm') := by
@@ -156,7 +156,7 @@ private theorem assign_gemJoinCtorBytes32Storage (evm : EVM.State) (locals : Sto
     (her : evalStorageRef config { contract := contract, locals := locals } evm ref = .ok er)
     (hty : storageTypeAt? contract.storage er = some bytes32St)
     (hloc : config.storageBackend.locate? er = some (.leaf (bytes32Loc slot))) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner slot word
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner slot word
     assignStorageRef? config { contract := contract, locals := locals } evm
       .storage ref (.fixedBytes bytes32Width (EVM.Word.toBytesBE word)) =
         .ok ({ contract := contract, locals := locals }, evm') := by
@@ -697,7 +697,7 @@ theorem gemJoinCtorBodyDecimalsDecodeReverts
     (ExecStmt.externalCallReturnDecodeRevert hgem (by simp [evalExpr?, pure]) hdecimalArgs
       hcallDecimals hdecDecimals)
 
-theorem gemJoinSolmCtorExecSuccess
+theorem gemJoinSteleCtorExecSuccess
     {σ : AccountMap} {σ₀ : AccountMap} {A : Substate} {I : ExecutionEnv}
     {g : UInt256} (vat : AccountAddress) (ilk : UInt256) (gem : AccountAddress)
     {evmDecimals : EVM.State} {outDecimals : ByteArray} {dec : UInt256}
@@ -723,12 +723,12 @@ theorem gemJoinSolmCtorExecSuccess
     let locals := gemJoinCtorLocals vat ilk gem
     let localsAfterDecimals := locals.insert "decimalsRet" (.int (Int.ofNat dec.toNat))
     let evm6 := gemJoinCtorAfterDecState evmDecimals dec
-    solmCtorExec config contract
+    steleCtorExec config contract
       [.address vat, .fixedBytes bytes32Width (EVM.Word.toBytesBE ilk), .address gem]
       σ σ₀ g A I
       (.returned { contract := contract, locals := localsAfterDecimals } evm6 none) := by
   intro locals localsAfterDecimals evm6
-  refine solmCtorExec.intro
+  refine steleCtorExec.intro
     (evmState := initState σ σ₀
       (Sat256.ofUInt256 g) A I)
     (argsStore := locals) ?_ ?_ ?_ ?_
@@ -742,7 +742,7 @@ theorem gemJoinSolmCtorExecSuccess
             (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
             vat ilk gem hwv hgemCode hcallDecimals hdecDecimals)
 
-theorem gemJoinSolmCtorExecReverts_noCode
+theorem gemJoinSteleCtorExecReverts_noCode
     {σ : AccountMap} {σ₀ : AccountMap} {A : Substate} {I : ExecutionEnv}
     {g : UInt256} (vat : AccountAddress) (ilk : UInt256) (gem : AccountAddress)
     (hwv : I.weiValue = ⟨0⟩)
@@ -755,10 +755,10 @@ theorem gemJoinSolmCtorExecReverts_noCode
                 (Sat256.ofUInt256 g) A I)
               vat ilk gem)
             (EVM.address gem)))) = 0) :
-    solmCtorExec config contract
+    steleCtorExec config contract
       [.address vat, .fixedBytes bytes32Width (EVM.Word.toBytesBE ilk), .address gem]
       σ σ₀ g A I .reverted := by
-  refine solmCtorExec.intro
+  refine steleCtorExec.intro
     (evmState := initState σ σ₀
       (Sat256.ofUInt256 g) A I)
     (argsStore := gemJoinCtorLocals vat ilk gem) ?_ ?_ ?_ ?_
@@ -772,7 +772,7 @@ theorem gemJoinSolmCtorExecReverts_noCode
             (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
             vat ilk gem hwv hgemCode)
 
-theorem gemJoinSolmCtorExecReverts_decimalsFailure
+theorem gemJoinSteleCtorExecReverts_decimalsFailure
     {σ : AccountMap} {σ₀ : AccountMap} {A : Substate} {I : ExecutionEnv}
     {g : UInt256} (vat : AccountAddress) (ilk : UInt256) (gem : AccountAddress)
     {evmDecimals : EVM.State} {outDecimals : ByteArray}
@@ -793,10 +793,10 @@ theorem gemJoinSolmCtorExecReverts_decimalsFailure
             (Sat256.ofUInt256 g) A I)
           vat ilk gem)
         (EVM.address gem) "decimals" 0 [] (false, evmDecimals, outDecimals) false) :
-    solmCtorExec config contract
+    steleCtorExec config contract
       [.address vat, .fixedBytes bytes32Width (EVM.Word.toBytesBE ilk), .address gem]
       σ σ₀ g A I .reverted := by
-  refine solmCtorExec.intro
+  refine steleCtorExec.intro
     (evmState := initState σ σ₀
       (Sat256.ofUInt256 g) A I)
     (argsStore := gemJoinCtorLocals vat ilk gem) ?_ ?_ ?_ ?_
@@ -810,7 +810,7 @@ theorem gemJoinSolmCtorExecReverts_decimalsFailure
             (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
             vat ilk gem hwv hgemCode hcallDecimals)
 
-theorem gemJoinSolmCtorExecReverts_decimalsDecode
+theorem gemJoinSteleCtorExecReverts_decimalsDecode
     {σ : AccountMap} {σ₀ : AccountMap} {A : Substate} {I : ExecutionEnv}
     {g : UInt256} (vat : AccountAddress) (ilk : UInt256) (gem : AccountAddress)
     {evmDecimals : EVM.State} {outDecimals : ByteArray}
@@ -832,10 +832,10 @@ theorem gemJoinSolmCtorExecReverts_decimalsDecode
           vat ilk gem)
         (EVM.address gem) "decimals" 0 [] (true, evmDecimals, outDecimals) false)
     (hdecDecimals : config.externalABI.decode? "decimals" outDecimals = none) :
-    solmCtorExec config contract
+    steleCtorExec config contract
       [.address vat, .fixedBytes bytes32Width (EVM.Word.toBytesBE ilk), .address gem]
       σ σ₀ g A I .reverted := by
-  refine solmCtorExec.intro
+  refine steleCtorExec.intro
     (evmState := initState σ σ₀
       (Sat256.ofUInt256 g) A I)
     (argsStore := gemJoinCtorLocals vat ilk gem) ?_ ?_ ?_ ?_
@@ -849,14 +849,14 @@ theorem gemJoinSolmCtorExecReverts_decimalsDecode
             (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
             vat ilk gem hwv hgemCode hcallDecimals hdecDecimals)
 
-theorem gemJoinSolmCtorExecReverts_nonpayable
+theorem gemJoinSteleCtorExecReverts_nonpayable
     {σ : AccountMap} {σ₀ : AccountMap} {A : Substate} {I : ExecutionEnv}
     {g : UInt256} (vat : AccountAddress) (ilk : UInt256) (gem : AccountAddress)
     (hwv : I.weiValue ≠ ⟨0⟩) :
-    solmCtorExec config contract
+    steleCtorExec config contract
       [.address vat, .fixedBytes bytes32Width (EVM.Word.toBytesBE ilk), .address gem]
       σ σ₀ g A I .reverted := by
-  refine solmCtorExec.intro
+  refine steleCtorExec.intro
     (evmState := initState σ σ₀
       (Sat256.ofUInt256 g) A I)
     (argsStore := gemJoinCtorLocals vat ilk gem)

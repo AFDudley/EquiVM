@@ -8,12 +8,12 @@ Validation run of `Misc/scaffold-prompt.md` on a contract written for it (`Vault
   (transient storage; `Vault.build.json`); sources pinned in `sources.sha256`.
 - Generated with `scripts/scaffold.py all --dir Tests/Pipeline/Vault --solc solc --main Vault.sol
   --contract Vault --runs 200 --evm-version cancun --module Tests.Pipeline.Vault`, then
-  `bytecode_report.py`, `sol2solm.py` (no holes), `proof_skeleton.py`.
+  `bytecode_report.py`, `sol2stele.py` (no holes), `proof_skeleton.py`.
 
 ## Differential run
 
 ```
-lake exe solm-difftest --only Vault --count 50
+lake exe stele-difftest --only Vault --count 50
 Vault: 775 cases: 775 agree (330 successful), 0 disagree, 0 stuck, 0 EVM out of gas, 0 spec out of fuel
 ```
 
@@ -21,7 +21,7 @@ Coverage (seed 2026): every getter, `count`, `dropLast` and the constructor reac
 `sweep`, `deposit` and `withdraw` succeed rarely or not at all: they need the `token` slot to hold
 a callee whose `transfer`/`transferFrom` returns true and whose `balanceOf` exceeds `total`. The
 lever is `DiffTarget.lean`: add such a callee (see `standardCallees` in
-`Solm/DiffTest/Harness.lean`) and the amounts to `words`.
+`Stele/DiffTest/Harness.lean`) and the amounts to `words`.
 
 ## Spec versus source
 

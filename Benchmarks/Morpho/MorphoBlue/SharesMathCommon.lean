@@ -1,6 +1,6 @@
 import Benchmarks.Morpho.MorphoBlue.MathValues
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.Morpho.MorphoBlue
 
 def virtualShares : UInt256 := UInt256.ofNat 1000000

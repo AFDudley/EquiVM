@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Clipper.Fallback
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 namespace Benchmarks.Dss.Clipper
@@ -53,7 +53,7 @@ theorem clipperEvalChost (v : ClipperImmutables) (evm : EVM.State) (locals : Sto
     (hbase : locals.get? "chost" = none) :
     evalExpr? config { contract := contract, locals := locals, immutables := immStore v } evm
       (.storage chostRef) =
-      .ok (.int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨9⟩).toNat)) := by
+      .ok (.int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨9⟩).toNat)) := by
   let er : EvaledStorageRef := { base := "chost", steps := [] }
   have her : evalStorageRef config
       { contract := contract, locals := locals, immutables := immStore v } evm chostRef = .ok er := by
@@ -72,7 +72,7 @@ theorem clipperChostBodyReturns (v : ClipperImmutables) (evm : EVM.State) (local
     ExecTransitionBody config contract evm locals chostTransition.body
       (.returned { contract := contract, locals := locals, immutables := immStore v } evm
         (some [(.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨9⟩).toNat))])) (immStore v) := by
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨9⟩).toNat))])) (immStore v) := by
   simpa [chostTransition] using
     nonpayableReturnExprBodyReturns (cfg := config) (contract := contract) h
       (clipperEvalChost v evm locals hbase)
@@ -277,7 +277,7 @@ theorem clipperChostBody (v : ClipperImmutables) {code : ByteArray}
         (.returned { contract := contract, locals := ∅, immutables := immStore v }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.int (Int.ofNat (solcSlotWord σ I ⟨9⟩).toNat))])) (immStore v) := by
-    simpa [solcSlotWord, initState, Solm.EVM.storageLoad, State.lookupAccount] using
+    simpa [solcSlotWord, initState, Stele.EVM.storageLoad, State.lookupAccount] using
       clipperChostBodyReturns v
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
         (by simp only [initState]; exact hwv) (by simp)

@@ -2,7 +2,7 @@ import Benchmarks.UniswapV4PoolManager.BalanceTransfer
 import Benchmarks.UniswapV4PoolManager.DeltaCount
 
 /-! Shared source proof of the internal ERC6909 burn helper. -/
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 

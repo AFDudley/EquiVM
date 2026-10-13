@@ -3,7 +3,7 @@
 Current status (2026-10-09): the constructor input-size decision is resolved. The user requested
 a separate bounded copy of the refinement relation, keeping the deployment encoder unchanged.
 Comet now uses `typedConstructorRefinementWithCodeBound` and
-`contractRefinementWFWithCodeBound` from `Solm/RefineWithCodeBound.lean`. Both add the premise
+`contractRefinementWFWithCodeBound` from `Stele/RefineWithCodeBound.lean`. Both add the premise
 `I.code.size < UInt256.size` on deployments. Existing relations and the deployment encoder
 are unchanged. The decoder narrowing recorded below preserves `.solc0815` for every calldata
 call and leaves existing shared decoder bodies unchanged. The old encoder-guard proposal/review
@@ -61,7 +61,7 @@ Artifact SHA-256 values (file bytes unless explicitly marked decoded):
 Required command (seed defaults to 2026):
 
 ```sh
-lake exe solm-difftest --only CometWithExtendedAssetList --count 50
+lake exe stele-difftest --only CometWithExtendedAssetList --count 50
 ```
 
 The target uses ABI-specific callees, small and boundary amounts, and repeated asset addresses
@@ -133,7 +133,7 @@ only in their selected branch. `withdrawReserves` checks nonnegative reserves be
 
 The runtime and constructor block walk is complete, including all 68 selector arms, internal
 routines, and the payable fallback. There is no separate receive function. The report's
-`UNSUPPORTED_F4` label is `DELEGATECALL`, modelled directly by Solm. Runtime bytes from pc 18482
+`UNSUPPORTED_F4` label is `DELEGATECALL`, modelled directly by Stele. Runtime bytes from pc 18482
 are two event-topic constants followed by metadata, separated from executable code by `INVALID`
 at pc 18481; their apparent opcodes are data. The constructor's embedded runtime begins at
 creation offset 2826. The report's final selector comparison uses `SUB`, so the `withdraw` arm
@@ -1076,7 +1076,7 @@ An independent executable check using the constructor-derived diffTarget reprodu
 DISAGREE, so this is not confined to the all-zero immutable valuation.
 
 An asynchronous question asks the user to choose:
-1. Fix shared ABI/Solm address-array decoding to validate elements on access (recommended; expands
+1. Fix shared ABI/Stele address-array decoding to validate elements on access (recommended; expands
    edits beyond Comet, contrary to Misc/prompt.md's current directory scope).
 2. Also narrow the theorem to exclude static absorb calls whose calldata fails to decode.
 Do not assume the earlier gas-bound approval authorizes either new change. No source/model or
@@ -1105,7 +1105,7 @@ resume starts a fresh blocked audit unless the user also resolves the scope deci
 ## Decoder-mode approval, 2026-10-09
 
 The user explicitly authorized adding a mode named for Comet's compiler, with changes restricted
-to that mode, and requested rebuilding Solm/Reasoning only before continuing Comet. The new mode
+to that mode, and requested rebuilding Stele/Reasoning only before continuing Comet. The new mode
 is `DecodeMode.solc0815`, for solc 0.8.15+commit.e14f2714. The goal is active; the preceding scope
 decision is resolved and must not be requested again.
 
@@ -1113,7 +1113,7 @@ ABI/Decode.lean adds new-mode cases. Its address[] branch keeps canonical addres
 and retains each dirty word in the existing raw-word tuple representation. The unchanged
 normalizeRawBoolWord?/evalIndex? rejects that representation when the element is accessed
 (a dirty address is at least 2^160, so it cannot be the valid bool words 0 or 1). This preserves
-the bytecode's failure order without editing Solm's evaluator. Scalar addresses remain strict;
+the bytecode's failure order without editing Stele's evaluator. Scalar addresses remain strict;
 new-mode return-data decoding delegates to modern, retaining eager memory validation. Existing
 modes are unchanged. The new mode routes static parameter lists through modern decoding in
 decodeCalldataWithMode, preserving the existing scalar proofs. Reasoning/ABI.lean adds only the
@@ -1122,10 +1122,10 @@ new constructor cases required by exhaustive proofs. Comet's config selects solc
 AbsorbStaticDecodeWitness now explicitly uses baselineConfig with modern, preserving the
 original counterexample. Solc0815Regression checks the same input and adjacent boundary cases;
 Solc0815Decode provides array length, word-access and lazy-validation lemmas for the public loop.
-Validation is in progress. Do not build Examples, other benchmark targets, or solm-difftest
+Validation is in progress. Do not build Examples, other benchmark targets, or stele-difftest
 (its main executable imports other benchmarks); use Comet-only regression imports.
 
-Validation completed: solc0815-core-build.log builds Solm and Reasoning (3490 jobs).
+Validation completed: solc0815-core-build.log builds Stele and Reasoning (3490 jobs).
 solc0815-comet-build.log builds Correct, AbsorbInternalGas, AbsorbAccountsControl and the
 new-mode regression targets (4238 jobs). No Examples or other benchmark modules were built.
 All ten Solc0815Regression cases agree, including the original static-call mismatch, writable
@@ -1224,7 +1224,7 @@ This turn completed review-only validation in ConstructorSizeBoundReview.lean:
 The definition is not connected to the active Comet config. The proposed patch remains unapplied.
 Targeted build passed (3500 jobs), constructor-size-bound-review-build.log. Rejection audit:
 9 axioms, standard3 and native_decide only; no custom/sorry axioms or source warnings.
-No builds are running. No changes to ABI, Solm, Reasoning, or the active Spec config this turn.
+No builds are running. No changes to ABI, Stele, Reasoning, or the active Spec config this turn.
 The original zero-value constructor hole remains at Constructor.lean:21. Further dependent proof
 work needs the user's decision. This is only the second recurrence; leave the goal active.
 
@@ -1244,13 +1244,13 @@ The user resolved the preceding decision by asking for a copy of the constructor
 relation with the bound, rather than changing the deployment encoder. They also explicitly
 set the full proof goal active. No further scope approval is needed for this choice.
 
-`Solm/RefineWithCodeBound.lean` adds `typedConstructorRefinementWithCodeBound`, an exact copy
+`Stele/RefineWithCodeBound.lean` adds `typedConstructorRefinementWithCodeBound`, an exact copy
 of the original universal deployment relation with the additional premise
 `I.code.size < Ethereum.UInt256.size`. `contractRefinementWFWithCodeBound` carries the same
 deployment domain into whole-contract correctness. Its `of_runtime` theorem uses the existing
 fixed-input execution/deployment relations. Both original relations imply their bounded
-copies via `.withCodeBound`. The new module is exported by `Solm.lean`. The original
-`Solm/Refine.lean`, `Spec.selfDeployment`, ABI decoding and runtime predicates are unchanged.
+copies via `.withCodeBound`. The new module is exported by `Stele.lean`. The original
+`Stele/Refine.lean`, `Spec.selfDeployment`, ABI decoding and runtime predicates are unchanged.
 Comet's constructor/capstone use the new copies. The old encoder-guard proposal and
 ConstructorSizeBoundReview remain historical, unapplied alternatives: do not apply that patch.
 
@@ -1273,7 +1273,7 @@ Proof continuation completed:
   the record allocator with stack `[free,672,99,928,32,argSize,free]`, where
   `free=1664+224*n` and `argSize=736+224*n`. Main Constructor.lean consumes this theorem.
 
-Validation: `constructor-code-bound-core-build.log` builds Solm/Reasoning (3491 jobs).
+Validation: `constructor-code-bound-core-build.log` builds Stele/Reasoning (3491 jobs).
 `constructor-bounded-head-build.log` builds Correct with all new active helpers (4298 jobs).
 Earlier `constructor-bounded-entry-build.log` also checked ConstructorSizeWitness (4297 jobs).
 No Examples or other benchmarks were built. The new relation's `of_runtime` audit is standard3
@@ -1532,7 +1532,7 @@ fixedBytesLit[186,21,185,209], intLit32, and arrayLength local assets. The loop 
 `index (var assets) (var index)`; packed append casts tuple components0and1 to uint256, while
 components2..6 are direct tupleGet (the redundant source casts were lowered away). The loop
 incrementsindex with plain binary.add. See AssetSource.lean for packed encoding, source call,
-decode, and internal-call patterns; execWhile_var is available in Reasoning.SolmBody.
+decode, and internal-call patterns; execWhile_var is available in Reasoning.SteleBody.
 
 EVM1308 writes factory-call payload header: selector0xba15b9d1 atfree, offset32 atfree+4,
 asset count atfree+36; stackat1358 is
@@ -1621,7 +1621,7 @@ only the three standard Lean axioms.
 
 Validation:
 
-- `lake build Solm Reasoning` succeeds (3,491 jobs), recorded in
+- `lake build Stele Reasoning` succeeds (3,491 jobs), recorded in
   `solc0815-narrow-core-build.log`.
 - `lake build Benchmarks.CompoundIII.Comet.Correct
   Benchmarks.CompoundIII.Comet.Solc0815Regression` succeeds (4,382 jobs), recorded in

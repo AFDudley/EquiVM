@@ -3,7 +3,7 @@ import Benchmarks.Dss.Cat.Arithmetic
 import Benchmarks.Dss.Cat.Common
 import Benchmarks.Dss.Cat.BiteEVM
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 4000000
@@ -11,7 +11,7 @@ set_option maxHeartbeats 4000000
 namespace Benchmarks.Dss.Cat
 
 /-!
-# Cat `bite(bytes32,address)` — Solm-side body (`ExecTransitionBody`)
+# Cat `bite(bytes32,address)` — Stele-side body (`ExecTransitionBody`)
 
 Source-side refinement obligations for `bite`, proved with NO bytecode/RD.  The five external calls
 (`vat.ilks`, `vat.urns`, `vat.grab`, `vow.fess`, `milkFlip.kick`) are threaded via
@@ -91,7 +91,7 @@ theorem biteVatRead {evm : EVM.State} {locals : Store}
         (UInt256.land (solcSlotWordAt ⟨3⟩ evm.accountMap evm.executionEnv) solcAddrMask).toNat)) :=
           by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
-    (cfg := config) (solm := { contract := contract, locals := locals }) (evm := evm)
+    (cfg := config) (stele := { contract := contract, locals := locals }) (evm := evm)
     (slot := vatRef) (er := ({ base := "vat", steps := [] } : EvaledStorageRef))
     (t := .address) (loc := addrLoc ⟨3⟩)
     (value := .address (AccountAddress.ofNat
@@ -110,7 +110,7 @@ theorem biteVowRead {evm : EVM.State} {locals : Store}
         (UInt256.land (solcSlotWordAt ⟨4⟩ evm.accountMap evm.executionEnv) solcAddrMask).toNat)) :=
           by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
-    (cfg := config) (solm := { contract := contract, locals := locals }) (evm := evm)
+    (cfg := config) (stele := { contract := contract, locals := locals }) (evm := evm)
     (slot := vowRef) (er := ({ base := "vow", steps := [] } : EvaledStorageRef))
     (t := .address) (loc := addrLoc ⟨4⟩)
     (value := .address (AccountAddress.ofNat
@@ -127,7 +127,7 @@ theorem biteLiveRead {evm : EVM.State} {locals : Store}
     evalExpr? config { contract := contract, locals := locals } evm (.storage liveRef) =
       .ok (.int (Int.ofNat (solcSlotWordAt ⟨2⟩ evm.accountMap evm.executionEnv).toNat)) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
-    (cfg := config) (solm := { contract := contract, locals := locals }) (evm := evm)
+    (cfg := config) (stele := { contract := contract, locals := locals }) (evm := evm)
     (slot := liveRef) (er := ({ base := "live", steps := [] } : EvaledStorageRef))
     (t := .int uint256Int) (loc := wordLoc ⟨2⟩)
     (value := .int (Int.ofNat (solcSlotWordAt ⟨2⟩ evm.accountMap evm.executionEnv).toNat))
@@ -143,7 +143,7 @@ theorem biteBoxRead {evm : EVM.State} {locals : Store}
     evalExpr? config { contract := contract, locals := locals } evm (.storage boxRef) =
       .ok (.int (Int.ofNat (solcSlotWordAt ⟨5⟩ evm.accountMap evm.executionEnv).toNat)) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
-    (cfg := config) (solm := { contract := contract, locals := locals }) (evm := evm)
+    (cfg := config) (stele := { contract := contract, locals := locals }) (evm := evm)
     (slot := boxRef) (er := ({ base := "box", steps := [] } : EvaledStorageRef))
     (t := .int uint256Int) (loc := wordLoc ⟨5⟩)
     (value := .int (Int.ofNat (solcSlotWordAt ⟨5⟩ evm.accountMap evm.executionEnv).toNat))
@@ -159,7 +159,7 @@ theorem biteLitterRead {evm : EVM.State} {locals : Store}
     evalExpr? config { contract := contract, locals := locals } evm (.storage litterRef) =
       .ok (.int (Int.ofNat (solcSlotWordAt ⟨6⟩ evm.accountMap evm.executionEnv).toNat)) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
-    (cfg := config) (solm := { contract := contract, locals := locals }) (evm := evm)
+    (cfg := config) (stele := { contract := contract, locals := locals }) (evm := evm)
     (slot := litterRef) (er := ({ base := "litter", steps := [] } : EvaledStorageRef))
     (t := .int uint256Int) (loc := wordLoc ⟨6⟩)
     (value := .int (Int.ofNat (solcSlotWordAt ⟨6⟩ evm.accountMap evm.executionEnv).toNat))
@@ -180,7 +180,7 @@ theorem biteFlipRead {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size)
         (UInt256.land (solcSlotWordAt (biteFlipSlot I) evm.accountMap evm.executionEnv)
           solcAddrMask).toNat)) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
-    (cfg := config) (solm := { contract := contract, locals := locals }) (evm := evm)
+    (cfg := config) (stele := { contract := contract, locals := locals }) (evm := evm)
     (slot := ilksF (.var "ilk") "flip") (er := biteFlipEvaledRef I)
     (t := .address) (loc := addrLoc (biteFlipSlot I))
     (value := .address (AccountAddress.ofNat
@@ -213,7 +213,7 @@ theorem biteChopRead {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size)
       (.storage (ilksF (.var "ilk") "chop")) =
       .ok (.int (Int.ofNat (solcSlotWordAt (biteChopSlot I) evm.accountMap evm.executionEnv).toNat)) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
-    (cfg := config) (solm := { contract := contract, locals := locals }) (evm := evm)
+    (cfg := config) (stele := { contract := contract, locals := locals }) (evm := evm)
     (slot := ilksF (.var "ilk") "chop") (er := biteChopEvaledRef I)
     (t := .int uint256Int) (loc := wordLoc (biteChopSlot I))
     (value := .int (Int.ofNat
@@ -245,7 +245,7 @@ theorem biteDunkRead {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size)
       (.storage (ilksF (.var "ilk") "dunk")) =
       .ok (.int (Int.ofNat (solcSlotWordAt (biteDunkSlot I) evm.accountMap evm.executionEnv).toNat)) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
-    (cfg := config) (solm := { contract := contract, locals := locals }) (evm := evm)
+    (cfg := config) (stele := { contract := contract, locals := locals }) (evm := evm)
     (slot := ilksF (.var "ilk") "dunk") (er := biteDunkEvaledRef I)
     (t := .int uint256Int) (loc := wordLoc (biteDunkSlot I))
     (value := .int (Int.ofNat
@@ -365,7 +365,7 @@ theorem biteVowGuard_false {evm : EVM.State} {locals : Store}
   simp [evalExpr?, EvalResult.bind, bind, biteVowRead hbase, evalBinaryOp?, EVM.Word.ofNat,
     hcode0]
 
-/-- A `bytes32`/`uint256`/`address` word as a Solm `Value`. -/
+/-- A `bytes32`/`uint256`/`address` word as a Stele `Value`. -/
 abbrev bw (w : UInt256) : Value := .int (Int.ofNat w.toNat)
 
 abbrev biteIlkTuple (a r s l d : UInt256) : Value := .tuple [bw a, bw r, bw s, bw l, bw d]
@@ -508,7 +508,7 @@ theorem catBiteSourceLiveRevert
         (.ok { contract := contract, locals := Lilk } evmIlk) := by
     simpa [hLilk, biteIlkTuple, collapseReturns] using
       ExecStmt.externalCallSuccess
-        (cfg := config) (solm := { contract := contract, locals := L0 }) (evm := evm0)
+        (cfg := config) (stele := { contract := contract, locals := L0 }) (evm := evm0)
         (evm' := evmIlk)
         (receiver := .storage vatRef) (name := "ilks") (sendVal := 0)
         (target := biteVatAddr evm0) (args := [.var "ilk"]) (argVals := [biteIlkVal I])
@@ -558,7 +558,7 @@ theorem catBiteSourceLiveRevert
         (.ok { contract := contract, locals := Lurn } evmUrn) := by
     simpa [hLurn, biteUrnTuple, collapseReturns] using
       ExecStmt.externalCallSuccess
-        (cfg := config) (solm := { contract := contract, locals := Ldust }) (evm := evmIlk)
+        (cfg := config) (stele := { contract := contract, locals := Ldust }) (evm := evmIlk)
         (evm' := evmUrn)
         (receiver := .storage vatRef) (name := "urns") (sendVal := 0)
         (target := biteVatAddr evmIlk) (args := [.var "ilk", .var "urn"])
@@ -621,7 +621,7 @@ theorem catBiteSourceLiveRevert
     exact ExecBlock.consRevert (ExecStmt.requireFalse hLiveReq)
   simpa [ExecTransitionBody, hL0] using ExecFuncBody.execBlockRevert hblock
 
-/-! ## Generic Solm-expression evaluation helpers for the `bite` body -/
+/-! ## Generic Stele-expression evaluation helpers for the `bite` body -/
 
 /-- `x / y` reverts on `y = 0`; otherwise the quotient word. -/
 theorem evalExpr_div256_ok {evm : EVM.State} {locals : Store} {x y : Expr} {a b : UInt256}
@@ -759,8 +759,8 @@ theorem wadU_toNat : wadU.toNat = 1000000000000000000 := by
 
 theorem wadU_pos : 0 < wadU.toNat := by rw [wadU_toNat]; omega
 
-theorem evalExpr_wad {evm : EVM.State} {solm : Frame} :
-    evalExpr? config solm evm (.intLit WAD) = .ok (bw wadU) := by
+theorem evalExpr_wad {evm : EVM.State} {stele : Frame} :
+    evalExpr? config stele evm (.intLit WAD) = .ok (bw wadU) := by
   have h : (WAD : Int) = Int.ofNat wadU.toNat := by rw [wadU_toNat]; rfl
   simp only [evalExpr?, pure, bw]; rw [h]
 
@@ -818,7 +818,7 @@ theorem execMinCall {locals : Store} {evm : EVM.State} {xn yn retVar : Ident} {x
       (caller := { contract := contract, locals := locals }) (evm := evm) (name := "min")
       (retVar := retVar) (args := [.var xn, .var yn]) (argVals := [bw x, bw y])
       (callee := minFunction) (locals := uintBinaryLocals x y)
-      (calleeSolm := { contract := contract, locals := uintBinaryLocals x y }) (calleeEvm := evm)
+      (calleeStele := { contract := contract, locals := uintBinaryLocals x y }) (calleeEvm := evm)
       (value := some [bw (umin x y)]) hargs (by rfl) (by rfl) (execMinReturn evm x y)
 
 /-! ## Derived storage-word / intermediate values -/
@@ -1160,7 +1160,7 @@ theorem catBiteSourcePreLive
         (.ok { contract := contract, locals := bsIlk I iArt iRate iSpot iLine iDust } evmIlk) := by
     simpa [bsIlk, biteIlkTuple, collapseReturns] using
       ExecStmt.externalCallSuccess
-        (cfg := config) (solm := { contract := contract, locals := biteLocals I }) (evm := evm0)
+        (cfg := config) (stele := { contract := contract, locals := biteLocals I }) (evm := evm0)
         (evm' := evmIlk) (receiver := .storage vatRef) (name := "ilks") (sendVal := 0)
         (target := biteVatAddr evm0) (args := [.var "ilk"]) (argVals := [biteIlkVal I])
         (out := ilksOut) (perm := false)
@@ -1191,7 +1191,7 @@ theorem catBiteSourcePreLive
         (.ok { contract := contract, locals := bsUrn I iArt iRate iSpot iLine iDust ink art } evmUrn) := by
     simpa [bsUrn, biteUrnTuple, collapseReturns] using
       ExecStmt.externalCallSuccess
-        (cfg := config) (solm := { contract := contract, locals := bsDust I iArt iRate iSpot iLine iDust })
+        (cfg := config) (stele := { contract := contract, locals := bsDust I iArt iRate iSpot iLine iDust })
         (evm := evmIlk) (evm' := evmUrn) (receiver := .storage vatRef) (name := "urns") (sendVal := 0)
         (target := biteVatAddr evmIlk) (args := [.var "ilk", .var "urn"])
         (argVals := [biteIlkVal I, biteUrnVal I]) (out := urnsOut) (perm := false)
@@ -1417,7 +1417,7 @@ theorem biteGrabSuccessStmt {I : ExecutionEnv} {evmUrn evmGrab : EVM.State} {gra
       (.ok { contract := contract, locals := btGrab I evmUrn a r s l d ink art } evmGrab) := by
   simpa [btGrab, collapseReturns] using
     ExecStmt.externalCallSuccess
-      (cfg := config) (solm := { contract := contract, locals := bsDink I evmUrn a r s l d ink art })
+      (cfg := config) (stele := { contract := contract, locals := bsDink I evmUrn a r s l d ink art })
       (evm := evmUrn) (evm' := evmGrab) (receiver := .storage vatRef) (name := "grab") (sendVal := 0)
       (target := biteVatAddr evmUrn)
       (args := [ .var "ilk", .var "urn", thisAddr, vowAddr, asInt256 (.unary .neg (asInt256 (.var "dink"))),
@@ -1440,7 +1440,7 @@ theorem biteFessSuccessStmt {I : ExecutionEnv} {evmUrn evmGrab evmFess : EVM.Sta
       (.ok { contract := contract, locals := btFess I evmUrn a r s l d ink art } evmFess) := by
   simpa [btFess, collapseReturns] using
     ExecStmt.externalCallSuccess
-      (cfg := config) (solm := { contract := contract, locals := btDartRate I evmUrn a r s l d ink art })
+      (cfg := config) (stele := { contract := contract, locals := btDartRate I evmUrn a r s l d ink art })
       (evm := evmGrab) (evm' := evmFess) (receiver := vowAddr) (name := "fess") (sendVal := 0)
       (target := biteVowAddrV evmGrab) (args := [.var "dartRate"])
       (argVals := [bw (biteDartRateV I evmUrn r art)]) (out := fessOut) (perm := true) (value := [])
@@ -1525,7 +1525,7 @@ theorem catBiteSourceTail {I : ExecutionEnv}
         (.ok { contract := contract, locals := btGrab I evmUrn a r s l d ink art } evmGrab) := by
     simpa [btGrab, collapseReturns] using
       ExecStmt.externalCallSuccess
-        (cfg := config) (solm := { contract := contract, locals := bsDink I evmUrn a r s l d ink art })
+        (cfg := config) (stele := { contract := contract, locals := bsDink I evmUrn a r s l d ink art })
         (evm := evmUrn) (evm' := evmGrab) (receiver := .storage vatRef) (name := "grab") (sendVal := 0)
         (target := biteVatAddr evmUrn)
         (args := [ .var "ilk", .var "urn", thisAddr, vowAddr, asInt256 (.unary .neg (asInt256 (.var "dink"))),
@@ -1542,7 +1542,7 @@ theorem catBiteSourceTail {I : ExecutionEnv}
         (.ok { contract := contract, locals := btFess I evmUrn a r s l d ink art } evmFess) := by
     simpa [btFess, collapseReturns] using
       ExecStmt.externalCallSuccess
-        (cfg := config) (solm := { contract := contract, locals := btDartRate I evmUrn a r s l d ink art })
+        (cfg := config) (stele := { contract := contract, locals := btDartRate I evmUrn a r s l d ink art })
         (evm := evmGrab) (evm' := evmFess) (receiver := vowAddr) (name := "fess") (sendVal := 0)
         (target := biteVowAddrV evmGrab) (args := [.var "dartRate"])
         (argVals := [bw (biteDartRateV I evmUrn r art)]) (out := fessOut) (perm := true) (value := [])
@@ -1578,7 +1578,7 @@ theorem catBiteSourceTail {I : ExecutionEnv}
     simpa [btKick, collapseReturns] using
       ExecStmt.externalCallSuccess
         (cfg := config)
-        (solm := { contract := contract, locals := btLitterNew I evmUrn evmFess a r s l d ink art })
+        (stele := { contract := contract, locals := btLitterNew I evmUrn evmFess a r s l d ink art })
         (evm := evmLit) (evm' := evmKick) (receiver := .var "milkFlip") (name := "kick") (sendVal := 0)
         (target := biteFlipAddrV I evmUrn)
         (args := [.var "urn", vowAddr, .var "tab", .var "dink", .intLit 0])
@@ -1814,7 +1814,7 @@ theorem catBiteSourceArtRateOverflowRevert
 
 /-- **`artRate = art*rate` overflow revert with `spot = 0`.** Dual of `catBiteSourceArtRateOverflowRevert`
 when `spot = 0` (the `inkSpot` `checkedMul` check passes via `_yzero`); the EVM short-circuits at the
-`spot > 0` conjunct but Solm evaluates `art*rate` first and reverts on its overflow. -/
+`spot > 0` conjunct but Stele evaluates `art*rate` first and reverts on its overflow. -/
 theorem catBiteSourceArtRateOverflowSpotZeroRevert
     (hfitInkSpot : ink.toNat * iSpot.toNat < UInt256.size) (hspot0 : iSpot.toNat = 0)
     (hover : UInt256.size ≤ art.toNat * iRate.toNat) :

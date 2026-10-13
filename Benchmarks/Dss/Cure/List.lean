@@ -1,7 +1,7 @@
 import Reasoning.WordArithmetic
 import Benchmarks.Dss.Cure.ListLoop
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Cure
 
@@ -1310,13 +1310,13 @@ theorem cureListReturnCopyLoopExit {g : Sat256} {s0 : State}
 theorem storageLocLoad_addrLoc (evm : EVM.State) (slot : UInt256) :
     storageLocLoad evm (addrLoc slot) =
       .address (AccountAddress.ofNat
-        (UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
+        (UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
           solcAddrMask).toNat) := by
   unfold storageLocLoad addrLoc wordToElem
   simp only [Fin.val_zero, Nat.zero_add]
   change Value.address (AccountAddress.ofNat
       (fromBytes' (((EVM.Word.toBytesLEWithSizeProof
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).1).extract 0 20))) = _
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).1).extract 0 20))) = _
   rw [List.extract_eq_take_drop, List.drop_zero]
   rw [fromBytes'_take20_wordLE_solcAddrMask]
 
@@ -1330,10 +1330,10 @@ theorem readStorage_srcsElem_address_ok
             (solcSlotWord σ I (srcElemSlot (.int (Int.ofNat idx)))) solcAddrMask).toNat)) := by
   simp [config, storageLayout, storageLayoutRaw, solidityStorageBackend,
     solidityReadStorage?, solidityLeafLoc?, EvalResult.ofOption,
-    storageLocLoad_addrLoc, solcSlotWord, initState, Solm.EVM.storageLoad,
+    storageLocLoad_addrLoc, solcSlotWord, initState, Stele.EVM.storageLoad,
     State.lookupAccount, Account.lookupStorage]
   simp [EvalResult.bind, bind, pure, storageLocLoad_addrLoc, solcSlotWord, initState,
-    Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage]
+    Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage]
 
 theorem readArrayElems_srcs_address_ok
     {σ σ₀ A I} {g : Sat256} (idx n : Nat) :
@@ -1377,11 +1377,11 @@ theorem readStorage_srcs_ok {σ σ₀ A I} {g : Sat256} :
   rw [solidityReadStorage?, cureSrcsDynamicLength]
   have harray : solidityReadArray? storageLayoutRaw (initState σ σ₀ g A I)
       ({ base := "srcs", steps := [] } : EvaledStorageRef) (.elem .address) 0
-      (Solm.EVM.storageLoad (initState σ σ₀ g A I)
+      (Stele.EVM.storageLoad (initState σ σ₀ g A I)
         (initState σ σ₀ g A I).executionEnv.codeOwner ⟨2⟩).toNat =
         .ok (listSrcsValues σ I) := by
     simpa [listSrcsValues, solcSlotWordAt, solcSlotWord, initState,
-      Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage] using
+      Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage] using
       (readArrayElems_srcs_address_ok (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
         (g := g) 0 (solcSlotWordAt ⟨2⟩ σ I).toNat)
   simp only [harray, EvalResult.bind, bind, pure]

@@ -3,10 +3,10 @@ import Benchmarks.Dss.Dog.Selectors
 /-!
 # MakerDAO/Sky DSS Dog dispatcher facts
 
-Solm dispatch routing facts and the shared runtime revert paths.
+Stele dispatch routing facts and the shared runtime revert paths.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Dog.Immutables
 
 set_option maxRecDepth 2000000

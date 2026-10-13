@@ -1,6 +1,6 @@
 import Benchmarks.CompoundIII.Comet.InternalOutcome
 
-open Solm
+open Stele
 
 namespace Benchmarks.CompoundIII.Comet
 

@@ -1,6 +1,6 @@
 import Benchmarks.EAS.EAS.RequestRegion
 import Benchmarks.EAS.EAS.WordArrayAllocationView
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 -- GENERALIZES CopyRequestArrayMemory: parameterize the records and their bounded memory view.

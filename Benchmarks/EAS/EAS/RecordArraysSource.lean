@@ -1,6 +1,6 @@
 import Benchmarks.EAS.EAS.LocalArrayStore
 import Benchmarks.EAS.EAS.AttestationRequest
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 def attestationsResultValue (uids : List UInt256) (used : UInt256) : Value := .struct "AttestationsResult" [

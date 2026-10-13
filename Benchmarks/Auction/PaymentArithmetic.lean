@@ -3,7 +3,7 @@ import Reasoning.ExternalCall
 import Benchmarks.Auction.RawEthRoutine
 import Benchmarks.Auction.ReturnReserve
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Auction
 

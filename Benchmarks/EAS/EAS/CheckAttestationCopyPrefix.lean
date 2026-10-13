@@ -1,5 +1,5 @@
 import Benchmarks.EAS.EAS.CheckAttestationCopyExpr
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 set_option maxRecDepth 10000
 
@@ -75,7 +75,7 @@ theorem checkAttestationCopyPrefixSource {L imms : Store} {evm : EVM.State} {ind
       (checkAttestationCopyCast (.binary .add (.binary .add (.var "request") (.var "tail")) (.intLit 32)))=
       .ok (.int (Int.ofNat (checkAttestationCopyData cd index).toNat)) := by
     have he := evalCastUint256Add (naturalAddSource
-      (evalLocalValue (cfg := config) (solm := {contract := contract,locals := L5,immutables := imms}) (evm := evm) hr5)
+      (evalLocalValue (cfg := config) (stele := {contract := contract,locals := L5,immutables := imms}) (evm := evm) hr5)
       (evalLocalValue ht5)) (show evalExpr? config {contract := contract,locals := L5,immutables := imms} evm (.intLit 32)=.ok (.int (Int.ofNat 32)) from by simp only [evalExpr?,pure];rfl)
     have hn : (checkAttestationCopyData cd index).toNat=((ptr.toNat+tailWord.toNat)+32)%UInt256.size := by
       change ((ptr+tailWord)+UInt256.ofNat 32).toNat=_

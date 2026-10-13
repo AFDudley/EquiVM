@@ -5,7 +5,7 @@ import Benchmarks.CompoundIII.Comet.Safe128Evm
 import Benchmarks.CompoundIII.Comet.BorrowBalanceEvm
 import Benchmarks.CompoundIII.Comet.DynamicReturnEvm
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
 open Benchmarks.CompoundIII.Comet.Immutables cometWithExtendedAssetListBlocks
 
 namespace Benchmarks.CompoundIII.Comet

@@ -1,10 +1,10 @@
-import Reasoning.SolmArithmetic
+import Reasoning.SteleArithmetic
 import Benchmarks.UniswapV3.Pool.Routines
 import Benchmarks.UniswapV3.Pool.Slot0Storage
 import Benchmarks.UniswapV3.Pool.FactoryOwner
 import Benchmarks.UniswapV3.Pool.SourceExpressions
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 
 namespace Benchmarks.UniswapV3.Pool

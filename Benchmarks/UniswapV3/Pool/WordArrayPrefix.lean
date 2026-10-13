@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.DynamicWordArray
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 -- LIBRARY CANDIDATE: extend the initialized prefix of a memory array by one word.

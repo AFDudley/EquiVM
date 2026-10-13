@@ -1,7 +1,7 @@
 import Benchmarks.Dss.Dai.Dispatch
 import Benchmarks.Dss.Dai.Storage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Dai
 
@@ -27,7 +27,7 @@ theorem daiDecode_permitTypehash_ok {I : ExecutionEnv}
     some (∅ : Store)
   exact decodeCalldataWithMode_empty_ok hsz4
 
-/-- The Solm `PERMIT_TYPEHASH()` body returns Maker's permit typehash constant. -/
+/-- The Stele `PERMIT_TYPEHASH()` body returns Maker's permit typehash constant. -/
 theorem daiPermitTypehashBodyReturns (evm : EVM.State)
     (h : evm.executionEnv.weiValue = ⟨0⟩) :
     ExecTransitionBody config contract evm permitTypehashStore permitTypehashTransition.body
@@ -88,7 +88,7 @@ theorem daiPermitTypehashBodyCoreOk
         (by simpa [bytes32, bytes32Width] using
           bytes32ReturnEncoding permitTypehashWord))
 
-/-- `PERMIT_TYPEHASH()` body refines its Solm transition. -/
+/-- `PERMIT_TYPEHASH()` body refines its Stele transition. -/
 theorem daiPermitTypehashBodyCore {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = daiBytecode) (hsize : I.calldata.size < UInt256.size)
     (hwv : I.weiValue = ⟨0⟩)

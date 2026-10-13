@@ -3,7 +3,7 @@ import Benchmarks.UniswapV3.Pool.FlashGrowthSource
 import Benchmarks.UniswapV3.Pool.FullMathTrace
 import Benchmarks.UniswapV3.Pool.RuntimeBlocks_026
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 open uniswapV3PoolBlocks
 namespace Benchmarks.UniswapV3.Pool

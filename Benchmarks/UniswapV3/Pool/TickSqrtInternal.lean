@@ -2,7 +2,7 @@ import Benchmarks.UniswapV3.Pool.TickSqrtCanonical
 import Benchmarks.UniswapV3.Pool.TickSqrtSource
 import Benchmarks.UniswapV3.Pool.TickSqrtTrace
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
@@ -36,7 +36,7 @@ theorem tickSqrtInternalSource (tick : Int) (caller : Frame) (evm : EVM.State)
   have hc : {caller with locals := tickSqrtLocals tick} =
       tickSqrtFrame caller.immutables tick := by cases caller; simp_all only [tickSqrtFrame]
   obtain ⟨out, hb⟩ := tickSqrtReturns caller.immutables evm tick hlo hhi ht
-  exact internalCallFunctionReturn (callee := tickSqrtFunction) (calleeSolm := out)
+  exact internalCallFunctionReturn (callee := tickSqrtFunction) (calleeStele := out)
     (value := some [.int (Int.ofNat (tickSqrtValue tick).toNat)]) he
     (by rw [hf]; exact tickSqrtLookup) (tickSqrtBind tick) (by rw [hc]; exact hb)
 

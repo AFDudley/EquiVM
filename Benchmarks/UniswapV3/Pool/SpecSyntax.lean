@@ -1,4 +1,4 @@
-import Solm.Notation
+import Stele.Notation
 
 /-!
 # Uniswap V3 pool specification
@@ -10,7 +10,7 @@ source's quotient-overflow guard. TickMath and UnsafeMath model their assembly a
 This specification is being checked against the runtime report and the differential suite.
 -/
 
-open Solm Solm.Notation
+open Stele Stele.Notation
 
 namespace Benchmarks.UniswapV3.Pool.Syntax
 

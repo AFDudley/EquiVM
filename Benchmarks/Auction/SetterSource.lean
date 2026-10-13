@@ -1,6 +1,6 @@
 import Benchmarks.Auction.OwnerSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Auction
 
@@ -31,7 +31,7 @@ theorem ownerSetUint256Split (evm : EVM.State) (locals : Store) (name param : Id
       [nonpayable, .require (.binary .eq sender (.storage ownerRef)),
         .assign .storage { base := name } (.var param)]
       (.returned { contract := auctionContract, locals := locals }
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner slot value) none)) ∧
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner slot value) none)) ∧
       (evm.executionEnv.perm = false → ExecTransitionBody auctionConfig auctionContract evm locals
         [nonpayable, .require (.binary .eq sender (.storage ownerRef)),
           .assign .storage { base := name } (.var param)] .staticViolation) := by

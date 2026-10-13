@@ -2,7 +2,7 @@ import Benchmarks.EAS.EAS.AttestCall
 import Benchmarks.EAS.EAS.AttestPublicSource
 import Benchmarks.EAS.EAS.AttestPublicMemory
 import Benchmarks.EAS.EAS.AttestControl
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.EAS.EAS.Immutables
 namespace Benchmarks.EAS.EAS
 set_option maxRecDepth 10000

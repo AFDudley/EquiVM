@@ -2,7 +2,7 @@ import Reasoning.WordArithmetic
 import Examples.VyperERC20.Approve
 import Reasoning.Initcode
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 4000000
@@ -37,7 +37,7 @@ def transferToSlot (I : ExecutionEnv) : UInt256 :=
   erc20BalanceOfSlot (.address (AccountAddress.ofNat (transferToWord I).toNat))
 
 def transferFromBalanceWord (evm : EVM.State) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (transferSenderSlot evm)
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (transferSenderSlot evm)
 
 abbrev transferFromBalanceValue (evm : EVM.State) : Value :=
   .int (Int.ofNat (transferFromBalanceWord evm).toNat)
@@ -49,18 +49,18 @@ def transferDebitWord (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
   UInt256.ofNat ((transferFromBalanceWord evm).toNat - (transferValueWord I).toNat)
 
 def transferAfterDebitState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (transferSenderSlot evm)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (transferSenderSlot evm)
     (transferDebitWord evm I)
 
 theorem transferAfterDebit_codeOwner (evm : EVM.State) (I : ExecutionEnv) :
     (transferAfterDebitState evm I).executionEnv.codeOwner = evm.executionEnv.codeOwner := by
-  simp only [transferAfterDebitState, Solm.EVM.storageStore, State.lookupAccount]
+  simp only [transferAfterDebitState, Stele.EVM.storageStore, State.lookupAccount]
   cases evm.accountMap.get? evm.executionEnv.codeOwner with
   | none => rfl
   | some acc => simp only [Option.option, State.setAccount, Account.updateStorage]
 
 def transferToBalanceWord (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
-  Solm.EVM.storageLoad (transferAfterDebitState evm I) evm.executionEnv.codeOwner (transferToSlot I)
+  Stele.EVM.storageLoad (transferAfterDebitState evm I) evm.executionEnv.codeOwner (transferToSlot I)
 
 abbrev transferToBalanceValue (evm : EVM.State) (I : ExecutionEnv) : Value :=
   .int (Int.ofNat (transferToBalanceWord evm I).toNat)
@@ -81,7 +81,7 @@ abbrev transferStoreNewToBalance (evm : EVM.State) (I : ExecutionEnv) : Store :=
   (transferStoreToBalance evm I).insert "newToBalance" (transferNewToValue evm I)
 
 def transferPostState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore (transferAfterDebitState evm I) evm.executionEnv.codeOwner
+  Stele.EVM.storageStore (transferAfterDebitState evm I) evm.executionEnv.codeOwner
     (transferToSlot I) (transferNewToWord evm I)
 
 theorem transferNewToWord_toNat (evm : EVM.State) (I : ExecutionEnv)
@@ -438,7 +438,7 @@ theorem transferAssignTo (evm : EVM.State) (I : ExecutionEnv)
   simp only [balanceOfRef]
   refine assignStorageRef_storage_scalar
     (cfg := vyperERC20Config)
-    (solm := { contract := erc20Contract, locals := transferStoreNewToBalance evm I })
+    (stele := { contract := erc20Contract, locals := transferStoreNewToBalance evm I })
     (evm := transferAfterDebitState evm I)
     (evm' := transferPostState evm I)
     (slot := { base := "balanceOf", steps := [.mindex (.var "to")] })
@@ -862,14 +862,14 @@ theorem transferDispatchMem_mload0 :
   native_decide
 
 theorem transferFromBalanceWord_initState {σ σ₀ A I} {g : Sat256} :
-    Solm.EVM.storageLoad (initState σ σ₀ g A I) I.codeOwner
+    Stele.EVM.storageLoad (initState σ σ₀ g A I) I.codeOwner
         (transferSenderSlotI I) =
       transferFromBalanceWord (initState σ σ₀ g A I) := by
   simp [transferFromBalanceWord, transferSenderSlot, transferSenderSlotI, initState]
 
 theorem transferToBalanceWord_afterSenderStore_initState {σ σ₀ A I} {g : Sat256} :
-    Solm.EVM.storageLoad
-        (Solm.EVM.storageStore (initState σ σ₀ g A I) I.codeOwner
+    Stele.EVM.storageLoad
+        (Stele.EVM.storageStore (initState σ σ₀ g A I) I.codeOwner
           (transferSenderSlotI I)
           (transferDebitWord (initState σ σ₀ g A I) I))
         I.codeOwner (transferToSlot I) =
@@ -892,7 +892,7 @@ theorem transferSenderBalanceRaw_initState {σ σ₀ A I} {g : Sat256} :
     transferSenderBalanceRaw σ I =
       transferFromBalanceWord (initState σ σ₀ g A I) := by
   simpa [transferSenderBalanceRaw, transferFromBalanceWord, transferSenderSlot,
-    transferSenderSlotI, initState, Solm.EVM.storageLoad, State.lookupAccount,
+    transferSenderSlotI, initState, Stele.EVM.storageLoad, State.lookupAccount,
     Account.lookupStorage] using
     (transferFromBalanceWord_initState
       (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g))
@@ -902,7 +902,7 @@ theorem transferToBalanceRawAfterDebit_initState {σ σ₀ A I} {g : Sat256} :
         (transferDebitWord (initState σ σ₀ g A I) I) =
       transferToBalanceWord (initState σ σ₀ g A I) I := by
   simpa [transferToBalanceRawAfterDebit, transferToBalanceWord_afterSenderStore_initState,
-    Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
+    Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
     storageStore_accountMap]
     using (transferToBalanceWord_afterSenderStore_initState
       (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g))
@@ -956,7 +956,7 @@ theorem erc20X_transferAfterBalanceGuard {σ σ₀ A I} {g : Sat256}
           (σ.get? I.codeOwner))
         (transferValueWord I) = ⟨0⟩ := by
     simpa [evm0, transferFromBalanceWord, transferSenderSlot, transferSenderSlotI,
-      initState, Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage]
+      initState, Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage]
       using hbalanceGuard
   have rdBeforeSenderLoad := evm_run rd24 with [
     jumpdest,
@@ -1510,7 +1510,7 @@ theorem erc20TransferX_insufficient {σ σ₀ A I} {g : Sat256}
           (σ.get? I.codeOwner))
         (transferValueWord I) = ⟨1⟩ := by
     simpa [evm0, transferFromBalanceWord, transferSenderSlot, transferSenderSlotI,
-      initState, Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage]
+      initState, Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage]
       using hbalanceGuard
   have rdBeforeSenderLoad := evm_run rd24 with [
     jumpdest,

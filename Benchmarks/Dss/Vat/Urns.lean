@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Vat.Gem
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -297,7 +297,7 @@ theorem vatUrnsBodyReturns {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size)
         .ok (.int (Int.ofNat
           (solcSlotWordAt (urnsInkStorageSlot I) evm.accountMap evm.executionEnv).toNat)) := by
     exact evalExpr_storage_scalar_value (hbackend := rfl)
-      (cfg := config) (solm := frame) (evm := evm)
+      (cfg := config) (stele := frame) (evm := evm)
       (slot := urnsF (.var "arg0") (.var "arg1") "ink") (er := urnsInkEvaledRef I)
       (t := .int uint256Int) (loc := wordLoc (urnsInkStorageSlot I))
       (value := .int (Int.ofNat
@@ -318,7 +318,7 @@ theorem vatUrnsBodyReturns {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size)
         .ok (.int (Int.ofNat
           (solcSlotWordAt (urnsArtStorageSlot I) evm.accountMap evm.executionEnv).toNat)) := by
     exact evalExpr_storage_scalar_value (hbackend := rfl)
-      (cfg := config) (solm := frame) (evm := evm)
+      (cfg := config) (stele := frame) (evm := evm)
       (slot := urnsF (.var "arg0") (.var "arg1") "art") (er := urnsArtEvaledRef I)
       (t := .int uint256Int) (loc := wordLoc (urnsArtStorageSlot I))
       (value := .int (Int.ofNat

@@ -2,7 +2,7 @@ import Reasoning.ABIViews
 import Benchmarks.Dss.Dog.Dispatch
 import Reasoning.MemCascade
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Dog.Immutables
 
 set_option maxHeartbeats 0
@@ -589,7 +589,7 @@ theorem dogIlksBodyReturns {v : DogImmutables} {I : ExecutionEnv}
         .ok (.address (AccountAddress.ofNat
           (solcAddressSlotWord (ilksClipSlotFor I) evm.accountMap evm.executionEnv).toNat)) := by
     exact evalExpr_storage_scalar_value (hbackend := rfl)
-      (cfg := config) (solm := frame) (evm := evm)
+      (cfg := config) (stele := frame) (evm := evm)
       (slot := ilksF (.var "arg0") "clip") (er := ilksClipEvaledRef I)
       (t := .address) (loc := addrLoc (ilksClipSlotFor I))
       (value := .address (AccountAddress.ofNat
@@ -609,7 +609,7 @@ theorem dogIlksBodyReturns {v : DogImmutables} {I : ExecutionEnv}
         .ok (.int (Int.ofNat
           (solcSlotWordAt (ilksChopSlotFor I) evm.accountMap evm.executionEnv).toNat)) := by
     exact evalExpr_storage_scalar_value (hbackend := rfl)
-      (cfg := config) (solm := frame) (evm := evm)
+      (cfg := config) (stele := frame) (evm := evm)
       (slot := ilksF (.var "arg0") "chop") (er := ilksChopEvaledRef I)
       (t := .int uint256Int) (loc := wordLoc (ilksChopSlotFor I))
       (value := .int (Int.ofNat
@@ -628,7 +628,7 @@ theorem dogIlksBodyReturns {v : DogImmutables} {I : ExecutionEnv}
         .ok (.int (Int.ofNat
           (solcSlotWordAt (ilksHoleSlotFor I) evm.accountMap evm.executionEnv).toNat)) := by
     exact evalExpr_storage_scalar_value (hbackend := rfl)
-      (cfg := config) (solm := frame) (evm := evm)
+      (cfg := config) (stele := frame) (evm := evm)
       (slot := ilksF (.var "arg0") "hole") (er := ilksHoleEvaledRef I)
       (t := .int uint256Int) (loc := wordLoc (ilksHoleSlotFor I))
       (value := .int (Int.ofNat
@@ -647,7 +647,7 @@ theorem dogIlksBodyReturns {v : DogImmutables} {I : ExecutionEnv}
         .ok (.int (Int.ofNat
           (solcSlotWordAt (ilksDirtSlotFor I) evm.accountMap evm.executionEnv).toNat)) := by
     exact evalExpr_storage_scalar_value (hbackend := rfl)
-      (cfg := config) (solm := frame) (evm := evm)
+      (cfg := config) (stele := frame) (evm := evm)
       (slot := ilksF (.var "arg0") "dirt") (er := ilksDirtEvaledRef I)
       (t := .int uint256Int) (loc := wordLoc (ilksDirtSlotFor I))
       (value := .int (Int.ofNat

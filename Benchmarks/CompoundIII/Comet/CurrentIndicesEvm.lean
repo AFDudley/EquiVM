@@ -4,7 +4,7 @@ import Benchmarks.CompoundIII.Comet.AccrualTimeEvm
 import Benchmarks.CompoundIII.Comet.RuntimeBlocks_013
 import Benchmarks.CompoundIII.Comet.RuntimeBlocks_024
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.CompoundIII.Comet.Immutables
 open cometWithExtendedAssetListBlocks

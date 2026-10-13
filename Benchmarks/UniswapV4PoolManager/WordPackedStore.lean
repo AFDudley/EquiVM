@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV4PoolManager.ResolvedStorage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 -- LIBRARY CANDIDATE: replacement of the low bits of a packed storage word.
@@ -21,17 +21,17 @@ theorem storageLocStore_uintOffset0 (evm : EVM.State) (slot value : UInt256)
     storageLocStore evm
       {slot := slot, offset := 0, size := size, hbound := hbound, type := .int (.uint width)}
       (.int (Int.ofNat value.toNat)) =
-      some (Solm.EVM.storageStore evm evm.executionEnv.codeOwner slot
-        (wordLowSet (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot) value (8*size.val))) := by
+      some (Stele.EVM.storageStore evm evm.executionEnv.codeOwner slot
+        (wordLowSet (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot) value (8*size.val))) := by
   have hsize : size.val ≤ 32 := Nat.le_of_lt_succ size.isLt
   have hbits : 8*size.val ≤ 256 := by omega
   unfold storageLocStore storageLocWriteWord
   simp only [valueToWord, wordOfInt_ofNat_toNat, bind, Option.bind]
   congr 2
   apply u256_inj
-  change fromBytes' ((EVM.Word.toBytesLEWithSizeProof (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).1.take 0 ++
+  change fromBytes' ((EVM.Word.toBytesLEWithSizeProof (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).1.take 0 ++
     (EVM.Word.toBytesLEWithSizeProof value).1.take size.val ++
-    (EVM.Word.toBytesLEWithSizeProof (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).1.drop (0+size.val)) = _
+    (EVM.Word.toBytesLEWithSizeProof (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).1.drop (0+size.val)) = _
   simp only [List.take_zero, List.nil_append, Nat.zero_add]
   rw [fromBytes'_append, fromBytes'_take_wordLE_land_mask value size.val hbits, fromBytes'_drop_wordLE]
   have hclean := u256LandMaskCleanOfToNat value (UInt256.ofNat (2^(8*size.val)-1))

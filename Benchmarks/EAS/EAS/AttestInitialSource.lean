@@ -1,5 +1,5 @@
 import Benchmarks.EAS.EAS.AttestArraysSource
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 set_option maxRecDepth 10000
 
@@ -40,7 +40,7 @@ theorem attestInitialDecls_source {L imms : Store} {evm : EVM.State} {rs : List 
       (.ok {contract := contract,locals := attestDeclaredLocals L rs.length,immutables := imms} evm) := by
   have hlen : evalExpr? config {contract := contract,locals := L,immutables := imms} evm
       (.arrayLength .localVar {base := "data"}) = .ok (.int (Int.ofNat rs.length)) := by
-    simpa only [List.length_map] using evalLocalArrayLength (cfg := config) (solm := {contract := contract,locals := L,immutables := imms}) (evm := evm) hd
+    simpa only [List.length_map] using evalLocalArrayLength (cfg := config) (stele := {contract := contract,locals := L,immutables := imms}) (evm := evm) hd
   apply ExecBlock.consNormal (ExecStmt.letDecl hlen)
   have hempty : ∀ frame, evalExpr? config frame evm (.newArray (.elem (.bytes abiBytes32Width)) (.intLit 0)) = .ok (.array []) := by
     intro frame

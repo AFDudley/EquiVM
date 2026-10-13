@@ -1,7 +1,7 @@
 import Benchmarks.Safe.Main.SignatureLoop
 import Benchmarks.Safe.Main.SignatureBoundsTrace
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.Main
 

@@ -3,10 +3,10 @@ import Benchmarks.Safe.Main.Selectors
 import Reasoning.ABI
 import Reasoning.Dispatch
 import Reasoning.Solc
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 import Reasoning.JumpDest
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.Main
 

@@ -2,7 +2,7 @@ import Benchmarks.EAS.EAS.RefUIDSites
 import Benchmarks.EAS.EAS.MemoryArrayIndex
 import Benchmarks.EAS.EAS.ArrayStoreIndex
 import Benchmarks.EAS.EAS.WordArrayStore
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.EAS.EAS.Immutables
 namespace Benchmarks.EAS.EAS
 

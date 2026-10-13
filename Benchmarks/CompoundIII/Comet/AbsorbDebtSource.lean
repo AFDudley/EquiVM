@@ -1,7 +1,7 @@
 import Benchmarks.CompoundIII.Comet.AbsorbDebtModel
 import Benchmarks.CompoundIII.Comet.Unsigned256Revert
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.CompoundIII.Comet.Immutables
 
 namespace Benchmarks.CompoundIII.Comet

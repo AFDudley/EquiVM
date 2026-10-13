@@ -2,7 +2,7 @@ import Benchmarks.UniswapV3.Pool.MintCallbackCall
 import Benchmarks.UniswapV3.Pool.MintCallValues
 import Benchmarks.UniswapV3.Pool.SafeTransferCall
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000

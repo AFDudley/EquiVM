@@ -1,7 +1,7 @@
 import Benchmarks.EAS.EAS.MultiAttestControl
 import Benchmarks.EAS.EAS.MultiAttestRead
 import Benchmarks.EAS.EAS.MergeUIDRun
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 theorem multiRequestValues_length (cd : ByteArray) (base : UInt256) (n : Nat) :

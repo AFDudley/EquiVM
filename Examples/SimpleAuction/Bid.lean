@@ -1,8 +1,8 @@
 import Reasoning.WordArithmetic
 import Examples.SimpleAuction.Storage
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -381,7 +381,7 @@ theorem bidPendingKeccak (σ : AccountMap) (I : ExecutionEnv) :
 
 theorem bidStorageLocStore_uint256 (evm : EVM.State) (slot val : UInt256) :
     storageLocStore evm (simpleAuctionUint256Loc slot) (.int (Int.ofNat val.toNat)) =
-      some (Solm.EVM.storageStore evm evm.executionEnv.codeOwner slot val) := by
+      some (Stele.EVM.storageStore evm evm.executionEnv.codeOwner slot val) := by
   exact storageLocStore_uint256 evm slot val
 
 
@@ -905,22 +905,22 @@ theorem simpleAuctionX_bid_successWithPending {σ σ₀ A I} {g : Sat256}
   simpa [bidFinalMapWithPending, bidWriteHighestBidMap, bidWriteHighestBidderMap,
     bidPackedSenderWord, bidSenderWord] using rd123.stop (by decide) (by evm_ov)
 
-/-! ## `bid()` Solm-side source execution helpers -/
+/-! ## `bid()` Stele-side source execution helpers -/
 
 def bidAfterHighestBidderState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨2⟩
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨2⟩
     (setAddressOffset0Word
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩) (bidSenderWord I))
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩) (bidSenderWord I))
 
 def bidPostStateNoPending (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore (bidAfterHighestBidderState evm I)
+  Stele.EVM.storageStore (bidAfterHighestBidderState evm I)
     (bidAfterHighestBidderState evm I).executionEnv.codeOwner ⟨3⟩ I.weiValue
 
 def bidHighestBidWordState (evm : EVM.State) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩
 
 def bidHighestBidderRawState (evm : EVM.State) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩
 
 def bidHighestBidderWordState (evm : EVM.State) : UInt256 :=
   UInt256.land (bidHighestBidderRawState evm) solcAddrMask
@@ -932,10 +932,10 @@ def bidPendingSlotState (evm : EVM.State) : UInt256 :=
   pendingReturnsSlot (bidHighestBidderKeyState evm)
 
 def bidPendingReturnsWordState (evm : EVM.State) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (bidPendingSlotState evm)
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (bidPendingSlotState evm)
 
 def bidAfterPendingState (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (bidPendingSlotState evm)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (bidPendingSlotState evm)
     (bidPendingReturnsWordState evm + bidHighestBidWordState evm)
 
 def bidPostStateWithPending (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
@@ -964,7 +964,7 @@ theorem bidPackedSenderWord_eq_setAddress (old : UInt256) (I : ExecutionEnv) :
 theorem evalExpr_bid_auctionEndTime (evm : EVM.State) :
     evalExpr? simpleAuctionConfig { contract := simpleAuctionContract, locals := ∅ } evm
       (.storage auctionEndTimeRef) =
-        .ok (.int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat)) := by
+        .ok (.int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat)) := by
   have her : evalStorageRef simpleAuctionConfig
       { contract := simpleAuctionContract, locals := ∅ } evm auctionEndTimeRef =
       .ok { base := "auctionEndTime", steps := [] } := by
@@ -980,7 +980,7 @@ theorem evalExpr_bid_auctionEndTime (evm : EVM.State) :
 theorem evalExpr_bid_highestBid (evm : EVM.State) :
     evalExpr? simpleAuctionConfig { contract := simpleAuctionContract, locals := ∅ } evm
       (.storage highestBidRef) =
-        .ok (.int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩).toNat)) := by
+        .ok (.int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩).toNat)) := by
   have her : evalStorageRef simpleAuctionConfig
       { contract := simpleAuctionContract, locals := ∅ } evm highestBidRef =
       .ok { base := "highestBid", steps := [] } := by
@@ -1044,7 +1044,7 @@ theorem evalExpr_bid_callvalue_I (evm : EVM.State) (I : ExecutionEnv)
 theorem evalExpr_bid_time_true (evm : EVM.State)
     (htime :
       (UInt256.ofNat evm.executionEnv.header.timestamp).toNat ≤
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat) :
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat) :
     evalExpr? simpleAuctionConfig { contract := simpleAuctionContract, locals := ∅ } evm
       (.binary .le now (.storage auctionEndTimeRef)) = .ok (.bool true) := by
   simp only [evalExpr?, now, envValue, evalExpr_bid_auctionEndTime, bind, EvalResult.bind, pure]
@@ -1052,7 +1052,7 @@ theorem evalExpr_bid_time_true (evm : EVM.State)
 
 theorem evalExpr_bid_time_false (evm : EVM.State)
     (htime :
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat <
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat <
         (UInt256.ofNat evm.executionEnv.header.timestamp).toNat) :
     evalExpr? simpleAuctionConfig { contract := simpleAuctionContract, locals := ∅ } evm
       (.binary .le now (.storage auctionEndTimeRef)) = .ok (.bool false) := by
@@ -1061,11 +1061,11 @@ theorem evalExpr_bid_time_false (evm : EVM.State)
 
 theorem evalExpr_bid_value_gt_true (evm : EVM.State)
     (hbid :
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩).toNat <
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩).toNat <
         evm.executionEnv.weiValue.toNat) :
     evalExpr? simpleAuctionConfig { contract := simpleAuctionContract, locals := ∅ } evm
       (.binary .gt (.env .callvalue) (.storage highestBidRef)) = .ok (.bool true) := by
-  have hgt : Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩).toNat <
+  have hgt : Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩).toNat <
       Int.ofNat evm.executionEnv.weiValue.toNat :=
     Int.ofNat_lt.mpr hbid
   simp only [evalExpr?, envValue, evalExpr_bid_highestBid, bind, EvalResult.bind, pure]
@@ -1074,32 +1074,32 @@ theorem evalExpr_bid_value_gt_true (evm : EVM.State)
 theorem evalExpr_bid_value_gt_false (evm : EVM.State)
     (hbid :
       evm.executionEnv.weiValue.toNat ≤
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩).toNat) :
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩).toNat) :
     evalExpr? simpleAuctionConfig { contract := simpleAuctionContract, locals := ∅ } evm
       (.binary .gt (.env .callvalue) (.storage highestBidRef)) = .ok (.bool false) := by
   simp only [evalExpr?, envValue, evalExpr_bid_highestBid, bind, EvalResult.bind, pure]
   simpa [evalBinaryOp?, UInt256.toNat] using hbid
 
 theorem evalExpr_bid_highestBid_ne_true (evm : EVM.State)
-    (hnz : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩ ≠ ⟨0⟩) :
+    (hnz : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩ ≠ ⟨0⟩) :
     evalExpr? simpleAuctionConfig { contract := simpleAuctionContract, locals := ∅ } evm
       (.binary .ne (.storage highestBidRef) (.intLit 0)) = .ok (.bool true) := by
   rw [evalExpr?]
   simp only [evalExpr_bid_highestBid, evalExpr?, bind, EvalResult.bind, pure]
-  have hnat : (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩).toNat ≠ 0 := by
+  have hnat : (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩).toNat ≠ 0 := by
     intro h
     apply hnz
     apply u256_inj
     simpa [UInt256.toNat] using h
   change evalBinaryOp? .ne
-      (.int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩).toNat))
+      (.int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩).toNat))
       (.int 0) = .ok (.bool true)
   rw [evalBinaryOp_ne_int_ok]
   simp [hnat]
   all_goals decide
 
 theorem evalExpr_bid_highestBid_ne_false (evm : EVM.State)
-    (hzero : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩ = ⟨0⟩) :
+    (hzero : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩ = ⟨0⟩) :
     evalExpr? simpleAuctionConfig { contract := simpleAuctionContract, locals := ∅ } evm
       (.binary .ne (.storage highestBidRef) (.intLit 0)) = .ok (.bool false) := by
   rw [evalExpr?]
@@ -1129,13 +1129,13 @@ theorem evalExpr_bid_pending_add_ok (evm : EVM.State)
   have hsumWord := bidPendingSum_toNat evm hfit
   have hsumWordRaw :
       (bidPendingReturnsWordState evm +
-          Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩).toNat =
+          Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩).toNat =
         (bidPendingReturnsWordState evm).toNat +
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩).toNat := by
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩).toNat := by
     simpa [bidHighestBidWordState] using hsumWord
   have hfitNatRaw :
       (bidPendingReturnsWordState evm).toNat +
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩).toNat < 2 ^ 256 := by
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩).toNat < 2 ^ 256 := by
     simpa [UInt256.size, bidHighestBidWordState] using hfit
   simp only [u256, evalExpr?, evalExpr_bid_pendingReturns_current, evalExpr_bid_highestBid,
     EvalResult.bind, bind, pure]
@@ -1144,9 +1144,9 @@ theorem evalExpr_bid_pending_add_ok (evm : EVM.State)
   · simp only [bidHighestBidWordState]
     have hInt :
         Int.ofNat (bidPendingReturnsWordState evm).toNat +
-            Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩).toNat =
+            Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩).toNat =
           Int.ofNat ((bidPendingReturnsWordState evm).toNat +
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩).toNat) := by
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩).toNat) := by
       norm_num
     rw [hInt, ← hsumWordRaw]
   · simp
@@ -1225,7 +1225,7 @@ theorem bidAssignHighestBid (evm : EVM.State) (I : ExecutionEnv)
 
 theorem simpleAuctionBidBodyReverts_time (evm : EVM.State)
     (htime :
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat <
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat <
         (UInt256.ofNat evm.executionEnv.header.timestamp).toNat) :
     ExecTransitionBody simpleAuctionConfig simpleAuctionContract evm ∅ bidTransition.body .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
@@ -1235,10 +1235,10 @@ theorem simpleAuctionBidBodyReverts_time (evm : EVM.State)
 theorem simpleAuctionBidBodyReverts_bid (evm : EVM.State)
     (htime :
       (UInt256.ofNat evm.executionEnv.header.timestamp).toNat ≤
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat)
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat)
     (hbid :
       evm.executionEnv.weiValue.toNat ≤
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩).toNat) :
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩).toNat) :
     ExecTransitionBody simpleAuctionConfig simpleAuctionContract evm ∅ bidTransition.body .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
   unfold bidTransition
@@ -1249,11 +1249,11 @@ theorem simpleAuctionBidBodyReturnsNoPending (evm : EVM.State) (I : ExecutionEnv
     (hEnv : evm.executionEnv = I)
     (htime :
       (UInt256.ofNat evm.executionEnv.header.timestamp).toNat ≤
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat)
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat)
     (hbid :
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩).toNat <
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩).toNat <
         evm.executionEnv.weiValue.toNat)
-    (hzero : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩ = ⟨0⟩) :
+    (hzero : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩ = ⟨0⟩) :
     ExecTransitionBody simpleAuctionConfig simpleAuctionContract evm ∅ bidTransition.body
       (.returned { contract := simpleAuctionContract, locals := ∅ }
         (bidPostStateNoPending evm I) none) := by
@@ -1278,11 +1278,11 @@ theorem simpleAuctionBidBodyStaticNoPending (evm : EVM.State) (I : ExecutionEnv)
     (hEnv : evm.executionEnv = I)
     (htime :
       (UInt256.ofNat evm.executionEnv.header.timestamp).toNat ≤
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat)
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat)
     (hbid :
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩).toNat <
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩).toNat <
         evm.executionEnv.weiValue.toNat)
-    (hzero : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩ = ⟨0⟩)
+    (hzero : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩ = ⟨0⟩)
     (hperm : evm.executionEnv.perm = false) :
     ExecTransitionBody simpleAuctionConfig simpleAuctionContract evm ∅ bidTransition.body
       .staticViolation := by
@@ -1298,11 +1298,11 @@ theorem simpleAuctionBidBodyStaticNoPending (evm : EVM.State) (I : ExecutionEnv)
 theorem simpleAuctionBidBodyReverts_pendingOverflow (evm : EVM.State)
     (htime :
       (UInt256.ofNat evm.executionEnv.header.timestamp).toNat ≤
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat)
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat)
     (hbid :
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩).toNat <
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩).toNat <
         evm.executionEnv.weiValue.toNat)
-    (hnz : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩ ≠ ⟨0⟩)
+    (hnz : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩ ≠ ⟨0⟩)
     (hover :
       UInt256.size ≤
         (bidPendingReturnsWordState evm).toNat + (bidHighestBidWordState evm).toNat) :
@@ -1320,11 +1320,11 @@ theorem simpleAuctionBidBodyReturnsWithPending (evm : EVM.State) (I : ExecutionE
     (hEnv : evm.executionEnv = I)
     (htime :
       (UInt256.ofNat evm.executionEnv.header.timestamp).toNat ≤
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat)
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat)
     (hbid :
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩).toNat <
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩).toNat <
         evm.executionEnv.weiValue.toNat)
-    (hnz : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩ ≠ ⟨0⟩)
+    (hnz : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩ ≠ ⟨0⟩)
     (hfit :
       (bidPendingReturnsWordState evm).toNat + (bidHighestBidWordState evm).toNat < UInt256.size) :
     ExecTransitionBody simpleAuctionConfig simpleAuctionContract evm ∅ bidTransition.body
@@ -1357,11 +1357,11 @@ theorem simpleAuctionBidBodyReturnsWithPending (evm : EVM.State) (I : ExecutionE
 theorem simpleAuctionBidBodyStaticWithPending (evm : EVM.State)
     (htime :
       (UInt256.ofNat evm.executionEnv.header.timestamp).toNat ≤
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat)
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat)
     (hbid :
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩).toNat <
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩).toNat <
         evm.executionEnv.weiValue.toNat)
-    (hnz : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩ ≠ ⟨0⟩)
+    (hnz : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩ ≠ ⟨0⟩)
     (hfit :
       (bidPendingReturnsWordState evm).toNat + (bidHighestBidWordState evm).toNat < UInt256.size)
     (hperm : evm.executionEnv.perm = false) :
@@ -1403,7 +1403,7 @@ theorem simpleAuctionBidBody {σ σ₀ A I} {g : UInt256}
         ExecTransitionBody simpleAuctionConfig simpleAuctionContract evmS ∅
           bidTransition.body .reverted :=
       simpleAuctionBidBodyReverts_time evmS (by
-        simpa [evmS, initState, bidAuctionEndWord, bidTimestampWord, Solm.EVM.storageLoad,
+        simpa [evmS, initState, bidAuctionEndWord, bidTimestampWord, Stele.EVM.storageLoad,
           State.lookupAccount] using htimeS')
     exact (simpleAuctionX_bid_timeRevert (g := Sat256.ofUInt256 g) hreach htimeBad)
       |>.reEquivExecutionRevert hcode hd hdec hbody
@@ -1419,10 +1419,10 @@ theorem simpleAuctionBidBody {σ σ₀ A I} {g : UInt256}
             bidTransition.body .reverted :=
         simpleAuctionBidBodyReverts_bid evmS
           (by
-            simpa [evmS, initState, bidAuctionEndWord, bidTimestampWord, Solm.EVM.storageLoad,
+            simpa [evmS, initState, bidAuctionEndWord, bidTimestampWord, Stele.EVM.storageLoad,
               State.lookupAccount] using htimeS')
           (by
-            simpa [evmS, initState, bidHighestBidWord, Solm.EVM.storageLoad, State.lookupAccount]
+            simpa [evmS, initState, bidHighestBidWord, Stele.EVM.storageLoad, State.lookupAccount]
               using hbidS')
       exact (simpleAuctionX_bid_bidRevert (g := Sat256.ofUInt256 g) hreach htimeLe hbidBad)
         |>.reEquivExecutionRevert hcode hd hdec hbody
@@ -1439,12 +1439,12 @@ theorem simpleAuctionBidBody {σ σ₀ A I} {g : UInt256}
           have hbody := simpleAuctionBidBodyStaticNoPending evmS I (by simp [evmS, initState])
             (by
               simpa [evmS, initState, bidAuctionEndWord, bidTimestampWord,
-                Solm.EVM.storageLoad, State.lookupAccount] using htimeS')
+                Stele.EVM.storageLoad, State.lookupAccount] using htimeS')
             (by
-              simpa [evmS, initState, bidHighestBidWord, Solm.EVM.storageLoad,
+              simpa [evmS, initState, bidHighestBidWord, Stele.EVM.storageLoad,
                 State.lookupAccount] using hbidS')
             (by
-              simpa [evmS, initState, bidHighestBidWord, Solm.EVM.storageLoad,
+              simpa [evmS, initState, bidHighestBidWord, Stele.EVM.storageLoad,
                 State.lookupAccount] using hzeroS')
             (by simp only [evmS, initState]; exact hpf)
           exact (permSplit_false hpf (simpleAuctionX_bid_successNoPending
@@ -1458,12 +1458,12 @@ theorem simpleAuctionBidBody {σ σ₀ A I} {g : UInt256}
           simpleAuctionBidBodyReturnsNoPending evmS I (by simp [evmS, initState])
             (by
               simpa [evmS, initState, bidAuctionEndWord, bidTimestampWord,
-                Solm.EVM.storageLoad, State.lookupAccount] using htimeS')
+                Stele.EVM.storageLoad, State.lookupAccount] using htimeS')
             (by
-              simpa [evmS, initState, bidHighestBidWord, Solm.EVM.storageLoad,
+              simpa [evmS, initState, bidHighestBidWord, Stele.EVM.storageLoad,
                 State.lookupAccount] using hbidS')
             (by
-              simpa [evmS, initState, bidHighestBidWord, Solm.EVM.storageLoad,
+              simpa [evmS, initState, bidHighestBidWord, Stele.EVM.storageLoad,
                 State.lookupAccount] using hzeroS')
         exact (permSplit_true hperm (simpleAuctionX_bid_successNoPending
             (g := Sat256.ofUInt256 g) hreach htimeLe hbidLt hzero))
@@ -1471,7 +1471,7 @@ theorem simpleAuctionBidBody {σ σ₀ A I} {g : UInt256}
             (by simp [evmS, bidPostStateNoPending, bidAfterHighestBidderState, initState,
                 bidFinalMapNoPending, bidWriteHighestBidMap, bidWriteHighestBidderMap,
                 bidHighestBidderRawWord, bidPackedSenderWord_eq_setAddress,
-                Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
+                Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
                 storageStore_executionEnv, storageStore_accountMap])
             (returnEquiv.fallthrough rfl rfl (by native_decide))
       · have hnzE : bidHighestBidWord σ I ≠ ⟨0⟩ := hzero
@@ -1494,7 +1494,7 @@ theorem simpleAuctionBidBody {σ σ₀ A I} {g : UInt256}
               (bidPendingReturnsWordState evmS).toNat +
                 (bidHighestBidWordState evmS).toNat < UInt256.size := by
             simpa [evmS, initState, bidPendingReturnsWordState, bidHighestBidWordState,
-              bidPendingReturnsWord, bidHighestBidWord, Solm.EVM.storageLoad,
+              bidPendingReturnsWord, bidHighestBidWord, Stele.EVM.storageLoad,
               State.lookupAccount] using hfitS'
           by_cases hperm : I.perm = true
           swap
@@ -1502,12 +1502,12 @@ theorem simpleAuctionBidBody {σ σ₀ A I} {g : UInt256}
             have hbody := simpleAuctionBidBodyStaticWithPending evmS
               (by
                 simpa [evmS, initState, bidAuctionEndWord, bidTimestampWord,
-                  Solm.EVM.storageLoad, State.lookupAccount] using htimeS')
+                  Stele.EVM.storageLoad, State.lookupAccount] using htimeS')
               (by
-                simpa [evmS, initState, bidHighestBidWord, Solm.EVM.storageLoad,
+                simpa [evmS, initState, bidHighestBidWord, Stele.EVM.storageLoad,
                   State.lookupAccount] using hbidS')
               (by
-                simpa [evmS, initState, bidHighestBidWord, Solm.EVM.storageLoad,
+                simpa [evmS, initState, bidHighestBidWord, Stele.EVM.storageLoad,
                   State.lookupAccount] using hnzS')
               hfitSState
               (by simp only [evmS, initState]; exact hpf)
@@ -1522,12 +1522,12 @@ theorem simpleAuctionBidBody {σ σ₀ A I} {g : UInt256}
             simpleAuctionBidBodyReturnsWithPending evmS I (by simp [evmS, initState])
               (by
                 simpa [evmS, initState, bidAuctionEndWord, bidTimestampWord,
-                  Solm.EVM.storageLoad, State.lookupAccount] using htimeS')
+                  Stele.EVM.storageLoad, State.lookupAccount] using htimeS')
               (by
-                simpa [evmS, initState, bidHighestBidWord, Solm.EVM.storageLoad,
+                simpa [evmS, initState, bidHighestBidWord, Stele.EVM.storageLoad,
                   State.lookupAccount] using hbidS')
               (by
-                simpa [evmS, initState, bidHighestBidWord, Solm.EVM.storageLoad,
+                simpa [evmS, initState, bidHighestBidWord, Stele.EVM.storageLoad,
                   State.lookupAccount] using hnzS')
               hfitSState
           exact (simpleAuctionX_bid_successWithPending (g := Sat256.ofUInt256 g) hperm hreach
@@ -1541,7 +1541,7 @@ theorem simpleAuctionBidBody {σ σ₀ A I} {g : UInt256}
                   bidPendingReturnsWordState, bidPendingSlotState, bidHighestBidWordState,
                   bidHighestBidderKeyState, bidHighestBidderWordState,
                   bidHighestBidderRawState, bidPackedSenderWord_eq_setAddress,
-                  Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
+                  Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
                   storageStore_executionEnv, storageStore_accountMap])
               (returnEquiv.fallthrough rfl rfl (by native_decide))
         · have hoverE : UInt256.size ≤
@@ -1557,7 +1557,7 @@ theorem simpleAuctionBidBody {σ σ₀ A I} {g : UInt256}
                 (bidPendingReturnsWordState evmS).toNat +
                   (bidHighestBidWordState evmS).toNat := by
             simpa [evmS, initState, bidPendingReturnsWordState, bidHighestBidWordState,
-              bidPendingReturnsWord, bidHighestBidWord, Solm.EVM.storageLoad,
+              bidPendingReturnsWord, bidHighestBidWord, Stele.EVM.storageLoad,
               State.lookupAccount] using hoverS'
           have hbody :
               ExecTransitionBody simpleAuctionConfig simpleAuctionContract evmS ∅
@@ -1565,12 +1565,12 @@ theorem simpleAuctionBidBody {σ σ₀ A I} {g : UInt256}
             simpleAuctionBidBodyReverts_pendingOverflow evmS
               (by
                 simpa [evmS, initState, bidAuctionEndWord, bidTimestampWord,
-                  Solm.EVM.storageLoad, State.lookupAccount] using htimeS')
+                  Stele.EVM.storageLoad, State.lookupAccount] using htimeS')
               (by
-                simpa [evmS, initState, bidHighestBidWord, Solm.EVM.storageLoad,
+                simpa [evmS, initState, bidHighestBidWord, Stele.EVM.storageLoad,
                   State.lookupAccount] using hbidS')
               (by
-                simpa [evmS, initState, bidHighestBidWord, Solm.EVM.storageLoad,
+                simpa [evmS, initState, bidHighestBidWord, Stele.EVM.storageLoad,
                   State.lookupAccount] using hnzS')
               hoverSState
           exact (simpleAuctionX_bid_pendingOverflow (g := Sat256.ofUInt256 g) hreach

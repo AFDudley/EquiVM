@@ -3,7 +3,7 @@ import Benchmarks.EAS.EAS.AllocateBounds
 import Benchmarks.EAS.EAS.StructEncodeViews
 import Benchmarks.EAS.EAS.RuntimeBlocks_029
 import Benchmarks.EAS.EAS.RuntimeBlocks_033
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.EAS.EAS.Immutables
 namespace Benchmarks.EAS.EAS
 set_option maxRecDepth 10000

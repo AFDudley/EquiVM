@@ -2,7 +2,7 @@ import Benchmarks.EAS.EAS.RevokePublicControl
 import Benchmarks.EAS.EAS.RevokeDecode
 import Benchmarks.EAS.EAS.RevocationRequestMemory
 import Benchmarks.EAS.EAS.RecordUID
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 theorem revokePublicInputMemory_view (cd : ByteArray) :

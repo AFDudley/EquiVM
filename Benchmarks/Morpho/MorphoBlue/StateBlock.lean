@@ -1,6 +1,6 @@
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 namespace Benchmarks.Morpho.MorphoBlue
 
 -- GENERALIZES ABlock to prefixes containing storage writes or external calls.

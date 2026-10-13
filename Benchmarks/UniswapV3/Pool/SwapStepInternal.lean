@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.SwapStepSource
 import Benchmarks.UniswapV3.Pool.SwapStepTrace
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
@@ -43,7 +43,7 @@ theorem swapStepInternalX {σ : AccountMap} {ee : ExecutionEnv} {g : Sat256}
   · refine Or.inr ⟨?_, hv,
       swapStepRawPrice_clean a currentRaw targetRaw hc ht ha hv.1.1.2.2, hr⟩
     apply internalCallFunctionReturn (callee := swapStepFunction)
-      (calleeSolm := swapStepResultFrame (immStore v) a) (value := some (swapStepResults a))
+      (calleeStele := swapStepResultFrame (immStore v) a) (value := some (swapStepResults a))
       he hlookup (swapStepBind a)
     rw [hframe]
     exact swapStepReturns (immStore v) evm a ha hv

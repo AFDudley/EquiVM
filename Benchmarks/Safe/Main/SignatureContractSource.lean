@@ -2,7 +2,7 @@ import Benchmarks.Safe.Main.SignatureOffsetSource
 import Benchmarks.Safe.Main.ContractSignatureCheckSource
 import Benchmarks.Safe.Main.InternalCall
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.Main
 

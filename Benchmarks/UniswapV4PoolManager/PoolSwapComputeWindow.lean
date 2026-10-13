@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.PoolSwapMemoryWindow
 import Benchmarks.UniswapV4PoolManager.PoolSwapComputeMemory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 variable {mem : ByteArray} {step state params : UInt256}

@@ -1,16 +1,16 @@
-import Solm.Semantics
-import Solm.SolidityLayout
-import Solm.SolidityStorage
-import Solm.MetaSolidityLayout
+import Stele.Semantics
+import Stele.SolidityLayout
+import Stele.SolidityStorage
+import Stele.MetaSolidityLayout
 
 /-!
-# CtorTruth — Solm specification for a constructor-equivalence smoke test
+# CtorTruth — Stele specification for a constructor-equivalence smoke test
 
 The payable empty constructor keeps the initcode trace small, while still exercising the
 constructor-equivalence API and Solidity deployment hook.
 -/
 
-open Solm ABI
+open Stele ABI
 
 namespace CtorTruth
 
@@ -28,7 +28,7 @@ def ctor : ConstructorDecl :=
   { params := []
     body := [] }
 
-/-- Solm specification of `CtorTruth`. -/
+/-- Stele specification of `CtorTruth`. -/
 def contract : ContractDecl :=
   { name := "CtorTruth"
     storage := []

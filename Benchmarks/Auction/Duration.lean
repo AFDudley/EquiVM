@@ -1,6 +1,6 @@
 import Benchmarks.Auction.Storage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 100000
 
@@ -11,7 +11,7 @@ theorem durationBodyReturns (evm : EVM.State) (locals : Store)
     ExecTransitionBody auctionConfig auctionContract evm locals durationGetter.body
       (.returned { contract := auctionContract, locals := locals } evm
         (some [.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨206⟩).toNat)])) := by
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨206⟩).toNat)])) := by
   exact ExecFuncBody.execBlockRet <|
     (ABlock.start.requireStep (evalCallvalueEq_true hwv)).returns (by
       rw [durationRef, scalarRead evm locals "duration" (.int uint256Int) (auctionUint256Loc ⟨206⟩)
@@ -46,7 +46,7 @@ theorem durationBodyCore {σ σ₀ A I} {g : UInt256}
         (.returned { contract := auctionContract, locals := ∅ }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [.int (Int.ofNat (solcSlotWord σ I ⟨206⟩).toNat)])) := by
-      simpa [solcSlotWord, initState, Solm.EVM.storageLoad, State.lookupAccount] using
+      simpa [solcSlotWord, initState, Stele.EVM.storageLoad, State.lookupAccount] using
         durationBodyReturns (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           ∅ hwv (by simp)
     exact (durationX hreach hwv).reEquivExecution hcode hd hdec hbody

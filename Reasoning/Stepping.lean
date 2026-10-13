@@ -1,4 +1,4 @@
-import Solm.Refine
+import Stele.Refine
 import Ethereum.Theory.ProgressLemmas
 import Ethereum.Theory.OpcodeLemmas
 
@@ -22,7 +22,7 @@ These are **contract-agnostic** (parameterised by the code `ByteArray`); only th
 facts fed to them are contract-specific.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM
+open Stele ABI Ethereum Ethereum.EVM
 
 namespace Reasoning.Theory
 
@@ -2773,7 +2773,7 @@ end Reasoning.Theory
 
 namespace Reasoning.Theory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 set_option autoImplicit false
 set_option maxRecDepth 2000000

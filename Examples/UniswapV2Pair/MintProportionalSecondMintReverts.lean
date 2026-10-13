@@ -1,7 +1,7 @@
 import Examples.UniswapV2Pair.MintInitialSecondMintReverts
 import Examples.UniswapV2Pair.MintProportionalFinish
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -20,8 +20,8 @@ theorem uniswapMintProportionalUpdateFirstBoundFromAfterFeeCase
     (hdispatch : dispatchMsg contract I.calldata = some mintTransition)
     (hsz36 : 36 ≤ I.calldata.size)
     (hwv : I.weiValue = ⟨0⟩)
-    (hunlockedSolm :
-      Solm.EVM.storageLoad
+    (hunlockedStele :
+      Stele.EVM.storageLoad
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
           ⟨12⟩ =
@@ -133,7 +133,7 @@ theorem uniswapMintProportionalUpdateFirstBoundFromAfterFeeCase
       (uniswapUint256Value (mintFunctionTotalSupplyWord evmAfter))
   have hprefix :=
     uniswapMintAfterMintFeeTotalSupplyPrefix_of_call evmS evm0S evm1S evmAfter I
-      nextLocals (by simp only [evmS, initState]; exact hwv) hunlockedSolm hguard0
+      nextLocals (by simp only [evmS, initState]; exact hwv) hunlockedStele hguard0
       hguard1 hcall0 hdec0 hcall1 hdec1 hle0Source hle1Source hfee hbase
   have htoAfter :
       afterTotalSupplyLocals.get? "to" = some (.address recipient) := by
@@ -256,8 +256,8 @@ theorem uniswapMintProportionalUpdateSecondBoundFromAfterFeeCase
     (hdispatch : dispatchMsg contract I.calldata = some mintTransition)
     (hsz36 : 36 ≤ I.calldata.size)
     (hwv : I.weiValue = ⟨0⟩)
-    (hunlockedSolm :
-      Solm.EVM.storageLoad
+    (hunlockedStele :
+      Stele.EVM.storageLoad
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
           ⟨12⟩ =
@@ -370,7 +370,7 @@ theorem uniswapMintProportionalUpdateSecondBoundFromAfterFeeCase
       (uniswapUint256Value (mintFunctionTotalSupplyWord evmAfter))
   have hprefix :=
     uniswapMintAfterMintFeeTotalSupplyPrefix_of_call evmS evm0S evm1S evmAfter I
-      nextLocals (by simp only [evmS, initState]; exact hwv) hunlockedSolm hguard0
+      nextLocals (by simp only [evmS, initState]; exact hwv) hunlockedStele hguard0
       hguard1 hcall0 hdec0 hcall1 hdec1 hle0Source hle1Source hfee hbase
   have htoAfter :
       afterTotalSupplyLocals.get? "to" = some (.address recipient) := by
@@ -499,8 +499,8 @@ theorem uniswapMintProportionalSecondMintTotalSupplyOverflowFromAfterFeeCase
     (hdispatch : dispatchMsg contract I.calldata = some mintTransition)
     (hsz36 : 36 ≤ I.calldata.size)
     (hwv : I.weiValue = ⟨0⟩)
-    (hunlockedSolm :
-      Solm.EVM.storageLoad
+    (hunlockedStele :
+      Stele.EVM.storageLoad
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
           ⟨12⟩ =
@@ -613,7 +613,7 @@ theorem uniswapMintProportionalSecondMintTotalSupplyOverflowFromAfterFeeCase
       "liquidity" (some [minFunctionResultValue liquidity0 liquidity1])
   have hprefix :=
     uniswapMintAfterMintFeeTotalSupplyPrefix_of_call evmS evm0S evm1S evmAfter I
-      nextLocals (by simp only [evmS, initState]; exact hwv) hunlockedSolm hguard0
+      nextLocals (by simp only [evmS, initState]; exact hwv) hunlockedStele hguard0
       hguard1 hcall0 hdec0 hcall1 hdec1 hle0Source hle1Source hfee hbase
   have htoAfterTotal :
       afterTotalSupplyLocals.get? "to" = some (.address recipient) := by
@@ -738,8 +738,8 @@ theorem uniswapMintProportionalSecondMintBalanceOverflowFromAfterFeeCase
     (hsz36 : 36 ≤ I.calldata.size)
     (hperm : I.perm = true)
     (hwv : I.weiValue = ⟨0⟩)
-    (hunlockedSolm :
-      Solm.EVM.storageLoad
+    (hunlockedStele :
+      Stele.EVM.storageLoad
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
           ⟨12⟩ =
@@ -860,7 +860,7 @@ theorem uniswapMintProportionalSecondMintBalanceOverflowFromAfterFeeCase
       "liquidity" (some [minFunctionResultValue liquidity0 liquidity1])
   have hprefix :=
     uniswapMintAfterMintFeeTotalSupplyPrefix_of_call evmS evm0S evm1S evmAfter I
-      nextLocals (by simp only [evmS, initState]; exact hwv) hunlockedSolm hguard0
+      nextLocals (by simp only [evmS, initState]; exact hwv) hunlockedStele hguard0
       hguard1 hcall0 hdec0 hcall1 hdec1 hle0Source hle1Source hfee hbase
   have htoAfterTotal :
       afterTotalSupplyLocals.get? "to" = some (.address recipient) := by

@@ -1,7 +1,7 @@
 import Benchmarks.EAS.EAS.VerifyDigest
 import Benchmarks.EAS.EAS.NonceSource
 import Benchmarks.EAS.EAS.RequestMemory
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 set_option maxRecDepth 10000
 

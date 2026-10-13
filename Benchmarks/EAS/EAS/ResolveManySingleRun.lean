@@ -2,7 +2,7 @@ import Benchmarks.EAS.EAS.ResolveOneCall
 import Benchmarks.EAS.EAS.ResolveManyEntry
 import Benchmarks.EAS.EAS.ResolveManySource
 import Benchmarks.EAS.EAS.RecordArrayMemory
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.EAS.EAS.Immutables
 namespace Benchmarks.EAS.EAS
 set_option maxRecDepth 10000

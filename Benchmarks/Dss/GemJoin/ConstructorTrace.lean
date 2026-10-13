@@ -7,7 +7,7 @@ This module preserves the constructor-trace import path while the trace proof is
 across smaller files.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.GemJoin
 

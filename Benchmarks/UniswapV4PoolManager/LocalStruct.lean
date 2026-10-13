@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV4PoolManager.PoolKeySource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 -- LIBRARY CANDIDATE: update one field of a struct held in a local variable.

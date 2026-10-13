@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.WordArrayInPlace
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 -- LIBRARY CANDIDATE: updating one allocated region preserves a later disjoint region.

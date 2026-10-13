@@ -1,19 +1,19 @@
-import Solm.Semantics
-import Solm.SolidityLayout
-import Solm.SolidityStorage
-import Solm.MetaSolidityLayout
+import Stele.Semantics
+import Stele.SolidityLayout
+import Stele.SolidityStorage
+import Stele.MetaSolidityLayout
 
 /-!
-# ERC20 — Solm specification for `ERC20.sol`
+# ERC20 — Stele specification for `ERC20.sol`
 
-This is the Solm-level specification for the core ERC20 surface:
+This is the Stele-level specification for the core ERC20 surface:
 `totalSupply`, `balanceOf`, `allowance`, `approve`, `transfer`, and `transferFrom`.
 The mutating transitions `emit` the standard events where the runtime bytecode logs them; the log
 itself is not modelled.  The compiled constructor prefix used here logs nothing, so the spec
 constructor has no `emit`.
 -/
 
-open Solm ABI
+open Stele ABI
 
 namespace ERC20
 

@@ -3,7 +3,7 @@ import Benchmarks.EAS.EAS.AttestPublicSource
 import Benchmarks.EAS.EAS.MultiRequestArrayDecode
 import Benchmarks.EAS.EAS.MergeUIDSource
 import Benchmarks.EAS.EAS.HeapResultBlock
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 set_option maxRecDepth 10000
 
@@ -103,7 +103,7 @@ theorem multiAttestAllocateSource {L imms : Store} {evm : EVM.State} {requests :
   dsimp only
   have hd' (next : Nat) : (allocateBlockLocals L next).get? "multiRequests"=some (.array requests) := by
     simpa (disch := decide) only [allocateBlockLocals_get] using hd
-  have hs := batchAttestAllocateSource (length := multiAttestLength) (evalLocalArrayLength (cfg := config) (solm := {contract := contract,locals := L,immutables := imms}) (evm := evm) hd)
+  have hs := batchAttestAllocateSource (length := multiAttestLength) (evalLocalArrayLength (cfg := config) (stele := {contract := contract,locals := L,immutables := imms}) (evm := evm) hd)
     (fun next => evalLocalArrayLength (hd' next)) hh hlen
   dsimp only at hs
   split <;> rename_i hg

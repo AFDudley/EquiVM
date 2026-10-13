@@ -1,5 +1,5 @@
 import Benchmarks.Scaffolds.Klima.Constructor
-import Solm.Refine
+import Stele.Refine
 
 /-!
 # KlimaDAO KlimaToken benchmark correctness stub
@@ -10,7 +10,7 @@ the `ITWAPOracle` external ABI, and the `ecrecover`/`permit` semantics are prese
 runtime-equivalence proof is intentionally left as the benchmark target.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM
+open Stele ABI Ethereum Ethereum.EVM
 
 namespace Benchmarks.Klima
 

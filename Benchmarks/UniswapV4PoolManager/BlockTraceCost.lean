@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.BlockResultTrace
 import Benchmarks.UniswapV4PoolManager.ReachCost
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 -- LIBRARY CANDIDATE: rebase a block's successful cursor to preserve the incoming cost floor.

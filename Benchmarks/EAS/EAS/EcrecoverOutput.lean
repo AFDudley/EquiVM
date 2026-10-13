@@ -1,5 +1,5 @@
 import Benchmarks.EAS.EAS.StaticCallBridge
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 -- LIBRARY CANDIDATE: leading zero bytes do not change a big-endian byte-array value.

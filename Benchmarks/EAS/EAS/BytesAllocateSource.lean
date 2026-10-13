@@ -1,6 +1,6 @@
 import Benchmarks.EAS.EAS.BytesAllocation
 import Benchmarks.EAS.EAS.ArrayAllocateSource
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 -- LIBRARY CANDIDATE: the shared length guard and allocation of a dynamic byte sequence.

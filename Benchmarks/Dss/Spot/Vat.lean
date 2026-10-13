@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Spot.Dispatch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Spot
 
@@ -55,7 +55,7 @@ theorem spotVatBodyCore {σ σ₀ A I} {g : UInt256}
         (.returned { contract := contract, locals := ∅ }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.address (AccountAddress.ofNat (spotVatWord σ I).toNat))])) := by
-    simpa [vatTransition, spotVatWord, solcAddressSlotWord, initState, Solm.EVM.storageLoad,
+    simpa [vatTransition, spotVatWord, solcAddressSlotWord, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       spotAddressGetterBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅

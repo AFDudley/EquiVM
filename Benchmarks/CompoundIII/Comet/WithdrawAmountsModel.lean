@@ -1,7 +1,7 @@
 import Benchmarks.CompoundIII.Comet.SignedArithmeticWords
 import Benchmarks.CompoundIII.Comet.Spec
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 

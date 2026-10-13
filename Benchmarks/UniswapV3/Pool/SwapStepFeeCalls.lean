@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.SwapStepCapSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 1000
 
@@ -46,7 +46,7 @@ theorem swapStepFeeCallReturns (imms : Store) (evm : EVM.State) (a : SwapStepArg
       (.internalCall "FullMath_mulDivRoundingUp" swapStepFeeArgs "__c17")
       (.ok (swapStepFeeCallFrame imms a) evm) := by
   exact internalCallFunctionReturn (callee := fullMathRoundFunction)
-    (calleeSolm := fullMathRoundFinalFrame imms (swapStepAmount a true) a.fee
+    (calleeStele := fullMathRoundFinalFrame imms (swapStepAmount a true) a.fee
       (swapStepComplement a))
     (locals := fullMathLocals (swapStepAmount a true) a.fee (swapStepComplement a))
     (value := some [.int (Int.ofNat (fullMathRoundResult (swapStepAmount a true) a.fee

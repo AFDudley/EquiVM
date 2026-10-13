@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.TickUpdateInitializeSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 1000
 
@@ -22,7 +22,7 @@ theorem tickUpdateStatic (imms : Store) (evm : EVM.State) (a : TickUpdateArgs)
       apply ExecBlock.consStatic
       apply execStmt_assign_static (slot := ⟨"info", [.field "feeGrowthOutside0X128"]⟩)
         (rhs := .var "feeGrowthGlobal0X128")
-        (solm' := tickUpdateFlippedFrame imms a evm)
+        (stele' := tickUpdateFlippedFrame imms a evm)
         (evm' := tickFeeOutsideState evm a.tick false a.global0) ?_ hp
       exact ExecStmt.assign (evalExpr_var_get (name := "feeGrowthGlobal0X128")
         (by tick_update_get))
@@ -32,7 +32,7 @@ theorem tickUpdateStatic (imms : Store) (evm : EVM.State) (a : TickUpdateArgs)
         (by simpa only [ht, decide_false] using hc.2) ExecBlock.nil) ?_
       apply ExecBlock.consStatic
       apply execStmt_assign_static (slot := ⟨"info", [.field "initialized"]⟩)
-        (solm' := tickUpdateFlippedFrame imms a evm)
+        (stele' := tickUpdateFlippedFrame imms a evm)
         (rhs := .boolLit true) (evm' := tickHistoryState evm a.tick .initialized ⟨1⟩) ?_ hp
       exact ExecStmt.assign (expr := .boolLit true) (by simp only [evalExpr?, pure])
         (assignTickHistory (tickUpdateFlippedFrame imms a evm).locals imms evm "info" a.tick

@@ -1,5 +1,5 @@
 import Examples.Caller.Spec
-import Solm.Semantics
+import Stele.Semantics
 import Ethereum.Semantics
 import Reasoning.JumpDest
 
@@ -8,7 +8,7 @@ import Reasoning.JumpDest
 `callerBytecode` is `solc --bin-runtime --evm-version shanghai Caller.sol` (optimizer OFF), the same
 recipe that produced `powBytecode`. -/
 
-open Solm Ethereum Ethereum.EVM
+open Stele Ethereum Ethereum.EVM
 
 def callerBytecode : ByteArray :=
   ⟨#[96, 128, 96, 64, 82, 52, 128, 21, 97, 0, 15, 87, 95, 95, 253, 91, 80, 96, 4, 54, 16, 97, 0, 41,
@@ -47,10 +47,10 @@ set_option maxHeartbeats 0 in
 set_option maxRecDepth 1000000 in
 /-- `keccak("run(address,uint256)")[0:4] = 0x381fd190`. -/
 theorem callerSelectorBytes :
-    (KEC (String.toByteArray (Solm.transitionSigStr Caller.runTransition))).extract 0 4
+    (KEC (String.toByteArray (Stele.transitionSigStr Caller.runTransition))).extract 0 4
       = ⟨#[0x38, 0x1f, 0xd1, 0x90]⟩ := by
-  have hsig : Solm.transitionSigStr Caller.runTransition = "run(address,uint256)" := by
-    simp [Solm.transitionSigStr, ABI.printSignature, transitionSignature,
+  have hsig : Stele.transitionSigStr Caller.runTransition = "run(address,uint256)" := by
+    simp [Stele.transitionSigStr, ABI.printSignature, transitionSignature,
       Caller.runTransition, Caller.addr, Caller.uint256, ABI.abiToSigStr,
       ABI.elemToSigStr, ABI.intTypeToSigStr,
       show Nat.repr 256 = "256" by decide +kernel]

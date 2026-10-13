@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.SignedDivisionGeneral
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 -- LIBRARY CANDIDATE: a non-exact signed division leaves room to decrement its quotient.

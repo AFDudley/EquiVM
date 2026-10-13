@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.MemorySlice
 import Benchmarks.UniswapV4PoolManager.ConditionalMappingMemory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 -- LIBRARY CANDIDATE: mapping scratch words preserve every disjoint byte slice.

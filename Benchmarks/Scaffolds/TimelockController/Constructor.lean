@@ -1,5 +1,5 @@
 import Benchmarks.Scaffolds.TimelockController.Bytecode
-import Solm.Refine
+import Stele.Refine
 
 /-!
 # OpenZeppelin TimelockController constructor correctness stub
@@ -9,7 +9,7 @@ The creation bytecode deploys the concrete payable wrapper with initial delay `1
 constructor-equivalence proof is the benchmark target.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM
+open Stele ABI Ethereum Ethereum.EVM
 
 namespace OpenZeppelinBench.TimelockController
 

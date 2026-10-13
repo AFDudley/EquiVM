@@ -1,7 +1,7 @@
 import Examples.OpenZeppelinBench.ERC6909.Storage
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -141,7 +141,7 @@ theorem erc6909BalanceOfBodyReturns (evm : EVM.State) (I : ExecutionEnv)
     ExecTransitionBody config contract evm (balanceOfStore I) balanceOfTransition.body
       (.returned { contract := contract, locals := balanceOfStore I } evm
         (some [(.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (balanceOfSlot I)).toNat))])) := by
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (balanceOfSlot I)).toNat))])) := by
   exact ExecFuncBody.execBlockRet <|
     (ABlock.start.requireStep (evalCallvalueEq_true h)).returns (by
       rw [evalExpr_storage_scalar (hbackend := rfl) (t := .int uint256Int)
@@ -670,7 +670,7 @@ theorem erc6909BalanceOfBodyCore
               (.returned { contract := contract, locals := balanceOfStore I }
                 (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                 (some [(.int (Int.ofNat (balanceOfWord σ I).toNat))])) := by
-          simpa [balanceOfWord, balanceOfSlot, initState, Solm.EVM.storageLoad,
+          simpa [balanceOfWord, balanceOfSlot, initState, Stele.EVM.storageLoad,
             State.lookupAccount] using erc6909BalanceOfBodyReturns
               (initState σ σ₀ (Sat256.ofUInt256 g) A I) I
               (by simp only [initState]; exact hwv)

@@ -2,7 +2,7 @@ import Benchmarks.EAS.EAS.AttestRequestSite
 import Benchmarks.EAS.EAS.AttestRecordRegion
 import Benchmarks.EAS.EAS.RequestArrayMemory
 import Benchmarks.EAS.EAS.WordArrayReflect
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 structure AttestLoopMemory (mem : ByteArray) (site : UIDSite) (t3 t4 uidPtr : UInt256)

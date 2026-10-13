@@ -1,7 +1,7 @@
 import Benchmarks.EAS.EAS.BytesLongWord
 import Benchmarks.EAS.EAS.BytesLongLoop
 import Benchmarks.EAS.EAS.BytesPayloadWords
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.EAS.EAS.Immutables
 namespace Benchmarks.EAS.EAS
 

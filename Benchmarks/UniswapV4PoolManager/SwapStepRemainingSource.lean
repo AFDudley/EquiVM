@@ -2,7 +2,7 @@ import Benchmarks.UniswapV4PoolManager.SwapStepRemainingWords
 import Benchmarks.UniswapV4PoolManager.SwapStepFeeSource
 import Benchmarks.UniswapV4PoolManager.WordSignedSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 def swapStepRemainingExpr : Expr :=

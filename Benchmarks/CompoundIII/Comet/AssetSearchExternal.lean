@@ -2,7 +2,7 @@ import Benchmarks.CompoundIII.Comet.AssetExternal
 import Benchmarks.CompoundIII.Comet.AssetSearch
 import Benchmarks.CompoundIII.Comet.AddressGetter
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.CompoundIII.Comet.Immutables
 
 namespace Benchmarks.CompoundIII.Comet

@@ -1,7 +1,7 @@
 import Benchmarks.EAS.EAS.ArrayTableAllocate
 import Benchmarks.EAS.EAS.WordArrayPrefix
 import Benchmarks.EAS.EAS.ArrayDisjoint
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 -- LIBRARY CANDIDATE: a pointer table whose filled entries point above the complete table.

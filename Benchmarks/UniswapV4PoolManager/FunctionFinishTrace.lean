@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV4PoolManager.FunctionResultTrace
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 -- LIBRARY CANDIDATE: finishing a block preserves an already terminal function trace.

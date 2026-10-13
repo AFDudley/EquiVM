@@ -3,18 +3,18 @@ import Examples.CtorStore.Bytecode
 import Reasoning.Memory
 import Reasoning.Solc
 import Reasoning.Dispatch
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 import Reasoning.Reach
-import Solm.Refine
+import Stele.Refine
 
 /-!
 # CtorStore — whole-contract equivalence for a constructor storage write
 
 The constructor takes one ABI-encoded `uint256` argument and stores it in slot 0.  The runtime has no
-public transitions, so every runtime call reverts and corresponds to Solm no-dispatch.
+public transitions, so every runtime call reverts and corresponds to Stele no-dispatch.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 10000
 
@@ -336,14 +336,14 @@ theorem ctorStoreCtorBodyReturns (evm : EVM.State) (locals : Store) (i : Int)
   show evalExpr? ctorStoreConfig _ evm (.var "x") = .ok (.int i)
   simp only [evalExpr?, EvalResult.ofOption, hx]
 
-theorem ctorStoreSolmCtorExec
+theorem ctorStoreSteleCtorExec
     {σ : Ethereum.AccountMap}
     {σ₀ : Ethereum.AccountMap}
     {g : Ethereum.UInt256}
     {A : Ethereum.Substate}
     {I : Ethereum.ExecutionEnv}
     (i : Int) (h0 : 0 ≤ i) :
-    solmCtorExec ctorStoreConfig CtorStore.contract [.int i] σ σ₀ g A I
+    steleCtorExec ctorStoreConfig CtorStore.contract [.int i] σ σ₀ g A I
       (.returned
         { contract := CtorStore.contract
           locals := Std.HashMap.ofList (List.zip (CtorStore.contract.ctor.params.map Param.name) [.int i]) }
@@ -351,7 +351,7 @@ theorem ctorStoreSolmCtorExec
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           I.codeOwner ⟨0⟩ (EVM.word i.toNat))
         none) := by
-  refine solmCtorExec.intro
+  refine steleCtorExec.intro
     (evmState := initState σ σ₀ (Sat256.ofUInt256 g) A I)
     (argsStore := Std.HashMap.ofList (List.zip (CtorStore.contract.ctor.params.map Param.name) [.int i]))
     ?_ rfl rfl ?_
@@ -360,7 +360,7 @@ theorem ctorStoreSolmCtorExec
       (by simp [CtorStore.contract, CtorStore.ctor])
       (by simp [CtorStore.contract, CtorStore.ctor])
 
-/-- The creation/initcode bytecode refines the Solm constructor specification. -/
+/-- The creation/initcode bytecode refines the Stele constructor specification. -/
 theorem ctorStoreConstructorCorrect :
     typedConstructorRefinement ctorStoreConfig ctorStoreInitcode CtorStore.contract
       (fun _ => ctorStoreRuntimeBytecode) := by
@@ -381,7 +381,7 @@ theorem ctorStoreConstructorCorrect :
       simpa [initState, Sat256.ofUInt256] using hX)
     rw [hacc] at hsuccess
     refine typedConstructorRefinementFor.execution hsuccess
-      (ctorStoreSolmCtorExec (σ := σ) (σ₀ := σ₀) (g := g) (A := A) (I := I)
+      (ctorStoreSteleCtorExec (σ := σ) (σ₀ := σ₀) (g := g) (A := A) (I := I)
         i h0) ?_
     refine ctorResultEquiv.success rfl rfl ?_ rfl
     simp [storageStore_accountMap, initState]

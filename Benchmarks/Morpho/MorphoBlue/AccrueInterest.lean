@@ -1,7 +1,7 @@
 import Benchmarks.Morpho.MorphoBlue.AccruePublicSource
 import Benchmarks.Morpho.MorphoBlue.AccruePublicRoutines
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MorphoBlue.Immutables
 namespace Benchmarks.Morpho.MorphoBlue
@@ -85,7 +85,7 @@ theorem morphoAccrueInterestBody {σ σ₀ A I} {g : UInt256} (v : MorphoImmutab
             | @ok frame' evm' value σ' mem' fp' aw' rdata' k' C' hb hv hs' hm' hr =>
               have hcall := morphoAccrueInternalOk p _ (immStore v) _ evm' frame' value
                 (.var "marketParams") (.var "id") "__c1" hparams hid hb
-              have hsolm : ExecTransitionBody config contract (initState σ σ₀ (.ofUInt256 g) A I)
+              have hstele : ExecTransitionBody config contract (initState σ σ₀ (.ofUInt256 g) A I)
                   (createMarketArgs p) accrueInterestTransition.body
                   (.returned (resumeAfterInternalCall (createMarketFrame p I.calldata (immStore v)) "__c1" value) evm' none)
                   (immStore v) :=
@@ -93,7 +93,7 @@ theorem morphoAccrueInterestBody {σ σ₀ A I} {g : UInt256} (v : MorphoImmutab
               have hx := morphoBlocks.morpho_block_1211 (immWords := wordsOf (immStore v)) (by simp) hr
               have hx' : RDret (deployedRuntime v) (.ofUInt256 g) (initState σ σ₀ (.ofUInt256 g) A I) σ' ByteArray.empty := by
                 simpa only [show (UInt256.ofNat 0).toNat = 0 from rfl, byteArray_readWithPadding_zero] using hx
-              exact reEquivSelectorExecutionGen hcode hx' hd hdec hsolm hs'.accounts
+              exact reEquivSelectorExecutionGen hcode hx' hd hdec hstele hs'.accounts
                 (.fallthrough rfl rfl (by native_decide))
           · exact reEquivSelectorRevert hcode
               (morphoAccruePublicGuardReverts (v := v) p (not_not.mp hcreated) rd1) hd hdec

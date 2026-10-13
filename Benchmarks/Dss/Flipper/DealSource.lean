@@ -1,7 +1,7 @@
 import Benchmarks.Dss.Flipper.BidDelete
 import Benchmarks.Dss.Flipper.ExternalTargets
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 0
@@ -230,7 +230,7 @@ theorem evalExpr_dealIlk_ofLocals {evm : EVM.State} {locals : Store}
     evalExpr? config { contract := contract, locals := locals } evm
       (.storage ilkRef) =
         .ok (.fixedBytes bytes32Width
-          (EVM.Word.toBytesBE (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩))) := by
+          (EVM.Word.toBytesBE (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩))) := by
   rw [evalExpr_storage_scalar (hbackend := rfl)
     (t := .bytes bytes32Width)
     (er := ({ base := "ilk", steps := [] } : EvaledStorageRef))
@@ -247,12 +247,12 @@ theorem evalExpr_dealIlk {evm : EVM.State} :
     evalExpr? config { contract := contract, locals := dealLocals evm.executionEnv } evm
       (.storage ilkRef) =
         .ok (.fixedBytes bytes32Width
-          (EVM.Word.toBytesBE (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩))) := by
+          (EVM.Word.toBytesBE (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩))) := by
   exact evalExpr_dealIlk_ofLocals (dealLocals_get_ilk evm.executionEnv)
 
 abbrev dealClawArgValsOf (evm : EVM.State) (id : UInt256) : List Value :=
   [.int (Int.ofNat
-    (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+    (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
       (bidSlotOfWord id ⟨5⟩)).toNat)]
 
 abbrev dealClawArgVals (evm : EVM.State) : List Value :=
@@ -260,15 +260,15 @@ abbrev dealClawArgVals (evm : EVM.State) : List Value :=
 
 abbrev dealFluxArgValsOf (evm : EVM.State) (id : UInt256) : List Value :=
   [.fixedBytes bytes32Width
-      (EVM.Word.toBytesBE (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩)),
+      (EVM.Word.toBytesBE (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩)),
     .address evm.executionEnv.codeOwner,
     .address (AccountAddress.ofNat
       (UInt256.land
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
           (bidPackedSlotOfWord id))
         solcAddrMask).toNat),
     .int (Int.ofNat
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (bidSlotOfWord id ⟨1⟩)).toNat)]
 
 abbrev dealFluxArgVals (evm : EVM.State) : List Value :=

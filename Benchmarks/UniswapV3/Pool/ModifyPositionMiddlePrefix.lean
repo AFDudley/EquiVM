@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.ModifyPositionMiddleModel
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
@@ -24,7 +24,7 @@ theorem modifyPositionMiddlePrefixSource (v : UniswapV3PoolImmutables)
       (modifyPositionUpdatedState v a evm) (.internalCall "_blockTimestamp" [] "__c6")
       (.ok (modifyPositionMiddleTimeFrame v a evm) (modifyPositionUpdatedState v a evm)) := by
     exact internalCallFunctionReturn (callee := blockTimestampFunction) (argVals := []) (locals := ∅)
-      (calleeSolm := {contract := contract, locals := ∅, immutables := immStore v})
+      (calleeStele := {contract := contract, locals := ∅, immutables := immStore v})
       (value := some [.int (Int.ofNat (modifyPositionMiddleOracleArgs v a evm).time.toNat)])
       (by rfl) blockTimestampLookup rfl (blockTimestampReturns (immStore v) _)
   exact ExecBlock.consNormal hli (ExecBlock.consNormal hcall ExecBlock.nil)

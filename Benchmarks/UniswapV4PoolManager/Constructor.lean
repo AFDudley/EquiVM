@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.ConstructorSupport
 import Benchmarks.UniswapV4PoolManager.CreationBlocks_001
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.UniswapV4PoolManager.Immutables
 namespace Benchmarks.UniswapV4PoolManager
@@ -19,8 +19,8 @@ def ctorFinalImms (original : AccountAddress) : Store :=
   (initialImmutables contract).insert "original" (.address original)
 
 def ctorPost (evm : EVM.State) (initialOwner : AccountAddress) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨0⟩
-    (setAddressOffset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩) (accountWord initialOwner))
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨0⟩
+    (setAddressOffset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩) (accountWord initialOwner))
 
 theorem ctorArgLocals_get (a : AccountAddress) :
     (ctorArgLocals a).get? "initialOwner" = some (.address a) := by simp [ctorArgLocals]
@@ -237,21 +237,21 @@ theorem ctorTrace {σ σ₀ A I} {g : Sat256} (a : AccountAddress)
     exact ctorPatchedReturn _ _
   exact (congrArg₂ (fun acc bytes => RDret (ctorCode a) g (initState σ σ₀ g A I) acc bytes) hacc hout).mp hret
 
-theorem ctorSolmExecSuccess {σ σ₀ A I} {g : UInt256} (a : AccountAddress)
+theorem ctorSteleExecSuccess {σ σ₀ A I} {g : UInt256} (a : AccountAddress)
     (hwv : I.weiValue = ⟨0⟩) :
-    solmCtorExec config contract [.address a] σ σ₀ g A I
+    steleCtorExec config contract [.address a] σ σ₀ g A I
       (.returned
         { contract := contract
           locals := ctorFinalLocals a
           immutables := ctorFinalImms I.codeOwner }
         (ctorPost (initState σ σ₀ (Sat256.ofUInt256 g) A I) a) none) := by
-  exact solmCtorExec.intro rfl rfl rfl
+  exact steleCtorExec.intro rfl rfl rfl
     (ctorBodyReturns (initState σ σ₀ (Sat256.ofUInt256 g) A I) a hwv)
 
-theorem ctorSolmExecReverts {σ σ₀ A I} {g : UInt256} (a : AccountAddress)
+theorem ctorSteleExecReverts {σ σ₀ A I} {g : UInt256} (a : AccountAddress)
     (hwv : I.weiValue ≠ ⟨0⟩) :
-    solmCtorExec config contract [.address a] σ σ₀ g A I .reverted := by
-  exact solmCtorExec.intro (evmState := initState σ σ₀ (Sat256.ofUInt256 g) A I)
+    steleCtorExec config contract [.address a] σ σ₀ g A I .reverted := by
+  exact steleCtorExec.intro (evmState := initState σ σ₀ (Sat256.ofUInt256 g) A I)
     (argsStore := ctorArgLocals a) rfl rfl rfl (bodyReverts_nonPayable hwv)
 
 theorem ctorTraceReverts {σ σ₀ A I} {g : Sat256} (a : AccountAddress)
@@ -277,7 +277,7 @@ theorem poolManagerConstructorCorrect :
     rcases RDretXiResultAccountMap hcodeCtor hrd with hoog | ⟨g', A', hsuccess⟩
     · exact .outOfGas (by simpa [Sat256.ofUInt256] using hoog)
     · exact .execution (by simpa [Sat256.ofUInt256] using hsuccess)
-        (ctorSolmExecSuccess a hwv)
+        (ctorSteleExecSuccess a hwv)
         (ctorResultEquiv.success rfl rfl rfl (ctorFinalImms_deployed I.codeOwner).symm)
         (ctorFinalImms_fit I.codeOwner)
   · have hrd := ctorTraceReverts (σ := σ) (σ₀ := σ₀) (A := A) (g := Sat256.ofUInt256 g)
@@ -285,6 +285,6 @@ theorem poolManagerConstructorCorrect :
     rcases hrd.xiResult hcodeCtor with hoog | ⟨g', o, hrev⟩
     · exact .outOfGas (by simpa [Sat256.ofUInt256] using hoog)
     · exact .execution (by simpa [Sat256.ofUInt256] using hrev)
-        (ctorSolmExecReverts a hwv) (ctorResultEquiv.revert rfl rfl) trivial
+        (ctorSteleExecReverts a hwv) (ctorResultEquiv.revert rfl rfl) trivial
 
 end Benchmarks.UniswapV4PoolManager

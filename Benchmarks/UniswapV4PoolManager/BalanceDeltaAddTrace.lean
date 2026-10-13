@@ -3,7 +3,7 @@ import Benchmarks.UniswapV4PoolManager.SafeCast128Trace
 import Benchmarks.UniswapV4PoolManager.FunctionResultTrace
 import Benchmarks.UniswapV4PoolManager.RuntimeBlocks_018
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.UniswapV4PoolManager.Immutables
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000

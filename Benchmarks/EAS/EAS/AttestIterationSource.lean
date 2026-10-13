@@ -3,7 +3,7 @@ import Benchmarks.EAS.EAS.RequestGuards
 import Benchmarks.EAS.EAS.RecordStoreRun
 import Benchmarks.EAS.EAS.RefUIDRun
 import Benchmarks.EAS.EAS.RecordTailRun
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 abbrev attestFunction : FunctionDecl := contract.functions[14]!

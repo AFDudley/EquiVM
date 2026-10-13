@@ -1,8 +1,8 @@
 import Benchmarks.Dss.ExponentialDecrease.Spec
-import Solm.Notation
+import Stele.Notation
 
 /-!
-# ExponentialDecrease spec in the Solidity-faithful Solm frontend
+# ExponentialDecrease spec in the Solidity-faithful Stele frontend
 
 The whole `abaci.sol` `ExponentialDecrease` spec (including the `rpow` while-loop) written with
 `solidity%` and proven definitionally equal to the AST spec in `Spec.lean`.  Checked-math helpers
@@ -10,7 +10,7 @@ are inlined as surface statements; `"cut"` is the big-endian `bytes32` literal; 
 spec's `RAY` constant.  Transition order matches `contract.transitions` (selector order).
 -/
 
-open Solm Solm.Notation Benchmarks.Dss.ExponentialDecrease
+open Stele Stele.Notation Benchmarks.Dss.ExponentialDecrease
 
 namespace Benchmarks.Dss.ExponentialDecrease.Syntax
 

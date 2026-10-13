@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.TickLogMsbSource
 import Benchmarks.UniswapV3.Pool.WordShiftBits
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 def tickLogMsbAmount (r : UInt256) (bits : Nat) : Nat :=

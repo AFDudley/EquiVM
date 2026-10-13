@@ -2,7 +2,7 @@ import Benchmarks.CompoundIII.Comet.CollateralReservesInternal
 import Benchmarks.CompoundIII.Comet.TransferInEvm
 import Benchmarks.CompoundIII.Comet.MappingScratch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.CompoundIII.Comet.Immutables
 
 namespace Benchmarks.CompoundIII.Comet

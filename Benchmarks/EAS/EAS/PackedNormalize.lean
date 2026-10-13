@@ -1,6 +1,6 @@
 import Benchmarks.EAS.EAS.PackedSlice
 import Benchmarks.EAS.EAS.LowPacked
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 -- LIBRARY CANDIDATE: full-word and low-field specializations of the generic packed write.

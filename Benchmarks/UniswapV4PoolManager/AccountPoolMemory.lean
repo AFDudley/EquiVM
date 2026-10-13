@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.AccountPoolTrace
 import Benchmarks.UniswapV4PoolManager.PoolKeyPreservation
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 theorem PoolKeyView.accountDelta {mem ptr key} (h : PoolKeyView mem ptr key)

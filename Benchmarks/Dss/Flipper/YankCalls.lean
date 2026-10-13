@@ -3,7 +3,7 @@ import Reasoning.WordArithmetic
 import Benchmarks.Dss.Flipper.Yank
 import Benchmarks.Dss.Flipper.BidDelete
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxHeartbeats 0
 
@@ -462,7 +462,7 @@ theorem evalExpr_bidBid_of_get_id_evm {evm : EVM.State} {locals : Store}
     evalExpr? config { contract := contract, locals := locals } evm
       (.storage (bidsF (.var "id") "bid")) =
         .ok (.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (bidBaseOfWord id)).toNat)) := by
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (bidBaseOfWord id)).toNat)) := by
   rw [evalExpr_storage_scalar (hbackend := rfl)
     (t := .int uint256Int)
     (loc := wordLoc (bidBaseOfWord id))
@@ -484,10 +484,10 @@ abbrev yankMoveArgValsOf (evm : EVM.State) (id : UInt256) : List Value :=
     .address
       (AccountAddress.ofNat
         (UInt256.land
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (bidPackedSlotOfWord id))
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (bidPackedSlotOfWord id))
           solcAddrMask).toNat),
     .int (Int.ofNat
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (bidBaseOfWord id)).toNat)]
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (bidBaseOfWord id)).toNat)]
 
 theorem evalExprs_yankMoveArgs_ofLocals {evm : EVM.State} {locals : Store} {id : UInt256}
     (hid : locals.get? "id" = some (.int (Int.ofNat id.toNat)))
@@ -620,7 +620,7 @@ theorem flipperYankX_vatPostCall
       (by rfl)
       ?_ ?_
     · simpa [yankFluxArgValsOf, initState, solcSlotWordAt, solcSlotWord,
-        Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
+        Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
         bidLotWord, bidSlotOfWord, bidBaseOfWord] using
         yankVatFluxCallMem_encode σmem σ I
     · simpa [initState] using hΘ
@@ -1548,7 +1548,7 @@ theorem flipperYankX_movePostCall
       (by rfl)
       ?_ ?_
     · simpa [yankMoveArgValsOf, initState, solcSlotWordAt, solcSlotWord,
-        Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
+        Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
         bidGuyWord, bidPackedSlotOfWord, bidBaseOfWord, solcAddressSlotWord] using
         yankVatMoveCallMem_encode σmem σflux σ I
     · simpa [initState] using hΘ

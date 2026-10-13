@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MorphoBlue.RepayCallbackSource
 import Benchmarks.Morpho.MorphoBlue.RepayCallbackReach
 import Benchmarks.Morpho.MorphoBlue.LoanTransferPair
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MorphoBlue.Immutables
 namespace Benchmarks.Morpho.MorphoBlue

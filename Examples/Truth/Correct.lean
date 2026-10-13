@@ -3,7 +3,7 @@ import Examples.Truth.Spec
 import Examples.CtorTruth.Bytecode
 import Reasoning.ABI
 import Reasoning.Dispatch
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 import Reasoning.Stepping
 import Reasoning.Memory
 import Reasoning.Solc
@@ -14,15 +14,15 @@ import Reasoning.Constructor
 # Truth — runtime-equivalence proof for `truth()`
 
 Every call (`callvalue ≠ 0`, short calldata, wrong selector, and the `truth()` success path)
-is shown equivalent to the Solm spec via the generic `Reasoning` library. The selector fact in
+is shown equivalent to the Stele spec via the generic `Reasoning` library. The selector fact in
 `Bytecode.lean` is proved by kernel reduction; the jump table uses `native_decide`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 10000
 
-/-! ## 4. Truth-specific Solm-side facts -/
+/-! ## 4. Truth-specific Stele-side facts -/
 
 /-- Single-selector dispatch bundle (via `truthSelectorBytes`): `.eq` is the 4-byte calldata-prefix
     comparison, `.none_short` / `.none_nomatch` the no-dispatch cases. -/
@@ -36,7 +36,7 @@ theorem truthDispatch_unique {cd : ByteArray} {t : TransitionDecl}
   dispatch_unique rfl rfl h
 
 
-/-- With zero call value, the Solm body returns `true`: `require(callvalue == 0)` passes and
+/-- With zero call value, the Stele body returns `true`: `require(callvalue == 0)` passes and
     `return true` yields `(.bool true)` with the frame/EVM-state unchanged. -/
 theorem truthBodyReturns (evm : EVM.State) (locals : Store)
     (h : evm.executionEnv.weiValue = ⟨0⟩) :
@@ -175,7 +175,7 @@ set_option maxHeartbeats 800000 in
 /-- **The `truth()` success trace**.  With zero call value, ≥4-byte calldata and the matching
     selector, the dispatcher jumps into `truth()`, which stores the free pointer and the bool `1`
     in memory and `RETURN`s the 32-byte word `1`.  Accounts `σ` are preserved (no `SSTORE`);
-    the substate is dropped by `RDret` (the Solm equivalence ignores it).  Built compositionally off
+    the substate is dropped by `RDret` (the Stele equivalence ignores it).  Built compositionally off
     the dispatcher prefix as one `RDret`. -/
 theorem truthX_cvz_success {σ σ₀ A I} {g : Sat256}
     (hcode : I.code = truthBytecode) (hwv : I.weiValue = ⟨0⟩)
@@ -225,7 +225,7 @@ theorem truthReEquiv_callvalueZero
     runtimeRefinementFor truthConfig truthContract σ σ₀
       g.toUInt256 A I := by
   by_cases hsz : I.calldata.size < 4
-  · -- short calldata ⇒ EVM reverts, Solm fails to dispatch
+  · -- short calldata ⇒ EVM reverts, Stele fails to dispatch
     exact (truthX_cvz_short hcode hwv hsz).reEquivNoDispatch hcode (truthDispatch.none_short hsz)
   · rw [not_lt] at hsz
     by_cases hmatch : ((⟨#[0x9e, 0x9f, 0x51, 0xd2]⟩ : ByteArray) == I.calldata.extract 0 4) = true
@@ -237,20 +237,20 @@ theorem truthReEquiv_callvalueZero
         (truthBodyReturns (initState σ σ₀ g A I) ∅
           (by simp only [initState]; exact hwv))
         (returnEquiv_of_encode boolTrueReturnEncoding)
-    · -- wrong selector → EVM reverts at `0x26`, Solm fails to dispatch
+    · -- wrong selector → EVM reverts at `0x26`, Stele fails to dispatch
       rw [Bool.not_eq_true] at hmatch
       exact (truthX_cvz_revertB hcode hwv hsz hsize hmatch).reEquivNoDispatch hcode
         (truthDispatch.none_nomatch hmatch)
 
 /-! ## 6. The correctness statement -/
 
-/-- The runtime bytecode refines the Solm specification, for every initial state. -/
+/-- The runtime bytecode refines the Stele specification, for every initial state. -/
 theorem truthCorrect :
     runtimeRefinement truthConfig truthBytecode truthContract := by
   refine ⟨fun σ σ₀ g A I hcode hsize => ?_⟩
   by_cases hwv : I.weiValue = ⟨0⟩
   · exact truthReEquiv_callvalueZero (g := Sat256.ofUInt256 g) hcode hsize hwv
-  · -- callvalue ≠ 0: the non-payable guard reverts; the generic helper handles the Solm coupling
+  · -- callvalue ≠ 0: the non-payable guard reverts; the generic helper handles the Stele coupling
     exact (truthX_callvalue_ne (g := Sat256.ofUInt256 g) hcode hwv).reEquivNonPayable hcode rfl rfl
       fun _ca => bodyReverts_nonPayable (by simp only [initState]; exact hwv)
 
@@ -326,7 +326,7 @@ theorem truthInitcodeRun {σ σ₀ A I} {g : Sat256}
       truthFinal_read
       (by evm_ov)]
 
-/-- The creation/initcode bytecode refines the Solm constructor specification. -/
+/-- The creation/initcode bytecode refines the Stele constructor specification. -/
 theorem truthConstructorCorrect :
     typedConstructorRefinement truthConfig ctorTruthInitcode truthContract (fun _ => truthBytecode) :=
   emptyConstructorCorrect_of_RDret rfl rfl rfl (fun hcode => truthInitcodeRun hcode)

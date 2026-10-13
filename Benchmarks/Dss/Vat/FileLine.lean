@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Vat.Rely
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 50000000
 set_option maxHeartbeats 1000000
@@ -143,7 +143,7 @@ theorem evalExpr_fileLineWhatEq_false {evm : EVM.State} {I : ExecutionEnv} {loca
   all_goals decide
 
 theorem assign_fileLineStorage (evm : EVM.State) (I : ExecutionEnv) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨9⟩ (fileLineData I)
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨9⟩ (fileLineData I)
     assignStorageRef? config { contract := contract, locals := fileLineLocals I } evm
       .storage LineRef (.int (Int.ofNat (fileLineData I).toNat)) =
         .ok ({ contract := contract, locals := fileLineLocals I }, evm') := by
@@ -166,7 +166,7 @@ theorem vatFileLineSourceBodySplit {σ σ₀ A I} {g : UInt256}
     (hwhat : fileLineWhat I = fileLineBytes) :
     let locals := fileLineLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-    let evm1 := Solm.EVM.storageStore evm0 I.codeOwner ⟨9⟩ (fileLineData I)
+    let evm1 := Stele.EVM.storageStore evm0 I.codeOwner ⟨9⟩ (fileLineData I)
     ExecTransitionBody config contract evm0 locals fileLineTransition.body
       (.returned { contract := contract, locals := locals } evm1 none) ∧
     (I.perm = false →
@@ -228,7 +228,7 @@ theorem vatFileLineSourceBodyAuthReverts {σ σ₀ A I} {g : UInt256}
   simpa [fileLineTransition, nonpayable, auth] using
     nonpayableSecondRequireReverts
       (cfg := config)
-      (solm := { contract := contract, locals := locals })
+      (stele := { contract := contract, locals := locals })
       (evm := evm0)
       (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
       (rest := [
@@ -656,7 +656,7 @@ theorem vatFileLineBodyCoreOk
     runtimeRefinementFor config contract σ σ₀ g A I := by
   let locals := fileLineLocals I
   let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  let evm1 := Solm.EVM.storageStore evm0 I.codeOwner ⟨9⟩ (fileLineData I)
+  let evm1 := Stele.EVM.storageStore evm0 I.codeOwner ⟨9⟩ (fileLineData I)
   have hboth := vatFileLineSourceBodySplit (σ := σ)
     (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hauth hlive hwhat
   have hbody :

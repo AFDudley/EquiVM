@@ -1,6 +1,6 @@
 import Benchmarks.Safe.Main.CalldataBufferMemory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Safe.Main
 

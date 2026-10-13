@@ -1,7 +1,7 @@
 import Benchmarks.EAS.EAS.RevokeValuesLog
 import Benchmarks.EAS.EAS.RecordUID
 import Benchmarks.EAS.EAS.RevocationRequestMemory
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.EAS.EAS.Immutables
 namespace Benchmarks.EAS.EAS
 

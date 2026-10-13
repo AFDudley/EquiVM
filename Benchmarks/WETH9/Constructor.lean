@@ -3,13 +3,13 @@ import Reasoning.EVMWord
 import Benchmarks.WETH9.Bytecode
 import Benchmarks.WETH9.StringLayout
 import Benchmarks.WETH9.ConstructorStore
-import Benchmarks.WETH9.ConstructorSolm
+import Benchmarks.WETH9.ConstructorStele
 import Reasoning.Initcode
 import Reasoning.Memory
 import Reasoning.Stepping
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 import Reasoning.Constructor
-import Solm.Refine
+import Stele.Refine
 
 
 /-!
@@ -19,16 +19,16 @@ import Solm.Refine
 
 The solc-0.5.16 creation bytecode writes the two compact short strings `name` = "Wrapped Ether"
 (slot 0) and `symbol` = "WETH" (slot 1) and `decimals` = 18 (slot 2), then (after a non-payable
-callvalue guard) `CODECOPY`s the 1763-byte runtime window and `RETURN`s it.  The Solm constructor body
+callvalue guard) `CODECOPY`s the 1763-byte runtime window and `RETURN`s it.  The Stele constructor body
 is `nonpayable ++ [assign name, assign symbol, assign decimals]`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 section
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 2000000
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.WETH9
 
@@ -196,12 +196,12 @@ def weth9OldWordsOf (σ : AccountMap) (cO : AccountAddress) (slot : UInt256) : N
 def weth9EvmNameMap (σ : AccountMap) (cO : AccountAddress) : AccountMap :=
   clearDataWordsForwardFrom cO
     (sstoreAccountMap cO σ ⟨0⟩ (weth9StoreV ⟨13⟩ weth9NameWord))
-    (Solm.solidityBytesDataBaseSlot ⟨0⟩) ⟨0⟩ (weth9OldWordsOf σ cO ⟨0⟩)
+    (Stele.solidityBytesDataBaseSlot ⟨0⟩) ⟨0⟩ (weth9OldWordsOf σ cO ⟨0⟩)
 
 def weth9EvmSymMap (σ : AccountMap) (cO : AccountAddress) : AccountMap :=
   clearDataWordsForwardFrom cO
     (sstoreAccountMap cO (weth9EvmNameMap σ cO) ⟨1⟩ (weth9StoreV ⟨4⟩ weth9SymWord))
-    (Solm.solidityBytesDataBaseSlot ⟨1⟩) ⟨0⟩ (weth9OldWordsOf (weth9EvmNameMap σ cO) cO ⟨1⟩)
+    (Stele.solidityBytesDataBaseSlot ⟨1⟩) ⟨0⟩ (weth9OldWordsOf (weth9EvmNameMap σ cO) cO ⟨1⟩)
 
 def weth9EvmFinalMap (σ : AccountMap) (cO : AccountAddress) : AccountMap :=
   sstoreAccountMap cO (weth9EvmSymMap σ cO) ⟨2⟩
@@ -309,96 +309,96 @@ theorem weth9CtorInitcodeRevert {σ σ₀ A I} {g : Sat256}
     push1 ⟨0⟩, dup1]
   exact rd114.rev 0 (by native_decide) mem_cost (by evm_ov)
 
-/-! ## Reconciling the EVM store-then-clear with the Solm clear-then-store, per write -/
+/-! ## Reconciling the EVM store-then-clear with the Stele clear-then-store, per write -/
 
 
 /-- A single compact-string write reconciles equal starting maps. -/
-theorem weth9WriteReconcile (cO : AccountAddress) (τ_evm τ_solm : AccountMap)
+theorem weth9WriteReconcile (cO : AccountAddress) (τ_evm τ_stele : AccountMap)
     (slot len dataword sw : UInt256) (hslot : slot = ⟨0⟩ ∨ slot = ⟨1⟩)
-    (hsw : weth9StoreV len dataword = sw) (hτ : τ_evm = τ_solm) :
+    (hsw : weth9StoreV len dataword = sw) (hτ : τ_evm = τ_stele) :
     clearDataWordsForwardFrom cO (sstoreAccountMap cO τ_evm slot (weth9StoreV len dataword))
-        (Solm.solidityBytesDataBaseSlot slot) ⟨0⟩ (weth9OldWordsOf τ_evm cO slot)
+        (Stele.solidityBytesDataBaseSlot slot) ⟨0⟩ (weth9OldWordsOf τ_evm cO slot)
       = sstoreAccountMap cO
-        (clearDataWordsForwardFrom cO τ_solm (Solm.solidityBytesDataBaseSlot slot) ⟨0⟩
-          (weth9OldWordsOf τ_solm cO slot)) slot sw := by
+        (clearDataWordsForwardFrom cO τ_stele (Stele.solidityBytesDataBaseSlot slot) ⟨0⟩
+          (weth9OldWordsOf τ_stele cO slot)) slot sw := by
   have hload : (τ_evm.get? cO |>.option ⟨0⟩ (fun ac => ac.storage.getD slot ⟨0⟩)) =
-      (τ_solm.get? cO |>.option ⟨0⟩ (fun ac => ac.storage.getD slot ⟨0⟩)) :=
+      (τ_stele.get? cO |>.option ⟨0⟩ (fun ac => ac.storage.getD slot ⟨0⟩)) :=
     by rw [hτ]
-  have how : weth9OldWordsOf τ_evm cO slot = weth9OldWordsOf τ_solm cO slot := by
+  have how : weth9OldWordsOf τ_evm cO slot = weth9OldWordsOf τ_stele cO slot := by
     unfold weth9OldWordsOf; rw [hload]
   rw [how, ← hsw]
   calc
     clearDataWordsForwardFrom cO (sstoreAccountMap cO τ_evm slot (weth9StoreV len dataword))
-        (Solm.solidityBytesDataBaseSlot slot) ⟨0⟩ (weth9OldWordsOf τ_solm cO slot) =
+        (Stele.solidityBytesDataBaseSlot slot) ⟨0⟩ (weth9OldWordsOf τ_stele cO slot) =
       sstoreAccountMap cO
-        (clearDataWordsForwardFrom cO τ_evm (Solm.solidityBytesDataBaseSlot slot) ⟨0⟩
-          (weth9OldWordsOf τ_solm cO slot)) slot (weth9StoreV len dataword) :=
+        (clearDataWordsForwardFrom cO τ_evm (Stele.solidityBytesDataBaseSlot slot) ⟨0⟩
+          (weth9OldWordsOf τ_stele cO slot)) slot (weth9StoreV len dataword) :=
         weth9ClearStoreCommEquiv cO τ_evm slot (weth9StoreV len dataword) hslot
-          (weth9OldWordsOf τ_solm cO slot) (weth9NoOverflow slot hslot _)
+          (weth9OldWordsOf τ_stele cO slot) (weth9NoOverflow slot hslot _)
     _ = sstoreAccountMap cO
-        (clearDataWordsForwardFrom cO τ_solm (Solm.solidityBytesDataBaseSlot slot) ⟨0⟩
-          (weth9OldWordsOf τ_solm cO slot)) slot (weth9StoreV len dataword) := by
+        (clearDataWordsForwardFrom cO τ_stele (Stele.solidityBytesDataBaseSlot slot) ⟨0⟩
+          (weth9OldWordsOf τ_stele cO slot)) slot (weth9StoreV len dataword) := by
         exact congrArg (fun τ => sstoreAccountMap cO
-          (clearDataWordsForwardFrom cO τ (Solm.solidityBytesDataBaseSlot slot) ⟨0⟩
-            (weth9OldWordsOf τ_solm cO slot)) slot (weth9StoreV len dataword)) hτ
+          (clearDataWordsForwardFrom cO τ (Stele.solidityBytesDataBaseSlot slot) ⟨0⟩
+            (weth9OldWordsOf τ_stele cO slot)) slot (weth9StoreV len dataword)) hτ
 
-/-! ## The Solm final state's account map, unfolded to the clear/store form -/
+/-! ## The Stele final state's account map, unfolded to the clear/store form -/
 
-theorem weth9SolmNameState_map (evm : EVM.State) :
-    (weth9SolmNameState evm).accountMap =
+theorem weth9SteleNameState_map (evm : EVM.State) :
+    (weth9SteleNameState evm).accountMap =
       sstoreAccountMap evm.executionEnv.codeOwner
         (clearDataWordsForwardFrom evm.executionEnv.codeOwner evm.accountMap
-          (Solm.solidityBytesDataBaseSlot ⟨0⟩) ⟨0⟩ (weth9OldWordsOf evm.accountMap evm.executionEnv.codeOwner ⟨0⟩))
+          (Stele.solidityBytesDataBaseSlot ⟨0⟩) ⟨0⟩ (weth9OldWordsOf evm.accountMap evm.executionEnv.codeOwner ⟨0⟩))
         ⟨0⟩ (solidityShortBytesWord (String.toByteArray "Wrapped Ether")) := by
-  rw [weth9SolmNameState, storageStore_accountMap, clearSolidityBytesDataWordsFrom_accountMap]
+  rw [weth9SteleNameState, storageStore_accountMap, clearSolidityBytesDataWordsFrom_accountMap]
   rfl
 
-theorem weth9SolmNameState_executionEnv (evm : EVM.State) :
-    (weth9SolmNameState evm).executionEnv = evm.executionEnv := by
-  rw [weth9SolmNameState, storageStore_executionEnv, clearSolidityBytesDataWordsFrom_executionEnv]
+theorem weth9SteleNameState_executionEnv (evm : EVM.State) :
+    (weth9SteleNameState evm).executionEnv = evm.executionEnv := by
+  rw [weth9SteleNameState, storageStore_executionEnv, clearSolidityBytesDataWordsFrom_executionEnv]
 
-theorem weth9SolmSymbolState_map (evm : EVM.State) :
-    (weth9SolmSymbolState evm).accountMap =
+theorem weth9SteleSymbolState_map (evm : EVM.State) :
+    (weth9SteleSymbolState evm).accountMap =
       sstoreAccountMap evm.executionEnv.codeOwner
-        (clearDataWordsForwardFrom evm.executionEnv.codeOwner (weth9SolmNameState evm).accountMap
-          (Solm.solidityBytesDataBaseSlot ⟨1⟩) ⟨0⟩
-          (weth9OldWordsOf (weth9SolmNameState evm).accountMap evm.executionEnv.codeOwner ⟨1⟩))
+        (clearDataWordsForwardFrom evm.executionEnv.codeOwner (weth9SteleNameState evm).accountMap
+          (Stele.solidityBytesDataBaseSlot ⟨1⟩) ⟨0⟩
+          (weth9OldWordsOf (weth9SteleNameState evm).accountMap evm.executionEnv.codeOwner ⟨1⟩))
         ⟨1⟩ (solidityShortBytesWord (String.toByteArray "WETH")) := by
-  rw [weth9SolmSymbolState, storageStore_accountMap, clearSolidityBytesDataWordsFrom_accountMap,
-    weth9SolmNameState_executionEnv]
+  rw [weth9SteleSymbolState, storageStore_accountMap, clearSolidityBytesDataWordsFrom_accountMap,
+    weth9SteleNameState_executionEnv]
   rfl
 
-theorem weth9SolmSymbolState_executionEnv (evm : EVM.State) :
-    (weth9SolmSymbolState evm).executionEnv = evm.executionEnv := by
-  rw [weth9SolmSymbolState, storageStore_executionEnv, clearSolidityBytesDataWordsFrom_executionEnv,
-    weth9SolmNameState_executionEnv]
+theorem weth9SteleSymbolState_executionEnv (evm : EVM.State) :
+    (weth9SteleSymbolState evm).executionEnv = evm.executionEnv := by
+  rw [weth9SteleSymbolState, storageStore_executionEnv, clearSolidityBytesDataWordsFrom_executionEnv,
+    weth9SteleNameState_executionEnv]
 
 
-/-- The full three-write storage reconciliation between EVM and Solm final states. -/
+/-- The full three-write storage reconciliation between EVM and Stele final states. -/
 theorem weth9FinalReconcile (cO : AccountAddress) (evm0 : EVM.State) (σ : AccountMap)
     (hcO : evm0.executionEnv.codeOwner = cO) (hmap : σ = evm0.accountMap) :
-    weth9EvmFinalMap σ cO = (weth9SolmFinalState evm0).accountMap := by
+    weth9EvmFinalMap σ cO = (weth9SteleFinalState evm0).accountMap := by
   have hName : weth9EvmNameMap σ cO
-      = (weth9SolmNameState evm0).accountMap := by
-    rw [weth9SolmNameState_map, hcO]
+      = (weth9SteleNameState evm0).accountMap := by
+    rw [weth9SteleNameState_map, hcO]
     exact weth9WriteReconcile cO σ evm0.accountMap ⟨0⟩ ⟨13⟩ weth9NameWord
       (solidityShortBytesWord (String.toByteArray "Wrapped Ether")) (Or.inl rfl)
       (by native_decide) hmap
   have hSym : weth9EvmSymMap σ cO
-      = (weth9SolmSymbolState evm0).accountMap := by
-    rw [weth9SolmSymbolState_map, hcO]
-    exact weth9WriteReconcile cO (weth9EvmNameMap σ cO) (weth9SolmNameState evm0).accountMap
+      = (weth9SteleSymbolState evm0).accountMap := by
+    rw [weth9SteleSymbolState_map, hcO]
+    exact weth9WriteReconcile cO (weth9EvmNameMap σ cO) (weth9SteleNameState evm0).accountMap
       ⟨1⟩ ⟨4⟩ weth9SymWord (solidityShortBytesWord (String.toByteArray "WETH")) (Or.inr rfl)
       (by native_decide) hName
   have hload2 :
       ((weth9EvmSymMap σ cO).get? cO |>.option ⟨0⟩ (fun ac => ac.storage.getD ⟨2⟩ ⟨0⟩)) =
-        ((weth9SolmSymbolState evm0).accountMap.get? cO |>.option ⟨0⟩
+        ((weth9SteleSymbolState evm0).accountMap.get? cO |>.option ⟨0⟩
           (fun ac => ac.storage.getD ⟨2⟩ ⟨0⟩)) :=
     by rw [hSym]
-  rw [weth9EvmFinalMap, weth9SolmFinalState, storageStore_accountMap,
-    weth9SolmSymbolState_executionEnv, hcO,
-    show Solm.EVM.storageLoad (weth9SolmSymbolState evm0) cO ⟨2⟩ =
-      ((weth9SolmSymbolState evm0).accountMap.get? cO |>.option ⟨0⟩
+  rw [weth9EvmFinalMap, weth9SteleFinalState, storageStore_accountMap,
+    weth9SteleSymbolState_executionEnv, hcO,
+    show Stele.EVM.storageLoad (weth9SteleSymbolState evm0) cO ⟨2⟩ =
+      ((weth9SteleSymbolState evm0).accountMap.get? cO |>.option ⟨0⟩
         (fun ac => ac.storage.getD ⟨2⟩ ⟨0⟩)) from rfl,
     ← hload2, weth9DecimalsWordComm]
   rw [← hSym]
@@ -428,7 +428,7 @@ theorem weth9ConstructorCorrect :
       have hσ' : s.accountMap = weth9EvmFinalMap σ I.codeOwner := hacc
       rw [hσ'] at hsuccess
       refine typedConstructorRefinementFor.execution hsuccess
-        (weth9SolmCtorExecSuccess (σ := σ) (σ₀ := σ₀)
+        (weth9SteleCtorExecSuccess (σ := σ) (σ₀ := σ₀)
           (g := g) (A := A) (I := I) hwv) ?_
       refine ctorResultEquiv.success rfl rfl ?_ rfl
       exact weth9FinalReconcile I.codeOwner
@@ -439,7 +439,7 @@ theorem weth9ConstructorCorrect :
     rcases hrd.xiResult hcode with hoog | ⟨g', o, hrev⟩
     · exact typedConstructorRefinementFor.outOfGas (by simpa [Sat256.ofUInt256] using hoog)
     · refine typedConstructorRefinementFor.execution (by simpa [Sat256.ofUInt256] using hrev)
-        (weth9SolmCtorExecReverts (σ := σ) (σ₀ := σ₀)
+        (weth9SteleCtorExecReverts (σ := σ) (σ₀ := σ₀)
           (g := g) (A := A) (I := I) hwv) ?_
       exact ctorResultEquiv.revert rfl rfl
 

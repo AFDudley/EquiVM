@@ -1,7 +1,7 @@
 import Benchmarks.EAS.EAS.RevocationRequest
 import Benchmarks.EAS.EAS.CalldataPlans
 import Benchmarks.EAS.EAS.WordArrayBase
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open ABI.Solc08Calldata
 namespace Benchmarks.EAS.EAS
 set_option maxRecDepth 10000

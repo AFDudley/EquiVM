@@ -2,7 +2,7 @@ import Benchmarks.Auction.InitializeArgs
 import Benchmarks.Auction.InitializerStorage
 import Benchmarks.Auction.PackedByte
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 100000
 

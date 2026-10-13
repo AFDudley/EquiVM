@@ -2,10 +2,10 @@ import Reasoning.WordArithmetic
 import Benchmarks.Dss.Jug.ConstructorBase
 
 /-!
-# MakerDAO/Sky DSS Jug constructor Solm source semantics
+# MakerDAO/Sky DSS Jug constructor Stele source semantics
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Jug
 
@@ -15,12 +15,12 @@ abbrev jugCtorLocals (vat : AccountAddress) : Store :=
   (∅ : Store).insert "vat_" (.address vat)
 
 abbrev jugCtorAfterWardsState (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner
     (wardsSlot (.address evm.executionEnv.source)) ⟨1⟩
 
 abbrev jugCtorAfterVatState (evm : EVM.State) (vat : AccountAddress) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨2⟩
-    (setAddressOffset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨2⟩
+    (setAddressOffset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩)
       (EVM.word vat.val))
 
 
@@ -62,8 +62,8 @@ private theorem assign_jugCtorAddressStorage (evm : EVM.State) (locals : Store)
     (her : evalStorageRef config { contract := contract, locals := locals } evm ref = .ok er)
     (hty : storageTypeAt? contract.storage er = some (.elem .address))
     (hloc : config.storageBackend.locate? er = some (.leaf (addrLoc slot))) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner slot
-      (setAddressOffset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner slot
+      (setAddressOffset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
         (EVM.word addrValue.val))
     assignStorageRef? config { contract := contract, locals := locals } evm
       .storage ref (.address addrValue) =
@@ -139,18 +139,18 @@ theorem jugCtorBodySuccess
   refine ExecBlock.consNormal (ExecStmt.assign ?_ hassignVat) ExecBlock.nil
   · simpa [locals] using evalExpr_jugCtorLocalVat (evm := evm1) vat
 
-theorem jugSolmCtorExecSuccess
+theorem jugSteleCtorExecSuccess
     {σ : AccountMap} {σ₀ : AccountMap} {A : Substate} {I : ExecutionEnv}
     {g : UInt256} (vat : AccountAddress)
     (hwv : I.weiValue = ⟨0⟩) :
-    solmCtorExec config contract [.address vat] σ σ₀ g A I
+    steleCtorExec config contract [.address vat] σ σ₀ g A I
       (.returned { contract := contract, locals := jugCtorLocals vat }
         (jugCtorAfterVatState
           (jugCtorAfterWardsState
             (initState σ σ₀ (Sat256.ofUInt256 g) A I))
           vat)
         none) := by
-  refine solmCtorExec.intro
+  refine steleCtorExec.intro
     (evmState := initState σ σ₀
       (Sat256.ofUInt256 g) A I)
     (argsStore := jugCtorLocals vat)
@@ -163,12 +163,12 @@ theorem jugSolmCtorExecSuccess
         (jugCtorBodySuccess
           (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) vat hwv)
 
-theorem jugSolmCtorExecReverts_nonpayable
+theorem jugSteleCtorExecReverts_nonpayable
     {σ : AccountMap} {σ₀ : AccountMap} {A : Substate} {I : ExecutionEnv}
     {g : UInt256} (vat : AccountAddress)
     (hwv : I.weiValue ≠ ⟨0⟩) :
-    solmCtorExec config contract [.address vat] σ σ₀ g A I .reverted := by
-  refine solmCtorExec.intro
+    steleCtorExec config contract [.address vat] σ σ₀ g A I .reverted := by
+  refine steleCtorExec.intro
     (evmState := initState σ σ₀
       (Sat256.ofUInt256 g) A I)
     (argsStore := jugCtorLocals vat)

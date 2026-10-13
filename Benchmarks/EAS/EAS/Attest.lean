@@ -1,7 +1,7 @@
 import Benchmarks.EAS.EAS.AttestPublicRun
 import Benchmarks.EAS.EAS.AttestPrelude
 import Benchmarks.EAS.EAS.CalldataPlans
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.EAS.EAS.Immutables ABI.Solc08Calldata
 namespace Benchmarks.EAS.EAS
 set_option maxRecDepth 10000

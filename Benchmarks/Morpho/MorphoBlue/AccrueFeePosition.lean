@@ -1,7 +1,7 @@
 import Benchmarks.Morpho.MorphoBlue.AccrueMathRoutines
 import Benchmarks.Morpho.MorphoBlue.MarketWrites
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MorphoBlue.Immutables
 namespace Benchmarks.Morpho.MorphoBlue

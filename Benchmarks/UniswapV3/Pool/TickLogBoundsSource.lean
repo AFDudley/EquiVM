@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.TickLogBoundsModel
 import Benchmarks.UniswapV3.Pool.SignedRightShift
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
 
@@ -91,11 +91,11 @@ theorem tickLogBoundsSource {frame : Frame} {evm : EVM.State} (log : UInt256)
       (.int (tickLogLow log)))["log_sqrt10001"]? = _
     rw [Std.HashMap.getElem?_insert]
     exact hs
-  refine ExecBlock.consNormal (solm' := tickLogScaledFrame frame log)
+  refine ExecBlock.consNormal (stele' := tickLogScaledFrame frame log)
     (ExecStmt.letDecl (evalTickLogScaledLog log hl)) ?_
-  refine ExecBlock.consNormal (solm' := tickLogLowFrame frame log)
+  refine ExecBlock.consNormal (stele' := tickLogLowFrame frame log)
     (ExecStmt.letDecl (evalTickLogLow log hs)) ?_
-  refine ExecBlock.consNormal (solm' := tickLogHighFrame frame log)
+  refine ExecBlock.consNormal (stele' := tickLogHighFrame frame log)
     (ExecStmt.letDecl (evalTickLogHigh log hs')) ?_
   exact ExecBlock.consNormal (ExecStmt.letDecl (by simp only [evalExpr?, pure])) ExecBlock.nil
 

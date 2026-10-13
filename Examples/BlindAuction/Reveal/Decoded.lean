@@ -1,6 +1,6 @@
 import Examples.BlindAuction.Reveal.DecodedLengthOk
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 10000000
@@ -52,10 +52,10 @@ theorem scratch_blindAuctionReveal_decoded_ok_from1806
       rd1806 hvaluesGt hvaluesStart hvaluesLenLoad hvaluesLenMax hvaluesEnd
       hfakesGt hfakesStart hfakesLenLoad hfakesLenMax hfakesEnd
       hsecretsGt hsecretsStart hsecretsLenLoad hsecretsLenMax hsecretsEnd
-  let evmSolm : EVM.State :=
+  let evmStele : EVM.State :=
     initState σ σ₀ (Sat256.ofUInt256 g) A I
-  have hwvSolm : evmSolm.executionEnv.weiValue = ⟨0⟩ := by
-    simpa [evmSolm, initState] using hwv
+  have hwvStele : evmStele.executionEnv.weiValue = ⟨0⟩ := by
+    simpa [evmStele, initState] using hwv
   have hbiddingAbsent : callargs.get? biddingEndRef.base = none :=
     blindAuctionDecode_reveal_callargs_absent hdec (by decide) (by decide) (by decide)
   have hrevealAbsent : callargs.get? revealEndRef.base = none :=
@@ -68,20 +68,20 @@ theorem scratch_blindAuctionReveal_decoded_ok_from1806
         (revealScratchTimestampWord I).toNat <
           (revealScratchRevealEndWord σ I).toNat
     · have hafterBody :
-          (Solm.EVM.storageLoad evmSolm evmSolm.executionEnv.codeOwner ⟨1⟩).toNat <
-            (UInt256.ofNat evmSolm.executionEnv.header.timestamp).toNat := by
+          (Stele.EVM.storageLoad evmStele evmStele.executionEnv.codeOwner ⟨1⟩).toNat <
+            (UInt256.ofNat evmStele.executionEnv.header.timestamp).toNat := by
         change (revealScratchBiddingEndWord σ I).toNat <
           (revealScratchTimestampWord I).toNat
         exact hafter
       have hbeforeBody :
-          (UInt256.ofNat evmSolm.executionEnv.header.timestamp).toNat <
-            (Solm.EVM.storageLoad evmSolm evmSolm.executionEnv.codeOwner ⟨2⟩).toNat := by
+          (UInt256.ofNat evmStele.executionEnv.header.timestamp).toNat <
+            (Stele.EVM.storageLoad evmStele evmStele.executionEnv.codeOwner ⟨2⟩).toNat := by
         change (revealScratchTimestampWord I).toNat <
           (revealScratchRevealEndWord σ I).toNat
         exact hbefore
       have hlenBody :
-          Solm.EVM.storageLoad evmSolm evmSolm.executionEnv.codeOwner
-            (bidsBase (.address evmSolm.executionEnv.source)) =
+          Stele.EVM.storageLoad evmStele evmStele.executionEnv.codeOwner
+            (bidsBase (.address evmStele.executionEnv.source)) =
               revealScratchBidsLengthWord σ I := by
         rfl
       by_cases hvaluesEq :
@@ -116,10 +116,10 @@ theorem scratch_blindAuctionReveal_decoded_ok_from1806
               apply u256_inj
               omega
             have hbody :
-                ExecTransitionBody blindAuctionConfig blindAuctionContract evmSolm
+                ExecTransitionBody blindAuctionConfig blindAuctionContract evmStele
                   callargs revealTransition.body .reverted := by
               exact blindAuctionRevealBodyReverts_decoded_lengthMismatch
-                evmSolm hdec hvaluesGet hfakesGet hsecretsGet hwvSolm hafterBody
+                evmStele hdec hvaluesGet hfakesGet hsecretsGet hwvStele hafterBody
                 hbeforeBody hlenBody (Or.inr (Or.inr hsecretsNeNat))
             exact hrev.reEquivExecutionRevert hcode hd hdec hbody
         · have hrev :=
@@ -136,10 +136,10 @@ theorem scratch_blindAuctionReveal_decoded_ok_from1806
             apply u256_inj
             omega
           have hbody :
-              ExecTransitionBody blindAuctionConfig blindAuctionContract evmSolm
+              ExecTransitionBody blindAuctionConfig blindAuctionContract evmStele
                 callargs revealTransition.body .reverted := by
             exact blindAuctionRevealBodyReverts_decoded_lengthMismatch
-              evmSolm hdec hvaluesGet hfakesGet hsecretsGet hwvSolm hafterBody
+              evmStele hdec hvaluesGet hfakesGet hsecretsGet hwvStele hafterBody
               hbeforeBody hlenBody (Or.inr (Or.inl hfakesNeNat))
           exact hrev.reEquivExecutionRevert hcode hd hdec hbody
       · have hrev :=
@@ -156,10 +156,10 @@ theorem scratch_blindAuctionReveal_decoded_ok_from1806
           apply u256_inj
           omega
         have hbody :
-            ExecTransitionBody blindAuctionConfig blindAuctionContract evmSolm
+            ExecTransitionBody blindAuctionConfig blindAuctionContract evmStele
               callargs revealTransition.body .reverted := by
           exact blindAuctionRevealBodyReverts_decoded_lengthMismatch
-            evmSolm hdec hvaluesGet hfakesGet hsecretsGet hwvSolm hafterBody
+            evmStele hdec hvaluesGet hfakesGet hsecretsGet hwvStele hafterBody
             hbeforeBody hlenBody (Or.inl hvaluesNeNat)
         exact hrev.reEquivExecutionRevert hcode hd hdec hbody
     · have hrev := blindAuctionRevealX_from887_tooLate
@@ -167,21 +167,21 @@ theorem scratch_blindAuctionReveal_decoded_ok_from1806
           (s0 := initState σ σ₀ (Sat256.ofUInt256 g) A I)
           rd887 hafter (Nat.le_of_not_gt hbefore)
       have hafterBody :
-          (Solm.EVM.storageLoad evmSolm evmSolm.executionEnv.codeOwner ⟨1⟩).toNat <
-            (UInt256.ofNat evmSolm.executionEnv.header.timestamp).toNat := by
+          (Stele.EVM.storageLoad evmStele evmStele.executionEnv.codeOwner ⟨1⟩).toNat <
+            (UInt256.ofNat evmStele.executionEnv.header.timestamp).toNat := by
         change (revealScratchBiddingEndWord σ I).toNat <
           (revealScratchTimestampWord I).toNat
         exact hafter
       have hlateBody :
-          (Solm.EVM.storageLoad evmSolm evmSolm.executionEnv.codeOwner ⟨2⟩).toNat ≤
-            (UInt256.ofNat evmSolm.executionEnv.header.timestamp).toNat := by
+          (Stele.EVM.storageLoad evmStele evmStele.executionEnv.codeOwner ⟨2⟩).toNat ≤
+            (UInt256.ofNat evmStele.executionEnv.header.timestamp).toNat := by
         change (revealScratchRevealEndWord σ I).toNat ≤
           (revealScratchTimestampWord I).toNat
         exact Nat.le_of_not_gt hbefore
       have hbody :
-          ExecTransitionBody blindAuctionConfig blindAuctionContract evmSolm
+          ExecTransitionBody blindAuctionConfig blindAuctionContract evmStele
             callargs revealTransition.body .reverted := by
-        exact blindAuctionRevealBodyReverts_tooLate hwvSolm hbiddingAbsent
+        exact blindAuctionRevealBodyReverts_tooLate hwvStele hbiddingAbsent
           hrevealAbsent hafterBody hlateBody
       exact hrev.reEquivExecutionRevert hcode hd hdec hbody
   · have hrev := blindAuctionRevealX_from887_tooEarly
@@ -189,15 +189,15 @@ theorem scratch_blindAuctionReveal_decoded_ok_from1806
         (s0 := initState σ σ₀ (Sat256.ofUInt256 g) A I)
         rd887 (Nat.le_of_not_gt hafter)
     have htimeBody :
-        (UInt256.ofNat evmSolm.executionEnv.header.timestamp).toNat ≤
-          (Solm.EVM.storageLoad evmSolm evmSolm.executionEnv.codeOwner ⟨1⟩).toNat := by
+        (UInt256.ofNat evmStele.executionEnv.header.timestamp).toNat ≤
+          (Stele.EVM.storageLoad evmStele evmStele.executionEnv.codeOwner ⟨1⟩).toNat := by
       change (revealScratchTimestampWord I).toNat ≤
         (revealScratchBiddingEndWord σ I).toNat
       exact Nat.le_of_not_gt hafter
     have hbody :
-        ExecTransitionBody blindAuctionConfig blindAuctionContract evmSolm
+        ExecTransitionBody blindAuctionConfig blindAuctionContract evmStele
           callargs revealTransition.body .reverted := by
-      exact blindAuctionRevealBodyReverts_tooEarly hwvSolm hbiddingAbsent htimeBody
+      exact blindAuctionRevealBodyReverts_tooEarly hwvStele hbiddingAbsent htimeBody
     exact hrev.reEquivExecutionRevert hcode hd hdec hbody
 
 end BlindAuction

@@ -1,7 +1,7 @@
 import Benchmarks.EAS.EAS.AttestInitialControl
 import Benchmarks.EAS.EAS.AttestResultViews
 import Benchmarks.EAS.EAS.AttestSchemaMemory
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 -- The three reserved words are populated by the many-request entry point.

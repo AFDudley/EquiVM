@@ -3,7 +3,7 @@ import Benchmarks.EAS.EAS.AllocateBounds
 import Benchmarks.EAS.EAS.ZeroCopy
 import Benchmarks.EAS.EAS.RecordPadding
 import Benchmarks.EAS.EAS.MemoryArrayIndex
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 -- LIBRARY CANDIDATE: bounded word-array allocation is exact, without rounding or wrapping.

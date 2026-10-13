@@ -1,4 +1,4 @@
-import Solm.Syntax
+import Stele.Syntax
 import EVM.Types
 
 /-!
@@ -10,7 +10,7 @@ immutable site zeroed; the constructor patches the sites in the order listed bel
 the order the creation code writes them.
 -/
 
-open Solm ABI
+open Stele ABI
 
 namespace Tests.Pipeline.Vault.Immutables
 
@@ -19,7 +19,7 @@ structure VaultImmutables where
   feeBps : EVM.Word
   owner : EVM.Address
 
-/-- solc `immutableReferences`: each immutable's Solm name and patch offsets, in the order the
+/-- solc `immutableReferences`: each immutable's Stele name and patch offsets, in the order the
     constructor writes them. -/
 def immutableReferences : List (Ident × List Nat) :=
   [ ("feeBps", [219, 1755]),

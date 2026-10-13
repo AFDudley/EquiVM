@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.SwapStepModel
 import Benchmarks.UniswapV3.Pool.AmountDeltaRawRoutines
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 1000

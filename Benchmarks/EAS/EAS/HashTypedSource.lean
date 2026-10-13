@@ -1,6 +1,6 @@
 import Benchmarks.EAS.EAS.TypedDataSource
 import Benchmarks.EAS.EAS.HeapResultBlock
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 abbrev hashTypedFunction : FunctionDecl := contract.functions[27]!

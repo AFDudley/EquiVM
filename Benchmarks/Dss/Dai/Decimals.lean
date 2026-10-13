@@ -1,7 +1,7 @@
 import Benchmarks.Dss.Dai.Dispatch
 import Benchmarks.Dss.Dai.Storage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Dai
 
@@ -21,7 +21,7 @@ theorem daiDecode_decimals_ok {I : ExecutionEnv} (hsz4 : 4 ≤ I.calldata.size) 
     some (∅ : Store)
   exact decodeCalldataWithMode_empty_ok hsz4
 
-/-- The Solm `decimals()` body returns the constant `18`. -/
+/-- The Stele `decimals()` body returns the constant `18`. -/
 theorem daiDecimalsBodyReturns (evm : EVM.State)
     (h : evm.executionEnv.weiValue = ⟨0⟩) :
     ExecTransitionBody config contract evm decimalsStore decimalsTransition.body
@@ -85,7 +85,7 @@ theorem daiDecimalsBodyCoreOk
           simpa [uint8, decimalsWord] using
             uint8ReturnEncoding decimalsWord (by native_decide)))
 
-/-- `decimals()` body refines its Solm transition. -/
+/-- `decimals()` body refines its Stele transition. -/
 theorem daiDecimalsBodyCore {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = daiBytecode) (hsize : I.calldata.size < UInt256.size)
     (hwv : I.weiValue = ⟨0⟩)

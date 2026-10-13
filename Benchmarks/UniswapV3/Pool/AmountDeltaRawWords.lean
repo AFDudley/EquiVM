@@ -2,7 +2,7 @@ import Benchmarks.UniswapV3.Pool.AmountDeltaSortTrace
 import Benchmarks.UniswapV3.Pool.WordSubMasks
 import Benchmarks.UniswapV3.Pool.NextSqrt0Model
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 1000
 

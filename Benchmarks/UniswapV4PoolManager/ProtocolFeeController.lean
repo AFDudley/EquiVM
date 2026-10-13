@@ -7,11 +7,11 @@ import Benchmarks.UniswapV4PoolManager.RuntimeBlocks_009
 # PoolManager `protocolFeeController()`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 2350; reach lemma `poolManagerReachProtocolFeeControllerBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.UniswapV4PoolManager.Immutables
 
@@ -26,7 +26,7 @@ theorem protocolFeeControllerBodyReturns (evm : EVM.State) (locals imms : Store)
     ExecTransitionBody config contract evm locals protocolFeeControllerTransition.body
       (.returned (calldataFrame contract locals imms evm) evm
         (some [.address (AccountAddress.ofNat
-          (UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩)
+          (UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩)
             solcAddrMask).toNat)])) imms :=
   addressGetterBodyReturns evm locals imms "protocolFeeController" ⟨2⟩ hwv hhi (by decide) hbase
     (by decide +kernel) rfl

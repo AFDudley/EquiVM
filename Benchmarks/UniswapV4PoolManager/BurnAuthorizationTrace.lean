@@ -3,7 +3,7 @@ import Benchmarks.UniswapV4PoolManager.BalanceBurnTrace
 import Benchmarks.UniswapV4PoolManager.TransferFromTrace
 
 /-! Caller, operator, and allowance bytecode in the ERC6909 burn path. -/
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.UniswapV4PoolManager.Immutables
 namespace Benchmarks.UniswapV4PoolManager

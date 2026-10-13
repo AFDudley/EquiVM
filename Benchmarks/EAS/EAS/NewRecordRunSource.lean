@@ -1,6 +1,6 @@
 import Benchmarks.EAS.EAS.NewRecordSource
 import Benchmarks.EAS.EAS.ReadTimeBlock
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 def newRecordBody : Body := readTimeBlock "__c2$allocation" "__c2" ++ allocateBlock (.intLit 320) ++ newAttestationBody

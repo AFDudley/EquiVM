@@ -2,13 +2,13 @@ import Benchmarks.CompoundIII.Comet.AccrueInternalModel
 import Benchmarks.CompoundIII.Comet.UpdateBaseModel
 import Benchmarks.CompoundIII.Comet.GetterSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.CompoundIII.Comet.Immutables
 
 namespace Benchmarks.CompoundIII.Comet
 
 def accrueAccountBasic (evm : EVM.State) (addr : AccountAddress) : UserBasicData :=
-  userBasicData (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (userBasicSlot addr))
+  userBasicData (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (userBasicSlot addr))
 
 def accrueAccountUpdate (v : CometWithExtendedAssetListImmutables) (evm : EVM.State)
     (addr : AccountAddress) : InternalOutcome :=

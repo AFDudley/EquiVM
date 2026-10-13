@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.SwapStepRecalcGet
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 1000
 
@@ -98,7 +98,7 @@ theorem swapStepRecalcSource (locals imms : Store) (evm : EVM.State) (a : SwapSt
     ExecBlock config (swapStepCalcFrame imms locals) evm (swapStepRecalcBlock a input)
       (.ok (swapStepCalcFrame imms (swapStepRecalcLocals locals a input)) evm) := by
   refine ExecBlock.consNormal
-    (solm' := swapStepCalcFrame imms (swapStepRecalcZeroLocals locals a input))
+    (stele' := swapStepCalcFrame imms (swapStepRecalcZeroLocals locals a input))
     (ExecStmt.letDecl (by simp only [evalExpr?, pure])) ?_
   exact ExecBlock.consNormal (swapStepRecalcChoiceSource locals imms evm a input hg ha hp hv ho)
     (ExecBlock.consNormal (swapStepRecalcAssign locals imms evm a input ho) ExecBlock.nil)

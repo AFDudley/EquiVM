@@ -1,6 +1,6 @@
 import Benchmarks.EAS.EAS.RecordUID
 import Benchmarks.EAS.EAS.GetAttestationEVM
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 def recordStoreMemory (mem : ByteArray) (src word : UInt256) : ByteArray :=

@@ -2,13 +2,13 @@ import Reasoning.WordArithmetic
 import Benchmarks.Dss.Pot.ConstructorBase
 
 /-!
-# MakerDAO/Sky DSS Pot constructor Solm source semantics
+# MakerDAO/Sky DSS Pot constructor Stele source semantics
 
 The Pot constructor stores six slots in order: `wards[sender] = 1`, `vat = vat_` (slot 5, address
 pack), `dsr = ONE`, `chi = ONE` (slots 3/4), `rho = now` (slot 7), `live = 1` (slot 8).
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Pot
 
@@ -18,26 +18,26 @@ abbrev potCtorLocals (vat : AccountAddress) : Store :=
   (∅ : Store).insert "vat_" (.address vat)
 
 abbrev potCtorAfterWardsState (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner
     (wardsSlot (.address evm.executionEnv.source)) ⟨1⟩
 
 abbrev potCtorAfterVatState (evm : EVM.State) (vat : AccountAddress) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨5⟩
-    (setAddressOffset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨5⟩
+    (setAddressOffset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩)
       (EVM.word vat.val))
 
 abbrev potCtorAfterDsrState (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨3⟩ potCtorOne
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨3⟩ potCtorOne
 
 abbrev potCtorAfterChiState (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨4⟩ potCtorOne
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨4⟩ potCtorOne
 
 abbrev potCtorAfterRhoState (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨7⟩
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨7⟩
     (UInt256.ofNat evm.executionEnv.header.timestamp)
 
 abbrev potCtorAfterLiveState (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨8⟩ ⟨1⟩
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨8⟩ ⟨1⟩
 
 /-- Full six-store constructor post-state applied to `evm`. -/
 abbrev potCtorPostState (evm : EVM.State) (vat : AccountAddress) : EVM.State :=
@@ -86,8 +86,8 @@ private theorem assign_potCtorAddressStorage (evm : EVM.State) (locals : Store)
     (her : evalStorageRef config { contract := contract, locals := locals } evm ref = .ok er)
     (hty : storageTypeAt? contract.storage er = some (.elem .address))
     (hloc : config.storageBackend.locate? er = some (.leaf (addrLoc slot))) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner slot
-      (setAddressOffset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner slot
+      (setAddressOffset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
         (EVM.word addrValue.val))
     assignStorageRef? config { contract := contract, locals := locals } evm
       .storage ref (.address addrValue) =
@@ -237,18 +237,18 @@ theorem potCtorBodySuccess
       (assign_potCtorLiveStorage _ locals (by simp [locals, potCtorLocals])))
     ExecBlock.nil
 
-theorem potSolmCtorExecSuccess
+theorem potSteleCtorExecSuccess
     {σ : AccountMap} {σ₀ : AccountMap} {A : Substate} {I : ExecutionEnv}
     {g : UInt256} (vat : AccountAddress)
     (hwv : I.weiValue = ⟨0⟩) :
-    solmCtorExec config contract [.address vat]
+    steleCtorExec config contract [.address vat]
       σ σ₀ g A I
       (.returned { contract := contract, locals := potCtorLocals vat }
         (potCtorPostState
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           vat)
         none) := by
-  refine solmCtorExec.intro
+  refine steleCtorExec.intro
     (evmState := initState σ σ₀
       (Sat256.ofUInt256 g) A I)
     (argsStore := potCtorLocals vat)
@@ -260,13 +260,13 @@ theorem potSolmCtorExecSuccess
         (potCtorBodySuccess
           (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) vat hwv)
 
-theorem potSolmCtorExecReverts_nonpayable
+theorem potSteleCtorExecReverts_nonpayable
     {σ : AccountMap} {σ₀ : AccountMap} {A : Substate} {I : ExecutionEnv}
     {g : UInt256} (vat : AccountAddress)
     (hwv : I.weiValue ≠ ⟨0⟩) :
-    solmCtorExec config contract [.address vat]
+    steleCtorExec config contract [.address vat]
       σ σ₀ g A I .reverted := by
-  refine solmCtorExec.intro
+  refine steleCtorExec.intro
     (evmState := initState σ σ₀
       (Sat256.ofUInt256 g) A I)
     (argsStore := potCtorLocals vat)

@@ -1,5 +1,5 @@
 import Benchmarks.EAS.EAS.AttestationRequest
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 structure RevocationRequestRecord where

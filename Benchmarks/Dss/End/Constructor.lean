@@ -1,12 +1,12 @@
 import Benchmarks.Dss.End.Common
 import Reasoning.Constructor
-import Solm.Refine
+import Stele.Refine
 
 /-!
 # MakerDAO/Sky DSS End constructor correctness
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.End
 
@@ -72,14 +72,14 @@ theorem endCtorReturnMem_read (I : ExecutionEnv) :
     (by decide) (by rw [endCreationBytecode_size]) (by decide)]
   exact endCreationBytecode_runtime_window
 
-/-! ## Solm constructor source semantics -/
+/-! ## Stele constructor source semantics -/
 
 def endCtorAfterWardsState (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner
     (wardsSlot (.address evm.executionEnv.source)) ⟨1⟩
 
 def endCtorAfterLiveState (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨8⟩ ⟨1⟩
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨8⟩ ⟨1⟩
 
 theorem assign_endCtorWardsCaller (evm : EVM.State) {locals : Store}
     (hbase : locals.get? "wards" = none) :
@@ -160,11 +160,11 @@ theorem endCtorBodySuccess
   exact ExecBlock.consNormal (ExecStmt.assign (by simp [evalExpr?, pure]) hassignLive)
     ExecBlock.nil
 
-theorem endSolmCtorExecSuccess
+theorem endSteleCtorExecSuccess
     {σ : AccountMap} {σ₀ : AccountMap} {A : Substate} {I : ExecutionEnv}
     {g : UInt256}
     (hwv : I.weiValue = ⟨0⟩) :
-    solmCtorExec config contract []
+    steleCtorExec config contract []
       σ σ₀ g A I
       (.returned { contract := contract, locals := ∅ }
         (endCtorAfterLiveState
@@ -172,7 +172,7 @@ theorem endSolmCtorExecSuccess
             (initState σ σ₀
               (Sat256.ofUInt256 g) A I)))
         none) := by
-  refine solmCtorExec.intro
+  refine steleCtorExec.intro
     (evmState := initState σ σ₀
       (Sat256.ofUInt256 g) A I)
     (argsStore := (∅ : Store))
@@ -184,13 +184,13 @@ theorem endSolmCtorExecSuccess
         (endCtorBodySuccess
           (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv)
 
-theorem endSolmCtorExecReverts_nonpayable
+theorem endSteleCtorExecReverts_nonpayable
     {σ : AccountMap} {σ₀ : AccountMap} {A : Substate} {I : ExecutionEnv}
     {g : UInt256}
     (hwv : I.weiValue ≠ ⟨0⟩) :
-    solmCtorExec config contract []
+    steleCtorExec config contract []
       σ σ₀ g A I .reverted := by
-  refine solmCtorExec.intro
+  refine steleCtorExec.intro
     (evmState := initState σ σ₀
       (Sat256.ofUInt256 g) A I)
     (argsStore := (∅ : Store))
@@ -362,7 +362,7 @@ theorem endConstructorCorrect :
       refine typedConstructorRefinementFor.execution hsuccess
         (by
           simpa [evm0s, evm1s, evm2s] using
-            endSolmCtorExecSuccess
+            endSteleCtorExecSuccess
               (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
               (g := g) hwv)
         ?_
@@ -377,7 +377,7 @@ theorem endConstructorCorrect :
     rcases hrd.xiResult hcode with hOOG | ⟨g', o, hrev⟩
     · exact typedConstructorRefinementFor.outOfGas (by simpa [Sat256.ofUInt256] using hOOG)
     · refine typedConstructorRefinementFor.execution (by simpa [Sat256.ofUInt256] using hrev)
-        (endSolmCtorExecReverts_nonpayable
+        (endSteleCtorExecReverts_nonpayable
           (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
           (g := g) hwv) ?_
       exact ctorResultEquiv.revert rfl rfl

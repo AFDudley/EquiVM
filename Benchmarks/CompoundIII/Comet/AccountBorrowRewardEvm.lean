@@ -3,7 +3,7 @@ import Benchmarks.CompoundIII.Comet.AccountDeltaEvm
 import Benchmarks.CompoundIII.Comet.AccountRewardFinishEvm
 import Benchmarks.CompoundIII.Comet.Negate104Evm
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
 open Benchmarks.CompoundIII.Comet.Immutables cometWithExtendedAssetListBlocks
 
 namespace Benchmarks.CompoundIII.Comet

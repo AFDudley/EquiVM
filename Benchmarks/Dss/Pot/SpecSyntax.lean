@@ -1,8 +1,8 @@
 import Benchmarks.Dss.Pot.Spec
-import Solm.Notation
+import Stele.Notation
 
 /-!
-# Pot spec in the Solidity-faithful Solm frontend
+# Pot spec in the Solidity-faithful Stele frontend
 
 The whole `pot.sol` spec written with `solidity%` and proven definitionally equal to the AST spec
 in `Spec.lean`.  Checked-math helpers are inlined (`_rmul` keeps its `_mul` internal call, as in
@@ -11,7 +11,7 @@ storage `vat` receiver use the `${…}` escape.  Transition order matches `contr
 (selector order).
 -/
 
-open Solm Solm.Notation Benchmarks.Dss.Pot
+open Stele Stele.Notation Benchmarks.Dss.Pot
 
 namespace Benchmarks.Dss.Pot.Syntax
 

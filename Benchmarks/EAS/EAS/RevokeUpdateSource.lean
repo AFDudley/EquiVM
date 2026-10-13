@@ -1,6 +1,6 @@
 import Benchmarks.EAS.EAS.RevokeSource
 import Benchmarks.EAS.EAS.LocalArrayStore
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 def revokeUpdateLocals (L : Store) (ats : List AttestationRecord) (values : List UInt256)

@@ -4,7 +4,7 @@ import Benchmarks.UniswapV4PoolManager.PoolSwapTickSyntax
 import Benchmarks.UniswapV4PoolManager.TickCrossSource
 import Benchmarks.UniswapV4PoolManager.WordSignedCast
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 

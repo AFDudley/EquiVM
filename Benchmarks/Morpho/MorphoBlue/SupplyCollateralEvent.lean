@@ -1,7 +1,7 @@
 import Benchmarks.Morpho.MorphoBlue.SupplyCollateralUpdateRefine
 import Benchmarks.Morpho.MorphoBlue.FinalizeVoid
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MorphoBlue.Immutables
 namespace Benchmarks.Morpho.MorphoBlue
@@ -31,7 +31,7 @@ theorem supplyCollateralEventMem_facts (p : MarketParamsWords) (account assets :
     exact supplyCollateralCastMem_zero96 p
   · exact hp.params.writeWord 544 assets (by decide) (by rw [hp.size]; decide) hg (Or.inl (by decide))
 
--- The event has no state effect in Solm; its arguments are still evaluated.
+-- The event has no state effect in Stele; its arguments are still evaluated.
 theorem supplyCollateralEmit (p : MarketParamsWords) (assets account : UInt256) (data : ByteArray)
     (locals imms : Store) (evm : EVM.State) (hl : SupplyCollateralLocals p assets account data locals) :
     ExecStmt config { contract := contract, locals := locals, immutables := imms } evm

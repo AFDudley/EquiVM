@@ -3,13 +3,13 @@ import Benchmarks.UniswapV4PoolManager.PoolModifyContext
 import Benchmarks.UniswapV4PoolManager.TickBitmapSource
 import Benchmarks.UniswapV4PoolManager.ConditionalSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 
 def poolModifyFlipAlias (upper : Bool) : Ident :=
-  if upper then "__solm_storage_ref._@.Benchmarks.UniswapV4PoolManager.SpecSyntax.2010301240._hygCtx._hyg.9"
-  else "__solm_storage_ref._@.Benchmarks.UniswapV4PoolManager.SpecSyntax.2010301240._hygCtx._hyg.8"
+  if upper then "__stele_storage_ref._@.Benchmarks.UniswapV4PoolManager.SpecSyntax.2010301240._hygCtx._hyg.9"
+  else "__stele_storage_ref._@.Benchmarks.UniswapV4PoolManager.SpecSyntax.2010301240._hygCtx._hyg.8"
 def poolModifyFlipRet (upper : Bool) : Ident := if upper then "__c5" else "__c4"
 def poolModifyFlipAliasFrame (f : Frame) (id : UInt256) (upper : Bool) : Frame :=
   {f with locals := f.locals.insert (poolModifyFlipAlias upper) (tickBitmapRefValue id)}

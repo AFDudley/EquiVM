@@ -2,7 +2,7 @@ import Benchmarks.EAS.Attester.MultiRevokeSource
 import Benchmarks.EAS.Attester.MultiRevokeCallTrace
 import Benchmarks.EAS.Attester.MultiRevokeStartTrace
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
 open Benchmarks.EAS.Attester.Immutables attesterRuntimeBlocks
 
 namespace Benchmarks.EAS.Attester

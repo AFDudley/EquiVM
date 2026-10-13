@@ -2,7 +2,7 @@ import Benchmarks.Auction.BidStorage
 import Benchmarks.Auction.CheckedDivSub
 import Benchmarks.Auction.SnapshotMemory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Auction
 
@@ -107,7 +107,7 @@ theorem bidExtensionRoutine {I g s0 s bidder snap noun ret R mem aw rdata σ k C
         raw mstoreSymbolic (by native_decide) (by evm_ov), push1 ⟨210⟩]
       obtain ⟨_, _, rd1792⟩ := rd1791.sstore hperm (by native_decide) (by evm_ov)
       let finish := UInt256.ofNat I.header.timestamp + solcSlotWord σ I ⟨203⟩
-      let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨210⟩ finish
+      let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨210⟩ finish
       have hs' : SourceState s0 I (sstoreAccountMap I.codeOwner σ ⟨210⟩ finish) evm' := by
         simpa only [evm', hs.env] using hs.storageWrite ⟨210⟩ finish
       refine Or.inl ⟨evm', _, locals1, ⟨1⟩, _, _, _, _, ?_, hv1, hs', rd1792⟩

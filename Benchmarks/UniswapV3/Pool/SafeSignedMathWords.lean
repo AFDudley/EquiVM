@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.SafeSignedMathSource
 import Benchmarks.UniswapV3.Pool.SignedComparison
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 1000
 attribute [local instance] Classical.propDecidable

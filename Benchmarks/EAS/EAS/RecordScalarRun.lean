@@ -1,7 +1,7 @@
 import Benchmarks.EAS.EAS.RecordWriteFields
 import Benchmarks.EAS.EAS.RecordScalarSource
 import Benchmarks.EAS.EAS.RecordWriteStatic
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.EAS.EAS.Immutables
 namespace Benchmarks.EAS.EAS
 

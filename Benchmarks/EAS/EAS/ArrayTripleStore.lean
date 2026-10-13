@@ -1,5 +1,5 @@
 import Benchmarks.EAS.EAS.ArrayDisjoint
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 -- LIBRARY CANDIDATE: update corresponding entries in three disjoint arrays and a scratch word.

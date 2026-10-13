@@ -12,20 +12,20 @@ converging on the runtime body at pc 760:
 * calldata < 4 (`weth9ShortFallbackBodyCore`, via fallback dispatch; the prologue short-circuits).
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
 namespace Benchmarks.WETH9
 
-/-- The Solm `deposit()` body credits `balanceOf[msg.sender] += msg.value` and falls through
+/-- The Stele `deposit()` body credits `balanceOf[msg.sender] += msg.value` and falls through
     (no explicit return).  The unchecked `+=` truncates on store to the wrapping word. -/
 theorem weth9DepositBodyReturnsSplit {σ σ₀ A I} {g : Sat256} :
     (ExecTransitionBody config contract (initState σ σ₀ g A I) ∅
       depositTransition.body
       (.returned { contract := contract, locals := ∅ }
-        (Solm.EVM.storageStore (initState σ σ₀ g A I) I.codeOwner (callerBalSlot I)
-          (UInt256.add (Solm.EVM.storageLoad (initState σ σ₀ g A I) I.codeOwner
+        (Stele.EVM.storageStore (initState σ σ₀ g A I) I.codeOwner (callerBalSlot I)
+          (UInt256.add (Stele.EVM.storageLoad (initState σ σ₀ g A I) I.codeOwner
             (callerBalSlot I)) I.weiValue)) none)) ∧
       (I.perm = false → ExecTransitionBody config contract (initState σ σ₀ g A I) ∅
         depositTransition.body .staticViolation) := by
@@ -35,7 +35,7 @@ theorem weth9DepositBodyReturnsSplit {σ σ₀ A I} {g : Sat256} :
   set evm := initState σ σ₀ g A I with hevm
   have heval : evalExpr? config { contract := contract, locals := ∅ } evm
       (.binary .add (.storage (balanceOfRef sender)) (.env .callvalue)) =
-        .ok (.int (Int.ofNat (Solm.EVM.storageLoad evm I.codeOwner (callerBalSlot I)).toNat
+        .ok (.int (Int.ofNat (Stele.EVM.storageLoad evm I.codeOwner (callerBalSlot I)).toNat
           + Int.ofNat I.weiValue.toNat)) := by
     show evalExpr? config { contract := contract, locals := ∅ } evm
       (.binary .add (.storage (balanceOfRef sender)) (.env .callvalue)) = _
@@ -45,13 +45,13 @@ theorem weth9DepositBodyReturnsSplit {σ σ₀ A I} {g : Sat256} :
     rfl
   have hassign : assignStorageRef? config { contract := contract, locals := ∅ } evm
       .storage (balanceOfRef sender)
-      (.int (Int.ofNat (Solm.EVM.storageLoad evm I.codeOwner (callerBalSlot I)).toNat
+      (.int (Int.ofNat (Stele.EVM.storageLoad evm I.codeOwner (callerBalSlot I)).toNat
         + Int.ofNat I.weiValue.toNat)) =
       .ok ({ contract := contract, locals := ∅ },
-        Solm.EVM.storageStore evm I.codeOwner (callerBalSlot I)
-          (UInt256.add (Solm.EVM.storageLoad evm I.codeOwner (callerBalSlot I)) I.weiValue)) := by
+        Stele.EVM.storageStore evm I.codeOwner (callerBalSlot I)
+          (UInt256.add (Stele.EVM.storageLoad evm I.codeOwner (callerBalSlot I)) I.weiValue)) := by
     refine Benchmarks.WETH9.assignStorageRef_storage_scalar_value
-      (solm := { contract := contract, locals := ∅ }) (slot := balanceOfRef sender)
+      (stele := { contract := contract, locals := ∅ }) (slot := balanceOfRef sender)
       (er := callerBalRef I) (ty := uint256St) (loc := wordLoc (callerBalSlot I))
       (hbase := by simp [balanceOfRef]) (her := ?_) (hty := ?_)
       (hloc := by rfl) (hleaf := by exact Or.inl ⟨_, rfl⟩)
@@ -71,8 +71,8 @@ theorem weth9DepositBodyReturns {σ σ₀ A I} {g : Sat256} :
     ExecTransitionBody config contract (initState σ σ₀ g A I) ∅
       depositTransition.body
       (.returned { contract := contract, locals := ∅ }
-        (Solm.EVM.storageStore (initState σ σ₀ g A I) I.codeOwner (callerBalSlot I)
-          (UInt256.add (Solm.EVM.storageLoad (initState σ σ₀ g A I) I.codeOwner
+        (Stele.EVM.storageStore (initState σ σ₀ g A I) I.codeOwner (callerBalSlot I)
+          (UInt256.add (Stele.EVM.storageLoad (initState σ σ₀ g A I) I.codeOwner
             (callerBalSlot I)) I.weiValue)) none) :=
   weth9DepositBodyReturnsSplit.1
 
@@ -253,14 +253,14 @@ theorem weth9SelectorDispatchDeposit {I : ExecutionEnv} (hsel : selIs I (weth9Se
 
 /-- The deposit source body's post-state accountMap is the caller-keyed store (commuted). -/
 theorem weth9DepositBody_accountMap {σ σ₀ A I} {g : Sat256} :
-    (Solm.EVM.storageStore (initState σ σ₀ g A I) I.codeOwner (callerBalSlot I)
-        (UInt256.add (Solm.EVM.storageLoad (initState σ σ₀ g A I) I.codeOwner
+    (Stele.EVM.storageStore (initState σ σ₀ g A I) I.codeOwner (callerBalSlot I)
+        (UInt256.add (Stele.EVM.storageLoad (initState σ σ₀ g A I) I.codeOwner
           (callerBalSlot I)) I.weiValue)).accountMap
       = sstoreAccountMap I.codeOwner σ (callerBalSlot I)
           (UInt256.add (solcSlotWord σ I (callerBalSlot I)) I.weiValue) := by
-  have h : Solm.EVM.storageLoad (initState σ σ₀ g A I) I.codeOwner (callerBalSlot I)
+  have h : Stele.EVM.storageLoad (initState σ σ₀ g A I) I.codeOwner (callerBalSlot I)
       = solcSlotWord σ I (callerBalSlot I) := by
-    simp [solcSlotWord, Solm.EVM.storageLoad, State.lookupAccount, initState,
+    simp [solcSlotWord, Stele.EVM.storageLoad, State.lookupAccount, initState,
       Ethereum.Account.lookupStorage]
   rw [storageStore_accountMap, show (initState σ σ₀ g A I).accountMap = σ from rfl, h]
 
@@ -325,7 +325,7 @@ theorem weth9ReEquivFallbackGen {cfg : Config} {contract : ContractDecl} {t : Tr
           callargs t.body (.returned cs evm'' retVal) := by
       simpa [initState, Sat256.ofUInt256, Sat256.toUInt256] using hbody
     refine runtimeRefinementFor.execution rfl
-      (solmExec.fallback hnosel hnorecv hfb hargs hret rfl hbody') ?_
+      (steleExec.fallback hnosel hnorecv hfb hargs hret rfl hbody') ?_
     rw [hxi]
     have haccounts : s.accountMap = evm''.accountMap := hsacc.trans hAccountMap
     exact execResultsEquiv.success rfl rfl haccounts hRetData
@@ -349,7 +349,7 @@ theorem weth9ReEquivFallbackStatic {cfg : Config} {contract : ContractDecl}
       callargs t.body .staticViolation := by
     simpa [initState, Sat256.ofUInt256, Sat256.toUInt256] using hbody
   refine runtimeRefinementFor.execution rfl
-    (solmExec.fallback hnosel hnorecv hfb hargs hret rfl hbody') ?_
+    (steleExec.fallback hnosel hnorecv hfb hargs hret rfl hbody') ?_
   rw [hstatic]
   exact execResultsEquiv.staticHalt rfl rfl
 
@@ -390,8 +390,8 @@ theorem weth9FallbackBody {σ σ₀ A I} {g : Sat256} :
     ExecTransitionBody config contract (initState σ σ₀ g A I) ∅
       fallbackTransition.body
       (.returned { contract := contract, locals := ∅ }
-        (Solm.EVM.storageStore (initState σ σ₀ g A I) I.codeOwner (callerBalSlot I)
-          (UInt256.add (Solm.EVM.storageLoad (initState σ σ₀ g A I) I.codeOwner
+        (Stele.EVM.storageStore (initState σ σ₀ g A I) I.codeOwner (callerBalSlot I)
+          (UInt256.add (Stele.EVM.storageLoad (initState σ σ₀ g A I) I.codeOwner
             (callerBalSlot I)) I.weiValue)) none) :=
   weth9DepositBodyReturns
 

@@ -1,6 +1,6 @@
 import Benchmarks.EAS.EAS.CalldataCopy
 import Benchmarks.EAS.EAS.ByteViews
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 -- LIBRARY CANDIDATE: allocation, length, CALLDATACOPY, and the final zero word.

@@ -1,7 +1,7 @@
 import Benchmarks.CompoundIII.Comet.ConstructorPriceFeedMemory
 import Benchmarks.CompoundIII.Comet.ConstructorChecksSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open cometWithExtendedAssetListCreationBlocks
 
 namespace Benchmarks.CompoundIII.Comet

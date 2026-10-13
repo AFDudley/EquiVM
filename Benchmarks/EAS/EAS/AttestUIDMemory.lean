@@ -1,7 +1,7 @@
 import Benchmarks.EAS.EAS.WordArrayAllocationView
 import Benchmarks.EAS.EAS.SchemaSites
 import Benchmarks.EAS.EAS.RecordUID
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 set_option maxRecDepth 10000
 

@@ -2,7 +2,7 @@ import Benchmarks.Safe.Main.Dispatch
 import Benchmarks.Safe.Main.SimulateTrace
 import Benchmarks.Safe.Main.SimulateSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.Main
 

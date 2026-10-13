@@ -2,7 +2,7 @@ import Benchmarks.EAS.Attester.ArrayABI
 import Benchmarks.EAS.Attester.WordArrayABI
 import Benchmarks.EAS.Attester.LocalArray
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Reasoning.Theory
 

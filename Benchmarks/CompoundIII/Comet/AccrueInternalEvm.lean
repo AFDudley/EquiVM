@@ -1,7 +1,7 @@
 import Benchmarks.CompoundIII.Comet.AccrueIndicesEvm
 import Benchmarks.CompoundIII.Comet.AccrualTimeEvm
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
 open Benchmarks.CompoundIII.Comet.Immutables cometWithExtendedAssetListBlocks
 
 namespace Benchmarks.CompoundIII.Comet
@@ -18,7 +18,7 @@ theorem cometAccrueInternal {v : CometWithExtendedAssetListImmutables}
   let time := timestampWord ee
   let w1 := solcSlotWordAt ⟨1⟩ σ ee
   let elapsed := currentElapsed time w1
-  have hr1 : Solm.EVM.storageLoad evm ee.codeOwner ⟨1⟩ = w1 := by
+  have hr1 : Stele.EVM.storageLoad evm ee.codeOwner ⟨1⟩ = w1 := by
     simpa only [hs.env] using hs.storageRead ⟨1⟩
   have he : accrueElapsed evm = elapsed := by
     simp only [accrueElapsed, hs.env, hr1]

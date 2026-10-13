@@ -2,7 +2,7 @@ import Reasoning.Stepping
 import Reasoning.Reach
 import Benchmarks.Dss.Clipper.RedoSuckEVM
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 namespace Reasoning.Theory

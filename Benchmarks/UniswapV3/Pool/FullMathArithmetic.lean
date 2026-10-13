@@ -2,7 +2,7 @@ import Benchmarks.UniswapV3.Pool.ProductLimbs
 import Benchmarks.UniswapV3.Pool.DoubleWordArithmetic
 import Benchmarks.UniswapV3.Pool.WordInverse
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 open scoped Fin.IntCast Fin.CommRing
 

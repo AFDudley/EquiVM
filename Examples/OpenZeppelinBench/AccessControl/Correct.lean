@@ -6,7 +6,7 @@ import Examples.OpenZeppelinBench.AccessControl.RenounceRole
 import Examples.OpenZeppelinBench.AccessControl.RevokeRole
 import Examples.OpenZeppelinBench.AccessControl.SupportsInterface
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -42,7 +42,7 @@ theorem accessControlNonPayable {σ σ₀ A I} {g : UInt256}
               callargs (by simp only [initState]; exact hwv))
             (by rw [hrev]; exact execResultsEquiv.revert rfl rfl)
 
-/-- Calldata shorter than a selector (`size < 4`) reverts before Solm dispatch. -/
+/-- Calldata shorter than a selector (`size < 4`) reverts before Stele dispatch. -/
 theorem accessControlShortRevert {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = accessControlBenchBytecode) (hsize : I.calldata.size < UInt256.size)
     (hwv : I.weiValue = ⟨0⟩) (hsz : I.calldata.size < 4) :
@@ -51,7 +51,7 @@ theorem accessControlShortRevert {σ σ₀ A I} {g : UInt256}
   exact (accessControlX_short (g := Sat256.ofUInt256 g) hcode hwv hsz).reEquivNoDispatch
     hcode (accessControlDispatch_none_short hsz)
 
-/-- `size ≥ 4` but no selector matches: no Solm dispatch and EVM fallthrough reverts. -/
+/-- `size ≥ 4` but no selector matches: no Stele dispatch and EVM fallthrough reverts. -/
 theorem accessControlNoDispatch {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = accessControlBenchBytecode) (hsize : I.calldata.size < UInt256.size)
     (hwv : I.weiValue = ⟨0⟩)
@@ -65,7 +65,7 @@ theorem accessControlNoDispatch {σ σ₀ A I} {g : UInt256}
     exact (accessControlX_short (g := Sat256.ofUInt256 g) hcode hwv hshort).reEquivNoDispatch
       hcode (accessControlDispatch_none_short hshort)
 
-/-- The deployed AccessControl benchmark runtime bytecode refines the Solm specification. -/
+/-- The deployed AccessControl benchmark runtime bytecode refines the Stele specification. -/
 theorem accessControlCorrect :
     runtimeRefinement config accessControlBenchBytecode contract := by
   refine ⟨fun σ σ₀ g A I hcode hsize => ?_⟩

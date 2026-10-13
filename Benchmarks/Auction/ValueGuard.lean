@@ -1,6 +1,6 @@
 import Benchmarks.Auction.Common
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 100000
 set_option synthInstance.maxSize 4096

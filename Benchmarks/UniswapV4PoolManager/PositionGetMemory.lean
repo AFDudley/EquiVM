@@ -3,7 +3,7 @@ import Benchmarks.UniswapV4PoolManager.PositionStorage
 import Benchmarks.UniswapV4PoolManager.MappingScratchMemory
 import Benchmarks.UniswapV4PoolManager.TransientTrace
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 def positionGetMemory (mem : ByteArray) (free : UInt256) (id : UInt256) (owner : AccountAddress)

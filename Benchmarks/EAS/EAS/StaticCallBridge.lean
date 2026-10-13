@@ -1,6 +1,6 @@
 import Benchmarks.EAS.EAS.Common
 import Reasoning.ExternalCall
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 -- GENERALIZES Reasoning.ExternalCall.callBridge to the STATICCALL opcode and permission bit.

@@ -1,7 +1,7 @@
 import Benchmarks.CompoundIII.Comet.SupplyBaseTotalsModel
 import Benchmarks.CompoundIII.Comet.NarrowArithmetic
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 

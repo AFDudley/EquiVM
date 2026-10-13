@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.CallbackBuildLayout
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 -- LIBRARY CANDIDATE: the padded input size and call bounds of a word-pair/bytes callback.

@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Flopper.Deny
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -9,13 +9,13 @@ namespace Benchmarks.Dss.Flopper
 /-! ## `cage()` -/
 
 def cageLivePostState (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨8⟩ ⟨0⟩
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨8⟩ ⟨0⟩
 
 def cagePostState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore (cageLivePostState evm)
+  Stele.EVM.storageStore (cageLivePostState evm)
     (cageLivePostState evm).executionEnv.codeOwner ⟨9⟩
     (setAddressOffset0Word
-      (Solm.EVM.storageLoad (cageLivePostState evm)
+      (Stele.EVM.storageLoad (cageLivePostState evm)
         (cageLivePostState evm).executionEnv.codeOwner ⟨9⟩)
       (relySourceWord I))
 
@@ -75,7 +75,7 @@ theorem flopperCageBodyReturnsSplit (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hsrc : evm.executionEnv.source = I.source)
     (hauth :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (relyAuthStorageSlot I) = ⟨1⟩) :
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (relyAuthStorageSlot I) = ⟨1⟩) :
     (ExecTransitionBody config contract evm ∅ cageTransition.body
       (.returned { contract := contract, locals := ∅ } (cagePostState evm I) none)) ∧
       (evm.executionEnv.perm = false →
@@ -106,13 +106,13 @@ theorem flopperCageBodyReverts (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hsrc : evm.executionEnv.source = I.source)
     (hauth :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (relyAuthStorageSlot I) ≠ ⟨1⟩) :
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (relyAuthStorageSlot I) ≠ ⟨1⟩) :
     ExecTransitionBody config contract evm ∅ cageTransition.body .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
   simpa [cageTransition, nonpayable, auth] using
     nonpayableSecondRequireReverts
       (cfg := config)
-      (solm := { contract := contract, locals := ∅ })
+      (stele := { contract := contract, locals := ∅ })
       (evm := evm)
       (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
       (rest := [.assign .storage liveRef (.intLit 0), .assign .storage vowRef sender])
@@ -390,18 +390,18 @@ theorem flopperCageBodyCoreOk
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨620⟩ [sel]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
   have hauthWord : relyAuthWord σ I = ⟨1⟩ := hauth
   have hbodySplit :
-      (ExecTransitionBody config contract evmSolm ∅ cageTransition.body
-        (.returned { contract := contract, locals := ∅ } (cagePostState evmSolm I) none)) ∧
-      (I.perm = false → ExecTransitionBody config contract evmSolm ∅
+      (ExecTransitionBody config contract evmStele ∅ cageTransition.body
+        (.returned { contract := contract, locals := ∅ } (cagePostState evmStele I) none)) ∧
+      (I.perm = false → ExecTransitionBody config contract evmStele ∅
         cageTransition.body .staticViolation) := by
-    simpa [evmSolm, relyAuthWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [evmStele, relyAuthWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
-      flopperCageBodyReturnsSplit evmSolm I
-        (by simp only [evmSolm, initState]; exact hwv)
-        (by simp [evmSolm, initState])
+      flopperCageBodyReturnsSplit evmStele I
+        (by simp only [evmStele, initState]; exact hwv)
+        (by simp [evmStele, initState])
         hauthWord
   rcases flopperX_cage_okSplit (g := Sat256.ofUInt256 g) hauth hreach with
       ⟨_hperm, hret⟩ | ⟨hperm, hstatic⟩
@@ -410,8 +410,8 @@ theorem flopperCageBodyCoreOk
   exact hret.reEquivExecutionGen hcode hdispatch hdecode hbodySplit.1
       (by
         simpa [cagePostState, cageLivePostState, cagePostAccountMap,
-          cageLivePostAccountMap, cageVowStoredWord, evmSolm, initState,
-          storageStore_accountMap, storageStore_executionEnv, Solm.EVM.storageLoad,
+          cageLivePostAccountMap, cageVowStoredWord, evmStele, initState,
+          storageStore_accountMap, storageStore_executionEnv, Stele.EVM.storageLoad,
           State.lookupAccount, Account.lookupStorage, solcSlotWord])
       (by
         simpa [cageTransition] using
@@ -430,15 +430,15 @@ theorem flopperCageBodyCoreUnauthorized
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨620⟩ [sel]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
   have hauthWord : relyAuthWord σ I ≠ ⟨1⟩ := hauth
   have hbody :
-      ExecTransitionBody config contract evmSolm ∅ cageTransition.body .reverted := by
-    simpa [evmSolm, relyAuthWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+      ExecTransitionBody config contract evmStele ∅ cageTransition.body .reverted := by
+    simpa [evmStele, relyAuthWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
-      flopperCageBodyReverts evmSolm I
-        (by simp only [evmSolm, initState]; exact hwv)
-        (by simp [evmSolm, initState])
+      flopperCageBodyReverts evmStele I
+        (by simp only [evmStele, initState]; exact hwv)
+        (by simp [evmStele, initState])
         hauthWord
   exact (flopperX_cage_unauthorized (g := Sat256.ofUInt256 g) hauth hreach)
     |>.reEquivExecutionRevert hcode hdispatch hdecode hbody

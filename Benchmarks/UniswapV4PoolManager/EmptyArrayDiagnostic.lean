@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV4PoolManager.DiffTarget
 
-open Solm Solm.DiffTest Solm.Interp ABI Ethereum Ethereum.EVM
+open Stele Stele.DiffTest Stele.Interp ABI Ethereum Ethereum.EVM
 open Benchmarks.UniswapV4PoolManager
 
 /-- Regression diagnostic for empty word arrays with legal trailing calldata. -/

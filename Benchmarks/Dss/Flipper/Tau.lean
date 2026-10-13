@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Flipper.Dispatch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Flipper
 
@@ -63,7 +63,7 @@ theorem flipperTauBodyCore {σ σ₀ A I} {g : UInt256}
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.int (Int.ofNat (tauWord σ I).toNat))])) := by
     simpa [tauTransition, tauWord, flipperUint48Offset6Word, solcSlotWordAt, initState,
-      Solm.EVM.storageLoad, State.lookupAccount] using
+      Stele.EVM.storageLoad, State.lookupAccount] using
       flipperUint48Offset6GetterBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
         (ref := tauRef) (er := ({ base := "tau", steps := [] } : EvaledStorageRef))

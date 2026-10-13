@@ -2,7 +2,7 @@ import Benchmarks.CompoundIII.Comet.PauseCommon
 import Benchmarks.CompoundIII.Comet.PermissionSource
 import Benchmarks.CompoundIII.Comet.InternalOutcome
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 

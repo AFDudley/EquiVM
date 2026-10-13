@@ -1,5 +1,5 @@
 import Benchmarks.EAS.EAS.HeapStatic
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 -- LIBRARY CANDIDATE: a public void body paired with its complete EVM execution.

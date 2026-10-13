@@ -7,7 +7,7 @@ import Benchmarks.WETH9.Routines
 decodes one address argument, hashes the mapping slot, loads it, and ABI-encodes the `uint256`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 1000000
@@ -67,25 +67,25 @@ theorem weth9Decode_balanceOf_none_short {I : ExecutionEnv}
   show config.externalABI.decodeCalldata? ["owner"] [addr] I.calldata = none
   simpa using decodeCalldata_legacyAddress_none_short (cd := I.calldata) (x := "owner") hsz4 hshort
 
-/-- The Solm `balanceOf(address)` body returns `balanceOf[owner]`. -/
+/-- The Stele `balanceOf(address)` body returns `balanceOf[owner]`. -/
 theorem weth9BalanceOfBodyReturns (evm : EVM.State) (I : ExecutionEnv)
     (h : evm.executionEnv.weiValue = ⟨0⟩) :
     ExecTransitionBody config contract evm (balanceOfStore I) balanceOfTransition.body
       (.returned { contract := contract, locals := balanceOfStore I } evm
         (some [(.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
             (balanceOfStorageSlot I)).toNat))])) := by
   exact ExecFuncBody.execBlockRet <|
     (ABlock.start.requireStep (evalCallvalueEq_true h)).returns (by
       rw [evalExpr_storage_scalar_value
-        (solm := { contract := contract, locals := balanceOfStore I })
+        (stele := { contract := contract, locals := balanceOfStore I })
         (slot := balanceOfRef (.var "owner"))
         (er := ({ base := "balanceOf", steps := [.mindex (balanceOfArgKey I)] } :
           EvaledStorageRef))
         (t := .int uint256Int)
         (loc := wordLoc (balanceOfStorageSlot I))
         (value := .int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
             (balanceOfStorageSlot I)).toNat))
         (hbase := by simp [balanceOfStore, balanceOfRef])
         (her := by
@@ -179,7 +179,7 @@ theorem weth9BalanceOfBodyCoreOk {σ σ₀ A I} {g : UInt256}
           (.returned { contract := contract, locals := balanceOfStore I }
             (initState σ σ₀ (Sat256.ofUInt256 g) A I)
             (some [(.int (Int.ofNat (balanceOfWord σ I).toNat))])) := by
-      simpa [balanceOfWord, balanceOfStorageSlot, initState, Solm.EVM.storageLoad,
+      simpa [balanceOfWord, balanceOfStorageSlot, initState, Stele.EVM.storageLoad,
         State.lookupAccount] using
         weth9BalanceOfBodyReturns (initState σ σ₀ (Sat256.ofUInt256 g) A I) I
           (by simp only [initState]; exact hwv)
@@ -215,7 +215,7 @@ theorem weth9BalanceOfBodyCoreOk {σ σ₀ A I} {g : UInt256}
         |>.solcPush1Dup1Revert0 (by native_decide) (by native_decide) (by native_decide) (by simp)
     exact weth9ReEquivDecodeFailed hcode hrev hdisp (weth9Decode_balanceOf_none_short hsz4 hsz)
 
-/-- `balanceOf(address)` body refines its Solm transition (handling both callvalue branches). -/
+/-- `balanceOf(address)` body refines its Stele transition (handling both callvalue branches). -/
 theorem weth9BalanceOfBodyCore {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = weth9Bytecode) (hsize : I.calldata.size < UInt256.size)
     (hsel : selIs I (weth9SelBytes 6)) :

@@ -1,7 +1,7 @@
 import Reasoning.Initcode
-import Solm.Refine
+import Stele.Refine
 
-open Solm ABI Ethereum Reasoning.Theory
+open Stele ABI Ethereum Reasoning.Theory
 
 namespace Benchmarks.CompoundIII.Comet
 

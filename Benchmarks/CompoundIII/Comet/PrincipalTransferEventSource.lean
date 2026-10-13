@@ -1,7 +1,7 @@
 import Benchmarks.CompoundIII.Comet.PresentValue
 import Benchmarks.CompoundIII.Comet.TotalsStorage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 
@@ -19,7 +19,7 @@ def principalTransferEventFrame (frame : Frame) (evm : EVM.State) (principal : U
   if 0 < principal.toNat then
     { frame with locals := frame.locals.insert retName (.int
       (presentValueWord (totalsIndexWord
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩) false) principal).toNat) }
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩) false) principal).toNat) }
   else frame
 
 theorem principalTransferEventFrame_contract (frame : Frame) (evm : EVM.State)
@@ -51,7 +51,7 @@ theorem principalTransferEvent_source (frame : Frame) (evm : EVM.State) (mint : 
       .ok (.bool (decide (0 < principal.toNat))) := by
     simp only [evalExpr?, he, pure, bind, EvalResult.bind, evalBinaryOp?, Int.natCast_pos]
   by_cases hpos : 0 < principal.toNat
-  · let index := totalsIndexWord (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩) false
+  · let index := totalsIndexWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩) false
     let value := presentValueWord index principal
     let final : Frame := { frame with locals := frame.locals.insert retName (.int value.toNat) }
     have hei : evalExpr? config frame evm (.storage ⟨"baseSupplyIndex", []⟩) =

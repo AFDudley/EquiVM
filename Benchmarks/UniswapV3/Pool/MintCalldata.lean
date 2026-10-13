@@ -2,7 +2,7 @@ import Benchmarks.UniswapV3.Pool.LegacyScalarsBytes
 import Benchmarks.UniswapV3.Pool.LegacyBytesDecode
 import Benchmarks.UniswapV3.Pool.MintModel
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
 

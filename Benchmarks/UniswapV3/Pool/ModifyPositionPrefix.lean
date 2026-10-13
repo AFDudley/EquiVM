@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.ModifyPositionModel
 import Benchmarks.UniswapV3.Pool.StructFieldSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
@@ -9,9 +9,9 @@ set_option maxRecDepth 10000
 theorem modifyPositionZerosSource (imms : Store) (evm : EVM.State) (a : ModifyPositionArgs) :
     ExecBlock config (modifyPositionFrame imms a) evm (modifyPositionFunction.body.take 3)
       (.ok (modifyPositionZeroFrame imms a) evm) := by
-  refine ExecBlock.consNormal (solm' := modifyPositionPositionZeroFrame imms a) (evm' := evm)
+  refine ExecBlock.consNormal (stele' := modifyPositionPositionZeroFrame imms a) (evm' := evm)
     (ExecStmt.letDecl (by simp only [evalExpr?, pure]; rfl)) ?_
-  refine ExecBlock.consNormal (solm' := modifyPositionAmount0ZeroFrame imms a)
+  refine ExecBlock.consNormal (stele' := modifyPositionAmount0ZeroFrame imms a)
     (ExecStmt.letDecl (by simp only [evalExpr?, pure])) ?_
   exact ExecBlock.consNormal (ExecStmt.letDecl (by simp only [evalExpr?, pure])) ExecBlock.nil
 
@@ -21,7 +21,7 @@ theorem modifyPositionDelegateCall (v : UniswapV3PoolImmutables) (evm : EVM.Stat
       (.internalCall "checkNotDelegateCall" [] "__c0")
       (.ok (modifyPositionDelegateFrame (immStore v) a) evm) :=
   internalCallFunctionReturn (callee := noDelegateCallFunction) (argVals := []) (locals := ∅)
-    (calleeSolm := noDelegateCallFrame v) (value := none)
+    (calleeStele := noDelegateCallFrame v) (value := none)
     (by simp only [evalExprs?, pure]) noDelegateCallLookup rfl (noDelegateCallReturns v evm hself)
 
 theorem modifyPositionDelegateSource (v : UniswapV3PoolImmutables) (evm : EVM.State)
@@ -49,7 +49,7 @@ theorem modifyPositionCheckCall (imms : Store) (evm : EVM.State) (a : ModifyPosi
       (.ok (modifyPositionCheckedFrame imms a) evm) :=
   internalCallFunctionReturn (callee := checkTicksFunction)
     (argVals := [.int a.lower, .int a.upper]) (locals := checkTicksLocals a.lower a.upper)
-    (calleeSolm := checkTicksFrame imms a.lower a.upper) (value := none)
+    (calleeStele := checkTicksFrame imms a.lower a.upper) (value := none)
     (evalModifyPositionCheckExprs imms evm a) checkTicksLookup (checkTicksBind a.lower a.upper)
     (checkTicksReturns imms evm a.lower a.upper hticks)
 

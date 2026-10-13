@@ -1,14 +1,14 @@
 import Benchmarks.CompoundIII.Comet.GetterSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 
 -- LIBRARY CANDIDATE: division by zero propagates a source revert.
-theorem divSourceZero {cfg solm evm lhs rhs a}
-    (ha : evalExpr? cfg solm evm lhs = .ok (.int a))
-    (hb : evalExpr? cfg solm evm rhs = .ok (.int 0)) :
-    evalExpr? cfg solm evm (.binary .div lhs rhs) = .revert := by
+theorem divSourceZero {cfg stele evm lhs rhs a}
+    (ha : evalExpr? cfg stele evm lhs = .ok (.int a))
+    (hb : evalExpr? cfg stele evm rhs = .ok (.int 0)) :
+    evalExpr? cfg stele evm (.binary .div lhs rhs) = .revert := by
   simp only [evalExpr?, ha, hb, bind, EvalResult.bind, evalBinaryOp?, ↓reduceIte]
 
 def mulFactorWord (n factor : UInt256) : UInt256 :=
@@ -67,7 +67,7 @@ theorem mulFactor_call_ok (frame : Frame) (evm : EVM.State) (n factor : UInt256)
   have hb := mulFactorCallable_result evm frame.immutables n factor
   rw [if_pos hfit] at hb
   exact ExecStmt.internalCallReturn (callee := mulFactorCallable) (locals := mulFactorLocals n factor)
-    (cfg := config) (solm := frame) (evm := evm)
+    (cfg := config) (stele := frame) (evm := evm)
     (args := [nExpr, factorExpr]) (argVals := [.int n.toNat, .int factor.toNat])
     (by simp only [evalExprs?, hn, hf, pure, bind, EvalResult.bind])
     (by rw [hc]; exact mulFactorCallable_lookup) rfl (by simpa only [hc] using hb)
@@ -81,7 +81,7 @@ theorem mulFactor_call_revert (frame : Frame) (evm : EVM.State) (n factor : UInt
   have hb := mulFactorCallable_result evm frame.immutables n factor
   rw [if_neg hfit] at hb
   exact ExecStmt.internalCallRevert (callee := mulFactorCallable) (locals := mulFactorLocals n factor)
-    (cfg := config) (solm := frame) (evm := evm)
+    (cfg := config) (stele := frame) (evm := evm)
     (args := [nExpr, factorExpr]) (argVals := [.int n.toNat, .int factor.toNat])
     (by simp only [evalExprs?, hn, hf, pure, bind, EvalResult.bind])
     (by rw [hc]; exact mulFactorCallable_lookup) rfl (by simpa only [hc] using hb)
@@ -136,7 +136,7 @@ theorem safe64_call_ok (frame : Frame) (evm : EVM.State) (n : UInt256)
   have hb := safe64Callable_result evm frame.immutables n
   rw [if_pos hfit] at hb
   exact ExecStmt.internalCallReturn (callee := safe64Callable)
-    (cfg := config) (solm := frame) (evm := evm) (args := [expr]) (argVals := [.int n.toNat])
+    (cfg := config) (stele := frame) (evm := evm) (args := [expr]) (argVals := [.int n.toNat])
     (by simp only [evalExprs?, hn, pure, bind, EvalResult.bind])
     (by rw [hc]; exact safe64Callable_lookup) rfl (by simpa only [hc] using hb)
 
@@ -147,7 +147,7 @@ theorem safe64_call_revert (frame : Frame) (evm : EVM.State) (n : UInt256)
   have hb := safe64Callable_result evm frame.immutables n
   rw [if_neg hfit] at hb
   exact ExecStmt.internalCallRevert (callee := safe64Callable)
-    (cfg := config) (solm := frame) (evm := evm) (args := [expr]) (argVals := [.int n.toNat])
+    (cfg := config) (stele := frame) (evm := evm) (args := [expr]) (argVals := [.int n.toNat])
     (by simp only [evalExprs?, hn, pure, bind, EvalResult.bind])
     (by rw [hc]; exact safe64Callable_lookup) rfl (by simpa only [hc] using hb)
 

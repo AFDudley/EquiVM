@@ -1,15 +1,15 @@
 import Examples.SimpleAuction.Spec
-import Solm.Notation
+import Stele.Notation
 
 /-!
-# SimpleAuction spec in the Solidity-faithful Solm frontend
+# SimpleAuction spec in the Solidity-faithful Stele frontend
 
 The `if (cond) revert E();` sites of the source are `require(!cond)` here, as in the AST spec
 (custom-error payloads are dropped).  `bid` is payable; every other entry point gets the implicit
 non-payable guard.
 -/
 
-open Solm Solm.Notation
+open Stele Stele.Notation
 
 namespace SimpleAuction.Syntax
 

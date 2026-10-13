@@ -1,8 +1,8 @@
 import Benchmarks.EAS.Attester.SpecSyntax
 import Benchmarks.EAS.Attester.Immutables
-import Solm.SolidityStorage
-import Solm.Semantics
-import Solm.SolidityLayout
+import Stele.SolidityStorage
+import Stele.Semantics
+import Stele.SolidityLayout
 
 /-!
 # EAS Attester specification assembly
@@ -11,7 +11,7 @@ import Solm.SolidityLayout
 handles and supplies the EAS ABI, empty storage backend, and Solidity constructor-argument codec.
 -/
 
-open Solm ABI
+open Stele ABI
 
 namespace Benchmarks.EAS.Attester
 

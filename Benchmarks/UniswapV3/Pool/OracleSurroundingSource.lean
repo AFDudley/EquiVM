@@ -2,7 +2,7 @@ import Benchmarks.UniswapV3.Pool.OracleSurroundingLatest
 import Benchmarks.UniswapV3.Pool.OracleSurroundingSearch
 import Benchmarks.UniswapV3.Pool.OracleSurroundingReverts
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 inductive OracleSurroundingRun (time target : UInt256) (tick : Int)

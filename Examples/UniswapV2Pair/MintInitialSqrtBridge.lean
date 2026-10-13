@@ -1,19 +1,19 @@
 import Examples.UniswapV2Pair.MintFeeSqrtLoopBridge
 import Examples.UniswapV2Pair.MintRuntimeAfterFee
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
 namespace UniswapV2Pair
 
 theorem evalExpr_mint_initialLiquidity_sub_ok
-    {solm : Frame} (evm : EVM.State) (rootLiquidity : Int) (liquidity : UInt256)
-    (hroot : solm.locals.get? "rootLiquidity" = some (.int rootLiquidity))
+    {stele : Frame} (evm : EVM.State) (rootLiquidity : Int) (liquidity : UInt256)
+    (hroot : stele.locals.get? "rootLiquidity" = some (.int rootLiquidity))
     (hge : minimumLiquidity ≤ rootLiquidity)
     (hfit : rootLiquidity - minimumLiquidity < (2 : Int) ^ 256)
     (hliquidity : liquidity = UInt256.ofNat (rootLiquidity - minimumLiquidity).toNat) :
-    evalExpr? config solm evm
+    evalExpr? config stele evm
       (u256 (.binary .sub (.var "rootLiquidity") (.intLit minimumLiquidity))) =
         .ok (uniswapUint256Value liquidity) := by
   have hnonneg : 0 ≤ rootLiquidity - minimumLiquidity := by omega

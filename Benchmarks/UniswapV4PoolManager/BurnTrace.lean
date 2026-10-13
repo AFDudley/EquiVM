@@ -4,7 +4,7 @@ import Benchmarks.UniswapV4PoolManager.AccountDeltaTrace
 import Benchmarks.UniswapV4PoolManager.BurnFromTrace
 
 /-! Public burn bytecode: checked amount, currency accounting, then ERC6909 burnFrom. -/
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.UniswapV4PoolManager.Immutables
 namespace Benchmarks.UniswapV4PoolManager

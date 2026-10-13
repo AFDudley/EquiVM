@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.BitmapNextPrefix
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
 
@@ -35,7 +35,7 @@ theorem bitmapNextPositionCall (imms : Store) (evm : EVM.State) (tick spacing : 
   cases lte <;>
     exact internalCallFunctionReturn (callee := bitmapPositionFunction)
       (locals := bitmapPositionLocals (bitmapNextPosition (bitmapNextCompressed tick spacing) _))
-      (calleeSolm := bitmapPositionReadyFrame imms
+      (calleeStele := bitmapPositionReadyFrame imms
         (bitmapNextPosition (bitmapNextCompressed tick spacing) _))
       (value := some [
         .int (bitmapWordPos (bitmapNextPosition (bitmapNextCompressed tick spacing) _)),

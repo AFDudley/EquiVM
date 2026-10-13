@@ -3,7 +3,7 @@ import Benchmarks.Auction.SettleInternal
 import Benchmarks.Auction.PausableSource
 import Benchmarks.Auction.PausableErrors
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Auction
 

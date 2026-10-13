@@ -1,5 +1,5 @@
 import Benchmarks.EAS.EAS.ArrayLoopSource
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 -- GENERALIZES evalLocalNewArray to an arbitrary evaluated length expression.

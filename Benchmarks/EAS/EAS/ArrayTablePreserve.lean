@@ -1,6 +1,6 @@
 import Benchmarks.EAS.EAS.ArrayTableMemory
 import Benchmarks.EAS.EAS.AttestAllocationRequests
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 theorem WordArrayTablePrefix.write_below {mem : ByteArray} {ptr : UInt256}

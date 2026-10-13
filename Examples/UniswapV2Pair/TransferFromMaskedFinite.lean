@@ -1,6 +1,6 @@
 import Examples.UniswapV2Pair.TransferFromMasked
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -60,7 +60,7 @@ theorem uniswapTransferFromX_allowanceFiniteAfterDebit_masked {σ σ₀ A I}
       uniswapCodeOwnerStorageWord I σAllowance (mapSlot (transferFromFromMaskedWord I) ⟨1⟩) =
         transferFromFromBalanceWord (transferFromAfterAllowanceState
           (initState σ σ₀ g A I) I) I := by
-    unfold uniswapCodeOwnerStorageWord transferFromFromBalanceWord Solm.EVM.storageLoad
+    unfold uniswapCodeOwnerStorageWord transferFromFromBalanceWord Stele.EVM.storageLoad
     simp [-Std.ExtTreeMap.get?_eq_getElem?, State.lookupAccount,
       Account.lookupStorage, hstateMap, hfromSlot, hcodeOwner]
   have hbalanceEvm : (transferFromValueWord I).toNat ≤
@@ -206,7 +206,7 @@ theorem uniswapTransferFromX_allowanceFiniteAfterCreditCalc_masked {σ σ₀ A I
   have htoBalanceWord :
       uniswapCodeOwnerStorageWord I σDebit (mapSlot (transferFromToMaskedWord I) ⟨1⟩) =
         transferFromToBalanceWord (initState σ σ₀ g A I) I := by
-    unfold uniswapCodeOwnerStorageWord transferFromToBalanceWord Solm.EVM.storageLoad
+    unfold uniswapCodeOwnerStorageWord transferFromToBalanceWord Stele.EVM.storageLoad
     rw [hinitCodeOwner]
     simp [-Std.ExtTreeMap.get?_eq_getElem?, State.lookupAccount,
       Account.lookupStorage, hbalanceMap, htoSlot]
@@ -463,7 +463,7 @@ theorem uniswapTransferFromX_balanceFiniteAllowance_masked {σ σ₀ A I}
       uniswapCodeOwnerStorageWord I σAllowance (mapSlot (transferFromFromMaskedWord I) ⟨1⟩) =
         transferFromFromBalanceWord (transferFromAfterAllowanceState
           (initState σ σ₀ g A I) I) I := by
-    unfold uniswapCodeOwnerStorageWord transferFromFromBalanceWord Solm.EVM.storageLoad
+    unfold uniswapCodeOwnerStorageWord transferFromFromBalanceWord Stele.EVM.storageLoad
     simp [-Std.ExtTreeMap.get?_eq_getElem?, State.lookupAccount,
       Account.lookupStorage, hstateMap, hfromSlot, hcodeOwner]
   have hltWord :
@@ -576,7 +576,7 @@ theorem uniswapTransferFromX_overflowFiniteAllowance_masked {σ σ₀ A I}
   have htoBalanceWord :
       uniswapCodeOwnerStorageWord I σDebit (mapSlot (transferFromToMaskedWord I) ⟨1⟩) =
         transferFromToBalanceWord (initState σ σ₀ g A I) I := by
-    unfold uniswapCodeOwnerStorageWord transferFromToBalanceWord Solm.EVM.storageLoad
+    unfold uniswapCodeOwnerStorageWord transferFromToBalanceWord Stele.EVM.storageLoad
     rw [show (initState σ σ₀ g A I).executionEnv.codeOwner = I.codeOwner from rfl]
     simp [-Std.ExtTreeMap.get?_eq_getElem?, State.lookupAccount,
       Account.lookupStorage, hbalanceMap, htoSlot]

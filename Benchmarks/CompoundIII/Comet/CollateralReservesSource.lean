@@ -2,14 +2,14 @@ import Benchmarks.CompoundIII.Comet.TokenBalanceCall
 import Benchmarks.CompoundIII.Comet.TotalsCollateralStorage
 import Benchmarks.CompoundIII.Comet.NarrowArithmetic
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 
 set_option maxRecDepth 10000
 
 def collateralSupply (evm : EVM.State) (asset : AccountAddress) : UInt256 :=
-  low128 (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (totalsCollateralSlot asset))
+  low128 (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (totalsCollateralSlot asset))
 
 def collateralReservesValue (evm : EVM.State) (asset : AccountAddress)
     (out : ByteArray) : UInt256 :=
@@ -117,7 +117,7 @@ theorem collateralReserves_call_ok (frame : Frame) (evm evm' : EVM.State)
   have hb := collateralReserves_body_ok frame.immutables asset evm evm' out hc hhi hv
   exact ExecStmt.internalCallReturn (callee := collateralReservesCallable)
     (locals := (∅ : Store).insert "asset" (.address asset))
-    (cfg := config) (solm := frame) (evm := evm) (args := [expr])
+    (cfg := config) (stele := frame) (evm := evm) (args := [expr])
     (argVals := [.address asset])
     (by simp only [evalExprs?, he, pure, bind, EvalResult.bind])
     (by rw [hf]; exact collateralReservesCallable_lookup) rfl (by simpa only [hf] using hb)
@@ -134,7 +134,7 @@ theorem collateralReserves_call_revert (frame : Frame) (evm evm' : EVM.State)
   have hb := collateralReserves_body_revert frame.immutables asset evm evm' out z hc hhi hv
   exact ExecStmt.internalCallRevert (callee := collateralReservesCallable)
     (locals := (∅ : Store).insert "asset" (.address asset))
-    (cfg := config) (solm := frame) (evm := evm) (args := [expr])
+    (cfg := config) (stele := frame) (evm := evm) (args := [expr])
     (argVals := [.address asset])
     (by simp only [evalExprs?, he, pure, bind, EvalResult.bind])
     (by rw [hf]; exact collateralReservesCallable_lookup) rfl (by simpa only [hf] using hb)

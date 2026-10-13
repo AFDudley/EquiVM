@@ -2,7 +2,7 @@ import Benchmarks.UniswapV3.Pool.Calls
 import Reasoning.ABIComposite
 import Reasoning.HeapMemory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 
 namespace Benchmarks.UniswapV3.Pool

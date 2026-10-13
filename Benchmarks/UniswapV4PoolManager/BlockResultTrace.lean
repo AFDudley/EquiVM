@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.BlockContinuation
 import Benchmarks.UniswapV4PoolManager.CallContinuation
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 -- LIBRARY CANDIDATE: trace a block's normal and return continuations separately.

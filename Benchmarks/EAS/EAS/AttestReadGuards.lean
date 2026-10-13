@@ -2,7 +2,7 @@ import Benchmarks.EAS.EAS.AttestIterationSource
 import Benchmarks.EAS.EAS.AttestLoopControl
 import Benchmarks.EAS.EAS.RequestGuardsRun
 import Benchmarks.EAS.EAS.RecordProcessLocals
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.EAS.EAS.Immutables
 namespace Benchmarks.EAS.EAS
 

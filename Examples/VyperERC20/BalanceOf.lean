@@ -3,7 +3,7 @@ import Examples.VyperERC20.TotalSupply
 import Examples.VyperERC20.Storage
 import Examples.ERC20.Common
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option linter.unusedSimpArgs false
@@ -70,7 +70,7 @@ theorem erc20BalanceOfBodyReturns (evm : EVM.State) (I : ExecutionEnv)
       ERC20.balanceOfTransition.body
       (.returned { contract := erc20Contract, locals := balanceOfStore I } evm
         (some [(.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (balanceOfSlot I)).toNat))])) := by
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (balanceOfSlot I)).toNat))])) := by
   exact ExecFuncBody.execBlockRet <|
     (ABlock.start.requireStep (evalCallvalueEq_true h)).returns (by
       rw [evalExpr_storage_scalar (hbackend := rfl) (t := .int uint256Int)
@@ -487,7 +487,7 @@ theorem erc20BalanceOfBodyCore
         (.returned { contract := erc20Contract, locals := balanceOfStore I }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.int (Int.ofNat (balanceOfWord σ I).toNat))])) := by
-    simpa [balanceOfWord, balanceOfSlot, initState, Solm.EVM.storageLoad,
+    simpa [balanceOfWord, balanceOfSlot, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using erc20BalanceOfBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) I
         (by simp only [initState]; exact hwv)

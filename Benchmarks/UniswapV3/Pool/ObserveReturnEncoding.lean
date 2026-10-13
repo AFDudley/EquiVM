@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.WordArrayBytes
 import Benchmarks.UniswapV3.Pool.SignedWords
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 -- LIBRARY CANDIDATE: integer arrays whose scalar encodings are known.

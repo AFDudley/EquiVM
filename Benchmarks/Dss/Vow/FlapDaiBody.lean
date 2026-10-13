@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Vow.FlapBody
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -37,11 +37,11 @@ theorem flapBeforeDaiSuccess
       config.externalABI.decode? "sin" outSin =
         some [.int (Int.ofNat vatSin0.toNat)])
     (hBumpLoad :
-      Solm.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨10⟩ = BumpVal)
+      Stele.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨10⟩ = BumpVal)
     (hsurplus0 : surplus0 = vatSin0 + BumpVal)
     (hsurplus0Fit : vatSin0.toNat + BumpVal.toNat < UInt256.size)
     (hHumpLoad :
-      Solm.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨11⟩ = HumpVal)
+      Stele.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨11⟩ = HumpVal)
     (hsurplusNeed : surplusNeed = surplus0 + HumpVal)
     (hsurplusNeedFit : surplus0.toNat + HumpVal.toNat < UInt256.size) :
     let locals := (∅ : Store)
@@ -107,7 +107,7 @@ theorem flapBeforeDaiSuccess
         (args := [.var "vatSin0", .storage bumpRef])
         (argVals := [.int (Int.ofNat vatSin0.toNat), .int (Int.ofNat BumpVal.toNat)])
         (callee := addFunction) (locals := uintBinaryLocals vatSin0 BumpVal)
-        (calleeSolm := { contract := contract, locals := uintBinaryLocalsZ vatSin0 BumpVal surplus0 })
+        (calleeStele := { contract := contract, locals := uintBinaryLocalsZ vatSin0 BumpVal surplus0 })
         (value := some [.int (Int.ofNat surplus0.toNat)])
         hargsSurplus0 (by rfl) hbindSurplus0 hbody)
   have hsurplus0Var :
@@ -147,7 +147,7 @@ theorem flapBeforeDaiSuccess
         (args := [.var "surplus0", .storage humpRef])
         (argVals := [.int (Int.ofNat surplus0.toNat), .int (Int.ofNat HumpVal.toNat)])
         (callee := addFunction) (locals := uintBinaryLocals surplus0 HumpVal)
-        (calleeSolm := { contract := contract, locals := uintBinaryLocalsZ surplus0 HumpVal surplusNeed })
+        (calleeStele := { contract := contract, locals := uintBinaryLocalsZ surplus0 HumpVal surplusNeed })
         (value := some [.int (Int.ofNat surplusNeed.toNat)])
         hargsSurplusNeed (by rfl) hbindSurplusNeed hbody)
   simp only [flapBeforeDaiStmts, nonpayable, checkedExternalCallStmts, List.cons_append,
@@ -176,15 +176,15 @@ theorem flapSourceDai0NoCode
       config.externalABI.decode? "sin" outSin =
         some [.int (Int.ofNat vatSin0.toNat)])
     (hBumpLoad :
-      Solm.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨10⟩ = BumpVal)
+      Stele.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨10⟩ = BumpVal)
     (hsurplus0 : surplus0 = vatSin0 + BumpVal)
     (hsurplus0Fit : vatSin0.toNat + BumpVal.toNat < UInt256.size)
     (hHumpLoad :
-      Solm.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨11⟩ = HumpVal)
+      Stele.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨11⟩ = HumpVal)
     (hsurplusNeed : surplusNeed = surplus0 + HumpVal)
     (hsurplusNeedFit : surplus0.toNat + HumpVal.toNat < UInt256.size)
     (hvatLoadSin :
-      Solm.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨1⟩ =
+      Stele.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨1⟩ =
         solcSlotWordAt ⟨1⟩ σ I)
     (hvatNoCodeDai :
       (UInt256.ofNat
@@ -248,15 +248,15 @@ theorem flapSourceDai0CallFailure
       config.externalABI.decode? "sin" outSin =
         some [.int (Int.ofNat vatSin0.toNat)])
     (hBumpLoad :
-      Solm.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨10⟩ = BumpVal)
+      Stele.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨10⟩ = BumpVal)
     (hsurplus0 : surplus0 = vatSin0 + BumpVal)
     (hsurplus0Fit : vatSin0.toNat + BumpVal.toNat < UInt256.size)
     (hHumpLoad :
-      Solm.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨11⟩ = HumpVal)
+      Stele.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨11⟩ = HumpVal)
     (hsurplusNeed : surplusNeed = surplus0 + HumpVal)
     (hsurplusNeedFit : surplus0.toNat + HumpVal.toNat < UInt256.size)
     (hvatLoadSin :
-      Solm.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨1⟩ =
+      Stele.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨1⟩ =
         solcSlotWordAt ⟨1⟩ σ I)
     (hvatCodeDai :
       0 < (UInt256.ofNat
@@ -336,15 +336,15 @@ theorem flapSourceDai0DecodeRevert
       config.externalABI.decode? "sin" outSin =
         some [.int (Int.ofNat vatSin0.toNat)])
     (hBumpLoad :
-      Solm.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨10⟩ = BumpVal)
+      Stele.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨10⟩ = BumpVal)
     (hsurplus0 : surplus0 = vatSin0 + BumpVal)
     (hsurplus0Fit : vatSin0.toNat + BumpVal.toNat < UInt256.size)
     (hHumpLoad :
-      Solm.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨11⟩ = HumpVal)
+      Stele.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨11⟩ = HumpVal)
     (hsurplusNeed : surplusNeed = surplus0 + HumpVal)
     (hsurplusNeedFit : surplus0.toNat + HumpVal.toNat < UInt256.size)
     (hvatLoadSin :
-      Solm.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨1⟩ =
+      Stele.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨1⟩ =
         solcSlotWordAt ⟨1⟩ σ I)
     (hvatCodeDai :
       0 < (UInt256.ofNat
@@ -438,15 +438,15 @@ theorem vowFlapDai0NoCodeBodyCore
       config.externalABI.decode? "sin" outSin =
         some [.int (Int.ofNat vatSin0.toNat)])
     (hBumpLoad :
-      Solm.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨10⟩ = BumpVal)
+      Stele.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨10⟩ = BumpVal)
     (hsurplus0 : surplus0 = vatSin0 + BumpVal)
     (hsurplus0Fit : vatSin0.toNat + BumpVal.toNat < UInt256.size)
     (hHumpLoad :
-      Solm.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨11⟩ = HumpVal)
+      Stele.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨11⟩ = HumpVal)
     (hsurplusNeed : surplusNeed = surplus0 + HumpVal)
     (hsurplusNeedFit : surplus0.toNat + HumpVal.toNat < UInt256.size)
     (hvatLoadSin :
-      Solm.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨1⟩ =
+      Stele.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨1⟩ =
         solcSlotWordAt ⟨1⟩ σ I)
     (hvatNoCodeDai :
       (UInt256.ofNat
@@ -491,15 +491,15 @@ theorem vowFlapDai0CallFailureBodyCore
       config.externalABI.decode? "sin" outSin =
         some [.int (Int.ofNat vatSin0.toNat)])
     (hBumpLoad :
-      Solm.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨10⟩ = BumpVal)
+      Stele.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨10⟩ = BumpVal)
     (hsurplus0 : surplus0 = vatSin0 + BumpVal)
     (hsurplus0Fit : vatSin0.toNat + BumpVal.toNat < UInt256.size)
     (hHumpLoad :
-      Solm.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨11⟩ = HumpVal)
+      Stele.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨11⟩ = HumpVal)
     (hsurplusNeed : surplusNeed = surplus0 + HumpVal)
     (hsurplusNeedFit : surplus0.toNat + HumpVal.toNat < UInt256.size)
     (hvatLoadSin :
-      Solm.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨1⟩ =
+      Stele.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨1⟩ =
         solcSlotWordAt ⟨1⟩ σ I)
     (hvatCodeDai :
       0 < (UInt256.ofNat
@@ -552,15 +552,15 @@ theorem vowFlapDai0DecodeShortBodyCore
       config.externalABI.decode? "sin" outSin =
         some [.int (Int.ofNat vatSin0.toNat)])
     (hBumpLoad :
-      Solm.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨10⟩ = BumpVal)
+      Stele.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨10⟩ = BumpVal)
     (hsurplus0 : surplus0 = vatSin0 + BumpVal)
     (hsurplus0Fit : vatSin0.toNat + BumpVal.toNat < UInt256.size)
     (hHumpLoad :
-      Solm.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨11⟩ = HumpVal)
+      Stele.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨11⟩ = HumpVal)
     (hsurplusNeed : surplusNeed = surplus0 + HumpVal)
     (hsurplusNeedFit : surplus0.toNat + HumpVal.toNat < UInt256.size)
     (hvatLoadSin :
-      Solm.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨1⟩ =
+      Stele.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨1⟩ =
         solcSlotWordAt ⟨1⟩ σ I)
     (hvatCodeDai :
       0 < (UInt256.ofNat

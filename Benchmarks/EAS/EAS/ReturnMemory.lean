@@ -1,6 +1,6 @@
 import Benchmarks.EAS.EAS.CopyPreserve
 import Benchmarks.EAS.EAS.ReturnWordDecode
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 -- LIBRARY CANDIDATE: the complete words of an ABI return buffer held in memory.

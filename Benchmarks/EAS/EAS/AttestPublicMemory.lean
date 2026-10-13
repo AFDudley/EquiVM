@@ -1,7 +1,7 @@
 import Benchmarks.EAS.EAS.OneRequestMemory
 import Benchmarks.EAS.EAS.CopyRequestCall
 import Benchmarks.EAS.EAS.AttestDecode
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 def attestPublicInitialMemory : ByteArray := Reasoning.Theory.writeWord ByteArray.empty 64 (UInt256.ofNat 224)

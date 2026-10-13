@@ -1,6 +1,6 @@
 import Benchmarks.EAS.EAS.ZeroCopy
 import Benchmarks.EAS.EAS.RecordPadding
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 -- LIBRARY CANDIDATE: any write at a reservation boundary realizes the implicit zero prefix.

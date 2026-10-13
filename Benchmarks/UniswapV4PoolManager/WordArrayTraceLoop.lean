@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV4PoolManager.WordReadTraceLoop
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 def wordArrayTraceCursor (I : ExecutionEnv) (i : Nat) : UInt256 :=

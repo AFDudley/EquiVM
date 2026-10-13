@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Flopper.Dispatch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Flopper
 
@@ -72,7 +72,7 @@ theorem flopperVowBodyCore
         (.returned { contract := contract, locals := ∅ }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.address (AccountAddress.ofNat (vowWord σ I).toNat))])) := by
-    simpa [vowTransition, vowWord, solcAddressSlotWord, initState, Solm.EVM.storageLoad,
+    simpa [vowTransition, vowWord, solcAddressSlotWord, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       flopperAddressGetterBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅

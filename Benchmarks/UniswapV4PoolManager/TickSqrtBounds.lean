@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV4PoolManager.TickSqrtWords
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 /-- Concrete range audit of the pinned TickMath constants over every accepted absolute tick. -/

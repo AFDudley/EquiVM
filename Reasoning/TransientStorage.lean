@@ -1,6 +1,6 @@
 import Reasoning.Storage
-import Reasoning.SolmBody
-import Solm.TransientStorage
+import Reasoning.SteleBody
+import Stele.TransientStorage
 
 /-!
 # Transient storage reasoning
@@ -9,7 +9,7 @@ Scalar read and write helpers for the executing account's transient slot map. Th
 Solidity encoding and word lemmas are shared with persistent storage.
 -/
 
-open Ethereum Ethereum.EVM Solm ABI
+open Ethereum Ethereum.EVM Stele ABI
 
 namespace Reasoning.Theory
 
@@ -20,29 +20,29 @@ abbrev codeOwnerTransientWord (ee : ExecutionEnv) (σ : AccountMap)
 
 theorem codeOwnerTransientWord_initState {σ σ₀ A I} {g : Sat256}
     (slot : UInt256) :
-    Solm.EVM.transientLoad (initState σ σ₀ g A I) I.codeOwner slot =
+    Stele.EVM.transientLoad (initState σ σ₀ g A I) I.codeOwner slot =
       codeOwnerTransientWord I σ slot := by
-  simp [Solm.EVM.transientLoad, initState, State.lookupAccount,
+  simp [Stele.EVM.transientLoad, initState, State.lookupAccount,
     Account.lookupTransientStorage, codeOwnerTransientWord]
 
 theorem transientLocLoad_uint256 (evm : EVM.State) (slot : UInt256) :
     transientLocLoad evm (uint256Loc slot) =
-      .int (Int.ofNat (Solm.EVM.transientLoad evm evm.executionEnv.codeOwner slot).toNat) := by
+      .int (Int.ofNat (Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot).toNat) := by
   have htakeNat :
       (EVM.Word.toBytesLEWithSizeProof
-          (Solm.EVM.transientLoad evm evm.executionEnv.codeOwner slot)).1.extract 0 32 =
+          (Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot)).1.extract 0 32 =
         (EVM.Word.toBytesLEWithSizeProof
-          (Solm.EVM.transientLoad evm evm.executionEnv.codeOwner slot)).1 := by
+          (Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot)).1 := by
     rw [List.extract_eq_take_drop, List.drop_zero]
     apply List.take_of_length_le
     rw [(EVM.Word.toBytesLEWithSizeProof
-      (Solm.EVM.transientLoad evm evm.executionEnv.codeOwner slot)).2]
+      (Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot)).2]
   have htakeFin :
       (EVM.Word.toBytesLEWithSizeProof
-          (Solm.EVM.transientLoad evm evm.executionEnv.codeOwner slot)).1.extract 0
+          (Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot)).1.extract 0
             (32 : Fin 33).val =
         (EVM.Word.toBytesLEWithSizeProof
-          (Solm.EVM.transientLoad evm evm.executionEnv.codeOwner slot)).1 := by
+          (Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot)).1 := by
     exact htakeNat
   unfold transientLocLoad uint256Loc wordToElem
   simp only [Fin.val_zero, Nat.zero_add]
@@ -53,22 +53,22 @@ theorem transientLocLoad_uint256 (evm : EVM.State) (slot : UInt256) :
   · exact Int.natCast_nonneg _
   · apply Int.ofNat_lt.mpr
     change fromBytes' ((EVM.Word.toBytesLEWithSizeProof
-      (Solm.EVM.transientLoad evm evm.executionEnv.codeOwner slot)).1.extract 0 32) <
+      (Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot)).1.extract 0 32) <
         EVM.twoPow 256
     rw [htakeNat]
     have hle := EVM.fromBytes'_le (bs := (EVM.Word.toBytesLEWithSizeProof
-      (Solm.EVM.transientLoad evm evm.executionEnv.codeOwner slot)).1)
+      (Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot)).1)
     rw [(EVM.Word.toBytesLEWithSizeProof
-      (Solm.EVM.transientLoad evm evm.executionEnv.codeOwner slot)).2] at hle
+      (Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot)).2] at hle
     exact hle
 
 theorem transientLocStore_uint256 (evm : EVM.State) (slot val : UInt256) :
     transientLocStore evm (uint256Loc slot) (.int (Int.ofNat val.toNat)) =
-      some (Solm.EVM.transientStore evm evm.executionEnv.codeOwner slot val) := by
+      some (Stele.EVM.transientStore evm evm.executionEnv.codeOwner slot val) := by
   unfold transientLocStore storageLocWriteWord uint256Loc
   simp only [valueToWord, wordOfInt_ofNat_toNat, bind, Option.bind, pure]
   have hslen := (EVM.Word.toBytesLEWithSizeProof
-    (Solm.EVM.transientLoad evm evm.executionEnv.codeOwner slot)).2
+    (Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot)).2
   have hvlen := (EVM.Word.toBytesLEWithSizeProof val).2
   congr 2
   apply u256_inj
@@ -83,16 +83,16 @@ theorem transientLocStore_uint256 (evm : EVM.State) (slot val : UInt256) :
 theorem transientLocLoad_bytes32 (evm : EVM.State) (slot : UInt256) :
     transientLocLoad evm (bytes32Loc slot) =
       .fixedBytes ⟨31, by decide⟩
-        (EVM.Word.toBytesBE (Solm.EVM.transientLoad evm evm.executionEnv.codeOwner slot)) := by
+        (EVM.Word.toBytesBE (Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot)) := by
   have htake :
       (EVM.Word.toBytesLEWithSizeProof
-          (Solm.EVM.transientLoad evm evm.executionEnv.codeOwner slot)).1.extract 0 (32 : Fin 33).val =
+          (Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot)).1.extract 0 (32 : Fin 33).val =
         (EVM.Word.toBytesLEWithSizeProof
-          (Solm.EVM.transientLoad evm evm.executionEnv.codeOwner slot)).1 := by
+          (Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot)).1 := by
     rw [List.extract_eq_take_drop, List.drop_zero]
     exact List.take_of_length_le (by
       rw [(EVM.Word.toBytesLEWithSizeProof
-        (Solm.EVM.transientLoad evm evm.executionEnv.codeOwner slot)).2]
+        (Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot)).2]
       norm_num)
   unfold transientLocLoad bytes32Loc wordToElem
   simp only [Fin.val_zero, Nat.zero_add]
@@ -105,11 +105,11 @@ theorem transientLocLoad_bytes32 (evm : EVM.State) (slot : UInt256) :
 theorem transientLocStore_bytes32 (evm : EVM.State) (slot word : UInt256) (v : Value)
     (hval : valueToWord v = some word) :
     transientLocStore evm (bytes32Loc slot) v =
-      some (Solm.EVM.transientStore evm evm.executionEnv.codeOwner slot word) := by
+      some (Stele.EVM.transientStore evm evm.executionEnv.codeOwner slot word) := by
   unfold transientLocStore storageLocWriteWord bytes32Loc
   simp only [hval, bind, Option.bind]
   have hslen := (EVM.Word.toBytesLEWithSizeProof
-    (Solm.EVM.transientLoad evm evm.executionEnv.codeOwner slot)).2
+    (Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot)).2
   have hvlen := (EVM.Word.toBytesLEWithSizeProof word).2
   congr 2
   apply u256_inj
@@ -129,27 +129,27 @@ theorem transientLocLoad_uint_offset0 (evm : EVM.State) (slot : UInt256)
         { slot := slot, offset := 0, size := size, hbound := hbound,
           type := .int (.uint width) } =
       .int (Int.ofNat (UInt256.land
-        (Solm.EVM.transientLoad evm evm.executionEnv.codeOwner slot)
+        (Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot)
         (UInt256.ofNat (2 ^ (8 * size.val) - 1))).toNat) := by
   unfold transientLocLoad wordToElem
   simp only [Fin.val_zero, Nat.zero_add]
   rw [normalizeInt_uint_eq_self]
   · change Value.int (Int.ofNat (fromBytes' (((EVM.Word.toBytesLEWithSizeProof
-      (Solm.EVM.transientLoad evm evm.executionEnv.codeOwner slot)).1).extract 0 size.val))) = _
+      (Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot)).1).extract 0 size.val))) = _
     rw [List.extract_eq_take_drop, List.drop_zero]
     simpa [Nat.sub_zero] using
       fromBytes'_take_wordLE_land_mask
-        (Solm.EVM.transientLoad evm evm.executionEnv.codeOwner slot) size.val hbits
+        (Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot) size.val hbits
   · exact Int.natCast_nonneg _
   · apply Int.ofNat_lt.mpr
     change fromBytes' (((EVM.Word.toBytesLEWithSizeProof
-      (Solm.EVM.transientLoad evm evm.executionEnv.codeOwner slot)).1).extract 0 size.val) <
+      (Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot)).1).extract 0 size.val) <
         EVM.twoPow width.val
     rw [List.extract_eq_take_drop, List.drop_zero, hwidth]
     have hle := EVM.fromBytes'_le (bs := (EVM.Word.toBytesLEWithSizeProof
-      (Solm.EVM.transientLoad evm evm.executionEnv.codeOwner slot)).1.take size.val)
+      (Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot)).1.take size.val)
     rw [List.length_take, (EVM.Word.toBytesLEWithSizeProof
-      (Solm.EVM.transientLoad evm evm.executionEnv.codeOwner slot)).2,
+      (Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot)).2,
       Nat.min_eq_left (by omega)] at hle
     exact hle
 
@@ -162,30 +162,30 @@ theorem transientLocLoad_uint_offset (evm : EVM.State) (slot : UInt256)
         { slot := slot, offset := offset, size := size, hbound := hbound,
           type := .int (.uint width) } =
       .int (Int.ofNat (UInt256.land
-        (UInt256.div (Solm.EVM.transientLoad evm evm.executionEnv.codeOwner slot)
+        (UInt256.div (Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot)
           (UInt256.ofNat (256 ^ offset.val)))
           (UInt256.ofNat (256 ^ size.val - 1))).toNat) := by
   unfold transientLocLoad wordToElem
   change Value.int (normalizeInt (.uint width) (Int.ofNat (fromBytes'
     ((EVM.Word.toBytesLEWithSizeProof
-      (Solm.EVM.transientLoad evm evm.executionEnv.codeOwner slot)).1.extract
+      (Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot)).1.extract
         offset.val (offset.val + size.val))))) = _
   rw [normalizeInt_uint_eq_self]
   · rw [List.extract_eq_take_drop]
     simpa [Nat.add_sub_cancel_left] using
       fromBytes'_drop_take_wordLE_land_div_mask
-        (Solm.EVM.transientLoad evm evm.executionEnv.codeOwner slot) offset.val size.val hoff hsize
+        (Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot) offset.val size.val hoff hsize
   · exact Int.natCast_nonneg _
   · apply Int.ofNat_lt.mpr
     change fromBytes' (((EVM.Word.toBytesLEWithSizeProof
-      (Solm.EVM.transientLoad evm evm.executionEnv.codeOwner slot)).1).extract
+      (Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot)).1).extract
         offset.val (offset.val + size.val)) < EVM.twoPow width.val
     rw [List.extract_eq_take_drop, Nat.add_sub_cancel_left, hwidth]
     have hle := EVM.fromBytes'_le (bs := ((EVM.Word.toBytesLEWithSizeProof
-      (Solm.EVM.transientLoad evm evm.executionEnv.codeOwner slot)).1.drop offset.val).take
+      (Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot)).1.drop offset.val).take
         size.val)
     rw [List.length_take, List.length_drop, (EVM.Word.toBytesLEWithSizeProof
-      (Solm.EVM.transientLoad evm evm.executionEnv.codeOwner slot)).2,
+      (Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot)).2,
       Nat.min_eq_left (by omega)] at hle
     exact hle
 
@@ -199,13 +199,13 @@ theorem transientLocStore_int_some (evm : EVM.State) (loc : StorageLoc) (n : Int
 theorem transientLocLoad_address_offset0 (evm : EVM.State) (slot : UInt256) :
     transientLocLoad evm (addressOffset0Loc slot) =
       .address (AccountAddress.ofNat
-        (UInt256.land (Solm.EVM.transientLoad evm evm.executionEnv.codeOwner slot)
+        (UInt256.land (Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot)
           solcAddrMask).toNat) := by
   unfold transientLocLoad addressOffset0Loc wordToElem
   simp only [Fin.val_zero, Nat.zero_add]
   change Value.address (AccountAddress.ofNat
       (fromBytes' (((EVM.Word.toBytesLEWithSizeProof
-        (Solm.EVM.transientLoad evm evm.executionEnv.codeOwner slot)).1).extract 0 20))) = _
+        (Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot)).1).extract 0 20))) = _
   rw [List.extract_eq_take_drop, List.drop_zero]
   rw [fromBytes'_take20_wordLE_solcAddrMask]
 
@@ -214,9 +214,9 @@ theorem transientLocStore_address_offset0 (evm : EVM.State)
     (slot addr : UInt256) (hcanon : addr.toNat < EVM.addressModulus) :
     transientLocStore evm (addressOffset0Loc slot)
         (.address (AccountAddress.ofNat addr.toNat)) =
-      some (Solm.EVM.transientStore evm evm.executionEnv.codeOwner slot
+      some (Stele.EVM.transientStore evm evm.executionEnv.codeOwner slot
         (setAddressOffset0Word
-          (Solm.EVM.transientLoad evm evm.executionEnv.codeOwner slot) addr)) := by
+          (Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot) addr)) := by
   unfold transientLocStore storageLocWriteWord addressOffset0Loc
   simp only [valueToWord_address_ofNat_canonical addr hcanon, bind, Option.bind]
   have hvlen := (EVM.Word.toBytesLEWithSizeProof addr).2
@@ -226,7 +226,7 @@ theorem transientLocStore_address_offset0 (evm : EVM.State)
       (List.take (0 : Fin 32).val _ ++ List.take (20 : Fin 33).val _
         ++ List.drop ((0 : Fin 32).val + (20 : Fin 33).val) _) =
         (setAddressOffset0Word
-          (Solm.EVM.transientLoad evm evm.executionEnv.codeOwner slot) addr).toNat
+          (Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot) addr).toNat
   rw [show (0 : Fin 32).val = 0 from rfl, show (20 : Fin 33).val = 20 from rfl,
     List.take_zero, List.nil_append]
   rw [fromBytes'_append, fromBytes'_take20_wordLE_solcAddrMask, fromBytes'_drop_wordLE]
@@ -249,42 +249,42 @@ theorem transientLocLoad_address_offset1 (evm : EVM.State) (slot : UInt256)
         { slot := slot, offset := 1, size := 20, hbound := hbound, type := .address } =
       .address (AccountAddress.ofNat
         (UInt256.land
-          (UInt256.div (Solm.EVM.transientLoad evm evm.executionEnv.codeOwner slot) ⟨256⟩)
+          (UInt256.div (Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot) ⟨256⟩)
           solcAddrMask).toNat) := by
   unfold transientLocLoad wordToElem
   simp only [Fin.val_one]
   change Value.address (AccountAddress.ofNat
       (fromBytes' (((EVM.Word.toBytesLEWithSizeProof
-        (Solm.EVM.transientLoad evm evm.executionEnv.codeOwner slot)).1).extract 1 21))) = _
+        (Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot)).1).extract 1 21))) = _
   rw [List.extract_eq_take_drop, fromBytes'_drop1_take20_wordLE_solcAddrMask]
 
 
 theorem transientLocLoad_bool_offset0 (evm : EVM.State) (slot : UInt256) :
     transientLocLoad evm (boolOffset0Loc slot) =
       wordToElem .bool
-        (UInt256.land (Solm.EVM.transientLoad evm evm.executionEnv.codeOwner slot) ⟨255⟩) := by
+        (UInt256.land (Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot) ⟨255⟩) := by
   unfold transientLocLoad boolOffset0Loc
   simp only [Fin.val_zero, Nat.zero_add]
   congr
   change fromBytes' ((EVM.Word.toBytesLEWithSizeProof
-      (Solm.EVM.transientLoad evm evm.executionEnv.codeOwner slot)).1.take 1) = _
+      (Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot)).1.take 1) = _
   rw [fromBytes'_take_wordLE_land_mask (n := 1) _ (by decide)]
   rfl
 
 theorem transientLocLoad_bool_offset0_false (evm : EVM.State) (slot : UInt256)
-    (hzero : UInt256.land (Solm.EVM.transientLoad evm evm.executionEnv.codeOwner slot) ⟨255⟩ =
+    (hzero : UInt256.land (Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot) ⟨255⟩ =
       ⟨0⟩) :
     transientLocLoad evm (boolOffset0Loc slot) = .bool false := by
   rw [transientLocLoad_bool_offset0 evm slot]
   simp [wordToElem, hzero]
 
 theorem transientLocLoad_bool_offset0_true (evm : EVM.State) (slot : UInt256)
-    (hnz : UInt256.land (Solm.EVM.transientLoad evm evm.executionEnv.codeOwner slot) ⟨255⟩ ≠
+    (hnz : UInt256.land (Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot) ⟨255⟩ ≠
       ⟨0⟩) :
     transientLocLoad evm (boolOffset0Loc slot) = .bool true := by
   rw [transientLocLoad_bool_offset0 evm slot]
   have hbeq :
-      ((UInt256.land (Solm.EVM.transientLoad evm evm.executionEnv.codeOwner slot) ⟨255⟩).val == 0) =
+      ((UInt256.land (Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot) ⟨255⟩).val == 0) =
         false := by
     rw [beq_eq_false_iff_ne]
     intro hval
@@ -296,14 +296,14 @@ theorem transientLocLoad_bool_offset0_true (evm : EVM.State) (slot : UInt256)
 
 theorem transientLocStore_bool_true_offset0 (evm : EVM.State) (slot : UInt256) :
     transientLocStore evm (boolOffset0Loc slot) (.bool true) =
-      some (Solm.EVM.transientStore evm evm.executionEnv.codeOwner slot
+      some (Stele.EVM.transientStore evm evm.executionEnv.codeOwner slot
         (UInt256.lor
-          (UInt256.land (Solm.EVM.transientLoad evm evm.executionEnv.codeOwner slot)
+          (UInt256.land (Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot)
             (UInt256.lnot ⟨255⟩)) ⟨1⟩)) := by
   unfold transientLocStore storageLocWriteWord boolOffset0Loc
   simp only [valueToWord, Bool.toUInt256_true, bind, Option.bind]
   have hslen := (EVM.Word.toBytesLEWithSizeProof
-    (Solm.EVM.transientLoad evm evm.executionEnv.codeOwner slot)).2
+    (Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot)).2
   have hvlen := (EVM.Word.toBytesLEWithSizeProof (⟨1⟩ : UInt256)).2
   congr 2
   apply u256_inj
@@ -311,7 +311,7 @@ theorem transientLocStore_bool_true_offset0 (evm : EVM.State) (slot : UInt256) :
       (List.take (0 : Fin 32).val _ ++ List.take (1 : Fin 33).val _
         ++ List.drop ((0 : Fin 32).val + (1 : Fin 33).val) _) =
         (UInt256.lor
-          (UInt256.land (Solm.EVM.transientLoad evm evm.executionEnv.codeOwner slot)
+          (UInt256.land (Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot)
             (UInt256.lnot ⟨255⟩)) ⟨1⟩).toNat
   rw [show (0 : Fin 32).val = 0 from rfl, show (1 : Fin 33).val = 1 from rfl,
     List.take_zero, List.nil_append]
@@ -327,8 +327,8 @@ theorem transientLocStore_bool_true_offset0 (evm : EVM.State) (slot : UInt256) :
 
 theorem transientLocStore_bool_false_offset0 (evm : EVM.State) (slot : UInt256) :
     transientLocStore evm (boolOffset0Loc slot) (.bool false) =
-      some (Solm.EVM.transientStore evm evm.executionEnv.codeOwner slot
-        (UInt256.land (Solm.EVM.transientLoad evm evm.executionEnv.codeOwner slot)
+      some (Stele.EVM.transientStore evm evm.executionEnv.codeOwner slot
+        (UInt256.land (Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot)
           (UInt256.lnot ⟨255⟩))) := by
   unfold transientLocStore storageLocWriteWord boolOffset0Loc
   simp only [valueToWord, Bool.toUInt256_false, bind, Option.bind]
@@ -337,7 +337,7 @@ theorem transientLocStore_bool_false_offset0 (evm : EVM.State) (slot : UInt256) 
   show fromBytes'
       (List.take (0 : Fin 32).val _ ++ List.take (1 : Fin 33).val _
         ++ List.drop ((0 : Fin 32).val + (1 : Fin 33).val) _) =
-        (UInt256.land (Solm.EVM.transientLoad evm evm.executionEnv.codeOwner slot)
+        (UInt256.land (Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot)
           (UInt256.lnot ⟨255⟩)).toNat
   rw [show (0 : Fin 32).val = 0 from rfl, show (1 : Fin 33).val = 1 from rfl,
     List.take_zero, List.nil_append]
@@ -352,8 +352,8 @@ theorem transientLocStore_bool_false_offset0 (evm : EVM.State) (slot : UInt256) 
 
 theorem transientLocStore_bool_word_offset0 (evm : EVM.State) (slot word : UInt256) :
     transientLocStore evm (boolOffset0Loc slot) (wordToElem .bool word) =
-      some (Solm.EVM.transientStore evm evm.executionEnv.codeOwner slot
-        (setBoolOffset0Word (Solm.EVM.transientLoad evm evm.executionEnv.codeOwner slot) word)) := by
+      some (Stele.EVM.transientStore evm evm.executionEnv.codeOwner slot
+        (setBoolOffset0Word (Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot) word)) := by
   by_cases hzero : word = ⟨0⟩
   · subst hzero
     have hbool : UInt256.isZero (UInt256.isZero (⟨0⟩ : UInt256)) = ⟨0⟩ := by
@@ -374,11 +374,11 @@ theorem transientLocStore_bool_word_offset0 (evm : EVM.State) (slot word : UInt2
 
 theorem transientLocStore_uint256_int (evm : EVM.State) (slot : UInt256) (n : Int) :
     transientLocStore evm (uint256Loc slot) (.int n) =
-      some (Solm.EVM.transientStore evm evm.executionEnv.codeOwner slot (EVM.wordOfInt n)) := by
+      some (Stele.EVM.transientStore evm evm.executionEnv.codeOwner slot (EVM.wordOfInt n)) := by
   unfold transientLocStore storageLocWriteWord uint256Loc
   simp only [valueToWord, bind, Option.bind, pure]
   have hslen := (EVM.Word.toBytesLEWithSizeProof
-    (Solm.EVM.transientLoad evm evm.executionEnv.codeOwner slot)).2
+    (Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot)).2
   have hvlen := (EVM.Word.toBytesLEWithSizeProof (EVM.wordOfInt n)).2
   congr 2
   apply u256_inj
@@ -396,9 +396,9 @@ theorem transientLocStore_uint8 (evm : EVM.State) (slot value : UInt256)
       { slot := slot, offset := 0, size := 1, hbound := by decide,
         type := .int (.uint ⟨8, by decide⟩) }
       (.int (Int.ofNat value.toNat)) =
-      some (Solm.EVM.transientStore evm evm.executionEnv.codeOwner slot
+      some (Stele.EVM.transientStore evm evm.executionEnv.codeOwner slot
         (UInt256.lor
-          (UInt256.land (Solm.EVM.transientLoad evm evm.executionEnv.codeOwner slot)
+          (UInt256.land (Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot)
             (UInt256.lnot ⟨255⟩)) value)) := by
   unfold transientLocStore storageLocWriteWord
   simp only [valueToWord, wordOfInt_ofNat_toNat, bind, Option.bind]
@@ -406,24 +406,24 @@ theorem transientLocStore_uint8 (evm : EVM.State) (slot value : UInt256)
   apply u256_inj
   change fromBytes' ((EVM.Word.toBytesLEWithSizeProof value).1.take 1 ++
       (EVM.Word.toBytesLEWithSizeProof
-        (Solm.EVM.transientLoad evm evm.executionEnv.codeOwner slot)).1.drop 1) = _
+        (Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot)).1.drop 1) = _
   rw [fromBytes'_append, fromBytes'_take_wordLE_land_mask value 1 (by decide),
     fromBytes'_drop_wordLE]
   rw [u256_lor_toNat, packedSetFalseWord_toNat]
   rw [nat_lor_comm]
   rw [show 256 = 2 ^ 8 by decide, Nat.mul_comm (2 ^ 8)]
   rw [nat_lor_shift_add value.toNat _ 8 hc]
-  have hbound := (Solm.EVM.transientLoad evm evm.executionEnv.codeOwner slot).val.isLt
+  have hbound := (Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot).val.isLt
   rw [Nat.mod_eq_of_lt (show value.toNat +
-      (Solm.EVM.transientLoad evm evm.executionEnv.codeOwner slot).toNat / 2 ^ 8 * 2 ^ 8 <
+      (Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot).toNat / 2 ^ 8 * 2 ^ 8 <
         UInt256.size from by
       change _ < 2 ^ 256
-      change (Solm.EVM.transientLoad evm evm.executionEnv.codeOwner slot).toNat < 2 ^ 256
+      change (Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot).toNat < 2 ^ 256
         at hbound
       omega)]
   simp only [List.length_take, (EVM.Word.toBytesLEWithSizeProof value).2]
   change (UInt256.land value ⟨255⟩).toNat +
-    256 * ((Solm.EVM.transientLoad evm evm.executionEnv.codeOwner slot).toNat / 256) = _
+    256 * ((Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot).toNat / 256) = _
   rw [lowByteClean hc]
   omega
 
@@ -431,12 +431,12 @@ theorem transientLocStore_uint8 (evm : EVM.State) (slot value : UInt256)
 theorem transientLocStore_uint256_pred (evm : EVM.State) (slot len : UInt256)
     (hpos : 0 < len.toNat) :
     transientLocStore evm (uint256Loc slot) (.int (Int.ofNat len.toNat - 1)) =
-      some (Solm.EVM.transientStore evm evm.executionEnv.codeOwner slot
+      some (Stele.EVM.transientStore evm evm.executionEnv.codeOwner slot
         (UInt256.ofNat (len.toNat - 1))) := by
   unfold transientLocStore storageLocWriteWord uint256Loc
   simp only [valueToWord, wordOfInt_natCast_pred_of_pos len hpos, bind, Option.bind, pure]
   have hslen := (EVM.Word.toBytesLEWithSizeProof
-    (Solm.EVM.transientLoad evm evm.executionEnv.codeOwner slot)).2
+    (Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot)).2
   have hvlen := (EVM.Word.toBytesLEWithSizeProof (UInt256.ofNat (len.toNat - 1))).2
   congr 2
   apply u256_inj
@@ -450,11 +450,11 @@ theorem transientLocStore_uint256_pred (evm : EVM.State) (slot len : UInt256)
 
 theorem transientLocStore_uint256_succ (evm : EVM.State) (slot val : UInt256) :
     transientLocStore evm (uint256Loc slot) (.int (Int.ofNat val.toNat + 1)) =
-      some (Solm.EVM.transientStore evm evm.executionEnv.codeOwner slot (val + ⟨1⟩)) := by
+      some (Stele.EVM.transientStore evm evm.executionEnv.codeOwner slot (val + ⟨1⟩)) := by
   unfold transientLocStore storageLocWriteWord uint256Loc
   simp only [valueToWord, wordOfInt_natCast_succ, bind, Option.bind, pure]
   have hslen := (EVM.Word.toBytesLEWithSizeProof
-    (Solm.EVM.transientLoad evm evm.executionEnv.codeOwner slot)).2
+    (Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot)).2
   have hvlen := (EVM.Word.toBytesLEWithSizeProof (val + ⟨1⟩)).2
   congr 2
   apply u256_inj
@@ -467,13 +467,13 @@ theorem transientLocStore_uint256_succ (evm : EVM.State) (slot val : UInt256) :
 
 theorem transientLocStore_uint256_ofNat (evm : EVM.State) (slot : UInt256) (n : Nat) :
     transientLocStore evm (uint256Loc slot) (.int (Int.ofNat n)) =
-      some (Solm.EVM.transientStore evm evm.executionEnv.codeOwner slot
+      some (Stele.EVM.transientStore evm evm.executionEnv.codeOwner slot
         (EVM.word (Int.ofNat n).toNat)) := by
   unfold transientLocStore storageLocWriteWord uint256Loc
   simp only [valueToWord, bind, Option.bind, pure]
   rw [wordOfInt_nonneg]
   · have hslen := (EVM.Word.toBytesLEWithSizeProof
-      (Solm.EVM.transientLoad evm evm.executionEnv.codeOwner slot)).2
+      (Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot)).2
     have hvlen := (EVM.Word.toBytesLEWithSizeProof (EVM.word (Int.ofNat n).toNat)).2
     congr 2
     apply u256_inj
@@ -505,22 +505,22 @@ theorem tstoreAccountMap_absent_same {owner : AccountAddress} {τ : AccountMap}
 
 theorem transientStore_executionEnv (evm : EVM.State) (addr : AccountAddress)
     (slot val : UInt256) :
-    (Solm.EVM.transientStore evm addr slot val).executionEnv = evm.executionEnv := by
-  simp only [Solm.EVM.transientStore, State.lookupAccount]
+    (Stele.EVM.transientStore evm addr slot val).executionEnv = evm.executionEnv := by
+  simp only [Stele.EVM.transientStore, State.lookupAccount]
   cases evm.accountMap.get? addr <;> simp [Option.option, State.setAccount, Account.updateTransientStorage]
 
 theorem transientStore_eq_accountMap_update (evm : EVM.State) (addr : AccountAddress)
     (slot val : UInt256) :
-    {evm with accountMap := (Solm.EVM.transientStore evm addr slot val).accountMap} =
-      Solm.EVM.transientStore evm addr slot val := by
-  unfold Solm.EVM.transientStore
+    {evm with accountMap := (Stele.EVM.transientStore evm addr slot val).accountMap} =
+      Stele.EVM.transientStore evm addr slot val := by
+  unfold Stele.EVM.transientStore
   cases evm.lookupAccount addr <;> simp [Option.option, State.setAccount]
 
 theorem transientStore_accountMap (evm : EVM.State) (addr : AccountAddress)
     (slot val : UInt256) :
-    (Solm.EVM.transientStore evm addr slot val).accountMap =
+    (Stele.EVM.transientStore evm addr slot val).accountMap =
       tstoreAccountMap addr evm.accountMap slot val := by
-  unfold Solm.EVM.transientStore tstoreAccountMap State.lookupAccount
+  unfold Stele.EVM.transientStore tstoreAccountMap State.lookupAccount
   cases h : evm.accountMap.get? addr with
   | none => simp [Option.option]
   | some acc => simp [Option.option, State.setAccount, Account.updateTransientStorage]
@@ -528,15 +528,15 @@ theorem transientStore_accountMap (evm : EVM.State) (addr : AccountAddress)
 
 theorem transientStore_absent (evm : EVM.State) (addr : AccountAddress)
     (hmissing : evm.accountMap.get? addr = none) (slot val : UInt256) :
-    Solm.EVM.transientStore evm addr slot val = evm := by
-  simp [Solm.EVM.transientStore, State.lookupAccount,
+    Stele.EVM.transientStore evm addr slot val = evm := by
+  simp [Stele.EVM.transientStore, State.lookupAccount,
     -Std.ExtTreeMap.get?_eq_getElem?, hmissing, Option.option]
 
 
 theorem transientLoad_transientStore_same_present (evm : EVM.State) (addr : AccountAddress)
     {acc : Account} (hacc : evm.accountMap.get? addr = some acc) (slot val : UInt256) :
-    Solm.EVM.transientLoad (Solm.EVM.transientStore evm addr slot val) addr slot = val := by
-  unfold Solm.EVM.transientLoad Solm.EVM.transientStore State.lookupAccount
+    Stele.EVM.transientLoad (Stele.EVM.transientStore evm addr slot val) addr slot = val := by
+  unfold Stele.EVM.transientLoad Stele.EVM.transientStore State.lookupAccount
   rw [hacc]
   simp only [Option.option]
   unfold State.setAccount
@@ -552,9 +552,9 @@ theorem transientLoad_transientStore_same_present (evm : EVM.State) (addr : Acco
 
 theorem transientLoad_transientStore_ne (evm : EVM.State) (addr : AccountAddress)
     {readSlot writeSlot val : UInt256} (hne : readSlot ≠ writeSlot) :
-    Solm.EVM.transientLoad (Solm.EVM.transientStore evm addr writeSlot val) addr readSlot =
-      Solm.EVM.transientLoad evm addr readSlot := by
-  simp only [Solm.EVM.transientLoad, Solm.EVM.transientStore, State.lookupAccount]
+    Stele.EVM.transientLoad (Stele.EVM.transientStore evm addr writeSlot val) addr readSlot =
+      Stele.EVM.transientLoad evm addr readSlot := by
+  simp only [Stele.EVM.transientLoad, Stele.EVM.transientStore, State.lookupAccount]
   cases hacc : evm.accountMap.get? addr with
   | none =>
       simp [-Std.ExtTreeMap.get?_eq_getElem?, hacc, Option.option]
@@ -634,37 +634,37 @@ theorem tstoreAccountMap_tstorage_getD_self_zero_present
 
 
 theorem transientStore_σ₀ (evm : EVM.State) (addr : AccountAddress) (slot val : UInt256) :
-    (Solm.EVM.transientStore evm addr slot val).σ₀ = evm.σ₀ := by
-  simp only [Solm.EVM.transientStore, State.lookupAccount]
+    (Stele.EVM.transientStore evm addr slot val).σ₀ = evm.σ₀ := by
+  simp only [Stele.EVM.transientStore, State.lookupAccount]
   cases evm.accountMap.get? addr <;> simp [Option.option, State.setAccount]
 
 theorem transientStore_substate (evm : EVM.State) (addr : AccountAddress) (slot val : UInt256) :
-    (Solm.EVM.transientStore evm addr slot val).substate = evm.substate := by
-  simp only [Solm.EVM.transientStore, State.lookupAccount]
+    (Stele.EVM.transientStore evm addr slot val).substate = evm.substate := by
+  simp only [Stele.EVM.transientStore, State.lookupAccount]
   cases evm.accountMap.get? addr <;> simp [Option.option, State.setAccount]
 
 namespace EVMStateEquiv
 
 theorem transientLoad {evm₁ evm₂ : EVM.State} (h : EVMStateEquiv evm₁ evm₂)
     {addr₁ addr₂ : AccountAddress} (haddr : addr₁ = addr₂) (slot : UInt256) :
-    Solm.EVM.transientLoad evm₁ addr₁ slot = Solm.EVM.transientLoad evm₂ addr₂ slot := by
+    Stele.EVM.transientLoad evm₁ addr₁ slot = Stele.EVM.transientLoad evm₂ addr₂ slot := by
   subst addr₂
-  simp [Solm.EVM.transientLoad, State.lookupAccount,
+  simp [Stele.EVM.transientLoad, State.lookupAccount,
     Account.lookupTransientStorage, h.accountMap]
 
 theorem transientLoad_codeOwner {evm₁ evm₂ : EVM.State} (h : EVMStateEquiv evm₁ evm₂)
     (slot : UInt256) :
-    Solm.EVM.transientLoad evm₁ evm₁.executionEnv.codeOwner slot =
-      Solm.EVM.transientLoad evm₂ evm₂.executionEnv.codeOwner slot := by
+    Stele.EVM.transientLoad evm₁ evm₁.executionEnv.codeOwner slot =
+      Stele.EVM.transientLoad evm₂ evm₂.executionEnv.codeOwner slot := by
   rw [h.executionEnv]
-  simp [Solm.EVM.transientLoad, State.lookupAccount,
+  simp [Stele.EVM.transientLoad, State.lookupAccount,
     Account.lookupTransientStorage, h.accountMap]
 
 theorem transientStore {evm₁ evm₂ : EVM.State} (h : EVMStateEquiv evm₁ evm₂)
     {addr₁ addr₂ : AccountAddress} (haddr : addr₁ = addr₂) (slot : UInt256)
     {val₁ val₂ : UInt256} (hval : val₁ = val₂) :
-    EVMStateEquiv (Solm.EVM.transientStore evm₁ addr₁ slot val₁)
-      (Solm.EVM.transientStore evm₂ addr₂ slot val₂) := by
+    EVMStateEquiv (Stele.EVM.transientStore evm₁ addr₁ slot val₁)
+      (Stele.EVM.transientStore evm₂ addr₂ slot val₂) := by
   subst addr₂
   subst val₂
   refine ⟨?_, ?_⟩
@@ -676,19 +676,19 @@ theorem transientStore {evm₁ evm₂ : EVM.State} (h : EVMStateEquiv evm₁ evm
 theorem transientStore_codeOwner {evm₁ evm₂ : EVM.State} (h : EVMStateEquiv evm₁ evm₂)
     (slot : UInt256) {val₁ val₂ : UInt256} (hval : val₁ = val₂) :
     EVMStateEquiv
-      (Solm.EVM.transientStore evm₁ evm₁.executionEnv.codeOwner slot val₁)
-      (Solm.EVM.transientStore evm₂ evm₂.executionEnv.codeOwner slot val₂) :=
+      (Stele.EVM.transientStore evm₁ evm₁.executionEnv.codeOwner slot val₁)
+      (Stele.EVM.transientStore evm₂ evm₂.executionEnv.codeOwner slot val₂) :=
   h.transientStore (congrArg ExecutionEnv.codeOwner h.executionEnv) slot hval
 
 end EVMStateEquiv
 
 
 /-- Resolve a transient reference from the transient declarations. -/
-theorem resolveTransientStorageRef?_ok {cfg : Config} {solm : Frame} {evm : EVM.State}
+theorem resolveTransientStorageRef?_ok {cfg : Config} {stele : Frame} {evm : EVM.State}
     {slot : StorageRef} {er : EvaledStorageRef} {ty : StorageType}
-    (her : evalTransientStorageRef cfg solm evm slot = .ok er)
-    (hty : storageTypeAt? solm.contract.transient er = some ty) :
-    resolveTransientStorageRef? cfg solm evm slot = .ok (er, ty) := by
+    (her : evalTransientStorageRef cfg stele evm slot = .ok er)
+    (hty : storageTypeAt? stele.contract.transient er = some ty) :
+    resolveTransientStorageRef? cfg stele evm slot = .ok (er, ty) := by
   simp [resolveTransientStorageRef?, her, hty, EvalResult.ofOption,
     EvalResult.bind, bind, pure]
 
@@ -703,41 +703,41 @@ theorem readTransientStorage?_elem {cfg : Config} {layout : StorageLayout} {evm 
 
 /-- A scalar transient read collapses to a single `transientLocLoad`. -/
 theorem evalExpr_transient_scalar {cfg : Config} {layout : StorageLayout}
-    {solm : Frame} {evm : EVM.State} {slot : StorageRef}
+    {stele : Frame} {evm : EVM.State} {slot : StorageRef}
     {er : EvaledStorageRef} {t : ABI.ElemType} {loc : StorageLoc}
-    (her : evalTransientStorageRef cfg solm evm slot = .ok er)
-    (hty : storageTypeAt? solm.contract.transient er = some (.elem t))
+    (her : evalTransientStorageRef cfg stele evm slot = .ok er)
+    (hty : storageTypeAt? stele.contract.transient er = some (.elem t))
     (hbackend : cfg.transientBackend = solidityTransientStorageBackend layout)
     (hloc : layout er = some (.leaf loc)) :
-    evalExpr? cfg solm evm (.transient slot) = .ok (transientLocLoad evm loc) := by
+    evalExpr? cfg stele evm (.transient slot) = .ok (transientLocLoad evm loc) := by
   rw [evalExpr?]
   simp only [resolveTransientStorageRef?_ok her hty, bind, EvalResult.bind,
     readTransientStorage?_elem hbackend hloc]
 
 /-- A scalar transient read with an already-normalized value. -/
 theorem evalExpr_transient_scalar_value {cfg : Config} {layout : StorageLayout}
-    {solm : Frame} {evm : EVM.State} {slot : StorageRef}
+    {stele : Frame} {evm : EVM.State} {slot : StorageRef}
     {er : EvaledStorageRef} {t : ABI.ElemType} {loc : StorageLoc} {value : Value}
-    (her : evalTransientStorageRef cfg solm evm slot = .ok er)
-    (hty : storageTypeAt? solm.contract.transient er = some (.elem t))
+    (her : evalTransientStorageRef cfg stele evm slot = .ok er)
+    (hty : storageTypeAt? stele.contract.transient er = some (.elem t))
     (hbackend : cfg.transientBackend = solidityTransientStorageBackend layout)
     (hloc : layout er = some (.leaf loc))
     (hload : transientLocLoad evm loc = value) :
-    evalExpr? cfg solm evm (.transient slot) = .ok value := by
+    evalExpr? cfg stele evm (.transient slot) = .ok value := by
   rw [evalExpr_transient_scalar her hty hbackend hloc]
   exact congrArg EvalResult.ok hload
 
 /-- A scalar transient assignment collapses to a single `transientLocStore`. -/
 theorem assignStorageRef_transient_scalar_value {cfg : Config} {layout : StorageLayout}
-    {solm : Frame} {evm evm' : EVM.State} {slot : StorageRef}
+    {stele : Frame} {evm evm' : EVM.State} {slot : StorageRef}
     {er : EvaledStorageRef} {ty : StorageType} {loc : StorageLoc} {value : Value}
-    (her : evalTransientStorageRef cfg solm evm slot = .ok er)
-    (hty : storageTypeAt? solm.contract.transient er = some ty)
+    (her : evalTransientStorageRef cfg stele evm slot = .ok er)
+    (hty : storageTypeAt? stele.contract.transient er = some ty)
     (hbackend : cfg.transientBackend = solidityTransientStorageBackend layout)
     (hloc : layout er = some (.leaf loc))
     (hleaf : (∃ t, ty = .elem t) ∨ (∃ name, ty = .contract name))
     (hstore : transientLocStore evm loc value = some evm') :
-    assignStorageRef? cfg solm evm .transient slot value = .ok (solm, evm') := by
+    assignStorageRef? cfg stele evm .transient slot value = .ok (stele, evm') := by
   rcases hleaf with ⟨t, rfl⟩ | ⟨name, rfl⟩
   · simp [assignStorageRef?, resolveTransientStorageRef?_ok her hty, hbackend,
       solidityTransientStorageBackend, transientSolidityWriteStorage?,
@@ -749,28 +749,28 @@ theorem assignStorageRef_transient_scalar_value {cfg : Config} {layout : Storage
       EvalResult.bind, bind, pure]
 
 theorem assignStorageRef_transient_scalar {cfg : Config} {layout : StorageLayout}
-    {solm : Frame} {evm evm' : EVM.State} {slot : StorageRef}
+    {stele : Frame} {evm evm' : EVM.State} {slot : StorageRef}
     {er : EvaledStorageRef} {ty : StorageType} {loc : StorageLoc} {n : Int}
-    (her : evalTransientStorageRef cfg solm evm slot = .ok er)
-    (hty : storageTypeAt? solm.contract.transient er = some ty)
+    (her : evalTransientStorageRef cfg stele evm slot = .ok er)
+    (hty : storageTypeAt? stele.contract.transient er = some ty)
     (hbackend : cfg.transientBackend = solidityTransientStorageBackend layout)
     (hloc : layout er = some (.leaf loc))
     (hleaf : (∃ t, ty = .elem t) ∨ (∃ name, ty = .contract name))
     (hstore : transientLocStore evm loc (.int n) = some evm') :
-    assignStorageRef? cfg solm evm .transient slot (.int n) = .ok (solm, evm') := by
+    assignStorageRef? cfg stele evm .transient slot (.int n) = .ok (stele, evm') := by
   exact assignStorageRef_transient_scalar_value her hty hbackend hloc hleaf hstore
 
 theorem assignStorageRef_transient_bool_word {cfg : Config} {layout : StorageLayout}
-    {solm : Frame} {evm evm' : EVM.State} {slot : StorageRef}
+    {stele : Frame} {evm evm' : EVM.State} {slot : StorageRef}
     {er : EvaledStorageRef} {ty : StorageType} {loc : StorageLoc} {word : UInt256}
-    (her : evalTransientStorageRef cfg solm evm slot = .ok er)
-    (hty : storageTypeAt? solm.contract.transient er = some ty)
+    (her : evalTransientStorageRef cfg stele evm slot = .ok er)
+    (hty : storageTypeAt? stele.contract.transient er = some ty)
     (hbackend : cfg.transientBackend = solidityTransientStorageBackend layout)
     (hloc : layout er = some (.leaf loc))
     (hleaf : (∃ t, ty = .elem t) ∨ (∃ name, ty = .contract name))
     (hstore : transientLocStore evm loc (wordToElem .bool word) = some evm') :
-    assignStorageRef? cfg solm evm .transient slot (wordToElem .bool word) =
-      .ok (solm, evm') := by
+    assignStorageRef? cfg stele evm .transient slot (wordToElem .bool word) =
+      .ok (stele, evm') := by
   exact assignStorageRef_transient_scalar_value her hty hbackend hloc hleaf hstore
 
 /-- Clear an elementary transient leaf using its packed location. -/
@@ -786,14 +786,14 @@ theorem clearTransientStorage_elem {cfg : Config} {layout : StorageLayout}
     EvalResult.bind, bind]
 
 theorem deleteTransientStorage_elem {cfg : Config} {layout : StorageLayout}
-    {solm : Frame} {evm evm' : EVM.State} {ref : StorageRef}
+    {stele : Frame} {evm evm' : EVM.State} {ref : StorageRef}
     {er : EvaledStorageRef} {t : ABI.ElemType} {loc : StorageLoc}
-    (hkind : usesTransientStorage solm ref = true)
-    (hresolve : resolveTransientStorageRef? cfg solm evm ref = .ok (er, .elem t))
+    (hkind : usesTransientStorage stele ref = true)
+    (hresolve : resolveTransientStorageRef? cfg stele evm ref = .ok (er, .elem t))
     (hbackend : cfg.transientBackend = solidityTransientStorageBackend layout)
     (hloc : layout er = some (.leaf loc))
     (hstore : transientLocStore evm loc (.int 0) = some evm') :
-    deleteStorage? cfg solm evm ref = .ok evm' := by
+    deleteStorage? cfg stele evm ref = .ok evm' := by
   simp only [deleteStorage?, hkind, ↓reduceIte, hresolve, EvalResult.bind, bind]
   exact clearTransientStorage_elem hbackend hloc hstore
 

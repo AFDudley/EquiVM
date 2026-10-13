@@ -1,8 +1,8 @@
 import Benchmarks.WETH9.Spec
-import Solm.Notation
+import Stele.Notation
 
 /-!
-# WETH9 spec in the Solidity-faithful Solm frontend
+# WETH9 spec in the Solidity-faithful Stele frontend
 
 The whole WETH9 benchmark spec, written with `solidity%` and proven definitionally equal to the
 AST spec in `Benchmarks/WETH9/Spec.lean`.
@@ -16,7 +16,7 @@ Notes mirroring the AST spec:
 * Transition order matches `contract.transitions` exactly.
 -/
 
-open Solm Solm.Notation
+open Stele Stele.Notation
 
 namespace Benchmarks.WETH9.Syntax
 

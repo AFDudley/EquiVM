@@ -7,7 +7,7 @@ import Reasoning.Solc
 import Reasoning.Memory
 import Reasoning.Storage
 import Reasoning.Dispatch
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 import Mathlib.Tactic.IntervalCases
 
 /-!
@@ -17,7 +17,7 @@ Contract-wide selector notation and top-level revert/no-dispatch placeholders fo
 Cure runtime.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -137,7 +137,7 @@ theorem cureStorageWF_returnBound {σ : AccountMap} {I : ExecutionEnv}
 
 theorem cureSrcsLength (evm : EVM.State) :
     solidityStorageLength? storageLayoutRaw { base := "srcs" } (.dynamicArray addrSt) evm =
-      .ok (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩).toNat := by
+      .ok (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩).toNat := by
   have hloc : solidityAnchorWordLoc ⟨2⟩ = wordLoc ⟨2⟩ := rfl
   simp only [solidityStorageLength?, solidityDynamicLength?, solidityLengthLoc?,
     solidityAnchor?, storageLayoutRaw, hloc, Option.map_some,
@@ -147,7 +147,7 @@ theorem cureSrcsLength (evm : EVM.State) :
 
 theorem cureSrcsDynamicLength (evm : EVM.State) :
     solidityDynamicLength? storageLayoutRaw evm { base := "srcs" } =
-      .ok (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩).toNat := by
+      .ok (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩).toNat := by
   simpa only [solidityStorageLength?] using cureSrcsLength evm
 
 theorem cureUint256GetterBodyReturns (evm : EVM.State) (locals : Store)
@@ -160,7 +160,7 @@ theorem cureUint256GetterBodyReturns (evm : EVM.State) (locals : Store)
     ExecTransitionBody config contract evm locals (nonpayable ++ [ .return [(.storage ref)] ])
       (.returned { contract := contract, locals := locals } evm
         (some [(.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot).toNat))])) := by
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot).toNat))])) := by
   simpa [nonpayable] using
     nonpayableReturnExprBodyReturns (cfg := config) (contract := contract) h (by
       rw [evalExpr_storage_scalar (hbackend := rfl) (hbase := hbase) (her := her) (hty := hty) (hloc := hloc)]

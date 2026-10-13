@@ -1,7 +1,7 @@
 import Benchmarks.CompoundIII.Comet.PackedGetter
 import Benchmarks.CompoundIII.Comet.AggregateStorage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 
@@ -20,7 +20,7 @@ theorem readUserCollateralField (evm : EVM.State) (addr₀ addr₁ : AccountAddr
         .field (if upper then "_reserved" else "balance")]⟩
       (.elem (.int (.uint ⟨128, by decide⟩))) evm =
       .ok (.int ((if upper then high128 else low128)
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
           (userCollateralSlot addr₀ addr₁))).toNat) := by
   cases upper
   · simp only [Bool.false_eq_true, if_false]
@@ -45,7 +45,7 @@ theorem evalUserCollateral (frame : Frame) (evm : EVM.State)
     evalExpr? config frame evm (.storage ⟨"userCollateral", [.mindex arg₀, .mindex arg₁,
         .field (if upper then "_reserved" else "balance")]⟩) =
       .ok (.int ((if upper then high128 else low128)
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
           (userCollateralSlot addr₀ addr₁))).toNat) := by
   apply evalExpr_storage_typed hlocal
     (er := ⟨"userCollateral", [.mindex (.address addr₀), .mindex (.address addr₁),
@@ -65,7 +65,7 @@ theorem evalUserCollateralField (evm : EVM.State) (locals imms : Store)
       evm (.storage ⟨"userCollateral", [.mindex (.var "arg0"), .mindex (.var "arg1"),
         .field (if upper then "_reserved" else "balance")]⟩) =
       .ok (.int ((if upper then high128 else low128)
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (userCollateralSlot addr₀ addr₁))).toNat) := by
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (userCollateralSlot addr₀ addr₁))).toNat) := by
   exact evalUserCollateral _ evm addr₀ addr₁ (.var "arg0") (.var "arg1") upper rfl hlocal
     (by simp only [evalExpr?, harg₀, EvalResult.ofOption])
     (by simp only [evalExpr?, harg₁, EvalResult.ofOption])

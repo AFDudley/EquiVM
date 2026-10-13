@@ -1,6 +1,6 @@
 import Benchmarks.EAS.EAS.CalldataPayload
 import Benchmarks.EAS.EAS.CopyEncodeViews
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 -- LIBRARY CANDIDATE: a zero-length calldata read is empty at every address.

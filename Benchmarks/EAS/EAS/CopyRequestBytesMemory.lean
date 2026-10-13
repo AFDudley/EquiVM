@@ -2,7 +2,7 @@ import Benchmarks.EAS.EAS.CalldataBytesMemory
 import Benchmarks.EAS.EAS.CopyRequestBytes
 import Benchmarks.EAS.EAS.RequestMemory
 import Benchmarks.EAS.EAS.RecordUID
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 theorem requestCopyBytesMemory_eq (mem cd : ByteArray) (src off heap record : UInt256)

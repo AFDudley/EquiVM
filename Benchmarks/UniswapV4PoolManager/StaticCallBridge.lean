@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.Common
 import Reasoning.ExternalCall
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 -- LIBRARY CANDIDATE: typed STATICCALL coupling, including depth failure and the gas-derived output bound.

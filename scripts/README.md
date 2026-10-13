@@ -29,7 +29,7 @@ scripts/scaffold.py blocks --dir $D --module $M
 scripts/bytecode_report.py $D -o $D/REPORT.md
 
 # 5. the spec draft (holes fail to elaborate until closed; --comment-holes to check the rest)
-scripts/sol2solm.py $D --namespace $M -o $D/SpecSyntax.lean --spec-json $D/Foo.spec.json
+scripts/sol2stele.py $D --namespace $M -o $D/SpecSyntax.lean --spec-json $D/Foo.spec.json
 
 # 6. the proof skeleton: Spec, Common, Dispatch (proved), <Fn>.lean stubs, Constructor, Correct
 scripts/proof_skeleton.py --dir $D --module $M
@@ -50,11 +50,11 @@ files unless `--force` is given.
 | `scaffold.py lean` | `Bytecode.lean`, `Selectors.lean`, `Immutables.lean`, `ImmutableCode.lean` | Selector table in `SpecSyntax.lean` order when that file exists, else by selector value. Selector facts are spec-independent keccak facts; the bridge to each transition is in the skeleton's `Common.lean`. |
 | `scaffold.py blocks` | `RuntimeBlocks_NNN.lean`, `CreationBlocks_NNN.lean`, `.index` files | `generate_rd_blocks.py` driven with the right code terms, immutable-aware when needed. |
 | `scaffold.py check` | report | Lean bytes vs hex, jump tables vs the EVM scan, selector table vs ABI and spec order, immutable offsets, source hashes. |
-| `scaffold.py difftest` | `DiffTarget.lean`, `Tests/DiffTest/Generated.lean` | The contract's `Target` for the differential suite (spec, config, runtime, creation code, immutable plumbing when the contract has immutables) and the registry of every `DiffTarget.lean` in the repository, which `lake exe solm-difftest` runs. Delete a `DiffTarget.lean` and rerun to unregister. |
+| `scaffold.py difftest` | `DiffTarget.lean`, `Tests/DiffTest/Generated.lean` | The contract's `Target` for the differential suite (spec, config, runtime, creation code, immutable plumbing when the contract has immutables) and the registry of every `DiffTarget.lean` in the repository, which `lake exe stele-difftest` runs. Delete a `DiffTarget.lean` and rerun to unregister. |
 | `bytecode_report.py` | Markdown | Opcode census, dispatcher (guard, size check, pivots, arms, fallthroughs), JUMPDEST set, per-function pc ranges and internal routines from the source map, every runtime block with its source statement, creation summary. |
-| `sol2solm.py` | `SpecSyntax.lean` draft, optional `.spec.json` | From the solc AST: storage (persistent and `transient`)/structs/events/immutables, constructor with base constructors and initialisers inlined, external functions (modifiers inlined, getters generated), reachable internal and library functions, checked arithmetic from static types, external calls bound with view flags and EXTCODESIZE guards, via-IR calldata guard. Holes for what it cannot translate. |
+| `sol2stele.py` | `SpecSyntax.lean` draft, optional `.spec.json` | From the solc AST: storage (persistent and `transient`)/structs/events/immutables, constructor with base constructors and initialisers inlined, external functions (modifiers inlined, getters generated), reachable internal and library functions, checked arithmetic from static types, external calls bound with view flags and EXTCODESIZE guards, via-IR calldata guard. Holes for what it cannot translate. |
 | `proof_skeleton.py` | `Spec.lean`, `Common.lean`, `Dispatch.lean`, `<Fn>.lean`, `Constructor.lean`, `Correct.lean` | `Spec.lean` configures the transient backend when the spec declares transient state. `Dispatch.lean` contains proved reach lemmas composed from the block summaries (linear and binary-search dispatchers, with and without a global callvalue guard). Function bodies and the constructor are `sorry` stubs with the fixed signatures `Correct.lean` consumes. |
-| `check_sol2solm.py` | report | Translates every given directory and elaborates the drafts (holes as comments). |
+| `check_sol2stele.py` | report | Translates every given directory and elaborates the drafts (holes as comments). |
 | `finish_check.py` | report | Build, differential suite on the contract (`--difftest-count`, `--skip-difftest`), `sorry`/`admit`/`axiom` grep, `#print axioms` against the accepted trusted base. |
 | `check_all_benchmark_blocks.py` | report | Check that benchmark block summaries compile, excluding temporary contracts under `Benchmarks/Scaffolds/`. CI selects `UniswapV3/Pool`. |
 
@@ -73,11 +73,11 @@ files unless `--force` is given.
   library structs. Named storage returns and local pointer assignments bind aliases. Library
   extension calls include their receiver; colliding struct names are qualified by their owner.
 - Memory structs, arrays, `bytes` and `string` are passed to internal functions by reference in
-  Solidity but by value in Solm. A callee that may modify one (directly, or through a callee)
+  Solidity but by value in Stele. A callee that may modify one (directly, or through a callee)
   returns its final value after the declared results, and the caller assigns it back to the
   argument's path. Overlapping arguments, a parameter that is reassigned and modified, and a
   modification through a local alias of a parameter are holes.
-- Contracts with a `fallback`/`receive` get `sorry` stubs for the Solm dispatch facts: the
+- Contracts with a `fallback`/`receive` get `sorry` stubs for the Stele dispatch facts: the
   unmatched-selector path then runs the fallback instead of reverting.
 
 ## Tests
@@ -90,7 +90,7 @@ python3 scripts/test_scaffold_tools.py
 `Misc/scaffold-prompt.md` is the agent brief that runs these scripts from a contract to a
 ready-to-prove scaffold.
 
-The differential suite (`lake exe solm-difftest`, `Tests/DiffTest/README.md`) runs every
+The differential suite (`lake exe stele-difftest`, `Tests/DiffTest/README.md`) runs every
 specification against its bytecode.  `scaffold.py difftest` registers a contract; once its
-specification compiles, `lake exe solm-difftest --only <Name> --count 50` tests it before any
+specification compiles, `lake exe stele-difftest --only <Name> --count 50` tests it before any
 proof is attempted, and `finish_check.py` runs it again at acceptance.

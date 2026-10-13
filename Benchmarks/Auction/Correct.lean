@@ -20,9 +20,9 @@ import Benchmarks.Auction.SettleCurrentAndCreateNewAuction
 import Benchmarks.Auction.TransferOwnership
 import Benchmarks.Auction.Constructor
 import Benchmarks.Auction.Dispatcher
-import Solm.Refine
+import Stele.Refine
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 100000
 

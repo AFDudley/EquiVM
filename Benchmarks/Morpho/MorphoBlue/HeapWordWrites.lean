@@ -1,7 +1,7 @@
 import Benchmarks.Morpho.MorphoBlue.AccrueHeap
 import Benchmarks.Morpho.MorphoBlue.SafeTransferCallMemory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.Morpho.MorphoBlue
 
 -- LIBRARY CANDIDATE: a write in reserved memory preserves the cursor and allocated prefix.

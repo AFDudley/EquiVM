@@ -1,7 +1,7 @@
 import Benchmarks.CompoundIII.Comet.TransferFromPayload
 import Benchmarks.CompoundIII.Comet.TransferReplyMemory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 

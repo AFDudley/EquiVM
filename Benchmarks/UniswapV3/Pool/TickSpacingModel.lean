@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.SnapshotArithmetic
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 -- LIBRARY CANDIDATE: both operands of a fixed-width subtraction may be normalized early.

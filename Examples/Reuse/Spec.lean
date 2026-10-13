@@ -1,9 +1,9 @@
-import Solm.Semantics
-import Solm.SolidityLayout
-import Solm.MetaSolidityLayout
+import Stele.Semantics
+import Stele.SolidityLayout
+import Stele.MetaSolidityLayout
 
 /-!
-# Reuse — Solm spec for `C.sol`
+# Reuse — Stele spec for `C.sol`
 
 Scenario: a `public` function `f` that is **also** called internally by `g`.  `lookupCallable?`
 searches `functions` then `transitions`, so modelling `f` as a `TransitionDecl` (its external ABI
@@ -13,15 +13,15 @@ once as a shared routine reached from both the external dispatcher and `g`'s int
 This is spec-level data only (the bytecode and proof live in `Bytecode.lean` / `Correct.lean`).
 
 `f` returns `v * 2 + 1`, which solc compiles with *checked* `mul`/`add` (reverts on overflow).
-Solm's arithmetic is unbounded `Int`, so the return expression is range-checked back into
+Stele's arithmetic is unbounded `Int`, so the return expression is range-checked back into
 `uint256` to model Solidity's checked-arithmetic revert.
 -/
 
-open Solm ABI
+open Stele ABI
 
 namespace Reuse
 
-/-- The Solm/ABI `uint256` element and type. -/
+/-- The Stele/ABI `uint256` element and type. -/
 def uint256Int : IntType := .uint ⟨256, by decide⟩
 def uint256 : ABIType := .elem (.int uint256Int)
 

@@ -9,13 +9,13 @@ import Reasoning.MemCascade
 Deployment-shape, fixed-prefix decoding, constructor memory, storage, and immutable-patch facts.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 section
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 2000000
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Clipper
 
@@ -166,13 +166,13 @@ theorem clipperCtorDeployment_shape {args : List Value}
       args = [.address vat, .address spotter, .address dog,
         .fixedBytes bytes32Width ilk] ∧
       deployedInitcode = clipperCtorCode vat spotter dog ilk := by
-  change Solm.genSolidityConstructorDeployment constructorDecl.params
+  change Stele.genSolidityConstructorDeployment constructorDecl.params
     clipperCreationBytecode args = some deployedInitcode at hdeploy
   rw [show constructorDecl.params =
       [{ name := "vat_", ty := addr }, { name := "spotter_", ty := addr },
        { name := "dog_", ty := addr }, { name := "ilk_", ty := bytes32 }] from rfl]
     at hdeploy
-  unfold Solm.genSolidityConstructorDeployment at hdeploy
+  unfold Stele.genSolidityConstructorDeployment at hdeploy
   cases henc : ABI.encodeABIValues? [addr, addr, addr, bytes32] args with
   | none => simp [henc] at hdeploy
   | some encoded =>

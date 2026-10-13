@@ -1,7 +1,7 @@
 import Benchmarks.EAS.EAS.RequestArrayDecode
 import Benchmarks.EAS.EAS.CopyRequestArrayReject
 import Benchmarks.EAS.EAS.CopyRequestArrayCall
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.EAS.EAS.Immutables
 namespace Benchmarks.EAS.EAS
 

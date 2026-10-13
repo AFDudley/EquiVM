@@ -1,5 +1,5 @@
 import Benchmarks.EAS.EAS.PointerTableMemory
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 def AttestationCopyRegion (mem : ByteArray) (ptr : UInt256) (r : AttestationRequestRecord) (lower heap : Nat) : Prop :=

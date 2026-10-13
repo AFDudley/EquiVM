@@ -8,7 +8,7 @@ The input is a static absorb call with one dirty address, timestamp 1 and empty 
 This file does not import the unfinished correctness theorem.
 -/
 
-open Solm ABI Solm.DiffTest Ethereum Ethereum.EVM
+open Stele ABI Stele.DiffTest Ethereum Ethereum.EVM
 open Benchmarks.CompoundIII.Comet Benchmarks.CompoundIII.Comet.Immutables
 
 namespace Benchmarks.CompoundIII.Comet.AbsorbStaticDecodeWitness
@@ -74,8 +74,8 @@ theorem no_refinement_of_static_decode_failure
     ¬ runtimeRefinementFor cfg contract σ σ₀ gas A I imms := by
   intro h
   cases h with
-  | execution _ hsolm _ =>
-      cases hsolm with
+  | execution _ hstele _ =>
+      cases hstele with
       | intro hd hsig hargs _ _ =>
           cases Option.some.inj (hdispatch.symm.trans hd)
           subst_vars

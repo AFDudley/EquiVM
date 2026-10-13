@@ -1,5 +1,5 @@
 import Examples.UniswapV2Pair.PermitCoupling
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 2000000
@@ -635,7 +635,7 @@ theorem uniswapPermitBodyReverts_expired (evm : EVM.State) (I : ExecutionEnv)
   refine ExecFuncBody.execBlockRevert ?_
   simpa [permitTransition] using
     (nonpayableSecondRequireReverts
-      (cfg := config) (solm := { contract := contract, locals := permitStore I })
+      (cfg := config) (stele := { contract := contract, locals := permitStore I })
       (evm := evm)
       hwv
       (evalExpr_permit_deadline_ge_now_false evm I hexpired))
@@ -904,7 +904,7 @@ theorem uniswapPermitBody_depthLimit
       let evmCallS : EVM.State :=
         { evmNonceS with
           substate := (evmNonceS.addAccessedAccount (AccountAddress.ofNat 1)).substate }
-      have hdepthSolm : evmNonceS.executionEnv.depth = 1024 := by
+      have hdepthStele : evmNonceS.executionEnv.depth = 1024 := by
         simpa [evmNonceS, evmS, permitAfterNonceState, storageStore_executionEnv, initState]
           using hdepth
       have hcall : typedCallViaEVM config evmNonceS (AccountAddress.ofNat 1) "ecrecover" 0
@@ -918,7 +918,7 @@ theorem uniswapPermitBody_depthLimit
               permitSValue I])
             (callPerm := false)
             (uniswapEcrecoverEncode_eq σ I hsz228)
-            hdepthSolm)
+            hdepthStele)
       exact uniswapPermitBodyCoreRevert_ecrecoverFailure_afterNonce
         hcode hwv hsz228 hexpired hdispatch hrev
         (by simpa [evmS, evmNonceS] using hstructSource)

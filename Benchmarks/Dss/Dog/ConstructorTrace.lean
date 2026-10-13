@@ -5,7 +5,7 @@ import Benchmarks.Dss.Dog.Rely
 # MakerDAO/Sky DSS Dog constructor EVM trace
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Dog
 

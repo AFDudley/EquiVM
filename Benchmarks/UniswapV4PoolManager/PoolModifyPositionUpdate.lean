@@ -3,12 +3,12 @@ import Benchmarks.UniswapV4PoolManager.PositionUpdateResult
 import Benchmarks.UniswapV4PoolManager.CallContinuation
 import Benchmarks.UniswapV4PoolManager.TupleLocals
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 
 def poolModifyUpdateAlias : Ident :=
-  "__solm_storage_ref._@.Benchmarks.UniswapV4PoolManager.SpecSyntax.2010301240._hygCtx._hyg.12"
+  "__stele_storage_ref._@.Benchmarks.UniswapV4PoolManager.SpecSyntax.2010301240._hygCtx._hyg.12"
 def poolModifyUpdateAliasFrame (f : Frame) (id key : UInt256) : Frame :=
   {f with locals := f.locals.insert poolModifyUpdateAlias (positionRefValue id key)}
 def poolModifyOwedFrame (f : Frame) (owed0 owed1 : UInt256) : Frame :=

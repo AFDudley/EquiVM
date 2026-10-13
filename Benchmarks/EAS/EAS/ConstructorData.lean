@@ -1,6 +1,6 @@
 import Benchmarks.EAS.EAS.TryRecoverExpr
 import Benchmarks.EAS.EAS.HeapResultBlock
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
 namespace Benchmarks.EAS.EAS
 set_option maxRecDepth 10000
 

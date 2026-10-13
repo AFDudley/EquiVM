@@ -2,7 +2,7 @@ import Benchmarks.UniswapV4PoolManager.ReachCostExists
 import Benchmarks.UniswapV4PoolManager.BlockResultTrace
 import Benchmarks.UniswapV4PoolManager.FunctionTraceMono
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 -- LIBRARY CANDIDATE: preserve costs with existential stack or result witnesses.

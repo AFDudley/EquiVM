@@ -2,7 +2,7 @@ import Benchmarks.Safe.Main.CodePrefixMemory
 import Benchmarks.Safe.Main.ExternalCode
 import Benchmarks.Safe.Main.Blocks.Runtime_039
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.Main

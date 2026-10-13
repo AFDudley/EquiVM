@@ -1,7 +1,7 @@
 import Examples.UniswapV2Pair.MintInitialCases
 import Examples.UniswapV2Pair.MintInternalMintReverts
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -168,8 +168,8 @@ theorem uniswapMintAfterMintFeeInitialBranchStmtReverts_of_call
     {out0 out1 : ByteArray} {balance0 balance1 : UInt256}
     (nextLocals : Store)
     (hwv : I.weiValue = ⟨0⟩)
-    (hunlockedSolm :
-      Solm.EVM.storageLoad
+    (hunlockedStele :
+      Stele.EVM.storageLoad
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
           ⟨12⟩ =
@@ -250,7 +250,7 @@ theorem uniswapMintAfterMintFeeInitialBranchStmtReverts_of_call
       (uniswapUint256Value (mintFunctionTotalSupplyWord evmAfter))
   have hprefix :=
     uniswapMintAfterMintFeeTotalSupplyPrefix_of_call evmS evm0S evm1S evmAfter I
-      nextLocals (by simp only [evmS, initState]; exact hwv) hunlockedSolm hguard0
+      nextLocals (by simp only [evmS, initState]; exact hwv) hunlockedStele hguard0
       hguard1 hcall0 hdec0 hcall1 hdec1 henough0 henough1 hfee hbase
   have hbranchBlock :
       ExecBlock config { contract := contract, locals := afterTotalSupplyLocals } evmAfter
@@ -274,8 +274,8 @@ theorem uniswapMintInitialAfterMintFeeMinimumMintTotalSupplyOverflowRevertCase
     (hdispatch : dispatchMsg contract I.calldata = some mintTransition)
     (hsz36 : 36 ≤ I.calldata.size)
     (hwv : I.weiValue = ⟨0⟩)
-    (hunlockedSolm :
-      Solm.EVM.storageLoad
+    (hunlockedStele :
+      Stele.EVM.storageLoad
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
           ⟨12⟩ =
@@ -402,7 +402,7 @@ theorem uniswapMintInitialAfterMintFeeMinimumMintTotalSupplyOverflowRevertCase
       ExecTransitionBody config contract
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) (mintStore I)
         mintTransition.body .reverted :=
-    uniswapMintAfterMintFeeInitialBranchStmtReverts_of_call nextLocals hwv hunlockedSolm
+    uniswapMintAfterMintFeeInitialBranchStmtReverts_of_call nextLocals hwv hunlockedStele
       hguard0 hguard1 hcall0 hdec0 hcall1 hdec1 henough0 henough1 hfee hbase
       (by simpa [afterTotalSupplyLocals] using hbranch)
   rcases mintInitialRootLiquidityRuntimeFacts hrootSize hrootGeMin hliquiditySource with
@@ -432,8 +432,8 @@ theorem uniswapMintInitialAfterMintFeeMinimumMintBalanceOverflowRevertCase
     (hdispatch : dispatchMsg contract I.calldata = some mintTransition)
     (hsz36 : 36 ≤ I.calldata.size)
     (hwv : I.weiValue = ⟨0⟩)
-    (hunlockedSolm :
-      Solm.EVM.storageLoad
+    (hunlockedStele :
+      Stele.EVM.storageLoad
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
           ⟨12⟩ =
@@ -572,7 +572,7 @@ theorem uniswapMintInitialAfterMintFeeMinimumMintBalanceOverflowRevertCase
       ExecTransitionBody config contract
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) (mintStore I)
         mintTransition.body .reverted :=
-    uniswapMintAfterMintFeeInitialBranchStmtReverts_of_call nextLocals hwv hunlockedSolm
+    uniswapMintAfterMintFeeInitialBranchStmtReverts_of_call nextLocals hwv hunlockedStele
       hguard0 hguard1 hcall0 hdec0 hcall1 hdec1 henough0 henough1 hfee hbase
       (by simpa [afterTotalSupplyLocals] using hbranch)
   rcases mintInitialRootLiquidityRuntimeFacts hrootSize hrootGeMin hliquiditySource with

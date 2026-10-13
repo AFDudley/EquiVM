@@ -2,7 +2,7 @@ import Benchmarks.EAS.EAS.MultiAttestSource
 import Benchmarks.EAS.EAS.BatchRowRead
 import Benchmarks.EAS.EAS.DelegatedAttestationFacts
 import Benchmarks.EAS.EAS.VerifyAttestRun
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 set_option maxRecDepth 10000
 

@@ -1,7 +1,7 @@
 import Examples.Ballot.DelegateTailGeneral
 import Examples.Ballot.DelegateOOG
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 4000000
@@ -40,18 +40,18 @@ theorem ballotDelegateTailWeightRevertEquiv_general
       σ σ₀ g A I := by
   have hd := ballotDispatch_delegate (cd := I.calldata) hsel
   have hdec := ballotDecode_delegate_ok (I := I) hsz36 hbig hcanonInit
-  have hweightSolm := hweight
-  have hvotedSolm := hvoted
-  have hdelegateWeightSolm := hdelegateWeight
+  have hweightStele := hweight
+  have hvotedStele := hvoted
+  have hdelegateWeightStele := hdelegateWeight
   have hbody := ballotDelegateBodyReverts_tailDelegateWeight_general
     (initState σ σ₀ (Sat256.ofUInt256 g) A I) I w L hL
     (by simp only [initState]; exact hwv)
     (by simp [initState])
     hcanonInit
-    (by rw [delegateSenderWeightCurrent_init]; exact hweightSolm)
-    (by rw [delegateSenderVotedByteCurrent_init]; exact hvotedSolm)
+    (by rw [delegateSenderWeightCurrent_init]; exact hweightStele)
+    (by rw [delegateSenderVotedByteCurrent_init]; exact hvotedStele)
     hnotself hwhile
-    (by rw [delegateTailVoterWeightCurrent_init]; exact hdelegateWeightSolm)
+    (by rw [delegateTailVoterWeightCurrent_init]; exact hdelegateWeightStele)
   exact (ballotDelegateX_tailDelegateWeightRevertFrom1134
       (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
       (g := Sat256.ofUInt256 g) (sel := sel) (w := w) hcanonTail hdelegateWeight hreach)
@@ -139,13 +139,13 @@ theorem ballotDelegateTailNotVotedSuccessEquiv_general
       σ σ₀ g A I := by
   have hd := ballotDispatch_delegate (cd := I.calldata) hsel
   have hdec := ballotDecode_delegate_ok (I := I) hsz36 hbig hcanonInit
-  have hweightSolm := hweight
-  have hvotedSolm := hvoted
-  have hdelegateWeightSolm := hdelegateWeight
-  have hdelegateNotVotedSolm :
+  have hweightStele := hweight
+  have hvotedStele := hvoted
+  have hdelegateWeightStele := hdelegateWeight
+  have hdelegateNotVotedStele :
       delegateVoterVotedByte (delegateTailAfterSenderMap σ I w) I w = ⟨0⟩ := by
     exact hdelegateNotVoted
-  have hfitSolm :
+  have hfitStele :
       (delegateVoterWeightWord (delegateTailAfterSenderMap σ I w) I w).toNat +
           (delegateSenderWeightWord (delegateTailAfterSenderMap σ I w) I).toNat <
         UInt256.size := by
@@ -155,15 +155,15 @@ theorem ballotDelegateTailNotVotedSuccessEquiv_general
     (by simp only [initState]; exact hwv)
     (by simp [initState])
     hcanonInit hcanonTail
-    (by rw [delegateSenderWeightCurrent_init]; exact hweightSolm)
-    (by rw [delegateSenderVotedByteCurrent_init]; exact hvotedSolm)
+    (by rw [delegateSenderWeightCurrent_init]; exact hweightStele)
+    (by rw [delegateSenderVotedByteCurrent_init]; exact hvotedStele)
     hnotself hwhile
-    (by rw [delegateTailVoterWeightCurrent_init]; exact hdelegateWeightSolm)
-    (by rw [delegateTailVoterVotedByteCurrent_afterSenderState_init]; exact hdelegateNotVotedSolm)
+    (by rw [delegateTailVoterWeightCurrent_init]; exact hdelegateWeightStele)
+    (by rw [delegateTailVoterVotedByteCurrent_afterSenderState_init]; exact hdelegateNotVotedStele)
     (by
       rw [delegateTailVoterWeightCurrent_afterSenderState_init,
         delegateTailSenderWeightCurrent_afterSenderState_init]
-      exact hfitSolm)
+      exact hfitStele)
   have hreach1211 := permSplit_true hperm <| ballotDelegateX_tailAfterSenderPackedStoreFrom1134
     (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
     (g := Sat256.ofUInt256 g) (sel := sel) (w := w) hcanonTail hdelegateWeight
@@ -212,13 +212,13 @@ theorem ballotDelegateTailNotVotedOverflowEquiv_general
       σ σ₀ g A I := by
   have hd := ballotDispatch_delegate (cd := I.calldata) hsel
   have hdec := ballotDecode_delegate_ok (I := I) hsz36 hbig hcanonInit
-  have hweightSolm := hweight
-  have hvotedSolm := hvoted
-  have hdelegateWeightSolm := hdelegateWeight
-  have hdelegateNotVotedSolm :
+  have hweightStele := hweight
+  have hvotedStele := hvoted
+  have hdelegateWeightStele := hdelegateWeight
+  have hdelegateNotVotedStele :
       delegateVoterVotedByte (delegateTailAfterSenderMap σ I w) I w = ⟨0⟩ := by
     exact hdelegateNotVoted
-  have hoverSolm : UInt256.size ≤
+  have hoverStele : UInt256.size ≤
       (delegateVoterWeightWord (delegateTailAfterSenderMap σ I w) I w).toNat +
         (delegateSenderWeightWord (delegateTailAfterSenderMap σ I w) I).toNat := by
     exact hover
@@ -227,15 +227,15 @@ theorem ballotDelegateTailNotVotedOverflowEquiv_general
     (by simp only [initState]; exact hwv)
     (by simp [initState])
     hcanonInit hcanonTail
-    (by rw [delegateSenderWeightCurrent_init]; exact hweightSolm)
-    (by rw [delegateSenderVotedByteCurrent_init]; exact hvotedSolm)
+    (by rw [delegateSenderWeightCurrent_init]; exact hweightStele)
+    (by rw [delegateSenderVotedByteCurrent_init]; exact hvotedStele)
     hnotself hwhile
-    (by rw [delegateTailVoterWeightCurrent_init]; exact hdelegateWeightSolm)
-    (by rw [delegateTailVoterVotedByteCurrent_afterSenderState_init]; exact hdelegateNotVotedSolm)
+    (by rw [delegateTailVoterWeightCurrent_init]; exact hdelegateWeightStele)
+    (by rw [delegateTailVoterVotedByteCurrent_afterSenderState_init]; exact hdelegateNotVotedStele)
     (by
       rw [delegateTailVoterWeightCurrent_afterSenderState_init,
         delegateTailSenderWeightCurrent_afterSenderState_init]
-      exact hoverSolm)
+      exact hoverStele)
   have hreach1211 := permSplit_true hperm <| ballotDelegateX_tailAfterSenderPackedStoreFrom1134
     (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
     (g := Sat256.ofUInt256 g) (sel := sel) (w := w) hcanonTail hdelegateWeight
@@ -284,17 +284,17 @@ theorem ballotDelegateTailVotedSuccessEquiv_general
       σ σ₀ g A I := by
   have hd := ballotDispatch_delegate (cd := I.calldata) hsel
   have hdec := ballotDecode_delegate_ok (I := I) hsz36 hbig hcanonInit
-  have hweightSolm := hweight
-  have hvotedSolm := hvoted
-  have hdelegateWeightSolm := hdelegateWeight
-  have hdelegateVotedSolm :
+  have hweightStele := hweight
+  have hvotedStele := hvoted
+  have hdelegateWeightStele := hdelegateWeight
+  have hdelegateVotedStele :
       delegateVoterVotedByte (delegateTailAfterSenderMap σ I w) I w ≠ ⟨0⟩ := by
     exact hdelegateVoted
-  have hboundSolm :
+  have hboundStele :
       (delegateVoterVoteWord (delegateTailAfterSenderMap σ I w) I w).toNat <
         (delegateTailProposalsLengthWord σ I w).toNat := by
     exact hbound
-  have hfitSolm :
+  have hfitStele :
       (delegateTailProposalCountWord σ I w).toNat +
           (delegateSenderWeightWord (delegateTailAfterSenderMap σ I w) I).toNat <
         UInt256.size := by
@@ -304,19 +304,19 @@ theorem ballotDelegateTailVotedSuccessEquiv_general
     (by simp only [initState]; exact hwv)
     (by simp [initState])
     hcanonInit hcanonTail
-    (by rw [delegateSenderWeightCurrent_init]; exact hweightSolm)
-    (by rw [delegateSenderVotedByteCurrent_init]; exact hvotedSolm)
+    (by rw [delegateSenderWeightCurrent_init]; exact hweightStele)
+    (by rw [delegateSenderVotedByteCurrent_init]; exact hvotedStele)
     hnotself hwhile
-    (by rw [delegateTailVoterWeightCurrent_init]; exact hdelegateWeightSolm)
-    (by rw [delegateTailVoterVotedByteCurrent_afterSenderState_init]; exact hdelegateVotedSolm)
+    (by rw [delegateTailVoterWeightCurrent_init]; exact hdelegateWeightStele)
+    (by rw [delegateTailVoterVotedByteCurrent_afterSenderState_init]; exact hdelegateVotedStele)
     (by
       rw [delegateTailVoterVoteCurrent_afterSenderState_init,
         delegateTailProposalsLengthCurrent_afterSenderState_init]
-      exact hboundSolm)
+      exact hboundStele)
     (by
       rw [delegateTailProposalCountCurrent_init,
         delegateTailSenderWeightCurrent_afterSenderState_init]
-      exact hfitSolm)
+      exact hfitStele)
   have hreach1211 := permSplit_true hperm <| ballotDelegateX_tailAfterSenderPackedStoreFrom1134
     (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
     (g := Sat256.ofUInt256 g) (sel := sel) (w := w) hcanonTail hdelegateWeight
@@ -365,13 +365,13 @@ theorem ballotDelegateTailVotedOobEquiv_general
       σ σ₀ g A I := by
   have hd := ballotDispatch_delegate (cd := I.calldata) hsel
   have hdec := ballotDecode_delegate_ok (I := I) hsz36 hbig hcanonInit
-  have hweightSolm := hweight
-  have hvotedSolm := hvoted
-  have hdelegateWeightSolm := hdelegateWeight
-  have hdelegateVotedSolm :
+  have hweightStele := hweight
+  have hvotedStele := hvoted
+  have hdelegateWeightStele := hdelegateWeight
+  have hdelegateVotedStele :
       delegateVoterVotedByte (delegateTailAfterSenderMap σ I w) I w ≠ ⟨0⟩ := by
     exact hdelegateVoted
-  have hboundSolm : ¬
+  have hboundStele : ¬
       (delegateVoterVoteWord (delegateTailAfterSenderMap σ I w) I w).toNat <
         (delegateTailProposalsLengthWord σ I w).toNat := by
     exact hbound
@@ -380,15 +380,15 @@ theorem ballotDelegateTailVotedOobEquiv_general
     (by simp only [initState]; exact hwv)
     (by simp [initState])
     hcanonInit hcanonTail
-    (by rw [delegateSenderWeightCurrent_init]; exact hweightSolm)
-    (by rw [delegateSenderVotedByteCurrent_init]; exact hvotedSolm)
+    (by rw [delegateSenderWeightCurrent_init]; exact hweightStele)
+    (by rw [delegateSenderVotedByteCurrent_init]; exact hvotedStele)
     hnotself hwhile
-    (by rw [delegateTailVoterWeightCurrent_init]; exact hdelegateWeightSolm)
-    (by rw [delegateTailVoterVotedByteCurrent_afterSenderState_init]; exact hdelegateVotedSolm)
+    (by rw [delegateTailVoterWeightCurrent_init]; exact hdelegateWeightStele)
+    (by rw [delegateTailVoterVotedByteCurrent_afterSenderState_init]; exact hdelegateVotedStele)
     (by
       rw [delegateTailVoterVoteCurrent_afterSenderState_init,
         delegateTailProposalsLengthCurrent_afterSenderState_init]
-      exact hboundSolm)
+      exact hboundStele)
   have hreach1211 := permSplit_true hperm <| ballotDelegateX_tailAfterSenderPackedStoreFrom1134
     (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
     (g := Sat256.ofUInt256 g) (sel := sel) (w := w) hcanonTail hdelegateWeight
@@ -436,17 +436,17 @@ theorem ballotDelegateTailVotedOverflowEquiv_general
       σ σ₀ g A I := by
   have hd := ballotDispatch_delegate (cd := I.calldata) hsel
   have hdec := ballotDecode_delegate_ok (I := I) hsz36 hbig hcanonInit
-  have hweightSolm := hweight
-  have hvotedSolm := hvoted
-  have hdelegateWeightSolm := hdelegateWeight
-  have hdelegateVotedSolm :
+  have hweightStele := hweight
+  have hvotedStele := hvoted
+  have hdelegateWeightStele := hdelegateWeight
+  have hdelegateVotedStele :
       delegateVoterVotedByte (delegateTailAfterSenderMap σ I w) I w ≠ ⟨0⟩ := by
     exact hdelegateVoted
-  have hboundSolm :
+  have hboundStele :
       (delegateVoterVoteWord (delegateTailAfterSenderMap σ I w) I w).toNat <
         (delegateTailProposalsLengthWord σ I w).toNat := by
     exact hbound
-  have hoverSolm : UInt256.size ≤
+  have hoverStele : UInt256.size ≤
       (delegateTailProposalCountWord σ I w).toNat +
         (delegateSenderWeightWord (delegateTailAfterSenderMap σ I w) I).toNat := by
     exact hover
@@ -455,19 +455,19 @@ theorem ballotDelegateTailVotedOverflowEquiv_general
     (by simp only [initState]; exact hwv)
     (by simp [initState])
     hcanonInit hcanonTail
-    (by rw [delegateSenderWeightCurrent_init]; exact hweightSolm)
-    (by rw [delegateSenderVotedByteCurrent_init]; exact hvotedSolm)
+    (by rw [delegateSenderWeightCurrent_init]; exact hweightStele)
+    (by rw [delegateSenderVotedByteCurrent_init]; exact hvotedStele)
     hnotself hwhile
-    (by rw [delegateTailVoterWeightCurrent_init]; exact hdelegateWeightSolm)
-    (by rw [delegateTailVoterVotedByteCurrent_afterSenderState_init]; exact hdelegateVotedSolm)
+    (by rw [delegateTailVoterWeightCurrent_init]; exact hdelegateWeightStele)
+    (by rw [delegateTailVoterVotedByteCurrent_afterSenderState_init]; exact hdelegateVotedStele)
     (by
       rw [delegateTailVoterVoteCurrent_afterSenderState_init,
         delegateTailProposalsLengthCurrent_afterSenderState_init]
-      exact hboundSolm)
+      exact hboundStele)
     (by
       rw [delegateTailProposalCountCurrent_init,
         delegateTailSenderWeightCurrent_afterSenderState_init]
-      exact hoverSolm)
+      exact hoverStele)
   have hreach1211 := permSplit_true hperm <| ballotDelegateX_tailAfterSenderPackedStoreFrom1134
     (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
     (g := Sat256.ofUInt256 g) (sel := sel) (w := w) hcanonTail hdelegateWeight
@@ -500,21 +500,21 @@ theorem ballotDelegateChainExitEquiv
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C) :
     runtimeRefinementFor ballotConfig ballotContract
       σ σ₀ g A I := by
-  have hnext0Solm : delegateVoterDelegateWord σ I (delegateToWord I) ≠ ⟨0⟩ := by
+  have hnext0Stele : delegateVoterDelegateWord σ I (delegateToWord I) ≠ ⟨0⟩ := by
     exact hnext0
-  have hcycle0Solm :
+  have hcycle0Stele :
       delegateVoterDelegateWord σ I (delegateToWord I) ≠ delegateSourceWord I := by
     exact hcycle0
-  have hexitSolm : delegateChainExitsAt σ I target :=
+  have hexitStele : delegateChainExitsAt σ I target :=
     hexit
-  have hcontinueSolm :
+  have hcontinueStele :
       ∀ i, 1 ≤ i → i < target → delegateChainContinuesAt σ I i := by
     intro i hi hlt
     exact hcontinue i hi hlt
-  obtain ⟨L, hwhile, hL⟩ := ballotDelegateSolm_chainExit
+  obtain ⟨L, hwhile, hL⟩ := ballotDelegateStele_chainExit
     (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
-    (g := Sat256.ofUInt256 g) (target := target) hnext0Solm hcycle0Solm hexitSolm
-    hcontinueSolm
+    (g := Sat256.ofUInt256 g) (target := target) hnext0Stele hcycle0Stele hexitStele
+    hcontinueStele
   have hreachTail0 := ballotDelegateChainReachExitFrom245
     (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
     (g := Sat256.ofUInt256 g) (sel := sel) (target := target)

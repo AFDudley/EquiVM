@@ -2,7 +2,7 @@ import Benchmarks.UniswapV4PoolManager.IntWordABI
 import Benchmarks.UniswapV4PoolManager.SignedWordBounds
 import Benchmarks.UniswapV4PoolManager.WordArrayMemory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 -- LIBRARY CANDIDATE: encoding a pair of signed 256-bit return words.

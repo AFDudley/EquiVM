@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.PoolSwapStepWords
 import Benchmarks.UniswapV4PoolManager.SimpleMulDivWords
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 def poolSwapProtocolShare (s : PoolSwapStepWords) (fee protocol : UInt256) : UInt256 :=

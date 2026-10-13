@@ -2,7 +2,7 @@ import Benchmarks.Dss.Clipper.TakeNonzeroFromFluxEquiv
 import Benchmarks.Dss.Clipper.TakeFromFluxDataEmptyEquiv
 import Benchmarks.Dss.Clipper.TakeNoAdjustSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 namespace Benchmarks.Dss.Clipper
@@ -55,13 +55,13 @@ theorem clipperTakeNoAdjustEquiv
       let owe := UInt256.mul slice price
       ExecStmt config
         (Frame.mk contract (clipperTakeLocalsOwe
-            (Solm.EVM.storageStore
+            (Stele.EVM.storageStore
               (initState σ σ₀ (Sat256.ofUInt256 g) A I)
               I.codeOwner ⟨13⟩ ⟨1⟩)
             evmPrice I false price slice owe owe) (immStore v))
         evmPrice clipperTakeOweAdjustmentStmt
         (.ok (Frame.mk contract (clipperTakeLocalsOwe
-            (Solm.EVM.storageStore
+            (Stele.EVM.storageStore
               (initState σ σ₀ (Sat256.ofUInt256 g) A I)
               I.codeOwner ⟨13⟩ ⟨1⟩)
             evmPrice I false price slice owe owe) (immStore v)) evmPrice))
@@ -73,7 +73,7 @@ theorem clipperTakeNoAdjustEquiv
     (hmax : price.toNat ≤ (clipperTakeMaxWord I).toNat)
     (hstatus :
       let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-      let evmLock := Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner ⟨13⟩ ⟨1⟩
+      let evmLock := Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner ⟨13⟩ ⟨1⟩
       ExecStmt config (Frame.mk contract (clipperTakeLocalsTic evmLock I) (immStore v))
         evmLock (.internalCall "status" [.var "tic", .storage (salesF (.var "id") "top")] "st")
         (.ok (Frame.mk contract (clipperTakeLocalsSt evmLock I false price) (immStore v)) evmPrice))
@@ -85,7 +85,7 @@ theorem clipperTakeNoAdjustEquiv
     runtimeRefinementFor config contract
       σ σ₀ g A I (immStore v) := by
   let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  let evmLock := Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner ⟨13⟩ ⟨1⟩
+  let evmLock := Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner ⟨13⟩ ⟨1⟩
   let owe := UInt256.mul price slice
   let tabNew := UInt256.sub tab owe
   let lotNew := UInt256.sub lot slice
@@ -138,7 +138,7 @@ theorem clipperTakeNoAdjustEquiv
   have hwhoAddress :
       AccountAddress.ofNat (clipperTakeWhoWord I).toNat =
         AccountAddress.ofNat who.toNat := by
-    apply Solm.Value.address.inj
+    apply Stele.Value.address.inj
     simpa [hwhoWord, u256_land_comm] using
       solcAddressValue_masked (clipperTakeWhoWord I)
   have hfluxWho : fluxLocals.get? "who" =
@@ -161,7 +161,7 @@ theorem clipperTakeNoAdjustEquiv
       clipperTakeLocalsDone, clipperTakeLocalsSt, clipperTakeLocalsTic,
       clipperTakeLocalsUsr, clipperTakeSalesUsrEVMWord,
       clipperTakeSalesUsrWord, evmLock, evm0, initState,
-      Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
+      Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
       solcSlotWord, storageStore_accountMap, storageStore_executionEnv,
       hpackedWord,
       Std.HashMap.get?_eq_getElem?, Std.HashMap.getElem_insert]

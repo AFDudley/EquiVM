@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MorphoBlue.StateBlock
 import Benchmarks.Morpho.MorphoBlue.WordBufferCommon
 import Reasoning.ExternalCall
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.Morpho.MorphoBlue
 
 -- LIBRARY CANDIDATE: refinement of a source suffix that returns ABI values.

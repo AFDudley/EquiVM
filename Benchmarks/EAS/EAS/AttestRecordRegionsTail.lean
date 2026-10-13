@@ -1,5 +1,5 @@
 import Benchmarks.EAS.EAS.AttestRecordRegion
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 theorem AttestRecordRegions.tail {mem : ByteArray} (site : UIDSite)

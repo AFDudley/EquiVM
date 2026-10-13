@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.SwapStepPrefix
 import Benchmarks.UniswapV3.Pool.SwapStepExpressions
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 1000
 
@@ -38,7 +38,7 @@ theorem swapStepBudgetSource (imms : Store) (evm : EVM.State) (a : SwapStepArgs)
     ExecStmt config (swapStepReadyFrame imms a) evm (swapStepPriceBranch true)[0]!
       (.ok (swapStepBudgetFrame imms a) evm) := by
   exact internalCallFunctionReturn (callee := fullMathFunction)
-    (calleeSolm := fullMathProductFrame imms (EVM.wordOfInt a.remaining)
+    (calleeStele := fullMathProductFrame imms (EVM.wordOfInt a.remaining)
       (swapStepComplement a) (UInt256.ofNat 1000000))
     (locals := fullMathLocals (EVM.wordOfInt a.remaining)
       (swapStepComplement a) (UInt256.ofNat 1000000))

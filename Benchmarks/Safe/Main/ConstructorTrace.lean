@@ -2,7 +2,7 @@ import Benchmarks.Safe.Main.SetupOwnersFinish
 import Benchmarks.Safe.Main.Blocks.Creation
 import Reasoning.Constructor
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeCreationBlocks
 
 namespace Benchmarks.Safe.Main
@@ -10,7 +10,7 @@ namespace Benchmarks.Safe.Main
 theorem safeConstructorSource (evm : EVM.State) (hv : evm.executionEnv.weiValue = ⟨0⟩) :
     ExecTransitionBody config contract evm ∅ contract.ctor.body
       (.returned { contract := contract, locals := ∅ }
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨4⟩ ⟨1⟩) none) := by
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨4⟩ ⟨1⟩) none) := by
   apply ExecFuncBody.execBlockOK
   exact .consNormal (.requireTrue (evalCallvalueEq_true hv))
     (.consNormal (.assign (by simp [evalExpr?, pure]; rfl)

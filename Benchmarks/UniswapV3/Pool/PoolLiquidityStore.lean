@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.PoolLiquidityStorage
 import Benchmarks.UniswapV3.Pool.TickLiquidityStorage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 def storePoolLiquidity (evm : EVM.State) (word : UInt256) : EVM.State :=

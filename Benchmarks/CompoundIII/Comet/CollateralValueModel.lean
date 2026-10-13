@@ -2,14 +2,14 @@ import Benchmarks.CompoundIII.Comet.CollateralMath
 import Benchmarks.CompoundIII.Comet.UserCollateralRead
 import Benchmarks.CompoundIII.Comet.PriceSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.CompoundIII.Comet.Immutables
 
 namespace Benchmarks.CompoundIII.Comet
 
 def collateralBalanceWord (evm : EVM.State) (account : AccountAddress)
     (assetOut : ByteArray) : UInt256 :=
-  low128 (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+  low128 (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
     (userCollateralSlot account (AccountAddress.ofNat (calldataWord assetOut 32).toNat)))
 
 structure CollateralValueData where

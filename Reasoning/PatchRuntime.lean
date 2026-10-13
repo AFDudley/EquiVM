@@ -1,9 +1,9 @@
-import Solm.Value
+import Stele.Value
 
 /-!
 # Immutable / library reference patching (legacy)
 
-Not part of the Solm semantics or the refinement statement, which only relate the constructor's
+Not part of the Stele semantics or the refinement statement, which only relate the constructor's
 immutables to *some* deployed code.  Kept for the benchmarks whose proofs build the deployed code
 by patching solc's runtime template.
 
@@ -16,7 +16,7 @@ selector facts).  `patchRuntime` performs exactly that splice.
 (external-library placeholders); only `patchRuntime`'s outer gate fixes the 32-byte immutable width.
 -/
 
-namespace Solm
+namespace Stele
 
 /-- Overwrite `template[offset : offset + value.size]` with `value`; `none` if it would overrun the
     template (loud, never clamped).  Width-agnostic — used for both 32-byte immutables and 20-byte
@@ -41,4 +41,4 @@ def patchRuntime (template : ByteArray) (patches : List (Nat × ByteArray)) : Op
 #guard patchRuntime (ByteArray.mk (Array.replicate 40 0)) [(16, ByteArray.mk (Array.replicate 32 7))] = none
 #guard patchRuntime (ByteArray.mk (Array.replicate 64 0)) [(0, ByteArray.mk (Array.replicate 20 7))] = none
 
-end Solm
+end Stele

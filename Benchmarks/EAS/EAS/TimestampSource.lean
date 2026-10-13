@@ -1,7 +1,7 @@
 import Benchmarks.EAS.EAS.WordExpr
 import Benchmarks.EAS.EAS.Time
 import Benchmarks.EAS.EAS.LowPacked
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.EAS.EAS.Immutables
 namespace Benchmarks.EAS.EAS
 set_option maxRecDepth 10000
@@ -124,7 +124,7 @@ theorem timestampCall_revert {locals imms : Store} {evm : EVM.State}
   exact internalCallFunctionRevert hargs timestamp_lookup (timestamp_bind word time heap)
     (timestampSource_revert hf.1 hf.2.1 hz)
 
--- GENERALIZES Reasoning.SolmBody.internalCallFunctionRevert: propagate a callee's static violation.
+-- GENERALIZES Reasoning.SteleBody.internalCallFunctionRevert: propagate a callee's static violation.
 theorem internalCallFunctionStatic {cfg : Config} {caller : Frame} {evm : EVM.State}
     {name retVar : Ident} {args : List Expr} {argVals : List Value}
     {callee : FunctionDecl} {locals : Store}

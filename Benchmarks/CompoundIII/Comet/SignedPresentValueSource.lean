@@ -2,7 +2,7 @@ import Benchmarks.CompoundIII.Comet.SignedPresentValueModel
 import Benchmarks.CompoundIII.Comet.Signed256
 import Benchmarks.CompoundIII.Comet.AccountMagnitude
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 
@@ -37,7 +37,7 @@ theorem signedPresentBranch_source (evm : EVM.State) (imms : Store)
         (if borrow then -Int.ofNat (signedPresentMagnitude evm principal borrow).toNat
           else Int.ofNat (signedPresentMagnitude evm principal borrow).toNat)])) := by
   let frame := signedPresentEntry imms principal
-  let index := totalsIndexWord (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩) borrow
+  let index := totalsIndexWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩) borrow
   let mag := if borrow then negativePrincipal principal else positivePrincipal principal
   let val := signedPresentMagnitude evm principal borrow
   let f1 : Frame :=
@@ -50,7 +50,7 @@ theorem signedPresentBranch_source (evm : EVM.State) (imms : Store)
     · exact lt_trans (positivePrincipal_lt _) (by decide)
     · exact lt_trans (negativePrincipal_lt hmin) (by decide)
   have hi := totalsIndexWord_lt
-    (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩) borrow
+    (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩) borrow
   have he : evalExpr? config frame evm (.var "principalValue_") =
       .ok (.int (signed104 principal)) := by
     simp only [evalExpr?, frame, signedPresentEntry, Std.HashMap.get?_eq_getElem?,
@@ -145,7 +145,7 @@ theorem signedPresent_source_revert (evm : EVM.State) (imms : Store) (principal 
     simp only [signedPresentPrincipalExpr, if_true, evalExpr?, hn, bind, EvalResult.bind]
   have hx : evalExpr? config frame evm (.storage ⟨totalsIndexName true, []⟩) =
       .ok (.int (totalsIndexWord
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩) true).toNat) :=
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩) true).toNat) :=
     evalTotalsIndex evm frame.locals imms true (by
       simp [frame, signedPresentEntry, totalsIndexName])
   apply ExecFuncBody.execBlockRevert
@@ -165,7 +165,7 @@ theorem signedPresent_call (frame : Frame) (evm : EVM.State) (principal : UInt25
   by_cases hmin : -(2^103 : Int) < signed104 principal
   · rw [if_pos hmin]
     obtain ⟨final, hb⟩ := signedPresent_source_ok evm frame.immutables principal hmin
-    exact ExecStmt.internalCallReturn (cfg := config) (solm := frame) (evm := evm)
+    exact ExecStmt.internalCallReturn (cfg := config) (stele := frame) (evm := evm)
       (args := [expr]) (callee := signedPresentCallable)
       (locals := (signedPresentEntry frame.immutables principal).locals)
       (argVals := [.int (signed104 principal)])
@@ -173,7 +173,7 @@ theorem signedPresent_call (frame : Frame) (evm : EVM.State) (principal : UInt25
       (by rw [hc]; exact signedPresentCallable_lookup) rfl
       (by simpa only [hc] using hb)
   · rw [if_neg hmin]
-    exact ExecStmt.internalCallRevert (cfg := config) (solm := frame) (evm := evm)
+    exact ExecStmt.internalCallRevert (cfg := config) (stele := frame) (evm := evm)
       (args := [expr]) (callee := signedPresentCallable)
       (locals := (signedPresentEntry frame.immutables principal).locals)
       (argVals := [.int (signed104 principal)])

@@ -1,8 +1,8 @@
 import Benchmarks.Dss.Vat.Spec
-import Solm.Notation
+import Stele.Notation
 
 /-!
-# Vat spec in the Solidity-faithful Solm frontend
+# Vat spec in the Solidity-faithful Stele frontend
 
 The whole `vat.sol` spec written with `solidity%` and proven definitionally equal to the AST
 spec in `Spec.lean`.  Maker's checked-arithmetic helper statement lists are inlined: unsigned
@@ -13,7 +13,7 @@ add/sub/mul are the `as uint256` range checks, the signed variants wrap with
 literals.  Transition order matches `contract.transitions` (selector order).
 -/
 
-open Solm Solm.Notation Benchmarks.Dss.Vat
+open Stele Stele.Notation Benchmarks.Dss.Vat
 
 namespace Benchmarks.Dss.Vat.Syntax
 

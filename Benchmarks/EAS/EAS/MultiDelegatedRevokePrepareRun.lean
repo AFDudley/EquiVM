@@ -3,7 +3,7 @@ import Benchmarks.EAS.EAS.MultiDelegatedRevokeControl
 import Benchmarks.EAS.EAS.DelegatedRevocationPrepareValid
 import Benchmarks.EAS.EAS.DelegatedRevocationPrepareInvalid
 import Benchmarks.EAS.EAS.DelegatedRevocationGuard
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.EAS.EAS.Immutables
 namespace Benchmarks.EAS.EAS
 set_option maxRecDepth 10000

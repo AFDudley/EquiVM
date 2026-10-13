@@ -1,16 +1,16 @@
 import Benchmarks.UniswapV3.Pool.Routines
 import Reasoning.HeapMemory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 
 namespace Benchmarks.UniswapV3.Pool
 
--- LIBRARY CANDIDATE: Reasoning.SolmBody, return several evaluated expressions.
-theorem ABlock.returnsMany {cfg evm solm₀ stmts₀ solm rest} {exprs values}
-    (prev : ABlock cfg evm solm₀ stmts₀ solm (.return exprs :: rest))
-    (heval : evalExprs? cfg solm evm exprs = .ok values) :
-    ExecBlock cfg solm₀ evm stmts₀ (.returned solm evm (some values)) :=
+-- LIBRARY CANDIDATE: Reasoning.SteleBody, return several evaluated expressions.
+theorem ABlock.returnsMany {cfg evm stele₀ stmts₀ stele rest} {exprs values}
+    (prev : ABlock cfg evm stele₀ stmts₀ stele (.return exprs :: rest))
+    (heval : evalExprs? cfg stele evm exprs = .ok values) :
+    ExecBlock cfg stele₀ evm stmts₀ (.returned stele evm (some values)) :=
   prev.run (ExecBlock.consReturn (ExecStmt.return heval))
 
 -- GENERALIZES Reasoning.ABI.encodeABIValue_uint256 to any unsigned ABI width.

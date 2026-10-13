@@ -1,5 +1,5 @@
 import Benchmarks.EAS.EAS.StoredBytesWrite
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 -- LIBRARY CANDIDATE: preserve the source/EVM state relation through ordered bytes storage loops.

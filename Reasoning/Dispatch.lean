@@ -1,11 +1,11 @@
-import Solm.Refine
+import Stele.Refine
 import Reasoning.Reach
 import Reasoning.Storage
 
 /-!
-# Dispatch — generic Solm `dispatchMsg` facts
+# Dispatch — generic Stele `dispatchMsg` facts
 
-`dispatchMsg` (the trusted Solm dispatcher) maps each transition to its 4-byte keccak selector and
+`dispatchMsg` (the trusted Stele dispatcher) maps each transition to its 4-byte keccak selector and
 returns the first whose selector matches the calldata prefix.  Everything here is contract-agnostic:
 
 - **Multi-selector dispatch**: `dispatchList`, the pure list-recursive form of `dispatchMsg`, plus
@@ -17,7 +17,7 @@ returns the first whose selector matches the calldata prefix.  Everything here i
   coupling, e.g. `RDrev.reEquivNonPayable` for the whole `callvalue ≠ 0` branch.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Reasoning.Theory
 
@@ -25,7 +25,7 @@ variable {contract : ContractDecl} {transition : TransitionDecl} {selBytes : Byt
 
 /-! ## Generic multi-selector dispatch
 
-`dispatchMsg` (the trusted Solm dispatcher) maps each transition to its 4-byte keccak selector and
+`dispatchMsg` (the trusted Stele dispatcher) maps each transition to its 4-byte keccak selector and
 returns the first whose selector matches the calldata prefix.  `dispatchList` is its pure
 list-recursive form and `dispatchMsg_eq_dispatchList` bridges the two, after which a contract with
 *any* number of functions is handled by walking the list with `dispatchList_cons` / `dispatchList_nil`
@@ -174,7 +174,7 @@ theorem dispatchMsg_eq_some_of_split {contract : ContractDecl} {pre post : List 
 theorem dispatch_eq
     (hfallback : contract.fallback = none := by rfl)
     (htr : contract.transitions = [transition])
-    (hsel : (Ethereum.KEC (String.toByteArray (Solm.transitionSigStr transition))).extract 0 4 = selBytes)
+    (hsel : (Ethereum.KEC (String.toByteArray (Stele.transitionSigStr transition))).extract 0 4 = selBytes)
     (cd : ByteArray)
     (hreceive : contract.receive = none := by rfl) :
     dispatchMsg contract cd = if (selBytes == cd.extract 0 4) then some transition else none := by
@@ -202,7 +202,7 @@ theorem dispatch_unique
 theorem dispatch_none_short
     (hfallback : contract.fallback = none := by rfl)
     (htr : contract.transitions = [transition])
-    (hsel : (Ethereum.KEC (String.toByteArray (Solm.transitionSigStr transition))).extract 0 4 = selBytes)
+    (hsel : (Ethereum.KEC (String.toByteArray (Stele.transitionSigStr transition))).extract 0 4 = selBytes)
     (hsize : selBytes.size = 4) {cd : ByteArray} (h : cd.size < 4)
     (hreceive : contract.receive = none := by rfl) :
     dispatchMsg contract cd = none := by
@@ -220,7 +220,7 @@ theorem dispatch_none_short
 theorem dispatch_none_nomatch
     (hfallback : contract.fallback = none := by rfl)
     (htr : contract.transitions = [transition])
-    (hsel : (Ethereum.KEC (String.toByteArray (Solm.transitionSigStr transition))).extract 0 4 = selBytes)
+    (hsel : (Ethereum.KEC (String.toByteArray (Stele.transitionSigStr transition))).extract 0 4 = selBytes)
     {cd : ByteArray} (h : (selBytes == cd.extract 0 4) = false)
     (hreceive : contract.receive = none := by rfl) :
     dispatchMsg contract cd = none := by
@@ -247,7 +247,7 @@ structure SingleSelectorDispatch (contract : ContractDecl) (transition : Transit
 theorem singleSelectorDispatch
     (hfallback : contract.fallback = none := by rfl)
     (htr : contract.transitions = [transition])
-    (hsel : (Ethereum.KEC (String.toByteArray (Solm.transitionSigStr transition))).extract 0 4 = selBytes)
+    (hsel : (Ethereum.KEC (String.toByteArray (Stele.transitionSigStr transition))).extract 0 4 = selBytes)
     (hsize : selBytes.size = 4)
     (hreceive : contract.receive = none := by rfl) :
     SingleSelectorDispatch contract transition selBytes where
@@ -255,7 +255,7 @@ theorem singleSelectorDispatch
   none_short h := dispatch_none_short hfallback htr hsel hsize h hreceive
   none_nomatch h := dispatch_none_nomatch hfallback htr hsel h hreceive
 
-/-- The EVM return bytes `o` couple to the Solm return value `rv` whenever `o` is `rv`'s ABI
+/-- The EVM return bytes `o` couple to the Stele return value `rv` whenever `o` is `rv`'s ABI
     encoding (the `returned` case of `returnEquiv`). -/
 theorem returnEquiv_of_encode {abit : ABIType} {rv : Value} {o : ByteArray}
     (h : encodeReturnValue? abit rv = some o) :
@@ -266,10 +266,10 @@ end Reasoning.Theory
 
 namespace Reasoning.Reach
 
-/-- **The whole `callvalue ≠ 0` Solm coupling**, generic over a single-transition contract.  Given the
+/-- **The whole `callvalue ≠ 0` Stele coupling**, generic over a single-transition contract.  Given the
     non-payable guard's revert (`h : RDrev …`) and the contract body's revert under non-zero call
     value (`hbody`), produce the `runtimeRefinementFor` case: the OOG alternative folds via
-    `reEquivElim`, and the Solm side is dispatched abstractly into `noDispatch` / `decodingFailed` /
+    `reEquivElim`, and the Stele side is dispatched abstractly into `noDispatch` / `decodingFailed` /
     `execution`-with-revert.  Each example's `callvalue ≠ 0` branch is a single call to this. -/
 theorem RDrev.reEquivNonPayable {cfg : Config} {contract : ContractDecl} {transition : TransitionDecl}
     {immutables : Store}
@@ -296,7 +296,7 @@ theorem RDrev.reEquivNonPayable {cfg : Config} {contract : ContractDecl} {transi
         exact reEquiv_execution ht hca (hbody callargs) (by rw [hrev]; exact .revert rfl rfl)
           hfallback hreceive
 
-/-- Successful execution with a possibly changed account map. The EVM result map and the Solm
+/-- Successful execution with a possibly changed account map. The EVM result map and the Stele
     post-state map must be equal as extensional `ExtTreeMap`s. -/
 theorem RDret.reEquivExecutionGen {cfg : Config} {contract : ContractDecl}
     {immutables : Store}
@@ -337,7 +337,7 @@ theorem RDret.reEquivExecutionGen {cfg : Config} {contract : ContractDecl}
       exact hAccounts
     exact execResultsEquiv.success rfl rfl haccounts (.abi henc)
 
-/-- `RDret ⇒ execution` (success): the run returns bytes `o`, the dispatched Solm body returns
+/-- `RDret ⇒ execution` (success): the run returns bytes `o`, the dispatched Stele body returns
     `retVal` leaving the EVM state at `initState`, and `henc` relates `o` to that return value.
     The non-mutating special case of `RDret.reEquivExecutionGen` (`evm'' = initState …`). -/
 theorem RDret.reEquivExecution {cfg : Config} {contract : ContractDecl} {t : TransitionDecl}
@@ -360,14 +360,14 @@ theorem RDret.reEquivExecution {cfg : Config} {contract : ContractDecl} {t : Tra
   h.reEquivExecutionGen hcode hd hdec hbody
     (by simp [initState]) henc hfallback hreceive
 
-/-- `RDret ⇒ execution` (success), **return-value transport form**: the Solm body returns
-    `rvSolm`, while the EVM output `o` is related to `rvEvm` by `henc`. The caller supplies
-    `hval : rvSolm = rvEvm`, so the body can be passed with its natural return expression
+/-- `RDret ⇒ execution` (success), **return-value transport form**: the Stele body returns
+    `rvStele`, while the EVM output `o` is related to `rvEvm` by `henc`. The caller supplies
+    `hval : rvStele = rvEvm`, so the body can be passed with its natural return expression
     without restating it using `rvEvm`. -/
 theorem RDret.reEquivExecutionTransport {cfg : Config} {contract : ContractDecl} {t : TransitionDecl}
     {immutables : Store}
     {σ σ₀ A I} {g : Sat256}
-    {code o : ByteArray} {callargs cs rvSolm rvEvm}
+    {code o : ByteArray} {callargs cs rvStele rvEvm}
     (hcode : I.code = code)
     (h : RDret code g (initState σ σ₀ g A I) σ o)
     (hd : dispatchMsg contract I.calldata = some t)
@@ -375,8 +375,8 @@ theorem RDret.reEquivExecutionTransport {cfg : Config} {contract : ContractDecl}
               (transitionSignature t).paramTypes I.calldata = some callargs)
     (hbody : ExecTransitionBody cfg contract
               (initState σ σ₀ g A I) callargs t.body
-              (.returned cs (initState σ σ₀ g A I) rvSolm) immutables)
-    (hval : rvSolm = rvEvm)
+              (.returned cs (initState σ σ₀ g A I) rvStele) immutables)
+    (hval : rvStele = rvEvm)
     (henc : returnEquiv o rvEvm t.returnType)
     (hfallback : contract.fallback = none := by rfl)
     (hreceive : contract.receive = none := by rfl) :
@@ -385,7 +385,7 @@ theorem RDret.reEquivExecutionTransport {cfg : Config} {contract : ContractDecl}
   subst rvEvm
   exact h.reEquivExecution hcode hd hdec hbody henc hfallback hreceive
 
-/-- `RDrev ⇒ execution` (revert): the run reverts and the dispatched Solm body reverts too. -/
+/-- `RDrev ⇒ execution` (revert): the run reverts and the dispatched Stele body reverts too. -/
 theorem RDrev.reEquivExecutionRevert {cfg : Config} {contract : ContractDecl} {t : TransitionDecl}
     {immutables : Store}
     {σ σ₀ A I} {g : Sat256} {code : ByteArray}

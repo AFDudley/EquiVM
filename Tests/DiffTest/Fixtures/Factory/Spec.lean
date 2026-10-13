@@ -1,19 +1,19 @@
-import Solm.Semantics
-import Solm.SolidityLayout
-import Solm.SolidityStorage
-import Solm.MetaSolidityLayout
+import Stele.Semantics
+import Stele.SolidityLayout
+import Stele.SolidityStorage
+import Stele.MetaSolidityLayout
 
 /-!
 # Factory — fixture specification for the differential suite
 
-`Factory.sol` (solc 0.8.35, optimizer on, 200 runs) exercises the Solm statement forms no example
+`Factory.sol` (solc 0.8.35, optimizer on, 200 runs) exercises the Stele statement forms no example
 or benchmark reaches: contract creation with and without salt (`new`), `for` with `break` and
 `continue`, `try`/`catch` (`checkedCall`), and array `pop`/`delete`.  The `Child` contract's
 creation code is embedded verbatim in the factory's runtime; it is also the `creationCode` the
 specification hands to `new`.
 -/
 
-open Solm ABI Ethereum
+open Stele ABI Ethereum
 
 namespace Tests.DiffTest.Fixtures.Factory
 

@@ -1,7 +1,7 @@
 import Benchmarks.EAS.EAS.ScalarFields
 import Benchmarks.EAS.EAS.AttestationStorage
 import Benchmarks.EAS.EAS.EncodeAttestationSource
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 def attestationWordWrite (name : Ident) (slot word : UInt256) : ScalarFieldWrite :=

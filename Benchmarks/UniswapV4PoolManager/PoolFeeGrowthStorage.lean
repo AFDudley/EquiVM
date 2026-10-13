@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV4PoolManager.ResolvedStorage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 
@@ -11,7 +11,7 @@ def poolFeeGrowthSlot (id : UInt256) (second : Bool) : UInt256 :=
 def poolFeeGrowthRef (id : UInt256) (second : Bool) : EvaledStorageRef :=
   {base := "_pools", steps := (poolRef id).steps ++ [.field (poolFeeGrowthName second)]}
 def poolFeeGrowthWord (evm : EVM.State) (id : UInt256) (second : Bool) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (poolFeeGrowthSlot id second)
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (poolFeeGrowthSlot id second)
 
 theorem poolFeeGrowth_type (second : Bool) :
     storageTypeStep? poolStateType (.field (poolFeeGrowthName second)) =

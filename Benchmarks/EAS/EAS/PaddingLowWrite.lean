@@ -1,5 +1,5 @@
 import Benchmarks.EAS.EAS.ReservePrefix
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 -- LIBRARY CANDIDATE: scratch writes below 96 preserve the reserved allocation prefix, including implicit zeroes.

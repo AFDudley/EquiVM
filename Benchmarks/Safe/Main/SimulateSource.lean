@@ -2,7 +2,7 @@ import Benchmarks.Safe.Main.Common
 import Benchmarks.Safe.Main.AddressBytesCalldata
 import Benchmarks.Safe.Main.RawDelegateCall
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.Main
 

@@ -3,7 +3,7 @@ import Reasoning.Memory
 import Benchmarks.Dss.Spot.Common
 import Reasoning.ExternalCall
 import Reasoning.Initcode
-import Solm.Refine
+import Stele.Refine
 
 /-!
 # MakerDAO/Sky DSS Spotter constructor shared helpers
@@ -12,12 +12,12 @@ Shared bytecode, memory, and storage-slot facts used by the Spot constructor tra
 semantics proofs.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 section
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 2000000
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Spot
 
@@ -103,7 +103,7 @@ theorem spotCtorDeployment_shape {args : List Value} {deployedInitcode : ByteArr
     (hdeploy : config.selfDeployment spotCreationBytecode args = some deployedInitcode) :
     ∃ vat : AccountAddress,
       args = [.address vat] ∧ deployedInitcode = spotCtorCode vat := by
-  simp [config, contract, constructorDecl, Solm.genSolidityConstructorDeployment] at hdeploy
+  simp [config, contract, constructorDecl, Stele.genSolidityConstructorDeployment] at hdeploy
   cases args with
   | nil =>
       simp [ABI.encodeABIValues?, ABI.encodeABIValuesFrom?, addr] at hdeploy

@@ -1,6 +1,6 @@
 import Benchmarks.EAS.EAS.RecordWriteTimes
 import Benchmarks.EAS.EAS.PackedAdjacent
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 def recordOtherAccounts (σ : AccountMap) (ee : ExecutionEnv) (slot : UInt256) (a : AttestationRecord) : AccountMap :=

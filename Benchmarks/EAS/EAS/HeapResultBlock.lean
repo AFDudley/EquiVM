@@ -1,5 +1,5 @@
 import Benchmarks.EAS.EAS.AllocateBlock
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 -- LIBRARY CANDIDATE: a modular internal call followed by result and heap unpacking.

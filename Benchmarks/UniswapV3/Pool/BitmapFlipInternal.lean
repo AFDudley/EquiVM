@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.BitmapFlipTrace
 import Benchmarks.UniswapV3.Pool.TickUpdateMemory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
@@ -55,7 +55,7 @@ theorem bitmapFlipInternalX {σ : AccountMap} {ee : ExecutionEnv} {g : Sat256}
       exact bitmapFlipStatic (immStore v) evm tick spacing hn hrem (by rw [hs.env]; exact hp)
     · refine Or.inr (Or.inr ⟨?_, k', C', SourceState.flipBitmap hs _ _, ?_, ?_⟩)
       · exact internalCallFunctionReturn (callee := bitmapFlipFunction)
-          (calleeSolm := bitmapFlipReadyFrame (immStore v) tick spacing) (value := none)
+          (calleeStele := bitmapFlipReadyFrame (immStore v) tick spacing) (value := none)
           he hl (bitmapFlipBind tick spacing)
           (by rw [hc]; exact bitmapFlipReturns (immStore v) evm tick spacing hn hrem)
       · change RD (deployedRuntime v) ee g s0 ret R (bitmapFlipMemory mem tick spacing)

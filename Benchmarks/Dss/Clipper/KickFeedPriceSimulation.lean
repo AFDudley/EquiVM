@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Clipper.KickCallEquiv
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 namespace Benchmarks.Dss.Clipper
@@ -83,12 +83,12 @@ theorem clipperKickSimulateSpotterIlks
     · have hevm := RD.clipperGetFeedPriceSpotterIlksCallFailure
         v hpatch (by simpa using rd8840) houtIlks
           (by simp only [List.length_cons, List.length_nil]; omega)
-      obtain ⟨σIlksSolm, AIlksSolm, evmIlks, hevmeq, hcallIlksSolm,
+      obtain ⟨σIlksStele, AIlksStele, evmIlks, hevmeq, hcallIlksStele,
           halignIlks⟩ := clipperKickCallAligned_transport halign hcallIlks
       have haddr := clipperKickSpotterAddress_eq_of_aligned halign
-      have hcodeSolm := clipperKickHasCode_of_aligned halign haddr hspotter
+      have hcodeStele := clipperKickHasCode_of_aligned halign haddr hspotter
       have hsource := clipperGetFeedPriceCallRevertsSpotterIlksCallFailure
-        v callerLocals "feedPrice" hcodeSolm (by simpa [haddr] using hcallIlksSolm)
+        v callerLocals "feedPrice" hcodeStele (by simpa [haddr] using hcallIlksStele)
       exact .reverted hsource hevm
     · obtain ⟨k8861, C8861, rd8861⟩ :=
         RD.clipperGetFeedPriceSpotterIlksCallSuccessToDecode
@@ -96,23 +96,23 @@ theorem clipperKickSimulateSpotterIlks
       by_cases hshort : outIlks.size < 64
       · have hevm := RD.clipperKickGetFeedPriceSpotterIlksDecodeShortReverts
           v hpatch rd8861 hmem hread64 hshort houtIlks (by omega)
-        obtain ⟨σIlksSolm, AIlksSolm, evmIlks, hevmeq, hcallIlksSolm,
+        obtain ⟨σIlksStele, AIlksStele, evmIlks, hevmeq, hcallIlksStele,
             halignIlks⟩ := clipperKickCallAligned_transport halign hcallIlks
         have haddr := clipperKickSpotterAddress_eq_of_aligned halign
-        have hcodeSolm := clipperKickHasCode_of_aligned halign haddr hspotter
+        have hcodeStele := clipperKickHasCode_of_aligned halign haddr hspotter
         have hdec := clipperSpotterIlksDecode_none_short hshort
         have hsource := clipperGetFeedPriceCallRevertsSpotterIlksDecode
-          v callerLocals "feedPrice" hcodeSolm
-            (by simpa [haddr] using hcallIlksSolm) hdec
+          v callerLocals "feedPrice" hcodeStele
+            (by simpa [haddr] using hcallIlksStele) hdec
         exact .reverted hsource hevm
       · have hlo : 64 ≤ outIlks.size := by omega
         obtain ⟨k8937, C8937, rd8937⟩ :=
           RD.clipperKickGetFeedPriceSpotterIlksDecodeOkToPipPeekExtcodesizeGuard
             v hpatch rd8861 hmem hread64 hlo houtIlks (by omega)
-        obtain ⟨σIlksSolm, AIlksSolm, evmIlks, hevmeq, hcallIlksSolm,
+        obtain ⟨σIlksStele, AIlksStele, evmIlks, hevmeq, hcallIlksStele,
             halignIlks⟩ := clipperKickCallAligned_transport halign hcallIlks
         have haddr := clipperKickSpotterAddress_eq_of_aligned halign
-        have hcodeSolm := clipperKickHasCode_of_aligned halign haddr hspotter
+        have hcodeStele := clipperKickHasCode_of_aligned halign haddr hspotter
         let memPeek := clipperPipPeekSelectorMem
           (clipperSpotterIlksPostCallMem v mem outIlks)
         have hmemPost := clipperKickSpotterIlksPostCallMem_size_long
@@ -128,7 +128,7 @@ theorem clipperKickSimulateSpotterIlks
           simpa [memPeek] using clipperPipPeekEncode_eq (by omega : 132 ≤
             (clipperSpotterIlksPostCallMem v mem outIlks).size)
         exact .ready σIlks outIlks evmIlks memPeek k8937 C8937
-          hcodeSolm (by simpa [haddr] using hcallIlksSolm)
+          hcodeStele (by simpa [haddr] using hcallIlksStele)
           (clipperSpotterIlksDecode_ok hlo)
           (by simpa [hevmeq] using halignIlks) houtIlks hlo
           (by simpa [memPeek] using rd8937) hmemPeek hreadPeek hcalldata
@@ -191,13 +191,13 @@ theorem clipperKickSimulatePipPeek
       · have hevm := RD.clipperGetFeedPricePipPeekCallFailure
           v hpatch (by simpa using rd8953) houtPeek
             (by simp only [List.length_cons, List.length_nil]; omega)
-        obtain ⟨σPeekSolm, APeekSolm, evmPeek, hevmeq, hcallPeekSolm,
+        obtain ⟨σPeekStele, APeekStele, evmPeek, hevmeq, hcallPeekStele,
             halignPeek⟩ := clipperKickCallAligned_transport halign hcallPeek
         have hcodePip := clipperKickHasCode_of_aligned halign
           (clipperSpotterIlksPipAddress_eq_target outIlks) hpip
         have hsource := clipperGetFeedPriceCallRevertsPipPeekCallFailure
           v callerLocals "feedPrice" hcodeIlks hcallIlks hdecIlks hcodePip
-            (by simpa using hcallPeekSolm)
+            (by simpa using hcallPeekStele)
         exact .reverted hsource hevm
       · obtain ⟨k8974, C8974, rd8974⟩ :=
           RD.clipperGetFeedPricePipPeekCallSuccessToDecode
@@ -210,14 +210,14 @@ theorem clipperKickSimulatePipPeek
               (clipperKickPipPeekPostCallMem_read64 hmem hread64 houtPeek)
               hshort houtPeek
                 (by simp only [List.length_cons, List.length_nil]; omega)
-          obtain ⟨σPeekSolm, APeekSolm, evmPeek, hevmeq, hcallPeekSolm,
+          obtain ⟨σPeekStele, APeekStele, evmPeek, hevmeq, hcallPeekStele,
               halignPeek⟩ := clipperKickCallAligned_transport halign hcallPeek
           have hcodePip := clipperKickHasCode_of_aligned halign
             (clipperSpotterIlksPipAddress_eq_target outIlks) hpip
           have hdecPeek := clipperPipPeekDecode_none_short hshort
           have hsource := clipperGetFeedPriceCallRevertsPipPeekDecode
             v callerLocals "feedPrice" hcodeIlks hcallIlks hdecIlks hcodePip
-              (by simpa using hcallPeekSolm) hdecPeek
+              (by simpa using hcallPeekStele) hdecPeek
           exact .reverted hsource hevm
         · have hlo : 64 ≤ outPeek.size := by omega
           let memPost := clipperPipPeekPostCallMem mem outPeek
@@ -237,28 +237,28 @@ theorem clipperKickSimulatePipPeek
           · have hevm := RD.clipperKickGetFeedPricePipPeekHasFalseReverts
               v hpatch rd8974 hmemPost hreadPost hread128 hread160 hlo houtPeek
                 hhas (by simp only [List.length_cons, List.length_nil]; omega)
-            obtain ⟨σPeekSolm, APeekSolm, evmPeek, hevmeq, hcallPeekSolm,
+            obtain ⟨σPeekStele, APeekStele, evmPeek, hevmeq, hcallPeekStele,
                 halignPeek⟩ := clipperKickCallAligned_transport halign hcallPeek
             have hcodePip := clipperKickHasCode_of_aligned halign
               (clipperSpotterIlksPipAddress_eq_target outIlks) hpip
             have hdecPeek := clipperPipPeekDecode_ok hlo
             have hsource := clipperGetFeedPriceCallRevertsPipPeekHasFalse
               v callerLocals "feedPrice" hcodeIlks hcallIlks hdecIlks hcodePip
-                (by simpa using hcallPeekSolm) hdecPeek hhas
+                (by simpa using hcallPeekStele) hdecPeek hhas
             exact .reverted hsource hevm
           · obtain ⟨k9079, C9079, rd9079⟩ :=
               RD.clipperKickGetFeedPricePipPeekHasTrueToValBln
                 v hpatch rd8974 hmemPost hreadPost hread128 hread160 hlo
                   houtPeek hhas
                     (by simp only [List.length_cons, List.length_nil]; omega)
-            obtain ⟨σPeekSolm, APeekSolm, evmPeek, hevmeq, hcallPeekSolm,
+            obtain ⟨σPeekStele, APeekStele, evmPeek, hevmeq, hcallPeekStele,
                 halignPeek⟩ := clipperKickCallAligned_transport halign hcallPeek
             have hcodePip := clipperKickHasCode_of_aligned halign
               (clipperSpotterIlksPipAddress_eq_target outIlks) hpip
             have hdecPeek := clipperPipPeekDecode_ok hlo
             have hprefix := clipperGetFeedPricePrefixToHas
               v hcodeIlks hcallIlks hdecIlks hcodePip
-                (by simpa using hcallPeekSolm) hdecPeek hhas
+                (by simpa using hcallPeekStele) hdecPeek hhas
             exact .ready σPeek outIlks outPeek evmPeek memPost k9079 C9079
               (by simpa [hevmeq] using hprefix)
               (by simpa [hevmeq] using halignPeek) houtPeek hlo
@@ -353,13 +353,13 @@ theorem clipperKickFinishFeedPrice
         · have hevm := RD.clipperGetFeedPriceParCallFailure
             v hpatch (by simpa using rd9180) houtPar
               (by simp only [List.length_cons, List.length_nil]; omega)
-          obtain ⟨σParSolm, AParSolm, evmPar, hevmeq, hcallParSolm,
+          obtain ⟨σParStele, AParStele, evmPar, hevmeq, hcallParStele,
               halignPar⟩ := clipperKickCallAligned_transport halign hcallPar
           have haddr := clipperKickSpotterAddress_eq_of_aligned halign
           have hcodePar := clipperKickHasCode_of_aligned halign haddr hspotter
           have htail := clipperGetFeedPriceTailRevertsParCallFailure
             v outIlks outPeek (by omega) hmulVal hcodePar
-              (by simpa [haddr] using hcallParSolm)
+              (by simpa [haddr] using hcallParStele)
           have hsource := clipperGetFeedPriceSuccessCallRevertsOfTail
             v callerLocals "feedPrice" hprefix htail
           exact .reverted hsource hevm
@@ -374,14 +374,14 @@ theorem clipperKickFinishFeedPrice
                 (clipperKickSpotterParPostCallMem_read64 hmemPar hreadPar houtPar)
                 hshort houtPar
                 (by simp only [List.length_cons, List.length_nil]; omega)
-            obtain ⟨σParSolm, AParSolm, evmPar, hevmeq, hcallParSolm,
+            obtain ⟨σParStele, AParStele, evmPar, hevmeq, hcallParStele,
                 halignPar⟩ := clipperKickCallAligned_transport halign hcallPar
             have haddr := clipperKickSpotterAddress_eq_of_aligned halign
             have hcodePar := clipperKickHasCode_of_aligned halign haddr hspotter
             have hdec := clipperSpotterParDecode_none_short hshort
             have htail := clipperGetFeedPriceTailRevertsParDecode
               v outIlks outPeek (by omega) hmulVal hcodePar
-                (by simpa [haddr] using hcallParSolm) hdec
+                (by simpa [haddr] using hcallParStele) hdec
             have hsource := clipperGetFeedPriceSuccessCallRevertsOfTail
               v callerLocals "feedPrice" hprefix htail
             exact .reverted hsource hevm
@@ -401,7 +401,7 @@ theorem clipperKickFinishFeedPrice
               RD.clipperKickGetFeedPriceParDecodeOkToRdiv
                 v hpatch rd9201 hmemPost hreadPost hread128 hlo houtPar
                   (by simp only [List.length_cons, List.length_nil]; omega)
-            obtain ⟨σParSolm, AParSolm, evmPar, hevmeq, hcallParSolm,
+            obtain ⟨σParStele, AParStele, evmPar, hevmeq, hcallParStele,
                 halignPar⟩ := clipperKickCallAligned_transport halign hcallPar
             have haddr := clipperKickSpotterAddress_eq_of_aligned halign
             have hcodePar := clipperKickHasCode_of_aligned halign haddr hspotter
@@ -415,7 +415,7 @@ theorem clipperKickFinishFeedPrice
                 v evmPar outIlks outPeek outPar (by simpa [valBln] using hoverRdiv)
               have htail := clipperGetFeedPriceTailOfParSuccess
                 v outIlks outPeek (by omega) hmulVal hcodePar
-                  (by simpa [haddr] using hcallParSolm) hdec hrdiv
+                  (by simpa [haddr] using hcallParStele) hdec hrdiv
               have hsource := clipperGetFeedPriceSuccessCallRevertsOfTail
                 v callerLocals "feedPrice" hprefix htail
               exact .reverted hsource hevm
@@ -430,7 +430,7 @@ theorem clipperKickFinishFeedPrice
                     hzero
                 have htail := clipperGetFeedPriceTailOfParSuccess
                   v outIlks outPeek (by omega) hmulVal hcodePar
-                    (by simpa [haddr] using hcallParSolm) hdec hrdiv
+                    (by simpa [haddr] using hcallParStele) hdec hrdiv
                 have hsource := clipperGetFeedPriceSuccessCallRevertsOfTail
                   v callerLocals "feedPrice" hprefix htail
                 exact .invalid hsource hevm
@@ -444,7 +444,7 @@ theorem clipperKickFinishFeedPrice
                     hzero
                 have htail := clipperGetFeedPriceTailOfParSuccess
                   v outIlks outPeek (by omega) hmulVal hcodePar
-                    (by simpa [haddr] using hcallParSolm) hdec hrdiv
+                    (by simpa [haddr] using hcallParStele) hdec hrdiv
                 have hsourceRaw := clipperGetFeedPriceSuccessCallReturnsOfTail
                   v callerLocals "feedPrice" hprefix htail
                 have hsource : ExecStmt config

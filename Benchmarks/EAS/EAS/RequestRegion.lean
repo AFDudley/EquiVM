@@ -1,7 +1,7 @@
 import Benchmarks.EAS.EAS.RequestArrayMemory
 import Benchmarks.EAS.EAS.RecordDisjoint
 import Benchmarks.EAS.EAS.RecordArrayViews
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 theorem AttestationRequestMemoryView.write_below {mem : ByteArray} {ptr dataPtr : UInt256}

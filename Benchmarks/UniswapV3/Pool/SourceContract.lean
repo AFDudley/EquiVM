@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.SourceExpressions
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 -- LIBRARY CANDIDATE: execution changes locals and immutables, but never the contract declaration.

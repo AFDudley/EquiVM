@@ -1,6 +1,6 @@
 import Benchmarks.EAS.EAS.TimeArray
 import Benchmarks.EAS.EAS.WhileInvariant
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 /-- The EVM cursor shared by the two word-array time loops. -/

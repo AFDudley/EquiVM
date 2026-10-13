@@ -3,7 +3,7 @@ import Benchmarks.CompoundIII.Comet.IsInAssetSource
 import Benchmarks.CompoundIII.Comet.SignedWord
 import Benchmarks.CompoundIII.Comet.AssetSearch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.CompoundIII.Comet.Immutables
 
 namespace Benchmarks.CompoundIII.Comet

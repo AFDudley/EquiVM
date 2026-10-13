@@ -1,4 +1,4 @@
-import Solm.Notation
+import Stele.Notation
 import ABI.Decode
 
 /-!
@@ -11,7 +11,7 @@ The immutable hash words use uint256 internally, with explicit bytes32 casts at
 hash and return boundaries, matching the proof generator's word valuation.
 -/
 
-open Solm Solm.Notation
+open Stele Stele.Notation
 
 namespace Benchmarks.EAS.EAS.Syntax
 
@@ -937,7 +937,7 @@ private abbrev contractBody : ContractDecl := solidity% contract EAS {
 
 }
 
-/-- EAS with its compiler allocation guards, using only existing Solm statements. -/
+/-- EAS with its compiler allocation guards, using only existing Stele statements. -/
 def contractSyntax : ContractDecl := withAllocator contractBody
 
 /-- Copy boundaries in the pinned 0.8.32 runtime. The incoming edge to a copied value may

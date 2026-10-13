@@ -1,7 +1,7 @@
 import Reasoning.WordArithmetic
 import Benchmarks.Dss.Clipper.ListStorage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 namespace Benchmarks.Dss.Clipper
@@ -47,12 +47,12 @@ theorem clipperActiveArrayWordBytesFrom_eq_listSlots
       have hk : k < UInt256.size := by omega
       have hslot := clipperListArraySlot_eq_activeSlot_of_lt k hk
       have hload :
-          Solm.EVM.storageLoad (initState σ σ₀ g A I)
+          Stele.EVM.storageLoad (initState σ σ₀ g A I)
               (initState σ σ₀ g A I).executionEnv.codeOwner
               (activeSlot (.int (Int.ofNat k))) =
             solcSlotWord σ I (clipperListArraySlot k) := by
         rw [← hslot]
-        simp [initState, Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
+        simp [initState, Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
           solcSlotWord]
       rw [clipperActiveArrayWordBytesFrom, clipperListArrayWordBytesFrom, hload,
         clipperActiveArrayWordBytesFrom_eq_listSlots (k + 1) n (by omega)]
@@ -247,10 +247,10 @@ theorem clipperActiveArrayReturnBytes_eq_listSlots
       ⟨(ABI.natBytes 32 ++ ABI.natBytes (solcSlotWord σ I ⟨11⟩).toNat ++
         clipperListArrayWordBytesFrom σ I 0 (solcSlotWord σ I ⟨11⟩).toNat).toArray⟩ := by
   have hlen :
-      Solm.EVM.storageLoad (initState σ σ₀ g A I)
+      Stele.EVM.storageLoad (initState σ σ₀ g A I)
           (initState σ σ₀ g A I).executionEnv.codeOwner ⟨11⟩ =
         solcSlotWord σ I ⟨11⟩ := by
-    simp [initState, Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
+    simp [initState, Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
       solcSlotWord]
   unfold clipperActiveArrayReturnBytes clipperActiveArrayValues
   rw [hlen]
@@ -586,7 +586,7 @@ theorem clipperActiveArrayReturnBytes_empty {σ σ₀ A I} {g : Sat256}
     clipperActiveArrayReturnBytes (initState σ σ₀ g A I) =
       ⟨(ABI.natBytes 32 ++ ABI.natBytes 0).toArray⟩ := by
   unfold clipperActiveArrayReturnBytes clipperActiveArrayValues
-  simp only [initState, Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
+  simp only [initState, Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
     solcSlotWord] at hlen ⊢
   rw [hlen]
   rw [show (⟨0⟩ : UInt256).toNat = 0 from by decide]

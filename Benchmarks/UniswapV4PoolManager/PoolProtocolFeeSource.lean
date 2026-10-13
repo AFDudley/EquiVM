@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV4PoolManager.ProtocolFeeSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 
@@ -9,8 +9,8 @@ abbrev poolSetProtocolFunction : FunctionDecl := contract.functions[53]!
 theorem poolGet_lookup : lookupCallable? contract "_getPool" = some poolGetFunction.toCallable := rfl
 theorem poolSetProtocol_lookup : lookupCallable? contract "Pool_setProtocolFee" = some poolSetProtocolFunction.toCallable := rfl
 
-def poolGetAlias : Ident := "__solm_storage_ref._@.Benchmarks.UniswapV4PoolManager.SpecSyntax.2010301240._hygCtx._hyg.5"
-def poolSetProtocolAlias : Ident := "__solm_storage_ref._@.Benchmarks.UniswapV4PoolManager.SpecSyntax.2010301240._hygCtx._hyg.17"
+def poolGetAlias : Ident := "__stele_storage_ref._@.Benchmarks.UniswapV4PoolManager.SpecSyntax.2010301240._hygCtx._hyg.5"
+def poolSetProtocolAlias : Ident := "__stele_storage_ref._@.Benchmarks.UniswapV4PoolManager.SpecSyntax.2010301240._hygCtx._hyg.17"
 
 theorem poolGetBody {f : Frame} {evm : EVM.State} {id : UInt256}
     (hf : f.contract = contract) (hi : f.locals.get? "id" = some (wordBytes32Value id))
@@ -33,7 +33,7 @@ theorem poolGetCall {f : Frame} {evm : EVM.State} {e : Expr} {id : UInt256}
 def poolSetProtocolFrame (f : Frame) (evm : EVM.State) (id fee : UInt256) : Frame :=
   poolSetSlot0Frame f id (slot0ProtocolFeeWord (poolSlot0Word evm id) fee) poolSetProtocolAlias
 def poolSetProtocolPost (evm : EVM.State) (id fee : UInt256) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (poolSlot id) (slot0ProtocolFeeWord (poolSlot0Word evm id) fee)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (poolSlot id) (slot0ProtocolFeeWord (poolSlot0Word evm id) fee)
 def poolSetProtocolResult (f : Frame) (evm : EVM.State) (id fee : UInt256) : ExecResult :=
   poolSetSlot0Result f evm id (slot0ProtocolFeeWord (poolSlot0Word evm id) fee)
 

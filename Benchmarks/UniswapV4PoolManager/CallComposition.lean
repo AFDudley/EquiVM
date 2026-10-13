@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.SourceComposition
 
 /-! Composing internal calls without repeating every callee branch. -/
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 -- LIBRARY CANDIDATE: translate a function result into its caller's result.

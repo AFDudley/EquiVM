@@ -6,7 +6,7 @@ import Benchmarks.CompoundIII.Comet.TransferOutSource
 import Benchmarks.CompoundIII.Comet.AuthorizationSource
 import Benchmarks.CompoundIII.Comet.ReentrancyModel
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.CompoundIII.Comet.Immutables
 
 namespace Benchmarks.CompoundIII.Comet

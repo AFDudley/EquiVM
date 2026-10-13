@@ -2,7 +2,7 @@ import Benchmarks.UniswapV3.Pool.SwapIterationTickMemory
 import Benchmarks.UniswapV3.Pool.SwapIterationTickSource
 import Benchmarks.UniswapV3.Pool.SwapIterationBitmapStoreTrace
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 open uniswapV3PoolBlocks
 namespace Benchmarks.UniswapV3.Pool

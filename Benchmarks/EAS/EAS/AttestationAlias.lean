@@ -1,6 +1,6 @@
 import Benchmarks.EAS.EAS.StoredRecord
 import Benchmarks.EAS.EAS.AttestationWriteStatements
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 def attestationAliasRef (field : Ident) : StorageRef := {base := "attestation",steps := [.field field]}

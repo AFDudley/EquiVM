@@ -2,7 +2,7 @@ import Benchmarks.Safe.Main.SignaturePiece
 import Benchmarks.Safe.Main.OwnerStorage
 import Benchmarks.Safe.Main.Membership
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.Main
 

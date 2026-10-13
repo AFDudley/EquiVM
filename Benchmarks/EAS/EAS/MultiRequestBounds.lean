@@ -1,6 +1,6 @@
 import Benchmarks.EAS.EAS.MultiRequestControl
 import Benchmarks.EAS.EAS.CalldataSignedStride
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 -- GENERALIZES nestedPayload_of_bound to an arbitrary, possibly wrapping header address.

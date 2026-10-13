@@ -1,7 +1,7 @@
 import Benchmarks.EAS.EAS.HeapCall
 import Benchmarks.EAS.EAS.HeapBranch
 import Benchmarks.EAS.EAS.TimestampSource
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 -- LIBRARY CANDIDATE: coupled heap-returning calls with a possible static-mode halt.

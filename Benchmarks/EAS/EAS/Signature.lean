@@ -1,6 +1,6 @@
 import Benchmarks.EAS.EAS.RecoverRun
 import Benchmarks.EAS.EAS.RecordFieldExpr
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.EAS.EAS.Immutables
 namespace Benchmarks.EAS.EAS
 

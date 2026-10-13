@@ -4,7 +4,7 @@ import Benchmarks.Dss.Spot.ConstructorTraceVat
 # MakerDAO/Sky DSS Spotter constructor par/live storage traces
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Spot
 

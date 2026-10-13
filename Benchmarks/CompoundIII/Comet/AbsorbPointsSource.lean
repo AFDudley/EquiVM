@@ -1,7 +1,7 @@
 import Benchmarks.CompoundIII.Comet.AbsorbPointsCountsSource
 import Benchmarks.CompoundIII.Comet.AbsorbPointsSpendSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 

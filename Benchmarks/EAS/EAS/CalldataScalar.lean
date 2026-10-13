@@ -1,7 +1,7 @@
 import Benchmarks.EAS.EAS.CalldataRead
 import Benchmarks.EAS.EAS.SchemaABI
 import Benchmarks.EAS.EAS.SchemaBuffer
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open ABI.Solc08Calldata
 namespace Benchmarks.EAS.EAS
 

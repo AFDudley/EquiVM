@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.PackedPrefix
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 def modifyStorageWord (evm : EVM.State) (slot : UInt256) (f : UInt256 → UInt256) : EVM.State :=

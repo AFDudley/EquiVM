@@ -1,6 +1,6 @@
 import Benchmarks.Dss.End.Dispatch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 0
@@ -80,7 +80,7 @@ theorem endPotBodyCore
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.address (AccountAddress.ofNat (potWord σ I).toNat))])) := by
     simpa [potTransition, potWord, solcAddressSlotWord, solcSlotWordAt, initState,
-      Solm.EVM.storageLoad, State.lookupAccount] using
+      Stele.EVM.storageLoad, State.lookupAccount] using
       endAddressGetterBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
         (ref := potRef) (er := ({ base := "pot", steps := [] } : EvaledStorageRef))

@@ -1,7 +1,7 @@
 import Benchmarks.EAS.EAS.RecordTailEVM
 import Benchmarks.EAS.EAS.ResultPointer
 import Benchmarks.EAS.EAS.ArrayDisjoint
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.EAS.EAS.Immutables
 namespace Benchmarks.EAS.EAS
 

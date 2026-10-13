@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.SnapshotRead
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
@@ -101,7 +101,7 @@ theorem snapshotReadyPrefix (v : UniswapV3PoolImmutables) (evm : EVM.State)
   · simpa only [hu] using evalSnapshotUpperInitialized
       (snapshotLowerFrame v lower upper evm.accountMap evm.executionEnv).locals (immStore v) evm
       (tickOutside upper evm.accountMap evm.executionEnv)
-  refine ExecBlock.consNormal (solm' := snapshotReadyFrame v lower upper evm.accountMap evm.executionEnv)
+  refine ExecBlock.consNormal (stele' := snapshotReadyFrame v lower upper evm.accountMap evm.executionEnv)
     (evm' := evm) (ExecStmt.letDecl ?_) ExecBlock.nil
   exact evalSlot0Struct _ _ evm (by
     simp [snapshotLowerFrame, snapshotLowerReadFrame,

@@ -2,7 +2,7 @@ import Benchmarks.EAS.EAS.AttestationAlias
 import Benchmarks.EAS.EAS.RequireList
 import Benchmarks.EAS.EAS.UIDLoopSource
 import Benchmarks.EAS.EAS.WordExpr
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 def revokeUIDGuard : Expr := .binary .ne (.storage (attestationAliasRef "uid"))

@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV4PoolManager.MappingScratchMemory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 -- LIBRARY CANDIDATE: memory after an optional two-word mapping hash.

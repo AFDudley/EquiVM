@@ -1,6 +1,6 @@
 import Benchmarks.EAS.EAS.WordExpr
 import Benchmarks.EAS.EAS.Storage
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 def nonceExprRef (key : Expr) : StorageRef := {base := "_nonces",steps := [.mindex key]}

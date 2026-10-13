@@ -2,7 +2,7 @@ import Benchmarks.EAS.EAS.RevokeRun
 import Benchmarks.EAS.EAS.RevokePublicSource
 import Benchmarks.EAS.EAS.RevokePublicMemory
 import Benchmarks.EAS.EAS.RuntimeBlocks_006
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.EAS.EAS.Immutables
 namespace Benchmarks.EAS.EAS
 set_option maxRecDepth 10000

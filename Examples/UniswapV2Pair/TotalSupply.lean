@@ -1,7 +1,7 @@
 import Examples.UniswapV2Pair.Dispatch
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -12,14 +12,14 @@ namespace UniswapV2Pair
 def totalSupplyWord (σ : AccountMap) (I : ExecutionEnv) : UInt256 :=
   solcSlotWordAt ⟨0⟩ σ I
 
-/-- The Solm `totalSupply()` body returns the uint256 stored in slot 0. -/
+/-- The Stele `totalSupply()` body returns the uint256 stored in slot 0. -/
 theorem uniswapTotalSupplyBodyReturns (evm : EVM.State) (locals : Store)
     (h : evm.executionEnv.weiValue = ⟨0⟩)
     (hlocals : locals.get? "totalSupply" = none) :
     ExecTransitionBody config contract evm locals totalSupplyTransition.body
       (.returned { contract := contract, locals := locals } evm
         (some [(.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩).toNat))])) := by
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩).toNat))])) := by
   simpa [totalSupplyTransition] using
     uniswapUint256GetterBodyReturns (slot := ⟨0⟩) (ref := totalSupplyRef)
       (er := ({ base := "totalSupply", steps := [] } : EvaledStorageRef)) evm locals h
@@ -62,7 +62,7 @@ theorem uniswapTotalSupplyBodyCore
         (.returned { contract := contract, locals := ∅ }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.int (Int.ofNat (totalSupplyWord σ I).toNat))])) := by
-    simpa [totalSupplyWord, solcSlotWordAt, solcSlotWord, initState, Solm.EVM.storageLoad,
+    simpa [totalSupplyWord, solcSlotWordAt, solcSlotWord, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       uniswapTotalSupplyBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅

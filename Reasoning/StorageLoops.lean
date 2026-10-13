@@ -6,7 +6,7 @@ import Reasoning.WordArithmetic
 Index, memory, and account-map facts for sequential storage clearing and copying.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Reach
 
 set_option autoImplicit false
 set_option maxRecDepth 2000000
@@ -203,7 +203,7 @@ theorem longDataTailMaskedWord_padded {len word : UInt256} {bytes : List UInt8}
 
 section
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option autoImplicit false
 set_option maxRecDepth 2000000
@@ -400,7 +400,7 @@ theorem longDataLoopDone (len : UInt256) :
 
 section
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option autoImplicit false
 set_option maxRecDepth 2000000
@@ -445,7 +445,7 @@ theorem clearDataWordsForwardFrom_append (owner : AccountAddress) (τ : AccountM
 
 end
 
-/-- The EVM stores the short word at `slot` **then** clears the keccak-data words; the Solm write
+/-- The EVM stores the short word at `slot` **then** clears the keccak-data words; the Stele write
     clears **then** stores. Since the slots are disjoint, the resulting account maps are equal. -/
 theorem clearDataWordsForwardFrom_sstore_comm (cO : AccountAddress) (K slot sw : UInt256) :
     ∀ (n : Nat) (σ : AccountMap), (∀ i, i < n → slot ≠ K + UInt256.ofNat i) →
@@ -466,7 +466,7 @@ end Reasoning.Theory
 
 namespace Reasoning.Theory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option autoImplicit false
 set_option maxRecDepth 2000000

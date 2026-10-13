@@ -1,6 +1,6 @@
 import Benchmarks.Dss.StairstepExponentialDecrease.Rely
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -9,7 +9,7 @@ namespace Benchmarks.Dss.StairstepExponentialDecrease
 /-! ## `deny(address)` -/
 
 def denyPostState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (relyUsrStorageSlot I) ⟨0⟩
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (relyUsrStorageSlot I) ⟨0⟩
 
 theorem stairstepDecode_deny_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
     config.externalABI.decodeCalldata? (denyTransition.params.map Param.name)
@@ -42,14 +42,14 @@ theorem stairstepDenyBodyReturns (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hsrc : evm.executionEnv.source = I.source)
     (hauth :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (relyAuthStorageSlot I) = ⟨1⟩) :
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (relyAuthStorageSlot I) = ⟨1⟩) :
     ExecTransitionBody config contract evm (relyStore I) denyTransition.body
       (.returned { contract := contract, locals := relyStore I } (denyPostState evm I) none) := by
   refine ExecFuncBody.execBlockOK ?_
   simpa [denyTransition, nonpayable, auth] using
     nonpayableRequireAssignStorageBlock
       (cfg := config)
-      (solm := { contract := contract, locals := relyStore I })
+      (stele := { contract := contract, locals := relyStore I })
       (evm := evm)
       (evm' := denyPostState evm I)
       (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
@@ -65,14 +65,14 @@ theorem stairstepDenyBodyStatic (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hsrc : evm.executionEnv.source = I.source)
     (hauth :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (relyAuthStorageSlot I) = ⟨1⟩)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (relyAuthStorageSlot I) = ⟨1⟩)
     (hperm : evm.executionEnv.perm = false) :
     ExecTransitionBody config contract evm (relyStore I) denyTransition.body .staticViolation := by
   refine ExecFuncBody.execBlockStatic ?_
   simpa [denyTransition, nonpayable, auth] using
     nonpayableRequireAssignStorageBlockStatic
       (cfg := config)
-      (solm := { contract := contract, locals := relyStore I })
+      (stele := { contract := contract, locals := relyStore I })
       (evm := evm)
       (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
       (rhs := .intLit 0)
@@ -89,13 +89,13 @@ theorem stairstepDenyBodyReverts (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hsrc : evm.executionEnv.source = I.source)
     (hauth :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (relyAuthStorageSlot I) ≠ ⟨1⟩) :
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (relyAuthStorageSlot I) ≠ ⟨1⟩) :
     ExecTransitionBody config contract evm (relyStore I) denyTransition.body .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
   simpa [denyTransition, nonpayable, auth] using
     nonpayableSecondRequireReverts
       (cfg := config)
-      (solm := { contract := contract, locals := relyStore I })
+      (stele := { contract := contract, locals := relyStore I })
       (evm := evm)
       (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
       (rest := [.assign .storage (wardsRef (.var "usr")) (.intLit 0)])
@@ -466,21 +466,21 @@ theorem stairstepDenyBodyCoreOk
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) stairstepDenyEntryPc [sel]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
   have hbody :
-      ExecTransitionBody config contract evmSolm (relyStore I)
+      ExecTransitionBody config contract evmStele (relyStore I)
         denyTransition.body
         (.returned { contract := contract, locals := relyStore I }
-          (denyPostState evmSolm I) none) := by
-    simpa [evmSolm, relyAuthWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+          (denyPostState evmStele I) none) := by
+    simpa [evmStele, relyAuthWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
-      stairstepDenyBodyReturns evmSolm I
-        (by simp only [evmSolm, initState]; exact hwv)
-        (by simp [evmSolm, initState])
+      stairstepDenyBodyReturns evmStele I
+        (by simp only [evmStele, initState]; exact hwv)
+        (by simp [evmStele, initState])
         hauth
   exact (stairstepX_deny_ok (g := Sat256.ofUInt256 g) hsz36 hsize hperm hauth hreach)
     |>.reEquivExecutionGen hcode hdispatch hdecode hbody
-      (by simp [denyPostState, evmSolm, initState, storageStore_accountMap])
+      (by simp [denyPostState, evmStele, initState, storageStore_accountMap])
       (by
         simpa [denyTransition] using
           (returnEquiv.fallthrough (o := ByteArray.empty) (r := none) (t := [])
@@ -501,17 +501,17 @@ theorem stairstepDenyBodyCoreStatic
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) stairstepDenyEntryPc [sel]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
   have hbody :
-      ExecTransitionBody config contract evmSolm (relyStore I)
+      ExecTransitionBody config contract evmStele (relyStore I)
         denyTransition.body .staticViolation := by
-    simpa [evmSolm, relyAuthWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [evmStele, relyAuthWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
-      stairstepDenyBodyStatic evmSolm I
-        (by simp only [evmSolm, initState]; exact hwv)
-        (by simp [evmSolm, initState])
+      stairstepDenyBodyStatic evmStele I
+        (by simp only [evmStele, initState]; exact hwv)
+        (by simp [evmStele, initState])
         hauth
-        (by simp only [evmSolm, initState]; exact hperm)
+        (by simp only [evmStele, initState]; exact hperm)
   exact (permSplit_false hperm (stairstepX_deny_okSplit
       (g := Sat256.ofUInt256 g) hsz36 hsize hauth hreach))
     |>.reEquivStaticHalt hcode hdispatch hdecode hbody
@@ -531,15 +531,15 @@ theorem stairstepDenyBodyCoreUnauthorized
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) stairstepDenyEntryPc [sel]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
   have hbody :
-      ExecTransitionBody config contract evmSolm (relyStore I)
+      ExecTransitionBody config contract evmStele (relyStore I)
         denyTransition.body .reverted := by
-    simpa [evmSolm, relyAuthWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [evmStele, relyAuthWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
-      stairstepDenyBodyReverts evmSolm I
-        (by simp only [evmSolm, initState]; exact hwv)
-        (by simp [evmSolm, initState])
+      stairstepDenyBodyReverts evmStele I
+        (by simp only [evmStele, initState]; exact hwv)
+        (by simp [evmStele, initState])
         hauth
   exact (stairstepX_deny_unauthorized (g := Sat256.ofUInt256 g) hsz36 hsize hauth hreach)
     |>.reEquivExecutionRevert hcode hdispatch hdecode hbody

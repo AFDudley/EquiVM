@@ -3,7 +3,7 @@ import Benchmarks.CompoundIII.Comet.AbsorbLoopEvm
 import Benchmarks.CompoundIII.Comet.AbsorbAfterLoopEvm
 import Benchmarks.CompoundIII.Comet.InternalBoundedOutcome
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
 open Benchmarks.CompoundIII.Comet.Immutables cometWithExtendedAssetListBlocks
 
 namespace Benchmarks.CompoundIII.Comet

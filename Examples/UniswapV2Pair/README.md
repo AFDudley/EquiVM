@@ -30,6 +30,6 @@ Generated artifacts:
 - `Spec.lean`: full ABI/storage benchmark scaffold.
 - `Correct.lean`: top-level runtime-equivalence theorem routed to the per-function proof files.
 
-The current Solm source bodies are a proof scaffold.  Storage layout and ABI coverage are explicit,
+The current Stele source bodies are a proof scaffold.  Storage layout and ABI coverage are explicit,
 but the largest AMM paths still need proof-ready elaboration for legacy-solc details such as
 `ecrecover`, `Math.sqrt`, exact ABI-encoded low-level transfer calldata, and string return encoding.

@@ -2,7 +2,7 @@ import Benchmarks.EAS.EAS.RefUIDRead
 import Benchmarks.EAS.EAS.RefUIDSource
 import Benchmarks.EAS.EAS.GetAttestationEVM
 import Reasoning.ExternalCall
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.EAS.EAS.Immutables
 namespace Benchmarks.EAS.EAS
 

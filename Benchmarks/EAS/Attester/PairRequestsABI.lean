@@ -1,7 +1,7 @@
 import Benchmarks.EAS.Attester.PairRequestsRead
 import Reasoning.ABIViews
 
-open Solm ABI Ethereum Ethereum.EVM
+open Stele ABI Ethereum Ethereum.EVM
 
 namespace Reasoning.Theory
 

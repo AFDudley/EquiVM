@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Flipper.DentRefund
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxHeartbeats 0
 
@@ -421,7 +421,7 @@ theorem flipperDentX_refundPostCall
           (twoWordHashMem (dentId I) ⟨1⟩ mem).size = 96 :=
         twoWordHashMem_size_96 (dentId I) ⟨1⟩ hmemSize
       simpa [dentRefundMoveArgValsOf, initState, solcSlotWordAt, solcSlotWord,
-        Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
+        Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
         bidGuyWord, bidPackedSlotOfWord, solcAddressSlotWord]
         using dentVatRefundCallMem_encode (mem := twoWordHashMem (dentId I) ⟨1⟩ mem)
           (σ := σ) (I := I) hhashSize
@@ -1117,7 +1117,7 @@ theorem flipperDentX_fluxPostCallAw8
       (by rfl)
       ?_ ?_
     · simpa [dentFluxArgValsOf, dentFluxArgValsMap, initState, solcSlotWordAt,
-        solcSlotWord, Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
+        solcSlotWord, Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
         bidUsrWord, bidLotWord, bidSlotOfWord, bidBaseOfWord, solcAddressSlotWord]
         using dentVatFluxCallMem_encode_228 (mem := mem) (σ := σ) (I := I) hmemSize
     · simpa [initState, hperm] using hΘ

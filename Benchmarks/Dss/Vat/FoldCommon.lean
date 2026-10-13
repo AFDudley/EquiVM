@@ -4,7 +4,7 @@ import Benchmarks.Dss.Vat.Signed
 
 namespace Benchmarks.Dss.Vat
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 /-! ## Shared definitions for `fold(bytes32,address,int256)` -/
 
@@ -594,9 +594,9 @@ abbrev foldDebtSlot : UInt256 :=
 
 abbrev foldPostState (evm : EVM.State) (I : ExecutionEnv)
     (rateNew daiNew debtNew : UInt256) : EVM.State :=
-  Solm.EVM.storageStore
-    (Solm.EVM.storageStore
-      (Solm.EVM.storageStore evm evm.executionEnv.codeOwner (foldRateSlot I) rateNew)
+  Stele.EVM.storageStore
+    (Stele.EVM.storageStore
+      (Stele.EVM.storageStore evm evm.executionEnv.codeOwner (foldRateSlot I) rateNew)
       evm.executionEnv.codeOwner (foldDaiSlot I) daiNew)
     evm.executionEnv.codeOwner foldDebtSlot debtNew
 
@@ -676,7 +676,7 @@ theorem evalExpr_fold_ilks_rate (evm : EVM.State) (I : ExecutionEnv)
     evalExpr? config { contract := contract, locals := locals } evm
         (.storage (ilksF (.var "i") "rate")) =
       .ok (.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (foldRateSlot I)).toNat)) := by
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (foldRateSlot I)).toNat)) := by
   rw [evalExpr_storage_scalar (hbackend := rfl) (t := .int uint256Int) (hbase := hbase)
     (her := evalStorageRef_fold_ilksField evm I locals "rate" hsz100 hi)
     (hty := by simp [storageTypeAt?, storageTypeStep?, contract, storageDecls,
@@ -691,7 +691,7 @@ theorem evalExpr_fold_ilks_art (evm : EVM.State) (I : ExecutionEnv)
     evalExpr? config { contract := contract, locals := locals } evm
         (.storage (ilksF (.var "i") "Art")) =
       .ok (.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (foldArtSlot I)).toNat)) := by
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (foldArtSlot I)).toNat)) := by
   rw [evalExpr_storage_scalar (hbackend := rfl) (t := .int uint256Int) (hbase := hbase)
     (her := evalStorageRef_fold_ilksField evm I locals "Art" hsz100 hi)
     (hty := by simp [storageTypeAt?, storageTypeStep?, contract, storageDecls,
@@ -705,7 +705,7 @@ theorem evalExpr_fold_dai_u (evm : EVM.State) (I : ExecutionEnv)
     evalExpr? config { contract := contract, locals := locals } evm
         (.storage (daiRef (.var "u"))) =
       .ok (.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (foldDaiSlot I)).toNat)) := by
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (foldDaiSlot I)).toNat)) := by
   rw [evalExpr_storage_scalar (hbackend := rfl) (t := .int uint256Int) (hbase := hbase)
     (her := evalStorageRef_fold_dai_u evm I locals hu)
     (hty := by simp [storageTypeAt?, storageTypeStep?, contract,
@@ -720,7 +720,7 @@ theorem evalExpr_fold_debt (evm : EVM.State) (locals : Store)
     (hbase : locals.get? "debt" = none) :
     evalExpr? config { contract := contract, locals := locals } evm (.storage debtRef) =
       .ok (.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner foldDebtSlot).toNat)) := by
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner foldDebtSlot).toNat)) := by
   rw [evalExpr_storage_scalar (hbackend := rfl) (t := .int uint256Int) (hbase := hbase)
     (her := evalStorageRef_fold_debt evm locals)
     (hty := by simp [storageTypeAt?, contract, storageDecls, uint256St])
@@ -730,7 +730,7 @@ theorem evalExpr_fold_debt (evm : EVM.State) (locals : Store)
 theorem assign_fold_rate (evm : EVM.State) (I : ExecutionEnv)
     (locals : Store) (rateNew : UInt256) (hsz100 : 100 ≤ I.calldata.size)
     (hi : locals.get? "i" = some (foldIlkValue I)) (hbase : locals.get? "ilks" = none) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner (foldRateSlot I) rateNew
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner (foldRateSlot I) rateNew
     assignStorageRef? config { contract := contract, locals := locals } evm
       .storage (ilksF (.var "i") "rate") (.int (Int.ofNat rateNew.toNat)) =
         .ok ({ contract := contract, locals := locals }, evm') := by
@@ -747,7 +747,7 @@ theorem assign_fold_rate (evm : EVM.State) (I : ExecutionEnv)
 theorem assign_fold_dai_u (evm : EVM.State) (I : ExecutionEnv)
     (locals : Store) (daiNew : UInt256)
     (hu : locals.get? "u" = some (foldUsrValue I)) (hbase : locals.get? "dai" = none) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner (foldDaiSlot I) daiNew
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner (foldDaiSlot I) daiNew
     assignStorageRef? config { contract := contract, locals := locals } evm
       .storage (daiRef (.var "u")) (.int (Int.ofNat daiNew.toNat)) =
         .ok ({ contract := contract, locals := locals }, evm') := by
@@ -764,7 +764,7 @@ theorem assign_fold_dai_u (evm : EVM.State) (I : ExecutionEnv)
 
 theorem assign_fold_debt (evm : EVM.State) (locals : Store) (debtNew : UInt256)
     (hbase : locals.get? "debt" = none) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner foldDebtSlot debtNew
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner foldDebtSlot debtNew
     assignStorageRef? config { contract := contract, locals := locals } evm
       .storage debtRef (.int (Int.ofNat debtNew.toNat)) =
         .ok ({ contract := contract, locals := locals }, evm') := by
@@ -1087,7 +1087,7 @@ theorem foldStoreRad_ilks (I : ExecutionEnv) (rateNew : UInt256) (rad : Int) :
 theorem vatFoldRadMulRevertGuardFalse (evm : EVM.State) (I : ExecutionEnv)
     {rateNew artOld : UInt256} {rad : Int} (hsz100 : 100 ≤ I.calldata.size)
     (hload :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (foldArtSlot I) = artOld)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (foldArtSlot I) = artOld)
     (hrad : rad = Int.ofNat artOld.toNat * foldRateInt I)
     (hradLo : -((2 : Int) ^ 255) ≤ rad)
     (hradHi : rad < (2 : Int) ^ 255)
@@ -1142,7 +1142,7 @@ theorem vatFoldRadMulRevertGuardFalse (evm : EVM.State) (I : ExecutionEnv)
 theorem vatFoldRadMulRevertRange (evm : EVM.State) (I : ExecutionEnv)
     {rateNew artOld : UInt256} (hsz100 : 100 ≤ I.calldata.size)
     (hload :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (foldArtSlot I) = artOld)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (foldArtSlot I) = artOld)
     (hbad :
       Int.ofNat artOld.toNat * foldRateInt I < -((2 : Int) ^ 255) ∨
         Int.ofNat artOld.toNat * foldRateInt I ≥ (2 : Int) ^ 255) :

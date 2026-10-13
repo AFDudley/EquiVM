@@ -1,19 +1,19 @@
 import Reasoning.WordArithmetic
-import Reasoning.SolmArithmetic
+import Reasoning.SteleArithmetic
 import Reasoning.EVMWord
 import Benchmarks.Dss.Pot.Arith
 
 /-!
-# MakerDAO/Sky DSS Pot `_rpow` loop: Solm-side locals + expression helpers
+# MakerDAO/Sky DSS Pot `_rpow` loop: Stele-side locals + expression helpers
 
 Ported from the fully-proved sibling `Benchmarks/Dss/Jug`
 (`ArithmeticExpr.lean` additions + `ArithmeticLocals.lean` + `ArithmeticRpowLoop.lean`).
-The Solm base-of-exponentiation variable is named `"base"` in Pot (vs `"b"` in Jug).
+The Stele base-of-exponentiation variable is named `"base"` in Pot (vs `"b"` in Jug).
 Every declaration here is contract-independent (`LIBRARY CANDIDATE`): it exercises only
 `evalExpr?`/`Store` on the ternary/rpow locals frame.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -132,7 +132,7 @@ theorem execRpowLoopBodyRevertXX {evm : EVM.State} {locals : Store}
   exact ExecBlock.consRevert (by
     simpa [rpowLoopBody, checkedMulUintInto] using
       (ExecStmt.letDeclRevert
-        (cfg := config) (solm := { contract := contract, locals := locals }) (evm := evm)
+        (cfg := config) (stele := { contract := contract, locals := locals }) (evm := evm)
         (name := "xx") (ty := some uint256) (expr := mul256 (.var "x") (.var "x"))
         hmul))
 
@@ -213,13 +213,13 @@ theorem execRpowLoopBodyRevertXXRound {evm : EVM.State} {locals : Store}
   refine ExecBlock.consNormal (by
     simpa [rpowLoopBody, checkedMulUintInto, xx, localsXX] using
       (ExecStmt.letDecl
-        (cfg := config) (solm := { contract := contract, locals := locals }) (evm := evm)
+        (cfg := config) (stele := { contract := contract, locals := locals }) (evm := evm)
         (name := "xx") (ty := some uint256) (expr := mul256 (.var "x") (.var "x"))
         (value := .int (Int.ofNat xx.toNat)) hmul)) ?_
   refine ExecBlock.consNormal (by
     simpa [rpowLoopBody, checkedMulUintInto, checkedAddUintInto, xx, localsXX] using
       (ExecStmt.requireTrue
-        (cfg := config) (solm := { contract := contract, locals := localsXX }) (evm := evm)
+        (cfg := config) (stele := { contract := contract, locals := localsXX }) (evm := evm)
         (condExpr :=
           .binary .or
             (.binary .eq (.var "x") (.intLit 0))
@@ -228,7 +228,7 @@ theorem execRpowLoopBodyRevertXXRound {evm : EVM.State} {locals : Store}
   exact ExecBlock.consRevert (by
     simpa [rpowLoopBody, checkedMulUintInto, checkedAddUintInto, xx, localsXX] using
       (ExecStmt.letDeclRevert
-        (cfg := config) (solm := { contract := contract, locals := localsXX }) (evm := evm)
+        (cfg := config) (stele := { contract := contract, locals := localsXX }) (evm := evm)
         (name := "xxRound") (ty := some uint256)
         (expr := add256 (.var "xx") (.var "half")) hadd))
 

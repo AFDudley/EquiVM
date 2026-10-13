@@ -2,7 +2,7 @@ import Benchmarks.EAS.EAS.UIDFields
 import Benchmarks.EAS.EAS.UIDHeadMemory
 import Benchmarks.EAS.EAS.RuntimeBlocks_030
 import Benchmarks.EAS.EAS.RuntimeBlocks_035
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 inductive UIDSite where

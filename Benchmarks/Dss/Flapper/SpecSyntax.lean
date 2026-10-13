@@ -1,8 +1,8 @@
 import Benchmarks.Dss.Flapper.Spec
-import Solm.Notation
+import Stele.Notation
 
 /-!
-# Flapper spec in the Solidity-faithful Solm frontend
+# Flapper spec in the Solidity-faithful Stele frontend
 
 The whole `flap.sol` spec written with `solidity%` and proven definitionally equal to the AST spec
 in `Spec.lean`.  Checked-math helpers are inlined (uint48 adds are the explicit
@@ -11,7 +11,7 @@ the storage `vat`/`gem` receivers use the `${…}` escape.  Transition order mat
 `contract.transitions` (selector order).
 -/
 
-open Solm Solm.Notation Benchmarks.Dss.Flapper
+open Stele Stele.Notation Benchmarks.Dss.Flapper
 
 namespace Benchmarks.Dss.Flapper.Syntax
 

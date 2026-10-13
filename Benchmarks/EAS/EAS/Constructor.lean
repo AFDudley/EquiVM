@@ -1,5 +1,5 @@
 import Benchmarks.EAS.EAS.ConstructorReturnTrace
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
 namespace Benchmarks.EAS.EAS
 
 theorem easConstructorCorrect :

@@ -1,6 +1,6 @@
 import Benchmarks.EAS.EAS.RequestMemory
 import Benchmarks.EAS.EAS.MemoryArrayIndex
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 structure AttestationRequestArrayMemoryView (mem : ByteArray) (array : UInt256) (rs : List AttestationRequestRecord) (limit : Nat) : Prop where

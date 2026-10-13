@@ -3,11 +3,11 @@ import Benchmarks.EAS.EAS.DiffTarget
 /-!
 Regression for the synthetic dynamic-bytes state that exposed SOL-2025-1.
 Solidity 0.8.32 attempts the required clear and exhausts the finite gas budget;
-0.8.18 incorrectly skipped it and returned successfully. Do not execute Solm's
+0.8.18 incorrectly skipped it and returned successfully. Do not execute Stele's
 astronomically large clear loop: EVM out-of-gas is unconstrained by refinement.
 -/
 
-open Solm Solm.Interp Solm.DiffTest Ethereum Ethereum.EVM
+open Stele Stele.Interp Stele.DiffTest Ethereum Ethereum.EVM
 
 def main : IO UInt32 := do
   let t := Benchmarks.EAS.EAS.fixtureTarget

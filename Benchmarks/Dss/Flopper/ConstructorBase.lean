@@ -2,18 +2,18 @@ import Reasoning.WordArithmetic
 import Reasoning.Memory
 import Benchmarks.Dss.Flopper.Common
 import Reasoning.Initcode
-import Solm.Refine
+import Stele.Refine
 
 /-!
 # MakerDAO/Sky DSS Flopper constructor shared helpers
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 section
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 2000000
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Flopper
 
@@ -106,7 +106,7 @@ theorem flopperCtorDeployment_shape {args : List Value} {deployedInitcode : Byte
     ∃ vat gem : AccountAddress,
       args = [.address vat, .address gem] ∧
       deployedInitcode = flopperCtorCode vat gem := by
-  simp [config, contract, constructorDecl, Solm.genSolidityConstructorDeployment] at hdeploy
+  simp [config, contract, constructorDecl, Stele.genSolidityConstructorDeployment] at hdeploy
   cases args with
   | nil =>
       simp [ABI.encodeABIValues?, ABI.encodeABIValuesFrom?, addr] at hdeploy

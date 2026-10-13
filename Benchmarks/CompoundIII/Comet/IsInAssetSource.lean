@@ -1,6 +1,6 @@
 import Benchmarks.CompoundIII.Comet.IsInAssetModel
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 
@@ -45,7 +45,7 @@ theorem isInAsset_source (evm : EVM.State) (imms : Store)
       apply ExecBlock.consReturn (ExecStmt.iteFalse h16' ?_)
       apply ExecBlock.consReturn
         (ExecStmt.iteTrue (by simpa only [decide_eq_true h24] using hlt 24) ?_)
-      have hs := checkedNarrowSubSourceOk (cfg := config) (solm := frame) (evm := evm)
+      have hs := checkedNarrowSubSourceOk (cfg := config) (stele := frame) (evm := evm)
         (lhs := .var "assetOffset") (rhs := .intLit 16)
         (a := offset) (b := UInt256.ofNat 16) ⟨8, by decide⟩ heo
         (by simp only [evalExpr?, pure]; rfl) ho (by change 16 ≤ offset.toNat; omega)
@@ -56,7 +56,7 @@ theorem isInAsset_source (evm : EVM.State) (imms : Store)
       exact ABlock.start.returns (bitMembership_source ⟨8, by decide⟩ reserved
         (offset.toNat - 16) hr (by change offset.toNat - 16 < 8; omega) her hs')
     · rw [if_neg h24]
-      refine ExecBlock.consNormal (solm' := frame) (evm' := evm)
+      refine ExecBlock.consNormal (stele' := frame) (evm' := evm)
         (ExecStmt.iteFalse h16' ?_) ?_
       · exact ExecBlock.consNormal
           (ExecStmt.iteFalse (by simpa only [decide_eq_false h24] using hlt 24) .nil) .nil
@@ -72,7 +72,7 @@ theorem isInAsset_call (frame : Frame) (evm : EVM.State) (assets offset reserved
       (.ok { frame with
         locals := frame.locals.insert ret (.bool (isInAssetBool assets offset reserved)) }
         evm) := by
-  exact ExecStmt.internalCallReturn (cfg := config) (solm := frame) (evm := evm)
+  exact ExecStmt.internalCallReturn (cfg := config) (stele := frame) (evm := evm)
     (args := [assetExpr, offsetExpr, reservedExpr]) (callee := isInAssetCallable)
     (argVals := [.int assets.toNat, .int offset.toNat, .int reserved.toNat])
     (by simp only [evalExprs?, hea, heo, her, pure, bind, EvalResult.bind])

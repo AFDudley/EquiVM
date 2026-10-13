@@ -1,13 +1,13 @@
 import Benchmarks.UniswapV4PoolManager.Storage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 def protocolFeesSlot (currency : AccountAddress) : UInt256 := mappingSlotWord (accountWord currency) ⟨1⟩
 def protocolFeesWord (evm : EVM.State) (currency : AccountAddress) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (protocolFeesSlot currency)
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (protocolFeesSlot currency)
 def protocolFeesPost (evm : EVM.State) (currency : AccountAddress) (value : UInt256) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (protocolFeesSlot currency) value
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (protocolFeesSlot currency) value
 
 theorem protocolFeesLoc (currency : AccountAddress) :
     config.storageBackend.locate? {base := "protocolFeesAccrued", steps := [.mindex (.address currency)]} =

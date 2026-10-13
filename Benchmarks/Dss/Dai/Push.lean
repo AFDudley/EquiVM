@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Dai.TransferFrom
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -83,7 +83,7 @@ theorem daiPushBodyReturns_from_transferFrom (evm evmPost : EVM.State) (I : Exec
         (retVar := "_ok")
         (argVals := [transferFromSrcValue I, transferFromDstValue I, transferFromWadValue I])
         (callee := transferFromTransition) (locals := transferFromCallStore I)
-        (calleeSolm := { contract := contract, locals := transferFromCallStore I })
+        (calleeStele := { contract := contract, locals := transferFromCallStore I })
         (value := .bool true)
         (evalExprs_push_internalCall evm I hsel hsrc)
         daiLookupTransferFromForPush
@@ -132,7 +132,7 @@ theorem daiPushBodyStatic_from_transferFrom (evm : EVM.State) (I : ExecutionEnv)
   have hcall : ExecStmt config caller evm
       (.internalCall "transferFrom" [sender, .var "usr", .var "wad"] "_ok") .staticViolation := by
     exact ExecStmt.internalCallStatic (cfg := config)
-      (solm := caller) (evm := evm)
+      (stele := caller) (evm := evm)
       (name := "transferFrom") (args := [sender, .var "usr", .var "wad"])
       (retVar := "_ok")
       (argVals := [transferFromSrcValue I, transferFromDstValue I, transferFromWadValue I])
@@ -227,7 +227,7 @@ theorem daiPushBodyCoreDecodeFailed_short
   exact (daiPushX_shortarg (g := Sat256.ofUInt256 g) hsz4 hsize hshort hreach)
     |>.reEquivDecodingFailed hcode hdispatch hdec
 
-/-- `push(address,uint256)` body refines its Solm transition. -/
+/-- `push(address,uint256)` body refines its Stele transition. -/
 theorem daiPushBodyCore {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = daiBytecode) (hsize : I.calldata.size < UInt256.size)
     (hwv : I.weiValue = ⟨0⟩)

@@ -2,7 +2,7 @@ import Benchmarks.CompoundIII.Comet.BaseReward
 import Benchmarks.CompoundIII.Comet.AccrualWrites
 import Benchmarks.CompoundIII.Comet.UserBasicLocal
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.CompoundIII.Comet.Immutables
 
 namespace Benchmarks.CompoundIII.Comet
@@ -18,7 +18,7 @@ def accountMagnitudeExpr (borrow : Bool) : Expr :=
     (.elem (.int (.uint ⟨104, by decide⟩)))
 
 def accountRewardIndex (evm : EVM.State) (borrow : Bool) : UInt256 :=
-  trackingIndexWord (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩) borrow
+  trackingIndexWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩) borrow
 
 def accountRewardDelta (evm : EVM.State) (basic : UserBasicData) (borrow : Bool) : UInt256 :=
   UInt256.sub (accountRewardIndex evm borrow) basic.index

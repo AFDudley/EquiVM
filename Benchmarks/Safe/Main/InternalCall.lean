@@ -1,6 +1,6 @@
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 
-open Solm Reasoning.Theory
+open Stele Reasoning.Theory
 
 namespace Benchmarks.Safe.Main
 

@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MorphoBlue.BorrowRateEncode
 import Benchmarks.Morpho.MorphoBlue.BorrowRateABI
 import Benchmarks.Morpho.MorphoBlue.Dispatch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MorphoBlue.Immutables
 namespace Benchmarks.Morpho.MorphoBlue

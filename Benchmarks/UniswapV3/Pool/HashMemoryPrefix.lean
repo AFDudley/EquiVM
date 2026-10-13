@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.Common
 import Reasoning.HeapMemory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 -- LIBRARY CANDIDATE: hashing scratch words preserves the allocated memory region.

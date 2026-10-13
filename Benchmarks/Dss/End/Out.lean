@@ -1,6 +1,6 @@
 import Benchmarks.Dss.End.Dispatch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 0
@@ -125,7 +125,7 @@ theorem endOutBodyCoreOk
         (.returned { contract := contract, locals := locals }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.int (Int.ofNat (solcSlotWordAt (endOutSlotFor I) σ I).toNat))])) := by
-    simpa [outTransition, endOutSlotFor, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [outTransition, endOutSlotFor, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount, locals, endOutLocals, owner, spender] using
       endUint256GetterBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) locals

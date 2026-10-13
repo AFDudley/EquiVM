@@ -29,7 +29,7 @@ import Benchmarks.Dss.Clipper.Vat
 import Benchmarks.Dss.Clipper.Vow
 import Benchmarks.Dss.Clipper.Wards
 import Benchmarks.Dss.Clipper.Yank
-import Solm.Refine
+import Stele.Refine
 
 /-!
 # MakerDAO/Sky DSS Clipper benchmark correctness
@@ -38,7 +38,7 @@ This file proves runtime equivalence and exposes the whole-contract wrapper comb
 constructor equivalence.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 set_option maxRecDepth 2000000

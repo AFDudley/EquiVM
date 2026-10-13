@@ -1,7 +1,7 @@
 import Benchmarks.CompoundIII.Comet.PauseInputs
 import Benchmarks.CompoundIII.Comet.PackedWrites
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 
@@ -44,8 +44,8 @@ theorem pausePackedWord_eq (old flags : UInt256) :
   rfl
 
 def pauseSourceState (evm : EVM.State) (a : PauseInputs) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨1⟩
-    (pausePackedWord (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) (pauseFlagWord a))
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨1⟩
+    (pausePackedWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) (pauseFlagWord a))
 
 def pauseAccounts (σ : AccountMap) (I : ExecutionEnv) (a : PauseInputs) : AccountMap :=
   sstoreAccountMap I.codeOwner σ ⟨1⟩ (pausePackedWord (solcSlotWordAt ⟨1⟩ σ I) (pauseFlagWord a))

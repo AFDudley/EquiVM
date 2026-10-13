@@ -1,11 +1,11 @@
 import Benchmarks.Safe.Main.SignatureInput
 import Benchmarks.Safe.Main.ByteAtMemory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.Main
 
--- LIBRARY CANDIDATE: unbounded natural multiplication in a Solm expression.
+-- LIBRARY CANDIDATE: unbounded natural multiplication in a Stele expression.
 theorem naturalMulSource {cfg frame evm lhs rhs} {a b : Nat}
     (ha : evalExpr? cfg frame evm lhs = .ok (.int (Int.ofNat a)))
     (hb : evalExpr? cfg frame evm rhs = .ok (.int (Int.ofNat b))) :

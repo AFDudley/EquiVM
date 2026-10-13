@@ -2,7 +2,7 @@ import Benchmarks.EAS.EAS.RequestDecode
 import Benchmarks.EAS.EAS.CopyRequestEVM
 import Benchmarks.EAS.EAS.CopyRequestSource
 import Benchmarks.EAS.EAS.CalldataPayload
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 theorem requestDataRecord_size (cd : ByteArray) (src : UInt256) :

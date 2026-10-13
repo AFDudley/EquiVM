@@ -1,5 +1,5 @@
 import Benchmarks.EAS.EAS.Allocate
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 set_option maxRecDepth 10000
 
@@ -13,7 +13,7 @@ theorem evalWordEqZero {cfg : Config} {frame : Frame} {evm : EVM.State} {expr : 
   simp only [beq_iff_eq, Value.int.injEq, Int.ofNat_eq_natCast, Int.natCast_eq_zero, decide_eq_true_eq]
   exact ⟨uint256_toNat_eq_zero, fun h => by rw [h]; rfl⟩
 
--- GENERALIZES Reasoning.SolmArithmetic.evalExpr_ne_int_true/false to arbitrary frames and word values.
+-- GENERALIZES Reasoning.SteleArithmetic.evalExpr_ne_int_true/false to arbitrary frames and word values.
 theorem evalWordNeZero {cfg : Config} {frame : Frame} {evm : EVM.State} {expr : Expr} {word : UInt256}
     (he : evalExpr? cfg frame evm expr = .ok (.int (Int.ofNat word.toNat))) :
     evalExpr? cfg frame evm (.binary .ne expr (.intLit 0)) = .ok (.bool (decide (word ≠ ⟨0⟩))) := by
@@ -23,7 +23,7 @@ theorem evalWordNeZero {cfg : Config} {frame : Frame} {evm : EVM.State} {expr : 
   rw [hb]
   simp only [ne_eq, decide_not]
 
--- GENERALIZES Reasoning.SolmBody.evalExpr_uint256_sub to the uint256 cast form.
+-- GENERALIZES Reasoning.SteleBody.evalExpr_uint256_sub to the uint256 cast form.
 theorem evalCastUint256Sub {cfg : Config} {frame : Frame} {evm : EVM.State}
     {a b : Expr} {x y : UInt256}
     (hx : evalExpr? cfg frame evm a = .ok (.int (Int.ofNat x.toNat)))

@@ -1,22 +1,22 @@
-import Solm.SolidityStorage
+import Stele.SolidityStorage
 import ABI.Encode
-import Solm.Semantics
-import Solm.SolidityLayout
+import Stele.Semantics
+import Stele.SolidityLayout
 
 /-!
-# Auction — Solm specification for Nouns' `NounsAuctionHouse.sol`
+# Auction — Stele specification for Nouns' `NounsAuctionHouse.sol`
 
-A faithful, events-aside Solm spec of the Nouns auction house.  The OpenZeppelin
+A faithful, events-aside Stele spec of the Nouns auction house.  The OpenZeppelin
 upgradeable bases are flattened into the storage cells and modifier code that
 the compiled runtime observes: `Initializable`, `PausableUpgradeable`,
 `ReentrancyGuardUpgradeable`, and `OwnableUpgradeable`.
 
-The remaining intentional abstraction is Solm's low-level call form, which does
+The remaining intentional abstraction is Stele's low-level call form, which does
 not currently expose the ETH-transfer gas stipend.  The call itself, value, data,
 success/failure branch, and WETH fallback calldata are modeled explicitly.
 -/
 
-open Solm ABI
+open Stele ABI
 
 namespace Auction
 

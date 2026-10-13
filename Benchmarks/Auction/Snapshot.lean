@@ -1,7 +1,7 @@
 import Benchmarks.Auction.Storage
 import Benchmarks.Auction.ABI
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Auction
 
@@ -18,11 +18,11 @@ def snapshotOf (σ : AccountMap) (I : ExecutionEnv) : Snapshot :=
     solcSlotWord σ I ⟨210⟩, solcSlotWord σ I ⟨211⟩⟩
 
 def snapshotOfState (evm : EVM.State) : Snapshot :=
-  ⟨Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨207⟩,
-    Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨208⟩,
-    Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨209⟩,
-    Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨210⟩,
-    Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨211⟩⟩
+  ⟨Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨207⟩,
+    Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨208⟩,
+    Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨209⟩,
+    Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨210⟩,
+    Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨211⟩⟩
 
 def Snapshot.bidderWord (s : Snapshot) : UInt256 := UInt256.land s.packed solcAddrMask
 def Snapshot.settledSourceWord (s : Snapshot) : UInt256 := UInt256.div s.packed ⟨2 ^ 160⟩

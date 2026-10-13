@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Cure.Common
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Cure
 
@@ -54,7 +54,7 @@ theorem cureTCountBodyCore {σ σ₀ A I} {g : UInt256}
         wordLoc, EvalResult.ofOption, EvalResult.bind, pure, bind]
       rw [cureSrcsLength]
       simp [solcSlotWordAt, solcSlotWord, initState,
-        Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage]
+        Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage]
   have hreach := cureReachTCountBody (σ := σ)
     (σ₀ := σ₀) (A := A) (I := I) (g := Sat256.ofUInt256 g)
     hcode hwv hsz hsize hsel

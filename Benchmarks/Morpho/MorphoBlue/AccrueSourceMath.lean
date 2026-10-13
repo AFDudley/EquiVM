@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MorphoBlue.AccrueSourceCall
 import Benchmarks.Morpho.MorphoBlue.WadSource
 import Benchmarks.Morpho.MorphoBlue.Uint128Arithmetic
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.Morpho.MorphoBlue
 set_option maxRecDepth 1000
 

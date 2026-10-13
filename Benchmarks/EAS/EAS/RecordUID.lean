@@ -1,6 +1,6 @@
 import Benchmarks.EAS.EAS.RecordMemory
 import Benchmarks.EAS.EAS.RecordArrayViews
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 -- GENERALIZES memLoad_write_below to an initialized load above a word write.

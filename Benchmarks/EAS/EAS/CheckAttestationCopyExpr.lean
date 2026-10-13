@@ -1,7 +1,7 @@
 import Benchmarks.EAS.EAS.CheckAttestationCopySyntax
 import Benchmarks.EAS.EAS.CalldataWordSource
 import Benchmarks.EAS.EAS.NaturalWordExpr
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 set_option maxRecDepth 10000
 
@@ -10,7 +10,7 @@ theorem checkAttestationCopySlot_eval {L imms : Store} {evm : EVM.State} {base i
     evalExpr? config {contract := contract,locals := L,immutables := imms} evm (checkAttestationCopySlot base index)=
       .ok (.int (Int.ofNat (UInt256.ofNat (ptr.toNat+32*i)).toNat)) := by
   have he := evalCastUint256Nat (naturalAddSource
-    (evalLocalValue (cfg := config) (solm := {contract := contract,locals := L,immutables := imms}) (evm := evm) hb)
+    (evalLocalValue (cfg := config) (stele := {contract := contract,locals := L,immutables := imms}) (evm := evm) hb)
     (naturalMulSource (evalLocalValue hi) (show evalExpr? config {contract := contract,locals := L,immutables := imms} evm (.intLit 32)=.ok (.int (Int.ofNat 32)) from by simp only [evalExpr?,pure];rfl)))
   simpa only [Nat.mul_comm] using he
 

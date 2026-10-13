@@ -1,5 +1,5 @@
 import Benchmarks.EAS.EAS.TimeArray
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 -- LIBRARY CANDIDATE: the semantic list updater is standard replacement at an in-bounds index.

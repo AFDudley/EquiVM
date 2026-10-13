@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Dog.Dispatch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Dog.Immutables
 
 namespace Benchmarks.Dss.Dog
@@ -181,7 +181,7 @@ theorem dogWardsBodyCoreOk
           (some [(.int (Int.ofNat
             (solcSlotWordAt (wardsMappingSlotFor I) σ I).toNat))])) (immStore v) := by
     simpa [wardsTransition, wardsMappingSlotFor, solcSlotWordAt, initState,
-      Solm.EVM.storageLoad, State.lookupAccount, locals, key] using
+      Stele.EVM.storageLoad, State.lookupAccount, locals, key] using
       dogUint256GetterBodyReturns v
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) locals
         (ref := wardsRef (.var "arg0")) (er := wardsMappingEvaledRef I)

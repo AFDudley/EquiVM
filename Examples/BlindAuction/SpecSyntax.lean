@@ -1,8 +1,8 @@
 import Examples.BlindAuction.Spec
-import Solm.Notation
+import Stele.Notation
 
 /-!
-# BlindAuction spec in the Solidity-faithful Solm frontend
+# BlindAuction spec in the Solidity-faithful Stele frontend
 
 Covers the mapping-to-struct-array `push`, the storage alias inside `reveal`'s loop, the
 `keccak256(abi.encodePacked(…))` guard (packed operands carry their ABI types as `T(e)`
@@ -13,7 +13,7 @@ One escape: the AST spec models `bidToCheck.blindedBid = bytes32(0)` as a *cast*
 single right-hand side is written with `${…}`.
 -/
 
-open Solm Solm.Notation
+open Stele Stele.Notation
 
 namespace BlindAuction.Syntax
 

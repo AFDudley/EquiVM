@@ -1,6 +1,6 @@
 import Benchmarks.EAS.EAS.TypedDataSource
 import Benchmarks.EAS.EAS.WordSequence
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 def typedDataPrefixWord : UInt256 := ⟨11309588061646438093662687302255421419811724423900836950936401294474059186176⟩

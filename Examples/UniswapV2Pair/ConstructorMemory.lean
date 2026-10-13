@@ -2,7 +2,7 @@ import Examples.UniswapV2Pair.ConstructorCode
 import Examples.UniswapV2Pair.CodeCopyRevertSteps
 import Reasoning.MemCascade
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace UniswapV2Pair
 

@@ -1,12 +1,12 @@
 import Benchmarks.Dss.Dog.Dispatch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Dog.Immutables
 
 namespace Benchmarks.Dss.Dog
 
 def dogCagePostState (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨3⟩ ⟨0⟩
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨3⟩ ⟨0⟩
 
 abbrev dogCageLogTopic : UInt256 :=
   ⟨0x2308ed18a14e800c39b86eb6ea43270105955ca385b603b64eca89f98ae8fbda⟩
@@ -237,7 +237,7 @@ theorem dogCageBodyCoreOk {v : DogImmutables} {code : ByteArray}
   let locals : Store := ∅
   let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
   let evm1 := dogCagePostState evm0
-  have hauthSolm : solcSlotWordAt callerSlot σ I = ⟨1⟩ := hauthEvm
+  have hauthStele : solcSlotWordAt callerSlot σ I = ⟨1⟩ := hauthEvm
   have hbodySplit :
       (ExecTransitionBody config contract evm0 locals cageTransition.body
         (.returned { contract := contract, locals := locals, immutables := immStore v } evm1 none) (immStore v)) ∧
@@ -246,7 +246,7 @@ theorem dogCageBodyCoreOk {v : DogImmutables} {code : ByteArray}
     have hguard := dogAuthGuardEval_true (v := v)
       (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
       (g := Sat256.ofUInt256 g) (locals := locals)
-      (by simp [locals]) (by simpa [callerSlot] using hauthSolm)
+      (by simp [locals]) (by simpa [callerSlot] using hauthStele)
     have hassign :
         assignStorageRef? config { contract := contract, locals := locals, immutables := immStore v } evm0
           .storage liveRef (.int 0) =
@@ -254,7 +254,7 @@ theorem dogCageBodyCoreOk {v : DogImmutables} {code : ByteArray}
       simpa [locals, evm1] using dogCageAssignLive (v := v) evm0
     constructor
     · have hblock := nonpayableRequireAssignStorageBlock
-        (cfg := config) (solm := { contract := contract, locals := locals, immutables := immStore v })
+        (cfg := config) (stele := { contract := contract, locals := locals, immutables := immStore v })
         (evm := evm0) (evm' := evm1)
         (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
         (rhs := .intLit 0) (ref := liveRef) (value := .int 0)
@@ -264,7 +264,7 @@ theorem dogCageBodyCoreOk {v : DogImmutables} {code : ByteArray}
         ExecFuncBody.execBlockOK hblock
     · intro hperm
       have hblock := nonpayableRequireAssignStorageBlockStatic
-        (cfg := config) (solm := { contract := contract, locals := locals, immutables := immStore v })
+        (cfg := config) (stele := { contract := contract, locals := locals, immutables := immStore v })
         (evm := evm0) (rest := [])
         (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
         (rhs := .intLit 0) (ref := liveRef) (value := .int 0)
@@ -361,14 +361,14 @@ theorem dogCageBodyCoreAuthRevert {v : DogImmutables} {code : ByteArray}
   let callerSlot := dogCallerWardsSlot I
   let locals : Store := ∅
   let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  have hauthSolm : solcSlotWordAt callerSlot σ I ≠ ⟨1⟩ := hauthEvm
+  have hauthStele : solcSlotWordAt callerSlot σ I ≠ ⟨1⟩ := hauthEvm
   have hbody : ExecTransitionBody config contract evm0 locals cageTransition.body .reverted (immStore v) := by
     have hguard := dogAuthGuardEval_false (v := v)
       (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
       (g := Sat256.ofUInt256 g) (locals := locals)
-      (by simp [locals]) (by simpa [callerSlot] using hauthSolm)
+      (by simp [locals]) (by simpa [callerSlot] using hauthStele)
     have hblock := nonpayableSecondRequireReverts
-      (cfg := config) (solm := { contract := contract, locals := locals, immutables := immStore v })
+      (cfg := config) (stele := { contract := contract, locals := locals, immutables := immStore v })
       (evm := evm0)
       (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
       (rest := [.assign .storage liveRef (.intLit 0)])

@@ -2,7 +2,7 @@ import Benchmarks.EAS.EAS.RecordBytesEntry
 import Benchmarks.EAS.EAS.RuntimeBlocks_033
 import Benchmarks.EAS.EAS.RuntimeBlocks_037
 import Reasoning.StorageLoops
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.EAS.EAS.Immutables
 namespace Benchmarks.EAS.EAS
 

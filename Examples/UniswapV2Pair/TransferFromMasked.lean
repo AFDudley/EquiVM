@@ -2,7 +2,7 @@ import Examples.UniswapV2Pair.ExternalWrappers
 import Examples.UniswapV2Pair.Dispatch
 import Examples.UniswapV2Pair.TransferFrom
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -417,7 +417,7 @@ theorem uniswapTransferFromX_allowanceMaxAfterCreditCalc_masked {σ σ₀ A I}
         transferFromToBalanceWordMax (initState σ σ₀ g A I) I := by
     simp [-Std.ExtTreeMap.get?_eq_getElem?, σDebit, uniswapCodeOwnerStorageWord,
       transferFromToBalanceWordMax,
-      transferFromAfterBalanceStateMax, initState, Solm.EVM.storageLoad, State.lookupAccount,
+      transferFromAfterBalanceStateMax, initState, Stele.EVM.storageLoad, State.lookupAccount,
       Account.lookupStorage, storageStore_accountMap, hfromSlot, htoSlot]
   have hfitWord :
       (uniswapCodeOwnerStorageWord I σDebit (mapSlot (transferFromToMaskedWord I) ⟨1⟩)).toNat +
@@ -610,7 +610,7 @@ theorem uniswapTransferFromX_overflowMaxAllowance_masked {σ σ₀ A I}
         transferFromToBalanceWordMax (initState σ σ₀ g A I) I := by
     simp [-Std.ExtTreeMap.get?_eq_getElem?, σDebit, uniswapCodeOwnerStorageWord,
       transferFromToBalanceWordMax,
-      transferFromAfterBalanceStateMax, initState, Solm.EVM.storageLoad, State.lookupAccount,
+      transferFromAfterBalanceStateMax, initState, Stele.EVM.storageLoad, State.lookupAccount,
       Account.lookupStorage, storageStore_accountMap, hfromSlot, htoSlot]
   have hoverWord :
       UInt256.size ≤

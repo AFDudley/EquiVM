@@ -2,7 +2,7 @@ import Benchmarks.UniswapV3.Pool.Common
 import Benchmarks.UniswapV3.Pool.RuntimeBlocks_005
 import Benchmarks.UniswapV3.Pool.RuntimeBlocks_007
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 open uniswapV3PoolBlocks
 
@@ -87,7 +87,7 @@ theorem uintCastReturnEncoding (width : ABI.BitWidth) (w mask : UInt256)
   rw [normalizeUIntWord_mask width w mask hmask]
   exact uintReturnEncoding width _ (u256LandMaskToNatLtOfToNat w mask hmask)
 
--- LIBRARY CANDIDATE: Reasoning.SolmBody, evaluate an explicit integer cast.
+-- LIBRARY CANDIDATE: Reasoning.SteleBody, evaluate an explicit integer cast.
 theorem evalExpr_intCast {cfg : Config} {frame : Frame} {evm : EVM.State}
     {expr : Expr} {i : Int} (ty : ABI.IntType)
     (h : evalExpr? cfg frame evm expr = .ok (.int i)) :

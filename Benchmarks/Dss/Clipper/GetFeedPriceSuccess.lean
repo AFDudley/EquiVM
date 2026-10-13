@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Clipper.GetFeedPrice
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 namespace Benchmarks.Dss.Clipper
@@ -559,7 +559,7 @@ theorem clipperGetFeedPriceRdivReturns
         (args := [.var "valBln", .var "par"])
         (argVals := [.int (Int.ofNat x.toNat), .int (Int.ofNat y.toNat)])
         (callee := rdivFunction) (locals := clipperUintBinaryLocals x y)
-        (calleeSolm := Frame.mk contract (clipperRdivReturnLocals x y (UInt256.mul x clipperRayWord)) (immStore v))
+        (calleeStele := Frame.mk contract (clipperRdivReturnLocals x y (UInt256.mul x clipperRayWord)) (immStore v))
         (value := some [.int (Int.ofNat result.toNat)])
         (by simpa [x, y] using
           clipperEvalGetFeedPriceRdivArgs v evm outIlks outPeek outPar)
@@ -645,7 +645,7 @@ theorem clipperGetFeedPricePrefixToHas
         (.ok pipFrame evmIlks) := by
     simpa [spotterFrame, pipFrame, clipperGetFeedPricePipLocals] using
       ExecStmt.letDecl
-        (cfg := config) (solm := spotterFrame) (evm := evmIlks)
+        (cfg := config) (stele := spotterFrame) (evm := evmIlks)
         (name := "pip") (ty := some addr) (expr := tuple0 (.var "spotterIlk"))
         (value := .address (clipperSpotterIlksPipAddress outIlks))
         (clipperEvalGetFeedPricePipFromSpotterIlk v evmIlks outIlks)
@@ -674,7 +674,7 @@ theorem clipperGetFeedPricePrefixToHas
         (.ok valFrame evmPeek) := by
     simpa [peekFrame, valFrame, clipperGetFeedPriceValLocals] using
       ExecStmt.letDecl
-        (cfg := config) (solm := peekFrame) (evm := evmPeek)
+        (cfg := config) (stele := peekFrame) (evm := evmPeek)
         (name := "val") (ty := some bytes32) (expr := tuple0 (.var "peekRet"))
         (value := .fixedBytes abiBytes32Width (clipperPipPeekValueBytes outPeek))
         (clipperEvalGetFeedPricePeekVal v evmPeek outIlks outPeek)
@@ -684,7 +684,7 @@ theorem clipperGetFeedPricePrefixToHas
         (.ok hasFrame evmPeek) := by
     simpa [valFrame, hasFrame, clipperGetFeedPriceHasLocals] using
       ExecStmt.letDecl
-        (cfg := config) (solm := valFrame) (evm := evmPeek)
+        (cfg := config) (stele := valFrame) (evm := evmPeek)
         (name := "has") (ty := some boolTy) (expr := tuple1 (.var "peekRet"))
         (value := .bool (clipperPipPeekHasWord outPeek != ⟨0⟩))
         (clipperEvalGetFeedPricePeekHas v evmPeek outIlks outPeek)
@@ -821,7 +821,7 @@ theorem clipperGetFeedPriceSuccessCallReturnsOfTail
       (evm := evm) (calleeEvm := evmResult)
       (name := "getFeedPrice") (retVar := retVar) (args := []) (argVals := [])
       (callee := getFeedPriceFunction) (locals := ∅)
-      (calleeSolm := resultFrame) (value := some values) (by rfl)
+      (calleeStele := resultFrame) (value := some values) (by rfl)
       (clipperLookupGetFeedPriceFunction) (clipperBindParamsGetFeedPrice)
       (clipperGetFeedPriceSuccessFunctionReturnsOfTail v hprefix htail))
 

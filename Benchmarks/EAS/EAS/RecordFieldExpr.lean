@@ -1,5 +1,5 @@
 import Benchmarks.EAS.EAS.WordExpr
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 -- GENERALIZES attestationRecord_field to arbitrary record-valued expressions and field names.

@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.SourceFrame
 
-open Solm
+open Stele
 namespace Benchmarks.UniswapV3.Pool
 
 -- LIBRARY CANDIDATE: internal-call results leave other caller bindings untouched.

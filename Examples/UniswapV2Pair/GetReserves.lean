@@ -1,16 +1,16 @@
 import Reasoning.WordArithmetic
 import Examples.UniswapV2Pair.Dispatch
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
 section
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 2000000
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace UniswapV2Pair
 
@@ -114,19 +114,19 @@ theorem uniswapDecode_getReserves {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.siz
   show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
-/-- The Solm `getReserves()` body returns the three packed values from slot 8. -/
+/-- The Stele `getReserves()` body returns the three packed values from slot 8. -/
 theorem uniswapGetReservesBodyReturns (evm : EVM.State)
     (h : evm.executionEnv.weiValue = ⟨0⟩) :
     ExecTransitionBody config contract evm ∅ getReservesTransition.body
       (.returned { contract := contract, locals := ∅ } evm
         (some  [
           .int (Int.ofNat (UInt256.land
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩) reserve112Mask).toNat),
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩) reserve112Mask).toNat),
           .int (Int.ofNat (UInt256.land
-            (UInt256.div (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩)
+            (UInt256.div (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩)
               reserve112Shift) reserve112Mask).toNat),
           .int (Int.ofNat (UInt256.land
-            (UInt256.div (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩)
+            (UInt256.div (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩)
               reserve224Shift) reserve32Mask).toNat)])) := by
   exact ExecFuncBody.execBlockRet <|
     (ABlock.start.requireStep (evalCallvalueEq_true h)).run <|
@@ -134,25 +134,25 @@ theorem uniswapGetReservesBodyReturns (evm : EVM.State)
       have hload0 :
           storageLocLoad evm (uint112Loc0 ⟨8⟩) =
             .int (Int.ofNat (UInt256.land
-              (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩)
+              (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩)
               reserve112Mask).toNat) := by
         simpa using uniswapStorageLocLoad_uint112_offset0 evm ⟨8⟩
       have hload1 :
           storageLocLoad evm (uint112Loc14 ⟨8⟩) =
             .int (Int.ofNat (UInt256.land
-              (UInt256.div (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩)
+              (UInt256.div (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩)
                 reserve112Shift) reserve112Mask).toNat) := by
         simpa using uniswapStorageLocLoad_uint112_offset14 evm ⟨8⟩
       have hloadTs :
           storageLocLoad evm (uint32Loc28 ⟨8⟩) =
             .int (Int.ofNat (UInt256.land
-              (UInt256.div (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩)
+              (UInt256.div (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩)
                 reserve224Shift) reserve32Mask).toNat) := by
         simpa using uniswapStorageLocLoad_uint32_offset28 evm ⟨8⟩
       have hret0 :
           evalExpr? config { contract := contract, locals := ∅ } evm (.storage reserve0Ref) =
             .ok (.int (Int.ofNat (UInt256.land
-              (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩)
+              (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩)
               reserve112Mask).toNat)) := by
         rw [evalExpr_storage_scalar (hbackend := rfl) (t := .int uint112Int) (slot := reserve0Ref)
           (er := ({ base := "reserve0", steps := [] } : EvaledStorageRef))
@@ -166,7 +166,7 @@ theorem uniswapGetReservesBodyReturns (evm : EVM.State)
       have hret1 :
           evalExpr? config { contract := contract, locals := ∅ } evm (.storage reserve1Ref) =
             .ok (.int (Int.ofNat (UInt256.land
-              (UInt256.div (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩)
+              (UInt256.div (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩)
                 reserve112Shift) reserve112Mask).toNat)) := by
         rw [evalExpr_storage_scalar (hbackend := rfl) (t := .int uint112Int) (slot := reserve1Ref)
           (er := ({ base := "reserve1", steps := [] } : EvaledStorageRef))
@@ -180,7 +180,7 @@ theorem uniswapGetReservesBodyReturns (evm : EVM.State)
       have hretTs :
           evalExpr? config { contract := contract, locals := ∅ } evm (.storage blockTimestampLastRef) =
             .ok (.int (Int.ofNat (UInt256.land
-              (UInt256.div (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩)
+              (UInt256.div (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩)
                 reserve224Shift) reserve32Mask).toNat)) := by
         rw [evalExpr_storage_scalar (hbackend := rfl) (t := .int uint32Int) (slot := blockTimestampLastRef)
           (er := ({ base := "blockTimestampLast", steps := [] } : EvaledStorageRef))
@@ -191,7 +191,7 @@ theorem uniswapGetReservesBodyReturns (evm : EVM.State)
           (hty := by rfl)
           (hloc := by rfl)]
         rw [hloadTs]
-      simp only [Solm.evalExprs?.eq_def, hret0, hret1, hretTs, EvalResult.bind, bind, pure])
+      simp only [Stele.evalExprs?.eq_def, hret0, hret1, hretTs, EvalResult.bind, bind, pure])
 
 /-! ## Return wrapper memory -/
 
@@ -334,7 +334,7 @@ end UniswapV2Pair
 
 namespace Reasoning.Reach
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 /-! ## `getReserves()` runtime routines -/
 
@@ -480,7 +480,7 @@ theorem uniswapGetReservesBodyCore
             .int (Int.ofNat (reserve1Word σ I).toNat),
             .int (Int.ofNat (blockTimestampLastWord σ I).toNat)])) := by
     simpa [reserve0Word, reserve1Word, blockTimestampLastWord, getReservesSlotWord,
-      initState, Solm.EVM.storageLoad, State.lookupAccount] using
+      initState, Stele.EVM.storageLoad, State.lookupAccount] using
       uniswapGetReservesBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         (by simp only [initState]; exact hwv)

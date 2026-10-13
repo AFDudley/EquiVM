@@ -1,6 +1,6 @@
 import Benchmarks.EAS.EAS.AttestReadGuards
 import Benchmarks.EAS.EAS.RecordTailSource
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.EAS.EAS
 
 structure AttestLoopLocals (L : Store) (rs : List AttestationRequestRecord) (s : SchemaRecord)

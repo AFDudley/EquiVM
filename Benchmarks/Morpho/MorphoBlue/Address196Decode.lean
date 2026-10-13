@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MorphoBlue.BodyCommon
 
 /-! Shared Morpho bytecode routines. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MorphoBlue.Immutables
 
