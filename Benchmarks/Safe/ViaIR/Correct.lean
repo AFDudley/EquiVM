@@ -4,13 +4,12 @@ import Benchmarks.Safe.ViaIR.Blocks
 import Reasoning.Dispatch
 
 /-!
-# Safe benchmark correctness stub
+# Safe via-IR refinement
 
-The upstream Solidity source tree, optimized runtime bytecode, Solm AST spec, and Solm syntax spec
-are present. `Runtime.lean` separates all 31 selectors, receive, and fallback into unconditional
-refinement obligations. `Blocks.lean` imports the generated instruction summaries. The runtime
-assembly proof remains intentionally unproved. This file also exposes the whole-contract wrapper
-that combines the constructor and runtime targets.
+`Runtime.lean` provides the 31 selector, receive, and fallback refinement proofs for the pinned
+via-IR bytecode. The runtime and whole-contract wrappers use the approved existing-account
+predicate required by owner insertion. The constructor proof has no additional account premise.
+`Blocks.lean` imports the generated instruction summaries used by the bytecode traces.
 -/
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory

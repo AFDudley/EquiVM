@@ -19,7 +19,7 @@ def execAllocatedStack (p : ExecTransactionInput) (ptr : Nat)
     execCallSaved p before guard hash R
 
 set_option maxRecDepth 2000 in
-theorem safeCalldataBufferAllocate (len : Nat)
+theorem safeCalldataBufferAllocateEvidence (len : Nat)
     {I g s0 σ k C aw mem rdata src ptr} {ret : UInt256} {R : List UInt256}
     (h : RD safeBytecode I g s0 ⟨7208⟩
       (UInt256.ofNat src :: UInt256.ofNat len ::
@@ -29,7 +29,7 @@ theorem safeCalldataBufferAllocate (len : Nat)
     (hn : len < 2 ^ 64) (hd : src + len ≤ I.calldata.size)
     (hcd : I.calldata.size < UInt256.size)
     (hov : R.length + 12 ≤ 1024) (hret : (D_J safeBytecode 0).contains ret = true) :
-    RDrev safeBytecode g s0 ∨ ∃ aw' k' C',
+    (¬ptr + 32 + ABI.paddedSize len < 2 ^ 64 ∧ RDrev safeBytecode g s0) ∨ ∃ aw' k' C',
       ptr + 32 + ABI.paddedSize len < 2 ^ 64 ∧
       RD safeBytecode I g s0 ret (UInt256.ofNat ptr :: R)
         (calldataBufferMemory I.calldata mem src ptr len len
@@ -55,11 +55,18 @@ theorem safeCalldataBufferAllocate (len : Nat)
     u256_add_comm (UInt256.ofNat 31), u256_land_comm (UInt256.lnot (UInt256.ofNat 31)),
     roundedCalldataLengthMask len (by omega), hf,
     hadd 32 (ABI.paddedSize len) (by omega)] at h₄
-  obtain hr | ⟨aw₅, k₅, C₅, hcap, h₅⟩ := safeIRAllocateTrace h₄
+  by_cases hcap : ptr + 32 + ABI.paddedSize len < 2 ^ 64
+  swap
+  · obtain hr | ⟨_, _, _, hc, _⟩ := safeIRAllocateTrace h₄
+      (by change 32 + ABI.paddedSize len + 31 < 2 ^ 256; omega)
+      (by rw [hround]; omega) (by simp; omega) (by jump_dest)
+    · exact .inl ⟨hcap, hr⟩
+    · rw [hround, ← Nat.add_assoc] at hc
+      exact False.elim (hcap hc)
+  obtain ⟨aw₅, k₅, C₅, h₅⟩ := safeIRAllocateValidTrace h₄
     (by change 32 + ABI.paddedSize len + 31 < 2 ^ 256; omega)
-    (by rw [hround]; omega) (by simp; omega) (by jump_dest)
-  · exact .inl hr
-  rw [hround, ← Nat.add_assoc] at h₅ hcap
+    (by rw [hround, ← Nat.add_assoc]; exact hcap) (by simp; omega) (by jump_dest)
+  rw [hround, ← Nat.add_assoc] at h₅
   obtain ⟨aw₆, k₆, C₆, h₆⟩ := safeRuntime_block_7234_fallthrough_packed (by simp; omega)
     (by rw [hadd src len (by omega),
       ugt_zero (by rw [ht _ (by omega), ht _ hcd]; exact hd)]; rfl) h₅
@@ -73,6 +80,23 @@ theorem safeCalldataBufferAllocate (len : Nat)
   refine .inr ⟨aw₇, k₇, C₇, hcap, ?_⟩
   simpa only [calldataBufferMemory, calldataBufferHeader, Reasoning.Theory.writeWord,
     Nat.add_right_comm ptr len 32] using h₇
+
+theorem safeCalldataBufferAllocate (len : Nat)
+    {I g s0 σ k C aw mem rdata src ptr} {ret : UInt256} {R : List UInt256}
+    (h : RD safeBytecode I g s0 ⟨7208⟩
+      (UInt256.ofNat src :: UInt256.ofNat len ::
+        UInt256.ofNat I.calldata.size :: ret :: R) mem aw rdata σ k C)
+    (hf : memLoad ⟨64⟩ mem = UInt256.ofNat ptr)
+    (hp : ptr + 64 + len < UInt256.size)
+    (hn : len < 2 ^ 64) (hd : src + len ≤ I.calldata.size)
+    (hcd : I.calldata.size < UInt256.size)
+    (hov : R.length + 12 ≤ 1024) (hret : (D_J safeBytecode 0).contains ret = true) :
+    RDrev safeBytecode g s0 ∨ ∃ aw' k' C',
+      ptr + 32 + ABI.paddedSize len < 2 ^ 64 ∧
+      RD safeBytecode I g s0 ret (UInt256.ofNat ptr :: R)
+        (calldataBufferMemory I.calldata mem src ptr len len
+          (ptr + 32 + ABI.paddedSize len)) aw' rdata σ k' C' := by
+  exact (safeCalldataBufferAllocateEvidence len h hf hp hn hd hcd hov hret).imp And.right id
 
 
 set_option maxRecDepth 2000 in

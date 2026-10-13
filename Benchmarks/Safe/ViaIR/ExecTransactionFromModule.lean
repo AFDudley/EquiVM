@@ -2,6 +2,7 @@ import Benchmarks.Safe.ViaIR.Dispatch
 import Benchmarks.Safe.ViaIR.ModuleArgsDecoder
 import Benchmarks.Safe.ViaIR.ModuleCalldata
 import Benchmarks.Safe.ViaIR.ModuleTrace
+import Benchmarks.Safe.ViaIR.Routines
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks

@@ -2,7 +2,6 @@ import Benchmarks.Safe.ViaIR.ModulePreDecoded
 import Benchmarks.Safe.ViaIR.ModuleCallerSource
 import Benchmarks.Safe.ViaIR.ExecuteTrace
 import Benchmarks.Safe.ViaIR.PostModuleTrace
-import Benchmarks.Safe.ViaIR.BoolReturnMemory
 import Benchmarks.Safe.ViaIR.PreModuleReject
 import Benchmarks.Safe.ViaIR.Blocks.Runtime_030
 
@@ -74,16 +73,15 @@ theorem safeModuleTrace (evm : EVM.State) (payload : ByteArray)
   · exact Or.inr (Or.inl ⟨hr, .execBlockStatic (safeModulePrefix hv hn ho
       (.consNormal (safeModulePreCall hpre) (.consNormal (safeModuleExecuteCall hexe)
         (.consStatic (safeModulePostCall hs)))))⟩)
-  have hf₃ : memLoad ⟨64⟩ mem₃ = ptr := by
-    rcases hmem₃ with rfl | rfl
-    · exact hf
-    · exact safePostModuleReturnMemoryFree _ _ _ z
-  have hm₃ : 96 ≤ mem₃.size := by
-    rcases hmem₃ with rfl | rfl
-    · exact hm
-    · simp only [postModuleReturnMemory, postModuleMemory, selectorWordPairMemory, writeWord_sparse_size]
-      omega
-  have hr := safeReturnBoolFromMemory h₆ (by omega) hf₃ hm₃ hp
+  have hr : RDret safeBytecode g s0 σ₃ z.toUInt256.toByteArray := by
+    have hbool : UInt256.isZero (UInt256.isZero z.toUInt256) = z.toUInt256 := by
+      cases z <;> rfl
+    have hret := safeRuntime_block_6377 (by omega) h₆
+    rw [hbool] at hret
+    change RDret safeBytecode g s0 σ₃
+      ((writeWord mem₃ (memLoad ⟨64⟩ mem₃).toNat z.toUInt256).readWithPadding
+        (memLoad ⟨64⟩ mem₃).toNat 32) at hret
+    simpa only [writeWord_sparse_read_back] using hret
   exact Or.inr (Or.inr ⟨_, evm₃, σ₃, z, .execBlockRet (safeModulePrefix hv hn ho
     (.consNormal (safeModulePreCall hpre) (.consNormal (safeModuleExecuteCall hexe)
       (.consNormal (safeModulePostCall hpost) (safeModuleReturn _ _ _ _ _ _ _ _))))),

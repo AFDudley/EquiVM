@@ -1,7 +1,5 @@
-import Benchmarks.Safe.ViaIR.SetupSource
-import Benchmarks.Safe.ViaIR.SetupDecodeScalars
-import Benchmarks.Safe.ViaIR.VoidRoutineOutcome
-import Benchmarks.Safe.ViaIR.Blocks.Runtime_024
+import Benchmarks.Safe.ViaIR.SetupOutcome
+import Benchmarks.Safe.ViaIR.SetupPaymentPaths
 import Benchmarks.Safe.ViaIR.Blocks.Runtime_017
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
@@ -9,50 +7,84 @@ open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.ViaIR
 
-set_option maxRecDepth 100000
+set_option maxRecDepth 5000
 
-theorem safeSetupPaymentTrace (evm : EVM.State)
-    {I g s0 σ k C aw mem rdata n len ptr locals} {ret : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨4782⟩ (setupDecodedStack I.calldata n len (ret :: R))
+theorem safeSetupPaymentTrace (p : SetupInput) (evm : EVM.State)
+    {I g s0 σ k C aw mem rdata ptr locals} {x y : UInt256} {R : List UInt256}
+    (h : RD safeBytecode I g s0 ⟨3475⟩
+      (x :: y :: p.paymentToken :: p.paymentReceiver :: p.payment :: ⟨0⟩ :: R)
       mem aw rdata σ k C)
     (hee : evm.executionEnv = I) (hacc : evm.accountMap = σ) (hworld : evm.σ₀ = s0.σ₀)
-    (hl : SetupLocals (setupCalldataInput I.calldata n len) locals)
-    (hb : SetupCalldataBounds I.calldata n len)
-    (hf : memLoad ⟨64⟩ mem = UInt256.ofNat ptr) (hm : 128 ≤ mem.size) (hp : 128 ≤ ptr)
-    (hz : memLoad ⟨96⟩ mem = ⟨0⟩) (hptr : ptr < 2 ^ 220)
-    (hov : R.length + 36 ≤ 1024) (hret : (D_J safeBytecode 0).contains ret = true) :
-    VoidRoutineOutcome config { contract := contract, locals := locals } evm
-      [setupPaymentStmt] safeBytecode I g s0 ret R := by
-  let p := setupCalldataInput I.calldata n len
+    (hl : SetupLocals p locals)
+    (htoken : p.paymentToken.toNat < EVM.addressModulus)
+    (hreceiver : p.paymentReceiver.toNat < EVM.addressModulus)
+    (hf : memLoad ⟨64⟩ mem = UInt256.ofNat ptr) (hp : 128 ≤ ptr)
+    (hptr : ptr = 160 + 32 * p.owners.length + 32 + ABI.paddedSize p.payload.size)
+    (hcap : ptr < 2 ^ 64) (hperm : I.perm = true) (hov : R.length + 36 ≤ 1024) :
+    SetupTailOutcome p { contract := contract, locals := locals } evm [setupPaymentStmt] g s0 := by
+  have hdata : 32 * p.owners.length + p.payload.size ≤ 2 ^ 64 - 224 := by
+    rw [hptr] at hcap
+    unfold ABI.paddedSize at hcap
+    omega
   by_cases hpay : p.payment = ⟨0⟩
-  · have h₁ := safeRuntime_block_4782_taken (by simp; omega)
-      (by change UInt256.isZero p.payment ≠ _; rw [hpay]; decide) (by jump_dest) h
-    have h₂ := safeRuntime_block_2790 (by omega) hret h₁
-    rw [← hacc] at h₂
-    exact .success (execBlock_singleton (safeSetupPaymentSkip p evm hl hpay)) h₂
-  have h₁ := safeRuntime_block_4782_fallthrough (by simp; omega)
-    (isZero_eq_zero_of_ne hpay) h
-  have h₂ := safeRuntime_block_4789 (by simp; omega) (by jump_dest) h₁
+  · have h₁ := safeRuntime_block_3475_fallthrough (by simp; omega) hpay h
+    have h₂ := safeRuntime_block_3483 (by simp; omega) h₁
+    have ha : 32 * p.owners.length + p.payload.size ≤ p.allocationLimit := by
+      simpa only [SetupInput.allocationLimit, hpay, ne_self_iff_false, false_and,
+        ite_false] using hdata
+    exact .success ha (execBlock_singleton (safeSetupPaymentSkip p evm hl hpay))
+      (by simpa only [show (⟨0⟩ : UInt256).toNat = 0 from rfl,
+        byteArray_readWithPadding_zero, hacc] using h₂)
+  have h₁ := safeRuntime_block_3475_taken (by simp; omega) hpay (by jump_dest) h
+  have h₂ := safeRuntime_block_3486 (by simp; omega) (by jump_dest) h₁
   have ht : UInt256.ofNat p.paymentInput.gasToken.val = p.paymentToken :=
-    ((canonicalAddress_eq_address_iff _ _ hb.paymentToken).mp rfl).symm
+    ((canonicalAddress_eq_address_iff _ _ htoken).mp rfl).symm
   have hr : UInt256.ofNat p.paymentInput.refundReceiver.val = p.paymentReceiver :=
-    ((canonicalAddress_eq_address_iff _ _ hb.paymentReceiver).mp rfl).symm
-  have hcall : RD safeBytecode I g s0 ⟨7730⟩
-      (UInt256.ofNat p.paymentInput.refundReceiver.val ::
-        UInt256.ofNat p.paymentInput.gasToken.val :: p.paymentInput.gasPrice ::
-        p.paymentInput.baseGas :: p.paymentInput.gasUsed :: ⟨4802⟩ ::
-        setupDecodedStack I.calldata n len (ret :: R)) mem aw rdata σ
-        (k + 5 + 8) (C + 20 + 28) := by
+    ((canonicalAddress_eq_address_iff _ _ hreceiver).mp rfl).symm
+  have hcall : RD safeBytecode I g s0 ⟨10429⟩
+      (p.paymentInput.gasUsed :: UInt256.ofNat p.paymentInput.gasToken.val ::
+        UInt256.ofNat p.paymentInput.refundReceiver.val :: ⟨3495⟩ :: ⟨0⟩ :: R)
+      mem aw rdata σ (k + 6 + 5) (C + 21 + 18) := by
     rw [ht, hr]
     exact h₂
-  obtain ⟨hrev, hs⟩ | ⟨hstatic, hs⟩ |
-      ⟨f', evm', σ', mem', ptr', out, aw', k', C', hs, _, hacc', _, h₃, _⟩ :=
-    safePaymentTrace p.paymentInput evm hcall hee hacc hworld hf hm hp hz hptr
-      (by simp [setupDecodedStack]; omega) (by jump_dest)
-  · exact .reverted (.consRevert (safeSetupPaymentCall p evm hl hpay hs)) hrev
-  · exact .staticHalt (.consStatic (safeSetupPaymentCall p evm hl hpay hs)) hstatic
-  · have h₄ := safeRuntime_block_4802 (by omega) hret h₃
-    rw [← hacc'] at h₄
-    exact .success (execBlock_singleton (safeSetupPaymentCall p evm hl hpay hs)) h₄
+  obtain ⟨k₃, C₃, h₃⟩ :=
+    safeSetupPaymentArithmetic p.paymentInput hcall rfl rfl (by simp; omega)
+  have hs := (safeSetupPaymentBounds p.paymentInput I rfl rfl).1
+  have hm := (safeSetupPaymentBounds p.paymentInput I rfl rfl).2
+  have finish (ha : 32 * p.owners.length + p.payload.size ≤ p.allocationLimit)
+      (ho : SetupPaymentOutcome p.paymentInput evm I g s0 ⟨3495⟩ (⟨0⟩ :: R)) :
+      SetupTailOutcome p { contract := contract, locals := locals } evm
+        [setupPaymentStmt] g s0 := by
+    obtain ⟨hrev, hsource⟩ | ⟨f', evm', mem', out, aw', k', C', hsource, htrace⟩ := ho
+    · exact .reverted (.consRevert (safeSetupPaymentCall p evm hl hpay hsource)) hrev
+    · have hret := safeRuntime_block_3495 (by omega) htrace
+      exact .success ha (execBlock_singleton (safeSetupPaymentCall p evm hl hpay hsource))
+        (by simpa only [show (⟨0⟩ : UInt256).toNat = 0 from rfl,
+          byteArray_readWithPadding_zero] using hret)
+  by_cases hz : p.paymentInput.gasToken = EVM.address 0
+  · simp only [setupPaymentAfterArithmeticPC, setupPaymentArithmeticSaved, paymentPrice,
+      hz, ite_true, List.cons_append, List.nil_append] at h₃ hm
+    apply finish
+    · change AccountAddress.ofNat p.paymentToken.toNat = EVM.address 0 at hz
+      simpa only [SetupInput.allocationLimit, hz, ne_self_iff_false, and_false,
+        ite_false] using hdata
+    · exact safeSetupPaymentNativeTrace p.paymentInput evm h₃ hee hacc hworld hs hm hz
+        hf hcap hperm (by simp; omega) (by jump_dest)
+  · simp only [setupPaymentAfterArithmeticPC, setupPaymentArithmeticSaved, paymentPrice,
+      hz, ite_false, List.cons_append, List.nil_append] at h₃ hm
+    by_cases hfit : ptr + 128 < 2 ^ 64
+    · apply finish
+      · rw [safeSetupAllocationLimit_token p hpay hz]
+        rw [hptr] at hfit
+        unfold ABI.paddedSize at hfit
+        omega
+      · exact safeSetupPaymentTokenTrace p.paymentInput evm h₃ hee hacc hworld hs hm hz
+          hf hp hfit (by simp; omega) (by jump_dest)
+    · refine .allocationRevert ?_
+        (safeSetupTokenTransferAllocationRevert h₃ hf hcap hfit (by simp; omega))
+      rw [safeSetupAllocationLimit_token p hpay hz]
+      rw [hptr] at hfit
+      unfold ABI.paddedSize at hfit
+      omega
 
 end Benchmarks.Safe.ViaIR

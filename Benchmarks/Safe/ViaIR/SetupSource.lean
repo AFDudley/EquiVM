@@ -33,11 +33,25 @@ theorem safeSetupEventValues (p : SetupInput) (evm : EVM.State) :
 
 def setupAllocationExpr : Expr :=
   leE (addE (mulE (.intLit 32) (localLength "_owners")) (localLength "data"))
-    (.intLit (2 ^ 64 - 224))
+    (.ite (andE (gtE (.var "payment") (.intLit 0))
+      (neE (.var "paymentToken") zeroAddr))
+      (.intLit (2 ^ 64 - 352)) (.intLit (2 ^ 64 - 224)))
+
+def SetupInput.allocationLimit (p : SetupInput) : Nat :=
+  if p.payment ≠ ⟨0⟩ ∧ AccountAddress.ofNat p.paymentToken.toNat ≠ EVM.address 0
+    then 2 ^ 64 - 352 else 2 ^ 64 - 224
+
+theorem safeSetupAllocationLimit_le (p : SetupInput) : p.allocationLimit ≤ 2 ^ 64 - 224 := by
+  unfold SetupInput.allocationLimit
+  split <;> decide
+
+theorem safeSetupAllocationLimit_token (p : SetupInput) (hpay : p.payment ≠ ⟨0⟩)
+    (htoken : p.paymentInput.gasToken ≠ EVM.address 0) :
+    p.allocationLimit = 2 ^ 64 - 352 := if_pos ⟨hpay, htoken⟩
 
 theorem safeSetupAllocationCondition (p : SetupInput) (evm : EVM.State) :
     evalExpr? config p.frame evm setupAllocationExpr =
-      .ok (.bool (decide (32 * p.owners.length + p.payload.size ≤ 2 ^ 64 - 224))) := by
+      .ok (.bool (decide (32 * p.owners.length + p.payload.size ≤ p.allocationLimit))) := by
   have hl := SetupLocals.initial p
   have ho := evalLocalArrayLength (cfg := config) (frame := p.frame) (evm := evm) hl.owners
   have hd := evalLocalBytesLength (cfg := config) (frame := p.frame) (evm := evm) hl.payload
@@ -46,15 +60,34 @@ theorem safeSetupAllocationCondition (p : SetupInput) (evm : EVM.State) :
     .ok (.int (Int.ofNat p.owners.length)) at ho
   change evalExpr? config p.frame evm (localLength "data") =
     .ok (.int (Int.ofNat p.payload.size)) at hd
+  have hp := safeSetupPaymentCondition evm hl
+  have htv : evalExpr? config p.frame evm (.var "paymentToken") =
+      .ok (addressArrayValue p.paymentToken) := evalLocalValue hl.paymentToken
+  have ht : evalExpr? config p.frame evm (neE (.var "paymentToken") zeroAddr) =
+      .ok (.bool (decide (AccountAddress.ofNat p.paymentToken.toNat ≠ EVM.address 0))) := by
+    rw [neE, evalExpr_binary_nonshort (by decide) (by decide), htv]
+    simp [zeroAddr, addrSt, evalExpr?, castValue?, evalBinaryOpNeAddress,
+      addressArrayValue, EvalResult.bind, EvalResult.ofOption, bind, pure]
+    apply Bool.eq_iff_iff.mpr
+    simp only [beq_iff_eq, Value.address.injEq, decide_eq_true_eq]
+    rfl
+  have hc := evalBoolAnd hp ht
+  change evalExpr? config p.frame evm
+    (andE (gtE (.var "payment") (.intLit 0)) (neE (.var "paymentToken") zeroAddr)) =
+    .ok (.bool (decide (p.payment ≠ ⟨0⟩) &&
+      decide (AccountAddress.ofNat p.paymentToken.toNat ≠ EVM.address 0))) at hc
   rw [setupAllocationExpr, leE, evalExpr_binary_nonshort (by decide) (by decide),
     addE, evalExpr_binary_nonshort (by decide) (by decide),
     mulE, evalExpr_binary_nonshort (by decide) (by decide), ho, hd]
-  simp [evalExpr?, evalBinaryOp?, EvalResult.bind, bind, pure, Int.ofNat_eq_natCast]
-  omega
+  simp only [evalExpr?, hc, EvalResult.bind, bind, pure]
+  by_cases hpay : p.payment = ⟨0⟩ <;>
+    by_cases htoken : AccountAddress.ofNat p.paymentToken.toNat = EVM.address 0 <;>
+      simp [hpay, htoken, SetupInput.allocationLimit, evalBinaryOp?, Int.ofNat_eq_natCast] <;>
+        omega
 
 theorem safeSetupPrefix (p : SetupInput) (evm : EVM.State) {result : ExecResult}
     (hv : evm.executionEnv.weiValue = ⟨0⟩)
-    (ha : 32 * p.owners.length + p.payload.size ≤ 2 ^ 64 - 224)
+    (ha : 32 * p.owners.length + p.payload.size ≤ p.allocationLimit)
     (ht : ExecBlock config p.frame evm (setupTransition.body.drop 3) result) :
     ExecBlock config p.frame evm setupTransition.body result :=
   .consNormal (.requireTrue (evalCallvalueEq_true hv))
@@ -64,7 +97,7 @@ theorem safeSetupPrefix (p : SetupInput) (evm : EVM.State) {result : ExecResult}
 
 theorem safeSetupAllocationRevert (p : SetupInput) (evm : EVM.State)
     (hv : evm.executionEnv.weiValue = ⟨0⟩)
-    (ha : ¬32 * p.owners.length + p.payload.size ≤ 2 ^ 64 - 224) :
+    (ha : ¬32 * p.owners.length + p.payload.size ≤ p.allocationLimit) :
     ExecBlock config p.frame evm setupTransition.body .reverted :=
   .consNormal (.requireTrue (evalCallvalueEq_true hv))
     (.consNormal (.emit (safeSetupEventValues p evm))

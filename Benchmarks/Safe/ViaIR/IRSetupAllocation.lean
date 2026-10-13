@@ -228,6 +228,9 @@ theorem safeIRSetupAllocationGuardReverts (evm : State)
     let p := setupCalldataInput safeIRSetupAllocationCalldata 1 safeIRSetupAllocationLength
     ExecBlock config p.frame evm setupTransition.body .reverted := by
   apply safeSetupAllocationRevert _ evm hv
+  have hp := safeIRSetupAllocationNoCalls.2.2.2
+  rw [SetupInput.allocationLimit, hp]
+  simp only [ne_self_iff_false, false_and, ite_false]
   rw [safeIRSetupAllocationPayload, ByteArray_zeroes_size]
   change ¬32 * (calldataWords safeIRSetupAllocationCalldata
     (setupOwnersStart safeIRSetupAllocationCalldata) 1).length +
@@ -263,5 +266,18 @@ theorem safeIRSetupTokenAllocationExecution :
       | .ok (.revert gas out) => gas.toNat > 99000 &&
           out == (⟨#[0x4e, 0x48, 0x7b, 0x71]⟩ ++ (⟨0x41⟩ : UInt256).toByteArray)
       | _ => false) = true := by native_decide
+
+/-- The conditional guard rejects the additional token-encoder allocation boundary. -/
+theorem safeIRSetupTokenAllocationGuardReverts (evm : State) (payload : ByteArray)
+    (hlen : payload.size = 2 ^ 64 - 256)
+    (hv : evm.executionEnv.weiValue = ⟨0⟩) :
+    let p : SetupInput :=
+      ⟨[⟨8192⟩], ⟨1⟩, ⟨0⟩, payload, ⟨0⟩, ⟨8193⟩, ⟨1⟩, ⟨0⟩⟩
+    ExecBlock config p.frame evm setupTransition.body .reverted := by
+  apply safeSetupAllocationRevert _ evm hv
+  rw [safeSetupAllocationLimit_token _ (by change (⟨1⟩ : UInt256) ≠ ⟨0⟩; decide)
+    (by change AccountAddress.ofNat 8193 ≠ EVM.address 0; decide)]
+  simp only [List.length_cons, List.length_nil, hlen]
+  decide +kernel
 
 end Benchmarks.Safe.ViaIR

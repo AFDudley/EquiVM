@@ -1181,7 +1181,10 @@ def setupTransition : TransitionDecl :=
       [ .emit "SafeSetup" [sender, .var "_owners", .var "_threshold", .var "to",
           .var "fallbackHandler"],
         .require (leE (addE (mulE (.intLit 32) (localLength "_owners"))
-          (localLength "data")) (.intLit (2 ^ 64 - 224))),
+          (localLength "data"))
+          (.ite (andE (gtE (.var "payment") (.intLit 0))
+            (neE (.var "paymentToken") zeroAddr))
+            (.intLit (2 ^ 64 - 352)) (.intLit (2 ^ 64 - 224)))),
         .internalCall "setupOwners" [.var "_owners", .var "_threshold"] "_ownersSetup",
         .ite (neE (.var "fallbackHandler") zeroAddr)
           [ .internalCall "internalSetFallbackHandler" [.var "fallbackHandler"] "_fallbackSet" ]
