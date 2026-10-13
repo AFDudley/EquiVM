@@ -12,13 +12,13 @@ counterexample exposed the IR storage reader's final allocation-pointer check. T
 authorized tightening only the existing `getStorageAt` allocation guard. That change is
 applied, and the complete `getStorageAt` refinement theorem now builds. Continuing the
 port exposed the analogous owner-array allocation mismatch below. Its separate local guard
-correction is now approved and applied; the full `getOwners` refinement theorem builds. The next certified discrepancy is the
-separate paginated-module allocation guard described below.
+correction is now approved and applied; the full `getOwners` refinement theorem builds. The separately approved paginated-module guard correction is applied;
+its complete entrypoint refinement theorem now builds.
 
-Twenty runtime obligations now build: receive, fallback, `nonce`, `getThreshold`, `signedMessages`,
+Twenty-one runtime obligations now build: receive, fallback, `nonce`, `getThreshold`, `signedMessages`,
 `approvedHashes`, `isOwner`, `isModuleEnabled`, `domainSeparator`, `VERSION`, `changeThreshold`,
 `setFallbackHandler`, `approveHash`, `enableModule`, `disableModule`, `swapOwner`,
-`addOwnerWithThreshold`, `removeOwner`, `getStorageAt`, and `getOwners`. The zero-argument
+`addOwnerWithThreshold`, `removeOwner`, `getStorageAt`, `getOwners`, and `getModulesPaginated`. The zero-argument
 proofs include the new signed length failure; the mapping getters include short, huge, and
 noncanonical calldata where applicable. Fallback covers handler absence, call success and
 failure, static callers, call-depth failure, and oversized calldata exhausting gas.
@@ -228,29 +228,38 @@ After this guard change, artifact reproduction passes, the executable audit repo
 Safe_ViaIR: 1775 cases: 1758 agree (577 successful), 0 disagree, 0 stuck, 17 EVM out of gas, 0 spec out of fuel
 ```
 
-The next certified blocker is `getModulesPaginated(1, 2^59 - 1)` with an existing
+The fifth certified discrepancy was `getModulesPaginated(1, 2^59 - 1)` with an existing
 executing account, 68-byte canonical calldata, zero value, 100,000 gas, and
-`modules[1] = 1`. The unchanged specification accepts `pageSize <= 2^64 - 1`,
-counts zero modules, and returns an empty array with next pointer 1. The IR calls
+`modules[1] = 1`. The previous specification accepted `pageSize <= 2^64 - 1`,
+counted zero modules, and returned an empty array with next pointer 1. The IR calls
 the same array allocator before traversing the list: `32 * pageSize + 32 = 2^64`,
 and its final-pointer check reverts with panic `0x41`, leaving 99,080 gas.
 This input satisfies the approved account-existence restriction and uses ordinary
-ABI decoding; the local zero-argument decoder correction is irrelevant to it.
+ABI decoding. The negative certificate is preserved in commit `4495cf25`.
 
-`safeIRModuleAllocationPremises`, `safeIRModuleAllocationStorage`, and
-`safeIRModuleAllocationDecoding` certify the input. `safeIRModuleAllocationExecution`
-certifies actual bytecode execution, `safeIRModuleAllocationSourceReturns` constructs
-the successful source result, and `safeIRModuleAllocationSourceCannotRevert` rules out
-all reverting source derivations. Thus `safeIRModuleAllocationNotRefines` formally
-refutes the current refinement claim on this input. The certificate builds without
-proof holes or extra axioms: its axiom scan contains the standard three and 22 native
-certificates. Reproduce it with `lake build Benchmarks.Safe.ViaIR.IRModuleAllocation`.
+The user separately approved replacing only `getmodulespaginatedTransition`'s existing
+page-size guard with `pageSize <= 2^59 - 6`, mirrored in the syntax specification.
+That change is now applied. `safeIRModuleAllocationCorrectedBound` proves equivalence
+to the allocator's `32 * pageSize + 160 <= 2^64 - 1` condition. The former counterexample
+now checks as the positive regression `safeIRModuleAllocationRefines`, retaining the
+actual EVM execution certificate. The complete entrypoint proof now builds with its original
+statement. It follows the inlined address and length decoding, sentinel/membership checks,
+two allocation checks, module traversal, last-element selection, and shared array encoder.
+The linked-page source induction and memory invariant are retained. Source bound premises
+use the approved page-size limit; trace helper interfaces match the IR PCs and stack layouts.
+The last-element trace explicitly uses the existing canonical-address invariant because
+this IR path masks the loaded address before return.
 
-The proposed correction changes only `getmodulespaginatedTransition`'s existing
-page-size guard to `pageSize <= 2^59 - 6`, with the corresponding syntax-specification
-line. `safeIRModuleAllocationCorrectedBound` proves equivalence to the allocator's
-`32 * pageSize + 160 <= 2^64 - 1` condition. The exact two-line patch is prepared at
-`/tmp/safe-ir-modules-guard.patch` and has not been applied. The initial instruction to
-investigate, report, and wait on an unprovable claim applies to this separate change;
-its approval is pending. The approved `getOwners` fix and all twenty completed
-entrypoints are committed in `21134418`.
+The entrypoint axiom scan reports the standard three axioms and 816 native certificates;
+the positive regression uses the standard three and eight native certificates. Neither
+scan found proof holes or additional axioms. The no-write artifact audit reproduces the
+bytecode and block summaries. All twenty-one repaired entrypoints and the regression
+modules build together (3,620 jobs). Whole-contract correctness still requires the
+remaining twelve runtime obligations.
+
+After this correction, artifact reproduction passes and the executable audit reports
+408 cases with zero failures. The randomized differential run reports:
+
+```text
+Safe_ViaIR: 1775 cases: 1762 agree (580 successful), 0 disagree, 0 stuck, 13 EVM out of gas, 0 spec out of fuel
+```

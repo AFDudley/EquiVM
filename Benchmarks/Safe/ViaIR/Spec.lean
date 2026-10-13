@@ -1018,7 +1018,7 @@ def getmodulespaginatedTransition : TransitionDecl :=
       nonpayable ++
       [ .require (orE (eqE (.var "start") sentinelAddr) (moduleEnabledExpr (.var "start"))),
         .require (neE (.var "pageSize") (.intLit 0)),
-        .require (leE (.var "pageSize") maxMemoryLength),
+        .require (leE (.var "pageSize") (.intLit (2 ^ 59 - 6))),
         .letDecl "moduleCount" (some uint256) (.intLit 0),
         .letDecl "next" (some addr) (.storage (modulesRef (.var "start"))),
         .letDecl "last" (some addr) zeroAddr,

@@ -7,23 +7,23 @@ namespace Benchmarks.Safe.ViaIR
 
 theorem safeModulesLoop {I g s0 σ k C aw mem rdata capacity doneWords fuel current words last}
     {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨4995⟩
-      (UInt256.ofNat doneWords.length :: current :: ⟨128⟩ :: UInt256.ofNat capacity :: R)
+    (h : RD safeBytecode I g s0 ⟨2629⟩
+      (current :: ⟨128⟩ :: UInt256.ofNat capacity :: UInt256.ofNat doneWords.length :: ⟨0⟩ :: R)
       mem aw rdata σ k C)
-    (hov : R.length + 12 ≤ 1024)
+    (hov : R.length + 13 ≤ 1024)
     (hm : AddressArrayMemory mem capacity (doneWords ++ List.replicate fuel ⟨0⟩))
     (hn : capacity ≤ 2 ^ 64 - 1) (hf : doneWords.length + fuel = capacity)
     (hc : current.toNat < EVM.addressModulus)
     (hp : LinkedPage (moduleLinkAt σ I) fuel current words last) :
     ∃ mem' aw' k' C',
-      RD safeBytecode I g s0 ⟨5128⟩
-        (UInt256.ofNat (doneWords ++ words).length :: last :: ⟨128⟩ ::
-          UInt256.ofNat capacity :: R) mem' aw' rdata σ k' C' ∧
+      RD safeBytecode I g s0 ⟨2710⟩
+        (last :: last :: ⟨128⟩ :: UInt256.ofNat capacity ::
+          UInt256.ofNat (doneWords ++ words).length :: ⟨0⟩ :: R) mem' aw' rdata σ k' C' ∧
       AddressArrayMemory mem' capacity
         ((doneWords ++ words) ++ List.replicate (fuel - words.length) ⟨0⟩) := by
   induction hp generalizing mem doneWords aw k C with
   | @stop fuel current hstop =>
-      obtain ⟨k', C', hout⟩ := safeModulesLoopExit h (by omega) hc (by
+      obtain ⟨k', C', hout⟩ := safeModulesLoopExit h (by simp; omega) hc (by
         rcases hstop with hzero | hz | hs
         · right; right
           have hlen : doneWords.length = capacity := by omega

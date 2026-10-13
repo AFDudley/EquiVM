@@ -455,7 +455,7 @@ def contractSyntax : ContractDecl :=
         external returns (address[], address) {
       require(start == address(1) || (modules[start] != address(0) && start != address(1)));
       require(pageSize != 0);
-      require(pageSize <= ${maxMemoryLength});
+      require(pageSize <= ${Expr.intLit (2 ^ 59 - 6)});
       uint256 moduleCount = 0;
       address next = modules[start];
       address last = address(0);

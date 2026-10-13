@@ -1,7 +1,6 @@
 import Benchmarks.Safe.ViaIR.ModulesGuards
 import Benchmarks.Safe.ViaIR.AddressArrayMemory
 import Benchmarks.Safe.ViaIR.Memory
-import Benchmarks.Safe.ViaIR.Blocks.Runtime_025
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -10,57 +9,94 @@ namespace Benchmarks.Safe.ViaIR
 
 set_option maxRecDepth 2000
 
+def modulesAllocatedMemory (mem : ByteArray) (n : Nat) : ByteArray :=
+  writeWord (writeWord mem 64 (addressArrayFreePtr n)) 128 (UInt256.ofNat n)
+
+theorem modulesAllocatedMemory_size (mem : ByteArray) (n : Nat) (hm : mem.size = 96) :
+    (modulesAllocatedMemory mem n).size = 160 := by
+  simp only [modulesAllocatedMemory, writeWord_sparse_size, hm]
+  decide +kernel
+
+theorem safeModulesAllocated (mem : ByteArray) (n : Nat) (hm : mem.size = 96) :
+    AddressArrayMemory (modulesAllocatedMemory mem n) n (List.replicate n ⟨0⟩) := by
+  have hs := modulesAllocatedMemory_size mem n hm
+  have hinner : (writeWord mem 64 (addressArrayFreePtr n)).size = 96 := by
+    simp only [writeWord_sparse_size, hm]
+    decide
+  refine ⟨List.length_replicate, by rw [hs], by omega, by omega, ?_, ?_, ?_⟩
+  · rw [modulesAllocatedMemory,
+      writeWord_sparse_read_preserved _ _ _ _ (.inl ⟨by decide, by rw [hinner]⟩)]
+    exact writeWord_sparse_read_back _ _ _
+  · exact writeWord_sparse_read_back _ _ _
+  · exact WordArrayMemory.zeroes _ _ _ (by omega)
+
+theorem safeModulesAllocationMemory (mem : ByteArray) (n : Nat) :
+    safeRuntime_block_8973_memory
+      (mem := safeRuntime_block_7157_memory (mem := mem)
+        (x0 := addressArrayFreePtr n)) (x0 := UInt256.ofNat 128) (x2 := UInt256.ofNat n) =
+      modulesAllocatedMemory mem n := by rfl
+
+set_option maxHeartbeats 800000 in
 theorem safeModulesAllocate {I g s0 σ k C aw mem rdata n start} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨4896⟩
-      (⟨0⟩ :: ⟨96⟩ :: UInt256.ofNat n :: start :: R) mem aw rdata σ k C)
-    (hov : R.length + 11 ≤ 1024) (hn : n ≤ 2 ^ 64 - 1) (hz : n ≠ 0)
-    (hc : start.toNat < EVM.addressModulus) (hsize : I.calldata.size < UInt256.size)
+    (h : RD safeBytecode I g s0 ⟨2595⟩
+      (UInt256.ofNat n :: start :: ⟨0⟩ :: R) mem aw rdata σ k C)
+    (hov : R.length + 14 ≤ 1024) (hn : n ≤ 2 ^ 59 - 6)
+    (hsize : I.calldata.size < UInt256.size)
     (hm : mem.size = 96) (hread : mem.readWithPadding 64 32 = (⟨128⟩ : UInt256).toByteArray) :
-    ∃ aw' k' C', RD safeBytecode I g s0 ⟨4995⟩
-      (⟨0⟩ :: moduleLinkAt σ I start :: ⟨128⟩ :: UInt256.ofNat n :: start :: R)
-      (twoWordHashMem start ⟨1⟩ (addressArrayAllocatedMemory mem n)) aw' rdata σ k' C' := by
+    ∃ aw' k' C', RD safeBytecode I g s0 ⟨2629⟩
+      (moduleLinkAt σ I start :: ⟨128⟩ :: UInt256.ofNat n :: ⟨0⟩ :: ⟨0⟩ :: R)
+      (twoWordHashMem start ⟨1⟩ (modulesAllocatedMemory mem n)) aw' rdata σ k' C' := by
+  have hb : n ≤ 2 ^ 64 - 1 := by omega
   have hnword := ulit_toNat' n (by change n < 2 ^ 256; omega)
-  have hgt : UInt256.gt (UInt256.ofNat n)
-      (UInt256.sub (UInt256.shiftLeft (UInt256.ofNat 1) (UInt256.ofNat 64))
-        (UInt256.ofNat 1)) = ⟨0⟩ := ugt_zero (by simpa only [hnword] using hn)
-  have h₁ := safeRuntime_block_4896_taken (by simp; omega)
-    (by rw [hgt]; decide) (by jump_dest) h
-  have hfree : memLoad (UInt256.ofNat 64) mem = ⟨128⟩ := memLoad_of_wordRead _ _ _ hread
-  have hnz : UInt256.ofNat n ≠ ⟨0⟩ := by
-    intro he
-    have hv := congrArg UInt256.toNat he
-    exact hz (hnword.symm.trans hv)
-  obtain ⟨aw₂, k₂, C₂, h₂⟩ := safeRuntime_block_4920_fallthrough_packed
-    (by simp only [safeRuntime_block_4896_taken_stack, List.length_cons]; omega)
-    (isZero_eq_zero_of_ne hnz) h₁
-  have halloc : safeRuntime_block_4920_fallthrough_memory (mem := mem) (x0 := UInt256.ofNat n) =
-      addressArrayAllocatedMemory mem n := by
-    simp only [safeRuntime_block_4920_fallthrough_memory, hfree, addressArrayFreePtr_eq n hn]
-    rfl
-  simp only [safeRuntime_block_4920_fallthrough_stack, hfree, halloc] at h₂
-  obtain ⟨aw₃, k₃, C₃, h₃⟩ := safeRuntime_block_4946_packed (by simp; omega) h₂
-  have hcopy : safeRuntime_block_4946_memory (ee := I)
-      (mem := addressArrayAllocatedMemory mem n) (x0 := UInt256.ofNat n) (x1 := ⟨128⟩) =
-      addressArrayAllocatedMemory mem n := by
-    simp only [safeRuntime_block_4946_memory, ulit_toNat' _ hsize]
-    change I.calldata.write I.calldata.size (addressArrayAllocatedMemory mem n) 160 _ = _
-    rw [← safeAddressArrayAllocatedSize mem n hm]
+  have hp := safeGetOwnersFinalPointer n hb
+  have h8950 := safeRuntime_block_2595 (by simp; omega) (by jump_dest) h
+  simp only [safeRuntime_block_2595_stack] at h8950
+  have h8927 := safeRuntime_block_8950 (by simp; omega) (by jump_dest) h8950
+  simp only [safeRuntime_block_8950_stack] at h8927
+  obtain ⟨_, _, h8960⟩ := safeGetOwnersCountCheck h8927 (by simp; omega)
+    (by rwa [hnword]) (by jump_dest)
+  obtain ⟨_, _, _, h7128⟩ := safeRuntime_block_8960_packed (by simp; omega) (by jump_dest) h8960
+  simp only [safeRuntime_block_8960_stack] at h7128
+  rw [show memLoad (UInt256.ofNat 64) mem = UInt256.ofNat 128 from
+    memLoad_of_wordRead _ _ _ hread] at h7128
+  have hfp := ulit_toNat' (160 + 32 * n) (by change 160 + 32 * n < 2 ^ 256; omega)
+  have h7157 := safeRuntime_block_7128_fallthrough (by simp; omega) (by
+    rw [hp]
+    rw [ugt_zero (by
+      change (addressArrayFreePtr n).toNat ≤ 2 ^ 64 - 1
+      rw [addressArrayFreePtr, hfp]; omega), ult_zero (by
+      change 128 ≤ (addressArrayFreePtr n).toNat
+      rw [addressArrayFreePtr, hfp]; omega), u256_lor_zero]
+    rfl) h7128
+  simp only [safeRuntime_block_7128_fallthrough_stack, hp] at h7157
+  obtain ⟨_, _, _, h8973⟩ := safeRuntime_block_7157_packed (by simp; omega) (by jump_dest) h7157
+  simp only [safeRuntime_block_7157_stack] at h8973
+  obtain ⟨_, _, _, hcount⟩ := safeRuntime_block_8973_packed (by simp; omega) (by jump_dest) h8973
+  simp only [safeRuntime_block_8973_stack, safeModulesAllocationMemory] at hcount
+  obtain ⟨_, _, h8990⟩ := safeGetOwnersCountCheck hcount (by simp; omega)
+    (by rwa [hnword]) (by jump_dest)
+  obtain ⟨_, _, _, h2603⟩ := safeRuntime_block_8990_packed (by simp; omega) (by jump_dest) h8990
+  have hcopy : safeRuntime_block_8990_memory (ee := I) (mem := modulesAllocatedMemory mem n)
+      (x0 := UInt256.ofNat 32 + UInt256.shiftLeft (UInt256.ofNat n) (UInt256.ofNat 5))
+      (x1 := UInt256.lnot (UInt256.ofNat 31)) (x2 := UInt256.ofNat 128) =
+        modulesAllocatedMemory mem n := by
+    simp only [safeRuntime_block_8990_memory, ulit_toNat' _ hsize]
+    change I.calldata.write I.calldata.size (modulesAllocatedMemory mem n) 160 _ = _
+    rw [← modulesAllocatedMemory_size mem n hm]
     exact writePastSourceAtMemoryEnd _ _ _
-  rw [hcopy] at h₃
-  obtain ⟨aw₄, k₄, C₄, h₄⟩ := safeRuntime_block_4961_packed
-    (by omega) h₃
-  simp only [safeRuntime_block_4961_stack, safeRuntime_block_4961_memory,
-    safeAddressMask, solcAddrMask_clean hc] at h₄
-  have hh := twoWordHashMem_mapSlot_of_ge64 (mem := addressArrayAllocatedMemory mem n)
-    start ⟨1⟩ (by rw [safeAddressArrayAllocatedSize mem n hm]; decide)
-  change keccakWord ⟨0⟩ ⟨64⟩ (twoWordHashMem start ⟨1⟩ (addressArrayAllocatedMemory mem n)) =
+  simp only [safeRuntime_block_8990_stack, hcopy] at h2603
+  obtain ⟨aw', k', C', hout⟩ := safeRuntime_block_2603_packed (by omega) h2603
+  simp only [safeRuntime_block_2603_stack, safeAddressMask] at hout
+  have hh := twoWordHashMem_mapSlot_of_ge64 (mem := modulesAllocatedMemory mem n)
+    start ⟨1⟩ (by rw [modulesAllocatedMemory_size mem n hm]; decide)
+  change keccakWord ⟨0⟩ ⟨64⟩ (twoWordHashMem start ⟨1⟩ (modulesAllocatedMemory mem n)) =
     mapSlot start ⟨1⟩ at hh
-  change RD safeBytecode I g s0 ⟨4995⟩
-    (⟨0⟩ :: UInt256.land (solcSlotWordAt
-      (keccakWord ⟨0⟩ ⟨64⟩ (twoWordHashMem start ⟨1⟩ (addressArrayAllocatedMemory mem n)))
-      σ I) solcAddrMask :: ⟨128⟩ :: UInt256.ofNat n :: start :: R)
-    (twoWordHashMem start ⟨1⟩ (addressArrayAllocatedMemory mem n)) aw₄ rdata σ k₄ C₄ at h₄
-  rw [hh] at h₄
-  exact ⟨aw₄, k₄, C₄, h₄⟩
+  change RD safeBytecode I g s0 ⟨2629⟩
+    (UInt256.land solcAddrMask (solcSlotWordAt
+      (keccakWord ⟨0⟩ ⟨64⟩ (twoWordHashMem start ⟨1⟩ (modulesAllocatedMemory mem n))) σ I) ::
+      ⟨128⟩ :: UInt256.ofNat n :: ⟨0⟩ :: ⟨0⟩ :: R)
+    (twoWordHashMem start ⟨1⟩ (modulesAllocatedMemory mem n)) aw' rdata σ k' C' at hout
+  rw [hh, u256_land_comm solcAddrMask _] at hout
+  exact ⟨_, _, _, hout⟩
 
 end Benchmarks.Safe.ViaIR
