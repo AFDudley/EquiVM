@@ -12,7 +12,8 @@ counterexample exposed the IR storage reader's final allocation-pointer check. T
 authorized tightening only the existing `getStorageAt` allocation guard. That change is
 applied, and the complete `getStorageAt` refinement theorem now builds. Continuing the
 port exposed the analogous owner-array allocation mismatch below. Its separate local guard
-correction is now approved and applied; the full `getOwners` refinement theorem builds.
+correction is now approved and applied; the full `getOwners` refinement theorem builds. The next certified discrepancy is the
+separate paginated-module allocation guard described below.
 
 Twenty runtime obligations now build: receive, fallback, `nonce`, `getThreshold`, `signedMessages`,
 `approvedHashes`, `isOwner`, `isModuleEnabled`, `domainSeparator`, `VERSION`, `changeThreshold`,
@@ -226,3 +227,30 @@ After this guard change, artifact reproduction passes, the executable audit repo
 ```text
 Safe_ViaIR: 1775 cases: 1758 agree (577 successful), 0 disagree, 0 stuck, 17 EVM out of gas, 0 spec out of fuel
 ```
+
+The next certified blocker is `getModulesPaginated(1, 2^59 - 1)` with an existing
+executing account, 68-byte canonical calldata, zero value, 100,000 gas, and
+`modules[1] = 1`. The unchanged specification accepts `pageSize <= 2^64 - 1`,
+counts zero modules, and returns an empty array with next pointer 1. The IR calls
+the same array allocator before traversing the list: `32 * pageSize + 32 = 2^64`,
+and its final-pointer check reverts with panic `0x41`, leaving 99,080 gas.
+This input satisfies the approved account-existence restriction and uses ordinary
+ABI decoding; the local zero-argument decoder correction is irrelevant to it.
+
+`safeIRModuleAllocationPremises`, `safeIRModuleAllocationStorage`, and
+`safeIRModuleAllocationDecoding` certify the input. `safeIRModuleAllocationExecution`
+certifies actual bytecode execution, `safeIRModuleAllocationSourceReturns` constructs
+the successful source result, and `safeIRModuleAllocationSourceCannotRevert` rules out
+all reverting source derivations. Thus `safeIRModuleAllocationNotRefines` formally
+refutes the current refinement claim on this input. The certificate builds without
+proof holes or extra axioms: its axiom scan contains the standard three and 22 native
+certificates. Reproduce it with `lake build Benchmarks.Safe.ViaIR.IRModuleAllocation`.
+
+The proposed correction changes only `getmodulespaginatedTransition`'s existing
+page-size guard to `pageSize <= 2^59 - 6`, with the corresponding syntax-specification
+line. `safeIRModuleAllocationCorrectedBound` proves equivalence to the allocator's
+`32 * pageSize + 160 <= 2^64 - 1` condition. The exact two-line patch is prepared at
+`/tmp/safe-ir-modules-guard.patch` and has not been applied. The initial instruction to
+investigate, report, and wait on an unprovable claim applies to this separate change;
+its approval is pending. The approved `getOwners` fix and all twenty completed
+entrypoints are committed in `21134418`.
