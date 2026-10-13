@@ -49,9 +49,10 @@ theorem calldataPrelude_reverts {cfg : Config} {C : ContractDecl} {evm : EVM.Sta
       (value := .bytes evm.executionEnv.calldata) (by simp only [evalExpr?, envValue, pure]))
   simpa only [hsize, decide_false] using calldataGuard_eval
     (cfg := cfg) (evm := evm)
-    (stele := { contract := C
-               locals := locals.insert "__calldata" (.bytes evm.executionEnv.calldata)
-               immutables := imms }) (store_get_self _ _ _)
+    (stele := {
+      contract := C
+      locals := locals.insert "__calldata" (.bytes evm.executionEnv.calldata)
+      immutables := imms }) (store_get_self _ _ _)
 
 -- LIBRARY CANDIDATE: word addition of a modular negation is subtraction.
 theorem word_add_sub_zero (a b : UInt256) :
@@ -202,7 +203,7 @@ theorem reEquivSelectorDecodingFailed {cfg : Config} {contract : ContractDecl}
     runtimeRefinementFor cfg contract σ σ₀ g A I immutables := by
   apply RDrev.reEquivElim hcode h
   intro g' o hxi
-  exact .decodingFailed hd rfl hdec hxi
+  exact .execution hxi (.decodingFailed hd hdec) (.decodingFailed rfl rfl)
 
 -- LIBRARY CANDIDATE: the SUB guard used by solc's canonical-address decoders.
 theorem addressMaskSub_nonzero {w : UInt256} (hnc : ¬ w.toNat < EVM.addressModulus) :

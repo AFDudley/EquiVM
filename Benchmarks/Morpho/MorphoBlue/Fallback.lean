@@ -54,8 +54,10 @@ theorem fallbackBodyReverts (evm : EVM.State) (v : MorphoImmutables)
   · apply ExecFuncBody.execBlockRevert
     have prelude :=  ABlock.requireStep
       (ABlock.start (cfg := config) (evm := evm)
-        (stele := { contract := contract, locals := fallbackLocals evm.executionEnv.calldata,
-                   immutables := immStore v })
+        (stele := {
+          contract := contract
+          locals := fallbackLocals evm.executionEnv.calldata
+          immutables := immStore v })
         (stmts := setAuthorizationWithSigTransition.body)) (evalCallvalueEq_true hcv)
     by_cases hsize : 4 ≤ evm.executionEnv.calldata.size
     · have p0 := prelude.requireStep (by simpa only [hsize, decide_true] using fallbackSize_eval evm v)
