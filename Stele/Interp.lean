@@ -138,6 +138,8 @@ def Outcome.describe : Outcome → String
   | .result (.break _ _) => "break"
   | .result (.continue _ _) => "continue"
   | .result .reverted => "reverted"
+  | .result .noMatch => "no match"
+  | .result .decodingFailed => "decoding failed"
   | .result .staticViolation => "staticViolation"
   | .outOfFuel => "out of fuel"
   | .stuck why => s!"stuck: {why}"
@@ -598,14 +600,10 @@ def initialState (σ σ₀ : AccountMap) (g : UInt256) (A : Substate) (I : Execu
       accountMap := σ, σ₀ := σ₀, executionEnv := I, substate := A,
       machineState.gasAvailable := .ofUInt256 g }
 
-/-- The outcome of dispatching a message, mirroring `steleExec` and the rejection cases of
-    `runtimeRefinementFor`. -/
+/-- The outcome of message execution, mirroring `steleExec`. Dispatch and calldata-decoding
+    failures are carried by `ran` as `ExecResult.noMatch` and `ExecResult.decodingFailed`. -/
 inductive DispatchOutcome where
   | ran : Outcome → ReturnConvention → DispatchOutcome
-  /-- `dispatchMsg = none`: no transition, receive, or fallback accepts the calldata -/
-  | noDispatch : DispatchOutcome
-  /-- the selector matched but the calldata does not decode -/
-  | decodingFailed : DispatchOutcome
   /-- a receive/fallback with a shape `steleExec` has no rule for -/
   | malformed : String → DispatchOutcome
 
@@ -626,7 +624,8 @@ def steleExecRun (fuel : Nat) (o : Oracle Ω) (ω : Ω) (cfg : Config) (contract
       | some callargs =>
           let (r, ω') := execTransitionBody fuel o ω cfg contract evm callargs transition.body immutables
           (.ran r (.abi transition.returnType), ω')
-      | none => (.decodingFailed, ω)
+      | none =>                                                                                      -- steleExec.decodingFailed
+          (.ran (.result .decodingFailed) (.abi transition.returnType), ω)
   | none =>
       match receiveDispatchMsg contract I.calldata with
       | some transition =>                                                                           -- steleExec.receive
@@ -642,7 +641,7 @@ def steleExecRun (fuel : Nat) (o : Oracle Ω) (ω : Ω) (cfg : Config) (contract
                   let (r, ω') := execTransitionBody fuel o ω cfg contract evm callargs transition.body immutables
                   (.ran r rc, ω')
               | _, _ => (.malformed "fallback with an unsupported signature", ω)
-          | none => (.noDispatch, ω)
+          | none => (.ran (.result .noMatch) (.abi []), ω)                                            -- steleExec.noMatch
 
 /-- `steleCtorExec`, executable.  `none` when the argument count does not match. -/
 def steleCtorExecRun (fuel : Nat) (o : Oracle Ω) (ω : Ω) (cfg : Config) (contract : ContractDecl)

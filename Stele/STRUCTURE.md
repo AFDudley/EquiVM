@@ -51,6 +51,14 @@ supports transient aggregates as a specification extension. This does not imply 
 compiler support for transient arrays, mappings, or structs, or for local transient aliases.
 
 Currently, Stele does not currently model events, error payloads, or gas.
+
+Message execution (`steleExec`) produces `.noMatch` when no selector, `receive`, or
+`fallback` accepts the message, and `.decodingFailed` when a selected transition's
+calldata fails the configured argument decoder. Both outcomes occur before a function
+body runs. The interpreter reports them through the same `ExecResult` type. Missing
+entry points use the empty ABI return convention; decoding failures keep the selected
+transition's return convention.
+
 ```
 Stele/
 ├── Syntax.lean            umbrella: Syntax/Basic + Syntax/DecEq

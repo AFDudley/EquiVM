@@ -111,6 +111,8 @@ def compareExecution (evmRes : EVMResult) (r : ExecResult) (rc : ReturnConventio
   | .returned .., e => .disagree s!"spec returned, EVM {describeEvm e}"
   | .reverted, e => .disagree s!"spec reverted, EVM {describeEvm e}"
   | .staticViolation, e => .disagree s!"spec static violation, EVM {describeEvm e}"
+  -- These results are still related by the separate runtime-refinement cases below.
+  | .noMatch, _ | .decodingFailed, _ => .disagree "entry-point outcome has no execution-result equivalence"
   | .ok .., _ | .break .., _ | .continue .., _ => .disagree "spec body ended without a function result"
 
 /-- `runtimeRefinementFor`, decided for one run of each side. -/
@@ -119,11 +121,11 @@ def compareRuntime (evmRes : EVMResult) (spec : DispatchOutcome) : Verdict :=
   | .error .OutOfGass | .error .OutOfFuel => .evmOutOfGas                               -- runtimeRefinementFor.outOfGas
   | _ =>
     match spec with
-    | .noDispatch =>                                                                     -- runtimeRefinementFor.noDispatch
+    | .ran (.result .noMatch) _ =>                                                       -- runtimeRefinementFor.noDispatch
         match evmRes with
         | .ok (.revert _ _) => .agree "no dispatch, revert"
         | e => .disagree s!"spec dispatches nothing, EVM {describeEvm e}"
-    | .decodingFailed =>                                                                 -- runtimeRefinementFor.decodingFailed
+    | .ran (.result .decodingFailed) _ =>                                                 -- runtimeRefinementFor.decodingFailed
         match evmRes with
         | .ok (.revert _ _) => .agree "decoding failed, revert"
         | e => .disagree s!"spec calldata does not decode, EVM {describeEvm e}"

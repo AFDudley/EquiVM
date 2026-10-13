@@ -17,6 +17,12 @@ inductive ExecResult where
   | break : Frame -> EVM.State -> ExecResult
   | continue : Frame -> EVM.State -> ExecResult
   | reverted : ExecResult
+  /-- No entry point accepts the message: selector, receive, and fallback dispatch all fail.
+      Produced by `steleExec` before any function body runs. -/
+  | noMatch : ExecResult
+  /-- A selector selects an entry point, but the configured calldata decoder rejects its
+      arguments. Produced by `steleExec` before the selected function body runs. -/
+  | decodingFailed : ExecResult
   /-- Static-mode halt: a state-changing statement (storage write, event, value call, `new`) ran
       with `evm.executionEnv.perm = false`.  Mirrors the EVM's `StaticModeViolation` exception.
       The rules producing it are *additional* to the ordinary ones, which are not guarded by the
@@ -690,7 +696,9 @@ def ExecTransitionBody (cfg : Config) (contract : ContractDecl) (evm : EVM.State
     result
 
 /-- Stele transaction dispatch and execution, with `immutables` the values the deployed contract
-    was constructed with. -/
+    was constructed with. Dispatch and calldata-decoding failures are execution results, without
+    running a body. A missing entry point uses the empty ABI return convention; a decoding failure
+    retains the selected transition's return convention. -/
 inductive steleExec
     (conf : Config)
     (contract : ContractDecl) /- Spec -/
@@ -700,8 +708,16 @@ inductive steleExec
     (g : Ethereum.UInt256)
     (A : Ethereum.Substate)
     (I : Ethereum.ExecutionEnv)
-    (steleRes : ExecResult)
-: ReturnConvention -> Prop where
+: ExecResult -> ReturnConvention -> Prop where
+  | noMatch :
+    dispatchMsg contract I.calldata = .none →
+    steleExec conf contract immutables σ σ₀ g A I .noMatch (.abi [])
+  | decodingFailed :
+    selectorDispatchMsg contract I.calldata = .some transition →
+    conf.externalABI.decodeCalldata? (transition.params.map Param.name)
+      (transitionSignature transition).paramTypes I.calldata = .none →
+    steleExec conf contract immutables σ σ₀ g A I .decodingFailed
+      (.abi transition.returnType)
   | intro :
     /- Stele selector transition dispatch. -/
     selectorDispatchMsg contract I.calldata = .some transition →
