@@ -1,7 +1,7 @@
 import Benchmarks.CurveVault.DebitFinish
 import Benchmarks.CurveVault.MutationTransfer
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 theorem vaultDebitTailBody_eq (isWithdraw : Bool) :

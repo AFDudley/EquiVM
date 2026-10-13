@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.SnapshotBranches
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
@@ -52,7 +52,7 @@ theorem snapshotTimestampCall (v : UniswapV3PoolImmutables) (evm : EVM.State) (l
       (.internalCall "_blockTimestamp" [] "time")
       (.ok (snapshotTimeFrame v lower upper evm.accountMap evm.executionEnv) evm) := by
   exact internalCallFunctionReturn (callee := blockTimestampFunction) (argVals := []) (locals := ∅)
-    (calleeSolm := {contract := contract, locals := ∅, immutables := immStore v})
+    (calleeStele := {contract := contract, locals := ∅, immutables := immStore v})
     (value := some [.int (Int.ofNat (blockTimestampWord evm.executionEnv).toNat)])
     (by simp only [evalExprs?, pure]) blockTimestampLookup rfl (blockTimestampReturns (immStore v) evm)
 
@@ -94,7 +94,7 @@ theorem snapshotObserveCall (v : UniswapV3PoolImmutables) (evm : EVM.State) (low
     (locals := oracleObserveSingleLocals (blockTimestampWord evm.executionEnv) ⟨0⟩
       (slot0TickValue evm.accountMap evm.executionEnv) (slot0FieldWord 23 2 evm.accountMap evm.executionEnv)
       (poolLiquidityWord evm.accountMap evm.executionEnv) (slot0FieldWord 25 2 evm.accountMap evm.executionEnv))
-    (calleeSolm := frame) (value := some (snapshotCurrent evm.accountMap evm.executionEnv).cumulatives)
+    (calleeStele := frame) (value := some (snapshotCurrent evm.accountMap evm.executionEnv).cumulatives)
     (evalSnapshotObserveArgs v evm lower upper) oracleObserveSingleLookup
     (oracleObserveSingleBind _ ⟨0⟩ _ _ _ _) hbody
 
@@ -110,7 +110,7 @@ theorem snapshotInsideReturns (v : UniswapV3PoolImmutables) (evm : EVM.State) (l
   refine ExecBlock.consNormal (ExecStmt.letDecl (value := .int (snapshotCurrent evm.accountMap evm.executionEnv).tickCumulative) ?_) ?_
   · simp [evalExpr?, snapshotObservedFrame, OracleObservation.cumulatives,
       EvalResult.ofOption, bind, EvalResult.bind, tupleGetValue?]
-  refine ExecBlock.consNormal (solm' := snapshotInsideFrame v lower upper evm.accountMap evm.executionEnv)
+  refine ExecBlock.consNormal (stele' := snapshotInsideFrame v lower upper evm.accountMap evm.executionEnv)
     (evm' := evm) (ExecStmt.letDecl ?_) ?_
   · simp [evalExpr?, snapshotObservedFrame, OracleObservation.cumulatives, Std.HashMap.getElem_insert,
       EvalResult.ofOption, bind, EvalResult.bind, tupleGetValue?]

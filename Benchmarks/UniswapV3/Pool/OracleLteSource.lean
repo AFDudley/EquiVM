@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.OracleTransformSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
 
@@ -84,11 +84,11 @@ theorem oracleLteReturns (imms : Store) (evm : EVM.State) (time a b : UInt256)
     refine ⟨fb, ExecFuncBody.execBlockRet ?_⟩
     refine ExecBlock.consNormal (ExecStmt.iteFalse ?_ ExecBlock.nil) ?_
     · simpa only [h, decide_false] using evalOracleLteCondition imms evm time a b
-    refine ExecBlock.consNormal (solm' := fa) (evm' := evm) (ExecStmt.letDecl ?_) ?_
+    refine ExecBlock.consNormal (stele' := fa) (evm' := evm) (ExecStmt.letDecl ?_) ?_
     · exact evalOracleAdjusted time a
         (by simp [oracleLteFrame, oracleLteLocals])
         (by simp [oracleLteFrame, oracleLteLocals, Std.HashMap.getElem_insert]) ha
-    refine ExecBlock.consNormal (solm' := fb) (evm' := evm) (ExecStmt.letDecl ?_) ?_
+    refine ExecBlock.consNormal (stele' := fb) (evm' := evm) (ExecStmt.letDecl ?_) ?_
     · exact evalOracleAdjusted time b
         (by simp [fa, oracleLteLocals, Std.HashMap.getElem_insert])
         (by simp [fa, oracleLteLocals, Std.HashMap.getElem_insert]) hb
@@ -109,7 +109,7 @@ theorem oracleLteCall (locals imms : Store) (evm : EVM.State) (args : List Expr)
           locals := locals.insert name (.bool (oracleLte time a b))
           immutables := imms } evm) := by
   obtain ⟨frame, hbody⟩ := oracleLteReturns imms evm time a b ha hb
-  exact internalCallFunctionReturn (callee := oracleLteFunction) (calleeSolm := frame)
+  exact internalCallFunctionReturn (callee := oracleLteFunction) (calleeStele := frame)
     (value := some [.bool (oracleLte time a b)]) hargs oracleLteLookup (oracleLteBind time a b) hbody
 
 end Benchmarks.UniswapV3.Pool

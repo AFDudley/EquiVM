@@ -2,7 +2,7 @@ import Benchmarks.Dss.Dog.Dispatch
 import Reasoning.MemCascade
 import Reasoning.ABIComposite
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Dog.Immutables
 
 set_option maxHeartbeats 0
@@ -141,7 +141,7 @@ theorem evalExpr_fileUintWhatEq_false {v : DogImmutables} {evm : EVM.State}
 
 theorem assign_fileUintHoleStorage (v : DogImmutables) (evm : EVM.State)
     {locals : Store} (data : UInt256) (hbase : locals.get? "Hole" = none) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨4⟩ data
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨4⟩ data
     assignStorageRef? config { contract := contract, locals := locals, immutables := immStore v } evm
       .storage HoleRef (.int (Int.ofNat data.toNat)) =
         .ok ({ contract := contract, locals := locals, immutables := immStore v }, evm') := by
@@ -168,7 +168,7 @@ theorem fileUintHoleSourceBodySplit {v : DogImmutables} {σ σ₀ A I} {g : UInt
     (hwhat : fileUintWhat I = fileUintHoleBytes) :
     let locals := fileUintLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-    let evm1 := Solm.EVM.storageStore evm0 I.codeOwner ⟨4⟩ (fileUintData I)
+    let evm1 := Stele.EVM.storageStore evm0 I.codeOwner ⟨4⟩ (fileUintData I)
     (ExecTransitionBody config contract evm0 locals fileUintTransition.body
       (.returned { contract := contract, locals := locals, immutables := immStore v } evm1 none) (immStore v)) ∧
       (I.perm = false → ExecTransitionBody config contract
@@ -881,7 +881,7 @@ theorem dogFileUintBodyCoreOk
     rw [show fileUintTransition.returnType = [] by rfl]
     exact returnEquiv.fallthrough rfl (by rfl) (by native_decide)
   by_cases hauthEvm : solcSlotWordAt callerSlot σ I = ⟨1⟩
-  · have hauthSolm : solcSlotWordAt callerSlot σ I = ⟨1⟩ := by
+  · have hauthStele : solcSlotWordAt callerSlot σ I = ⟨1⟩ := by
       rw [← hcallerWord]
       exact hauthEvm
     have hauthSolc :
@@ -889,7 +889,7 @@ theorem dogFileUintBodyCoreOk
       simpa [callerSlot, dogCallerWardsSlot, solcSlotWordAt] using hauthEvm
     by_cases hwhat : fileUintWhat I = fileUintHoleBytes
     · let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-      let evm1 := Solm.EVM.storageStore evm0 I.codeOwner ⟨4⟩ data
+      let evm1 := Stele.EVM.storageStore evm0 I.codeOwner ⟨4⟩ data
       have hbodySplit :
           (ExecTransitionBody config contract evm0 locals fileUintTransition.body
             (.returned { contract := contract, locals := locals, immutables := immStore v } evm1 none) (immStore v)) ∧
@@ -898,7 +898,7 @@ theorem dogFileUintBodyCoreOk
         simpa [evm0, evm1, locals, data] using
           (fileUintHoleSourceBodySplit (v := v)
             (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
-            hwv hauthSolm hwhat)
+            hwv hauthStele hwhat)
       rcases RD.dogFileUintSuccessSplit hpatch hreach hsz68 hsize hauthSolc hwhat with
         ⟨_hperm, hret⟩ | ⟨hperm, hstatic⟩
       swap
@@ -916,13 +916,13 @@ theorem dogFileUintBodyCoreOk
         simpa [evm0, locals] using
           (fileUintUnrecognizedSourceBody (v := v)
             (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
-            hwv hauthSolm hwhat)
+            hwv hauthStele hwhat)
       have hrev := RD.dogFileUintUnrecognizedParamRevert
         hpatch hreach hsz68 hsize hauthSolc hwhat
       exact hrev.reEquivExecutionRevert hcode hdispatch hdecode hbody
-  · have hauthSolm : solcSlotWordAt callerSlot σ I ≠ ⟨1⟩ := by
-      intro hsolm
-      exact hauthEvm (by rw [hcallerWord, hsolm])
+  · have hauthStele : solcSlotWordAt callerSlot σ I ≠ ⟨1⟩ := by
+      intro hstele
+      exact hauthEvm (by rw [hcallerWord, hstele])
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     have hbody :
         ExecTransitionBody config contract evm0 locals fileUintTransition.body
@@ -930,9 +930,9 @@ theorem dogFileUintBodyCoreOk
       have hguard := dogAuthGuardEval_false (v := v)
         (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
         (g := Sat256.ofUInt256 g) (locals := locals)
-        (by simp [locals, fileUintLocals]) hauthSolm
+        (by simp [locals, fileUintLocals]) hauthStele
       have hblock := nonpayableSecondRequireReverts
-        (cfg := config) (solm := { contract := contract, locals := locals, immutables := immStore v })
+        (cfg := config) (stele := { contract := contract, locals := locals, immutables := immStore v })
         (evm := evm0)
         (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
         (rest := [

@@ -11,7 +11,7 @@ and `ok = extcall TOKEN.transfer(msg.sender, amount)` (pc 1209, the `CALL` at 12
 the decode checks 1266/1289), `require(ok)` (pc 1300, revert 1321) and the `RETURN` (pc 1435).
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
   Reasoning.VyperCalls
 open Reasoning.VyperImmutables
 
@@ -53,7 +53,7 @@ theorem uDecode_short {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) (hshort :
 /-- `shares[msg.sender] := v` through the backend. -/
 theorem assignSharesCaller (imms L : Store) (evm : EVM.State) (v : UInt256) (hL : L.get? "shares" = none) :
     assignStorageRef? config (frame imms L) evm .storage shRef (uint256Value v) =
-      .ok (frame imms L, Solm.EVM.storageStore evm evm.executionEnv.codeOwner (sharesSlot evm.executionEnv.source) v) := by
+      .ok (frame imms L, Stele.EVM.storageStore evm evm.executionEnv.codeOwner (sharesSlot evm.executionEnv.source) v) := by
   apply assignStorageRef_storage_vyper_scalar (hbackend := rfl) (hcheck := by rfl)
     (er := { base := "shares", steps := [.mindex (.address evm.executionEnv.source)] })
     (hleaf := Or.inl ⟨_, rfl⟩) (ty := .elem (.int (.uint ⟨256, by decide⟩))) (loc := vyperUint256Loc (sharesSlot evm.executionEnv.source))
@@ -66,7 +66,7 @@ theorem assignSharesCaller (imms L : Store) (evm : EVM.State) (v : UInt256) (hL 
 /-- `totalShares := v` through the backend. -/
 theorem assignTs (imms L : Store) (evm : EVM.State) (v : UInt256) (hL : L.get? "totalShares" = none) :
     assignStorageRef? config (frame imms L) evm .storage tsRef (uint256Value v) =
-      .ok (frame imms L, Solm.EVM.storageStore evm evm.executionEnv.codeOwner (UInt256.ofNat 2) v) := by
+      .ok (frame imms L, Stele.EVM.storageStore evm evm.executionEnv.codeOwner (UInt256.ofNat 2) v) := by
   apply assignStorageRef_storage_vyper_scalar (hbackend := rfl) (hcheck := by rfl)
     (er := { base := "totalShares", steps := [] })
     (hleaf := Or.inl ⟨_, rfl⟩) (ty := .elem (.int (.uint ⟨256, by decide⟩))) (loc := vyperUint256Loc (UInt256.ofNat 2))
@@ -228,7 +228,7 @@ theorem wrapperUnwrapBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hfit : im
     memLoad_write_back _ _ 96 (by decide) (by rw [hu1]; exact lt_usize _ (by decide))
   have hload64 : memLoad (UInt256.ofNat 64) (uM4 (addrWord a) I hw) = hw :=
     memLoad_write_back _ _ 64 (by decide) (by rw [hu2]; exact lt_usize _ (by decide))
-  -- Solm after the first call
+  -- Stele after the first call
   set L2 : Store := L1.insert "held" (uint256Value hw) with hL2
   have hdecode : config.externalABI.decode? "balanceOf" out = some [uint256Value hw] := by
     rw [decode_balanceOf, decodeReturn_uint256_ok out h32 (by omega), hhw]; rfl
@@ -341,9 +341,9 @@ theorem wrapperUnwrapBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hfit : im
   have hsub1 := evalExpr_uint256_sub hsh' (hso3 _) hund
   set sh1 := UInt256.sub (solcSlotWordAt (sharesSlot I.source) σ' I) (argWord I) with hsh1
   have hassign1 : assignStorageRef? config (frame imms L3) evm' .storage shRef (uint256Value sh1) =
-      .ok (frame imms L3, Solm.EVM.storageStore evm' I.codeOwner (sharesSlot I.source) sh1) := by
+      .ok (frame imms L3, Stele.EVM.storageStore evm' I.codeOwner (sharesSlot I.source) sh1) := by
     rw [assignSharesCaller imms _ _ _ (by simp [hL3, hL2, hL1]), hs'.env]
-  set evm1 := Solm.EVM.storageStore evm' I.codeOwner (sharesSlot I.source) sh1 with hevm1
+  set evm1 := Stele.EVM.storageStore evm' I.codeOwner (sharesSlot I.source) sh1 with hevm1
   have hs1 : SourceState (initState σ σ₀ (Sat256.ofUInt256 g) A I) I (sstoreAccountMap I.codeOwner σ' (sharesSlot I.source) sh1) evm1 :=
     hs'.storageWrite _ _
   by_cases hperm : I.perm = true
@@ -409,9 +409,9 @@ theorem wrapperUnwrapBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hfit : im
   have hsub2 := evalExpr_uint256_sub hts1 (hso3 _) hund2
   set ts2 := UInt256.sub ts1 (argWord I) with hts2
   have hassign2 : assignStorageRef? config (frame imms L3) evm1 .storage tsRef (uint256Value ts2) =
-      .ok (frame imms L3, Solm.EVM.storageStore evm1 I.codeOwner (UInt256.ofNat 2) ts2) := by
+      .ok (frame imms L3, Stele.EVM.storageStore evm1 I.codeOwner (UInt256.ofNat 2) ts2) := by
     rw [assignTs imms _ _ _ (by simp [hL3, hL2, hL1]), hs1.env]
-  set evm2 := Solm.EVM.storageStore evm1 I.codeOwner (UInt256.ofNat 2) ts2 with hevm2
+  set evm2 := Stele.EVM.storageStore evm1 I.codeOwner (UInt256.ofNat 2) ts2 with hevm2
   have hs2 : SourceState (initState σ σ₀ (Sat256.ofUInt256 g) A I) I
       (sstoreAccountMap I.codeOwner (sstoreAccountMap I.codeOwner σ' (sharesSlot I.source) sh1) (UInt256.ofNat 2) ts2) evm2 :=
     hs1.storageWrite _ _
@@ -550,7 +550,7 @@ theorem wrapperUnwrapBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hfit : im
     memLoad_of_read _ 96 amt (by decide) (by rw [hM9size]; decide) hread96
   rw [ulit_toNat' 96 (by decide), ulit_toNat' 32 (by decide), ulit_toNat' 160 (by decide), hload96',
     write32_read_below _ _ 160 96 (by rw [toByteArray_size]) (by rw [hM9size] <;> omega) (by decide), hread96] at rd19
-  -- Solm: `ok = true`, the event and the return
+  -- Stele: `ok = true`, the event and the return
   have hdec2 : config.externalABI.decode? "transfer" out2 = some [.bool true] := by
     rw [decode_transfer, decodeReturn_bool_one out2 h32' (by omega) (by rw [hbw]; exact hone)]; rfl
   set L5 : Store := L4.insert "ok" (.bool true) with hL5

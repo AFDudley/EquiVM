@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.NextSqrt0Denominator
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
 
@@ -55,7 +55,7 @@ theorem nextSqrt0CastReturns (imms : Store) (evm : EVM.State) (a : NextSqrtArgs)
       (.ok (nextSqrt0CastFrame imms a) evm) :=
   internalCallFunctionReturn (callee := safeCast160Function)
     (locals := safeCast160Locals (nextSqrt0FullResult a))
-    (calleeSolm := safeCast160ReadyFrame imms (nextSqrt0FullResult a))
+    (calleeStele := safeCast160ReadyFrame imms (nextSqrt0FullResult a))
     (value := some [.int (Int.ofNat (nextSqrt0FullResult a).toNat)])
     (evalNextSqrt0CastArgs imms evm a ha) safeCast160Lookup (safeCast160Bind _)
     (safeCast160Returns imms evm _ hv)

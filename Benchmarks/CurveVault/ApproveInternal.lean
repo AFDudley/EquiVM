@@ -3,7 +3,7 @@ import Benchmarks.CurveVault.Memory
 import Benchmarks.CurveVault.RuntimeBlocks_030
 import Reasoning.ExternalCall
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 abbrev vaultApproveFunction : FunctionDecl := contract.functions[33]!
@@ -16,7 +16,7 @@ theorem vaultApproveSource (evm : State) (owner spender : AccountAddress) (value
     ExecFuncBody config {contract := contract, locals := vaultApproveLocals owner spender value}
       evm vaultApproveFunction.body
       (.returned {contract := contract, locals := vaultApproveLocals owner spender value}
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner (vaultAllowanceSlot owner spender) value) none) := by
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner (vaultAllowanceSlot owner spender) value) none) := by
   let locals := vaultApproveLocals owner spender value
   have ha (s : State) : evalExpr? config {contract := contract, locals := locals} s (.var "_owner") =
       .ok (.address owner) := by simp [evalExpr?, EvalResult.ofOption, locals, vaultApproveLocals]

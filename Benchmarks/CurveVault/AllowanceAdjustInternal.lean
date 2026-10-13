@@ -1,7 +1,7 @@
 import Benchmarks.CurveVault.AllowanceAdjustFinish
 import Benchmarks.CurveVault.MutatingLock
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 def vaultAdjustLocals (increase : Bool) (spender : AccountAddress) (delta : UInt256) : Store :=
@@ -38,7 +38,7 @@ theorem vaultAdjustRoutine (increase : Bool) {I : ExecutionEnv} {g : Sat256} {s0
     unfold evm0 vaultSetLock
     rw [hs.env]
     exact sourceStateTransientWrite hs ⟨0⟩ ⟨1⟩
-  have hread : Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner
+  have hread : Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner
       (vaultAllowanceSlot evm0.executionEnv.source (AccountAddress.ofNat spender.toNat)) = old := by
     simpa only [hs0.env] using hs0.storageRead (vaultAllowanceSlot I.source (AccountAddress.ofNat spender.toNat))
   have hprefix := vaultAdjustPrefixSource increase evm0 locals (AccountAddress.ofNat spender.toNat)

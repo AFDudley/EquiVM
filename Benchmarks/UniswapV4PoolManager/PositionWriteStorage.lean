@@ -1,12 +1,12 @@
 import Benchmarks.UniswapV4PoolManager.PositionStorage
 import Benchmarks.UniswapV4PoolManager.WordPackedStore
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 
 def positionLiquidityStore (evm : EVM.State) (id key value : UInt256) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (positionSlot id key)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (positionSlot id key)
     (wordLowSet (positionPackedWord evm id key) value 128)
 
 theorem positionLiquidity_bound (evm : EVM.State) (id key : UInt256) :
@@ -29,7 +29,7 @@ def positionFeeSlot (id key : UInt256) (second : Bool) : UInt256 :=
 def positionFeeRef (id key : UInt256) (second : Bool) : EvaledStorageRef :=
   {base := "_pools", steps := (positionRef id key).steps ++ [.field (positionFeeName second)]}
 def positionFeeWord (evm : EVM.State) (id key : UInt256) (second : Bool) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (positionFeeSlot id key second)
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (positionFeeSlot id key second)
 
 theorem positionFee_type (second : Bool) :
     storageTypeStep? positionStateType (.field (positionFeeName second)) =
@@ -55,7 +55,7 @@ theorem positionFee_read {f : Frame} {evm : EVM.State} {name : Ident} {id key : 
 theorem positionFee_write {f : Frame} {evm : EVM.State} {name : Ident} {id key value : UInt256}
     (hs : f.locals.get? name = some (positionRefValue id key)) (second : Bool) :
     assignStorageRef? config f evm .storage {base := name, steps := [.field (positionFeeName second)]}
-      (.int (Int.ofNat value.toNat)) = .ok (f, Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+      (.int (Int.ofNat value.toNat)) = .ok (f, Stele.EVM.storageStore evm evm.executionEnv.codeOwner
         (positionFeeSlot id key second) value) :=
   assignResolvedStorageScalar (resolveStorageAliasField hs (positionFee_type second)) rfl
     (positionFee_loc id key second) (storageLocStore_uint256 evm _ value)

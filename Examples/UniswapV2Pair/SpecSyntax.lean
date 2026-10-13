@@ -1,8 +1,8 @@
 import Examples.UniswapV2Pair.Spec
-import Solm.Notation
+import Stele.Notation
 
 /-!
-# UniswapV2Pair spec in the Solidity-faithful Solm frontend
+# UniswapV2Pair spec in the Solidity-faithful Stele frontend
 
 The whole Pair benchmark spec (LP-token surface, permit, and the mutating AMM entry points),
 written with `solidity%` and proven definitionally equal to the AST spec in
@@ -22,7 +22,7 @@ Escapes, where the surface cannot express the AST:
 `UniswapV2Pair.contract.transitions` (selector order).
 -/
 
-open Solm Solm.Notation
+open Stele Stele.Notation
 
 namespace UniswapV2Pair.Syntax
 

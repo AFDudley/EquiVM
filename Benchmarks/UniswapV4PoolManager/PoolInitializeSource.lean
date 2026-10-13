@@ -2,7 +2,7 @@ import Benchmarks.UniswapV4PoolManager.PoolCheckSource
 import Benchmarks.UniswapV4PoolManager.Slot0InitializeSource
 import Benchmarks.UniswapV4PoolManager.TickPriceSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 
@@ -13,7 +13,7 @@ theorem poolInitialize_lookup : lookupCallable? contract "Pool_initialize" =
 def poolInitializeWord (price tick fee : UInt256) : UInt256 :=
   slot0LPFeeWord (slot0SetTickWord (slot0SetSqrtWord ⟨0⟩ price) tick) fee
 def poolInitializePost (evm : EVM.State) (id price tick fee : UInt256) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (poolSlot id) (poolInitializeWord price tick fee)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (poolSlot id) (poolInitializeWord price tick fee)
 def poolInitializeTailResult (f : Frame) (evm : EVM.State) (id price tick fee : UInt256) : ExecResult :=
   if evm.executionEnv.perm = false then .staticViolation else
     .returned f (poolInitializePost evm id price tick fee) (some [.int (EVM.signed tick)])

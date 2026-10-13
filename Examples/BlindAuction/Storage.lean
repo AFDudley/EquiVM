@@ -1,7 +1,7 @@
 import Examples.BlindAuction.Common
 import Reasoning.Storage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -17,7 +17,7 @@ Generic storage-map facts are imported from `Reasoning.Storage`.
 
 theorem blindAuctionStorageLocStore_uint256_natCast (evm : EVM.State) (slot val : UInt256) :
     storageLocStore evm (blindAuctionUint256Loc slot) (.int ↑val.toNat) =
-      some (Solm.EVM.storageStore evm evm.executionEnv.codeOwner slot val) := by
+      some (Stele.EVM.storageStore evm evm.executionEnv.codeOwner slot val) := by
   change storageLocStore evm (blindAuctionUint256Loc slot) (.int (Int.ofNat val.toNat)) = _
   erw [storageLocStore_uint256]
 

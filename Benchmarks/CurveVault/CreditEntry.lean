@@ -1,7 +1,7 @@
 import Benchmarks.CurveVault.CreditInternal
 import Benchmarks.CurveVault.MutationEntry
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 def vaultCreditEntryBody (isDeposit : Bool) : List Stmt :=

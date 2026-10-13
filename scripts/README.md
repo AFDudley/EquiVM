@@ -30,8 +30,8 @@ scripts/scaffold.py blocks --dir $D --module $M
 scripts/bytecode_report.py $D -o $D/REPORT.md
 
 # 5. the spec draft (holes fail to elaborate until closed; --comment-holes to check the rest)
-scripts/sol2solm.py $D --namespace $M -o $D/SpecSyntax.lean --spec-json $D/Foo.spec.json
-#    (Vyper: scripts/vy2solm.py, same arguments, from the pinned annotated AST)
+scripts/sol2stele.py $D --namespace $M -o $D/SpecSyntax.lean --spec-json $D/Foo.spec.json
+#    (Vyper: scripts/vy2stele.py, same arguments, from the pinned annotated AST)
 
 # 6. the proof skeleton: Spec, Common, Dispatch (proved), <Fn>.lean stubs, Constructor, Correct
 scripts/proof_skeleton.py --dir $D --module $M
@@ -61,10 +61,10 @@ Vyper's `pc_pos_map` for block-to-source line annotations; solc AST function ran
 Check the source and `<Name>.storage.json` together before writing `SpecSyntax.lean`.
 
 `compile` also pins the annotated AST (`<Name>.vy.ast.json`, and the `ast` entry of the build
-JSON), from which `vy2solm.py` drafts the specification:
+JSON), from which `vy2stele.py` drafts the specification:
 
 ```bash
-scripts/vy2solm.py <Dir> --namespace <Module> -o <Dir>/SpecSyntax.lean --spec-json <Dir>/<Name>.spec.json
+scripts/vy2stele.py <Dir> --namespace <Module> -o <Dir>/SpecSyntax.lean --spec-json <Dir>/<Name>.spec.json
 ```
 
 The draft has one transition per selector, including the variants Vyper generates for default
@@ -79,7 +79,7 @@ are bound external calls with the EXTCODESIZE guard Vyper emits for calls withou
 becomes an index loop. What it cannot translate is a hole (`abi_encode`, `create_*`, decimals,
 bytes literals, …). The spec JSON lists every selector with its parameters, the ones with a
 Vyper capacity (for `externalABI.withVyperABI`), the external calls, and the lock protocol.
-`check_sol2solm.py` elaborates Vyper drafts too; it picks the translator from the build JSON.
+`check_sol2stele.py` elaborates Vyper drafts too; it picks the translator from the build JSON.
 Use `Examples/VyperERC20/SpecSyntax.lean` as a reference when closing holes. Once the spec
 builds, generate the Config shell:
 
@@ -120,19 +120,19 @@ for a complete Vyper proof and `Examples/VyperImmutable` for the immutable suffi
 | `scaffold.py lean` | `Bytecode.lean`, `Selectors.lean`, `Immutables.lean`, `ImmutableCode.lean` | Selector table in `SpecSyntax.lean` order when that file exists, else by selector value. Selector facts are spec-independent keccak facts; the bridge to each transition is in the skeleton's `Common.lean`. |
 | `scaffold.py blocks` | `RuntimeBlocks_NNN.lean`, `CreationBlocks_NNN.lean`, `.index` files | `generate_rd_blocks.py` driven with the right code terms, immutable-aware when needed. |
 | `scaffold.py check` | report | Lean bytes vs hex, jump tables vs the EVM scan, selector table vs ABI and spec order, immutable offsets, source hashes. |
-| `scaffold.py difftest` | `DiffTarget.lean`, `Tests/DiffTest/Generated.lean` | The contract's `Target` for the differential suite (spec, config, runtime, creation code, immutable plumbing when the contract has immutables) and the registry of every `DiffTarget.lean` in the repository, which `lake exe solm-difftest` runs. Delete a `DiffTarget.lean` and rerun to unregister. |
+| `scaffold.py difftest` | `DiffTarget.lean`, `Tests/DiffTest/Generated.lean` | The contract's `Target` for the differential suite (spec, config, runtime, creation code, immutable plumbing when the contract has immutables) and the registry of every `DiffTarget.lean` in the repository, which `lake exe stele-difftest` runs. Delete a `DiffTarget.lean` and rerun to unregister. |
 | `bytecode_report.py` | Markdown | Opcode census, dispatcher, JUMPDEST set and annotated blocks. Solc reports AST function ranges and internal routines; Vyper reports source lines from `pc_pos_map`. |
-| `sol2solm.py` | `SpecSyntax.lean` draft, optional `.spec.json` | From the solc AST: storage (persistent and `transient`)/structs/events/immutables, constructor with base constructors and initialisers inlined, external functions (modifiers inlined, getters generated), reachable internal and library functions, checked arithmetic from static types, external calls bound with view flags and EXTCODESIZE guards, via-IR calldata guard. Holes for what it cannot translate. |
-| `vy2solm.py` | `SpecSyntax.lean` draft, optional `.spec.json` | From the Vyper annotated AST: storage in layout order (modules prefixed), structs/events/immutables, constructor, one transition per selector (default-argument variants, getters, module exports), reachable internal functions, checked arithmetic and `convert` from static types, the `@nonreentrant` lock protocol, external calls bound with view flags and Vyper's EXTCODESIZE guard, `send`/`raw_call` as low-level calls. Holes for what it cannot translate. |
+| `sol2stele.py` | `SpecSyntax.lean` draft, optional `.spec.json` | From the solc AST: storage (persistent and `transient`)/structs/events/immutables, constructor with base constructors and initialisers inlined, external functions (modifiers inlined, getters generated), reachable internal and library functions, checked arithmetic from static types, external calls bound with view flags and EXTCODESIZE guards, via-IR calldata guard. Holes for what it cannot translate. |
+| `vy2stele.py` | `SpecSyntax.lean` draft, optional `.spec.json` | From the Vyper annotated AST: storage in layout order (modules prefixed), structs/events/immutables, constructor, one transition per selector (default-argument variants, getters, module exports), reachable internal functions, checked arithmetic and `convert` from static types, the `@nonreentrant` lock protocol, external calls bound with view flags and Vyper's EXTCODESIZE guard, `send`/`raw_call` as low-level calls. Holes for what it cannot translate. |
 | `proof_skeleton.py` | `Spec.lean`, `Common.lean`, `Dispatch.lean`, `<Fn>.lean`, `Constructor.lean`, `Correct.lean` | solc: the compare-chain or binary-search dispatcher; Vyper: the jump-table dispatcher (`Reasoning/VyperDispatch.lean`), Vyper storage and ABI defaults in `Spec.lean` that need capacity review, the `deployed_of_fit` stub for immutables, and with `--wf <name>` the storage-precondition form of the runtime theorems. |
-| `check_sol2solm.py` | report | Translates every given directory (solc or Vyper, by the build JSON) and elaborates the drafts (holes as comments). |
+| `check_sol2stele.py` | report | Translates every given directory (solc or Vyper, by the build JSON) and elaborates the drafts (holes as comments). |
 | `finish_check.py` | report | Build, differential suite on the contract (`--difftest-count`, `--skip-difftest`), `sorry`/`admit`/`axiom` grep, `#print axioms` against the accepted trusted base. |
 | `check_all_benchmark_blocks.py` | report | Check that benchmark block summaries compile, excluding temporary contracts under `Benchmarks/Scaffolds/`. CI selects `UniswapV3/Pool`. |
 
 ## Conventions the generators follow
 
 - Transition order is the `SpecSyntax.lean` function order; the translator writes them in selector
-  order, which is the compiled dispatcher order. `vy2solm.py` keeps the selector variants of one
+  order, which is the compiled dispatcher order. `vy2stele.py` keeps the selector variants of one
   source function (default arguments) adjacent, the grouping `scaffold.py` applies when it
   derives the selector table from an existing `SpecSyntax.lean`.
 - Declarations are prefixed with the lowerCamel contract name (`fooBytecode`, `fooSelBytes`,
@@ -146,11 +146,11 @@ for a complete Vyper proof and `Examples/VyperImmutable` for the immutable suffi
   library structs. Named storage returns and local pointer assignments bind aliases. Library
   extension calls include their receiver; colliding struct names are qualified by their owner.
 - Memory structs, arrays, `bytes` and `string` are passed to internal functions by reference in
-  Solidity but by value in Solm. A callee that may modify one (directly, or through a callee)
+  Solidity but by value in Stele. A callee that may modify one (directly, or through a callee)
   returns its final value after the declared results, and the caller assigns it back to the
   argument's path. Overlapping arguments, a parameter that is reassigned and modified, and a
   modification through a local alias of a parameter are holes.
-- Contracts with a `fallback`/`receive` get `sorry` stubs for the Solm dispatch facts: the
+- Contracts with a `fallback`/`receive` get `sorry` stubs for the Stele dispatch facts: the
   unmatched-selector path then runs the fallback instead of reverting.
 
 ## Tests
@@ -158,13 +158,13 @@ for a complete Vyper proof and `Examples/VyperImmutable` for the immutable suffi
 ```bash
 python3 scripts/test_generate_rd_blocks.py
 python3 scripts/test_scaffold_tools.py
-VYPER=/path/to/vyper-0.4.3 python3 -B -m unittest discover -s scripts -p test_vy2solm.py
+VYPER=/path/to/vyper-0.4.3 python3 -B -m unittest discover -s scripts -p test_vy2stele.py
 ```
 
 `Misc/scaffold-prompt.md` is the agent brief that runs these scripts from a contract to a
 ready-to-prove scaffold.
 
-The differential suite (`lake exe solm-difftest`, `Tests/DiffTest/README.md`) runs every
+The differential suite (`lake exe stele-difftest`, `Tests/DiffTest/README.md`) runs every
 specification against its bytecode.  `scaffold.py difftest` registers a contract; once its
-specification compiles, `lake exe solm-difftest --only <Name> --count 50` tests it before any
+specification compiles, `lake exe stele-difftest --only <Name> --count 50` tests it before any
 proof is attempted, and `finish_check.py` runs it again at acceptance.

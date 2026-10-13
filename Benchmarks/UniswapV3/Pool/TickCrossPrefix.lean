@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.TickCrossModel
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 1000
 
@@ -12,7 +12,7 @@ macro "tick_cross_get" : tactic => `(tactic| (
 theorem tickCrossPrefix (imms : Store) (evm : EVM.State) (a : TickCrossArgs) :
     ExecBlock config (tickCrossFrame imms a) evm (tickCrossFunction.body.take 2)
       (.ok (tickCrossAliasFrame imms a) evm) := by
-  refine ExecBlock.consNormal (solm' := tickCrossZeroFrame imms a)
+  refine ExecBlock.consNormal (stele' := tickCrossZeroFrame imms a)
     (ExecStmt.letDecl (by simp only [evalExpr?, pure])) ?_
   refine ExecBlock.consNormal (ExecStmt.letStorage ?_) ExecBlock.nil
   apply resolveTickReference _ imms evm "tick" a.tick

@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Cat.BiteBodyReach
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 4000000
@@ -8,7 +8,7 @@ set_option maxHeartbeats 4000000
 section
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 2000000
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Cat
 
@@ -339,7 +339,7 @@ theorem kickEncodeP_eq (p urn vow tab dink : UInt256) {mem : ByteArray}
 
 /-- `2516 → 2532`: the EXTCODESIZE guard (`RD.solcExtcodesizeGuardOkGas`) + the `kick` `CALL`
 (`perm := true`, value `0`, `depth < 1024`, inOff/retOff `p`, argsLen `164`, retLen `32`) + the
-`Θ`→Solm coupling (`callCoincides`).  The kick `CALL` copies its 1-word return `o'` (the auction `id`)
+`Θ`→Stele coupling (`callCoincides`).  The kick `CALL` copies its 1-word return `o'` (the auction `id`)
 into memory at `p`, so the post-call memory is `o'.write 0 mem' p (min 32 o'.size)`.  Generic in the
 `targetWord`/`args`/`hencode` so the caller instantiates the spec-side values. -/
 theorem catBiteKickGuardCallP {σ σ₀ A I} {g : UInt256}
@@ -897,7 +897,7 @@ theorem catBiteReachKickC {σ σ₀ A I} {g : UInt256}
         max_eq_left (by omega)]
     rw [hinner]; exact awInv32 aw (by omega)
   rw [hawEq] at rd2532raw
-  -- the spec-side call coincidence (Θ ↔ Solm)
+  -- the spec-side call coincidence (Θ ↔ Stele)
   have hcall : typedCallViaEVM config
       { initState σ σ₀ (Sat256.ofUInt256 g) A I with
         accountMap := σx }

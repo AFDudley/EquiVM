@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.OracleSurroundingCompare
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
 
@@ -48,7 +48,7 @@ theorem oracleSurroundingSearchReturns (imms : Store) (evm : EVM.State) (time ta
   obtain ⟨calleeFrame, hbody⟩ := oracleSearchReturns imms evm time target index cardinality
     before after hn hc ht hrun
   have hcall := internalCallFunctionReturn (cfg := config) (caller := f) (evm := evm)
-    (callee := oracleSearchFunction) (calleeSolm := calleeFrame)
+    (callee := oracleSearchFunction) (calleeStele := calleeFrame)
     (retVar := "__c3") (value := some [before.value, after.value])
     hargs oracleSearchLookup (oracleSearchBind time target index cardinality) hbody
   let ft := resumeAfterInternalCall f "__c3" (some [before.value, after.value])

@@ -1387,22 +1387,22 @@ ModifyLiquidity, Swap, and Donate. The tight gas-bound audit below remains valid
 
 During the `exttload(bytes32[])` proof, a legal empty array with one trailing
 calldata byte exposed a specification error in `calldataWordAt`: its direct
-`uint256(data[offset + j])` cast is rejected by Solm because indexing bytes
+`uint256(data[offset + j])` cast is rejected by Stele because indexing bytes
 produces `bytes1`. Both `exttload(bytes32[])` and `extsload(bytes32[])` returned
-64 bytes successfully in the EVM while Solm reported `spec stuck: assign: type error`.
+64 bytes successfully in the EVM while Stele reported `spec stuck: assign: type error`.
 The specification now converts through `uint8` before widening to `uint256`.
 The diagnostic is `EmptyArrayDiagnostic.lean`; run it with
 `lake env lean --run Benchmarks/UniswapV4PoolManager/EmptyArrayDiagnostic.lean`.
 All four diagnostic cases agree on success after the correction. The full differential
 suite was rerun afterward: 1875 cases, 1856 agree (634 successful), zero disagreements
 and zero stuck cases, 15 out-of-gas cases and four allocation-limit cases.
-This correction changes only the Solm model; the pinned Solidity and bytecode are unchanged.
+This correction changes only the Stele model; the pinned Solidity and bytecode are unchanged.
 
 ## Compiler settings and provenance
 
 - Upstream: `Uniswap/v4-core`, commit `46c6834698c48bc4a463a86d8420f4eb1d7f3b75`.
 - Main contract: `src/PoolManager.sol:PoolManager`; 45 source units in `contracts/`.
-- Solmate: `4b47a19038b798b4a33d9749d25e570443520647`.
+- Steleate: `4b47a19038b798b4a33d9749d25e570443520647`.
 - Compiler: `0.8.26+commit.8a97fa7a.Linux.g++`; binary SHA-256
   `d5f23436f443edb85d8e76906d12f0a86ce0490e7663a9e608efeb7a93f149ef`.
 - Settings from the pinned `foundry.toml`: optimizer enabled, 44,444,444 runs,
@@ -1428,7 +1428,7 @@ PYTHONDONTWRITEBYTECODE=1 python3 scripts/scaffold.py all \
   --remapping ds-test/=lib/forge-std/lib/ds-test/src/ \
   --remapping forge-std/=lib/forge-std/src/ \
   --remapping hardhat/=node_modules/hardhat/ \
-  --remapping solmate/=lib/solmate/ --no-register
+  --remapping steleate/=lib/steleate/ --no-register
 ```
 
 Final checks:
@@ -1454,7 +1454,7 @@ again after adding the refinement hypotheses. Its command and results are:
 
 ```sh
 # In the isolated package described below:
-lake --log-level=error exe solm-difftest --only PoolManager --count 50 --seed 2026
+lake --log-level=error exe stele-difftest --only PoolManager --count 50 --seed 2026
 ```
 
 ```text
@@ -1521,13 +1521,13 @@ test_dir.mkdir(exist_ok=True)
 test_dir.joinpath('lakefile.toml').write_text(
     'name = "PoolManagerDiff"\nversion = "0.1.0"\n'
     '[[require]]\nname = "EquiVM"\npath = ' + json.dumps(str(repo)) + '\n'
-    '[[lean_exe]]\nname = "solm-difftest"\nroot = "Main"\n')
+    '[[lean_exe]]\nname = "stele-difftest"\nroot = "Main"\n')
 test_dir.joinpath('lean-toolchain').write_text(repo.joinpath('lean-toolchain').read_text())
 main = repo.joinpath('Tests/DiffTest/Main.lean').read_text()
 main = main.replace('import Tests.DiffTest.Targets',
     'import Benchmarks.UniswapV4PoolManager.DiffTarget')
-main = main.replace('open Solm.DiffTest Tests.DiffTest',
-    'open Solm.DiffTest\n\ndef allTargets : List Target :=\n'
+main = main.replace('open Stele.DiffTest Tests.DiffTest',
+    'open Stele.DiffTest\n\ndef allTargets : List Target :=\n'
     '  [Benchmarks.UniswapV4PoolManager.diffTarget]')
 test_dir.joinpath('Main.lean').write_text(main)
 manifest = json.loads(repo.joinpath('lake-manifest.json').read_text())
@@ -1552,7 +1552,7 @@ Save as `/tmp/uniswap-v4-focused.lean` and run
 
 ```lean
 import Benchmarks.UniswapV4PoolManager.DiffTarget
-open Solm Solm.DiffTest Solm.Interp ABI Ethereum Ethereum.EVM
+open Stele Stele.DiffTest Stele.Interp ABI Ethereum Ethereum.EVM
 open Benchmarks.UniswapV4PoolManager
 
 def addressValue (n : Nat) : Value := .address (EVM.address n)
@@ -1630,7 +1630,7 @@ Save as `/tmp/uniswap-v4-hooks.lean` and run
 
 ```lean
 import Benchmarks.UniswapV4PoolManager.DiffTarget
-open Solm Solm.DiffTest Solm.Interp ABI Ethereum Ethereum.EVM
+open Stele Stele.DiffTest Stele.Interp ABI Ethereum Ethereum.EVM
 open Benchmarks.UniswapV4PoolManager
 
 def addressValue (n : Nat) : Value := .address (EVM.address n)
@@ -1729,7 +1729,7 @@ would lose information:
 - PoolId hashing uses sign-extended tick spacing in a 256-bit word; position hashing
   uses packed 20/3/3/32-byte fields. FullMath/Newton operations wrap where compiled
   arithmetic wraps; liquidity/delta operations retain their checked arithmetic.
-- ABI tuple parameters are unpacked into Solm struct values at entry. Casts are
+- ABI tuple parameters are unpacked into Stele struct values at entry. Casts are
   explicit where a notation type annotation alone would not perform conversion.
 
 These are modeling corrections, not claims of new source vulnerabilities.
@@ -1778,7 +1778,7 @@ lake build Benchmarks.UniswapV4PoolManager.Correct
 
 Use `proof` alone after specification edits. It overwrites generated stubs, so
 preserve completed proofs before using it in a later session. Do not rerun
-`sol2solm.py` over the finished specification.
+`sol2stele.py` over the finished specification.
 
 <details>
 <summary>Generator adapter</summary>
@@ -1962,8 +1962,8 @@ Save as `/tmp/uniswap-v4-capacity.lean` and run
 `lake env lean --run /tmp/uniswap-v4-capacity.lean` at the repository root.
 
 ```lean
-import Solm.DiffTest.Trace
-open Ethereum Ethereum.EVM Solm.DiffTest Solm.Interp
+import Stele.DiffTest.Trace
+open Ethereum Ethereum.EVM Stele.DiffTest Stele.Interp
 
 def cm (n : Nat) : Nat := 3*n + n*n/512
 

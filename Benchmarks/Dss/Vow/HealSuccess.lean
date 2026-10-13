@@ -2,7 +2,7 @@ import Reasoning.SolcRoutines
 import Benchmarks.Dss.Vow.Heal
 import Benchmarks.Dss.Vow.KissSuccess
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 0
@@ -67,7 +67,7 @@ theorem evalExpr_healSinCapitalStorage (evm : EVM.State) {locals : Store}
     (hbase : locals.get? "Sin" = none) :
     evalExpr? config { contract := contract, locals := locals } evm (.storage SinRef) =
       .ok (.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩).toNat)) := by
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩).toNat)) := by
   rw [evalExpr_storage_scalar (hbackend := rfl) (er := healSinCapitalEvaledRef) (t := .int uint256Int)
     (loc := wordLoc ⟨5⟩)]
   · exact congrArg EvalResult.ok (storageLocLoad_uint256 _ ⟨5⟩)
@@ -684,7 +684,7 @@ theorem vowHealSourceSinDecodeRevert
         some [.int (Int.ofNat vatDai.toNat)])
     (hvatDaiEnough : (healRad I).toNat ≤ vatDai.toNat)
     (hvatLoadDai :
-      Solm.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner ⟨1⟩ =
+      Stele.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner ⟨1⟩ =
         solcSlotWordAt ⟨1⟩ σ I)
     (hvatCodeSin :
       0 < (UInt256.ofNat
@@ -788,7 +788,7 @@ theorem vowHealSourceFreeSinUnderflow
         some [.int (Int.ofNat vatDai.toNat)])
     (hvatDaiEnough : (healRad I).toNat ≤ vatDai.toNat)
     (hvatLoadDai :
-      Solm.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner ⟨1⟩ =
+      Stele.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner ⟨1⟩ =
         solcSlotWordAt ⟨1⟩ σ I)
     (hvatCodeSin :
       0 < (UInt256.ofNat
@@ -800,7 +800,7 @@ theorem vowHealSourceFreeSinUnderflow
       config.externalABI.decode? "sin" outSin =
         some [.int (Int.ofNat vatSin.toNat)])
     (hSinLoad :
-      Solm.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨5⟩ = SinVal)
+      Stele.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨5⟩ = SinVal)
     (hlt : vatSin.toNat < SinVal.toNat) :
     let locals := healLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
@@ -935,7 +935,7 @@ theorem vowHealSourceHealDebtUnderflow
         some [.int (Int.ofNat vatDai.toNat)])
     (hvatDaiEnough : (healRad I).toNat ≤ vatDai.toNat)
     (hvatLoadDai :
-      Solm.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner ⟨1⟩ =
+      Stele.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner ⟨1⟩ =
         solcSlotWordAt ⟨1⟩ σ I)
     (hvatCodeSin :
       0 < (UInt256.ofNat
@@ -947,11 +947,11 @@ theorem vowHealSourceHealDebtUnderflow
       config.externalABI.decode? "sin" outSin =
         some [.int (Int.ofNat vatSin.toNat)])
     (hSinLoad :
-      Solm.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨5⟩ = SinVal)
+      Stele.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨5⟩ = SinVal)
     (hfree : freeSin = UInt256.sub vatSin SinVal)
     (hfreeOk : SinVal.toNat ≤ vatSin.toNat)
     (hAshLoad :
-      Solm.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨6⟩ = AshVal)
+      Stele.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨6⟩ = AshVal)
     (hlt : freeSin.toNat < AshVal.toNat) :
     let locals := healLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
@@ -1058,7 +1058,7 @@ theorem vowHealSourceHealDebtUnderflow
         (args := [.var "vatSin", .storage SinRef])
         (argVals := [.int (Int.ofNat vatSin.toNat), .int (Int.ofNat SinVal.toNat)])
         (callee := subFunction) (locals := uintBinaryLocals vatSin SinVal)
-        (calleeSolm := { contract := contract, locals := uintBinaryLocalsZ vatSin SinVal freeSin })
+        (calleeStele := { contract := contract, locals := uintBinaryLocalsZ vatSin SinVal freeSin })
         (value := some [.int (Int.ofNat freeSin.toNat)]) hargsFree (by rfl) hbindFree hbody)
   have hfreeVar :
       evalExpr? config { contract := contract, locals := locals3 } evmSin (.var "freeSin") =
@@ -1129,7 +1129,7 @@ theorem vowHealSourceInsufficientDebt
         some [.int (Int.ofNat vatDai.toNat)])
     (hvatDaiEnough : (healRad I).toNat ≤ vatDai.toNat)
     (hvatLoadDai :
-      Solm.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner ⟨1⟩ =
+      Stele.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner ⟨1⟩ =
         solcSlotWordAt ⟨1⟩ σ I)
     (hvatCodeSin :
       0 < (UInt256.ofNat
@@ -1141,11 +1141,11 @@ theorem vowHealSourceInsufficientDebt
       config.externalABI.decode? "sin" outSin =
         some [.int (Int.ofNat vatSin.toNat)])
     (hSinLoad :
-      Solm.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨5⟩ = SinVal)
+      Stele.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨5⟩ = SinVal)
     (hfree : freeSin = UInt256.sub vatSin SinVal)
     (hfreeOk : SinVal.toNat ≤ vatSin.toNat)
     (hAshLoad :
-      Solm.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨6⟩ = AshVal)
+      Stele.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨6⟩ = AshVal)
     (hdebt : healDebt = UInt256.sub freeSin AshVal)
     (hdebtOk : AshVal.toNat ≤ freeSin.toNat)
     (hinsuff : healDebt.toNat < (healRad I).toNat) :
@@ -1255,7 +1255,7 @@ theorem vowHealSourceInsufficientDebt
         (args := [.var "vatSin", .storage SinRef])
         (argVals := [.int (Int.ofNat vatSin.toNat), .int (Int.ofNat SinVal.toNat)])
         (callee := subFunction) (locals := uintBinaryLocals vatSin SinVal)
-        (calleeSolm := { contract := contract, locals := uintBinaryLocalsZ vatSin SinVal freeSin })
+        (calleeStele := { contract := contract, locals := uintBinaryLocalsZ vatSin SinVal freeSin })
         (value := some [.int (Int.ofNat freeSin.toNat)]) hargsFree (by rfl) hbindFree hbody)
   have hfreeVar :
       evalExpr? config { contract := contract, locals := locals3 } evmSin (.var "freeSin") =
@@ -1296,7 +1296,7 @@ theorem vowHealSourceInsufficientDebt
         (args := [.var "freeSin", .storage AshRef])
         (argVals := [.int (Int.ofNat freeSin.toNat), .int (Int.ofNat AshVal.toNat)])
         (callee := subFunction) (locals := uintBinaryLocals freeSin AshVal)
-        (calleeSolm := { contract := contract, locals := uintBinaryLocalsZ freeSin AshVal healDebt })
+        (calleeStele := { contract := contract, locals := uintBinaryLocalsZ freeSin AshVal healDebt })
         (value := some [.int (Int.ofNat healDebt.toNat)]) hargsDebt (by rfl) hbindDebt hbody)
   have hrad :
       evalExpr? config { contract := contract, locals := locals4 } evmSin (.var "rad") =
@@ -1369,7 +1369,7 @@ theorem vowHealSinDecodeShortBodyCore
         some [.int (Int.ofNat vatDai.toNat)])
     (hvatDaiEnough : (healRad I).toNat ≤ vatDai.toNat)
     (hvatLoadDai :
-      Solm.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner ⟨1⟩ =
+      Stele.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner ⟨1⟩ =
         solcSlotWordAt ⟨1⟩ σ I)
     (hvatCodeSin :
       0 < (UInt256.ofNat
@@ -1416,7 +1416,7 @@ theorem vowHealFreeSinUnderflowBodyCore
         some [.int (Int.ofNat vatDai.toNat)])
     (hvatDaiEnough : (healRad I).toNat ≤ vatDai.toNat)
     (hvatLoadDai :
-      Solm.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner ⟨1⟩ =
+      Stele.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner ⟨1⟩ =
         solcSlotWordAt ⟨1⟩ σ I)
     (hvatCodeSin :
       0 < (UInt256.ofNat
@@ -1429,7 +1429,7 @@ theorem vowHealFreeSinUnderflowBodyCore
       config.externalABI.decode? "sin" outSin =
         some [.int (Int.ofNat vatSin.toNat)])
     (hSinLoad :
-      Solm.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨5⟩ =
+      Stele.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨5⟩ =
         solcSlotWordAt ⟨5⟩ acc I) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   have hrev := RD.vowHealFreeSinSubUnderflow rd1318 hunder
@@ -1468,7 +1468,7 @@ theorem vowHealDebtUnderflowBodyCore
         some [.int (Int.ofNat vatDai.toNat)])
     (hvatDaiEnough : (healRad I).toNat ≤ vatDai.toNat)
     (hvatLoadDai :
-      Solm.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner ⟨1⟩ =
+      Stele.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner ⟨1⟩ =
         solcSlotWordAt ⟨1⟩ σ I)
     (hvatCodeSin :
       0 < (UInt256.ofNat
@@ -1481,12 +1481,12 @@ theorem vowHealDebtUnderflowBodyCore
       config.externalABI.decode? "sin" outSin =
         some [.int (Int.ofNat vatSin.toNat)])
     (hSinLoad :
-      Solm.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨5⟩ =
+      Stele.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨5⟩ =
         solcSlotWordAt ⟨5⟩ acc I)
     (hfree : freeSin = UInt256.sub vatSin (solcSlotWordAt ⟨5⟩ acc I))
     (hfreeOk : (solcSlotWordAt ⟨5⟩ acc I).toNat ≤ vatSin.toNat)
     (hAshLoad :
-      Solm.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨6⟩ =
+      Stele.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨6⟩ =
         solcSlotWordAt ⟨6⟩ acc I) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   have hrev := RD.vowHealDebtSubUnderflow rd1325 hunder
@@ -1528,7 +1528,7 @@ theorem vowHealInsufficientDebtBodyCore
         some [.int (Int.ofNat vatDai.toNat)])
     (hvatDaiEnough : (healRad I).toNat ≤ vatDai.toNat)
     (hvatLoadDai :
-      Solm.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner ⟨1⟩ =
+      Stele.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner ⟨1⟩ =
         solcSlotWordAt ⟨1⟩ σ I)
     (hvatCodeSin :
       0 < (UInt256.ofNat
@@ -1541,12 +1541,12 @@ theorem vowHealInsufficientDebtBodyCore
       config.externalABI.decode? "sin" outSin =
         some [.int (Int.ofNat vatSin.toNat)])
     (hSinLoad :
-      Solm.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨5⟩ =
+      Stele.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨5⟩ =
         solcSlotWordAt ⟨5⟩ acc I)
     (hfree : freeSin = UInt256.sub vatSin (solcSlotWordAt ⟨5⟩ acc I))
     (hfreeOk : (solcSlotWordAt ⟨5⟩ acc I).toNat ≤ vatSin.toNat)
     (hAshLoad :
-      Solm.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨6⟩ =
+      Stele.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨6⟩ =
         solcSlotWordAt ⟨6⟩ acc I)
     (hdebt : healDebt = UInt256.sub freeSin (solcSlotWordAt ⟨6⟩ acc I))
     (hdebtOk : (solcSlotWordAt ⟨6⟩ acc I).toNat ≤ freeSin.toNat) :

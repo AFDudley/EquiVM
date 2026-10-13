@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.Storage
 
 /-! Transient lock, currency delta slots, and their source helpers. -/
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 2000000
@@ -22,14 +22,14 @@ theorem deltaSlotFunction_lookup : lookupCallable? contract "CurrencyDelta__comp
 theorem getDeltaFunction_lookup : lookupCallable? contract "CurrencyDelta_getDelta" = some getDeltaFunction.toCallable := rfl
 
 def transientWord (evm : EVM.State) (slot : UInt256) : UInt256 :=
-  Solm.EVM.transientLoad evm evm.executionEnv.codeOwner slot
+  Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot
 
 theorem rawTransient_writeInt {f : Frame} {evm : EVM.State} {index : Expr} {slot : UInt256}
     (value : Int) (hf : f.contract = contract)
     (he : evalExpr? config f evm index = .ok (.int (Int.ofNat slot.toNat))) :
     assignStorageRef? config f evm .transient {base := "rawTransient", steps := [.aindex index]}
       (.int value) =
-      .ok (f, Solm.EVM.transientStore evm evm.executionEnv.codeOwner slot (EVM.wordOfInt value)) := by
+      .ok (f, Stele.EVM.transientStore evm evm.executionEnv.codeOwner slot (EVM.wordOfInt value)) := by
   apply assignStorageRef_transient_scalar_value (rawTransient_ref hf he)
     (hbackend := rfl) (hloc := rawTransient_loc slot)
   · rw [hf]; exact rawTransient_type slot
@@ -41,7 +41,7 @@ theorem rawTransient_write {f : Frame} {evm : EVM.State} {index : Expr} {slot : 
     (he : evalExpr? config f evm index = .ok (.int (Int.ofNat slot.toNat))) :
     assignStorageRef? config f evm .transient {base := "rawTransient", steps := [.aindex index]}
       (.int (Int.ofNat value.toNat)) =
-      .ok (f, Solm.EVM.transientStore evm evm.executionEnv.codeOwner slot value) := by
+      .ok (f, Stele.EVM.transientStore evm evm.executionEnv.codeOwner slot value) := by
   simpa only [wordOfInt_ofNat_toNat] using rawTransient_writeInt (Int.ofNat value.toNat) hf he
 
 theorem evalLockSlot {f : Frame} {evm : EVM.State} (hf : f.contract = contract) :

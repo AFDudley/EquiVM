@@ -1,7 +1,7 @@
 import Benchmarks.CurveVault.Calls
 import Benchmarks.CurveVault.StringGas
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperCalls Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperCalls Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 -- LIBRARY CANDIDATE: the bounded minimum idiom emitted by Vyper.

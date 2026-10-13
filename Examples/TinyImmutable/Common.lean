@@ -1,5 +1,5 @@
-import Solm.Refine
-import Reasoning.SolmBody
+import Stele.Refine
+import Reasoning.SteleBody
 import Reasoning.WordArithmetic
 import Examples.TinyImmutable.Selectors
 import Examples.TinyImmutable.ImmutableCode
@@ -9,7 +9,7 @@ import Reasoning.MemCascade
 import Reasoning.Solc
 import Reasoning.Immutables
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open TinyImmutable.Immutables
 

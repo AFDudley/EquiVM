@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MorphoBlue.AccrueFeePreservation
 import Benchmarks.Morpho.MorphoBlue.AccrueFeeWrites
 import Benchmarks.Morpho.MorphoBlue.AccrueSourceFinish
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Morpho.MorphoBlue.Immutables
 namespace Benchmarks.Morpho.MorphoBlue
 set_option maxRecDepth 1000

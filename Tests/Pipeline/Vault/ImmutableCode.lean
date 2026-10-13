@@ -3,9 +3,9 @@ import Tests.Pipeline.Vault.Immutables
 import Reasoning.Immutables
 
 /-!
-The patch sites of the deployed runtime template, keyed by Solm immutable name.  Generated
+The patch sites of the deployed runtime template, keyed by Stele immutable name.  Generated
 summaries quantify the words written at these sites; `Reasoning.Immutables.wordsOf` supplies them
-from a Solm immutables store.
+from a Stele immutables store.
 -/
 
 open Reasoning.Immutables

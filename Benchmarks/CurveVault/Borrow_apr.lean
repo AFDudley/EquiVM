@@ -7,7 +7,7 @@ import Benchmarks.CurveVault.Calls
 import Benchmarks.CurveVault.RuntimeBlocks_004
 import Benchmarks.CurveVault.RuntimeBlocks_005
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch Reasoning.VyperCalls
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch Reasoning.VyperCalls
 namespace Benchmarks.CurveVault
 
 abbrev vaultYearSecondsExpr := sourceMul256 (.intLit 365) (.intLit 86400)
@@ -38,13 +38,13 @@ abbrev vaultBorrowAprFunction : FunctionDecl := contract.functions[1]!
 
 theorem vaultBorrowAprReceiver (evm : EVM.State) (locals : Store) (hbase : locals.get? "_amm" = none) :
     evalExpr? config {contract := contract, locals := locals} evm (.storage {base := "_amm", steps := []}) =
-      .ok (.address (AccountAddress.ofUInt256 (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩))) :=
+      .ok (.address (AccountAddress.ofUInt256 (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩))) :=
   vaultAmmEval evm locals hbase
 
 theorem vaultBorrowAprCallOk {evm evm' : EVM.State} {locals : Store}
     {out : ByteArray} (hbase : locals.get? "_amm" = none)
     (hcall : typedCallViaEVM config evm
-      (AccountAddress.ofUInt256 (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩))
+      (AccountAddress.ofUInt256 (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩))
       "rate" 0 [] (true, evm', out) false) (h32 : 32 ≤ out.size) :
     ExecStmt config {contract := contract, locals := locals} evm
       (.externalCall (.storage {base := "_amm", steps := []}) "rate" (.intLit 0) [] "__c0" (perm := false))
@@ -59,7 +59,7 @@ theorem vaultBorrowAprCallOk {evm evm' : EVM.State} {locals : Store}
 theorem vaultBorrowAprFunctionReturns {evm evm' : EVM.State} {locals : Store}
     {out : ByteArray} (hbase : locals.get? "_amm" = none)
     (hcall : typedCallViaEVM config evm
-      (AccountAddress.ofUInt256 (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩))
+      (AccountAddress.ofUInt256 (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩))
       "rate" 0 [] (true, evm', out) false) (h32 : 32 ≤ out.size)
     (hfit : (retWord out).toNat * (UInt256.ofNat 31536000).toNat < UInt256.size) :
     ExecFuncBody config {contract := contract, locals := locals} evm vaultBorrowAprFunction.body
@@ -73,7 +73,7 @@ theorem vaultBorrowAprFunctionReturns {evm evm' : EVM.State} {locals : Store}
 theorem vaultBorrowAprFunctionOverflow {evm evm' : EVM.State} {locals : Store}
     {out : ByteArray} (hbase : locals.get? "_amm" = none)
     (hcall : typedCallViaEVM config evm
-      (AccountAddress.ofUInt256 (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩))
+      (AccountAddress.ofUInt256 (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩))
       "rate" 0 [] (true, evm', out) false) (h32 : 32 ≤ out.size)
     (hover : UInt256.size ≤ (retWord out).toNat * (UInt256.ofNat 31536000).toNat) :
     ExecFuncBody config {contract := contract, locals := locals} evm vaultBorrowAprFunction.body .reverted := by
@@ -86,7 +86,7 @@ theorem vaultBorrowAprFunctionOverflow {evm evm' : EVM.State} {locals : Store}
 theorem vaultBorrowAprFunctionCallFailed {evm evm' : EVM.State} {locals : Store}
     {out : ByteArray} (hbase : locals.get? "_amm" = none)
     (hcall : typedCallViaEVM config evm
-      (AccountAddress.ofUInt256 (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩))
+      (AccountAddress.ofUInt256 (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩))
       "rate" 0 [] (false, evm', out) false) :
     ExecFuncBody config {contract := contract, locals := locals} evm vaultBorrowAprFunction.body .reverted :=
   ExecFuncBody.execBlockRevert <| ExecBlock.consRevert <|
@@ -97,7 +97,7 @@ theorem vaultBorrowAprFunctionCallFailed {evm evm' : EVM.State} {locals : Store}
 theorem vaultBorrowAprFunctionDecodeFailed {evm evm' : EVM.State} {locals : Store}
     {out : ByteArray} (hbase : locals.get? "_amm" = none)
     (hcall : typedCallViaEVM config evm
-      (AccountAddress.ofUInt256 (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩))
+      (AccountAddress.ofUInt256 (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩))
       "rate" 0 [] (true, evm', out) false)
     (hdec : config.externalABI.decode? "rate" out = none) :
     ExecFuncBody config {contract := contract, locals := locals} evm vaultBorrowAprFunction.body .reverted :=
@@ -130,7 +130,7 @@ theorem vaultBorrowAprBodyCore {σ σ₀ A I} {g : UInt256}
       (transitionSignature borrow_aprTransition).paramTypes I.calldata = some ∅ := by
     change decodeCalldataWithMode .vyper [] [] I.calldata = some ∅
     exact decodeCalldataWithMode_empty_ok hsz
-  have hload : Solm.EVM.transientLoad (initState σ σ₀ (Sat256.ofUInt256 g) A I)
+  have hload : Stele.EVM.transientLoad (initState σ σ₀ (Sat256.ofUInt256 g) A I)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner ⟨0⟩ =
       codeOwnerTransientWord I σ ⟨0⟩ := codeOwnerTransientWord_initState _
   by_cases hlocked : codeOwnerTransientWord I σ ⟨0⟩ = ⟨1⟩
@@ -142,7 +142,7 @@ theorem vaultBorrowAprBodyCore {σ σ₀ A I} {g : UInt256}
       [.internalCall "borrow_apr_body" [] "__r", .return [.var "__r"]] hvalue
       (by rw [hload]; exact hlocked)
     exact hrev.reEquivExecutionRevert hcode hd hdec hsource
-  · have hlock : Solm.EVM.transientLoad (initState σ σ₀ (Sat256.ofUInt256 g) A I)
+  · have hlock : Stele.EVM.transientLoad (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner ⟨0⟩ ≠ ⟨1⟩ :=
       by rwa [hload]
     have hwrap (hb : ExecFuncBody config {contract := contract, locals := ∅}
@@ -157,7 +157,7 @@ theorem vaultBorrowAprBodyCore {σ σ₀ A I} {g : UInt256}
     obtain ⟨evm', σ', z, out, k2, C2, hcall, hs, rd1052, hout⟩ :=
       typedStaticCallBridge (cfg := config) (name := "rate") (args := []) rd1051
         SourceState.init (by native_decide) (vaultBorrowAprCalldata _) (by decide +kernel) (by simp)
-    have hsload : Solm.EVM.storageLoad (initState σ σ₀ (Sat256.ofUInt256 g) A I)
+    have hsload : Stele.EVM.storageLoad (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner ⟨2⟩ =
         codeOwnerStorageWord I σ ⟨2⟩ := codeOwnerStorageWord_initState _
     change typedCallViaEVM config _ (AccountAddress.ofUInt256 (codeOwnerStorageWord I σ ⟨2⟩))

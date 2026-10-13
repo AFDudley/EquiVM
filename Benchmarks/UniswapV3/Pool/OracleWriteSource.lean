@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.OracleWriteCardinalitySource
 import Benchmarks.UniswapV3.Pool.OracleObservationStore
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 1000
 
@@ -29,7 +29,7 @@ theorem oracleWriteTransformCall (imms : Store) (evm : EVM.State) (a : OracleWri
       (.ok (oracleWriteTransformedFrame imms a evm) evm) :=
   internalCallFunctionReturn (callee := oracleTransformFunction)
     (locals := oracleTransformLocals (oracleWriteLast a evm) a.time a.tick a.liquidity)
-    (calleeSolm := oracleTransformDeltaFrame imms (oracleWriteLast a evm) a.time a.tick a.liquidity)
+    (calleeStele := oracleTransformDeltaFrame imms (oracleWriteLast a evm) a.time a.tick a.liquidity)
     (value := some [(oracleWriteResultObservation a evm).value])
     (evalOracleWriteTransformArgs imms evm a) oracleTransformLookup
     (oracleTransformBind _ _ _ _) (oracleTransformReturns imms evm _ _ _ _ htick)

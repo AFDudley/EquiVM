@@ -4,7 +4,7 @@ import Examples.VyperERC20.Bytecode
 import Examples.VyperERC20.Storage
 import Examples.ERC20.Common
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -44,7 +44,7 @@ theorem erc20TotalSupplyBodyReturns (evm : EVM.State) (locals : Store)
     (hlocals : locals.get? "totalSupply" = none) :
     ExecTransitionBody vyperERC20Config erc20Contract evm locals ERC20.totalSupplyTransition.body
       (.returned { contract := erc20Contract, locals := locals } evm
-        (some [(.int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩).toNat))])) := by
+        (some [(.int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩).toNat))])) := by
   exact ExecFuncBody.execBlockRet <|
     (ABlock.start.requireStep (evalCallvalueEq_true h)).returns (by
       have her : evalStorageRef vyperERC20Config { contract := erc20Contract, locals := locals } evm
@@ -244,7 +244,7 @@ theorem erc20TotalSupplyBodyCore
         (.returned { contract := erc20Contract, locals := ∅ }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.int (Int.ofNat (totalSupplyWord σ I).toNat))])) := by
-    simpa [totalSupplyWord, initState, Solm.EVM.storageLoad, State.lookupAccount] using
+    simpa [totalSupplyWord, initState, Stele.EVM.storageLoad, State.lookupAccount] using
       erc20TotalSupplyBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
         (by simp only [initState]; exact hwv) (by simp)

@@ -1,7 +1,7 @@
 import Benchmarks.CurveVault.InitializeStringStorage
 import Benchmarks.CurveVault.RuntimeBlocks_003
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 def vaultStringLoopPC (isName : Bool) : UInt256 := if isName then ⟨628⟩ else ⟨786⟩

@@ -1,13 +1,13 @@
-import Solm.Semantics
-import Solm.SolidityLayout
-import Solm.MetaSolidityLayout
+import Stele.Semantics
+import Stele.SolidityLayout
+import Stele.MetaSolidityLayout
 
 /-!
-# BlindAuction — Solm specification for `BlindAuction.sol`
+# BlindAuction — Stele specification for `BlindAuction.sol`
 
-A faithful (events-aside) Solm spec of the Solidity `BlindAuction` example.
+A faithful (events-aside) Stele spec of the Solidity `BlindAuction` example.
 
-Notable Solm features exercised:
+Notable Stele features exercised:
 
 * a **`mapping(address => Bid[])`** (`bids`) — a mapping whose values are *dynamic arrays of
   structs* — grown with `push` of a struct literal (`bid`);
@@ -21,7 +21,7 @@ Notable Solm features exercised:
 * an **internal** helper `placeBid` (`FunctionDecl`, returns `bool`);
 * the solc-generated public getters, including the two-key `bids(address,uint256)` array getter;
 * the `reveal` hash check `bidToCheck.blindedBid != keccak256(abi.encodePacked(value, fake, secret))`,
-  using the **`keccak256`** and **`abiEncodePacked`** `Expr` nodes (`Solm/Syntax.lean`).  The spec
+  using the **`keccak256`** and **`abiEncodePacked`** `Expr` nodes (`Stele/Syntax.lean`).  The spec
   `keccak256` evaluates to the same `KEC` the EVM's `KECCAK256` opcode uses, so runtime-equivalence
   reduces to equality of the hashed bytes — i.e. that our packed encoding matches what solc lays out
   in memory before hashing.
@@ -30,7 +30,7 @@ The generated Solidity storage layout matches the deployed bytecode. The (empty)
 the generic default.
 -/
 
-open Solm ABI Ethereum
+open Stele ABI Ethereum
 
 namespace BlindAuction
 

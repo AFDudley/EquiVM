@@ -7,7 +7,7 @@ Dispatcher bucket 7, arm entry pc 776: the 68-byte guard, `weight` from calldata
 memory offset 288 (pc 786), then the shared body (`registerTail`, from pc 793).
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
   Reasoning.VyperBounded
 
 namespace Tests.Pipeline.VyperRegistry

@@ -1,9 +1,9 @@
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 import Reasoning.Memory
 import Reasoning.ABI
 import Examples.UniswapV2Pair.Common
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace UniswapV2Pair
 

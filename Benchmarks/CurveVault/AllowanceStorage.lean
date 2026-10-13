@@ -1,6 +1,6 @@
 import Benchmarks.CurveVault.Storage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 def vaultAllowanceSlot (owner spender : AccountAddress) : UInt256 :=
@@ -12,7 +12,7 @@ theorem vaultAllowanceEvalAt (evm : State) (locals : Store) (owner spender : Exp
     (hb : evalExpr? config {contract := contract, locals := locals} evm spender = .ok (.address b)) :
     evalExpr? config {contract := contract, locals := locals} evm
       (.storage {base := "allowance", steps := [.mindex owner, .mindex spender]}) =
-      .ok (.int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      .ok (.int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (vaultAllowanceSlot a b)).toNat)) := by
   apply evalExpr_storage_scalar_of_read
     (er := {base := "allowance", steps := [.mindex (.address a), .mindex (.address b)]}) hbase
@@ -29,7 +29,7 @@ theorem vaultAllowanceAssign (evm : State) (locals : Store) (owner spender : Exp
     assignStorageRef? config {contract := contract, locals := locals} evm .storage
       {base := "allowance", steps := [.mindex owner, .mindex spender]} (.int (Int.ofNat value.toNat)) =
       .ok ({contract := contract, locals := locals},
-        Solm.EVM.storageStore evm evm.executionEnv.codeOwner (vaultAllowanceSlot a b) value) := by
+        Stele.EVM.storageStore evm evm.executionEnv.codeOwner (vaultAllowanceSlot a b) value) := by
   apply assignStorageRef_storage_of_write
     (er := {base := "allowance", steps := [.mindex (.address a), .mindex (.address b)]})
     hbase

@@ -1,7 +1,7 @@
 import Benchmarks.CurveVault.StringReturn
 import Benchmarks.CurveVault.StringMalformed
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 theorem vaultStringOffsetMemory (mem : ByteArray) (hmem : mem.size ≤ 64) :
@@ -25,7 +25,7 @@ theorem vaultStringRoutine {I : ExecutionEnv} {g : Sat256} {s0 evm : State}
       encodeReturnValue? .string (.bytes bytes) = some out ∧ RDret vaultBytecode g s0 σ out) ∨
     (ExecTransitionBody config contract evm ∅ (vaultStringBody isName) .reverted ∧ RDrev vaultBytecode g s0) := by
   let length := codeOwnerStorageWord I σ (vaultStringSlot isName)
-  have hstorage : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (vaultStringSlot isName) = length :=
+  have hstorage : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (vaultStringSlot isName) = length :=
     hs.storageRead _
   have hvalueS : evm.executionEnv.weiValue = ⟨0⟩ := by rw [hs.env]; exact hvalue
   obtain ⟨front, hfront, hoff⟩ := vaultStringOffsetMemory mem hmem

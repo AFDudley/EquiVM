@@ -4,7 +4,7 @@ import Benchmarks.CurveVault.MaxRedeemArguments
 import Benchmarks.CurveVault.BalanceStorage
 import Benchmarks.CurveVault.RuntimeBlocks_017
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 abbrev vaultMaxRedeemFunction : FunctionDecl := contract.functions[17]!
@@ -111,7 +111,7 @@ theorem vaultMaxRedeemRoutine {I : ExecutionEnv} {g : Sat256} {s0 evm : State}
       (by rw [store_get_ne _ _ (by decide +kernel), store_get_ne _ _ (by decide +kernel)]; exact harg)
     simpa only [hs1.storageRead] using hh
   let locals2 := locals1.insert "__v2" (.int (Int.ofNat balance.toNat))
-  have hmin := evalExpr_min256 (cfg := config) (solm := {contract := contract, locals := locals2}) (evm := evm1)
+  have hmin := evalExpr_min256 (cfg := config) (stele := {contract := contract, locals := locals2}) (evm := evm1)
     (lhs := .var "__c1") (rhs := .var "__v2")
     (evalExpr_varUInt256 (value := shares) (by rw [store_get_ne _ _ (by decide +kernel), store_get_self]))
     (evalExpr_varUInt256 (value := balance) (by simp [locals2]))

@@ -2,7 +2,7 @@ import Benchmarks.CurveVault.BalanceStorage
 import Benchmarks.CurveVault.Memory
 import Benchmarks.CurveVault.Arithmetic
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 def vaultSupplyMemory (mem : ByteArray) (owner value : UInt256) : ByteArray :=

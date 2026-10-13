@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.ObservePrefix
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
@@ -30,7 +30,7 @@ theorem observeSourceReturns (v : UniswapV3PoolImmutables) (evm : EVM.State)
   have hcall : ExecStmt config (observeReadyFrame v secondsAgos evm.executionEnv) evm
       (.internalCall "Oracle_observe" observeCallArgs "__c2")
       (.ok (observeResultFrame v secondsAgos evm.executionEnv ticks seconds) evm) :=
-    internalCallFunctionReturn (callee := oracleObserveFunction) (calleeSolm := callee)
+    internalCallFunctionReturn (callee := oracleObserveFunction) (calleeStele := callee)
       (value := some [.array ticks, .array seconds]) (evalObserveCallArgs v evm secondsAgos)
       oracleObserveLookup (oracleObserveBind _ _ _ _ _ _) hbody
   apply ExecFuncBody.execBlockRet

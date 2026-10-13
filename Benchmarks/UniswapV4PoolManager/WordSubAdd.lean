@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV4PoolManager.WordIntegerArithmetic
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 -- LIBRARY CANDIDATE: EVM word subtraction associates through wrapping addition.

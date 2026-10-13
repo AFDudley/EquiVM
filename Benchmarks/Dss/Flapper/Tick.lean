@@ -3,7 +3,7 @@ import Reasoning.ABIComposite
 import Benchmarks.Dss.Flapper.Yank
 import Benchmarks.Dss.Flopper.Tick.Part1
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -105,14 +105,14 @@ theorem tickWordOfInt_emod_uint48 (w : UInt256) :
 theorem storageLocStore_uint48_offset26_word (evm : EVM.State) (slot data : UInt256) :
     storageLocStore evm (uint48Loc slot ⟨26, by decide⟩ (by decide))
         (.int (Int.ofNat data.toNat % uint48Modulus)) =
-      some (Solm.EVM.storageStore evm evm.executionEnv.codeOwner slot
+      some (Stele.EVM.storageStore evm evm.executionEnv.codeOwner slot
         (setUint48Offset26Word
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot) data)) := by
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot) data)) := by
   unfold storageLocStore storageLocWriteWord uint48Loc
   simp only [valueToWord, tickWordOfInt_emod_uint48, bind, Option.bind]
   congr 2
   apply u256_inj
-  let old := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot
+  let old := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot
   show fromBytes'
       (List.take (26 : Fin 32).val _ ++ List.take (6 : Fin 33).val _ ++
         List.drop ((26 : Fin 32).val + (6 : Fin 33).val) _) =
@@ -148,7 +148,7 @@ theorem storageLocStore_uint48_offset26_word (evm : EVM.State) (slot data : UInt
   dsimp [old]
   ring_nf
   have hdiv' :
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot).toNat /
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot).toNat /
           115792089237316195423570985008687907853269984665640564039457584007913129639936 =
         0 := by
     simpa [old] using hdiv
@@ -205,11 +205,11 @@ abbrev tickEndWrappedLocals (evm : EVM.State) (I : ExecutionEnv) : Store :=
 
 def tickEndStoredWord (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
   setUint48Offset26Word
-    (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (auctionPackedSlot (tickIdWord I)))
+    (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (auctionPackedSlot (tickIdWord I)))
     (tickEndPostWord evm)
 
 def tickPostState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (auctionPackedSlot (tickIdWord I))
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (auctionPackedSlot (tickIdWord I))
     (tickEndStoredWord evm I)
 
 abbrev tickRuntimeTauWord (σ : AccountMap) (I : ExecutionEnv) : UInt256 :=
@@ -282,13 +282,13 @@ theorem evalExpr_tick_end_storage (evm : EVM.State) (I : ExecutionEnv) :
     erw [storageLocLoad_uint48_offset26]
     rw [u256_land_comm
       (UInt256.div
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
           (auctionPackedSlot (tickIdWord I)))
         (UInt256.ofNat (256 ^ 26)))
       uint48Mask]
     rfl
   exact evalExpr_storage_scalar_value (hbackend := rfl)
-    (cfg := config) (solm := frame) (evm := evm)
+    (cfg := config) (stele := frame) (evm := evm)
     (slot := bidsF (.var "id") "end") (er := tickEndEvaledRef I)
     (t := .int uint48Int)
     (loc := uint48Loc (auctionPackedSlot (tickIdWord I)) ⟨26, by decide⟩ (by decide))
@@ -317,13 +317,13 @@ theorem evalExpr_tick_tic_storage (evm : EVM.State) (I : ExecutionEnv) :
     erw [storageLocLoad_uint48_offset20]
     rw [u256_land_comm
       (UInt256.div
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
           (auctionPackedSlot (tickIdWord I)))
         (UInt256.ofNat (256 ^ 20)))
       uint48Mask]
     rfl
   exact evalExpr_storage_scalar_value (hbackend := rfl)
-    (cfg := config) (solm := frame) (evm := evm)
+    (cfg := config) (stele := frame) (evm := evm)
     (slot := bidsF (.var "id") "tic") (er := tickTicEvaledRef I)
     (t := .int uint48Int)
     (loc := uint48Loc (auctionPackedSlot (tickIdWord I)) ⟨20, by decide⟩ (by decide))
@@ -350,11 +350,11 @@ theorem evalExpr_tick_tau_storage (evm : EVM.State) (I : ExecutionEnv) :
         .int (Int.ofNat (tickTauWord evm).toNat) := by
     erw [storageLocLoad_uint48_offset6]
     rw [u256_land_comm
-      (UInt256.div (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩)
+      (UInt256.div (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩)
         (UInt256.ofNat (256 ^ 6))) uint48Mask]
     rfl
   exact evalExpr_storage_scalar_value (hbackend := rfl)
-    (cfg := config) (solm := frame) (evm := evm)
+    (cfg := config) (stele := frame) (evm := evm)
     (slot := tauRef) (er := tickTauEvaledRef)
     (t := .int uint48Int) (loc := uint48Loc ⟨5⟩ ⟨6, by decide⟩ (by decide))
     (value := .int (Int.ofNat (tickTauWord evm).toNat))
@@ -1403,45 +1403,45 @@ theorem tickRuntimeSuccessAccountMap_eq
     tickRuntimeSuccessAccountMap I.codeOwner σ I =
       (tickPostState (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         I).accountMap := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
   let packedSlot := auctionPackedSlot (tickIdWord I)
   let runtimeOld := solcSlotWord σ I packedSlot
   let runtimeAdd := tickRuntimeAddWord σ I
-  have htau : tickRuntimeTauWord σ I = tickTauWord evmSolm := by
-    simp [evmSolm, tickRuntimeTauWord, tickTauWord, initState]
-  have haddFitSolm :
-      (tickNow48Word evmSolm).toNat + (tickTauWord evmSolm).toNat < 2 ^ 48 := by
-    simpa [evmSolm, tickNow48Word, tickTimestampWord, initState, htau] using haddFit
+  have htau : tickRuntimeTauWord σ I = tickTauWord evmStele := by
+    simp [evmStele, tickRuntimeTauWord, tickTauWord, initState]
+  have haddFitStele :
+      (tickNow48Word evmStele).toNat + (tickTauWord evmStele).toNat < 2 ^ 48 := by
+    simpa [evmStele, tickNow48Word, tickTimestampWord, initState, htau] using haddFit
   have hmaskedRuntime :
-      UInt256.land runtimeAdd uint48Mask = tickEndPostWord evmSolm := by
+      UInt256.land runtimeAdd uint48Mask = tickEndPostWord evmStele := by
     apply u256_inj
     change (UInt256.land (tickRuntimeAddWord σ I) uint48Mask).toNat =
-      (tickEndPostWord evmSolm).toNat
+      (tickEndPostWord evmStele).toNat
     rw [tickRuntimeAddWord]
     rw [uint48Mask_add_no_wrap_toNat (UInt256.ofNat I.header.timestamp)
       (tickRuntimeTauWord σ I) haddFit]
-    rw [tickEndPostWord_toNat evmSolm haddFitSolm]
-    simpa [evmSolm, tickNow48Word, tickTimestampWord, initState, htau]
+    rw [tickEndPostWord_toNat evmStele haddFitStele]
+    simpa [evmStele, tickNow48Word, tickTimestampWord, initState, htau]
   have hsourceClean :
-      UInt256.land (tickEndPostWord evmSolm) uint48Mask =
-        tickEndPostWord evmSolm := by
+      UInt256.land (tickEndPostWord evmStele) uint48Mask =
+        tickEndPostWord evmStele := by
     apply uint48Mask_clean_of_canonical
-    have hendNat := tickEndPostWord_toNat evmSolm haddFitSolm
+    have hendNat := tickEndPostWord_toNat evmStele haddFitStele
     rw [hendNat]
-    simpa [EVM.twoPow] using haddFitSolm
+    simpa [EVM.twoPow] using haddFitStele
   have hold :
       runtimeOld =
-        Solm.EVM.storageLoad evmSolm evmSolm.executionEnv.codeOwner packedSlot := by
-    simp [runtimeOld, packedSlot, solcSlotWordAt, solcSlotWord, evmSolm, initState,
-      Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage]
+        Stele.EVM.storageLoad evmStele evmStele.executionEnv.codeOwner packedSlot := by
+    simp [runtimeOld, packedSlot, solcSlotWordAt, solcSlotWord, evmStele, initState,
+      Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage]
   have hstored :
-      tickRuntimeEndStoredRawWord runtimeOld runtimeAdd = tickEndStoredWord evmSolm I := by
+      tickRuntimeEndStoredRawWord runtimeOld runtimeAdd = tickEndStoredWord evmStele I := by
     rw [tickRuntimeEndStoredRawWord_eq_setUint48Offset26Word]
     unfold tickEndStoredWord
     apply u256_inj
     rw [setUint48Offset26Word_toNat, setUint48Offset26Word_toNat]
     rw [hold, hmaskedRuntime, hsourceClean]
-  simp [evmSolm, initState, storageStore_accountMap, packedSlot, runtimeOld, runtimeAdd,
+  simp [evmStele, initState, storageStore_accountMap, packedSlot, runtimeOld, runtimeAdd,
     tickRuntimeSuccessAccountMap, tickPostState, hstored]
 
 theorem flapperTickBodyCoreEndNotExpired
@@ -1459,15 +1459,15 @@ theorem flapperTickBodyCoreEndNotExpired
       [tickIdWord I, ⟨360⟩, sel]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  have hendGeSolm :
-      (tickTimestampWord evmSolm).toNat ≤ (tickEndWord evmSolm I).toNat := by
-    simpa [evmSolm, tickTimestampWord, tickEndWord, initState] using hendGe
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  have hendGeStele :
+      (tickTimestampWord evmStele).toNat ≤ (tickEndWord evmStele I).toNat := by
+    simpa [evmStele, tickTimestampWord, tickEndWord, initState] using hendGe
   have hbody :
-      ExecTransitionBody config contract evmSolm (tickLocals I) tickTransition.body
+      ExecTransitionBody config contract evmStele (tickLocals I) tickTransition.body
         .reverted := by
-    exact flapperTickBodyReverts_endNotExpired evmSolm I
-      (by simpa [evmSolm, initState] using hwv) hendGeSolm
+    exact flapperTickBodyReverts_endNotExpired evmStele I
+      (by simpa [evmStele, initState] using hwv) hendGeStele
   exact (flapperTickX_endNotExpired (g := Sat256.ofUInt256 g) hendGe rd4586)
     |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
 
@@ -1487,19 +1487,19 @@ theorem flapperTickBodyCoreTicNonzero
       [tickIdWord I, ⟨360⟩, sel]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  have hendLtSolm :
-      (tickEndWord evmSolm I).toNat < (tickTimestampWord evmSolm).toNat := by
-    simpa [evmSolm, tickEndWord, tickTimestampWord, initState] using hendLt
-  have hticSolm : tickTicWord evmSolm I ≠ ⟨0⟩ := by
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  have hendLtStele :
+      (tickEndWord evmStele I).toNat < (tickTimestampWord evmStele).toNat := by
+    simpa [evmStele, tickEndWord, tickTimestampWord, initState] using hendLt
+  have hticStele : tickTicWord evmStele I ≠ ⟨0⟩ := by
     intro hzero
     apply htic
-    simpa [evmSolm, tickTicWord, initState] using hzero
+    simpa [evmStele, tickTicWord, initState] using hzero
   have hbody :
-      ExecTransitionBody config contract evmSolm (tickLocals I) tickTransition.body
+      ExecTransitionBody config contract evmStele (tickLocals I) tickTransition.body
         .reverted := by
-    exact flapperTickBodyReverts_ticNonzero evmSolm I
-      (by simpa [evmSolm, initState] using hwv) hendLtSolm hticSolm
+    exact flapperTickBodyReverts_ticNonzero evmStele I
+      (by simpa [evmStele, initState] using hwv) hendLtStele hticStele
   exact (flapperTickX_ticNonzero (g := Sat256.ofUInt256 g) hendLt htic rd4586)
     |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
 
@@ -1523,24 +1523,24 @@ theorem flapperTickBodyCoreAddOverflow
       [tickIdWord I, ⟨360⟩, sel]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  have hendLtSolm :
-      (tickEndWord evmSolm I).toNat < (tickTimestampWord evmSolm).toNat := by
-    simpa [evmSolm, tickEndWord, tickTimestampWord, initState] using hendLt
-  have hticSolm : tickTicWord evmSolm I = ⟨0⟩ := by
-    simpa [evmSolm, tickTicWord, initState] using htic
-  have htau : tickRuntimeTauWord σ I = tickTauWord evmSolm := by
-    simp [evmSolm, tickRuntimeTauWord, tickTauWord, initState]
-  have haddOverflowSolm :
-      2 ^ 48 ≤ (tickNow48Word evmSolm).toNat + (tickTauWord evmSolm).toNat := by
-    simpa [evmSolm, tickNow48Word, tickTimestampWord, initState, htau]
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  have hendLtStele :
+      (tickEndWord evmStele I).toNat < (tickTimestampWord evmStele).toNat := by
+    simpa [evmStele, tickEndWord, tickTimestampWord, initState] using hendLt
+  have hticStele : tickTicWord evmStele I = ⟨0⟩ := by
+    simpa [evmStele, tickTicWord, initState] using htic
+  have htau : tickRuntimeTauWord σ I = tickTauWord evmStele := by
+    simp [evmStele, tickRuntimeTauWord, tickTauWord, initState]
+  have haddOverflowStele :
+      2 ^ 48 ≤ (tickNow48Word evmStele).toNat + (tickTauWord evmStele).toNat := by
+    simpa [evmStele, tickNow48Word, tickTimestampWord, initState, htau]
       using haddOverflow
   have hbody :
-      ExecTransitionBody config contract evmSolm (tickLocals I) tickTransition.body
+      ExecTransitionBody config contract evmStele (tickLocals I) tickTransition.body
         .reverted := by
-    exact flapperTickBodyReverts_addOverflow evmSolm I
-      (by simpa [evmSolm, initState] using hwv) hendLtSolm hticSolm
-      haddOverflowSolm
+    exact flapperTickBodyReverts_addOverflow evmStele I
+      (by simpa [evmStele, initState] using hwv) hendLtStele hticStele
+      haddOverflowStele
   exact (flapperTickX_addOverflow (g := Sat256.ofUInt256 g) hendLt htic
       haddOverflow rd4586)
     |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
@@ -1565,25 +1565,25 @@ theorem flapperTickBodyCoreSuccess
       [tickIdWord I, ⟨360⟩, sel]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  have hendLtSolm :
-      (tickEndWord evmSolm I).toNat < (tickTimestampWord evmSolm).toNat := by
-    simpa [evmSolm, tickEndWord, tickTimestampWord, initState] using hendLt
-  have hticSolm : tickTicWord evmSolm I = ⟨0⟩ := by
-    simpa [evmSolm, tickTicWord, initState] using htic
-  have htau : tickRuntimeTauWord σ I = tickTauWord evmSolm := by
-    simp [evmSolm, tickRuntimeTauWord, tickTauWord, initState]
-  have haddFitSolm :
-      (tickNow48Word evmSolm).toNat + (tickTauWord evmSolm).toNat < 2 ^ 48 := by
-    simpa [evmSolm, tickNow48Word, tickTimestampWord, initState, htau] using haddFit
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  have hendLtStele :
+      (tickEndWord evmStele I).toNat < (tickTimestampWord evmStele).toNat := by
+    simpa [evmStele, tickEndWord, tickTimestampWord, initState] using hendLt
+  have hticStele : tickTicWord evmStele I = ⟨0⟩ := by
+    simpa [evmStele, tickTicWord, initState] using htic
+  have htau : tickRuntimeTauWord σ I = tickTauWord evmStele := by
+    simp [evmStele, tickRuntimeTauWord, tickTauWord, initState]
+  have haddFitStele :
+      (tickNow48Word evmStele).toNat + (tickTauWord evmStele).toNat < 2 ^ 48 := by
+    simpa [evmStele, tickNow48Word, tickTimestampWord, initState, htau] using haddFit
   have hbodySplit :
-      (ExecTransitionBody config contract evmSolm (tickLocals I) tickTransition.body
-        (.returned { contract := contract, locals := tickEndLocals evmSolm I }
-          (tickPostState evmSolm I) none)) ∧
-      (I.perm = false → ExecTransitionBody config contract evmSolm (tickLocals I)
+      (ExecTransitionBody config contract evmStele (tickLocals I) tickTransition.body
+        (.returned { contract := contract, locals := tickEndLocals evmStele I }
+          (tickPostState evmStele I) none)) ∧
+      (I.perm = false → ExecTransitionBody config contract evmStele (tickLocals I)
         tickTransition.body .staticViolation) := by
-    exact flapperTickBodyReturns_successSplit evmSolm I
-      (by simpa [evmSolm, initState] using hwv) hendLtSolm hticSolm haddFitSolm
+    exact flapperTickBodyReturns_successSplit evmStele I
+      (by simpa [evmStele, initState] using hwv) hendLtStele hticStele haddFitStele
   rcases flapperTickX_successSplit (g := Sat256.ofUInt256 g) hendLt htic
     haddFit rd4586 with
       ⟨_hperm, hret⟩ | ⟨hperm, hstatic⟩
@@ -1594,7 +1594,7 @@ theorem flapperTickBodyCoreSuccess
       (σ₀ := σ₀) (A := A)
       (I := I) (g := g) haddFit
   exact hret.reEquivExecutionGen hcode hdispatch hdecode hbodySplit.1
-    (by simpa [evmSolm] using hpostAccounts)
+    (by simpa [evmStele] using hpostAccounts)
     (by
       simpa [tickTransition] using
         (returnEquiv.fallthrough (o := ByteArray.empty) (r := none) (t := [])

@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.BytesMemory
 import Benchmarks.UniswapV4PoolManager.WordArrayMemory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 -- LIBRARY CANDIDATE: a raw return-data copy followed by updating the Solidity free pointer.

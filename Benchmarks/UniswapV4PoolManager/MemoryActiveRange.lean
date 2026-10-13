@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV4PoolManager.MemoryGas
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 -- LIBRARY CANDIDATE: every word access inside a reserved range keeps active memory fixed.

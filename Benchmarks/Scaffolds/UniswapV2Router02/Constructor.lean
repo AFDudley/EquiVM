@@ -1,5 +1,5 @@
 import Benchmarks.Scaffolds.UniswapV2Router02.Bytecode
-import Solm.Refine
+import Stele.Refine
 
 /-!
 # UniswapV2Router02 constructor correctness stub
@@ -9,7 +9,7 @@ is the template patched with the constructor's final immutables (`deployedRuntim
 are well typed.  Proof left as the benchmark target.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Benchmarks.UniswapV2Router02.Immutables
+open Stele ABI Ethereum Ethereum.EVM Benchmarks.UniswapV2Router02.Immutables
 
 namespace Benchmarks.UniswapV2Router02
 

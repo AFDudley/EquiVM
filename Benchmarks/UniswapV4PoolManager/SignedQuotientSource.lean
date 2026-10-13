@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV4PoolManager.SignedDivisionSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 -- GENERALIZES tickSpacingMin_eval to arbitrary expressions and signed operands.

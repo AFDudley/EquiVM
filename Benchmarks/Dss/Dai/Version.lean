@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Dai.StringReturn
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -21,7 +21,7 @@ theorem daiVersionReturnEncoding :
     encodeReturnValue? stringTy (.bytes daiVersionBytes) = some daiVersionReturnBytes := by
   native_decide
 
-/-- The Solm `version()` body returns `"1"` as a dynamic string value. -/
+/-- The Stele `version()` body returns `"1"` as a dynamic string value. -/
 theorem daiVersionBodyReturns (evm : EVM.State)
     (h : evm.executionEnv.weiValue = ⟨0⟩) :
     ExecTransitionBody config contract evm versionStore versionTransition.body
@@ -166,7 +166,7 @@ theorem daiDecode_version_ok {I : ExecutionEnv} (hsz4 : 4 ≤ I.calldata.size) :
     some (∅ : Store)
   exact decodeCalldataWithMode_empty_ok hsz4
 
-/-- `version()` body refines its Solm transition. -/
+/-- `version()` body refines its Stele transition. -/
 theorem daiVersionBodyCore {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = daiBytecode) (hsize : I.calldata.size < UInt256.size)
     (hwv : I.weiValue = ⟨0⟩)

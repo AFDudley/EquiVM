@@ -1,16 +1,16 @@
 import Tests.Pipeline.VyperWrapper.Bytecode
 import Tests.Pipeline.VyperWrapper.Immutables
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Tests.Pipeline.VyperWrapper
 
 /-- Runtime bytes from the constructor's immutable valuation. -/
-def deployedRuntime (imms : Solm.Store) : ByteArray :=
+def deployedRuntime (imms : Stele.Store) : ByteArray :=
   immutableLayout.deployed wrapperBytecode imms
 
-/-- The compiler's slot order, with each named Solm value encoded as Vyper bytes. -/
-private theorem immutablePatches (imms : Solm.Store) (v0 : Solm.Value)
+/-- The compiler's slot order, with each named Stele value encoded as Vyper bytes. -/
+private theorem immutablePatches (imms : Stele.Store) (v0 : Stele.Value)
     (b0 : ByteArray)
     (hget0 : imms.get? "TOKEN" = some v0)
     (henc0 : Reasoning.VyperImmutables.scalarBytes? v0 = some b0)
@@ -20,7 +20,7 @@ private theorem immutablePatches (imms : Solm.Store) (v0 : Solm.Value)
     Reasoning.VyperImmutables.Slot.patch?, hget0, henc0]
 
 /-- The runtime code read for Vyper immutable `TOKEN`. -/
-theorem immutableRead_TOKEN (imms : Solm.Store) (v0 : Solm.Value)
+theorem immutableRead_TOKEN (imms : Stele.Store) (v0 : Stele.Value)
     (b0 suffix : ByteArray)
     (hget0 : imms.get? "TOKEN" = some v0)
     (henc0 : Reasoning.VyperImmutables.scalarBytes? v0 = some b0)
@@ -37,7 +37,7 @@ theorem immutableRead_TOKEN (imms : Solm.Store) (v0 : Solm.Value)
   · exact hsuffix
 
 /-- Read `TOKEN` back from memory after copying the immutable section. -/
-theorem immutableCopy_TOKEN (imms : Solm.Store) (v0 : Solm.Value)
+theorem immutableCopy_TOKEN (imms : Stele.Store) (v0 : Stele.Value)
     (b0 suffix mem : ByteArray) (dest : Nat)
     (hget0 : imms.get? "TOKEN" = some v0)
     (henc0 : Reasoning.VyperImmutables.scalarBytes? v0 = some b0)
@@ -62,11 +62,11 @@ theorem immutableLoad_TOKEN (immWords : String → Ethereum.UInt256)
       immutableLayout.slots.map (fun slot => (slot.offset, (immWords slot.name).toByteArray)) =
       [] ++ (0, (immWords "TOKEN").toByteArray) :: [] := by
     rfl
-  have hpatch : ∃ suffix, Solm.patchRuntime (ByteArray.zeroes immutableLayout.size)
+  have hpatch : ∃ suffix, Stele.patchRuntime (ByteArray.zeroes immutableLayout.size)
       (immutableLayout.slots.map (fun slot => (slot.offset, (immWords slot.name).toByteArray))) =
       some suffix := by
     simp only [immutableLayout, List.map_cons, List.map_nil]
-    simp [Solm.patchRuntime, Solm.spliceBytes?, ByteArray_zeroes_size, toByteArray_size]
+    simp [Stele.patchRuntime, Stele.spliceBytes?, ByteArray_zeroes_size, toByteArray_size]
   have hpost : ∀ (p : Nat × ByteArray), p ∈ [] → 0 + 32 ≤ p.1 ∨ p.1 + 32 ≤ 0 := by
     intro p hp
     simp at hp
@@ -87,11 +87,11 @@ theorem immutableCopyWord_TOKEN (immWords : String → Ethereum.UInt256)
       immutableLayout.slots.map (fun slot => (slot.offset, (immWords slot.name).toByteArray)) =
       [] ++ (0, (immWords "TOKEN").toByteArray) :: [] := by
     rfl
-  have hpatch : ∃ suffix, Solm.patchRuntime (ByteArray.zeroes immutableLayout.size)
+  have hpatch : ∃ suffix, Stele.patchRuntime (ByteArray.zeroes immutableLayout.size)
       (immutableLayout.slots.map (fun slot => (slot.offset, (immWords slot.name).toByteArray))) =
       some suffix := by
     simp only [immutableLayout, List.map_cons, List.map_nil]
-    simp [Solm.patchRuntime, Solm.spliceBytes?, ByteArray.size_append,
+    simp [Stele.patchRuntime, Stele.spliceBytes?, ByteArray.size_append,
       ByteArray.size_extract, ByteArray_zeroes_size, toByteArray_size]
   have hpost : ∀ (p : Nat × ByteArray), p ∈ [] → 0 + 32 ≤ p.1 ∨ p.1 + 32 ≤ 0 := by
     intro p hp
@@ -103,8 +103,8 @@ theorem immutableCopyWord_TOKEN (immWords : String → Ethereum.UInt256)
     (words := immWords) (name := "TOKEN") (offset := 0) (dest := dest)
     (pre := []) (post := []) hslots (by decide) hpost hpatch
 
-/-- The scalar word valuation encodes the same suffix as the Solm store. -/
-theorem immutableWordsBridge (imms : Solm.Store) (v0 : Solm.Value)
+/-- The scalar word valuation encodes the same suffix as the Stele store. -/
+theorem immutableWordsBridge (imms : Stele.Store) (v0 : Stele.Value)
     (b0 : ByteArray)
     (hget0 : imms.get? "TOKEN" = some v0)
     (henc0 : Reasoning.VyperImmutables.scalarBytes? v0 = some b0)
@@ -122,8 +122,8 @@ theorem immutableWordsBridge (imms : Solm.Store) (v0 : Solm.Value)
   rw [hp]
   simp [immutableLayout, hw0]
 
-/-- The scalar word runtime agrees with the constructor's Solm valuation. -/
-theorem deployedRuntime_eq_words (imms : Solm.Store) (v0 : Solm.Value)
+/-- The scalar word runtime agrees with the constructor's Stele valuation. -/
+theorem deployedRuntime_eq_words (imms : Stele.Store) (v0 : Stele.Value)
     (b0 : ByteArray)
     (hget0 : imms.get? "TOKEN" = some v0)
     (henc0 : Reasoning.VyperImmutables.scalarBytes? v0 = some b0)
@@ -134,8 +134,8 @@ theorem deployedRuntime_eq_words (imms : Solm.Store) (v0 : Solm.Value)
   rw [immutableWordsBridge imms v0 b0 hget0 henc0 hsize0]
 
 /-- Constructor memory writes in slot order produce the patched runtime. -/
-theorem returnedRuntime_eq_deployed (imms : Solm.Store) (returned : ByteArray)
-    (v0 : Solm.Value) (b0 : ByteArray)
+theorem returnedRuntime_eq_deployed (imms : Stele.Store) (returned : ByteArray)
+    (v0 : Stele.Value) (b0 : ByteArray)
     (hget0 : imms.get? "TOKEN" = some v0)
     (henc0 : Reasoning.VyperImmutables.scalarBytes? v0 = some b0)
     (hsize0 : b0.size = 32)
@@ -149,8 +149,8 @@ theorem returnedRuntime_eq_deployed (imms : Solm.Store) (returned : ByteArray)
     (immutableWordsBridge imms v0 b0 hget0 henc0 hsize0) hreturned
 
 /-- A full RETURN read of that buffer yields the patched runtime. -/
-theorem returnedRuntime_read_eq_deployed (imms : Solm.Store) (returned : ByteArray)
-    (v0 : Solm.Value) (b0 : ByteArray)
+theorem returnedRuntime_read_eq_deployed (imms : Stele.Store) (returned : ByteArray)
+    (v0 : Stele.Value) (b0 : ByteArray)
     (hget0 : imms.get? "TOKEN" = some v0)
     (henc0 : Reasoning.VyperImmutables.scalarBytes? v0 = some b0)
     (hsize0 : b0.size = 32)

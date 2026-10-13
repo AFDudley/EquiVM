@@ -1,15 +1,15 @@
 import Benchmarks.CompoundIII.Comet.UserBasicWrite
 import Benchmarks.CompoundIII.Comet.UserBasicPackedWords
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 
 def storeUserBasicLow (evm : EVM.State) (addr : AccountAddress) (basic : UserBasicData) :
     EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (userBasicSlot addr)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (userBasicSlot addr)
     (userBasicLowWord
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (userBasicSlot addr))
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (userBasicSlot addr))
       (UInt256.signextend ⟨12⟩ basic.principal) basic.index basic.accrued)
 
 theorem storeUserBasic_eq (evm : EVM.State) (addr : AccountAddress) (basic : UserBasicData) :
@@ -25,9 +25,9 @@ theorem storeUserBasic_eq (evm : EVM.State) (addr : AccountAddress) (basic : Use
         (userBasicSlot addr) basic.accrued 21 8 = storeUserBasicLow evm addr basic := by
     change storePackedWord
       (storePackedWord
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner (userBasicSlot addr)
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner (userBasicSlot addr)
           (packedWriteWord
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (userBasicSlot addr))
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (userBasicSlot addr))
             (UInt256.signextend ⟨12⟩ basic.principal) 0 13))
         (userBasicSlot addr) basic.index 13 8)
       (userBasicSlot addr) basic.accrued 21 8 = _

@@ -2,7 +2,7 @@ import Benchmarks.UniswapV4PoolManager.BurnAllowanceStatic
 import Benchmarks.UniswapV4PoolManager.BurnFromSource
 
 /-! The complete internal burnFrom trace, including allowance and balance failures. -/
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.UniswapV4PoolManager.Immutables
 namespace Benchmarks.UniswapV4PoolManager

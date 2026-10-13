@@ -3,7 +3,7 @@ import Benchmarks.CurveVault.Entry
 import Benchmarks.CurveVault.Lock
 import Benchmarks.CurveVault.PriceInternal
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 theorem vaultPricePerShare_BodyCore {σ σ₀ A I} {g : UInt256}
@@ -29,7 +29,7 @@ theorem vaultPricePerShare_BodyCore {σ σ₀ A I} {g : UInt256}
     simp [evalExpr?, pure]
   have hargEval : evalExprs? config {contract := contract, locals := locals} evm [.var "_is_floor"] = .ok [.bool true] := by
     simp [locals, evalExprs?, evalExpr?, EvalResult.ofOption, bind, pure, EvalResult.bind]
-  have hload : Solm.EVM.transientLoad evm evm.executionEnv.codeOwner ⟨0⟩ = codeOwnerTransientWord I σ ⟨0⟩ :=
+  have hload : Stele.EVM.transientLoad evm evm.executionEnv.codeOwner ⟨0⟩ = codeOwnerTransientWord I σ ⟨0⟩ :=
     codeOwnerTransientWord_initState _
   have rd1533 := vaultBlocks.vault_block_1506 (by simp) (by native_decide) rdBody
   by_cases hlocked : codeOwnerTransientWord I σ ⟨0⟩ = ⟨1⟩
@@ -42,7 +42,7 @@ theorem vaultPricePerShare_BodyCore {σ σ₀ A I} {g : UInt256}
         (ExecBlock.consNormal (ExecStmt.letDecl hflagEval)
           (ExecBlock.consRevert (ExecStmt.requireFalse (vaultLockEval_fail evm locals (by rw [hload]; exact hlocked))))))
     exact hrev.reEquivExecutionRevert hcode hd hdec hsource
-  · have hlock : Solm.EVM.transientLoad evm evm.executionEnv.codeOwner ⟨0⟩ ≠ ⟨1⟩ := by rw [hload]; exact hlocked
+  · have hlock : Stele.EVM.transientLoad evm evm.executionEnv.codeOwner ⟨0⟩ ≠ ⟨1⟩ := by rw [hload]; exact hlocked
     have rd1543 := vaultBlocks.vault_block_1533_fallthrough (by simp)
       (u256_eq_of_ne (Ne.symm hlocked)) rd1533
     have hgap : 320 - (vaultDispatchMemory ⟨2572356358⟩).size < USize.size :=

@@ -3,7 +3,7 @@ import Benchmarks.CurveVault.Arithmetic
 import Benchmarks.CurveVault.RuntimeBlocks_002
 import Benchmarks.CurveVault.RuntimeBlocks_031
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 -- LIBRARY CANDIDATE: the compiler's base-ten exponent guard bounds a finite table.

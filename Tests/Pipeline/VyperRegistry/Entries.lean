@@ -8,7 +8,7 @@ Dispatcher bucket 6, arm entry pc 1435: the guard and the three field words of
 `storageWF` makes the raw `account` and `active` words the spec's typed views.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
   Reasoning.VyperBounded
 
 namespace Tests.Pipeline.VyperRegistry

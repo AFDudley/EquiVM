@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.SparseBytesMemory
 import Benchmarks.UniswapV4PoolManager.BytesABI
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 -- LIBRARY CANDIDATE: an ABI bytes value copied to any destination in memory.

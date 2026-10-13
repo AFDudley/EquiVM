@@ -7,10 +7,10 @@ import Reasoning.ExternalCall
 Dispatcher bucket 3, arm entry pc 683: the guard, the reentrancy lock (slot 0: `2` while locked,
 set at pc 705), `balances[msg.sender] >= amount` (pc 702), the two checked subtractions
 (pc 849/877), `send(msg.sender, amount)` as a `CALL` with no data at pc 916 (bridged through
-`callBridge` to Solm's `callViaEVM`), the success check at pc 917 and the unlock at pc 922.
+`callBridge` to Stele's `callViaEVM`), the success check at pc 917 and the unlock at pc 922.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
   Reasoning.VyperImmutables
 
 namespace Tests.Pipeline.VyperVault
@@ -86,11 +86,11 @@ abbrev σT (σ : AccountMap) (I : ExecutionEnv) : AccountMap :=
   sstoreAccountMap I.codeOwner (σB σ I) (UInt256.ofNat 2) (UInt256.sub (tdB σ I) (argWord I))
 
 abbrev evmL (σ σ₀ : AccountMap) (g : Sat256) (A : Substate) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore (initState σ σ₀ g A I) I.codeOwner ⟨0⟩ (UInt256.ofNat 2)
+  Stele.EVM.storageStore (initState σ σ₀ g A I) I.codeOwner ⟨0⟩ (UInt256.ofNat 2)
 abbrev evmB (σ σ₀ : AccountMap) (g : Sat256) (A : Substate) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore (evmL σ σ₀ g A I) I.codeOwner (balSlot I) (UInt256.sub (balL σ I) (argWord I))
+  Stele.EVM.storageStore (evmL σ σ₀ g A I) I.codeOwner (balSlot I) (UInt256.sub (balL σ I) (argWord I))
 abbrev evmT (σ σ₀ : AccountMap) (g : Sat256) (A : Substate) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore (evmB σ σ₀ g A I) I.codeOwner (UInt256.ofNat 2) (UInt256.sub (tdB σ I) (argWord I))
+  Stele.EVM.storageStore (evmB σ σ₀ g A I) I.codeOwner (UInt256.ofNat 2) (UInt256.sub (tdB σ I) (argWord I))
 
 /-- The hash scratch memory (`1 ++ caller`) built over the 32-byte dispatcher memory, and again
     over itself. -/
@@ -255,7 +255,7 @@ theorem vyperVaultWithdrawBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hfit
     (by apply D_J_contains_append_left; jump_dest) rd2
   simp only [vyperVaultBlocks.vyperVault_block_702_taken_memory, ulit_toNat' 32 (by decide),
     show (⟨0⟩ : UInt256).toNat = 0 from rfl] at rd3
-  -- Solm: the callee's `require` and first assignment
+  -- Stele: the callee's `require` and first assignment
   have hgeTrue : evalExpr? config (frame imms (wStore I)) (evmL σ σ₀ (Sat256.ofUInt256 g) A I)
       (.binary .ge (.storage balRef) (.var "amount")) = .ok (.bool true) := by
     rw [evalExpr_ge_words hbalRead (hamt _), decide_eq_true hge]
@@ -327,7 +327,7 @@ theorem vyperVaultWithdrawBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hfit
   rw [slotWord_eq] at rd5
   obtain ⟨_, _, rd6⟩ := vyperVaultBlocks.vyperVault_block_900 (by simp) hperm rd5
   simp only [vyperVaultBlocks.vyperVault_block_900_stack] at rd6
-  -- Solm: the second assignment
+  -- Stele: the second assignment
   have hsub2 := evalExpr_uint256_sub htdRead (hamt _) htd
   have hassignT : assignStorageRef? config (frame imms (wStore I)) (evmB σ σ₀ (Sat256.ofUInt256 g) A I)
       .storage tdRef (uint256Value (UInt256.sub (tdB σ I) (argWord I))) =
@@ -339,7 +339,7 @@ theorem vyperVaultWithdrawBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hfit
       (hty := by show storageTypeAt? contract.storage _ = _; decide) (hloc := rfl)
     erw [storageLocStore_uint256, storageStore_executionEnv, storageStore_executionEnv]
     rfl
-  -- the `CALL` (pc 916): bridged to Solm's `callViaEVM`
+  -- the `CALL` (pc 916): bridged to Stele's `callViaEVM`
   have hs : SourceState (initState σ σ₀ (Sat256.ofUInt256 g) A I) I (σT σ I) (evmT σ σ₀ (Sat256.ofUInt256 g) A I) :=
     ((SourceState.init.storageWrite ⟨0⟩ (UInt256.ofNat 2)).storageWrite (balSlot I)
       (UInt256.sub (balL σ I) (argWord I))).storageWrite (UInt256.ofNat 2) (UInt256.sub (tdB σ I) (argWord I))
@@ -392,7 +392,7 @@ theorem vyperVaultWithdrawBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hfit
         .ok (uint256Value (UInt256.ofNat 3)) := evalExpr_intLit_word _ 3 (by decide)
     have hassign3 : assignStorageRef? config (frame imms ((wStore I).insert "__r" .unit)) evm' .storage lockRef
         (uint256Value (UInt256.ofNat 3)) =
-        .ok (frame imms ((wStore I).insert "__r" .unit), Solm.EVM.storageStore evm' I.codeOwner ⟨0⟩ (UInt256.ofNat 3)) := by
+        .ok (frame imms ((wStore I).insert "__r" .unit), Stele.EVM.storageStore evm' I.codeOwner ⟨0⟩ (UInt256.ofNat 3)) := by
       apply assignStorageRef_storage_vyper_scalar (hbackend := rfl) (hcheck := by rfl)
         (er := { base := "nonreentrant_lock", steps := [] })
         (hleaf := Or.inl ⟨_, rfl⟩) (ty := .elem (.int (.uint ⟨256, by decide⟩))) (loc := vyperUint256Loc ⟨0⟩)
@@ -402,7 +402,7 @@ theorem vyperVaultWithdrawBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hfit
     have hbody : ExecTransitionBody config contract (initState σ σ₀ (Sat256.ofUInt256 g) A I) (wStore I)
         withdrawTransition.body
         (.returned (frame imms ((wStore I).insert "__r" .unit))
-          (Solm.EVM.storageStore evm' I.codeOwner ⟨0⟩ (UInt256.ofNat 3)) none)
+          (Stele.EVM.storageStore evm' I.codeOwner ⟨0⟩ (UInt256.ofNat 3)) none)
         (restrictImmutables contract imms) := by
       rw [withdrawBody_eq]
       exact ExecFuncBody.execBlockOK (ExecBlock.consNormal (ExecStmt.requireTrue hcv)

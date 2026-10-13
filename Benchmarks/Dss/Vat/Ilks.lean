@@ -3,7 +3,7 @@ import Reasoning.ABI
 import Benchmarks.Dss.Vat.Init
 import Reasoning.MemCascade
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -717,7 +717,7 @@ private theorem evalIlksField
         (.storage (ilksF (.var "arg0") field)) =
       .ok (.int (Int.ofNat (solcSlotWordAt slot evm.accountMap evm.executionEnv).toNat)) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
-    (cfg := config) (solm := { contract := contract, locals := ilksStore I }) (evm := evm)
+    (cfg := config) (stele := { contract := contract, locals := ilksStore I }) (evm := evm)
     (slot := ilksF (.var "arg0") field) (er := er)
     (t := .int uint256Int) (loc := wordLoc slot)
     (value := .int (Int.ofNat (solcSlotWordAt slot evm.accountMap evm.executionEnv).toNat))

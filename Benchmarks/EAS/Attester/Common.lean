@@ -5,7 +5,7 @@ import Reasoning.ABI
 import Reasoning.Constructor
 import Reasoning.Solc
 import Reasoning.Dispatch
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 
 /-!
 # Attester proof prelude
@@ -15,7 +15,7 @@ and shared refinement machinery. Functional proof obligations remain unproved.
 `Audit.lean` is executable regression evidence and is deliberately separate from this prelude.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Reasoning.Reach
 

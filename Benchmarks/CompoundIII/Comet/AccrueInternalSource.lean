@@ -1,6 +1,6 @@
 import Benchmarks.CompoundIII.Comet.AccrueThenSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.CompoundIII.Comet.Immutables
 
 namespace Benchmarks.CompoundIII.Comet
@@ -10,7 +10,7 @@ set_option maxRecDepth 2000
 theorem accrue_block (v : CometWithExtendedAssetListImmutables) (evm : EVM.State) :
     internalBlockResult config (accrueEntry v) evm accrueCallable.body (accrueOutcome v evm) := by
   let time := timestampWord evm.executionEnv
-  let last := lastAccrualWord (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩)
+  let last := lastAccrualWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩)
   let elapsed := accrueElapsed evm
   let f0 := accrueEntry v
   let f1 : Frame := { f0 with locals := f0.locals.insert "now_" (.int time.toNat) }

@@ -6,7 +6,7 @@ import Benchmarks.CurveVault.RuntimeBlocks_024
 The selected entry's calldata/payability guard starts at pc 73; it jumps to the
 function entry encoded in bits 8..23 of the selected seven-byte record. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 set_option maxRecDepth 2000
 set_option maxHeartbeats 0

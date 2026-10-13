@@ -2,7 +2,7 @@ import Benchmarks.UniswapV4PoolManager.AbsDiffWords
 import Benchmarks.UniswapV4PoolManager.FullMath96Words
 import Benchmarks.UniswapV4PoolManager.WordBoolean
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 abbrev amount1Fits (a b liquidity : UInt256) : Prop := fullMathFits liquidity (absDiffWord a b) fullMathQ96

@@ -7,7 +7,7 @@ Dispatcher bucket 3, arm entry pc 198: the `callvalue` guard, then `SLOAD 0` and
 raw word (the spec's `address` view agrees under `storageWF`).
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 open Reasoning.VyperImmutables
 
 namespace Tests.Pipeline.VyperWrapper

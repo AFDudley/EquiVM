@@ -1,14 +1,14 @@
 import Benchmarks.Morpho.MorphoBlue.MarketWrites
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.Morpho.MorphoBlue
 set_option maxRecDepth 1000
 
 def positionPackedField (high : Bool) : Fin 3 := if high then ⟨2, by decide⟩ else ⟨1, by decide⟩
 
 def storePositionPacked (evm : EVM.State) (id account : UInt256) (high : Bool) (value : UInt256) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (positionSlot id account + ⟨1⟩)
-    (setUint128HalfWord high (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (positionSlot id account + ⟨1⟩)
+    (setUint128HalfWord high (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
       (positionSlot id account + ⟨1⟩)) value)
 
 theorem assignPositionPacked (evm : EVM.State) (locals imms : Store) (key0 key1 : Expr)

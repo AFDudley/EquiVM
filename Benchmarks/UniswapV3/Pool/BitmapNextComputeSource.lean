@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.BitmapNextReadSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
 
@@ -44,12 +44,12 @@ theorem bitmapNextScanSource (imms locals : Store) (evm : EVM.State) (lte : Bool
   cases lte
   · obtain ⟨out, hbody⟩ := bitLsbReturns imms evm masked hx
     exact internalCallFunctionReturn (callee := bitLsbFunction) (locals := bitLsbLocals masked)
-      (calleeSolm := out) (value := some [.int (Int.ofNat (bitLsbCount masked))])
+      (calleeStele := out) (value := some [.int (Int.ofNat (bitLsbCount masked))])
       (by simp only [evalExprs?, he, bind, EvalResult.bind, pure])
       bitLsbLookup (bitLsbBind masked) hbody
   · obtain ⟨out, hbody⟩ := bitMsbReturns imms evm masked hx
     exact internalCallFunctionReturn (callee := bitMsbFunction) (locals := bitMsbLocals masked)
-      (calleeSolm := out) (value := some [.int (Int.ofNat (tickLogMsbCount masked))])
+      (calleeStele := out) (value := some [.int (Int.ofNat (tickLogMsbCount masked))])
       (by simp only [evalExprs?, he, bind, EvalResult.bind, pure])
       bitMsbLookup (bitMsbBind masked) hbody
 

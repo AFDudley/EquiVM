@@ -3,7 +3,7 @@ import Benchmarks.CurveVault.Arithmetic
 import Benchmarks.CurveVault.RuntimeBlocks_025
 import Benchmarks.CurveVault.RuntimeBlocks_026
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 abbrev vaultCeilDivFunction : FunctionDecl := contract.functions[27]!

@@ -5,7 +5,7 @@ import Benchmarks.CurveVault.RuntimeBlocks_014
 import Benchmarks.CurveVault.RuntimeBlocks_017
 import Benchmarks.CurveVault.RuntimeBlocks_019
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 def vaultTokenFlowSender (flow : VaultFlow) (I : ExecutionEnv) (controller : UInt256) : UInt256 :=

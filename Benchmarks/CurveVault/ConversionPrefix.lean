@@ -2,7 +2,7 @@ import Benchmarks.CurveVault.CeilDiv
 import Benchmarks.CurveVault.TotalAssetsInternal
 import Benchmarks.CurveVault.Memory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch Reasoning.VyperCalls
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch Reasoning.VyperCalls
 namespace Benchmarks.CurveVault
 
 

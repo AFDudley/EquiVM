@@ -34,7 +34,7 @@ the source semantics and bytecode storage reads exactly.
   `TransferFrom.lean` contain function-specific source/EVM/refinement proofs.
 - `Common.lean` contains ERC20-wide ABI, memory, selector, and return helpers.
 - `Storage.lean` contains ERC20-wide storage load/store, RBMap preservation, and bool-return facts.
-- `Spec.lean` defines the Solm ERC20 spec and storage layout. Do not silently change it.
+- `Spec.lean` defines the Stele ERC20 spec and storage layout. Do not silently change it.
 - `Bytecode.lean` defines runtime bytecode, selector theorems, and the verified
   jump-destination fact.
 
@@ -52,7 +52,7 @@ The top-level theorem follows the standard solc dispatcher path:
 Each function proof follows the same broad pattern:
 
 1. Prove ABI decoding for valid calldata and all malformed calldata branches.
-2. Prove the Solm source body result.
+2. Prove the Stele source body result.
 3. Prove EVM reachability through natural phases.
 4. Connect source and EVM results with `reEquiv`.
 
@@ -82,7 +82,7 @@ Useful libraries in this proof were:
 - `Reasoning.Solc` for solc guards, selector load, and common wrappers.
 - `Reasoning.Reach` for EVM stepping and reachability.
 - `Reasoning.Memory` for mapping-slot and storage-load coupling.
-- `Reasoning.SolmBody` and `Reasoning.Refinement` for source execution and equivalence.
+- `Reasoning.SteleBody` and `Reasoning.Refinement` for source execution and equivalence.
 
 ### Prove Storage Map Behavior Separately From Layout
 
@@ -109,7 +109,7 @@ balanceOf[from] -= value;
 ```
 
 The `require` reads `balanceOf[from]`, but the compound assignment `balanceOf[from] -= value`
-performs another storage read at the assignment site. The Solm spec must model that second read:
+performs another storage read at the assignment site. The Stele spec must model that second read:
 
 ```lean
 .assign (balanceOfRef (.var "from"))
@@ -136,7 +136,7 @@ Before adding any axiom, run through this checklist:
 
 1. Identify the exact source expression and the exact bytecode read/write sequence.
 2. Check whether a source storage compound assignment should be modeled as a fresh storage read.
-3. Check whether an optimizer-style local in the Solm spec is stronger than the Solidity source.
+3. Check whether an optimizer-style local in the Stele spec is stronger than the Solidity source.
 4. Prove ordinary map behavior over `RBMap`/storage maps locally; do not axiomatize map updates.
 5. If the remaining obligation is truly cryptographic, isolate it behind a narrow, documented
    boundary and first ask whether the spec/proof can be refactored to avoid depending on it.

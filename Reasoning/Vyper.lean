@@ -1,22 +1,22 @@
 import Reasoning.MemCascade
 import Reasoning.Storage
-import Reasoning.SolmBody
-import Solm.VyperStorage
+import Reasoning.SteleBody
+import Stele.VyperStorage
 
 /-!
 # Vyper storage and mapping-hash bridges
 
 Vyper hashes a mapping's base slot before its key. The memory lemmas below connect
-the two `MSTORE`s and `KECCAK256` in a Vyper trace to `Solm.vyperMappingSlot`.
+the two `MSTORE`s and `KECCAK256` in a Vyper trace to `Stele.vyperMappingSlot`.
 Scalar leaves use the configured storage layout and the backend-neutral helpers in
-`Reasoning.SolmBody`.
+`Reasoning.SteleBody`.
 -/
 
-open Ethereum Ethereum.EVM Solm ABI
+open Ethereum Ethereum.EVM Stele ABI
 
 namespace Reasoning.Theory
 
-/-- The EVM hash of the Vyper preimage `baseSlot ++ key` is the Solm mapping slot. -/
+/-- The EVM hash of the Vyper preimage `baseSlot ++ key` is the Stele mapping slot. -/
 theorem vyperMappingSlot_hash (baseSlot : UInt256) (key : KeyValue) :
     UInt256.ofNat (fromByteArrayBigEndian
       (KEC (baseSlot.toByteArray ++ (keyValueToWord key).toByteArray))) =
@@ -55,15 +55,15 @@ theorem wordAt0Mem_wordAt32Mem_vyperMappingSlot
 
 /-- Read a scalar leaf through the Vyper backend after validating its reference path. -/
 theorem evalExpr_storage_vyper_scalar {cfg : Config} {layout : StorageLayout}
-    {bounds : VyperBounds} {solm : Frame} {evm : EVM.State} {slot : StorageRef}
+    {bounds : VyperBounds} {stele : Frame} {evm : EVM.State} {slot : StorageRef}
     {er : EvaledStorageRef} {t : ABI.ElemType} {loc : StorageLoc}
-    (hbase : solm.locals.get? slot.base = none)
-    (her : evalStorageRef cfg solm evm slot = .ok er)
-    (hty : storageTypeAt? solm.contract.storage er = some (.elem t))
+    (hbase : stele.locals.get? slot.base = none)
+    (her : evalStorageRef cfg stele evm slot = .ok er)
+    (hty : storageTypeAt? stele.contract.storage er = some (.elem t))
     (hbackend : cfg.storageBackend = vyperStorageBackend layout bounds)
     (hcheck : vyperCheckRef? layout bounds evm er = .ok ())
     (hloc : layout er = some (.leaf loc)) :
-    evalExpr? cfg solm evm (.storage slot) = .ok (storageLocLoad evm loc) := by
+    evalExpr? cfg stele evm (.storage slot) = .ok (storageLocLoad evm loc) := by
   apply evalExpr_storage_scalar_of_read hbase her hty
   rw [hbackend]
   simp [vyperStorageBackend, hcheck, vyperReadRaw?, vyperLeafLoc?, hloc,
@@ -71,18 +71,18 @@ theorem evalExpr_storage_vyper_scalar {cfg : Config} {layout : StorageLayout}
 
 /-- Write an integer scalar through the Vyper backend. -/
 theorem assignStorageRef_storage_vyper_scalar {cfg : Config} {layout : StorageLayout}
-    {bounds : VyperBounds} {solm : Frame} {evm evm' : EVM.State}
+    {bounds : VyperBounds} {stele : Frame} {evm evm' : EVM.State}
     {slot : StorageRef} {er : EvaledStorageRef} {ty : StorageType}
     {loc : StorageLoc} {n : Int}
-    (hbase : solm.locals.get? slot.base = none)
-    (her : evalStorageRef cfg solm evm slot = .ok er)
-    (hty : storageTypeAt? solm.contract.storage er = some ty)
+    (hbase : stele.locals.get? slot.base = none)
+    (her : evalStorageRef cfg stele evm slot = .ok er)
+    (hty : storageTypeAt? stele.contract.storage er = some ty)
     (hbackend : cfg.storageBackend = vyperStorageBackend layout bounds)
     (hcheck : vyperCheckRef? layout bounds evm er = .ok ())
     (hloc : layout er = some (.leaf loc))
     (hleaf : (∃ t, ty = .elem t) ∨ (∃ name, ty = .contract name))
     (hstore : storageLocStore evm loc (.int n) = some evm') :
-    assignStorageRef? cfg solm evm .storage slot (.int n) = .ok (solm, evm') := by
+    assignStorageRef? cfg stele evm .storage slot (.int n) = .ok (stele, evm') := by
   apply assignStorageRef_storage_of_write hbase her hty
   rw [hbackend]
   rcases hleaf with ⟨t, rfl⟩ | ⟨name, rfl⟩
@@ -93,18 +93,18 @@ theorem assignStorageRef_storage_vyper_scalar {cfg : Config} {layout : StorageLa
 
 /-- Full-word uint256 read through the Vyper backend. -/
 theorem evalExpr_storage_vyper_uint256_backend {cfg : Config} {layout : StorageLayout}
-    {bounds : VyperBounds} {solm : Frame} {evm : EVM.State} {slot : StorageRef}
+    {bounds : VyperBounds} {stele : Frame} {evm : EVM.State} {slot : StorageRef}
     {er : EvaledStorageRef} {physicalSlot : UInt256}
-    (hbase : solm.locals.get? slot.base = none)
-    (her : evalStorageRef cfg solm evm slot = .ok er)
-    (hty : storageTypeAt? solm.contract.storage er =
+    (hbase : stele.locals.get? slot.base = none)
+    (her : evalStorageRef cfg stele evm slot = .ok er)
+    (hty : storageTypeAt? stele.contract.storage er =
       some (.elem (.int (.uint ⟨256, by decide⟩))))
     (hbackend : cfg.storageBackend = vyperStorageBackend layout bounds)
     (hcheck : vyperCheckRef? layout bounds evm er = .ok ())
     (hloc : layout er = some (.leaf (vyperUint256Loc physicalSlot))) :
-    evalExpr? cfg solm evm (.storage slot) =
+    evalExpr? cfg stele evm (.storage slot) =
       .ok (.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner physicalSlot).toNat)) := by
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner physicalSlot).toNat)) := by
   have hread := evalExpr_storage_vyper_scalar hbase her hty hbackend hcheck hloc
   have hlocEq : vyperUint256Loc physicalSlot = uint256Loc physicalSlot := rfl
   rw [hlocEq, storageLocLoad_uint256] at hread

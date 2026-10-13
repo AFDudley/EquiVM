@@ -6,7 +6,7 @@ import Tests.Pipeline.VyperWrapper.Helpers
 Dispatcher bucket 1, arm entry pc 1740: the `callvalue` guard, then `SLOAD 2` and `RETURN`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 open Reasoning.VyperImmutables
 
 namespace Tests.Pipeline.VyperWrapper

@@ -3,14 +3,14 @@ import Benchmarks.Safe.Main.FallbackMemory
 import Reasoning.ABIViews
 import Reasoning.ExternalCall
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.Main
 
 def fallbackArgs (cd : ByteArray) : Store := (∅ : Store).insert "calldata" (.bytes cd)
 
 def fallbackHandler (evm : EVM.State) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner fallbackHandlerSlot
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner fallbackHandlerSlot
 
 def fallbackLocals (cd : ByteArray) (handler : UInt256) : Store :=
   ((fallbackArgs cd).insert "handlerWord" (.int (Int.ofNat handler.toNat))).insert

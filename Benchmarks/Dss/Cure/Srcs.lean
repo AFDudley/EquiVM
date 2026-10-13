@@ -1,7 +1,7 @@
 import Benchmarks.Dss.Cure.Common
 import Ethereum.Theory.OpcodeLemmas
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Cure
 
@@ -123,17 +123,17 @@ theorem evalExpr_srcsStorage_inBounds {σ σ₀ A I} {g : Sat256}
   · rw [show addrLoc (srcsSlotFor I) = addressOffset0Loc (srcsSlotFor I) by rfl]
     rw [storageLocLoad_address_offset0]
     simp [srcsAddressValue, srcsRawWord, solcSlotWordAt, solcSlotWord, initState,
-      Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage]
+      Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage]
   · simp [locals, srcElemRef]
   · have hlenLoad :
         storageLocLoad (initState σ σ₀ g A I) (wordLoc ⟨2⟩) =
           .int (Int.ofNat (srcsLenWord σ I).toNat) := by
       erw [storageLocLoad_uint256]
-      simp [srcsLenWord, solcSlotWordAt, solcSlotWord, initState, Solm.EVM.storageLoad,
+      simp [srcsLenWord, solcSlotWordAt, solcSlotWord, initState, Stele.EVM.storageLoad,
         State.lookupAccount, Account.lookupStorage]
-    have hlength : Solm.EVM.storageLoad (initState σ σ₀ g A I)
+    have hlength : Stele.EVM.storageLoad (initState σ σ₀ g A I)
         (initState σ σ₀ g A I).executionEnv.codeOwner ⟨2⟩ = srcsLenWord σ I := by
-      simp [srcsLenWord, solcSlotWordAt, solcSlotWord, initState, Solm.EVM.storageLoad,
+      simp [srcsLenWord, solcSlotWordAt, solcSlotWord, initState, Stele.EVM.storageLoad,
         State.lookupAccount, Account.lookupStorage]
     simp [srcsEvaledRef, srcElemRef, evalStorageRef, evalStorageRefSteps,
       evalStorageRefStep, evalExpr?, EvalResult.ofOption, EvalResult.bind, pure, bind,
@@ -184,15 +184,15 @@ theorem evalExpr_srcsStorage_oob {σ σ₀ A I} {g : Sat256}
       storageLocLoad (initState σ σ₀ g A I) (wordLoc ⟨2⟩) =
         .int (Int.ofNat (srcsLenWord σ I).toNat) := by
     erw [storageLocLoad_uint256]
-    simp [srcsLenWord, solcSlotWordAt, solcSlotWord, initState, Solm.EVM.storageLoad,
+    simp [srcsLenWord, solcSlotWordAt, solcSlotWord, initState, Stele.EVM.storageLoad,
       State.lookupAccount, Account.lookupStorage]
   simp only [wordLoc] at hlenLoad
   have her :
       evalStorageRef config { contract := contract, locals := locals }
         (initState σ σ₀ g A I) (srcElemRef (.var "arg0")) = .revert := by
-    have hlength : Solm.EVM.storageLoad (initState σ σ₀ g A I)
+    have hlength : Stele.EVM.storageLoad (initState σ σ₀ g A I)
         (initState σ σ₀ g A I).executionEnv.codeOwner ⟨2⟩ = srcsLenWord σ I := by
-      simp [srcsLenWord, solcSlotWordAt, solcSlotWord, initState, Solm.EVM.storageLoad,
+      simp [srcsLenWord, solcSlotWordAt, solcSlotWord, initState, Stele.EVM.storageLoad,
         State.lookupAccount, Account.lookupStorage]
     simp [srcElemRef, evalStorageRef, evalStorageRefSteps, evalStorageRefStep, evalExpr?,
       EvalResult.ofOption, EvalResult.bind, pure, bind, valueToKey?, locals,

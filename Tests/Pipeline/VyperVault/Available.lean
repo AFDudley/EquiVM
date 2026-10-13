@@ -8,7 +8,7 @@ Dispatcher bucket 7, arm entry pc 1282: the guard, the address validation, `bala
 branchless `min` at pc 1322.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
   Reasoning.VyperImmutables
 
 namespace Tests.Pipeline.VyperVault
@@ -114,7 +114,7 @@ theorem vyperVaultAvailableBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hfi
     wordAt0Mem_size_96 _ (wordAt32Mem_size_96 _ (argMem_size 7 _ hmemsize))
   rw [hkec, slotWord_eq, branchlessMin, ulit_toNat' 96 (by decide), ulit_toNat' 32 (by decide),
     toByteArray_write_read_back_of_gap _ _ 96 (by rw [hmemsz]; exact lt_usize _ (by decide))] at rd5
-  -- the Solm body
+  -- the Stele body
   set bal := solcSlotWordAt (vyperMappingSlot (UInt256.ofNat 1)
     (.address (AccountAddress.ofNat (argWord I).toNat))) σ I with hbal
   set sb := selfBalanceWord σ I with hsb

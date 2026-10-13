@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.ModifyLiquidityCallerCorrect
 import Benchmarks.UniswapV4PoolManager.TickPriceSelectSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.UniswapV4PoolManager.Immutables
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
@@ -75,6 +75,6 @@ theorem modifyLiquidityAccountingCorrect {I : ExecutionEnv} {g : Sat256} {s0 evm
         exact ⟨result, ExecBlock.consNormal hs hbody, htrace⟩
     | reverted => exact ⟨.reverted, ExecBlock.consRevert hs, ht⟩
     | staticViolation => exact ⟨.staticViolation, ExecBlock.consStatic hs, ht⟩
-    | returned | «break» | «continue» => exact False.elim ht
+    | returned | «break» | «continue» | noMatch | decodingFailed => exact False.elim ht
 
 end Benchmarks.UniswapV4PoolManager

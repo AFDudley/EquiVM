@@ -5,7 +5,7 @@ import Benchmarks.CompoundIII.Comet.TransferBaseUpdateEvm
 import Benchmarks.CompoundIII.Comet.TransferBaseTailEvm
 import Benchmarks.CompoundIII.Comet.AccrueInternalEvm
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
 open Benchmarks.CompoundIII.Comet.Immutables cometWithExtendedAssetListBlocks
 
 namespace Benchmarks.CompoundIII.Comet

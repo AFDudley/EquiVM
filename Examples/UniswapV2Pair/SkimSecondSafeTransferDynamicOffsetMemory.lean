@@ -2,7 +2,7 @@ import Examples.UniswapV2Pair.MemorySteps
 import Examples.UniswapV2Pair.SkimDynamicSecondRuntime
 import Examples.UniswapV2Pair.SkimSecondSafeTransferDynamicRuntime
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 

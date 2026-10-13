@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.UpdatePositionTickEntryTrace
 import Benchmarks.UniswapV3.Pool.UpdatePositionBitmapModel
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 open uniswapV3PoolBlocks
 namespace Benchmarks.UniswapV3.Pool

@@ -1,8 +1,8 @@
 import Examples.Caller.Spec
-import Solm.Notation
+import Stele.Notation
 
 /-!
-# Caller spec in the Solidity-faithful Solm frontend
+# Caller spec in the Solidity-faithful Stele frontend
 
 The `Caller` contract from `Examples/Caller/Spec.lean` written with `solidity%` and proven
 definitionally equal to the AST spec.
@@ -12,7 +12,7 @@ definitionally equal to the AST spec.
 * `t.pow2(n)` is the external call, bound to `tmp` as in the AST.
 -/
 
-open Solm Solm.Notation
+open Stele Stele.Notation
 
 namespace Caller.Syntax
 

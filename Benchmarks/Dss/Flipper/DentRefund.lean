@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Flipper.DentSameCaller
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxHeartbeats 0
 
@@ -13,7 +13,7 @@ abbrev dentRefundMoveArgValsOf (evm : EVM.State) (I : ExecutionEnv) : List Value
     .address
       (AccountAddress.ofNat
         (UInt256.land
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
             (bidPackedSlotOfWord (dentId I)))
           solcAddrMask).toNat),
     .int (Int.ofNat (dentBid I).toNat)]
@@ -366,7 +366,7 @@ theorem evalExpr_dentLotDelta_forLocals {evm : EVM.State} {locals : Store}
       (wrap256 (.binary .sub (.storage (bidsF (.var "id") "lot")) (.var "lot"))) =
         .ok (.int (Int.ofNat
           (UInt256.sub
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
               (bidSlotOfWord (dentId I) ⟨1⟩))
             (dentLot I)).toNat)) := by
   have hbidLot := evalExpr_bidLot_of_get_id_evm (evm := evm)
@@ -376,12 +376,12 @@ theorem evalExpr_dentLotDelta_forLocals {evm : EVM.State} {locals : Store}
   rw [wrap256]
   simp only [evalExpr?, hbidLot, hlotVar, EvalResult.bind, bind, pure]
   change (if wordModulus = 0 then EvalResult.revert else
-      .ok (Value.int ((Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      .ok (Value.int ((Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (bidSlotOfWord (dentId I) ⟨1⟩)).toNat -
           Int.ofNat (dentLot I).toNat) % wordModulus))) =
     .ok (Value.int (Int.ofNat
       (UInt256.sub
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (bidSlotOfWord (dentId I) ⟨1⟩))
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (bidSlotOfWord (dentId I) ⟨1⟩))
         (dentLot I)).toNat))
   rw [if_neg (by norm_num [wordModulus]), intModWord_sub_toNat]
 
@@ -483,16 +483,16 @@ theorem flipperDentSourceBlockAfterRefundSuccessTailSplit {σ σ₀ A I}
         (true, evmRefund, outRefund) true) :
     let locals := dentLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-    let evmGuy := Solm.EVM.storageStore evmRefund evmRefund.executionEnv.codeOwner
+    let evmGuy := Stele.EVM.storageStore evmRefund evmRefund.executionEnv.codeOwner
       (bidPackedSlotOfWord (dentId I))
       (setAddressOffset0Word
-        (Solm.EVM.storageLoad evmRefund evmRefund.executionEnv.codeOwner
+        (Stele.EVM.storageLoad evmRefund evmRefund.executionEnv.codeOwner
           (bidPackedSlotOfWord (dentId I)))
         (solcSourceWord evmRefund.executionEnv))
-    ((let evmGuy := Solm.EVM.storageStore evmRefund evmRefund.executionEnv.codeOwner
+    ((let evmGuy := Stele.EVM.storageStore evmRefund evmRefund.executionEnv.codeOwner
         (bidPackedSlotOfWord (dentId I))
         (setAddressOffset0Word
-          (Solm.EVM.storageLoad evmRefund evmRefund.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evmRefund evmRefund.executionEnv.codeOwner
             (bidPackedSlotOfWord (dentId I)))
           (solcSourceWord evmRefund.executionEnv))
       ExecBlock config { contract := contract, locals := dentLocalsAfterRefund σ I } evmGuy
@@ -701,20 +701,20 @@ theorem flipperDentSourceBlockAfterRefundSuccessTail {σ σ₀ A I}
           (initState σ σ₀ (Sat256.ofUInt256 g) A I) I)
         (true, evmRefund, outRefund) true)
     (htail :
-      let evmGuy := Solm.EVM.storageStore evmRefund evmRefund.executionEnv.codeOwner
+      let evmGuy := Stele.EVM.storageStore evmRefund evmRefund.executionEnv.codeOwner
         (bidPackedSlotOfWord (dentId I))
         (setAddressOffset0Word
-          (Solm.EVM.storageLoad evmRefund evmRefund.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evmRefund evmRefund.executionEnv.codeOwner
             (bidPackedSlotOfWord (dentId I)))
           (solcSourceWord evmRefund.executionEnv))
       ExecBlock config { contract := contract, locals := dentLocalsAfterRefund σ I } evmGuy
         dentAfterDecreaseFluxTailStmts r) :
     let locals := dentLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-    let _evmGuy := Solm.EVM.storageStore evmRefund evmRefund.executionEnv.codeOwner
+    let _evmGuy := Stele.EVM.storageStore evmRefund evmRefund.executionEnv.codeOwner
       (bidPackedSlotOfWord (dentId I))
       (setAddressOffset0Word
-        (Solm.EVM.storageLoad evmRefund evmRefund.executionEnv.codeOwner
+        (Stele.EVM.storageLoad evmRefund evmRefund.executionEnv.codeOwner
           (bidPackedSlotOfWord (dentId I)))
         (solcSourceWord evmRefund.executionEnv))
     ExecBlock config { contract := contract, locals := locals } evm0 dentTransition.body r :=
@@ -1073,10 +1073,10 @@ theorem flipperDentSourceBodyFluxNoCodeAfterRefund {σ σ₀ A I}
           (initState σ σ₀ (Sat256.ofUInt256 g) A I) I)
         (true, evmRefund, outRefund) true)
     (hfluxNoCode :
-      let evmGuy := Solm.EVM.storageStore evmRefund evmRefund.executionEnv.codeOwner
+      let evmGuy := Stele.EVM.storageStore evmRefund evmRefund.executionEnv.codeOwner
         (bidPackedSlotOfWord (dentId I))
         (setAddressOffset0Word
-          (Solm.EVM.storageLoad evmRefund evmRefund.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evmRefund evmRefund.executionEnv.codeOwner
             (bidPackedSlotOfWord (dentId I)))
           (solcSourceWord evmRefund.executionEnv))
       (UInt256.ofNat
@@ -1087,10 +1087,10 @@ theorem flipperDentSourceBodyFluxNoCodeAfterRefund {σ σ₀ A I}
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     ExecTransitionBody config contract evm0 locals dentTransition.body .reverted := by
   intro locals evm0
-  let evmGuy := Solm.EVM.storageStore evmRefund evmRefund.executionEnv.codeOwner
+  let evmGuy := Stele.EVM.storageStore evmRefund evmRefund.executionEnv.codeOwner
     (bidPackedSlotOfWord (dentId I))
     (setAddressOffset0Word
-      (Solm.EVM.storageLoad evmRefund evmRefund.executionEnv.codeOwner
+      (Stele.EVM.storageLoad evmRefund evmRefund.executionEnv.codeOwner
         (bidPackedSlotOfWord (dentId I)))
       (solcSourceWord evmRefund.executionEnv))
   have hvat :
@@ -1187,10 +1187,10 @@ theorem flipperDentSourceBodyFluxCallFailureAfterRefund {σ σ₀ A I}
           (initState σ σ₀ (Sat256.ofUInt256 g) A I) I)
         (true, evmRefund, outRefund) true)
     (hfluxCode :
-      let evmGuy := Solm.EVM.storageStore evmRefund evmRefund.executionEnv.codeOwner
+      let evmGuy := Stele.EVM.storageStore evmRefund evmRefund.executionEnv.codeOwner
         (bidPackedSlotOfWord (dentId I))
         (setAddressOffset0Word
-          (Solm.EVM.storageLoad evmRefund evmRefund.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evmRefund evmRefund.executionEnv.codeOwner
             (bidPackedSlotOfWord (dentId I)))
           (solcSourceWord evmRefund.executionEnv))
       0 <
@@ -1199,10 +1199,10 @@ theorem flipperDentSourceBodyFluxCallFailureAfterRefund {σ σ₀ A I}
             (flipperVatAddress evmGuy.accountMap evmGuy.executionEnv)).option
             0 (fun acc => acc.code.size))).toNat)
     (hcallFlux :
-      let evmGuy := Solm.EVM.storageStore evmRefund evmRefund.executionEnv.codeOwner
+      let evmGuy := Stele.EVM.storageStore evmRefund evmRefund.executionEnv.codeOwner
         (bidPackedSlotOfWord (dentId I))
         (setAddressOffset0Word
-          (Solm.EVM.storageLoad evmRefund evmRefund.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evmRefund evmRefund.executionEnv.codeOwner
             (bidPackedSlotOfWord (dentId I)))
           (solcSourceWord evmRefund.executionEnv))
       typedCallViaEVM config evmGuy
@@ -1212,10 +1212,10 @@ theorem flipperDentSourceBodyFluxCallFailureAfterRefund {σ σ₀ A I}
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     ExecTransitionBody config contract evm0 locals dentTransition.body .reverted := by
   intro locals evm0
-  let evmGuy := Solm.EVM.storageStore evmRefund evmRefund.executionEnv.codeOwner
+  let evmGuy := Stele.EVM.storageStore evmRefund evmRefund.executionEnv.codeOwner
     (bidPackedSlotOfWord (dentId I))
     (setAddressOffset0Word
-      (Solm.EVM.storageLoad evmRefund evmRefund.executionEnv.codeOwner
+      (Stele.EVM.storageLoad evmRefund evmRefund.executionEnv.codeOwner
         (bidPackedSlotOfWord (dentId I)))
       (solcSourceWord evmRefund.executionEnv))
   have hvat :
@@ -1330,10 +1330,10 @@ theorem flipperDentSourceBodySuccessAfterRefund {σ σ₀ A I}
           (initState σ σ₀ (Sat256.ofUInt256 g) A I) I)
         (true, evmRefund, outRefund) true)
     (hfluxCode :
-      let evmGuy := Solm.EVM.storageStore evmRefund evmRefund.executionEnv.codeOwner
+      let evmGuy := Stele.EVM.storageStore evmRefund evmRefund.executionEnv.codeOwner
         (bidPackedSlotOfWord (dentId I))
         (setAddressOffset0Word
-          (Solm.EVM.storageLoad evmRefund evmRefund.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evmRefund evmRefund.executionEnv.codeOwner
             (bidPackedSlotOfWord (dentId I)))
           (solcSourceWord evmRefund.executionEnv))
       0 <
@@ -1342,10 +1342,10 @@ theorem flipperDentSourceBodySuccessAfterRefund {σ σ₀ A I}
             (flipperVatAddress evmGuy.accountMap evmGuy.executionEnv)).option
             0 (fun acc => acc.code.size))).toNat)
     (hcallFlux :
-      let evmGuy := Solm.EVM.storageStore evmRefund evmRefund.executionEnv.codeOwner
+      let evmGuy := Stele.EVM.storageStore evmRefund evmRefund.executionEnv.codeOwner
         (bidPackedSlotOfWord (dentId I))
         (setAddressOffset0Word
-          (Solm.EVM.storageLoad evmRefund evmRefund.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evmRefund evmRefund.executionEnv.codeOwner
             (bidPackedSlotOfWord (dentId I)))
           (solcSourceWord evmRefund.executionEnv))
       typedCallViaEVM config evmGuy
@@ -1356,17 +1356,17 @@ theorem flipperDentSourceBodySuccessAfterRefund {σ σ₀ A I}
     (hfitTic :
       (tendNow48 I).toNat +
           (tendTtlWord
-            (Solm.EVM.storageStore evmFlux evmFlux.executionEnv.codeOwner
+            (Stele.EVM.storageStore evmFlux evmFlux.executionEnv.codeOwner
               (bidSlotOfWord (dentId I) ⟨1⟩) (dentLot I)).accountMap I).toNat <
         2 ^ 48) :
     let locals := dentLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-    let evmLot := Solm.EVM.storageStore evmFlux evmFlux.executionEnv.codeOwner
+    let evmLot := Stele.EVM.storageStore evmFlux evmFlux.executionEnv.codeOwner
       (bidSlotOfWord (dentId I) ⟨1⟩) (dentLot I)
-    let evmTic := Solm.EVM.storageStore evmLot evmLot.executionEnv.codeOwner
+    let evmTic := Stele.EVM.storageStore evmLot evmLot.executionEnv.codeOwner
       (bidPackedSlotOfWord (dentId I))
       (setUint48Offset20Word
-        (Solm.EVM.storageLoad evmLot evmLot.executionEnv.codeOwner
+        (Stele.EVM.storageLoad evmLot evmLot.executionEnv.codeOwner
           (bidPackedSlotOfWord (dentId I)))
         (tendTicNewWord evmLot.accountMap I))
     ExecTransitionBody config contract evm0 locals dentTransition.body
@@ -1374,10 +1374,10 @@ theorem flipperDentSourceBodySuccessAfterRefund {σ σ₀ A I}
         { contract := contract, locals := dentLocalsAfterRefundWithTicFrom σ evmLot.accountMap I }
         evmTic none) := by
   intro locals evm0 evmLot evmTic
-  let evmGuy := Solm.EVM.storageStore evmRefund evmRefund.executionEnv.codeOwner
+  let evmGuy := Stele.EVM.storageStore evmRefund evmRefund.executionEnv.codeOwner
     (bidPackedSlotOfWord (dentId I))
     (setAddressOffset0Word
-      (Solm.EVM.storageLoad evmRefund evmRefund.executionEnv.codeOwner
+      (Stele.EVM.storageLoad evmRefund evmRefund.executionEnv.codeOwner
         (bidPackedSlotOfWord (dentId I)))
       (solcSourceWord evmRefund.executionEnv))
   have hvat :
@@ -1462,7 +1462,7 @@ theorem flipperDentSourceBodySuccessAfterRefund {σ σ₀ A I}
             .ok (.int (Int.ofNat (tendTicNewWord evmLot.accountMap I).toNat)) := by
     exact evalExpr_dentAfterRefundTicVarWithTicFrom (evm := evmLot)
       (σpre := σ) (σtic := evmLot.accountMap) (I := I)
-  let solmTic : Frame :=
+  let steleTic : Frame :=
     { contract := contract, locals := dentLocalsAfterRefundWithTicFrom σ evmLot.accountMap I }
   have hassignTic :
       assignStorageRef? config
@@ -1470,8 +1470,8 @@ theorem flipperDentSourceBodySuccessAfterRefund {σ σ₀ A I}
             locals := dentLocalsAfterRefundWithTicFrom σ evmLot.accountMap I }
           evmLot .storage (bidsF (.var "id") "tic")
           (.int (Int.ofNat (tendTicNewWord evmLot.accountMap I).toNat)) =
-        .ok (solmTic, evmTic) := by
-    simpa [evmTic, solmTic] using
+        .ok (steleTic, evmTic) := by
+    simpa [evmTic, steleTic] using
       assign_bidTicStorage evmLot (dentId I) (tendTicNewWord evmLot.accountMap I)
         (tendTicNewWord_bound evmLot.accountMap I)
         (dentLocalsAfterRefundWithTicFrom_get_id σ evmLot.accountMap I)
@@ -1578,10 +1578,10 @@ theorem flipperDentSourceBodyAdd48OverflowAfterRefund {σ σ₀ A I}
           (initState σ σ₀ (Sat256.ofUInt256 g) A I) I)
         (true, evmRefund, outRefund) true)
     (hfluxCode :
-      let evmGuy := Solm.EVM.storageStore evmRefund evmRefund.executionEnv.codeOwner
+      let evmGuy := Stele.EVM.storageStore evmRefund evmRefund.executionEnv.codeOwner
         (bidPackedSlotOfWord (dentId I))
         (setAddressOffset0Word
-          (Solm.EVM.storageLoad evmRefund evmRefund.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evmRefund evmRefund.executionEnv.codeOwner
             (bidPackedSlotOfWord (dentId I)))
           (solcSourceWord evmRefund.executionEnv))
       0 <
@@ -1590,10 +1590,10 @@ theorem flipperDentSourceBodyAdd48OverflowAfterRefund {σ σ₀ A I}
             (flipperVatAddress evmGuy.accountMap evmGuy.executionEnv)).option
             0 (fun acc => acc.code.size))).toNat)
     (hcallFlux :
-      let evmGuy := Solm.EVM.storageStore evmRefund evmRefund.executionEnv.codeOwner
+      let evmGuy := Stele.EVM.storageStore evmRefund evmRefund.executionEnv.codeOwner
         (bidPackedSlotOfWord (dentId I))
         (setAddressOffset0Word
-          (Solm.EVM.storageLoad evmRefund evmRefund.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evmRefund evmRefund.executionEnv.codeOwner
             (bidPackedSlotOfWord (dentId I)))
           (solcSourceWord evmRefund.executionEnv))
       typedCallViaEVM config evmGuy
@@ -1605,19 +1605,19 @@ theorem flipperDentSourceBodyAdd48OverflowAfterRefund {σ σ₀ A I}
       2 ^ 48 ≤
         (tendNow48 I).toNat +
           (tendTtlWord
-            (Solm.EVM.storageStore evmFlux evmFlux.executionEnv.codeOwner
+            (Stele.EVM.storageStore evmFlux evmFlux.executionEnv.codeOwner
               (bidSlotOfWord (dentId I) ⟨1⟩) (dentLot I)).accountMap I).toNat) :
     let locals := dentLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     ExecTransitionBody config contract evm0 locals dentTransition.body .reverted := by
   intro locals evm0
-  let evmGuy := Solm.EVM.storageStore evmRefund evmRefund.executionEnv.codeOwner
+  let evmGuy := Stele.EVM.storageStore evmRefund evmRefund.executionEnv.codeOwner
     (bidPackedSlotOfWord (dentId I))
     (setAddressOffset0Word
-      (Solm.EVM.storageLoad evmRefund evmRefund.executionEnv.codeOwner
+      (Stele.EVM.storageLoad evmRefund evmRefund.executionEnv.codeOwner
         (bidPackedSlotOfWord (dentId I)))
       (solcSourceWord evmRefund.executionEnv))
-  let evmLot := Solm.EVM.storageStore evmFlux evmFlux.executionEnv.codeOwner
+  let evmLot := Stele.EVM.storageStore evmFlux evmFlux.executionEnv.codeOwner
     (bidSlotOfWord (dentId I) ⟨1⟩) (dentLot I)
   have hvat :
       evalExpr? config { contract := contract, locals := dentLocalsAfterRefund σ I }

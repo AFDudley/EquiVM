@@ -1,6 +1,6 @@
 import Benchmarks.CurveVault.DiffTarget
 
-open Solm Solm.DiffTest ABI Ethereum Ethereum.EVM
+open Stele Stele.DiffTest ABI Ethereum Ethereum.EVM
 open Benchmarks.CurveVault
 
 namespace Benchmarks.CurveVault.InitializeDiagnostic
@@ -21,7 +21,7 @@ def run (len : Nat) (padding : UInt8) : IO Unit := do
   let args := [0x6000, 0x7000, 0x5000, 0x8000].map (fun n => Value.address (EVM.address n))
   let cd := (ABI.encodeCallWithSelector? ⟨#[0xf8, 0xc8, 0x76, 0x5e]⟩
     (initializeTransition.params.map Param.ty) args).getD .empty
-  let c : Solm.DiffTest.Case :=
+  let c : Stele.DiffTest.Case :=
     { label := s!"symbol length={len}, padding={padding}"
       σ := t.world
       I := t.env t.runtime (EVM.address 0x2000) 0 cd true }

@@ -3,7 +3,7 @@ import Benchmarks.UniswapV4PoolManager.ModifyLiquidityParams
 import Benchmarks.UniswapV4PoolManager.PoolKeyView
 import Benchmarks.UniswapV4PoolManager.RuntimeBlocks_017
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.UniswapV4PoolManager.Immutables
 namespace Benchmarks.UniswapV4PoolManager
 open poolManagerBlocks

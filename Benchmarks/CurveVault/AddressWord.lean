@@ -1,6 +1,6 @@
 import Benchmarks.CurveVault.Common
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 -- LIBRARY CANDIDATES: canonical word representation and round trip for any address.
@@ -27,12 +27,12 @@ theorem addressOfWord_eq_iff {w : UInt256} (hcanon : w.toNat < EVM.addressModulu
     rw [h, addressWord_roundtrip]
 
 -- LIBRARY CANDIDATE: address inequality evaluated against a canonical EVM word.
-theorem evalExpr_ne_address_word {cfg : Config} {solm : Frame} {evm : State}
+theorem evalExpr_ne_address_word {cfg : Config} {stele : Frame} {evm : State}
     {lhs rhs : Expr} {word : UInt256} {addr : AccountAddress}
     (hcanon : word.toNat < EVM.addressModulus)
-    (hl : evalExpr? cfg solm evm lhs = .ok (.address (AccountAddress.ofNat word.toNat)))
-    (hr : evalExpr? cfg solm evm rhs = .ok (.address addr)) :
-    evalExpr? cfg solm evm (.binary .ne lhs rhs) =
+    (hl : evalExpr? cfg stele evm lhs = .ok (.address (AccountAddress.ofNat word.toNat)))
+    (hr : evalExpr? cfg stele evm rhs = .ok (.address addr)) :
+    evalExpr? cfg stele evm (.binary .ne lhs rhs) =
       .ok (.bool (decide (word ≠ UInt256.ofNat addr.val))) := by
   rw [evalExpr_binary_nonshort (by decide +kernel) (by decide +kernel), hl, hr]
   simp only [EvalResult.bind, bind, evalBinaryOp?, value_address_beq]

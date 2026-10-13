@@ -10,7 +10,7 @@ bodies run in, the per-function guards, the owner check routine, and the view of
 and mapping slots at the initial state.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
   Reasoning.VyperBounded
 
 namespace Tests.Pipeline.VyperRegistry
@@ -176,7 +176,7 @@ theorem checkOwnerCallee_lookup : lookupCallable? contract "ownable__check_owner
 /-- The owner word as the spec reads it. -/
 theorem evalOwnerRead {L : Store} (evm : EVM.State) (hL : L.get? "ownable_owner" = none) :
     evalExpr? config (frame L) evm (.storage ownerRef) =
-      .ok (.address (AccountAddress.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩).toNat)) := by
+      .ok (.address (AccountAddress.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩).toNat)) := by
   rw [evalExpr_storage_vyper_scalar (hbackend := rfl) (hcheck := by rfl) (t := .address)
       (er := { base := "ownable_owner", steps := [] })
       (loc := vyperWordLoc ⟨0⟩ .address) (hbase := hL)
@@ -187,10 +187,10 @@ theorem evalOwnerRead {L : Store} (evm : EVM.State) (hL : L.get? "ownable_owner"
 
 /-- `msg.sender == ownable_owner`, decided on words for a canonical owner word. -/
 theorem evalCallerEqOwner {L : Store} (evm : EVM.State) (hL : L.get? "ownable_owner" = none)
-    (hcanon : (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩).toNat < EVM.addressModulus) :
+    (hcanon : (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩).toNat < EVM.addressModulus) :
     evalExpr? config (frame L) evm (.binary .eq (.env .caller) (.storage ownerRef)) =
       .ok (.bool (decide (UInt256.ofNat evm.executionEnv.source.val =
-        Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩))) := by
+        Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩))) := by
   rw [evalExpr_binary_nonshort (by decide) (by decide), evalOwnerRead evm hL, evalExpr_caller]
   simp only [EvalResult.bind, bind, evalBinaryOp?]
   rw [value_address_beq]
@@ -227,9 +227,9 @@ theorem evalEntriesFieldRef (L : Store) (evm : EVM.State) (w : UInt256) (name f 
 /-- The struct value of `entries[id]`. -/
 abbrev entryValue (evm : EVM.State) (w : UInt256) : Value :=
   .struct "Entry"
-    [("account", .address (AccountAddress.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (entrySlot w)).toNat)),
-     ("weight", uint256Value (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (entrySlot w + UInt256.ofNat 1))),
-     ("active", wordToElem .bool (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (entrySlot w + UInt256.ofNat 2)))]
+    [("account", .address (AccountAddress.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (entrySlot w)).toNat)),
+     ("weight", uint256Value (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (entrySlot w + UInt256.ofNat 1))),
+     ("active", wordToElem .bool (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (entrySlot w + UInt256.ofNat 2)))]
 
 theorem evalEntriesRead (L : Store) (evm : EVM.State) (w : UInt256) (name : Ident)
     (hL : L.get? name = some (uint256Value w)) (hb : L.get? "entries" = none) :
@@ -260,7 +260,7 @@ theorem assignEntry (L : Store) (evm : EVM.State) (id : UInt256) (a : AccountAdd
     (hL : L.get? "id" = some (uint256Value id)) (hb : L.get? "entries" = none) :
     assignStorageRef? config (frame L) evm .storage { base := "entries", steps := [.mindex (.var "id")] }
       (.struct "Entry" [("account", .address a), ("weight", uint256Value w), ("active", .bool true)]) =
-      .ok (frame L, Solm.EVM.storageStore (Solm.EVM.storageStore (Solm.EVM.storageStore evm
+      .ok (frame L, Stele.EVM.storageStore (Stele.EVM.storageStore (Stele.EVM.storageStore evm
         evm.executionEnv.codeOwner (entrySlot id) (UInt256.ofNat a.val))
         evm.executionEnv.codeOwner (entrySlot id + UInt256.ofNat 1) w)
         evm.executionEnv.codeOwner (entrySlot id + UInt256.ofNat 2) (UInt256.ofNat 1)) := by
@@ -276,17 +276,17 @@ theorem assignEntry (L : Store) (evm : EVM.State) (id : UInt256) (a : AccountAdd
 
 /-- `ids.push(v)` through the backend, below the capacity. -/
 theorem pushIds (L : Store) (evm : EVM.State) (v : UInt256) (hb : L.get? "ids" = none)
-    (hcap : (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (UInt256.ofNat 2)).toNat < 16) :
+    (hcap : (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (UInt256.ofNat 2)).toNat < 16) :
     pushArray? config (frame L) evm { base := "ids", steps := [] } (some (uint256Value v)) =
-      .ok (Solm.EVM.storageStore
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+      .ok (Stele.EVM.storageStore
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner
           (UInt256.ofNat 2 + UInt256.ofNat 1 + UInt256.ofNat ((keyValueToWord (.int (Int.ofNat
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (UInt256.ofNat 2)).toNat))).toNat * 1)) v)
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (UInt256.ofNat 2)).toNat))).toNat * 1)) v)
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner
           (UInt256.ofNat 2 + UInt256.ofNat 1 + UInt256.ofNat ((keyValueToWord (.int (Int.ofNat
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (UInt256.ofNat 2)).toNat))).toNat * 1)) v).executionEnv.codeOwner
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (UInt256.ofNat 2)).toNat))).toNat * 1)) v).executionEnv.codeOwner
         (UInt256.ofNat 2)
-        (UInt256.ofNat ((Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (UInt256.ofNat 2)).toNat + 1))) :=
+        (UInt256.ofNat ((Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (UInt256.ofNat 2)).toNat + 1))) :=
   pushArray_vyper_ok (hbackend := rfl) (hcheck := rfl) (hbounds := rfl) (hanchor := rfl) (hbase := hb)
     (er := { base := "ids", steps := [] }) (elem := .elem (.int (.uint ⟨256, by decide⟩)))
     (her := by simp [evalStorageRef, evalStorageRefSteps, EvalResult.bind, pure, bind])

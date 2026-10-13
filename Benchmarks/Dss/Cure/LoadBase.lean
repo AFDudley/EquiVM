@@ -3,12 +3,12 @@ import Benchmarks.Dss.Cure.Common
 import Benchmarks.Dss.Cure.Cage
 import Reasoning.ExternalCall
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 section
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 2000000
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Cure
 
@@ -277,7 +277,7 @@ theorem loadKey_address_eq (I : ExecutionEnv) :
   rw [Nat.mod_mod]
 
 theorem evalExpr_loadLiveEqZero_true (evm : EVM.State) (I : ExecutionEnv)
-    (hlive : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩ = ⟨0⟩) :
+    (hlive : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩ = ⟨0⟩) :
     evalExpr? config { contract := contract, locals := loadLocals I } evm
       (.binary .eq (.storage liveRef) (.intLit 0)) = .ok (.bool true) := by
   rw [evalExpr?]
@@ -298,7 +298,7 @@ theorem evalExpr_loadLiveEqZero_true (evm : EVM.State) (I : ExecutionEnv)
   · native_decide
 
 theorem evalExpr_loadLiveEqZero_false (evm : EVM.State) (I : ExecutionEnv)
-    (hlive : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩ ≠ ⟨0⟩) :
+    (hlive : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩ ≠ ⟨0⟩) :
     evalExpr? config { contract := contract, locals := loadLocals I } evm
       (.binary .eq (.storage liveRef) (.intLit 0)) = .ok (.bool false) := by
   rw [evalExpr?]
@@ -310,7 +310,7 @@ theorem evalExpr_loadLiveEqZero_false (evm : EVM.State) (I : ExecutionEnv)
       simp only [evalExpr?, pure]
       change EvalResult.ok (Value.bool
           ((Value.int (Int.ofNat
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat)) ==
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat)) ==
             (Value.int 0))) = EvalResult.ok (Value.bool false)
       congr
       rw [Bool.eq_false_iff]
@@ -331,7 +331,7 @@ theorem evalExpr_loadPosStorage (evm : EVM.State) (I : ExecutionEnv) :
     evalExpr? config { contract := contract, locals := loadLocals I } evm
       (.storage (posRef (.var "src"))) =
         .ok (.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (loadPosSlotFor I)).toNat)) := by
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (loadPosSlotFor I)).toNat)) := by
   rw [evalExpr_storage_scalar (hbackend := rfl)
     (er := loadPosEvaledRef I) (t := .int uint256Int) (loc := wordLoc (loadPosSlotFor I))]
   · exact congrArg EvalResult.ok (storageLocLoad_uint256 evm (loadPosSlotFor I))
@@ -348,7 +348,7 @@ theorem evalExpr_loadAmtStorage (evm : EVM.State) (I : ExecutionEnv) :
     evalExpr? config { contract := contract, locals := loadLocals I } evm
       (.storage (amtRef (.var "src"))) =
         .ok (.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (loadAmtSlotFor I)).toNat)) := by
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (loadAmtSlotFor I)).toNat)) := by
   rw [evalExpr_storage_scalar (hbackend := rfl)
     (er := loadAmtEvaledRef I) (t := .int uint256Int) (loc := wordLoc (loadAmtSlotFor I))]
   · exact congrArg EvalResult.ok (storageLocLoad_uint256 evm (loadAmtSlotFor I))
@@ -365,7 +365,7 @@ theorem evalExpr_loadSayStorage {evm : EVM.State} {locals : Store}
     (hbase : locals.get? "say" = none) :
     evalExpr? config { contract := contract, locals := locals } evm (.storage sayRef) =
       .ok (.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨9⟩).toNat)) := by
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨9⟩).toNat)) := by
   rw [evalExpr_storage_scalar (hbackend := rfl) (er := loadSayEvaledRef) (t := .int uint256Int)
     (loc := wordLoc ⟨9⟩)]
   · exact congrArg EvalResult.ok (storageLocLoad_uint256 evm ⟨9⟩)
@@ -382,7 +382,7 @@ theorem evalExpr_loadLoadedStorage {evm : EVM.State} {locals : Store} (I : Execu
     evalExpr? config { contract := contract, locals := locals } evm
       (.storage (loadedRef (.var "src"))) =
         .ok (.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
             (loadLoadedSlotFor I)).toNat)) := by
   rw [evalExpr_storage_scalar (hbackend := rfl)
     (er := loadLoadedEvaledRef I) (t := .int uint256Int)
@@ -409,7 +409,7 @@ theorem evalExpr_loadLoadedEqZero_true {evm : EVM.State} {locals : Store} (I : E
     (hbase : locals.get? "loaded" = none)
     (hsrc : locals.get? "src" = some (.address (loadSrc I)))
     (hloaded :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (loadLoadedSlotFor I) = ⟨0⟩) :
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (loadLoadedSlotFor I) = ⟨0⟩) :
     evalExpr? config { contract := contract, locals := locals } evm
       (.binary .eq (.storage (loadedRef (.var "src"))) (.intLit 0)) = .ok (.bool true) := by
   rw [evalExpr?]
@@ -425,7 +425,7 @@ theorem evalExpr_loadLoadedEqZero_false {evm : EVM.State} {locals : Store} (I : 
     (hbase : locals.get? "loaded" = none)
     (hsrc : locals.get? "src" = some (.address (loadSrc I)))
     (hloaded :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (loadLoadedSlotFor I) ≠ ⟨0⟩) :
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (loadLoadedSlotFor I) ≠ ⟨0⟩) :
     evalExpr? config { contract := contract, locals := locals } evm
       (.binary .eq (.storage (loadedRef (.var "src"))) (.intLit 0)) = .ok (.bool false) := by
   rw [evalExpr?]
@@ -434,7 +434,7 @@ theorem evalExpr_loadLoadedEqZero_false {evm : EVM.State} {locals : Store} (I : 
     simp only [evalExpr?, pure]
     change EvalResult.ok (Value.bool
         ((Value.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (loadLoadedSlotFor I)).toNat)) ==
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (loadLoadedSlotFor I)).toNat)) ==
           (Value.int 0))) = EvalResult.ok (Value.bool false)
     congr
     rw [Bool.eq_false_iff]
@@ -450,7 +450,7 @@ theorem evalExpr_loadLCountStorage {evm : EVM.State} {locals : Store}
     (hbase : locals.get? "lCount" = none) :
     evalExpr? config { contract := contract, locals := locals } evm (.storage lCountRef) =
       .ok (.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩).toNat)) := by
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩).toNat)) := by
   rw [evalExpr_storage_scalar (hbackend := rfl) (er := loadLCountEvaledRef) (t := .int uint256Int)
     (loc := wordLoc ⟨8⟩)]
   · exact congrArg EvalResult.ok (storageLocLoad_uint256 evm ⟨8⟩)
@@ -463,7 +463,7 @@ theorem evalExpr_loadLCountStorage {evm : EVM.State} {locals : Store}
 
 theorem evalExpr_incUncheckedLCount {evm : EVM.State} {locals : Store}
     (hbase : locals.get? "lCount" = none) :
-    let count := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩
+    let count := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩
     evalExpr? config { contract := contract, locals := locals } evm
       (incUnchecked (.storage lCountRef)) =
         .ok (.int (Int.ofNat (count + ⟨1⟩).toNat)) := by
@@ -494,7 +494,7 @@ theorem assign_loadAmtStorage {evm : EVM.State} {locals : Store} (I : ExecutionE
     (newAmt : UInt256)
     (hbase : locals.get? "amt" = none)
     (hsrc : locals.get? "src" = some (.address (loadSrc I))) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner (loadAmtSlotFor I) newAmt
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner (loadAmtSlotFor I) newAmt
     assignStorageRef? config { contract := contract, locals := locals } evm
       .storage (amtRef (.var "src")) (.int (Int.ofNat newAmt.toNat)) =
         .ok ({ contract := contract, locals := locals }, evm') := by
@@ -522,7 +522,7 @@ theorem assign_loadAmtStorage {evm : EVM.State} {locals : Store} (I : ExecutionE
 
 theorem assign_loadSayStorage {evm : EVM.State} {locals : Store} (sayNew : UInt256)
     (hbase : locals.get? "say" = none) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨9⟩ sayNew
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨9⟩ sayNew
     assignStorageRef? config { contract := contract, locals := locals } evm
       .storage sayRef (.int (Int.ofNat sayNew.toNat)) =
         .ok ({ contract := contract, locals := locals }, evm') := by
@@ -542,7 +542,7 @@ theorem assign_loadLoadedStorage {evm : EVM.State} {locals : Store} (I : Executi
     (value : UInt256)
     (hbase : locals.get? "loaded" = none)
     (hsrc : locals.get? "src" = some (.address (loadSrc I))) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner
       (loadLoadedSlotFor I) value
     assignStorageRef? config { contract := contract, locals := locals } evm
       .storage (loadedRef (.var "src")) (.int (Int.ofNat value.toNat)) =
@@ -572,7 +572,7 @@ theorem assign_loadLoadedStorage {evm : EVM.State} {locals : Store} (I : Executi
 
 theorem assign_loadLCountStorage {evm : EVM.State} {locals : Store} (value : UInt256)
     (hbase : locals.get? "lCount" = none) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨8⟩ value
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨8⟩ value
     assignStorageRef? config { contract := contract, locals := locals } evm
       .storage lCountRef (.int (Int.ofNat value.toNat)) =
         .ok ({ contract := contract, locals := locals }, evm') := by
@@ -593,11 +593,11 @@ theorem execLoadLoadedZeroTail {evm : EVM.State} {locals : Store} (I : Execution
     (hbaseLCount : locals.get? "lCount" = none)
     (hsrc : locals.get? "src" = some (.address (loadSrc I)))
     (hloaded :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (loadLoadedSlotFor I) = ⟨0⟩) :
-    let evmLoaded := Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (loadLoadedSlotFor I) = ⟨0⟩) :
+    let evmLoaded := Stele.EVM.storageStore evm evm.executionEnv.codeOwner
       (loadLoadedSlotFor I) ⟨1⟩
-    let count := Solm.EVM.storageLoad evmLoaded evmLoaded.executionEnv.codeOwner ⟨8⟩
-    let evmCount := Solm.EVM.storageStore evmLoaded evmLoaded.executionEnv.codeOwner
+    let count := Stele.EVM.storageLoad evmLoaded evmLoaded.executionEnv.codeOwner ⟨8⟩
+    let evmCount := Stele.EVM.storageStore evmLoaded evmLoaded.executionEnv.codeOwner
       ⟨8⟩ (count + ⟨1⟩)
     ExecStmt config { contract := contract, locals := locals } evm
       (.ite
@@ -639,7 +639,7 @@ theorem execLoadLoadedZeroTail {evm : EVM.State} {locals : Store} (I : Execution
   exact ExecStmt.iteTrue hcond hthen
 
 theorem evalExpr_loadPosGtZero_false (evm : EVM.State) (I : ExecutionEnv)
-    (hpos : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (loadPosSlotFor I) = ⟨0⟩) :
+    (hpos : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (loadPosSlotFor I) = ⟨0⟩) :
     evalExpr? config { contract := contract, locals := loadLocals I } evm
       (.binary .gt (.storage (posRef (.var "src"))) (.intLit 0)) = .ok (.bool false) := by
   rw [evalExpr?]
@@ -652,7 +652,7 @@ theorem evalExpr_loadPosGtZero_false (evm : EVM.State) (I : ExecutionEnv)
   · native_decide
 
 theorem evalExpr_loadPosGtZero_true (evm : EVM.State) (I : ExecutionEnv)
-    (hpos : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (loadPosSlotFor I) ≠ ⟨0⟩) :
+    (hpos : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (loadPosSlotFor I) ≠ ⟨0⟩) :
     evalExpr? config { contract := contract, locals := loadLocals I } evm
       (.binary .gt (.storage (posRef (.var "src"))) (.intLit 0)) = .ok (.bool true) := by
   rw [evalExpr?]
@@ -661,7 +661,7 @@ theorem evalExpr_loadPosGtZero_true (evm : EVM.State) (I : ExecutionEnv)
     simp only [evalExpr?, pure]
     simp only [evalBinaryOp?]
     have hposNat :
-        0 < (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (loadPosSlotFor I)).toNat :=
+        0 < (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (loadPosSlotFor I)).toNat :=
       Nat.pos_of_ne_zero (by
         intro hzero
         apply hpos
@@ -669,13 +669,13 @@ theorem evalExpr_loadPosGtZero_true (evm : EVM.State) (I : ExecutionEnv)
         simpa using hzero)
     have hposInt :
         (0 : Int) < Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (loadPosSlotFor I)).toNat := by
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (loadPosSlotFor I)).toNat := by
       exact Int.natCast_pos.mpr hposNat
     rw [show decide (Int.ofNat
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (loadPosSlotFor I)).toNat > 0) =
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (loadPosSlotFor I)).toNat > 0) =
         true from by
           exact decide_eq_true (show Int.ofNat
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (loadPosSlotFor I)).toNat >
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (loadPosSlotFor I)).toNat >
               0 from hposInt)]
   · native_decide
   · native_decide

@@ -11,7 +11,7 @@ of a module, a default argument (two selectors for `register`), a `DynArray` sta
   (`Registry.build.json`); sources pinned in `sources.sha256`.
 - Generated with `scripts/scaffold.py all --dir Tests/Pipeline/VyperRegistry --vyper vyper
   --main Registry.vy --contract Registry --evm-version cancun --module
-  Tests.Pipeline.VyperRegistry`, then `bytecode_report.py`, `vy2solm.py` (no holes),
+  Tests.Pipeline.VyperRegistry`, then `bytecode_report.py`, `vy2stele.py` (no holes),
   `proof_skeleton.py` (the full Vyper skeleton).
 - Hand edits: `SpecSyntax.lean` adds `require(__n0 <= 16)` in `active_weight` (the compiler's
   loop bound, below); `Spec.lean` replaces `vyperStorage!` with `vyperBoundedStorage!` over
@@ -20,7 +20,7 @@ of a module, a default argument (two selectors for `register`), a `DynArray` sta
 ## Differential run
 
 ```
-lake exe solm-difftest --only Registry --count 50
+lake exe stele-difftest --only Registry --count 50
 Registry: 825 cases: 825 agree (363 successful), 0 disagree, 0 stuck, 0 EVM out of gas, 0 spec out of fuel
 ```
 
@@ -45,7 +45,7 @@ statements:
   before it; the spec states it as `require(__n0 <= 16)` after reading the length once
   (the loop then reads `ids[i]` from storage at every iteration, as the bytecode does).
 - `self.ids.pop()` only decrements the length word; the popped slot keeps its value. The
-  Vyper backend's `pop` has the same semantics (`Solm/VyperStorage.lean`).
+  Vyper backend's `pop` has the same semantics (`Stele/VyperStorage.lean`).
 
 Dispatcher: a computed jump table, `selector % 10`, 2-byte entries at code offset 1665;
 bucket → entry pc `[1533, 1123, 704, 1367, 24, 391, 1423, 764, 1486, 1533]`:
@@ -146,14 +146,14 @@ as an internal call, `nextId := 1`, `Constructor.lean`) with the runtime refinem
   stores `1` for `active`, `deactivate` stores `0`, `pop_last` stores zeros), so the
   precondition is preserved.
 - **No array clause and no hash non-collision clause.** The Vyper backend reads the `ids`
-  length word raw (`Solm/VyperStorage.lean`, `vyperLength?`), exactly as the bytecode does:
+  length word raw (`Stele/VyperStorage.lean`, `vyperLength?`), exactly as the bytecode does:
   `len(self.ids)` returns it, indexing checks `i < len`, `append` reverts on `len ≥ 16`, `pop`
   reverts on `len = 0`, and the `for` loop's compiler bound (`require(__n0 <= 16)` in the spec,
   pc 273 in the bytecode) reverts on a longer array.  `register` re-reads the length after the
   entry stores on both sides, so the entry slots may even alias slot 2 without affecting the
   refinement.
 - `active_weight`: the loop is `awLoop` (`Active_weight.lean`), an induction on the remaining
-  iterations that couples the EVM blocks 296→331→365→372 with Solm's `ExecForLoop` under the
+  iterations that couples the EVM blocks 296→331→365→372 with Stele's `ExecForLoop` under the
   memory invariant `Minv` (`total` at offset 64).
 - Shared Vyper lemmas for bounded storage (`DynArray` length, indexing, push, pop, struct
   reads/writes) are in `Reasoning/VyperBounded.lean`; word/memory helpers in

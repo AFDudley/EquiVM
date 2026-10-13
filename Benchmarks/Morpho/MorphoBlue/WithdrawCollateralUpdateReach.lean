@@ -4,7 +4,7 @@ import Benchmarks.Morpho.MorphoBlue.Uint128Subtraction
 import Benchmarks.Morpho.MorphoBlue.PositionPackedWrites
 import Benchmarks.Morpho.MorphoBlue.StoreHighStatic
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MorphoBlue.Immutables
 namespace Benchmarks.Morpho.MorphoBlue

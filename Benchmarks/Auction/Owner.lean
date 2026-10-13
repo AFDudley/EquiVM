@@ -1,6 +1,6 @@
 import Benchmarks.Auction.Storage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 100000
 
@@ -11,7 +11,7 @@ theorem ownerBodyReturns (evm : EVM.State) (locals : Store)
     ExecTransitionBody auctionConfig auctionContract evm locals ownerGetter.body
       (.returned { contract := auctionContract, locals := locals } evm
         (some [.address (AccountAddress.ofNat
-          (UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨151⟩)
+          (UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨151⟩)
             solcAddrMask).toNat)])) := by
   exact ExecFuncBody.execBlockRet <|
     (ABlock.start.requireStep (evalCallvalueEq_true hwv)).returns (by
@@ -58,7 +58,7 @@ theorem ownerBodyCore {σ σ₀ A I} {g : UInt256}
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [.address (AccountAddress.ofNat
             (UInt256.land (solcSlotWord σ I ⟨151⟩) solcAddrMask).toNat)])) := by
-      simpa [solcSlotWord, initState, Solm.EVM.storageLoad, State.lookupAccount] using
+      simpa [solcSlotWord, initState, Stele.EVM.storageLoad, State.lookupAccount] using
         ownerBodyReturns (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           ∅ hwv (by simp)
     exact (ownerX hreach hwv).reEquivExecution hcode hd hdec hbody

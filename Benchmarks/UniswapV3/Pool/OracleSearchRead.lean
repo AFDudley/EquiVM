@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.OracleSearchBindings
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
 
@@ -48,7 +48,7 @@ theorem oracleSearchReadPrefix (locals imms : Store) (evm : EVM.State)
     exact evalExpr_word_div (evalExpr_word_add (evalExpr_var_get h.left) (evalExpr_var_get h.right))
       (b := ⟨2⟩) (by simp only [evalExpr?, pure]; rfl) (by decide)
   obtain ⟨oldI, hi⟩ := h.index
-  refine ExecBlock.consNormal (solm' := fm) (evm' := evm)
+  refine ExecBlock.consNormal (stele' := fm) (evm' := evm)
     (ExecStmt.assign he (assignLocalVarBase_frame hi)) ?_
   have hfm := h.insert_aux "i" (.int (Int.ofNat mid.toNat)) (by decide)
   have hr : evalExpr? config fm evm (.binary .mod (.var "i") (.var "cardinality")) =

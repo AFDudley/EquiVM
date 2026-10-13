@@ -1,8 +1,8 @@
 import Benchmarks.CurveVault.Common
 import Reasoning.TransientStorage
-import Reasoning.SolmArithmetic
+import Reasoning.SteleArithmetic
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 abbrev vaultLockExpr : Expr := .binary .ne
@@ -11,7 +11,7 @@ abbrev vaultLockExpr : Expr := .binary .ne
 theorem vaultLockRead (evm : EVM.State) (locals : Store) :
     evalExpr? config {contract := contract, locals := locals} evm
       (.transient {base := "nonreentrant_lock", steps := []}) =
-      .ok (.int (Int.ofNat (Solm.EVM.transientLoad evm evm.executionEnv.codeOwner ⟨0⟩).toNat)) := by
+      .ok (.int (Int.ofNat (Stele.EVM.transientLoad evm evm.executionEnv.codeOwner ⟨0⟩).toNat)) := by
   apply evalExpr_transient_scalar_value
     (er := {base := "nonreentrant_lock", steps := []})
     (t := .int (.uint ⟨256, by decide⟩))
@@ -21,7 +21,7 @@ theorem vaultLockRead (evm : EVM.State) (locals : Store) :
   exact transientLocLoad_uint256 evm ⟨0⟩
 
 theorem vaultLockEval_pass (evm : EVM.State) (locals : Store)
-    (h : Solm.EVM.transientLoad evm evm.executionEnv.codeOwner ⟨0⟩ ≠ ⟨1⟩) :
+    (h : Stele.EVM.transientLoad evm evm.executionEnv.codeOwner ⟨0⟩ ≠ ⟨1⟩) :
     evalExpr? config {contract := contract, locals := locals} evm vaultLockExpr = .ok (.bool true) := by
   apply evalExpr_ne_int_true (b := 1) (vaultLockRead evm locals) (by simp [evalExpr?, pure])
   intro hn
@@ -30,7 +30,7 @@ theorem vaultLockEval_pass (evm : EVM.State) (locals : Store)
   exact Int.ofNat.inj hn
 
 theorem vaultLockEval_fail (evm : EVM.State) (locals : Store)
-    (h : Solm.EVM.transientLoad evm evm.executionEnv.codeOwner ⟨0⟩ = ⟨1⟩) :
+    (h : Stele.EVM.transientLoad evm evm.executionEnv.codeOwner ⟨0⟩ = ⟨1⟩) :
     evalExpr? config {contract := contract, locals := locals} evm vaultLockExpr = .ok (.bool false) := by
   apply evalExpr_ne_int_false (b := 1) (vaultLockRead evm locals) (by simp [evalExpr?, pure])
   rw [h]
@@ -38,7 +38,7 @@ theorem vaultLockEval_fail (evm : EVM.State) (locals : Store)
 
 theorem vaultLockedBodyReverts (evm : EVM.State) (locals : Store) (rest : List Stmt)
     (hvalue : evm.executionEnv.weiValue = ⟨0⟩)
-    (hlock : Solm.EVM.transientLoad evm evm.executionEnv.codeOwner ⟨0⟩ = ⟨1⟩) :
+    (hlock : Stele.EVM.transientLoad evm evm.executionEnv.codeOwner ⟨0⟩ = ⟨1⟩) :
     ExecTransitionBody config contract evm locals
       (.require (.binary .eq (.env .callvalue) (.intLit 0)) :: .require vaultLockExpr :: rest)
       .reverted :=
@@ -47,14 +47,14 @@ theorem vaultLockedBodyReverts (evm : EVM.State) (locals : Store) (rest : List S
       ExecBlock.consRevert (ExecStmt.requireFalse (vaultLockEval_fail evm locals hlock))
 
 theorem vaultViewBodyReturns {evm calleeEvm : EVM.State} {locals calleeLocals : Store}
-    {fn : FunctionDecl} {calleeSolm : Frame} {args : List Expr} {argVals : List Value} {value : Value}
+    {fn : FunctionDecl} {calleeStele : Frame} {args : List Expr} {argVals : List Value} {value : Value}
     (hvalue : evm.executionEnv.weiValue = ⟨0⟩)
-    (hlock : Solm.EVM.transientLoad evm evm.executionEnv.codeOwner ⟨0⟩ ≠ ⟨1⟩)
+    (hlock : Stele.EVM.transientLoad evm evm.executionEnv.codeOwner ⟨0⟩ ≠ ⟨1⟩)
     (hargs : evalExprs? config {contract := contract, locals := locals} evm args = .ok argVals)
     (hlookup : lookupCallable? contract fn.name = some fn.toCallable)
     (hbind : bindParams? fn.params argVals = some calleeLocals)
     (hbody : ExecFuncBody config {contract := contract, locals := calleeLocals} evm fn.body
-      (.returned calleeSolm calleeEvm (some [value]))) :
+      (.returned calleeStele calleeEvm (some [value]))) :
     ExecTransitionBody config contract evm locals
       [.require (.binary .eq (.env .callvalue) (.intLit 0)), .require vaultLockExpr,
         .internalCall fn.name args "__r", .return [.var "__r"]]
@@ -71,7 +71,7 @@ theorem vaultViewBodyReturns {evm calleeEvm : EVM.State} {locals calleeLocals : 
 theorem vaultViewBodyReverts {evm : EVM.State} {locals calleeLocals : Store}
     {fn : FunctionDecl} {args : List Expr} {argVals : List Value}
     (hvalue : evm.executionEnv.weiValue = ⟨0⟩)
-    (hlock : Solm.EVM.transientLoad evm evm.executionEnv.codeOwner ⟨0⟩ ≠ ⟨1⟩)
+    (hlock : Stele.EVM.transientLoad evm evm.executionEnv.codeOwner ⟨0⟩ ≠ ⟨1⟩)
     (hargs : evalExprs? config {contract := contract, locals := locals} evm args = .ok argVals)
     (hlookup : lookupCallable? contract fn.name = some fn.toCallable)
     (hbind : bindParams? fn.params argVals = some calleeLocals)

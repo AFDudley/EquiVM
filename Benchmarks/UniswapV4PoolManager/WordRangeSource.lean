@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV4PoolManager.WordRangeSourceStep
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 3000
 
@@ -15,7 +15,7 @@ def wordRangeResultFrame (evm : EVM.State) (imms : Store) (start : UInt256) (n :
 def wordRangeFirstFrame (evm : EVM.State) (imms : Store) (start : UInt256) (n : Nat) : Frame :=
   let f := wordRangeResultFrame evm imms start n
   {f with locals := f.locals.insert "first" (.int (Int.ofNat
-    (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner start).toNat))}
+    (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner start).toNat))}
 
 theorem wordRangePrelude (evm : EVM.State) (imms : Store) (start : UInt256) (n : Nat)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩) (hhi : evm.executionEnv.calldata.size < calldataLimit) :

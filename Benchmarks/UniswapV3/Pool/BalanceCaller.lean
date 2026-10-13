@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.BalanceSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 namespace Benchmarks.UniswapV3.Pool
 
@@ -15,7 +15,7 @@ theorem poolBalanceReturns (v : UniswapV3PoolImmutables) (locals : Store) (name 
              locals := locals.insert name (.int (Int.ofNat value.toNat))
              immutables := immStore v } evm') :=
   internalCallFunctionReturn (callee := balanceFunction second) (locals := ∅)
-    (calleeSolm := calleeFrame) (value := some [.int (Int.ofNat value.toNat)])
+    (calleeStele := calleeFrame) (value := some [.int (Int.ofNat value.toNat)])
     (by simp only [evalExprs?, pure]) (balanceLookup second) (balanceBind second) hcall
 
 theorem poolBalanceReverts (v : UniswapV3PoolImmutables) (locals : Store) (name : Ident)

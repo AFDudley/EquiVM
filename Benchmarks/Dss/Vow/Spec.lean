@@ -1,18 +1,18 @@
-import Solm.SolidityStorage
-import Solm.Semantics
-import Solm.SolidityLayout
+import Stele.SolidityStorage
+import Stele.Semantics
+import Stele.SolidityLayout
 
 /-!
 # MakerDAO/Sky DSS Vow benchmark spec
 
-Solm benchmark scaffold for upstream `dss/src/vow.sol`.
+Stele benchmark scaffold for upstream `dss/src/vow.sol`.
 
 The storage layout and public ABI surface follow solc `0.6.12`. Events are omitted. The transition
 bodies preserve the source order of storage writes and external calls, including repeated `vat.dai`
 and `vat.sin` reads.
 -/
 
-open Solm ABI Ethereum
+open Stele ABI Ethereum
 
 namespace Benchmarks.Dss.Vow
 

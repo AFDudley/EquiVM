@@ -3,7 +3,7 @@ import Benchmarks.CurveVault.Entry
 import Benchmarks.CurveVault.FactoryStorage
 import Benchmarks.CurveVault.RuntimeBlocks_001
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 theorem vaultFactoryBodyCore {σ σ₀ A I} {g : UInt256}
@@ -19,7 +19,7 @@ theorem vaultFactoryBodyCore {σ σ₀ A I} {g : UInt256}
   rw [accountAddress_ofUInt256_eq_ofNat_toNat] at heval
   change evalExpr? config {contract := contract, locals := ∅}
     (initState σ σ₀ (Sat256.ofUInt256 g) A I) _ =
-    .ok (.address (AccountAddress.ofNat (Solm.EVM.storageLoad (initState σ σ₀ (Sat256.ofUInt256 g) A I) I.codeOwner ⟨4⟩).toNat)) at heval
+    .ok (.address (AccountAddress.ofNat (Stele.EVM.storageLoad (initState σ σ₀ (Sat256.ofUInt256 g) A I) I.codeOwner ⟨4⟩).toNat)) at heval
   rw [codeOwnerStorageWord_initState] at heval
   apply vaultNullaryReturn (t := factoryTransition)
     (pc := UInt256.ofNat 146)

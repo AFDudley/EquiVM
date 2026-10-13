@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.InitializePrefix
 import Benchmarks.UniswapV3.Pool.OracleInitializeSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
@@ -34,7 +34,7 @@ theorem initializeOracleCall (v : UniswapV3PoolImmutables) (evm : EVM.State)
         (oracleInitializeState evm (blockTimestampWord evm.executionEnv))) :=
   internalCallFunctionReturn (callee := oracleInitializeFunction)
     (locals := oracleInitializeLocals (blockTimestampWord evm.executionEnv))
-    (calleeSolm := oracleInitializeReadyFrame (immStore v) (blockTimestampWord evm.executionEnv))
+    (calleeStele := oracleInitializeReadyFrame (immStore v) (blockTimestampWord evm.executionEnv))
     (value := some [.int 1, .int 1])
     (evalInitializeOracleArgs v evm price tick) oracleInitializeLookup (oracleInitializeBind _)
     (oracleInitializeReturns (immStore v) evm _ (blockTimestampWord_lt _))

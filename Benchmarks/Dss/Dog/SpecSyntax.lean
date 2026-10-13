@@ -1,8 +1,8 @@
 import Benchmarks.Dss.Dog.Spec
-import Solm.Notation
+import Stele.Notation
 
 /-!
-# Dog spec in the Solidity-faithful Solm frontend
+# Dog spec in the Solidity-faithful Stele frontend
 
 The whole `dog.sol` spec written with `solidity%` and proven definitionally equal to the AST
 spec in `Spec.lean`.  The immutable `vat` is declared and assigned as in Solidity.  Calls through
@@ -11,7 +11,7 @@ statement pair and reference the returned tuple binders via `${…}` escapes.  T
 matches `contract.transitions` (selector order).
 -/
 
-open Solm Solm.Notation
+open Stele Stele.Notation
 open Benchmarks.Dss.Dog.Immutables
 
 namespace Benchmarks.Dss.Dog.Syntax

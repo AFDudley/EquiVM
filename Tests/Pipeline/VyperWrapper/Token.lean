@@ -7,7 +7,7 @@ Dispatcher bucket 2, arm entry pc 1651: the `callvalue` guard, then the immutabl
 from the code (pc 1656) and returned.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 open Reasoning.VyperImmutables
 
 namespace Tests.Pipeline.VyperWrapper

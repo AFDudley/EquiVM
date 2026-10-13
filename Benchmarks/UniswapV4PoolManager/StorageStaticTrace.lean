@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV4PoolManager.EntryTrace
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 -- LIBRARY CANDIDATE: a JUMPDEST/SWAP1/SSTORE sequence halts in static mode.

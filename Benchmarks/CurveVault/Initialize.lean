@@ -9,12 +9,12 @@ import Benchmarks.CurveVault.InitializeGuard
 # Vault `initialize(address,address,address,address)`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body (its own `calldatasize`/`callvalue` guard first), the Solm body evaluation, and the
+body (its own `calldatasize`/`callvalue` guard first), the Stele body evaluation, and the
 `…Body` theorem `Correct.lean` consumes.
 Dispatcher: bucket 0, arm entry pc 73; reach lemma `vaultReachInitializeBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 
 namespace Benchmarks.CurveVault
 
@@ -76,7 +76,7 @@ theorem vaultInitializeBodyCore {σ σ₀ A I} {g : UInt256}
     simp only [locals, vaultInitializeLocals, Std.HashMap.get?_eq_getElem?,
       Std.HashMap.getElem?_insert, Std.HashMap.getElem?_empty]
     rfl
-  have hload : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩ = codeOwnerStorageWord I σ ⟨0⟩ :=
+  have hload : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩ = codeOwnerStorageWord I σ ⟨0⟩ :=
     codeOwnerStorageWord_initState _
   have hguard := vaultInitializeGuardEval evm locals hbase
     (by rw [hload]; exact vaultSlotWord_canonical hwf 0 (by omega))

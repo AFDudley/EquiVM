@@ -14,7 +14,7 @@ shared tail `wrapTail` from pc 730: `shares[msg.sender] += minted`, `totalShares
 `RETURN` (pc 846).
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
   Reasoning.VyperCalls
 open Reasoning.VyperImmutables
 
@@ -120,7 +120,7 @@ theorem wrapTail {σ σ₀ A I} {g : UInt256} (imms : Store) (hwf : storageWF σ
   rw [hkec, slotWord_eq, hload96, hsh2eq] at rd1
   have hadd1 := evalExpr_uint256_add hsh2 (hmv _) hfit1
   have hassign1 : assignStorageRef? config (frame imms L) evm2 .storage shRef (uint256Value (sh2 + minted)) =
-      .ok (frame imms L, Solm.EVM.storageStore evm2 I.codeOwner (sharesSlot I.source) (sh2 + minted)) := by
+      .ok (frame imms L, Stele.EVM.storageStore evm2 I.codeOwner (sharesSlot I.source) (sh2 + minted)) := by
     rw [assignSharesCaller imms _ _ _ hLsh, hs2.env]
   by_cases hperm : I.perm = true
   swap
@@ -140,7 +140,7 @@ theorem wrapTail {σ σ₀ A I} {g : UInt256} (imms : Store) (hwf : storageWF σ
       (by append_decode(wrapperBytecode, (immutableLayout.suffixWords (wordsOf imms)), (⟨763⟩ : UInt256), .SSTORE, none)) (by evm_ov)
     exact RDstatic.reEquivStaticHalt hcode' rs hd hdec (ExecFuncBody.execBlockStatic (hprefix _
       (ExecBlock.consStatic (ExecStmt.assignStatic hadd1 hassign1 (by rw [hs2.env]; exact hpf)))))
-  set evm3 := Solm.EVM.storageStore evm2 I.codeOwner (sharesSlot I.source) (sh2 + minted) with hevm3
+  set evm3 := Stele.EVM.storageStore evm2 I.codeOwner (sharesSlot I.source) (sh2 + minted) with hevm3
   have hs3 : SourceState (initState σ σ₀ (Sat256.ofUInt256 g) A I) I
       (sstoreAccountMap I.codeOwner σ2 (sharesSlot I.source) (sh2 + minted)) evm3 := hs2.storageWrite _ _
   have hts3 : evalExpr? config (frame imms L) evm3 (.storage tsRef) =
@@ -166,9 +166,9 @@ theorem wrapTail {σ σ₀ A I} {g : UInt256} (imms : Store) (hwf : storageWF σ
   rw [slotWord_eq, hload96, hts3eq] at rd2
   have hadd2 := evalExpr_uint256_add hts3 (hmv _) hfit2
   have hassign2 : assignStorageRef? config (frame imms L) evm3 .storage tsRef (uint256Value (ts3 + minted)) =
-      .ok (frame imms L, Solm.EVM.storageStore evm3 I.codeOwner (UInt256.ofNat 2) (ts3 + minted)) := by
+      .ok (frame imms L, Stele.EVM.storageStore evm3 I.codeOwner (UInt256.ofNat 2) (ts3 + minted)) := by
     rw [assignTs imms _ _ _ hLts, hs3.env]
-  set evm4 := Solm.EVM.storageStore evm3 I.codeOwner (UInt256.ofNat 2) (ts3 + minted) with hevm4
+  set evm4 := Stele.EVM.storageStore evm3 I.codeOwner (UInt256.ofNat 2) (ts3 + minted) with hevm4
   have hs4 : SourceState (initState σ σ₀ (Sat256.ofUInt256 g) A I) I
       (sstoreAccountMap I.codeOwner (sstoreAccountMap I.codeOwner σ2 (sharesSlot I.source) (sh2 + minted))
         (UInt256.ofNat 2) (ts3 + minted)) evm4 := hs3.storageWrite _ _
@@ -179,7 +179,7 @@ theorem wrapTail {σ σ₀ A I} {g : UInt256} (imms : Store) (hwf : storageWF σ
   obtain ⟨hk, hhk⟩ : ∃ x, solcSlotWordAt ⟨0⟩ (sstoreAccountMap I.codeOwner (sstoreAccountMap I.codeOwner σ2 (sharesSlot I.source) (sh2 + minted))
       (UInt256.ofNat 2) (ts3 + minted)) I = x := ⟨_, rfl⟩
   have hcanon4 : hk.toNat < EVM.addressModulus := by rw [← hhk, hhook4]; exact hcanon2
-  have hk_read : Solm.EVM.storageLoad evm4 evm4.executionEnv.codeOwner ⟨0⟩ = hk := by
+  have hk_read : Stele.EVM.storageLoad evm4 evm4.executionEnv.codeOwner ⟨0⟩ = hk := by
     rw [hs4.storageRead]; exact hhk
   have hhookRead : evalExpr? config (frame imms L) evm4 (.storage hookRef) = .ok (.address (AccountAddress.ofNat hk.toNat)) := by
     rw [evalHookRead imms _ _ hLhook, hk_read]
@@ -480,7 +480,7 @@ theorem wrapperWrapBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hfit : immu
     (tfMem (addrWord a) I (argWord I) (wrapperDispatchMem 0)) 96 32) 224 32) 64 32 with hW4def
   have hW4 : W4.size = 256 := by
     rw [hW4def, byteArray_write_size_of_inBounds _ _ _ _ (by rw [toByteArray_size]) (by rw [hW3] <;> omega)]; exact hW3
-  -- Solm up to the second call
+  -- Stele up to the second call
   have hdec1 : config.externalABI.decode? "transferFrom" out1 = some [.bool true] := by
     rw [decode_transferFrom, decodeReturn_bool_one out1 h32 (by omega) (by rw [hbw]; exact hone)]; rfl
   set L2 : Store := L1.insert "ok" (.bool true) with hL2
@@ -576,7 +576,7 @@ theorem wrapperWrapBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hfit : immu
     rw [hW7def, write32_read_below _ _ 128 96 (by rw [toByteArray_size]) (by rw [hW6] <;> omega) (by decide), hW6def,
       write32_read_below _ _ 160 96 (by rw [toByteArray_size]) (by rw [hb3] <;> omega) (by decide),
       bal2Mem_read96 _ _ _ _ hW4]
-  -- Solm after the second call
+  -- Stele after the second call
   have hdec2 : config.externalABI.decode? "balanceOf" out2 = some [uint256Value hw] := by
     rw [decode_balanceOf, decodeReturn_uint256_ok out2 h32' (by omega), hhw]; rfl
   set L5 : Store := L4.insert "held" (uint256Value hw) with hL5

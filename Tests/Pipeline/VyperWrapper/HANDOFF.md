@@ -11,7 +11,7 @@ checked arithmetic with division, public getters, events.
   (`Wrapper.build.json`); sources pinned in `sources.sha256`.
 - Generated with `scripts/scaffold.py all --dir Tests/Pipeline/VyperWrapper --vyper vyper
   --main Wrapper.vy --contract Wrapper --evm-version cancun --module
-  Tests.Pipeline.VyperWrapper`, then `bytecode_report.py`, `vy2solm.py` (no holes),
+  Tests.Pipeline.VyperWrapper`, then `bytecode_report.py`, `vy2stele.py` (no holes),
   `proof_skeleton.py` (the full Vyper skeleton). `SpecSyntax.lean` and `Spec.lean` are the generated files,
   unedited.
 - `DiffTarget.lean` is edited: the `TOKEN` immutable is fixed to the standard callee `0x5000`
@@ -21,7 +21,7 @@ checked arithmetic with division, public getters, events.
 ## Differential run
 
 ```
-lake exe solm-difftest --only Wrapper --count 50
+lake exe stele-difftest --only Wrapper --count 50
 Wrapper: 625 cases: 625 agree (319 successful), 0 disagree, 0 stuck, 0 EVM out of gas, 0 spec out of fuel
 ```
 
@@ -35,7 +35,7 @@ Compiler guards and call conventions in the bytecode:
 
 - the `calldatasize`/`callvalue` test and address validation of every entry, the
   overflow checks of `*` and `+`, the underflow checks of `-`, and the division-by-zero
-  checks (`as uint256`, and Solm's `/` reverting on zero). In `wrap` the bytecode checks the
+  checks (`as uint256`, and Stele's `/` reverting on zero). In `wrap` the bytecode checks the
   multiplication, then the subtraction, then the zero divisor, which is the spec's evaluation
   order of `((amount * totalShares) as uint256) / ((held - amount) as uint256)`.
 - `extcall IERC20(TOKEN).transferFrom/transfer(...)` is `CALL` with all gas, 32-byte output
@@ -76,7 +76,7 @@ in the 32-byte code suffix (`Immutables.lean`).
 
 Every block of the runtime is listed once; "guard revert" is pc 1760, "no match" pc 1756.
 "bubble" blocks copy the callee's return data and revert with it: the external call's failure
-case of the Solm `externalCall`. Revert-payload blocks belong to the `require` they serve.
+case of the Stele `externalCall`. Revert-payload blocks belong to the `require` they serve.
 
 | function | blocks (pc) | spec statements, in order |
 |---|---|---|
@@ -94,7 +94,7 @@ case of the Solm `externalCall`. Revert-payload blocks belong to the `require` t
 | | 624–632 | `returndatasize >= 32` (decode) |
 | | 633–648, 649–659, 660–667 | `totalShares > 0 && held > amount` (short-circuit) |
 | | 668–689 | `(amount * totalShares) as uint256` |
-| | 690–709, 710–719 | `(held - amount) as uint256`; divisor `!= 0` (Solm `/`) |
+| | 690–709, 710–719 | `(held - amount) as uint256`; divisor `!= 0` (Stele `/`) |
 | | 720–729 | `minted =` |
 | | 730–757, 758–780 | `(shares[msg.sender] + minted) as uint256`; SSTORE; `(totalShares + minted) as uint256` |
 | | 781–794 | SSTORE; `hook != address(0)` |
@@ -152,7 +152,7 @@ refinement `wrapperCorrect` (one `…Body` theorem per selector).
     callee, calldata, gas and substate.
   `setHook` validates the calldata word, so the first clause is preserved.
 - External calls: `Reasoning/VyperCalls.lean` bridges Vyper's `CALL` (value 0) and `STATICCALL`
-  to Solm's `typedCallViaEVM` (`typedCallBridge`, `typedStaticCallBridge`, via `callCoincides`),
+  to Stele's `typedCallViaEVM` (`typedCallBridge`, `typedStaticCallBridge`, via `callCoincides`),
   evaluates the modern-mode return decoders (`decodeReturn_*`), Vyper's `returndatasize` check
   (`rdsCheck_*`) and its multiplication check (`mulCheck_*`).  `CallHelpers.lean` computes the
   ABI encodings `externalABI.encode?` produces for the four interface calls and the call

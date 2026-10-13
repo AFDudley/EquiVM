@@ -1,7 +1,7 @@
 import Benchmarks.CurveVault.PriceFinish
 import Benchmarks.CurveVault.RuntimeBlocks_007
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 theorem vaultPriceRoutine {I : ExecutionEnv} {g : Sat256} {s0 evm : State}

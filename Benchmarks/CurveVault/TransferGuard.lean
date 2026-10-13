@@ -4,7 +4,7 @@ import Benchmarks.CurveVault.RuntimeBlocks_030
 import Benchmarks.CurveVault.RuntimeBlocks_031
 import Reasoning.ExternalCall
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 abbrev vaultTransferFunction : FunctionDecl := contract.functions[35]!

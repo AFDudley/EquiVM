@@ -3,7 +3,7 @@ import Benchmarks.CompoundIII.Comet.AbsorbTotalsEvm
 import Benchmarks.CompoundIII.Comet.RepayAmountsEvm
 import Benchmarks.CompoundIII.Comet.RepayAmountsWords
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
 open Benchmarks.CompoundIII.Comet.Immutables cometWithExtendedAssetListBlocks
 
 namespace Benchmarks.CompoundIII.Comet

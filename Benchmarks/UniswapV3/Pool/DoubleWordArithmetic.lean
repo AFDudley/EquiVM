@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.LowBit
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 -- LIBRARY CANDIDATE: subtracting a single word from a two-word unsigned integer.

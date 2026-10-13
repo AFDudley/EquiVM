@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.ModularWords
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 -- LIBRARY CANDIDATE: signed EVM division by a word in the nonnegative signed range.

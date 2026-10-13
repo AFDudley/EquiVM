@@ -1,5 +1,5 @@
-import Solm.Notation
-import Solm.Semantics.Types
+import Stele.Notation
+import Stele.Semantics.Types
 import ABI.Encode
 
 /-!
@@ -17,7 +17,7 @@ session. This specification and the generated proof skeleton contain no complete
 function-body refinement proofs.
 -/
 
-open Solm Solm.Notation
+open Stele Stele.Notation
 
 namespace Benchmarks.UniswapV4PoolManager.Syntax
 

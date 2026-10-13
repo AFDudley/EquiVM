@@ -2,7 +2,7 @@ import Benchmarks.CompoundIII.Comet.IndexAccrual
 import Benchmarks.CompoundIII.Comet.RateSource
 import Benchmarks.CompoundIII.Comet.UtilizationSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.CompoundIII.Comet.Immutables
 
 namespace Benchmarks.CompoundIII.Comet

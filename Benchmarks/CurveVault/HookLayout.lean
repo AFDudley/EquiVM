@@ -1,7 +1,7 @@
 import Benchmarks.CurveVault.HookMemory
 import Benchmarks.CurveVault.MutationSites
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch Reasoning.VyperCalls
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch Reasoning.VyperCalls
 namespace Benchmarks.CurveVault
 
 def vaultHookCachedMemory (flow : VaultFlow) (I : ExecutionEnv) (σ : AccountMap) (mem : ByteArray) : ByteArray :=

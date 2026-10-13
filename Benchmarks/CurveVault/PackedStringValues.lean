@@ -1,7 +1,7 @@
 import Benchmarks.CurveVault.InitializeSymbolMemory
 import Benchmarks.CurveVault.SymbolReturnABI
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 -- GENERALIZES Reasoning.ABI.encodePacked_uint256 — parameterize the integer width.

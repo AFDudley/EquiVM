@@ -2,7 +2,7 @@ import Benchmarks.EAS.Attester.PairFillMemory
 import Benchmarks.EAS.Attester.NestedDecodeTrace
 import Benchmarks.EAS.Attester.ArrayBounds
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.EAS.Attester
 

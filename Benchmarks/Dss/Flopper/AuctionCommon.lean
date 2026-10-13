@@ -4,7 +4,7 @@ import Reasoning.ABIComposite
 import Benchmarks.Dss.Flopper.Bids
 import Reasoning.ExternalCall
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -80,7 +80,7 @@ theorem solidityClearStorage_uint256_zero {layout : StorageLayout} {evm : EVM.St
     {er : EvaledStorageRef} {slot : UInt256}
     (hloc : layout er = some (.leaf (uint256Loc slot))) :
     solidityClearStorage? layout evm er uint256St =
-      .ok (Solm.EVM.storageStore evm evm.executionEnv.codeOwner slot ⟨0⟩) := by
+      .ok (Stele.EVM.storageStore evm evm.executionEnv.codeOwner slot ⟨0⟩) := by
   simpa [uint256St, packedUInt256StorageType] using
     (Reasoning.Theory.clearStorage_uint256_zero hloc)
 
@@ -88,8 +88,8 @@ theorem solidityClearStorage_addr_zero {layout : StorageLayout} {evm : EVM.State
     {er : EvaledStorageRef} {slot : UInt256}
     (hloc : layout er = some (.leaf (addrLoc slot))) :
     solidityClearStorage? layout evm er addrSt =
-      .ok (Solm.EVM.storageStore evm evm.executionEnv.codeOwner slot
-        (setAddressOffset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot) ⟨0⟩)) := by
+      .ok (Stele.EVM.storageStore evm evm.executionEnv.codeOwner slot
+        (setAddressOffset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot) ⟨0⟩)) := by
   simpa [addrSt, packedAddressStorageType] using
     (Reasoning.Theory.clearStorage_addr_zero hloc)
 
@@ -97,8 +97,8 @@ theorem solidityClearStorage_uint48_offset20_zero {layout : StorageLayout} {evm 
     {er : EvaledStorageRef} {slot : UInt256}
     (hloc : layout er = some (.leaf (uint48Loc slot ⟨20, by decide⟩ (by decide)))) :
     solidityClearStorage? layout evm er uint48St =
-      .ok (Solm.EVM.storageStore evm evm.executionEnv.codeOwner slot
-        (clearUint48Offset20Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot))) := by
+      .ok (Stele.EVM.storageStore evm evm.executionEnv.codeOwner slot
+        (clearUint48Offset20Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot))) := by
   simpa [uint48St, packedUInt48StorageType] using
     (Reasoning.Theory.clearStorage_uint48_offset20_zero hloc)
 
@@ -106,8 +106,8 @@ theorem solidityClearStorage_uint48_offset26_zero {layout : StorageLayout} {evm 
     {er : EvaledStorageRef} {slot : UInt256}
     (hloc : layout er = some (.leaf (uint48Loc slot ⟨26, by decide⟩ (by decide)))) :
     solidityClearStorage? layout evm er uint48St =
-      .ok (Solm.EVM.storageStore evm evm.executionEnv.codeOwner slot
-        (clearUint48Offset26Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot))) := by
+      .ok (Stele.EVM.storageStore evm evm.executionEnv.codeOwner slot
+        (clearUint48Offset26Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot))) := by
   simpa [uint48St, packedUInt48StorageType] using
     (Reasoning.Theory.clearStorage_uint48_offset26_zero hloc)
 
@@ -156,32 +156,32 @@ theorem resolveStorageRef_auction_bid (evm : EVM.State) (locals : Store) (id : U
     EvalResult.ofOption, EvalResult.bind, bind, pure]
 
 def auctionDeleteAfterBid (id : UInt256) (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (auctionBidSlot id) ⟨0⟩
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (auctionBidSlot id) ⟨0⟩
 
 def auctionDeleteAfterLot (id : UInt256) (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore (auctionDeleteAfterBid id evm)
+  Stele.EVM.storageStore (auctionDeleteAfterBid id evm)
     (auctionDeleteAfterBid id evm).executionEnv.codeOwner (auctionLotSlot id) ⟨0⟩
 
 def auctionDeleteAfterGuy (id : UInt256) (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore (auctionDeleteAfterLot id evm)
+  Stele.EVM.storageStore (auctionDeleteAfterLot id evm)
     (auctionDeleteAfterLot id evm).executionEnv.codeOwner (auctionPackedSlot id)
     (setAddressOffset0Word
-      (Solm.EVM.storageLoad (auctionDeleteAfterLot id evm)
+      (Stele.EVM.storageLoad (auctionDeleteAfterLot id evm)
         (auctionDeleteAfterLot id evm).executionEnv.codeOwner (auctionPackedSlot id))
       ⟨0⟩)
 
 def auctionDeleteAfterTic (id : UInt256) (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore (auctionDeleteAfterGuy id evm)
+  Stele.EVM.storageStore (auctionDeleteAfterGuy id evm)
     (auctionDeleteAfterGuy id evm).executionEnv.codeOwner (auctionPackedSlot id)
     (clearUint48Offset20Word
-      (Solm.EVM.storageLoad (auctionDeleteAfterGuy id evm)
+      (Stele.EVM.storageLoad (auctionDeleteAfterGuy id evm)
         (auctionDeleteAfterGuy id evm).executionEnv.codeOwner (auctionPackedSlot id)))
 
 def auctionDeletePostState (id : UInt256) (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore (auctionDeleteAfterTic id evm)
+  Stele.EVM.storageStore (auctionDeleteAfterTic id evm)
     (auctionDeleteAfterTic id evm).executionEnv.codeOwner (auctionPackedSlot id)
     (clearUint48Offset26Word
-      (Solm.EVM.storageLoad (auctionDeleteAfterTic id evm)
+      (Stele.EVM.storageLoad (auctionDeleteAfterTic id evm)
         (auctionDeleteAfterTic id evm).executionEnv.codeOwner (auctionPackedSlot id)))
 
 def auctionRuntimeDeleteAccountMap (owner : AccountAddress) (id : UInt256)
@@ -247,7 +247,7 @@ theorem deleteStorage_auction_bid (evm : EVM.State) (locals : Store) (id : UInt2
 
 theorem auctionDeletePackedFinalWord_zero (id : UInt256) (evm : EVM.State) :
     clearUint48Offset26Word
-        (Solm.EVM.storageLoad (auctionDeleteAfterTic id evm)
+        (Stele.EVM.storageLoad (auctionDeleteAfterTic id evm)
           (auctionDeleteAfterTic id evm).executionEnv.codeOwner (auctionPackedSlot id)) =
       ⟨0⟩ := by
   by_cases hacc0 : evm.accountMap.get? evm.executionEnv.codeOwner = none
@@ -261,17 +261,17 @@ theorem auctionDeletePackedFinalWord_zero (id : UInt256) (evm : EVM.State) :
         storageStore_absent evm evm.executionEnv.codeOwner hacc0
           (auctionPackedSlot id)
           (setAddressOffset0Word
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (auctionPackedSlot id)) ⟨0⟩)]
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (auctionPackedSlot id)) ⟨0⟩)]
     have htic : auctionDeleteAfterTic id evm = evm := by
       simp [auctionDeleteAfterTic, hguy,
         storageStore_absent evm evm.executionEnv.codeOwner hacc0
           (auctionPackedSlot id)
           (clearUint48Offset20Word
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (auctionPackedSlot id)))]
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (auctionPackedSlot id)))]
     have hload :
-        Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (auctionPackedSlot id) = ⟨0⟩ := by
+        Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (auctionPackedSlot id) = ⟨0⟩ := by
       rw [Std.ExtTreeMap.get?_eq_getElem?] at hacc0
-      simp [Solm.EVM.storageLoad, State.lookupAccount, hacc0, Option.option]
+      simp [Stele.EVM.storageLoad, State.lookupAccount, hacc0, Option.option]
     rw [htic, hload]
     exact clearUint48Offset26Word_zero
   · obtain ⟨_, hacc0some⟩ := Option.ne_none_iff_exists'.mp hacc0
@@ -280,17 +280,17 @@ theorem auctionDeletePackedFinalWord_zero (id : UInt256) (evm : EVM.State) :
     have haccLotExists :
         ∃ acc, (auctionDeleteAfterLot id evm).accountMap.get?
           (auctionDeleteAfterLot id evm).executionEnv.codeOwner = some acc := by
-      simp [auctionDeleteAfterLot, auctionDeleteAfterBid, Solm.EVM.storageStore,
+      simp [auctionDeleteAfterLot, auctionDeleteAfterBid, Stele.EVM.storageStore,
         State.lookupAccount, hacc0someElem, Option.option, State.setAccount,
         Std.ExtTreeMap.getElem?_insert_self]
     obtain ⟨_, haccLot⟩ := haccLotExists
     have haccLotElem := haccLot
     rw [Std.ExtTreeMap.get?_eq_getElem?] at haccLotElem
     have hloadGuy :
-        Solm.EVM.storageLoad (auctionDeleteAfterGuy id evm)
+        Stele.EVM.storageLoad (auctionDeleteAfterGuy id evm)
             (auctionDeleteAfterGuy id evm).executionEnv.codeOwner (auctionPackedSlot id) =
           setAddressOffset0Word
-            (Solm.EVM.storageLoad (auctionDeleteAfterLot id evm)
+            (Stele.EVM.storageLoad (auctionDeleteAfterLot id evm)
               (auctionDeleteAfterLot id evm).executionEnv.codeOwner (auctionPackedSlot id))
             ⟨0⟩ := by
       rw [show (auctionDeleteAfterGuy id evm).executionEnv =
@@ -300,19 +300,19 @@ theorem auctionDeletePackedFinalWord_zero (id : UInt256) (evm : EVM.State) :
         (auctionDeleteAfterLot id evm).executionEnv.codeOwner haccLot
         (auctionPackedSlot id)
         (setAddressOffset0Word
-          (Solm.EVM.storageLoad (auctionDeleteAfterLot id evm)
+          (Stele.EVM.storageLoad (auctionDeleteAfterLot id evm)
             (auctionDeleteAfterLot id evm).executionEnv.codeOwner (auctionPackedSlot id)) ⟨0⟩)
     have haccGuyExists :
         ∃ acc, (auctionDeleteAfterGuy id evm).accountMap.get?
           (auctionDeleteAfterGuy id evm).executionEnv.codeOwner = some acc := by
-      simp [auctionDeleteAfterGuy, haccLotElem, Solm.EVM.storageStore, State.lookupAccount,
+      simp [auctionDeleteAfterGuy, haccLotElem, Stele.EVM.storageStore, State.lookupAccount,
         Option.option, State.setAccount, Std.ExtTreeMap.getElem?_insert_self]
     obtain ⟨_, haccGuy⟩ := haccGuyExists
     have hloadTic :
-        Solm.EVM.storageLoad (auctionDeleteAfterTic id evm)
+        Stele.EVM.storageLoad (auctionDeleteAfterTic id evm)
             (auctionDeleteAfterTic id evm).executionEnv.codeOwner (auctionPackedSlot id) =
           clearUint48Offset20Word
-            (Solm.EVM.storageLoad (auctionDeleteAfterGuy id evm)
+            (Stele.EVM.storageLoad (auctionDeleteAfterGuy id evm)
               (auctionDeleteAfterGuy id evm).executionEnv.codeOwner (auctionPackedSlot id)) := by
       rw [show (auctionDeleteAfterTic id evm).executionEnv =
           (auctionDeleteAfterGuy id evm).executionEnv by
@@ -321,7 +321,7 @@ theorem auctionDeletePackedFinalWord_zero (id : UInt256) (evm : EVM.State) :
         (auctionDeleteAfterGuy id evm).executionEnv.codeOwner haccGuy
         (auctionPackedSlot id)
         (clearUint48Offset20Word
-          (Solm.EVM.storageLoad (auctionDeleteAfterGuy id evm)
+          (Stele.EVM.storageLoad (auctionDeleteAfterGuy id evm)
             (auctionDeleteAfterGuy id evm).executionEnv.codeOwner (auctionPackedSlot id)))
     rw [hloadTic, hloadGuy]
     exact clearUint48Offset26_after_offset20_after_address_zero _
@@ -340,15 +340,15 @@ theorem auctionDeletePostState_accountMapEq (id : UInt256) (evm : EVM.State)
       lotSlot ⟨0⟩
   let vGuy :=
     setAddressOffset0Word
-      (Solm.EVM.storageLoad (auctionDeleteAfterLot id evm)
+      (Stele.EVM.storageLoad (auctionDeleteAfterLot id evm)
         (auctionDeleteAfterLot id evm).executionEnv.codeOwner packedSlot) ⟨0⟩
   let vTic :=
     clearUint48Offset20Word
-      (Solm.EVM.storageLoad (auctionDeleteAfterGuy id evm)
+      (Stele.EVM.storageLoad (auctionDeleteAfterGuy id evm)
         (auctionDeleteAfterGuy id evm).executionEnv.codeOwner packedSlot)
   let vEnd :=
     clearUint48Offset26Word
-      (Solm.EVM.storageLoad (auctionDeleteAfterTic id evm)
+      (Stele.EVM.storageLoad (auctionDeleteAfterTic id evm)
         (auctionDeleteAfterTic id evm).executionEnv.codeOwner packedSlot)
   have hfinal : vEnd = ⟨0⟩ := by
     simpa [vEnd, packedSlot] using auctionDeletePackedFinalWord_zero id evm

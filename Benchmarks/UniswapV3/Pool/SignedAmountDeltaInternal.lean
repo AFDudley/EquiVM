@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.SignedAmountDeltaSource
 import Benchmarks.UniswapV3.Pool.SignedAmountDeltaTrace
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
@@ -36,7 +36,7 @@ theorem signedAmountDeltaInternalX {σ : AccountMap} {ee : ExecutionEnv} {g : Sa
     exact signedAmountDeltaReverts (immStore v) evm second a ha hbad
   · refine Or.inr ⟨?_, hv, kr, Cr, rr⟩
     apply internalCallFunctionReturn (callee := signedAmountDeltaFunction second)
-      (calleeSolm := signedAmountDeltaReturnFrame (immStore v) second a)
+      (calleeStele := signedAmountDeltaReturnFrame (immStore v) second a)
       (value := some [.int (signedAmountDeltaResult second a)]) he hl (signedAmountDeltaBind second a)
     rw [hc]
     exact signedAmountDeltaReturns (immStore v) evm second a ha hv

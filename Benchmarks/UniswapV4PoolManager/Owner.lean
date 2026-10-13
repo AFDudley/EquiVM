@@ -7,11 +7,11 @@ import Benchmarks.UniswapV4PoolManager.RuntimeBlocks_011
 # PoolManager `owner()`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 3041; reach lemma `poolManagerReachOwnerBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.UniswapV4PoolManager.Immutables
 
@@ -26,7 +26,7 @@ theorem ownerBodyReturns (evm : EVM.State) (locals imms : Store)
     ExecTransitionBody config contract evm locals ownerTransition.body
       (.returned (calldataFrame contract locals imms evm) evm
         (some [.address (AccountAddress.ofNat
-          (UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
+          (UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
             solcAddrMask).toNat)])) imms :=
   addressGetterBodyReturns evm locals imms "owner" ⟨0⟩ hwv hhi (by decide) hbase
     (by decide +kernel) rfl

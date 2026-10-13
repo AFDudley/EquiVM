@@ -50,7 +50,7 @@ def VaultFlow.hookNext : VaultFlow → Nat
   | .withdraw => 4630
   | .redeem => 5534
 
-def VaultFlow.hookName : VaultFlow → Solm.Ident
+def VaultFlow.hookName : VaultFlow → Stele.Ident
   | .deposit | .mint => "on_borrowed_token_transfer_in"
   | .withdraw | .redeem => "on_borrowed_token_transfer_out"
 

@@ -6,7 +6,7 @@ import Reasoning.Stepping
 import Reasoning.Reach
 import Examples.StringStoreLite.ClearCurrentLong
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 8000000
@@ -4275,10 +4275,10 @@ theorem stringStoreLiteSetShortNonemptyLongValidRuntime
   let payloadStart : UInt256 :=
     (((⟨4⟩ : UInt256) + calldataWord I.calldata 4) + ⟨32⟩)
   let oldLen : UInt256 := UInt256.div (currentLengthHeaderWord σ I) ⟨2⟩
-  let evmSolm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  let evmSolm1 := Solm.EVM.storageStore
-    (clearSolidityBytesDataWordsFrom evmSolm0 ⟨0⟩ 0 ((oldLen.toNat + 31) / 32))
-    (clearSolidityBytesDataWordsFrom evmSolm0 ⟨0⟩ 0
+  let evmStele0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele1 := Stele.EVM.storageStore
+    (clearSolidityBytesDataWordsFrom evmStele0 ⟨0⟩ 0 ((oldLen.toNat + 31) / 32))
+    (clearSolidityBytesDataWordsFrom evmStele0 ⟨0⟩ 0
       ((oldLen.toNat + 31) / 32)).executionEnv.codeOwner
     ⟨0⟩ (solidityShortBytesWord (setDecodedValueBytes I))
   have hlenAbi :
@@ -4332,21 +4332,21 @@ theorem stringStoreLiteSetShortNonemptyLongValidRuntime
     (oldLen := oldLen) hnz hshort hsrc rd1350 hflag rfl
     (by simpa [oldLen] using hvalid)
   have hload :
-      Solm.EVM.storageLoad evmSolm0 evmSolm0.executionEnv.codeOwner ⟨0⟩ =
+      Stele.EVM.storageLoad evmStele0 evmStele0.executionEnv.codeOwner ⟨0⟩ =
         currentLengthHeaderWord σ I := by
-    simp [evmSolm0, Solm.EVM.storageLoad, initState, State.lookupAccount,
+    simp [evmStele0, Stele.EVM.storageLoad, initState, State.lookupAccount,
       Account.lookupStorage, currentLengthHeaderWord]
   have hvalueSizeShort : (setDecodedValueBytes I).size < 32 := by
     rw [setDecodedValueBytes_size hpayload]
     simpa [hlenAbi] using hshort
   have hwrite :
       stringStoreLiteConfig.storageBackend.write { base := "current", steps := [] }
-        .string (.bytes (setDecodedValueBytes I)) evmSolm0 = .ok evmSolm1 := by
-    have hwrite₀ := writeCurrentShortFromLongPrepared (evm := evmSolm0)
+        .string (.bytes (setDecodedValueBytes I)) evmStele0 = .ok evmStele1 := by
+    have hwrite₀ := writeCurrentShortFromLongPrepared (evm := evmStele0)
       (header := currentLengthHeaderWord σ I) (len := oldLen)
       (value := setDecodedValueBytes I)
       hvalueSizeShort hload hflag rfl (by simpa [oldLen] using hvalid)
-    simpa only [evmSolm1] using hwrite₀
+    simpa only [evmStele1] using hwrite₀
   have hretEnc :
       returnEquiv (UInt256.toByteArray len) (some [.int (setDecodedValueBytes I).size])
         [(.elem (.int (.uint ⟨256, by decide⟩)))] := by
@@ -4388,7 +4388,7 @@ theorem stringStoreLiteSetShortNonemptyLongValidRuntime
     exact setRuntimeStaticOfWrite hcode hwv hpf (permSplit_false hpf hsplit) hd hdec hwrite
   exact setRuntimeOfWriteAccountMapEq hcode hwv (permSplit_true hperm hsplit) hd hdec hwrite
     (by
-      simp [evmSolm1, evmSolm0, clearSolidityBytesDataWordsFrom_accountMap,
+      simp [evmStele1, evmStele0, clearSolidityBytesDataWordsFrom_accountMap,
         clearSolidityBytesDataWordsFrom_executionEnv, storageStore_accountMap, initState, hcountNat,
         clearCurrentBaseWord_eq_solidityBytesDataBaseSlot, uint256_add_zero_right,
         hheaderEq]
@@ -4414,11 +4414,11 @@ theorem stringStoreLiteSetEmptyLongValidRuntime {σ σ₀ A I}
         ⟨0⟩) :
     runtimeRefinementFor stringStoreLiteConfig stringStoreLiteContract
       σ σ₀ g A I := by
-  let evmSolm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
   let len : UInt256 := UInt256.div (currentLengthHeaderWord σ I) ⟨2⟩
-  let evmSolm1 := Solm.EVM.storageStore
-    (clearSolidityBytesDataWordsFrom evmSolm0 ⟨0⟩ 0 ((len.toNat + 31) / 32))
-    (clearSolidityBytesDataWordsFrom evmSolm0 ⟨0⟩ 0
+  let evmStele1 := Stele.EVM.storageStore
+    (clearSolidityBytesDataWordsFrom evmStele0 ⟨0⟩ 0 ((len.toNat + 31) / 32))
+    (clearSolidityBytesDataWordsFrom evmStele0 ⟨0⟩ 0
       ((len.toNat + 31) / 32)).executionEnv.codeOwner
     ⟨0⟩ ⟨0⟩
   let payloadStart : UInt256 :=
@@ -4487,31 +4487,31 @@ theorem stringStoreLiteSetEmptyLongValidRuntime {σ σ₀ A I}
       (g := Sat256.ofUInt256 g) (payloadStart := payloadStart)
       (by simpa [clearCurrentHashAw6] using hwriteEvm)
   have hload :
-      Solm.EVM.storageLoad evmSolm0 I.codeOwner ⟨0⟩ =
+      Stele.EVM.storageLoad evmStele0 I.codeOwner ⟨0⟩ =
         currentLengthHeaderWord σ I := by
-    simp [evmSolm0, Solm.EVM.storageLoad, initState, State.lookupAccount,
+    simp [evmStele0, Stele.EVM.storageLoad, initState, State.lookupAccount,
       Account.lookupStorage, currentLengthHeaderWord]
   have hloadBytes :
-      Solm.EVM.storageLoad evmSolm0 evmSolm0.executionEnv.codeOwner ⟨0⟩ =
+      Stele.EVM.storageLoad evmStele0 evmStele0.executionEnv.codeOwner ⟨0⟩ =
         currentLengthHeaderWord σ I := by
-    simpa [evmSolm0, initState] using hload
+    simpa [evmStele0, initState] using hload
   have hshortEmpty : solidityShortBytesWord ByteArray.empty = ⟨0⟩ := by
     rw [solidityShortBytesWord, empty_readWithPadding_word_zero]
     rfl
   have hwrite :
       stringStoreLiteConfig.storageBackend.write { base := "current", steps := [] }
-        .string (.bytes ByteArray.empty) evmSolm0 = .ok evmSolm1 := by
-    have hwrite₀ := writeCurrentShortFromLongPrepared (evm := evmSolm0)
+        .string (.bytes ByteArray.empty) evmStele0 = .ok evmStele1 := by
+    have hwrite₀ := writeCurrentShortFromLongPrepared (evm := evmStele0)
       (header := currentLengthHeaderWord σ I) (len := len) (value := ByteArray.empty)
       (by decide) hloadBytes hflag rfl (by simpa [len] using hvalid)
-    simpa only [evmSolm1, hshortEmpty] using hwrite₀
+    simpa only [evmStele1, hshortEmpty] using hwrite₀
   by_cases hperm : I.perm = true
   swap
   · have hpf : I.perm = false := by simpa using hperm
     exact setRuntimeStaticOfWrite hcode hwv hpf (permSplit_false hpf hsplit) hd hdec hwrite
   exact setRuntimeOfWriteAccountMapEq hcode hwv (permSplit_true hperm hsplit) hd hdec hwrite
     (by
-      simp [evmSolm1, evmSolm0, clearSolidityBytesDataWordsFrom_accountMap,
+      simp [evmStele1, evmStele0, clearSolidityBytesDataWordsFrom_accountMap,
         clearSolidityBytesDataWordsFrom_executionEnv, storageStore_accountMap, initState, hcountNat,
         clearCurrentBaseWord_eq_solidityBytesDataBaseSlot, uint256_add_zero_right]
       rfl)

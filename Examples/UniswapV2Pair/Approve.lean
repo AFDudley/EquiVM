@@ -1,8 +1,8 @@
 import Examples.UniswapV2Pair.ExternalWrappers
 import Examples.UniswapV2Pair.Dispatch
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -37,7 +37,7 @@ def approveStorageSlot (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
   allowanceSlot (.address evm.executionEnv.source) (approveSpenderKey I)
 
 def approvePostState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (approveStorageSlot evm I)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (approveStorageSlot evm I)
     (approveValueWord I)
 
 abbrev approveEvaledRef (evm : EVM.State) (I : ExecutionEnv) : EvaledStorageRef :=
@@ -134,7 +134,7 @@ theorem uniswapDecode_approve_ok_noncanon {I : ExecutionEnv}
     using decodeCalldata_legacyAddress_uint256_ok
       (cd := I.calldata) (x := "spender") (y := "value") hsz68
 
-/-- The Solm `approve(address,uint256)` body writes `allowance[msg.sender][spender]` and returns
+/-- The Stele `approve(address,uint256)` body writes `allowance[msg.sender][spender]` and returns
     `true`. -/
 theorem uniswapApproveBodyReturns (evm : EVM.State) (I : ExecutionEnv)
     (h : evm.executionEnv.weiValue = ⟨0⟩) :
@@ -147,7 +147,7 @@ theorem uniswapApproveBodyReturns (evm : EVM.State) (I : ExecutionEnv)
     (approveAssign evm I)) ?_
   exact ExecBlock.consReturn (ExecStmt.return (by simp [evalExprs?, evalExpr?, EvalResult.bind, bind, pure]))
 
-/-- In a static call, the Solm `approve(address,uint256)` body halts at the allowance
+/-- In a static call, the Stele `approve(address,uint256)` body halts at the allowance
     assignment. -/
 theorem uniswapApproveBodyStatic (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩) (hperm : evm.executionEnv.perm = false) :

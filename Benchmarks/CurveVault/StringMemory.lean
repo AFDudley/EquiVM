@@ -1,7 +1,7 @@
 import Benchmarks.CurveVault.StringLoop
 import Reasoning.ExternalCall
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 -- LIBRARY CANDIDATE: a sequence of Vyper data words has a fixed byte length.
@@ -47,7 +47,7 @@ theorem vaultStringCopyMemory_header {s0 : State} {I : ExecutionEnv} {σ : Accou
     (hs : SourceState s0 I σ evm) (slot : UInt256) (mem : ByteArray) (count : Nat)
     (hsize : mem.size = 96) (hcount : count ≤ 2) :
     vaultStringCopyMemory I σ slot mem 0 (count + 1) =
-      (mem ++ (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot).toByteArray) ++
+      (mem ++ (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot).toByteArray) ++
         vyperReadDataWords evm slot 0 count := by
   rw [vaultStringCopyMemory, vaultStringCopyWord_append I σ slot mem 0 (by omega) (by omega)]
   change vaultStringCopyMemory I σ slot (mem ++ (codeOwnerStorageWord I σ (slot + ⟨0⟩)).toByteArray) 1 count = _

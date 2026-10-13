@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV4PoolManager.UnlockABI
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 -- LIBRARY CANDIDATE: precompile length words and in-bounds ABI words have the same value.

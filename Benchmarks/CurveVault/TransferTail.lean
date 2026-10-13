@@ -2,7 +2,7 @@ import Benchmarks.CurveVault.TransferGuard
 import Benchmarks.CurveVault.Memory
 import Benchmarks.CurveVault.Arithmetic
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 def vaultTransferMemory (mem : ByteArray) (sender recipient value : UInt256) : ByteArray :=
@@ -90,7 +90,7 @@ theorem vaultTransferTail {I : ExecutionEnv} {g : Sat256} {s0 evm : State}
     (wordAt0Mem ⟨13⟩ (wordAt32Mem (memLoad (UInt256.ofNat 64) mem) mem)) aw0 rdata σ k0 C0 at rd8190
   rw [hmf, hhash0, hv0] at rd8190
   let σ1 := sstoreAccountMap I.codeOwner σ slotFrom debit
-  let evm1 := Solm.EVM.storageStore evm I.codeOwner slotFrom debit
+  let evm1 := Stele.EVM.storageStore evm I.codeOwner slotFrom debit
   have hs1 : SourceState s0 I σ1 evm1 := hs.storageWrite _ _
   have hdebit : ExecStmt config {contract := contract, locals := locals} evm
       vaultTransferFunction.body[1]!
@@ -137,7 +137,7 @@ theorem vaultTransferTail {I : ExecutionEnv} {g : Sat256} {s0 evm : State}
   change RD vaultBytecode I g s0 returnPc R ((memLoad (UInt256.ofNat 128) mem1).toByteArray.write 0 mem1 160 32)
     aw2 rdata (sstoreAccountMap I.codeOwner σ1 slotTo (oldTo + value)) k2 C2 at rdReturn
   rw [hv1] at rdReturn
-  let evm2 := Solm.EVM.storageStore evm1 I.codeOwner slotTo (oldTo + value)
+  let evm2 := Stele.EVM.storageStore evm1 I.codeOwner slotTo (oldTo + value)
   have hs2 : SourceState s0 I (sstoreAccountMap I.codeOwner σ1 slotTo (oldTo + value)) evm2 := hs1.storageWrite _ _
   refine Or.inl ⟨evm2, _, aw2, k2, C2, ?_, hs2, rdReturn⟩
   apply ExecBlock.consNormal hdebit

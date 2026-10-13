@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.OracleObservationRead
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 -- LIBRARY CANDIDATE: a memory-cost potential carried by a symbolic execution cursor.

@@ -1,7 +1,7 @@
 import Benchmarks.CurveVault.ConvertAssetsInternal
 import Benchmarks.CurveVault.ConversionArguments
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 abbrev vaultConversionFunction (toShares : Bool) : FunctionDecl :=

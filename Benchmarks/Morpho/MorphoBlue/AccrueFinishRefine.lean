@@ -1,7 +1,7 @@
 import Benchmarks.Morpho.MorphoBlue.AccrueMemoryAdvance
 import Benchmarks.Morpho.MorphoBlue.AccrueFeeRefine
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Morpho.MorphoBlue.Immutables
 namespace Benchmarks.Morpho.MorphoBlue
 set_option maxRecDepth 1000
@@ -69,7 +69,7 @@ theorem morphoAccrueFinishRefineWithMemory (p : MarketParamsWords) (locals imms 
       simpa only [hs.env, ← hs.accounts, decide_eq_true hf] using he
     rcases morphoAccrueFeeRefineWithFee (v := v) p locals imms hstack hp hs hm hb hl h with hr | hok
     · exact Or.inl ⟨ExecBlock.consRevert (ExecStmt.iteTrue hn hr.1), hr.2⟩
-    · obtain ⟨shares, locals', evm', σ', aw1, k1, C1, hsolm, hl', hs', hm', hnfee, rd1⟩ := hok
+    · obtain ⟨shares, locals', evm', σ', aw1, k1, C1, hstele, hl', hs', hm', hnfee, rd1⟩ := hok
       have hem := morphoAccrueEmit p locals' imms evm' rate interest shares hl'.toMarketLocals
         (hl'.evalRate imms evm') (hl'.evalInterest imms evm') (hl'.evalShares imms evm')
       obtain ⟨aw2, k2, C2, rd2⟩ := morphoAccrueFeeLogReturn (v := v) (by omega) hp hvalid rd1
@@ -80,7 +80,7 @@ theorem morphoAccrueFinishRefineWithMemory (p : MarketParamsWords) (locals imms 
         ((hm'.eventAdvance rate interest shares).trans
           (heapAdvance_hash _ (fp + UInt256.ofNat 64) p.id (UInt256.ofNat 3)))
       refine Or.inr ⟨locals', evm', _, _, _, aw2, k2, C2,
-        ExecBlock.consNormal (ExecStmt.iteTrue hn hsolm) (ExecBlock.consNormal hem ExecBlock.nil),
+        ExecBlock.consNormal (ExecStmt.iteTrue hn hstele) (ExecBlock.consNormal hem ExecBlock.nil),
         hl'.toMarketLocals, accrueTimestamp_bridge hs' p.id,
         (hm'.event rate interest shares).hash p.id (UInt256.ofNat 3), ?_, rd2⟩
       simpa only [hfeeLast σ', if_neg hnf, Nat.add_zero] using had

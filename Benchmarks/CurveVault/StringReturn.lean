@@ -1,7 +1,7 @@
 import Benchmarks.CurveVault.StringMemory
 import Benchmarks.CurveVault.StringEncoding
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 theorem vaultStringPaddedNormal (I : ExecutionEnv) (front data : ByteArray) (length : UInt256)

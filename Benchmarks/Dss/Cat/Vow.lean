@@ -1,7 +1,7 @@
 import Benchmarks.Dss.Cat.Common
-import Solm.Refine
+import Stele.Refine
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -72,7 +72,7 @@ theorem catVowBody {σ σ₀ A I} {g : UInt256}
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.address (AccountAddress.ofNat
             (solcAddressSlotWord ⟨4⟩ σ I).toNat))])) := by
-    simpa [vowTransition, solcAddressSlotWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [vowTransition, solcAddressSlotWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount, solcSlotWord] using
       catAddressGetterBodyReturns (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
         (ref := vowRef) (er := ({ base := "vow", steps := [] } : EvaledStorageRef)) (slot := ⟨4⟩)

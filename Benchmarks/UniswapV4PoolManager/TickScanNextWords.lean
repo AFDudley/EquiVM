@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV4PoolManager.WordNarrowCast
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 def tickScanNextWord (compressed spacing distance : UInt256) (lte : Bool) : UInt256 :=

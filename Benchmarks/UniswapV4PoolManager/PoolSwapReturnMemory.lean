@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.PoolSwapAllocatedMemory
 import Benchmarks.UniswapV4PoolManager.MemoryWindowSlice
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 theorem poolSwapAllocatedMemory_size (mem : ByteArray) (evm : State) (id state : UInt256)

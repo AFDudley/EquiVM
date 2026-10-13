@@ -4,7 +4,7 @@ import Benchmarks.Dss.Flapper.ConstructorBase
 # MakerDAO/Sky DSS Flapper constructor default-store and nonpayable traces
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Flapper
 

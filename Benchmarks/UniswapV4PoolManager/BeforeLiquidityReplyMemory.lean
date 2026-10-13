@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.BeforeLiquidityMemory
 import Benchmarks.UniswapV4PoolManager.ReturnDataAllocation
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 def beforeLiquidityReplyMemory (add : Bool) (src mem : ByteArray) (srcOff : Nat) (ptr len : UInt256)

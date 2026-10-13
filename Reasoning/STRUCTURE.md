@@ -1,12 +1,12 @@
 # Reasoning/ — structure
 
-Shared, contract-agnostic infrastructure for proving that compiled EVM bytecode refines its Solm
+Shared, contract-agnostic infrastructure for proving that compiled EVM bytecode refines its Stele
 specification. Every per-contract proof in `Examples/` and `Benchmarks/` is assembled from these
 files plus contract-specific facts (bytecode literals, selectors, storage layout).
 
 Most declarations are in `Reasoning.Theory`. The EVM trace layer (`RD`, `evm_run`,
 `SolcRoutines.lean`, and the `RD.*` lemma halves of `Solc.lean` and `Dispatch.lean`) is in
-`Reasoning.Reach`. `SolmArithmetic.lean` includes the nested `Reasoning.Theory.RpowB` and
+`Reasoning.Reach`. `SteleArithmetic.lean` includes the nested `Reasoning.Theory.RpowB` and
 `Reasoning.Theory.RpowBase` namespaces for the two source-variable conventions.
 `Immutables.lean` uses `Reasoning.Immutables` for immutable layouts and decoding.
 `JumpDest.lean` has no namespace (it defines a tactic and an attribute).
@@ -20,7 +20,7 @@ dependencies.
 |---|---|
 | `Stepping.lean` | Base layer. Trace drivers — `initState` (the fresh EVM state), the `Ξ`-to-iterator bridge (`Xi_*_of_X`), single-step peeling (`X_peel`, `stepContinue`, `stepOOG`, `stepHalt*`) — plus one lemma per opcode (`<op>_xstep`) evaluating a single `Xstep` to an explicit gas-guarded successor state (`st<Op>` definitions). |
 | `EVMWord.lean` | `UInt256` arithmetic: no-wrap `toNat` lemmas, bitwise normalization, unsigned comparisons, signed `SLT`, `compare` order instances, the word-rounding used by solc memory allocation. |
-| `SolmBody.lean` | The Solm side: `ExecTransitionBody`/`ExecStmt`/`ExecBlock` lemmas. Non-payable guard, call wrappers (external/checked/low-level/delegate), loop rules, block sequencing (`execBlock_append`), locals lookup, storage-access collapse through either a specified backend read/write or a Solidity-layout leaf. |
+| `SteleBody.lean` | The Stele side: `ExecTransitionBody`/`ExecStmt`/`ExecBlock` lemmas. Non-payable guard, call wrappers (external/checked/low-level/delegate), loop rules, block sequencing (`execBlock_append`), locals lookup, storage-access collapse through either a specified backend read/write or a Solidity-layout leaf. |
 | `Memory.lean` | Byte-level memory: little-endian word arithmetic, `MSTORE`/`MLOAD` read-write facts, scratch memory for mapping hashes, selector extraction, calldata decode coupling, mapping-slot keccak facts, and the `keccak_size` theorem. |
 | `Reach.lean` | The EVM trace layer. `RD` (reached-or-out-of-gas invariant), one forward step lemma per opcode (`RD.<op>`), `CALL`/`STATICCALL` with the callee treated as an opaque `Θ` result, terminal forms `RDret`/`RDrev` with the `reEquiv_*` case builders for `runtimeRefinementFor` and the `reEquivElim` eliminators, `Cursor`/`RDc`, and the `evm_run` macro that chains steps with auto-discharged decode/overflow side conditions. |
 | `ABI.lean` | Calldata decoding and return-value encoding: per-shape decode lemmas (address/uint256/bool/bytes32/string/dynamic-array combinations), decode-mode variants, failure cases (short, huge, non-canonical), return encodings. |
@@ -29,9 +29,9 @@ dependencies.
 | `Initcode.lean` | Constructor-time facts: decode of the initcode prefix, jump-table survival, constructor-argument arithmetic. |
 | `Solc.lean` | Compiler-emitted code shapes, proved once: selector dispatch, ABI length checks, free-memory-pointer and revert memory, the 160-bit address mask, getter/store routines, reentrancy locks, checked arithmetic, event logs, high-level call combinators. |
 | `Storage.lean` | Storage maps: `ExtTreeMap` lookup/update facts, `StorageLoc` load/store for the Solidity value encodings, the bytes/string storage layout, account-map equality/`EVMStateEquiv` with `SLOAD`/`SSTORE` preservation. |
-| `TransientStorage.lean` | Direct `tstorage` scalar load/store facts, account-map update and `EVMStateEquiv` lemmas, and Solm transient read, assignment, and delete helpers. |
-| `Dispatch.lean` | Solm dispatcher facts: `dispatchMsg` as a list walk (`dispatchList`), single-transition instances, `SingleSelectorDispatch`, and the `RDret`/`RDrev.reEquiv*` bridges that connect a finished trace to the equivalence statement. |
-| `ExternalCall.lean` | The `CALL` ↔ Solm `externalCall` boundary: both sides invoke the same `Θ`, so results coincide (`callCoincides`); transport of call results across equivalent account maps and substate changes. |
+| `TransientStorage.lean` | Direct `tstorage` scalar load/store facts, account-map update and `EVMStateEquiv` lemmas, and Stele transient read, assignment, and delete helpers. |
+| `Dispatch.lean` | Stele dispatcher facts: `dispatchMsg` as a list walk (`dispatchList`), single-transition instances, `SingleSelectorDispatch`, and the `RDret`/`RDrev.reEquiv*` bridges that connect a finished trace to the equivalence statement. |
+| `ExternalCall.lean` | The `CALL` ↔ Stele `externalCall` boundary: both sides invoke the same `Θ`, so results coincide (`callCoincides`); transport of call results across equivalent account maps and substate changes. |
 | `Constructor.lean` | Skeletons for constructor (creation-code) equivalence proofs. |
 | `WordArithmetic.lean` | Further signed and unsigned word bounds, masks, shifts, rounding, and compiler guard arithmetic. |
 | `HeapMemory.lean` | Heap prefixes and cursors, allocation invariants, dynamic tuple and return-data layouts, and dynamic revert payloads. |
@@ -43,18 +43,18 @@ dependencies.
 | `BytecodePatching.lean` | Immutable-word encoding, bytecode splicing, preserved decode windows, and jump destinations. |
 | `Immutables.lean` | Named immutable layouts, runtime construction, preserved decode windows, and decoding of patched PUSH20/PUSH32 operands for generated block summaries. |
 | `SolcRoutines.lean` | Bytecode-parameterized getter, authorization, storage-update, checked-arithmetic, and revert routines. |
-| `SolmArithmetic.lean` | Source arithmetic expressions, checked and wrapping operations, local-variable frames, and exponentiation-frame evaluation facts. |
+| `SteleArithmetic.lean` | Source arithmetic expressions, checked and wrapping operations, local-variable frames, and exponentiation-frame evaluation facts. |
 | `Vyper.lean` | Vyper mapping-slot hashes with `baseSlot ++ key` preimages, including both scratch-memory write orders and address keys; full-word scalar storage reads and writes through a Vyper layout. Nested mappings use the same hash helper at each level. |
 
 ## Dependencies
 
-External: `Ethereum.*` (evmlean — EVM semantics and opcode lemmas), `Solm` (the spec language and
+External: `Ethereum.*` (evmlean — EVM semantics and opcode lemmas), `Stele` (the spec language and
 its semantics), `ABI.Decode`, and Mathlib.
 
 Within `Reasoning/`, imports flow upward:
 
 ```
-Stepping   EVMWord ── SolmBody
+Stepping   EVMWord ── SteleBody
     │         │
     ├── Memory ── MemCascade
     │      │
@@ -65,9 +65,9 @@ Stepping   EVMWord ── SolmBody
                 │
             Storage
              ├── Dispatch      (also Reach)
-             └── ExternalCall  (also SolmBody)
+             └── ExternalCall  (also SteleBody)
 
-Constructor ← Reach, SolmBody     Initcode ← EVMWord     JumpDest ← (Ethereum only)
+Constructor ← Reach, SteleBody     Initcode ← EVMWord     JumpDest ← (Ethereum only)
 ```
 
 The remaining extension modules have distinct responsibilities:
@@ -77,24 +77,24 @@ The remaining extension modules have distinct responsibilities:
 - `MemCascade` builds on `Memory`. `Solc` also imports it for scratch-memory layouts;
   `HeapMemory` adds heap invariants and dynamic layouts above `Solc`.
 - `PackedStorage` extends `Storage`. `WordArithmetic` supplies the higher-level word bounds
-  used by compiler and storage proofs, with `SolmBody` and `Initcode` also available.
-- `TransientStorage` extends `Storage` and `SolmBody`; `TransientPackedStorage` extends it with
+  used by compiler and storage proofs, with `SteleBody` and `Initcode` also available.
+- `TransientStorage` extends `Storage` and `SteleBody`; `TransientPackedStorage` extends it with
   the pure masks and field layouts from `PackedStorage`.
-- `BytecodePatching` uses `Initcode`, `MemCascade`, and `Solm.Immutables` to connect bytecode
+- `BytecodePatching` uses `Initcode`, `MemCascade`, and `Stele.Immutables` to connect bytecode
   splices to word writes and preserve decoding.
 - `Immutables` uses `MemCascade` and `Reach` to prove decoding rules for named immutable layouts
   consumed by generated block summaries.
 - `SolcRoutines` combines compiler primitives with heap, packed-storage, and word facts.
-- `SolmArithmetic` combines source evaluation, ABI types, and word arithmetic. Its `RpowB`
+- `SteleArithmetic` combines source evaluation, ABI types, and word arithmetic. Its `RpowB`
   and `RpowBase` namespaces retain the two local-variable conventions for exponentiation.
 - `StorageLoops` combines storage updates and word arithmetic for clearing and copying loops.
-- `Vyper` combines the generic memory and storage facts with `Solm.VyperLayout`; it does not
+- `Vyper` combines the generic memory and storage facts with `Stele.VyperLayout`; it does not
   depend on a particular contract or bytecode.
 
 Basic memory bounds and byte-array conversions live in `Memory`; write-cascade facts live in
 `MemCascade`; compiler allocation and mapping-memory facts live in `Solc`. State projections
 live in `Storage`, code-size/precompile facts in `ExternalCall`, and elementary source evaluation
-in `SolmBody`. This keeps those facts beside their definitions instead of collecting them in
+in `SteleBody`. This keeps those facts beside their definitions instead of collecting them in
 separate files by the contract from which they were extracted.
 
 These modules do not import `Examples` or `Benchmarks`. Contract-specific bytecode, selectors,
@@ -142,19 +142,19 @@ source of the constraint and the rule's reuse, rather than the absence of numeri
   `PackedStorage`; transient scalar facts → `TransientStorage`, `TransientPackedStorage`;
   clearing and copying loops → `StorageLoops`; Vyper mapping hashes and full-word leaves → `Vyper`.
 - Code-size guards and precompile results → `ExternalCall`.
-- Elementary source evaluation → `SolmBody`; arithmetic and exponentiation frames →
-  `SolmArithmetic`.
+- Elementary source evaluation → `SteleBody`; arithmetic and exponentiation frames →
+  `SteleArithmetic`.
 - Immutable bytecode patching and decode preservation → `BytecodePatching`.
 - Named immutable layouts and generated-summary decoding → `Immutables`.
 - Selector dispatch, connecting a trace to `runtimeRefinement` → `Dispatch`.
 - An external call inside a function body → `ExternalCall` (EVM side: `RD.call` in `Reach`;
-  Solm side: `SolmBody`).
+  Stele side: `SteleBody`).
 - Constructor proofs → `Constructor`, `Initcode`.
 - Jump-target validity → `JumpDest`.
 
 ## Build
 
-`lake build Reasoning` builds the Reasoning modules. A bare `lake build` builds only `Solm`
+`lake build Reasoning` builds the Reasoning modules. A bare `lake build` builds only `Stele`
 (the default target) — use explicit targets.
 
 After changing shared lemmas, check their callers with

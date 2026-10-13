@@ -4,7 +4,7 @@ import Benchmarks.CurveVault.RuntimeBlocks_016
 import Benchmarks.CurveVault.RuntimeBlocks_019
 import Benchmarks.CurveVault.RuntimeBlocks_031
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 def vaultDebitMinimumEntry (isWithdraw : Bool) : Nat := if isWithdraw then 4202 else 5272

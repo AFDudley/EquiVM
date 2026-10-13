@@ -7,7 +7,7 @@ Dispatcher bucket 8: the callvalue guard at pc 1193, then the `CODECOPY` of the 
 and `RETURN` of its single word.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
   Reasoning.VyperImmutables
 
 namespace Tests.Pipeline.VyperVault

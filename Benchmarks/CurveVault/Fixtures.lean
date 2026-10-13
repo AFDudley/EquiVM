@@ -1,6 +1,6 @@
-import Solm.DiffTest.Harness
+import Stele.DiffTest.Harness
 
-open Solm Solm.DiffTest ABI Ethereum Ethereum.EVM
+open Stele Stele.DiffTest ABI Ethereum Ethereum.EVM
 
 namespace Benchmarks.CurveVault.Fixtures
 

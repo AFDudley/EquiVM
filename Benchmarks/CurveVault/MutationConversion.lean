@@ -1,7 +1,7 @@
 import Benchmarks.CurveVault.MutationConversionSetup
 import Benchmarks.CurveVault.ConversionForward
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 theorem vaultMutationConversion (flow : VaultFlow) {I : ExecutionEnv} {g : Sat256} {s0 evm : State}

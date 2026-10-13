@@ -2,7 +2,7 @@ import Benchmarks.CurveVault.AllowanceStorage
 import Benchmarks.CurveVault.Arithmetic
 import Benchmarks.CurveVault.ApproveInternal
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 def vaultAdjustFunction (increase : Bool) : FunctionDecl :=
@@ -55,7 +55,7 @@ theorem vaultAdjustPrefixSource (increase : Bool) (evm : State) (locals : Store)
     (hbase : locals.get? "allowance" = none)
     (hspender : locals.get? "_spender" = some (.address spender))
     (hdelta : locals.get? (vaultAdjustDeltaName increase) = some (.int (Int.ofNat delta.toNat)))
-    (hold : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+    (hold : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
       (vaultAllowanceSlot evm.executionEnv.source spender) = old) :
     ExecBlock config {contract := contract, locals := locals} evm ((vaultAdjustFunction increase).body.take 3)
       (.ok {contract := contract, locals := vaultAdjustPrefixLocals locals increase old delta} evm) := by

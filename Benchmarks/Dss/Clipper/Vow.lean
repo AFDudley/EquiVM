@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Clipper.Fallback
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 namespace Benchmarks.Dss.Clipper
@@ -101,7 +101,7 @@ theorem clipperEvalVow (v : ClipperImmutables) (evm : EVM.State) (locals : Store
     evalExpr? config { contract := contract, locals := locals, immutables := immStore v } evm
       (.storage vowRef) =
       .ok (.address (AccountAddress.ofNat
-        (UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩)
+        (UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩)
           solcAddrMask).toNat)) := by
   let er : EvaledStorageRef := { base := "vow", steps := [] }
   have her : evalStorageRef config
@@ -121,7 +121,7 @@ theorem clipperVowBodyReturns (v : ClipperImmutables) (evm : EVM.State) (locals 
     ExecTransitionBody config contract evm locals vowTransition.body
       (.returned { contract := contract, locals := locals, immutables := immStore v } evm
         (some [(.address (AccountAddress.ofNat
-          (UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩)
+          (UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩)
             solcAddrMask).toNat))])) (immStore v) := by
   simpa [vowTransition] using
     nonpayableReturnExprBodyReturns (cfg := config) (contract := contract) h
@@ -355,7 +355,7 @@ theorem clipperVowBody (v : ClipperImmutables) {code : ByteArray}
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.address (AccountAddress.ofNat
             (UInt256.land (solcSlotWord σ I ⟨2⟩) solcAddrMask).toNat))])) (immStore v) := by
-    simpa [solcSlotWord, initState, Solm.EVM.storageLoad, State.lookupAccount] using
+    simpa [solcSlotWord, initState, Stele.EVM.storageLoad, State.lookupAccount] using
       clipperVowBodyReturns v
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
         (by simp only [initState]; exact hwv) (by simp)

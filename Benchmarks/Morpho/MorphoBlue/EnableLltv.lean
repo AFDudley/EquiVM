@@ -5,11 +5,11 @@ import Benchmarks.Morpho.MorphoBlue.AdminCommon
 # Morpho `enableLltv(uint256)`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 8981; reach lemma `morphoReachEnableLltvBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MorphoBlue.Immutables
 
@@ -52,7 +52,7 @@ theorem morphoEnableLltvBodySplit (v : MorphoImmutables) (evm : EVM.State)
     ExecTransitionBody config contract evm (enableLltvArgs evm.executionEnv.calldata)
       enableLltvTransition.body
       (.returned (enableLltvFrame v evm.executionEnv.calldata)
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner
           (solcMappingSlot ⟨5⟩ (calldataWord evm.executionEnv.calldata 4))
           (UInt256.lor (UInt256.land (solcSlotWordAt
             (solcMappingSlot ⟨5⟩ (calldataWord evm.executionEnv.calldata 4))

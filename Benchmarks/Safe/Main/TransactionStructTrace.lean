@@ -1,7 +1,7 @@
 import Benchmarks.Safe.Main.TransactionDomainTrace
 import Benchmarks.Safe.Main.ByteCopy
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.Main

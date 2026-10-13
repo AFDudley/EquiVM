@@ -2,7 +2,7 @@ import Benchmarks.UniswapV4PoolManager.PoolSwapStepWords
 import Benchmarks.UniswapV4PoolManager.WordSignedSource
 import Benchmarks.UniswapV4PoolManager.ValueLocals
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 def poolSwapInputAmountFits (s : PoolSwapStepWords) (calculated : UInt256) : Prop :=

@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Flopper.Dispatch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Flopper
 
@@ -70,7 +70,7 @@ theorem flopperKicksBodyCore
         (.returned { contract := contract, locals := ∅ }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.int (Int.ofNat (kicksWord σ I).toNat))])) := by
-    simpa [kicksTransition, kicksWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [kicksTransition, kicksWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       flopperUint256GetterBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅

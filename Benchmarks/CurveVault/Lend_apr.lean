@@ -3,7 +3,7 @@ import Benchmarks.CurveVault.Entry
 import Benchmarks.CurveVault.Lock
 import Benchmarks.CurveVault.LendInternal
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch Reasoning.VyperCalls
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch Reasoning.VyperCalls
 namespace Benchmarks.CurveVault
 
 theorem vaultLend_aprBodyCore {σ σ₀ A I} {g : UInt256}
@@ -23,7 +23,7 @@ theorem vaultLend_aprBodyCore {σ σ₀ A I} {g : UInt256}
       (transitionSignature lend_aprTransition).paramTypes I.calldata = some ∅ := by
     change decodeCalldataWithMode .vyper [] [] I.calldata = some ∅
     exact decodeCalldataWithMode_empty_ok hsz
-  have hload : Solm.EVM.transientLoad (initState σ σ₀ (Sat256.ofUInt256 g) A I)
+  have hload : Stele.EVM.transientLoad (initState σ σ₀ (Sat256.ofUInt256 g) A I)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner ⟨0⟩ =
       codeOwnerTransientWord I σ ⟨0⟩ := codeOwnerTransientWord_initState _
   by_cases hlocked : codeOwnerTransientWord I σ ⟨0⟩ = ⟨1⟩

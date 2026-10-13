@@ -3,7 +3,7 @@ import Benchmarks.CompoundIII.Comet.AssetSource
 import Benchmarks.CompoundIII.Comet.UserBasicState
 import Benchmarks.CompoundIII.Comet.InternalMemoryOutcome
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 
@@ -13,7 +13,7 @@ def assetMembershipChange (initial final : UInt256) : Option Bool :=
 
 def assetMembershipState (evm : EVM.State) (account : AccountAddress)
     (offset : UInt256) (add : Bool) : EVM.State :=
-  let basic := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (userBasicSlot account)
+  let basic := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (userBasicSlot account)
   if offset.toNat < 16 then
     storePackedWord evm (userBasicSlot account)
       (typedBitUpdateWord add ⟨16, by decide⟩ (userBasicFieldWord basic 2) offset.toNat) 29 2

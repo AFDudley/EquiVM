@@ -6,7 +6,7 @@ import Examples.StringStoreLite.SetOldLong
 This file contains the valid `set(string)` branch proof for writing a long value when the old storage value is packed/short.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 20000000
@@ -41,14 +41,14 @@ theorem stringStoreLiteX_setLongValueShortValidPresentResidual
         (UInt256.lt
           (UInt256.land (UInt256.div (currentLengthHeaderWord σ I) ⟨2⟩) ⟨127⟩)
           ⟨32⟩) ≠ ⟨0⟩)
-    (accSolm0 : Account)
-    (_haccSolm0 :
+    (accStele0 : Account)
+    (_haccStele0 :
       (initState σ σ₀ (Sat256.ofUInt256 g) A I).accountMap.get?
           (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner =
-        some accSolm0)
-    (evmSolm1 : EVM.State)
+        some accStele0)
+    (evmStele1 : EVM.State)
     (hdataWrite :
-      Solm.EVM.storageStore
+      Stele.EVM.storageStore
         (writeSolidityBytesDataWordsFrom
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           ⟨0⟩ (setDecodedValueBytes I) 0 (((setDecodedValueBytes I).size + 31) / 32))
@@ -57,16 +57,16 @@ theorem stringStoreLiteX_setLongValueShortValidPresentResidual
           ⟨0⟩ (setDecodedValueBytes I) 0
           (((setDecodedValueBytes I).size + 31) / 32)).executionEnv.codeOwner
         ⟨0⟩ (solidityBytesHeaderWord (setDecodedValueBytes I).size) =
-          evmSolm1) :
+          evmStele1) :
     (I.perm = true ∧ ∃ evmEvm1,
-      EVMStateEquiv evmEvm1 evmSolm1 ∧
+      EVMStateEquiv evmEvm1 evmStele1 ∧
       RDret stringStoreLiteBytecode (Sat256.ofUInt256 g)
         (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         evmEvm1.accountMap
         (UInt256.toByteArray (UInt256.ofNat (setDecodedValueBytes I).size))) ∨
       (I.perm = false ∧ RDstatic stringStoreLiteBytecode (Sat256.ofUInt256 g)
         (initState σ σ₀ (Sat256.ofUInt256 g) A I)) := by
-  let evmSolm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
   let len : UInt256 :=
     uInt256OfByteArray
       (I.calldata.readBytes
@@ -146,8 +146,8 @@ theorem stringStoreLiteX_setLongValueShortValidPresentResidual
       (payloadStart := payloadStart) (len := len) (oldLen := oldLen)
       hnz hlenMaxLen hsrc rd1350 hflag rfl (by simpa [oldLen] using hvalid)
   let dataFuel := ((setDecodedValueBytes I).size + 31) / 32
-  have hsolmMap :
-      evmSolm1.accountMap =
+  have hsteleMap :
+      evmStele1.accountMap =
         sstoreAccountMap I.codeOwner
           (solidityDataWordsForwardFrom I.codeOwner σ
             ⟨0⟩ (setDecodedValueBytes I) 0 dataFuel)
@@ -155,7 +155,7 @@ theorem stringStoreLiteX_setLongValueShortValidPresentResidual
     rw [← hdataWrite]
     simp [header, dataFuel, writeSolidityBytesDataWordsFrom_accountMap,
       writeSolidityBytesDataWordsFrom_executionEnv, storageStore_accountMap, initState]
-  have hsolmEnv : evmSolm1.executionEnv = I := by
+  have hsteleEnv : evmStele1.executionEnv = I := by
     rw [← hdataWrite]
     simp [writeSolidityBytesDataWordsFrom_executionEnv,
       storageStore_executionEnv, initState]
@@ -198,10 +198,10 @@ theorem stringStoreLiteX_setLongValueShortValidPresentResidual
           (clearCurrentBaseMemFrom (setPaddedMem I.calldata len payloadStart))
           (len.toNat / 32))
         ⟨0⟩ (len * (⟨2⟩ : UInt256) + ⟨1⟩)
-    let evmEvm1 : EVM.State := { evmSolm1 with accountMap := evmPostMap }
+    let evmEvm1 : EVM.State := { evmStele1 with accountMap := evmPostMap }
     refine ⟨evmEvm1, ?_, ?_⟩
     · refine ⟨?_, ?_⟩
-      · simp [evmEvm1, hsolmEnv]
+      · simp [evmEvm1, hsteleEnv]
       · have hgenAccounts :
             Eq evmPostMap
               (sstoreAccountMap I.codeOwner
@@ -220,7 +220,7 @@ theorem stringStoreLiteX_setLongValueShortValidPresentResidual
           (I := I) (len := len) (payloadStart := payloadStart) (owner := I.codeOwner)
           hnz hlenMaxLen hsrc hsizeDecoded hlenAbi rfl hoffMax
           (τ := σ) (i := 0) (fuel := len.toNat / 32) (by omega)
-        have hsolmTarget :
+        have hsteleTarget :
             Eq
               (sstoreAccountMap I.codeOwner
                 (longDataWordsForwardFrom I.codeOwner σ clearCurrentBaseWord ⟨32⟩ ⟨128⟩
@@ -228,16 +228,16 @@ theorem stringStoreLiteX_setLongValueShortValidPresentResidual
                   (clearCurrentBaseMemFrom (setPaddedMem I.calldata len payloadStart))
                   (len.toNat / 32))
                 ⟨0⟩ header)
-              evmSolm1.accountMap := by
+              evmStele1.accountMap := by
           have hbase0 : clearCurrentBaseWord + UInt256.ofNat 0 = clearCurrentBaseWord := by
             simpa using uint256_add_zero_right clearCurrentBaseWord
           have hstride : UInt256.ofNat 32 = (⟨32⟩ : UInt256) := by
             native_decide
-          rw [hsolmMap]
+          rw [hsteleMap]
           simpa [hdataFuelEq, hbase0, hstride] using
             congrArg (fun accounts => sstoreAccountMap I.codeOwner accounts ⟨0⟩ header)
               hdataBridge.symm
-        simpa [evmEvm1] using Eq.trans hgenAccounts hsolmTarget
+        simpa [evmEvm1] using Eq.trans hgenAccounts hsteleTarget
     · simpa [evmEvm1, evmPostMap, hretWord] using hret
   · let wordTail : UInt256 :=
       UInt256.ofNat (fromBytesBigEndian
@@ -308,10 +308,10 @@ theorem stringStoreLiteX_setLongValueShortValidPresentResidual
           (longDataWordsLoopSlot clearCurrentBaseWord (len.toNat / 32))
           (longDataTailMaskedWord wordTail len))
         ⟨0⟩ (len * (⟨2⟩ : UInt256) + ⟨1⟩)
-    let evmEvm1 : EVM.State := { evmSolm1 with accountMap := evmPostMap }
+    let evmEvm1 : EVM.State := { evmStele1 with accountMap := evmPostMap }
     refine ⟨evmEvm1, ?_, ?_⟩
     · refine ⟨?_, ?_⟩
-      · simp [evmEvm1, hsolmEnv]
+      · simp [evmEvm1, hsteleEnv]
       · have hgenAccounts :
             Eq evmPostMap
               (sstoreAccountMap I.codeOwner
@@ -334,7 +334,7 @@ theorem stringStoreLiteX_setLongValueShortValidPresentResidual
           (I := I) (len := len) (payloadStart := payloadStart) (wordTail := wordTail)
           (owner := I.codeOwner)
           hnz hlenMaxLen hsrc hsizeDecoded hlong hlenAbi rfl hoffMax hmod (by rfl) σ
-        have hsolmTarget :
+        have hsteleTarget :
             Eq
               (sstoreAccountMap I.codeOwner
                 (sstoreAccountMap I.codeOwner
@@ -345,16 +345,16 @@ theorem stringStoreLiteX_setLongValueShortValidPresentResidual
                   (longDataWordsLoopSlot clearCurrentBaseWord (len.toNat / 32))
                   (longDataTailMaskedWord wordTail len))
                 ⟨0⟩ header)
-              evmSolm1.accountMap := by
+              evmStele1.accountMap := by
           have hbase0 : clearCurrentBaseWord + UInt256.ofNat 0 = clearCurrentBaseWord := by
             simpa using uint256_add_zero_right clearCurrentBaseWord
           have hstride : UInt256.ofNat 32 = (⟨32⟩ : UInt256) := by
             native_decide
-          rw [hsolmMap]
+          rw [hsteleMap]
           simpa [hdataFuelEq, hbase0, hstride] using
             congrArg (fun accounts => sstoreAccountMap I.codeOwner accounts ⟨0⟩ header)
               hdataBridge.symm
-        simpa [evmEvm1] using Eq.trans hgenAccounts hsolmTarget
+        simpa [evmEvm1] using Eq.trans hgenAccounts hsteleTarget
     · simpa [evmEvm1, evmPostMap, hretWord] using hret
 
 end StringStoreLite

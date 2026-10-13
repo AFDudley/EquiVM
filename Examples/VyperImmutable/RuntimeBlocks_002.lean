@@ -4,7 +4,7 @@ import Examples.VyperImmutable.Bytecode
 import Examples.VyperImmutable.Immutables
 import Examples.VyperImmutable.ImmutableCode
 
-open Solm ABI Ethereum Ethereum.EVM
+open Stele ABI Ethereum Ethereum.EVM
 open Reasoning.Theory Reasoning.Reach
 
 namespace immutableBlocks

@@ -1,7 +1,7 @@
 import Benchmarks.CurveVault.Common
-import Reasoning.SolmArithmetic
+import Reasoning.SteleArithmetic
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 -- LIBRARY CANDIDATE: Vyper detects checked subtraction underflow with GT.
@@ -13,22 +13,22 @@ theorem u256_sub_underflow_gt (a b : UInt256) (h : a.toNat < b.toNat) :
   omega
 
 -- LIBRARY CANDIDATE: a uint256 cast after addition agrees with wrapping word addition.
-theorem evalExpr_castAdd256 {cfg : Config} {solm : Frame} {evm : EVM.State}
+theorem evalExpr_castAdd256 {cfg : Config} {stele : Frame} {evm : EVM.State}
     {lhs rhs : Expr} {a b : UInt256}
-    (ha : evalExpr? cfg solm evm lhs = .ok (.int (Int.ofNat a.toNat)))
-    (hb : evalExpr? cfg solm evm rhs = .ok (.int (Int.ofNat b.toNat))) :
-    evalExpr? cfg solm evm (.cast (.binary .add lhs rhs) (.elem (.int (.uint ⟨256, by decide⟩)))) =
+    (ha : evalExpr? cfg stele evm lhs = .ok (.int (Int.ofNat a.toNat)))
+    (hb : evalExpr? cfg stele evm rhs = .ok (.int (Int.ofNat b.toNat))) :
+    evalExpr? cfg stele evm (.cast (.binary .add lhs rhs) (.elem (.int (.uint ⟨256, by decide⟩)))) =
       .ok (.int (Int.ofNat (a + b).toNat)) := by
   simp only [evalExpr?, ha, hb, bind, EvalResult.bind, evalBinaryOp?, castValue?,
     normalizeInt, EvalResult.ofOption, uadd_toNat]
   congr 2
 
 -- LIBRARY CANDIDATE: a uint256 cast after subtraction agrees with wrapping subtraction.
-theorem evalExpr_castSub256 {cfg : Config} {solm : Frame} {evm : EVM.State}
+theorem evalExpr_castSub256 {cfg : Config} {stele : Frame} {evm : EVM.State}
     {lhs rhs : Expr} {a b : UInt256}
-    (ha : evalExpr? cfg solm evm lhs = .ok (.int (Int.ofNat a.toNat)))
-    (hb : evalExpr? cfg solm evm rhs = .ok (.int (Int.ofNat b.toNat))) :
-    evalExpr? cfg solm evm (.cast (.binary .sub lhs rhs) (.elem (.int (.uint ⟨256, by decide⟩)))) =
+    (ha : evalExpr? cfg stele evm lhs = .ok (.int (Int.ofNat a.toNat)))
+    (hb : evalExpr? cfg stele evm rhs = .ok (.int (Int.ofNat b.toNat))) :
+    evalExpr? cfg stele evm (.cast (.binary .sub lhs rhs) (.elem (.int (.uint ⟨256, by decide⟩)))) =
       .ok (.int (Int.ofNat (UInt256.sub a b).toNat)) := by
   simp only [evalExpr?, ha, hb, bind, EvalResult.bind, evalBinaryOp?, castValue?,
     normalizeInt, EvalResult.ofOption]
@@ -67,18 +67,18 @@ theorem u256_lnot_eq_zero_iff (w : UInt256) :
     decide +kernel
 
 -- LIBRARY CANDIDATE: checked binary arithmetic propagates a left operand's revert.
-theorem evalExpr_checked_binary_left_revert {cfg : Config} {solm : Frame} {evm : State}
+theorem evalExpr_checked_binary_left_revert {cfg : Config} {stele : Frame} {evm : State}
     {lhs rhs : Expr} (op : BinaryOp) (ty : IntType)
-    (h : evalExpr? cfg solm evm lhs = .revert) :
-    evalExpr? cfg solm evm (.inRange ty (.binary op lhs rhs)) = .revert := by
+    (h : evalExpr? cfg stele evm lhs = .revert) :
+    evalExpr? cfg stele evm (.inRange ty (.binary op lhs rhs)) = .revert := by
   cases op <;> simp [evalExpr?, h, bind, EvalResult.bind]
 
 
 -- LIBRARY CANDIDATE: checked multiplication propagates a right operand's
 -- revert after the left operand evaluates successfully.
-theorem evalExpr_checked_mul_right_revert {cfg : Config} {solm : Frame} {evm : State}
+theorem evalExpr_checked_mul_right_revert {cfg : Config} {stele : Frame} {evm : State}
     {lhs rhs : Expr} {v : Value} (ty : IntType)
-    (hl : evalExpr? cfg solm evm lhs = .ok v) (hr : evalExpr? cfg solm evm rhs = .revert) :
-    evalExpr? cfg solm evm (.inRange ty (.binary .mul lhs rhs)) = .revert := by
+    (hl : evalExpr? cfg stele evm lhs = .ok v) (hr : evalExpr? cfg stele evm rhs = .revert) :
+    evalExpr? cfg stele evm (.inRange ty (.binary .mul lhs rhs)) = .revert := by
   simp [evalExpr?, hl, hr, bind, EvalResult.bind]
 end Benchmarks.CurveVault

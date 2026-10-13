@@ -1,7 +1,7 @@
 import Examples.UniswapV2Pair.Common
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 1000000
@@ -24,7 +24,7 @@ abbrev mintFunctionCallStore (recipient : AccountAddress) (value : UInt256) : St
     (mintFunctionToValue recipient)
 
 def mintFunctionTotalSupplyWord (evm : EVM.State) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩
 
 def mintFunctionTotalSupplyNewNat (evm : EVM.State) (value : UInt256) : Nat :=
   (mintFunctionTotalSupplyWord evm).toNat + value.toNat
@@ -36,7 +36,7 @@ abbrev mintFunctionTotalSupplyNewValue (evm : EVM.State) (value : UInt256) : Val
   uniswapUint256Value (mintFunctionTotalSupplyNewWord evm value)
 
 def mintFunctionAfterTotalSupplyState (evm : EVM.State) (value : UInt256) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨0⟩
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨0⟩
     (mintFunctionTotalSupplyNewWord evm value)
 
 def mintFunctionToSlot (recipient : AccountAddress) : UInt256 :=
@@ -44,7 +44,7 @@ def mintFunctionToSlot (recipient : AccountAddress) : UInt256 :=
 
 def mintFunctionToBalanceWord (evm : EVM.State) (recipient : AccountAddress) (value : UInt256) :
     UInt256 :=
-  Solm.EVM.storageLoad (mintFunctionAfterTotalSupplyState evm value)
+  Stele.EVM.storageLoad (mintFunctionAfterTotalSupplyState evm value)
     evm.executionEnv.codeOwner (mintFunctionToSlot recipient)
 
 def mintFunctionToBalanceNewNat
@@ -61,7 +61,7 @@ abbrev mintFunctionToBalanceNewValue
 
 def mintFunctionPostState (evm : EVM.State) (recipient : AccountAddress) (value : UInt256) :
     EVM.State :=
-  Solm.EVM.storageStore (mintFunctionAfterTotalSupplyState evm value)
+  Stele.EVM.storageStore (mintFunctionAfterTotalSupplyState evm value)
     evm.executionEnv.codeOwner (mintFunctionToSlot recipient)
     (mintFunctionToBalanceNewWord evm recipient value)
 
@@ -181,7 +181,7 @@ theorem mintFunctionAssignTotalSupply
 theorem mintFunctionAfterTotalSupply_codeOwner (evm : EVM.State) (value : UInt256) :
     (mintFunctionAfterTotalSupplyState evm value).executionEnv.codeOwner =
       evm.executionEnv.codeOwner := by
-  simp only [mintFunctionAfterTotalSupplyState, Solm.EVM.storageStore, State.lookupAccount]
+  simp only [mintFunctionAfterTotalSupplyState, Stele.EVM.storageStore, State.lookupAccount]
   cases evm.accountMap.get? evm.executionEnv.codeOwner with
   | none => rfl
   | some acc => simp only [Option.option, State.setAccount, Account.updateStorage]
@@ -334,7 +334,7 @@ theorem uniswapMintFunctionCallSuccess {caller : Frame} {evm : EVM.State}
     (name := "_mint") (retVar := retVar) (args := args)
     (argVals := [mintFunctionToValue recipient, mintFunctionValueValue value])
     (callee := mintFunction) (locals := mintFunctionCallStore recipient value)
-    (calleeSolm := { contract := contract, locals := mintFunctionCallStore recipient value })
+    (calleeStele := { contract := contract, locals := mintFunctionCallStore recipient value })
     (value := none)
     hargs
     (by simpa [hcontract, himm] using uniswapLookupMintFunction)

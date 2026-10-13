@@ -2,7 +2,7 @@ import Benchmarks.CurveVault.MutationConversion
 import Benchmarks.CurveVault.CreditSource
 import Benchmarks.CurveVault.RuntimeBlocks_011
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 def vaultDepositConversionBody : List Stmt :=

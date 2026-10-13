@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Clipper.Fallback
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 namespace Benchmarks.Dss.Clipper
@@ -139,27 +139,27 @@ theorem clipperDecode_wards_none_short {I : ExecutionEnv}
   simpa [config] using
     decodeCalldata_legacyAddress_none_short (cd := I.calldata) (x := "arg0") hsz4 hshort
 
-/-- The Solm `wards(address)` body returns `wards[arg0]`. -/
+/-- The Stele `wards(address)` body returns `wards[arg0]`. -/
 theorem clipperWardsBodyReturns (v : ClipperImmutables) (evm : EVM.State)
     (I : ExecutionEnv) (h : evm.executionEnv.weiValue = ⟨0⟩) :
     ExecTransitionBody config contract evm (clipperWardsStore I)
       wardsTransition.body
       (.returned { contract := contract, locals := clipperWardsStore I, immutables := immStore v } evm
         (some [(.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
             (clipperWardsStorageSlot I)).toNat))])) (immStore v) := by
   exact ExecFuncBody.execBlockRet <|
     (ABlock.start.requireStep (evalCallvalueEq_true h)).returns (by
       rw [evalExpr_storage_scalar_value (hbackend := rfl)
         (cfg := config)
-        (solm := { contract := contract, locals := clipperWardsStore I, immutables := immStore v })
+        (stele := { contract := contract, locals := clipperWardsStore I, immutables := immStore v })
         (slot := wardsRef (.var "arg0"))
         (er := ({ base := "wards", steps := [.mindex (clipperWardsArgKey I)] } :
           EvaledStorageRef))
         (t := .int uint256Int)
         (loc := wordLoc (clipperWardsStorageSlot I))
         (value := .int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
             (clipperWardsStorageSlot I)).toNat))
         (hbase := by
           simp [clipperWardsStore, wardsRef])
@@ -499,7 +499,7 @@ theorem clipperWardsBodyCoreOk
         (.returned { contract := contract, locals := clipperWardsStore I, immutables := immStore v }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.int (Int.ofNat (clipperWardsWord σ I).toNat))])) (immStore v) := by
-    simpa [clipperWardsWord, initState, Solm.EVM.storageLoad, State.lookupAccount] using
+    simpa [clipperWardsWord, initState, Stele.EVM.storageLoad, State.lookupAccount] using
       clipperWardsBodyReturns v
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) I
         (by simp only [initState]; exact hwv)
@@ -524,7 +524,7 @@ theorem clipperWardsBodyCoreDecodeFailed_short
     hsize hshort hreach)
     |>.reEquivDecodingFailed hcode hdispatch hdec
 
-/-- `wards(address)` body refines its Solm transition. -/
+/-- `wards(address)` body refines its Stele transition. -/
 theorem clipperWardsBody (v : ClipperImmutables) {code : ByteArray}
     (hpatch : patchRuntime clipperBytecode (patches v) = some code)
     {σ σ₀ A I} {g : UInt256}

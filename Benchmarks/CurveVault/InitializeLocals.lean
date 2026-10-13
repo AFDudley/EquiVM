@@ -1,6 +1,6 @@
 import Benchmarks.CurveVault.Common
 
-open Solm ABI Ethereum
+open Stele ABI Ethereum
 namespace Benchmarks.CurveVault
 
 def vaultInitializeLocals (amm controller token collateral : UInt256) : Store :=

@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.SwapCrossTickSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 theorem swapStateFrame_get (frame : Frame) (s : SwapStateData) (name : Ident)

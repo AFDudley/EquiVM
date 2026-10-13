@@ -3,7 +3,7 @@ import Benchmarks.CurveVault.DebitEntry
 import Benchmarks.CurveVault.DebitArguments
 import Benchmarks.CurveVault.Calldata
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 
 namespace Benchmarks.CurveVault
 

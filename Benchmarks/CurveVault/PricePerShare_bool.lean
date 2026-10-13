@@ -4,7 +4,7 @@ import Benchmarks.CurveVault.Lock
 import Benchmarks.CurveVault.PriceInternal
 import Benchmarks.CurveVault.Calldata
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 
 namespace Benchmarks.CurveVault
 
@@ -35,7 +35,7 @@ theorem vaultPricePerShare_boolBodyCore {σ σ₀ A I} {g : UInt256}
     have hargEval : evalExprs? config {contract := contract, locals := locals}
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) [.var "_is_floor"] = .ok [.bool isFloor] := by
       simp [locals, evalExprs?, evalExpr?, EvalResult.ofOption, bind, pure, EvalResult.bind]
-    have hload : Solm.EVM.transientLoad (initState σ σ₀ (Sat256.ofUInt256 g) A I)
+    have hload : Stele.EVM.transientLoad (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner ⟨0⟩ =
         codeOwnerTransientWord I σ ⟨0⟩ := codeOwnerTransientWord_initState _
     by_cases hlocked : codeOwnerTransientWord I σ ⟨0⟩ = ⟨1⟩

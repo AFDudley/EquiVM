@@ -2,7 +2,7 @@ import Benchmarks.CurveVault.CreditLimits
 import Benchmarks.CurveVault.DepositConversion
 import Benchmarks.CurveVault.CreditTail
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 theorem vaultDepositAfterAssetsBody_eq : (vaultCreditFunction true).body.drop 3 =

@@ -5,11 +5,11 @@ import Benchmarks.Morpho.MorphoBlue.AdminCommon
 # Morpho `setOwner(address)`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 11152; reach lemma `morphoReachSetOwnerBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MorphoBlue.Immutables
 
@@ -34,8 +34,8 @@ theorem morphoSetOwnerBodySplit (v : MorphoImmutables) (evm : EVM.State)
     ExecTransitionBody config contract evm (setOwnerArgs evm.executionEnv.calldata)
       setOwnerTransition.body
       (.returned (setOwnerFrame v evm.executionEnv.calldata)
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨0⟩
-          (setAddressOffset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨0⟩
+          (setAddressOffset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
             (calldataWord evm.executionEnv.calldata 4))) none) (immStore v) ∧
     (evm.executionEnv.perm = false →
       ExecTransitionBody config contract evm (setOwnerArgs evm.executionEnv.calldata)

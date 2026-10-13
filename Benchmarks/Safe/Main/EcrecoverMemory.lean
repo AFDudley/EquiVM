@@ -4,7 +4,7 @@ import Benchmarks.Safe.Main.ByteCopy
 import Benchmarks.Safe.Main.GuardCallMemory
 import Benchmarks.Safe.Main.MemoryBytesDecoded
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.Main
 

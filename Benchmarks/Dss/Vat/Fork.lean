@@ -6,7 +6,7 @@ import Benchmarks.Dss.Vat.Signed
 section
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 2000000
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Vat
 
@@ -86,7 +86,7 @@ end
 
 namespace Benchmarks.Dss.Vat
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -1750,7 +1750,7 @@ theorem evalExpr_fork_src_ink {evm : EVM.State} {I : ExecutionEnv}
     evalExpr? config { contract := contract, locals := forkStore I } evm
       (.storage (urnsF (.var "ilk") (.var "src") "ink")) =
       .ok (.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcInkSlot I)).toNat)) := by
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcInkSlot I)).toNat)) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
     (hbase := forkStore_urns I)
     (her := evalStorageRef_fork_src_ink evm I hsz164)
@@ -1764,7 +1764,7 @@ theorem evalExpr_fork_src_art {evm : EVM.State} {I : ExecutionEnv}
     evalExpr? config { contract := contract, locals := forkStore I } evm
       (.storage (urnsF (.var "ilk") (.var "src") "art")) =
       .ok (.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcArtSlot I)).toNat)) := by
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcArtSlot I)).toNat)) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
     (hbase := forkStore_urns I)
     (her := evalStorageRef_fork_src_art evm I hsz164)
@@ -1778,7 +1778,7 @@ theorem evalExpr_fork_dst_ink {evm : EVM.State} {I : ExecutionEnv}
     evalExpr? config { contract := contract, locals := forkStore I } evm
       (.storage (urnsF (.var "ilk") (.var "dst") "ink")) =
       .ok (.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstInkSlot I)).toNat)) := by
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstInkSlot I)).toNat)) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
     (hbase := forkStore_urns I)
     (her := evalStorageRef_fork_dst_ink evm I hsz164)
@@ -1793,7 +1793,7 @@ theorem evalExpr_fork_dst_art {evm : EVM.State} {I : ExecutionEnv}
     evalExpr? config { contract := contract, locals := forkStore I } evm
       (.storage (urnsF (.var "ilk") (.var "dst") "art")) =
       .ok (.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstArtSlot I)).toNat)) := by
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstArtSlot I)).toNat)) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
     (hbase := forkStore_urns I)
     (her := evalStorageRef_fork_dst_art evm I hsz164)
@@ -1808,7 +1808,7 @@ theorem evalExpr_fork_ilk_rate {evm : EVM.State} {I : ExecutionEnv}
     evalExpr? config { contract := contract, locals := forkStore I } evm
       (.storage (ilksF (.var "ilk") "rate")) =
       .ok (.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkIlkRateSlot I)).toNat)) := by
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkIlkRateSlot I)).toNat)) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
     (hbase := forkStore_ilks I)
     (her := evalStorageRef_fork_ilk_rate evm I hsz164)
@@ -1822,7 +1822,7 @@ theorem evalExpr_fork_ilk_spot {evm : EVM.State} {I : ExecutionEnv}
     evalExpr? config { contract := contract, locals := forkStore I } evm
       (.storage (ilksF (.var "ilk") "spot")) =
       .ok (.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkIlkSpotSlot I)).toNat)) := by
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkIlkSpotSlot I)).toNat)) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
     (hbase := forkStore_ilks I)
     (her := evalStorageRef_fork_ilk_spot evm I hsz164)
@@ -1836,7 +1836,7 @@ theorem evalExpr_fork_ilk_dust {evm : EVM.State} {I : ExecutionEnv}
     evalExpr? config { contract := contract, locals := forkStore I } evm
       (.storage (ilksF (.var "ilk") "dust")) =
       .ok (.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkIlkDustSlot I)).toNat)) := by
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkIlkDustSlot I)).toNat)) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
     (hbase := forkStore_ilks I)
     (her := evalStorageRef_fork_ilk_dust evm I hsz164)
@@ -1959,7 +1959,7 @@ theorem evalExpr_fork_src_ink_locals {evm : EVM.State} {I : ExecutionEnv}
     evalExpr? config { contract := contract, locals := locals } evm
       (.storage (urnsF (.var "ilk") (.var "src") "ink")) =
       .ok (.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcInkSlot I)).toNat)) := by
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcInkSlot I)).toNat)) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
     (hbase := hbase)
     (her := evalStorageRef_fork_src_ink_locals evm I locals hsz164 hilk hsrc)
@@ -1975,7 +1975,7 @@ theorem evalExpr_fork_src_art_locals {evm : EVM.State} {I : ExecutionEnv}
     evalExpr? config { contract := contract, locals := locals } evm
       (.storage (urnsF (.var "ilk") (.var "src") "art")) =
       .ok (.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcArtSlot I)).toNat)) := by
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcArtSlot I)).toNat)) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
     (hbase := hbase)
     (her := evalStorageRef_fork_src_art_locals evm I locals hsz164 hilk hsrc)
@@ -1991,7 +1991,7 @@ theorem evalExpr_fork_dst_ink_locals {evm : EVM.State} {I : ExecutionEnv}
     evalExpr? config { contract := contract, locals := locals } evm
       (.storage (urnsF (.var "ilk") (.var "dst") "ink")) =
       .ok (.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstInkSlot I)).toNat)) := by
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstInkSlot I)).toNat)) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
     (hbase := hbase)
     (her := evalStorageRef_fork_dst_ink_locals evm I locals hsz164 hilk hdst)
@@ -2008,7 +2008,7 @@ theorem evalExpr_fork_dst_art_locals {evm : EVM.State} {I : ExecutionEnv}
     evalExpr? config { contract := contract, locals := locals } evm
       (.storage (urnsF (.var "ilk") (.var "dst") "art")) =
       .ok (.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstArtSlot I)).toNat)) := by
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstArtSlot I)).toNat)) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
     (hbase := hbase)
     (her := evalStorageRef_fork_dst_art_locals evm I locals hsz164 hilk hdst)
@@ -2024,7 +2024,7 @@ theorem evalExpr_fork_ilk_rate_locals {evm : EVM.State} {I : ExecutionEnv}
     evalExpr? config { contract := contract, locals := locals } evm
       (.storage (ilksF (.var "ilk") "rate")) =
       .ok (.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkIlkRateSlot I)).toNat)) := by
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkIlkRateSlot I)).toNat)) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
     (hbase := hbase)
     (her := evalStorageRef_fork_ilk_rate_locals evm I locals hsz164 hilk)
@@ -2039,7 +2039,7 @@ theorem evalExpr_fork_ilk_spot_locals {evm : EVM.State} {I : ExecutionEnv}
     evalExpr? config { contract := contract, locals := locals } evm
       (.storage (ilksF (.var "ilk") "spot")) =
       .ok (.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkIlkSpotSlot I)).toNat)) := by
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkIlkSpotSlot I)).toNat)) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
     (hbase := hbase)
     (her := evalStorageRef_fork_ilk_spot_locals evm I locals hsz164 hilk)
@@ -2054,7 +2054,7 @@ theorem evalExpr_fork_ilk_dust_locals {evm : EVM.State} {I : ExecutionEnv}
     evalExpr? config { contract := contract, locals := locals } evm
       (.storage (ilksF (.var "ilk") "dust")) =
       .ok (.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkIlkDustSlot I)).toNat)) := by
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkIlkDustSlot I)).toNat)) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
     (hbase := hbase)
     (her := evalStorageRef_fork_ilk_dust_locals evm I locals hsz164 hilk)
@@ -2067,7 +2067,7 @@ theorem assignStorageRef_fork_src_ink (evm : EVM.State) (I : ExecutionEnv)
     (hilk : locals.get? "ilk" = some (forkIlkValue I))
     (hsrc : locals.get? "src" = some (forkSrcValue I))
     (hbase : locals.get? "urns" = none) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner
       (forkSrcInkSlot I) srcInkNew
     assignStorageRef? config { contract := contract, locals := locals } evm .storage
       (urnsF (.var "ilk") (.var "src") "ink") (.int (Int.ofNat srcInkNew.toNat)) =
@@ -2087,7 +2087,7 @@ theorem assignStorageRef_fork_src_art (evm : EVM.State) (I : ExecutionEnv)
     (hilk : locals.get? "ilk" = some (forkIlkValue I))
     (hsrc : locals.get? "src" = some (forkSrcValue I))
     (hbase : locals.get? "urns" = none) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner
       (forkSrcArtSlot I) srcArtNew
     assignStorageRef? config { contract := contract, locals := locals } evm .storage
       (urnsF (.var "ilk") (.var "src") "art") (.int (Int.ofNat srcArtNew.toNat)) =
@@ -2107,7 +2107,7 @@ theorem assignStorageRef_fork_dst_ink (evm : EVM.State) (I : ExecutionEnv)
     (hilk : locals.get? "ilk" = some (forkIlkValue I))
     (hdst : locals.get? "dst" = some (forkDstValue I))
     (hbase : locals.get? "urns" = none) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner
       (forkDstInkSlot I) dstInkNew
     assignStorageRef? config { contract := contract, locals := locals } evm .storage
       (urnsF (.var "ilk") (.var "dst") "ink") (.int (Int.ofNat dstInkNew.toNat)) =
@@ -2128,7 +2128,7 @@ theorem assignStorageRef_fork_dst_art (evm : EVM.State) (I : ExecutionEnv)
     (hilk : locals.get? "ilk" = some (forkIlkValue I))
     (hdst : locals.get? "dst" = some (forkDstValue I))
     (hbase : locals.get? "urns" = none) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner
       (forkDstArtSlot I) dstArtNew
     assignStorageRef? config { contract := contract, locals := locals } evm .storage
       (urnsF (.var "ilk") (.var "dst") "art") (.int (Int.ofNat dstArtNew.toNat)) =
@@ -2342,7 +2342,7 @@ theorem execForkSrcInkUpdateSplit {evm : EVM.State} {I : ExecutionEnv}
     (hdink : locals.get? "dink" = some (forkDinkValue I))
     (hbase : locals.get? "urns" = none)
     (hload :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcInkSlot I) = srcInkOld)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcInkSlot I) = srcInkOld)
     (hnew : srcInkNew = UInt256.sub srcInkOld (forkDinkWord I))
     (hguardNeg : forkDinkInt I ≤ 0 ∨ srcInkNew.toNat ≤ srcInkOld.toNat)
     (hguardPos : 0 ≤ forkDinkInt I ∨ srcInkOld.toNat ≤ srcInkNew.toNat) :
@@ -2353,7 +2353,7 @@ theorem execForkSrcInkUpdateSplit {evm : EVM.State} {I : ExecutionEnv}
       (.ok
         { contract := contract,
           locals := locals.insert "srcInkNew" (.int (Int.ofNat srcInkNew.toNat)) }
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner
           (forkSrcInkSlot I) srcInkNew)) ∧
     (evm.executionEnv.perm = false →
       ExecBlock config { contract := contract, locals := locals } evm
@@ -2362,7 +2362,7 @@ theorem execForkSrcInkUpdateSplit {evm : EVM.State} {I : ExecutionEnv}
           [ .assign .storage (urnsF (.var "ilk") (.var "src") "ink") (.var "srcInkNew") ])
         .staticViolation) := by
   let locals' := locals.insert "srcInkNew" (.int (Int.ofNat srcInkNew.toNat))
-  let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+  let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner
     (forkSrcInkSlot I) srcInkNew
   have hstorage :
       evalExpr? config { contract := contract, locals := locals } evm
@@ -2476,7 +2476,7 @@ theorem execForkSrcInkUpdateOk {evm : EVM.State} {I : ExecutionEnv}
     (hdink : locals.get? "dink" = some (forkDinkValue I))
     (hbase : locals.get? "urns" = none)
     (hload :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcInkSlot I) = srcInkOld)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcInkSlot I) = srcInkOld)
     (hnew : srcInkNew = UInt256.sub srcInkOld (forkDinkWord I))
     (hguardNeg : forkDinkInt I ≤ 0 ∨ srcInkNew.toNat ≤ srcInkOld.toNat)
     (hguardPos : 0 ≤ forkDinkInt I ∨ srcInkOld.toNat ≤ srcInkNew.toNat) :
@@ -2487,7 +2487,7 @@ theorem execForkSrcInkUpdateOk {evm : EVM.State} {I : ExecutionEnv}
       (.ok
         { contract := contract,
           locals := locals.insert "srcInkNew" (.int (Int.ofNat srcInkNew.toNat)) }
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner
           (forkSrcInkSlot I) srcInkNew)) :=
   (execForkSrcInkUpdateSplit locals srcInkOld srcInkNew hsz164 hilk hsrc hdink hbase hload hnew
     hguardNeg hguardPos).1
@@ -2500,7 +2500,7 @@ theorem execForkSrcInkUpdateRevertGuardNeg {evm : EVM.State} {I : ExecutionEnv}
     (hdink : locals.get? "dink" = some (forkDinkValue I))
     (hbase : locals.get? "urns" = none)
     (hload :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcInkSlot I) = srcInkOld)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcInkSlot I) = srcInkOld)
     (hnew : srcInkNew = UInt256.sub srcInkOld (forkDinkWord I))
     (hfail :
       ¬ (UInt256.sgt (forkDinkWord I) ⟨0⟩ = ⟨0⟩ ∨
@@ -2568,7 +2568,7 @@ theorem execForkSrcInkUpdateRevertGuardPos {evm : EVM.State} {I : ExecutionEnv}
     (hdink : locals.get? "dink" = some (forkDinkValue I))
     (hbase : locals.get? "urns" = none)
     (hload :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcInkSlot I) = srcInkOld)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcInkSlot I) = srcInkOld)
     (hnew : srcInkNew = UInt256.sub srcInkOld (forkDinkWord I))
     (hguardNeg :
       UInt256.sgt (forkDinkWord I) ⟨0⟩ = ⟨0⟩ ∨
@@ -2652,7 +2652,7 @@ theorem execForkSrcArtUpdateOk {evm : EVM.State} {I : ExecutionEnv}
     (hdart : locals.get? "dart" = some (forkDartValue I))
     (hbase : locals.get? "urns" = none)
     (hload :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcArtSlot I) = srcArtOld)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcArtSlot I) = srcArtOld)
     (hnew : srcArtNew = UInt256.sub srcArtOld (forkDartWord I))
     (hguardNeg : forkDartInt I ≤ 0 ∨ srcArtNew.toNat ≤ srcArtOld.toNat)
     (hguardPos : 0 ≤ forkDartInt I ∨ srcArtOld.toNat ≤ srcArtNew.toNat) :
@@ -2663,10 +2663,10 @@ theorem execForkSrcArtUpdateOk {evm : EVM.State} {I : ExecutionEnv}
       (.ok
         { contract := contract,
           locals := locals.insert "srcArtNew" (.int (Int.ofNat srcArtNew.toNat)) }
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner
           (forkSrcArtSlot I) srcArtNew)) := by
   let locals' := locals.insert "srcArtNew" (.int (Int.ofNat srcArtNew.toNat))
-  let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+  let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner
     (forkSrcArtSlot I) srcArtNew
   have hstorage :
       evalExpr? config { contract := contract, locals := locals } evm
@@ -2773,7 +2773,7 @@ theorem execForkSrcArtUpdateRevertGuardNeg {evm : EVM.State} {I : ExecutionEnv}
     (hdart : locals.get? "dart" = some (forkDartValue I))
     (hbase : locals.get? "urns" = none)
     (hload :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcArtSlot I) = srcArtOld)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcArtSlot I) = srcArtOld)
     (hnew : srcArtNew = UInt256.sub srcArtOld (forkDartWord I))
     (hfail :
       ¬ (UInt256.sgt (forkDartWord I) ⟨0⟩ = ⟨0⟩ ∨
@@ -2841,7 +2841,7 @@ theorem execForkSrcArtUpdateRevertGuardPos {evm : EVM.State} {I : ExecutionEnv}
     (hdart : locals.get? "dart" = some (forkDartValue I))
     (hbase : locals.get? "urns" = none)
     (hload :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcArtSlot I) = srcArtOld)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcArtSlot I) = srcArtOld)
     (hnew : srcArtNew = UInt256.sub srcArtOld (forkDartWord I))
     (hguardNeg :
       UInt256.sgt (forkDartWord I) ⟨0⟩ = ⟨0⟩ ∨
@@ -2925,7 +2925,7 @@ theorem execForkDstInkUpdateOk {evm : EVM.State} {I : ExecutionEnv}
     (hdink : locals.get? "dink" = some (forkDinkValue I))
     (hbase : locals.get? "urns" = none)
     (hload :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstInkSlot I) = dstInkOld)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstInkSlot I) = dstInkOld)
     (hnew : dstInkNew = forkDinkWord I + dstInkOld)
     (hguardNeg : 0 ≤ forkDinkInt I ∨ dstInkNew.toNat ≤ dstInkOld.toNat)
     (hguardPos : forkDinkInt I ≤ 0 ∨ dstInkOld.toNat ≤ dstInkNew.toNat) :
@@ -2936,10 +2936,10 @@ theorem execForkDstInkUpdateOk {evm : EVM.State} {I : ExecutionEnv}
       (.ok
         { contract := contract,
           locals := locals.insert "dstInkNew" (.int (Int.ofNat dstInkNew.toNat)) }
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner
           (forkDstInkSlot I) dstInkNew)) := by
   let locals' := locals.insert "dstInkNew" (.int (Int.ofNat dstInkNew.toNat))
-  let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+  let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner
     (forkDstInkSlot I) dstInkNew
   have hstorage :
       evalExpr? config { contract := contract, locals := locals } evm
@@ -3045,7 +3045,7 @@ theorem execForkDstInkUpdateRevertGuardNeg {evm : EVM.State} {I : ExecutionEnv}
     (hdink : locals.get? "dink" = some (forkDinkValue I))
     (hbase : locals.get? "urns" = none)
     (hload :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstInkSlot I) = dstInkOld)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstInkSlot I) = dstInkOld)
     (hnew : dstInkNew = forkDinkWord I + dstInkOld)
     (hfail :
       ¬ (UInt256.slt (forkDinkWord I) ⟨0⟩ = ⟨0⟩ ∨
@@ -3111,7 +3111,7 @@ theorem execForkDstInkUpdateRevertGuardPos {evm : EVM.State} {I : ExecutionEnv}
     (hdink : locals.get? "dink" = some (forkDinkValue I))
     (hbase : locals.get? "urns" = none)
     (hload :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstInkSlot I) = dstInkOld)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstInkSlot I) = dstInkOld)
     (hnew : dstInkNew = forkDinkWord I + dstInkOld)
     (hguardNeg :
       UInt256.slt (forkDinkWord I) ⟨0⟩ = ⟨0⟩ ∨
@@ -3193,7 +3193,7 @@ theorem execForkDstArtUpdateOk {evm : EVM.State} {I : ExecutionEnv}
     (hdart : locals.get? "dart" = some (forkDartValue I))
     (hbase : locals.get? "urns" = none)
     (hload :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstArtSlot I) = dstArtOld)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstArtSlot I) = dstArtOld)
     (hnew : dstArtNew = forkDartWord I + dstArtOld)
     (hguardNeg : 0 ≤ forkDartInt I ∨ dstArtNew.toNat ≤ dstArtOld.toNat)
     (hguardPos : forkDartInt I ≤ 0 ∨ dstArtOld.toNat ≤ dstArtNew.toNat) :
@@ -3204,10 +3204,10 @@ theorem execForkDstArtUpdateOk {evm : EVM.State} {I : ExecutionEnv}
       (.ok
         { contract := contract,
           locals := locals.insert "dstArtNew" (.int (Int.ofNat dstArtNew.toNat)) }
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner
           (forkDstArtSlot I) dstArtNew)) := by
   let locals' := locals.insert "dstArtNew" (.int (Int.ofNat dstArtNew.toNat))
-  let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+  let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner
     (forkDstArtSlot I) dstArtNew
   have hstorage :
       evalExpr? config { contract := contract, locals := locals } evm
@@ -3313,7 +3313,7 @@ theorem execForkDstArtUpdateRevertGuardNeg {evm : EVM.State} {I : ExecutionEnv}
     (hdart : locals.get? "dart" = some (forkDartValue I))
     (hbase : locals.get? "urns" = none)
     (hload :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstArtSlot I) = dstArtOld)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstArtSlot I) = dstArtOld)
     (hnew : dstArtNew = forkDartWord I + dstArtOld)
     (hfail :
       ¬ (UInt256.slt (forkDartWord I) ⟨0⟩ = ⟨0⟩ ∨
@@ -3379,7 +3379,7 @@ theorem execForkDstArtUpdateRevertGuardPos {evm : EVM.State} {I : ExecutionEnv}
     (hdart : locals.get? "dart" = some (forkDartValue I))
     (hbase : locals.get? "urns" = none)
     (hload :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstArtSlot I) = dstArtOld)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstArtSlot I) = dstArtOld)
     (hnew : dstArtNew = forkDartWord I + dstArtOld)
     (hguardNeg :
       UInt256.slt (forkDartWord I) ⟨0⟩ = ⟨0⟩ ∨
@@ -3458,16 +3458,16 @@ theorem execForkFinalLoadsOk {evm : EVM.State} {I : ExecutionEnv}
       srcArtFinal dstArtFinal srcInkFinal dstInkFinal : UInt256)
     (hsz164 : 164 ≤ I.calldata.size)
     (hloadSrcArt :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcArtSlot I) =
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcArtSlot I) =
         srcArtFinal)
     (hloadDstArt :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstArtSlot I) =
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstArtSlot I) =
         dstArtFinal)
     (hloadSrcInk :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcInkSlot I) =
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcInkSlot I) =
         srcInkFinal)
     (hloadDstInk :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstInkSlot I) =
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstInkSlot I) =
         dstInkFinal) :
     ExecBlock config
       { contract := contract,
@@ -3746,7 +3746,7 @@ theorem execForkUtabFinalMulOk {evm : EVM.State} {I : ExecutionEnv}
       srcArtFinal dstArtFinal srcInkFinal dstInkFinal rate utab : UInt256)
     (hsz164 : 164 ≤ I.calldata.size)
     (hloadRate :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkIlkRateSlot I) = rate)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkIlkRateSlot I) = rate)
     (hprod : utab = UInt256.mul srcArtFinal rate)
     (hfit : srcArtFinal.toNat * rate.toNat < UInt256.size)
     (hguard : rate.toNat = 0 ∨ utab.toNat / rate.toNat = srcArtFinal.toNat) :
@@ -3843,7 +3843,7 @@ theorem execForkVtabFinalMulOk {evm : EVM.State} {I : ExecutionEnv}
       srcArtFinal dstArtFinal srcInkFinal dstInkFinal rate utab vtab : UInt256)
     (hsz164 : 164 ≤ I.calldata.size)
     (hloadRate :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkIlkRateSlot I) = rate)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkIlkRateSlot I) = rate)
     (hprod : vtab = UInt256.mul dstArtFinal rate)
     (hfit : dstArtFinal.toNat * rate.toNat < UInt256.size)
     (hguard : rate.toNat = 0 ∨ vtab.toNat / rate.toNat = dstArtFinal.toNat) :
@@ -3940,7 +3940,7 @@ theorem execForkSrcInkSpotFinalMulOk {evm : EVM.State} {I : ExecutionEnv}
       srcArtFinal dstArtFinal srcInkFinal dstInkFinal spot utab vtab srcInkSpot : UInt256)
     (hsz164 : 164 ≤ I.calldata.size)
     (hloadSpot :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkIlkSpotSlot I) = spot)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkIlkSpotSlot I) = spot)
     (hprod : srcInkSpot = UInt256.mul srcInkFinal spot)
     (hfit : srcInkFinal.toNat * spot.toNat < UInt256.size)
     (hguard : spot.toNat = 0 ∨ srcInkSpot.toNat / spot.toNat = srcInkFinal.toNat) :
@@ -4041,7 +4041,7 @@ theorem execForkDstInkSpotFinalMulOk {evm : EVM.State} {I : ExecutionEnv}
       dstInkSpot : UInt256)
     (hsz164 : 164 ≤ I.calldata.size)
     (hloadSpot :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkIlkSpotSlot I) = spot)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkIlkSpotSlot I) = spot)
     (hprod : dstInkSpot = UInt256.mul dstInkFinal spot)
     (hfit : dstInkFinal.toNat * spot.toNat < UInt256.size)
     (hguard : spot.toNat = 0 ∨ dstInkSpot.toNat / spot.toNat = dstInkFinal.toNat) :
@@ -4145,9 +4145,9 @@ theorem execForkUtabMulOk {evm : EVM.State} {I : ExecutionEnv}
     (hurns : locals.get? "urns" = none)
     (hilks : locals.get? "ilks" = none)
     (hloadSrc :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcArtSlot I) = srcArt)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcArtSlot I) = srcArt)
     (hloadRate :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkIlkRateSlot I) = rate)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkIlkRateSlot I) = rate)
     (hprod : utab = UInt256.mul srcArt rate)
     (hfit : srcArt.toNat * rate.toNat < UInt256.size)
     (hguard : rate.toNat = 0 ∨ utab.toNat / rate.toNat = srcArt.toNat) :
@@ -4222,9 +4222,9 @@ theorem execForkVtabMulOk {evm : EVM.State} {I : ExecutionEnv}
     (hurns : locals.get? "urns" = none)
     (hilks : locals.get? "ilks" = none)
     (hloadDst :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstArtSlot I) = dstArt)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstArtSlot I) = dstArt)
     (hloadRate :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkIlkRateSlot I) = rate)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkIlkRateSlot I) = rate)
     (hprod : vtab = UInt256.mul dstArt rate)
     (hfit : dstArt.toNat * rate.toNat < UInt256.size)
     (hguard : rate.toNat = 0 ∨ vtab.toNat / rate.toNat = dstArt.toNat) :
@@ -4299,9 +4299,9 @@ theorem execForkSrcInkSpotMulOk {evm : EVM.State} {I : ExecutionEnv}
     (hurns : locals.get? "urns" = none)
     (hilks : locals.get? "ilks" = none)
     (hloadSrc :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcInkSlot I) = srcInk)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcInkSlot I) = srcInk)
     (hloadSpot :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkIlkSpotSlot I) = spot)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkIlkSpotSlot I) = spot)
     (hprod : srcInkSpot = UInt256.mul srcInk spot)
     (hfit : srcInk.toNat * spot.toNat < UInt256.size)
     (hguard : spot.toNat = 0 ∨ srcInkSpot.toNat / spot.toNat = srcInk.toNat) :
@@ -4376,9 +4376,9 @@ theorem execForkDstInkSpotMulOk {evm : EVM.State} {I : ExecutionEnv}
     (hurns : locals.get? "urns" = none)
     (hilks : locals.get? "ilks" = none)
     (hloadDst :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstInkSlot I) = dstInk)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstInkSlot I) = dstInk)
     (hloadSpot :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkIlkSpotSlot I) = spot)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkIlkSpotSlot I) = spot)
     (hprod : dstInkSpot = UInt256.mul dstInk spot)
     (hfit : dstInk.toNat * spot.toNat < UInt256.size)
     (hguard : spot.toNat = 0 ∨ dstInkSpot.toNat / spot.toNat = dstInk.toNat) :
@@ -4888,7 +4888,7 @@ theorem evalExpr_fork_src_dust_final_store {evm : EVM.State} {I : ExecutionEnv}
       utab vtab srcInkSpot dstInkSpot dust : UInt256)
     (hsz164 : 164 ≤ I.calldata.size)
     (hloadDust :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkIlkDustSlot I) = dust)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkIlkDustSlot I) = dust)
     (hcond : dust.toNat ≤ utab.toNat ∨ srcArtFinal.toNat = 0) :
     evalExpr? config
       { contract := contract,
@@ -4956,7 +4956,7 @@ theorem evalExpr_fork_dst_dust_final_store {evm : EVM.State} {I : ExecutionEnv}
       utab vtab srcInkSpot dstInkSpot dust : UInt256)
     (hsz164 : 164 ≤ I.calldata.size)
     (hloadDust :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkIlkDustSlot I) = dust)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkIlkDustSlot I) = dust)
     (hcond : dust.toNat ≤ vtab.toNat ∨ dstArtFinal.toNat = 0) :
     evalExpr? config
       { contract := contract,
@@ -5025,7 +5025,7 @@ theorem evalExpr_fork_src_dust_false_final_store
       utab vtab srcInkSpot dstInkSpot dust : UInt256)
     (hsz164 : 164 ≤ I.calldata.size)
     (hloadDust :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkIlkDustSlot I) = dust)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkIlkDustSlot I) = dust)
     (hgtDust : utab.toNat < dust.toNat)
     (hsrcArtPos : 0 < srcArtFinal.toNat) :
     evalExpr? config
@@ -5089,7 +5089,7 @@ theorem evalExpr_fork_dst_dust_false_final_store
       utab vtab srcInkSpot dstInkSpot dust : UInt256)
     (hsz164 : 164 ≤ I.calldata.size)
     (hloadDust :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkIlkDustSlot I) = dust)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkIlkDustSlot I) = dust)
     (hgtDust : vtab.toNat < dust.toNat)
     (hdstArtPos : 0 < dstArtFinal.toNat) :
     evalExpr? config
@@ -5166,7 +5166,7 @@ theorem evalExpr_fork_src_can_final {evm : EVM.State} {I : ExecutionEnv}
             srcInkSpot dstInkSpot } evm
       (.storage (canRef (.var "src") sender)) =
       .ok (.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcWishSlot I)).toNat)) := by
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcWishSlot I)).toNat)) := by
   let locals :=
     forkStoreDstInkSpot I srcInkNew srcArtNew dstInkNew dstArtNew utab vtab srcInkSpot
       dstInkSpot
@@ -5194,7 +5194,7 @@ theorem evalExpr_fork_dst_can_final {evm : EVM.State} {I : ExecutionEnv}
             srcInkSpot dstInkSpot } evm
       (.storage (canRef (.var "dst") sender)) =
       .ok (.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstWishSlot I)).toNat)) := by
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstWishSlot I)).toNat)) := by
   let locals :=
     forkStoreDstInkSpot I srcInkNew srcArtNew dstInkNew dstArtNew utab vtab srcInkSpot
       dstInkSpot
@@ -5337,7 +5337,7 @@ theorem evalExpr_fork_dst_sender_eq_false_final {evm : EVM.State} {I : Execution
 theorem evalExpr_fork_src_can_eq_true_final {evm : EVM.State} {I : ExecutionEnv}
     (srcInkNew srcArtNew dstInkNew dstArtNew utab vtab srcInkSpot dstInkSpot : UInt256)
     (hsource : evm.executionEnv.source = I.source)
-    (hcan : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcWishSlot I) = ⟨1⟩) :
+    (hcan : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcWishSlot I) = ⟨1⟩) :
     evalExpr? config
       { contract := contract,
         locals :=
@@ -5353,7 +5353,7 @@ theorem evalExpr_fork_src_can_eq_true_final {evm : EVM.State} {I : ExecutionEnv}
 theorem evalExpr_fork_dst_can_eq_true_final {evm : EVM.State} {I : ExecutionEnv}
     (srcInkNew srcArtNew dstInkNew dstArtNew utab vtab srcInkSpot dstInkSpot : UInt256)
     (hsource : evm.executionEnv.source = I.source)
-    (hcan : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstWishSlot I) = ⟨1⟩) :
+    (hcan : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstWishSlot I) = ⟨1⟩) :
     evalExpr? config
       { contract := contract,
         locals :=
@@ -5369,7 +5369,7 @@ theorem evalExpr_fork_dst_can_eq_true_final {evm : EVM.State} {I : ExecutionEnv}
 theorem evalExpr_fork_src_can_eq_false_final {evm : EVM.State} {I : ExecutionEnv}
     (srcInkNew srcArtNew dstInkNew dstArtNew utab vtab srcInkSpot dstInkSpot : UInt256)
     (hsource : evm.executionEnv.source = I.source)
-    (hcan : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcWishSlot I) ≠ ⟨1⟩) :
+    (hcan : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcWishSlot I) ≠ ⟨1⟩) :
     evalExpr? config
       { contract := contract,
         locals :=
@@ -5378,7 +5378,7 @@ theorem evalExpr_fork_src_can_eq_false_final {evm : EVM.State} {I : ExecutionEnv
       (.binary .eq (.storage (canRef (.var "src") sender)) (.intLit 1)) =
       .ok (.bool false) := by
   have hneNat :
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcWishSlot I)).toNat ≠ 1 := by
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcWishSlot I)).toNat ≠ 1 := by
     intro hnat
     apply hcan
     apply u256_inj
@@ -5392,7 +5392,7 @@ theorem evalExpr_fork_src_can_eq_false_final {evm : EVM.State} {I : ExecutionEnv
 theorem evalExpr_fork_dst_can_eq_false_final {evm : EVM.State} {I : ExecutionEnv}
     (srcInkNew srcArtNew dstInkNew dstArtNew utab vtab srcInkSpot dstInkSpot : UInt256)
     (hsource : evm.executionEnv.source = I.source)
-    (hcan : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstWishSlot I) ≠ ⟨1⟩) :
+    (hcan : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstWishSlot I) ≠ ⟨1⟩) :
     evalExpr? config
       { contract := contract,
         locals :=
@@ -5401,7 +5401,7 @@ theorem evalExpr_fork_dst_can_eq_false_final {evm : EVM.State} {I : ExecutionEnv
       (.binary .eq (.storage (canRef (.var "dst") sender)) (.intLit 1)) =
       .ok (.bool false) := by
   have hneNat :
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstWishSlot I)).toNat ≠ 1 := by
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstWishSlot I)).toNat ≠ 1 := by
     intro hnat
     apply hcan
     apply u256_inj
@@ -5448,7 +5448,7 @@ theorem evalExpr_fork_src_wish_true_can_final {evm : EVM.State} {I : ExecutionEn
     (srcInkNew srcArtNew dstInkNew dstArtNew utab vtab srcInkSpot dstInkSpot : UInt256)
     (hsource : evm.executionEnv.source = I.source)
     (hne : forkSrcMaskedWord I ≠ hopeSourceWord I)
-    (hcan : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcWishSlot I) = ⟨1⟩) :
+    (hcan : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcWishSlot I) = ⟨1⟩) :
     evalExpr? config
       { contract := contract,
         locals :=
@@ -5467,7 +5467,7 @@ theorem evalExpr_fork_dst_wish_true_can_final {evm : EVM.State} {I : ExecutionEn
     (srcInkNew srcArtNew dstInkNew dstArtNew utab vtab srcInkSpot dstInkSpot : UInt256)
     (hsource : evm.executionEnv.source = I.source)
     (hne : forkDstMaskedWord I ≠ hopeSourceWord I)
-    (hcan : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstWishSlot I) = ⟨1⟩) :
+    (hcan : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstWishSlot I) = ⟨1⟩) :
     evalExpr? config
       { contract := contract,
         locals :=
@@ -5486,7 +5486,7 @@ theorem evalExpr_fork_src_wish_false_final {evm : EVM.State} {I : ExecutionEnv}
     (srcInkNew srcArtNew dstInkNew dstArtNew utab vtab srcInkSpot dstInkSpot : UInt256)
     (hsource : evm.executionEnv.source = I.source)
     (hne : forkSrcMaskedWord I ≠ hopeSourceWord I)
-    (hcan : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcWishSlot I) ≠ ⟨1⟩) :
+    (hcan : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcWishSlot I) ≠ ⟨1⟩) :
     evalExpr? config
       { contract := contract,
         locals :=
@@ -5505,7 +5505,7 @@ theorem evalExpr_fork_dst_wish_false_final {evm : EVM.State} {I : ExecutionEnv}
     (srcInkNew srcArtNew dstInkNew dstArtNew utab vtab srcInkSpot dstInkSpot : UInt256)
     (hsource : evm.executionEnv.source = I.source)
     (hne : forkDstMaskedWord I ≠ hopeSourceWord I)
-    (hcan : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstWishSlot I) ≠ ⟨1⟩) :
+    (hcan : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstWishSlot I) ≠ ⟨1⟩) :
     evalExpr? config
       { contract := contract,
         locals :=
@@ -5746,7 +5746,7 @@ theorem evalExpr_fork_src_wish_true_of_word_final {evm : EVM.State}
     (srcInkNew srcArtNew dstInkNew dstArtNew utab vtab srcInkSpot dstInkSpot : UInt256)
     (hsource : evm.executionEnv.source = I.source)
     (hload :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcWishSlot I) =
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcWishSlot I) =
         solcSlotWordAt (forkSrcWishSlot I) σ I)
     (hword : forkSrcWishWord σ I ≠ ⟨0⟩) :
     evalExpr? config
@@ -5771,7 +5771,7 @@ theorem evalExpr_fork_dst_wish_true_of_word_final {evm : EVM.State}
     (srcInkNew srcArtNew dstInkNew dstArtNew utab vtab srcInkSpot dstInkSpot : UInt256)
     (hsource : evm.executionEnv.source = I.source)
     (hload :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstWishSlot I) =
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstWishSlot I) =
         solcSlotWordAt (forkDstWishSlot I) σ I)
     (hword : forkDstWishWord σ I ≠ ⟨0⟩) :
     evalExpr? config
@@ -5796,10 +5796,10 @@ theorem evalExpr_fork_wish_both_true_of_word_final {evm : EVM.State}
     (srcInkNew srcArtNew dstInkNew dstArtNew utab vtab srcInkSpot dstInkSpot : UInt256)
     (hsource : evm.executionEnv.source = I.source)
     (hloadSrc :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcWishSlot I) =
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcWishSlot I) =
         solcSlotWordAt (forkSrcWishSlot I) σ I)
     (hloadDst :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstWishSlot I) =
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstWishSlot I) =
         solcSlotWordAt (forkDstWishSlot I) σ I)
     (hword : forkBothWishWord σ I ≠ ⟨0⟩) :
     evalExpr? config
@@ -5824,7 +5824,7 @@ theorem evalExpr_fork_src_wish_false_of_word_zero_final {evm : EVM.State}
     (srcInkNew srcArtNew dstInkNew dstArtNew utab vtab srcInkSpot dstInkSpot : UInt256)
     (hsource : evm.executionEnv.source = I.source)
     (hload :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcWishSlot I) =
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcWishSlot I) =
         solcSlotWordAt (forkSrcWishSlot I) σ I)
     (hword : forkSrcWishWord σ I = ⟨0⟩) :
     evalExpr? config
@@ -5847,7 +5847,7 @@ theorem evalExpr_fork_dst_wish_false_of_word_zero_final {evm : EVM.State}
     (srcInkNew srcArtNew dstInkNew dstArtNew utab vtab srcInkSpot dstInkSpot : UInt256)
     (hsource : evm.executionEnv.source = I.source)
     (hload :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstWishSlot I) =
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstWishSlot I) =
         solcSlotWordAt (forkDstWishSlot I) σ I)
     (hword : forkDstWishWord σ I = ⟨0⟩) :
     evalExpr? config
@@ -5870,10 +5870,10 @@ theorem evalExpr_fork_wish_both_false_of_word_zero_final {evm : EVM.State}
     (srcInkNew srcArtNew dstInkNew dstArtNew utab vtab srcInkSpot dstInkSpot : UInt256)
     (hsource : evm.executionEnv.source = I.source)
     (hloadSrc :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcWishSlot I) =
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcWishSlot I) =
         solcSlotWordAt (forkSrcWishSlot I) σ I)
     (hloadDst :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstWishSlot I) =
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstWishSlot I) =
         solcSlotWordAt (forkDstWishSlot I) σ I)
     (hword : forkBothWishWord σ I = ⟨0⟩) :
     evalExpr? config
@@ -5915,7 +5915,7 @@ theorem evalExpr_fork_src_can_final_store {evm : EVM.State} {I : ExecutionEnv}
             dstInkSpot } evm
       (.storage (canRef (.var "src") sender)) =
       .ok (.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcWishSlot I)).toNat)) := by
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcWishSlot I)).toNat)) := by
   let locals :=
     forkStoreDstInkSpotFinal I srcInkNew srcArtNew dstInkNew dstArtNew
       srcArtFinal dstArtFinal srcInkFinal dstInkFinal utab vtab srcInkSpot dstInkSpot
@@ -5948,7 +5948,7 @@ theorem evalExpr_fork_dst_can_final_store {evm : EVM.State} {I : ExecutionEnv}
             dstInkSpot } evm
       (.storage (canRef (.var "dst") sender)) =
       .ok (.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstWishSlot I)).toNat)) := by
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstWishSlot I)).toNat)) := by
   let locals :=
     forkStoreDstInkSpotFinal I srcInkNew srcArtNew dstInkNew dstArtNew
       srcArtFinal dstArtFinal srcInkFinal dstInkFinal utab vtab srcInkSpot dstInkSpot
@@ -6109,7 +6109,7 @@ theorem evalExpr_fork_src_can_eq_true_final_store {evm : EVM.State} {I : Executi
       srcArtFinal dstArtFinal srcInkFinal dstInkFinal
       utab vtab srcInkSpot dstInkSpot : UInt256)
     (hsource : evm.executionEnv.source = I.source)
-    (hcan : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcWishSlot I) = ⟨1⟩) :
+    (hcan : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcWishSlot I) = ⟨1⟩) :
     evalExpr? config
       { contract := contract,
         locals :=
@@ -6129,7 +6129,7 @@ theorem evalExpr_fork_dst_can_eq_true_final_store {evm : EVM.State} {I : Executi
       srcArtFinal dstArtFinal srcInkFinal dstInkFinal
       utab vtab srcInkSpot dstInkSpot : UInt256)
     (hsource : evm.executionEnv.source = I.source)
-    (hcan : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstWishSlot I) = ⟨1⟩) :
+    (hcan : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstWishSlot I) = ⟨1⟩) :
     evalExpr? config
       { contract := contract,
         locals :=
@@ -6149,7 +6149,7 @@ theorem evalExpr_fork_src_can_eq_false_final_store {evm : EVM.State} {I : Execut
       srcArtFinal dstArtFinal srcInkFinal dstInkFinal
       utab vtab srcInkSpot dstInkSpot : UInt256)
     (hsource : evm.executionEnv.source = I.source)
-    (hcan : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcWishSlot I) ≠ ⟨1⟩) :
+    (hcan : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcWishSlot I) ≠ ⟨1⟩) :
     evalExpr? config
       { contract := contract,
         locals :=
@@ -6159,7 +6159,7 @@ theorem evalExpr_fork_src_can_eq_false_final_store {evm : EVM.State} {I : Execut
       (.binary .eq (.storage (canRef (.var "src") sender)) (.intLit 1)) =
       .ok (.bool false) := by
   have hneNat :
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcWishSlot I)).toNat ≠ 1 := by
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcWishSlot I)).toNat ≠ 1 := by
     intro hnat
     apply hcan
     apply u256_inj
@@ -6176,7 +6176,7 @@ theorem evalExpr_fork_dst_can_eq_false_final_store {evm : EVM.State} {I : Execut
       srcArtFinal dstArtFinal srcInkFinal dstInkFinal
       utab vtab srcInkSpot dstInkSpot : UInt256)
     (hsource : evm.executionEnv.source = I.source)
-    (hcan : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstWishSlot I) ≠ ⟨1⟩) :
+    (hcan : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstWishSlot I) ≠ ⟨1⟩) :
     evalExpr? config
       { contract := contract,
         locals :=
@@ -6186,7 +6186,7 @@ theorem evalExpr_fork_dst_can_eq_false_final_store {evm : EVM.State} {I : Execut
       (.binary .eq (.storage (canRef (.var "dst") sender)) (.intLit 1)) =
       .ok (.bool false) := by
   have hneNat :
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstWishSlot I)).toNat ≠ 1 := by
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstWishSlot I)).toNat ≠ 1 := by
     intro hnat
     apply hcan
     apply u256_inj
@@ -6244,7 +6244,7 @@ theorem evalExpr_fork_src_wish_true_can_final_store {evm : EVM.State} {I : Execu
       utab vtab srcInkSpot dstInkSpot : UInt256)
     (hsource : evm.executionEnv.source = I.source)
     (hne : forkSrcMaskedWord I ≠ hopeSourceWord I)
-    (hcan : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcWishSlot I) = ⟨1⟩) :
+    (hcan : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcWishSlot I) = ⟨1⟩) :
     evalExpr? config
       { contract := contract,
         locals :=
@@ -6268,7 +6268,7 @@ theorem evalExpr_fork_dst_wish_true_can_final_store {evm : EVM.State} {I : Execu
       utab vtab srcInkSpot dstInkSpot : UInt256)
     (hsource : evm.executionEnv.source = I.source)
     (hne : forkDstMaskedWord I ≠ hopeSourceWord I)
-    (hcan : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstWishSlot I) = ⟨1⟩) :
+    (hcan : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstWishSlot I) = ⟨1⟩) :
     evalExpr? config
       { contract := contract,
         locals :=
@@ -6292,7 +6292,7 @@ theorem evalExpr_fork_src_wish_false_final_store {evm : EVM.State} {I : Executio
       utab vtab srcInkSpot dstInkSpot : UInt256)
     (hsource : evm.executionEnv.source = I.source)
     (hne : forkSrcMaskedWord I ≠ hopeSourceWord I)
-    (hcan : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcWishSlot I) ≠ ⟨1⟩) :
+    (hcan : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcWishSlot I) ≠ ⟨1⟩) :
     evalExpr? config
       { contract := contract,
         locals :=
@@ -6316,7 +6316,7 @@ theorem evalExpr_fork_dst_wish_false_final_store {evm : EVM.State} {I : Executio
       utab vtab srcInkSpot dstInkSpot : UInt256)
     (hsource : evm.executionEnv.source = I.source)
     (hne : forkDstMaskedWord I ≠ hopeSourceWord I)
-    (hcan : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstWishSlot I) ≠ ⟨1⟩) :
+    (hcan : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstWishSlot I) ≠ ⟨1⟩) :
     evalExpr? config
       { contract := contract,
         locals :=
@@ -6423,7 +6423,7 @@ theorem evalExpr_fork_src_wish_true_of_word_final_store {evm : EVM.State}
       utab vtab srcInkSpot dstInkSpot : UInt256)
     (hsource : evm.executionEnv.source = I.source)
     (hload :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcWishSlot I) =
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcWishSlot I) =
         solcSlotWordAt (forkSrcWishSlot I) σ I)
     (hword : forkSrcWishWord σ I ≠ ⟨0⟩) :
     evalExpr? config
@@ -6452,7 +6452,7 @@ theorem evalExpr_fork_dst_wish_true_of_word_final_store {evm : EVM.State}
       utab vtab srcInkSpot dstInkSpot : UInt256)
     (hsource : evm.executionEnv.source = I.source)
     (hload :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstWishSlot I) =
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstWishSlot I) =
         solcSlotWordAt (forkDstWishSlot I) σ I)
     (hword : forkDstWishWord σ I ≠ ⟨0⟩) :
     evalExpr? config
@@ -6481,10 +6481,10 @@ theorem evalExpr_fork_wish_both_true_of_word_final_store {evm : EVM.State}
       utab vtab srcInkSpot dstInkSpot : UInt256)
     (hsource : evm.executionEnv.source = I.source)
     (hloadSrc :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcWishSlot I) =
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcWishSlot I) =
         solcSlotWordAt (forkSrcWishSlot I) σ I)
     (hloadDst :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstWishSlot I) =
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstWishSlot I) =
         solcSlotWordAt (forkDstWishSlot I) σ I)
     (hword : forkBothWishWord σ I ≠ ⟨0⟩) :
     evalExpr? config
@@ -6514,7 +6514,7 @@ theorem evalExpr_fork_src_wish_false_of_word_zero_final_store {evm : EVM.State}
       utab vtab srcInkSpot dstInkSpot : UInt256)
     (hsource : evm.executionEnv.source = I.source)
     (hload :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcWishSlot I) =
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcWishSlot I) =
         solcSlotWordAt (forkSrcWishSlot I) σ I)
     (hword : forkSrcWishWord σ I = ⟨0⟩) :
     evalExpr? config
@@ -6541,7 +6541,7 @@ theorem evalExpr_fork_dst_wish_false_of_word_zero_final_store {evm : EVM.State}
       utab vtab srcInkSpot dstInkSpot : UInt256)
     (hsource : evm.executionEnv.source = I.source)
     (hload :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstWishSlot I) =
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstWishSlot I) =
         solcSlotWordAt (forkDstWishSlot I) σ I)
     (hword : forkDstWishWord σ I = ⟨0⟩) :
     evalExpr? config
@@ -6568,10 +6568,10 @@ theorem evalExpr_fork_wish_both_false_of_word_zero_final_store {evm : EVM.State}
       utab vtab srcInkSpot dstInkSpot : UInt256)
     (hsource : evm.executionEnv.source = I.source)
     (hloadSrc :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcWishSlot I) =
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcWishSlot I) =
         solcSlotWordAt (forkSrcWishSlot I) σ I)
     (hloadDst :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstWishSlot I) =
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstWishSlot I) =
         solcSlotWordAt (forkDstWishSlot I) σ I)
     (hword : forkBothWishWord σ I = ⟨0⟩) :
     evalExpr? config
@@ -6630,9 +6630,9 @@ theorem evalExpr_fork_src_dust_final {evm : EVM.State} {I : ExecutionEnv}
     (srcInkNew srcArtNew dstInkNew dstArtNew utab vtab srcInkSpot dstInkSpot dust : UInt256)
     (hsz164 : 164 ≤ I.calldata.size)
     (hloadDust :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkIlkDustSlot I) = dust)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkIlkDustSlot I) = dust)
     (hloadSrcArt :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcArtSlot I) = srcArtNew)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcArtSlot I) = srcArtNew)
     (hcond : dust.toNat ≤ utab.toNat ∨ srcArtNew.toNat = 0) :
     evalExpr? config
       { contract := contract,
@@ -6701,9 +6701,9 @@ theorem evalExpr_fork_src_dust_false_final {evm : EVM.State} {I : ExecutionEnv}
     (srcInkNew srcArtNew dstInkNew dstArtNew utab vtab srcInkSpot dstInkSpot dust : UInt256)
     (hsz164 : 164 ≤ I.calldata.size)
     (hloadDust :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkIlkDustSlot I) = dust)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkIlkDustSlot I) = dust)
     (hloadSrcArt :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcArtSlot I) = srcArtNew)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkSrcArtSlot I) = srcArtNew)
     (hgtDust : utab.toNat < dust.toNat)
     (hsrcArtPos : 0 < srcArtNew.toNat) :
     evalExpr? config
@@ -6765,9 +6765,9 @@ theorem evalExpr_fork_dst_dust_final {evm : EVM.State} {I : ExecutionEnv}
     (srcInkNew srcArtNew dstInkNew dstArtNew utab vtab srcInkSpot dstInkSpot dust : UInt256)
     (hsz164 : 164 ≤ I.calldata.size)
     (hloadDust :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkIlkDustSlot I) = dust)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkIlkDustSlot I) = dust)
     (hloadDstArt :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstArtSlot I) = dstArtNew)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstArtSlot I) = dstArtNew)
     (hcond : dust.toNat ≤ vtab.toNat ∨ dstArtNew.toNat = 0) :
     evalExpr? config
       { contract := contract,
@@ -6836,9 +6836,9 @@ theorem evalExpr_fork_dst_dust_false_final {evm : EVM.State} {I : ExecutionEnv}
     (srcInkNew srcArtNew dstInkNew dstArtNew utab vtab srcInkSpot dstInkSpot dust : UInt256)
     (hsz164 : 164 ≤ I.calldata.size)
     (hloadDust :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkIlkDustSlot I) = dust)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkIlkDustSlot I) = dust)
     (hloadDstArt :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstArtSlot I) = dstArtNew)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (forkDstArtSlot I) = dstArtNew)
     (hgtDust : vtab.toNat < dust.toNat)
     (hdstArtPos : 0 < dstArtNew.toNat) :
     evalExpr? config
@@ -6904,24 +6904,24 @@ theorem execForkSourceOk {evm0 : EVM.State} {I : ExecutionEnv}
     (hwei : evm0.executionEnv.weiValue = ⟨0⟩)
     (hsz164 : 164 ≤ I.calldata.size)
     (hloadSrcInk :
-      Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I) = srcInkOld)
+      Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I) = srcInkOld)
     (hsrcInkNew : srcInkNew = UInt256.sub srcInkOld (forkDinkWord I))
     (hsrcInkGuardNeg : forkDinkInt I ≤ 0 ∨ srcInkNew.toNat ≤ srcInkOld.toNat)
     (hsrcInkGuardPos : 0 ≤ forkDinkInt I ∨ srcInkOld.toNat ≤ srcInkNew.toNat)
     (hloadSrcArt :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
           srcInkNew)
-        (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+        (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
           srcInkNew).executionEnv.codeOwner
         (forkSrcArtSlot I) = srcArtOld)
     (hsrcArtNew : srcArtNew = UInt256.sub srcArtOld (forkDartWord I))
     (hsrcArtGuardNeg : forkDartInt I ≤ 0 ∨ srcArtNew.toNat ≤ srcArtOld.toNat)
     (hsrcArtGuardPos : 0 ≤ forkDartInt I ∨ srcArtOld.toNat ≤ srcArtNew.toNat)
     (hloadDstInk :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore
-          (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore
+          (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
             srcInkNew)
           evm0.executionEnv.codeOwner (forkSrcArtSlot I) srcArtNew)
         evm0.executionEnv.codeOwner (forkDstInkSlot I) = dstInkOld)
@@ -6929,10 +6929,10 @@ theorem execForkSourceOk {evm0 : EVM.State} {I : ExecutionEnv}
     (hdstInkGuardNeg : 0 ≤ forkDinkInt I ∨ dstInkNew.toNat ≤ dstInkOld.toNat)
     (hdstInkGuardPos : forkDinkInt I ≤ 0 ∨ dstInkOld.toNat ≤ dstInkNew.toNat)
     (hloadDstArt :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore
-          (Solm.EVM.storageStore
-            (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore
+          (Stele.EVM.storageStore
+            (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
               srcInkNew)
             evm0.executionEnv.codeOwner (forkSrcArtSlot I) srcArtNew)
           evm0.executionEnv.codeOwner (forkDstInkSlot I) dstInkNew)
@@ -6941,66 +6941,66 @@ theorem execForkSourceOk {evm0 : EVM.State} {I : ExecutionEnv}
     (hdstArtGuardNeg : 0 ≤ forkDartInt I ∨ dstArtNew.toNat ≤ dstArtOld.toNat)
     (hdstArtGuardPos : forkDartInt I ≤ 0 ∨ dstArtOld.toNat ≤ dstArtNew.toNat)
     (hloadSrcArtFinal :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore
-          (Solm.EVM.storageStore
-            (Solm.EVM.storageStore
-              (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore
+          (Stele.EVM.storageStore
+            (Stele.EVM.storageStore
+              (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
                 srcInkNew)
               evm0.executionEnv.codeOwner (forkSrcArtSlot I) srcArtNew)
             evm0.executionEnv.codeOwner (forkDstInkSlot I) dstInkNew)
           evm0.executionEnv.codeOwner (forkDstArtSlot I) dstArtNew)
         evm0.executionEnv.codeOwner (forkSrcArtSlot I) = srcArtFinal)
     (hloadDstArtFinal :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore
-          (Solm.EVM.storageStore
-            (Solm.EVM.storageStore
-              (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore
+          (Stele.EVM.storageStore
+            (Stele.EVM.storageStore
+              (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
                 srcInkNew)
               evm0.executionEnv.codeOwner (forkSrcArtSlot I) srcArtNew)
             evm0.executionEnv.codeOwner (forkDstInkSlot I) dstInkNew)
           evm0.executionEnv.codeOwner (forkDstArtSlot I) dstArtNew)
         evm0.executionEnv.codeOwner (forkDstArtSlot I) = dstArtFinal)
     (hloadSrcInkFinal :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore
-          (Solm.EVM.storageStore
-            (Solm.EVM.storageStore
-              (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore
+          (Stele.EVM.storageStore
+            (Stele.EVM.storageStore
+              (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
                 srcInkNew)
               evm0.executionEnv.codeOwner (forkSrcArtSlot I) srcArtNew)
             evm0.executionEnv.codeOwner (forkDstInkSlot I) dstInkNew)
           evm0.executionEnv.codeOwner (forkDstArtSlot I) dstArtNew)
         evm0.executionEnv.codeOwner (forkSrcInkSlot I) = srcInkFinal)
     (hloadDstInkFinal :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore
-          (Solm.EVM.storageStore
-            (Solm.EVM.storageStore
-              (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore
+          (Stele.EVM.storageStore
+            (Stele.EVM.storageStore
+              (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
                 srcInkNew)
               evm0.executionEnv.codeOwner (forkSrcArtSlot I) srcArtNew)
             evm0.executionEnv.codeOwner (forkDstInkSlot I) dstInkNew)
           evm0.executionEnv.codeOwner (forkDstArtSlot I) dstArtNew)
         evm0.executionEnv.codeOwner (forkDstInkSlot I) = dstInkFinal)
     (hloadRate :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore
-          (Solm.EVM.storageStore
-            (Solm.EVM.storageStore
-              (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore
+          (Stele.EVM.storageStore
+            (Stele.EVM.storageStore
+              (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
                 srcInkNew)
               evm0.executionEnv.codeOwner (forkSrcArtSlot I) srcArtNew)
             evm0.executionEnv.codeOwner (forkDstInkSlot I) dstInkNew)
           evm0.executionEnv.codeOwner (forkDstArtSlot I) dstArtNew)
         evm0.executionEnv.codeOwner (forkIlkRateSlot I) = rate)
     (hloadSpot :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore
-          (Solm.EVM.storageStore
-            (Solm.EVM.storageStore
-              (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore
+          (Stele.EVM.storageStore
+            (Stele.EVM.storageStore
+              (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
                 srcInkNew)
               evm0.executionEnv.codeOwner (forkSrcArtSlot I) srcArtNew)
             evm0.executionEnv.codeOwner (forkDstInkSlot I) dstInkNew)
@@ -7018,13 +7018,13 @@ theorem execForkSourceOk {evm0 : EVM.State} {I : ExecutionEnv}
     (hdstInkSpotProd : dstInkSpot = UInt256.mul dstInkFinal spot)
     (hdstInkSpotFit : dstInkFinal.toNat * spot.toNat < UInt256.size)
     (hdstInkSpotGuard : spot.toNat = 0 ∨ dstInkSpot.toNat / spot.toNat = dstInkFinal.toNat) :
-    let evm1 := Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner
+    let evm1 := Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner
       (forkSrcInkSlot I) srcInkNew
-    let evm2 := Solm.EVM.storageStore evm1 evm1.executionEnv.codeOwner
+    let evm2 := Stele.EVM.storageStore evm1 evm1.executionEnv.codeOwner
       (forkSrcArtSlot I) srcArtNew
-    let evm3 := Solm.EVM.storageStore evm2 evm2.executionEnv.codeOwner
+    let evm3 := Stele.EVM.storageStore evm2 evm2.executionEnv.codeOwner
       (forkDstInkSlot I) dstInkNew
-    let evm4 := Solm.EVM.storageStore evm3 evm3.executionEnv.codeOwner
+    let evm4 := Stele.EVM.storageStore evm3 evm3.executionEnv.codeOwner
       (forkDstArtSlot I) dstArtNew
     let finalLocals :=
       forkStoreDstInkSpotFinal I srcInkNew srcArtNew dstInkNew dstArtNew
@@ -7109,10 +7109,10 @@ theorem execForkSourceOk {evm0 : EVM.State} {I : ExecutionEnv}
     forkStoreFinalLoads I srcInkNew srcArtNew dstInkNew dstArtNew srcArtFinal
       dstArtFinal srcInkFinal dstInkFinal
   have hloadRateFinal :
-      Solm.EVM.storageLoad evm4 evm4.executionEnv.codeOwner (forkIlkRateSlot I) = rate := by
+      Stele.EVM.storageLoad evm4 evm4.executionEnv.codeOwner (forkIlkRateSlot I) = rate := by
     simpa [evm1, evm2, evm3, evm4, storageStore_executionEnv] using hloadRate
   have hloadSpotFinal :
-      Solm.EVM.storageLoad evm4 evm4.executionEnv.codeOwner (forkIlkSpotSlot I) = spot := by
+      Stele.EVM.storageLoad evm4 evm4.executionEnv.codeOwner (forkIlkSpotSlot I) = spot := by
     simpa [evm1, evm2, evm3, evm4, storageStore_executionEnv] using hloadSpot
   have hutabBlock :=
     execForkUtabFinalMulOk (evm := evm4) (I := I)
@@ -7168,7 +7168,7 @@ theorem execForkSourceRevertSrcInkGuardNeg {evm0 : EVM.State} {I : ExecutionEnv}
     (hwei : evm0.executionEnv.weiValue = ⟨0⟩)
     (hsz164 : 164 ≤ I.calldata.size)
     (hloadSrcInk :
-      Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I) = srcInkOld)
+      Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I) = srcInkOld)
     (hsrcInkNew : srcInkNew = UInt256.sub srcInkOld (forkDinkWord I))
     (hfail :
       ¬ (UInt256.sgt (forkDinkWord I) ⟨0⟩ = ⟨0⟩ ∨
@@ -7244,7 +7244,7 @@ theorem execForkSourceRevertSrcInkGuardPos {evm0 : EVM.State} {I : ExecutionEnv}
     (hwei : evm0.executionEnv.weiValue = ⟨0⟩)
     (hsz164 : 164 ≤ I.calldata.size)
     (hloadSrcInk :
-      Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I) = srcInkOld)
+      Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I) = srcInkOld)
     (hsrcInkNew : srcInkNew = UInt256.sub srcInkOld (forkDinkWord I))
     (hguardNeg :
       UInt256.sgt (forkDinkWord I) ⟨0⟩ = ⟨0⟩ ∨
@@ -7323,7 +7323,7 @@ theorem execForkSourceStatic {evm0 : EVM.State} {I : ExecutionEnv}
     (hwei : evm0.executionEnv.weiValue = ⟨0⟩)
     (hsz164 : 164 ≤ I.calldata.size)
     (hloadSrcInk :
-      Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I) = srcInkOld)
+      Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I) = srcInkOld)
     (hsrcInkNew : srcInkNew = UInt256.sub srcInkOld (forkDinkWord I))
     (hsrcInkGuardNeg : forkDinkInt I ≤ 0 ∨ srcInkNew.toNat ≤ srcInkOld.toNat)
     (hsrcInkGuardPos : 0 ≤ forkDinkInt I ∨ srcInkOld.toNat ≤ srcInkNew.toNat)
@@ -7353,15 +7353,15 @@ theorem execForkSourceRevertSrcArtGuardNeg {evm0 : EVM.State} {I : ExecutionEnv}
     (hwei : evm0.executionEnv.weiValue = ⟨0⟩)
     (hsz164 : 164 ≤ I.calldata.size)
     (hloadSrcInk :
-      Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I) = srcInkOld)
+      Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I) = srcInkOld)
     (hsrcInkNew : srcInkNew = UInt256.sub srcInkOld (forkDinkWord I))
     (hsrcInkGuardNeg : forkDinkInt I ≤ 0 ∨ srcInkNew.toNat ≤ srcInkOld.toNat)
     (hsrcInkGuardPos : 0 ≤ forkDinkInt I ∨ srcInkOld.toNat ≤ srcInkNew.toNat)
     (hloadSrcArt :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
           srcInkNew)
-        (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+        (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
           srcInkNew).executionEnv.codeOwner
         (forkSrcArtSlot I) = srcArtOld)
     (hsrcArtNew : srcArtNew = UInt256.sub srcArtOld (forkDartWord I))
@@ -7369,7 +7369,7 @@ theorem execForkSourceRevertSrcArtGuardNeg {evm0 : EVM.State} {I : ExecutionEnv}
       ¬ (UInt256.sgt (forkDartWord I) ⟨0⟩ = ⟨0⟩ ∨
         UInt256.gt srcArtNew srcArtOld = ⟨0⟩)) :
     ExecTransitionBody config contract evm0 (forkStore I) forkTransition.body .reverted := by
-  let evm1 := Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner
+  let evm1 := Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner
     (forkSrcInkSlot I) srcInkNew
   have hprefix :
       ExecBlock config { contract := contract, locals := forkStore I } evm0 nonpayable
@@ -7454,15 +7454,15 @@ theorem execForkSourceRevertSrcArtGuardPos {evm0 : EVM.State} {I : ExecutionEnv}
     (hwei : evm0.executionEnv.weiValue = ⟨0⟩)
     (hsz164 : 164 ≤ I.calldata.size)
     (hloadSrcInk :
-      Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I) = srcInkOld)
+      Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I) = srcInkOld)
     (hsrcInkNew : srcInkNew = UInt256.sub srcInkOld (forkDinkWord I))
     (hsrcInkGuardNeg : forkDinkInt I ≤ 0 ∨ srcInkNew.toNat ≤ srcInkOld.toNat)
     (hsrcInkGuardPos : 0 ≤ forkDinkInt I ∨ srcInkOld.toNat ≤ srcInkNew.toNat)
     (hloadSrcArt :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
           srcInkNew)
-        (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+        (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
           srcInkNew).executionEnv.codeOwner
         (forkSrcArtSlot I) = srcArtOld)
     (hsrcArtNew : srcArtNew = UInt256.sub srcArtOld (forkDartWord I))
@@ -7473,7 +7473,7 @@ theorem execForkSourceRevertSrcArtGuardPos {evm0 : EVM.State} {I : ExecutionEnv}
       ¬ (UInt256.slt (forkDartWord I) ⟨0⟩ = ⟨0⟩ ∨
         UInt256.lt srcArtNew srcArtOld = ⟨0⟩)) :
     ExecTransitionBody config contract evm0 (forkStore I) forkTransition.body .reverted := by
-  let evm1 := Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner
+  let evm1 := Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner
     (forkSrcInkSlot I) srcInkNew
   have hprefix :
       ExecBlock config { contract := contract, locals := forkStore I } evm0 nonpayable
@@ -7558,22 +7558,22 @@ theorem execForkSourceRevertDstInkGuardNeg {evm0 : EVM.State} {I : ExecutionEnv}
     (hwei : evm0.executionEnv.weiValue = ⟨0⟩)
     (hsz164 : 164 ≤ I.calldata.size)
     (hloadSrcInk :
-      Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I) = srcInkOld)
+      Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I) = srcInkOld)
     (hsrcInkNew : srcInkNew = UInt256.sub srcInkOld (forkDinkWord I))
     (hsrcInkGuardNeg : forkDinkInt I ≤ 0 ∨ srcInkNew.toNat ≤ srcInkOld.toNat)
     (hsrcInkGuardPos : 0 ≤ forkDinkInt I ∨ srcInkOld.toNat ≤ srcInkNew.toNat)
     (hloadSrcArt :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
           srcInkNew)
         evm0.executionEnv.codeOwner (forkSrcArtSlot I) = srcArtOld)
     (hsrcArtNew : srcArtNew = UInt256.sub srcArtOld (forkDartWord I))
     (hsrcArtGuardNeg : forkDartInt I ≤ 0 ∨ srcArtNew.toNat ≤ srcArtOld.toNat)
     (hsrcArtGuardPos : 0 ≤ forkDartInt I ∨ srcArtOld.toNat ≤ srcArtNew.toNat)
     (hloadDstInk :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore
-          (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore
+          (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
             srcInkNew)
           evm0.executionEnv.codeOwner (forkSrcArtSlot I) srcArtNew)
         evm0.executionEnv.codeOwner (forkDstInkSlot I) = dstInkOld)
@@ -7582,9 +7582,9 @@ theorem execForkSourceRevertDstInkGuardNeg {evm0 : EVM.State} {I : ExecutionEnv}
       ¬ (UInt256.slt (forkDinkWord I) ⟨0⟩ = ⟨0⟩ ∨
         UInt256.gt dstInkNew dstInkOld = ⟨0⟩)) :
     ExecTransitionBody config contract evm0 (forkStore I) forkTransition.body .reverted := by
-  let evm1 := Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner
+  let evm1 := Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner
     (forkSrcInkSlot I) srcInkNew
-  let evm2 := Solm.EVM.storageStore evm1 evm1.executionEnv.codeOwner
+  let evm2 := Stele.EVM.storageStore evm1 evm1.executionEnv.codeOwner
     (forkSrcArtSlot I) srcArtNew
   have hprefix :
       ExecBlock config { contract := contract, locals := forkStore I } evm0 nonpayable
@@ -7670,22 +7670,22 @@ theorem execForkSourceRevertDstInkGuardPos {evm0 : EVM.State} {I : ExecutionEnv}
     (hwei : evm0.executionEnv.weiValue = ⟨0⟩)
     (hsz164 : 164 ≤ I.calldata.size)
     (hloadSrcInk :
-      Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I) = srcInkOld)
+      Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I) = srcInkOld)
     (hsrcInkNew : srcInkNew = UInt256.sub srcInkOld (forkDinkWord I))
     (hsrcInkGuardNeg : forkDinkInt I ≤ 0 ∨ srcInkNew.toNat ≤ srcInkOld.toNat)
     (hsrcInkGuardPos : 0 ≤ forkDinkInt I ∨ srcInkOld.toNat ≤ srcInkNew.toNat)
     (hloadSrcArt :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
           srcInkNew)
         evm0.executionEnv.codeOwner (forkSrcArtSlot I) = srcArtOld)
     (hsrcArtNew : srcArtNew = UInt256.sub srcArtOld (forkDartWord I))
     (hsrcArtGuardNeg : forkDartInt I ≤ 0 ∨ srcArtNew.toNat ≤ srcArtOld.toNat)
     (hsrcArtGuardPos : 0 ≤ forkDartInt I ∨ srcArtOld.toNat ≤ srcArtNew.toNat)
     (hloadDstInk :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore
-          (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore
+          (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
             srcInkNew)
           evm0.executionEnv.codeOwner (forkSrcArtSlot I) srcArtNew)
         evm0.executionEnv.codeOwner (forkDstInkSlot I) = dstInkOld)
@@ -7697,9 +7697,9 @@ theorem execForkSourceRevertDstInkGuardPos {evm0 : EVM.State} {I : ExecutionEnv}
       ¬ (UInt256.sgt (forkDinkWord I) ⟨0⟩ = ⟨0⟩ ∨
         UInt256.lt dstInkNew dstInkOld = ⟨0⟩)) :
     ExecTransitionBody config contract evm0 (forkStore I) forkTransition.body .reverted := by
-  let evm1 := Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner
+  let evm1 := Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner
     (forkSrcInkSlot I) srcInkNew
-  let evm2 := Solm.EVM.storageStore evm1 evm1.executionEnv.codeOwner
+  let evm2 := Stele.EVM.storageStore evm1 evm1.executionEnv.codeOwner
     (forkSrcArtSlot I) srcArtNew
   have hprefix :
       ExecBlock config { contract := contract, locals := forkStore I } evm0 nonpayable
@@ -7786,22 +7786,22 @@ theorem execForkSourceRevertDstArtGuardNeg {evm0 : EVM.State} {I : ExecutionEnv}
     (hwei : evm0.executionEnv.weiValue = ⟨0⟩)
     (hsz164 : 164 ≤ I.calldata.size)
     (hloadSrcInk :
-      Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I) = srcInkOld)
+      Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I) = srcInkOld)
     (hsrcInkNew : srcInkNew = UInt256.sub srcInkOld (forkDinkWord I))
     (hsrcInkGuardNeg : forkDinkInt I ≤ 0 ∨ srcInkNew.toNat ≤ srcInkOld.toNat)
     (hsrcInkGuardPos : 0 ≤ forkDinkInt I ∨ srcInkOld.toNat ≤ srcInkNew.toNat)
     (hloadSrcArt :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
           srcInkNew)
         evm0.executionEnv.codeOwner (forkSrcArtSlot I) = srcArtOld)
     (hsrcArtNew : srcArtNew = UInt256.sub srcArtOld (forkDartWord I))
     (hsrcArtGuardNeg : forkDartInt I ≤ 0 ∨ srcArtNew.toNat ≤ srcArtOld.toNat)
     (hsrcArtGuardPos : 0 ≤ forkDartInt I ∨ srcArtOld.toNat ≤ srcArtNew.toNat)
     (hloadDstInk :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore
-          (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore
+          (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
             srcInkNew)
           evm0.executionEnv.codeOwner (forkSrcArtSlot I) srcArtNew)
         evm0.executionEnv.codeOwner (forkDstInkSlot I) = dstInkOld)
@@ -7809,10 +7809,10 @@ theorem execForkSourceRevertDstArtGuardNeg {evm0 : EVM.State} {I : ExecutionEnv}
     (hdstInkGuardNeg : 0 ≤ forkDinkInt I ∨ dstInkNew.toNat ≤ dstInkOld.toNat)
     (hdstInkGuardPos : forkDinkInt I ≤ 0 ∨ dstInkOld.toNat ≤ dstInkNew.toNat)
     (hloadDstArt :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore
-          (Solm.EVM.storageStore
-            (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore
+          (Stele.EVM.storageStore
+            (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
               srcInkNew)
             evm0.executionEnv.codeOwner (forkSrcArtSlot I) srcArtNew)
           evm0.executionEnv.codeOwner (forkDstInkSlot I) dstInkNew)
@@ -7822,11 +7822,11 @@ theorem execForkSourceRevertDstArtGuardNeg {evm0 : EVM.State} {I : ExecutionEnv}
       ¬ (UInt256.slt (forkDartWord I) ⟨0⟩ = ⟨0⟩ ∨
         UInt256.gt dstArtNew dstArtOld = ⟨0⟩)) :
     ExecTransitionBody config contract evm0 (forkStore I) forkTransition.body .reverted := by
-  let evm1 := Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner
+  let evm1 := Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner
     (forkSrcInkSlot I) srcInkNew
-  let evm2 := Solm.EVM.storageStore evm1 evm1.executionEnv.codeOwner
+  let evm2 := Stele.EVM.storageStore evm1 evm1.executionEnv.codeOwner
     (forkSrcArtSlot I) srcArtNew
-  let evm3 := Solm.EVM.storageStore evm2 evm2.executionEnv.codeOwner
+  let evm3 := Stele.EVM.storageStore evm2 evm2.executionEnv.codeOwner
     (forkDstInkSlot I) dstInkNew
   have hprefix :
       ExecBlock config { contract := contract, locals := forkStore I } evm0 nonpayable
@@ -7920,22 +7920,22 @@ theorem execForkSourceRevertDstArtGuardPos {evm0 : EVM.State} {I : ExecutionEnv}
     (hwei : evm0.executionEnv.weiValue = ⟨0⟩)
     (hsz164 : 164 ≤ I.calldata.size)
     (hloadSrcInk :
-      Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I) = srcInkOld)
+      Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I) = srcInkOld)
     (hsrcInkNew : srcInkNew = UInt256.sub srcInkOld (forkDinkWord I))
     (hsrcInkGuardNeg : forkDinkInt I ≤ 0 ∨ srcInkNew.toNat ≤ srcInkOld.toNat)
     (hsrcInkGuardPos : 0 ≤ forkDinkInt I ∨ srcInkOld.toNat ≤ srcInkNew.toNat)
     (hloadSrcArt :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
           srcInkNew)
         evm0.executionEnv.codeOwner (forkSrcArtSlot I) = srcArtOld)
     (hsrcArtNew : srcArtNew = UInt256.sub srcArtOld (forkDartWord I))
     (hsrcArtGuardNeg : forkDartInt I ≤ 0 ∨ srcArtNew.toNat ≤ srcArtOld.toNat)
     (hsrcArtGuardPos : 0 ≤ forkDartInt I ∨ srcArtOld.toNat ≤ srcArtNew.toNat)
     (hloadDstInk :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore
-          (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore
+          (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
             srcInkNew)
           evm0.executionEnv.codeOwner (forkSrcArtSlot I) srcArtNew)
         evm0.executionEnv.codeOwner (forkDstInkSlot I) = dstInkOld)
@@ -7943,10 +7943,10 @@ theorem execForkSourceRevertDstArtGuardPos {evm0 : EVM.State} {I : ExecutionEnv}
     (hdstInkGuardNeg : 0 ≤ forkDinkInt I ∨ dstInkNew.toNat ≤ dstInkOld.toNat)
     (hdstInkGuardPos : forkDinkInt I ≤ 0 ∨ dstInkOld.toNat ≤ dstInkNew.toNat)
     (hloadDstArt :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore
-          (Solm.EVM.storageStore
-            (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore
+          (Stele.EVM.storageStore
+            (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
               srcInkNew)
             evm0.executionEnv.codeOwner (forkSrcArtSlot I) srcArtNew)
           evm0.executionEnv.codeOwner (forkDstInkSlot I) dstInkNew)
@@ -7959,11 +7959,11 @@ theorem execForkSourceRevertDstArtGuardPos {evm0 : EVM.State} {I : ExecutionEnv}
       ¬ (UInt256.sgt (forkDartWord I) ⟨0⟩ = ⟨0⟩ ∨
         UInt256.lt dstArtNew dstArtOld = ⟨0⟩)) :
     ExecTransitionBody config contract evm0 (forkStore I) forkTransition.body .reverted := by
-  let evm1 := Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner
+  let evm1 := Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner
     (forkSrcInkSlot I) srcInkNew
-  let evm2 := Solm.EVM.storageStore evm1 evm1.executionEnv.codeOwner
+  let evm2 := Stele.EVM.storageStore evm1 evm1.executionEnv.codeOwner
     (forkSrcArtSlot I) srcArtNew
-  let evm3 := Solm.EVM.storageStore evm2 evm2.executionEnv.codeOwner
+  let evm3 := Stele.EVM.storageStore evm2 evm2.executionEnv.codeOwner
     (forkDstInkSlot I) dstInkNew
   have hprefix :
       ExecBlock config { contract := contract, locals := forkStore I } evm0 nonpayable
@@ -8058,22 +8058,22 @@ theorem execForkSourceRevertUtabMul {evm0 : EVM.State} {I : ExecutionEnv}
     (hwei : evm0.executionEnv.weiValue = ⟨0⟩)
     (hsz164 : 164 ≤ I.calldata.size)
     (hloadSrcInk :
-      Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I) = srcInkOld)
+      Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I) = srcInkOld)
     (hsrcInkNew : srcInkNew = UInt256.sub srcInkOld (forkDinkWord I))
     (hsrcInkGuardNeg : forkDinkInt I ≤ 0 ∨ srcInkNew.toNat ≤ srcInkOld.toNat)
     (hsrcInkGuardPos : 0 ≤ forkDinkInt I ∨ srcInkOld.toNat ≤ srcInkNew.toNat)
     (hloadSrcArt :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
           srcInkNew)
         evm0.executionEnv.codeOwner (forkSrcArtSlot I) = srcArtOld)
     (hsrcArtNew : srcArtNew = UInt256.sub srcArtOld (forkDartWord I))
     (hsrcArtGuardNeg : forkDartInt I ≤ 0 ∨ srcArtNew.toNat ≤ srcArtOld.toNat)
     (hsrcArtGuardPos : 0 ≤ forkDartInt I ∨ srcArtOld.toNat ≤ srcArtNew.toNat)
     (hloadDstInk :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore
-          (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore
+          (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
             srcInkNew)
           evm0.executionEnv.codeOwner (forkSrcArtSlot I) srcArtNew)
         evm0.executionEnv.codeOwner (forkDstInkSlot I) = dstInkOld)
@@ -8081,10 +8081,10 @@ theorem execForkSourceRevertUtabMul {evm0 : EVM.State} {I : ExecutionEnv}
     (hdstInkGuardNeg : 0 ≤ forkDinkInt I ∨ dstInkNew.toNat ≤ dstInkOld.toNat)
     (hdstInkGuardPos : forkDinkInt I ≤ 0 ∨ dstInkOld.toNat ≤ dstInkNew.toNat)
     (hloadDstArt :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore
-          (Solm.EVM.storageStore
-            (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore
+          (Stele.EVM.storageStore
+            (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
               srcInkNew)
             evm0.executionEnv.codeOwner (forkSrcArtSlot I) srcArtNew)
           evm0.executionEnv.codeOwner (forkDstInkSlot I) dstInkNew)
@@ -8093,55 +8093,55 @@ theorem execForkSourceRevertUtabMul {evm0 : EVM.State} {I : ExecutionEnv}
     (hdstArtGuardNeg : 0 ≤ forkDartInt I ∨ dstArtNew.toNat ≤ dstArtOld.toNat)
     (hdstArtGuardPos : forkDartInt I ≤ 0 ∨ dstArtOld.toNat ≤ dstArtNew.toNat)
     (hloadSrcArtFinal :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore
-          (Solm.EVM.storageStore
-            (Solm.EVM.storageStore
-              (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore
+          (Stele.EVM.storageStore
+            (Stele.EVM.storageStore
+              (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
                 srcInkNew)
               evm0.executionEnv.codeOwner (forkSrcArtSlot I) srcArtNew)
             evm0.executionEnv.codeOwner (forkDstInkSlot I) dstInkNew)
         evm0.executionEnv.codeOwner (forkDstArtSlot I) dstArtNew)
         evm0.executionEnv.codeOwner (forkSrcArtSlot I) = srcArtFinal)
     (hloadDstArtFinal :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore
-          (Solm.EVM.storageStore
-            (Solm.EVM.storageStore
-              (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore
+          (Stele.EVM.storageStore
+            (Stele.EVM.storageStore
+              (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
                 srcInkNew)
               evm0.executionEnv.codeOwner (forkSrcArtSlot I) srcArtNew)
             evm0.executionEnv.codeOwner (forkDstInkSlot I) dstInkNew)
         evm0.executionEnv.codeOwner (forkDstArtSlot I) dstArtNew)
         evm0.executionEnv.codeOwner (forkDstArtSlot I) = dstArtFinal)
     (hloadSrcInkFinal :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore
-          (Solm.EVM.storageStore
-            (Solm.EVM.storageStore
-              (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore
+          (Stele.EVM.storageStore
+            (Stele.EVM.storageStore
+              (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
                 srcInkNew)
               evm0.executionEnv.codeOwner (forkSrcArtSlot I) srcArtNew)
             evm0.executionEnv.codeOwner (forkDstInkSlot I) dstInkNew)
         evm0.executionEnv.codeOwner (forkDstArtSlot I) dstArtNew)
         evm0.executionEnv.codeOwner (forkSrcInkSlot I) = srcInkFinal)
     (hloadDstInkFinal :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore
-          (Solm.EVM.storageStore
-            (Solm.EVM.storageStore
-              (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore
+          (Stele.EVM.storageStore
+            (Stele.EVM.storageStore
+              (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
                 srcInkNew)
               evm0.executionEnv.codeOwner (forkSrcArtSlot I) srcArtNew)
             evm0.executionEnv.codeOwner (forkDstInkSlot I) dstInkNew)
         evm0.executionEnv.codeOwner (forkDstArtSlot I) dstArtNew)
         evm0.executionEnv.codeOwner (forkDstInkSlot I) = dstInkFinal)
     (hloadRate :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore
-          (Solm.EVM.storageStore
-            (Solm.EVM.storageStore
-              (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore
+          (Stele.EVM.storageStore
+            (Stele.EVM.storageStore
+              (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
                 srcInkNew)
               evm0.executionEnv.codeOwner (forkSrcArtSlot I) srcArtNew)
             evm0.executionEnv.codeOwner (forkDstInkSlot I) dstInkNew)
@@ -8149,13 +8149,13 @@ theorem execForkSourceRevertUtabMul {evm0 : EVM.State} {I : ExecutionEnv}
         evm0.executionEnv.codeOwner (forkIlkRateSlot I) = rate)
     (hover : UInt256.size ≤ srcArtFinal.toNat * rate.toNat) :
     ExecTransitionBody config contract evm0 (forkStore I) forkTransition.body .reverted := by
-  let evm1 := Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner
+  let evm1 := Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner
     (forkSrcInkSlot I) srcInkNew
-  let evm2 := Solm.EVM.storageStore evm1 evm1.executionEnv.codeOwner
+  let evm2 := Stele.EVM.storageStore evm1 evm1.executionEnv.codeOwner
     (forkSrcArtSlot I) srcArtNew
-  let evm3 := Solm.EVM.storageStore evm2 evm2.executionEnv.codeOwner
+  let evm3 := Stele.EVM.storageStore evm2 evm2.executionEnv.codeOwner
     (forkDstInkSlot I) dstInkNew
-  let evm4 := Solm.EVM.storageStore evm3 evm3.executionEnv.codeOwner
+  let evm4 := Stele.EVM.storageStore evm3 evm3.executionEnv.codeOwner
     (forkDstArtSlot I) dstArtNew
   have hprefix :
       ExecBlock config { contract := contract, locals := forkStore I } evm0 nonpayable
@@ -8217,7 +8217,7 @@ theorem execForkSourceRevertUtabMul {evm0 : EVM.State} {I : ExecutionEnv}
     forkStoreFinalLoads I srcInkNew srcArtNew dstInkNew dstArtNew srcArtFinal
       dstArtFinal srcInkFinal dstInkFinal
   have hloadRateFinal :
-      Solm.EVM.storageLoad evm4 evm4.executionEnv.codeOwner (forkIlkRateSlot I) = rate := by
+      Stele.EVM.storageLoad evm4 evm4.executionEnv.codeOwner (forkIlkRateSlot I) = rate := by
     simpa [evm1, evm2, evm3, evm4, storageStore_executionEnv] using hloadRate
   have hsrcArtEval :
       evalExpr? config { contract := contract, locals := localsFinal } evm4
@@ -8290,22 +8290,22 @@ theorem execForkSourceRevertVtabMul {evm0 : EVM.State} {I : ExecutionEnv}
     (hwei : evm0.executionEnv.weiValue = ⟨0⟩)
     (hsz164 : 164 ≤ I.calldata.size)
     (hloadSrcInk :
-      Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I) = srcInkOld)
+      Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I) = srcInkOld)
     (hsrcInkNew : srcInkNew = srcInkOld.sub (forkDinkWord I))
     (hsrcInkGuardNeg : forkDinkInt I ≤ 0 ∨ srcInkNew.toNat ≤ srcInkOld.toNat)
     (hsrcInkGuardPos : 0 ≤ forkDinkInt I ∨ srcInkOld.toNat ≤ srcInkNew.toNat)
     (hloadSrcArt :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
           srcInkNew)
         evm0.executionEnv.codeOwner (forkSrcArtSlot I) = srcArtOld)
     (hsrcArtNew : srcArtNew = srcArtOld.sub (forkDartWord I))
     (hsrcArtGuardNeg : forkDartInt I ≤ 0 ∨ srcArtNew.toNat ≤ srcArtOld.toNat)
     (hsrcArtGuardPos : 0 ≤ forkDartInt I ∨ srcArtOld.toNat ≤ srcArtNew.toNat)
     (hloadDstInk :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore
-          (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore
+          (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
             srcInkNew)
           evm0.executionEnv.codeOwner (forkSrcArtSlot I) srcArtNew)
         evm0.executionEnv.codeOwner (forkDstInkSlot I) = dstInkOld)
@@ -8313,10 +8313,10 @@ theorem execForkSourceRevertVtabMul {evm0 : EVM.State} {I : ExecutionEnv}
     (hdstInkGuardNeg : 0 ≤ forkDinkInt I ∨ dstInkNew.toNat ≤ dstInkOld.toNat)
     (hdstInkGuardPos : forkDinkInt I ≤ 0 ∨ dstInkOld.toNat ≤ dstInkNew.toNat)
     (hloadDstArt :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore
-          (Solm.EVM.storageStore
-            (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore
+          (Stele.EVM.storageStore
+            (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
               srcInkNew)
             evm0.executionEnv.codeOwner (forkSrcArtSlot I) srcArtNew)
           evm0.executionEnv.codeOwner (forkDstInkSlot I) dstInkNew)
@@ -8325,55 +8325,55 @@ theorem execForkSourceRevertVtabMul {evm0 : EVM.State} {I : ExecutionEnv}
     (hdstArtGuardNeg : 0 ≤ forkDartInt I ∨ dstArtNew.toNat ≤ dstArtOld.toNat)
     (hdstArtGuardPos : forkDartInt I ≤ 0 ∨ dstArtOld.toNat ≤ dstArtNew.toNat)
     (hloadSrcArtFinal :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore
-          (Solm.EVM.storageStore
-            (Solm.EVM.storageStore
-              (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore
+          (Stele.EVM.storageStore
+            (Stele.EVM.storageStore
+              (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
                 srcInkNew)
               evm0.executionEnv.codeOwner (forkSrcArtSlot I) srcArtNew)
             evm0.executionEnv.codeOwner (forkDstInkSlot I) dstInkNew)
           evm0.executionEnv.codeOwner (forkDstArtSlot I) dstArtNew)
         evm0.executionEnv.codeOwner (forkSrcArtSlot I) = srcArtFinal)
     (hloadDstArtFinal :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore
-          (Solm.EVM.storageStore
-            (Solm.EVM.storageStore
-              (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore
+          (Stele.EVM.storageStore
+            (Stele.EVM.storageStore
+              (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
                 srcInkNew)
               evm0.executionEnv.codeOwner (forkSrcArtSlot I) srcArtNew)
             evm0.executionEnv.codeOwner (forkDstInkSlot I) dstInkNew)
           evm0.executionEnv.codeOwner (forkDstArtSlot I) dstArtNew)
         evm0.executionEnv.codeOwner (forkDstArtSlot I) = dstArtFinal)
     (hloadSrcInkFinal :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore
-          (Solm.EVM.storageStore
-            (Solm.EVM.storageStore
-              (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore
+          (Stele.EVM.storageStore
+            (Stele.EVM.storageStore
+              (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
                 srcInkNew)
               evm0.executionEnv.codeOwner (forkSrcArtSlot I) srcArtNew)
             evm0.executionEnv.codeOwner (forkDstInkSlot I) dstInkNew)
           evm0.executionEnv.codeOwner (forkDstArtSlot I) dstArtNew)
         evm0.executionEnv.codeOwner (forkSrcInkSlot I) = srcInkFinal)
     (hloadDstInkFinal :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore
-          (Solm.EVM.storageStore
-            (Solm.EVM.storageStore
-              (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore
+          (Stele.EVM.storageStore
+            (Stele.EVM.storageStore
+              (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
                 srcInkNew)
               evm0.executionEnv.codeOwner (forkSrcArtSlot I) srcArtNew)
             evm0.executionEnv.codeOwner (forkDstInkSlot I) dstInkNew)
           evm0.executionEnv.codeOwner (forkDstArtSlot I) dstArtNew)
         evm0.executionEnv.codeOwner (forkDstInkSlot I) = dstInkFinal)
     (hloadRate :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore
-          (Solm.EVM.storageStore
-            (Solm.EVM.storageStore
-              (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore
+          (Stele.EVM.storageStore
+            (Stele.EVM.storageStore
+              (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
                 srcInkNew)
               evm0.executionEnv.codeOwner (forkSrcArtSlot I) srcArtNew)
             evm0.executionEnv.codeOwner (forkDstInkSlot I) dstInkNew)
@@ -8384,13 +8384,13 @@ theorem execForkSourceRevertVtabMul {evm0 : EVM.State} {I : ExecutionEnv}
     (hutabGuard : rate.toNat = 0 ∨ utab.toNat / rate.toNat = srcArtFinal.toNat)
     (hover : UInt256.size ≤ dstArtFinal.toNat * rate.toNat) :
     ExecTransitionBody config contract evm0 (forkStore I) forkTransition.body .reverted := by
-  let evm1 := Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner
+  let evm1 := Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner
     (forkSrcInkSlot I) srcInkNew
-  let evm2 := Solm.EVM.storageStore evm1 evm1.executionEnv.codeOwner
+  let evm2 := Stele.EVM.storageStore evm1 evm1.executionEnv.codeOwner
     (forkSrcArtSlot I) srcArtNew
-  let evm3 := Solm.EVM.storageStore evm2 evm2.executionEnv.codeOwner
+  let evm3 := Stele.EVM.storageStore evm2 evm2.executionEnv.codeOwner
     (forkDstInkSlot I) dstInkNew
-  let evm4 := Solm.EVM.storageStore evm3 evm3.executionEnv.codeOwner
+  let evm4 := Stele.EVM.storageStore evm3 evm3.executionEnv.codeOwner
     (forkDstArtSlot I) dstArtNew
   have hprefix :
       ExecBlock config { contract := contract, locals := forkStore I } evm0 nonpayable
@@ -8449,7 +8449,7 @@ theorem execForkSourceRevertVtabMul {evm0 : EVM.State} {I : ExecutionEnv}
         simpa [evm1, evm2, evm3, evm4, storageStore_executionEnv] using
           hloadDstInkFinal)
   have hloadRateFinal :
-      Solm.EVM.storageLoad evm4 evm4.executionEnv.codeOwner (forkIlkRateSlot I) = rate := by
+      Stele.EVM.storageLoad evm4 evm4.executionEnv.codeOwner (forkIlkRateSlot I) = rate := by
     simpa [evm1, evm2, evm3, evm4, storageStore_executionEnv] using hloadRate
   have hutabBlock :=
     execForkUtabFinalMulOk (evm := evm4) (I := I)
@@ -8528,22 +8528,22 @@ theorem execForkSourceRevertSrcInkSpotMul {evm0 : EVM.State} {I : ExecutionEnv}
     (hwei : evm0.executionEnv.weiValue = ⟨0⟩)
     (hsz164 : 164 ≤ I.calldata.size)
     (hloadSrcInk :
-      Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I) = srcInkOld)
+      Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I) = srcInkOld)
     (hsrcInkNew : srcInkNew = srcInkOld.sub (forkDinkWord I))
     (hsrcInkGuardNeg : forkDinkInt I ≤ 0 ∨ srcInkNew.toNat ≤ srcInkOld.toNat)
     (hsrcInkGuardPos : 0 ≤ forkDinkInt I ∨ srcInkOld.toNat ≤ srcInkNew.toNat)
     (hloadSrcArt :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
           srcInkNew)
         evm0.executionEnv.codeOwner (forkSrcArtSlot I) = srcArtOld)
     (hsrcArtNew : srcArtNew = srcArtOld.sub (forkDartWord I))
     (hsrcArtGuardNeg : forkDartInt I ≤ 0 ∨ srcArtNew.toNat ≤ srcArtOld.toNat)
     (hsrcArtGuardPos : 0 ≤ forkDartInt I ∨ srcArtOld.toNat ≤ srcArtNew.toNat)
     (hloadDstInk :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore
-          (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore
+          (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
             srcInkNew)
           evm0.executionEnv.codeOwner (forkSrcArtSlot I) srcArtNew)
         evm0.executionEnv.codeOwner (forkDstInkSlot I) = dstInkOld)
@@ -8551,10 +8551,10 @@ theorem execForkSourceRevertSrcInkSpotMul {evm0 : EVM.State} {I : ExecutionEnv}
     (hdstInkGuardNeg : 0 ≤ forkDinkInt I ∨ dstInkNew.toNat ≤ dstInkOld.toNat)
     (hdstInkGuardPos : forkDinkInt I ≤ 0 ∨ dstInkOld.toNat ≤ dstInkNew.toNat)
     (hloadDstArt :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore
-          (Solm.EVM.storageStore
-            (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore
+          (Stele.EVM.storageStore
+            (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
               srcInkNew)
             evm0.executionEnv.codeOwner (forkSrcArtSlot I) srcArtNew)
           evm0.executionEnv.codeOwner (forkDstInkSlot I) dstInkNew)
@@ -8563,66 +8563,66 @@ theorem execForkSourceRevertSrcInkSpotMul {evm0 : EVM.State} {I : ExecutionEnv}
     (hdstArtGuardNeg : 0 ≤ forkDartInt I ∨ dstArtNew.toNat ≤ dstArtOld.toNat)
     (hdstArtGuardPos : forkDartInt I ≤ 0 ∨ dstArtOld.toNat ≤ dstArtNew.toNat)
     (hloadSrcArtFinal :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore
-          (Solm.EVM.storageStore
-            (Solm.EVM.storageStore
-              (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore
+          (Stele.EVM.storageStore
+            (Stele.EVM.storageStore
+              (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
                 srcInkNew)
               evm0.executionEnv.codeOwner (forkSrcArtSlot I) srcArtNew)
             evm0.executionEnv.codeOwner (forkDstInkSlot I) dstInkNew)
           evm0.executionEnv.codeOwner (forkDstArtSlot I) dstArtNew)
         evm0.executionEnv.codeOwner (forkSrcArtSlot I) = srcArtFinal)
     (hloadDstArtFinal :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore
-          (Solm.EVM.storageStore
-            (Solm.EVM.storageStore
-              (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore
+          (Stele.EVM.storageStore
+            (Stele.EVM.storageStore
+              (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
                 srcInkNew)
               evm0.executionEnv.codeOwner (forkSrcArtSlot I) srcArtNew)
             evm0.executionEnv.codeOwner (forkDstInkSlot I) dstInkNew)
           evm0.executionEnv.codeOwner (forkDstArtSlot I) dstArtNew)
         evm0.executionEnv.codeOwner (forkDstArtSlot I) = dstArtFinal)
     (hloadSrcInkFinal :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore
-          (Solm.EVM.storageStore
-            (Solm.EVM.storageStore
-              (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore
+          (Stele.EVM.storageStore
+            (Stele.EVM.storageStore
+              (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
                 srcInkNew)
               evm0.executionEnv.codeOwner (forkSrcArtSlot I) srcArtNew)
             evm0.executionEnv.codeOwner (forkDstInkSlot I) dstInkNew)
           evm0.executionEnv.codeOwner (forkDstArtSlot I) dstArtNew)
         evm0.executionEnv.codeOwner (forkSrcInkSlot I) = srcInkFinal)
     (hloadDstInkFinal :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore
-          (Solm.EVM.storageStore
-            (Solm.EVM.storageStore
-              (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore
+          (Stele.EVM.storageStore
+            (Stele.EVM.storageStore
+              (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
                 srcInkNew)
               evm0.executionEnv.codeOwner (forkSrcArtSlot I) srcArtNew)
             evm0.executionEnv.codeOwner (forkDstInkSlot I) dstInkNew)
           evm0.executionEnv.codeOwner (forkDstArtSlot I) dstArtNew)
         evm0.executionEnv.codeOwner (forkDstInkSlot I) = dstInkFinal)
     (hloadRate :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore
-          (Solm.EVM.storageStore
-            (Solm.EVM.storageStore
-              (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore
+          (Stele.EVM.storageStore
+            (Stele.EVM.storageStore
+              (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
                 srcInkNew)
               evm0.executionEnv.codeOwner (forkSrcArtSlot I) srcArtNew)
             evm0.executionEnv.codeOwner (forkDstInkSlot I) dstInkNew)
           evm0.executionEnv.codeOwner (forkDstArtSlot I) dstArtNew)
         evm0.executionEnv.codeOwner (forkIlkRateSlot I) = rate)
     (hloadSpot :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore
-          (Solm.EVM.storageStore
-            (Solm.EVM.storageStore
-              (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore
+          (Stele.EVM.storageStore
+            (Stele.EVM.storageStore
+              (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
                 srcInkNew)
               evm0.executionEnv.codeOwner (forkSrcArtSlot I) srcArtNew)
             evm0.executionEnv.codeOwner (forkDstInkSlot I) dstInkNew)
@@ -8636,13 +8636,13 @@ theorem execForkSourceRevertSrcInkSpotMul {evm0 : EVM.State} {I : ExecutionEnv}
     (hvtabGuard : rate.toNat = 0 ∨ vtab.toNat / rate.toNat = dstArtFinal.toNat)
     (hover : UInt256.size ≤ srcInkFinal.toNat * spot.toNat) :
     ExecTransitionBody config contract evm0 (forkStore I) forkTransition.body .reverted := by
-  let evm1 := Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner
+  let evm1 := Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner
     (forkSrcInkSlot I) srcInkNew
-  let evm2 := Solm.EVM.storageStore evm1 evm1.executionEnv.codeOwner
+  let evm2 := Stele.EVM.storageStore evm1 evm1.executionEnv.codeOwner
     (forkSrcArtSlot I) srcArtNew
-  let evm3 := Solm.EVM.storageStore evm2 evm2.executionEnv.codeOwner
+  let evm3 := Stele.EVM.storageStore evm2 evm2.executionEnv.codeOwner
     (forkDstInkSlot I) dstInkNew
-  let evm4 := Solm.EVM.storageStore evm3 evm3.executionEnv.codeOwner
+  let evm4 := Stele.EVM.storageStore evm3 evm3.executionEnv.codeOwner
     (forkDstArtSlot I) dstArtNew
   have hprefix :
       ExecBlock config { contract := contract, locals := forkStore I } evm0 nonpayable
@@ -8701,10 +8701,10 @@ theorem execForkSourceRevertSrcInkSpotMul {evm0 : EVM.State} {I : ExecutionEnv}
         simpa [evm1, evm2, evm3, evm4, storageStore_executionEnv] using
           hloadDstInkFinal)
   have hloadRateFinal :
-      Solm.EVM.storageLoad evm4 evm4.executionEnv.codeOwner (forkIlkRateSlot I) = rate := by
+      Stele.EVM.storageLoad evm4 evm4.executionEnv.codeOwner (forkIlkRateSlot I) = rate := by
     simpa [evm1, evm2, evm3, evm4, storageStore_executionEnv] using hloadRate
   have hloadSpotFinal :
-      Solm.EVM.storageLoad evm4 evm4.executionEnv.codeOwner (forkIlkSpotSlot I) = spot := by
+      Stele.EVM.storageLoad evm4 evm4.executionEnv.codeOwner (forkIlkSpotSlot I) = spot := by
     simpa [evm1, evm2, evm3, evm4, storageStore_executionEnv] using hloadSpot
   have hutabBlock :=
     execForkUtabFinalMulOk (evm := evm4) (I := I)
@@ -8788,22 +8788,22 @@ theorem execForkSourceRevertDstInkSpotMul {evm0 : EVM.State} {I : ExecutionEnv}
     (hwei : evm0.executionEnv.weiValue = ⟨0⟩)
     (hsz164 : 164 ≤ I.calldata.size)
     (hloadSrcInk :
-      Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I) = srcInkOld)
+      Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I) = srcInkOld)
     (hsrcInkNew : srcInkNew = srcInkOld.sub (forkDinkWord I))
     (hsrcInkGuardNeg : forkDinkInt I ≤ 0 ∨ srcInkNew.toNat ≤ srcInkOld.toNat)
     (hsrcInkGuardPos : 0 ≤ forkDinkInt I ∨ srcInkOld.toNat ≤ srcInkNew.toNat)
     (hloadSrcArt :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
           srcInkNew)
         evm0.executionEnv.codeOwner (forkSrcArtSlot I) = srcArtOld)
     (hsrcArtNew : srcArtNew = srcArtOld.sub (forkDartWord I))
     (hsrcArtGuardNeg : forkDartInt I ≤ 0 ∨ srcArtNew.toNat ≤ srcArtOld.toNat)
     (hsrcArtGuardPos : 0 ≤ forkDartInt I ∨ srcArtOld.toNat ≤ srcArtNew.toNat)
     (hloadDstInk :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore
-          (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore
+          (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
             srcInkNew)
           evm0.executionEnv.codeOwner (forkSrcArtSlot I) srcArtNew)
         evm0.executionEnv.codeOwner (forkDstInkSlot I) = dstInkOld)
@@ -8811,10 +8811,10 @@ theorem execForkSourceRevertDstInkSpotMul {evm0 : EVM.State} {I : ExecutionEnv}
     (hdstInkGuardNeg : 0 ≤ forkDinkInt I ∨ dstInkNew.toNat ≤ dstInkOld.toNat)
     (hdstInkGuardPos : forkDinkInt I ≤ 0 ∨ dstInkOld.toNat ≤ dstInkNew.toNat)
     (hloadDstArt :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore
-          (Solm.EVM.storageStore
-            (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore
+          (Stele.EVM.storageStore
+            (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
               srcInkNew)
             evm0.executionEnv.codeOwner (forkSrcArtSlot I) srcArtNew)
           evm0.executionEnv.codeOwner (forkDstInkSlot I) dstInkNew)
@@ -8823,66 +8823,66 @@ theorem execForkSourceRevertDstInkSpotMul {evm0 : EVM.State} {I : ExecutionEnv}
     (hdstArtGuardNeg : 0 ≤ forkDartInt I ∨ dstArtNew.toNat ≤ dstArtOld.toNat)
     (hdstArtGuardPos : forkDartInt I ≤ 0 ∨ dstArtOld.toNat ≤ dstArtNew.toNat)
     (hloadSrcArtFinal :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore
-          (Solm.EVM.storageStore
-            (Solm.EVM.storageStore
-              (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore
+          (Stele.EVM.storageStore
+            (Stele.EVM.storageStore
+              (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
                 srcInkNew)
               evm0.executionEnv.codeOwner (forkSrcArtSlot I) srcArtNew)
             evm0.executionEnv.codeOwner (forkDstInkSlot I) dstInkNew)
           evm0.executionEnv.codeOwner (forkDstArtSlot I) dstArtNew)
         evm0.executionEnv.codeOwner (forkSrcArtSlot I) = srcArtFinal)
     (hloadDstArtFinal :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore
-          (Solm.EVM.storageStore
-            (Solm.EVM.storageStore
-              (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore
+          (Stele.EVM.storageStore
+            (Stele.EVM.storageStore
+              (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
                 srcInkNew)
               evm0.executionEnv.codeOwner (forkSrcArtSlot I) srcArtNew)
             evm0.executionEnv.codeOwner (forkDstInkSlot I) dstInkNew)
           evm0.executionEnv.codeOwner (forkDstArtSlot I) dstArtNew)
         evm0.executionEnv.codeOwner (forkDstArtSlot I) = dstArtFinal)
     (hloadSrcInkFinal :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore
-          (Solm.EVM.storageStore
-            (Solm.EVM.storageStore
-              (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore
+          (Stele.EVM.storageStore
+            (Stele.EVM.storageStore
+              (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
                 srcInkNew)
               evm0.executionEnv.codeOwner (forkSrcArtSlot I) srcArtNew)
             evm0.executionEnv.codeOwner (forkDstInkSlot I) dstInkNew)
           evm0.executionEnv.codeOwner (forkDstArtSlot I) dstArtNew)
         evm0.executionEnv.codeOwner (forkSrcInkSlot I) = srcInkFinal)
     (hloadDstInkFinal :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore
-          (Solm.EVM.storageStore
-            (Solm.EVM.storageStore
-              (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore
+          (Stele.EVM.storageStore
+            (Stele.EVM.storageStore
+              (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
                 srcInkNew)
               evm0.executionEnv.codeOwner (forkSrcArtSlot I) srcArtNew)
             evm0.executionEnv.codeOwner (forkDstInkSlot I) dstInkNew)
           evm0.executionEnv.codeOwner (forkDstArtSlot I) dstArtNew)
         evm0.executionEnv.codeOwner (forkDstInkSlot I) = dstInkFinal)
     (hloadRate :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore
-          (Solm.EVM.storageStore
-            (Solm.EVM.storageStore
-              (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore
+          (Stele.EVM.storageStore
+            (Stele.EVM.storageStore
+              (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
                 srcInkNew)
               evm0.executionEnv.codeOwner (forkSrcArtSlot I) srcArtNew)
             evm0.executionEnv.codeOwner (forkDstInkSlot I) dstInkNew)
           evm0.executionEnv.codeOwner (forkDstArtSlot I) dstArtNew)
         evm0.executionEnv.codeOwner (forkIlkRateSlot I) = rate)
     (hloadSpot :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore
-          (Solm.EVM.storageStore
-            (Solm.EVM.storageStore
-              (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore
+          (Stele.EVM.storageStore
+            (Stele.EVM.storageStore
+              (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
                 srcInkNew)
               evm0.executionEnv.codeOwner (forkSrcArtSlot I) srcArtNew)
             evm0.executionEnv.codeOwner (forkDstInkSlot I) dstInkNew)
@@ -8899,13 +8899,13 @@ theorem execForkSourceRevertDstInkSpotMul {evm0 : EVM.State} {I : ExecutionEnv}
     (hsrcInkSpotGuard : spot.toNat = 0 ∨ srcInkSpot.toNat / spot.toNat = srcInkFinal.toNat)
     (hover : UInt256.size ≤ dstInkFinal.toNat * spot.toNat) :
     ExecTransitionBody config contract evm0 (forkStore I) forkTransition.body .reverted := by
-  let evm1 := Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner
+  let evm1 := Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner
     (forkSrcInkSlot I) srcInkNew
-  let evm2 := Solm.EVM.storageStore evm1 evm1.executionEnv.codeOwner
+  let evm2 := Stele.EVM.storageStore evm1 evm1.executionEnv.codeOwner
     (forkSrcArtSlot I) srcArtNew
-  let evm3 := Solm.EVM.storageStore evm2 evm2.executionEnv.codeOwner
+  let evm3 := Stele.EVM.storageStore evm2 evm2.executionEnv.codeOwner
     (forkDstInkSlot I) dstInkNew
-  let evm4 := Solm.EVM.storageStore evm3 evm3.executionEnv.codeOwner
+  let evm4 := Stele.EVM.storageStore evm3 evm3.executionEnv.codeOwner
     (forkDstArtSlot I) dstArtNew
   have hprefix :
       ExecBlock config { contract := contract, locals := forkStore I } evm0 nonpayable
@@ -8964,10 +8964,10 @@ theorem execForkSourceRevertDstInkSpotMul {evm0 : EVM.State} {I : ExecutionEnv}
         simpa [evm1, evm2, evm3, evm4, storageStore_executionEnv] using
           hloadDstInkFinal)
   have hloadRateFinal :
-      Solm.EVM.storageLoad evm4 evm4.executionEnv.codeOwner (forkIlkRateSlot I) = rate := by
+      Stele.EVM.storageLoad evm4 evm4.executionEnv.codeOwner (forkIlkRateSlot I) = rate := by
     simpa [evm1, evm2, evm3, evm4, storageStore_executionEnv] using hloadRate
   have hloadSpotFinal :
-      Solm.EVM.storageLoad evm4 evm4.executionEnv.codeOwner (forkIlkSpotSlot I) = spot := by
+      Stele.EVM.storageLoad evm4 evm4.executionEnv.codeOwner (forkIlkSpotSlot I) = spot := by
     simpa [evm1, evm2, evm3, evm4, storageStore_executionEnv] using hloadSpot
   have hutabBlock :=
     execForkUtabFinalMulOk (evm := evm4) (I := I)
@@ -9056,22 +9056,22 @@ theorem execForkSourceRevertFinal {evm0 : EVM.State} {I : ExecutionEnv}
     (hwei : evm0.executionEnv.weiValue = ⟨0⟩)
     (hsz164 : 164 ≤ I.calldata.size)
     (hloadSrcInk :
-      Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I) = srcInkOld)
+      Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I) = srcInkOld)
     (hsrcInkNew : srcInkNew = UInt256.sub srcInkOld (forkDinkWord I))
     (hsrcInkGuardNeg : forkDinkInt I ≤ 0 ∨ srcInkNew.toNat ≤ srcInkOld.toNat)
     (hsrcInkGuardPos : 0 ≤ forkDinkInt I ∨ srcInkOld.toNat ≤ srcInkNew.toNat)
     (hloadSrcArt :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
           srcInkNew)
         evm0.executionEnv.codeOwner (forkSrcArtSlot I) = srcArtOld)
     (hsrcArtNew : srcArtNew = UInt256.sub srcArtOld (forkDartWord I))
     (hsrcArtGuardNeg : forkDartInt I ≤ 0 ∨ srcArtNew.toNat ≤ srcArtOld.toNat)
     (hsrcArtGuardPos : 0 ≤ forkDartInt I ∨ srcArtOld.toNat ≤ srcArtNew.toNat)
     (hloadDstInk :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore
-          (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore
+          (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
             srcInkNew)
           evm0.executionEnv.codeOwner (forkSrcArtSlot I) srcArtNew)
         evm0.executionEnv.codeOwner (forkDstInkSlot I) = dstInkOld)
@@ -9079,10 +9079,10 @@ theorem execForkSourceRevertFinal {evm0 : EVM.State} {I : ExecutionEnv}
     (hdstInkGuardNeg : 0 ≤ forkDinkInt I ∨ dstInkNew.toNat ≤ dstInkOld.toNat)
     (hdstInkGuardPos : forkDinkInt I ≤ 0 ∨ dstInkOld.toNat ≤ dstInkNew.toNat)
     (hloadDstArt :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore
-          (Solm.EVM.storageStore
-            (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore
+          (Stele.EVM.storageStore
+            (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
               srcInkNew)
             evm0.executionEnv.codeOwner (forkSrcArtSlot I) srcArtNew)
           evm0.executionEnv.codeOwner (forkDstInkSlot I) dstInkNew)
@@ -9091,66 +9091,66 @@ theorem execForkSourceRevertFinal {evm0 : EVM.State} {I : ExecutionEnv}
     (hdstArtGuardNeg : 0 ≤ forkDartInt I ∨ dstArtNew.toNat ≤ dstArtOld.toNat)
     (hdstArtGuardPos : forkDartInt I ≤ 0 ∨ dstArtOld.toNat ≤ dstArtNew.toNat)
     (hloadSrcArtFinal :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore
-          (Solm.EVM.storageStore
-            (Solm.EVM.storageStore
-              (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore
+          (Stele.EVM.storageStore
+            (Stele.EVM.storageStore
+              (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
                 srcInkNew)
               evm0.executionEnv.codeOwner (forkSrcArtSlot I) srcArtNew)
             evm0.executionEnv.codeOwner (forkDstInkSlot I) dstInkNew)
         evm0.executionEnv.codeOwner (forkDstArtSlot I) dstArtNew)
         evm0.executionEnv.codeOwner (forkSrcArtSlot I) = srcArtFinal)
     (hloadDstArtFinal :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore
-          (Solm.EVM.storageStore
-            (Solm.EVM.storageStore
-              (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore
+          (Stele.EVM.storageStore
+            (Stele.EVM.storageStore
+              (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
                 srcInkNew)
               evm0.executionEnv.codeOwner (forkSrcArtSlot I) srcArtNew)
             evm0.executionEnv.codeOwner (forkDstInkSlot I) dstInkNew)
         evm0.executionEnv.codeOwner (forkDstArtSlot I) dstArtNew)
         evm0.executionEnv.codeOwner (forkDstArtSlot I) = dstArtFinal)
     (hloadSrcInkFinal :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore
-          (Solm.EVM.storageStore
-            (Solm.EVM.storageStore
-              (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore
+          (Stele.EVM.storageStore
+            (Stele.EVM.storageStore
+              (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
                 srcInkNew)
               evm0.executionEnv.codeOwner (forkSrcArtSlot I) srcArtNew)
             evm0.executionEnv.codeOwner (forkDstInkSlot I) dstInkNew)
         evm0.executionEnv.codeOwner (forkDstArtSlot I) dstArtNew)
         evm0.executionEnv.codeOwner (forkSrcInkSlot I) = srcInkFinal)
     (hloadDstInkFinal :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore
-          (Solm.EVM.storageStore
-            (Solm.EVM.storageStore
-              (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore
+          (Stele.EVM.storageStore
+            (Stele.EVM.storageStore
+              (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
                 srcInkNew)
               evm0.executionEnv.codeOwner (forkSrcArtSlot I) srcArtNew)
             evm0.executionEnv.codeOwner (forkDstInkSlot I) dstInkNew)
         evm0.executionEnv.codeOwner (forkDstArtSlot I) dstArtNew)
         evm0.executionEnv.codeOwner (forkDstInkSlot I) = dstInkFinal)
     (hloadRate :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore
-          (Solm.EVM.storageStore
-            (Solm.EVM.storageStore
-              (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore
+          (Stele.EVM.storageStore
+            (Stele.EVM.storageStore
+              (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
                 srcInkNew)
               evm0.executionEnv.codeOwner (forkSrcArtSlot I) srcArtNew)
             evm0.executionEnv.codeOwner (forkDstInkSlot I) dstInkNew)
           evm0.executionEnv.codeOwner (forkDstArtSlot I) dstArtNew)
         evm0.executionEnv.codeOwner (forkIlkRateSlot I) = rate)
     (hloadSpot :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore
-          (Solm.EVM.storageStore
-            (Solm.EVM.storageStore
-              (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore
+          (Stele.EVM.storageStore
+            (Stele.EVM.storageStore
+              (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
                 srcInkNew)
               evm0.executionEnv.codeOwner (forkSrcArtSlot I) srcArtNew)
             evm0.executionEnv.codeOwner (forkDstInkSlot I) dstInkNew)
@@ -9168,13 +9168,13 @@ theorem execForkSourceRevertFinal {evm0 : EVM.State} {I : ExecutionEnv}
     (hdstInkSpotProd : dstInkSpot = UInt256.mul dstInkFinal spot)
     (hdstInkSpotFit : dstInkFinal.toNat * spot.toNat < UInt256.size)
     (hdstInkSpotGuard : spot.toNat = 0 ∨ dstInkSpot.toNat / spot.toNat = dstInkFinal.toNat) :
-    let evm1 := Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner
+    let evm1 := Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner
       (forkSrcInkSlot I) srcInkNew
-    let evm2 := Solm.EVM.storageStore evm1 evm1.executionEnv.codeOwner
+    let evm2 := Stele.EVM.storageStore evm1 evm1.executionEnv.codeOwner
       (forkSrcArtSlot I) srcArtNew
-    let evm3 := Solm.EVM.storageStore evm2 evm2.executionEnv.codeOwner
+    let evm3 := Stele.EVM.storageStore evm2 evm2.executionEnv.codeOwner
       (forkDstInkSlot I) dstInkNew
-    let evm4 := Solm.EVM.storageStore evm3 evm3.executionEnv.codeOwner
+    let evm4 := Stele.EVM.storageStore evm3 evm3.executionEnv.codeOwner
       (forkDstArtSlot I) dstArtNew
     let finalLocals :=
       forkStoreDstInkSpotFinal I srcInkNew srcArtNew dstInkNew dstArtNew
@@ -9254,10 +9254,10 @@ theorem execForkSourceRevertFinal {evm0 : EVM.State} {I : ExecutionEnv}
     forkStoreFinalLoads I srcInkNew srcArtNew dstInkNew dstArtNew srcArtFinal
       dstArtFinal srcInkFinal dstInkFinal
   have hloadRateFinal :
-      Solm.EVM.storageLoad evm4 evm4.executionEnv.codeOwner (forkIlkRateSlot I) = rate := by
+      Stele.EVM.storageLoad evm4 evm4.executionEnv.codeOwner (forkIlkRateSlot I) = rate := by
     simpa [evm1, evm2, evm3, evm4, storageStore_executionEnv] using hloadRate
   have hloadSpotFinal :
-      Solm.EVM.storageLoad evm4 evm4.executionEnv.codeOwner (forkIlkSpotSlot I) = spot := by
+      Stele.EVM.storageLoad evm4 evm4.executionEnv.codeOwner (forkIlkSpotSlot I) = spot := by
     simpa [evm1, evm2, evm3, evm4, storageStore_executionEnv] using hloadSpot
   have hutabBlock :=
     execForkUtabFinalMulOk (evm := evm4) (I := I)
@@ -9300,22 +9300,22 @@ theorem execForkSourceRevertWish {evm0 : EVM.State} {I : ExecutionEnv}
     (hwei : evm0.executionEnv.weiValue = ⟨0⟩)
     (hsz164 : 164 ≤ I.calldata.size)
     (hloadSrcInk :
-      Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I) = srcInkOld)
+      Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I) = srcInkOld)
     (hsrcInkNew : srcInkNew = UInt256.sub srcInkOld (forkDinkWord I))
     (hsrcInkGuardNeg : forkDinkInt I ≤ 0 ∨ srcInkNew.toNat ≤ srcInkOld.toNat)
     (hsrcInkGuardPos : 0 ≤ forkDinkInt I ∨ srcInkOld.toNat ≤ srcInkNew.toNat)
     (hloadSrcArt :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
           srcInkNew)
         evm0.executionEnv.codeOwner (forkSrcArtSlot I) = srcArtOld)
     (hsrcArtNew : srcArtNew = UInt256.sub srcArtOld (forkDartWord I))
     (hsrcArtGuardNeg : forkDartInt I ≤ 0 ∨ srcArtNew.toNat ≤ srcArtOld.toNat)
     (hsrcArtGuardPos : 0 ≤ forkDartInt I ∨ srcArtOld.toNat ≤ srcArtNew.toNat)
     (hloadDstInk :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore
-          (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore
+          (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
             srcInkNew)
           evm0.executionEnv.codeOwner (forkSrcArtSlot I) srcArtNew)
         evm0.executionEnv.codeOwner (forkDstInkSlot I) = dstInkOld)
@@ -9323,10 +9323,10 @@ theorem execForkSourceRevertWish {evm0 : EVM.State} {I : ExecutionEnv}
     (hdstInkGuardNeg : 0 ≤ forkDinkInt I ∨ dstInkNew.toNat ≤ dstInkOld.toNat)
     (hdstInkGuardPos : forkDinkInt I ≤ 0 ∨ dstInkOld.toNat ≤ dstInkNew.toNat)
     (hloadDstArt :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore
-          (Solm.EVM.storageStore
-            (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore
+          (Stele.EVM.storageStore
+            (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
               srcInkNew)
             evm0.executionEnv.codeOwner (forkSrcArtSlot I) srcArtNew)
           evm0.executionEnv.codeOwner (forkDstInkSlot I) dstInkNew)
@@ -9335,66 +9335,66 @@ theorem execForkSourceRevertWish {evm0 : EVM.State} {I : ExecutionEnv}
     (hdstArtGuardNeg : 0 ≤ forkDartInt I ∨ dstArtNew.toNat ≤ dstArtOld.toNat)
     (hdstArtGuardPos : forkDartInt I ≤ 0 ∨ dstArtOld.toNat ≤ dstArtNew.toNat)
     (hloadSrcArtFinal :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore
-          (Solm.EVM.storageStore
-            (Solm.EVM.storageStore
-              (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore
+          (Stele.EVM.storageStore
+            (Stele.EVM.storageStore
+              (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
                 srcInkNew)
               evm0.executionEnv.codeOwner (forkSrcArtSlot I) srcArtNew)
             evm0.executionEnv.codeOwner (forkDstInkSlot I) dstInkNew)
         evm0.executionEnv.codeOwner (forkDstArtSlot I) dstArtNew)
         evm0.executionEnv.codeOwner (forkSrcArtSlot I) = srcArtFinal)
     (hloadDstArtFinal :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore
-          (Solm.EVM.storageStore
-            (Solm.EVM.storageStore
-              (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore
+          (Stele.EVM.storageStore
+            (Stele.EVM.storageStore
+              (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
                 srcInkNew)
               evm0.executionEnv.codeOwner (forkSrcArtSlot I) srcArtNew)
             evm0.executionEnv.codeOwner (forkDstInkSlot I) dstInkNew)
         evm0.executionEnv.codeOwner (forkDstArtSlot I) dstArtNew)
         evm0.executionEnv.codeOwner (forkDstArtSlot I) = dstArtFinal)
     (hloadSrcInkFinal :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore
-          (Solm.EVM.storageStore
-            (Solm.EVM.storageStore
-              (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore
+          (Stele.EVM.storageStore
+            (Stele.EVM.storageStore
+              (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
                 srcInkNew)
               evm0.executionEnv.codeOwner (forkSrcArtSlot I) srcArtNew)
             evm0.executionEnv.codeOwner (forkDstInkSlot I) dstInkNew)
         evm0.executionEnv.codeOwner (forkDstArtSlot I) dstArtNew)
         evm0.executionEnv.codeOwner (forkSrcInkSlot I) = srcInkFinal)
     (hloadDstInkFinal :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore
-          (Solm.EVM.storageStore
-            (Solm.EVM.storageStore
-              (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore
+          (Stele.EVM.storageStore
+            (Stele.EVM.storageStore
+              (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
                 srcInkNew)
               evm0.executionEnv.codeOwner (forkSrcArtSlot I) srcArtNew)
             evm0.executionEnv.codeOwner (forkDstInkSlot I) dstInkNew)
         evm0.executionEnv.codeOwner (forkDstArtSlot I) dstArtNew)
         evm0.executionEnv.codeOwner (forkDstInkSlot I) = dstInkFinal)
     (hloadRate :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore
-          (Solm.EVM.storageStore
-            (Solm.EVM.storageStore
-              (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore
+          (Stele.EVM.storageStore
+            (Stele.EVM.storageStore
+              (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
                 srcInkNew)
               evm0.executionEnv.codeOwner (forkSrcArtSlot I) srcArtNew)
             evm0.executionEnv.codeOwner (forkDstInkSlot I) dstInkNew)
           evm0.executionEnv.codeOwner (forkDstArtSlot I) dstArtNew)
         evm0.executionEnv.codeOwner (forkIlkRateSlot I) = rate)
     (hloadSpot :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore
-          (Solm.EVM.storageStore
-            (Solm.EVM.storageStore
-              (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore
+          (Stele.EVM.storageStore
+            (Stele.EVM.storageStore
+              (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I)
                 srcInkNew)
               evm0.executionEnv.codeOwner (forkSrcArtSlot I) srcArtNew)
             evm0.executionEnv.codeOwner (forkDstInkSlot I) dstInkNew)
@@ -9412,13 +9412,13 @@ theorem execForkSourceRevertWish {evm0 : EVM.State} {I : ExecutionEnv}
     (hdstInkSpotProd : dstInkSpot = UInt256.mul dstInkFinal spot)
     (hdstInkSpotFit : dstInkFinal.toNat * spot.toNat < UInt256.size)
     (hdstInkSpotGuard : spot.toNat = 0 ∨ dstInkSpot.toNat / spot.toNat = dstInkFinal.toNat) :
-    let evm1 := Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner
+    let evm1 := Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner
       (forkSrcInkSlot I) srcInkNew
-    let evm2 := Solm.EVM.storageStore evm1 evm1.executionEnv.codeOwner
+    let evm2 := Stele.EVM.storageStore evm1 evm1.executionEnv.codeOwner
       (forkSrcArtSlot I) srcArtNew
-    let evm3 := Solm.EVM.storageStore evm2 evm2.executionEnv.codeOwner
+    let evm3 := Stele.EVM.storageStore evm2 evm2.executionEnv.codeOwner
       (forkDstInkSlot I) dstInkNew
-    let evm4 := Solm.EVM.storageStore evm3 evm3.executionEnv.codeOwner
+    let evm4 := Stele.EVM.storageStore evm3 evm3.executionEnv.codeOwner
       (forkDstArtSlot I) dstArtNew
     let finalLocals :=
       forkStoreDstInkSpotFinal I srcInkNew srcArtNew dstInkNew dstArtNew
@@ -13048,13 +13048,13 @@ theorem forkSourceFinal_accountMap_eq
     (hDstInk : dstInkNew = forkDstInkNew σ I)
     (hDstArt : dstArtNew = forkDstArtNew σ I) :
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-    let evm1 := Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner
+    let evm1 := Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner
       (forkSrcInkSlot I) srcInkNew
-    let evm2 := Solm.EVM.storageStore evm1 evm1.executionEnv.codeOwner
+    let evm2 := Stele.EVM.storageStore evm1 evm1.executionEnv.codeOwner
       (forkSrcArtSlot I) srcArtNew
-    let evm3 := Solm.EVM.storageStore evm2 evm2.executionEnv.codeOwner
+    let evm3 := Stele.EVM.storageStore evm2 evm2.executionEnv.codeOwner
       (forkDstInkSlot I) dstInkNew
-    let evm4 := Solm.EVM.storageStore evm3 evm3.executionEnv.codeOwner
+    let evm4 := Stele.EVM.storageStore evm3 evm3.executionEnv.codeOwner
       (forkDstArtSlot I) dstArtNew
     Eq (forkAfterDstArt σ I) evm4.accountMap := by
   intro evm0 evm1 evm2 evm3 evm4
@@ -13088,15 +13088,15 @@ theorem forkSourceFinal_storageLoad
     (hDstInk : dstInkNew = forkDstInkNew σ I)
     (hDstArt : dstArtNew = forkDstArtNew σ I) :
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-    let evm1 := Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner
+    let evm1 := Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner
       (forkSrcInkSlot I) srcInkNew
-    let evm2 := Solm.EVM.storageStore evm1 evm1.executionEnv.codeOwner
+    let evm2 := Stele.EVM.storageStore evm1 evm1.executionEnv.codeOwner
       (forkSrcArtSlot I) srcArtNew
-    let evm3 := Solm.EVM.storageStore evm2 evm2.executionEnv.codeOwner
+    let evm3 := Stele.EVM.storageStore evm2 evm2.executionEnv.codeOwner
       (forkDstInkSlot I) dstInkNew
-    let evm4 := Solm.EVM.storageStore evm3 evm3.executionEnv.codeOwner
+    let evm4 := Stele.EVM.storageStore evm3 evm3.executionEnv.codeOwner
       (forkDstArtSlot I) dstArtNew
-    Solm.EVM.storageLoad evm4 evm4.executionEnv.codeOwner slot =
+    Stele.EVM.storageLoad evm4 evm4.executionEnv.codeOwner slot =
       solcSlotWord (forkAfterDstArt σ I) I slot := by
   intro evm0 evm1 evm2 evm3 evm4
   have howner : evm4.executionEnv.codeOwner = I.codeOwner := by
@@ -13105,7 +13105,7 @@ theorem forkSourceFinal_storageLoad
     simp [evm4, evm3, evm2, evm1, evm0, initState, storageStore_accountMap,
       storageStore_executionEnv, forkAfterDstArt, forkAfterDstInk, forkAfterSrcArt,
       forkAfterSrcInk, hSrcInk, hSrcArt, hDstInk, hDstArt]
-  simp [Solm.EVM.storageLoad, solcSlotWord, State.lookupAccount, Account.lookupStorage,
+  simp [Stele.EVM.storageLoad, solcSlotWord, State.lookupAccount, Account.lookupStorage,
     howner, hmap]
 
 theorem vatForkSourceSuccessBodyFromFinalGuards
@@ -13234,13 +13234,13 @@ theorem vatForkSourceSuccessBodyFromFinalGuards
       forkStoreDstInkSpotFinal I srcInkNew srcArtNew dstInkNew dstArtNew
         srcArtFinal dstArtFinal srcInkFinal dstInkFinal utab vtab srcInkSpot dstInkSpot
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-    let evm1 := Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner
+    let evm1 := Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner
       (forkSrcInkSlot I) srcInkNew
-    let evm2 := Solm.EVM.storageStore evm1 evm1.executionEnv.codeOwner
+    let evm2 := Stele.EVM.storageStore evm1 evm1.executionEnv.codeOwner
       (forkSrcArtSlot I) srcArtNew
-    let evm3 := Solm.EVM.storageStore evm2 evm2.executionEnv.codeOwner
+    let evm3 := Stele.EVM.storageStore evm2 evm2.executionEnv.codeOwner
       (forkDstInkSlot I) dstInkNew
-    let evm4 := Solm.EVM.storageStore evm3 evm3.executionEnv.codeOwner
+    let evm4 := Stele.EVM.storageStore evm3 evm3.executionEnv.codeOwner
       (forkDstArtSlot I) dstArtNew
     ExecTransitionBody config contract evm0 (forkStore I) forkTransition.body
       (.returned { contract := contract, locals := finalLocals } evm4 none) := by
@@ -13248,32 +13248,32 @@ theorem vatForkSourceSuccessBodyFromFinalGuards
     srcInkFinal dstInkFinal rate spot dust utab vtab srcInkSpot dstInkSpot finalLocals
     evm0 evm1 evm2 evm3 evm4
   have hloadSrcInk :
-      Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I) =
+      Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I) =
         solcSlotWord σ I (forkSrcInkSlot I) := by
-    simp [evm0, initState, Solm.EVM.storageLoad, solcSlotWord, State.lookupAccount,
+    simp [evm0, initState, Stele.EVM.storageLoad, solcSlotWord, State.lookupAccount,
       Account.lookupStorage]
   have hloadSrcArt :
-      Solm.EVM.storageLoad evm1 evm1.executionEnv.codeOwner (forkSrcArtSlot I) =
+      Stele.EVM.storageLoad evm1 evm1.executionEnv.codeOwner (forkSrcArtSlot I) =
         solcSlotWord (forkAfterSrcInk σ I) I (forkSrcArtSlot I) := by
-    simp [evm1, evm0, initState, Solm.EVM.storageLoad, solcSlotWord,
+    simp [evm1, evm0, initState, Stele.EVM.storageLoad, solcSlotWord,
       State.lookupAccount, Account.lookupStorage, storageStore_accountMap,
       storageStore_executionEnv, forkAfterSrcInk, srcInkNew]
   have hloadDstInk :
-      Solm.EVM.storageLoad evm2 evm2.executionEnv.codeOwner (forkDstInkSlot I) =
+      Stele.EVM.storageLoad evm2 evm2.executionEnv.codeOwner (forkDstInkSlot I) =
         solcSlotWord (forkAfterSrcArt σ I) I (forkDstInkSlot I) := by
-    simp [evm2, evm1, evm0, initState, Solm.EVM.storageLoad, solcSlotWord,
+    simp [evm2, evm1, evm0, initState, Stele.EVM.storageLoad, solcSlotWord,
       State.lookupAccount, Account.lookupStorage, storageStore_accountMap,
       storageStore_executionEnv, forkAfterSrcInk, forkAfterSrcArt, srcInkNew,
       srcArtNew]
   have hloadDstArt :
-      Solm.EVM.storageLoad evm3 evm3.executionEnv.codeOwner (forkDstArtSlot I) =
+      Stele.EVM.storageLoad evm3 evm3.executionEnv.codeOwner (forkDstArtSlot I) =
         solcSlotWord (forkAfterDstInk σ I) I (forkDstArtSlot I) := by
-    simp [evm3, evm2, evm1, evm0, initState, Solm.EVM.storageLoad, solcSlotWord,
+    simp [evm3, evm2, evm1, evm0, initState, Stele.EVM.storageLoad, solcSlotWord,
       State.lookupAccount, Account.lookupStorage, storageStore_accountMap,
       storageStore_executionEnv, forkAfterSrcInk, forkAfterSrcArt, forkAfterDstInk,
       srcInkNew, srcArtNew, dstInkNew]
   have hloadFinal (slot : UInt256) :
-      Solm.EVM.storageLoad evm4 evm4.executionEnv.codeOwner slot =
+      Stele.EVM.storageLoad evm4 evm4.executionEnv.codeOwner slot =
         solcSlotWord (forkAfterDstArt σ I) I slot := by
     simpa [evm4, evm3, evm2, evm1, evm0, storageStore_executionEnv, srcInkNew,
       srcArtNew, dstInkNew, dstArtNew] using
@@ -13452,13 +13452,13 @@ theorem vatForkSourceRevertBodyFromFinalBlock
       forkStoreDstInkSpotFinal I srcInkNew srcArtNew dstInkNew dstArtNew
         srcArtFinal dstArtFinal srcInkFinal dstInkFinal utab vtab srcInkSpot dstInkSpot
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-    let evm1 := Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner
+    let evm1 := Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner
       (forkSrcInkSlot I) srcInkNew
-    let evm2 := Solm.EVM.storageStore evm1 evm1.executionEnv.codeOwner
+    let evm2 := Stele.EVM.storageStore evm1 evm1.executionEnv.codeOwner
       (forkSrcArtSlot I) srcArtNew
-    let evm3 := Solm.EVM.storageStore evm2 evm2.executionEnv.codeOwner
+    let evm3 := Stele.EVM.storageStore evm2 evm2.executionEnv.codeOwner
       (forkDstInkSlot I) dstInkNew
-    let evm4 := Solm.EVM.storageStore evm3 evm3.executionEnv.codeOwner
+    let evm4 := Stele.EVM.storageStore evm3 evm3.executionEnv.codeOwner
       (forkDstArtSlot I) dstArtNew
     ExecBlock config { contract := contract, locals := finalLocals } evm4
       [ .require (bothExpr (wishExpr (.var "src") sender) (wishExpr (.var "dst") sender)),
@@ -13478,32 +13478,32 @@ theorem vatForkSourceRevertBodyFromFinalBlock
     srcInkFinal dstInkFinal rate spot utab vtab srcInkSpot dstInkSpot finalLocals
     evm0 evm1 evm2 evm3 evm4 hfinalBlock
   have hloadSrcInk :
-      Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I) =
+      Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (forkSrcInkSlot I) =
         solcSlotWord σ I (forkSrcInkSlot I) := by
-    simp [evm0, initState, Solm.EVM.storageLoad, solcSlotWord, State.lookupAccount,
+    simp [evm0, initState, Stele.EVM.storageLoad, solcSlotWord, State.lookupAccount,
       Account.lookupStorage]
   have hloadSrcArt :
-      Solm.EVM.storageLoad evm1 evm1.executionEnv.codeOwner (forkSrcArtSlot I) =
+      Stele.EVM.storageLoad evm1 evm1.executionEnv.codeOwner (forkSrcArtSlot I) =
         solcSlotWord (forkAfterSrcInk σ I) I (forkSrcArtSlot I) := by
-    simp [evm1, evm0, initState, Solm.EVM.storageLoad, solcSlotWord,
+    simp [evm1, evm0, initState, Stele.EVM.storageLoad, solcSlotWord,
       State.lookupAccount, Account.lookupStorage, storageStore_accountMap,
       storageStore_executionEnv, forkAfterSrcInk, srcInkNew]
   have hloadDstInk :
-      Solm.EVM.storageLoad evm2 evm2.executionEnv.codeOwner (forkDstInkSlot I) =
+      Stele.EVM.storageLoad evm2 evm2.executionEnv.codeOwner (forkDstInkSlot I) =
         solcSlotWord (forkAfterSrcArt σ I) I (forkDstInkSlot I) := by
-    simp [evm2, evm1, evm0, initState, Solm.EVM.storageLoad, solcSlotWord,
+    simp [evm2, evm1, evm0, initState, Stele.EVM.storageLoad, solcSlotWord,
       State.lookupAccount, Account.lookupStorage, storageStore_accountMap,
       storageStore_executionEnv, forkAfterSrcInk, forkAfterSrcArt, srcInkNew,
       srcArtNew]
   have hloadDstArt :
-      Solm.EVM.storageLoad evm3 evm3.executionEnv.codeOwner (forkDstArtSlot I) =
+      Stele.EVM.storageLoad evm3 evm3.executionEnv.codeOwner (forkDstArtSlot I) =
         solcSlotWord (forkAfterDstInk σ I) I (forkDstArtSlot I) := by
-    simp [evm3, evm2, evm1, evm0, initState, Solm.EVM.storageLoad, solcSlotWord,
+    simp [evm3, evm2, evm1, evm0, initState, Stele.EVM.storageLoad, solcSlotWord,
       State.lookupAccount, Account.lookupStorage, storageStore_accountMap,
       storageStore_executionEnv, forkAfterSrcInk, forkAfterSrcArt, forkAfterDstInk,
       srcInkNew, srcArtNew, dstInkNew]
   have hloadFinal (slot : UInt256) :
-      Solm.EVM.storageLoad evm4 evm4.executionEnv.codeOwner slot =
+      Stele.EVM.storageLoad evm4 evm4.executionEnv.codeOwner slot =
         solcSlotWord (forkAfterDstArt σ I) I slot := by
     simpa [evm4, evm3, evm2, evm1, evm0, storageStore_executionEnv, srcInkNew,
       srcArtNew, dstInkNew, dstArtNew] using
@@ -13605,13 +13605,13 @@ theorem vatForkSuccessEquivFromSourceFinal
       let dstInkNew := forkDstInkNew σ I
       let dstArtNew := forkDstArtNew σ I
       let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-      let evm1 := Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner
+      let evm1 := Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner
         (forkSrcInkSlot I) srcInkNew
-      let evm2 := Solm.EVM.storageStore evm1 evm1.executionEnv.codeOwner
+      let evm2 := Stele.EVM.storageStore evm1 evm1.executionEnv.codeOwner
         (forkSrcArtSlot I) srcArtNew
-      let evm3 := Solm.EVM.storageStore evm2 evm2.executionEnv.codeOwner
+      let evm3 := Stele.EVM.storageStore evm2 evm2.executionEnv.codeOwner
         (forkDstInkSlot I) dstInkNew
-      let evm4 := Solm.EVM.storageStore evm3 evm3.executionEnv.codeOwner
+      let evm4 := Stele.EVM.storageStore evm3 evm3.executionEnv.codeOwner
         (forkDstArtSlot I) dstArtNew
       ExecTransitionBody config contract evm0 (forkStore I) forkTransition.body
         (.returned { contract := contract, locals := finalLocals } evm4 none)) :
@@ -13625,46 +13625,46 @@ theorem vatForkSuccessEquivFromSourceFinal
       rfl rfl rfl rfl
   have haccounts :
       Eq (forkAfterDstArt σ I)
-        (Solm.EVM.storageStore
-          (Solm.EVM.storageStore
-            (Solm.EVM.storageStore
-              (Solm.EVM.storageStore
+        (Stele.EVM.storageStore
+          (Stele.EVM.storageStore
+            (Stele.EVM.storageStore
+              (Stele.EVM.storageStore
                 (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                 (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
                 (forkSrcInkSlot I) (forkSrcInkNew σ I))
-              (Solm.EVM.storageStore
+              (Stele.EVM.storageStore
                 (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                 (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
                 (forkSrcInkSlot I) (forkSrcInkNew σ I)).executionEnv.codeOwner
               (forkSrcArtSlot I) (forkSrcArtNew σ I))
-            (Solm.EVM.storageStore
-              (Solm.EVM.storageStore
+            (Stele.EVM.storageStore
+              (Stele.EVM.storageStore
                 (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                 (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
                 (forkSrcInkSlot I) (forkSrcInkNew σ I))
-              (Solm.EVM.storageStore
+              (Stele.EVM.storageStore
                 (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                 (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
                 (forkSrcInkSlot I) (forkSrcInkNew σ I)).executionEnv.codeOwner
               (forkSrcArtSlot I) (forkSrcArtNew σ I)).executionEnv.codeOwner
             (forkDstInkSlot I) (forkDstInkNew σ I))
-          (Solm.EVM.storageStore
-            (Solm.EVM.storageStore
-              (Solm.EVM.storageStore
+          (Stele.EVM.storageStore
+            (Stele.EVM.storageStore
+              (Stele.EVM.storageStore
                 (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                 (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
                 (forkSrcInkSlot I) (forkSrcInkNew σ I))
-              (Solm.EVM.storageStore
+              (Stele.EVM.storageStore
                 (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                 (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
                 (forkSrcInkSlot I) (forkSrcInkNew σ I)).executionEnv.codeOwner
               (forkSrcArtSlot I) (forkSrcArtNew σ I))
-            (Solm.EVM.storageStore
-              (Solm.EVM.storageStore
+            (Stele.EVM.storageStore
+              (Stele.EVM.storageStore
                 (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                 (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
                 (forkSrcInkSlot I) (forkSrcInkNew σ I))
-              (Solm.EVM.storageStore
+              (Stele.EVM.storageStore
                 (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                 (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
                 (forkSrcInkSlot I) (forkSrcInkNew σ I)).executionEnv.codeOwner
@@ -13940,12 +13940,12 @@ theorem vatForkBodyCore : VatBodyTheoremAnyPerm 10 := by
             UInt256.lt (forkSrcInkNew σ I)
               (solcSlotWord σ I (forkSrcInkSlot I)) = ⟨0⟩
       · have hloadSrcInk0 :
-            Solm.EVM.storageLoad
+            Stele.EVM.storageLoad
               (initState σ σ₀ (Sat256.ofUInt256 g) A I)
               (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
               (forkSrcInkSlot I) =
             solcSlotWord σ I (forkSrcInkSlot I) := by
-          simp [initState, Solm.EVM.storageLoad, solcSlotWord, State.lookupAccount,
+          simp [initState, Stele.EVM.storageLoad, solcSlotWord, State.lookupAccount,
             Account.lookupStorage]
         obtain ⟨_, _, h4792s⟩ := RD.vatForkSrcInkSubSuccess
           (h := hdecoded) solcFreePtrMem_size hsz164
@@ -14211,13 +14211,13 @@ theorem vatForkBodyCore : VatBodyTheoremAnyPerm 10 := by
                                           (forkDstInkSlot I)) ≠ ⟨0⟩ := by
                                 simpa [σFinal] using hdstInkSpotOk
                               let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-                              let evm1 := Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner
+                              let evm1 := Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner
                                 (forkSrcInkSlot I) (forkSrcInkNew σ I)
-                              let evm2 := Solm.EVM.storageStore evm1 evm1.executionEnv.codeOwner
+                              let evm2 := Stele.EVM.storageStore evm1 evm1.executionEnv.codeOwner
                                 (forkSrcArtSlot I) (forkSrcArtNew σ I)
-                              let evm3 := Solm.EVM.storageStore evm2 evm2.executionEnv.codeOwner
+                              let evm3 := Stele.EVM.storageStore evm2 evm2.executionEnv.codeOwner
                                 (forkDstInkSlot I) (forkDstInkNew σ I)
-                              let evm4 := Solm.EVM.storageStore evm3 evm3.executionEnv.codeOwner
+                              let evm4 := Stele.EVM.storageStore evm3 evm3.executionEnv.codeOwner
                                 (forkDstArtSlot I) (forkDstArtNew σ I)
                               let σFinalS := forkAfterDstArt σ I
                               let srcArtFinalS := solcSlotWord σFinalS I (forkSrcArtSlot I)
@@ -14237,7 +14237,7 @@ theorem vatForkBodyCore : VatBodyTheoremAnyPerm 10 := by
                                   srcArtFinalS dstArtFinalS srcInkFinalS dstInkFinalS
                                   utabS vtabS srcInkSpotS dstInkSpotS
                               have hloadFinalS (slot : UInt256) :
-                                  Solm.EVM.storageLoad evm4 evm4.executionEnv.codeOwner slot =
+                                  Stele.EVM.storageLoad evm4 evm4.executionEnv.codeOwner slot =
                                     solcSlotWord σFinalS I slot := by
                                 simpa [evm4, evm3, evm2, evm1, evm0, σFinalS,
                                   storageStore_executionEnv] using
@@ -14800,49 +14800,49 @@ theorem vatForkBodyCore : VatBodyTheoremAnyPerm 10 := by
                                         (forkDstArtSlot I)) = ⟨0⟩ :=
                                 hdstArtPos
                               let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-                              let evm1 := Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner
+                              let evm1 := Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner
                                 (forkSrcInkSlot I) (forkSrcInkNew σ I)
-                              let evm2 := Solm.EVM.storageStore evm1 evm1.executionEnv.codeOwner
+                              let evm2 := Stele.EVM.storageStore evm1 evm1.executionEnv.codeOwner
                                 (forkSrcArtSlot I) (forkSrcArtNew σ I)
-                              let evm3 := Solm.EVM.storageStore evm2 evm2.executionEnv.codeOwner
+                              let evm3 := Stele.EVM.storageStore evm2 evm2.executionEnv.codeOwner
                                 (forkDstInkSlot I) (forkDstInkNew σ I)
-                              let evm4 := Solm.EVM.storageStore evm3 evm3.executionEnv.codeOwner
+                              let evm4 := Stele.EVM.storageStore evm3 evm3.executionEnv.codeOwner
                                 (forkDstArtSlot I) (forkDstArtNew σ I)
                               have hloadSrcInk :
-                                  Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner
+                                  Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner
                                     (forkSrcInkSlot I) =
                                   solcSlotWord σ I (forkSrcInkSlot I) := by
-                                simp [evm0, initState, Solm.EVM.storageLoad, solcSlotWord,
+                                simp [evm0, initState, Stele.EVM.storageLoad, solcSlotWord,
                                   State.lookupAccount, Account.lookupStorage]
                               have hloadSrcArt :
-                                  Solm.EVM.storageLoad evm1 evm1.executionEnv.codeOwner
+                                  Stele.EVM.storageLoad evm1 evm1.executionEnv.codeOwner
                                     (forkSrcArtSlot I) =
                                   solcSlotWord (forkAfterSrcInk σ I) I
                                     (forkSrcArtSlot I) := by
-                                simp [evm1, evm0, initState, Solm.EVM.storageLoad,
+                                simp [evm1, evm0, initState, Stele.EVM.storageLoad,
                                   solcSlotWord, State.lookupAccount, Account.lookupStorage,
                                   storageStore_accountMap, storageStore_executionEnv,
                                   forkAfterSrcInk]
                               have hloadDstInk :
-                                  Solm.EVM.storageLoad evm2 evm2.executionEnv.codeOwner
+                                  Stele.EVM.storageLoad evm2 evm2.executionEnv.codeOwner
                                     (forkDstInkSlot I) =
                                   solcSlotWord (forkAfterSrcArt σ I) I
                                     (forkDstInkSlot I) := by
-                                simp [evm2, evm1, evm0, initState, Solm.EVM.storageLoad,
+                                simp [evm2, evm1, evm0, initState, Stele.EVM.storageLoad,
                                   solcSlotWord, State.lookupAccount, Account.lookupStorage,
                                   storageStore_accountMap, storageStore_executionEnv,
                                   forkAfterSrcInk, forkAfterSrcArt]
                               have hloadDstArt :
-                                  Solm.EVM.storageLoad evm3 evm3.executionEnv.codeOwner
+                                  Stele.EVM.storageLoad evm3 evm3.executionEnv.codeOwner
                                     (forkDstArtSlot I) =
                                   solcSlotWord (forkAfterDstInk σ I) I
                                     (forkDstArtSlot I) := by
-                                simp [evm3, evm2, evm1, evm0, initState, Solm.EVM.storageLoad,
+                                simp [evm3, evm2, evm1, evm0, initState, Stele.EVM.storageLoad,
                                   solcSlotWord, State.lookupAccount, Account.lookupStorage,
                                   storageStore_accountMap, storageStore_executionEnv,
                                   forkAfterSrcInk, forkAfterSrcArt, forkAfterDstInk]
                               have hloadFinal (slot : UInt256) :
-                                  Solm.EVM.storageLoad evm4 evm4.executionEnv.codeOwner slot =
+                                  Stele.EVM.storageLoad evm4 evm4.executionEnv.codeOwner slot =
                                     solcSlotWord (forkAfterDstArt σ I) I slot := by
                                 simpa [evm4, evm3, evm2, evm1, evm0,
                                   storageStore_executionEnv] using
@@ -15211,49 +15211,49 @@ theorem vatForkBodyCore : VatBodyTheoremAnyPerm 10 := by
                                       (forkDstArtSlot I)) = ⟨0⟩ :=
                               hdstArtPos
                             let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-                            let evm1 := Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner
+                            let evm1 := Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner
                               (forkSrcInkSlot I) (forkSrcInkNew σ I)
-                            let evm2 := Solm.EVM.storageStore evm1 evm1.executionEnv.codeOwner
+                            let evm2 := Stele.EVM.storageStore evm1 evm1.executionEnv.codeOwner
                               (forkSrcArtSlot I) (forkSrcArtNew σ I)
-                            let evm3 := Solm.EVM.storageStore evm2 evm2.executionEnv.codeOwner
+                            let evm3 := Stele.EVM.storageStore evm2 evm2.executionEnv.codeOwner
                               (forkDstInkSlot I) (forkDstInkNew σ I)
-                            let evm4 := Solm.EVM.storageStore evm3 evm3.executionEnv.codeOwner
+                            let evm4 := Stele.EVM.storageStore evm3 evm3.executionEnv.codeOwner
                               (forkDstArtSlot I) (forkDstArtNew σ I)
                             have hloadSrcInk :
-                                Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner
+                                Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner
                                   (forkSrcInkSlot I) =
                                 solcSlotWord σ I (forkSrcInkSlot I) := by
-                              simp [evm0, initState, Solm.EVM.storageLoad, solcSlotWord,
+                              simp [evm0, initState, Stele.EVM.storageLoad, solcSlotWord,
                                 State.lookupAccount, Account.lookupStorage]
                             have hloadSrcArt :
-                                Solm.EVM.storageLoad evm1 evm1.executionEnv.codeOwner
+                                Stele.EVM.storageLoad evm1 evm1.executionEnv.codeOwner
                                   (forkSrcArtSlot I) =
                                 solcSlotWord (forkAfterSrcInk σ I) I
                                   (forkSrcArtSlot I) := by
-                              simp [evm1, evm0, initState, Solm.EVM.storageLoad,
+                              simp [evm1, evm0, initState, Stele.EVM.storageLoad,
                                 solcSlotWord, State.lookupAccount, Account.lookupStorage,
                                 storageStore_accountMap, storageStore_executionEnv,
                                 forkAfterSrcInk]
                             have hloadDstInk :
-                                Solm.EVM.storageLoad evm2 evm2.executionEnv.codeOwner
+                                Stele.EVM.storageLoad evm2 evm2.executionEnv.codeOwner
                                   (forkDstInkSlot I) =
                                 solcSlotWord (forkAfterSrcArt σ I) I
                                   (forkDstInkSlot I) := by
-                              simp [evm2, evm1, evm0, initState, Solm.EVM.storageLoad,
+                              simp [evm2, evm1, evm0, initState, Stele.EVM.storageLoad,
                                 solcSlotWord, State.lookupAccount, Account.lookupStorage,
                                 storageStore_accountMap, storageStore_executionEnv,
                                 forkAfterSrcInk, forkAfterSrcArt]
                             have hloadDstArt :
-                                Solm.EVM.storageLoad evm3 evm3.executionEnv.codeOwner
+                                Stele.EVM.storageLoad evm3 evm3.executionEnv.codeOwner
                                   (forkDstArtSlot I) =
                                 solcSlotWord (forkAfterDstInk σ I) I
                                   (forkDstArtSlot I) := by
-                              simp [evm3, evm2, evm1, evm0, initState, Solm.EVM.storageLoad,
+                              simp [evm3, evm2, evm1, evm0, initState, Stele.EVM.storageLoad,
                                 solcSlotWord, State.lookupAccount, Account.lookupStorage,
                                 storageStore_accountMap, storageStore_executionEnv,
                                 forkAfterSrcInk, forkAfterSrcArt, forkAfterDstInk]
                             have hloadFinal (slot : UInt256) :
-                                Solm.EVM.storageLoad evm4 evm4.executionEnv.codeOwner slot =
+                                Stele.EVM.storageLoad evm4 evm4.executionEnv.codeOwner slot =
                                   solcSlotWord (forkAfterDstArt σ I) I slot := by
                               simpa [evm4, evm3, evm2, evm1, evm0,
                                 storageStore_executionEnv] using
@@ -15530,49 +15530,49 @@ theorem vatForkBodyCore : VatBodyTheoremAnyPerm 10 := by
                                     (forkDstArtSlot I)) = ⟨0⟩ :=
                             hdstArtPos
                           let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-                          let evm1 := Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner
+                          let evm1 := Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner
                             (forkSrcInkSlot I) (forkSrcInkNew σ I)
-                          let evm2 := Solm.EVM.storageStore evm1 evm1.executionEnv.codeOwner
+                          let evm2 := Stele.EVM.storageStore evm1 evm1.executionEnv.codeOwner
                             (forkSrcArtSlot I) (forkSrcArtNew σ I)
-                          let evm3 := Solm.EVM.storageStore evm2 evm2.executionEnv.codeOwner
+                          let evm3 := Stele.EVM.storageStore evm2 evm2.executionEnv.codeOwner
                             (forkDstInkSlot I) (forkDstInkNew σ I)
-                          let evm4 := Solm.EVM.storageStore evm3 evm3.executionEnv.codeOwner
+                          let evm4 := Stele.EVM.storageStore evm3 evm3.executionEnv.codeOwner
                             (forkDstArtSlot I) (forkDstArtNew σ I)
                           have hloadSrcInk :
-                              Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner
+                              Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner
                                 (forkSrcInkSlot I) =
                               solcSlotWord σ I (forkSrcInkSlot I) := by
-                            simp [evm0, initState, Solm.EVM.storageLoad, solcSlotWord,
+                            simp [evm0, initState, Stele.EVM.storageLoad, solcSlotWord,
                               State.lookupAccount, Account.lookupStorage]
                           have hloadSrcArt :
-                              Solm.EVM.storageLoad evm1 evm1.executionEnv.codeOwner
+                              Stele.EVM.storageLoad evm1 evm1.executionEnv.codeOwner
                                 (forkSrcArtSlot I) =
                               solcSlotWord (forkAfterSrcInk σ I) I
                                 (forkSrcArtSlot I) := by
-                            simp [evm1, evm0, initState, Solm.EVM.storageLoad,
+                            simp [evm1, evm0, initState, Stele.EVM.storageLoad,
                               solcSlotWord, State.lookupAccount, Account.lookupStorage,
                               storageStore_accountMap, storageStore_executionEnv,
                               forkAfterSrcInk]
                           have hloadDstInk :
-                              Solm.EVM.storageLoad evm2 evm2.executionEnv.codeOwner
+                              Stele.EVM.storageLoad evm2 evm2.executionEnv.codeOwner
                                 (forkDstInkSlot I) =
                               solcSlotWord (forkAfterSrcArt σ I) I
                                 (forkDstInkSlot I) := by
-                            simp [evm2, evm1, evm0, initState, Solm.EVM.storageLoad,
+                            simp [evm2, evm1, evm0, initState, Stele.EVM.storageLoad,
                               solcSlotWord, State.lookupAccount, Account.lookupStorage,
                               storageStore_accountMap, storageStore_executionEnv,
                               forkAfterSrcInk, forkAfterSrcArt]
                           have hloadDstArt :
-                              Solm.EVM.storageLoad evm3 evm3.executionEnv.codeOwner
+                              Stele.EVM.storageLoad evm3 evm3.executionEnv.codeOwner
                                 (forkDstArtSlot I) =
                               solcSlotWord (forkAfterDstInk σ I) I
                                 (forkDstArtSlot I) := by
-                            simp [evm3, evm2, evm1, evm0, initState, Solm.EVM.storageLoad,
+                            simp [evm3, evm2, evm1, evm0, initState, Stele.EVM.storageLoad,
                               solcSlotWord, State.lookupAccount, Account.lookupStorage,
                               storageStore_accountMap, storageStore_executionEnv,
                               forkAfterSrcInk, forkAfterSrcArt, forkAfterDstInk]
                           have hloadFinal (slot : UInt256) :
-                              Solm.EVM.storageLoad evm4 evm4.executionEnv.codeOwner slot =
+                              Stele.EVM.storageLoad evm4 evm4.executionEnv.codeOwner slot =
                                 solcSlotWord (forkAfterDstArt σ I) I slot := by
                             simpa [evm4, evm3, evm2, evm1, evm0,
                               storageStore_executionEnv] using
@@ -15761,48 +15761,48 @@ theorem vatForkBodyCore : VatBodyTheoremAnyPerm 10 := by
                                   (forkDstArtSlot I)) = ⟨0⟩ :=
                           hdstArtPos
                         let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-                        let evm1 := Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner
+                        let evm1 := Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner
                           (forkSrcInkSlot I) (forkSrcInkNew σ I)
-                        let evm2 := Solm.EVM.storageStore evm1 evm1.executionEnv.codeOwner
+                        let evm2 := Stele.EVM.storageStore evm1 evm1.executionEnv.codeOwner
                           (forkSrcArtSlot I) (forkSrcArtNew σ I)
-                        let evm3 := Solm.EVM.storageStore evm2 evm2.executionEnv.codeOwner
+                        let evm3 := Stele.EVM.storageStore evm2 evm2.executionEnv.codeOwner
                           (forkDstInkSlot I) (forkDstInkNew σ I)
-                        let evm4 := Solm.EVM.storageStore evm3 evm3.executionEnv.codeOwner
+                        let evm4 := Stele.EVM.storageStore evm3 evm3.executionEnv.codeOwner
                           (forkDstArtSlot I) (forkDstArtNew σ I)
                         have hloadSrcInk :
-                            Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner
+                            Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner
                               (forkSrcInkSlot I) =
                             solcSlotWord σ I (forkSrcInkSlot I) := by
-                          simp [evm0, initState, Solm.EVM.storageLoad, solcSlotWord,
+                          simp [evm0, initState, Stele.EVM.storageLoad, solcSlotWord,
                             State.lookupAccount, Account.lookupStorage]
                         have hloadSrcArt :
-                            Solm.EVM.storageLoad evm1 evm1.executionEnv.codeOwner
+                            Stele.EVM.storageLoad evm1 evm1.executionEnv.codeOwner
                               (forkSrcArtSlot I) =
                             solcSlotWord (forkAfterSrcInk σ I) I
                               (forkSrcArtSlot I) := by
-                          simp [evm1, evm0, initState, Solm.EVM.storageLoad, solcSlotWord,
+                          simp [evm1, evm0, initState, Stele.EVM.storageLoad, solcSlotWord,
                             State.lookupAccount, Account.lookupStorage, storageStore_accountMap,
                             storageStore_executionEnv, forkAfterSrcInk]
                         have hloadDstInk :
-                            Solm.EVM.storageLoad evm2 evm2.executionEnv.codeOwner
+                            Stele.EVM.storageLoad evm2 evm2.executionEnv.codeOwner
                               (forkDstInkSlot I) =
                             solcSlotWord (forkAfterSrcArt σ I) I
                               (forkDstInkSlot I) := by
-                          simp [evm2, evm1, evm0, initState, Solm.EVM.storageLoad,
+                          simp [evm2, evm1, evm0, initState, Stele.EVM.storageLoad,
                             solcSlotWord, State.lookupAccount, Account.lookupStorage,
                             storageStore_accountMap, storageStore_executionEnv,
                             forkAfterSrcInk, forkAfterSrcArt]
                         have hloadDstArt :
-                            Solm.EVM.storageLoad evm3 evm3.executionEnv.codeOwner
+                            Stele.EVM.storageLoad evm3 evm3.executionEnv.codeOwner
                               (forkDstArtSlot I) =
                             solcSlotWord (forkAfterDstInk σ I) I
                               (forkDstArtSlot I) := by
-                          simp [evm3, evm2, evm1, evm0, initState, Solm.EVM.storageLoad,
+                          simp [evm3, evm2, evm1, evm0, initState, Stele.EVM.storageLoad,
                             solcSlotWord, State.lookupAccount, Account.lookupStorage,
                             storageStore_accountMap, storageStore_executionEnv,
                             forkAfterSrcInk, forkAfterSrcArt, forkAfterDstInk]
                         have hloadFinal (slot : UInt256) :
-                            Solm.EVM.storageLoad evm4 evm4.executionEnv.codeOwner slot =
+                            Stele.EVM.storageLoad evm4 evm4.executionEnv.codeOwner slot =
                               solcSlotWord (forkAfterDstArt σ I) I slot := by
                           simpa [evm4, evm3, evm2, evm1, evm0, storageStore_executionEnv]
                             using
@@ -15939,28 +15939,28 @@ theorem vatForkBodyCore : VatBodyTheoremAnyPerm 10 := by
                       intro hs
                       exact hdstArtPos (hs)
                     have hloadSrcInk :
-                        Solm.EVM.storageLoad
+                        Stele.EVM.storageLoad
                           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                           (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
                           (forkSrcInkSlot I) =
                         solcSlotWord σ I (forkSrcInkSlot I) := by
-                      simp [initState, Solm.EVM.storageLoad, solcSlotWord, State.lookupAccount,
+                      simp [initState, Stele.EVM.storageLoad, solcSlotWord, State.lookupAccount,
                         Account.lookupStorage]
                     have hloadSrcArt :
-                        Solm.EVM.storageLoad
-                          (Solm.EVM.storageStore
+                        Stele.EVM.storageLoad
+                          (Stele.EVM.storageStore
                             (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                             (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
                             (forkSrcInkSlot I) (forkSrcInkNew σ I))
                           (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
                           (forkSrcArtSlot I) =
                         solcSlotWord (forkAfterSrcInk σ I) I (forkSrcArtSlot I) := by
-                      simp [initState, Solm.EVM.storageLoad, solcSlotWord, State.lookupAccount,
+                      simp [initState, Stele.EVM.storageLoad, solcSlotWord, State.lookupAccount,
                         Account.lookupStorage, storageStore_accountMap, forkAfterSrcInk]
                     have hloadDstInk :
-                        Solm.EVM.storageLoad
-                          (Solm.EVM.storageStore
-                            (Solm.EVM.storageStore
+                        Stele.EVM.storageLoad
+                          (Stele.EVM.storageStore
+                            (Stele.EVM.storageStore
                               (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                               (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
                               (forkSrcInkSlot I) (forkSrcInkNew σ I))
@@ -15969,13 +15969,13 @@ theorem vatForkBodyCore : VatBodyTheoremAnyPerm 10 := by
                           (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
                           (forkDstInkSlot I) =
                         solcSlotWord (forkAfterSrcArt σ I) I (forkDstInkSlot I) := by
-                      simp [initState, Solm.EVM.storageLoad, solcSlotWord, State.lookupAccount,
+                      simp [initState, Stele.EVM.storageLoad, solcSlotWord, State.lookupAccount,
                         Account.lookupStorage, storageStore_accountMap, forkAfterSrcInk, forkAfterSrcArt]
                     have hloadDstArt :
-                        Solm.EVM.storageLoad
-                          (Solm.EVM.storageStore
-                            (Solm.EVM.storageStore
-                              (Solm.EVM.storageStore
+                        Stele.EVM.storageLoad
+                          (Stele.EVM.storageStore
+                            (Stele.EVM.storageStore
+                              (Stele.EVM.storageStore
                                 (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                                 (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
                                 (forkSrcInkSlot I) (forkSrcInkNew σ I))
@@ -15986,7 +15986,7 @@ theorem vatForkBodyCore : VatBodyTheoremAnyPerm 10 := by
                           (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
                           (forkDstArtSlot I) =
                         solcSlotWord (forkAfterDstInk σ I) I (forkDstArtSlot I) := by
-                      simp [initState, Solm.EVM.storageLoad, solcSlotWord, State.lookupAccount,
+                      simp [initState, Stele.EVM.storageLoad, solcSlotWord, State.lookupAccount,
                         Account.lookupStorage, storageStore_accountMap, forkAfterSrcInk,
                         forkAfterSrcArt, forkAfterDstInk]
                     have hbody := execForkSourceRevertDstArtGuardPos
@@ -16062,28 +16062,28 @@ theorem vatForkBodyCore : VatBodyTheoremAnyPerm 10 := by
                     intro hs
                     exact hdstArtNeg (hs)
                   have hloadSrcInk :
-                      Solm.EVM.storageLoad
+                      Stele.EVM.storageLoad
                         (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                         (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
                         (forkSrcInkSlot I) =
                       solcSlotWord σ I (forkSrcInkSlot I) := by
-                    simp [initState, Solm.EVM.storageLoad, solcSlotWord, State.lookupAccount,
+                    simp [initState, Stele.EVM.storageLoad, solcSlotWord, State.lookupAccount,
                       Account.lookupStorage]
                   have hloadSrcArt :
-                      Solm.EVM.storageLoad
-                        (Solm.EVM.storageStore
+                      Stele.EVM.storageLoad
+                        (Stele.EVM.storageStore
                           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                           (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
                           (forkSrcInkSlot I) (forkSrcInkNew σ I))
                         (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
                         (forkSrcArtSlot I) =
                       solcSlotWord (forkAfterSrcInk σ I) I (forkSrcArtSlot I) := by
-                    simp [initState, Solm.EVM.storageLoad, solcSlotWord, State.lookupAccount,
+                    simp [initState, Stele.EVM.storageLoad, solcSlotWord, State.lookupAccount,
                       Account.lookupStorage, storageStore_accountMap, forkAfterSrcInk]
                   have hloadDstInk :
-                      Solm.EVM.storageLoad
-                        (Solm.EVM.storageStore
-                          (Solm.EVM.storageStore
+                      Stele.EVM.storageLoad
+                        (Stele.EVM.storageStore
+                          (Stele.EVM.storageStore
                             (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                             (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
                             (forkSrcInkSlot I) (forkSrcInkNew σ I))
@@ -16092,13 +16092,13 @@ theorem vatForkBodyCore : VatBodyTheoremAnyPerm 10 := by
                         (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
                         (forkDstInkSlot I) =
                       solcSlotWord (forkAfterSrcArt σ I) I (forkDstInkSlot I) := by
-                    simp [initState, Solm.EVM.storageLoad, solcSlotWord, State.lookupAccount,
+                    simp [initState, Stele.EVM.storageLoad, solcSlotWord, State.lookupAccount,
                       Account.lookupStorage, storageStore_accountMap, forkAfterSrcInk, forkAfterSrcArt]
                   have hloadDstArt :
-                      Solm.EVM.storageLoad
-                        (Solm.EVM.storageStore
-                          (Solm.EVM.storageStore
-                            (Solm.EVM.storageStore
+                      Stele.EVM.storageLoad
+                        (Stele.EVM.storageStore
+                          (Stele.EVM.storageStore
+                            (Stele.EVM.storageStore
                               (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                               (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
                               (forkSrcInkSlot I) (forkSrcInkNew σ I))
@@ -16109,7 +16109,7 @@ theorem vatForkBodyCore : VatBodyTheoremAnyPerm 10 := by
                         (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
                         (forkDstArtSlot I) =
                       solcSlotWord (forkAfterDstInk σ I) I (forkDstArtSlot I) := by
-                    simp [initState, Solm.EVM.storageLoad, solcSlotWord, State.lookupAccount,
+                    simp [initState, Stele.EVM.storageLoad, solcSlotWord, State.lookupAccount,
                       Account.lookupStorage, storageStore_accountMap, forkAfterSrcInk,
                       forkAfterSrcArt, forkAfterDstInk]
                   have hbody := execForkSourceRevertDstArtGuardNeg
@@ -16179,28 +16179,28 @@ theorem vatForkBodyCore : VatBodyTheoremAnyPerm 10 := by
                   intro hs
                   exact hdstInkPos (hs)
                 have hloadSrcInk :
-                    Solm.EVM.storageLoad
+                    Stele.EVM.storageLoad
                       (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                       (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
                       (forkSrcInkSlot I) =
                     solcSlotWord σ I (forkSrcInkSlot I) := by
-                  simp [initState, Solm.EVM.storageLoad, solcSlotWord, State.lookupAccount,
+                  simp [initState, Stele.EVM.storageLoad, solcSlotWord, State.lookupAccount,
                     Account.lookupStorage]
                 have hloadSrcArt :
-                    Solm.EVM.storageLoad
-                      (Solm.EVM.storageStore
+                    Stele.EVM.storageLoad
+                      (Stele.EVM.storageStore
                         (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                         (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
                         (forkSrcInkSlot I) (forkSrcInkNew σ I))
                       (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
                       (forkSrcArtSlot I) =
                     solcSlotWord (forkAfterSrcInk σ I) I (forkSrcArtSlot I) := by
-                  simp [initState, Solm.EVM.storageLoad, solcSlotWord, State.lookupAccount,
+                  simp [initState, Stele.EVM.storageLoad, solcSlotWord, State.lookupAccount,
                     Account.lookupStorage, storageStore_accountMap, forkAfterSrcInk]
                 have hloadDstInk :
-                    Solm.EVM.storageLoad
-                      (Solm.EVM.storageStore
-                        (Solm.EVM.storageStore
+                    Stele.EVM.storageLoad
+                      (Stele.EVM.storageStore
+                        (Stele.EVM.storageStore
                           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                           (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
                           (forkSrcInkSlot I) (forkSrcInkNew σ I))
@@ -16209,7 +16209,7 @@ theorem vatForkBodyCore : VatBodyTheoremAnyPerm 10 := by
                       (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
                       (forkDstInkSlot I) =
                     solcSlotWord (forkAfterSrcArt σ I) I (forkDstInkSlot I) := by
-                  simp [initState, Solm.EVM.storageLoad, solcSlotWord, State.lookupAccount,
+                  simp [initState, Stele.EVM.storageLoad, solcSlotWord, State.lookupAccount,
                     Account.lookupStorage, storageStore_accountMap, forkAfterSrcInk, forkAfterSrcArt]
                 have hbody := execForkSourceRevertDstInkGuardPos
                   (evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I) (I := I)
@@ -16265,29 +16265,29 @@ theorem vatForkBodyCore : VatBodyTheoremAnyPerm 10 := by
                 intro hs
                 exact hdstInkNeg (hs)
               have hloadSrcInk :
-                  Solm.EVM.storageLoad
+                  Stele.EVM.storageLoad
                     (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                     (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
                     (forkSrcInkSlot I) =
                   solcSlotWord σ I (forkSrcInkSlot I) := by
-                simp [initState, Solm.EVM.storageLoad, solcSlotWord, State.lookupAccount,
+                simp [initState, Stele.EVM.storageLoad, solcSlotWord, State.lookupAccount,
                   Account.lookupStorage]
               have hloadSrcArt :
-                  Solm.EVM.storageLoad
-                    (Solm.EVM.storageStore
+                  Stele.EVM.storageLoad
+                    (Stele.EVM.storageStore
                       (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                       (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
                       (forkSrcInkSlot I) (forkSrcInkNew σ I))
                     (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
                     (forkSrcArtSlot I) =
                   solcSlotWord (forkAfterSrcInk σ I) I (forkSrcArtSlot I) := by
-                simp [initState, Solm.EVM.storageLoad, solcSlotWord, State.lookupAccount,
+                simp [initState, Stele.EVM.storageLoad, solcSlotWord, State.lookupAccount,
                   Account.lookupStorage, storageStore_accountMap, storageStore_executionEnv,
                   forkAfterSrcInk]
               have hloadDstInk :
-                  Solm.EVM.storageLoad
-                    (Solm.EVM.storageStore
-                      (Solm.EVM.storageStore
+                  Stele.EVM.storageLoad
+                    (Stele.EVM.storageStore
+                      (Stele.EVM.storageStore
                         (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                         (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
                         (forkSrcInkSlot I) (forkSrcInkNew σ I))
@@ -16296,7 +16296,7 @@ theorem vatForkBodyCore : VatBodyTheoremAnyPerm 10 := by
                     (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
                     (forkDstInkSlot I) =
                   solcSlotWord (forkAfterSrcArt σ I) I (forkDstInkSlot I) := by
-                simp [initState, Solm.EVM.storageLoad, solcSlotWord, State.lookupAccount,
+                simp [initState, Stele.EVM.storageLoad, solcSlotWord, State.lookupAccount,
                   Account.lookupStorage, storageStore_accountMap, storageStore_executionEnv,
                   forkAfterSrcInk, forkAfterSrcArt]
               have hbody := execForkSourceRevertDstInkGuardNeg
@@ -16347,26 +16347,26 @@ theorem vatForkBodyCore : VatBodyTheoremAnyPerm 10 := by
               intro hs
               exact hsrcArtPos (hs)
             have hloadSrcInk :
-                Solm.EVM.storageLoad
+                Stele.EVM.storageLoad
                   (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                   (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
                   (forkSrcInkSlot I) =
                 solcSlotWord σ I (forkSrcInkSlot I) := by
-              simp [initState, Solm.EVM.storageLoad, solcSlotWord, State.lookupAccount,
+              simp [initState, Stele.EVM.storageLoad, solcSlotWord, State.lookupAccount,
                 Account.lookupStorage]
             have hloadSrcArt :
-                Solm.EVM.storageLoad
-                  (Solm.EVM.storageStore
+                Stele.EVM.storageLoad
+                  (Stele.EVM.storageStore
                     (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                     (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
                     (forkSrcInkSlot I) (forkSrcInkNew σ I))
-                  (Solm.EVM.storageStore
+                  (Stele.EVM.storageStore
                     (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                     (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
                     (forkSrcInkSlot I) (forkSrcInkNew σ I)).executionEnv.codeOwner
                   (forkSrcArtSlot I) =
                 solcSlotWord (forkAfterSrcInk σ I) I (forkSrcArtSlot I) := by
-              simp [initState, Solm.EVM.storageLoad, solcSlotWord, State.lookupAccount,
+              simp [initState, Stele.EVM.storageLoad, solcSlotWord, State.lookupAccount,
                 Account.lookupStorage, storageStore_accountMap, storageStore_executionEnv,
                 forkAfterSrcInk]
             have hbody := execForkSourceRevertSrcArtGuardPos
@@ -16404,26 +16404,26 @@ theorem vatForkBodyCore : VatBodyTheoremAnyPerm 10 := by
             intro hs
             exact hsrcArtNeg (hs)
           have hloadSrcInk :
-              Solm.EVM.storageLoad
+              Stele.EVM.storageLoad
                 (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                 (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
                 (forkSrcInkSlot I) =
               solcSlotWord σ I (forkSrcInkSlot I) := by
-            simp [initState, Solm.EVM.storageLoad, solcSlotWord, State.lookupAccount,
+            simp [initState, Stele.EVM.storageLoad, solcSlotWord, State.lookupAccount,
               Account.lookupStorage]
           have hloadSrcArt :
-              Solm.EVM.storageLoad
-                (Solm.EVM.storageStore
+              Stele.EVM.storageLoad
+                (Stele.EVM.storageStore
                   (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                   (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
                   (forkSrcInkSlot I) (forkSrcInkNew σ I))
-                (Solm.EVM.storageStore
+                (Stele.EVM.storageStore
                   (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                   (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
                   (forkSrcInkSlot I) (forkSrcInkNew σ I)).executionEnv.codeOwner
                 (forkSrcArtSlot I) =
               solcSlotWord (forkAfterSrcInk σ I) I (forkSrcArtSlot I) := by
-            simp [initState, Solm.EVM.storageLoad, solcSlotWord, State.lookupAccount,
+            simp [initState, Stele.EVM.storageLoad, solcSlotWord, State.lookupAccount,
               Account.lookupStorage, storageStore_accountMap, storageStore_executionEnv,
               forkAfterSrcInk]
           have hbody := execForkSourceRevertSrcArtGuardNeg
@@ -16455,12 +16455,12 @@ theorem vatForkBodyCore : VatBodyTheoremAnyPerm 10 := by
           intro hs
           exact hsrcInkPos (hs)
         have hloadSrcInk :
-            Solm.EVM.storageLoad
+            Stele.EVM.storageLoad
               (initState σ σ₀ (Sat256.ofUInt256 g) A I)
               (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
               (forkSrcInkSlot I) =
             solcSlotWord σ I (forkSrcInkSlot I) := by
-          simp [initState, Solm.EVM.storageLoad, solcSlotWord, State.lookupAccount,
+          simp [initState, Stele.EVM.storageLoad, solcSlotWord, State.lookupAccount,
             Account.lookupStorage]
         have hbody := execForkSourceRevertSrcInkGuardPos
           (evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I) (I := I)
@@ -16479,12 +16479,12 @@ theorem vatForkBodyCore : VatBodyTheoremAnyPerm 10 := by
         intro hs
         exact hsrcInkNeg (hs)
       have hloadSrcInk :
-          Solm.EVM.storageLoad
+          Stele.EVM.storageLoad
             (initState σ σ₀ (Sat256.ofUInt256 g) A I)
             (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
             (forkSrcInkSlot I) =
           solcSlotWord σ I (forkSrcInkSlot I) := by
-        simp [initState, Solm.EVM.storageLoad, solcSlotWord, State.lookupAccount,
+        simp [initState, Stele.EVM.storageLoad, solcSlotWord, State.lookupAccount,
           Account.lookupStorage]
       have hbody := execForkSourceRevertSrcInkGuardNeg
         (evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I) (I := I)

@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Flipper.Dispatch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 0
@@ -92,7 +92,7 @@ theorem flipperDenyBodyCoreOk
     (by native_decide) (by native_decide) (by native_decide) (by jump_dest) (by simp)
   by_cases hauthEvm : solcSlotWordAt callerSlot σ I = ⟨1⟩
   · let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-    let evm1 := Solm.EVM.storageStore evm0 I.codeOwner (flipperUsrSlotFor I) ⟨0⟩
+    let evm1 := Stele.EVM.storageStore evm0 I.codeOwner (flipperUsrSlotFor I) ⟨0⟩
     have hbodySplit :
         (ExecTransitionBody config contract evm0 locals denyTransition.body
           (.returned { contract := contract, locals := locals } evm1 none)) ∧
@@ -125,7 +125,7 @@ theorem flipperDenyBodyCoreOk
           (hstore := hstore)
       constructor
       · have hblock := nonpayableRequireAssignStorageBlock
-          (cfg := config) (solm := { contract := contract, locals := locals })
+          (cfg := config) (stele := { contract := contract, locals := locals })
           (evm := evm0) (evm' := evm1)
           (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
           (rhs := .intLit 0) (ref := wardsRef (.var "usr")) (value := .int 0)
@@ -135,7 +135,7 @@ theorem flipperDenyBodyCoreOk
           flipperUsrStore] using ExecFuncBody.execBlockOK hblock
       · intro hperm
         have hblock := nonpayableRequireAssignStorageBlockStatic
-          (cfg := config) (solm := { contract := contract, locals := locals })
+          (cfg := config) (stele := { contract := contract, locals := locals })
           (evm := evm0) (rest := [])
           (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
           (rhs := .intLit 0) (ref := wardsRef (.var "usr")) (value := .int 0)
@@ -192,7 +192,7 @@ theorem flipperDenyBodyCoreOk
         (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := Sat256.ofUInt256 g)
         (locals := locals) (by simp [locals, flipperUsrStore]) hauthEvm
       have hblock := nonpayableSecondRequireReverts
-        (cfg := config) (solm := { contract := contract, locals := locals })
+        (cfg := config) (stele := { contract := contract, locals := locals })
         (evm := evm0)
         (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
         (rest := [.assign .storage (wardsRef (.var "usr")) (.intLit 0)])

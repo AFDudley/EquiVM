@@ -6,7 +6,7 @@ import Tests.Pipeline.VyperRegistry.Helpers
 Dispatcher bucket 3, arm entry pc 1407: the `callvalue` guard and the `uint256` getter of slot 20.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
   Reasoning.VyperBounded
 
 namespace Tests.Pipeline.VyperRegistry

@@ -2,7 +2,7 @@ import Examples.UniswapV2Pair.MintRuntimeAfterFee
 import Examples.UniswapV2Pair.MintSourceReturns
 import Examples.UniswapV2Pair.MintReserveProductFits
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace UniswapV2Pair
 
@@ -51,9 +51,9 @@ theorem uniswapMintAfterUpdateRuntimeReturns
         henv] using congrArg
           (fun accounts => sstoreAccountMap I.codeOwner accounts ⟨12⟩ ⟨1⟩) hAccounts
   | true =>
-    have hslot8 : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩ =
+    have hslot8 : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩ =
         solcSlotWordAt ⟨8⟩ σUpd I := by
-      simpa only [Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
+      simpa only [Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
         solcSlotWordAt, solcSlotWord, henv, ← hAccounts]
     have hkLastValue :
         mintFeeReserveProductWord (uniswapReserve0Word evm) (uniswapReserve1Word evm) =

@@ -2,7 +2,7 @@ import Benchmarks.CurveVault.ConvertAssetsArithmetic
 import Benchmarks.CurveVault.ConvertAssetsFinish
 import Benchmarks.CurveVault.ConvertSharesInternal
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 theorem vaultConvertAssetsRoutine {I : ExecutionEnv} {g : Sat256} {s0 evm : State}

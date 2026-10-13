@@ -5,7 +5,7 @@ import Benchmarks.CompoundIII.Comet.Negate104Evm
 import Benchmarks.CompoundIII.Comet.RuntimeBlocks_051
 import Reasoning.ExternalCall
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
 open Benchmarks.CompoundIII.Comet.Immutables cometWithExtendedAssetListBlocks
 
 namespace Benchmarks.CompoundIII.Comet
@@ -43,7 +43,7 @@ theorem cometSignedPresentValue {v : CometWithExtendedAssetListImmutables}
       ∃ k' C', RD (deployedRuntime v) ee g s0 ret
         (signedPresentValueWord evm principal :: R) mem aw rdata σ k' C') ∨
     (¬ -(2^103 : Int) < signed104 principal ∧ RDrev (deployedRuntime v) g s0) := by
-  let w0 := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩
+  let w0 := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩
   have hw0 : solcSlotWordAt (UInt256.ofNat 0) σ ee = w0 := by
     simpa only [w0, hs.env] using (hs.storageRead ⟨0⟩).symm
   by_cases hpos : 0 ≤ signed104 principal

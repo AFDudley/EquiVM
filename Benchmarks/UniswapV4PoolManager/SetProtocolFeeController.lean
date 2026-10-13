@@ -4,7 +4,7 @@ import Benchmarks.UniswapV4PoolManager.Authorization
 import Benchmarks.UniswapV4PoolManager.RuntimeBlocks_027
 import Benchmarks.UniswapV4PoolManager.RuntimeBlocks_028
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.UniswapV4PoolManager.Immutables
 
@@ -12,8 +12,8 @@ namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 2000000
 
 def setProtocolFeeControllerPost (evm : EVM.State) (controller : UInt256) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨2⟩
-    (setAddressOffset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩) controller)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨2⟩
+    (setAddressOffset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩) controller)
 
 theorem setProtocolFeeControllerAssign (evm : EVM.State) (locals imms : Store) (controller : UInt256)
     (hc : controller.toNat < EVM.addressModulus) (hbase : locals.get? "protocolFeeController" = none) :

@@ -1,6 +1,6 @@
 import Benchmarks.Morpho.MorphoBlue.BodyCommon
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.Morpho.MorphoBlue
 
 -- LIBRARY CANDIDATE: a selector prefix determines each in-bounds selector byte.

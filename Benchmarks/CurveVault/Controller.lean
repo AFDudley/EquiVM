@@ -3,7 +3,7 @@ import Benchmarks.CurveVault.Entry
 import Benchmarks.CurveVault.Storage
 import Benchmarks.CurveVault.RuntimeBlocks_001
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 theorem vaultControllerBodyCore {σ σ₀ A I} {g : UInt256}
@@ -18,7 +18,7 @@ theorem vaultControllerBodyCore {σ σ₀ A I} {g : UInt256}
   have heval := vaultControllerEval (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅ (by simp)
   change evalExpr? config {contract := contract, locals := ∅}
     (initState σ σ₀ (Sat256.ofUInt256 g) A I) _ =
-    .ok (.address (AccountAddress.ofNat (Solm.EVM.storageLoad (initState σ σ₀ (Sat256.ofUInt256 g) A I) I.codeOwner ⟨3⟩).toNat)) at heval
+    .ok (.address (AccountAddress.ofNat (Stele.EVM.storageLoad (initState σ σ₀ (Sat256.ofUInt256 g) A I) I.codeOwner ⟨3⟩).toNat)) at heval
   rw [codeOwnerStorageWord_initState] at heval
   apply vaultNullaryReturn (t := controllerTransition)
     (pc := UInt256.ofNat 134)

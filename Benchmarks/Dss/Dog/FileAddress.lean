@@ -2,7 +2,7 @@ import Benchmarks.Dss.Dog.Dispatch
 import Reasoning.MemCascade
 import Reasoning.ABIComposite
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Dog.Immutables
 
 set_option maxHeartbeats 0
@@ -163,8 +163,8 @@ theorem evalExpr_fileAddressData {v : DogImmutables} {evm : EVM.State}
 
 theorem assign_fileAddressVowStorage (v : DogImmutables) (evm : EVM.State)
     {locals : Store} (data : UInt256) (hbase : locals.get? "vow" = none) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨2⟩
-      (setAddressOffset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩)
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨2⟩
+      (setAddressOffset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩)
         (UInt256.land solcAddrMask data))
     assignStorageRef? config { contract := contract, locals := locals, immutables := immStore v } evm
       .storage vowRef (.address (AccountAddress.ofNat data.toNat)) =
@@ -204,8 +204,8 @@ theorem fileAddressVowSourceBodySplit {v : DogImmutables} {σ σ₀ A I}
     (hwhat : fileAddressWhat I = fileAddressVowBytes) :
     let locals := fileAddressLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-    let evm1 := Solm.EVM.storageStore evm0 I.codeOwner ⟨2⟩
-      (setAddressOffset0Word (Solm.EVM.storageLoad evm0 I.codeOwner ⟨2⟩)
+    let evm1 := Stele.EVM.storageStore evm0 I.codeOwner ⟨2⟩
+      (setAddressOffset0Word (Stele.EVM.storageLoad evm0 I.codeOwner ⟨2⟩)
         (fileAddressDataKey I))
     (ExecTransitionBody config contract evm0 locals fileAddressTransition.body
       (.returned { contract := contract, locals := locals, immutables := immStore v } evm1 none) (immStore v)) ∧
@@ -259,8 +259,8 @@ theorem fileAddressVowSourceBody {v : DogImmutables} {σ σ₀ A I}
     (hwhat : fileAddressWhat I = fileAddressVowBytes) :
     let locals := fileAddressLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-    let evm1 := Solm.EVM.storageStore evm0 I.codeOwner ⟨2⟩
-      (setAddressOffset0Word (Solm.EVM.storageLoad evm0 I.codeOwner ⟨2⟩)
+    let evm1 := Stele.EVM.storageStore evm0 I.codeOwner ⟨2⟩
+      (setAddressOffset0Word (Stele.EVM.storageLoad evm0 I.codeOwner ⟨2⟩)
         (fileAddressDataKey I))
     ExecTransitionBody config contract evm0 locals fileAddressTransition.body
       (.returned { contract := contract, locals := locals, immutables := immStore v } evm1 none) (immStore v) :=
@@ -1050,26 +1050,26 @@ theorem dogFileAddressBodyCoreOk
     rw [show fileAddressTransition.returnType = [] by rfl]
     exact returnEquiv.fallthrough rfl (by rfl) (by native_decide)
   by_cases hauthEvm : solcSlotWordAt callerSlot σ I = ⟨1⟩
-  · have hauthSolm : solcSlotWordAt callerSlot σ I = ⟨1⟩ := hauthEvm
+  · have hauthStele : solcSlotWordAt callerSlot σ I = ⟨1⟩ := hauthEvm
     have hauthSolc :
         solcSlotWord σ I (solcMappingSlot ⟨0⟩ (solcSourceWord I)) = ⟨1⟩ := by
       simpa [callerSlot, dogCallerWardsSlot, solcSlotWordAt] using hauthEvm
     by_cases hwhat : fileAddressWhat I = fileAddressVowBytes
     · let stored := setAddressOffset0Word (solcSlotWordAt ⟨2⟩ σ I) dataKey
       let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-      let evm1 := Solm.EVM.storageStore evm0 I.codeOwner ⟨2⟩ stored
-      have hstoredSolm :
+      let evm1 := Stele.EVM.storageStore evm0 I.codeOwner ⟨2⟩ stored
+      have hstoredStele :
           stored = setAddressOffset0Word (solcSlotWordAt ⟨2⟩ σ I) dataKey := rfl
       have hbodySplit :
           (ExecTransitionBody config contract evm0 locals fileAddressTransition.body
             (.returned { contract := contract, locals := locals, immutables := immStore v } evm1 none) (immStore v)) ∧
           (I.perm = false → ExecTransitionBody config contract
             evm0 locals fileAddressTransition.body .staticViolation (immStore v)) := by
-        simpa [evm0, evm1, locals, dataKey, stored, hstoredSolm, solcSlotWordAt, solcSlotWord,
-          initState, Solm.EVM.storageLoad] using
+        simpa [evm0, evm1, locals, dataKey, stored, hstoredStele, solcSlotWordAt, solcSlotWord,
+          initState, Stele.EVM.storageLoad] using
           (fileAddressVowSourceBodySplit (v := v)
             (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
-            hwv hauthSolm hwhat)
+            hwv hauthStele hwhat)
       rcases RD.dogFileAddressSuccessSplit hpatch hreach hsz68 hsize hauthSolc hwhat with
         ⟨_hperm, hret⟩ | ⟨hperm, hstatic⟩
       swap
@@ -1077,8 +1077,8 @@ theorem dogFileAddressBodyCoreOk
       have haccounts :
           Eq (sstoreAccountMap I.codeOwner σ ⟨2⟩ stored)
             evm1.accountMap := by
-        simpa [evm1, evm0, initState, storageStore_accountMap, stored, hstoredSolm,
-          solcSlotWordAt, solcSlotWord, Solm.EVM.storageLoad]
+        simpa [evm1, evm0, initState, storageStore_accountMap, stored, hstoredStele,
+          solcSlotWordAt, solcSlotWord, Stele.EVM.storageLoad]
       have hret' :
           RDret code (Sat256.ofUInt256 g)
             (initState σ σ₀ (Sat256.ofUInt256 g) A I)
@@ -1093,13 +1093,13 @@ theorem dogFileAddressBodyCoreOk
         simpa [evm0, locals] using
           (fileAddressUnrecognizedSourceBody (v := v)
             (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
-            hwv hauthSolm hwhat)
+            hwv hauthStele hwhat)
       have hrev := RD.dogFileAddressUnrecognizedParamRevert
         hpatch hreach hsz68 hsize hauthSolc hwhat
       exact hrev.reEquivExecutionRevert hcode hdispatch hdecode hbody
-  · have hauthSolm : solcSlotWordAt callerSlot σ I ≠ ⟨1⟩ := by
-      intro hsolm
-      exact hauthEvm hsolm
+  · have hauthStele : solcSlotWordAt callerSlot σ I ≠ ⟨1⟩ := by
+      intro hstele
+      exact hauthEvm hstele
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     have hbody :
         ExecTransitionBody config contract evm0 locals fileAddressTransition.body
@@ -1107,9 +1107,9 @@ theorem dogFileAddressBodyCoreOk
       have hguard := dogAuthGuardEval_false (v := v)
         (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
         (g := Sat256.ofUInt256 g) (locals := locals)
-        (by simp [locals, fileAddressLocals]) hauthSolm
+        (by simp [locals, fileAddressLocals]) hauthStele
       have hblock := nonpayableSecondRequireReverts
-        (cfg := config) (solm := { contract := contract, locals := locals, immutables := immStore v })
+        (cfg := config) (stele := { contract := contract, locals := locals, immutables := immStore v })
         (evm := evm0)
         (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
         (rest := [

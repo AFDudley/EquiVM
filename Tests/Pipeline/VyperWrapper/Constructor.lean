@@ -6,12 +6,12 @@ import Tests.Pipeline.VyperWrapper.CreationBlocks_001
 
 The init code checks `callvalue` (pc 0, revert at 54), copies the `token` argument from the end
 of the initcode and validates it as an address (pc 10), writes it after the runtime (offset 1780)
-and returns the runtime followed by the immutable word (pc 27).  The Solm constructor is
+and returns the runtime followed by the immutable word (pc 27).  The Stele constructor is
 `require(msg.value == 0); TOKEN = token;`; the deployment appends the ABI-encoded argument to the
 creation code, so the argument is an address and the initcode tail is its word.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 open Reasoning.VyperImmutables
 
 namespace Tests.Pipeline.VyperWrapper
@@ -140,7 +140,7 @@ theorem wrapperConstructorCorrect :
       memLoad_write_back _ _ 64 (by decide) (by rw [hw32]; exact lt_usize _ (by decide))
     rw [ulit_toNat' 58 (by decide), ulit_toNat' 64 (by decide), ulit_toNat' 1780 (by decide), ulit_toNat' 0 (by decide),
       ulit_toNat' 1812 (by decide), hload64, ctorOutput t] at rd3
-    -- Solm
+    -- Stele
     have hbody : ExecTransitionBody config contract (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         ((∅ : Store).insert "token" (.address t)) contract.ctor.body
         (.returned { contract := contract, locals := (∅ : Store).insert "token" (.address t), immutables := ctorImms t }
@@ -160,7 +160,7 @@ theorem wrapperConstructorCorrect :
     · have hxi := Xi_success_of_X (by rw [← hcode'] at hX; exact hX)
       rw [hacc] at hxi
       exact typedConstructorRefinementFor.execution (by simpa using hxi)
-        (solmCtorExec.intro rfl (by rfl) (by rfl) hbody)
+        (steleCtorExec.intro rfl (by rfl) (by rfl) hbody)
         (ctorResultEquiv.success rfl rfl rfl (by
           show wrapperBytecode ++ (addrWord t).toByteArray = immutableLayout.deployed wrapperBytecode (ctorImms t)
           rw [deployed_of_fit (ctorImms_fit t), suffixWords_TOKEN, wordsOf_TOKEN (store_get_self _ _ _)]
@@ -172,7 +172,7 @@ theorem wrapperConstructorCorrect :
     rcases rd2.xiResult hcode' with hoog | ⟨g', o, hxi⟩
     · exact typedConstructorRefinementFor.outOfGas (by simpa using hoog)
     · exact typedConstructorRefinementFor.execution (by simpa using hxi)
-        (solmCtorExec.intro rfl (by rfl) (by rfl) (by
+        (steleCtorExec.intro rfl (by rfl) (by rfl) (by
           rw [ctorBody_eq]
           exact ExecFuncBody.execBlockRevert (ExecBlock.consRevert
             (ExecStmt.requireFalse (evalCallvalueEq_false (by simpa [initState] using hwv))))))

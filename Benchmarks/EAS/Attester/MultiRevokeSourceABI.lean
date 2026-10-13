@@ -2,7 +2,7 @@ import Benchmarks.EAS.Attester.MultiRevokeSourceLoop
 import Benchmarks.EAS.Attester.MultiRevokeEncodeMemory
 import Benchmarks.EAS.Attester.NestedPrefix
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Reasoning.Theory
 

@@ -1,14 +1,14 @@
-import Solm.Notation
+import Stele.Notation
 
 /-!
 # Curve lending Vault, from the pinned Vyper 0.4.3 source and Cancun bytecode
 
-Drafted by `scripts/vy2solm.py`; translation holes are closed below.
+Drafted by `scripts/vy2stele.py`; translation holes are closed below.
 The storage capacities and return decoders are configured in `Spec.lean`.
 `HANDOFF.md` records the selector/block audit and compiler provenance.
 -/
 
-open Solm Solm.Notation
+open Stele Stele.Notation
 
 namespace Benchmarks.CurveVault.Syntax
 

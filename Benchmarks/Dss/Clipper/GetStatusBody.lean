@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Clipper.GetStatusSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 namespace Benchmarks.Dss.Clipper
@@ -60,7 +60,7 @@ theorem clipperGetStatusBodyReturnsRdivBranch (v : ClipperImmutables)
         (.ok usrFrame evm) := by
     simpa [startFrame, usrFrame, clipperGetStatusLocalsUsr] using
       (ExecStmt.letDecl
-        (cfg := config) (solm := startFrame) (evm := evm) (name := "usr")
+        (cfg := config) (stele := startFrame) (evm := evm) (name := "usr")
         (ty := some addr) (expr := .storage (salesF (.var "id") "usr"))
         (value := .address (AccountAddress.ofNat (clipperGetStatusUsrWord evm I).toNat))
         (by simpa [startFrame, clipperGetStatusUsrWord] using
@@ -71,7 +71,7 @@ theorem clipperGetStatusBodyReturnsRdivBranch (v : ClipperImmutables)
         (.ok ticFrame evm) := by
     simpa [usrFrame, ticFrame, clipperGetStatusLocalsTic] using
       (ExecStmt.letDecl
-        (cfg := config) (solm := usrFrame) (evm := evm) (name := "tic")
+        (cfg := config) (stele := usrFrame) (evm := evm) (name := "tic")
         (ty := some uint96) (expr := .storage (salesF (.var "id") "tic"))
         (value := .int (Int.ofNat (clipperGetStatusTicWord evm I).toNat))
         (by simpa [usrFrame] using clipperEvalGetStatusSalesTicAfterUsr v evm I))
@@ -88,7 +88,7 @@ theorem clipperGetStatusBodyReturnsRdivBranch (v : ClipperImmutables)
         (.ok doneFrame evmPrice) := by
     simpa [stFrame, doneFrame, clipperGetStatusLocalsDone] using
       (ExecStmt.letDecl
-        (cfg := config) (solm := stFrame) (evm := evmPrice) (name := "done")
+        (cfg := config) (stele := stFrame) (evm := evmPrice) (name := "done")
         (ty := some boolTy) (expr := tuple0 (.var "st")) (value := .bool done)
         (by simpa [stFrame] using
           clipperEvalGetStatusDoneFromStatusAt v evm evmPrice I done price))
@@ -98,7 +98,7 @@ theorem clipperGetStatusBodyReturnsRdivBranch (v : ClipperImmutables)
         (.ok priceFrame evmPrice) := by
     simpa [doneFrame, priceFrame, clipperGetStatusLocalsPrice] using
       (ExecStmt.letDecl
-        (cfg := config) (solm := doneFrame) (evm := evmPrice) (name := "price")
+        (cfg := config) (stele := doneFrame) (evm := evmPrice) (name := "price")
         (ty := some uint256) (expr := tuple1 (.var "st"))
         (value := .int (Int.ofNat price.toNat))
         (by simpa [doneFrame] using
@@ -110,7 +110,7 @@ theorem clipperGetStatusBodyReturnsRdivBranch (v : ClipperImmutables)
         (.ok needsFrame evmPrice) := by
     simpa [priceFrame, needsFrame, clipperGetStatusLocalsNeedsRedo] using
       (ExecStmt.letDecl
-        (cfg := config) (solm := priceFrame) (evm := evmPrice) (name := "needsRedo")
+        (cfg := config) (stele := priceFrame) (evm := evmPrice) (name := "needsRedo")
         (ty := some boolTy)
         (expr := .binary .and (.binary .ne (.var "usr") zeroAddr) (.var "done"))
         (value := .bool (clipperGetStatusNeedsRedo evm I done))
@@ -132,13 +132,13 @@ theorem clipperGetStatusBodyReturnsRdivBranch (v : ClipperImmutables)
           clipperEvalGetStatusReturnValues v evm evmPrice I done price))
   simpa [getStatusTransition, nonpayable, startFrame, needsFrame] using
     (ExecFuncBody.execBlockRet <|
-      ExecBlock.consNormal (solm' := startFrame) (evm' := evm)
+      ExecBlock.consNormal (stele' := startFrame) (evm' := evm)
         (ExecStmt.requireTrue (evalCallvalueEq_true hwv)) <|
-      ExecBlock.consNormal (solm' := usrFrame) (evm' := evm) hletUsr <|
-      ExecBlock.consNormal (solm' := ticFrame) (evm' := evm) hletTic <|
-      ExecBlock.consNormal (solm' := stFrame) (evm' := evmPrice) hstatus <|
-      ExecBlock.consNormal (solm' := doneFrame) (evm' := evmPrice) hletDone <|
-      ExecBlock.consNormal (solm' := priceFrame) (evm' := evmPrice) hletPrice <|
-      ExecBlock.consNormal (solm' := needsFrame) (evm' := evmPrice) hletNeeds hret)
+      ExecBlock.consNormal (stele' := usrFrame) (evm' := evm) hletUsr <|
+      ExecBlock.consNormal (stele' := ticFrame) (evm' := evm) hletTic <|
+      ExecBlock.consNormal (stele' := stFrame) (evm' := evmPrice) hstatus <|
+      ExecBlock.consNormal (stele' := doneFrame) (evm' := evmPrice) hletDone <|
+      ExecBlock.consNormal (stele' := priceFrame) (evm' := evmPrice) hletPrice <|
+      ExecBlock.consNormal (stele' := needsFrame) (evm' := evmPrice) hletNeeds hret)
 
 end Benchmarks.Dss.Clipper

@@ -2,13 +2,13 @@ import Reasoning.WordArithmetic
 import Benchmarks.Dss.Cat.ConstructorBase
 
 /-!
-# MakerDAO/Sky DSS Cat constructor Solm source semantics
+# MakerDAO/Sky DSS Cat constructor Stele source semantics
 
 The Cat constructor stores three slots in order: `wards[sender] = 1`, `vat = vat_` (slot 3, address
 pack), `live = 1` (scalar slot 2).
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Cat
 
@@ -18,16 +18,16 @@ abbrev catCtorLocals (vat : AccountAddress) : Store :=
   (∅ : Store).insert "vat_" (.address vat)
 
 abbrev catCtorAfterWardsState (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner
     (wardsSlot (.address evm.executionEnv.source)) ⟨1⟩
 
 abbrev catCtorAfterVatState (evm : EVM.State) (vat : AccountAddress) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨3⟩
-    (setAddressOffset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨3⟩
+    (setAddressOffset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩)
       (EVM.word vat.val))
 
 abbrev catCtorAfterLiveState (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨2⟩ ⟨1⟩
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨2⟩ ⟨1⟩
 
 /-- Full three-store constructor post-state applied to `evm`. -/
 abbrev catCtorPostState (evm : EVM.State) (vat : AccountAddress) : EVM.State :=
@@ -72,8 +72,8 @@ private theorem assign_catCtorAddressStorage (evm : EVM.State) (locals : Store)
     (her : evalStorageRef config { contract := contract, locals := locals } evm ref = .ok er)
     (hty : storageTypeAt? contract.storage er = some (.elem .address))
     (hloc : config.storageBackend.locate? er = some (.leaf (addrLoc slot))) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner slot
-      (setAddressOffset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner slot
+      (setAddressOffset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
         (EVM.word addrValue.val))
     assignStorageRef? config { contract := contract, locals := locals } evm
       .storage ref (.address addrValue) =
@@ -169,17 +169,17 @@ theorem catCtorBodySuccess
       (assign_catCtorLiveStorage _ locals (by simp [locals, catCtorLocals])))
     ExecBlock.nil
 
-theorem catSolmCtorExecSuccess
+theorem catSteleCtorExecSuccess
     {σ : AccountMap} {σ₀ : AccountMap} {A : Substate} {I : ExecutionEnv}
     {g : UInt256} (vat : AccountAddress)
     (hwv : I.weiValue = ⟨0⟩) :
-    solmCtorExec config contract [.address vat] σ σ₀ g A I
+    steleCtorExec config contract [.address vat] σ σ₀ g A I
       (.returned { contract := contract, locals := catCtorLocals vat }
         (catCtorPostState
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           vat)
         none) := by
-  refine solmCtorExec.intro
+  refine steleCtorExec.intro
     (evmState := initState σ σ₀
       (Sat256.ofUInt256 g) A I)
     (argsStore := catCtorLocals vat)
@@ -191,12 +191,12 @@ theorem catSolmCtorExecSuccess
         (catCtorBodySuccess
           (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) vat hwv)
 
-theorem catSolmCtorExecReverts_nonpayable
+theorem catSteleCtorExecReverts_nonpayable
     {σ : AccountMap} {σ₀ : AccountMap} {A : Substate} {I : ExecutionEnv}
     {g : UInt256} (vat : AccountAddress)
     (hwv : I.weiValue ≠ ⟨0⟩) :
-    solmCtorExec config contract [.address vat] σ σ₀ g A I .reverted := by
-  refine solmCtorExec.intro
+    steleCtorExec config contract [.address vat] σ σ₀ g A I .reverted := by
+  refine steleCtorExec.intro
     (evmState := initState σ σ₀
       (Sat256.ofUInt256 g) A I)
     (argsStore := catCtorLocals vat)

@@ -4,16 +4,16 @@ import Benchmarks.CompoundIII.Comet.CollateralCheckSource
 import Benchmarks.CompoundIII.Comet.AssetSearch
 import Benchmarks.CompoundIII.Comet.TransferOutSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.CompoundIII.Comet.Immutables
 
 namespace Benchmarks.CompoundIII.Comet
 
 def withdrawCollateralBalance (evm : EVM.State) (src asset : AccountAddress) : UInt256 :=
-  low128 (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (userCollateralSlot src asset))
+  low128 (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (userCollateralSlot src asset))
 
 def withdrawCollateralTotal (evm : EVM.State) (asset : AccountAddress) : UInt256 :=
-  low128 (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (totalsCollateralSlot asset))
+  low128 (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (totalsCollateralSlot asset))
 
 def withdrawCollateralState (evm : EVM.State) (src asset : AccountAddress)
     (amount : UInt256) : EVM.State :=

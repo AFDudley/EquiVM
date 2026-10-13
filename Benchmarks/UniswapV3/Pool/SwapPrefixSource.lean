@@ -2,7 +2,7 @@ import Benchmarks.UniswapV3.Pool.SwapModel
 import Benchmarks.UniswapV3.Pool.NoDelegateCall
 import Benchmarks.UniswapV3.Pool.SourceSignedDivision
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
@@ -29,7 +29,7 @@ theorem swapDelegateCall (v : UniswapV3PoolImmutables) (a : SwapArgs) (evm : EVM
     ExecStmt config (swapInitFrame v a) evm (.internalCall "checkNotDelegateCall" [] "__c0")
       (.ok (swapDelegateFrame v a) evm) :=
   internalCallFunctionReturn (callee := noDelegateCallFunction) (argVals := []) (locals := ∅)
-    (calleeSolm := noDelegateCallFrame v) (value := none)
+    (calleeStele := noDelegateCallFrame v) (value := none)
     (by simp only [evalExprs?, pure]) noDelegateCallLookup rfl (noDelegateCallReturns v evm hself)
 
 theorem swapDelegateSource (v : UniswapV3PoolImmutables) (a : SwapArgs) (evm : EVM.State)

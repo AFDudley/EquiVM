@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.WordArrayMemory
 import Reasoning.ABIViews
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.UniswapV4PoolManager
 

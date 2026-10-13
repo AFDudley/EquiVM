@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Vow.Common
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -116,7 +116,7 @@ theorem vowSinMappingBodyCore
         (.returned { contract := contract, locals := locals }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.int (Int.ofNat (solcSlotWordAt (sinMappingSlotFor I) σ I).toNat))])) := by
-    simpa [sinTransition, sinMappingSlotFor, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [sinTransition, sinMappingSlotFor, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount, locals, key] using
       vowUint256GetterBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) locals

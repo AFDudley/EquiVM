@@ -1,6 +1,6 @@
 import Benchmarks.CurveVault.Common
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 -- LIBRARY CANDIDATE: mapping-only paths need no Vyper array-bound checks.
@@ -17,7 +17,7 @@ theorem vaultReadMapping (evm : EVM.State) (base : Ident) (keys : List KeyValue)
     (hloc : boundedStorage.locate? {base := base, steps := keys.map .mindex} =
       some (.leaf (vyperWordLoc slot ty))) :
     config.storageBackend.read {base := base, steps := keys.map .mindex} (.elem ty) evm =
-      .ok (wordToElem ty (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)) := by
+      .ok (wordToElem ty (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)) := by
   change (do
     let _ ← vyperCheckRef? boundedStorage.locate? _ evm {base := base, steps := keys.map .mindex}
     vyperReadRaw? boundedStorage.locate? _ evm {base := base, steps := keys.map .mindex} (.elem ty)) = _
@@ -28,7 +28,7 @@ theorem vaultReadMapping (evm : EVM.State) (base : Ident) (keys : List KeyValue)
 theorem vaultReadScalar (evm : EVM.State) (name : Ident) (ty : ElemType) (slot : UInt256)
     (hloc : boundedStorage.locate? {base := name, steps := []} = some (.leaf (vyperWordLoc slot ty))) :
     config.storageBackend.read {base := name, steps := []} (.elem ty) evm =
-      .ok (wordToElem ty (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)) :=
+      .ok (wordToElem ty (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)) :=
   vaultReadMapping evm name [] ty slot hloc
 
 theorem vaultEvalScalar (evm : EVM.State) (locals : Store) (name : Ident)
@@ -38,7 +38,7 @@ theorem vaultEvalScalar (evm : EVM.State) (locals : Store) (name : Ident)
     (hloc : boundedStorage.locate? {base := name, steps := []} = some (.leaf (vyperWordLoc slot ty))) :
     evalExpr? config {contract := contract, locals := locals} evm
       (.storage {base := name, steps := []}) =
-      .ok (wordToElem ty (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)) := by
+      .ok (wordToElem ty (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)) := by
   apply evalExpr_storage_scalar_of_read (er := {base := name, steps := []}) hbase
     (by simp [evalStorageRef, evalStorageRefSteps, EvalResult.bind, pure, bind]) hty
   exact vaultReadScalar evm name ty slot hloc
@@ -50,7 +50,7 @@ theorem vaultAssignScalarUint256 (evm : State) (locals : Store) (name : Ident)
     (hname : name ≠ "_controller") :
     assignStorageRef? config {contract := contract, locals := locals} evm .storage
       {base := name, steps := []} (.int (Int.ofNat value.toNat)) =
-      .ok ({contract := contract, locals := locals}, Solm.EVM.storageStore evm evm.executionEnv.codeOwner slot value) := by
+      .ok ({contract := contract, locals := locals}, Stele.EVM.storageStore evm evm.executionEnv.codeOwner slot value) := by
   apply assignStorageRef_storage_of_write (er := {base := name, steps := []}) hbase
     (by simp [evalStorageRef, evalStorageRefSteps, EvalResult.bind, pure, bind]) hty
   have hbackend : config.storageBackend.write {base := name, steps := []}
@@ -94,13 +94,13 @@ theorem vaultControllerEval (evm : EVM.State) (locals : Store)
     (hlocals : locals.get? "_controller" = none) :
     evalExpr? config {contract := contract, locals := locals} evm
       (.cast (.storage {base := "_controller", steps := []}) (.elem .address)) =
-      .ok (.address (AccountAddress.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩).toNat)) := by
+      .ok (.address (AccountAddress.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩).toNat)) := by
   have h := vaultEvalScalar evm locals "_controller" (.int (.uint ⟨256, by decide⟩))
     ⟨3⟩ hlocals rfl rfl
   simp only [wordToElem, normalizeInt_uint256_word] at h
   rw [evalExpr?]
   simp only [h, EvalResult.bind, bind, castValue?, EvalResult.ofOption]
-  have hn : ¬ (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩).toNat < 0) :=
+  have hn : ¬ (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩).toNat < 0) :=
     Int.not_lt.mpr (Int.natCast_nonneg _)
   rw [if_neg hn]
   rfl

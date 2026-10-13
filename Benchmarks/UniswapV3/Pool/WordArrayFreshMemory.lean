@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.WordArrayMemory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 -- LIBRARY CANDIDATE: the first struct allocation leaves the solc zero word untouched.

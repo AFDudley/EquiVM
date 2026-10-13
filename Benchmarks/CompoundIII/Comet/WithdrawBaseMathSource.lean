@@ -3,7 +3,7 @@ import Benchmarks.CompoundIII.Comet.BaseBalanceSource
 import Benchmarks.CompoundIII.Comet.PrincipalValueSource
 import Benchmarks.CompoundIII.Comet.WithdrawAmountsSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 

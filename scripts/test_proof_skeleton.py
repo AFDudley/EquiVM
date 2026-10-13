@@ -80,7 +80,7 @@ class VyperSpecTests(unittest.TestCase):
         c = fake_contract(ROOT / "Examples/VyperImmutable", "Immutable", "immutable")
         c.compiler_kind = "vyper"
         text = ps.render_spec(c)
-        self.assertIn("import Solm.MetaVyperLayout", text)
+        self.assertIn("import Stele.MetaVyperLayout", text)
         self.assertIn("vyperStorage! [contract.storage]", text)
         self.assertIn("withMode DecodeMode.vyper", text)
         self.assertIn("withVyperABI", text)

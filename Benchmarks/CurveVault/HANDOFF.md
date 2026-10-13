@@ -70,7 +70,7 @@ codesize-dispatch limitations are recorded in `skeleton-generation.log` and
 `dispatch-generation.log`. The local generator uses the shared generator for the
 prelude, function stubs, constructor and composition; it generates the proved
 dispatcher from the pinned two-stage tables and preserves the audited `Spec.lean`.
-No shared generator, Solm module, reasoning module or global test registry was edited.
+No shared generator, Stele module, reasoning module or global test registry was edited.
 `Vault.spec.json` is the unedited initial translation report: its 13 reported holes
 are historical. Their replacements (interface address access, controller hooks,
 admin percentage and optional token returns) are in the finished `SpecSyntax.lean`.
@@ -86,7 +86,7 @@ for those data bytes. All artifact bytes and jump tables remain pinned unchanged
 
 The local runner registers only this target in a hidden Lake package, preserving the
 repository's test registry. It invokes the repository CLI as
-`lake exe solm-difftest --only Vault --count 50`, with seed **2026**.
+`lake exe stele-difftest --only Vault --count 50`, with seed **2026**.
 It also supplies the working-directory paths needed by EVMLean's Python precompiles.
 Its Python dependencies are pinned in [precompile-requirements.txt](precompile-requirements.txt).
 
@@ -315,7 +315,7 @@ Both the proof-hole search and the axiom-declaration search across this director
 returned no output (exit status 1). No differential tests were run.
 
 All new Lean modules are reachable from the capstone imports. The longest authored
-module is `DispatchSolm.lean` at 1,706 lines; all authored modules stay below the
+module is `DispatchStele.lean` at 1,706 lines; all authored modules stay below the
 2,000-line limit. Shared helpers carry 73 library-candidate or generalization tags
 for later promotion to `Reasoning/`.
 
@@ -349,7 +349,7 @@ uses `native_decide`; there is no additional gas or storage precondition.
 `Constructor.lean` composes the provided creation summary with the empty-constructor
 library theorem and checks that the returned 8,635 bytes equal the pinned runtime.
 
-`DispatchPrelude.lean` and `DispatchSolm.lean` split the original dispatcher by
+`DispatchPrelude.lean` and `DispatchStele.lean` split the original dispatcher by
 concern to keep files below 2000 lines. `Entry.lean` proves the shared guard at pc
 73 and its computed jump. `Storage.lean`, `Memory.lean`, `Calls.lean`, and
 `Lock.lean` hold the reusable storage, mapping-memory, external-call ABI, and

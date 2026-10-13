@@ -13,7 +13,7 @@ ordinary big-endian word representation.
 
 namespace Reasoning.VyperImmutables
 
-open Solm
+open Stele
 open Reasoning.Theory
 
 structure Slot where
@@ -27,7 +27,7 @@ structure Layout where
   size : Nat
   deriving Repr
 
-/-- Scalar representation of a Solm value in Vyper's immutable code section. -/
+/-- Scalar representation of a Stele value in Vyper's immutable code section. -/
 def scalarBytes? (v : Value) : Option ByteArray :=
   match v with
   | .fixedBytes _ bs =>
@@ -36,7 +36,7 @@ def scalarBytes? (v : Value) : Option ByteArray :=
       else none
   | _ => (valueToWord v).map (fun w => w.toByteArray)
 
-/-- Turn a scalar Solm immutable into the word used by runtime summaries.
+/-- Turn a scalar Stele immutable into the word used by runtime summaries.
     For `bytesN`, `scalarBytes?` has already placed the bytes on the left. -/
 def wordsOf (imms : Store) (name : String) : Ethereum.UInt256 :=
   Ethereum.uInt256OfByteArray

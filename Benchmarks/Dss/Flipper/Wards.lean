@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Flipper.Dispatch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Flipper
 
@@ -96,7 +96,7 @@ theorem flipperWardsBodyCoreOk
           (some [(.int (Int.ofNat
             (solcSlotWordAt (wardsMappingSlotFor I) σ I).toNat))])) := by
     simpa [wardsTransition, wardsMappingSlotFor, solcSlotWordAt, initState,
-      Solm.EVM.storageLoad, State.lookupAccount, locals, key] using
+      Stele.EVM.storageLoad, State.lookupAccount, locals, key] using
       flipperUint256GetterBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) locals
         (ref := wardsRef (.var "arg0")) (er := wardsMappingEvaledRef I)

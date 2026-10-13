@@ -1,11 +1,11 @@
 import Benchmarks.CurveVault.Common
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 -- GENERALIZES Reasoning.Theory.decodeCalldata_uint256_ok to Vyper's decoder,
 -- which accepts arbitrary suffixes without a signed-length restriction.
-theorem decodeCalldataWithMode_vyper_uint256_ok {cd : ByteArray} {x : Solm.Ident}
+theorem decodeCalldataWithMode_vyper_uint256_ok {cd : ByteArray} {x : Stele.Ident}
     (hsz : 36 ≤ cd.size) :
     decodeCalldataWithMode .vyper [x] [abiUInt256] cd =
       some ((∅ : Store).insert x (.int (Int.ofNat (calldataWord cd 4).toNat))) := by
@@ -21,7 +21,7 @@ theorem decodeCalldataWithMode_vyper_uint256_ok {cd : ByteArray} {x : Solm.Ident
   rfl
 
 -- GENERALIZES Reasoning.Theory.decodeCalldata_uint256_none_short to Vyper.
-theorem decodeCalldataWithMode_vyper_uint256_none_short {cd : ByteArray} {x : Solm.Ident}
+theorem decodeCalldataWithMode_vyper_uint256_none_short {cd : ByteArray} {x : Stele.Ident}
     (hshort : cd.size < 36) : decodeCalldataWithMode .vyper [x] [abiUInt256] cd = none := by
   have htlen : cd.toList.length = cd.size := by
     rw [byteArray_toList_eq, Array.length_toList]; rfl
@@ -32,7 +32,7 @@ theorem decodeCalldataWithMode_vyper_uint256_none_short {cd : ByteArray} {x : So
       (by rw [List.length_drop, htlen]; omega)]
 
 -- LIBRARY CANDIDATE: Vyper's scalar Boolean calldata accepts exactly zero or one.
-theorem decodeCalldataWithMode_vyper_bool_ok {cd : ByteArray} {x : Solm.Ident} {b : Bool}
+theorem decodeCalldataWithMode_vyper_bool_ok {cd : ByteArray} {x : Stele.Ident} {b : Bool}
     (hsz : 36 ≤ cd.size) (hword : calldataWord cd 4 = if b then ⟨1⟩ else ⟨0⟩) :
     decodeCalldataWithMode .vyper [x] [.elem .bool] cd = some ((∅ : Store).insert x (.bool b)) := by
   have htlen : cd.toList.length = cd.size := by rw [byteArray_toList_eq, Array.length_toList]; rfl
@@ -53,7 +53,7 @@ theorem decodeCalldataWithMode_vyper_bool_ok {cd : ByteArray} {x : Solm.Ident} {
     rfl
 
 -- LIBRARY CANDIDATE: Vyper Boolean calldata rejects noncanonical words.
-theorem decodeCalldataWithMode_vyper_bool_none_noncanon {cd : ByteArray} {x : Solm.Ident}
+theorem decodeCalldataWithMode_vyper_bool_none_noncanon {cd : ByteArray} {x : Stele.Ident}
     (hsz : 36 ≤ cd.size) (hz : calldataWord cd 4 ≠ ⟨0⟩) (ho : calldataWord cd 4 ≠ ⟨1⟩) :
     decodeCalldataWithMode .vyper [x] [.elem .bool] cd = none := by
   have htlen : cd.toList.length = cd.size := by rw [byteArray_toList_eq, Array.length_toList]; rfl
@@ -67,7 +67,7 @@ theorem decodeCalldataWithMode_vyper_bool_none_noncanon {cd : ByteArray} {x : So
   rfl
 
 -- LIBRARY CANDIDATE: a Vyper Boolean argument requires one complete word.
-theorem decodeCalldataWithMode_vyper_bool_none_short {cd : ByteArray} {x : Solm.Ident}
+theorem decodeCalldataWithMode_vyper_bool_none_short {cd : ByteArray} {x : Stele.Ident}
     (hshort : cd.size < 36) : decodeCalldataWithMode .vyper [x] [.elem .bool] cd = none := by
   have htlen : cd.toList.length = cd.size := by rw [byteArray_toList_eq, Array.length_toList]; rfl
   rw [decodeCalldataWithMode_vyperScalarWords_eq (by decide)]

@@ -4,7 +4,7 @@ import Benchmarks.UniswapV4PoolManager.WordStructInitMemory
 import Benchmarks.UniswapV4PoolManager.MemorySlice
 import Benchmarks.UniswapV4PoolManager.RuntimeBlocks_007
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 def swapPoolMemory (mem : ByteArray) (free : UInt256) (p : PoolSwapParamsWords) : ByteArray :=

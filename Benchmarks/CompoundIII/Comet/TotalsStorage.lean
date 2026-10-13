@@ -1,6 +1,6 @@
 import Benchmarks.CompoundIII.Comet.PackedFields
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 
@@ -55,7 +55,7 @@ theorem evalTotalsIndex (evm : EVM.State) (locals imms : Store) (borrow : Bool)
     (hlocal : locals.get? (totalsIndexName borrow) = none) :
     evalExpr? config { contract := contract, locals := locals, immutables := imms }
       evm (.storage ⟨totalsIndexName borrow, []⟩) =
-      .ok (.int (totalsIndexWord (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
+      .ok (.int (totalsIndexWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
         borrow).toNat) := by
   apply evalExpr_storage_scalar_value (hbackend := rfl)
     (loc := { slot := ⟨0⟩, offset := totalsIndexOffset borrow, size := 8,
@@ -70,7 +70,7 @@ theorem evalTotalsPrincipal (evm : EVM.State) (locals imms : Store) (borrow : Bo
     (hlocal : locals.get? (totalsPrincipalName borrow) = none) :
     evalExpr? config { contract := contract, locals := locals, immutables := imms }
       evm (.storage ⟨totalsPrincipalName borrow, []⟩) =
-      .ok (.int (totalsPrincipalWord (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩)
+      .ok (.int (totalsPrincipalWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩)
         borrow).toNat) := by
   apply evalExpr_storage_scalar_value (hbackend := rfl)
     (loc := { slot := ⟨1⟩, offset := totalsPrincipalOffset borrow, size := 13,

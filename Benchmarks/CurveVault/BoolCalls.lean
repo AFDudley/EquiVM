@@ -1,6 +1,6 @@
 import Benchmarks.CurveVault.Calls
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch Reasoning.VyperCalls
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch Reasoning.VyperCalls
 namespace Benchmarks.CurveVault
 
 theorem decodeReturn_vyper_bool_ok (out : ByteArray) (h32 : 32 ≤ out.size) (value : Bool)

@@ -1,8 +1,8 @@
 import Examples.Ballot.Common
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 import Reasoning.Storage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -22,7 +22,7 @@ theorem ballotChairpersonBodyReturns (evm : EVM.State) (locals : Store)
     ExecTransitionBody ballotConfig ballotContract evm locals chairpersonGetter.body
       (.returned { contract := ballotContract, locals := locals } evm
         (some [(.address (AccountAddress.ofNat
-          (UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
+          (UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
             solcAddrMask).toNat))])) := by
   exact ExecFuncBody.execBlockRet <|
     (ABlock.start.requireStep (evalCallvalueEq_true h)).returns (by
@@ -109,7 +109,7 @@ theorem ballotChairpersonBodyCore
         (.returned { contract := ballotContract, locals := ∅ }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.address (AccountAddress.ofNat (chairpersonReturnWord σ I).toNat))])) := by
-    simpa [chairpersonWord, chairpersonReturnWord, initState, Solm.EVM.storageLoad,
+    simpa [chairpersonWord, chairpersonReturnWord, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using ballotChairpersonBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
         (by simp only [initState]; exact hwv) (by simp)

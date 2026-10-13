@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.WordCallMemory
 import Benchmarks.UniswapV4PoolManager.BytesValueMemory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 -- LIBRARY CANDIDATE: a static ABI head followed by a calldata-backed bytes tail.

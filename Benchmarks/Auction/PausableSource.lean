@@ -1,6 +1,6 @@
 import Benchmarks.Auction.SetterSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Auction
 
@@ -50,8 +50,8 @@ theorem pauseBlockSplit (evm : EVM.State) (locals : Store)
     (ExecBlock auctionConfig { contract := auctionContract, locals := locals } evm
       [.require (.unary .not (.storage pausedRef)), .assign .storage pausedRef (.boolLit true)]
       (.ok { contract := auctionContract, locals := locals }
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨51⟩
-          (pauseWord (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨51⟩))))) ∧
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨51⟩
+          (pauseWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨51⟩))))) ∧
       (evm.executionEnv.perm = false →
         ExecBlock auctionConfig { contract := auctionContract, locals := locals } evm
         [.require (.unary .not (.storage pausedRef)), .assign .storage pausedRef (.boolLit true)]
@@ -74,8 +74,8 @@ theorem pauseBlock (evm : EVM.State) (locals : Store)
     ExecBlock auctionConfig { contract := auctionContract, locals := locals } evm
       [.require (.unary .not (.storage pausedRef)), .assign .storage pausedRef (.boolLit true)]
       (.ok { contract := auctionContract, locals := locals }
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨51⟩
-          (pauseWord (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨51⟩)))) :=
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨51⟩
+          (pauseWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨51⟩)))) :=
   (pauseBlockSplit evm locals hbase hp).1
 
 theorem pauseBlockReverts (evm : EVM.State) (locals : Store)

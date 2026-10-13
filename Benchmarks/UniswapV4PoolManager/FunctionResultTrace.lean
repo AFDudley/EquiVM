@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.CallComposition
 import Reasoning.Dispatch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 -- LIBRARY CANDIDATE: relate a source function result to an arbitrary return continuation.
@@ -21,6 +21,6 @@ theorem functionResultTrace_mono {code : ByteArray} {g : Sat256} {s0 : State}
   cases result with
   | returned _ post values => exact hn post values hr
   | reverted | staticViolation => exact hr
-  | ok | «break» | «continue» => exact False.elim hr
+  | ok | «break» | «continue» | noMatch | decodingFailed => exact False.elim hr
 
 end Benchmarks.UniswapV4PoolManager

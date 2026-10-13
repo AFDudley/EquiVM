@@ -1,17 +1,17 @@
 import Reasoning.Reach
-import Reasoning.SolmBody
-import Solm.SolidityLayout
-import Solm.Refine
+import Reasoning.SteleBody
+import Stele.SolidityLayout
+import Stele.Refine
 
 /-!
 # Constructor — reusable constructor-equivalence proof skeletons
 
-This module contains contract-agnostic glue for constructors whose Solidity/Solm constructor has no
+This module contains contract-agnostic glue for constructors whose Solidity/Stele constructor has no
 parameters and no body.  Callers still prove their concrete initcode trace, but the deployment,
-Solm-side empty-constructor execution, and final constructor-equivalence wrapper are shared.
+Stele-side empty-constructor execution, and final constructor-equivalence wrapper are shared.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Reach
 
 namespace Reasoning.Theory
 
@@ -58,7 +58,7 @@ theorem emptyCtorBodyReturns
   rw [hbody]
   exact ExecFuncBody.execBlockOK ExecBlock.nil
 
-theorem emptySolmCtorExec
+theorem emptySteleCtorExec
     {cfg : Config} {contract : ContractDecl}
     {σ : Ethereum.AccountMap}
     {σ₀ : Ethereum.AccountMap}
@@ -72,13 +72,13 @@ theorem emptySolmCtorExec
     (hbody : contract.ctor.body = [])
     (hdeploy : cfg.selfDeployment initcode args = some deployedInitcode)
     (himm : contract.immutables = [] := by rfl) :
-    solmCtorExec cfg contract args σ σ₀ g A I
+    steleCtorExec cfg contract args σ σ₀ g A I
       (.returned
         { contract := contract
           locals := Std.HashMap.ofList (List.zip (contract.ctor.params.map Param.name) args) }
         (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         none) := by
-  refine solmCtorExec.intro
+  refine steleCtorExec.intro
     (evmState := initState σ σ₀ (Sat256.ofUInt256 g) A I)
     (argsStore := Std.HashMap.ofList (List.zip (contract.ctor.params.map Param.name) args))
     ?_ (emptyCtorDeployment_args_length hself hparams hdeploy) rfl ?_
@@ -114,7 +114,7 @@ theorem emptyConstructorCorrect_of_RDret
   rcases hrd.xiResult hcode with hoog | ⟨g', A', hsuccess⟩
   · exact typedConstructorRefinementFor.outOfGas (by simpa using hoog)
   · refine typedConstructorRefinementFor.execution hsuccess
-      (emptySolmCtorExec (cfg := cfg) (contract := contract)
+      (emptySteleCtorExec (cfg := cfg) (contract := contract)
         (σ := σ) (σ₀ := σ₀) (g := g) (A := A) (I := I)
         (args := args) (initcode := initcode) (deployedInitcode := deployedInitcode)
         hself hparams hbody hdeploy himm) ?_ (ctorImmutablesFit_noImmutables himm)
@@ -139,17 +139,17 @@ theorem emptyContractCorrect_of_RDret
     (emptyConstructorCorrect_of_RDret hself hparams hbody hrun himm)
     hruntime himm
 
-theorem solmEmptyParamsCtorExec_of_body {cfg : Config} {decl : ContractDecl}
+theorem steleEmptyParamsCtorExec_of_body {cfg : Config} {decl : ContractDecl}
     {σ σ₀ A I} {g : UInt256} {res : ExecResult}
     (hparams : decl.ctor.params = [])
     (hbody : ExecTransitionBody cfg decl (initState σ σ₀ (Sat256.ofUInt256 g) A I)
       ∅ decl.ctor.body res)
     (himm : decl.immutables = [] := by rfl) :
-    solmCtorExec cfg decl [] σ σ₀ g A I res := by
+    steleCtorExec cfg decl [] σ σ₀ g A I res := by
   have hbody' : ExecTransitionBody cfg decl (initState σ σ₀ (Sat256.ofUInt256 g) A I)
       ∅ decl.ctor.body res (initialImmutables decl) := by
     rw [initialImmutables_noImmutables himm]; exact hbody
-  refine solmCtorExec.intro rfl ?_ ?_ hbody'
+  refine steleCtorExec.intro rfl ?_ ?_ hbody'
   · rw [hparams]; rfl
   · rw [hparams]; rfl
 
@@ -176,7 +176,7 @@ theorem RDret.constructorRefinementEmptyParams {cfg : Config} {decl : ContractDe
   · have hxi := Xi_success_of_X (by rw [← hcode] at hX; exact hX)
     rw [hacc] at hxi
     exact typedConstructorRefinementFor.execution (by simpa using hxi)
-      (solmEmptyParamsCtorExec_of_body hparams hbody himm)
+      (steleEmptyParamsCtorExec_of_body hparams hbody himm)
       (ctorResultEquiv.success rfl rfl ha rfl) (ctorImmutablesFit_noImmutables himm)
 
 theorem RDrev.constructorRefinementEmptyParams {cfg : Config} {decl : ContractDecl}
@@ -191,7 +191,7 @@ theorem RDrev.constructorRefinementEmptyParams {cfg : Config} {decl : ContractDe
   rcases rd.xiResult hcode with hoog | ⟨g', o, hxi⟩
   · exact typedConstructorRefinementFor.outOfGas (by simpa using hoog)
   · exact typedConstructorRefinementFor.execution (by simpa using hxi)
-      (solmEmptyParamsCtorExec_of_body hparams hbody himm) (ctorResultEquiv.revert rfl rfl)
+      (steleEmptyParamsCtorExec_of_body hparams hbody himm) (ctorResultEquiv.revert rfl rfl)
       (ctorImmutablesFit_noImmutables himm)
 
 end Reasoning.Reach

@@ -1,6 +1,6 @@
 import Benchmarks.CurveVault.Common
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.CurveVault
 
 -- LIBRARY CANDIDATE: a bound on active words survives a bounded memory access.

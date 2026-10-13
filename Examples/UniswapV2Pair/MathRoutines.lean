@@ -1,7 +1,7 @@
 import Examples.UniswapV2Pair.Common
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 1000000
@@ -120,7 +120,7 @@ theorem uniswapSqrtFunctionCallSuccess_le3 {caller : Frame} {evm : EVM.State}
     (name := "sqrt") (retVar := retVar) (args := args)
     (argVals := [sqrtFunctionYValue y])
     (callee := sqrtFunction) (locals := sqrtFunctionCallStore y)
-    (calleeSolm := { contract := contract, locals := sqrtFunctionCallStore y })
+    (calleeStele := { contract := contract, locals := sqrtFunctionCallStore y })
     (value := some [sqrtFunctionSmallResultValue y])
     hargs
     (by simpa [hcontract, himm] using uniswapLookupSqrtFunction)
@@ -536,7 +536,7 @@ theorem uniswapSqrtFunctionCallSuccess {caller : Frame} {evm : EVM.State}
       (name := "sqrt") (retVar := retVar) (args := args)
       (argVals := [sqrtFunctionYValue y])
       (callee := sqrtFunction) (locals := sqrtFunctionCallStore y)
-      (calleeSolm := { contract := contract, locals := locals' })
+      (calleeStele := { contract := contract, locals := locals' })
       (value := some [value])
       hargs
       (by simpa [hcontract, himm] using uniswapLookupSqrtFunction)
@@ -558,7 +558,7 @@ theorem uniswapSqrtFunctionCallSuccessInt {caller : Frame} {evm : EVM.State}
       (name := "sqrt") (retVar := retVar) (args := args)
       (argVals := [sqrtFunctionYValue y])
       (callee := sqrtFunction) (locals := sqrtFunctionCallStore y)
-      (calleeSolm := { contract := contract, locals := locals' })
+      (calleeStele := { contract := contract, locals := locals' })
       (value := some [.int result])
       hargs
       (by simpa [hcontract, himm] using uniswapLookupSqrtFunction)
@@ -582,7 +582,7 @@ theorem uniswapSqrtFunctionCallSuccessIntBounded {caller : Frame} {evm : EVM.Sta
     (name := "sqrt") (retVar := retVar) (args := args)
     (argVals := [sqrtFunctionYValue y])
     (callee := sqrtFunction) (locals := sqrtFunctionCallStore y)
-    (calleeSolm := { contract := contract, locals := locals' })
+    (calleeStele := { contract := contract, locals := locals' })
     (value := some [.int result])
     hargs
     (by simpa [hcontract, himm] using uniswapLookupSqrtFunction)
@@ -720,7 +720,7 @@ theorem uniswapMinFunctionCallSuccess {caller : Frame} {evm : EVM.State}
     (name := "min") (retVar := retVar) (args := args)
     (argVals := [minFunctionXValue x, minFunctionYValue y])
     (callee := minFunction) (locals := minFunctionCallStore x y)
-    (calleeSolm := { contract := contract, locals := minFunctionCallStore x y })
+    (calleeStele := { contract := contract, locals := minFunctionCallStore x y })
     (value := some [minFunctionResultValue x y])
     hargs
     (by simpa [hcontract, himm] using uniswapLookupMinFunction)

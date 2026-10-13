@@ -7,7 +7,7 @@ Dispatcher bucket 3, arm entry pc 1379: the `callvalue` guard and `return len(se
 length word (slot 2), which the backend reads raw as well.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
   Reasoning.VyperBounded
 
 namespace Tests.Pipeline.VyperRegistry

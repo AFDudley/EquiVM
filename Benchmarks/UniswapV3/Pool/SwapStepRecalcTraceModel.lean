@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.SwapStepPriceTraceModel
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 noncomputable def swapStepCalcWords (a : SwapStepArgs)

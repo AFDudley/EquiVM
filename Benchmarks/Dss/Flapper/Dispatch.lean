@@ -3,10 +3,10 @@ import Benchmarks.Dss.Flapper.Selectors
 /-!
 # MakerDAO/Sky DSS Flapper dispatcher facts
 
-Solm dispatch routing facts and the shared dispatcher revert entry points.
+Stele dispatch routing facts and the shared dispatcher revert entry points.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 

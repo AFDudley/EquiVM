@@ -3,10 +3,10 @@ import Benchmarks.Dss.Dog.Common
 /-!
 # MakerDAO/Sky DSS Dog selector proofs
 
-The selector theorems connect Solm signatures to the runtime dispatcher constants.
+The selector theorems connect Stele signatures to the runtime dispatcher constants.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM
+open Stele ABI Ethereum Ethereum.EVM
 open Benchmarks.Dss.Dog.Immutables
 
 namespace Benchmarks.Dss.Dog

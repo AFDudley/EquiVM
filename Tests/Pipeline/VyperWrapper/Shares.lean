@@ -7,7 +7,7 @@ Dispatcher bucket 2, arm entry pc 1681: the guard, the address validation, then
 `keccak256(1 ++ arg)`, `SLOAD` into offset 96 and `RETURN`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 open Reasoning.VyperImmutables
 
 namespace Tests.Pipeline.VyperWrapper

@@ -1,6 +1,6 @@
 import Reasoning.ABI
 
-open Solm ABI Ethereum Ethereum.EVM
+open Stele ABI Ethereum Ethereum.EVM
 
 namespace Reasoning.Theory
 

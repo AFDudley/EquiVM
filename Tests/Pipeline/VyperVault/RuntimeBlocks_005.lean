@@ -4,7 +4,7 @@ import Tests.Pipeline.VyperVault.Bytecode
 import Tests.Pipeline.VyperVault.Immutables
 import Tests.Pipeline.VyperVault.ImmutableCode
 
-open Solm ABI Ethereum Ethereum.EVM
+open Stele ABI Ethereum Ethereum.EVM
 open Reasoning.Theory Reasoning.Reach
 
 namespace vyperVaultBlocks

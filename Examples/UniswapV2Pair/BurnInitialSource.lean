@@ -2,7 +2,7 @@ import Reasoning.ExternalCall
 import Examples.UniswapV2Pair.BurnCommon
 import Examples.UniswapV2Pair.MintCommon
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace UniswapV2Pair
 set_option maxRecDepth 2000000
 
@@ -23,7 +23,7 @@ abbrev burnCachePrefix : List Stmt :=
 
 theorem uniswapBurnCachePrefix (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩) :
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩) :
     ExecBlock config { contract := contract, locals := burnStore I } evm burnCachePrefix
       (.ok { contract := contract, locals := burnCacheStore (uniswapLockEnteredState evm) I }
         (uniswapLockEnteredState evm)) := by
@@ -59,7 +59,7 @@ theorem uniswapAddressAtSlot_eq_runtime
     uniswapAddressAtSlot evm slot =
       AccountAddress.ofUInt256 (UInt256.land solcAddrMask (solcSlotWordAt slot σ I)) := by
   subst σ
-  simp only [uniswapAddressAtSlot, Solm.EVM.storageLoad, State.lookupAccount,
+  simp only [uniswapAddressAtSlot, Stele.EVM.storageLoad, State.lookupAccount,
     Account.lookupStorage, henv, solcSlotWordAt, solcSlotWord,
     accountAddress_ofUInt256_eq_ofNat_toNat, u256_land_comm]
 
@@ -83,7 +83,7 @@ theorem burnCacheStore_token1 (evm : EVM.State) (I : ExecutionEnv) :
 
 theorem uniswapBurnBodyReverts_firstNoCode (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard : evalExpr? config
       { contract := contract, locals := burnCacheStore (uniswapLockEnteredState evm) I }
       (uniswapLockEnteredState evm)
@@ -100,7 +100,7 @@ theorem uniswapBurnBodyReverts_firstNoCode (evm : EVM.State) (I : ExecutionEnv)
 
 theorem uniswapBurnBodyReverts_firstBalanceBlock (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hfirst : ExecBlock config
       { contract := contract, locals := burnCacheStore (uniswapLockEnteredState evm) I }
       (uniswapLockEnteredState evm) (balanceOfThisStmts (.var "_token0") "balance0") .reverted) :
@@ -117,7 +117,7 @@ abbrev burnBalance0Store (evm : EVM.State) (I : ExecutionEnv) (balance0 : UInt25
 theorem uniswapBurnBodyReverts_secondBalanceBlock
     (evm evm0 : EVM.State) (I : ExecutionEnv) (balance0 : UInt256)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hfirst : ExecBlock config
       { contract := contract, locals := burnCacheStore (uniswapLockEnteredState evm) I }
       (uniswapLockEnteredState evm) (balanceOfThisStmts (.var "_token0") "balance0")

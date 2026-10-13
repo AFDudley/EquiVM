@@ -1,8 +1,8 @@
 import Benchmarks.Dss.Clipper.TakeNoAdjustVatMoveSource
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 import Reasoning.Storage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 namespace Benchmarks.Dss.Clipper
@@ -313,7 +313,7 @@ theorem clipperTakeNoAdjustAssignSalesTabAtDigsRet
       .ok
         (Frame.mk contract (clipperTakeLocalsNoAdjustDigsRet evmLoc evmRead evmVat I price slice owe0 owe
             tabNew lotNew) (immStore v),
-          Solm.EVM.storageStore evm evm.executionEnv.codeOwner (clipperTakeSalesTabSlot I)
+          Stele.EVM.storageStore evm evm.executionEnv.codeOwner (clipperTakeSalesTabSlot I)
             tabNew) := by
   apply assignStorageRef_storage_scalar (hbackend := rfl)
     (er := clipperTakeSalesTabRef I) (ty := uint256St)
@@ -347,7 +347,7 @@ theorem clipperTakeNoAdjustAssignSalesLotAtDigsRet
       .ok
         (Frame.mk contract (clipperTakeLocalsNoAdjustDigsRet evmLoc evmRead evmVat I price slice owe0 owe
             tabNew lotNew) (immStore v),
-          Solm.EVM.storageStore evm evm.executionEnv.codeOwner (clipperTakeSalesLotSlot I)
+          Stele.EVM.storageStore evm evm.executionEnv.codeOwner (clipperTakeSalesLotSlot I)
             lotNew) := by
   apply assignStorageRef_storage_scalar (hbackend := rfl)
     (er := clipperTakeSalesLotRef I) (ty := uint256St)
@@ -387,10 +387,10 @@ theorem clipperTakeNoAdjustDogDigsOweNonzeroStoreSourceOk (v : ClipperImmutables
         "digs" 0 [v.ilk, .int (Int.ofNat owe.toNat)]
         (true, evmDog, outDog) true) :
     let evmTab :=
-      Solm.EVM.storageStore evmDog evmDog.executionEnv.codeOwner
+      Stele.EVM.storageStore evmDog evmDog.executionEnv.codeOwner
         (clipperTakeSalesTabSlot I) tabNew
     let evmLot :=
-      Solm.EVM.storageStore evmTab evmTab.executionEnv.codeOwner
+      Stele.EVM.storageStore evmTab evmTab.executionEnv.codeOwner
         (clipperTakeSalesLotSlot I) lotNew
     ExecBlock config
       (Frame.mk contract (clipperTakeLocalsNoAdjustMoveRet evmLoc evmRead evmVat I price slice owe0 owe
@@ -417,7 +417,7 @@ theorem clipperTakeNoAdjustDogDigsOweNonzeroStoreSourceOk (v : ClipperImmutables
       (.ok
         (Frame.mk contract (clipperTakeLocalsNoAdjustDigsRet evmLoc evmRead evmVat I price slice owe0 owe
             tabNew lotNew) (immStore v))
-        (Solm.EVM.storageStore evmLot evmLot.executionEnv.codeOwner ⟨13⟩ ⟨0⟩)) := by
+        (Stele.EVM.storageStore evmLot evmLot.executionEnv.codeOwner ⟨13⟩ ⟨0⟩)) := by
   intro evmTab evmLot
   let moveFrame : Frame :=
     Frame.mk contract (clipperTakeLocalsNoAdjustMoveRet evmLoc evmRead evmVat I price slice owe0 owe
@@ -524,7 +524,7 @@ theorem clipperTakeNoAdjustDogDigsOweNonzeroStoreSourceOk (v : ClipperImmutables
       assignStorageRef? config digsRetFrame evmLot
         .storage lockedRef (.int 0) =
         .ok (digsRetFrame,
-          Solm.EVM.storageStore evmLot evmLot.executionEnv.codeOwner ⟨13⟩ ⟨0⟩) := by
+          Stele.EVM.storageStore evmLot evmLot.executionEnv.codeOwner ⟨13⟩ ⟨0⟩) := by
     simpa [digsRetFrame] using
       assign_clipperLocked v evmLot
         (clipperTakeLocalsNoAdjustDigsRet evmLoc evmRead evmVat I price slice owe0 owe
@@ -536,7 +536,7 @@ theorem clipperTakeNoAdjustDogDigsOweNonzeroStoreSourceOk (v : ClipperImmutables
       ExecStmt config digsRetFrame evmLot
         (.assign .storage lockedRef (.intLit 0))
         (.ok digsRetFrame
-          (Solm.EVM.storageStore evmLot evmLot.executionEnv.codeOwner ⟨13⟩ ⟨0⟩)) := by
+          (Stele.EVM.storageStore evmLot evmLot.executionEnv.codeOwner ⟨13⟩ ⟨0⟩)) := by
     exact ExecStmt.assign hzero hassign
   have htail :
       ExecBlock config digsRetFrame evmDog
@@ -552,7 +552,7 @@ theorem clipperTakeNoAdjustDogDigsOweNonzeroStoreSourceOk (v : ClipperImmutables
                 .assign .storage (salesF (.var "id") "lot") (.var "lot") ] ],
           .assign .storage lockedRef (.intLit 0) ]
         (.ok digsRetFrame
-          (Solm.EVM.storageStore evmLot evmLot.executionEnv.codeOwner ⟨13⟩ ⟨0⟩)) := by
+          (Stele.EVM.storageStore evmLot evmLot.executionEnv.codeOwner ⟨13⟩ ⟨0⟩)) := by
     exact ExecBlock.consNormal hlotIte (ExecBlock.consNormal hunlock ExecBlock.nil)
   simpa [moveFrame, digsRetFrame, evmTab, evmLot] using execBlockAppendOk hdog htail
 

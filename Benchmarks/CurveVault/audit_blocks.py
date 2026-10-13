@@ -15,7 +15,7 @@ directory = Path(__file__).resolve().parent
 build = json.loads((directory / "Vault.build.json").read_text())
 
 # Each entry owns instructions up to the next entry. Encoding/copy instructions
-# serve the stated operation; they do not introduce memory operations in Solm.
+# serve the stated operation; they do not introduce memory operations in Stele.
 review = [
     (0, "dispatch", "Two-stage perfect hash; compare selector and require calldata size >= 4; otherwise revert at 6768"),
     (73, "dispatch", "Selected record: minimum calldata and zero callvalue; otherwise revert at 8284"),

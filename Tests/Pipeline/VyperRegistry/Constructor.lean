@@ -7,12 +7,12 @@ import Reasoning.ExternalCall
 
 The init code checks `callvalue`, calls `ownable.__init__` (pc 5 → 35: `SSTORE 0 ← caller`,
 returning to pc 12), stores `nextId := 1` (slot 19) and returns the runtime (`CODECOPY` from
-offset 44, 1685 bytes).  The Solm constructor is
+offset 44, 1685 bytes).  The Stele constructor is
 `require(msg.value == 0); ownable___init__(); nextId = 1;` with no immutables, so the deployed
 code is the constant `registryBytecode`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
   Reasoning.VyperBounded
 
 namespace Tests.Pipeline.VyperRegistry
@@ -59,10 +59,10 @@ theorem registryConstructorCorrect :
     have rd4 := registryCreationBlocks.registryCreation_block_12 (by simp) hperm rd3
     rw [ByteArray.append_empty, ulit_toNat' 44 (by decide), ulit_toNat' 0 (by decide), ulit_toNat' 1685 (by decide),
       ctorOutput] at rd4
-    -- Solm
+    -- Stele
     have hassignOwner : ∀ (F : Frame), F.contract = contract → F.locals.get? "ownable_owner" = none →
         assignStorageRef? config F (initState σ σ₀ (Sat256.ofUInt256 g) A I) .storage ownerRef (.address I.source) =
-          .ok (F, Solm.EVM.storageStore (initState σ σ₀ (Sat256.ofUInt256 g) A I) I.codeOwner ⟨0⟩
+          .ok (F, Stele.EVM.storageStore (initState σ σ₀ (Sat256.ofUInt256 g) A I) I.codeOwner ⟨0⟩
             (UInt256.ofNat I.source.val)) := by
       intro F hF hb
       apply assignStorageRef_storage_vyper_scalar_value (hbackend := rfl) (hcheck := by rfl)
@@ -72,13 +72,13 @@ theorem registryConstructorCorrect :
         (hty := by rw [hF]; rfl) (hloc := rfl)
       rw [storageLocStore_vyperWord_address]
       rfl
-    set evm1 := Solm.EVM.storageStore (initState σ σ₀ (Sat256.ofUInt256 g) A I) I.codeOwner ⟨0⟩ (UInt256.ofNat I.source.val)
+    set evm1 := Stele.EVM.storageStore (initState σ σ₀ (Sat256.ofUInt256 g) A I) I.codeOwner ⟨0⟩ (UInt256.ofNat I.source.val)
       with hevm1
     have hs1 : SourceState (initState σ σ₀ (Sat256.ofUInt256 g) A I) I
         (sstoreAccountMap I.codeOwner σ ⟨0⟩ (UInt256.ofNat I.source.val)) evm1 := SourceState.init.storageWrite _ _
     have hassignNext : ∀ (F : Frame), F.contract = contract → F.locals.get? "nextId" = none →
         assignStorageRef? config F evm1 .storage { base := "nextId", steps := [] } (uint256Value (UInt256.ofNat 1)) =
-          .ok (F, Solm.EVM.storageStore evm1 I.codeOwner (UInt256.ofNat 19) (UInt256.ofNat 1)) := by
+          .ok (F, Stele.EVM.storageStore evm1 I.codeOwner (UInt256.ofNat 19) (UInt256.ofNat 1)) := by
       intro F hF hb
       apply assignStorageRef_storage_vyper_scalar (hbackend := rfl) (hcheck := by rfl)
         (er := { base := "nextId", steps := [] })
@@ -88,7 +88,7 @@ theorem registryConstructorCorrect :
       erw [storageLocStore_uint256, hs1.env]
     have hbody : ExecTransitionBody config contract (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅ contract.ctor.body
         (.returned { contract := contract, locals := (∅ : Store).insert "__c0" .unit, immutables := initialImmutables contract }
-          (Solm.EVM.storageStore evm1 I.codeOwner (UInt256.ofNat 19) (UInt256.ofNat 1)) none) (initialImmutables contract) := by
+          (Stele.EVM.storageStore evm1 I.codeOwner (UInt256.ofNat 19) (UInt256.ofNat 1)) none) (initialImmutables contract) := by
       rw [ctorBody_eq]
       exact ExecFuncBody.execBlockOK (ExecBlock.consNormal
         (ExecStmt.requireTrue (evalCallvalueEq_true (by simpa [initState] using hwv)))
@@ -103,7 +103,7 @@ theorem registryConstructorCorrect :
     · have hxi := Xi_success_of_X (by rw [← hcodeC] at hX; exact hX)
       rw [hacc] at hxi
       exact typedConstructorRefinementFor.execution (by simpa using hxi)
-        (solmCtorExec.intro rfl (by rfl) (by rfl) hbody)
+        (steleCtorExec.intro rfl (by rfl) (by rfl) hbody)
         (ctorResultEquiv.success rfl rfl ((hs1.storageWrite _ _).accounts) rfl)
         (ctorImmutablesFit_noImmutables noImmutables)
   · have rd1 := registryCreationBlocks.registryCreation_block_0_taken (by simp) (fun h => hwv h) (by native_decide) rd0
@@ -111,7 +111,7 @@ theorem registryConstructorCorrect :
     rcases rd2.xiResult hcode' with hoog | ⟨g', o, hxi⟩
     · exact typedConstructorRefinementFor.outOfGas (by simpa using hoog)
     · exact typedConstructorRefinementFor.execution (by simpa using hxi)
-        (solmCtorExec.intro rfl (by rfl) (by rfl) (by
+        (steleCtorExec.intro rfl (by rfl) (by rfl) (by
           rw [ctorBody_eq]
           exact ExecFuncBody.execBlockRevert (ExecBlock.consRevert
             (ExecStmt.requireFalse (evalCallvalueEq_false (by simpa [initState] using hwv))))))

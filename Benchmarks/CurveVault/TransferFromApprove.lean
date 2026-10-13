@@ -1,7 +1,7 @@
 import Benchmarks.CurveVault.TransferFromTail
 import Benchmarks.CurveVault.AllowanceSpend
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 abbrev vaultTransferFromApproveStmt : Stmt := .internalCall "_approve"

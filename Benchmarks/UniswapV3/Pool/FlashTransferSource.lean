@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.PoolTokenTransfer
 import Benchmarks.UniswapV3.Pool.FlashPrefix
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
@@ -53,7 +53,7 @@ theorem flashTransferReturns (v : UniswapV3PoolImmutables) (locals : Store)
   refine ExecStmt.iteTrue ?_ (ExecBlock.consNormal ?_ ExecBlock.nil)
   · simpa only [hp, decide_true] using evalFlashTransferGuard v locals evm second amount ha
   · exact internalCallFunctionReturn (callee := safeTransferFunction) (value := none)
-      (calleeSolm := calleeFrame) (locals := safeTransferLocals (poolToken v second) recipient amount)
+      (calleeStele := calleeFrame) (locals := safeTransferLocals (poolToken v second) recipient amount)
       (poolTransferEval v locals evm second recipient amount hr ha) safeTransferLookup rfl hcall
 
 theorem flashTransferReverts (v : UniswapV3PoolImmutables) (locals : Store)

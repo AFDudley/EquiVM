@@ -1,5 +1,5 @@
 import Tests.Pipeline.VyperRegistry.Count
-import Reasoning.SolmArithmetic
+import Reasoning.SteleArithmetic
 
 /-!
 # Registry `active_weight()`
@@ -10,10 +10,10 @@ the `len(self.ids) ≤ 16` bound (pc 273), the empty check (pc 289), then the lo
 365 (store `total`) → 372 (`i + 1`, back to 296 or out to 383, the `RETURN`).
 
 The loop is handled by `awLoop`: an induction on the remaining iterations that couples the EVM
-trace with Solm's `ExecForLoop`, under the memory invariant `Minv` (`total` at offset 64).
+trace with Stele's `ExecForLoop`, under the memory invariant `Minv` (`total` at offset 64).
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
   Reasoning.VyperBounded
 
 namespace Tests.Pipeline.VyperRegistry
@@ -127,7 +127,7 @@ theorem awStore_Minv {M : ByteArray} (hM : M.size = 128) (t : UInt256) : Minv t 
 
 /-! ### One iteration: pc 296 → 372 -/
 
-/-- The loop-carried facts on the Solm locals. -/
+/-- The loop-carried facts on the Stele locals. -/
 def Linv (len : UInt256) (i : Nat) (total : UInt256) (L : Store) : Prop :=
   L.get? "__i0" = some (uint256Value (UInt256.ofNat i)) ∧ L.get? "total" = some (uint256Value total) ∧
   L.get? "__n0" = some (uint256Value len) ∧ L.get? "ids" = none ∧ L.get? "entries" = none
@@ -153,7 +153,7 @@ theorem awIter {σ σ₀ A I} {g : UInt256} (hle16 : (solcSlotWordAt (UInt256.of
   have hiN : (UInt256.ofNat i).toNat = i := ulit_toNat' i (lt_size_of_lt_sign (by omega))
   have hcT : evalExpr? config (frame L) (initState σ σ₀ (Sat256.ofUInt256 g) A I) awCond = .ok (.bool true) := by
     rw [evalLtVars L _ "__i0" "__n0" _ _ hLi hLn, hiN, decide_eq_true hi]
-  -- Solm: `id = ids[__i0]`
+  -- Stele: `id = ids[__i0]`
   have hidx : evalExpr? config (frame L) (initState σ σ₀ (Sat256.ofUInt256 g) A I) (.var "__i0") =
       .ok (.int (Int.ofNat (UInt256.ofNat i).toNat)) := evalVar _ _ "__i0" _ hLi
   have hlenB := idsLength_initState (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
@@ -265,7 +265,7 @@ theorem awIter {σ σ₀ A I} {g : UInt256} (hle16 : (solcSlotWordAt (UInt256.of
     ulit_toNat' 64 (by decide)] at rd3
   have hM3 : (awH idw (awH idw (idw.toByteArray.write 0 mem 96 32))).size = 128 := awH_size _ _ hM2
   have hM4inv := awStore_Minv hM3 (total + wt)
-  -- Solm: `total += entries[id].weight`
+  -- Stele: `total += entries[id].weight`
   have hadd := evalExpr_uint256_add htot hwt hfit
   set L2 : Store := L1.insert "total" (uint256Value (total + wt)) with hL2def
   have hL2i : L2.get? "__i0" = some (uint256Value (UInt256.ofNat i)) := by
@@ -365,13 +365,13 @@ theorem registryActive_weightBody {σ σ₀ A I} {g : UInt256} (_hwf : storageWF
     exact RDrev.reEquivOfDispatch hcode hd
       (fun _ => by rw [active_weightBody_eq]; exact bodyReverts_nonPayable (by simpa [initState] using hwv)) rd2
   have rd1 := registryBlocks.registry_block_268_fallthrough (by simp) (by rw [hwv]; rfl) rd
-  -- Solm prefix
+  -- Stele prefix
   have hcv : evalExpr? config (frame ∅) (initState σ σ₀ (Sat256.ofUInt256 g) A I)
       (.binary .eq (.env .callvalue) (.intLit 0)) = .ok (.bool true) :=
     evalCallvalueEq_true (by simpa [initState] using hwv)
   have h0 : ∀ L : Store, evalExpr? config (frame L) (initState σ σ₀ (Sat256.ofUInt256 g) A I) (.intLit 0) =
       .ok (uint256Value ⟨0⟩) := fun L => by
-    have h := evalExpr_intLit_word (cfg := config) (solm := frame L) (initState σ σ₀ (Sat256.ofUInt256 g) A I) 0 (by decide)
+    have h := evalExpr_intLit_word (cfg := config) (stele := frame L) (initState σ σ₀ (Sat256.ofUInt256 g) A I) 0 (by decide)
     rw [hz] at h
     exact h
   set L0 : Store := (∅ : Store).insert "total" (uint256Value ⟨0⟩) with hL0def

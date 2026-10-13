@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Vat.Dispatch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -98,7 +98,7 @@ theorem vatDaiBodyCoreOk
         (.returned { contract := contract, locals := locals }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.int (Int.ofNat (solcSlotWordAt (daiMappingSlotFor I) σ I).toNat))])) := by
-    simpa [daiTransition, daiMappingSlotFor, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [daiTransition, daiMappingSlotFor, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount, locals, key] using
       vatUint256GetterBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) locals

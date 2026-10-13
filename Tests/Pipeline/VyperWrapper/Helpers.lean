@@ -12,7 +12,7 @@ first calldata word, the `shares` mapping slots and the hash scratch the bytecod
 calldata decoding, and frame-generic evaluation facts.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
   Reasoning.VyperBounded
 open Reasoning.VyperImmutables
 
@@ -67,11 +67,11 @@ theorem suffixWords_TOKEN (w : String → UInt256) :
     immutableLayout.suffixWords w = (w "TOKEN").toByteArray := by
   have hslots : immutableLayout.slots.map (fun slot => (slot.offset, (w slot.name).toByteArray)) =
       [] ++ (0, (w "TOKEN").toByteArray) :: [] := by rfl
-  have hpatch : ∃ suffix, Solm.patchRuntime (ByteArray.zeroes immutableLayout.size)
+  have hpatch : ∃ suffix, Stele.patchRuntime (ByteArray.zeroes immutableLayout.size)
       (immutableLayout.slots.map (fun slot => (slot.offset, (w slot.name).toByteArray))) =
       some suffix := by
     simp only [immutableLayout, List.map_cons, List.map_nil]
-    simp [Solm.patchRuntime, Solm.spliceBytes?, ByteArray.size_append,
+    simp [Stele.patchRuntime, Stele.spliceBytes?, ByteArray.size_append,
       ByteArray.size_extract, ByteArray_zeroes_size, toByteArray_size]
   have h := Layout.suffixWords_read_slot (layout := immutableLayout) (words := w) (name := "TOKEN")
     (offset := 0) (pre := []) (post := []) hslots (by decide) (by intro p hp; simp at hp) hpatch
@@ -203,8 +203,8 @@ theorem evalVar (imms L : Store) (evm : EVM.State) (name : Ident) (v : Value)
   show EvalResult.ofOption _ (L.get? name) = _
   rw [h]; rfl
 
-theorem evalThis {cfg : Config} {solm : Frame} (evm : EVM.State) :
-    evalExpr? cfg solm evm (.env .this) = .ok (.address evm.executionEnv.codeOwner) := by
+theorem evalThis {cfg : Config} {stele : Frame} (evm : EVM.State) :
+    evalExpr? cfg stele evm (.env .this) = .ok (.address evm.executionEnv.codeOwner) := by
   rw [evalExpr?]; rfl
 
 abbrev hookRef : StorageRef := { base := "hook", steps := [] }
@@ -213,7 +213,7 @@ abbrev tsRef : StorageRef := { base := "totalShares", steps := [] }
 /-- `hook` as the spec reads it: the address the raw word denotes. -/
 theorem evalHookRead (imms L : Store) (evm : EVM.State) (hL : L.get? "hook" = none) :
     evalExpr? config (frame imms L) evm (.storage hookRef) =
-      .ok (.address (AccountAddress.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩).toNat)) := by
+      .ok (.address (AccountAddress.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩).toNat)) := by
   rw [evalExpr_storage_vyper_scalar (hbackend := rfl) (hcheck := by rfl) (t := .address)
       (er := { base := "hook", steps := [] }) (loc := vyperWordLoc ⟨0⟩ .address) (hbase := hL)
       (her := by simp [evalStorageRef, evalStorageRefSteps, EvalResult.bind, pure, bind])
@@ -228,7 +228,7 @@ theorem evalAddrZero (imms L : Store) (evm : EVM.State) :
 /-- `totalShares` as the spec reads it. -/
 theorem evalTsRead (imms L : Store) (evm : EVM.State) (hL : L.get? "totalShares" = none) :
     evalExpr? config (frame imms L) evm (.storage tsRef) =
-      .ok (uint256Value (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (UInt256.ofNat 2))) := by
+      .ok (uint256Value (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (UInt256.ofNat 2))) := by
   rw [evalExpr_storage_vyper_uint256_backend (hbackend := rfl) (hcheck := by rfl)
       (er := { base := "totalShares", steps := [] }) (physicalSlot := UInt256.ofNat 2) (hbase := hL)
       (her := by simp [evalStorageRef, evalStorageRefSteps, EvalResult.bind, pure, bind])
@@ -237,7 +237,7 @@ theorem evalTsRead (imms L : Store) (evm : EVM.State) (hL : L.get? "totalShares"
 /-- `shares[msg.sender]` as the spec reads it. -/
 theorem evalSharesCallerRead (imms L : Store) (evm : EVM.State) (hL : L.get? "shares" = none) :
     evalExpr? config (frame imms L) evm (.storage { base := "shares", steps := [.mindex (.env .caller)] }) =
-      .ok (uint256Value (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (sharesSlot evm.executionEnv.source))) := by
+      .ok (uint256Value (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (sharesSlot evm.executionEnv.source))) := by
   rw [evalExpr_storage_vyper_uint256_backend (hbackend := rfl) (hcheck := by rfl)
       (er := { base := "shares", steps := [.mindex (.address evm.executionEnv.source)] })
       (physicalSlot := sharesSlot evm.executionEnv.source) (hbase := hL)

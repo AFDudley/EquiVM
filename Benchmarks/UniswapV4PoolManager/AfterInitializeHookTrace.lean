@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.AfterInitializeActiveTrace
 import Benchmarks.UniswapV4PoolManager.HookWrapperSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.UniswapV4PoolManager.Immutables
 namespace Benchmarks.UniswapV4PoolManager

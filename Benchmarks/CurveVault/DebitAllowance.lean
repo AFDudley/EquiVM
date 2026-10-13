@@ -2,7 +2,7 @@ import Benchmarks.CurveVault.DebitAllowancePrepare
 import Benchmarks.CurveVault.AllowanceSpend
 import Benchmarks.CurveVault.DebitSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 def vaultDebitAllowanceRetVar (isWithdraw : Bool) : Ident := if isWithdraw then "__c2" else "__c0"

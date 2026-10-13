@@ -1,6 +1,6 @@
 import Benchmarks.CompoundIII.Comet.TotalSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.CompoundIII.Comet.Immutables
 
 namespace Benchmarks.CompoundIII.Comet
@@ -50,7 +50,7 @@ def reservesReadyFrame (v : CometWithExtendedAssetListImmutables) (w0 w1 time : 
       "token" (.address v.baseToken) }
 
 theorem reservesSnapshot_result (v : CometWithExtendedAssetListImmutables) (evm : EVM.State) :
-    let w1 := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩
+    let w1 := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩
     let time := timestampWord evm.executionEnv
     ExecBlock config
       { contract := contract, locals := (∅ : Store).insert "__c0" (.int time.toNat),
@@ -67,15 +67,15 @@ theorem reservesSnapshot_result (v : CometWithExtendedAssetListImmutables) (evm 
 
 theorem reservesIndices_result (v : CometWithExtendedAssetListImmutables) (evm : EVM.State)
     (ht : (timestampWord evm.executionEnv).toNat < 2^40) :
-    let w0 := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩
-    let w1 := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩
+    let w0 := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩
+    let w1 := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩
     let time := timestampWord evm.executionEnv
     ExecBlock config (reservesSnapshotFrame v w1 time) evm reservesIndicesBlock
       (if CurrentIndicesValid v w0 w1 time then .ok (reservesReadyFrame v w0 w1 time) evm
         else .reverted) := by
   dsimp only
-  let w0 := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩
-  let w1 := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩
+  let w0 := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩
+  let w1 := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩
   let time := timestampWord evm.executionEnv
   let f := reservesSnapshotFrame v w1 time
   have he : evalExpr? config f evm (.var "__c0") = .ok (.int (Int.ofNat time.toNat)) := by
@@ -115,8 +115,8 @@ theorem reservesIndices_result (v : CometWithExtendedAssetListImmutables) (evm :
     simp only [evalExprs?, reservesElapsedExpr, hd, bind, EvalResult.bind]
 
 theorem reservesStart_result (v : CometWithExtendedAssetListImmutables) (evm : EVM.State) :
-    let w0 := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩
-    let w1 := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩
+    let w0 := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩
+    let w1 := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩
     let time := timestampWord evm.executionEnv
     ExecBlock config { contract := contract, locals := ∅, immutables := immStore v }
       evm reservesStartBlock

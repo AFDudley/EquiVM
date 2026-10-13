@@ -2,7 +2,7 @@ import Benchmarks.UniswapV4PoolManager.PoolModifyValues
 import Benchmarks.UniswapV4PoolManager.PoolStorage
 import Benchmarks.UniswapV4PoolManager.CallComposition
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 /-- Locals kept throughout the pool modification, including across internal calls. -/

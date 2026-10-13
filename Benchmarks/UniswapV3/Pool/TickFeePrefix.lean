@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.TickFeeModel
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 1000
 
@@ -41,14 +41,14 @@ theorem tickFeePrefix (imms : Store) (evm : EVM.State) (a : TickFeeArgs) :
       (.ok (tickFeeBelowZeroFrame imms a) evm) := by
   refine ExecBlock.consNormal
     (ExecStmt.letDecl (value := .int 0) (by simp only [evalExpr?, pure])) ?_
-  refine ExecBlock.consNormal (solm' := tickFeeZerosFrame imms a)
+  refine ExecBlock.consNormal (stele' := tickFeeZerosFrame imms a)
     (ExecStmt.letDecl (value := .int 0) (by simp only [evalExpr?, pure])) ?_
-  refine ExecBlock.consNormal (solm' := tickFeeLowerAliasFrame imms a) (evm' := evm)
+  refine ExecBlock.consNormal (stele' := tickFeeLowerAliasFrame imms a) (evm' := evm)
     (ExecStmt.letStorage ?_) ?_
   · apply resolveTickReference _ imms evm "tickLower" a.lower
     · simp [tickFeeZerosFrame, tickFeeFrame, tickFeeLocals, Std.HashMap.getElem_insert]
     · simp [tickFeeZerosFrame, tickFeeFrame, tickFeeLocals, Std.HashMap.getElem_insert]
-  · refine ExecBlock.consNormal (solm' := tickFeeAliasesFrame imms a) (evm' := evm)
+  · refine ExecBlock.consNormal (stele' := tickFeeAliasesFrame imms a) (evm' := evm)
       (ExecStmt.letStorage ?_) ?_
     · apply resolveTickReference _ imms evm "tickUpper" a.upper
       · simp [tickFeeLowerAliasFrame, tickFeeZerosFrame, tickFeeFrame, tickFeeLocals,

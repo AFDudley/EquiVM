@@ -1,11 +1,11 @@
-import Solm.SolidityStorage
-import Solm.Semantics
-import Solm.SolidityLayout
+import Stele.SolidityStorage
+import Stele.Semantics
+import Stele.SolidityLayout
 
 /-!
 # MakerDAO DSS Dai benchmark spec
 
-Solm benchmark scaffold for upstream MakerDAO/Sky `dss/src/dai.sol`.
+Stele benchmark scaffold for upstream MakerDAO/Sky `dss/src/dai.sol`.
 
 Events are omitted.  The ordinary auth and ERC20 paths are modeled source-structurally, including
 Maker's explicit checked `add`/`sub` helper pattern.  The `permit` transition is included with the
@@ -13,7 +13,7 @@ EIP-712 digest construction and an `ecrecover` precompile-shaped static call; pr
 faithfully will require reusable precompile/ABI lemmas.
 -/
 
-open Solm ABI Ethereum
+open Stele ABI Ethereum
 
 namespace Benchmarks.Dss.Dai
 

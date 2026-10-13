@@ -1,6 +1,6 @@
 import Examples.Ballot.DelegateChain
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 1000000
@@ -471,7 +471,7 @@ theorem evalExpr_delegate_tail_proposal_count_general (evm : EVM.State)
         .int (Int.ofNat (delegateTailProposalCountCurrent evm I w).toNat) := by
     change storageLocLoad (delegateTailAfterSenderState evm I w)
         (wordLoc (delegateTailProposalCountSlotCurrent evm I w)) =
-      .int (Int.ofNat (Solm.EVM.storageLoad (delegateTailAfterSenderState evm I w)
+      .int (Int.ofNat (Stele.EVM.storageLoad (delegateTailAfterSenderState evm I w)
         (delegateTailAfterSenderState evm I w).executionEnv.codeOwner
         (delegateTailProposalCountSlotCurrent evm I w)).toNat)
     exact storageLocLoad_uint256 (delegateTailAfterSenderState evm I w)

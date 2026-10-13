@@ -1,17 +1,17 @@
 import Benchmarks.CompoundIII.Comet.PackedWrites
 import Benchmarks.CompoundIII.Comet.AccrualTime
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 
 def storeLastAccrual (evm : EVM.State) (time : UInt256) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨1⟩
-    (packedWriteWord (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) time 26 5)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨1⟩
+    (packedWriteWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) time 26 5)
 
 def storeTotalsIndex (evm : EVM.State) (borrow : Bool) (value : UInt256) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨0⟩
-    (packedWriteWord (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨0⟩
+    (packedWriteWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
       value (totalsIndexOffset borrow).val 8)
 
 theorem assignLastAccrual (evm : EVM.State) (locals imms : Store) (time : UInt256)

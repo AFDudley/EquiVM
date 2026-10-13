@@ -1,15 +1,15 @@
-import Solm.Semantics
-import Solm.SolidityLayout
-import Solm.MetaSolidityLayout
+import Stele.Semantics
+import Stele.SolidityLayout
+import Stele.MetaSolidityLayout
 
 /-!
 # OpenZeppelin ERC6909 benchmark spec
 
-Solm specification for the public ERC-6909 surface implemented by OpenZeppelin.  Events and custom
+Stele specification for the public ERC-6909 surface implemented by OpenZeppelin.  Events and custom
 error payloads are omitted; storage effects, allowance rules, and return values are modelled.
 -/
 
-open Solm ABI Ethereum
+open Stele ABI Ethereum
 
 namespace OpenZeppelinBench.ERC6909
 

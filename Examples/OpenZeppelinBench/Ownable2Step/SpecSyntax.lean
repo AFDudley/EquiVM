@@ -1,8 +1,8 @@
 import Examples.OpenZeppelinBench.Ownable2Step.Spec
-import Solm.Notation
+import Stele.Notation
 
 /-!
-# Ownable2Step spec in the Solidity-faithful Solm frontend
+# Ownable2Step spec in the Solidity-faithful Stele frontend
 
 The `Ownable2StepBench` spec written with `solidity%`, proven definitionally equal to the AST spec
 in `Examples/OpenZeppelinBench/Ownable2Step/Spec.lean`.
@@ -11,7 +11,7 @@ The AST constructor has no callvalue guard, so the surface constructor is marked
 Transition order matches `contract.transitions` (selector order).
 -/
 
-open Solm Solm.Notation
+open Stele Stele.Notation
 
 namespace OpenZeppelinBench.Ownable2Step.Syntax
 

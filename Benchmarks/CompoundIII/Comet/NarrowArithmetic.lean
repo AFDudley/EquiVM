@@ -1,6 +1,6 @@
 import Benchmarks.CompoundIII.Comet.ArithmeticRoutines
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.CompoundIII.Comet.Immutables
 open cometWithExtendedAssetListBlocks
@@ -9,11 +9,11 @@ namespace Benchmarks.CompoundIII.Comet
 
 set_option maxRecDepth 10000
 
--- GENERALIZES Reasoning.SolmBody.uint256RangeSourceOk to every unsigned width.
-theorem uintRangeSourceOk {cfg solm evm expr} {n : Nat} (width : BitWidth)
-    (he : evalExpr? cfg solm evm expr = .ok (.int (Int.ofNat n)))
+-- GENERALIZES Reasoning.SteleBody.uint256RangeSourceOk to every unsigned width.
+theorem uintRangeSourceOk {cfg stele evm expr} {n : Nat} (width : BitWidth)
+    (he : evalExpr? cfg stele evm expr = .ok (.int (Int.ofNat n)))
     (hn : n < 2^width.val) :
-    evalExpr? cfg solm evm (.inRange (.uint width) expr) = .ok (.int (Int.ofNat n)) := by
+    evalExpr? cfg stele evm (.inRange (.uint width) expr) = .ok (.int (Int.ofNat n)) := by
   have hi0 : ¬ Int.ofNat n < 0 := by simp only [Int.ofNat_eq_natCast]; omega
   have hi : ¬ Int.ofNat n ≥ (2 : Int)^width.val := by
     have hp : ((2^width.val : Nat) : Int) = (2 : Int)^width.val := by simp
@@ -23,23 +23,23 @@ theorem uintRangeSourceOk {cfg solm evm expr} {n : Nat} (width : BitWidth)
   simp only [evalExpr?, he, bind, EvalResult.bind, hi0, hi, decide_false, Bool.or_self,
     Bool.false_eq_true, if_false, pure]
 
--- GENERALIZES Reasoning.SolmBody.uint256RangeSourceOverflow to every unsigned width.
-theorem uintRangeSourceOverflow {cfg solm evm expr} {n : Nat} (width : BitWidth)
-    (he : evalExpr? cfg solm evm expr = .ok (.int (Int.ofNat n)))
+-- GENERALIZES Reasoning.SteleBody.uint256RangeSourceOverflow to every unsigned width.
+theorem uintRangeSourceOverflow {cfg stele evm expr} {n : Nat} (width : BitWidth)
+    (he : evalExpr? cfg stele evm expr = .ok (.int (Int.ofNat n)))
     (hn : 2^width.val ≤ n) :
-    evalExpr? cfg solm evm (.inRange (.uint width) expr) = .revert := by
+    evalExpr? cfg stele evm (.inRange (.uint width) expr) = .revert := by
   have hi : Int.ofNat n ≥ (2 : Int)^width.val := by
     simp only [Int.ofNat_eq_natCast]
     exact_mod_cast hn
   simp only [evalExpr?, he, bind, EvalResult.bind, hi, decide_true, Bool.or_true, if_true]
 
 -- LIBRARY CANDIDATE: checked addition at a narrow unsigned width, with a word result.
-theorem checkedNarrowAddSourceOk {cfg solm evm lhs rhs} {a b : UInt256}
+theorem checkedNarrowAddSourceOk {cfg stele evm lhs rhs} {a b : UInt256}
     (width : BitWidth) (hw : width.val ≤ 256)
-    (ha : evalExpr? cfg solm evm lhs = .ok (.int (Int.ofNat a.toNat)))
-    (hb : evalExpr? cfg solm evm rhs = .ok (.int (Int.ofNat b.toNat)))
+    (ha : evalExpr? cfg stele evm lhs = .ok (.int (Int.ofNat a.toNat)))
+    (hb : evalExpr? cfg stele evm rhs = .ok (.int (Int.ofNat b.toNat)))
     (hfit : a.toNat + b.toNat < 2^width.val) :
-    evalExpr? cfg solm evm (.inRange (.uint width) (.binary .add lhs rhs)) =
+    evalExpr? cfg stele evm (.inRange (.uint width) (.binary .add lhs rhs)) =
       .ok (.int (Int.ofNat (a + b).toNat)) := by
   have hsize : a.toNat + b.toNat < UInt256.size :=
     lt_of_lt_of_le hfit (Nat.pow_le_pow_right (by decide) hw)
@@ -54,23 +54,23 @@ theorem mask64Clean (x : UInt256) (hx : x.toNat < 2^64) :
   exact u256LandMaskCleanOfToNat x _ rfl hx
 
 -- LIBRARY CANDIDATE: checked subtraction at an unsigned width.
-theorem checkedNarrowSubSourceOk {cfg solm evm lhs rhs} {a b : UInt256}
+theorem checkedNarrowSubSourceOk {cfg stele evm lhs rhs} {a b : UInt256}
     (width : BitWidth)
-    (ha : evalExpr? cfg solm evm lhs = .ok (.int (Int.ofNat a.toNat)))
-    (hb : evalExpr? cfg solm evm rhs = .ok (.int (Int.ofNat b.toNat)))
+    (ha : evalExpr? cfg stele evm lhs = .ok (.int (Int.ofNat a.toNat)))
+    (hb : evalExpr? cfg stele evm rhs = .ok (.int (Int.ofNat b.toNat)))
     (hfit : a.toNat < 2^width.val) (hle : b.toNat ≤ a.toNat) :
-    evalExpr? cfg solm evm (.inRange (.uint width) (.binary .sub lhs rhs)) =
+    evalExpr? cfg stele evm (.inRange (.uint width) (.binary .sub lhs rhs)) =
       .ok (.int (Int.ofNat (UInt256.sub a b).toNat)) := by
   apply uintRangeSourceOk width (subSourceOk ha hb hle)
   rw [usub_toNat hle]
   omega
 
-theorem checkedNarrowSubSourceUnderflow {cfg solm evm lhs rhs} {a b : UInt256}
+theorem checkedNarrowSubSourceUnderflow {cfg stele evm lhs rhs} {a b : UInt256}
     (width : BitWidth)
-    (ha : evalExpr? cfg solm evm lhs = .ok (.int (Int.ofNat a.toNat)))
-    (hb : evalExpr? cfg solm evm rhs = .ok (.int (Int.ofNat b.toNat)))
+    (ha : evalExpr? cfg stele evm lhs = .ok (.int (Int.ofNat a.toNat)))
+    (hb : evalExpr? cfg stele evm rhs = .ok (.int (Int.ofNat b.toNat)))
     (hlt : a.toNat < b.toNat) :
-    evalExpr? cfg solm evm (.inRange (.uint width) (.binary .sub lhs rhs)) = .revert := by
+    evalExpr? cfg stele evm (.inRange (.uint width) (.binary .sub lhs rhs)) = .revert := by
   have hneg : Int.ofNat a.toNat - Int.ofNat b.toNat < 0 := by
     simp only [Int.ofNat_eq_natCast]
     exact sub_neg.mpr (by exact_mod_cast hlt)

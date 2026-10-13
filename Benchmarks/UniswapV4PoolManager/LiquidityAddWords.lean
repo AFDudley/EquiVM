@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.LiquidityAddSource
 import Benchmarks.UniswapV4PoolManager.WordSignedRepresentation
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 def liquidityAddResultWord (liquidity : UInt256) (delta : Int) : UInt256 :=

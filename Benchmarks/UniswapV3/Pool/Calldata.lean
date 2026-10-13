@@ -1,7 +1,7 @@
 import Reasoning.ABIComposite
 import Benchmarks.UniswapV3.Pool.Common
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.UniswapV3.Pool
 
@@ -23,7 +23,7 @@ theorem decodeScalarWord_legacyInt_none_short (ty : ABI.IntType) {bytes : List U
   simp only [decodeScalarWordWithMode?, readWord?, readBytes?, if_neg hshort, bind, Option.bind]
 
 -- LIBRARY CANDIDATE: Reasoning.ABI, a single legacy integer argument at any width.
-theorem decodeCalldata_legacyInt_ok (ty : ABI.IntType) {cd : ByteArray} {x : Solm.Ident}
+theorem decodeCalldata_legacyInt_ok (ty : ABI.IntType) {cd : ByteArray} {x : Stele.Ident}
     (hsz : 36 ≤ cd.size) :
     decodeCalldataWithMode .legacySolc05 [x] [.elem (.int ty)] cd =
       some ((∅ : Store).insert x (.int (normalizeInt ty (Int.ofNat (calldataWord cd 4).toNat)))) := by
@@ -42,7 +42,7 @@ theorem decodeCalldata_legacyInt_ok (ty : ABI.IntType) {cd : ByteArray} {x : Sol
   simp only [decodeCalldata.insertValues]
 
 -- LIBRARY CANDIDATE: Reasoning.ABI, a short single legacy integer argument at any width.
-theorem decodeCalldata_legacyInt_none_short (ty : ABI.IntType) {cd : ByteArray} {x : Solm.Ident}
+theorem decodeCalldata_legacyInt_none_short (ty : ABI.IntType) {cd : ByteArray} {x : Stele.Ident}
     (hsz : 4 ≤ cd.size) (hshort : cd.size < 36) :
     decodeCalldataWithMode .legacySolc05 [x] [.elem (.int ty)] cd = none := by
   have htlen : cd.toList.length = cd.size := by rw [byteArray_toList_eq, Array.length_toList]; rfl

@@ -11,7 +11,7 @@ Source: eas-contracts-example commit d2864b166a08f9b3f9314f8b302316d67f227462.
 The runtime template's `_eas` sites are recorded in `Immutables.lean`.
 -/
 
-open Solm Ethereum Ethereum.EVM
+open Stele Ethereum Ethereum.EVM
 
 namespace Benchmarks.EAS.Attester
 

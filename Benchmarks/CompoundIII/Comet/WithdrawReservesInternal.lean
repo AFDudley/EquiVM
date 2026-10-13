@@ -2,7 +2,7 @@ import Benchmarks.CompoundIII.Comet.WithdrawReservesModel
 import Benchmarks.CompoundIII.Comet.WithdrawReservesLog
 import Benchmarks.CompoundIII.Comet.TransferOutInternal
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
 open Benchmarks.CompoundIII.Comet.Immutables cometWithExtendedAssetListBlocks
 
 namespace Benchmarks.CompoundIII.Comet

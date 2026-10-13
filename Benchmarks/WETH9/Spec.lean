@@ -1,12 +1,12 @@
-import Solm.SolidityStorage
-import Solm.Semantics
-import Solm.SolidityLayout
+import Stele.SolidityStorage
+import Stele.Semantics
+import Stele.SolidityLayout
 import Benchmarks.WETH9.StringLayout
 
 /-!
 # WETH9 benchmark spec
 
-Solm benchmark scaffold for the canonical DappHub/Gnosis `WETH9` contract.
+Stele benchmark scaffold for the canonical DappHub/Gnosis `WETH9` contract.
 
 The benchmark targets the deployed optimized runtime.  Events are omitted, as in the other examples.
 The named ABI surface is explicit, and the payable Solidity fallback is modeled as the deposit body.
@@ -15,7 +15,7 @@ The named ABI surface is explicit, and the payable Solidity fallback is modeled 
 bytecode and read by the deployed runtime getters.
 -/
 
-open Solm ABI Ethereum
+open Stele ABI Ethereum
 
 namespace Benchmarks.WETH9
 

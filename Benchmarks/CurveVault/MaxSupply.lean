@@ -3,14 +3,14 @@ import Benchmarks.CurveVault.Entry
 import Benchmarks.CurveVault.Storage
 import Benchmarks.CurveVault.RuntimeBlocks_023
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 theorem vaultMaxSupplyEval (evm : EVM.State) (locals : Store)
     (hlocals : locals.get? "maxSupply" = none) :
     evalExpr? config {contract := contract, locals := locals} evm
       (.storage {base := "maxSupply", steps := []}) =
-      .ok (.int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩).toNat)) := by
+      .ok (.int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩).toNat)) := by
   simpa only [wordToElem, normalizeInt_uint256_word] using
     vaultEvalScalar evm locals "maxSupply" (.int (.uint ⟨256, by decide⟩))
       ⟨5⟩ hlocals rfl rfl
@@ -26,7 +26,7 @@ theorem vaultMaxSupplyBodyCore {σ σ₀ A I} {g : UInt256}
   have heval := vaultMaxSupplyEval (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅ (by simp)
   change evalExpr? config {contract := contract, locals := ∅}
     (initState σ σ₀ (Sat256.ofUInt256 g) A I) _ =
-    .ok (.int (Int.ofNat (Solm.EVM.storageLoad (initState σ σ₀ (Sat256.ofUInt256 g) A I) I.codeOwner ⟨5⟩).toNat)) at heval
+    .ok (.int (Int.ofNat (Stele.EVM.storageLoad (initState σ σ₀ (Sat256.ofUInt256 g) A I) I.codeOwner ⟨5⟩).toNat)) at heval
   rw [codeOwnerStorageWord_initState] at heval
   apply vaultNullaryReturn (t := maxSupplyTransition)
     (pc := UInt256.ofNat 6414)

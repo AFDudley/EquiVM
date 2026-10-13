@@ -2,7 +2,7 @@ import Benchmarks.Safe.Main.SafeAddSource
 import Benchmarks.Safe.Main.SignatureValues
 import Benchmarks.Safe.Main.ContractSignatureSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.Main
 
@@ -136,7 +136,7 @@ theorem safeCheckContractCall (p : ContractSignatureInput) {evm evm' : EVM.State
   apply internalCallFunctionReturn (callee := validateContractSignatureFunction)
     (argVals := [.address p.owner, wordBytes32Value p.hash, .bytes p.signature])
     (locals := contractSignatureArgs p.owner p.hash p.signature)
-    (calleeSolm := contractSignatureFinalFrame p.owner p.hash p.signature z out)
+    (calleeStele := contractSignatureFinalFrame p.owner p.hash p.signature z out)
     (value := some [.bool (contractSignatureResult z out)])
   · simp [sliceFrame, endFrame, lengthFrame, startFrame, frame, args,
       evalExprs?, evalExpr?, EvalResult.ofOption, EvalResult.bind, bind, pure,

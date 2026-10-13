@@ -1,9 +1,9 @@
 import Reasoning.SolcRoutines
 import Benchmarks.Dss.Cat.Common
-import Solm.Refine
+import Stele.Refine
 
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 0
@@ -11,7 +11,7 @@ set_option maxHeartbeats 0
 section
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 2000000
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Cat
 
@@ -67,7 +67,7 @@ deny store-zero) and `Benchmarks/Dss/Vow/Rely.lean` (rely store-one), renaming `
 The `cat`-prefixed generic auth/store routine lemmas below are contract-agnostic and are
 LIBRARY CANDIDATEs: they should be lifted out of the per-contract Vow/Cat copies. -/
 
-/-! ## `wards[msg.sender]` auth guard (Solm side) -/
+/-! ## `wards[msg.sender]` auth guard (Stele side) -/
 
 abbrev catCallerWardsSlot (I : ExecutionEnv) : UInt256 :=
   solcMappingSlot ⟨0⟩ (solcSourceWord I)
@@ -92,7 +92,7 @@ theorem catAuthGuardEval_true {σ σ₀ A I} {g : Sat256} {locals : Store}
       (.binary .eq (.storage (wardsRef sender)) (.intLit 1)) = .ok (.bool true) := by
   have her := catCallerWardsEvaledRef_ok (σ := σ)
     (σ₀ := σ₀) (A := A) (I := I) (g := g) (locals := locals) hbase
-  have hload : Solm.EVM.storageLoad (initState σ σ₀ g A I) I.codeOwner
+  have hload : Stele.EVM.storageLoad (initState σ σ₀ g A I) I.codeOwner
       (catCallerWardsSlot I) = ⟨1⟩ := by
     simpa [solcSlotWordAt] using hauth
   rw [evalExpr?]
@@ -120,7 +120,7 @@ theorem catAuthGuardEval_false {σ σ₀ A I} {g : Sat256} {locals : Store}
       (.binary .eq (.storage (wardsRef sender)) (.intLit 1)) = .ok (.bool false) := by
   have her := catCallerWardsEvaledRef_ok (σ := σ)
     (σ₀ := σ₀) (A := A) (I := I) (g := g) (locals := locals) hbase
-  let w := Solm.EVM.storageLoad (initState σ σ₀ g A I) I.codeOwner
+  let w := Stele.EVM.storageLoad (initState σ σ₀ g A I) I.codeOwner
       (catCallerWardsSlot I)
   have hload : w ≠ ⟨1⟩ := by
     intro hw

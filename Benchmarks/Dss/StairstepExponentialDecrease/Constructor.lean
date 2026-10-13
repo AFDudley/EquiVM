@@ -1,13 +1,13 @@
 import Benchmarks.Dss.StairstepExponentialDecrease.Common
 import Reasoning.Constructor
 import Reasoning.Initcode
-import Solm.Refine
+import Stele.Refine
 
 /-!
 # MakerDAO/Sky DSS StairstepExponentialDecrease constructor correctness
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.StairstepExponentialDecrease
 
@@ -76,10 +76,10 @@ theorem stairstepCtorReturnMem_read (I : ExecutionEnv) :
     (by decide) (by rw [stairstepCreationBytecode_size]) (by decide)]
   exact stairstepCreationBytecode_runtime_window
 
-/-! ## Solm constructor source semantics -/
+/-! ## Stele constructor source semantics -/
 
 def stairstepCtorAfterWardsState (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner
     (wardsSlot (.address evm.executionEnv.source)) ⟨1⟩
 
 theorem assign_stairstepCtorWardsCaller (evm : EVM.State) {locals : Store}
@@ -129,16 +129,16 @@ theorem stairstepCtorBodySuccess
   · exact evalCallvalueEq_true (by simp [evm0, initState]; exact hwv)
   exact ExecBlock.consNormal (ExecStmt.assign (by simp [evalExpr?, pure]) hassign) ExecBlock.nil
 
-theorem stairstepSolmCtorExecSuccess
+theorem stairstepSteleCtorExecSuccess
     {σ : AccountMap} {σ₀ : AccountMap} {A : Substate} {I : ExecutionEnv}
     {g : UInt256}
     (hwv : I.weiValue = ⟨0⟩) :
-    solmCtorExec config contract [] σ σ₀ g A I
+    steleCtorExec config contract [] σ σ₀ g A I
       (.returned { contract := contract, locals := ∅ }
         (stairstepCtorAfterWardsState
           (initState σ σ₀ (Sat256.ofUInt256 g) A I))
         none) := by
-  refine solmCtorExec.intro
+  refine steleCtorExec.intro
     (evmState := initState σ σ₀ (Sat256.ofUInt256 g) A I)
     (argsStore := (∅ : Store))
     ?_ rfl ?_ ?_
@@ -149,12 +149,12 @@ theorem stairstepSolmCtorExecSuccess
         (stairstepCtorBodySuccess
           (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv)
 
-theorem stairstepSolmCtorExecReverts_nonpayable
+theorem stairstepSteleCtorExecReverts_nonpayable
     {σ : AccountMap} {σ₀ : AccountMap} {A : Substate} {I : ExecutionEnv}
     {g : UInt256}
     (hwv : I.weiValue ≠ ⟨0⟩) :
-    solmCtorExec config contract [] σ σ₀ g A I .reverted := by
-  refine solmCtorExec.intro
+    steleCtorExec config contract [] σ σ₀ g A I .reverted := by
+  refine steleCtorExec.intro
     (evmState := initState σ σ₀ (Sat256.ofUInt256 g) A I)
     (argsStore := (∅ : Store))
     ?_ rfl ?_ ?_
@@ -314,7 +314,7 @@ theorem stairstepExponentialDecreaseConstructorCorrect :
       refine typedConstructorRefinementFor.execution hsuccess
         (by
           simpa [evm0s] using
-            stairstepSolmCtorExecSuccess
+            stairstepSteleCtorExecSuccess
               (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
               (g := g) hwv)
         ?_
@@ -329,7 +329,7 @@ theorem stairstepExponentialDecreaseConstructorCorrect :
     rcases hrd.xiResult hcode with hOOG | ⟨g', o, hrev⟩
     · exact typedConstructorRefinementFor.outOfGas (by simpa [Sat256.ofUInt256] using hOOG)
     · refine typedConstructorRefinementFor.execution (by simpa [Sat256.ofUInt256] using hrev)
-        (stairstepSolmCtorExecReverts_nonpayable
+        (stairstepSteleCtorExecReverts_nonpayable
           (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
           (g := g) hwv) ?_
       exact ctorResultEquiv.revert rfl rfl

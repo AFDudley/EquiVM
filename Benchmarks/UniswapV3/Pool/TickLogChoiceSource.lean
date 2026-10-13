@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.TickLogBoundsSource
 import Benchmarks.UniswapV3.Pool.TickSqrtSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
 
@@ -34,7 +34,7 @@ theorem tickLogCalleeSource {frame : Frame} {evm : EVM.State} (log : UInt256)
     cases frame
     simp_all only [tickSqrtFrame]
   rw [← hf] at hbody
-  apply internalCallFunctionReturn (callee := tickSqrtFunction) (calleeSolm := out)
+  apply internalCallFunctionReturn (callee := tickSqrtFunction) (calleeStele := out)
     (argVals := [.int (tickLogHigh log)])
     (locals := tickSqrtLocals (tickLogHigh log)) (value := some
       [.int (Int.ofNat (tickSqrtValue (tickLogHigh log)).toNat)])
@@ -97,7 +97,7 @@ theorem tickLogFinalSource {frame : Frame} {evm : EVM.State} (tick : Int)
     ∃ out, ExecBlock config frame evm (tickLogFunction.body.drop 75)
       (.returned out evm (some [.int tick])) := by
   let out : Frame := {frame with locals := frame.locals.insert "tick" (.int tick)}
-  refine ⟨out, ExecBlock.consNormal (solm' := out) (evm' := evm)
+  refine ⟨out, ExecBlock.consNormal (stele' := out) (evm' := evm)
     (ExecStmt.assign (evalExpr_var_get (cfg := config) (evm := evm) hc)
       (assignLocalVarBase_frame ht)) ?_⟩
   apply ExecBlock.consReturn
@@ -125,7 +125,7 @@ theorem tickLogChoiceSource {frame : Frame} {evm : EVM.State} (log price : UInt2
         exact ht)
     refine ⟨out, ?_⟩
     rw [tickLogChoice_eq, if_pos he]
-    refine ExecBlock.consNormal (solm' := chosen) (evm' := evm) (ExecStmt.iteTrue ?_ ?_) hr
+    refine ExecBlock.consNormal (stele' := chosen) (evm' := evm) (ExecStmt.iteTrue ?_ ?_) hr
     · simpa only [he, decide_true] using heq
     · exact ExecBlock.consNormal (ExecStmt.assign (evalExpr_var_get (cfg := config) hl)
         (assignLocalVarBase_frame hcond)) ExecBlock.nil
@@ -151,7 +151,7 @@ theorem tickLogChoiceSource {frame : Frame} {evm : EVM.State} (log price : UInt2
         change (mid.locals.insert "__cond1" (.int (tickLogChoice log price)))["tick"]? = _
         rw [Std.HashMap.getElem?_insert]
         exact (hkeep "tick" (by decide)).trans ht)
-    refine ⟨out, ExecBlock.consNormal (solm' := chosen) (evm' := evm)
+    refine ⟨out, ExecBlock.consNormal (stele' := chosen) (evm' := evm)
       (ExecStmt.iteFalse ?_ ?_) hr⟩
     · simpa only [he, decide_false] using heq
     · refine ExecBlock.consNormal (tickLogCalleeSource log hc hh hv') ?_

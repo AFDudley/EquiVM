@@ -190,7 +190,7 @@ def raw_entry_skeleton() -> None:
 
     def dispatch(*args):
         out, info = original_dispatch(*args)
-        # The EVM has no fallback: only the Solm representation uses a raw entry. Render
+        # The EVM has no fallback: only the Stele representation uses a raw entry. Render
         # actual short/no-match bytecode paths without the generic fallback-entry heuristic.
         evm_out, info = original_dispatch(replace(args[0], has_fallback=False), *args[1:])
         marker = "/-! ## Runtime dispatcher paths -/"

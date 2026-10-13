@@ -2,7 +2,7 @@ import Benchmarks.CurveVault.LendNumerator
 import Benchmarks.CurveVault.Memory
 import Benchmarks.CurveVault.RuntimeBlocks_007
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch Reasoning.VyperCalls
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch Reasoning.VyperCalls
 namespace Benchmarks.CurveVault
 
 abbrev vaultLendReturnStmt : Stmt := vaultLendFunction.body[9]!

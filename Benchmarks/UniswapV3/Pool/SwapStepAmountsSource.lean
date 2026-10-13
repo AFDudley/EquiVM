@@ -2,7 +2,7 @@ import Benchmarks.UniswapV3.Pool.SwapStepMaxSource
 import Benchmarks.UniswapV3.Pool.SwapStepRecalcSource
 import Benchmarks.UniswapV3.Pool.SwapStepRecalcReverts
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 1000
 

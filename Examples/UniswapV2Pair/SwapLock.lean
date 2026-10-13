@@ -1,5 +1,5 @@
 import Examples.UniswapV2Pair.SwapDecodeRuntime
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace UniswapV2Pair
 set_option maxRecDepth 2000000
 
@@ -36,7 +36,7 @@ theorem RD.uniswapSwapLockEnteredStatic {g : Sat256} {s0 : State} {I : Execution
 
 theorem uniswapSwapBodyReverts_locked (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ ≠ ⟨1⟩) :
+    (hlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ ≠ ⟨1⟩) :
     ExecTransitionBody config contract evm (swapStore I) swapTransition.body .reverted := by
   have hlock := uniswapLockEnterLockedRevert evm (swapStore I) hwv (by simp [swapStore]) hlocked
   exact ExecFuncBody.execBlockRevert (by
@@ -45,7 +45,7 @@ theorem uniswapSwapBodyReverts_locked (evm : EVM.State) (I : ExecutionEnv)
 
 theorem uniswapSwapBodyStatic (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hperm : evm.executionEnv.perm = false) :
     ExecTransitionBody config contract evm (swapStore I) swapTransition.body
       .staticViolation := by

@@ -5,7 +5,7 @@ import Benchmarks.UniswapV4PoolManager.SwapStepStartTrace
 import Benchmarks.UniswapV4PoolManager.PoolSwapComputeStoreTrace
 import Benchmarks.UniswapV4PoolManager.PoolSwapComputeSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 variable {mem : ByteArray} {step state params : UInt256}

@@ -1,8 +1,8 @@
 import Benchmarks.Dss.Dai.Spec
-import Solm.Notation
+import Stele.Notation
 
 /-!
-# Dai spec in the Solidity-faithful Solm frontend
+# Dai spec in the Solidity-faithful Stele frontend
 
 The whole Dai benchmark spec, written with `solidity%` and proven definitionally equal to the
 AST spec in `Benchmarks/Dss/Dai/Spec.lean`.
@@ -18,7 +18,7 @@ Notes:
 * Transition order matches `contract.transitions` (selector order).
 -/
 
-open Solm Solm.Notation
+open Stele Stele.Notation
 
 namespace Benchmarks.Dss.Dai.Syntax
 

@@ -12,7 +12,7 @@ jump to the shared body at pc 793: address validation, `ownable._check_owner`, `
 `registerTail`; the two `…Body` theorems supply the guard, the decode and the `weight` binding.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
   Reasoning.VyperBounded
 
 namespace Tests.Pipeline.VyperRegistry
@@ -227,12 +227,12 @@ theorem registerTail {σ σ₀ A I} {g : UInt256} (hwf : storageWF σ I) (hcode 
     ulit_toNat' 320 (by decide)] at rd5
   rw [slotWord_eq, show memLoad (UInt256.ofNat 320) (nid.toByteArray.write 0 (rM1 m wgt I) 320 32) = nid from
     rM2_load320 m hm wgt I nid] at rd5
-  -- Solm: `nextId = id + 1`
+  -- Stele: `nextId = id + 1`
   have hadd1 := evalExpr_uint256_add (hid (initState σ σ₀ (Sat256.ofUInt256 g) A I)) (evalExpr_intLit_word _ 1 (by decide))
     (by rw [ulit_toNat' 1 (by decide)]; exact hfit1)
   have hassign1 : assignStorageRef? config (frame L2) (initState σ σ₀ (Sat256.ofUInt256 g) A I) .storage nextIdRef
       (uint256Value (nid + UInt256.ofNat 1)) =
-      .ok (frame L2, Solm.EVM.storageStore (initState σ σ₀ (Sat256.ofUInt256 g) A I) I.codeOwner (UInt256.ofNat 19)
+      .ok (frame L2, Stele.EVM.storageStore (initState σ σ₀ (Sat256.ofUInt256 g) A I) I.codeOwner (UInt256.ofNat 19)
         (nid + UInt256.ofNat 1)) := by
     apply assignStorageRef_storage_vyper_scalar (hbackend := rfl) (hcheck := by rfl)
       (er := { base := "nextId", steps := [] })
@@ -252,13 +252,13 @@ theorem registerTail {σ σ₀ A I} {g : UInt256} (hwf : storageWF σ I) (hcode 
     exact ExecBlock.consNormal hcheck (ExecBlock.consNormal (ExecStmt.requireTrue hgt')
       (ExecBlock.consNormal (ExecStmt.letDecl hidRead)
         (ExecBlock.consStatic (ExecStmt.assignStatic hadd1 hassign1 (by show I.perm = false; exact hpf)))))
-  set evm1 := Solm.EVM.storageStore (initState σ σ₀ (Sat256.ofUInt256 g) A I) I.codeOwner (UInt256.ofNat 19) (nid + UInt256.ofNat 1)
+  set evm1 := Stele.EVM.storageStore (initState σ σ₀ (Sat256.ofUInt256 g) A I) I.codeOwner (UInt256.ofNat 19) (nid + UInt256.ofNat 1)
     with hevm1
   have hs1 : SourceState (initState σ σ₀ (Sat256.ofUInt256 g) A I) I (rσ1 σ I) evm1 := SourceState.init.storageWrite _ _
   have hlit := evalEntryLit L2 evm1 (AccountAddress.ofNat (argWord I).toNat) wgt
     (by rw [hL2def, store_get_ne _ _ (by decide), hL1def, store_get_ne _ _ (by decide), hLacc])
     (by rw [hL2def, store_get_ne _ _ (by decide), hL1def, store_get_ne _ _ (by decide), hLw])
-  set evm4 := Solm.EVM.storageStore (Solm.EVM.storageStore (Solm.EVM.storageStore evm1 I.codeOwner (entrySlot nid) (argWord I))
+  set evm4 := Stele.EVM.storageStore (Stele.EVM.storageStore (Stele.EVM.storageStore evm1 I.codeOwner (entrySlot nid) (argWord I))
     I.codeOwner (entrySlot nid + UInt256.ofNat 1) wgt) I.codeOwner (entrySlot nid + UInt256.ofNat 2) (UInt256.ofNat 1) with hevm4
   have hassign2 : assignStorageRef? config (frame L2) evm1 .storage entryIdRef
       (.struct "Entry" [("account", .address (AccountAddress.ofNat (argWord I).toNat)), ("weight", uint256Value wgt),
@@ -302,19 +302,19 @@ theorem registerTail {σ σ₀ A I} {g : UInt256} (hwf : storageWF σ I) (hcode 
   simp only [registryBlocks.registry_block_967_fallthrough_stack, registryBlocks.registry_block_967_fallthrough_memory,
     ulit_toNat' 32 (by decide), show (⟨0⟩ : UInt256).toNat = 0 from rfl] at rd6
   rw [rM2_load320 m hm, hkec, hm256, hm288, slotWord_eq] at rd6
-  -- Solm: `ids.append(id)`
+  -- Stele: `ids.append(id)`
   have hofnat : UInt256.ofNat ((rLen σ I wgt).toNat + 1) = rLen σ I wgt + UInt256.ofNat 1 := by
     have h := u256_ofNat_toNat_add_eq_add_of_lt (rLen σ I wgt) (UInt256.ofNat 1)
       (by rw [ulit_toNat' 1 (by decide)]; exact lt_size_of_lt_sign (by omega))
     rwa [ulit_toNat' 1 (by decide)] at h
-  set evm6 := Solm.EVM.storageStore (Solm.EVM.storageStore evm4 I.codeOwner (UInt256.ofNat 3 + rLen σ I wgt) nid)
+  set evm6 := Stele.EVM.storageStore (Stele.EVM.storageStore evm4 I.codeOwner (UInt256.ofNat 3 + rLen σ I wgt) nid)
     I.codeOwner (UInt256.ofNat 2) (rLen σ I wgt + UInt256.ofNat 1) with hevm6
   have hpush : pushArray? config (frame L2) evm4 idsRef0 (some (uint256Value nid)) = .ok evm6 := by
     have h := pushIds L2 evm4 nid hnone2.2.2.1 (by rw [hs4.storageRead]; show (rLen σ I wgt).toNat < 16; omega)
     rw [hs4.storageRead] at h
     simp only [storageStore_executionEnv, hs4.env] at h
     rw [h]
-    show EvalResult.ok (Solm.EVM.storageStore (Solm.EVM.storageStore evm4 I.codeOwner
+    show EvalResult.ok (Stele.EVM.storageStore (Stele.EVM.storageStore evm4 I.codeOwner
       (UInt256.ofNat 2 + UInt256.ofNat 1 + UInt256.ofNat ((keyValueToWord (.int (Int.ofNat (rLen σ I wgt).toNat))).toNat * 1)) nid)
       I.codeOwner (UInt256.ofNat 2) (UInt256.ofNat ((rLen σ I wgt).toNat + 1))) = _
     rw [idsSlot_eq, hofnat]
@@ -355,20 +355,20 @@ theorem registerTail {σ σ₀ A I} {g : UInt256} (hwf : storageWF σ I) (hcode 
     rM3_return m hm wgt I nid wgt] at rd8
   have hadd3 := evalExpr_uint256_add htw (hw2 _) hfit2
   have hassign3 : assignStorageRef? config (frame L2) evm6 .storage twRef' (uint256Value (rTw σ I wgt + wgt)) =
-      .ok (frame L2, Solm.EVM.storageStore evm6 I.codeOwner (UInt256.ofNat 20) (rTw σ I wgt + wgt)) := by
+      .ok (frame L2, Stele.EVM.storageStore evm6 I.codeOwner (UInt256.ofNat 20) (rTw σ I wgt + wgt)) := by
     apply assignStorageRef_storage_vyper_scalar (hbackend := rfl) (hcheck := by rfl)
       (er := { base := "totalWeight", steps := [] })
       (hleaf := Or.inl ⟨_, rfl⟩) (ty := .elem (.int (.uint ⟨256, by decide⟩))) (loc := vyperUint256Loc (UInt256.ofNat 20))
       (hbase := hnone2.2.2.2) (her := by simp [evalStorageRef, evalStorageRefSteps, EvalResult.bind, pure, bind])
       (hty := by show storageTypeAt? contract.storage _ = _; decide) (hloc := rfl)
     erw [storageLocStore_uint256, hs6.env]
-  have hemit : evalExprs? config (frame L2) (Solm.EVM.storageStore evm6 I.codeOwner (UInt256.ofNat 20) (rTw σ I wgt + wgt))
+  have hemit : evalExprs? config (frame L2) (Stele.EVM.storageStore evm6 I.codeOwner (UInt256.ofNat 20) (rTw σ I wgt + wgt))
       [.var "id", .var "account", .var "weight"] =
       .ok [uint256Value nid, .address (AccountAddress.ofNat (argWord I).toNat), uint256Value wgt] := by
     rw [evalExprs?, hid, evalExprs?, hacc2, evalExprs?, hw2, evalExprs?]
     rfl
   have hbody : ExecTransitionBody config contract (initState σ σ₀ (Sat256.ofUInt256 g) A I) callargs t.body
-      (.returned (frame L2) (Solm.EVM.storageStore evm6 I.codeOwner (UInt256.ofNat 20) (rTw σ I wgt + wgt))
+      (.returned (frame L2) (Stele.EVM.storageStore evm6 I.codeOwner (UInt256.ofNat 20) (rTw σ I wgt + wgt))
         (some [uint256Value nid])) :=
     ExecFuncBody.execBlockRet (hprefix _
       (ExecBlock.consNormal hcheck (ExecBlock.consNormal (ExecStmt.requireTrue hgt')

@@ -2,7 +2,7 @@ import Benchmarks.Dss.StairstepExponentialDecrease.Spec
 import Ethereum.Semantics
 import Reasoning.JumpDest
 
-open Solm Ethereum Ethereum.EVM
+open Stele Ethereum Ethereum.EVM
 
 namespace Benchmarks.Dss.StairstepExponentialDecrease
 

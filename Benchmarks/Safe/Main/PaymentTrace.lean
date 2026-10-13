@@ -1,7 +1,7 @@
 import Benchmarks.Safe.Main.PaymentNativeTrace
 import Benchmarks.Safe.Main.PaymentTokenTrace
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.Main
 

@@ -4,7 +4,7 @@ import Benchmarks.CurveVault.BalanceStorage
 import Benchmarks.CurveVault.Memory
 import Benchmarks.CurveVault.RuntimeBlocks_024
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 theorem vaultBalanceOfEval (evm : EVM.State) (locals : Store) (a : AccountAddress)
@@ -12,7 +12,7 @@ theorem vaultBalanceOfEval (evm : EVM.State) (locals : Store) (a : AccountAddres
     (harg : locals.get? "arg0" = some (.address a)) :
     evalExpr? config {contract := contract, locals := locals} evm
       (.storage {base := "balanceOf", steps := [.mindex (.var "arg0")]}) =
-      .ok (.int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      .ok (.int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (vyperMappingSlot ⟨13⟩ (.address a))).toNat)) :=
   vaultBalanceEval evm locals "arg0" a hbase harg
 
@@ -66,7 +66,7 @@ theorem vaultBalanceOfBodyCore {σ σ₀ A I} {g : UInt256}
       ((∅ : Store).insert "arg0" (.address (AccountAddress.ofNat (calldataWord I.calldata 4).toNat)))
       (AccountAddress.ofNat (calldataWord I.calldata 4).toNat) (by simp) (by simp)
     change evalExpr? config _ _ _ = .ok (.int (Int.ofNat
-      (Solm.EVM.storageLoad (initState σ σ₀ (Sat256.ofUInt256 g) A I) I.codeOwner _).toNat)) at heval
+      (Stele.EVM.storageLoad (initState σ σ₀ (Sat256.ofUInt256 g) A I) I.codeOwner _).toNat)) at heval
     rw [codeOwnerStorageWord_initState] at heval
     have hsource := nonpayableReturnExprBodyReturns (contract := contract) hvalue heval
     exact hret.reEquivExecution hcode hd hdec hsource

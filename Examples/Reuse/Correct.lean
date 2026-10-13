@@ -7,17 +7,17 @@ import Reasoning.Dispatch
 import Reasoning.EVMWord
 import Reasoning.Memory
 import Reasoning.Solc
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 import Reasoning.Stepping
 import Reasoning.Reach
 import Reasoning.Constructor
-import Solm.Refine
+import Stele.Refine
 import Mathlib.Tactic.IntervalCases
 
 /-!
 # Reuse — correctness
 
-The deployed (optimizer-on) runtime bytecode of `C` refines its Solm spec (`Reuse.cContract`) under
+The deployed (optimizer-on) runtime bytecode of `C` refines its Stele spec (`Reuse.cContract`) under
 `cConfig`.
 
 The point of this example is the **internal-call reuse** scenario: `f` is a public function (its own
@@ -30,7 +30,7 @@ The bytecode proof uses the selector and jump-destination facts in `Bytecode.lea
 the optimizer-on dispatch, decode, and shared-body routine.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -42,7 +42,7 @@ abbrev cSelWord (I : ExecutionEnv) : UInt256 :=
 abbrev cArgWord (I : ExecutionEnv) : UInt256 :=
   uInt256OfByteArray (I.calldata.readBytes (⟨4⟩ : UInt256).toNat 32)
 
-/-- The Solm value corresponding to `C`'s single `uint256` ABI argument. -/
+/-- The Stele value corresponding to `C`'s single `uint256` ABI argument. -/
 abbrev cArgValue (I : ExecutionEnv) : Value :=
   .int (Int.ofNat (cArgWord I).toNat)
 
@@ -62,7 +62,7 @@ def cSelBytes : ℕ → ByteArray
 abbrev cFResultWord (I : ExecutionEnv) : UInt256 :=
   UInt256.mul (cArgWord I) ⟨2⟩ + ⟨1⟩
 
-/-- The Solm value returned by `f` on the happy path. -/
+/-- The Stele value returned by `f` on the happy path. -/
 abbrev cFResultValue (I : ExecutionEnv) : Value :=
   .int (Int.ofNat (cFResultWord I).toNat)
 
@@ -861,14 +861,14 @@ theorem cBindFArg (I : ExecutionEnv) :
 
 theorem cStorageLocStore_uint256 (evm : EVM.State) (val : UInt256) :
     storageLocStore evm Reuse.sLoc (.int (Int.ofNat val.toNat)) =
-      some (Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨0⟩ val) := by
+      some (Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨0⟩ val) := by
   exact storageLocStore_uint256 evm ⟨0⟩ val
 
 theorem cAssignS (evm : EVM.State) (I : ExecutionEnv) :
     assignStorageRef? cConfig { contract := Reuse.cContract, locals := cGStoreAfterF I } evm
         .storage Reuse.sRef (cFResultValue I) =
       .ok ({ contract := Reuse.cContract, locals := cGStoreAfterF I },
-        Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨0⟩ (cFResultWord I)) := by
+        Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨0⟩ (cFResultWord I)) := by
   apply assignStorageRef_storage_scalar (hbackend := rfl)
     (hleaf := Or.inl ⟨_, rfl⟩)
     (er := ({ base := "s", steps := [] } : EvaledStorageRef))
@@ -884,7 +884,7 @@ theorem cGBodyReturns (evm : EVM.State) (I : ExecutionEnv)
     (hbound : 2 * (cArgWord I).toNat + 1 < UInt256.size) :
     ExecTransitionBody cConfig Reuse.cContract evm (cArgStore I) Reuse.gTransition.body
       (.returned { contract := Reuse.cContract, locals := cGStoreAfterF I }
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨0⟩ (cFResultWord I)) none) := by
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨0⟩ (cFResultWord I)) none) := by
   refine ExecFuncBody.execBlockOK ?_
   refine ExecBlock.consNormal (ExecStmt.requireTrue (evalCallvalueEq_true hwv)) ?_
   have hcall : ExecStmt cConfig { contract := Reuse.cContract, locals := cArgStore I } evm
@@ -896,7 +896,7 @@ theorem cGBodyReturns (evm : EVM.State) (I : ExecutionEnv)
         (evm := evm) (calleeEvm := evm) (name := "f") (args := [.var "v"])
         (retVar := "r") (argVals := [cArgValue I]) (callee := Reuse.fTransition)
         (locals := cArgStore I)
-        (calleeSolm := { contract := Reuse.cContract, locals := cArgStore I })
+        (calleeStele := { contract := Reuse.cContract, locals := cArgStore I })
         (value := cFResultValue I)
         (cEvalArgs_v evm I) cLookupF (cBindFArg I) (cFBodyReturns evm I hwv hbound)
   refine ExecBlock.consNormal hcall ?_
@@ -920,7 +920,7 @@ theorem cGBodyStatic (evm : EVM.State) (I : ExecutionEnv)
         (evm := evm) (calleeEvm := evm) (name := "f") (args := [.var "v"])
         (retVar := "r") (argVals := [cArgValue I]) (callee := Reuse.fTransition)
         (locals := cArgStore I)
-        (calleeSolm := { contract := Reuse.cContract, locals := cArgStore I })
+        (calleeStele := { contract := Reuse.cContract, locals := cArgStore I })
         (value := cFResultValue I)
         (cEvalArgs_v evm I) cLookupF (cBindFArg I) (cFBodyReturns evm I hwv hbound)
   refine ExecBlock.consNormal hcall ?_
@@ -947,7 +947,7 @@ theorem cUint256ReturnEncoding (I : ExecutionEnv) :
 
 /-! ## Top-level revert obligations -/
 
-/-- No selector matches: the EVM falls through to the no-match revert and Solm does not dispatch. -/
+/-- No selector matches: the EVM falls through to the no-match revert and Stele does not dispatch. -/
 theorem cNoDispatch {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = cBytecode) (hsize : I.calldata.size < UInt256.size)
     (hwv : I.weiValue = ⟨0⟩)
@@ -970,7 +970,7 @@ theorem cShortRevert {σ σ₀ A I} {g : UInt256}
   exact (cX_short (g := Sat256.ofUInt256 g) hcode hwv hsz).reEquivNoDispatch hcode
     (cDispatch_none_short hsz)
 
-/-- Non-zero callvalue: both Solm transition bodies and the bytecode revert as non-payable. -/
+/-- Non-zero callvalue: both Stele transition bodies and the bytecode revert as non-payable. -/
 theorem cNonPayable {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = cBytecode) (hwv : I.weiValue ≠ ⟨0⟩) :
     runtimeRefinementFor cConfig Reuse.cContract
@@ -1152,7 +1152,7 @@ theorem cInitcodeRun {σ σ₀ A I} {g : Sat256}
       cFinal_read
       (by evm_ov)]
 
-/-- The creation/initcode bytecode refines the Solm constructor specification. -/
+/-- The creation/initcode bytecode refines the Stele constructor specification. -/
 theorem cConstructorCorrect :
     typedConstructorRefinement cConfig cInitcode Reuse.cContract (fun _ => cBytecode) :=
   emptyConstructorCorrect_of_RDret rfl rfl rfl (fun hcode => cInitcodeRun hcode)

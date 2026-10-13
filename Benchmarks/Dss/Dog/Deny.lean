@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Dog.Dispatch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Dog.Immutables
 
 set_option maxHeartbeats 0
@@ -376,11 +376,11 @@ theorem dogDenyBodyCoreOk
     (by rw [dogDecodePatchedEqTemplate1405 hpatch (by native_decide)]; native_decide)
     (dogPatchedJumpDest hpatch (by native_decide)) (by simp)
   by_cases hauthEvm : solcSlotWordAt callerSlot σ I = ⟨1⟩
-  · have hauthSolm : solcSlotWordAt callerSlot σ I = ⟨1⟩ := by
+  · have hauthStele : solcSlotWordAt callerSlot σ I = ⟨1⟩ := by
       rw [← hcallerWord]
       exact hauthEvm
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-    let evm1 := Solm.EVM.storageStore evm0 I.codeOwner (denySlotFor I) ⟨0⟩
+    let evm1 := Stele.EVM.storageStore evm0 I.codeOwner (denySlotFor I) ⟨0⟩
     have hbodySplit :
         (ExecTransitionBody config contract evm0 locals denyTransition.body
           (.returned { contract := contract, locals := locals, immutables := immStore v } evm1 none) (immStore v)) ∧
@@ -389,7 +389,7 @@ theorem dogDenyBodyCoreOk
       have hguard := dogAuthGuardEval_true (v := v)
         (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
         (g := Sat256.ofUInt256 g) (locals := locals)
-        (by simp [locals, denyLocals]) hauthSolm
+        (by simp [locals, denyLocals]) hauthStele
       have hassign :
           assignStorageRef? config { contract := contract, locals := locals, immutables := immStore v } evm0
             .storage (wardsRef (.var "usr")) (.int 0) =
@@ -414,7 +414,7 @@ theorem dogDenyBodyCoreOk
           (hstore := hstore)
       constructor
       · have hblock := nonpayableRequireAssignStorageBlock
-          (cfg := config) (solm := { contract := contract, locals := locals, immutables := immStore v })
+          (cfg := config) (stele := { contract := contract, locals := locals, immutables := immStore v })
           (evm := evm0) (evm' := evm1)
           (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
           (rhs := .intLit 0) (ref := wardsRef (.var "usr")) (value := .int 0)
@@ -424,7 +424,7 @@ theorem dogDenyBodyCoreOk
           ExecFuncBody.execBlockOK hblock
       · intro hperm
         have hblock := nonpayableRequireAssignStorageBlockStatic
-          (cfg := config) (solm := { contract := contract, locals := locals, immutables := immStore v })
+          (cfg := config) (stele := { contract := contract, locals := locals, immutables := immStore v })
           (evm := evm0) (rest := [])
           (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
           (rhs := .intLit 0) (ref := wardsRef (.var "usr")) (value := .int 0)
@@ -495,17 +495,17 @@ theorem dogDenyBodyCoreOk
       exact returnEquiv.fallthrough rfl (by rfl) (by native_decide)
     exact hret.reEquivExecutionGen hcode hdispatch hdecode hbodySplit.1
       haccounts henc
-  · have hauthSolm : solcSlotWordAt callerSlot σ I ≠ ⟨1⟩ := by
-      intro hsolm
-      exact hauthEvm (by rw [hcallerWord, hsolm])
+  · have hauthStele : solcSlotWordAt callerSlot σ I ≠ ⟨1⟩ := by
+      intro hstele
+      exact hauthEvm (by rw [hcallerWord, hstele])
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     have hbody : ExecTransitionBody config contract evm0 locals denyTransition.body .reverted (immStore v) := by
       have hguard := dogAuthGuardEval_false (v := v)
         (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
         (g := Sat256.ofUInt256 g) (locals := locals)
-        (by simp [locals, denyLocals]) hauthSolm
+        (by simp [locals, denyLocals]) hauthStele
       have hblock := nonpayableSecondRequireReverts
-        (cfg := config) (solm := { contract := contract, locals := locals, immutables := immStore v })
+        (cfg := config) (stele := { contract := contract, locals := locals, immutables := immStore v })
         (evm := evm0)
         (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
         (rest := [.assign .storage (wardsRef (.var "usr")) (.intLit 0)])

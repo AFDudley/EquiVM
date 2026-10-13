@@ -1,6 +1,7 @@
-import Solm.DiffTest.Harness
+import Stele.DiffTest.Harness
 import Benchmarks.CompoundIII.Comet.DiffTarget
 import Benchmarks.Morpho.MorphoBlue.DiffTarget
+import Benchmarks.EAS.EAS.DiffTarget
 import Benchmarks.UniswapV3.Pool.DiffTarget
 import Benchmarks.UniswapV4PoolManager.DiffTarget
 import Tests.DiffTest.Fixtures.Factory.DiffTarget
@@ -16,9 +17,10 @@ repository.  Do not edit; rerun the script after adding or removing a target.
 
 namespace Tests.DiffTest
 
-def generatedTargets : List Solm.DiffTest.Target :=
+def generatedTargets : List Stele.DiffTest.Target :=
   [ Benchmarks.CompoundIII.Comet.diffTarget,
     Benchmarks.Morpho.MorphoBlue.diffTarget,
+    Benchmarks.EAS.EAS.diffTarget,
     Benchmarks.UniswapV3.Pool.diffTarget,
     Benchmarks.UniswapV4PoolManager.diffTarget,
     Tests.DiffTest.Fixtures.Factory.diffTarget,

@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.BitmapNextModel
 import Benchmarks.UniswapV3.Pool.SourceSignedDivision
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
 
@@ -51,9 +51,9 @@ theorem bitmapNextRevertsZero (imms : Store) (evm : EVM.State) (tick : Int) (lte
     ExecFuncBody config (bitmapNextFrame imms tick 0 lte) evm
       bitmapNextFunction.body .reverted := by
   apply ExecFuncBody.execBlockRevert
-  refine ExecBlock.consNormal (solm' := bitmapNextNextZeroFrame imms tick 0 lte)
+  refine ExecBlock.consNormal (stele' := bitmapNextNextZeroFrame imms tick 0 lte)
     (ExecStmt.letDecl (by simp only [evalExpr?, pure])) ?_
-  refine ExecBlock.consNormal (solm' := bitmapNextZeroFrame imms tick 0 lte)
+  refine ExecBlock.consNormal (stele' := bitmapNextZeroFrame imms tick 0 lte)
     (ExecStmt.letDecl (by simp only [evalExpr?, pure])) ?_
   refine ExecBlock.consRevert (ExecStmt.letDeclRevert ?_)
   have et := evalExpr_var_get (cfg := config) (evm := evm)
@@ -68,11 +68,11 @@ theorem bitmapNextPrefixSource (imms : Store) (evm : EVM.State) (tick spacing : 
     (hn : spacing ≠ 0) :
     ExecBlock config (bitmapNextFrame imms tick spacing lte) evm (bitmapNextFunction.body.take 4)
       (.ok (bitmapNextPrefixFrame imms tick spacing lte) evm) := by
-  refine ExecBlock.consNormal (solm' := bitmapNextNextZeroFrame imms tick spacing lte)
+  refine ExecBlock.consNormal (stele' := bitmapNextNextZeroFrame imms tick spacing lte)
     (ExecStmt.letDecl (by simp only [evalExpr?, pure])) ?_
-  refine ExecBlock.consNormal (solm' := bitmapNextZeroFrame imms tick spacing lte)
+  refine ExecBlock.consNormal (stele' := bitmapNextZeroFrame imms tick spacing lte)
     (ExecStmt.letDecl (by simp only [evalExpr?, pure])) ?_
-  refine ExecBlock.consNormal (solm' := bitmapNextDivFrame imms tick spacing lte)
+  refine ExecBlock.consNormal (stele' := bitmapNextDivFrame imms tick spacing lte)
     (ExecStmt.letDecl (evalExpr_int_sdiv
       (evalExpr_var_get (by bitmap_next_prefix_get))
       (evalExpr_var_get (by bitmap_next_prefix_get)) hn)) ?_

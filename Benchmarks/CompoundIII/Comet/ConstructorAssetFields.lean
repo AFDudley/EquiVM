@@ -2,7 +2,7 @@ import Benchmarks.CompoundIII.Comet.ConstructorAssetMemory
 import Benchmarks.CompoundIII.Comet.CreationBlocks_007
 import Benchmarks.CompoundIII.Comet.CreationBlocks_008
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open cometWithExtendedAssetListCreationBlocks
 
 namespace Benchmarks.CompoundIII.Comet

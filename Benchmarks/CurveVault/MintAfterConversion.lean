@@ -1,7 +1,7 @@
 import Benchmarks.CurveVault.CreditLimits
 import Benchmarks.CurveVault.CreditTail
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 theorem vaultMintAfterConversionBody_eq : (vaultCreditFunction false).body.drop 5 =

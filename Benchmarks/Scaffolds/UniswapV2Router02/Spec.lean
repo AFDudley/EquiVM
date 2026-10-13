@@ -1,12 +1,12 @@
-import Solm.SolidityStorage
-import Solm.Semantics
-import Solm.SolidityLayout
+import Stele.SolidityStorage
+import Stele.Semantics
+import Stele.SolidityLayout
 import Benchmarks.Scaffolds.UniswapV2Router02.Immutables
 
 /-!
 # Uniswap V2 Router02 benchmark spec
 
-Source-shaped Solm benchmark scaffold for upstream `UniswapV2Router02` at Solidity `=0.6.6`.
+Source-shaped Stele benchmark scaffold for upstream `UniswapV2Router02` at Solidity `=0.6.6`.
 The contract has no storage; its persistent constructor data are the immutable `factory` and `WETH`
 addresses, modeled in `Immutables.lean` and returned by the public getters here.
 
@@ -14,7 +14,7 @@ Events and revert strings are omitted, as in the other benchmark specs.  The ext
 contains the exact selectors used for typed external calls and for TransferHelper's raw calls.
 -/
 
-open Solm ABI
+open Stele ABI
 open Benchmarks.UniswapV2Router02.Immutables
 
 namespace Benchmarks.UniswapV2Router02

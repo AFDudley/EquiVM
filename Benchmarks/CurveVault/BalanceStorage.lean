@@ -1,6 +1,6 @@
 import Benchmarks.CurveVault.Storage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 theorem vaultBalanceEval (evm : EVM.State) (locals : Store) (argName : Ident) (a : AccountAddress)
@@ -8,7 +8,7 @@ theorem vaultBalanceEval (evm : EVM.State) (locals : Store) (argName : Ident) (a
     (harg : locals.get? argName = some (.address a)) :
     evalExpr? config {contract := contract, locals := locals} evm
       (.storage {base := "balanceOf", steps := [.mindex (.var argName)]}) =
-      .ok (.int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      .ok (.int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (vyperMappingSlot ⟨13⟩ (.address a))).toNat)) := by
   have harg' : locals[argName]? = some (.address a) := harg
   apply evalExpr_storage_scalar_of_read
@@ -25,7 +25,7 @@ theorem vaultBalanceAssign (evm : State) (locals : Store) (argName : Ident)
     assignStorageRef? config {contract := contract, locals := locals} evm .storage
       {base := "balanceOf", steps := [.mindex (.var argName)]} (.int (Int.ofNat value.toNat)) =
       .ok ({contract := contract, locals := locals},
-        Solm.EVM.storageStore evm evm.executionEnv.codeOwner (vyperMappingSlot ⟨13⟩ (.address a)) value) := by
+        Stele.EVM.storageStore evm evm.executionEnv.codeOwner (vyperMappingSlot ⟨13⟩ (.address a)) value) := by
   apply assignStorageRef_storage_of_write
     (er := {base := "balanceOf", steps := [.mindex (.address a)]}) hbase
     (by simp only [evalStorageRef, evalStorageRefSteps, evalStorageRefStep, evalExpr?, harg,

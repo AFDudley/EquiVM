@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.WordArrayUpdate
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 -- LIBRARY CANDIDATE: updating an allocated array preserves the heap and earlier allocations.

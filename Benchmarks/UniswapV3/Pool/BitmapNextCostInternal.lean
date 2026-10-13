@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.BitmapNextInternal
 import Benchmarks.UniswapV3.Pool.BitmapNextCostTrace
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
@@ -59,7 +59,7 @@ theorem bitmapNextInternalMonoX {σ : AccountMap} {ee : ExecutionEnv} {g : Sat25
     exact bitmapNextRevertsZero caller.immutables evm tick lte
   · refine Or.inr ⟨?_, ?_, kr, Cr, hcost, ?_, HeapMemory.twoWordHash hm _ _⟩
     · exact internalCallFunctionReturn (callee := bitmapNextFunction)
-        (calleeSolm := bitmapNextReadyFrame caller.immutables evm tick spacing lte)
+        (calleeStele := bitmapNextReadyFrame caller.immutables evm tick spacing lte)
         (value := some [.int (bitmapNextResult (bitmapNextCompressed tick spacing) spacing lte
           (bitmapNextMasked evm (bitmapNextCompressed tick spacing) lte)),
           .bool (decide (bitmapNextMasked evm (bitmapNextCompressed tick spacing) lte ≠ ⟨0⟩))])

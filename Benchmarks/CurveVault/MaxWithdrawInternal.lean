@@ -5,7 +5,7 @@ import Benchmarks.CurveVault.BalanceStorage
 import Benchmarks.CurveVault.RuntimeBlocks_014
 import Benchmarks.CurveVault.RuntimeBlocks_015
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 abbrev vaultMaxWithdrawFunction : FunctionDecl := contract.functions[14]!
@@ -86,7 +86,7 @@ theorem vaultMaxWithdrawRoutine {I : ExecutionEnv} {g : Sat256} {s0 evm : State}
   have hcall1 := internalCallFunctionReturn (caller := {contract := contract, locals := locals0})
     (callee := vaultAvailableBalanceFunction) (name := "_available_balance") (args := []) (argVals := [])
     (retVar := "__c1") (by simp [evalExprs?, pure]) rfl rfl havailable
-  have hmin := evalExpr_min256 (cfg := config) (solm := {contract := contract, locals := locals1}) (evm := evm1)
+  have hmin := evalExpr_min256 (cfg := config) (stele := {contract := contract, locals := locals1}) (evm := evm1)
     (lhs := .var "__c0") (rhs := .var "__c1")
     (evalExpr_varUInt256 (value := assets) (by rw [store_get_ne _ _ (by decide +kernel), store_get_self]))
     (evalExpr_varUInt256 (value := available) (by simp [locals1]))

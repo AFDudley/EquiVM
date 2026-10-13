@@ -4,7 +4,7 @@ import Benchmarks.Dss.Cat.BiteCallGrab
 import Benchmarks.Dss.Cat.BiteCallFess
 import Benchmarks.Dss.Cat.BiteConnectGrab
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 1000000
@@ -15,7 +15,7 @@ namespace Benchmarks.Dss.Cat
 
 `BiteConnect` assembles the frozen `BiteTrace` segment reach-lemmas into the full success trace
 (`catBiteSuccessTrace`), builds the short revert traces, and connects the `bite` body
-(`catBiteBody`) via the `reEquivExecution*` glue against `BiteSource`'s Solm-body lemmas. -/
+(`catBiteBody`) via the `reEquivExecution*` glue against `BiteSource`'s Stele-body lemmas. -/
 
 /-- The shared DSMath checked-multiply routine `@3720` on the **overflow** path: when `a*b ≥ 2^256`
 the `(p/a)==b` guard is `0`, the `JUMPI` falls through, and the `PUSH1 0; DUP1; REVERT` stub fires.
@@ -570,7 +570,7 @@ theorem catBiteReachGrabRegion {σ σ₀ A I} {g : UInt256}
       (solcSlotWord σ' I ⟨4⟩) dink dart hp96 hpmem (by omega) hthisCanon hdink hdart
   exact RD.catBiteGrabCallGen (inOff := p) (inSize := ⟨196⟩) rd2177 hcodeSize hdepth hencode (by simp)
 
-/-- The `bite` SUCCESS-branch reEquiv: the chained-spine `RDret` (returning `id`) refines the Solm
+/-- The `bite` SUCCESS-branch reEquiv: the chained-spine `RDret` (returning `id`) refines the Stele
 success body (`catBiteSourceSuccess`), coupled by the final account-map equivalence. -/
 theorem catBiteSuccessBodyCore {σ σ₀ A I} {g : UInt256}
     {acc : AccountMap} {evmKick : EVM.State}
@@ -593,7 +593,7 @@ theorem catBiteSuccessBodyCore {σ σ₀ A I} {g : UInt256}
     hAccountsFinal henc
 
 /-- The full `bite` SUCCESS leaf: the chained-spine `RDret` (returning `id`, on `σ`) refines the
-Solm success body run on `σ` (`catBiteSourceSuccess`), coupled by the final account-map
+Stele success body run on `σ` (`catBiteSourceSuccess`), coupled by the final account-map
 equivalence.  The σ→σ mapping of the 5 calls is done by the caller (`catBiteBody`); this
 lemma just runs the source and finishes the reEquiv. -/
 theorem catBiteSuccessLeaf {σ σ₀ A I} {g : UInt256}
@@ -691,10 +691,10 @@ theorem catBiteMapIlksCall {σ σ₀ A I} {g : UInt256}
     {z : Bool} {perm : Bool}
     (hcall : typedCallViaEVM config (initState σ σ₀ (Sat256.ofUInt256 g) A I)
       tgt name 0 args (z, evmIlk, ilksOut) perm) :
-    ∃ (σ' : AccountMap) (A_solm' : Substate),
+    ∃ (σ' : AccountMap) (A_stele' : Substate),
       typedCallViaEVM config (initState σ σ₀ (Sat256.ofUInt256 g) A I) tgt name 0 args
         (z, { initState σ σ₀ (Sat256.ofUInt256 g) A I with
-              accountMap := σ', substate := A_solm' },
+              accountMap := σ', substate := A_stele' },
           ilksOut) perm
     ∧ evmIlk.accountMap = σ' := by
   have hOutput :
@@ -710,7 +710,7 @@ theorem catBiteMapIlksCall {σ σ₀ A I} {g : UInt256}
 /-- Replay an intermediate-state value-`0` call after changing only the caller substate.
 Serves the urns/grab/fess/kick calls (all from `{initState … with …}`). -/
 theorem catBiteMapCall {σ σ₀ A I} {g : UInt256}
-    {σx : AccountMap} {A_x_evm A_x_solm : Substate}
+    {σx : AccountMap} {A_x_evm A_x_stele : Substate}
     {tgt : EVM.Address} {name : Ident} {args : List Value} {z perm : Bool}
     {evm'_evm : EVM.State} {out : ByteArray}
     (hcall : typedCallViaEVM config
@@ -718,20 +718,20 @@ theorem catBiteMapCall {σ σ₀ A I} {g : UInt256}
           accountMap := σx, substate := A_x_evm }
       tgt name 0 args (z, evm'_evm, out) perm)
     (hdepthNe : I.depth ≠ 1024) :
-    ∃ (σ'_solm : AccountMap) (A'_solm : Substate),
+    ∃ (σ'_stele : AccountMap) (A'_stele : Substate),
       typedCallViaEVM config
         { initState σ σ₀ (Sat256.ofUInt256 g) A I with
-            accountMap := σx, substate := A_x_solm }
+            accountMap := σx, substate := A_x_stele }
         tgt name 0 args
         (z, { initState σ σ₀ (Sat256.ofUInt256 g) A I with
-              accountMap := σ'_solm, substate := A'_solm }, out) perm
-    ∧ evm'_evm.accountMap = σ'_solm := by
+              accountMap := σ'_stele, substate := A'_stele }, out) perm
+    ∧ evm'_evm.accountMap = σ'_stele := by
   have hdepthNeBase :
       ({ initState σ σ₀ (Sat256.ofUInt256 g) A I with
           accountMap := σx, substate := A_x_evm } : EVM.State).executionEnv.depth ≠ 1024 := by
     simpa [initState] using hdepthNe
-  obtain ⟨A'_solm, hcallSolm⟩ := typedCallViaEVM_zero_setSubstate hcall hdepthNeBase A_x_solm
-  exact ⟨evm'_evm.accountMap, A'_solm, by simpa using hcallSolm, rfl⟩
+  obtain ⟨A'_stele, hcallStele⟩ := typedCallViaEVM_zero_setSubstate hcall hdepthNeBase A_x_stele
+  exact ⟨evm'_evm.accountMap, A'_stele, by simpa using hcallStele, rfl⟩
 
 /-! ## Short-calldata revert (`size < 68`) -/
 
@@ -754,7 +754,7 @@ theorem catBiteDecode_none_short {I : ExecutionEnv}
   simp only [bind, Option.bind]
   rw [if_pos (by rw [List.length_drop, htlen]; omega : (I.calldata.toList.drop 4).length < 64)]
 
-/-- Calldata size `< 68` → the length check reverts, matched to the Solm decode failure. -/
+/-- Calldata size `< 68` → the length check reverts, matched to the Stele decode failure. -/
 theorem catBiteShort {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = catBytecode) (hsize : I.calldata.size < UInt256.size)
     (hwv : I.weiValue = ⟨0⟩) (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 68)

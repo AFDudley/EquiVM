@@ -1,7 +1,7 @@
 import Benchmarks.CompoundIII.Comet.TotalsStorage
 import Benchmarks.CompoundIII.Comet.GetterSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 
@@ -88,7 +88,7 @@ theorem presentValue_call (frame : Frame) (evm : EVM.State) (borrow : Bool)
         locals := frame.locals.insert ret (.int (presentValueWord index principal).toNat) } evm) := by
   exact ExecStmt.internalCallReturn (callee := presentValueCallable borrow)
     (locals := presentValueLocals borrow index principal)
-    (cfg := config) (solm := frame) (evm := evm)
+    (cfg := config) (stele := frame) (evm := evm)
     (args := [indexExpr, principalExpr]) (argVals := [.int index.toNat, .int principal.toNat])
     (by simp only [evalExprs?, heI, heP, pure, bind, EvalResult.bind])
     (by rw [hc]; exact presentValueCallable_lookup borrow)

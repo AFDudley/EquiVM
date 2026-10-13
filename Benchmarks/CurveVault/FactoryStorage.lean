@@ -1,12 +1,12 @@
 import Benchmarks.CurveVault.Storage
 import Benchmarks.CurveVault.Calls
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch Reasoning.VyperCalls
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch Reasoning.VyperCalls
 namespace Benchmarks.CurveVault
 
 theorem vaultFactoryEval (evm : State) (locals : Store) (hbase : locals.get? "_factory" = none) :
     evalExpr? config {contract := contract, locals := locals} evm (.storage {base := "_factory", steps := []}) =
-      .ok (.address (AccountAddress.ofUInt256 (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨4⟩))) := by
+      .ok (.address (AccountAddress.ofUInt256 (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨4⟩))) := by
   rw [accountAddress_ofUInt256_eq_ofNat_toNat]
   exact vaultEvalScalar evm locals "_factory" .address ⟨4⟩ hbase rfl rfl
 

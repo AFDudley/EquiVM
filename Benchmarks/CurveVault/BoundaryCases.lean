@@ -1,6 +1,6 @@
 import Benchmarks.CurveVault.DiffTarget
 
-open Solm Solm.DiffTest Solm.Interp ABI Ethereum Ethereum.EVM
+open Stele Stele.DiffTest Stele.Interp ABI Ethereum Ethereum.EVM
 open Benchmarks.CurveVault
 
 namespace Benchmarks.CurveVault.BoundaryCases
@@ -20,7 +20,7 @@ def initializedSlots : List (Nat × Nat) :=
 
 def check (t : Target) (label : String) (σ : AccountMap) (cd : ByteArray)
     (expectedOOG : Bool := false) : IO Nat := do
-  let c : Solm.DiffTest.Case :=
+  let c : Stele.DiffTest.Case :=
     { label, σ, I := t.env t.runtime (EVM.address 0x2000) 0 cd true }
   let r := runCase t c
   IO.println s!"{label}: {r.verdict.describe}"

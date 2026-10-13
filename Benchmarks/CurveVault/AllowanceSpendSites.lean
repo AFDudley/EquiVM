@@ -4,7 +4,7 @@ import Benchmarks.CurveVault.RuntimeBlocks_016
 import Benchmarks.CurveVault.RuntimeBlocks_018
 import Benchmarks.CurveVault.RuntimeBlocks_020
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 inductive VaultAllowanceSpendFlow where

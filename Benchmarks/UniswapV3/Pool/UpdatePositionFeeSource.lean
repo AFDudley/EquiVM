@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.UpdatePositionFeeModel
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
@@ -41,7 +41,7 @@ theorem updatePositionFeeCallSource (v : UniswapV3PoolImmutables) (a : UpdatePos
       .int (Int.ofNat (feeGrowthWord false evm.accountMap evm.executionEnv).toNat),
       .int (Int.ofNat (feeGrowthWord true evm.accountMap evm.executionEnv).toNat)])
     (locals := tickFeeLocals (updatePositionFeeArgs a evm))
-    (calleeSolm := tickFeeFinalFrame (immStore v) (updatePositionFeeArgs a evm)
+    (calleeStele := tickFeeFinalFrame (immStore v) (updatePositionFeeArgs a evm)
       (updatePositionChangedState v a evm))
     (value := some [.int (Int.ofNat (updatePositionInside v a evm false).toNat),
       .int (Int.ofNat (updatePositionInside v a evm true).toNat)])
@@ -57,7 +57,7 @@ theorem updatePositionFeeSource (v : UniswapV3PoolImmutables) (a : UpdatePositio
     ExecBlock config (updatePositionChangedFrame v a evm) (updatePositionChangedState v a evm)
       updatePositionFeeBody (.ok (updatePositionFee1Frame v a evm) (updatePositionChangedState v a evm)) := by
   refine ExecBlock.consNormal (updatePositionFeeCallSource v a evm) ?_
-  refine ExecBlock.consNormal (solm' := updatePositionFee0Frame v a evm)
+  refine ExecBlock.consNormal (stele' := updatePositionFee0Frame v a evm)
     (evm' := updatePositionChangedState v a evm) (ExecStmt.letDecl ?_) ?_
   · simp only [evalExpr?, updatePositionFeeFrame, Std.HashMap.get?_eq_getElem?,
       Std.HashMap.getElem?_insert_self, EvalResult.ofOption, bind, EvalResult.bind, tupleGetValue?]

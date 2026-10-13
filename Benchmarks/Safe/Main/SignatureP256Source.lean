@@ -1,7 +1,7 @@
 import Benchmarks.Safe.Main.SignatureP256Pieces
 import Benchmarks.Safe.Main.ModuleStorage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.Main
 
@@ -45,7 +45,7 @@ theorem safeInternalP256 {p : SignatureInput} {f : Frame} {evm evm' : EVM.State}
   apply internalCallFunctionReturn (callee := p256VerifyFunction)
     (argVals := [wordBytes32Value q.h, wordBytes32Value q.r, wordBytes32Value q.s,
       uint256Value q.qx, uint256Value q.qy]) (locals := p256Args q)
-    (calleeSolm := p256FinalFrame q z out) (value := some [.bool (p256Result z out)])
+    (calleeStele := p256FinalFrame q z out) (value := some [.bool (p256Result z out)])
   · simp [evalExprs?, evalExpr?, signatureP256SignerFrame, signatureP256WordsFrame,
       signatureP256XFrame, signatureP256SFrame, signatureP256RFrame, signatureSet,
       Std.HashMap.getElem?_insert, Std.HashMap.getElem_insert, hc.hash, hq,

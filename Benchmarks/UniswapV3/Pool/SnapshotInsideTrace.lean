@@ -2,7 +2,7 @@ import Benchmarks.UniswapV3.Pool.SnapshotSlotRead
 import Benchmarks.UniswapV3.Pool.SnapshotReturn
 import Benchmarks.UniswapV3.Pool.OracleObserveTrace
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 open uniswapV3PoolBlocks
 namespace Benchmarks.UniswapV3.Pool

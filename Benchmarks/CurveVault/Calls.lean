@@ -1,7 +1,7 @@
 import Benchmarks.CurveVault.Common
 import Reasoning.VyperCalls
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch Reasoning.VyperCalls
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch Reasoning.VyperCalls
 namespace Benchmarks.CurveVault
 
 -- LIBRARY CANDIDATE: Vyper scalar returndata has exactly the scalar-word decoder,

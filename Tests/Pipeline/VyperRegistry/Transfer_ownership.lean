@@ -8,7 +8,7 @@ Dispatcher bucket 4, arm entry pc 36: the guard, the address validation, the int
 the `previous` read, the `SSTORE` of slot 0 and the log (pc 196).
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
   Reasoning.VyperBounded
 
 namespace Tests.Pipeline.VyperRegistry
@@ -169,7 +169,7 @@ theorem registryTransfer_ownershipBody {σ σ₀ A I} {g : UInt256} (hwf : stora
     evalVar _ _ "new_owner" _ (by rw [store_get_ne2 _ _ _ (by decide) (by decide), store_get_self])
   have hassign : assignStorageRef? config (frame (toL2 σ I)) (initState σ σ₀ (Sat256.ofUInt256 g) A I) .storage ownerRef
       (.address (AccountAddress.ofNat (argWord I).toNat)) =
-      .ok (frame (toL2 σ I), Solm.EVM.storageStore (initState σ σ₀ (Sat256.ofUInt256 g) A I) I.codeOwner ⟨0⟩ (argWord I)) := by
+      .ok (frame (toL2 σ I), Stele.EVM.storageStore (initState σ σ₀ (Sat256.ofUInt256 g) A I) I.codeOwner ⟨0⟩ (argWord I)) := by
     apply assignStorageRef_storage_vyper_scalar_value (hbackend := rfl) (hcheck := by rfl)
       (er := { base := "ownable_owner", steps := [] })
       (hleaf := Or.inl ⟨_, rfl⟩) (ty := .elem .address) (loc := vyperWordLoc ⟨0⟩ .address)
@@ -183,7 +183,7 @@ theorem registryTransfer_ownershipBody {σ σ₀ A I} {g : UInt256} (hwf : stora
       memLoad_below_write _ _ 288 256 (by rw [mem57_size]) (by omega)
         (by rw [mem57_size]; exact lt_usize _ (by decide)) (by decide), memLoad256_mem57] at rd7
     have hemit : evalExprs? config (frame (toL2 σ I))
-        (Solm.EVM.storageStore (initState σ σ₀ (Sat256.ofUInt256 g) A I) I.codeOwner ⟨0⟩ (argWord I))
+        (Stele.EVM.storageStore (initState σ σ₀ (Sat256.ofUInt256 g) A I) I.codeOwner ⟨0⟩ (argWord I))
         [.var "previous", .var "new_owner"] =
         .ok [.address (AccountAddress.ofNat (solcSlotWordAt ⟨0⟩ σ I).toNat), .address (AccountAddress.ofNat (argWord I).toNat)] := by
       rw [evalExprs?, evalVar _ _ "previous" _ (store_get_self _ _ _), evalExprs?,
@@ -192,7 +192,7 @@ theorem registryTransfer_ownershipBody {σ σ₀ A I} {g : UInt256} (hwf : stora
     have hbody : ExecTransitionBody config contract (initState σ σ₀ (Sat256.ofUInt256 g) A I) (toStore I)
         transfer_ownershipTransition.body
         (.returned (frame (toL2 σ I))
-          (Solm.EVM.storageStore (initState σ σ₀ (Sat256.ofUInt256 g) A I) I.codeOwner ⟨0⟩ (argWord I)) none) := by
+          (Stele.EVM.storageStore (initState σ σ₀ (Sat256.ofUInt256 g) A I) I.codeOwner ⟨0⟩ (argWord I)) none) := by
       rw [transfer_ownershipBody_eq]
       exact ExecFuncBody.execBlockOK (ExecBlock.consNormal (ExecStmt.requireTrue hcv)
         (ExecBlock.consNormal hcheck

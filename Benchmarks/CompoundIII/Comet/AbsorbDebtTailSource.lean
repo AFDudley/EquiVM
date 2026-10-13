@@ -2,7 +2,7 @@ import Benchmarks.CompoundIII.Comet.AbsorbDebtSource
 import Benchmarks.CompoundIII.Comet.AbsorbEventsSource
 import Benchmarks.CompoundIII.Comet.InternalOutcome
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.CompoundIII.Comet.Immutables
 
 namespace Benchmarks.CompoundIII.Comet

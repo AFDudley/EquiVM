@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Spot.PokeDecode
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Spot
 
@@ -272,7 +272,7 @@ theorem execPokeTrueRdivParMulOverflowReverts
         (.ok { contract := contract, locals := localsV } evm) := by
     simpa [locals0, localsV, pokeValScaledLocals] using
       (ExecStmt.letDecl
-        (cfg := config) (solm := { contract := contract, locals := locals0 })
+        (cfg := config) (stele := { contract := contract, locals := locals0 })
         (evm := evm) (name := "valScaled") (ty := some uint256)
         (expr := mul256 (.cast (.var "val") uint256St) (.intLit billion))
         (value := .int (Int.ofNat valScaled.toNat)) hMul)
@@ -408,7 +408,7 @@ theorem execPokeTrueRdivParDivZeroReverts
         (.ok { contract := contract, locals := localsV } evm) := by
     simpa [locals0, localsV, pokeValScaledLocals] using
       (ExecStmt.letDecl
-        (cfg := config) (solm := { contract := contract, locals := locals0 })
+        (cfg := config) (stele := { contract := contract, locals := locals0 })
         (evm := evm) (name := "valScaled") (ty := some uint256)
         (expr := mul256 (.cast (.var "val") uint256St) (.intLit billion))
         (value := .int (Int.ofNat valScaled.toNat)) hMul)
@@ -554,7 +554,7 @@ theorem execPokeTrueAfterRdivParThenRdivMatReverts
         (.ok { contract := contract, locals := localsV } evm) := by
     simpa [locals0, localsV, pokeValScaledLocals] using
       (ExecStmt.letDecl
-        (cfg := config) (solm := { contract := contract, locals := locals0 })
+        (cfg := config) (stele := { contract := contract, locals := locals0 })
         (evm := evm) (name := "valScaled") (ty := some uint256)
         (expr := mul256 (.cast (.var "val") uint256St) (.intLit billion))
         (value := .int (Int.ofNat valScaled.toNat)) hMul)

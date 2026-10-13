@@ -1,6 +1,6 @@
 import Benchmarks.CurveVault.DiffTarget
 
-open Solm Solm.DiffTest Solm.Interp ABI Ethereum Ethereum.EVM
+open Stele Stele.DiffTest Stele.Interp ABI Ethereum Ethereum.EVM
 open Benchmarks.CurveVault
 
 namespace Benchmarks.CurveVault.SuccessfulPaths
@@ -37,7 +37,7 @@ def runAll : IO UInt32 := do
       else tr.params.map argument
     let sel := (Ethereum.KEC (String.toByteArray (transitionSigStr tr))).extract 0 4
     let cd := (ABI.encodeCallWithSelector? sel (transitionSignature tr).paramTypes args).getD .empty
-    let c : Solm.DiffTest.Case :=
+    let c : Stele.DiffTest.Case :=
       { label := "successful " ++ tr.name
         σ := if isInit then diffTarget.world else seeded
         I := diffTarget.env diffTarget.runtime (EVM.address 0x2000) 0 cd true }

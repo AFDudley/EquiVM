@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Jug.Dispatch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Jug
 
@@ -87,7 +87,7 @@ theorem jugWardsBodyCoreOk
         (.returned { contract := contract, locals := locals }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.int (Int.ofNat (solcSlotWordAt (wardsMappingSlotFor I) σ I).toNat))])) := by
-    simpa [wardsTransition, wardsMappingSlotFor, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [wardsTransition, wardsMappingSlotFor, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount, locals, key] using
       jugUint256GetterBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) locals

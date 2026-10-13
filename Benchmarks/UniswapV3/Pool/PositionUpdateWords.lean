@@ -2,7 +2,7 @@ import Benchmarks.UniswapV3.Pool.PositionUpdateModel
 import Benchmarks.UniswapV3.Pool.PositionSnapshotMemory
 import Benchmarks.UniswapV3.Pool.SignedWordZero
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 theorem positionUpdateLiquidityBefore_bounds (a : PositionUpdateArgs) (evm : EVM.State) :

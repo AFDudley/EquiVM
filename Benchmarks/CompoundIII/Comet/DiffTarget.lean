@@ -1,4 +1,4 @@
-import Solm.DiffTest.Harness
+import Stele.DiffTest.Harness
 import Benchmarks.CompoundIII.Comet.Spec
 import Benchmarks.CompoundIII.Comet.Bytecode
 import Benchmarks.CompoundIII.Comet.ImmutableCode
@@ -6,12 +6,12 @@ import Benchmarks.CompoundIII.Comet.ImmutableCode
 /-!
 # CometWithExtendedAssetList differential-test target
 
-Registered in `Tests/DiffTest/Generated.lean`; run with `lake exe solm-difftest --only CometWithExtendedAssetList`.
+Registered in `Tests/DiffTest/Generated.lean`; run with `lake exe stele-difftest --only CometWithExtendedAssetList`.
 The scaffold target is extended with ABI-specific callees and a deterministic constructor run.
 The runtime and all 25 immutable values come from that run, checked against the runtime template.
 -/
 
-open Solm Solm.DiffTest Solm.Interp Ethereum Ethereum.EVM
+open Stele Stele.DiffTest Stele.Interp Ethereum Ethereum.EVM
 
 namespace Benchmarks.CompoundIII.Comet
 
@@ -36,7 +36,7 @@ private def calleeDispatch (arms : List (Nat × ByteArray))
   return checks ++ ⟨#[0x50]⟩ ++ otherwise ++ bodies
 
 -- The ERC20 holds a signed offset from its initial 10^12 balance in slot zero. transferFrom
--- increases that balance; transfer decreases it. The full account effects are replayed by Solm.
+-- increases that balance; transfer decreases it. The full account effects are replayed by Stele.
 private def tokenCode : ByteArray :=
   let balance := ⟨#[0x60, 0, 0x54]⟩ ++ pushWord (10 ^ 12) ++
     ⟨#[0x01, 0x60, 0, 0x52, 0x60, 32, 0x60, 0, 0xf3]⟩
@@ -102,7 +102,7 @@ def fixtureDeployment : Except String (ByteArray × Store) := do
   let env := t.env code (EVM.address 0x2000) 0 ByteArray.empty true
   let gas : UInt256 := .ofNat t.gas
   let trace := runTrace (initialState accounts accounts gas default env) (t.gas + 1)
-  let some (outcome, replay) := solmCtorExecRun t.fuel replayOracle (Replay.ofTrace trace)
+  let some (outcome, replay) := steleCtorExecRun t.fuel replayOracle (Replay.ofTrace trace)
       t.config t.contract deploymentArgs accounts accounts gas default env
     | throw "fixture constructor parameters do not bind"
   let verdict := compareConstructor trace.xiResult outcome t.codeOf

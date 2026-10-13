@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Clipper.GetStatusBody
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 namespace Benchmarks.Dss.Clipper
@@ -379,8 +379,8 @@ private theorem clipperStatusFunctionRevertsRdivCore (v : ClipperImmutables)
   have htailBlock :
       ExecBlock config priceFrame evmPrice tailStmts .reverted := by
     simpa [tailStmts, doneFrame] using
-      ExecBlock.consNormal (solm' := ageDoneFrame) (evm' := evmPrice) hsubDone <|
-        ExecBlock.consNormal (solm' := doneFrame) (evm' := evmPrice) hletDone hbranch
+      ExecBlock.consNormal (stele' := ageDoneFrame) (evm' := evmPrice) hsubDone <|
+        ExecBlock.consNormal (stele' := doneFrame) (evm' := evmPrice) hletDone hbranch
   have hcallTail :
       ExecBlock config ageFrame evm (callStmts ++ tailStmts) .reverted :=
    execBlock_append (s2 := tailStmts) hcallBlock htailBlock
@@ -736,7 +736,7 @@ private theorem clipperGetStatusBodyRevertsAtStatusCall (v : ClipperImmutables)
         (.ok usrFrame evm) := by
     simpa [startFrame, usrFrame, clipperGetStatusLocalsUsr] using
       (ExecStmt.letDecl
-        (cfg := config) (solm := startFrame) (evm := evm) (name := "usr")
+        (cfg := config) (stele := startFrame) (evm := evm) (name := "usr")
         (ty := some addr) (expr := .storage (salesF (.var "id") "usr"))
         (value := .address (AccountAddress.ofNat (clipperGetStatusUsrWord evm I).toNat))
         (by simpa [startFrame, clipperGetStatusUsrWord] using
@@ -747,16 +747,16 @@ private theorem clipperGetStatusBodyRevertsAtStatusCall (v : ClipperImmutables)
         (.ok ticFrame evm) := by
     simpa [usrFrame, ticFrame, clipperGetStatusLocalsTic] using
       (ExecStmt.letDecl
-        (cfg := config) (solm := usrFrame) (evm := evm) (name := "tic")
+        (cfg := config) (stele := usrFrame) (evm := evm) (name := "tic")
         (ty := some uint96) (expr := .storage (salesF (.var "id") "tic"))
         (value := .int (Int.ofNat (clipperGetStatusTicWord evm I).toNat))
         (by simpa [usrFrame] using clipperEvalGetStatusSalesTicAfterUsr v evm I))
   simpa [getStatusTransition, nonpayable, startFrame, ticFrame] using
     (ExecFuncBody.execBlockRevert <|
-      ExecBlock.consNormal (solm' := startFrame) (evm' := evm)
+      ExecBlock.consNormal (stele' := startFrame) (evm' := evm)
         (ExecStmt.requireTrue (evalCallvalueEq_true hwv)) <|
-      ExecBlock.consNormal (solm' := usrFrame) (evm' := evm) hletUsr <|
-      ExecBlock.consNormal (solm' := ticFrame) (evm' := evm) hletTic <|
+      ExecBlock.consNormal (stele' := usrFrame) (evm' := evm) hletUsr <|
+      ExecBlock.consNormal (stele' := ticFrame) (evm' := evm) hletTic <|
       ExecBlock.consRevert hstatus)
 
 theorem clipperGetStatusBodyRevertsAgeForPrice (v : ClipperImmutables)
@@ -793,7 +793,7 @@ theorem clipperGetStatusBodyRevertsPriceCallFailure (v : ClipperImmutables)
         (.ok usrFrame evm) := by
     simpa [startFrame, usrFrame, clipperGetStatusLocalsUsr] using
       (ExecStmt.letDecl
-        (cfg := config) (solm := startFrame) (evm := evm) (name := "usr")
+        (cfg := config) (stele := startFrame) (evm := evm) (name := "usr")
         (ty := some addr) (expr := .storage (salesF (.var "id") "usr"))
         (value := .address (AccountAddress.ofNat (clipperGetStatusUsrWord evm I).toNat))
         (by simpa [startFrame, clipperGetStatusUsrWord] using
@@ -804,7 +804,7 @@ theorem clipperGetStatusBodyRevertsPriceCallFailure (v : ClipperImmutables)
         (.ok ticFrame evm) := by
     simpa [usrFrame, ticFrame, clipperGetStatusLocalsTic] using
       (ExecStmt.letDecl
-        (cfg := config) (solm := usrFrame) (evm := evm) (name := "tic")
+        (cfg := config) (stele := usrFrame) (evm := evm) (name := "tic")
         (ty := some uint96) (expr := .storage (salesF (.var "id") "tic"))
         (value := .int (Int.ofNat (clipperGetStatusTicWord evm I).toNat))
         (by simpa [usrFrame] using clipperEvalGetStatusSalesTicAfterUsr v evm I))
@@ -816,10 +816,10 @@ theorem clipperGetStatusBodyRevertsPriceCallFailure (v : ClipperImmutables)
       clipperGetStatusStatusCallRevertsPriceCallFailure v I hlePrice hcode hcall
   simpa [getStatusTransition, nonpayable, startFrame] using
     (ExecFuncBody.execBlockRevert <|
-      ExecBlock.consNormal (solm' := startFrame) (evm' := evm)
+      ExecBlock.consNormal (stele' := startFrame) (evm' := evm)
         (ExecStmt.requireTrue (evalCallvalueEq_true hwv)) <|
-      ExecBlock.consNormal (solm' := usrFrame) (evm' := evm) hletUsr <|
-      ExecBlock.consNormal (solm' := ticFrame) (evm' := evm) hletTic <|
+      ExecBlock.consNormal (stele' := usrFrame) (evm' := evm) hletUsr <|
+      ExecBlock.consNormal (stele' := ticFrame) (evm' := evm) hletTic <|
       ExecBlock.consRevert hstatus)
 
 theorem clipperGetStatusBodyRevertsPriceNoCode (v : ClipperImmutables)

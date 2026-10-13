@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Vat.Dispatch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Vat
 
@@ -58,7 +58,7 @@ theorem vatDebtBodyCore : VatBodyTheoremAnyPerm 4 := by
         (.returned { contract := contract, locals := ∅ }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.int (Int.ofNat (debtWord σ I).toNat))])) := by
-    simpa [debtTransition, debtWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [debtTransition, debtWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       vatUint256GetterBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅

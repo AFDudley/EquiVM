@@ -3,7 +3,7 @@ import Benchmarks.CurveVault.RuntimeBlocks_029
 import Benchmarks.CurveVault.RuntimeBlocks_031
 import Reasoning.ExternalCall
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 abbrev vaultMintFunction : FunctionDecl := contract.functions[31]!
@@ -74,7 +74,7 @@ theorem vaultMintRoutine {I : ExecutionEnv} {g : Sat256} {s0 evm : State}
     (wordAt0Mem ⟨13⟩ (wordAt32Mem (memLoad (UInt256.ofNat 64) mem) mem)) aw0 rdata σ k0 C0 at rd7712
   rw [hmt, hhash, hv0] at rd7712
   let σ1 := sstoreAccountMap I.codeOwner σ slot (old + value)
-  let evm1 := Solm.EVM.storageStore evm I.codeOwner slot (old + value)
+  let evm1 := Stele.EVM.storageStore evm I.codeOwner slot (old + value)
   have hs1 : SourceState s0 I σ1 evm1 := hs.storageWrite _ _
   have hcredit : ExecStmt config {contract := contract, locals := locals} evm
       vaultMintFunction.body[0]! (.ok {contract := contract, locals := locals} evm1) := by
@@ -108,7 +108,7 @@ theorem vaultMintRoutine {I : ExecutionEnv} {g : Sat256} {s0 evm : State}
   change RD vaultBytecode I g s0 returnPc R ((memLoad (UInt256.ofNat 96) mem0).toByteArray.write 0 mem0 128 32)
     aw2 rdata (sstoreAccountMap I.codeOwner σ1 (UInt256.ofNat 14) (supply + value)) k2 C2 at rdReturn
   rw [hv0] at rdReturn
-  let evm2 := Solm.EVM.storageStore evm1 I.codeOwner (UInt256.ofNat 14) (supply + value)
+  let evm2 := Stele.EVM.storageStore evm1 I.codeOwner (UInt256.ofNat 14) (supply + value)
   have hs2 : SourceState s0 I (sstoreAccountMap I.codeOwner σ1 (UInt256.ofNat 14) (supply + value)) evm2 := hs1.storageWrite _ _
   refine Or.inl ⟨evm2, _, aw2, k2, C2, ?_, hs2, rdReturn⟩
   apply ExecFuncBody.execBlockOK

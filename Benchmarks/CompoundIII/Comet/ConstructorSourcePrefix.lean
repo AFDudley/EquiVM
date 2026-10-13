@@ -1,7 +1,7 @@
 import Benchmarks.CompoundIII.Comet.ConstructorInput
 import Benchmarks.CompoundIII.Comet.DecimalsCall
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 

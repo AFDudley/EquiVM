@@ -2,7 +2,7 @@ import Benchmarks.CurveVault.Dispatch
 import Benchmarks.CurveVault.Entry
 import Benchmarks.CurveVault.AllowanceAdjustInternal
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 theorem vaultIncreaseAllowanceBodyCore {σ σ₀ A I} {g : UInt256}
@@ -34,7 +34,7 @@ theorem vaultIncreaseAllowanceBodyCore {σ σ₀ A I} {g : UInt256}
   have hdec : config.externalABI.decodeCalldata? (increaseAllowanceTransition.params.map Param.name)
       (transitionSignature increaseAllowanceTransition).paramTypes I.calldata = some locals :=
     decodeCalldataWithMode_vyper_addr_uint256_ok hargs hcanon
-  have hload : Solm.EVM.transientLoad evm evm.executionEnv.codeOwner ⟨0⟩ = codeOwnerTransientWord I σ ⟨0⟩ :=
+  have hload : Stele.EVM.transientLoad evm evm.executionEnv.codeOwner ⟨0⟩ = codeOwnerTransientWord I σ ⟨0⟩ :=
     codeOwnerTransientWord_initState _
   have rdLock := vaultBlocks.vault_block_6012_fallthrough (by simp)
     (u256_shiftRight160_zero_of_lt _ hcanon) rdBody

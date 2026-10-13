@@ -1,6 +1,6 @@
 import Benchmarks.CurveVault.SetMaxGuard
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 theorem vaultSetMaxRoutine {I : ExecutionEnv} {g : Sat256} {s0 evm : State}
@@ -44,7 +44,7 @@ theorem vaultSetMaxRoutine {I : ExecutionEnv} {g : Sat256} {s0 evm : State}
   · exact Or.inr ⟨ExecFuncBody.execBlockRevert (ExecBlock.consNormal hcall
       (ExecBlock.consRevert (ExecStmt.requireFalse hguard))), hrev⟩
   let value := calldataWord I.calldata 4
-  let evm2 := Solm.EVM.storageStore evm1 I.codeOwner ⟨5⟩ value
+  let evm2 := Stele.EVM.storageStore evm1 I.codeOwner ⟨5⟩ value
   let σ2 := sstoreAccountMap I.codeOwner σ1 ⟨5⟩ value
   have hs2 : SourceState s0 I σ2 evm2 := hs1.storageWrite _ _
   have hwrite : ExecStmt config {contract := contract, locals := locals1} evm1 vaultSetMaxFunction.body[2]!

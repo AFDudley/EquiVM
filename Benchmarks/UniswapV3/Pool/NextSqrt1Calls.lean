@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.NextSqrt1Prefix
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
 
@@ -26,7 +26,7 @@ theorem nextSqrt1FullReturns (imms : Store) (evm : EVM.State) (a : NextSqrtArgs)
     have hc := internalCallFunctionReturn (callee := fullMathRoundFunction)
       (retVar := nextSqrt1CallName a)
       (locals := fullMathLocals a.amount (UInt256.ofNat (2 ^ 96)) a.liquidity)
-      (calleeSolm := fullMathRoundFinalFrame imms a.amount (UInt256.ofNat (2 ^ 96)) a.liquidity)
+      (calleeStele := fullMathRoundFinalFrame imms a.amount (UInt256.ofNat (2 ^ 96)) a.liquidity)
       (value := some [.int (Int.ofNat
         (fullMathRoundResult a.amount (UInt256.ofNat (2 ^ 96)) a.liquidity).toNat)])
       (evalNextSqrt1FullArgs imms evm a) fullMathRoundLookup
@@ -38,7 +38,7 @@ theorem nextSqrt1FullReturns (imms : Store) (evm : EVM.State) (a : NextSqrtArgs)
     have hc := internalCallFunctionReturn (callee := fullMathFunction)
       (retVar := nextSqrt1CallName a)
       (locals := fullMathLocals a.amount (UInt256.ofNat (2 ^ 96)) a.liquidity)
-      (calleeSolm := fullMathProductFrame imms a.amount (UInt256.ofNat (2 ^ 96)) a.liquidity)
+      (calleeStele := fullMathProductFrame imms a.amount (UInt256.ofNat (2 ^ 96)) a.liquidity)
       (value := some [.int (Int.ofNat
         (fullMathResult a.amount (UInt256.ofNat (2 ^ 96)) a.liquidity).toNat)])
       (evalNextSqrt1FullArgs imms evm a) fullMathLookup
@@ -74,7 +74,7 @@ theorem nextSqrt1UnsafeReturns (imms : Store) (evm : EVM.State) (a : NextSqrtArg
       (.ok (nextSqrt1CallFrame imms a) evm) := by
   have hc := internalCallFunctionReturn (callee := unsafeDivRoundFunction) (retVar := "__c4")
     (locals := unsafeDivRoundLocals (nextSqrt1ScaledAmount a) a.liquidity)
-    (calleeSolm := unsafeDivRoundFrame imms (nextSqrt1ScaledAmount a) a.liquidity)
+    (calleeStele := unsafeDivRoundFrame imms (nextSqrt1ScaledAmount a) a.liquidity)
     (value := some [.int (Int.ofNat
       (unsafeDivRoundResult (nextSqrt1ScaledAmount a) a.liquidity).toNat)])
     (evalNextSqrt1UnsafeArgs imms evm a) unsafeDivRoundLookup (unsafeDivRoundBind _ _)

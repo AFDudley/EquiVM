@@ -1,7 +1,7 @@
 import Examples.UniswapV2Pair.MintTailRuntimeCases
 import Examples.UniswapV2Pair.MintProportionalArithmetic
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace UniswapV2Pair
 

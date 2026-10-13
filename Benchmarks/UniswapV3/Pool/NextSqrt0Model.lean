@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.NextSqrtModel
 import Benchmarks.UniswapV3.Pool.WordShiftBits
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 def nextSqrt0Numerator (a : NextSqrtArgs) : UInt256 :=

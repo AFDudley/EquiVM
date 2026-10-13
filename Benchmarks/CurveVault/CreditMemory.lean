@@ -3,7 +3,7 @@ import Benchmarks.CurveVault.MutationSites
 import Benchmarks.CurveVault.RuntimeBlocks_011
 import Benchmarks.CurveVault.RuntimeBlocks_014
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 def vaultCreditFlow (isDeposit : Bool) : VaultFlow := if isDeposit then .deposit else .mint

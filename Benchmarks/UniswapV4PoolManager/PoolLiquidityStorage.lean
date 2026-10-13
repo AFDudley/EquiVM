@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.ResolvedStorage
 import Benchmarks.UniswapV4PoolManager.WordPackedStore
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 
@@ -12,11 +12,11 @@ def poolLiquidityLoc (id : UInt256) : StorageLoc :=
   {slot := poolLiquiditySlot id, offset := 0, size := 16, hbound := by decide,
    type := .int (.uint ⟨128, by decide⟩)}
 def poolLiquidityPacked (evm : State) (id : UInt256) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (poolLiquiditySlot id)
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (poolLiquiditySlot id)
 def poolLiquidityWord (evm : State) (id : UInt256) : UInt256 :=
   UInt256.land (poolLiquidityPacked evm id) (UInt256.ofNat (2^128-1))
 def poolLiquidityStore (evm : State) (id value : UInt256) : State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (poolLiquiditySlot id)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (poolLiquiditySlot id)
     (wordLowSet (poolLiquidityPacked evm id) value 128)
 
 theorem poolLiquidity_loc (id : UInt256) :

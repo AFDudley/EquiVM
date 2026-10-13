@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MorphoBlue.TaylorRoutines
 import Benchmarks.Morpho.MorphoBlue.WadSource
 import Benchmarks.Morpho.MorphoBlue.Storage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MorphoBlue.Immutables
 namespace Benchmarks.Morpho.MorphoBlue

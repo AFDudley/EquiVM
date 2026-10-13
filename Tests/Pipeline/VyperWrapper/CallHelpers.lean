@@ -8,7 +8,7 @@ The ABI encodings of the four interface calls (`transferFrom`, `balanceOf`, `tra
 as `externalABI.encode?` produces them, and the memory the bytecode builds for each call.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
   Reasoning.VyperCalls
 open Reasoning.VyperImmutables
 
@@ -97,16 +97,16 @@ theorem decode_onWrap (out : ByteArray) : config.externalABI.decode? "onWrap" ou
 
 /-! ## Expression helpers -/
 
-theorem evalExpr_eq_zero_word {cfg : Config} {solm : Frame} {evm : EVM.State} {e : Expr} {a : UInt256}
-    (ha : evalExpr? cfg solm evm e = .ok (uint256Value a)) :
-    evalExpr? cfg solm evm (.binary .eq e (.intLit 0)) = .ok (.bool (decide (a.toNat = 0))) := by
+theorem evalExpr_eq_zero_word {cfg : Config} {stele : Frame} {evm : EVM.State} {e : Expr} {a : UInt256}
+    (ha : evalExpr? cfg stele evm e = .ok (uint256Value a)) :
+    evalExpr? cfg stele evm (.binary .eq e (.intLit 0)) = .ok (.bool (decide (a.toNat = 0))) := by
   rw [evalExpr_binary_nonshort (by decide) (by decide), ha, evalExpr?]
   simp [EvalResult.bind, bind, evalBinaryOp?, uint256Value, value_int_beq]
 
-theorem evalExpr_div_zero {cfg : Config} {solm : Frame} {evm : EVM.State} {lhs rhs : Expr} {a : UInt256}
-    (ha : evalExpr? cfg solm evm lhs = .ok (uint256Value a))
-    (hb : evalExpr? cfg solm evm rhs = .ok (uint256Value ⟨0⟩)) :
-    evalExpr? cfg solm evm (.binary .div lhs rhs) = .revert := by
+theorem evalExpr_div_zero {cfg : Config} {stele : Frame} {evm : EVM.State} {lhs rhs : Expr} {a : UInt256}
+    (ha : evalExpr? cfg stele evm lhs = .ok (uint256Value a))
+    (hb : evalExpr? cfg stele evm rhs = .ok (uint256Value ⟨0⟩)) :
+    evalExpr? cfg stele evm (.binary .div lhs rhs) = .revert := by
   rw [evalExpr_binary_nonshort (by decide) (by decide), ha, hb]
   simp [EvalResult.bind, bind, evalBinaryOp?]
 
@@ -238,40 +238,40 @@ theorem trMem_read96 (t : UInt256) (I : ExecutionEnv) (amt : UInt256) (M : ByteA
 /-! ## More expression helpers -/
 
 /-- A local assignment, for any frame (the immutables are kept). -/
-theorem assignLocalVar_frame {cfg : Config} {solm : Frame} {evm : EVM.State} {name : Ident} {old value : Value}
-    (hget : solm.locals.get? name = some old) :
-    assignStorageRef? cfg solm evm .localVar { base := name } value =
-      .ok ({ solm with locals := solm.locals.insert name value }, evm) := by
+theorem assignLocalVar_frame {cfg : Config} {stele : Frame} {evm : EVM.State} {name : Ident} {old value : Value}
+    (hget : stele.locals.get? name = some old) :
+    assignStorageRef? cfg stele evm .localVar { base := name } value =
+      .ok ({ stele with locals := stele.locals.insert name value }, evm) := by
   simp only [assignStorageRef?, updateLocalPath?, EvalResult.bind, bind, pure]
-  change (match solm.locals.get? name with
-    | some _ => EvalResult.ok (({ solm with locals := solm.locals.insert name value } : Frame), evm)
+  change (match stele.locals.get? name with
+    | some _ => EvalResult.ok (({ stele with locals := stele.locals.insert name value } : Frame), evm)
     | none => EvalResult.error EvalError.unboundVariable) = _
   rw [hget]
 
-theorem evalExpr_gt_words {cfg : Config} {solm : Frame} {evm : EVM.State} {lhs rhs : Expr} {a b : UInt256}
-    (ha : evalExpr? cfg solm evm lhs = .ok (uint256Value a))
-    (hb : evalExpr? cfg solm evm rhs = .ok (uint256Value b)) :
-    evalExpr? cfg solm evm (.binary .gt lhs rhs) = .ok (.bool (decide (b.toNat < a.toNat))) := by
+theorem evalExpr_gt_words {cfg : Config} {stele : Frame} {evm : EVM.State} {lhs rhs : Expr} {a b : UInt256}
+    (ha : evalExpr? cfg stele evm lhs = .ok (uint256Value a))
+    (hb : evalExpr? cfg stele evm rhs = .ok (uint256Value b)) :
+    evalExpr? cfg stele evm (.binary .gt lhs rhs) = .ok (.bool (decide (b.toNat < a.toNat))) := by
   rw [evalExpr_binary_nonshort (by decide) (by decide), ha, hb]
   simp [EvalResult.bind, bind, evalBinaryOp?, uint256Value]
 
-theorem evalExpr_and_false {cfg : Config} {solm : Frame} {evm : EVM.State} {lhs rhs : Expr}
-    (hl : evalExpr? cfg solm evm lhs = .ok (.bool false)) :
-    evalExpr? cfg solm evm (.binary .and lhs rhs) = .ok (.bool false) := by
+theorem evalExpr_and_false {cfg : Config} {stele : Frame} {evm : EVM.State} {lhs rhs : Expr}
+    (hl : evalExpr? cfg stele evm lhs = .ok (.bool false)) :
+    evalExpr? cfg stele evm (.binary .and lhs rhs) = .ok (.bool false) := by
   rw [evalExpr?, hl]; rfl
 
-theorem evalExpr_and_true {cfg : Config} {solm : Frame} {evm : EVM.State} {lhs rhs : Expr} {b : Bool}
-    (hl : evalExpr? cfg solm evm lhs = .ok (.bool true)) (hr : evalExpr? cfg solm evm rhs = .ok (.bool b)) :
-    evalExpr? cfg solm evm (.binary .and lhs rhs) = .ok (.bool b) := by
+theorem evalExpr_and_true {cfg : Config} {stele : Frame} {evm : EVM.State} {lhs rhs : Expr} {b : Bool}
+    (hl : evalExpr? cfg stele evm lhs = .ok (.bool true)) (hr : evalExpr? cfg stele evm rhs = .ok (.bool b)) :
+    evalExpr? cfg stele evm (.binary .and lhs rhs) = .ok (.bool b) := by
   rw [evalExpr?, hl]
   simp only [bind, EvalResult.bind, hr]
   rfl
 
 /-- `hook != address(0)` on a canonical hook word. -/
 theorem evalHookNeZero (imms L : Store) (evm : EVM.State) (hL : L.get? "hook" = none)
-    (hcanon : (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩).toNat < EVM.addressModulus) :
+    (hcanon : (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩).toNat < EVM.addressModulus) :
     evalExpr? config (frame imms L) evm (.binary .ne (.storage hookRef) (.cast (.intLit 0) (.elem .address))) =
-      .ok (.bool (!decide (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩ = ⟨0⟩))) := by
+      .ok (.bool (!decide (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩ = ⟨0⟩))) := by
   rw [evalExpr_binary_nonshort (by decide) (by decide), evalHookRead imms L evm hL, evalAddrZero]
   simp only [EvalResult.bind, bind, evalBinaryOp?, value_address_beq, addrZero_iff_word hcanon]
 

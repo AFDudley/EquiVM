@@ -1,7 +1,7 @@
 import Benchmarks.Auction.SetterSource
 import Benchmarks.Auction.Events
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Auction
 
@@ -10,9 +10,9 @@ theorem assignOwner (evm : EVM.State) (locals : Store) (value : UInt256)
     assignStorageRef? auctionConfig { contract := auctionContract, locals := locals } evm
       .storage ownerRef (.address (AccountAddress.ofNat value.toNat)) =
       .ok ({ contract := auctionContract, locals := locals },
-        Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨151⟩
+        Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨151⟩
           (setAddressOffset0Word
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨151⟩) value)) := by
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨151⟩) value)) := by
   exact scalarWrite evm _ locals "_owner" (.elem .address) (auctionAddrLoc ⟨151⟩) _
     hbase (by native_decide) rfl (by exact Or.inl ⟨_, rfl⟩) (storageLocStore_address_offset0 evm ⟨151⟩ value hc)
 

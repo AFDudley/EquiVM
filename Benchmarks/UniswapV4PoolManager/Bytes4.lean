@@ -3,7 +3,7 @@ import Reasoning.ABIViews
 
 /-! Fixed bytes4 ABI padding and EVM word comparisons. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.UniswapV4PoolManager
 

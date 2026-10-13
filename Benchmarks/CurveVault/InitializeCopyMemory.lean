@@ -2,7 +2,7 @@ import Benchmarks.CurveVault.PaddedCopyMemory
 import Benchmarks.CurveVault.StringMemory
 import Benchmarks.CurveVault.PaddedReadMemory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.CurveVault
 
 def vaultInitializeCopyMemory (mem : ByteArray) (ptr : UInt256) : ByteArray :=

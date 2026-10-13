@@ -1,16 +1,16 @@
-import Solm.SolidityStorage
-import Solm.Refine
+import Stele.SolidityStorage
+import Stele.Refine
 
 /-!
 # WETH9 per-contract `bytes`/`string` storage read hook (solc 0.5.16 total header decode)
 
-`Solm/SolidityLayout.lean`'s default compact-string decode (`solidityDecodeBytesLengthHeader`) is
+`Stele/SolidityLayout.lean`'s default compact-string decode (`solidityDecodeBytesLengthHeader`) is
 0.8-style: it **reverts** when the slot header's short/long flag disagrees with the decoded length
 magnitude (short flag with len ≥ 32, or long flag with len < 32).  solc **0.5.16**'s deployed getter
 does no such validation — it trusts the header, deriving the length purely from the flag
 (`len = (h & (flag=0 ? 0xff : ~0)) / 2`) and choosing the inline-vs-keccak data form solely by
-`len < 32`.  Over the arbitrary-`σ` quantification of the refinement theorem, the extra Solm revert
-is a spec falsity: for e.g. header `0x40` the Solm getter reverts while the runtime returns 32 bytes.
+`len < 32`.  Over the arbitrary-`σ` quantification of the refinement theorem, the extra Stele revert
+is a spec falsity: for e.g. header `0x40` the Stele getter reverts while the runtime returns 32 bytes.
 
 Per the layout-hook design (`StorageLayout` fields are per-contract config; `SolidityLayout` is a
 convenience default), the fix is a WETH9-local `readValue?` that mirrors the Solidity one but with a
@@ -19,7 +19,7 @@ the constructor's, onto fresh (zero) storage, where the default decode already y
 reverting.  `.layout` is inherited too, so every scalar/mapping leaf is definitionally unchanged.
 -/
 
-open Solm Ethereum
+open Stele Ethereum
 
 namespace Benchmarks.WETH9
 

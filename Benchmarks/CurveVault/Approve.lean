@@ -6,7 +6,7 @@ import Benchmarks.CurveVault.AddressWord
 import Benchmarks.CurveVault.MutatingLock
 import Benchmarks.CurveVault.RuntimeBlocks_021
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 abbrev vaultApprovePublicFunction : FunctionDecl := contract.functions[22]!
@@ -64,7 +64,7 @@ theorem vaultApproveBodyCore {σ σ₀ A I} {g : UInt256}
   have hdec : config.externalABI.decodeCalldata? (approveTransition.params.map Param.name)
       (transitionSignature approveTransition).paramTypes I.calldata = some locals :=
     decodeCalldataWithMode_vyper_addr_uint256_ok hargs hcanon
-  have hload : Solm.EVM.transientLoad evm evm.executionEnv.codeOwner ⟨0⟩ = codeOwnerTransientWord I σ ⟨0⟩ :=
+  have hload : Stele.EVM.transientLoad evm evm.executionEnv.codeOwner ⟨0⟩ = codeOwnerTransientWord I σ ⟨0⟩ :=
     codeOwnerTransientWord_initState _
   have rd5959 := vaultBlocks.vault_block_5947_fallthrough (by simp)
     (u256_shiftRight160_zero_of_lt _ hcanon) rdBody

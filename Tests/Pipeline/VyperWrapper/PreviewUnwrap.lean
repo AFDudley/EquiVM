@@ -9,7 +9,7 @@ the `returndatasize` check at 1571), `sharesOut * held` with its overflow check 
 divisor check (pc 1610) and the division and `RETURN` (pc 1623/1637).
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
   Reasoning.VyperCalls
 open Reasoning.VyperImmutables
 
@@ -86,7 +86,7 @@ theorem wrapperPreviewUnwrapBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hf
         (by rw [dispatchMem_size 6 (by decide)]; exact lt_usize _ (by decide))] at rd4
     have h0 : evalExpr? config (frame imms (pStore I)) (initState σ σ₀ (Sat256.ofUInt256 g) A I) (.intLit 0) =
         .ok (uint256Value ⟨0⟩) := by
-      have h := evalExpr_intLit_word (cfg := config) (solm := frame imms (pStore I)) (initState σ σ₀ (Sat256.ofUInt256 g) A I) 0 (by decide)
+      have h := evalExpr_intLit_word (cfg := config) (stele := frame imms (pStore I)) (initState σ σ₀ (Sat256.ofUInt256 g) A I) 0 (by decide)
       rw [show UInt256.ofNat 0 = (⟨0⟩ : UInt256) from by decide] at h
       exact h
     have hbody : ExecTransitionBody config contract (initState σ σ₀ (Sat256.ofUInt256 g) A I) (pStore I)
@@ -169,7 +169,7 @@ theorem wrapperPreviewUnwrapBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hf
       memLoad_write_back _ _ 64 (by decide) (by rw [hM1size]; exact lt_usize _ (by decide))
     have hM2size : (hw.toByteArray.write 0 M1 64 32).size = 160 := by
       rw [byteArray_write_size_of_inBounds _ _ _ _ (by rw [toByteArray_size]) (by rw [hM1size] <;> decide)]; exact hM1size
-    -- Solm after the call
+    -- Stele after the call
     set L2 : Store := L1.insert "held" (uint256Value hw) with hL2
     have hdecode : config.externalABI.decode? "balanceOf" out = some [uint256Value hw] := by
       rw [decode_balanceOf, decodeReturn_uint256_ok out h32 (by omega), hhw]; rfl

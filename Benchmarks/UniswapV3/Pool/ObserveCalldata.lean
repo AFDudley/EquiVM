@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.LegacyArrayDecode
 import Benchmarks.UniswapV3.Pool.ObserveSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 attribute [local instance] Classical.propDecidable
 

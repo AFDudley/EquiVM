@@ -1,7 +1,7 @@
 import Benchmarks.CompoundIII.Comet.PrincipalWords
 import Benchmarks.CompoundIII.Comet.RuntimeBlocks_048
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.CompoundIII.Comet.Immutables
 open cometWithExtendedAssetListBlocks
@@ -61,7 +61,7 @@ theorem signed256_call_ok (frame : Frame) (evm : EVM.State) (n : UInt256)
   dsimp only at hb
   rw [if_pos hn] at hb
   exact ExecStmt.internalCallReturn (callee := signed256Callable)
-    (cfg := config) (solm := frame) (evm := evm) (args := [expr]) (argVals := [.int n.toNat])
+    (cfg := config) (stele := frame) (evm := evm) (args := [expr]) (argVals := [.int n.toNat])
     (by simp only [evalExprs?, he, pure, bind, EvalResult.bind])
     (by rw [hc]; exact signed256Callable_lookup) rfl (by simpa only [hc] using hb)
 
@@ -73,7 +73,7 @@ theorem signed256_call_revert (frame : Frame) (evm : EVM.State) (n : UInt256)
   dsimp only at hb
   rw [if_neg hn] at hb
   exact ExecStmt.internalCallRevert (callee := signed256Callable)
-    (cfg := config) (solm := frame) (evm := evm) (args := [expr]) (argVals := [.int n.toNat])
+    (cfg := config) (stele := frame) (evm := evm) (args := [expr]) (argVals := [.int n.toNat])
     (by simp only [evalExprs?, he, pure, bind, EvalResult.bind])
     (by rw [hc]; exact signed256Callable_lookup) rfl (by simpa only [hc] using hb)
 

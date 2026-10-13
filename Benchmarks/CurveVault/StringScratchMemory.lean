@@ -1,7 +1,7 @@
 import Benchmarks.CurveVault.Memory
 import Benchmarks.CurveVault.SymbolReturnMemory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 def vaultStringScratch (mem : ByteArray) (prefixSize : Nat) (prefixWord size word : UInt256) : ByteArray :=

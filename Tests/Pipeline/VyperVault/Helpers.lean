@@ -9,7 +9,7 @@ storage words unnormalized), the immutable `OWNER` as a value and as the code su
 the bodies run in, and the view of a storage word at the initial state.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
   Reasoning.VyperImmutables
 
 namespace Tests.Pipeline.VyperVault
@@ -44,11 +44,11 @@ theorem suffixWords_OWNER (w : String → UInt256) :
     immutableLayout.suffixWords w = (w "OWNER").toByteArray := by
   have hslots : immutableLayout.slots.map (fun slot => (slot.offset, (w slot.name).toByteArray)) =
       [] ++ (0, (w "OWNER").toByteArray) :: [] := by rfl
-  have hpatch : ∃ suffix, Solm.patchRuntime (ByteArray.zeroes immutableLayout.size)
+  have hpatch : ∃ suffix, Stele.patchRuntime (ByteArray.zeroes immutableLayout.size)
       (immutableLayout.slots.map (fun slot => (slot.offset, (w slot.name).toByteArray))) =
       some suffix := by
     simp only [immutableLayout, List.map_cons, List.map_nil]
-    simp [Solm.patchRuntime, Solm.spliceBytes?, ByteArray.size_append,
+    simp [Stele.patchRuntime, Stele.spliceBytes?, ByteArray.size_append,
       ByteArray.size_extract, ByteArray_zeroes_size, toByteArray_size]
   have h := Layout.suffixWords_read_slot (layout := immutableLayout) (words := w) (name := "OWNER")
     (offset := 0) (pre := []) (post := []) hslots (by decide) (by intro p hp; simp at hp) hpatch

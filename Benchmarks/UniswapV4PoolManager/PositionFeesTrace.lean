@@ -2,7 +2,7 @@ import Benchmarks.UniswapV4PoolManager.PositionFeesComputeTrace
 import Benchmarks.UniswapV4PoolManager.PositionStoreStatic
 import Benchmarks.UniswapV4PoolManager.FunctionResultTrace
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.UniswapV4PoolManager.Immutables
 namespace Benchmarks.UniswapV4PoolManager

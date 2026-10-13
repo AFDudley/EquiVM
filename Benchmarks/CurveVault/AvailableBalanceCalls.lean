@@ -3,7 +3,7 @@ import Benchmarks.CurveVault.RuntimeBlocks_029
 import Benchmarks.CurveVault.RuntimeBlocks_030
 import Benchmarks.CurveVault.RuntimeBlocks_031
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch Reasoning.VyperCalls
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch Reasoning.VyperCalls
 namespace Benchmarks.CurveVault
 
 theorem vaultAvailableBalanceCall {I : ExecutionEnv} {g : Sat256} {s0 evm : State}

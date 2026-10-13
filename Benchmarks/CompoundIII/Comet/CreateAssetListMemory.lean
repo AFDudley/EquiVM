@@ -2,7 +2,7 @@ import Benchmarks.CompoundIII.Comet.CreateAssetListEncoder
 import Benchmarks.CompoundIII.Comet.CreateAssetListSyntax
 import Benchmarks.CompoundIII.Comet.CallWordsMemory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 

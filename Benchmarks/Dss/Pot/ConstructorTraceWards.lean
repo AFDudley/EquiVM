@@ -8,7 +8,7 @@ DUP2; SWAP1; SSTORE`); the optimizer reuses that `1` as the `live = 1` value lat
 stack after the wards store is `[⟨1⟩, vat_]` rather than Jug's `[vat_]`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Pot
 

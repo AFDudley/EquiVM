@@ -6,11 +6,11 @@ import Tests.Pipeline.VyperVault.CreationBlocks_001
 
 The init code checks `callvalue`, stores `msg.sender` as the `OWNER` immutable word after the
 runtime copy (memory offset 1429) and returns the runtime followed by the immutable section.
-The Solm constructor is `require(msg.value == 0); OWNER = msg.sender;`; the returned bytes are
+The Stele constructor is `require(msg.value == 0); OWNER = msg.sender;`; the returned bytes are
 `immutableLayout.deployed vyperVaultBytecode` of its final immutables.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 open Reasoning.VyperImmutables
 
 namespace Tests.Pipeline.VyperVault
@@ -90,7 +90,7 @@ theorem vyperVaultConstructorCorrect :
     · have hxi := Xi_success_of_X (by rw [← hcodeC] at hX; exact hX)
       rw [hacc] at hxi
       exact typedConstructorRefinementFor.execution (by simpa using hxi)
-        (solmCtorExec.intro rfl (by rfl) (by rfl) hbody)
+        (steleCtorExec.intro rfl (by rfl) (by rfl) hbody)
         (ctorResultEquiv.success rfl rfl rfl (by
           show vyperVaultBytecode ++ (UInt256.ofNat I.source.val).toByteArray =
             immutableLayout.deployed vyperVaultBytecode (ctorImms I)
@@ -104,7 +104,7 @@ theorem vyperVaultConstructorCorrect :
     rcases rd2.xiResult hcode' with hoog | ⟨g', o, hxi⟩
     · exact typedConstructorRefinementFor.outOfGas (by simpa using hoog)
     · exact typedConstructorRefinementFor.execution (by simpa using hxi)
-        (solmCtorExec.intro rfl (by rfl) (by rfl) (by
+        (steleCtorExec.intro rfl (by rfl) (by rfl) (by
           rw [ctorBody_eq]
           exact ExecFuncBody.execBlockRevert (ExecBlock.consRevert
             (ExecStmt.requireFalse (evalCallvalueEq_false (by simpa [initState] using hwv))))))

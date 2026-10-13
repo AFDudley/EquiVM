@@ -1,7 +1,7 @@
 import Benchmarks.CompoundIII.Comet.ArithmeticSource
 import Benchmarks.CompoundIII.Comet.NarrowArithmetic
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 
@@ -64,7 +64,7 @@ def indexAccrualFrame (frame : Frame) (borrow : Bool) (index rate elapsed : UInt
       (indexSafeName borrow) (.int delta.toNat)).insert
         (indexLocalName borrow) (.int (accruedIndexWord index rate elapsed).toNat) }
 
--- GENERALIZES Reasoning.SolmArithmetic.assignLocalVarBase_ok to frames with immutables.
+-- GENERALIZES Reasoning.SteleArithmetic.assignLocalVarBase_ok to frames with immutables.
 theorem assignLocalFrame {cfg : Config} {frame : Frame} {evm : EVM.State}
     {name : Ident} {old value : Value} (hget : frame.locals.get? name = some old) :
     assignStorageRef? cfg frame evm .localVar ⟨name, []⟩ value =

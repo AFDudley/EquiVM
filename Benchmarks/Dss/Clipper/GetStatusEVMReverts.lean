@@ -1,7 +1,7 @@
 import Benchmarks.Dss.Clipper.GetStatusEVM
 import Benchmarks.Dss.Clipper.Invalid
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 namespace Benchmarks.Dss.Clipper

@@ -9,7 +9,7 @@ check against the immutable `OWNER` (pc 487), `feesCollected` read and zeroed (p
 pc 657, the unlock and the `uint256` return at pc 662.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
   Reasoning.VyperImmutables
 
 namespace Tests.Pipeline.VyperVault
@@ -43,7 +43,7 @@ abbrev fcL (σ : AccountMap) (I : ExecutionEnv) : UInt256 := solcSlotWordAt (UIn
 abbrev σF (σ : AccountMap) (I : ExecutionEnv) : AccountMap :=
   sstoreAccountMap I.codeOwner (σL σ I) (UInt256.ofNat 3) ⟨0⟩
 abbrev evmF (σ σ₀ : AccountMap) (g : Sat256) (A : Substate) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore (evmL σ σ₀ g A I) I.codeOwner (UInt256.ofNat 3) ⟨0⟩
+  Stele.EVM.storageStore (evmL σ σ₀ g A I) I.codeOwner (UInt256.ofNat 3) ⟨0⟩
 
 /-- The callee's locals before and after the call. -/
 abbrev cfLocals (σ : AccountMap) (I : ExecutionEnv) (a : AccountAddress) : Store :=
@@ -194,7 +194,7 @@ theorem vyperVaultCollectFeesBody {σ σ₀ A I} {g : UInt256} (imms : Store) (h
   simp only [vyperVaultBlocks.vyperVault_block_628_stack, vyperVaultBlocks.vyperVault_block_628_memory,
     ulit_toNat' 64 (by decide), show (⟨0⟩ : UInt256).toNat = 0 from rfl] at rd4
   rw [wordsOf_OWNER hget, slotWord_eq, memLoad64_mem628 σ I a hmemsize] at rd4
-  -- Solm: the callee's `let`s and the store
+  -- Stele: the callee's `let`s and the store
   have hfcRead : evalExpr? config (frame imms ∅) (evmL σ σ₀ (Sat256.ofUInt256 g) A I) (.storage fcRef) =
       .ok (uint256Value (fcL σ I)) := by
     rw [evalExpr_storage_vyper_uint256_backend (hbackend := rfl) (hcheck := by rfl)
@@ -272,7 +272,7 @@ theorem vyperVaultCollectFeesBody {σ σ₀ A I} {g : UInt256} (imms : Store) (h
     have hassign3 : assignStorageRef? config (frame imms ((∅ : Store).insert "__r" (uint256Value (fcL σ I)))) evm'
         .storage lockRef (uint256Value (UInt256.ofNat 3)) =
         .ok (frame imms ((∅ : Store).insert "__r" (uint256Value (fcL σ I))),
-          Solm.EVM.storageStore evm' I.codeOwner ⟨0⟩ (UInt256.ofNat 3)) := by
+          Stele.EVM.storageStore evm' I.codeOwner ⟨0⟩ (UInt256.ofNat 3)) := by
       apply assignStorageRef_storage_vyper_scalar (hbackend := rfl) (hcheck := by rfl)
         (er := { base := "nonreentrant_lock", steps := [] })
         (hleaf := Or.inl ⟨_, rfl⟩) (ty := .elem (.int (.uint ⟨256, by decide⟩))) (loc := vyperUint256Loc ⟨0⟩)
@@ -282,7 +282,7 @@ theorem vyperVaultCollectFeesBody {σ σ₀ A I} {g : UInt256} (imms : Store) (h
     have hbody : ExecTransitionBody config contract (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
         collectFeesTransition.body
         (.returned (frame imms ((∅ : Store).insert "__r" (uint256Value (fcL σ I))))
-          (Solm.EVM.storageStore evm' I.codeOwner ⟨0⟩ (UInt256.ofNat 3)) (some [uint256Value (fcL σ I)]))
+          (Stele.EVM.storageStore evm' I.codeOwner ⟨0⟩ (UInt256.ofNat 3)) (some [uint256Value (fcL σ I)]))
         (restrictImmutables contract imms) := by
       rw [collectFeesBody_eq]
       exact ExecFuncBody.execBlockRet (ExecBlock.consNormal (ExecStmt.requireTrue hcv)

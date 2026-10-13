@@ -1,6 +1,6 @@
 import Benchmarks.CurveVault.Memory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 def vaultSupplyArguments (mem : ByteArray) (owner value : UInt256) : ByteArray :=

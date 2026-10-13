@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.ArrayReserve
 import Benchmarks.UniswapV3.Pool.OracleObservePartialArrays
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 def oracleObserveOutputMem (src mem : ByteArray) (p : UInt256) (n : Nat) : ByteArray :=

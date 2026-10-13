@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Vat.Rely
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 50000000
 set_option maxHeartbeats 0
@@ -117,7 +117,7 @@ theorem vatCageBodyCore : VatBodyTheoremAnyPerm 1 := by
   by_cases hauthEvm : solcSlotWordAt callerSlot σ I = ⟨1⟩
   ·
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-    let evm1 := Solm.EVM.storageStore evm0 I.codeOwner ⟨10⟩ ⟨0⟩
+    let evm1 := Stele.EVM.storageStore evm0 I.codeOwner ⟨10⟩ ⟨0⟩
     have hguard := vatAuthGuardEval_true
       (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
       (g := Sat256.ofUInt256 g) (locals := ∅)
@@ -209,7 +209,7 @@ theorem vatCageBodyCore : VatBodyTheoremAnyPerm 1 := by
         (g := Sat256.ofUInt256 g) (locals := ∅)
         (by simp) hauthEvm
       have hblock := nonpayableSecondRequireReverts
-        (cfg := config) (solm := { contract := contract, locals := ∅ })
+        (cfg := config) (stele := { contract := contract, locals := ∅ })
         (evm := evm0)
         (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
         (rest := [ .assign .storage liveRef (.intLit 0) ])

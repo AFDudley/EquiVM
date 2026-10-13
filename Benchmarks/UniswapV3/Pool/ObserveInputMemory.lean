@@ -2,7 +2,7 @@ import Benchmarks.UniswapV3.Pool.ObserveCalldata
 import Benchmarks.UniswapV3.Pool.DynamicWordArray
 import Benchmarks.UniswapV3.Pool.MemoryGasBound
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 def observeInputFree (n : Nat) : UInt256 := UInt256.ofNat (160 + 32 * n)

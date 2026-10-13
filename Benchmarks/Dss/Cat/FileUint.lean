@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Cat.Storage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 0
@@ -123,7 +123,7 @@ theorem evalExpr_fileUintWhatEq_false {evm : EVM.State} {I : ExecutionEnv} {loca
 
 theorem assign_fileUintBoxStorage (evm : EVM.State) {locals : Store} (data : UInt256)
     (hbase : locals.get? "box" = none) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨5⟩ data
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨5⟩ data
     assignStorageRef? config { contract := contract, locals := locals } evm
       .storage boxRef (.int (Int.ofNat data.toNat)) =
         .ok ({ contract := contract, locals := locals }, evm') := by
@@ -499,7 +499,7 @@ theorem RD.catFileUintUnrecognizedParamRevert
       solcFreePtrMem_read64
   exact RD.catFileUintUnrecognizedRevert htailPc hmemAuth hread64 (by simp)
 
-/-! ### Solm-side source bodies -/
+/-! ### Stele-side source bodies -/
 
 theorem fileUintBoxSourceBodySplit {σ σ₀ A I} {g : UInt256}
     (hwv : I.weiValue = ⟨0⟩)
@@ -507,7 +507,7 @@ theorem fileUintBoxSourceBodySplit {σ σ₀ A I} {g : UInt256}
     (hwhat : fileUintWhat I = fileUintBoxBytes) :
     let locals := fileUintLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-    let evm1 := Solm.EVM.storageStore evm0 I.codeOwner ⟨5⟩ (fileUintData I)
+    let evm1 := Stele.EVM.storageStore evm0 I.codeOwner ⟨5⟩ (fileUintData I)
     ExecTransitionBody config contract evm0 locals fileUintTransition.body
       (.returned { contract := contract, locals := locals } evm1 none) ∧
     (I.perm = false →
@@ -556,7 +556,7 @@ theorem fileUintBoxSourceBody {σ σ₀ A I} {g : UInt256}
     (hwhat : fileUintWhat I = fileUintBoxBytes) :
     let locals := fileUintLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-    let evm1 := Solm.EVM.storageStore evm0 I.codeOwner ⟨5⟩ (fileUintData I)
+    let evm1 := Stele.EVM.storageStore evm0 I.codeOwner ⟨5⟩ (fileUintData I)
     ExecTransitionBody config contract evm0 locals fileUintTransition.body
       (.returned { contract := contract, locals := locals } evm1 none) :=
   (fileUintBoxSourceBodySplit (σ₀ := σ₀) (A := A) (g := g)
@@ -619,26 +619,26 @@ theorem catFileUintBodyCore
     rw [show fileUintTransition.returnType = [] by rfl]
     exact returnEquiv.fallthrough rfl (by rfl) (by native_decide)
   by_cases hauthEvm : solcSlotWordAt callerSlot σ I = ⟨1⟩
-  · have hauthSolm : solcSlotWordAt callerSlot σ I = ⟨1⟩ := by
+  · have hauthStele : solcSlotWordAt callerSlot σ I = ⟨1⟩ := by
       exact hauthEvm
     have hauthSolc :
         solcSlotWord σ I (solcMappingSlot ⟨0⟩ (solcSourceWord I)) = ⟨1⟩ := by
       simpa [callerSlot, catCallerWardsSlot, solcSlotWordAt] using hauthEvm
     by_cases hbox : fileUintWhat I = fileUintBoxBytes
     · let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-      let evm1 := Solm.EVM.storageStore evm0 I.codeOwner ⟨5⟩ data
+      let evm1 := Stele.EVM.storageStore evm0 I.codeOwner ⟨5⟩ data
       have hbody :
           ExecTransitionBody config contract evm0 locals fileUintTransition.body
             (.returned { contract := contract, locals := locals } evm1 none) := by
         simpa [evm0, evm1, locals, data] using
           (fileUintBoxSourceBody (σ := σ)
-            (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hauthSolm hbox)
+            (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hauthStele hbox)
       have hstoreSplit := RD.catFileUintBoxSuccessSplit hreach hsz68 hsize hauthSolc hbox
       rcases hstoreSplit with ⟨_, hret⟩ | ⟨hperm, hstatic⟩
       swap
       · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode
           ((fileUintBoxSourceBodySplit (σ₀ := σ₀) (A := A) (g := g)
-            hwv hauthSolm hbox).2 hperm)
+            hwv hauthStele hbox).2 hperm)
       have haccounts :
           sstoreAccountMap I.codeOwner σ ⟨5⟩ data = evm1.accountMap := by
         simp [evm1, evm0, initState, storageStore_accountMap, data]
@@ -651,21 +651,21 @@ theorem catFileUintBodyCore
         simpa [evm0, locals] using
           (fileUintUnrecognizedSourceBody
             (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
-            hwv hauthSolm hbox)
+            hwv hauthStele hbox)
       have hrev := RD.catFileUintUnrecognizedParamRevert hreach hsz68 hsize hauthSolc hbox
       exact hrev.reEquivExecutionRevert hcode hdispatch hdecode hbody
-  · have hauthSolm : solcSlotWordAt callerSlot σ I ≠ ⟨1⟩ := by
-      intro hsolm
-      exact hauthEvm (by rw [hcallerWord, hsolm])
+  · have hauthStele : solcSlotWordAt callerSlot σ I ≠ ⟨1⟩ := by
+      intro hstele
+      exact hauthEvm (by rw [hcallerWord, hstele])
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     have hbody :
         ExecTransitionBody config contract evm0 locals fileUintTransition.body .reverted := by
       have hguard := catAuthGuardEval_false
         (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
         (g := Sat256.ofUInt256 g) (locals := locals)
-        (by simp [locals, fileUintLocals]) hauthSolm
+        (by simp [locals, fileUintLocals]) hauthStele
       have hblock := nonpayableSecondRequireReverts
-        (cfg := config) (solm := { contract := contract, locals := locals })
+        (cfg := config) (stele := { contract := contract, locals := locals })
         (evm := evm0)
         (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
         (rest := [

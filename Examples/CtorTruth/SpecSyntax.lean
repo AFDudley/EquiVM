@@ -1,14 +1,14 @@
 import Examples.CtorTruth.Spec
-import Solm.Notation
+import Stele.Notation
 
 /-!
-# CtorTruth spec in the Solidity-faithful Solm frontend
+# CtorTruth spec in the Solidity-faithful Stele frontend
 
 The spec's constructor is payable with an empty body (no callvalue guard); `truth()` is
 non-payable, so its guard is implicit.
 -/
 
-open Solm Solm.Notation
+open Stele Stele.Notation
 
 namespace CtorTruth.Syntax
 

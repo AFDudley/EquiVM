@@ -1,7 +1,7 @@
 import Benchmarks.CurveVault.Memory
 import Benchmarks.CurveVault.ConversionPrefix
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 def vaultMaxRedeemArgsMemory (mem : ByteArray) (available : UInt256) : ByteArray :=

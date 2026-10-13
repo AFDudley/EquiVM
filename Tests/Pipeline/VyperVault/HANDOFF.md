@@ -10,13 +10,13 @@ Validation run of `Misc/scaffold-prompt.md` on a Vyper contract written for it
   (`VyperVault.build.json`); sources pinned in `sources.sha256`.
 - Generated with `scripts/scaffold.py all --dir Tests/Pipeline/VyperVault --vyper vyper
   --main VyperVault.vy --contract VyperVault --evm-version shanghai --module
-  Tests.Pipeline.VyperVault`, then `bytecode_report.py`, `vy2solm.py` (no holes),
+  Tests.Pipeline.VyperVault`, then `bytecode_report.py`, `vy2stele.py` (no holes),
   `proof_skeleton.py` (the full Vyper skeleton). `SpecSyntax.lean` is the translator's draft, unedited.
 
 ## Differential run
 
 ```
-lake exe solm-difftest --only VyperVault --count 50
+lake exe stele-difftest --only VyperVault --count 50
 VyperVault: 725 cases: 725 agree (357 successful), 0 disagree, 0 stuck, 0 EVM out of gas, 0 spec out of fuel
 ```
 

@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.AmountDeltaModel
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 1000
 
@@ -59,11 +59,11 @@ theorem amountDeltaSwapSource (imms : Store) (evm : EVM.State) (second : Bool) (
   by_cases hs : a.sqrtB.toNat < a.sqrtA.toNat
   · simp only [amountDeltaSortedFrame, if_pos hs]
     apply ExecStmt.iteTrue (by simpa only [decide_eq_true hs] using hg)
-    refine ExecBlock.consNormal (solm' := amountDeltaSwapBFrame imms second a) (evm' := evm)
+    refine ExecBlock.consNormal (stele' := amountDeltaSwapBFrame imms second a) (evm' := evm)
       (ExecStmt.letDecl hb) ?_
-    refine ExecBlock.consNormal (solm' := amountDeltaSwapAFrame imms second a) (evm' := evm)
+    refine ExecBlock.consNormal (stele' := amountDeltaSwapAFrame imms second a) (evm' := evm)
       (ExecStmt.letDecl (evalExpr_var_get (by amount_delta_prefix_get))) ?_
-    refine ExecBlock.consNormal (solm' := amountDeltaSwapLowerFrame imms second a) (evm' := evm)
+    refine ExecBlock.consNormal (stele' := amountDeltaSwapLowerFrame imms second a) (evm' := evm)
       (ExecStmt.assign (evalExpr_var_get (by amount_delta_prefix_get))
         (assignLocalVarBase_frame (by amount_delta_prefix_get))) ?_
     exact ExecBlock.consNormal (ExecStmt.assign (evalExpr_var_get (by amount_delta_prefix_get))

@@ -2,7 +2,7 @@ import Benchmarks.Dss.Dai.Spec
 import Ethereum.Semantics
 import Reasoning.JumpDest
 
-open Solm Ethereum Ethereum.EVM
+open Stele Ethereum Ethereum.EVM
 
 namespace Benchmarks.Dss.Dai
 
@@ -410,7 +410,7 @@ def daiCreationBytecode : ByteArray :=
       ⟨4156⟩, ⟨4169⟩, ⟨4176⟩, ⟨4187⟩, ⟨4192⟩, ⟨4203⟩, ⟨4209⟩, ⟨4227⟩, ⟨4256⟩, ⟨4267⟩, ⟨4283⟩] := by
   native_decide
 
-/-! Constructor-domain Keccak constants connecting the bytecode's EIP-712 literals to Solm. -/
+/-! Constructor-domain Keccak constants connecting the bytecode's EIP-712 literals to Stele. -/
 
 /-- `keccak("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)")`.
 -/

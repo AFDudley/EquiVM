@@ -2,7 +2,7 @@ import Benchmarks.CompoundIII.Comet.AccrueInternalModel
 import Benchmarks.CompoundIII.Comet.TrackingAccrualSource
 import Benchmarks.CompoundIII.Comet.TrackingFrame
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.CompoundIII.Comet.Immutables
 
 namespace Benchmarks.CompoundIII.Comet

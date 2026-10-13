@@ -7,7 +7,7 @@ Dispatcher bucket 8, arm entry pc 1498: the guard, the index check `arg0 < len(i
 the backend's index check), and the data word at slot `3 + arg0`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
   Reasoning.VyperBounded
 
 namespace Tests.Pipeline.VyperRegistry

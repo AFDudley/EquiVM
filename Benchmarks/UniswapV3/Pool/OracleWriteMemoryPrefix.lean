@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.OracleWriteTrace
 import Benchmarks.UniswapV3.Pool.OracleObserveZeroPrefix
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 theorem oracleWriteMemory_prefix (mem : ByteArray) (p : UInt256) (a : OracleWriteArgs)

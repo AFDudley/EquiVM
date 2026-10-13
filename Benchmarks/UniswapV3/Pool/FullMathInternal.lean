@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.FullMathTrace
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
@@ -34,7 +34,7 @@ theorem fullMathInternalX {σ : AccountMap} {ee : ExecutionEnv} {g : Sat256}
     exact fullMathReverts caller.immutables evm a b denominator hb
   · refine Or.inr ⟨?_, hr⟩
     apply internalCallFunctionReturn (callee := fullMathFunction)
-      (calleeSolm := fullMathProductFrame caller.immutables a b denominator)
+      (calleeStele := fullMathProductFrame caller.immutables a b denominator)
       (value := some [.int (Int.ofNat (fullMathResult a b denominator).toNat)])
       he hl (fullMathBind a b denominator)
     rw [hc]

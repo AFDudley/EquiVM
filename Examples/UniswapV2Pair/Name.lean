@@ -1,7 +1,7 @@
 import Examples.UniswapV2Pair.StringReturn
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -16,7 +16,7 @@ theorem nameReturnEncoding :
     encodeReturnValue? .string (.bytes nameBytes) = some nameReturnBytes := by
   native_decide
 
-/-- The Solm `name()` body returns `"Uniswap V2"` as a dynamic string value. -/
+/-- The Stele `name()` body returns `"Uniswap V2"` as a dynamic string value. -/
 theorem uniswapNameBodyReturns (evm : EVM.State) (locals : Store)
     (h : evm.executionEnv.weiValue = ⟨0⟩) :
     ExecTransitionBody config contract evm locals nameTransition.body

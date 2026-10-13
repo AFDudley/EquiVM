@@ -1,6 +1,6 @@
 import Benchmarks.CompoundIII.Comet.AbsorbStaticDecodeWitness
 
-open Solm ABI Solm.DiffTest Ethereum Ethereum.EVM
+open Stele ABI Stele.DiffTest Ethereum Ethereum.EVM
 open Benchmarks.CompoundIII.Comet Benchmarks.CompoundIII.Comet.AbsorbStaticDecodeWitness
 
 namespace Benchmarks.CompoundIII.Comet.Solc0815Regression

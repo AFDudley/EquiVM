@@ -2,7 +2,7 @@ import Benchmarks.UniswapV4PoolManager.WordMulModSource
 import Benchmarks.UniswapV4PoolManager.WordBorrowSource
 import Benchmarks.UniswapV4PoolManager.WordPow2
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 def fullMathMax : UInt256 := UInt256.ofNat (2^256-1)

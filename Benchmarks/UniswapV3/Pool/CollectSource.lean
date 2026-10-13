@@ -3,7 +3,7 @@ import Benchmarks.UniswapV3.Pool.PositionOwedStorage
 import Benchmarks.UniswapV3.Pool.PoolTokenTransfer
 import Benchmarks.UniswapV3.Pool.Slot0Storage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
@@ -120,7 +120,7 @@ theorem collectCallPosition (v : UniswapV3PoolImmutables) (evm : EVM.State)
     (locals := positionGetLocals evm.executionEnv.source lower upper)
     (value := some [.fixedBytes ⟨31, by decide⟩
       (EVM.Word.toBytesBE (positionKey evm.executionEnv.source lower upper))])
-    (calleeSolm := positionGetFrame (immStore v) evm.executionEnv.source lower upper)
+    (calleeStele := positionGetFrame (immStore v) evm.executionEnv.source lower upper)
     (by simp only [evalExprs?, evalExpr?, hl, hu, envValue, bind, EvalResult.bind, pure])
     positionGetLookup rfl (positionGetReturns (immStore v) evm evm.executionEnv.source lower upper)
 

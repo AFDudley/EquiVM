@@ -1,7 +1,7 @@
 import Reasoning.ABIComposite
 import Examples.VyperERC20.Transfer
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 20000000
@@ -47,7 +47,7 @@ def transferFromAllowanceSlotI (I : ExecutionEnv) : UInt256 :=
     (.address I.source)
 
 def transferFromCurrentAllowanceWord (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (transferFromAllowanceSlot evm I)
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (transferFromAllowanceSlot evm I)
 
 abbrev transferFromCurrentAllowanceValue (evm : EVM.State) (I : ExecutionEnv) : Value :=
   .int (Int.ofNat (transferFromCurrentAllowanceWord evm I).toNat)
@@ -59,7 +59,7 @@ def transferFromFromSlot (I : ExecutionEnv) : UInt256 :=
   erc20BalanceOfSlot (.address (AccountAddress.ofNat (transferFromFromWord I).toNat))
 
 def transferFromFromBalanceWord (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (transferFromFromSlot I)
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (transferFromFromSlot I)
 
 abbrev transferFromFromBalanceValue (evm : EVM.State) (I : ExecutionEnv) : Value :=
   .int (Int.ofNat (transferFromFromBalanceWord evm I).toNat)
@@ -77,26 +77,26 @@ def transferFromBalanceDebitWord (evm : EVM.State) (I : ExecutionEnv) : UInt256 
     ((transferFromFromBalanceWord evm I).toNat - (transferFromValueWord I).toNat)
 
 def transferFromAfterAllowanceState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (transferFromAllowanceSlot evm I)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (transferFromAllowanceSlot evm I)
     (transferFromAllowanceDebitWord evm I)
 
 theorem transferFromAfterAllowance_codeOwner (evm : EVM.State) (I : ExecutionEnv) :
     (transferFromAfterAllowanceState evm I).executionEnv.codeOwner =
       evm.executionEnv.codeOwner := by
-  simp only [transferFromAfterAllowanceState, Solm.EVM.storageStore, State.lookupAccount]
+  simp only [transferFromAfterAllowanceState, Stele.EVM.storageStore, State.lookupAccount]
   cases evm.accountMap.get? evm.executionEnv.codeOwner with
   | none => rfl
   | some acc => simp only [Option.option, State.setAccount, Account.updateStorage]
 
 def transferFromAfterBalanceState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore (transferFromAfterAllowanceState evm I) evm.executionEnv.codeOwner
+  Stele.EVM.storageStore (transferFromAfterAllowanceState evm I) evm.executionEnv.codeOwner
     (transferFromFromSlot I)
     (transferFromBalanceDebitWord (transferFromAfterAllowanceState evm I) I)
 
 theorem transferFromAfterBalance_codeOwner (evm : EVM.State) (I : ExecutionEnv) :
     (transferFromAfterBalanceState evm I).executionEnv.codeOwner =
       evm.executionEnv.codeOwner := by
-  simp only [transferFromAfterBalanceState, Solm.EVM.storageStore, State.lookupAccount]
+  simp only [transferFromAfterBalanceState, Stele.EVM.storageStore, State.lookupAccount]
   cases (transferFromAfterAllowanceState evm I).accountMap.get? evm.executionEnv.codeOwner with
   | none => exact transferFromAfterAllowance_codeOwner evm I
   | some acc =>
@@ -107,7 +107,7 @@ def transferFromToSlot (I : ExecutionEnv) : UInt256 :=
   erc20BalanceOfSlot (.address (AccountAddress.ofNat (transferFromToWord I).toNat))
 
 def transferFromToBalanceWord (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
-  Solm.EVM.storageLoad (transferFromAfterBalanceState evm I) evm.executionEnv.codeOwner
+  Stele.EVM.storageLoad (transferFromAfterBalanceState evm I) evm.executionEnv.codeOwner
     (transferFromToSlot I)
 
 abbrev transferFromToBalanceValue (evm : EVM.State) (I : ExecutionEnv) : Value :=
@@ -130,7 +130,7 @@ abbrev transferFromStoreNewToBalance (evm : EVM.State) (I : ExecutionEnv) : Stor
   (transferFromStoreToBalance evm I).insert "newToBalance" (transferFromNewToValue evm I)
 
 def transferFromPostState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore (transferFromAfterBalanceState evm I) evm.executionEnv.codeOwner
+  Stele.EVM.storageStore (transferFromAfterBalanceState evm I) evm.executionEnv.codeOwner
     (transferFromToSlot I) (transferFromNewToWord evm I)
 
 theorem transferFromNewToWord_toNat (evm : EVM.State) (I : ExecutionEnv)
@@ -186,14 +186,14 @@ theorem transferFromCurrentAllowanceRaw_initState {σ σ₀ A I} {g : Sat256} :
     transferFromCurrentAllowanceRaw σ I =
       transferFromCurrentAllowanceWord (initState σ σ₀ g A I) I := by
   simpa [transferFromCurrentAllowanceRaw, transferFromCurrentAllowanceWord,
-    transferFromAllowanceSlot, transferFromAllowanceSlotI, initState, Solm.EVM.storageLoad,
+    transferFromAllowanceSlot, transferFromAllowanceSlotI, initState, Stele.EVM.storageLoad,
     State.lookupAccount, Account.lookupStorage]
 
 theorem transferFromFromBalanceRaw_initState {σ σ₀ A I} {g : Sat256} :
     transferFromFromBalanceRaw σ I =
       transferFromFromBalanceWord (initState σ σ₀ g A I) I := by
   simpa [transferFromFromBalanceRaw, transferFromFromBalanceWord,
-    transferFromFromSlot, initState, Solm.EVM.storageLoad, State.lookupAccount,
+    transferFromFromSlot, initState, Stele.EVM.storageLoad, State.lookupAccount,
     Account.lookupStorage]
 
 theorem transferFromFromBalanceRawAfterAllowance_initState
@@ -205,7 +205,7 @@ theorem transferFromFromBalanceRawAfterAllowance_initState
   have hcodeOwner :
       (transferFromAfterAllowanceState evm0 I).executionEnv.codeOwner = I.codeOwner := by
     simpa [evm0, initState] using transferFromAfterAllowance_codeOwner (evm := evm0) (I := I)
-  unfold transferFromFromBalanceWord Solm.EVM.storageLoad
+  unfold transferFromFromBalanceWord Stele.EVM.storageLoad
   rw [hcodeOwner]
   simpa [evm0, transferFromFromBalanceRawAfterAllowance, transferFromAfterAllowanceState,
     transferFromAllowanceSlot, transferFromAllowanceSlotI, initState, State.lookupAccount,
@@ -221,7 +221,7 @@ theorem transferFromToBalanceRawAfterBalance_initState
   simpa [transferFromToBalanceRawAfterBalance, transferFromToBalanceWord,
     transferFromAfterBalanceState, transferFromAfterAllowanceState,
     transferFromAfterBalance_codeOwner, transferFromAfterAllowance_codeOwner,
-    transferFromAllowanceSlot, transferFromAllowanceSlotI, initState, Solm.EVM.storageLoad,
+    transferFromAllowanceSlot, transferFromAllowanceSlotI, initState, Stele.EVM.storageLoad,
     State.lookupAccount, Account.lookupStorage, storageStore_accountMap]
 
 

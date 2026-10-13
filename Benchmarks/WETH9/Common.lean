@@ -5,7 +5,7 @@ import Reasoning.Stepping
 import Reasoning.Reach
 import Reasoning.Solc
 import Reasoning.Dispatch
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 import Mathlib.Tactic.IntervalCases
 
 /-!
@@ -16,7 +16,7 @@ computed from the canonical ABI signatures and cross-checked against the runtime
 in `Bytecode.lean` (see the disassembled binary-search dispatcher).
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 

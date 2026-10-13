@@ -1,13 +1,13 @@
 import Benchmarks.Dss.GemJoin.Dispatch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.GemJoin
 
 /-! ## `cage()` -/
 
 def cagePostState (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨5⟩ ⟨0⟩
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨5⟩ ⟨0⟩
 
 theorem gemJoinDecode_cage {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
     config.externalABI.decodeCalldata? (cageTransition.params.map Param.name)
@@ -33,14 +33,14 @@ theorem gemJoinCageBodyReturns (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hsrc : evm.executionEnv.source = I.source)
     (hauth :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (relyAuthStorageSlot I) = ⟨1⟩) :
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (relyAuthStorageSlot I) = ⟨1⟩) :
     ExecTransitionBody config contract evm ∅ cageTransition.body
       (.returned { contract := contract, locals := ∅ } (cagePostState evm) none) := by
   refine ExecFuncBody.execBlockOK ?_
   simpa [cageTransition, nonpayable, auth] using
     nonpayableRequireAssignStorageBlock
       (cfg := config)
-      (solm := { contract := contract, locals := ∅ })
+      (stele := { contract := contract, locals := ∅ })
       (evm := evm)
       (evm' := cagePostState evm)
       (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
@@ -56,7 +56,7 @@ theorem gemJoinCageBodyStatic (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hsrc : evm.executionEnv.source = I.source)
     (hauth :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (relyAuthStorageSlot I) = ⟨1⟩)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (relyAuthStorageSlot I) = ⟨1⟩)
     (hperm : evm.executionEnv.perm = false) :
     ExecTransitionBody config contract evm ∅ cageTransition.body
       .staticViolation := by
@@ -64,7 +64,7 @@ theorem gemJoinCageBodyStatic (evm : EVM.State) (I : ExecutionEnv)
   simpa [cageTransition, nonpayable, auth] using
     nonpayableRequireAssignStorageBlockStatic
       (cfg := config)
-      (solm := { contract := contract, locals := ∅ })
+      (stele := { contract := contract, locals := ∅ })
       (evm := evm)
       (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
       (rhs := .intLit 0)
@@ -81,13 +81,13 @@ theorem gemJoinCageBodyReverts (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hsrc : evm.executionEnv.source = I.source)
     (hauth :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (relyAuthStorageSlot I) ≠ ⟨1⟩) :
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (relyAuthStorageSlot I) ≠ ⟨1⟩) :
     ExecTransitionBody config contract evm ∅ cageTransition.body .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
   simpa [cageTransition, nonpayable, auth] using
     nonpayableSecondRequireReverts
       (cfg := config)
-      (solm := { contract := contract, locals := ∅ })
+      (stele := { contract := contract, locals := ∅ })
       (evm := evm)
       (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
       (rest := [.assign .storage liveRef (.intLit 0)])
@@ -345,21 +345,21 @@ theorem gemJoinCageBodyCoreOk
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨294⟩ [sel]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
   have hauthWord : relyAuthWord σ I = ⟨1⟩ := hauth
   have hbody :
-      ExecTransitionBody config contract evmSolm ∅ cageTransition.body
-        (.returned { contract := contract, locals := ∅ } (cagePostState evmSolm) none) := by
-    simpa [evmSolm, relyAuthWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+      ExecTransitionBody config contract evmStele ∅ cageTransition.body
+        (.returned { contract := contract, locals := ∅ } (cagePostState evmStele) none) := by
+    simpa [evmStele, relyAuthWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
-      gemJoinCageBodyReturns evmSolm I
-        (by simp only [evmSolm, initState]; exact hwv)
-        (by simp [evmSolm, initState])
+      gemJoinCageBodyReturns evmStele I
+        (by simp only [evmStele, initState]; exact hwv)
+        (by simp [evmStele, initState])
         hauthWord
   exact (gemJoinX_cage_ok (g := Sat256.ofUInt256 g) hperm hauth hreach)
     |>.reEquivExecutionGen hcode hdispatch hdecode hbody
       (by
-        simpa [cagePostState, evmSolm, initState, storageStore_accountMap,
+        simpa [cagePostState, evmStele, initState, storageStore_accountMap,
           storageStore_executionEnv, sstoreAccountMap])
       (by
         simpa [cageTransition] using
@@ -378,18 +378,18 @@ theorem gemJoinCageBodyCoreStatic
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨294⟩ [sel]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
   have hauthWord : relyAuthWord σ I = ⟨1⟩ := hauth
   have hbody :
-      ExecTransitionBody config contract evmSolm ∅ cageTransition.body
+      ExecTransitionBody config contract evmStele ∅ cageTransition.body
         .staticViolation := by
-    simpa [evmSolm, relyAuthWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [evmStele, relyAuthWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
-      gemJoinCageBodyStatic evmSolm I
-        (by simp only [evmSolm, initState]; exact hwv)
-        (by simp [evmSolm, initState])
+      gemJoinCageBodyStatic evmStele I
+        (by simp only [evmStele, initState]; exact hwv)
+        (by simp [evmStele, initState])
         hauthWord
-        (by simp only [evmSolm, initState]; exact hperm)
+        (by simp only [evmStele, initState]; exact hperm)
   exact (permSplit_false hperm (gemJoinX_cage_okSplit
       (g := Sat256.ofUInt256 g) hauth hreach))
     |>.reEquivStaticHalt hcode hdispatch hdecode hbody
@@ -406,15 +406,15 @@ theorem gemJoinCageBodyCoreUnauthorized
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨294⟩ [sel]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
   have hauthWord : relyAuthWord σ I ≠ ⟨1⟩ := hauth
   have hbody :
-      ExecTransitionBody config contract evmSolm ∅ cageTransition.body .reverted := by
-    simpa [evmSolm, relyAuthWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+      ExecTransitionBody config contract evmStele ∅ cageTransition.body .reverted := by
+    simpa [evmStele, relyAuthWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
-      gemJoinCageBodyReverts evmSolm I
-        (by simp only [evmSolm, initState]; exact hwv)
-        (by simp [evmSolm, initState])
+      gemJoinCageBodyReverts evmStele I
+        (by simp only [evmStele, initState]; exact hwv)
+        (by simp [evmStele, initState])
         hauthWord
   exact (gemJoinX_cage_unauthorized (g := Sat256.ofUInt256 g) hauth hreach)
     |>.reEquivExecutionRevert hcode hdispatch hdecode hbody

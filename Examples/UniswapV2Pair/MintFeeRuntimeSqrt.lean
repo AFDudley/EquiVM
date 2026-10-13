@@ -1,7 +1,7 @@
 import Examples.UniswapV2Pair.MintFeeRootRuntime
 import Examples.UniswapV2Pair.MintFeeRuntimeFactory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 

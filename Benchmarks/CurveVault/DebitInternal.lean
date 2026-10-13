@@ -1,7 +1,7 @@
 import Benchmarks.CurveVault.DebitTotalAssets
 import Benchmarks.CurveVault.RedeemAllowance
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 theorem vaultDebitRoutine (isWithdraw : Bool) {I : ExecutionEnv} {g : Sat256} {s0 evm : State}

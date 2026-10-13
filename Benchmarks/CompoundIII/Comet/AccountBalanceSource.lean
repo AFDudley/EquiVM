@@ -1,7 +1,7 @@
 import Benchmarks.CompoundIII.Comet.CurrentIndicesSource
 import Benchmarks.CompoundIII.Comet.UserBasicFields
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.CompoundIII.Comet.Immutables
 
 namespace Benchmarks.CompoundIII.Comet
@@ -26,19 +26,19 @@ def accountBalanceFrame (v : CometWithExtendedAssetListImmutables)
 theorem accountBalancePrefix (v : CometWithExtendedAssetListImmutables)
     (evm : EVM.State) (addr : AccountAddress) (borrow : Bool)
     (hv : CurrentIndicesValid v
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) (timestampWord evm.executionEnv)) :
-    let w0 := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩
-    let w1 := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) (timestampWord evm.executionEnv)) :
+    let w0 := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩
+    let w1 := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩
     let time := timestampWord evm.executionEnv
-    let basic := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (userBasicSlot addr)
+    let basic := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (userBasicSlot addr)
     ExecBlock config (accountBalanceEntry v addr) evm (currentIndicesBlock ++ accountBalanceRead borrow)
       (.ok (accountBalanceFrame v addr borrow w0 w1 time basic) evm) := by
   dsimp only
-  let w0 := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩
-  let w1 := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩
+  let w0 := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩
+  let w1 := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩
   let time := timestampWord evm.executionEnv
-  let basic := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (userBasicSlot addr)
+  let basic := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (userBasicSlot addr)
   let f0 := accountBalanceEntry v addr
   let f1 := currentIndicesFrame f0 v w0 w1 time
   let f2 : Frame :=

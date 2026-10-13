@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Pot.Dispatch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Pot
 
@@ -54,7 +54,7 @@ theorem potChiBodyCore
         (.returned { contract := contract, locals := ∅ }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.int (Int.ofNat (chiWord σ I).toNat))])) := by
-    simpa [chiTransition, chiWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [chiTransition, chiWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       potUint256GetterBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅

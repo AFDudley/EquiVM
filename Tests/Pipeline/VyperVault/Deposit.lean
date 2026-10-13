@@ -10,7 +10,7 @@ Dispatcher bucket 9, arm entry pc 36: the `paused` check, the `callvalue > 0` ch
 revert; in static mode the first `SSTORE` (pc 367) halts.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
   Reasoning.VyperImmutables
 
 namespace Tests.Pipeline.VyperVault
@@ -120,7 +120,7 @@ theorem keccak_mem330 (I : ExecutionEnv) (hmemsize : (vyperVaultDispatchMem 9).s
   rw [Reasoning.Theory.keyValueToWord_address] at h
   exact h
 
-/-! ### The Solm side -/
+/-! ### The Stele side -/
 
 theorem evalPausedRead {σ σ₀ A I} {g : UInt256} (imms : Store) :
     evalExpr? config (frame imms ∅) (initState σ σ₀ (Sat256.ofUInt256 g) A I) (.storage pausedRef) =
@@ -226,7 +226,7 @@ theorem vyperVaultDepositBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hfit 
   simp only [vyperVaultBlocks.vyperVault_block_307_fallthrough_stack,
     vyperVaultBlocks.vyperVault_block_307_fallthrough_memory, ulit_toNat' 64 (by decide),
     memLoad64_mem307 I hmemsize] at rd4
-  -- Solm: the two `let`s
+  -- Stele: the two `let`s
   have hfeeEval : evalExpr? config (frame imms ∅) (initState σ σ₀ (Sat256.ofUInt256 g) A I) feeExpr =
       .ok (uint256Value (depositFee I.weiValue)) :=
     evalExpr_uint256_div
@@ -236,7 +236,7 @@ theorem vyperVaultDepositBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hfit 
   have hcredEval : evalExpr? config (frame imms ((∅ : Store).insert "fee" (uint256Value (depositFee I.weiValue))))
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) creditedExpr = .ok (uint256Value (depositCredited I.weiValue)) :=
     evalExpr_uint256_sub (evalExpr_callvalue _) (evalVar imms _ _ "fee" _ (store_get_self _ _ _)) hfee_le
-  -- Solm: the first assignment's operands
+  -- Stele: the first assignment's operands
   have her1 : evalStorageRef config (frame imms (depositLocals I.weiValue)) (initState σ σ₀ (Sat256.ofUInt256 g) A I)
       balRef = .ok { base := "balances", steps := [.mindex (.address I.source)] } := by
     simp [evalStorageRef, evalStorageRefSteps, evalStorageRefStep, valueToKey?,
@@ -286,13 +286,13 @@ theorem vyperVaultDepositBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hfit 
     vyperVaultBlocks.vyperVault_block_330_fallthrough_memory,
     show (⟨0⟩ : UInt256).toNat = 0 from rfl, ulit_toNat' 32 (by decide), ulit_toNat' 96 (by decide)] at rd5
   rw [hkec, hm96, slotWord_eq] at rd5
-  -- Solm: the first assignment
+  -- Stele: the first assignment
   have hadd1 := evalExpr_uint256_add hbalRead (hcredVar _) hfit2
   have hassign1 : assignStorageRef? config (frame imms (depositLocals I.weiValue))
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) .storage balRef
       (uint256Value (solcSlotWordAt (balSlot I) σ I + depositCredited I.weiValue)) =
       .ok (frame imms (depositLocals I.weiValue),
-        Solm.EVM.storageStore (initState σ σ₀ (Sat256.ofUInt256 g) A I)
+        Stele.EVM.storageStore (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner (balSlot I)
           (solcSlotWordAt (balSlot I) σ I + depositCredited I.weiValue)) := by
     apply assignStorageRef_storage_vyper_scalar (hbackend := rfl) (hcheck := by rfl)
@@ -303,7 +303,7 @@ theorem vyperVaultDepositBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hfit 
     erw [storageLocStore_uint256]
   -- the state after the first store, and the `totalDeposits` read from it
   have htd : evalExpr? config (frame imms (depositLocals I.weiValue))
-      (Solm.EVM.storageStore (initState σ σ₀ (Sat256.ofUInt256 g) A I)
+      (Stele.EVM.storageStore (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner (balSlot I)
         (solcSlotWordAt (balSlot I) σ I + depositCredited I.weiValue))
       (.storage tdRef) = .ok (uint256Value (solcSlotWordAt (UInt256.ofNat 2) (σ1 σ I) I)) := by
@@ -371,16 +371,16 @@ theorem vyperVaultDepositBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hfit 
         rw [uadd_toNat, Nat.mod_eq_of_lt hfit3]; omega)) rd5
   simp only [vyperVaultBlocks.vyperVault_block_362_fallthrough_stack] at rd6
   rw [hm96, slotWord_eq] at rd6
-  -- Solm: the second assignment
+  -- Stele: the second assignment
   have hadd2 := evalExpr_uint256_add htd (hcredVar _) hfit3
   have hassign2 : assignStorageRef? config (frame imms (depositLocals I.weiValue))
-      (Solm.EVM.storageStore (initState σ σ₀ (Sat256.ofUInt256 g) A I)
+      (Stele.EVM.storageStore (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner (balSlot I)
         (solcSlotWordAt (balSlot I) σ I + depositCredited I.weiValue))
       .storage tdRef (uint256Value (solcSlotWordAt (UInt256.ofNat 2) (σ1 σ I) I + depositCredited I.weiValue)) =
       .ok (frame imms (depositLocals I.weiValue),
-        Solm.EVM.storageStore
-          (Solm.EVM.storageStore (initState σ σ₀ (Sat256.ofUInt256 g) A I)
+        Stele.EVM.storageStore
+          (Stele.EVM.storageStore (initState σ σ₀ (Sat256.ofUInt256 g) A I)
             (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner (balSlot I)
             (solcSlotWordAt (balSlot I) σ I + depositCredited I.weiValue))
           I.codeOwner (UInt256.ofNat 2)
@@ -394,8 +394,8 @@ theorem vyperVaultDepositBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hfit 
     rfl
   -- the `feesCollected` read after two stores
   have hfc : evalExpr? config (frame imms (depositLocals I.weiValue))
-      (Solm.EVM.storageStore
-        (Solm.EVM.storageStore (initState σ σ₀ (Sat256.ofUInt256 g) A I)
+      (Stele.EVM.storageStore
+        (Stele.EVM.storageStore (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner (balSlot I)
           (solcSlotWordAt (balSlot I) σ I + depositCredited I.weiValue))
         I.codeOwner (UInt256.ofNat 2)
@@ -440,20 +440,20 @@ theorem vyperVaultDepositBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hfit 
   rw [hm64, slotWord_eq] at rd7
   -- pc 408: store `feesCollected`, log, stop
   have rd8 := vyperVaultBlocks.vyperVault_block_408 (by simp) hperm rd7
-  -- Solm: the third assignment and the log
+  -- Stele: the third assignment and the log
   have hadd3 := evalExpr_uint256_add hfc (hfeeVar _) hfit4
   have hassign3 : assignStorageRef? config (frame imms (depositLocals I.weiValue))
-      (Solm.EVM.storageStore
-        (Solm.EVM.storageStore (initState σ σ₀ (Sat256.ofUInt256 g) A I)
+      (Stele.EVM.storageStore
+        (Stele.EVM.storageStore (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner (balSlot I)
           (solcSlotWordAt (balSlot I) σ I + depositCredited I.weiValue))
         I.codeOwner (UInt256.ofNat 2)
         (solcSlotWordAt (UInt256.ofNat 2) (σ1 σ I) I + depositCredited I.weiValue))
       .storage fcRef (uint256Value (solcSlotWordAt (UInt256.ofNat 3) (σ2 σ I) I + depositFee I.weiValue)) =
       .ok (frame imms (depositLocals I.weiValue),
-        Solm.EVM.storageStore
-          (Solm.EVM.storageStore
-            (Solm.EVM.storageStore (initState σ σ₀ (Sat256.ofUInt256 g) A I)
+        Stele.EVM.storageStore
+          (Stele.EVM.storageStore
+            (Stele.EVM.storageStore (initState σ σ₀ (Sat256.ofUInt256 g) A I)
               (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner (balSlot I)
               (solcSlotWordAt (balSlot I) σ I + depositCredited I.weiValue))
             I.codeOwner (UInt256.ofNat 2)
@@ -468,9 +468,9 @@ theorem vyperVaultDepositBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hfit 
     erw [storageLocStore_uint256, storageStore_executionEnv, storageStore_executionEnv]
     rfl
   have hemit : evalExprs? config (frame imms (depositLocals I.weiValue))
-      (Solm.EVM.storageStore
-        (Solm.EVM.storageStore
-          (Solm.EVM.storageStore (initState σ σ₀ (Sat256.ofUInt256 g) A I)
+      (Stele.EVM.storageStore
+        (Stele.EVM.storageStore
+          (Stele.EVM.storageStore (initState σ σ₀ (Sat256.ofUInt256 g) A I)
             (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner (balSlot I)
             (solcSlotWordAt (balSlot I) σ I + depositCredited I.weiValue))
           I.codeOwner (UInt256.ofNat 2)
@@ -484,9 +484,9 @@ theorem vyperVaultDepositBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hfit 
   have hbody : ExecTransitionBody config contract (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
       depositTransition.body
       (.returned (frame imms (depositLocals I.weiValue))
-        (Solm.EVM.storageStore
-          (Solm.EVM.storageStore
-            (Solm.EVM.storageStore (initState σ σ₀ (Sat256.ofUInt256 g) A I)
+        (Stele.EVM.storageStore
+          (Stele.EVM.storageStore
+            (Stele.EVM.storageStore (initState σ σ₀ (Sat256.ofUInt256 g) A I)
               (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner (balSlot I)
               (solcSlotWordAt (balSlot I) σ I + depositCredited I.weiValue))
             I.codeOwner (UInt256.ofNat 2)

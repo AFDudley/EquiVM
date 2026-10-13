@@ -1,7 +1,7 @@
 import Benchmarks.EAS.Attester.LocalArray
 import Benchmarks.EAS.Attester.Spec
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.EAS.Attester
 
@@ -46,7 +46,7 @@ theorem revokeInnerRun {cfg : Config} {C : ContractDecl} {imms : Store} {evm : S
             List.getElem?_eq_none (Nat.le_of_not_gt hkp)]
       refine ⟨locals, ExecForLoop.falseDone ?_, by simpa only [hdata] using hd, ?_⟩
       · simpa only [revokeInnerCond, hjn, Nat.lt_irrefl, decide_false] using
-          (evalLocalNatLt (cfg := cfg) (solm := ⟨C, locals, imms⟩) (evm := evm) hi hcount)
+          (evalLocalNatLt (cfg := cfg) (stele := ⟨C, locals, imms⟩) (evm := evm) hi hcount)
       · intro name _ _; rfl
   | succ remaining ih =>
       have hju : j < uids.length := by omega
@@ -58,7 +58,7 @@ theorem revokeInnerRun {cfg : Config} {C : ContractDecl} {imms : Store} {evm : S
       have hget : uids[j]? = some uid := List.getElem?_eq_getElem hju
       have hvalue : evalExpr? cfg ⟨C, locals, imms⟩ evm
           (.tupleLit [.index (.var "uids") (.var "j"), .intLit 0]) = .ok value := by
-        have hv := evalLocalArrayIndex (cfg := cfg) (solm := ⟨C, locals, imms⟩)
+        have hv := evalLocalArrayIndex (cfg := cfg) (stele := ⟨C, locals, imms⟩)
           (evm := evm) hu hi hget (hnorm uid (List.mem_of_getElem? hget))
         simp only [evalExpr?, evalExprList?, hv, bind, EvalResult.bind, pure, value]
       have hbody : ExecBlock cfg ⟨C, locals, imms⟩ evm revokeInnerBody
@@ -85,7 +85,7 @@ theorem revokeInnerRun {cfg : Config} {C : ContractDecl} {imms : Store} {evm : S
         (by simpa using hlen) hfilled'
       refine ⟨result, ExecForLoop.iterate ?_ hbody hpost hrun, hdata, ?_⟩
       · simpa only [revokeInnerCond, hju, decide_true] using
-          (evalLocalNatLt (cfg := cfg) (solm := ⟨C, locals, imms⟩) (evm := evm) hi hcount)
+          (evalLocalNatLt (cfg := cfg) (stele := ⟨C, locals, imms⟩) (evm := evm) hi hcount)
       · intro name hdataName hjName
         rw [hsame name hdataName hjName]
         simp [afterStep, afterData, Std.HashMap.getElem?_insert, Ne.symm hdataName, Ne.symm hjName]

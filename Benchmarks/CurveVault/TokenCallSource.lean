@@ -2,9 +2,9 @@ import Benchmarks.CurveVault.TokenSetup
 import Benchmarks.CurveVault.AddressWord
 import Benchmarks.CurveVault.Storage
 import Reasoning.ExternalCall
-import Reasoning.SolmArithmetic
+import Reasoning.SteleArithmetic
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 -- LIBRARY CANDIDATE: converting a canonical address expression to a uint256 word.

@@ -1,18 +1,18 @@
 import Benchmarks.UniswapV4PoolManager.PoolSetSlot0Source
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 
 abbrev poolSetFeeFunction : FunctionDecl := contract.functions[50]!
 theorem poolSetFee_lookup : lookupCallable? contract "Pool_setLPFee" = some poolSetFeeFunction.toCallable := rfl
 
-def poolSetFeeAlias : Ident := "__solm_storage_ref._@.Benchmarks.UniswapV4PoolManager.SpecSyntax.2010301240._hygCtx._hyg.16"
+def poolSetFeeAlias : Ident := "__stele_storage_ref._@.Benchmarks.UniswapV4PoolManager.SpecSyntax.2010301240._hygCtx._hyg.16"
 def poolSetFeeFrame (f : Frame) (evm : EVM.State) (id fee : UInt256) : Frame :=
   {f with locals := (((f.locals.insert poolSetFeeAlias (poolRefValue id)).insert "__c0" .unit).insert
     "__c1" (wordBytes32Value (slot0LPFeeWord (poolSlot0Word evm id) fee)))}
 def poolSetFeePost (evm : EVM.State) (id fee : UInt256) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (poolSlot id) (slot0LPFeeWord (poolSlot0Word evm id) fee)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (poolSlot id) (slot0LPFeeWord (poolSlot0Word evm id) fee)
 
 def poolSetFeeResult (f : Frame) (evm : EVM.State) (id fee : UInt256) : ExecResult :=
   if poolSqrtPriceWord evm id = ⟨0⟩ then .reverted else

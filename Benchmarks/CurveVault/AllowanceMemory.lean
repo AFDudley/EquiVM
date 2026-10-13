@@ -1,7 +1,7 @@
 import Benchmarks.CurveVault.ApproveInternal
 import Benchmarks.CurveVault.AddressWord
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 def vaultAllowanceRawMemory (I : ExecutionEnv) (σ : AccountMap) (mem : ByteArray)

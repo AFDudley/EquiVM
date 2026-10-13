@@ -2,7 +2,7 @@ import Benchmarks.UniswapV4PoolManager.PoolKeyEncodeMemory
 import Benchmarks.UniswapV4PoolManager.AfterSwapMemory
 import Benchmarks.UniswapV4PoolManager.RuntimeBlocks_045
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 open poolManagerBlocks
 set_option maxRecDepth 5000

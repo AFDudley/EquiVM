@@ -1,6 +1,6 @@
 import Examples.UniswapV2Pair.Common
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -83,7 +83,7 @@ theorem evalExpr_safeTransfer_calldata (evm : EVM.State)
     (hdata : transferCalldata? recipient value = some calldata) :
     evalExpr? config { contract := contract, locals := safeTransferCalleeStore token recipient value }
       evm (transferCalldataExpr (.var "to") (.var "value")) = .ok (.bytes calldata) := by
-  simp only [transferCalldataExpr, evalExpr?, Solm.evalExprList?.eq_def, EvalResult.bind, bind, pure,
+  simp only [transferCalldataExpr, evalExpr?, Stele.evalExprList?.eq_def, EvalResult.bind, bind, pure,
     EvalResult.ofOption]
   rw [safeTransferCalleeStore_to, safeTransferCalleeStore_value]
   simp
@@ -220,7 +220,7 @@ theorem safeTransferFunctionBodyReverts_decode
         (transferCalldataExpr (.var "to") (.var "value")) "_success" "_data",
       .require safeTransferReturnOkExpr ] .reverted
   refine ExecBlock.consNormal
-    (solm' := { contract := contract, locals := safeTransferCallStore token recipient value true out })
+    (stele' := { contract := contract, locals := safeTransferCallStore token recipient value true out })
     (evm' := evm') ?_ ?_
   · exact ExecStmt.lowLevelCallSuccess
       (evalExpr_safeTransfer_receiver evm token recipient value)
@@ -248,7 +248,7 @@ theorem safeTransferFunctionBodyReverts_decodeFalse
         (transferCalldataExpr (.var "to") (.var "value")) "_success" "_data",
       .require safeTransferReturnOkExpr ] .reverted
   refine ExecBlock.consNormal
-    (solm' := { contract := contract, locals := safeTransferCallStore token recipient value true out })
+    (stele' := { contract := contract, locals := safeTransferCallStore token recipient value true out })
     (evm' := evm') ?_ ?_
   · exact ExecStmt.lowLevelCallSuccess
       (evalExpr_safeTransfer_receiver evm token recipient value)
@@ -279,7 +279,7 @@ theorem safeTransferFunctionBodyReturns_empty
       .require safeTransferReturnOkExpr ]
     (.ok { contract := contract, locals := safeTransferCallStore token recipient value true out } evm')
   refine ExecBlock.consNormal
-    (solm' := { contract := contract, locals := safeTransferCallStore token recipient value true out })
+    (stele' := { contract := contract, locals := safeTransferCallStore token recipient value true out })
     (evm' := evm') ?_ ?_
   · exact ExecStmt.lowLevelCallSuccess
       (evalExpr_safeTransfer_receiver evm token recipient value)
@@ -312,7 +312,7 @@ theorem safeTransferFunctionBodyReturns_decodeTrue
       .require safeTransferReturnOkExpr ]
     (.ok { contract := contract, locals := safeTransferCallStore token recipient value true out } evm')
   refine ExecBlock.consNormal
-    (solm' := { contract := contract, locals := safeTransferCallStore token recipient value true out })
+    (stele' := { contract := contract, locals := safeTransferCallStore token recipient value true out })
     (evm' := evm') ?_ ?_
   · exact ExecStmt.lowLevelCallSuccess
       (evalExpr_safeTransfer_receiver evm token recipient value)
@@ -424,7 +424,7 @@ theorem safeTransferInternalCallReturns_empty
     (args := [tokenExpr, toExpr, valueExpr])
     (argVals := safeTransferArgs token recipient value) (callee := safeTransferFunction)
     (locals := safeTransferCalleeStore token recipient value)
-    (calleeSolm :=
+    (calleeStele :=
       { contract := contract, locals := safeTransferCallStore token recipient value true out })
     (value := none)
     hargs (by simpa [hcaller, himm] using lookupCallable_safeTransfer)
@@ -455,7 +455,7 @@ theorem safeTransferInternalCallReturns_decodeTrue
     (args := [tokenExpr, toExpr, valueExpr])
     (argVals := safeTransferArgs token recipient value) (callee := safeTransferFunction)
     (locals := safeTransferCalleeStore token recipient value)
-    (calleeSolm :=
+    (calleeStele :=
       { contract := contract, locals := safeTransferCallStore token recipient value true out })
     (value := none)
     hargs (by simpa [hcaller, himm] using lookupCallable_safeTransfer)

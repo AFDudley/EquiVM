@@ -1,7 +1,7 @@
 import Benchmarks.Morpho.MorphoBlue.ExtSloadsSourceStep
 import Benchmarks.EAS.Attester.WordArrayABI
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.Morpho.MorphoBlue
 set_option maxRecDepth 1000
 
@@ -29,7 +29,7 @@ theorem extSloadsSourceLoop (evm : EVM.State) (imms : Store) (slots : List Value
       refine ⟨locals, .whileFalse ?_, ?_⟩
       · simpa only [extSloadsCond, hin, lt_self_iff_false, decide_false]
           using evalLocalNatLt (cfg := config) (evm := evm)
-            (solm := { contract := contract, locals := locals, immutables := imms })
+            (stele := { contract := contract, locals := locals, immutables := imms })
             hl.index_eq hl.count_eq
       · simpa only [he] using hl.result_eq
   | succ remaining ih =>
@@ -49,7 +49,7 @@ theorem extSloadsSourceLoop (evm : EVM.State) (imms : Store) (slots : List Value
       refine ⟨last, .whileTrue ?_ hs hw, hlast⟩
       simpa only [extSloadsCond, show i < slots.length by omega, decide_true]
         using evalLocalNatLt (cfg := config) (evm := evm)
-          (solm := { contract := contract, locals := locals, immutables := imms })
+          (stele := { contract := contract, locals := locals, immutables := imms })
           hl.index_eq hl.count_eq
 
 def extSloadsArgs (slots : List Value) : Store := (∅ : Store).insert "slots" (.array slots)

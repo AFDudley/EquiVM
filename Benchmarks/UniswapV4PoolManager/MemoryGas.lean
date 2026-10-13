@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV4PoolManager.Common
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 -- LIBRARY CANDIDATE: memory expansion preserves its natural word count and is monotone.

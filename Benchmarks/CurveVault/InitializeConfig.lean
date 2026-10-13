@@ -4,15 +4,15 @@ import Benchmarks.CurveVault.TokenCallSource
 import Benchmarks.CurveVault.Calls
 import Benchmarks.CurveVault.RuntimeBlocks_002
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch Reasoning.VyperCalls
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch Reasoning.VyperCalls
 namespace Benchmarks.CurveVault
 
 def vaultInitializeConfigState (I : ExecutionEnv) (evm : State) (amm controller collateral precision : UInt256) : State :=
-  Solm.EVM.storageStore
-    (Solm.EVM.storageStore
-      (Solm.EVM.storageStore
-        (Solm.EVM.storageStore
-          (Solm.EVM.storageStore evm I.codeOwner ⟨1⟩ collateral)
+  Stele.EVM.storageStore
+    (Stele.EVM.storageStore
+      (Stele.EVM.storageStore
+        (Stele.EVM.storageStore
+          (Stele.EVM.storageStore evm I.codeOwner ⟨1⟩ collateral)
           I.codeOwner ⟨4⟩ (UInt256.ofNat I.source.val))
         I.codeOwner ⟨2⟩ amm)
       I.codeOwner ⟨3⟩ controller)
@@ -40,10 +40,10 @@ theorem vaultInitializeConfigSource {I : ExecutionEnv} {s0 evm : State} {σ : Ac
       (.ok {contract := contract, locals := locals} (vaultInitializeConfigState I evm amm controller collateral precision)) ∧
     SourceState s0 I (vaultInitializeConfigAccounts I σ amm controller collateral precision)
       (vaultInitializeConfigState I evm amm controller collateral precision) := by
-  let evm1 := Solm.EVM.storageStore evm I.codeOwner ⟨1⟩ collateral
-  let evm2 := Solm.EVM.storageStore evm1 I.codeOwner ⟨4⟩ (UInt256.ofNat I.source.val)
-  let evm3 := Solm.EVM.storageStore evm2 I.codeOwner ⟨2⟩ amm
-  let evm4 := Solm.EVM.storageStore evm3 I.codeOwner ⟨3⟩ controller
+  let evm1 := Stele.EVM.storageStore evm I.codeOwner ⟨1⟩ collateral
+  let evm2 := Stele.EVM.storageStore evm1 I.codeOwner ⟨4⟩ (UInt256.ofNat I.source.val)
+  let evm3 := Stele.EVM.storageStore evm2 I.codeOwner ⟨2⟩ amm
+  let evm4 := Stele.EVM.storageStore evm3 I.codeOwner ⟨3⟩ controller
   have hs1 := hs.storageWrite ⟨1⟩ collateral
   have hs2 := hs1.storageWrite ⟨4⟩ (UInt256.ofNat I.source.val)
   have hs3 := hs2.storageWrite ⟨2⟩ amm
@@ -63,7 +63,7 @@ theorem vaultInitializeConfigSource {I : ExecutionEnv} {s0 evm : State} {σ : Ac
         "_collateral_token" ⟨1⟩ (AccountAddress.ofNat collateral.toNat) (hbase _ (by decide +kernel)) rfl rfl))
   have sf : ExecStmt config {contract := contract, locals := locals} evm1 initializeTransition.body[6]!
       (.ok {contract := contract, locals := locals} evm2) :=
-    ExecStmt.assign (by simpa only [he1] using evalExpr_caller (cfg := config) (solm := {contract := contract, locals := locals}) evm1)
+    ExecStmt.assign (by simpa only [he1] using evalExpr_caller (cfg := config) (stele := {contract := contract, locals := locals}) evm1)
       (by simpa only [he1] using (vaultAssignScalarAddress evm1 locals
         "_factory" ⟨4⟩ I.source (hbase _ (by decide +kernel)) rfl rfl))
   have sa : ExecStmt config {contract := contract, locals := locals} evm2 initializeTransition.body[7]!

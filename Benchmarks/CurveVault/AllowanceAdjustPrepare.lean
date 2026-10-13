@@ -4,7 +4,7 @@ import Benchmarks.CurveVault.AddressWord
 import Benchmarks.CurveVault.RuntimeBlocks_021
 import Benchmarks.CurveVault.RuntimeBlocks_022
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 def vaultAdjustEntryPc (increase : Bool) : UInt256 := if increase then UInt256.ofNat 6036 else UInt256.ofNat 6209

@@ -1,7 +1,7 @@
 import Benchmarks.CurveVault.PriceArithmetic
 import Benchmarks.CurveVault.ConversionFinishSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 abbrev vaultPriceFinishBody : List Stmt := vaultPriceNonzeroBody.drop 4

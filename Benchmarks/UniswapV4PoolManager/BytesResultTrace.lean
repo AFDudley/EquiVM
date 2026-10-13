@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.BytesABI
 import Reasoning.Dispatch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 -- LIBRARY CANDIDATE: trace and refinement glue for a computation returning one bytes value.

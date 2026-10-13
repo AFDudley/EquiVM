@@ -4,7 +4,7 @@ import Benchmarks.CurveVault.Storage
 import Benchmarks.CurveVault.Lock
 import Benchmarks.CurveVault.RuntimeBlocks_007
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 abbrev vaultAssetFunction : FunctionDecl := contract.functions[3]!
@@ -14,7 +14,7 @@ theorem vaultAssetFunctionReturns (evm : EVM.State) (locals : Store)
     ExecFuncBody config {contract := contract, locals := locals} evm vaultAssetFunction.body
       (.returned {contract := contract, locals := locals} evm
         (some [.address (AccountAddress.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩).toNat)])) := by
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩).toNat)])) := by
   have heval := vaultEvalScalar evm locals "_borrowed_token" .address ⟨0⟩ hbase rfl rfl
   exact ExecFuncBody.execBlockRet <| ExecBlock.consReturn (ExecStmt.return (evalExprs?_singleton heval))
 
@@ -36,7 +36,7 @@ theorem vaultAssetBodyCore {σ σ₀ A I} {g : UInt256}
       (transitionSignature assetTransition).paramTypes I.calldata = some ∅ := by
     change decodeCalldataWithMode .vyper [] [] I.calldata = some ∅
     exact decodeCalldataWithMode_empty_ok hsz
-  have hload : Solm.EVM.transientLoad (initState σ σ₀ (Sat256.ofUInt256 g) A I)
+  have hload : Stele.EVM.transientLoad (initState σ σ₀ (Sat256.ofUInt256 g) A I)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner ⟨0⟩ =
       codeOwnerTransientWord I σ ⟨0⟩ := codeOwnerTransientWord_initState _
   by_cases hlocked : codeOwnerTransientWord I σ ⟨0⟩ = ⟨1⟩
@@ -56,7 +56,7 @@ theorem vaultAssetBodyCore {σ σ₀ A I} {g : UInt256}
     rw [vaultWordReturn_read] at hret
     have hcallee := vaultAssetFunctionReturns (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅ (by simp)
     change ExecFuncBody config _ _ _ (.returned _ _ (some [.address (AccountAddress.ofNat
-      (Solm.EVM.storageLoad (initState σ σ₀ (Sat256.ofUInt256 g) A I) I.codeOwner ⟨0⟩).toNat)])) at hcallee
+      (Stele.EVM.storageLoad (initState σ σ₀ (Sat256.ofUInt256 g) A I) I.codeOwner ⟨0⟩).toNat)])) at hcallee
     rw [codeOwnerStorageWord_initState] at hcallee
     have hsource := vaultViewBodyReturns (fn := vaultAssetFunction) (locals := ∅) (args := []) (argVals := [])
       hvalue (by rw [hload]; exact hlocked)

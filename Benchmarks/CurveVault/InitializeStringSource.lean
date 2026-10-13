@@ -1,7 +1,7 @@
 import Benchmarks.CurveVault.InitializeStringValues
 import Benchmarks.CurveVault.InitializeStringStorage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 def vaultInitializeStringLocals (locals : Store) (size word : UInt256) : Store :=
@@ -11,7 +11,7 @@ def vaultInitializeStringLocals (locals : Store) (size word : UInt256) : Store :
 def vaultInitializeStringState (evm : State) (size word : UInt256) : State :=
   let evm1 := vaultStringState evm ⟨6⟩ (size.toNat + 16) (vaultNameData size word)
   let evm2 := vaultStringState evm1 ⟨9⟩ (size.toNat + 2) (vaultSymbolData size word)
-  Solm.EVM.storageStore evm2 evm2.executionEnv.codeOwner ⟨5⟩ (UInt256.ofNat (UInt256.size - 1))
+  Stele.EVM.storageStore evm2 evm2.executionEnv.codeOwner ⟨5⟩ (UInt256.ofNat (UInt256.size - 1))
 
 def vaultInitializeStringAccounts (I : ExecutionEnv) (σ : AccountMap) (size word : UInt256) : AccountMap :=
   sstoreAccountMap I.codeOwner

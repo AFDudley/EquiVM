@@ -7,7 +7,7 @@ import Benchmarks.CurveVault.RuntimeBlocks_018
 import Benchmarks.CurveVault.RuntimeBlocks_031
 import Benchmarks.CurveVault.Entry
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 namespace VaultFlow
@@ -50,7 +50,7 @@ theorem vaultMutationEntry (flow : VaultFlow) {σ σ₀ A I} {g : UInt256} {t : 
         RDrev vaultBytecode (Sat256.ofUInt256 g) (initState σ σ₀ (Sat256.ofUInt256 g) A I))) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   let evm := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  have hload : Solm.EVM.transientLoad evm evm.executionEnv.codeOwner ⟨0⟩ = codeOwnerTransientWord I σ ⟨0⟩ :=
+  have hload : Stele.EVM.transientLoad evm evm.executionEnv.codeOwner ⟨0⟩ = codeOwnerTransientWord I σ ⟨0⟩ :=
     codeOwnerTransientWord_initState _
   by_cases hlocked : codeOwnerTransientWord I σ ⟨0⟩ = ⟨1⟩
   · have hrev : RDrev vaultBytecode (Sat256.ofUInt256 g) evm := by
@@ -85,7 +85,7 @@ theorem vaultMutationEntry (flow : VaultFlow) {σ σ₀ A I} {g : UInt256} {t : 
     · exact vaultBlocks.vault_block_4178_fallthrough_packed (by omega) (u256_eq_of_ne (Ne.symm hlocked)) h
     · exact vaultBlocks.vault_block_5080_fallthrough_packed (by omega) (u256_eq_of_ne (Ne.symm hlocked)) h
   obtain ⟨aw0, k0, C0, rdBody⟩ := hbodyReach
-  have hlock : Solm.EVM.transientLoad evm evm.executionEnv.codeOwner ⟨0⟩ ≠ ⟨1⟩ := by
+  have hlock : Stele.EVM.transientLoad evm evm.executionEnv.codeOwner ⟨0⟩ ≠ ⟨1⟩ := by
     rw [hload]; exact hlocked
   have hlockStmt := ExecStmt.requireTrue (vaultLockEval_pass evm locals hlock)
   by_cases hperm : I.perm = true

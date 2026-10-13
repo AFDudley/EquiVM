@@ -1,7 +1,7 @@
 import Benchmarks.CurveVault.MaxMintCapacity
 import Benchmarks.CurveVault.ConvertSharesForward
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 abbrev vaultMaxMintFunction : FunctionDecl := contract.functions[11]!
@@ -81,7 +81,7 @@ theorem vaultMaxMintRoutine {I : ExecutionEnv} {g : Sat256} {s0 evm : State}
       have hcall := internalCallFunctionReturn (caller := {contract := contract, locals := locals1})
         (callee := vaultTotalAssetsFunction) (name := "_total_assets") (args := []) (argVals := []) (retVar := "assets")
         (by simp [evalExprs?, pure]) rfl rfl hcallee
-      have hsub := evalExpr_checkedMaxSub256 (cfg := config) (solm := {contract := contract, locals := locals2}) (evm := evm')
+      have hsub := evalExpr_checkedMaxSub256 (cfg := config) (stele := {contract := contract, locals := locals2}) (evm := evm')
         (lhs := .var "max_supply") (rhs := .var "assets")
         (evalExpr_varUInt256 (value := limit) (by rw [store_get_ne _ _ (by decide +kernel), store_get_self]))
         (evalExpr_varUInt256 (value := assets) (by simp [locals2]))

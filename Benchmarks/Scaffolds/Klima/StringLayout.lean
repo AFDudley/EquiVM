@@ -1,5 +1,5 @@
-import Solm.SolidityStorage
-import Solm.Refine
+import Stele.SolidityStorage
+import Stele.Refine
 
 /-!
 # KlimaToken per-contract `bytes`/`string` storage read/write hook (solc 0.7.5, pre-0.8 total decode)
@@ -9,18 +9,18 @@ by the creation bytecode and read by the deployed runtime getters (`name()` read
 `runtime.hex` pc 1588–1671 with pure `AND`/`DIV` mask arithmetic, `symbol()` reads slot 4).  Both are
 short (`"Klima DAO"` = 9 bytes, `"KLIMA"` = 5 bytes).
 
-`Solm/SolidityLayout.lean`'s default compact-string decode (`solidityDecodeBytesLengthHeader`) is
+`Stele/SolidityLayout.lean`'s default compact-string decode (`solidityDecodeBytesLengthHeader`) is
 0.8-style: it **reverts** when the slot header's short/long flag disagrees with the decoded length
 magnitude.  solc **pre-0.8** (0.7.5 here, as for the 0.5.16 WETH9 benchmark) does no such
 validation — it trusts the header, deriving the length purely from the flag
 (`len = (h & (flag=0 ? 0xff : ~0)) / 2`) and choosing the inline-vs-keccak data form solely by
-`len < 32`.  Over the arbitrary-`σ` quantification of the refinement theorem, the extra Solm revert
+`len < 32`.  Over the arbitrary-`σ` quantification of the refinement theorem, the extra Stele revert
 is a spec falsity, so the fix is a Klima-local `readValue?` that mirrors the Solidity getter but with
 a **total** header decode.  This is the same hook shape as `Benchmarks/WETH9/StringLayout.lean`; it is
 duplicated here to keep the benchmark self-contained.
 -/
 
-open Solm Ethereum
+open Stele Ethereum
 
 namespace Benchmarks.Klima
 

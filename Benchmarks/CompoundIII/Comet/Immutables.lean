@@ -1,4 +1,4 @@
-import Solm.Syntax
+import Stele.Syntax
 import EVM.Types
 
 /-!
@@ -10,7 +10,7 @@ immutable site zeroed; the constructor patches the sites in the order listed bel
 the order the creation code writes them.
 -/
 
-open Solm ABI
+open Stele ABI
 
 namespace Benchmarks.CompoundIII.Comet.Immutables
 
@@ -44,7 +44,7 @@ structure CometWithExtendedAssetListImmutables where
   decimals_lt : decimals.toNat < 256
   numAssets_lt : numAssets.toNat < 256
 
-/-- solc `immutableReferences`: each immutable's Solm name and patch offsets, in the order the
+/-- solc `immutableReferences`: each immutable's Stele name and patch offsets, in the order the
     constructor writes them. -/
 def immutableReferences : List (Ident × List Nat) :=
   [ ("governor", [1592, 3441, 5137, 6161]),

@@ -3,7 +3,7 @@ import Proofs.ERC20.API
 /-!
 # ERC20 — the supply invariant on the bytecode
 
-`Proofs.ERC20.API` proves `Inv` for every run of the Solm spec.  The refinement proofs of
+`Proofs.ERC20.API` proves `Inv` for every run of the Stele spec.  The refinement proofs of
 `Examples/ERC20` (`erc20Correct`, `erc20ConstructorCorrect`) match every EVM execution of the
 compiled code with such a run ending in the same account map, so the invariant transfers to the
 bytecode:
@@ -16,7 +16,7 @@ bytecode:
 A call that reverts or runs out of gas returns no account map, so there is nothing to show.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace ERC20
 
@@ -59,21 +59,21 @@ theorem erc20_bytecode_preserves_inv (hinj : InjectiveLayout erc20Config)
     InvAt σ' I.codeOwner := by
   obtain ⟨hrun⟩ := erc20Correct
   cases hrun σ σ₀ g A I hcode hsize with
-  | execution hΞ' hsolm hequiv =>
+  | execution hΞ' hstele hequiv =>
     obtain rfl := hΞ'.symm.trans hΞ
     cases hequiv with
     | success h1 h2 h3 _ =>
       cases h1
       subst h2 h3
       obtain ⟨henv, hInv'⟩ :=
-        erc20_solmExec_preserves_inv hinj ((inv_initState σ σ₀ _ A I).mpr hInv) hsolm
+        erc20_steleExec_preserves_inv hinj ((inv_initState σ σ₀ _ A I).mpr hInv) hstele
       rw [inv_iff_invAt, henv] at hInv'
       exact hInv'
     | revert h1 _ => cases h1
+    | noMatch h1 _ => cases h1
+    | decodingFailed h1 _ => cases h1
     | invalidHalt h1 _ => cases h1
     | staticHalt h1 _ => cases h1
-  | noDispatch _ hΞ' => cases hΞ'.symm.trans hΞ
-  | decodingFailed _ _ _ hΞ' => cases hΞ'.symm.trans hΞ
   | outOfGas hΞ' => cases hΞ'.symm.trans hΞ
 
 /-! ## Deployment -/
@@ -92,14 +92,14 @@ theorem erc20_initcode_establishes_inv (hinj : InjectiveLayout erc20Config)
     (hΞ : Ξ σ σ₀ g A I = .ok (.success (σ', g', A') o)) :
     InvAt σ' I.codeOwner ∧ o = erc20Bytecode := by
   cases erc20ConstructorCorrect σ σ₀ g A I args deployedInitcode hdeploy hcode hcalldata hperm with
-  | execution hΞ' hsolm hequiv _ =>
+  | execution hΞ' hstele hequiv _ =>
     obtain rfl := hΞ'.symm.trans hΞ
     cases hequiv with
     | success h1 h2 h3 h4 | successVoidReturn h1 h2 h3 h4 =>
       cases h1
       subst h2 h3
       obtain ⟨henv, hInv⟩ := erc20_deployment_establishes_inv hinj hdeploy
-        (fun a => (balOf_initState σ σ₀ _ A I a).trans (hzero a)) hsolm
+        (fun a => (balOf_initState σ σ₀ _ A I a).trans (hzero a)) hstele
       rw [inv_iff_invAt, henv] at hInv
       exact ⟨hInv, h4⟩
     | revert h1 _ => cases h1

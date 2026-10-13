@@ -1,6 +1,6 @@
 import Examples.UniswapV2Pair.MintSourcePrefixes
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -11,7 +11,7 @@ theorem uniswapMintProportionalFeeOffReturn_kLastZero
     {out0 out1 outFee : ByteArray} {balance0 balance1 liquidity : UInt256}
     (feeTo : AccountAddress)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 :
       evalExpr? config
         { contract := contract, locals := mintReserveStore (uniswapLockEnteredState evm) I }
@@ -161,7 +161,7 @@ theorem uniswapMintProportionalFeeOffCumulativeReturn_kLastZero
     {out0 out1 outFee : ByteArray} {balance0 balance1 liquidity : UInt256}
     (feeTo : AccountAddress)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 :
       evalExpr? config
         { contract := contract, locals := mintReserveStore (uniswapLockEnteredState evm) I }
@@ -312,7 +312,7 @@ theorem uniswapMintProportionalFeeOnReturn_kLastZero
     {out0 out1 outFee : ByteArray} {balance0 balance1 liquidity : UInt256}
     (feeTo : AccountAddress)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 :
       evalExpr? config
         { contract := contract, locals := mintReserveStore (uniswapLockEnteredState evm) I }
@@ -478,7 +478,7 @@ theorem uniswapMintProportionalFeeOnCumulativeReturn_kLastZero
     {out0 out1 outFee : ByteArray} {balance0 balance1 liquidity : UInt256}
     (feeTo : AccountAddress)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 :
       evalExpr? config
         { contract := contract, locals := mintReserveStore (uniswapLockEnteredState evm) I }
@@ -650,7 +650,7 @@ theorem uniswapMintProportionalFeeOffReturn_kLastNonzero
     {out0 out1 outFee : ByteArray} {balance0 balance1 liquidity : UInt256}
     (feeTo : AccountAddress)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 :
       evalExpr? config
         { contract := contract, locals := mintReserveStore (uniswapLockEnteredState evm) I }
@@ -806,7 +806,7 @@ theorem uniswapMintProportionalFeeOffCumulativeReturn_kLastNonzero
     {out0 out1 outFee : ByteArray} {balance0 balance1 liquidity : UInt256}
     (feeTo : AccountAddress)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 :
       evalExpr? config
         { contract := contract, locals := mintReserveStore (uniswapLockEnteredState evm) I }
@@ -964,7 +964,7 @@ theorem uniswapMintProportionalFeeOnReturn_kLastNonzeroNoMint
     {out0 out1 outFee : ByteArray} {balance0 balance1 liquidity : UInt256}
     (feeTo : AccountAddress) (rootK rootKLast : Int)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 :
       evalExpr? config
         { contract := contract, locals := mintReserveStore (uniswapLockEnteredState evm) I }
@@ -1146,7 +1146,7 @@ theorem uniswapMintProportionalFeeOnReturn_kLastNonzeroPositiveNoLiquidity
     {out0 out1 outFee : ByteArray} {balance0 balance1 liquidity : UInt256}
     (feeTo : AccountAddress) (rootK rootKLast : Int)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 :
       evalExpr? config
         { contract := contract, locals := mintReserveStore (uniswapLockEnteredState evm) I }
@@ -1336,7 +1336,7 @@ theorem uniswapMintProportionalFeeOnReturn_kLastNonzeroPositiveWithLiquidity
     {out0 out1 outFee : ByteArray} {balance0 balance1 liquidity : UInt256}
     (feeTo : AccountAddress) (rootK rootKLast : Int)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 :
       evalExpr? config
         { contract := contract, locals := mintReserveStore (uniswapLockEnteredState evm) I }
@@ -1555,7 +1555,7 @@ theorem uniswapMintInitialSmallRootReverts_feeOff_kLastZero
     (evm evm0 evm1 evmFee : EVM.State) (I : ExecutionEnv)
     {out0 out1 outFee : ByteArray} {balance0 balance1 : UInt256} (feeTo : AccountAddress)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 :
       evalExpr? config
         { contract := contract, locals := mintReserveStore (uniswapLockEnteredState evm) I }
@@ -1624,7 +1624,7 @@ theorem uniswapMintInitialSmallRootReverts_feeOn_kLastZero
     (evm evm0 evm1 evmFee : EVM.State) (I : ExecutionEnv)
     {out0 out1 outFee : ByteArray} {balance0 balance1 : UInt256} (feeTo : AccountAddress)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 :
       evalExpr? config
         { contract := contract, locals := mintReserveStore (uniswapLockEnteredState evm) I }
@@ -1693,7 +1693,7 @@ theorem uniswapMintInitialSmallRootReverts_feeOff_kLastNonzero
     (evm evm0 evm1 evmFee : EVM.State) (I : ExecutionEnv)
     {out0 out1 outFee : ByteArray} {balance0 balance1 : UInt256} (feeTo : AccountAddress)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 :
       evalExpr? config
         { contract := contract, locals := mintReserveStore (uniswapLockEnteredState evm) I }

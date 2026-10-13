@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV4PoolManager.SignedRangeSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 -- LIBRARY CANDIDATE: signed normalization always produces a value in its target range.

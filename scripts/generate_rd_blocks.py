@@ -1620,7 +1620,7 @@ def render_module(prefix: str, imports: list[str], units: list[Unit],
     if immutable_sites is not None:
         output.append("import Reasoning.Immutables")
     output.extend(f"import {module}" for module in imports)
-    output += ["", "open Solm ABI Ethereum Ethereum.EVM",
+    output += ["", "open Stele ABI Ethereum Ethereum.EVM",
                "open Reasoning.Theory Reasoning.Reach", "",
                f"namespace {prefix}Blocks", ""]
     if runtime_suffix:

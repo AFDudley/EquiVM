@@ -3,12 +3,12 @@ import Benchmarks.UniswapV4PoolManager.TickBitmapStorage
 import Benchmarks.UniswapV4PoolManager.WordXorSource
 import Benchmarks.UniswapV4PoolManager.CallComposition
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 
 def tickBitmapPost (evm : EVM.State) (id : UInt256) (tick spacing : Int) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (tickBitmapSlot id (tickBitmapPosition tick spacing))
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (tickBitmapSlot id (tickBitmapPosition tick spacing))
     (UInt256.xor (tickBitmapWord evm id (tickBitmapPosition tick spacing))
       (tickBitmapMask (tickBitmapCompressed tick spacing)))
 def tickBitmapResult (f : Frame) (evm : EVM.State) (id : UInt256) (tick spacing : Int) : ExecResult :=

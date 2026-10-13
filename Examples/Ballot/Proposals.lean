@@ -1,16 +1,16 @@
 import Reasoning.WordArithmetic
 import Examples.Ballot.Common
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
 section
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 2000000
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Ballot
 
@@ -62,13 +62,13 @@ def proposalCountWord (σ : AccountMap) (I : ExecutionEnv) : UInt256 :=
   σ.get? I.codeOwner |>.option ⟨0⟩ (fun acc => acc.storage.getD (proposalCountSlot I) ⟨0⟩)
 
 def proposalsLengthCurrent (evm : EVM.State) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩
 
 def proposalNameCurrent (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (proposalNameSlot I)
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (proposalNameSlot I)
 
 def proposalCountCurrent (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (proposalCountSlot I)
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (proposalCountSlot I)
 
 theorem proposalNameSlot_spec (I : ExecutionEnv) :
     proposalNameSlot I = proposalElemSlot (.int (Int.ofNat (proposalsIndexWord I).toNat)) := by
@@ -82,7 +82,7 @@ theorem proposalsArrayIndexInBounds_ok (evm : EVM.State) (I : ExecutionEnv)
       (.int (Int.ofNat (proposalsIndexWord I).toNat)) = .ok () := by
   have hboundStorage :
       (proposalsIndexWord I).toNat <
-        UInt256.toNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩) := by
+        UInt256.toNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩) := by
     simpa [proposalsLengthCurrent] using hbound
   simp [arrayIndexInBounds?, storageTypeAt?, ballotContract, ballotStorageDecls]
   rw [ballotProposalsLength]
@@ -94,10 +94,10 @@ theorem proposalsArrayIndexInBounds_revert (evm : EVM.State) (I : ExecutionEnv)
       (.int (Int.ofNat (proposalsIndexWord I).toNat)) = .revert := by
   have hboundStorage :
       ¬ (proposalsIndexWord I).toNat <
-        UInt256.toNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩) := by
+        UInt256.toNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩) := by
     simpa [proposalsLengthCurrent] using hbound
   have hleStorage :
-      UInt256.toNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩) ≤
+      UInt256.toNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩) ≤
         (proposalsIndexWord I).toNat :=
     Nat.le_of_not_gt hboundStorage
   simp [arrayIndexInBounds?, storageTypeAt?, ballotContract, ballotStorageDecls]
@@ -132,7 +132,7 @@ theorem ballotProposalsBodyReturns (evm : EVM.State) (I : ExecutionEnv)
         exact ⟨Int.natCast_nonneg _, Int.ofNat_lt_ofNat_of_lt hbound⟩
       have hboundStorage :
           (proposalsIndexWord I).toNat <
-            UInt256.toNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩) := by
+            UInt256.toNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩) := by
         simpa [proposalsLengthCurrent] using hbound
       have hboundsOk :
           arrayIndexInBounds? ballotConfig evm ballotContract.storage "proposals" []
@@ -184,7 +184,7 @@ theorem ballotProposalsBodyReturns (evm : EVM.State) (I : ExecutionEnv)
             .int (Int.ofNat (proposalCountCurrent evm I).toNat) := by
         simpa [proposalCountCurrent] using
           (storageLocLoad_uint256 evm (proposalCountSlot I))
-      simp only [Solm.evalExprs?.eq_def,
+      simp only [Stele.evalExprs?.eq_def,
         evalExpr_storage_scalar (hbackend := rfl) (t := .bytes ⟨31, by decide⟩) (hbase := hbaseName)
           (her := herName) (hty := htyName) (hloc := hlocName),
         evalExpr_storage_scalar (hbackend := rfl) (t := .int uint256Int) (hbase := hbaseCount)
@@ -221,7 +221,7 @@ theorem ballotProposalsBodyReverts_oob (evm : EVM.State) (I : ExecutionEnv)
             evalStorageRefStep.eq_def, hi, proposalsIndexValue, valueToKey?, EvalResult.ofOption,
             EvalResult.bind, bind, pure, List.nil_append]
           rw [hboundsRevert]
-        simp [evalExpr?, Solm.evalExprs?.eq_def, resolveStorageRef?, hbaseNameGet, herNameRevert,
+        simp [evalExpr?, Stele.evalExprs?.eq_def, resolveStorageRef?, hbaseNameGet, herNameRevert,
           EvalResult.bind, bind])))
 
 /-! ## Memory used by the proposal getter -/
@@ -399,7 +399,7 @@ end Ballot
 
 namespace Reasoning.Reach
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Ballot
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Ballot
 
 theorem RD.ballotDecodeUint256Ok1747 {g : Sat256} {s0 : State} {ee : ExecutionEnv} {k C : ℕ}
     {ret : UInt256} {R : List UInt256} {mem : ByteArray} {aw : UInt256} {rdata : ByteArray}

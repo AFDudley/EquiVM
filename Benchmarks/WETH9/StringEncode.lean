@@ -5,18 +5,18 @@ import Benchmarks.WETH9.ConstructorTrusted
 
 /-! # WETH9 dynamic-string ABI-encode reconciliation (shared by `name()` and `symbol()`)
 
-Header/word/slot-parametric machinery connecting the Solm total-decode string value (`.bytes`) to the
+Header/word/slot-parametric machinery connecting the Stele total-decode string value (`.bytes`) to the
 EVM encoder's `weth9{Empty,Short}StringAbi` / the long tail-mask.  `Name.lean`/`Symbol.lean` specialise
 these to slot 0 / slot 1. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 4000000
 
 namespace Benchmarks.WETH9
 
-/-! ## Length-word bridge: EVM `weth9StringLen` = the Solm total-decode length word -/
+/-! ## Length-word bridge: EVM `weth9StringLen` = the Stele total-decode length word -/
 
 
 theorem weth9StringLen_eq_evmLenWord (H : UInt256) :
@@ -26,7 +26,7 @@ theorem weth9StringLen_eq_evmLenWord (H : UInt256) :
     u256_land_comm H (UInt256.sub (UInt256.mul ⟨256⟩ (UInt256.isZero (UInt256.land H ⟨1⟩))) ⟨1⟩),
     u256_land_comm H ⟨1⟩]
 
-/-- The Solm total decode of `H` yields `(weth9StringLen H).toNat`. -/
+/-- The Stele total decode of `H` yields `(weth9StringLen H).toNat`. -/
 theorem weth9DecodeBytesLengthHeader_stringLen (H : UInt256) :
     weth9DecodeBytesLengthHeader H = .ok (weth9StringLen H).toNat := by
   rw [weth9DecodeBytesLengthHeader_eq, weth9StringLen_eq_evmLenWord, weth9EvmLenWord_eq]
@@ -131,7 +131,7 @@ theorem land31_toNat_mod (H : UInt256) :
     show (31 : ℕ) = 2 ^ 5 - 1 from by norm_num, Nat.and_two_pow_sub_one_eq_mod,
     show (2 : ℕ) ^ 5 = 32 from by norm_num]
 
-/-! ## Solm-side storage helpers (slot-parametric) -/
+/-! ## Stele-side storage helpers (slot-parametric) -/
 
 
 /-- The keccak-data word at an arbitrary slot, as read from `initState σ`. -/

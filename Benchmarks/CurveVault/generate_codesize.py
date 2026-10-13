@@ -69,7 +69,7 @@ import Benchmarks.CurveVault.RuntimeBlocks_024
 The selected entry's calldata/payability guard starts at pc 73; it jumps to the
 function entry encoded in bits 8..23 of the selected seven-byte record. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 set_option maxRecDepth 2000
 set_option maxHeartbeats 0
@@ -130,7 +130,7 @@ theorem vaultRevertMismatch {σ σ₀ A I} {g : Sat256}
     (aw := UInt256.ofNat 0) (by simp) hcond (by native_decide) rd0
   exact vaultBlocks.vault_block_6768 (by simp [vaultBlocks.vault_block_0_taken_stack]) rd1
 ''']
-out += p.solm_dispatch_facts(c, False, True)
+out += p.stele_dispatch_facts(c, False, True)
 
 for t in c.transitions:
     value = int.from_bytes(t.selector, 'big')

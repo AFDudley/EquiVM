@@ -7,7 +7,7 @@ Dispatcher bucket 3, arm entry pc 36: the guard, the address validation (pc 46),
 `hook == empty(address)` check (pc 57, revert at 67), and the store (pc 179).
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 open Reasoning.VyperImmutables Reasoning.VyperBounded
 
 namespace Tests.Pipeline.VyperWrapper
@@ -112,7 +112,7 @@ theorem wrapperSetHookBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hfit : i
     evalVar imms _ _ "target" _ (store_get_self _ _ _)
   have hassign : assignStorageRef? config (frame imms (setHookStore I)) (initState σ σ₀ (Sat256.ofUInt256 g) A I)
       .storage hookRef (.address (AccountAddress.ofNat (argWord I).toNat)) =
-      .ok (frame imms (setHookStore I), Solm.EVM.storageStore (initState σ σ₀ (Sat256.ofUInt256 g) A I) I.codeOwner ⟨0⟩ (argWord I)) := by
+      .ok (frame imms (setHookStore I), Stele.EVM.storageStore (initState σ σ₀ (Sat256.ofUInt256 g) A I) I.codeOwner ⟨0⟩ (argWord I)) := by
     apply assignStorageRef_storage_vyper_scalar_value (hbackend := rfl) (hcheck := by rfl)
       (er := { base := "hook", steps := [] })
       (hleaf := Or.inl ⟨_, rfl⟩) (ty := .elem .address) (loc := vyperWordLoc ⟨0⟩ .address) (hbase := by simp)
@@ -151,7 +151,7 @@ theorem wrapperSetHookBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hfit : i
   have hbody : ExecTransitionBody config contract (initState σ σ₀ (Sat256.ofUInt256 g) A I) (setHookStore I)
       setHookTransition.body
       (.returned (frame imms (setHookStore I))
-        (Solm.EVM.storageStore (initState σ σ₀ (Sat256.ofUInt256 g) A I) I.codeOwner ⟨0⟩ (argWord I)) none)
+        (Stele.EVM.storageStore (initState σ σ₀ (Sat256.ofUInt256 g) A I) I.codeOwner ⟨0⟩ (argWord I)) none)
       (restrictImmutables contract imms) := by
     rw [setHookBody_eq]
     exact ExecFuncBody.execBlockOK (ExecBlock.consNormal (ExecStmt.requireTrue hcv)

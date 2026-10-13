@@ -8,7 +8,7 @@ import Examples.VyperERC20.Allowance
 import Examples.VyperERC20.Approve
 import Examples.VyperERC20.Transfer
 import Examples.VyperERC20.TransferFromRuntime
-import Solm.Refine
+import Stele.Refine
 import Reasoning.ABI
 import Reasoning.Dispatch
 import Reasoning.Stepping
@@ -16,7 +16,7 @@ import Reasoning.Reach
 import Reasoning.Solc
 import Reasoning.Initcode
 import Reasoning.Memory
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 import Mathlib.Tactic.IntervalCases
 
 
@@ -24,14 +24,14 @@ import Mathlib.Tactic.IntervalCases
 # Vyper ERC20 — correctness entrypoints
 
 This file wires the Vyper-compiled ERC20 artifact into the same equivalence statements used by the
-Solidity ERC20 example.  The source-level behavior and ABI are the existing ERC20 Solm contract;
+Solidity ERC20 example.  The source-level behavior and ABI are the existing ERC20 Stele contract;
 the storage layout and bytecode are Vyper-specific.
 
 The constructor/initcode trace is proven below.  Runtime dispatch and function-body equivalence is
 still the remaining Vyper bytecode proof obligation.
 -/
 
-open Solm
+open Stele
 open ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
@@ -40,7 +40,7 @@ set_option linter.unusedSimpArgs false
 section
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 2000000
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace VyperERC20
 
@@ -92,11 +92,11 @@ theorem erc20CtorLocals_get_totalSupply (initialSupply : Int) :
   simp [erc20Contract, ERC20.erc20Contract, ERC20.constructorDecl]
 
 def erc20CtorBalancePostState (evm : EVM.State) (initialSupply : UInt256) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner
     (erc20BalanceOfSlot (.address evm.executionEnv.source)) initialSupply
 
 def erc20CtorPostState (evm : EVM.State) (initialSupply : UInt256) : EVM.State :=
-  Solm.EVM.storageStore (erc20CtorBalancePostState evm initialSupply)
+  Stele.EVM.storageStore (erc20CtorBalancePostState evm initialSupply)
     (erc20CtorBalancePostState evm initialSupply).executionEnv.codeOwner ⟨2⟩ initialSupply
 
 theorem erc20Deployment_shape {args : List Value} {deployedInitcode : ByteArray} :
@@ -236,7 +236,7 @@ theorem erc20CtorAssignTotalSupply (evm : EVM.State) (initialSupply : Int)
       { contract := erc20Contract, locals := erc20CtorLocals initialSupply }
       evm .storage totalSupplyRef (.int initialSupply) =
         .ok ({ contract := erc20Contract, locals := erc20CtorLocals initialSupply },
-          Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨2⟩
+          Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨2⟩
             (EVM.word initialSupply.toNat)) := by
   apply assignStorageRef_storage_vyper_scalar (hbackend := rfl) (hcheck := by rfl)
       (hleaf := Or.inl ⟨_, rfl⟩) (ty := uint256Storage)
@@ -259,7 +259,7 @@ theorem erc20CtorAssignTotalSupply (evm : EVM.State) (initialSupply : Int)
   conv_lhs => rw [← hint]
   erw [storageLocStore_uint256]
 
-theorem erc20SolmCtorExecReverts_nonpayable
+theorem erc20SteleCtorExecReverts_nonpayable
     {σ : AccountMap}
     {σ₀ : AccountMap}
     {g : UInt256}
@@ -267,9 +267,9 @@ theorem erc20SolmCtorExecReverts_nonpayable
     {I : ExecutionEnv}
     (initialSupply : Int)
     (hwv : I.weiValue ≠ ⟨0⟩) :
-    solmCtorExec config erc20Contract [.int initialSupply]
+    steleCtorExec config erc20Contract [.int initialSupply]
       σ σ₀ g A I .reverted := by
-  refine solmCtorExec.intro
+  refine steleCtorExec.intro
     (evmState := initState σ σ₀ (Sat256.ofUInt256 g) A I)
     (argsStore := erc20CtorLocals initialSupply)
     ?_ rfl ?_ ?_
@@ -278,7 +278,7 @@ theorem erc20SolmCtorExecReverts_nonpayable
   · exact bodyReverts_nonPayable (cfg := config) (contract := erc20Contract)
       (locals := erc20CtorLocals initialSupply) hwv
 
-theorem erc20SolmCtorExecSuccess
+theorem erc20SteleCtorExecSuccess
     {σ : AccountMap}
     {σ₀ : AccountMap}
     {g : UInt256}
@@ -288,7 +288,7 @@ theorem erc20SolmCtorExecSuccess
     (h0 : 0 ≤ initialSupply)
     (hlt : initialSupply < Int.ofNat (EVM.twoPow 256))
     (hwv : I.weiValue = ⟨0⟩) :
-    solmCtorExec config erc20Contract [.int initialSupply]
+    steleCtorExec config erc20Contract [.int initialSupply]
       σ σ₀ g A I
       (.returned
         { contract := erc20Contract, locals := erc20CtorLocals initialSupply }
@@ -296,7 +296,7 @@ theorem erc20SolmCtorExecSuccess
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (EVM.word initialSupply.toNat))
         none) := by
-  refine solmCtorExec.intro
+  refine steleCtorExec.intro
     (evmState := initState σ σ₀ (Sat256.ofUInt256 g) A I)
     (argsStore := erc20CtorLocals initialSupply)
     ?_ rfl ?_ ?_
@@ -306,10 +306,10 @@ theorem erc20SolmCtorExecSuccess
     let frame : Frame := { contract := erc20Contract, locals := erc20CtorLocals initialSupply }
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let evm1 := erc20CtorBalancePostState evm0 (EVM.word initialSupply.toNat)
-    refine ExecBlock.consNormal (solm' := frame) (evm' := evm0)
+    refine ExecBlock.consNormal (stele' := frame) (evm' := evm0)
       (ExecStmt.requireTrue (evalCallvalueEq_true (cfg := config)
-        (solm := frame) (evm := evm0) (by simpa [evm0, initState] using hwv))) ?_
-    refine ExecBlock.consNormal (solm' := frame) (evm' := evm1) ?_ ?_
+        (stele := frame) (evm := evm0) (by simpa [evm0, initState] using hwv))) ?_
+    refine ExecBlock.consNormal (stele' := frame) (evm' := evm1) ?_ ?_
     · exact ExecStmt.assign (value := .int initialSupply)
         (by
           show evalExpr? config frame evm0 (.var "initialSupply") = .ok (.int initialSupply)
@@ -1557,7 +1557,7 @@ theorem constructorCorrect :
         hacc
       rw [hσ'] at hsuccess
       refine typedConstructorRefinementFor.execution hsuccess
-        (erc20SolmCtorExecSuccess
+        (erc20SteleCtorExecSuccess
           (σ := σ) (σ₀ := σ₀) (g := g) (A := A) (I := I)
           initialSupply h0 hlt hwv) ?_
       refine ctorResultEquiv.success rfl rfl ?_ rfl
@@ -1572,7 +1572,7 @@ theorem constructorCorrect :
     rcases hrd.xiResult hcodeTail with hOOG | ⟨g', o, hrev⟩
     · exact typedConstructorRefinementFor.outOfGas (by simpa [Sat256.ofUInt256] using hOOG)
     · refine typedConstructorRefinementFor.execution (by simpa [Sat256.ofUInt256] using hrev)
-        (erc20SolmCtorExecReverts_nonpayable
+        (erc20SteleCtorExecReverts_nonpayable
           (σ := σ) (σ₀ := σ₀) (g := g) (A := A) (I := I)
           initialSupply hwv) ?_
       exact ctorResultEquiv.revert rfl rfl

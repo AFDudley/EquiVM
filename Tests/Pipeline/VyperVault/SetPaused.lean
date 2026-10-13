@@ -9,7 +9,7 @@ owner check against the immutable `OWNER` (pc 1005), then `SSTORE` of the raw wo
 the spec's static violation.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
   Reasoning.VyperImmutables
 
 namespace Tests.Pipeline.VyperVault
@@ -170,7 +170,7 @@ theorem vyperVaultSetPausedBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hfi
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) .storage { base := "paused", steps := [] }
       (.bool (decide ((argWord I).toNat = 1))) =
       .ok (frame imms (setPausedStore I),
-        Solm.EVM.storageStore (initState σ σ₀ (Sat256.ofUInt256 g) A I)
+        Stele.EVM.storageStore (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner (UInt256.ofNat 4) (argWord I)) := by
     apply assignStorageRef_storage_vyper_scalar_value (hbackend := rfl) (hcheck := by rfl)
       (er := { base := "paused", steps := [] })
@@ -185,7 +185,7 @@ theorem vyperVaultSetPausedBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hfi
     have hbody : ExecTransitionBody config contract (initState σ σ₀ (Sat256.ofUInt256 g) A I) (setPausedStore I)
         setPausedTransition.body
         (.returned (frame imms (setPausedStore I))
-          (Solm.EVM.storageStore (initState σ σ₀ (Sat256.ofUInt256 g) A I)
+          (Stele.EVM.storageStore (initState σ σ₀ (Sat256.ofUInt256 g) A I)
             (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner (UInt256.ofNat 4) (argWord I)) none)
         (restrictImmutables contract imms) := by
       rw [setPausedBody_eq]

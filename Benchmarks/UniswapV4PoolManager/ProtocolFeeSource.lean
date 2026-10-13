@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.PoolSetSlot0Source
 import Benchmarks.UniswapV4PoolManager.WordArrayLoop
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 
@@ -70,7 +70,7 @@ theorem slot0ProtocolFeeCall {f : Frame} {evm : EVM.State} {ep ef : Expr} {packe
     ((store_get_ne _ _ (by decide : ("_packed" == "_protocolFee") = false)).trans (store_get_self _ _ _)) hc
 
 def protocolControllerWord (evm : EVM.State) : UInt256 :=
-  UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩) solcAddrMask
+  UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩) solcAddrMask
 def protocolControllerAuthorized (evm : EVM.State) : Prop := accountWord evm.executionEnv.source = protocolControllerWord evm
 instance (evm : EVM.State) : Decidable (protocolControllerAuthorized evm) := inferInstanceAs (Decidable (_ = _))
 

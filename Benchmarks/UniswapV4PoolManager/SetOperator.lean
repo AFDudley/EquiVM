@@ -3,7 +3,7 @@ import Benchmarks.UniswapV4PoolManager.Routines
 import Benchmarks.UniswapV4PoolManager.MappingMemory
 import Benchmarks.UniswapV4PoolManager.RuntimeBlocks_024
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.UniswapV4PoolManager.Immutables
 
@@ -14,8 +14,8 @@ def setOperatorSlot (evm : EVM.State) (operator : UInt256) : UInt256 :=
   mappingSlotWord operator (mappingSlotWord (accountWord evm.executionEnv.source) ⟨3⟩)
 
 def setOperatorPost (evm : EVM.State) (operator approved : UInt256) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (setOperatorSlot evm operator)
-    (setBoolOffset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (setOperatorSlot evm operator)
+    (setBoolOffset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
       (setOperatorSlot evm operator)) approved)
 
 theorem setOperatorAssign (evm : EVM.State) (locals imms : Store) (operator approved : UInt256)
@@ -212,7 +212,7 @@ theorem poolManagerSetOperatorBodyCore {σ σ₀ A I} {g : UInt256} (v : PoolMan
               exact hret.reEquivExecutionGen hcode hd hdec hbody
                 (storageStore_accountMap (initState σ σ₀ (Sat256.ofUInt256 g) A I) I.codeOwner
                   (setOperatorSlot (initState σ σ₀ (Sat256.ofUInt256 g) A I) (calldataWord I.calldata 4))
-                  (setBoolOffset0Word (Solm.EVM.storageLoad (initState σ σ₀ (Sat256.ofUInt256 g) A I) I.codeOwner
+                  (setBoolOffset0Word (Stele.EVM.storageLoad (initState σ σ₀ (Sat256.ofUInt256 g) A I) I.codeOwner
                     (setOperatorSlot (initState σ σ₀ (Sat256.ofUInt256 g) A I) (calldataWord I.calldata 4)))
                     (calldataWord I.calldata 36))).symm
                 (returnEquiv_of_encode (boolReturnEncoding true))

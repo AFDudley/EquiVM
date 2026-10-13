@@ -3,7 +3,7 @@ import Benchmarks.CurveVault.DebitTail
 import Benchmarks.CurveVault.ControllerCache
 import Benchmarks.CurveVault.SupplyForward
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 theorem vaultDebitBurn (isWithdraw : Bool) {I : ExecutionEnv} {g : Sat256} {s0 evm : State}

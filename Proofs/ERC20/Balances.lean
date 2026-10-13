@@ -6,14 +6,14 @@ import Reasoning.Storage
 
 This is the foundation for the *spec-level* ERC20 contract invariant
 `totalSupply = Σ balances` (see `Proofs.ERC20.Invariant`).  Unlike the equivalence proofs in
-`Examples/ERC20`, nothing here talks about bytecode: we reason purely about the trusted Solm
+`Examples/ERC20`, nothing here talks about bytecode: we reason purely about the trusted Stele
 spec's effect on EVM storage.
 
 It provides:
 
 * `balOf evm a` / `totalSupplyVal evm` — the contract's own-account storage read of `balanceOf[a]`
   and `totalSupply`, as `ℕ`.
-* Raw load-after-store frame lemmas for `Solm.EVM.storageStore` (same slot / different slot).
+* Raw load-after-store frame lemmas for `Stele.EVM.storageStore` (same slot / different slot).
 * `InjectiveLayout cfg` — the *explicit* hypothesis that the storage layout maps distinct storage
   references to distinct slots.  This is the one assumption a `Σ balances` argument cannot avoid
   (distinct mapping keys must land in distinct slots); for Solidity's layout it is discharged by
@@ -21,7 +21,7 @@ It provides:
   named hypothesis on the theorems makes the dependency visible rather than trusted.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace ERC20
 
@@ -29,51 +29,51 @@ namespace ERC20
 
 /-- `balanceOf[a]` read from the contract's own account, as a `ℕ`. -/
 def balOf (evm : EVM.State) (a : AccountAddress) : ℕ :=
-  (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+  (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
     (erc20BalanceOfSlot (.address a))).toNat
 
 /-- `totalSupply` (storage slot `2`) read from the contract's own account, as a `ℕ`. -/
 def totalSupplyVal (evm : EVM.State) : ℕ :=
-  (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩).toNat
+  (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩).toNat
 
 /-! ## Raw `storageStore` frame lemmas
 
 These characterise reading one slot after writing another, directly on the raw
-`Solm.EVM.storageStore`/`storageLoad` pair (the form the ERC20 post-states are built from).  They
+`Stele.EVM.storageStore`/`storageLoad` pair (the form the ERC20 post-states are built from).  They
 hold unconditionally for the *different-slot* case; the *same-slot* read-back needs the account to
 exist (a `storageStore` to a missing account is a no-op). -/
 
 /-- `storageStore` preserves the execution environment, hence the `codeOwner`. -/
 @[simp] theorem storageStore_codeOwner (evm : EVM.State) (a : AccountAddress) (k v : UInt256) :
-    (Solm.EVM.storageStore evm a k v).executionEnv = evm.executionEnv := by
+    (Stele.EVM.storageStore evm a k v).executionEnv = evm.executionEnv := by
   exact Reasoning.Theory.storageStore_executionEnv evm a k v
 
 /-- Reading a *different* slot is unaffected by a store. -/
 theorem storageLoad_storageStore_ne (evm : EVM.State) (a : AccountAddress)
     (rs ws v : UInt256) (h : rs ≠ ws) :
-    Solm.EVM.storageLoad (Solm.EVM.storageStore evm a ws v) a rs =
-      Solm.EVM.storageLoad evm a rs := by
+    Stele.EVM.storageLoad (Stele.EVM.storageStore evm a ws v) a rs =
+      Stele.EVM.storageLoad evm a rs := by
   exact Reasoning.Theory.storageLoad_storageStore_ne evm a h
 
 /-- Reading the *same* slot after a store returns the stored value (account must exist). -/
 theorem storageLoad_storageStore_self (evm : EVM.State) (a : AccountAddress)
     (ws v : UInt256) {acc : Account} (hex : evm.accountMap.get? a = some acc) :
-    Solm.EVM.storageLoad (Solm.EVM.storageStore evm a ws v) a ws = v := by
+    Stele.EVM.storageLoad (Stele.EVM.storageStore evm a ws v) a ws = v := by
   exact Reasoning.Theory.storageLoad_storageStore_same_present evm a hex ws v
 
 /-- A store to a *missing* account is a no-op. -/
 theorem storageStore_noop_of_missing (evm : EVM.State) (a : AccountAddress) (k v : UInt256)
     (hmiss : evm.accountMap.get? a = none) :
-    Solm.EVM.storageStore evm a k v = evm := by
+    Stele.EVM.storageStore evm a k v = evm := by
   exact Reasoning.Theory.storageStore_absent evm a hmiss k v
 
 /-- `storageStore` to an *existing* account leaves it existing (used to thread read-backs through
     several writes). -/
 theorem storageStore_find_codeOwner (evm : EVM.State) (a : AccountAddress) (k v : UInt256)
     {acc : Account} (hex : evm.accountMap.get? a = some acc) :
-    ∃ acc', (Solm.EVM.storageStore evm a k v).accountMap.get? a = some acc' := by
+    ∃ acc', (Stele.EVM.storageStore evm a k v).accountMap.get? a = some acc' := by
   refine ⟨acc.updateStorage k v, ?_⟩
-  simp only [Solm.EVM.storageStore, State.lookupAccount, State.setAccount, hex, Option.option]
+  simp only [Stele.EVM.storageStore, State.lookupAccount, State.setAccount, hex, Option.option]
   simp [Std.ExtTreeMap.get?_eq_getElem?]
 
 /-! ## Layout injectivity (explicit hypothesis) -/

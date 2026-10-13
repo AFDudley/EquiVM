@@ -2,7 +2,7 @@ import Benchmarks.CurveVault.WithdrawAfterAssets
 import Benchmarks.CurveVault.RedeemAfterAssets
 import Benchmarks.CurveVault.TotalAssetsInternal
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 def vaultDebitLocals (isWithdraw : Bool) (receiver owner : AccountAddress) (input : UInt256) : Store :=

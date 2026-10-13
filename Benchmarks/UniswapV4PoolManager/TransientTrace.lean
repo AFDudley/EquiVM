@@ -2,7 +2,7 @@ import Benchmarks.UniswapV4PoolManager.TransientSource
 import Benchmarks.UniswapV4PoolManager.MappingMemory
 
 /-! Shared transient-storage bridges and static-call stepping. -/
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 
@@ -10,7 +10,7 @@ set_option maxRecDepth 5000
 theorem transientWord_accountMap {evm : EVM.State} {I : ExecutionEnv}
     (hI : evm.executionEnv = I) (slot : UInt256) :
     transientWord evm slot = codeOwnerTransientWord I evm.accountMap slot := by
-  simp [transientWord, Solm.EVM.transientLoad, State.lookupAccount,
+  simp [transientWord, Stele.EVM.transientLoad, State.lookupAccount,
     Account.lookupTransientStorage, codeOwnerTransientWord, hI]
 
 -- GENERALIZES mappingMemory_slot by removing the memory-size precondition.

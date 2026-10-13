@@ -9,11 +9,11 @@ import Benchmarks.UniswapV4PoolManager.RuntimeBlocks_011
 # PoolManager `protocolFeesAccrued(address)`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 2942; reach lemma `poolManagerReachProtocolFeesAccruedBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.UniswapV4PoolManager.Immutables
 
@@ -30,7 +30,7 @@ theorem protocolFeesAccruedBodyReturns (evm : EVM.State) (locals imms : Store) (
     ExecTransitionBody config contract evm locals protocolFeesAccruedTransition.body
       (.returned (calldataFrame contract locals imms evm) evm
         (some [.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (mappingSlotWord w ⟨1⟩)).toNat)])) imms := by
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (mappingSlotWord w ⟨1⟩)).toNat)])) imms := by
   apply guardedReturnBody hwv hhi
   have hr := protocolFeesRead (f := calldataFrame contract locals imms evm) (evm := evm) rfl
     ((store_get_ne locals _ (by decide : ("__calldata" == "protocolFeesAccrued") = false)).trans hbase)

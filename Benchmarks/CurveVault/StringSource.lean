@@ -1,7 +1,7 @@
 import Benchmarks.CurveVault.StringArithmetic
 import Benchmarks.CurveVault.Arithmetic
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 def vaultStringName (isName : Bool) : Ident := if isName then "name" else "symbol"
@@ -9,7 +9,7 @@ def vaultStringSlot (isName : Bool) : UInt256 := if isName then ⟨6⟩ else ⟨
 def vaultStringBody (isName : Bool) : List Stmt := if isName then nameTransition.body else symbolTransition.body
 
 def vaultStringBytes (evm : State) (slot : UInt256) : ByteArray :=
-  let length := (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot).toNat
+  let length := (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot).toNat
   (vyperReadDataWords evm slot 0 ((length + 31) / 32)).extract 0 length
 
 def vaultStringLocals (length : UInt256) : Store :=
@@ -41,7 +41,7 @@ theorem vaultStringLengthEval (evm : State) (locals : Store) (isName : Bool)
     (hbase : locals.get? (vaultStringName isName) = none) :
     evalExpr? config {contract := contract, locals := locals} evm
       (.arrayLength .storage {base := vaultStringName isName, steps := []}) =
-      .ok (.int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (vaultStringSlot isName)).toNat)) := by
+      .ok (.int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (vaultStringSlot isName)).toNat)) := by
   rw [evalExpr?]
   simp only [vaultStringResolve evm locals isName hbase, EvalResult.bind, bind]
   cases isName <;> rfl
@@ -74,17 +74,17 @@ theorem vaultStringSourcePrefix (evm : State) (isName : Bool)
       [.require (.binary .eq (.env .callvalue) (.intLit 0)),
         .letDecl "stored_length" (some (.elem (.int (.uint ⟨256, by decide⟩))))
           (.arrayLength .storage {base := vaultStringName isName, steps := []})]
-      (.ok {contract := contract, locals := vaultStringLocals (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (vaultStringSlot isName))} evm) :=
+      (.ok {contract := contract, locals := vaultStringLocals (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (vaultStringSlot isName))} evm) :=
   ExecBlock.consNormal (ExecStmt.requireTrue (evalCallvalueEq_true hvalue))
     (ExecBlock.consNormal (ExecStmt.letDecl (vaultStringLengthEval evm ∅ isName (by simp))) ExecBlock.nil)
 
 theorem vaultStringSourceReturns (evm : State) (isName : Bool)
     (hvalue : evm.executionEnv.weiValue = ⟨0⟩)
-    (hlen : (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (vaultStringSlot isName)).toNat ≤ 64) :
+    (hlen : (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (vaultStringSlot isName)).toNat ≤ 64) :
     ExecTransitionBody config contract evm ∅ (vaultStringBody isName)
-      (.returned {contract := contract, locals := vaultStringLocals (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (vaultStringSlot isName))}
+      (.returned {contract := contract, locals := vaultStringLocals (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (vaultStringSlot isName))}
         evm (some [.bytes (vaultStringBytes evm (vaultStringSlot isName))])) := by
-  let length := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (vaultStringSlot isName)
+  let length := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (vaultStringSlot isName)
   let locals := (∅ : Store).insert "stored_length" (.int (Int.ofNat length.toNat))
   have hv : locals.get? "stored_length" = some (.int (Int.ofNat length.toNat)) := by simp [locals]
   have hbase : locals.get? (vaultStringName isName) = none := by cases isName <;> simp [locals, vaultStringName]
@@ -106,12 +106,12 @@ theorem vaultStringSourceReturns (evm : State) (isName : Bool)
 
 theorem vaultStringSourceWrapped (evm : State) (isName : Bool)
     (hvalue : evm.executionEnv.weiValue = ⟨0⟩)
-    (hlo : UInt256.size - 63 ≤ (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (vaultStringSlot isName)).toNat)
-    (hhi : (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (vaultStringSlot isName)).toNat ≤ UInt256.size - 32) :
+    (hlo : UInt256.size - 63 ≤ (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (vaultStringSlot isName)).toNat)
+    (hhi : (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (vaultStringSlot isName)).toNat ≤ UInt256.size - 32) :
     ExecTransitionBody config contract evm ∅ (vaultStringBody isName)
-      (.returned {contract := contract, locals := vaultStringLocals (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (vaultStringSlot isName))}
+      (.returned {contract := contract, locals := vaultStringLocals (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (vaultStringSlot isName))}
         evm (some [.bytes ByteArray.empty])) := by
-  let length := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (vaultStringSlot isName)
+  let length := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (vaultStringSlot isName)
   have hv : (vaultStringLocals length).get? "stored_length" = some (.int (Int.ofNat length.toNat)) := by simp [vaultStringLocals]
   rw [vaultStringBody_eq]
   apply ExecFuncBody.execBlockRet
@@ -124,11 +124,11 @@ theorem vaultStringSourceWrapped (evm : State) (isName : Bool)
 
 theorem vaultStringSourceReverts (evm : State) (isName : Bool)
     (hvalue : evm.executionEnv.weiValue = ⟨0⟩)
-    (hlen : 64 < (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (vaultStringSlot isName)).toNat)
-    (hwrap : ¬ (UInt256.size - 63 ≤ (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (vaultStringSlot isName)).toNat ∧
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (vaultStringSlot isName)).toNat ≤ UInt256.size - 32)) :
+    (hlen : 64 < (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (vaultStringSlot isName)).toNat)
+    (hwrap : ¬ (UInt256.size - 63 ≤ (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (vaultStringSlot isName)).toNat ∧
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (vaultStringSlot isName)).toNat ≤ UInt256.size - 32)) :
     ExecTransitionBody config contract evm ∅ (vaultStringBody isName) .reverted := by
-  let length := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (vaultStringSlot isName)
+  let length := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (vaultStringSlot isName)
   have hv : (vaultStringLocals length).get? "stored_length" = some (.int (Int.ofNat length.toNat)) := by simp [vaultStringLocals]
   have hguard : evalExpr? config {contract := contract, locals := vaultStringLocals length} evm vaultStringWrapExpr = .ok (.bool false) := by
     rw [vaultStringWrapEval evm (vaultStringLocals length) length hv]

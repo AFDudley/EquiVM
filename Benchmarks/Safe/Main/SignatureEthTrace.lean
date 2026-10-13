@@ -4,7 +4,7 @@ import Benchmarks.Safe.Main.EcrecoverTrace
 import Benchmarks.Safe.Main.SignatureRecoveryMemory
 import Benchmarks.Safe.Main.MemoryPreserves
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.Main
 

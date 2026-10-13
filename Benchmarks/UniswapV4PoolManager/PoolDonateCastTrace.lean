@@ -4,7 +4,7 @@ import Benchmarks.UniswapV4PoolManager.RuntimeBlocks_029
 import Benchmarks.UniswapV4PoolManager.SafeCast
 import Benchmarks.UniswapV4PoolManager.ReachCost
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.UniswapV4PoolManager.Immutables
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
@@ -25,7 +25,7 @@ theorem poolDonateCastTrace {I : ExecutionEnv} {g : Sat256} {s0 evm : State}
   have hread : UInt256.land (evm.accountMap.get? I.codeOwner |>.option (⟨0⟩ : UInt256)
       (fun ac => ac.storage.getD (poolSlot id+UInt256.ofNat 3) ⟨0⟩))
       (UInt256.ofNat 340282366920938463463374607431768211455) = poolLiquidityWord evm id := by
-    simp only [poolLiquidityWord, poolLiquidityPacked, poolLiquiditySlot, Solm.EVM.storageLoad, hI]
+    simp only [poolLiquidityWord, poolLiquidityPacked, poolLiquiditySlot, Stele.EVM.storageLoad, hI]
     rfl
   by_cases hz : poolLiquidityWord evm id = ⟨0⟩
   · rw [if_pos hz]

@@ -2,7 +2,7 @@ import Benchmarks.UniswapV4PoolManager.BalanceBurn
 import Benchmarks.UniswapV4PoolManager.BalanceMintTrace
 
 /-! The ERC6909 balance debit and Transfer event reached by burn. -/
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.UniswapV4PoolManager.Immutables
 namespace Benchmarks.UniswapV4PoolManager

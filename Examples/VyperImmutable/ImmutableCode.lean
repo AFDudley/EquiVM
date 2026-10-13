@@ -1,16 +1,16 @@
 import Examples.VyperImmutable.Bytecode
 import Examples.VyperImmutable.Immutables
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Examples.VyperImmutable
 
 /-- Runtime bytes from the constructor's immutable valuation. -/
-def deployedRuntime (imms : Solm.Store) : ByteArray :=
+def deployedRuntime (imms : Stele.Store) : ByteArray :=
   immutableLayout.deployed immutableBytecode imms
 
-/-- The compiler's slot order, with each named Solm value encoded as Vyper bytes. -/
-private theorem immutablePatches (imms : Solm.Store) (v0 v1 v2 : Solm.Value)
+/-- The compiler's slot order, with each named Stele value encoded as Vyper bytes. -/
+private theorem immutablePatches (imms : Stele.Store) (v0 v1 v2 : Stele.Value)
     (b0 b1 b2 : ByteArray)
     (hget0 : imms.get? "OWNER" = some v0)
     (henc0 : Reasoning.VyperImmutables.scalarBytes? v0 = some b0)
@@ -24,7 +24,7 @@ private theorem immutablePatches (imms : Solm.Store) (v0 v1 v2 : Solm.Value)
     Reasoning.VyperImmutables.Slot.patch?, hget0, hget1, hget2, henc0, henc1, henc2]
 
 /-- The runtime code read for Vyper immutable `OWNER`. -/
-theorem immutableRead_OWNER (imms : Solm.Store) (v0 v1 v2 : Solm.Value)
+theorem immutableRead_OWNER (imms : Stele.Store) (v0 v1 v2 : Stele.Value)
     (b0 b1 b2 suffix : ByteArray)
     (hget0 : imms.get? "OWNER" = some v0)
     (henc0 : Reasoning.VyperImmutables.scalarBytes? v0 = some b0)
@@ -48,7 +48,7 @@ theorem immutableRead_OWNER (imms : Solm.Store) (v0 v1 v2 : Solm.Value)
   · exact hsuffix
 
 /-- Read `OWNER` back from memory after copying the immutable section. -/
-theorem immutableCopy_OWNER (imms : Solm.Store) (v0 v1 v2 : Solm.Value)
+theorem immutableCopy_OWNER (imms : Stele.Store) (v0 v1 v2 : Stele.Value)
     (b0 b1 b2 suffix mem : ByteArray) (dest : Nat)
     (hget0 : imms.get? "OWNER" = some v0)
     (henc0 : Reasoning.VyperImmutables.scalarBytes? v0 = some b0)
@@ -80,11 +80,11 @@ theorem immutableLoad_OWNER (immWords : String → Ethereum.UInt256)
       immutableLayout.slots.map (fun slot => (slot.offset, (immWords slot.name).toByteArray)) =
       [] ++ (0, (immWords "OWNER").toByteArray) :: [(32, (immWords "LIMIT").toByteArray), (64, (immWords "TAG").toByteArray)] := by
     rfl
-  have hpatch : ∃ suffix, Solm.patchRuntime (ByteArray.zeroes immutableLayout.size)
+  have hpatch : ∃ suffix, Stele.patchRuntime (ByteArray.zeroes immutableLayout.size)
       (immutableLayout.slots.map (fun slot => (slot.offset, (immWords slot.name).toByteArray))) =
       some suffix := by
     simp only [immutableLayout, List.map_cons, List.map_nil]
-    simp [Solm.patchRuntime, Solm.spliceBytes?, ByteArray.size_append,
+    simp [Stele.patchRuntime, Stele.spliceBytes?, ByteArray.size_append,
       ByteArray.size_extract, ByteArray_zeroes_size, toByteArray_size]
   have hpost : ∀ (p : Nat × ByteArray), p ∈ [(32, (immWords "LIMIT").toByteArray), (64, (immWords "TAG").toByteArray)] → 0 + 32 ≤ p.1 ∨ p.1 + 32 ≤ 0 := by
     intro p hp
@@ -106,11 +106,11 @@ theorem immutableCopyWord_OWNER (immWords : String → Ethereum.UInt256)
       immutableLayout.slots.map (fun slot => (slot.offset, (immWords slot.name).toByteArray)) =
       [] ++ (0, (immWords "OWNER").toByteArray) :: [(32, (immWords "LIMIT").toByteArray), (64, (immWords "TAG").toByteArray)] := by
     rfl
-  have hpatch : ∃ suffix, Solm.patchRuntime (ByteArray.zeroes immutableLayout.size)
+  have hpatch : ∃ suffix, Stele.patchRuntime (ByteArray.zeroes immutableLayout.size)
       (immutableLayout.slots.map (fun slot => (slot.offset, (immWords slot.name).toByteArray))) =
       some suffix := by
     simp only [immutableLayout, List.map_cons, List.map_nil]
-    simp [Solm.patchRuntime, Solm.spliceBytes?, ByteArray.size_append,
+    simp [Stele.patchRuntime, Stele.spliceBytes?, ByteArray.size_append,
       ByteArray.size_extract, ByteArray_zeroes_size, toByteArray_size]
   have hpost : ∀ (p : Nat × ByteArray), p ∈ [(32, (immWords "LIMIT").toByteArray), (64, (immWords "TAG").toByteArray)] → 0 + 32 ≤ p.1 ∨ p.1 + 32 ≤ 0 := by
     intro p hp
@@ -123,7 +123,7 @@ theorem immutableCopyWord_OWNER (immWords : String → Ethereum.UInt256)
     (pre := []) (post := [(32, (immWords "LIMIT").toByteArray), (64, (immWords "TAG").toByteArray)]) hslots (by decide) hpost hpatch
 
 /-- The runtime code read for Vyper immutable `LIMIT`. -/
-theorem immutableRead_LIMIT (imms : Solm.Store) (v0 v1 v2 : Solm.Value)
+theorem immutableRead_LIMIT (imms : Stele.Store) (v0 v1 v2 : Stele.Value)
     (b0 b1 b2 suffix : ByteArray)
     (hget0 : imms.get? "OWNER" = some v0)
     (henc0 : Reasoning.VyperImmutables.scalarBytes? v0 = some b0)
@@ -147,7 +147,7 @@ theorem immutableRead_LIMIT (imms : Solm.Store) (v0 v1 v2 : Solm.Value)
   · exact hsuffix
 
 /-- Read `LIMIT` back from memory after copying the immutable section. -/
-theorem immutableCopy_LIMIT (imms : Solm.Store) (v0 v1 v2 : Solm.Value)
+theorem immutableCopy_LIMIT (imms : Stele.Store) (v0 v1 v2 : Stele.Value)
     (b0 b1 b2 suffix mem : ByteArray) (dest : Nat)
     (hget0 : imms.get? "OWNER" = some v0)
     (henc0 : Reasoning.VyperImmutables.scalarBytes? v0 = some b0)
@@ -179,11 +179,11 @@ theorem immutableLoad_LIMIT (immWords : String → Ethereum.UInt256)
       immutableLayout.slots.map (fun slot => (slot.offset, (immWords slot.name).toByteArray)) =
       [(0, (immWords "OWNER").toByteArray)] ++ (32, (immWords "LIMIT").toByteArray) :: [(64, (immWords "TAG").toByteArray)] := by
     rfl
-  have hpatch : ∃ suffix, Solm.patchRuntime (ByteArray.zeroes immutableLayout.size)
+  have hpatch : ∃ suffix, Stele.patchRuntime (ByteArray.zeroes immutableLayout.size)
       (immutableLayout.slots.map (fun slot => (slot.offset, (immWords slot.name).toByteArray))) =
       some suffix := by
     simp only [immutableLayout, List.map_cons, List.map_nil]
-    simp [Solm.patchRuntime, Solm.spliceBytes?, ByteArray.size_append,
+    simp [Stele.patchRuntime, Stele.spliceBytes?, ByteArray.size_append,
       ByteArray.size_extract, ByteArray_zeroes_size, toByteArray_size]
   have hpost : ∀ (p : Nat × ByteArray), p ∈ [(64, (immWords "TAG").toByteArray)] → 32 + 32 ≤ p.1 ∨ p.1 + 32 ≤ 32 := by
     intro p hp
@@ -205,11 +205,11 @@ theorem immutableCopyWord_LIMIT (immWords : String → Ethereum.UInt256)
       immutableLayout.slots.map (fun slot => (slot.offset, (immWords slot.name).toByteArray)) =
       [(0, (immWords "OWNER").toByteArray)] ++ (32, (immWords "LIMIT").toByteArray) :: [(64, (immWords "TAG").toByteArray)] := by
     rfl
-  have hpatch : ∃ suffix, Solm.patchRuntime (ByteArray.zeroes immutableLayout.size)
+  have hpatch : ∃ suffix, Stele.patchRuntime (ByteArray.zeroes immutableLayout.size)
       (immutableLayout.slots.map (fun slot => (slot.offset, (immWords slot.name).toByteArray))) =
       some suffix := by
     simp only [immutableLayout, List.map_cons, List.map_nil]
-    simp [Solm.patchRuntime, Solm.spliceBytes?, ByteArray.size_append,
+    simp [Stele.patchRuntime, Stele.spliceBytes?, ByteArray.size_append,
       ByteArray.size_extract, ByteArray_zeroes_size, toByteArray_size]
   have hpost : ∀ (p : Nat × ByteArray), p ∈ [(64, (immWords "TAG").toByteArray)] → 32 + 32 ≤ p.1 ∨ p.1 + 32 ≤ 32 := by
     intro p hp
@@ -222,7 +222,7 @@ theorem immutableCopyWord_LIMIT (immWords : String → Ethereum.UInt256)
     (pre := [(0, (immWords "OWNER").toByteArray)]) (post := [(64, (immWords "TAG").toByteArray)]) hslots (by decide) hpost hpatch
 
 /-- The runtime code read for Vyper immutable `TAG`. -/
-theorem immutableRead_TAG (imms : Solm.Store) (v0 v1 v2 : Solm.Value)
+theorem immutableRead_TAG (imms : Stele.Store) (v0 v1 v2 : Stele.Value)
     (b0 b1 b2 suffix : ByteArray)
     (hget0 : imms.get? "OWNER" = some v0)
     (henc0 : Reasoning.VyperImmutables.scalarBytes? v0 = some b0)
@@ -243,7 +243,7 @@ theorem immutableRead_TAG (imms : Solm.Store) (v0 v1 v2 : Solm.Value)
   · exact hsuffix
 
 /-- Read `TAG` back from memory after copying the immutable section. -/
-theorem immutableCopy_TAG (imms : Solm.Store) (v0 v1 v2 : Solm.Value)
+theorem immutableCopy_TAG (imms : Stele.Store) (v0 v1 v2 : Stele.Value)
     (b0 b1 b2 suffix mem : ByteArray) (dest : Nat)
     (hget0 : imms.get? "OWNER" = some v0)
     (henc0 : Reasoning.VyperImmutables.scalarBytes? v0 = some b0)
@@ -272,11 +272,11 @@ theorem immutableLoad_TAG (immWords : String → Ethereum.UInt256)
       immutableLayout.slots.map (fun slot => (slot.offset, (immWords slot.name).toByteArray)) =
       [(0, (immWords "OWNER").toByteArray), (32, (immWords "LIMIT").toByteArray)] ++ (64, (immWords "TAG").toByteArray) :: [] := by
     rfl
-  have hpatch : ∃ suffix, Solm.patchRuntime (ByteArray.zeroes immutableLayout.size)
+  have hpatch : ∃ suffix, Stele.patchRuntime (ByteArray.zeroes immutableLayout.size)
       (immutableLayout.slots.map (fun slot => (slot.offset, (immWords slot.name).toByteArray))) =
       some suffix := by
     simp only [immutableLayout, List.map_cons, List.map_nil]
-    simp [Solm.patchRuntime, Solm.spliceBytes?, ByteArray.size_append,
+    simp [Stele.patchRuntime, Stele.spliceBytes?, ByteArray.size_append,
       ByteArray.size_extract, ByteArray_zeroes_size, toByteArray_size]
   have hpost : ∀ (p : Nat × ByteArray), p ∈ [] → 64 + 32 ≤ p.1 ∨ p.1 + 32 ≤ 64 := by
     intro p hp
@@ -298,11 +298,11 @@ theorem immutableCopyWord_TAG (immWords : String → Ethereum.UInt256)
       immutableLayout.slots.map (fun slot => (slot.offset, (immWords slot.name).toByteArray)) =
       [(0, (immWords "OWNER").toByteArray), (32, (immWords "LIMIT").toByteArray)] ++ (64, (immWords "TAG").toByteArray) :: [] := by
     rfl
-  have hpatch : ∃ suffix, Solm.patchRuntime (ByteArray.zeroes immutableLayout.size)
+  have hpatch : ∃ suffix, Stele.patchRuntime (ByteArray.zeroes immutableLayout.size)
       (immutableLayout.slots.map (fun slot => (slot.offset, (immWords slot.name).toByteArray))) =
       some suffix := by
     simp only [immutableLayout, List.map_cons, List.map_nil]
-    simp [Solm.patchRuntime, Solm.spliceBytes?, ByteArray.size_append,
+    simp [Stele.patchRuntime, Stele.spliceBytes?, ByteArray.size_append,
       ByteArray.size_extract, ByteArray_zeroes_size, toByteArray_size]
   have hpost : ∀ (p : Nat × ByteArray), p ∈ [] → 64 + 32 ≤ p.1 ∨ p.1 + 32 ≤ 64 := by
     intro p hp
@@ -314,8 +314,8 @@ theorem immutableCopyWord_TAG (immWords : String → Ethereum.UInt256)
     (words := immWords) (name := "TAG") (offset := 64) (dest := dest)
     (pre := [(0, (immWords "OWNER").toByteArray), (32, (immWords "LIMIT").toByteArray)]) (post := []) hslots (by decide) hpost hpatch
 
-/-- The scalar word valuation encodes the same suffix as the Solm store. -/
-theorem immutableWordsBridge (imms : Solm.Store) (v0 v1 v2 : Solm.Value)
+/-- The scalar word valuation encodes the same suffix as the Stele store. -/
+theorem immutableWordsBridge (imms : Stele.Store) (v0 v1 v2 : Stele.Value)
     (b0 b1 b2 : ByteArray)
     (hget0 : imms.get? "OWNER" = some v0)
     (henc0 : Reasoning.VyperImmutables.scalarBytes? v0 = some b0)
@@ -345,8 +345,8 @@ theorem immutableWordsBridge (imms : Solm.Store) (v0 v1 v2 : Solm.Value)
   rw [hp]
   simp [immutableLayout, hw0, hw1, hw2]
 
-/-- The scalar word runtime agrees with the constructor's Solm valuation. -/
-theorem deployedRuntime_eq_words (imms : Solm.Store) (v0 v1 v2 : Solm.Value)
+/-- The scalar word runtime agrees with the constructor's Stele valuation. -/
+theorem deployedRuntime_eq_words (imms : Stele.Store) (v0 v1 v2 : Stele.Value)
     (b0 b1 b2 : ByteArray)
     (hget0 : imms.get? "OWNER" = some v0)
     (henc0 : Reasoning.VyperImmutables.scalarBytes? v0 = some b0)
@@ -361,8 +361,8 @@ theorem deployedRuntime_eq_words (imms : Solm.Store) (v0 v1 v2 : Solm.Value)
   rw [immutableWordsBridge imms v0 v1 v2 b0 b1 b2 hget0 henc0 hget1 henc1 hget2 henc2 hsize0 hsize1 hsize2]
 
 /-- Constructor memory writes in slot order produce the patched runtime. -/
-theorem returnedRuntime_eq_deployed (imms : Solm.Store) (returned : ByteArray)
-    (v0 v1 v2 : Solm.Value) (b0 b1 b2 : ByteArray)
+theorem returnedRuntime_eq_deployed (imms : Stele.Store) (returned : ByteArray)
+    (v0 v1 v2 : Stele.Value) (b0 b1 b2 : ByteArray)
     (hget0 : imms.get? "OWNER" = some v0)
     (henc0 : Reasoning.VyperImmutables.scalarBytes? v0 = some b0)
     (hget1 : imms.get? "LIMIT" = some v1)
@@ -380,8 +380,8 @@ theorem returnedRuntime_eq_deployed (imms : Solm.Store) (returned : ByteArray)
     (immutableWordsBridge imms v0 v1 v2 b0 b1 b2 hget0 henc0 hget1 henc1 hget2 henc2 hsize0 hsize1 hsize2) hreturned
 
 /-- A full RETURN read of that buffer yields the patched runtime. -/
-theorem returnedRuntime_read_eq_deployed (imms : Solm.Store) (returned : ByteArray)
-    (v0 v1 v2 : Solm.Value) (b0 b1 b2 : ByteArray)
+theorem returnedRuntime_read_eq_deployed (imms : Stele.Store) (returned : ByteArray)
+    (v0 v1 v2 : Stele.Value) (b0 b1 b2 : ByteArray)
     (hget0 : imms.get? "OWNER" = some v0)
     (henc0 : Reasoning.VyperImmutables.scalarBytes? v0 = some b0)
     (hget1 : imms.get? "LIMIT" = some v1)

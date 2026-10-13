@@ -2,24 +2,24 @@ import Benchmarks.CompoundIII.Comet.WithdrawBaseModel
 import Benchmarks.CompoundIII.Comet.WithdrawCollateralTrace
 import Benchmarks.CompoundIII.Comet.BalanceSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.CompoundIII.Comet.Immutables
 
 namespace Benchmarks.CompoundIII.Comet
 
 def withdrawBalanceValid (v : CometWithExtendedAssetListImmutables) (evm : EVM.State) : Prop :=
   CurrentIndicesValid v
-    (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
-    (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) (timestampWord evm.executionEnv)
+    (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
+    (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) (timestampWord evm.executionEnv)
 
 instance (v : CometWithExtendedAssetListImmutables) (evm : EVM.State) :
     Decidable (withdrawBalanceValid v evm) := by unfold withdrawBalanceValid; infer_instance
 
 def withdrawBalanceWord (v : CometWithExtendedAssetListImmutables) (evm : EVM.State)
     (src : AccountAddress) : UInt256 :=
-  balanceWord v (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
-    (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) (timestampWord evm.executionEnv)
-    (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (userBasicSlot src))
+  balanceWord v (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
+    (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) (timestampWord evm.executionEnv)
+    (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (userBasicSlot src))
 
 inductive WithdrawAssetTrace (v : CometWithExtendedAssetListImmutables)
     (src recipient asset : AccountAddress) (amount : UInt256) (evm : EVM.State) :

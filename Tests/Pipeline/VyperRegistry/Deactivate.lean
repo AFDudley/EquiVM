@@ -8,7 +8,7 @@ of `entries[id]` into memory (pc 1152, the local `entry`), `assert entry.active`
 `active := False` (pc 1341), and `totalWeight -= entry.weight` with its underflow check (pc 1319/1359).
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
   Reasoning.VyperBounded
 
 namespace Tests.Pipeline.VyperRegistry
@@ -189,7 +189,7 @@ theorem registryDeactivateBody {σ σ₀ A I} {g : UInt256} (hwf : storageWF σ 
     · show EvalResult.ok (wordToElem .bool (solcSlotWordAt (entrySlot (argWord I) + UInt256.ofNat 2) σ I)) = _
       rw [h]; rfl
   have hassignA : assignStorageRef? config (frame L2) (initState σ σ₀ (Sat256.ofUInt256 g) A I) .storage activeRef
-      (.bool false) = .ok (frame L2, Solm.EVM.storageStore (initState σ σ₀ (Sat256.ofUInt256 g) A I) I.codeOwner
+      (.bool false) = .ok (frame L2, Stele.EVM.storageStore (initState σ σ₀ (Sat256.ofUInt256 g) A I) I.codeOwner
         (entrySlot (argWord I) + UInt256.ofNat 2) ⟨0⟩) := by
     apply assignStorageRef_storage_vyper_scalar_value (hbackend := rfl) (hcheck := by rfl)
       (er := { base := "entries", steps := [.mindex (.int (Int.ofNat (argWord I).toNat)), .field "active"] })
@@ -201,7 +201,7 @@ theorem registryDeactivateBody {σ σ₀ A I} {g : UInt256} (hwf : storageWF σ 
     rfl
   have hkec2 := keccak_entry_over (dMem σ I) (by rw [(dMem_sizes σ I).2.2]; omega) (argWord I)
   have htw : evalExpr? config (frame L2)
-      (Solm.EVM.storageStore (initState σ σ₀ (Sat256.ofUInt256 g) A I) I.codeOwner (entrySlot (argWord I) + UInt256.ofNat 2) ⟨0⟩)
+      (Stele.EVM.storageStore (initState σ σ₀ (Sat256.ofUInt256 g) A I) I.codeOwner (entrySlot (argWord I) + UInt256.ofNat 2) ⟨0⟩)
       (.storage twRef) =
       .ok (uint256Value (solcSlotWordAt (UInt256.ofNat 20)
         (sstoreAccountMap I.codeOwner σ (entrySlot (argWord I) + UInt256.ofNat 2) ⟨0⟩) I)) := by
@@ -273,11 +273,11 @@ theorem registryDeactivateBody {σ σ₀ A I} {g : UInt256} (hwf : storageWF σ 
   have rd7 := registryBlocks.registry_block_1359 (by simp) hperm rd6
   have hsub := evalExpr_uint256_sub htw (hweight _) hund
   have hassignT : assignStorageRef? config (frame L2)
-      (Solm.EVM.storageStore (initState σ σ₀ (Sat256.ofUInt256 g) A I) I.codeOwner (entrySlot (argWord I) + UInt256.ofNat 2) ⟨0⟩)
+      (Stele.EVM.storageStore (initState σ σ₀ (Sat256.ofUInt256 g) A I) I.codeOwner (entrySlot (argWord I) + UInt256.ofNat 2) ⟨0⟩)
       .storage twRef (uint256Value (UInt256.sub (solcSlotWordAt (UInt256.ofNat 20)
         (sstoreAccountMap I.codeOwner σ (entrySlot (argWord I) + UInt256.ofNat 2) ⟨0⟩) I) (dWt σ I))) =
-      .ok (frame L2, Solm.EVM.storageStore
-        (Solm.EVM.storageStore (initState σ σ₀ (Sat256.ofUInt256 g) A I) I.codeOwner (entrySlot (argWord I) + UInt256.ofNat 2) ⟨0⟩)
+      .ok (frame L2, Stele.EVM.storageStore
+        (Stele.EVM.storageStore (initState σ σ₀ (Sat256.ofUInt256 g) A I) I.codeOwner (entrySlot (argWord I) + UInt256.ofNat 2) ⟨0⟩)
         I.codeOwner (UInt256.ofNat 20) (UInt256.sub (solcSlotWordAt (UInt256.ofNat 20)
           (sstoreAccountMap I.codeOwner σ (entrySlot (argWord I) + UInt256.ofNat 2) ⟨0⟩) I) (dWt σ I))) := by
     apply assignStorageRef_storage_vyper_scalar (hbackend := rfl) (hcheck := by rfl)
@@ -290,8 +290,8 @@ theorem registryDeactivateBody {σ σ₀ A I} {g : UInt256} (hwf : storageWF σ 
   have hbody : ExecTransitionBody config contract (initState σ σ₀ (Sat256.ofUInt256 g) A I) (dStore I)
       deactivateTransition.body
       (.returned (frame L2)
-        (Solm.EVM.storageStore
-          (Solm.EVM.storageStore (initState σ σ₀ (Sat256.ofUInt256 g) A I) I.codeOwner (entrySlot (argWord I) + UInt256.ofNat 2) ⟨0⟩)
+        (Stele.EVM.storageStore
+          (Stele.EVM.storageStore (initState σ σ₀ (Sat256.ofUInt256 g) A I) I.codeOwner (entrySlot (argWord I) + UInt256.ofNat 2) ⟨0⟩)
           I.codeOwner (UInt256.ofNat 20) (UInt256.sub (solcSlotWordAt (UInt256.ofNat 20)
             (sstoreAccountMap I.codeOwner σ (entrySlot (argWord I) + UInt256.ofNat 2) ⟨0⟩) I) (dWt σ I))) none) := by
     rw [deactivateBody_eq]

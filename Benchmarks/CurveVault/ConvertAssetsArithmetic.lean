@@ -1,6 +1,6 @@
 import Benchmarks.CurveVault.ConvertSharesArithmetic
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch Reasoning.VyperCalls
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch Reasoning.VyperCalls
 namespace Benchmarks.CurveVault
 
 abbrev vaultConvertAssetsFunction : FunctionDecl := contract.functions[29]!

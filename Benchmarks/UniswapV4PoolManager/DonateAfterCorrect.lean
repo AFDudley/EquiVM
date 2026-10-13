@@ -4,7 +4,7 @@ import Benchmarks.UniswapV4PoolManager.SignedResultTrace
 import Benchmarks.UniswapV4PoolManager.SignedWordBounds
 import Benchmarks.UniswapV4PoolManager.ABIResultTrace
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.UniswapV4PoolManager.Immutables
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
@@ -60,6 +60,6 @@ theorem donateAfterCorrect {I : ExecutionEnv} {g : Sat256} {s0 evm : State}
       returnEquiv_of_encode (signedReturnEncoding ⟨256, by decide⟩ delta (signedWord_fits delta))⟩
   | reverted => exact .inr ⟨.reverted, ExecBlock.consRevert hs, ht⟩
   | staticViolation => exact .inr ⟨.staticViolation, ExecBlock.consStatic hs, ht⟩
-  | ok | «break» | «continue» => exact False.elim ht
+  | ok | «break» | «continue» | noMatch | decodingFailed => exact False.elim ht
 
 end Benchmarks.UniswapV4PoolManager

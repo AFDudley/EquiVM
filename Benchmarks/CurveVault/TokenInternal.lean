@@ -2,7 +2,7 @@ import Benchmarks.CurveVault.TokenSource
 import Benchmarks.CurveVault.TokenOutputMemory
 import Benchmarks.CurveVault.TokenReturnEVM
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch Reasoning.VyperCalls
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch Reasoning.VyperCalls
 namespace Benchmarks.CurveVault
 
 theorem vaultTokenRoutine {I : ExecutionEnv} {g : Sat256} {s0 evm : State}

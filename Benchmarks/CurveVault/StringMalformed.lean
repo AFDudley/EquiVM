@@ -2,7 +2,7 @@ import Benchmarks.CurveVault.StringMemory
 import Benchmarks.CurveVault.StringEncoding
 import Benchmarks.CurveVault.StringGas
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 theorem vaultStringOutputEmpty (I : ExecutionEnv) (front : ByteArray) (hfront : front.size = 64) :

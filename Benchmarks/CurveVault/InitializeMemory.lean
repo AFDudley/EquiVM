@@ -1,7 +1,7 @@
 import Benchmarks.CurveVault.Memory
 import Reasoning.MemCascade
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 def vaultInitializeMemory (mem : ByteArray) (amm controller token collateral : UInt256) : ByteArray :=

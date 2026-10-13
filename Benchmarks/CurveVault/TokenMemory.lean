@@ -1,7 +1,7 @@
 import Benchmarks.CurveVault.Calls
 import Benchmarks.CurveVault.Memory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch Reasoning.VyperCalls
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch Reasoning.VyperCalls
 namespace Benchmarks.CurveVault
 
 def vaultTokenPayload (sender recipient amount : UInt256) : ByteArray :=

@@ -5,7 +5,7 @@ import Benchmarks.CurveVault.RuntimeBlocks_013
 import Benchmarks.CurveVault.RuntimeBlocks_014
 import Benchmarks.CurveVault.RuntimeBlocks_031
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 def vaultCreditLimitsEntry (isDeposit : Bool) : Nat := if isDeposit then 2190 else 3359

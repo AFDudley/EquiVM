@@ -1,7 +1,7 @@
 import Benchmarks.CurveVault.ConversionPrefix
 import Benchmarks.CurveVault.RuntimeBlocks_027
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch Reasoning.VyperCalls
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch Reasoning.VyperCalls
 namespace Benchmarks.CurveVault
 
 

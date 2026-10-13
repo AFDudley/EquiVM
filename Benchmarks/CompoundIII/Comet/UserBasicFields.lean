@@ -1,7 +1,7 @@
 import Benchmarks.CompoundIII.Comet.StaticReturns
 import Benchmarks.CompoundIII.Comet.SignedFields
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 
@@ -76,7 +76,7 @@ theorem evalUserBasicField (evm : EVM.State) (locals imms : Store)
     evalExpr? config { contract := contract, locals := locals, immutables := imms }
       evm (userBasicFieldExpr i) =
       .ok (.int (userBasicFieldWord
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (userBasicSlot addr)) i).toNat) := by
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (userBasicSlot addr)) i).toNat) := by
   have hbound : (userBasicFieldOffset i).val + (userBasicFieldSize i).val - 1 < 32 := by
     rcases i with ⟨i, hi⟩; interval_cases i <;> dsimp only [userBasicFieldSize, userBasicFieldOffset] <;> decide
   apply evalExpr_storage_scalar_value (hbackend := rfl)
@@ -116,7 +116,7 @@ theorem evalUserBasicPrincipalOf (evm : EVM.State) (locals imms : Store)
     evalExpr? config { contract := contract, locals := locals, immutables := imms }
       evm (.storage ⟨"userBasic", [.mindex arg, .field "principal"]⟩) =
       .ok (.int (signed104
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (userBasicSlot addr)))) := by
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (userBasicSlot addr)))) := by
   apply evalExpr_storage_scalar_value (hbackend := rfl)
     (loc := { slot := userBasicSlot addr, offset := 0, size := 13, hbound := by decide,
               type := .int (.sint ⟨104, by decide⟩) })
@@ -136,7 +136,7 @@ theorem evalUserBasicPrincipal (evm : EVM.State) (locals imms : Store)
     evalExpr? config { contract := contract, locals := locals, immutables := imms }
       evm userBasicPrincipalExpr =
       .ok (.int (signed104
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (userBasicSlot addr)))) := by
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (userBasicSlot addr)))) := by
   apply evalUserBasicPrincipalOf evm locals imms addr (.var "arg0") hlocal
   simp only [evalExpr?, harg, EvalResult.ofOption]
 

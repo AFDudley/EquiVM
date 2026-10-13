@@ -5,7 +5,7 @@ import Benchmarks.CurveVault.InitializeConfig
 import Benchmarks.CurveVault.InitializeSymbolCall
 import Benchmarks.CurveVault.InitializeStringWrites
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 theorem vaultInitializeAfterGuard {I : ExecutionEnv} {g : Sat256} {s0 evm : State}

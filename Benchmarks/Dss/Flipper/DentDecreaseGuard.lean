@@ -1,7 +1,7 @@
 import Benchmarks.Dss.Flipper.DentLotGuard
 import Benchmarks.Dss.Flipper.CheckedMul
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Flipper
 

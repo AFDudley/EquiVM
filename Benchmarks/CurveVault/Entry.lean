@@ -4,7 +4,7 @@ import Benchmarks.CurveVault.RuntimeBlocks_031
 
 /-! The shared calldata/payability guard and computed jump at pcs 73–98. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 
 namespace Benchmarks.CurveVault
 

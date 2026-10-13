@@ -2,11 +2,11 @@ import Benchmarks.CurveVault.InitializeStorage
 import Benchmarks.CurveVault.PaddedReadMemory
 import Benchmarks.CurveVault.StringSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 def vaultStringState (evm : State) (slot : UInt256) (length : Nat) (data : ByteArray) : State :=
-  vyperWriteDataWords (Solm.EVM.storageStore evm evm.executionEnv.codeOwner slot (UInt256.ofNat length))
+  vyperWriteDataWords (Stele.EVM.storageStore evm evm.executionEnv.codeOwner slot (UInt256.ofNat length))
     slot data 0 ((length + 31) / 32)
 
 def vaultStringAccounts (I : ExecutionEnv) (σ : AccountMap) (slot : UInt256)

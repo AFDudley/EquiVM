@@ -2,7 +2,7 @@ import Reasoning.WordArithmetic
 import Reasoning.EVMWord
 import Benchmarks.Dss.ExponentialDecrease.RpowEVM
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -278,13 +278,13 @@ theorem evalExpr_price_or_false_right {evm : EVM.State} {locals : Store}
 
 theorem evalExpr_priceCut_word {evm : EVM.State} {locals : Store} {cut : UInt256}
     (hbase : locals.get? "cut" = none)
-    (hcut : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩ = cut) :
+    (hcut : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩ = cut) :
     evalExpr? config { contract := contract, locals := locals } evm (.storage cutRef) =
       .ok (.int (Int.ofNat cut.toNat)) := by
   have hload : storageLocLoad evm (wordLoc ⟨1⟩) = .int (Int.ofNat cut.toNat) := by
     rw [show wordLoc = uint256Loc from rfl, storageLocLoad_uint256, hcut]
   exact evalExpr_storage_scalar_value (hbackend := rfl)
-    (cfg := config) (solm := { contract := contract, locals := locals }) (evm := evm)
+    (cfg := config) (stele := { contract := contract, locals := locals }) (evm := evm)
     (slot := cutRef) (er := ({ base := "cut", steps := [] } : EvaledStorageRef))
     (t := .int uint256Int) (loc := wordLoc ⟨1⟩) (value := .int (Int.ofNat cut.toNat))
     (hbase := hbase)
@@ -497,7 +497,7 @@ theorem stairstepExecRmulFunctionRevertMul (evm : EVM.State) {x y : UInt256}
   simpa [rmulFunction, checkedMulUintInto, locals] using ExecFuncBody.execBlockRevert hblock
 
 theorem evalExprs_priceRpowArgsNZero {evm : EVM.State} {σ : AccountMap} {I : ExecutionEnv}
-    (hcut : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩ = priceCutWord σ I)
+    (hcut : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩ = priceCutWord σ I)
     (hn : priceN σ I = ⟨0⟩) :
     evalExprs? config { contract := contract, locals := priceLocalsN σ I } evm
       [.storage cutRef, .var "dur", .intLit RAY] =
@@ -533,7 +533,7 @@ theorem evalExprs_priceRmulRayArgs {evm : EVM.State} {σ : AccountMap} {I : Exec
   simp [evalExprs?, htop, hpow, EvalResult.bind, bind, pure]
 
 theorem evalExprs_priceRpowArgs {evm : EVM.State} {σ : AccountMap} {I : ExecutionEnv}
-    (hcut : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩ = priceCutWord σ I) :
+    (hcut : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩ = priceCutWord σ I) :
     evalExprs? config { contract := contract, locals := priceLocalsN σ I } evm
       [.storage cutRef, .var "dur", .intLit RAY] =
         .ok [.int (Int.ofNat (priceCutWord σ I).toNat),
@@ -572,7 +572,7 @@ theorem stairstepPriceSourceXZeroNNonzeroReturns {evm : EVM.State} {σ : Account
     {I : ExecutionEnv}
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hcutLoad :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩ = priceCutWord σ I)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩ = priceCutWord σ I)
     (hn : priceN σ I ≠ ⟨0⟩)
     (hcut : priceCutWord σ I = ⟨0⟩) :
     ExecTransitionBody config contract evm (priceLocals I) priceTransition.body
@@ -659,7 +659,7 @@ theorem stairstepPriceSourceNZeroReturns {evm : EVM.State} {σ : AccountMap}
     {I : ExecutionEnv}
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hcutLoad :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩ = priceCutWord σ I)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩ = priceCutWord σ I)
     (hn : priceN σ I = ⟨0⟩)
     (hfit : stairstepRay.toNat * (priceTop I).toNat < UInt256.size) :
     ExecTransitionBody config contract evm (priceLocals I) priceTransition.body
@@ -746,7 +746,7 @@ theorem stairstepPriceSourceNZeroRmulOverflowReverts {evm : EVM.State} {σ : Acc
     {I : ExecutionEnv}
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hcutLoad :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩ = priceCutWord σ I)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩ = priceCutWord σ I)
     (hn : priceN σ I = ⟨0⟩)
     (hover : UInt256.size ≤ stairstepRay.toNat * (priceTop I).toNat) :
     ExecTransitionBody config contract evm (priceLocals I) priceTransition.body .reverted := by
@@ -817,7 +817,7 @@ theorem stairstepPriceSourceRpowReverts {evm : EVM.State} {σ : AccountMap}
     {I : ExecutionEnv}
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hcutLoad :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩ = priceCutWord σ I)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩ = priceCutWord σ I)
     (hrpowBody :
       ExecFuncBody config
         { contract := contract,
@@ -862,7 +862,7 @@ theorem stairstepPriceSourceRpowReturns {evm : EVM.State} {σ : AccountMap}
     {I : ExecutionEnv} {pow : UInt256} {rpowLocals : Store}
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hcutLoad :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩ = priceCutWord σ I)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩ = priceCutWord σ I)
     (hrpowBody :
       ExecFuncBody config
         { contract := contract,
@@ -900,7 +900,7 @@ theorem stairstepPriceSourceRpowReturns {evm : EVM.State} {σ : AccountMap}
         .int (Int.ofNat (priceN σ I).toNat), .int (Int.ofNat stairstepRay.toNat)])
       (callee := rpowFunction)
       (locals := uintTernaryLocals (priceCutWord σ I) (priceN σ I) stairstepRay)
-      (calleeSolm := { contract := contract, locals := rpowLocals })
+      (calleeStele := { contract := contract, locals := rpowLocals })
       hrpowArgs hlookupRpow hbindRpow hrpowBody
     simpa [resumeAfterInternalCall, priceLocalsPow] using h
   have hrmulArgs := evalExprs_priceRmulArgs (evm := evm) (σ := σ) (I := I)
@@ -957,7 +957,7 @@ theorem stairstepPriceSourceRpowReturnsRmulOverflowReverts
     {pow : UInt256} {rpowLocals : Store}
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hcutLoad :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩ = priceCutWord σ I)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩ = priceCutWord σ I)
     (hrpowBody :
       ExecFuncBody config
         { contract := contract,
@@ -988,7 +988,7 @@ theorem stairstepPriceSourceRpowReturnsRmulOverflowReverts
         .int (Int.ofNat (priceN σ I).toNat), .int (Int.ofNat stairstepRay.toNat)])
       (callee := rpowFunction)
       (locals := uintTernaryLocals (priceCutWord σ I) (priceN σ I) stairstepRay)
-      (calleeSolm := { contract := contract, locals := rpowLocals })
+      (calleeStele := { contract := contract, locals := rpowLocals })
       hrpowArgs hlookupRpow hbindRpow hrpowBody
     simpa [resumeAfterInternalCall, priceLocalsPow] using h
   have hrmulArgs := evalExprs_priceRmulArgs (evm := evm) (σ := σ) (I := I)

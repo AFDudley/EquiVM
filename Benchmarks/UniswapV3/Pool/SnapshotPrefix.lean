@@ -2,7 +2,7 @@ import Benchmarks.UniswapV3.Pool.NoDelegateCall
 import Benchmarks.UniswapV3.Pool.CheckTicksSource
 import Benchmarks.UniswapV3.Pool.TickReferences
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
@@ -37,7 +37,7 @@ theorem snapshotDelegateCall (v : UniswapV3PoolImmutables) (evm : EVM.State)
     ExecStmt config (snapshotInitialFrame v lower upper) evm
       (.internalCall "checkNotDelegateCall" [] "__c0") (.ok (snapshotDelegateFrame v lower upper) evm) :=
   internalCallFunctionReturn (callee := noDelegateCallFunction) (argVals := []) (locals := ∅)
-    (calleeSolm := noDelegateCallFrame v) (value := none)
+    (calleeStele := noDelegateCallFrame v) (value := none)
     (by simp only [evalExprs?, pure]) noDelegateCallLookup rfl (noDelegateCallReturns v evm hself)
 
 theorem snapshotCheckTicksArgs (v : UniswapV3PoolImmutables) (evm : EVM.State) (lower upper : Int) :
@@ -53,7 +53,7 @@ theorem snapshotCheckTicksCall (v : UniswapV3PoolImmutables) (evm : EVM.State)
       (.internalCall "checkTicks" [.var "tickLower", .var "tickUpper"] "__c1")
       (.ok (snapshotCheckedFrame v lower upper) evm) :=
   internalCallFunctionReturn (callee := checkTicksFunction) (locals := checkTicksLocals lower upper)
-    (calleeSolm := checkTicksFrame (immStore v) lower upper) (value := none)
+    (calleeStele := checkTicksFrame (immStore v) lower upper) (value := none)
     (snapshotCheckTicksArgs v evm lower upper) checkTicksLookup
     (checkTicksBind lower upper) (checkTicksReturns (immStore v) evm lower upper hticks)
 
@@ -117,14 +117,14 @@ theorem snapshotAliasPrefix (v : UniswapV3PoolImmutables) (evm : EVM.State)
   refine ExecBlock.consNormal (ExecStmt.letDecl (value := .int 0) (by simp only [evalExpr?, pure])) ?_
   refine ExecBlock.consNormal (ExecStmt.letDecl (value := .int 0) (by simp only [evalExpr?, pure])) ?_
   change ExecBlock config (snapshotZerosFrame v lower upper) evm _ _
-  refine ExecBlock.consNormal (solm' := snapshotLowerAliasFrame v lower upper) (evm' := evm)
+  refine ExecBlock.consNormal (stele' := snapshotLowerAliasFrame v lower upper) (evm' := evm)
     (ExecStmt.letStorage ?_) ?_
   · exact resolveTickReference _ _ evm "tickLower" lower
       (by simp [snapshotCheckedFrame, snapshotDelegateFrame, snapshotInitialFrame,
         snapshotLocals, checkTicksLocals])
       (by simp [snapshotCheckedFrame, snapshotDelegateFrame, snapshotInitialFrame,
         snapshotLocals, checkTicksLocals, Std.HashMap.getElem_insert])
-  refine ExecBlock.consNormal (solm' := snapshotAliasesFrame v lower upper) (evm' := evm)
+  refine ExecBlock.consNormal (stele' := snapshotAliasesFrame v lower upper) (evm' := evm)
     (ExecStmt.letStorage ?_) ExecBlock.nil
   exact resolveTickReference _ _ evm "tickUpper" upper
     (by simp [snapshotZerosFrame, snapshotCheckedFrame,

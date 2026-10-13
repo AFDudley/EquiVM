@@ -1,8 +1,8 @@
 import Benchmarks.Dss.Flopper.Spec
-import Solm.Notation
+import Stele.Notation
 
 /-!
-# Flopper spec in the Solidity-faithful Solm frontend
+# Flopper spec in the Solidity-faithful Stele frontend
 
 The whole `flop.sol` spec written with `solidity%` and proven definitionally equal to the AST
 spec in `Spec.lean`.  Checked-math helper statement lists are inlined; the `Bid.end` field is
@@ -13,7 +13,7 @@ splices of the spec's own `checkedExternalCallStmts`.  Transition order matches
 `contract.transitions` (selector order).
 -/
 
-open Solm Solm.Notation Benchmarks.Dss.Flopper
+open Stele Stele.Notation Benchmarks.Dss.Flopper
 
 namespace Benchmarks.Dss.Flopper.Syntax
 

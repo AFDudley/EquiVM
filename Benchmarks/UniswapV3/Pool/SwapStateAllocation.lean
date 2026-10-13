@@ -2,7 +2,7 @@ import Benchmarks.UniswapV3.Pool.SwapStateMiddleTrace
 import Benchmarks.UniswapV3.Pool.SwapStateTailTrace
 import Benchmarks.UniswapV3.Pool.SwapInitStack
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 def swapStateInitWords (remaining price tick growth liquidity : UInt256) : List UInt256 :=

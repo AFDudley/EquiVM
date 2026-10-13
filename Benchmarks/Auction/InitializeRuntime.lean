@@ -2,7 +2,7 @@ import Benchmarks.Auction.InitializerRoutines
 import Benchmarks.Auction.InitializeStores
 import Benchmarks.Auction.PauseRoutine
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 100000
 

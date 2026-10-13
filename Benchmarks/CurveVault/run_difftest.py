@@ -14,12 +14,12 @@ runner.mkdir(exist_ok=True)
     'name = "CurveVaultDiff"\nversion = "0.1.0"\n'
     'packagesDir = ' + json.dumps(str(repo / ".lake/packages")) + '\n'
     '[[require]]\nname = "EquiVM"\npath = ' + json.dumps(str(repo)) + '\n'
-    '[[lean_exe]]\nname = "solm-difftest"\nroot = "Main"\n')
+    '[[lean_exe]]\nname = "stele-difftest"\nroot = "Main"\n')
 (runner / "lean-toolchain").write_text((repo / "lean-toolchain").read_text())
 main = (repo / "Tests/DiffTest/Main.lean").read_text()
 main = main.replace("import Tests.DiffTest.Targets", "import Benchmarks.CurveVault.DiffTarget")
-main = main.replace("open Solm.DiffTest Tests.DiffTest",
-                    "open Solm.DiffTest\n\ndef allTargets : List Target :=\n"
+main = main.replace("open Stele.DiffTest Tests.DiffTest",
+                    "open Stele.DiffTest\n\ndef allTargets : List Target :=\n"
                     "  [Benchmarks.CurveVault.diffTarget]")
 (runner / "Main.lean").write_text(main)
 manifest = json.loads((repo / "lake-manifest.json").read_text())
@@ -40,4 +40,4 @@ if (venv_bin / "python3").exists():
     env["PATH"] = str(venv_bin) + os.pathsep + env.get("PATH", "")
 subprocess.run(["python3", "-c", "import Crypto.Hash.RIPEMD160, eth_typing.bls, py_ecc.bls"],
                env=env, check=True)
-raise SystemExit(subprocess.call(["lake", "exe", "solm-difftest", *sys.argv[1:]], cwd=runner, env=env))
+raise SystemExit(subprocess.call(["lake", "exe", "stele-difftest", *sys.argv[1:]], cwd=runner, env=env))

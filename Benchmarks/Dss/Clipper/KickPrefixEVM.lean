@@ -2,7 +2,7 @@ import Benchmarks.Dss.Clipper.KickBase
 import Benchmarks.Dss.Clipper.Arithmetic
 import Benchmarks.Dss.Clipper.Guards
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 namespace Benchmarks.Dss.Clipper

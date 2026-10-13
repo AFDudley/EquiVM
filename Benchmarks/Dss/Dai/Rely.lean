@@ -2,7 +2,7 @@ import Reasoning.WordArithmetic
 import Benchmarks.Dss.Dai.Dispatch
 import Benchmarks.Dss.Dai.Storage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -42,7 +42,7 @@ def relyAuthWord (σ : AccountMap) (I : ExecutionEnv) : UInt256 :=
     (fun acc => acc.storage.getD (relyAuthStorageSlot I) ⟨0⟩)
 
 def relyPostState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (relyGuyStorageSlot I) ⟨1⟩
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (relyGuyStorageSlot I) ⟨1⟩
 
 abbrev relyGuyEvaledRef (I : ExecutionEnv) : EvaledStorageRef :=
   { base := "wards", steps := [.mindex (relyGuyKey I)] }
@@ -116,7 +116,7 @@ theorem evalStorageRef_rely_auth (evm : EVM.State) (I : ExecutionEnv)
 theorem evalExpr_rely_auth_true (evm : EVM.State) (I : ExecutionEnv)
     (hsrc : evm.executionEnv.source = I.source)
     (hload :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (relyAuthStorageSlot I) = ⟨1⟩) :
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (relyAuthStorageSlot I) = ⟨1⟩) :
     evalExpr? config { contract := contract, locals := relyStore I } evm
       (.binary .eq (.storage (wardsRef sender)) (.intLit 1)) = .ok (.bool true) := by
   have hstorage :
@@ -124,7 +124,7 @@ theorem evalExpr_rely_auth_true (evm : EVM.State) (I : ExecutionEnv)
         (.storage (wardsRef sender)) = .ok (.int 1) := by
     rw [evalExpr_storage_scalar_value (hbackend := rfl)
       (cfg := config)
-      (solm := { contract := contract, locals := relyStore I })
+      (stele := { contract := contract, locals := relyStore I })
       (slot := wardsRef sender)
       (er := relyAuthEvaledRef I)
       (t := .int uint256Int)
@@ -145,18 +145,18 @@ theorem evalExpr_rely_auth_true (evm : EVM.State) (I : ExecutionEnv)
 theorem evalExpr_rely_auth_false (evm : EVM.State) (I : ExecutionEnv)
     (hsrc : evm.executionEnv.source = I.source)
     (hload :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (relyAuthStorageSlot I) ≠ ⟨1⟩) :
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (relyAuthStorageSlot I) ≠ ⟨1⟩) :
     evalExpr? config { contract := contract, locals := relyStore I } evm
       (.binary .eq (.storage (wardsRef sender)) (.intLit 1)) = .ok (.bool false) := by
   have hstorage :
       evalExpr? config { contract := contract, locals := relyStore I } evm
         (.storage (wardsRef sender)) =
           .ok (.int (Int.ofNat
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
               (relyAuthStorageSlot I)).toNat)) := by
     exact evalExpr_storage_scalar_value (hbackend := rfl)
       (cfg := config)
-      (solm := { contract := contract, locals := relyStore I })
+      (stele := { contract := contract, locals := relyStore I })
       (slot := wardsRef sender)
       (er := relyAuthEvaledRef I)
       (t := .int uint256Int)
@@ -172,7 +172,7 @@ theorem evalExpr_rely_auth_false (evm : EVM.State) (I : ExecutionEnv)
           storageLocLoad_uint256 evm (relyAuthStorageSlot I))
   have hne :
       Value.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
             (relyAuthStorageSlot I)).toNat) ≠ Value.int 1 := by
     intro hbad
     rw [Value.int.injEq] at hbad
@@ -180,13 +180,13 @@ theorem evalExpr_rely_auth_false (evm : EVM.State) (I : ExecutionEnv)
     exact uInt256_toNat_eq_one (Int.ofNat.inj hbad)
   have hbeq :
       (Value.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
             (relyAuthStorageSlot I)).toNat) == Value.int 1) = false := by
     exact beq_eq_false_iff_ne.mpr hne
   simp only [evalExpr?, hstorage, EvalResult.bind, bind, pure]
   change evalBinaryOp? BinaryOp.eq
       (Value.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (relyAuthStorageSlot I)).toNat))
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (relyAuthStorageSlot I)).toNat))
       (Value.int 1) = .ok (.bool false)
   simp only [evalBinaryOp?]
   rw [hbeq]
@@ -211,12 +211,12 @@ theorem relyAssign (evm : EVM.State) (I : ExecutionEnv) :
   simpa [relyPostState, wordLoc, uint256Loc, uint256Int] using
     storageLocStore_uint256 evm (relyGuyStorageSlot I) ⟨1⟩
 
-/-- The Solm `rely(address)` body stores `wards[guy] = 1` when `msg.sender` is authorized. -/
+/-- The Stele `rely(address)` body stores `wards[guy] = 1` when `msg.sender` is authorized. -/
 theorem daiRelyBodyReturns (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hsrc : evm.executionEnv.source = I.source)
     (hauth :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (relyAuthStorageSlot I) = ⟨1⟩) :
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (relyAuthStorageSlot I) = ⟨1⟩) :
     ExecTransitionBody config contract evm (relyStore I) relyTransition.body
       (.returned { contract := contract, locals := relyStore I }
         (relyPostState evm I) none) := by
@@ -224,7 +224,7 @@ theorem daiRelyBodyReturns (evm : EVM.State) (I : ExecutionEnv)
   simpa [relyTransition, nonpayable, auth] using
     nonpayableRequireAssignStorageBlock
       (cfg := config)
-      (solm := { contract := contract, locals := relyStore I })
+      (stele := { contract := contract, locals := relyStore I })
       (evm := evm)
       (evm' := relyPostState evm I)
       (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
@@ -240,7 +240,7 @@ theorem daiRelyBodyStatic (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hsrc : evm.executionEnv.source = I.source)
     (hauth :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (relyAuthStorageSlot I) = ⟨1⟩)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (relyAuthStorageSlot I) = ⟨1⟩)
     (hperm : evm.executionEnv.perm = false) :
     ExecTransitionBody config contract evm (relyStore I) relyTransition.body
       .staticViolation := by
@@ -248,7 +248,7 @@ theorem daiRelyBodyStatic (evm : EVM.State) (I : ExecutionEnv)
   simpa [relyTransition, nonpayable, auth] using
     nonpayableRequireAssignStorageBlockStatic
       (cfg := config)
-      (solm := { contract := contract, locals := relyStore I })
+      (stele := { contract := contract, locals := relyStore I })
       (evm := evm)
       (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
       (rhs := .intLit 1)
@@ -261,18 +261,18 @@ theorem daiRelyBodyStatic (evm : EVM.State) (I : ExecutionEnv)
       (relyAssign evm I)
       hperm
 
-/-- The Solm `rely(address)` body reverts when `msg.sender` is not authorized. -/
+/-- The Stele `rely(address)` body reverts when `msg.sender` is not authorized. -/
 theorem daiRelyBodyReverts (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hsrc : evm.executionEnv.source = I.source)
     (hauth :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (relyAuthStorageSlot I) ≠ ⟨1⟩) :
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (relyAuthStorageSlot I) ≠ ⟨1⟩) :
     ExecTransitionBody config contract evm (relyStore I) relyTransition.body .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
   simpa [relyTransition, nonpayable, auth] using
     nonpayableSecondRequireReverts
       (cfg := config)
-      (solm := { contract := contract, locals := relyStore I })
+      (stele := { contract := contract, locals := relyStore I })
       (evm := evm)
       (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
       (rest := [.assign .storage (wardsRef (.var "guy")) (.intLit 1)])
@@ -579,19 +579,19 @@ theorem daiRelyBodyCoreStatic
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨696⟩ [sel]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
   have hauthWord : relyAuthWord σ I = ⟨1⟩ := hauth
   have hbody :
-      ExecTransitionBody config contract evmSolm (relyStore I)
+      ExecTransitionBody config contract evmStele (relyStore I)
         relyTransition.body
         .staticViolation := by
-    simpa [evmSolm, relyAuthWord, initState, Solm.EVM.storageLoad,
+    simpa [evmStele, relyAuthWord, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
-      daiRelyBodyStatic evmSolm I
-        (by simp only [evmSolm, initState]; exact hwv)
-        (by simp [evmSolm, initState])
+      daiRelyBodyStatic evmStele I
+        (by simp only [evmStele, initState]; exact hwv)
+        (by simp [evmStele, initState])
         hauthWord
-        (by simp only [evmSolm, initState]; exact hperm)
+        (by simp only [evmStele, initState]; exact hperm)
   exact (permSplit_false hperm (daiX_rely_okSplit
       (g := Sat256.ofUInt256 g) hsz36 hsize hauth hreach))
     |>.reEquivStaticHalt hcode hdispatch hdecode hbody
@@ -614,22 +614,22 @@ theorem daiRelyBodyCoreOk
   swap
   · exact daiRelyBodyCoreStatic hcode hsize (by simpa using hperm) hwv hsz36 hauth
       hdispatch hdecode hreach
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
   have hauthWord : relyAuthWord σ I = ⟨1⟩ := hauth
   have hbody :
-      ExecTransitionBody config contract evmSolm (relyStore I)
+      ExecTransitionBody config contract evmStele (relyStore I)
         relyTransition.body
         (.returned { contract := contract, locals := relyStore I }
-          (relyPostState evmSolm I) none) := by
-    simpa [evmSolm, relyAuthWord, initState, Solm.EVM.storageLoad,
+          (relyPostState evmStele I) none) := by
+    simpa [evmStele, relyAuthWord, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
-      daiRelyBodyReturns evmSolm I
-        (by simp only [evmSolm, initState]; exact hwv)
-        (by simp [evmSolm, initState])
+      daiRelyBodyReturns evmStele I
+        (by simp only [evmStele, initState]; exact hwv)
+        (by simp [evmStele, initState])
         hauthWord
   exact (daiX_rely_ok (g := Sat256.ofUInt256 g) hsz36 hsize hperm hauth hreach)
     |>.reEquivExecutionGen hcode hdispatch hdecode hbody
-      (by simp [relyPostState, evmSolm, initState, storageStore_accountMap])
+      (by simp [relyPostState, evmStele, initState, storageStore_accountMap])
       (by
         simpa [relyTransition] using
           (returnEquiv.fallthrough (o := ByteArray.empty) (r := none) (t := [])
@@ -649,16 +649,16 @@ theorem daiRelyBodyCoreUnauthorized
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨696⟩ [sel]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
   have hauthWord : relyAuthWord σ I ≠ ⟨1⟩ := hauth
   have hbody :
-      ExecTransitionBody config contract evmSolm (relyStore I)
+      ExecTransitionBody config contract evmStele (relyStore I)
         relyTransition.body .reverted := by
-    simpa [evmSolm, relyAuthWord, initState, Solm.EVM.storageLoad,
+    simpa [evmStele, relyAuthWord, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
-      daiRelyBodyReverts evmSolm I
-        (by simp only [evmSolm, initState]; exact hwv)
-        (by simp [evmSolm, initState])
+      daiRelyBodyReverts evmStele I
+        (by simp only [evmStele, initState]; exact hwv)
+        (by simp [evmStele, initState])
         hauthWord
   exact (daiX_rely_unauthorized (g := Sat256.ofUInt256 g) hsz36 hsize hauth hreach)
     |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
@@ -676,7 +676,7 @@ theorem daiRelyBodyCoreDecodeFailed_short
   exact (daiRelyX_shortarg (g := Sat256.ofUInt256 g) hsz4 hsize hshort hreach)
     |>.reEquivDecodingFailed hcode hdispatch hdec
 
-/-- `rely(address)` body refines its Solm transition. -/
+/-- `rely(address)` body refines its Stele transition. -/
 theorem daiRelyBodyCore {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = daiBytecode) (hsize : I.calldata.size < UInt256.size)
     (hwv : I.weiValue = ⟨0⟩)

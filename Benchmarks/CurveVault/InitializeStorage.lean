@@ -2,7 +2,7 @@ import Benchmarks.CurveVault.Storage
 import Benchmarks.CurveVault.AddressWord
 import Reasoning.VyperBounded
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch Reasoning.VyperBounded
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch Reasoning.VyperBounded
 namespace Benchmarks.CurveVault
 
 theorem vaultAssignScalarAddress (evm : State) (locals : Store) (name : Ident)
@@ -12,7 +12,7 @@ theorem vaultAssignScalarAddress (evm : State) (locals : Store) (name : Ident)
     assignStorageRef? config {contract := contract, locals := locals} evm .storage
       {base := name, steps := []} (.address value) =
       .ok ({contract := contract, locals := locals},
-        Solm.EVM.storageStore evm evm.executionEnv.codeOwner slot (UInt256.ofNat value.val)) := by
+        Stele.EVM.storageStore evm evm.executionEnv.codeOwner slot (UInt256.ofNat value.val)) := by
   apply assignStorageRef_storage_of_write (er := {base := name, steps := []}) hbase
     (by simp [evalStorageRef, evalStorageRefSteps, EvalResult.bind, pure, bind]) hty
   change (do
@@ -26,7 +26,7 @@ theorem vaultAssignController (evm : State) (locals : Store) (value : UInt256)
     assignStorageRef? config {contract := contract, locals := locals} evm .storage
       {base := "_controller", steps := []} (.int (Int.ofNat value.toNat)) =
       .ok ({contract := contract, locals := locals},
-        Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨3⟩ value) := by
+        Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨3⟩ value) := by
   apply assignStorageRef_storage_of_write (er := {base := "_controller", steps := []}) hbase
     (by simp [evalStorageRef, evalStorageRefSteps, EvalResult.bind, pure, bind]) rfl
   have hnonneg : ¬ (Int.ofNat value.toNat < 0) := Int.not_lt.mpr (Int.natCast_nonneg _)

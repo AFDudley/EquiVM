@@ -3,7 +3,7 @@ import Benchmarks.CurveVault.Entry
 import Benchmarks.CurveVault.Calldata
 import Benchmarks.CurveVault.SetMaxInternal
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 set_option maxRecDepth 2000000
@@ -31,7 +31,7 @@ theorem vaultSet_max_supplyBodyCore {σ σ₀ A I} {g : UInt256}
   have hv : locals.get? "_max_supply" = some (.int (Int.ofNat value.toNat)) := by simp [locals]
   have hargEval := evalExprs?_singleton
     (evalExpr_varUInt256 (cfg := config) (contract := contract) (evm := vaultSetLock evm ⟨1⟩) hv)
-  have hload : Solm.EVM.transientLoad evm evm.executionEnv.codeOwner ⟨0⟩ = codeOwnerTransientWord I σ ⟨0⟩ :=
+  have hload : Stele.EVM.transientLoad evm evm.executionEnv.codeOwner ⟨0⟩ = codeOwnerTransientWord I σ ⟨0⟩ :=
     codeOwnerTransientWord_initState _
   by_cases hlocked : codeOwnerTransientWord I σ ⟨0⟩ = ⟨1⟩
   · have rdRevert := vaultBlocks.vault_block_851_taken (by simp)

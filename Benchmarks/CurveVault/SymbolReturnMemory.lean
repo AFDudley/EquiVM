@@ -1,6 +1,6 @@
 import Benchmarks.CurveVault.SymbolReturnABI
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.CurveVault
 
 -- LIBRARY CANDIDATE: padded words in the right part of an append.

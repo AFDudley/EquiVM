@@ -1,7 +1,7 @@
 import Benchmarks.CurveVault.Storage
 import Benchmarks.CurveVault.StaticWordCalls
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch Reasoning.VyperCalls
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch Reasoning.VyperCalls
 namespace Benchmarks.CurveVault
 
 def vaultControllerCall (controllerLocal resultLocal callName : Ident) : List Stmt :=
@@ -12,12 +12,12 @@ def vaultControllerCall (controllerLocal resultLocal callName : Ident) : List St
 def vaultControllerCallLocals (locals : Store) (evm : EVM.State) (controllerLocal resultLocal : Ident)
     (value : Value) : Store :=
   (locals.insert controllerLocal (.address (AccountAddress.ofUInt256
-    (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩)))).insert resultLocal value
+    (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩)))).insert resultLocal value
 
 theorem vaultControllerRead (evm : EVM.State) (locals : Store) (hbase : locals.get? "_controller" = none) :
     evalExpr? config {contract := contract, locals := locals} evm
       (.cast (.storage {base := "_controller", steps := []}) (.elem .address)) =
-      .ok (.address (AccountAddress.ofUInt256 (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩))) := by
+      .ok (.address (AccountAddress.ofUInt256 (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩))) := by
   rw [accountAddress_ofUInt256_eq_ofNat_toNat]
   exact vaultControllerEval evm locals hbase
 
@@ -25,14 +25,14 @@ theorem vaultControllerCallSuccess {evm evm' : EVM.State} {locals : Store} {valu
     {controllerLocal resultLocal callName : Ident} {out : ByteArray}
     (hbase : locals.get? "_controller" = none)
     (hcall : typedCallViaEVM config evm
-      (AccountAddress.ofUInt256 (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩))
+      (AccountAddress.ofUInt256 (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩))
       callName 0 [] (true, evm', out) false)
     (hdecode : config.externalABI.decode? callName out = some [value]) :
     ExecBlock config {contract := contract, locals := locals} evm
       (vaultControllerCall controllerLocal resultLocal callName)
       (.ok {contract := contract, locals := vaultControllerCallLocals locals evm controllerLocal resultLocal value} evm') := by
   apply ExecBlock.consNormal (ExecStmt.letDecl (vaultControllerRead evm locals hbase))
-  apply ExecBlock.consNormal (ExecStmt.externalCallSuccess (target := AccountAddress.ofUInt256 (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩))
+  apply ExecBlock.consNormal (ExecStmt.externalCallSuccess (target := AccountAddress.ofUInt256 (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩))
     (sendVal := 0) (argVals := []) (value := [value])
     (by simp [evalExpr?, EvalResult.ofOption])
     (by simp [evalExpr?, pure]) (by simp [evalExprs?, pure])
@@ -43,12 +43,12 @@ theorem vaultControllerCallFailure {evm evm' : EVM.State} {locals : Store}
     {controllerLocal resultLocal callName : Ident} {out : ByteArray}
     (hbase : locals.get? "_controller" = none)
     (hcall : typedCallViaEVM config evm
-      (AccountAddress.ofUInt256 (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩))
+      (AccountAddress.ofUInt256 (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩))
       callName 0 [] (false, evm', out) false) :
     ExecBlock config {contract := contract, locals := locals} evm
       (vaultControllerCall controllerLocal resultLocal callName) .reverted := by
   apply ExecBlock.consNormal (ExecStmt.letDecl (vaultControllerRead evm locals hbase))
-  exact ExecBlock.consRevert (ExecStmt.externalCallFailure (target := AccountAddress.ofUInt256 (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩))
+  exact ExecBlock.consRevert (ExecStmt.externalCallFailure (target := AccountAddress.ofUInt256 (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩))
     (sendVal := 0) (argVals := [])
     (by simp [evalExpr?, EvalResult.ofOption])
     (by simp [evalExpr?, pure]) (by simp [evalExprs?, pure])
@@ -58,13 +58,13 @@ theorem vaultControllerCallDecodeFailure {evm evm' : EVM.State} {locals : Store}
     {controllerLocal resultLocal callName : Ident} {out : ByteArray}
     (hbase : locals.get? "_controller" = none)
     (hcall : typedCallViaEVM config evm
-      (AccountAddress.ofUInt256 (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩))
+      (AccountAddress.ofUInt256 (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩))
       callName 0 [] (true, evm', out) false)
     (hdecode : config.externalABI.decode? callName out = none) :
     ExecBlock config {contract := contract, locals := locals} evm
       (vaultControllerCall controllerLocal resultLocal callName) .reverted := by
   apply ExecBlock.consNormal (ExecStmt.letDecl (vaultControllerRead evm locals hbase))
-  exact ExecBlock.consRevert (ExecStmt.externalCallReturnDecodeRevert (target := AccountAddress.ofUInt256 (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩))
+  exact ExecBlock.consRevert (ExecStmt.externalCallReturnDecodeRevert (target := AccountAddress.ofUInt256 (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩))
     (sendVal := 0) (argVals := [])
     (by simp [evalExpr?, EvalResult.ofOption])
     (by simp [evalExpr?, pure]) (by simp [evalExprs?, pure])
@@ -107,7 +107,7 @@ theorem vaultControllerWordCall {I : ExecutionEnv} {g : Sat256} {s0 evm : State}
       (gasArg :: codeOwnerStorageWord I σ ⟨3⟩ :: inOffset :: ⟨4⟩ :: outOffset :: ⟨32⟩ :: R)
       mem aw rdata σ k C) :
     vaultControllerCallOutcome s0 evm I g locals controllerLocal resultLocal callName next R mem outOffset := by
-  have hread : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩ =
+  have hread : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩ =
       codeOwnerStorageWord I σ ⟨3⟩ := hs.storageRead _
   rcases staticWordCallBridge (nextStack := fun _ => R) hs hstack hpc hcd hbuffer hpass hfail hshort h with
     ⟨evm', σ', out, aw', k', C', h32, hout, hcall, hs', rdNext⟩ |

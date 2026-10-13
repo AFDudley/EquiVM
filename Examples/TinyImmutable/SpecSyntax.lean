@@ -1,14 +1,14 @@
 import Examples.TinyImmutable.Spec
-import Solm.Notation
+import Stele.Notation
 
 /-!
-# TinyImmutable spec in the Solidity-faithful Solm frontend
+# TinyImmutable spec in the Solidity-faithful Stele frontend
 
 The immutables are declared as in Solidity and assigned in the constructor.  The `unchecked`
 product in `quote` is the explicit `% 2^256` wrap, as in the AST spec.
 -/
 
-open Solm Solm.Notation
+open Stele Stele.Notation
 open TinyImmutable.Immutables
 
 namespace TinyImmutable.Syntax

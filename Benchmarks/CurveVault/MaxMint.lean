@@ -3,7 +3,7 @@ import Benchmarks.CurveVault.Entry
 import Benchmarks.CurveVault.Lock
 import Benchmarks.CurveVault.MaxMintInternal
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 
 namespace Benchmarks.CurveVault
 
@@ -31,7 +31,7 @@ theorem vaultMaxMintBodyCore {σ σ₀ A I} {g : UInt256}
     have hargEval : evalExprs? config {contract := contract, locals := locals}
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) [.var "_receiver"] = .ok [.address receiver] := by
       simp [locals, evalExprs?, evalExpr?, EvalResult.ofOption, bind, pure, EvalResult.bind]
-    have hload : Solm.EVM.transientLoad (initState σ σ₀ (Sat256.ofUInt256 g) A I)
+    have hload : Stele.EVM.transientLoad (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner ⟨0⟩ =
         codeOwnerTransientWord I σ ⟨0⟩ := codeOwnerTransientWord_initState _
     by_cases hlocked : codeOwnerTransientWord I σ ⟨0⟩ = ⟨1⟩

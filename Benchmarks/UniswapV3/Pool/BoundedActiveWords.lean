@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.MemoryGasBound
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 -- LIBRARY CANDIDATE: a uniform bound for fixed-size memory initialization traces.

@@ -1,6 +1,6 @@
 import Examples.BlindAuction.Reveal.BodyCases
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 10000000
@@ -55,10 +55,10 @@ theorem scratch_revealLoopBody_fromLoopStart {I : ExecutionEnv} {g : Sat256}
         (fun ac => ac.storage.getD (revealScratchBidsLengthSlot I) ⟨0⟩) =
         curLen := rfl
   have hlenSrc :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (bidsBase (.address evm.executionEnv.source)) = curLen := by
     dsimp [curLen]
-    simpa [Solm.EVM.storageLoad, State.lookupAccount,
+    simpa [Stele.EVM.storageLoad, State.lookupAccount,
       Account.lookupStorage, revealScratchBidsLengthSlot, bidsBase,
       blindAuctionMappingSlot, henv, haccounts]
   have hbaseHashWord :=

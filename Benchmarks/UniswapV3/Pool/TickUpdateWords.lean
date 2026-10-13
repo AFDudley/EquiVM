@@ -2,7 +2,7 @@ import Benchmarks.UniswapV3.Pool.TickUpdateRawModel
 import Benchmarks.UniswapV3.Pool.TickUpdateMaxTrace
 import Benchmarks.UniswapV3.Pool.SignedWordZero
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 -- LIBRARY CANDIDATE: a zero test on the encoding of a bounded signed integer.

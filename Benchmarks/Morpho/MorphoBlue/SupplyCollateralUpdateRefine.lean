@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MorphoBlue.SupplyCollateralSourceStart
 import Benchmarks.Morpho.MorphoBlue.SupplyCollateralUpdateReach
 import Benchmarks.Morpho.MorphoBlue.StateBlock
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MorphoBlue.Immutables
 namespace Benchmarks.Morpho.MorphoBlue

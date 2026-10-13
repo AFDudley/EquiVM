@@ -7,7 +7,7 @@ Dispatcher bucket 8, arm entry pc 1223: the `calldatasize`/`callvalue` guard, th
 validation, then `keccak256(1 ++ arg)`, `SLOAD` and `RETURN`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
   Reasoning.VyperImmutables
 
 namespace Tests.Pipeline.VyperVault

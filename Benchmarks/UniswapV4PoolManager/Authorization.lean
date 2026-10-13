@@ -4,7 +4,7 @@ import Benchmarks.UniswapV4PoolManager.RuntimeBlocks_035
 
 /-! Owner authorization in source and bytecode. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.UniswapV4PoolManager.Immutables
 
@@ -13,7 +13,7 @@ set_option maxRecDepth 2000000
 
 def ownerAuthorized (evm : EVM.State) : Prop :=
   accountWord evm.executionEnv.source =
-    UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩) solcAddrMask
+    UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩) solcAddrMask
 
 instance (evm : EVM.State) : Decidable (ownerAuthorized evm) := inferInstanceAs (Decidable (_ = _))
 

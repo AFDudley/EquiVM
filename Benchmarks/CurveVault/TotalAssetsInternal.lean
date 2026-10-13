@@ -1,7 +1,7 @@
 import Benchmarks.CurveVault.TotalAssetsCalls
-import Reasoning.SolmArithmetic
+import Reasoning.SteleArithmetic
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch Reasoning.VyperCalls
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch Reasoning.VyperCalls
 namespace Benchmarks.CurveVault
 
 abbrev vaultTotalAssetsFunction : FunctionDecl := contract.functions[26]!

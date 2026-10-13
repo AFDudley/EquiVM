@@ -1,6 +1,6 @@
 import Benchmarks.CurveVault.ConversionFinish
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 def vaultConversionLocals (argName : String) (value : UInt256) (isFloor : Bool) (total : UInt256) : Store :=

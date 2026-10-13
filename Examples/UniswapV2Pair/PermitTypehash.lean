@@ -1,8 +1,8 @@
 import Examples.UniswapV2Pair.Dispatch
 import Examples.UniswapV2Pair.Permit
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -14,7 +14,7 @@ theorem permitTypehashWord_toBytesBE :
     EVM.Word.toBytesBE permitTypehashWord = permitTypehashBytes := by
   native_decide
 
-/-- The Solm `PERMIT_TYPEHASH()` body returns the bytes32 literal from Uniswap V2 ERC20. -/
+/-- The Stele `PERMIT_TYPEHASH()` body returns the bytes32 literal from Uniswap V2 ERC20. -/
 theorem uniswapPermitTypehashBodyReturns (evm : EVM.State) (locals : Store)
     (h : evm.executionEnv.weiValue = ⟨0⟩) :
     ExecTransitionBody config contract evm locals permitTypehashTransition.body

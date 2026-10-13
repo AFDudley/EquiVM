@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.EntrySource
 
 /-! Composing source bodies across normal prefixes and state changes. -/
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 -- LIBRARY CANDIDATE: prefix composition also preserves function fallthrough.

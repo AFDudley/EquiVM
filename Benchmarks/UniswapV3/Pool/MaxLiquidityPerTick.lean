@@ -5,11 +5,11 @@ import Benchmarks.UniswapV3.Pool.Routines
 # UniswapV3Pool `maxLiquidityPerTick()`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 1478; reach lemma `uniswapV3PoolReachMaxLiquidityPerTickBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.UniswapV3.Pool.Immutables
 

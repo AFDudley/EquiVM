@@ -1,7 +1,7 @@
 import Examples.UniswapV2Pair.Dispatch
 import Examples.UniswapV2Pair.TransferFrom
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -288,7 +288,7 @@ theorem uniswapTransferFromX_overflowMaxAllowance {σ σ₀ A I} {g : Sat256}
         transferFromToBalanceWordMax (initState σ σ₀ g A I) I := by
     simp [-Std.ExtTreeMap.get?_eq_getElem?, σDebit, uniswapCodeOwnerStorageWord,
       transferFromToBalanceWordMax,
-      transferFromAfterBalanceStateMax, initState, Solm.EVM.storageLoad, State.lookupAccount,
+      transferFromAfterBalanceStateMax, initState, Stele.EVM.storageLoad, State.lookupAccount,
       Account.lookupStorage, storageStore_accountMap, hfromSlot, htoSlot]
   have hoverWord :
       UInt256.size ≤
@@ -457,7 +457,7 @@ theorem uniswapTransferFromX_balanceFiniteAllowance {σ σ₀ A I} {g : Sat256}
       uniswapCodeOwnerStorageWord I σAllowance (mapSlot (transferFromFromWord I) ⟨1⟩) =
         transferFromFromBalanceWord (transferFromAfterAllowanceState
           (initState σ σ₀ g A I) I) I := by
-    unfold uniswapCodeOwnerStorageWord transferFromFromBalanceWord Solm.EVM.storageLoad
+    unfold uniswapCodeOwnerStorageWord transferFromFromBalanceWord Stele.EVM.storageLoad
     simp [-Std.ExtTreeMap.get?_eq_getElem?, State.lookupAccount,
       Account.lookupStorage, hstateMap, hfromSlot, hcodeOwner]
   have hltWord :
@@ -647,7 +647,7 @@ theorem uniswapTransferFromX_overflowFiniteAllowance {σ σ₀ A I} {g : Sat256}
   have htoBalanceWord :
       uniswapCodeOwnerStorageWord I σDebit (mapSlot (transferFromToWord I) ⟨1⟩) =
         transferFromToBalanceWord (initState σ σ₀ g A I) I := by
-    unfold uniswapCodeOwnerStorageWord transferFromToBalanceWord Solm.EVM.storageLoad
+    unfold uniswapCodeOwnerStorageWord transferFromToBalanceWord Stele.EVM.storageLoad
     rw [show (initState σ σ₀ g A I).executionEnv.codeOwner = I.codeOwner from rfl]
     simp [-Std.ExtTreeMap.get?_eq_getElem?, State.lookupAccount,
       Account.lookupStorage, hbalanceMap, htoSlot]

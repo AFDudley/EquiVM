@@ -1,7 +1,7 @@
 import Benchmarks.CurveVault.AllowanceMemory
 import Benchmarks.CurveVault.AllowanceSpendSites
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 def vaultDebitAllowanceFlow (isWithdraw : Bool) : VaultAllowanceSpendFlow :=

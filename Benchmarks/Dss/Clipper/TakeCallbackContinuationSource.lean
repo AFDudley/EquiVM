@@ -1,7 +1,7 @@
 import Benchmarks.Dss.Clipper.TakeCallbackTailSource
 import Benchmarks.Dss.Clipper.TakeOweVatMoveSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 namespace Benchmarks.Dss.Clipper
@@ -80,7 +80,7 @@ theorem clipperTakeOweGtTabCallbackTailSource
       (.ok dogFrame evmVat) := by
     simpa [fluxFrame, dogFrame, clipperTakeLocalsDogLoaded] using
       (ExecStmt.letDecl
-        (cfg := config) (solm := fluxFrame) (evm := evmVat) (name := "dog_")
+        (cfg := config) (stele := fluxFrame) (evm := evmVat) (name := "dog_")
         (ty := some addr) (expr := .storage dogRef)
         (value := .address
           (AccountAddress.ofNat (clipperTakeDogEVMWord evmVat).toNat))

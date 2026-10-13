@@ -3,11 +3,11 @@ import Benchmarks.Scaffolds.TimelockController.Common
 /-!
 # OpenZeppelin TimelockController selector proofs
 
-The selector theorems connect Solm signatures to the runtime dispatcher constants.
+The selector theorems connect Stele signatures to the runtime dispatcher constants.
 Each proof evaluates the canonical ABI signature's Keccak selector.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM
+open Stele ABI Ethereum Ethereum.EVM
 
 namespace OpenZeppelinBench.TimelockController
 

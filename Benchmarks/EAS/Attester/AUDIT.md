@@ -17,7 +17,7 @@ the entire encoded payload.
 
 CALL uses `ByteArray.readWithPadding` for its input. Previously its definition took a `panic!`
 branch at lengths of at least `2^64`, which returned the default empty byte array in the logical
-semantics. Solm's `typedCallViaEVM` passes the encoded bytes directly to `Θ`. EquiVM main commit
+semantics. Stele's `typedCallViaEVM` passes the encoded bytes directly to `Θ`. EquiVM main commit
 `b67b0c4e` updates EVMLean to `dd418ee8b01980be94e58b363cbfe7fa83f87c5a`, removing that cutoff
 and adding unbounded read lemmas in `Reasoning/Memory.lean`.
 
@@ -34,7 +34,7 @@ execution and explicit constructor trace cases. No additional WF condition was n
 
 ## Refinement boundary
 
-The target remains the existing `Solm.contractRefinement`, composed from
+The target remains the existing `Stele.contractRefinement`, composed from
 `typedConstructorRefinement` and `runtimeRefinement`. No custom axiom, extra precondition, weakened
 relation, or storage well-formedness assumption was introduced. Runtime targets quantify over
 arbitrary well-typed immutable assignments, account maps, calldata of size below 2^256, gas,
@@ -97,7 +97,7 @@ a STOP callee. `ABI.solcDynamicArrayElementTarget` now wraps modern nested eleme
 modulo 2^256. Legacy and Vyper arithmetic is unchanged. Regressions cover both batch functions
 and positive, negative, unaligned, overlapping, and invalid offsets.
 
-Solidity accesses inner arrays lazily, whereas Solm decodes the parameter tree before the
+Solidity accesses inner arrays lazily, whereas Stele decodes the parameter tree before the
 body. This wrapper consumes every inner array before its sole external call, with no earlier
 state effect. Invalid inner data therefore has the same overall revert result. Offsets into
 the selector prefix cannot produce accepted nonempty inner arrays for these selectors: the
@@ -106,7 +106,7 @@ EVM, but the wrapper rejects those empty arrays.
 
 Both batch functions require nonempty schemas, equal outer lengths, and a nonempty inner
 array at every index. All lengths are at most 2^64-1, so loop indices cannot overflow uint256.
-The current spec uses Solm `for` and explicit increment casts. Local path assignments build the
+The current spec uses Stele `for` and explicit increment casts. Local path assignments build the
 ordered request array; tests compare its call encoding with the memory slice at actual CALL.
 
 ## Requests and calls
@@ -202,7 +202,7 @@ in `README.md`.
 
 Final validation after merging EquiVM main commit `b67b0c4e`:
 
-- `lake build Solm Reasoning`: `Build completed successfully (3487 jobs).`
+- `lake build Stele Reasoning`: `Build completed successfully (3487 jobs).`
 - `lake build Benchmarks.EAS.Attester.Correct`:
   `Build completed successfully (3612 jobs).`
 - `lake build Benchmarks.EAS.Attester.ReadLimitAudit`:

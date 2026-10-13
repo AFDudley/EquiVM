@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.UpdatePositionTickModel
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 1000
@@ -72,7 +72,7 @@ theorem updatePositionTickCallSource (v : UniswapV3PoolImmutables) (a : UpdatePo
   have hc := internalCallFunctionReturn
     (argVals := tickUpdateValues (updatePositionTickArgs v a evm upper))
     (callee := tickUpdateFunction) (locals := tickUpdateLocals (updatePositionTickArgs v a evm upper))
-    (calleeSolm := tickUpdateNetReadyFrame (immStore v) (updatePositionTickArgs v a evm upper)
+    (calleeStele := tickUpdateNetReadyFrame (immStore v) (updatePositionTickArgs v a evm upper)
       (updatePositionTickBefore v a evm upper) upper)
     (value := some [.bool (updatePositionFlipped v a evm upper)])
     (retVar := if upper then "__c4" else "__c3") (name := "Tick_update") he

@@ -1,20 +1,20 @@
 import Benchmarks.CompoundIII.Comet.AccruedIndicesModel
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.CompoundIII.Comet.Immutables
 
 namespace Benchmarks.CompoundIII.Comet
 
 theorem accruedIndicesThen_result (v : CometWithExtendedAssetListImmutables)
     (elapsed : UInt256) (evm : EVM.State) (ht : elapsed.toNat < 2^40) :
-    let w0 := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩
-    let w1 := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩
+    let w0 := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩
+    let w1 := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩
     ExecBlock config (accruedIndicesInitialFrame v w0 elapsed) evm accruedIndicesThen
       (if AccruedWorkValid v w0 w1 elapsed then
         .ok (accruedIndicesUpdatedFrame v w0 w1 elapsed) evm else .reverted) := by
   dsimp only
-  let w0 := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩
-  let w1 := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩
+  let w0 := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩
+  let w1 := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩
   let u := utilizationWord w0 w1
   let f0 := accruedIndicesInitialFrame v w0 elapsed
   let f1 : Frame := { f0 with locals := f0.locals.insert "utilization" (.int u.toNat) }
@@ -95,16 +95,16 @@ theorem accruedIndicesFinalFrame_get (v : CometWithExtendedAssetListImmutables)
 
 theorem accruedIndicesCallable_block (v : CometWithExtendedAssetListImmutables)
     (elapsed : UInt256) (evm : EVM.State) (ht : elapsed.toNat < 2^40) :
-    let w0 := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩
-    let w1 := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩
+    let w0 := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩
+    let w1 := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩
     ExecBlock config (accruedIndicesEntry v elapsed) evm accruedIndicesCallable.body
       (if AccruedIndicesValid v w0 w1 elapsed then
         .returned (accruedIndicesFinalFrame v w0 w1 elapsed) evm
           (some [.int (accruedIndex v w0 w1 elapsed false).toNat,
             .int (accruedIndex v w0 w1 elapsed true).toNat]) else .reverted) := by
   dsimp only
-  let w0 := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩
-  let w1 := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩
+  let w0 := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩
+  let w1 := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩
   let f0 := accruedIndicesEntry v elapsed
   let f1 : Frame := { f0 with locals := f0.locals.insert "baseSupplyIndex_" (.int (totalsIndexWord w0 false).toNat) }
   let f2 := accruedIndicesInitialFrame v w0 elapsed
@@ -161,10 +161,10 @@ theorem accruedIndices_call_ok (v : CometWithExtendedAssetListImmutables)
     (he : evalExpr? config frame evm expr = .ok (.int elapsed.toNat))
     (ht : elapsed.toNat < 2^40)
     (hv : AccruedIndicesValid v
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) elapsed) :
-    let w0 := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩
-    let w1 := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) elapsed) :
+    let w0 := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩
+    let w1 := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩
     ExecStmt config frame evm (.internalCall "accruedInterestIndices" [expr] ret)
       (.ok { frame with
         locals := frame.locals.insert ret (.tuple
@@ -176,7 +176,7 @@ theorem accruedIndices_call_ok (v : CometWithExtendedAssetListImmutables)
   have hf := ExecFuncBody.execBlockRet hb
   exact ExecStmt.internalCallReturn (callee := accruedIndicesCallable)
     (locals := (∅ : Store).insert "timeElapsed" (.int elapsed.toNat))
-    (cfg := config) (solm := frame) (evm := evm) (args := [expr])
+    (cfg := config) (stele := frame) (evm := evm) (args := [expr])
     (argVals := [.int elapsed.toNat])
     (by simp only [evalExprs?, he, pure, bind, EvalResult.bind])
     (by rw [hc]; exact accruedIndicesCallable_lookup) rfl
@@ -188,15 +188,15 @@ theorem accruedIndices_call_revert (v : CometWithExtendedAssetListImmutables)
     (he : evalExpr? config frame evm expr = .ok (.int elapsed.toNat))
     (ht : elapsed.toNat < 2^40)
     (hv : ¬ AccruedIndicesValid v
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) elapsed) :
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) elapsed) :
     ExecStmt config frame evm (.internalCall "accruedInterestIndices" [expr] ret) .reverted := by
   have hb := accruedIndicesCallable_block v elapsed evm ht
   dsimp only at hb
   rw [if_neg hv] at hb
   apply ExecStmt.internalCallRevert (callee := accruedIndicesCallable)
     (locals := (∅ : Store).insert "timeElapsed" (.int elapsed.toNat))
-    (cfg := config) (solm := frame) (evm := evm) (args := [expr])
+    (cfg := config) (stele := frame) (evm := evm) (args := [expr])
     (argVals := [.int elapsed.toNat])
     (by simp only [evalExprs?, he, pure, bind, EvalResult.bind])
     (by rw [hc]; exact accruedIndicesCallable_lookup) rfl

@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.WordOperationsSource
 import Benchmarks.UniswapV4PoolManager.WordArrayLoop
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 abbrev wordByteFunction : FunctionDecl := contract.functions[0]!

@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Jug.DripSourceXZero
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 open Reasoning.Theory.RpowB
 
@@ -147,7 +147,7 @@ theorem jugDripSourceBodyVatFoldNoCodeReverts {σ σ₀ A I} {g : UInt256}
           .intLit one ])
       (argVals := [.int (Int.ofNat fee.toNat), .int 0, .int (Int.ofNat jugRay.toNat)])
       (callee := rpowFunction) (locals := uintTernaryLocals fee ⟨0⟩ jugRay)
-      (calleeSolm := { contract := contract, locals := rpowDoneLocals })
+      (calleeStele := { contract := contract, locals := rpowDoneLocals })
       hrpowArgs hlookupRpow hbindRpow hrpowBody
     simpa [resumeAfterInternalCall, dripPowLocals] using h
   have hrmulArgs :
@@ -227,7 +227,7 @@ theorem jugDripSourceBodyVatFoldNoCodeReverts {σ σ₀ A I} {g : UInt256}
     simpa [dripVatIlksPrevLocals, rate] using
       (ExecStmt.letDecl
         (cfg := config)
-        (solm := { contract := contract, locals := dripVatIlksLocals I out })
+        (stele := { contract := contract, locals := dripVatIlksLocals I out })
         (evm := evmVat)
         (name := "prev")
         (ty := some uint256)
@@ -416,7 +416,7 @@ theorem jugDripSourceBodyVatFoldCallFailedReverts {σ σ₀ A I} {g : UInt256}
           .intLit one ])
       (argVals := [.int (Int.ofNat fee.toNat), .int 0, .int (Int.ofNat jugRay.toNat)])
       (callee := rpowFunction) (locals := uintTernaryLocals fee ⟨0⟩ jugRay)
-      (calleeSolm := { contract := contract, locals := rpowDoneLocals })
+      (calleeStele := { contract := contract, locals := rpowDoneLocals })
       hrpowArgs hlookupRpow hbindRpow hrpowBody
     simpa [resumeAfterInternalCall, dripPowLocals] using h
   have hrmulArgs :
@@ -505,7 +505,7 @@ theorem jugDripSourceBodyVatFoldCallFailedReverts {σ σ₀ A I} {g : UInt256}
     simpa [dripVatIlksPrevLocals, rate] using
       (ExecStmt.letDecl
         (cfg := config)
-        (solm := { contract := contract, locals := dripVatIlksLocals I out })
+        (stele := { contract := contract, locals := dripVatIlksLocals I out })
         (evm := evmVat)
         (name := "prev")
         (ty := some uint256)
@@ -594,7 +594,7 @@ theorem jugDripSourceBodyVatFoldCallSucceededReturnsSplit {σ σ₀ A I} {g : UI
     let rate := dripVatIlksPrevWord out
     let foldLocals := (dripDeltaLocals I out fee jugRay rate ⟨0⟩).insert "_foldRet" .unit
     let timestamp := UInt256.ofNat evmFold.executionEnv.header.timestamp
-    let evmRho := Solm.EVM.storageStore evmFold evmFold.executionEnv.codeOwner
+    let evmRho := Stele.EVM.storageStore evmFold evmFold.executionEnv.codeOwner
       (fileDutyRhoSlotFor I) timestamp
     ExecTransitionBody config contract evm0 locals dripTransition.body
       (.returned { contract := contract, locals := foldLocals } evmRho
@@ -703,7 +703,7 @@ theorem jugDripSourceBodyVatFoldCallSucceededReturnsSplit {σ σ₀ A I} {g : UI
           .intLit one ])
       (argVals := [.int (Int.ofNat fee.toNat), .int 0, .int (Int.ofNat jugRay.toNat)])
       (callee := rpowFunction) (locals := uintTernaryLocals fee ⟨0⟩ jugRay)
-      (calleeSolm := { contract := contract, locals := rpowDoneLocals })
+      (calleeStele := { contract := contract, locals := rpowDoneLocals })
       hrpowArgs hlookupRpow hbindRpow hrpowBody
     simpa [resumeAfterInternalCall, dripPowLocals] using h
   have hrmulArgs :
@@ -794,7 +794,7 @@ theorem jugDripSourceBodyVatFoldCallSucceededReturnsSplit {σ σ₀ A I} {g : UI
             [.var "ilk", .storage vowRef, .var "delta"] "_foldRet" (perm := true))
           (.ok { contract := contract, locals := foldLocals } evmFold) := by
     have h := ExecStmt.externalCallSuccess (cfg := config)
-      (solm := { contract := contract, locals := dripDeltaLocals I out fee jugRay rate ⟨0⟩ })
+      (stele := { contract := contract, locals := dripDeltaLocals I out fee jugRay rate ⟨0⟩ })
       (evm := evmVat) (receiver := .storage vatRef) (name := "fold") (eth := .intLit 0)
       (args := [.var "ilk", .storage vowRef, .var "delta"]) (retVar := "_foldRet")
       (perm := true) (target := dripVatAddress evmVat.accountMap evmVat.executionEnv)
@@ -859,7 +859,7 @@ theorem jugDripSourceBodyVatFoldCallSucceededReturnsSplit {σ σ₀ A I} {g : UI
     simpa [dripVatIlksPrevLocals, rate] using
       (ExecStmt.letDecl
         (cfg := config)
-        (solm := { contract := contract, locals := dripVatIlksLocals I out })
+        (stele := { contract := contract, locals := dripVatIlksLocals I out })
         (evm := evmVat)
         (name := "prev")
         (ty := some uint256)

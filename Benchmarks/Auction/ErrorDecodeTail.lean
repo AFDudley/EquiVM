@@ -1,7 +1,7 @@
 import Benchmarks.Auction.ErrorOffsetGuard
 import Benchmarks.Auction.ErrorAllocation
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Auction
 

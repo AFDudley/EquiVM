@@ -5,7 +5,7 @@ import Benchmarks.CurveVault.Lock
 import Benchmarks.CurveVault.ConvertAssetsForward
 import Benchmarks.CurveVault.RuntimeBlocks_009
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 
 namespace Benchmarks.CurveVault
 
@@ -33,7 +33,7 @@ theorem vaultConvertToAssetsBodyCore {σ σ₀ A I} {g : UInt256}
   have hargEval := evalExprs?_singleton
     (evalExpr_varUInt256 (cfg := config) (contract := contract)
       (evm := initState σ σ₀ (Sat256.ofUInt256 g) A I) harg)
-  have hload : Solm.EVM.transientLoad (initState σ σ₀ (Sat256.ofUInt256 g) A I)
+  have hload : Stele.EVM.transientLoad (initState σ σ₀ (Sat256.ofUInt256 g) A I)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner ⟨0⟩ =
       codeOwnerTransientWord I σ ⟨0⟩ := codeOwnerTransientWord_initState _
   by_cases hlocked : codeOwnerTransientWord I σ ⟨0⟩ = ⟨1⟩

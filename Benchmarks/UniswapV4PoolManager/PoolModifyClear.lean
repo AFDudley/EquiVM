@@ -3,13 +3,13 @@ import Benchmarks.UniswapV4PoolManager.PoolModifyContext
 import Benchmarks.UniswapV4PoolManager.ConditionalSource
 import Benchmarks.UniswapV4PoolManager.TickClearSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 
 def poolModifyClearAlias (upper : Bool) : Ident :=
-  if upper then "__solm_storage_ref._@.Benchmarks.UniswapV4PoolManager.SpecSyntax.2010301240._hygCtx._hyg.14"
-  else "__solm_storage_ref._@.Benchmarks.UniswapV4PoolManager.SpecSyntax.2010301240._hygCtx._hyg.13"
+  if upper then "__stele_storage_ref._@.Benchmarks.UniswapV4PoolManager.SpecSyntax.2010301240._hygCtx._hyg.14"
+  else "__stele_storage_ref._@.Benchmarks.UniswapV4PoolManager.SpecSyntax.2010301240._hygCtx._hyg.13"
 def poolModifyClearRet (upper : Bool) : Ident := if upper then "__c13" else "__c12"
 def poolModifyClearAliasFrame (f : Frame) (id : UInt256) (upper : Bool) : Frame :=
   {f with locals := f.locals.insert (poolModifyClearAlias upper) (poolRefValue id)}

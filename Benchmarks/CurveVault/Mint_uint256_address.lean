@@ -2,7 +2,7 @@ import Benchmarks.CurveVault.Dispatch
 import Benchmarks.CurveVault.CreditEntry
 import Benchmarks.CurveVault.UintAddressABI
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 theorem vaultMint_uint256_addressBodyCore {σ σ₀ A I} {g : UInt256}

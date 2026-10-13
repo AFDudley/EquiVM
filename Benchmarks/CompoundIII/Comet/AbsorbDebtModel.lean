@@ -2,7 +2,7 @@ import Benchmarks.CompoundIII.Comet.CollateralCheckModel
 import Benchmarks.CompoundIII.Comet.MulPrice
 import Benchmarks.CompoundIII.Comet.SignedArithmeticWords
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.CompoundIII.Comet.Immutables
 
 namespace Benchmarks.CompoundIII.Comet

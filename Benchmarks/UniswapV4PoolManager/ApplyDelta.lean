@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.DeltaCount
 
 /-! Applying a signed currency delta preserves the source's read/write order. -/
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 2000000
 
@@ -15,7 +15,7 @@ def applyDeltaFrame (f : Frame) (target currency : AccountAddress) (previous nex
   {f with locals := locals.insert "next" (.int next)}
 
 def applyDeltaPost (evm : EVM.State) (target currency : AccountAddress) (delta : Int) : EVM.State :=
-  Solm.EVM.transientStore evm evm.executionEnv.codeOwner (currencyDeltaSlot target currency)
+  Stele.EVM.transientStore evm evm.executionEnv.codeOwner (currencyDeltaSlot target currency)
     (EVM.wordOfInt (currencyDeltaValue evm target currency + delta))
 
 def applyDeltaResult (f : Frame) (evm : EVM.State) (target currency : AccountAddress) (delta : Int) : ExecResult :=

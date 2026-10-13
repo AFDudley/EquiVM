@@ -2,7 +2,7 @@ import Benchmarks.Safe.Main.ExecGuardCallPrepare
 import Benchmarks.Safe.Main.ExecGuardSource
 import Benchmarks.Safe.Main.RawValueCall
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
 
 namespace Benchmarks.Safe.Main

@@ -2,9 +2,9 @@ import Reasoning.WordArithmetic
 import Reasoning.Memory
 import Examples.OpenZeppelinBench.AccessControl.Storage
 import Reasoning.ABI
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -50,7 +50,7 @@ def getRoleAdminWord (σ : AccountMap) (I : ExecutionEnv) : UInt256 :=
   σ.get? I.codeOwner |>.option ⟨0⟩ (fun acc => acc.storage.getD (getRoleAdminSlot I) ⟨0⟩)
 
 def getRoleAdminCurrent (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (getRoleAdminSlot I)
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (getRoleAdminSlot I)
 
 theorem getRoleAdminKeyValueToWord {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
     keyValueToWord (getRoleAdminRoleKey I) = getRoleAdminRoleWord I := by
@@ -164,7 +164,7 @@ theorem accessControlGetRoleAdminBodyReturns (evm : EVM.State) (I : ExecutionEnv
         (her := her) (hty := hty) (hloc := hloc)]
       rw [show storageLocLoad evm (getRoleAdminLoc I) =
           .fixedBytes bytes32Width
-            (EVM.Word.toBytesBE (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+            (EVM.Word.toBytesBE (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
               (getRoleAdminSlot I))) by
         simpa [getRoleAdminLoc] using
           accessControlStorageLocLoad_bytes32 evm (getRoleAdminSlot I)]
@@ -425,7 +425,7 @@ theorem accessControlGetRoleAdminBody {σ σ₀ A I}
               (initState σ σ₀ (Sat256.ofUInt256 g) A I)
               (some [(.fixedBytes bytes32Width
                 (EVM.Word.toBytesBE (getRoleAdminWord σ I)))])) := by
-        simpa [getRoleAdminCurrent, getRoleAdminWord, initState, Solm.EVM.storageLoad,
+        simpa [getRoleAdminCurrent, getRoleAdminWord, initState, Stele.EVM.storageLoad,
           State.lookupAccount] using
           accessControlGetRoleAdminBodyReturns
             (initState σ σ₀ (Sat256.ofUInt256 g) A I) I

@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.Common
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.UniswapV3.Pool
 
@@ -19,7 +19,7 @@ theorem evalExpr_bool_and {cfg : Config} {frame : Frame} {evm : EVM.State}
   cases a <;> simp only [evalExpr?, ha, hb, bind, EvalResult.bind, pure,
     Bool.false_and, Bool.true_and]
 
--- GENERALIZES Reasoning.SolmArithmetic.evalExpr_or_false_right and evalExpr_or_true_left.
+-- GENERALIZES Reasoning.SteleArithmetic.evalExpr_or_false_right and evalExpr_or_true_left.
 theorem evalExpr_bool_or {cfg : Config} {frame : Frame} {evm : EVM.State}
     {lhs rhs : Expr} {a b : Bool}
     (ha : evalExpr? cfg frame evm lhs = .ok (.bool a))
@@ -54,7 +54,7 @@ theorem evalExpr_uintShiftRight {cfg : Config} {frame : Frame} {evm : EVM.State}
   simp only [Int.ofNat_eq_natCast, if_neg (Int.not_lt.mpr (Int.natCast_nonneg bits)), ↓reduceIte,
     IntType.bitWidth, Int.toNat_natCast, Nat.not_le.mpr hbits, EVM.twoPow]
 
--- GENERALIZES Reasoning.SolmArithmetic integer equality to arbitrary frames and expressions.
+-- GENERALIZES Reasoning.SteleArithmetic integer equality to arbitrary frames and expressions.
 theorem evalExpr_nat_eq_zero {cfg : Config} {frame : Frame} {evm : EVM.State}
     {expr : Expr} {n : Nat} (he : evalExpr? cfg frame evm expr = .ok (.int (Int.ofNat n))) :
     evalExpr? cfg frame evm (.binary .eq expr (.intLit 0)) = .ok (.bool (decide (n = 0))) := by
@@ -68,7 +68,7 @@ theorem evalExpr_localBytesLength {cfg : Config} {frame : Frame} {evm : EVM.Stat
     evalExpr? cfg frame evm (.arrayLength .localVar ⟨name, []⟩) = .ok (.int (Int.ofNat out.size)) := by
   simp only [evalExpr?, hget, readLocalPath?, bind, EvalResult.bind, pure]
 
--- GENERALIZES Reasoning.SolmArithmetic.assignLocalVarBase_ok to arbitrary frames.
+-- GENERALIZES Reasoning.SteleArithmetic.assignLocalVarBase_ok to arbitrary frames.
 theorem assignLocalVarBase_frame {cfg : Config} {frame : Frame} {evm : EVM.State}
     {name : Ident} {old value : Value} (hget : frame.locals.get? name = some old) :
     assignStorageRef? cfg frame evm .localVar ⟨name, []⟩ value =

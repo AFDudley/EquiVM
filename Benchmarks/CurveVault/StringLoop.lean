@@ -1,6 +1,6 @@
 import Benchmarks.CurveVault.StringBlocks
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 def vaultStringCopyMemory (I : ExecutionEnv) (σ : AccountMap) (slot : UInt256)

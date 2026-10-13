@@ -1,7 +1,7 @@
 import Benchmarks.CurveVault.MintInternal
 import Benchmarks.CurveVault.BurnInternal
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 abbrev vaultSupplyFunction (isMint : Bool) : FunctionDecl :=

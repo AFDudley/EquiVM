@@ -2,7 +2,7 @@ import Benchmarks.CurveVault.HookCalls
 import Benchmarks.CurveVault.TokenCallSource
 import Benchmarks.CurveVault.TokenForward
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 def vaultMutationTransferBody (flow : VaultFlow) (argName : Ident) : List Stmt :=

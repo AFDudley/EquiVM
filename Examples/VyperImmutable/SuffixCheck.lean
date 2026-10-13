@@ -1,6 +1,6 @@
 import Examples.VyperImmutable.ImmutableCode
 
-open Solm
+open Stele
 
 namespace Examples.VyperImmutable
 

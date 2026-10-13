@@ -6,7 +6,7 @@ import Benchmarks.Dss.Flipper.BidAccess
 import Benchmarks.Dss.Flipper.Dispatch
 import Reasoning.MemCascade
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 0
@@ -159,7 +159,7 @@ abbrev kickLocalsAfterFlux (σ : AccountMap) (I : ExecutionEnv) : Store :=
 
 abbrev kickFluxArgValsOf (evm : EVM.State) : List Value :=
   [.fixedBytes bytes32Width
-      (EVM.Word.toBytesBE (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩)),
+      (EVM.Word.toBytesBE (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩)),
     .address evm.executionEnv.source,
     .address evm.executionEnv.codeOwner,
     .int (Int.ofNat (kickLot evm.executionEnv).toNat)]
@@ -1334,7 +1334,7 @@ theorem flipperKickSourceBodyAuthReverts {σ σ₀ A I} {g : UInt256}
     (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := Sat256.ofUInt256 g)
     (locals := kickLocals I) (kickLocals_get_wards I) hauth
   have hblock := nonpayableSecondRequireReverts
-    (cfg := config) (solm := { contract := contract, locals := kickLocals I })
+    (cfg := config) (stele := { contract := contract, locals := kickLocals I })
     (evm := evm0) (guard := kickAuthGuard) (rest := kickAfterAuthStmts)
     (by simp [evm0, initState]; exact hwv)
     (by simpa [kickAuthGuard] using hguard)

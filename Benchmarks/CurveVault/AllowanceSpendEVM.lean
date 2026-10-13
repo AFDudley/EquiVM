@@ -2,7 +2,7 @@ import Benchmarks.CurveVault.AllowanceSpendSites
 import Benchmarks.CurveVault.Arithmetic
 import Benchmarks.CurveVault.RuntimeBlocks_031
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 theorem vaultAllowanceSpendEVM (flow : VaultAllowanceSpendFlow) {I : ExecutionEnv} {g : Sat256} {s0 : State}

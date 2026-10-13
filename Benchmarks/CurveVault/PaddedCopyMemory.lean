@@ -1,6 +1,6 @@
 import Benchmarks.CurveVault.SymbolReturnMemory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.CurveVault
 
 -- LIBRARY CANDIDATE: an extending copy stores the available source bytes.

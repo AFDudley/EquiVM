@@ -3,19 +3,19 @@ import Benchmarks.Auction.CreateErrorSource
 import Benchmarks.Auction.PauseRoutine
 import Benchmarks.Auction.SettleStorage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Auction
 
 def pauseState (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨51⟩
-    (pauseWord (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨51⟩))
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨51⟩
+    (pauseWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨51⟩))
 
 theorem SourceState.pause {s0 I σ evm} (hs : SourceState s0 I σ evm) :
     SourceState s0 I
       (sstoreAccountMap I.codeOwner σ ⟨51⟩ (pauseWord (solcSlotWord σ I ⟨51⟩))) (pauseState evm) :=
         by
-  have hw : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨51⟩ =
+  have hw : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨51⟩ =
       solcSlotWord σ I ⟨51⟩ := by
     exact hs.storageRead _
   unfold pauseState

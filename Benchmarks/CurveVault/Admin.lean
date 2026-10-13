@@ -6,7 +6,7 @@ import Benchmarks.CurveVault.Calls
 import Benchmarks.CurveVault.RuntimeBlocks_022
 import Benchmarks.CurveVault.RuntimeBlocks_023
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch Reasoning.VyperCalls
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch Reasoning.VyperCalls
 namespace Benchmarks.CurveVault
 
 abbrev vaultAdminFunction : FunctionDecl := contract.functions[25]!
@@ -14,7 +14,7 @@ abbrev vaultAdminFunction : FunctionDecl := contract.functions[25]!
 theorem vaultAdminFunctionReturns {evm evm' : EVM.State} {locals : Store}
     {out : ByteArray} {value : Value} (hbase : locals.get? "_factory" = none)
     (hcall : typedCallViaEVM config evm
-      (AccountAddress.ofUInt256 (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨4⟩))
+      (AccountAddress.ofUInt256 (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨4⟩))
       "admin" 0 [] (true, evm', out) false)
     (hdec : config.externalABI.decode? "admin" out = some [value]) :
     ExecFuncBody config {contract := contract, locals := locals} evm vaultAdminFunction.body
@@ -29,7 +29,7 @@ theorem vaultAdminFunctionReturns {evm evm' : EVM.State} {locals : Store}
 theorem vaultAdminFunctionCallFailed {evm evm' : EVM.State} {locals : Store}
     {out : ByteArray} (hbase : locals.get? "_factory" = none)
     (hcall : typedCallViaEVM config evm
-      (AccountAddress.ofUInt256 (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨4⟩))
+      (AccountAddress.ofUInt256 (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨4⟩))
       "admin" 0 [] (false, evm', out) false) :
     ExecFuncBody config {contract := contract, locals := locals} evm vaultAdminFunction.body .reverted :=
   ExecFuncBody.execBlockRevert <| ExecBlock.consRevert <|
@@ -40,7 +40,7 @@ theorem vaultAdminFunctionCallFailed {evm evm' : EVM.State} {locals : Store}
 theorem vaultAdminFunctionDecodeFailed {evm evm' : EVM.State} {locals : Store}
     {out : ByteArray} (hbase : locals.get? "_factory" = none)
     (hcall : typedCallViaEVM config evm
-      (AccountAddress.ofUInt256 (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨4⟩))
+      (AccountAddress.ofUInt256 (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨4⟩))
       "admin" 0 [] (true, evm', out) false)
     (hdec : config.externalABI.decode? "admin" out = none) :
     ExecFuncBody config {contract := contract, locals := locals} evm vaultAdminFunction.body .reverted :=
@@ -66,7 +66,7 @@ theorem vaultAdminBodyCore {σ σ₀ A I} {g : UInt256}
       (transitionSignature adminTransition).paramTypes I.calldata = some ∅ := by
     change decodeCalldataWithMode .vyper [] [] I.calldata = some ∅
     exact decodeCalldataWithMode_empty_ok hsz
-  have hload : Solm.EVM.transientLoad (initState σ σ₀ (Sat256.ofUInt256 g) A I)
+  have hload : Stele.EVM.transientLoad (initState σ σ₀ (Sat256.ofUInt256 g) A I)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner ⟨0⟩ =
       codeOwnerTransientWord I σ ⟨0⟩ := codeOwnerTransientWord_initState _
   by_cases hlocked : codeOwnerTransientWord I σ ⟨0⟩ = ⟨1⟩
@@ -78,7 +78,7 @@ theorem vaultAdminBodyCore {σ σ₀ A I} {g : UInt256}
       [.internalCall "admin_body" [] "__r", .return [.var "__r"]] hvalue
       (by rw [hload]; exact hlocked)
     exact hrev.reEquivExecutionRevert hcode hd hdec hsource
-  · have hlock : Solm.EVM.transientLoad (initState σ σ₀ (Sat256.ofUInt256 g) A I)
+  · have hlock : Stele.EVM.transientLoad (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner ⟨0⟩ ≠ ⟨1⟩ :=
       by rwa [hload]
     have hwrap (hb : ExecFuncBody config {contract := contract, locals := ∅}
@@ -93,7 +93,7 @@ theorem vaultAdminBodyCore {σ σ₀ A I} {g : UInt256}
     obtain ⟨evm', σ', z, out, k2, C2, hcall, hs, rd6360, hout⟩ :=
       typedStaticCallBridge (cfg := config) (name := "admin") (args := []) rd6359
         SourceState.init (by native_decide) (vaultAdminCalldata _) (by decide +kernel) (by simp)
-    have hsload : Solm.EVM.storageLoad (initState σ σ₀ (Sat256.ofUInt256 g) A I)
+    have hsload : Stele.EVM.storageLoad (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner ⟨4⟩ =
         codeOwnerStorageWord I σ ⟨4⟩ := codeOwnerStorageWord_initState _
     change typedCallViaEVM config _ (AccountAddress.ofUInt256 (codeOwnerStorageWord I σ ⟨4⟩))

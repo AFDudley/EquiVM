@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.WordOperationsSource
 import Benchmarks.UniswapV4PoolManager.SignedRemainderWords
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 -- GENERALIZES Reasoning.Theory.evalExpr_mod_int_ok to arbitrary word-valued expressions and frames.

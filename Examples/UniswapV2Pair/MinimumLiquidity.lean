@@ -1,7 +1,7 @@
 import Examples.UniswapV2Pair.Dispatch
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -11,7 +11,7 @@ namespace UniswapV2Pair
 
 def minimumLiquidityWord : UInt256 := ⟨1000⟩
 
-/-- The Solm `MINIMUM_LIQUIDITY()` body returns the uint256 literal `1000`. -/
+/-- The Stele `MINIMUM_LIQUIDITY()` body returns the uint256 literal `1000`. -/
 theorem uniswapMinimumLiquidityBodyReturns (evm : EVM.State) (locals : Store)
     (h : evm.executionEnv.weiValue = ⟨0⟩) :
     ExecTransitionBody config contract evm locals minimumLiquidityTransition.body

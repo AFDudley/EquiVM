@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.BitMsbStepSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
 
@@ -45,7 +45,7 @@ theorem evalBitMsbGuard (imms : Store) (evm : EVM.State) (x : UInt256) :
 theorem bitMsbReverts (imms : Store) (evm : EVM.State) (x : UInt256) (hx : ¬0 < x.toNat) :
     ExecFuncBody config (bitMsbFrame imms x) evm bitMsbFunction.body .reverted := by
   apply ExecFuncBody.execBlockRevert
-  refine ExecBlock.consNormal (solm' := bitMsbZeroFrame imms x)
+  refine ExecBlock.consNormal (stele' := bitMsbZeroFrame imms x)
     (ExecStmt.letDecl (by simp only [evalExpr?, pure])) ?_
   exact ExecBlock.consRevert (ExecStmt.requireFalse
     (by simpa only [hx, decide_false] using evalBitMsbGuard imms evm x))
@@ -64,7 +64,7 @@ theorem bitMsbReturns (imms : Store) (evm : EVM.State) (x : UInt256) (hx : 0 < x
   obtain ⟨out, ht, hr'', _⟩ := bitMsbStepSource (evm := evm) (bitMsbPrefix x) 1 false
     hr' hx' (by have hb := bitMsbPrefix_bound x; omega)
   refine ⟨out, ExecFuncBody.execBlockRet ?_⟩
-  refine ExecBlock.consNormal (solm' := bitMsbZeroFrame imms x)
+  refine ExecBlock.consNormal (stele' := bitMsbZeroFrame imms x)
     (ExecStmt.letDecl (by simp only [evalExpr?, pure])) ?_
   refine ExecBlock.consNormal (ExecStmt.requireTrue
     (by simpa only [hx, decide_true] using evalBitMsbGuard imms evm x)) ?_

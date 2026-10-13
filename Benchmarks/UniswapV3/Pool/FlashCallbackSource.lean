@@ -2,7 +2,7 @@ import Benchmarks.UniswapV3.Pool.CallbackEncoding
 import Benchmarks.UniswapV3.Pool.Calls
 import Benchmarks.UniswapV3.Pool.SourceExpressions
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 def flashCallbackStmts : List Stmt :=

@@ -7,7 +7,7 @@ import Benchmarks.WETH9.Routines
 `decimals` is a public non-payable uint8 getter reading storage slot 2 (masked with `0xff`).
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 1000000
@@ -42,23 +42,23 @@ theorem weth9Decode_decimals_ok {I : ExecutionEnv} (hsz4 : 4 ≤ I.calldata.size
   change decodeCalldataWithMode .modern [] [] I.calldata = some (∅ : Store)
   exact decodeCalldataWithMode_empty_ok hsz4
 
-/-- The Solm `decimals()` body returns the low byte of slot 2. -/
+/-- The Stele `decimals()` body returns the low byte of slot 2. -/
 theorem weth9DecimalsBodyReturns (evm : EVM.State)
     (h : evm.executionEnv.weiValue = ⟨0⟩) :
     ExecTransitionBody config contract evm ∅ decimalsTransition.body
       (.returned { contract := contract, locals := ∅ } evm
         (some [(.int (Int.ofNat
-          (UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩) ⟨255⟩).toNat))])) := by
+          (UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩) ⟨255⟩).toNat))])) := by
   exact ExecFuncBody.execBlockRet <|
     (ABlock.start.requireStep (evalCallvalueEq_true h)).returns (by
       rw [evalExpr_storage_scalar_value
-        (solm := { contract := contract, locals := ∅ })
+        (stele := { contract := contract, locals := ∅ })
         (slot := decimalsRef)
         (er := ({ base := "decimals", steps := [] } : EvaledStorageRef))
         (t := .int uint8Int)
         (loc := uint8Loc ⟨2⟩)
         (value := .int (Int.ofNat
-          (UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩) ⟨255⟩).toNat))
+          (UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩) ⟨255⟩).toNat))
         (hbase := by simp [decimalsRef])
         (her := by simp [evalStorageRef, evalStorageRefStep, decimalsRef, EvalResult.bind,
           EvalResult.ofOption, bind, pure])
@@ -130,7 +130,7 @@ theorem weth9DecimalsBodyCoreOk {σ σ₀ A I} {g : UInt256}
           (some [(.int (Int.ofNat (decimalsWord σ I).toNat))])) := by
     have hb := weth9DecimalsBodyReturns (initState σ σ₀ (Sat256.ofUInt256 g) A I)
       (by simp only [initState]; exact hwv)
-    simpa [decimalsWord, Solm.EVM.storageLoad, State.lookupAccount, initState] using hb
+    simpa [decimalsWord, Stele.EVM.storageLoad, State.lookupAccount, initState] using hb
   exact weth9ReEquivExecGen hcode
     (weth9DecimalsX_ok (g := Sat256.ofUInt256 g) hcode hwv hsz4 hsize hsel)
     (weth9SelectorDispatchDecimals hsel) (weth9Decode_decimals_ok hsz4) hbody rfl

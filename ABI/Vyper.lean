@@ -32,7 +32,7 @@ end
 
 mutual
   /-- Check capacities after ABI decoding, including nested arrays and tuples. -/
-  def VyperABIType.withinBounds : VyperABIType → Solm.Value → Bool
+  def VyperABIType.withinBounds : VyperABIType → Stele.Value → Bool
     | .elem _, _ => true
     | .array elem n, .array values =>
         values.length == n && values.all elem.withinBounds
@@ -43,7 +43,7 @@ mutual
     | .tuple tys, .tuple values => vyperABIValuesWithinBounds tys values
     | _, _ => false
 
-  def vyperABIValuesWithinBounds : List VyperABIType → List Solm.Value → Bool
+  def vyperABIValuesWithinBounds : List VyperABIType → List Stele.Value → Bool
     | [], [] => true
     | ty :: tys, value :: values =>
         ty.withinBounds value && vyperABIValuesWithinBounds tys values
@@ -53,9 +53,9 @@ end
 /-- The ABI declaration of one Vyper entry point. Bounds do not change its selector. -/
 structure VyperABIFunction where
   name : String
-  params : List (Solm.Ident × VyperABIType)
+  params : List (Stele.Ident × VyperABIType)
 
-def VyperABIFunction.names (f : VyperABIFunction) : List Solm.Ident :=
+def VyperABIFunction.names (f : VyperABIFunction) : List Stele.Ident :=
   f.params.map Prod.fst
 
 def VyperABIFunction.types (f : VyperABIFunction) : List ABIType :=
@@ -68,8 +68,8 @@ def VyperABIFunction.selector (f : VyperABIFunction) : ByteArray :=
 handles layout and scalar checks; this layer rejects decoded values beyond Vyper capacities.
 Its arguments match `ExternalCallABI.decodeCalldata?`. -/
 def decodeVyperCalldata (functions : List VyperABIFunction)
-    (names : List Solm.Ident) (types : List ABIType) (calldata : EVM.Bytes) :
-    Option Solm.Store := do
+    (names : List Stele.Ident) (types : List ABIType) (calldata : EVM.Bytes) :
+    Option Stele.Store := do
   let f ← functions.find? (fun f => f.selector == calldata.extract 0 4)
   if f.names != names || f.types != types then none
   else do

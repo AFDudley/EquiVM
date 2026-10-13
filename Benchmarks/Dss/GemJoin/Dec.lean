@@ -1,6 +1,6 @@
 import Benchmarks.Dss.GemJoin.Dispatch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.GemJoin
 
@@ -56,7 +56,7 @@ theorem gemJoinDecBodyCore {σ σ₀ A I} {g : UInt256}
         (.returned { contract := contract, locals := ∅ }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.int (Int.ofNat (gemJoinDecWord σ I).toNat))])) := by
-    simpa [decTransition, gemJoinDecWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [decTransition, gemJoinDecWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       gemJoinUint256GetterBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅

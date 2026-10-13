@@ -2,7 +2,7 @@ import Benchmarks.CurveVault.InitializeDecimalsCall
 import Benchmarks.CurveVault.InitializeStorage
 import Benchmarks.CurveVault.Memory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch Reasoning.VyperCalls
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch Reasoning.VyperCalls
 namespace Benchmarks.CurveVault
 
 theorem vaultInitializeBorrowedDecimals {I : ExecutionEnv} {g : Sat256} {s0 evm : State}
@@ -24,7 +24,7 @@ theorem vaultInitializeBorrowedDecimals {I : ExecutionEnv} {g : Sat256} {s0 evm 
       RD vaultBytecode I g s0 (UInt256.ofNat 294) (decimals :: ⟨32⟩ :: token :: R) mem' aw' out σ' k' C') ∨
     (ExecBlock config {contract := contract, locals := locals} evm (initializeTransition.body.drop 2 |>.take 2)
       .reverted ∧ RDrev vaultBytecode g s0) := by
-  let evm0 := Solm.EVM.storageStore evm I.codeOwner ⟨0⟩ token
+  let evm0 := Stele.EVM.storageStore evm I.codeOwner ⟨0⟩ token
   let σ0 := sstoreAccountMap I.codeOwner σ ⟨0⟩ token
   let mem0 := vaultBlocks.vault_block_221_memory (mem := mem)
   have hs0 : SourceState s0 I σ0 evm0 := hs.storageWrite ⟨0⟩ token

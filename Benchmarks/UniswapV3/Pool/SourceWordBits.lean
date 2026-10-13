@@ -1,9 +1,9 @@
 import Benchmarks.UniswapV3.Pool.FlashProtocolWords
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
--- GENERALIZES Reasoning.SolmArithmetic wrapping multiplication to arbitrary frames.
+-- GENERALIZES Reasoning.SteleArithmetic wrapping multiplication to arbitrary frames.
 theorem evalExpr_word_mul {cfg : Config} {frame : Frame} {evm : EVM.State}
     {lhs rhs : Expr} {a b : UInt256}
     (ha : evalExpr? cfg frame evm lhs = .ok (.int (Int.ofNat a.toNat)))

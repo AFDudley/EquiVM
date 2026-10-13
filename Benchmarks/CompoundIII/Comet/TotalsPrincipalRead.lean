@@ -1,6 +1,6 @@
 import Benchmarks.CompoundIII.Comet.WithdrawBaseTotalsModel
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 
@@ -9,7 +9,7 @@ theorem sourceState_totalsPrincipalRead {s0 ee σ evm} (hs : SourceState s0 ee �
     totalsPrincipalWord (solcSlotWordAt (UInt256.ofNat 1) σ ee) borrow =
       withdrawBaseTotal evm borrow := by
   have hr : solcSlotWordAt (UInt256.ofNat 1) σ ee =
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩ := by
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩ := by
     simpa only [hs.env] using (hs.storageRead ⟨1⟩).symm
   rw [hr]
   rfl

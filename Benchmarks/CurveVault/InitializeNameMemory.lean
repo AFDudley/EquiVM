@@ -2,7 +2,7 @@ import Benchmarks.CurveVault.InitializeCopyMemory
 import Benchmarks.CurveVault.StringScratchInputs
 import Benchmarks.CurveVault.RuntimeBlocks_003
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 def vaultNamePrefix : UInt256 :=

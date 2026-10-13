@@ -2,7 +2,7 @@ import Benchmarks.UniswapV4PoolManager.TickStorage
 import Benchmarks.UniswapV4PoolManager.PoolFeeGrowthStorage
 import Benchmarks.UniswapV4PoolManager.Slot0TickSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 
@@ -11,11 +11,11 @@ theorem poolUpdateTick_lookup : lookupCallable? contract "Pool_updateTick" =
     some poolUpdateTickFunction.toCallable := rfl
 
 def tickFeeWrite0 (evm : EVM.State) (id : UInt256) (tick : Int) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ((tickSlot id tick)+⟨1⟩)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ((tickSlot id tick)+⟨1⟩)
     (poolFeeGrowthWord evm id false)
 def tickFeeWrites (evm : EVM.State) (id : UInt256) (tick : Int) : EVM.State :=
   let evm1 := tickFeeWrite0 evm id tick
-  Solm.EVM.storageStore evm1 evm1.executionEnv.codeOwner ((tickSlot id tick)+⟨2⟩)
+  Stele.EVM.storageStore evm1 evm1.executionEnv.codeOwner ((tickSlot id tick)+⟨2⟩)
     (poolFeeGrowthWord evm1 id true)
 
 def tickFeeWriteBody : List Stmt :=

@@ -1,7 +1,7 @@
 import Benchmarks.CurveVault.Lock
 import Reasoning.ExternalCall
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 -- LIBRARY CANDIDATE: a transient write preserves every persistent storage word.
@@ -50,13 +50,13 @@ theorem tstoreStaticReach {code : ByteArray} {I : ExecutionEnv} {g : Sat256} {s0
 theorem sourceStateTransientWrite {s0 I σ evm} (hs : SourceState s0 I σ evm)
     (slot value : UInt256) :
     SourceState s0 I (tstoreAccountMap I.codeOwner σ slot value)
-      (Solm.EVM.transientStore evm I.codeOwner slot value) := by
+      (Stele.EVM.transientStore evm I.codeOwner slot value) := by
   refine ⟨(transientStore_σ₀ _ _ _ _).trans hs.world,
     (transientStore_executionEnv _ _ _ _).trans hs.env, ?_⟩
   rw [transientStore_accountMap, hs.accounts]
 
 def vaultSetLock (evm : State) (value : UInt256) : State :=
-  Solm.EVM.transientStore evm evm.executionEnv.codeOwner ⟨0⟩ value
+  Stele.EVM.transientStore evm evm.executionEnv.codeOwner ⟨0⟩ value
 
 abbrev vaultLockAssignStmt (value : UInt256) : Stmt :=
   .assign .transient {base := "nonreentrant_lock", steps := []} (.intLit (Int.ofNat value.toNat))
@@ -78,7 +78,7 @@ theorem vaultLockSet (evm : State) (locals : Store) (value : UInt256) :
 
 theorem vaultMutatingBodyStatic (evm : State) (locals : Store) (rest : List Stmt)
     (hvalue : evm.executionEnv.weiValue = ⟨0⟩)
-    (hlock : Solm.EVM.transientLoad evm evm.executionEnv.codeOwner ⟨0⟩ ≠ ⟨1⟩)
+    (hlock : Stele.EVM.transientLoad evm evm.executionEnv.codeOwner ⟨0⟩ ≠ ⟨1⟩)
     (hperm : evm.executionEnv.perm = false) :
     ExecTransitionBody config contract evm locals
       (.require (.binary .eq (.env .callvalue) (.intLit 0)) :: .require vaultLockExpr ::
@@ -90,14 +90,14 @@ theorem vaultMutatingBodyStatic (evm : State) (locals : Store) (rest : List Stmt
           (vaultLockAssign evm locals ⟨1⟩) hperm)
 
 theorem vaultMutatingBodyReturns {evm calleeEvm : State} {locals calleeLocals : Store}
-    {fn : FunctionDecl} {calleeSolm : Frame} {args : List Expr} {argVals : List Value} {value : Value}
+    {fn : FunctionDecl} {calleeStele : Frame} {args : List Expr} {argVals : List Value} {value : Value}
     (hvalue : evm.executionEnv.weiValue = ⟨0⟩)
-    (hlock : Solm.EVM.transientLoad evm evm.executionEnv.codeOwner ⟨0⟩ ≠ ⟨1⟩)
+    (hlock : Stele.EVM.transientLoad evm evm.executionEnv.codeOwner ⟨0⟩ ≠ ⟨1⟩)
     (hargs : evalExprs? config {contract := contract, locals := locals} (vaultSetLock evm ⟨1⟩) args = .ok argVals)
     (hlookup : lookupCallable? contract fn.name = some fn.toCallable)
     (hbind : bindParams? fn.params argVals = some calleeLocals)
     (hbody : ExecFuncBody config {contract := contract, locals := calleeLocals} (vaultSetLock evm ⟨1⟩) fn.body
-      (.returned calleeSolm calleeEvm (some [value]))) :
+      (.returned calleeStele calleeEvm (some [value]))) :
     ExecTransitionBody config contract evm locals
       [.require (.binary .eq (.env .callvalue) (.intLit 0)), .require vaultLockExpr,
         vaultLockAssignStmt ⟨1⟩, .internalCall fn.name args "__r", vaultLockAssignStmt ⟨0⟩, .return [.var "__r"]]
@@ -115,14 +115,14 @@ theorem vaultMutatingBodyReturns {evm calleeEvm : State} {locals calleeLocals : 
   simp [evalExpr?, EvalResult.ofOption]
 
 theorem vaultMutatingBodyVoidReturns {evm calleeEvm : State} {locals calleeLocals : Store}
-    {fn : FunctionDecl} {calleeSolm : Frame} {args : List Expr} {argVals : List Value}
+    {fn : FunctionDecl} {calleeStele : Frame} {args : List Expr} {argVals : List Value}
     (hvalue : evm.executionEnv.weiValue = ⟨0⟩)
-    (hlock : Solm.EVM.transientLoad evm evm.executionEnv.codeOwner ⟨0⟩ ≠ ⟨1⟩)
+    (hlock : Stele.EVM.transientLoad evm evm.executionEnv.codeOwner ⟨0⟩ ≠ ⟨1⟩)
     (hargs : evalExprs? config {contract := contract, locals := locals} (vaultSetLock evm ⟨1⟩) args = .ok argVals)
     (hlookup : lookupCallable? contract fn.name = some fn.toCallable)
     (hbind : bindParams? fn.params argVals = some calleeLocals)
     (hbody : ExecFuncBody config {contract := contract, locals := calleeLocals} (vaultSetLock evm ⟨1⟩) fn.body
-      (.returned calleeSolm calleeEvm none)) :
+      (.returned calleeStele calleeEvm none)) :
     ExecTransitionBody config contract evm locals
       [.require (.binary .eq (.env .callvalue) (.intLit 0)), .require vaultLockExpr,
         vaultLockAssignStmt ⟨1⟩, .internalCall fn.name args "__r", vaultLockAssignStmt ⟨0⟩]
@@ -140,7 +140,7 @@ theorem vaultMutatingBodyVoidReturns {evm calleeEvm : State} {locals calleeLocal
 theorem vaultMutatingBodyReverts {evm : State} {locals calleeLocals : Store}
     {fn : FunctionDecl} {args : List Expr} {argVals : List Value}
     (hvalue : evm.executionEnv.weiValue = ⟨0⟩)
-    (hlock : Solm.EVM.transientLoad evm evm.executionEnv.codeOwner ⟨0⟩ ≠ ⟨1⟩)
+    (hlock : Stele.EVM.transientLoad evm evm.executionEnv.codeOwner ⟨0⟩ ≠ ⟨1⟩)
     (hargs : evalExprs? config {contract := contract, locals := locals} (vaultSetLock evm ⟨1⟩) args = .ok argVals)
     (hlookup : lookupCallable? contract fn.name = some fn.toCallable)
     (hbind : bindParams? fn.params argVals = some calleeLocals)

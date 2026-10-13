@@ -6,7 +6,7 @@ import Tests.Pipeline.VyperVault.Helpers
 Dispatcher bucket 5: the callvalue guard at pc 1383, then `SLOAD 3` and `RETURN`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
   Reasoning.VyperImmutables
 
 namespace Tests.Pipeline.VyperVault

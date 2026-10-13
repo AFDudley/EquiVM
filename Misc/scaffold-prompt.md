@@ -1,7 +1,7 @@
 # Agent prompt — from a contract to a ready-to-prove scaffold
 
 In one session you turn one Solidity or Vyper contract into a proof scaffold: pinned artifacts, generated
-Lean that builds, a Solm specification you have audited against the bytecode and that the
+Lean that builds, a Stele specification you have audited against the bytecode and that the
 differential suite cannot tell apart from it, and the proof skeleton the proving session
 (`Misc/prompt.md`) starts from. You write no proofs.
 
@@ -20,12 +20,12 @@ differential suite cannot tell apart from it, and the proof skeleton the proving
 - Generated files are not edited by hand except for the ABI and Vyper storage configuration in `Spec.lean` when
   the generated decoder does not match the bytecode. Rerun the generator with `--force` before
   making that edit, and reapply it if regeneration is later necessary. The main file you write is
-  `SpecSyntax.lean`; its surface syntax is documented in the header of `Solm/Notation.lean`.
-- Nothing outside `<Dir>` changes: not `Solm/`, not `Reasoning/`, not `scripts/`.
+  `SpecSyntax.lean`; its surface syntax is documented in the header of `Stele/Notation.lean`.
+- Nothing outside `<Dir>` changes: not `Stele/`, not `Reasoning/`, not `scripts/`.
 - Inline assembly, library calls and everything else the translator leaves as a hole are
-  modelled by their effect: the Solm statements that perform the same storage reads and writes,
+  modelled by their effect: the Stele statements that perform the same storage reads and writes,
   calls and results, justified by the bytecode report. Compiler-inserted checks are written as
-  `require` statements. A blocker is only a behaviour the Solm semantics cannot express; name the
+  `require` statements. A blocker is only a behaviour the Stele semantics cannot express; name the
   function and the bytecode location, do not work around it silently.
 - The differential suite is evidence, not the audit. It runs first and samples the paths its
   generator reaches; the audit of step 8 covers every block of the bytecode, is yours to do, and
@@ -65,21 +65,21 @@ differential suite cannot tell apart from it, and the proof skeleton the proving
    ```
    Record the source's `# pragma optimize` and `# pragma nonreentrancy` settings. Vyper's
    `layout` output and source map have different shapes from solc's. `all` creates artifacts,
-   selectors, block summaries and a differential target; it does not create a Solm spec.
+   selectors, block summaries and a differential target; it does not create a Stele spec.
 2. **Report.** `scripts/bytecode_report.py <Dir> --output <Dir>/<Name>.report.md`: the
    dispatcher, every runtime block with its source statement, the per-function pc ranges, the
    internal routines. For Vyper, the report annotates blocks from `pc_pos_map`; it does not
    infer solc AST function ranges or jump tags. This is the ground truth for steps 4 and 8.
 3. **Draft.**
    ```
-   scripts/sol2solm.py <Dir> --contract <Name> --namespace <Module> \
+   scripts/sol2stele.py <Dir> --contract <Name> --namespace <Module> \
        --output <Dir>/SpecSyntax.lean --spec-json <Dir>/<Name>.spec.json
    ```
    The draft encodes checked arithmetic, the compiler's guards, hoisted calls and the getters;
    what it cannot translate is a `${hole …}`, listed in the file header.
    **Vyper:**
    ```
-   scripts/vy2solm.py <Dir> --contract <Name> --namespace <Module> \
+   scripts/vy2stele.py <Dir> --contract <Name> --namespace <Module> \
        --output <Dir>/SpecSyntax.lean --spec-json <Dir>/<Name>.spec.json
    ```
    drafts from the pinned annotated AST: one transition per selector (default-argument variants
@@ -90,7 +90,7 @@ differential suite cannot tell apart from it, and the proof skeleton the proving
    capacity (`bounded`), the external calls, and the lock slot. Check the storage declarations
    against `<Name>.storage.json` and treat external calls and imported modules according to the
    compiled bytecode, not their names; `Examples/VyperERC20/SpecSyntax.lean` shows the syntax.
-4. **Close the holes.** Replace each hole with the Solm statements the source and the report
+4. **Close the holes.** Replace each hole with the Stele statements the source and the report
    justify (Vyper drafts: `abi_encode`, `create_*`, bytes literals, decimals, `extract32`, …).
    `lake build <Module>.SpecSyntax` must succeed before you continue.
 5. **Skeleton.** `scripts/proof_skeleton.py --dir <Dir> --module <Module>` writes `Spec.lean`,
@@ -131,7 +131,7 @@ differential suite cannot tell apart from it, and the proof skeleton the proving
    facts when it has a `fallback`, `receive` or `__default__`.
    Do not report a finished ready-to-prove skeleton before `Correct` builds.
 7. **Differential test**, before the audit, so the gross errors are gone when you read.
-   `lake exe solm-difftest --only <Name> --count 50` (`Tests/DiffTest/README.md`). Every
+   `lake exe stele-difftest --only <Name> --count 50` (`Tests/DiffTest/README.md`). Every
    `DISAGREE` and every `spec stuck` case is understood: a specification error is fixed in
    `SpecSyntax.lean` (then steps 5 to 7 again), anything else is a blocker. Inconclusive cases
    (out of gas, out of fuel, allocation cap) impose nothing. Every transition's `successful/cases`
@@ -175,7 +175,7 @@ differential suite cannot tell apart from it, and the proof skeleton the proving
      within the bound, is a finding;
    - proof blockers: storage reads and writes of mappings, arrays, strings and bytes in the
      bytecode's order (otherwise the proof needs a slot-noncollision axiom, which is not allowed);
-     the same logic in one helper function rather than repeated; nothing the Solm semantics cannot
+     the same logic in one helper function rather than repeated; nothing the Stele semantics cannot
      express.
    A function is done when every block of its range is accounted for; nothing is skipped because
    the suite agreed. Every finding makes the spec faithful (then steps 5 to 7 again). A finding
@@ -197,7 +197,7 @@ differential suite cannot tell apart from it, and the proof skeleton the proving
 - `scripts/scaffold.py check --dir <Dir>` prints only `ok` lines.
 - `lake build <Module>.Correct` succeeds with no `sorry` outside the generated stubs.
 - `config.externalABI` uses decoders that match the pinned bytecode, including malformed inputs.
-- `lake exe solm-difftest --only <Name> --count 50` reports no disagreement and no stuck case.
+- `lake exe stele-difftest --only <Name> --count 50` reports no disagreement and no stuck case.
 - The audit of step 8 is complete for every function and the constructor, with no finding left.
 - `HANDOFF.md` has the five sections of step 9.
 

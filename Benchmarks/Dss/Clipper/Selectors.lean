@@ -1,13 +1,13 @@
 import Benchmarks.Dss.Clipper.Common
-import Solm.Semantics
+import Stele.Semantics
 
 /-!
 # MakerDAO/Sky DSS Clipper selector proofs
 
-The selector theorems connect Solm signatures to the runtime dispatcher constants.
+The selector theorems connect Stele signatures to the runtime dispatcher constants.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM
+open Stele ABI Ethereum Ethereum.EVM
 open Benchmarks.Dss.Clipper.Immutables
 
 namespace Benchmarks.Dss.Clipper

@@ -1,8 +1,8 @@
 import Examples.Reuse.Spec
-import Solm.Semantics
+import Stele.Semantics
 import Reasoning.JumpDest
 
-open Solm Ethereum Ethereum.EVM
+open Stele Ethereum Ethereum.EVM
 
 /-! ## `C`'s deployed runtime bytecode — **optimizer ON**
 
@@ -37,10 +37,10 @@ set_option maxHeartbeats 0 in
 set_option maxRecDepth 1000000 in
 /-- `keccak("f(uint256)")[0:4] = 0xb3de648b`. -/
 theorem cFSelectorBytes :
-    (KEC (String.toByteArray (Solm.transitionSigStr Reuse.fTransition))).extract 0 4
+    (KEC (String.toByteArray (Stele.transitionSigStr Reuse.fTransition))).extract 0 4
       = ⟨#[0xb3, 0xde, 0x64, 0x8b]⟩ := by
-  have hsig : Solm.transitionSigStr Reuse.fTransition = "f(uint256)" := by
-    simp [Solm.transitionSigStr, ABI.printSignature, transitionSignature,
+  have hsig : Stele.transitionSigStr Reuse.fTransition = "f(uint256)" := by
+    simp [Stele.transitionSigStr, ABI.printSignature, transitionSignature,
       Reuse.fTransition, Reuse.uint256, Reuse.uint256Int, ABI.abiToSigStr,
       ABI.elemToSigStr, ABI.intTypeToSigStr,
       show Nat.repr 256 = "256" by decide +kernel]
@@ -52,10 +52,10 @@ set_option maxHeartbeats 0 in
 set_option maxRecDepth 1000000 in
 /-- `keccak("g(uint256)")[0:4] = 0xe420264a`. -/
 theorem cGSelectorBytes :
-    (KEC (String.toByteArray (Solm.transitionSigStr Reuse.gTransition))).extract 0 4
+    (KEC (String.toByteArray (Stele.transitionSigStr Reuse.gTransition))).extract 0 4
       = ⟨#[0xe4, 0x20, 0x26, 0x4a]⟩ := by
-  have hsig : Solm.transitionSigStr Reuse.gTransition = "g(uint256)" := by
-    simp [Solm.transitionSigStr, ABI.printSignature, transitionSignature,
+  have hsig : Stele.transitionSigStr Reuse.gTransition = "g(uint256)" := by
+    simp [Stele.transitionSigStr, ABI.printSignature, transitionSignature,
       Reuse.gTransition, Reuse.uint256, Reuse.uint256Int, ABI.abiToSigStr,
       ABI.elemToSigStr, ABI.intTypeToSigStr,
       show Nat.repr 256 = "256" by decide +kernel]

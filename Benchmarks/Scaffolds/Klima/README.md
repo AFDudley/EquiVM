@@ -36,7 +36,7 @@ Generated artifacts and scaffold files:
 - `KlimaToken.storage.json`: storage layout emitted by solc.
 - `Bytecode.lean`: creation/runtime bytecode as Lean `ByteArray`s plus verified `JUMPDEST` sets.
 - `StringLayout.lean`: per-contract pre-0.8 compact-string read/write hook for `_name`/`_symbol`.
-- `Spec.lean`: Solm AST benchmark spec.
+- `Spec.lean`: Stele AST benchmark spec.
 - `Constructor.lean`: top-level constructor-equivalence theorem (`sorry`).
 - `Correct.lean`: top-level runtime-equivalence theorem plus whole-contract wrapper (`sorry`).
 

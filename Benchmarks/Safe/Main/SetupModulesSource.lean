@@ -5,7 +5,7 @@ import Benchmarks.Safe.Main.InternalCall
 import Benchmarks.Safe.Main.LocalArrays
 import Reasoning.ExternalCall
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.Main
 

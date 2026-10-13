@@ -7,18 +7,18 @@ import Reasoning.VyperDispatch
 
 Vyper's `extcall`/`staticcall` to an interface function is a `CALL` (value 0) or `STATICCALL`
 whose input is the ABI encoding the spec's `externalABI.encode?` produces.  The bridges below pair
-the opcode's `RD` step (`RD.call`/`RD.solcStaticcall`, with the depth-limit twins) with Solm's
+the opcode's `RD` step (`RD.call`/`RD.solcStaticcall`, with the depth-limit twins) with Stele's
 `typedCallViaEVM` through `callCoincides`, carrying a `SourceState` across the call.  The decode
 lemmas evaluate `decodeReturnValue?` (modern mode) on a `uint256`/`bool` return word.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 
 namespace Reasoning.VyperCalls
 
 set_option maxRecDepth 2000000
 
-/-- A `CALL` with value 0 at `pc`, bridged to Solm's typed call: the Solm state `evm` follows the
+/-- A `CALL` with value 0 at `pc`, bridged to Stele's typed call: the Stele state `evm` follows the
 summary's account map through `hs`; the call's input is the encoding `hcd` of the spec's
 arguments. -/
 theorem typedCallBridge {code : ByteArray} {I : ExecutionEnv} {g : Sat256} {s0 : State} {pc : UInt256}
@@ -76,7 +76,7 @@ theorem typedCallBridge {code : ByteArray} {I : ExecutionEnv} {g : Sat256} {s0 :
       (by rw [hs.env]; exact hd) rfl hcd hΘ'
     exact ⟨_, σ', z, out, k', C', hcall, ⟨hs.world, hs.env, rfl⟩, rd, hsize, Or.inr ⟨A_in, callGas, g'', A', hΘ0⟩⟩
 
-/-- A `STATICCALL` at `pc`, bridged to Solm's typed view call (`perm := false`). -/
+/-- A `STATICCALL` at `pc`, bridged to Stele's typed view call (`perm := false`). -/
 theorem typedStaticCallBridge {code : ByteArray} {I : ExecutionEnv} {g : Sat256} {s0 : State} {pc : UInt256}
     {R : List UInt256} {mem : ByteArray} {aw : UInt256} {rdata : ByteArray} {σ : AccountMap} {k C : ℕ}
     {evm : EVM.State} {cfg : Config} {name : Ident} {args : List Value}

@@ -4,7 +4,7 @@ import Benchmarks.CompoundIII.Comet.CollateralMappingMemory
 import Benchmarks.CompoundIII.Comet.RuntimeBlocks_064
 import Benchmarks.CompoundIII.Comet.RuntimeBlocks_049
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
 open Benchmarks.CompoundIII.Comet.Immutables cometWithExtendedAssetListBlocks
 
 namespace Benchmarks.CompoundIII.Comet
@@ -42,7 +42,7 @@ theorem cometSupplyCollateralBalance {v : CometWithExtendedAssetListImmutables}
     (immWords := wordsOf (immStore v)) (by change R.length + 18 + 5 ≤ 1024; omega)
     (by rw [cometWithExtendedAssetListPatchedValidJumpsRuntime v]; jump_dest) r4
   have hread : solcSlotWordAt (userCollateralSlot dst asset) σ ee =
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (userCollateralSlot dst asset) := by
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (userCollateralSlot dst asset) := by
     simpa only [hs.env] using (hs.storageRead (userCollateralSlot dst asset)).symm
   change RD _ _ _ _ _ (UInt256.land _ (solcSlotWordAt (userCollateralSlot dst asset) σ ee) :: _)
     _ _ _ _ _ _ at r5

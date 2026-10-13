@@ -1,6 +1,6 @@
 import Benchmarks.CompoundIII.Comet.PackedGetter
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 
@@ -20,7 +20,7 @@ theorem evalTotalsCollateralFieldVar (evm : EVM.State) (locals imms : Store)
       evm (.storage ⟨"totalsCollateral", [.mindex (.var name),
         .field (if upper then "_reserved" else "totalSupplyAsset")]⟩) =
       .ok (.int ((if upper then high128 else low128)
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
           (totalsCollateralSlot addr))).toNat) := by
   cases upper
   · apply evalExpr_storage_scalar_value (hbackend := rfl)
@@ -64,7 +64,7 @@ theorem evalTotalsCollateralField (evm : EVM.State) (locals imms : Store)
       evm (.storage ⟨"totalsCollateral", [.mindex (.var "arg0"),
         .field (if upper then "_reserved" else "totalSupplyAsset")]⟩) =
       .ok (.int ((if upper then high128 else low128)
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (totalsCollateralSlot addr))).toNat) :=
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (totalsCollateralSlot addr))).toNat) :=
   evalTotalsCollateralFieldVar evm locals imms addr upper "arg0" hlocal harg
 
 end Benchmarks.CompoundIII.Comet

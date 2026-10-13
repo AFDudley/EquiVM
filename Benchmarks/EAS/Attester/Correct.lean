@@ -3,7 +3,7 @@ import Benchmarks.EAS.Attester.Attest
 import Benchmarks.EAS.Attester.MultiAttest
 import Benchmarks.EAS.Attester.MultiRevoke
 import Benchmarks.EAS.Attester.Revoke
-import Solm.Refine
+import Stele.Refine
 
 /-!
 # EAS Attester benchmark correctness stub
@@ -13,7 +13,7 @@ it) refines the spec run with those immutables.  With the constructor target thi
 contract refinement.  Proofs are the benchmark target.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Benchmarks.EAS.Attester.Immutables
+open Stele ABI Ethereum Ethereum.EVM Benchmarks.EAS.Attester.Immutables
 
 namespace Benchmarks.EAS.Attester
 

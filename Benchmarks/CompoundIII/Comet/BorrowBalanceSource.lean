@@ -2,7 +2,7 @@ import Benchmarks.CompoundIII.Comet.AccountBalanceSource
 import Benchmarks.CompoundIII.Comet.Unsigned104
 import Benchmarks.CompoundIII.Comet.NegativePrincipal
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.CompoundIII.Comet.Immutables
 
 namespace Benchmarks.CompoundIII.Comet
@@ -38,18 +38,18 @@ theorem borrowBalanceCallable_lookup :
 theorem borrowBalanceCallable_returns (v : CometWithExtendedAssetListImmutables)
     (evm : EVM.State) (addr : AccountAddress)
     (hv : BorrowBalanceValid v
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) (timestampWord evm.executionEnv)
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (userBasicSlot addr))) :
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) (timestampWord evm.executionEnv)
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (userBasicSlot addr))) :
     ∃ final, ExecFuncBody config (accountBalanceEntry v addr) evm borrowBalanceCallable.body
       (.returned final evm (some [.int (borrowBalanceWord v
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) (timestampWord evm.executionEnv)
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (userBasicSlot addr))).toNat])) := by
-  let w0 := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩
-  let w1 := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) (timestampWord evm.executionEnv)
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (userBasicSlot addr))).toNat])) := by
+  let w0 := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩
+  let w1 := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩
   let time := timestampWord evm.executionEnv
-  let basic := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (userBasicSlot addr)
+  let basic := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (userBasicSlot addr)
   let idx := currentIndex v w0 w1 time true
   let f3 := accountBalanceFrame v addr true w0 w1 time basic
   have hprefix := accountBalancePrefix v evm addr true hv.1
@@ -98,14 +98,14 @@ theorem borrowBalanceCallable_returns (v : CometWithExtendedAssetListImmutables)
 theorem borrowBalanceCallable_reverts (v : CometWithExtendedAssetListImmutables)
     (evm : EVM.State) (addr : AccountAddress)
     (hv : ¬ BorrowBalanceValid v
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) (timestampWord evm.executionEnv)
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (userBasicSlot addr))) :
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) (timestampWord evm.executionEnv)
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (userBasicSlot addr))) :
     ExecFuncBody config (accountBalanceEntry v addr) evm borrowBalanceCallable.body .reverted := by
-  let w0 := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩
-  let w1 := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩
+  let w0 := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩
+  let w1 := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩
   let time := timestampWord evm.executionEnv
-  let basic := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (userBasicSlot addr)
+  let basic := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (userBasicSlot addr)
   apply ExecFuncBody.execBlockRevert
   by_cases hc : CurrentIndicesValid v w0 w1 time
   · have hmin : signed104 basic = -(2^103 : Int) := by
@@ -133,19 +133,19 @@ theorem borrowBalance_call_ok (v : CometWithExtendedAssetListImmutables)
     (hc : frame.contract = contract) (hi : frame.immutables = immStore v)
     (he : evalExpr? config frame evm expr = .ok (.address addr))
     (hv : BorrowBalanceValid v
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) (timestampWord evm.executionEnv)
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (userBasicSlot addr))) :
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) (timestampWord evm.executionEnv)
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (userBasicSlot addr))) :
     let val := borrowBalanceWord v
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) (timestampWord evm.executionEnv)
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (userBasicSlot addr))
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) (timestampWord evm.executionEnv)
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (userBasicSlot addr))
     ExecStmt config frame evm (.internalCall "borrowBalanceOf_body" [expr] ret)
       (.ok { frame with locals := frame.locals.insert ret (.int val.toNat) } evm) := by
   obtain ⟨final, hf⟩ := borrowBalanceCallable_returns v evm addr hv
   exact ExecStmt.internalCallReturn (callee := borrowBalanceCallable)
     (locals := (∅ : Store).insert "account" (.address addr))
-    (cfg := config) (solm := frame) (evm := evm) (args := [expr]) (argVals := [.address addr])
+    (cfg := config) (stele := frame) (evm := evm) (args := [expr]) (argVals := [.address addr])
     (by simp only [evalExprs?, he, pure, bind, EvalResult.bind])
     (by rw [hc]; exact borrowBalanceCallable_lookup) rfl
     (by simpa only [hc, hi] using hf)
@@ -155,13 +155,13 @@ theorem borrowBalance_call_revert (v : CometWithExtendedAssetListImmutables)
     (hc : frame.contract = contract) (hi : frame.immutables = immStore v)
     (he : evalExpr? config frame evm expr = .ok (.address addr))
     (hv : ¬ BorrowBalanceValid v
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) (timestampWord evm.executionEnv)
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (userBasicSlot addr))) :
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) (timestampWord evm.executionEnv)
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (userBasicSlot addr))) :
     ExecStmt config frame evm (.internalCall "borrowBalanceOf_body" [expr] ret) .reverted := by
   apply ExecStmt.internalCallRevert (callee := borrowBalanceCallable)
     (locals := (∅ : Store).insert "account" (.address addr))
-    (cfg := config) (solm := frame) (evm := evm) (args := [expr]) (argVals := [.address addr])
+    (cfg := config) (stele := frame) (evm := evm) (args := [expr]) (argVals := [.address addr])
     (by simp only [evalExprs?, he, pure, bind, EvalResult.bind])
     (by rw [hc]; exact borrowBalanceCallable_lookup) rfl
   simpa only [hc, hi] using borrowBalanceCallable_reverts v evm addr hv

@@ -1,6 +1,6 @@
 import Benchmarks.CurveVault.ConversionFinishSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 theorem vaultConversionCeilCall {I : ExecutionEnv} {g : Sat256} {s0 : State}

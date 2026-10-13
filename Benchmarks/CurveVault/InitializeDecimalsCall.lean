@@ -4,7 +4,7 @@ import Benchmarks.CurveVault.UintReturnABI
 import Benchmarks.CurveVault.RuntimeBlocks_002
 import Benchmarks.CurveVault.RuntimeBlocks_031
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch Reasoning.VyperCalls
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch Reasoning.VyperCalls
 namespace Benchmarks.CurveVault
 
 abbrev vaultInitializeDecimalsStmt : Stmt := initializeTransition.body[3]!

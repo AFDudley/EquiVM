@@ -3,7 +3,7 @@ import Benchmarks.UniswapV3.Pool.PoolTokenTransfer
 import Benchmarks.UniswapV3.Pool.Slot0Storage
 import Benchmarks.UniswapV3.Pool.FactoryOwner
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
@@ -104,7 +104,7 @@ theorem collectProtocolCallOwner (v : UniswapV3PoolImmutables) (evm evm' : EVM.S
       (.ok (collectProtocolOwnerFrame v recipient req0 req1 owner) evm') := by
   exact internalCallFunctionReturn (args := []) (argVals := []) (locals := ∅)
     (caller := collectProtocolInitFrame v recipient req0 req1) (retVar := "__c0")
-    (callee := factoryOwnerFunction) (calleeSolm := calleeFrame) (value := some [.address owner])
+    (callee := factoryOwnerFunction) (calleeStele := calleeFrame) (value := some [.address owner])
     (by simp only [evalExprs?, pure]) factoryOwnerLookup rfl hfactory
 
 theorem evalCollectProtocolOwner (v : UniswapV3PoolImmutables) (evm : EVM.State)

@@ -6,12 +6,12 @@ import Benchmarks.CurveVault.StringRoutine
 # Vault `symbol()`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body (its own `calldatasize`/`callvalue` guard first), the Solm body evaluation, and the
+body (its own `calldatasize`/`callvalue` guard first), the Stele body evaluation, and the
 `…Body` theorem `Correct.lean` consumes.
 Dispatcher: bucket 0, arm entry pc 73; reach lemma `vaultReachSymbolBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 
 namespace Benchmarks.CurveVault
 

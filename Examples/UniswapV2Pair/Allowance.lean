@@ -1,8 +1,8 @@
 import Examples.UniswapV2Pair.ExternalWrappers
 import Examples.UniswapV2Pair.Dispatch
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -101,13 +101,13 @@ theorem uniswapDecode_allowance_none_short {I : ExecutionEnv}
   simpa using decodeCalldata_legacyAddress_legacyAddress_none_short
     (cd := I.calldata) (x := "owner") (y := "spender") hsz4 hshort
 
-/-- The Solm `allowance(address,address)` body returns `allowance[owner][spender]`. -/
+/-- The Stele `allowance(address,address)` body returns `allowance[owner][spender]`. -/
 theorem uniswapAllowanceBodyReturns (evm : EVM.State) (I : ExecutionEnv)
     (h : evm.executionEnv.weiValue = ⟨0⟩) :
     ExecTransitionBody config contract evm (allowanceStore I) allowanceTransition.body
       (.returned { contract := contract, locals := allowanceStore I } evm
         (some [(.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
             (allowanceStorageSlot I)).toNat))])) := by
   have hgowner := allowanceStore_owner_getElem? I
   have hgspender := allowanceStore_spender_getElem? I
@@ -244,7 +244,7 @@ theorem uniswapAllowanceBodyCoreOk
         (.returned { contract := contract, locals := allowanceStore I }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.int (Int.ofNat (allowanceWord σ I).toNat))])) := by
-    simpa [allowanceWord, allowanceStorageSlot, initState, Solm.EVM.storageLoad,
+    simpa [allowanceWord, allowanceStorageSlot, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       uniswapAllowanceBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) I

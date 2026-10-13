@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Clipper.Fallback
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 namespace Benchmarks.Dss.Clipper
@@ -52,7 +52,7 @@ theorem clipperEvalChip (v : ClipperImmutables) (evm : EVM.State) (locals : Stor
     (hbase : locals.get? "chip" = none) :
     evalExpr? config { contract := contract, locals := locals, immutables := immStore v } evm (.storage chipRef) =
       .ok (.int (Int.ofNat (UInt256.land
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩)
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩)
         (UInt256.ofNat (2 ^ 64 - 1))).toNat)) := by
   let er : EvaledStorageRef := { base := "chip", steps := [] }
   have her : evalStorageRef config
@@ -74,7 +74,7 @@ theorem clipperChipBodyReturns (v : ClipperImmutables) (evm : EVM.State) (locals
     ExecTransitionBody config contract evm locals chipTransition.body
       (.returned { contract := contract, locals := locals, immutables := immStore v } evm
         (some [(.int (Int.ofNat (UInt256.land
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩)
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩)
           (UInt256.ofNat (2 ^ 64 - 1))).toNat))])) (immStore v) := by
   simpa [chipTransition] using
     nonpayableReturnExprBodyReturns (cfg := config) (contract := contract) h
@@ -294,7 +294,7 @@ theorem clipperChipBody (v : ClipperImmutables) {code : ByteArray}
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.int (Int.ofNat (UInt256.land (solcSlotWord σ I ⟨8⟩)
             (UInt256.ofNat (2 ^ 64 - 1))).toNat))])) (immStore v) := by
-    simpa [solcSlotWord, initState, Solm.EVM.storageLoad, State.lookupAccount] using
+    simpa [solcSlotWord, initState, Stele.EVM.storageLoad, State.lookupAccount] using
       clipperChipBodyReturns v
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
         (by simp only [initState]; exact hwv) (by simp)

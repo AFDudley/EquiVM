@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.TickClampWords
 import Benchmarks.UniswapV4PoolManager.SparseBytesMemory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 def tickScanStoreMemory (mem : ByteArray) (step tick : UInt256) (initialized : Bool) : ByteArray :=

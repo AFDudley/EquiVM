@@ -2,7 +2,7 @@ import Benchmarks.UniswapV4PoolManager.PrecompileReply
 import Benchmarks.UniswapV4PoolManager.UnlockCallbackPrefix
 import Benchmarks.UniswapV4PoolManager.CallGasEvidence
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 theorem ZeroCallGasEvidence.unlock_precompile_size {evm evm' : State}

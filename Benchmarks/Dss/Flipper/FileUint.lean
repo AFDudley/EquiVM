@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Flipper.Dispatch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 0
@@ -206,7 +206,7 @@ theorem evalExpr_fileUintWhatEq_false {evm : EVM.State} {I : ExecutionEnv} {loca
   all_goals decide
 
 theorem assign_fileUintBegStorage (evm : EVM.State) (I : ExecutionEnv) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨4⟩ (fileUintData I)
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨4⟩ (fileUintData I)
     assignStorageRef? config { contract := contract, locals := fileUintLocals I } evm
       .storage begRef (.int (Int.ofNat (fileUintData I).toNat)) =
         .ok ({ contract := contract, locals := fileUintLocals I }, evm') := by
@@ -222,8 +222,8 @@ theorem assign_fileUintBegStorage (evm : EVM.State) (I : ExecutionEnv) :
   simpa [evm'] using storageLocStore_uint256 evm ⟨4⟩ (fileUintData I)
 
 theorem assign_fileUintTtlStorage (evm : EVM.State) (I : ExecutionEnv) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨5⟩
-      (setUint48Offset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩)
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨5⟩
+      (setUint48Offset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩)
         (fileUintData48 I))
     assignStorageRef? config { contract := contract, locals := fileUintLocals I } evm
       .storage ttlRef (.int (Int.ofNat (fileUintData48 I).toNat)) =
@@ -242,8 +242,8 @@ theorem assign_fileUintTtlStorage (evm : EVM.State) (I : ExecutionEnv) :
       (uint48Mask_bound (fileUintData I))
 
 theorem assign_fileUintTauStorage (evm : EVM.State) (I : ExecutionEnv) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨5⟩
-      (setUint48Offset6Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩)
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨5⟩
+      (setUint48Offset6Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩)
         (fileUintData48 I))
     assignStorageRef? config { contract := contract, locals := fileUintLocals I } evm
       .storage tauRef (.int (Int.ofNat (fileUintData48 I).toNat)) =
@@ -267,7 +267,7 @@ theorem flipperFileUintSourceBodyBegSplit {σ σ₀ A I} {g : UInt256}
     (hwhat : fileUintWhat I = fileUintBegBytes) :
     let locals := fileUintLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-    let evm1 := Solm.EVM.storageStore evm0 I.codeOwner ⟨4⟩ (fileUintData I)
+    let evm1 := Stele.EVM.storageStore evm0 I.codeOwner ⟨4⟩ (fileUintData I)
     (ExecTransitionBody config contract evm0 locals fileUintTransition.body
       (.returned { contract := contract, locals := locals } evm1 none)) ∧
       (I.perm = false → ExecTransitionBody config contract evm0 locals
@@ -322,8 +322,8 @@ theorem flipperFileUintSourceBodyTtlSplit {σ σ₀ A I} {g : UInt256}
     (hwhat : fileUintWhat I = fileUintTtlBytes) :
     let locals := fileUintLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-    let evm1 := Solm.EVM.storageStore evm0 I.codeOwner ⟨5⟩
-      (setUint48Offset0Word (Solm.EVM.storageLoad evm0 I.codeOwner ⟨5⟩)
+    let evm1 := Stele.EVM.storageStore evm0 I.codeOwner ⟨5⟩
+      (setUint48Offset0Word (Stele.EVM.storageLoad evm0 I.codeOwner ⟨5⟩)
         (fileUintData48 I))
     (ExecTransitionBody config contract evm0 locals fileUintTransition.body
       (.returned { contract := contract, locals := locals } evm1 none)) ∧
@@ -361,7 +361,7 @@ theorem flipperFileUintSourceBodyTtlSplit {σ σ₀ A I} {g : UInt256}
       assignStorageRef? config { contract := contract, locals := locals } evm0
         .storage ttlRef (.int (Int.ofNat (fileUintData48 I).toNat)) =
           .ok ({ contract := contract, locals := locals }, evm1) := by
-    simpa [locals, evm1, evm0, initState, Solm.EVM.storageLoad] using
+    simpa [locals, evm1, evm0, initState, Stele.EVM.storageLoad] using
       assign_fileUintTtlStorage evm0 I
   have hprefix {result : ExecResult}
       (hwrite : ExecBlock config { contract := contract, locals := locals } evm0
@@ -389,8 +389,8 @@ theorem flipperFileUintSourceBodyTauSplit {σ σ₀ A I} {g : UInt256}
     (hwhat : fileUintWhat I = fileUintTauBytes) :
     let locals := fileUintLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-    let evm1 := Solm.EVM.storageStore evm0 I.codeOwner ⟨5⟩
-      (setUint48Offset6Word (Solm.EVM.storageLoad evm0 I.codeOwner ⟨5⟩)
+    let evm1 := Stele.EVM.storageStore evm0 I.codeOwner ⟨5⟩
+      (setUint48Offset6Word (Stele.EVM.storageLoad evm0 I.codeOwner ⟨5⟩)
         (fileUintData48 I))
     (ExecTransitionBody config contract evm0 locals fileUintTransition.body
       (.returned { contract := contract, locals := locals } evm1 none)) ∧
@@ -435,7 +435,7 @@ theorem flipperFileUintSourceBodyTauSplit {σ σ₀ A I} {g : UInt256}
       assignStorageRef? config { contract := contract, locals := locals } evm0
         .storage tauRef (.int (Int.ofNat (fileUintData48 I).toNat)) =
           .ok ({ contract := contract, locals := locals }, evm1) := by
-    simpa [locals, evm1, evm0, initState, Solm.EVM.storageLoad] using
+    simpa [locals, evm1, evm0, initState, Stele.EVM.storageLoad] using
       assign_fileUintTauStorage evm0 I
   have hprefix {result : ExecResult}
       (hwrite : ExecBlock config { contract := contract, locals := locals } evm0
@@ -474,7 +474,7 @@ theorem flipperFileUintSourceBodyAuthReverts {σ σ₀ A I} {g : UInt256}
   simpa [fileUintTransition, nonpayable, auth] using
     nonpayableSecondRequireReverts
       (cfg := config)
-      (solm := { contract := contract, locals := locals })
+      (stele := { contract := contract, locals := locals })
       (evm := evm0)
       (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
       (rest := [
@@ -1172,7 +1172,7 @@ theorem flipperFileUintBodyCoreOkBeg
     runtimeRefinementFor config contract σ σ₀ g A I := by
   let locals := fileUintLocals I
   let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  let evm1 := Solm.EVM.storageStore evm0 I.codeOwner ⟨4⟩ (fileUintData I)
+  let evm1 := Stele.EVM.storageStore evm0 I.codeOwner ⟨4⟩ (fileUintData I)
   have hbodySplit :
       (ExecTransitionBody config contract evm0 locals fileUintTransition.body
         (.returned { contract := contract, locals := locals } evm1 none)) ∧
@@ -1217,14 +1217,14 @@ theorem flipperFileUintBodyCoreOkTtl
   let stored := setUint48Offset0Word (solcSlotWord σ I ⟨5⟩) data
   let locals := fileUintLocals I
   let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  let evm1 := Solm.EVM.storageStore evm0 I.codeOwner ⟨5⟩ stored
+  let evm1 := Stele.EVM.storageStore evm0 I.codeOwner ⟨5⟩ stored
   have hbodySplit :
       (ExecTransitionBody config contract evm0 locals fileUintTransition.body
         (.returned { contract := contract, locals := locals } evm1 none)) ∧
       (I.perm = false → ExecTransitionBody config contract evm0 locals
         fileUintTransition.body .staticViolation) := by
     simpa [evm0, evm1, locals, stored, data, solcSlotWord, initState,
-      Solm.EVM.storageLoad] using
+      Stele.EVM.storageLoad] using
       (flipperFileUintSourceBodyTtlSplit (σ := σ)
         (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hauth hnotBeg hwhat)
   obtain ⟨_, _, hdecoded⟩ := flipperFileUintX_decoded (g := Sat256.ofUInt256 g)
@@ -1271,14 +1271,14 @@ theorem flipperFileUintBodyCoreOkTau
   let stored := setUint48Offset6Word (solcSlotWord σ I ⟨5⟩) data
   let locals := fileUintLocals I
   let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  let evm1 := Solm.EVM.storageStore evm0 I.codeOwner ⟨5⟩ stored
+  let evm1 := Stele.EVM.storageStore evm0 I.codeOwner ⟨5⟩ stored
   have hbodySplit :
       (ExecTransitionBody config contract evm0 locals fileUintTransition.body
         (.returned { contract := contract, locals := locals } evm1 none)) ∧
       (I.perm = false → ExecTransitionBody config contract evm0 locals
         fileUintTransition.body .staticViolation) := by
     simpa [evm0, evm1, locals, stored, data, solcSlotWord, initState,
-      Solm.EVM.storageLoad] using
+      Stele.EVM.storageLoad] using
       (flipperFileUintSourceBodyTauSplit (σ := σ)
         (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hauth hnotBeg hnotTtl hwhat)
   obtain ⟨_, _, hdecoded⟩ := flipperFileUintX_decoded (g := Sat256.ofUInt256 g)

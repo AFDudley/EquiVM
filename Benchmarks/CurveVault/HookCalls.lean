@@ -8,7 +8,7 @@ import Benchmarks.CurveVault.RuntimeBlocks_017
 import Benchmarks.CurveVault.RuntimeBlocks_019
 import Benchmarks.CurveVault.RuntimeBlocks_031
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch Reasoning.VyperCalls
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch Reasoning.VyperCalls
 namespace Benchmarks.CurveVault
 
 theorem vaultHookCall (flow : VaultFlow) {I : ExecutionEnv} {g : Sat256} {s0 evm : State}

@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.WordBoolean
 import Benchmarks.UniswapV4PoolManager.PoolKeyABI
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 -- LIBRARY CANDIDATE: the modern ABI accepts precisely the two canonical Boolean words.

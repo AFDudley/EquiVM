@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.TickSqrtModel
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 -- This closed finite check bounds the concrete TickMath factor table over its valid domain.

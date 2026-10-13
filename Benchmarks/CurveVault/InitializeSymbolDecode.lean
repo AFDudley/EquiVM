@@ -4,7 +4,7 @@ import Benchmarks.CurveVault.RuntimeBlocks_002
 import Benchmarks.CurveVault.RuntimeBlocks_003
 import Benchmarks.CurveVault.RuntimeBlocks_031
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.CurveVault
 
 theorem vaultInitializeSymbolDecode {I : ExecutionEnv} {g : Sat256} {s0 : State}

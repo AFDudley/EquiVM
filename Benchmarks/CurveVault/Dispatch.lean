@@ -1,7 +1,7 @@
 import Benchmarks.CurveVault.DispatchPrelude
-import Benchmarks.CurveVault.DispatchSolm
+import Benchmarks.CurveVault.DispatchStele
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 
 namespace Benchmarks.CurveVault
 set_option maxRecDepth 2000

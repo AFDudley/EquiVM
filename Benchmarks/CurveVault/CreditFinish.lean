@@ -3,7 +3,7 @@ import Benchmarks.CurveVault.SupplyForward
 import Benchmarks.CurveVault.SaveRateCalls
 import Benchmarks.CurveVault.MutationReturn
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 theorem vaultCreditFinish (isDeposit : Bool) {I : ExecutionEnv} {g : Sat256} {s0 evm : State}

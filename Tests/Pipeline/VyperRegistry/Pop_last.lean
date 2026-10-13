@@ -10,7 +10,7 @@ the read of `ids[len-1]`), `if self.entries[id].active` (the hash at 581), the `
 decrement with its underflow check (pc 624/659) and the three zeroing stores plus `RETURN` (pc 666).
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
   Reasoning.VyperBounded
 
 namespace Tests.Pipeline.VyperRegistry
@@ -94,9 +94,9 @@ theorem pM1_read256 (σ : AccountMap) (I : ExecutionEnv) : (pM1 σ I).readWithPa
   toByteArray_write_read_back_of_gap _ _ 256 (by rw [dispatchMem_size 5 (by decide)]; exact lt_usize _ (by decide))
 
 /-- `len - 1` as an expression, on a `uint256` length. -/
-theorem evalExpr_sub_one {cfg : Config} {solm : Frame} {evm : EVM.State} {e : Expr} {a : UInt256}
-    (ha : evalExpr? cfg solm evm e = .ok (uint256Value a)) (hpos : 0 < a.toNat) :
-    evalExpr? cfg solm evm (.binary .sub e (.intLit 1)) = .ok (.int (Int.ofNat (a.toNat - 1))) := by
+theorem evalExpr_sub_one {cfg : Config} {stele : Frame} {evm : EVM.State} {e : Expr} {a : UInt256}
+    (ha : evalExpr? cfg stele evm e = .ok (uint256Value a)) (hpos : 0 < a.toNat) :
+    evalExpr? cfg stele evm (.binary .sub e (.intLit 1)) = .ok (.int (Int.ofNat (a.toNat - 1))) := by
   rw [evalExpr_binary_nonshort (by decide) (by decide), ha, evalExpr?]
   simp only [EvalResult.bind, bind, evalBinaryOp?, uint256Value, pure, Int.ofNat_eq_natCast]
   congr 2
@@ -189,7 +189,7 @@ theorem registryPop_lastBody {σ σ₀ A I} {g : UInt256} (hwf : storageWF σ I)
     (by rw [slotWord_eq]; exact isZero_eq_zero_of_ne hpos) rd5
   simp only [registryBlocks.registry_block_569_fallthrough_stack] at rd6
   rw [slotWord_eq] at rd6
-  -- Solm: `id = ids[len - 1]`
+  -- Stele: `id = ids[len - 1]`
   have hpw : (pw σ I).toNat = (pLen σ I).toNat - 1 := by
     show (UInt256.sub (pLen σ I) (UInt256.ofNat 1)).toNat = _
     rw [usub_toNat (by rw [ulit_toNat' 1 (by decide)]; omega), ulit_toNat' 1 (by decide)]
@@ -216,9 +216,9 @@ theorem registryPop_lastBody {σ σ₀ A I} {g : UInt256} (hwf : storageWF σ I)
   have hid : ∀ evm, evalExpr? config (frame L2) evm (.var "id") = .ok (uint256Value (pId σ I)) := fun evm =>
     evalVar _ _ "id" _ (by rw [hL2def]; exact store_get_self _ _ _)
   have hL2id : L2.get? "id" = some (uint256Value (pId σ I)) := by rw [hL2def]; exact store_get_self _ _ _
-  -- Solm: `ids.pop()`
+  -- Stele: `ids.pop()`
   have hpop : popArray? config (frame L2) (initState σ σ₀ (Sat256.ofUInt256 g) A I) pIds =
-      .ok (Solm.EVM.storageStore (initState σ σ₀ (Sat256.ofUInt256 g) A I) I.codeOwner (UInt256.ofNat 2) (pw σ I)) := by
+      .ok (Stele.EVM.storageStore (initState σ σ₀ (Sat256.ofUInt256 g) A I) I.codeOwner (UInt256.ofNat 2) (pw σ I)) := by
     rw [popArray_vyper_ok (hbackend := rfl) (hcheck := rfl) (hbounds := rfl) (hanchor := rfl)
         (hbase := by simp [hL2def, hL1def]) (er := { base := "ids", steps := [] }) (elem := .elem (.int (.uint ⟨256, by decide⟩)))
         (s := UInt256.ofNat 2) (cap := 16)
@@ -254,8 +254,8 @@ theorem registryPop_lastBody {σ σ₀ A I} {g : UInt256} (hwf : storageWF σ I)
     solcSlotWordAt_sstore_ne _ _ _ _ _ hne32
   have hM2 : (pH (pId σ I) (pM1 σ I)).size = 288 := pH_size _ _ (pM1_size σ I)
   have hM3 : (pH (pId σ I) (pH (pId σ I) (pM1 σ I))).size = 288 := pH_size _ _ hM2
-  -- Solm after the pop
-  set evm1 := Solm.EVM.storageStore (initState σ σ₀ (Sat256.ofUInt256 g) A I) I.codeOwner (UInt256.ofNat 2) (pw σ I)
+  -- Stele after the pop
+  set evm1 := Stele.EVM.storageStore (initState σ σ₀ (Sat256.ofUInt256 g) A I) I.codeOwner (UInt256.ofNat 2) (pw σ I)
     with hevm1
   have hs1 : SourceState (initState σ σ₀ (Sat256.ofUInt256 g) A I) I (pσ1 σ I) evm1 := SourceState.init.storageWrite _ _
   have hactE : evalExpr? config (frame L2) evm1 (.storage pActiveRef) =
@@ -290,7 +290,7 @@ theorem registryPop_lastBody {σ σ₀ A I} {g : UInt256} (hwf : storageWF σ I)
   have hassignZ : ∀ evm, assignStorageRef? config (frame L2) evm .storage pEntryRef
       (.struct "Entry" [("account", .address (AccountAddress.ofNat 0)), ("weight", uint256Value ⟨0⟩),
         ("active", .bool false)]) =
-      .ok (frame L2, Solm.EVM.storageStore (Solm.EVM.storageStore (Solm.EVM.storageStore evm
+      .ok (frame L2, Stele.EVM.storageStore (Stele.EVM.storageStore (Stele.EVM.storageStore evm
         evm.executionEnv.codeOwner (entrySlot (pId σ I)) ⟨0⟩)
         evm.executionEnv.codeOwner (entrySlot (pId σ I) + UInt256.ofNat 1) ⟨0⟩)
         evm.executionEnv.codeOwner (entrySlot (pId σ I) + UInt256.ofNat 2) ⟨0⟩) := by
@@ -325,7 +325,7 @@ theorem registryPop_lastBody {σ σ₀ A I} {g : UInt256} (hwf : storageWF σ I)
     have hs3 := ((hs1.storageWrite (entrySlot (pId σ I)) ⟨0⟩).storageWrite (entrySlot (pId σ I) + UInt256.ofNat 1) ⟨0⟩).storageWrite
       (entrySlot (pId σ I) + UInt256.ofNat 2) ⟨0⟩
     have hbody : ExecTransitionBody config contract (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅ pop_lastTransition.body
-        (.returned (frame L2) (Solm.EVM.storageStore (Solm.EVM.storageStore (Solm.EVM.storageStore evm1
+        (.returned (frame L2) (Stele.EVM.storageStore (Stele.EVM.storageStore (Stele.EVM.storageStore evm1
           I.codeOwner (entrySlot (pId σ I)) ⟨0⟩) I.codeOwner (entrySlot (pId σ I) + UInt256.ofNat 1) ⟨0⟩)
           I.codeOwner (entrySlot (pId σ I) + UInt256.ofNat 2) ⟨0⟩) (some [uint256Value (pId σ I)])) := by
       rw [pop_lastBody_eq]
@@ -383,7 +383,7 @@ theorem registryPop_lastBody {σ σ₀ A I} {g : UInt256} (hwf : storageWF σ I)
   simp only [ulit_toNat' 32 (by decide), ulit_toNat' 256 (by decide), show (⟨0⟩ : UInt256).toNat = 0 from rfl,
     pH_load256 _ _ hM2, pH_load256 _ _ (pM1_size σ I), pM1_load256, pH_kec _ _ hM3, pH_read256 _ _ hM3,
     pH_read256 _ _ hM2, pH_read256 _ _ (pM1_size σ I), pM1_read256] at rd10
-  set evm2 := Solm.EVM.storageStore evm1 I.codeOwner (UInt256.ofNat 20) (UInt256.sub (pTw σ I) (pWt σ I)) with hevm2
+  set evm2 := Stele.EVM.storageStore evm1 I.codeOwner (UInt256.ofNat 20) (UInt256.sub (pTw σ I) (pWt σ I)) with hevm2
   have hs2 : SourceState (initState σ σ₀ (Sat256.ofUInt256 g) A I) I
       (sstoreAccountMap I.codeOwner (pσ1 σ I) (UInt256.ofNat 20) (UInt256.sub (pTw σ I) (pWt σ I))) evm2 :=
     hs1.storageWrite _ _
@@ -401,7 +401,7 @@ theorem registryPop_lastBody {σ σ₀ A I} {g : UInt256} (hwf : storageWF σ I)
   have hs3 := ((hs2.storageWrite (entrySlot (pId σ I)) ⟨0⟩).storageWrite (entrySlot (pId σ I) + UInt256.ofNat 1) ⟨0⟩).storageWrite
     (entrySlot (pId σ I) + UInt256.ofNat 2) ⟨0⟩
   have hbody : ExecTransitionBody config contract (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅ pop_lastTransition.body
-      (.returned (frame L2) (Solm.EVM.storageStore (Solm.EVM.storageStore (Solm.EVM.storageStore evm2
+      (.returned (frame L2) (Stele.EVM.storageStore (Stele.EVM.storageStore (Stele.EVM.storageStore evm2
         I.codeOwner (entrySlot (pId σ I)) ⟨0⟩) I.codeOwner (entrySlot (pId σ I) + UInt256.ofNat 1) ⟨0⟩)
         I.codeOwner (entrySlot (pId σ I) + UInt256.ofNat 2) ⟨0⟩) (some [uint256Value (pId σ I)])) := by
     rw [pop_lastBody_eq]

@@ -1,4 +1,4 @@
-import Solm.DiffTest.Harness
+import Stele.DiffTest.Harness
 import Benchmarks.CurveVault.Spec
 import Benchmarks.CurveVault.Bytecode
 import Benchmarks.CurveVault.Fixtures
@@ -10,7 +10,7 @@ Run the repository CLI through `python3 -B Benchmarks/CurveVault/run_difftest.py
 Adjust `callees` and `words` when the contract needs specific counterparties or amounts.
 -/
 
-open Solm Solm.DiffTest
+open Stele Stele.DiffTest
 
 namespace Benchmarks.CurveVault
 

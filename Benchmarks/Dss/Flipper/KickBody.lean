@@ -2,7 +2,7 @@ import Reasoning.Storage
 import Reasoning.WordArithmetic
 import Benchmarks.Dss.Flipper.KickTail
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 0
@@ -14,32 +14,32 @@ namespace Benchmarks.Dss.Flipper
 
 private theorem flipperKickSourceTabState_eq {σ σ₀ A I} {g : UInt256} :
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-    let evmKicks := Solm.EVM.storageStore evm0 I.codeOwner ⟨6⟩ (kickIdWord σ I)
-    let evmBid := Solm.EVM.storageStore evmKicks I.codeOwner
+    let evmKicks := Stele.EVM.storageStore evm0 I.codeOwner ⟨6⟩ (kickIdWord σ I)
+    let evmBid := Stele.EVM.storageStore evmKicks I.codeOwner
       (bidBaseOfWord (kickIdWord σ I)) (kickBid I)
-    let evmLot := Solm.EVM.storageStore evmBid I.codeOwner
+    let evmLot := Stele.EVM.storageStore evmBid I.codeOwner
       (bidSlotOfWord (kickIdWord σ I) ⟨1⟩) (kickLot I)
-    let evmGuy := Solm.EVM.storageStore evmLot I.codeOwner
+    let evmGuy := Stele.EVM.storageStore evmLot I.codeOwner
       (bidPackedSlotOfWord (kickIdWord σ I))
       (setAddressOffset0Word
-        (Solm.EVM.storageLoad evmLot I.codeOwner (bidPackedSlotOfWord (kickIdWord σ I)))
+        (Stele.EVM.storageLoad evmLot I.codeOwner (bidPackedSlotOfWord (kickIdWord σ I)))
         (solcSourceWord I))
-    let evmEnd := Solm.EVM.storageStore evmGuy I.codeOwner
+    let evmEnd := Stele.EVM.storageStore evmGuy I.codeOwner
       (bidPackedSlotOfWord (kickIdWord σ I))
       (setUint48Offset26Word
-        (Solm.EVM.storageLoad evmGuy I.codeOwner (bidPackedSlotOfWord (kickIdWord σ I)))
+        (Stele.EVM.storageLoad evmGuy I.codeOwner (bidPackedSlotOfWord (kickIdWord σ I)))
         (kickEndNewWord (kickAfterGuyMap σ I) I))
-    let evmUsr := Solm.EVM.storageStore evmEnd I.codeOwner
+    let evmUsr := Stele.EVM.storageStore evmEnd I.codeOwner
       (bidSlotOfWord (kickIdWord σ I) ⟨3⟩)
       (setAddressOffset0Word
-        (Solm.EVM.storageLoad evmEnd I.codeOwner (bidSlotOfWord (kickIdWord σ I) ⟨3⟩))
+        (Stele.EVM.storageLoad evmEnd I.codeOwner (bidSlotOfWord (kickIdWord σ I) ⟨3⟩))
         (kickUsrKey I))
-    let evmGal := Solm.EVM.storageStore evmUsr I.codeOwner
+    let evmGal := Stele.EVM.storageStore evmUsr I.codeOwner
       (bidSlotOfWord (kickIdWord σ I) ⟨4⟩)
       (setAddressOffset0Word
-        (Solm.EVM.storageLoad evmUsr I.codeOwner (bidSlotOfWord (kickIdWord σ I) ⟨4⟩))
+        (Stele.EVM.storageLoad evmUsr I.codeOwner (bidSlotOfWord (kickIdWord σ I) ⟨4⟩))
         (kickGalKey I))
-    let evmTab := Solm.EVM.storageStore evmGal I.codeOwner
+    let evmTab := Stele.EVM.storageStore evmGal I.codeOwner
       (bidSlotOfWord (kickIdWord σ I) ⟨5⟩) (kickTab I)
     evmTab = { evm0 with accountMap := kickAfterTabMap σ I } := by
   intro evm0 evmKicks evmBid evmLot evmGuy evmEnd evmUsr evmGal evmTab
@@ -49,7 +49,7 @@ private theorem flipperKickSourceTabState_eq {σ σ₀ A I} {g : UInt256} :
       kickAfterUsrMap, kickAfterEndMap, kickAfterGuyMap, kickAfterLotMap,
       kickAfterBidMap, kickAfterKicksMap, kickUsrStoredWord, kickGalStoredWord,
       kickEndStoredWord, kickGuyStoredWord, solcSlotWordAt, solcSlotWord,
-      Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage]
+      Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage]
   · simp [evmTab, evmGal, evmUsr, evmEnd, evmGuy, evmLot, evmBid, evmKicks, evm0,
       storageStore_σ₀]
   · simp [evmTab, evmGal, evmUsr, evmEnd, evmGuy, evmLot, evmBid, evmKicks, evm0,
@@ -303,7 +303,7 @@ theorem evalExpr_kickIlk_ofLocals {evm : EVM.State} {locals : Store}
     (hilk : locals.get? "ilk" = none) :
     evalExpr? config { contract := contract, locals := locals } evm (.storage ilkRef) =
       .ok (.fixedBytes bytes32Width
-        (EVM.Word.toBytesBE (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩))) := by
+        (EVM.Word.toBytesBE (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩))) := by
   rw [evalExpr_storage_scalar (hbackend := rfl)
     (t := .bytes bytes32Width)
     (loc := bytes32Loc ⟨3⟩)
@@ -326,7 +326,7 @@ theorem evalExprs_kickFluxArgs_ofLocals {evm : EVM.State} {locals : Store}
   rfl
 
 theorem assign_kickKicksStorage (evm : EVM.State) (σ : AccountMap) (I : ExecutionEnv) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨6⟩
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨6⟩
       (kickIdWord σ I)
     assignStorageRef? config { contract := contract, locals := kickLocalsWithId σ I } evm
       .storage kicksRef (.int (Int.ofNat (kickIdWord σ I).toNat)) =
@@ -348,7 +348,7 @@ theorem assign_kickBidStorage (evm : EVM.State) (σ : AccountMap) (I : Execution
     {locals : Store}
     (hid : locals.get? "id" = some (.int (Int.ofNat (kickIdWord σ I).toNat)))
     (hbids : locals.get? "bids" = none) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner
       (bidBaseOfWord (kickIdWord σ I)) (kickBid I)
     assignStorageRef? config { contract := contract, locals := locals } evm
       .storage (bidsF (.var "id") "bid") (.int (Int.ofNat (kickBid I).toNat)) =
@@ -373,7 +373,7 @@ theorem assign_kickLotStorage (evm : EVM.State) (σ : AccountMap) (I : Execution
     {locals : Store}
     (hid : locals.get? "id" = some (.int (Int.ofNat (kickIdWord σ I).toNat)))
     (hbids : locals.get? "bids" = none) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner
       (bidSlotOfWord (kickIdWord σ I) ⟨1⟩) (kickLot I)
     assignStorageRef? config { contract := contract, locals := locals } evm
       .storage (bidsF (.var "id") "lot") (.int (Int.ofNat (kickLot I).toNat)) =
@@ -398,10 +398,10 @@ theorem assign_kickGuyStorage (evm : EVM.State) (σ : AccountMap) (I : Execution
     {locals : Store}
     (hid : locals.get? "id" = some (.int (Int.ofNat (kickIdWord σ I).toNat)))
     (hbids : locals.get? "bids" = none) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner
       (bidPackedSlotOfWord (kickIdWord σ I))
       (setAddressOffset0Word
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
           (bidPackedSlotOfWord (kickIdWord σ I)))
         (solcSourceWord I))
     assignStorageRef? config { contract := contract, locals := locals } evm
@@ -431,10 +431,10 @@ theorem assign_kickGuyStorage (evm : EVM.State) (σ : AccountMap) (I : Execution
       (EVM.word I.source.val) (word_val_addr_canonical I.source)
 
 theorem assign_kickEndStorage (evm : EVM.State) (σ : AccountMap) (I : ExecutionEnv) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner
       (bidPackedSlotOfWord (kickIdWord σ I))
       (setUint48Offset26Word
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
           (bidPackedSlotOfWord (kickIdWord σ I)))
         (kickEndNewWord (kickAfterGuyMap σ I) I))
     assignStorageRef? config { contract := contract, locals := kickLocalsWithEnd σ I } evm
@@ -444,7 +444,7 @@ theorem assign_kickEndStorage (evm : EVM.State) (σ : AccountMap) (I : Execution
   intro evm'
   exact assignStorageRef_storage_scalar (hbackend := rfl)
     (cfg := config)
-    (solm := { contract := contract, locals := kickLocalsWithEnd σ I })
+    (stele := { contract := contract, locals := kickLocalsWithEnd σ I })
     (evm := evm)
     (evm' := evm')
     (slot := bidsF (.var "id") "end")
@@ -466,10 +466,10 @@ theorem assign_kickEndStorage (evm : EVM.State) (σ : AccountMap) (I : Execution
         (kickEndNewWord_bound (kickAfterGuyMap σ I) I))
 
 theorem assign_kickUsrStorage (evm : EVM.State) (σ : AccountMap) (I : ExecutionEnv) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner
       (bidSlotOfWord (kickIdWord σ I) ⟨3⟩)
       (setAddressOffset0Word
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
           (bidSlotOfWord (kickIdWord σ I) ⟨3⟩))
         (kickUsrKey I))
     assignStorageRef? config { contract := contract, locals := kickLocalsWithEnd σ I } evm
@@ -483,7 +483,7 @@ theorem assign_kickUsrStorage (evm : EVM.State) (σ : AccountMap) (I : Execution
   rw [hvalue]
   exact assignStorageRef_storage_scalar_value (hbackend := rfl)
     (cfg := config)
-    (solm := { contract := contract, locals := kickLocalsWithEnd σ I })
+    (stele := { contract := contract, locals := kickLocalsWithEnd σ I })
     (evm := evm)
     (evm' := evm')
     (slot := bidsF (.var "id") "usr")
@@ -505,10 +505,10 @@ theorem assign_kickUsrStorage (evm : EVM.State) (σ : AccountMap) (I : Execution
           (EVM.word (kickUsr I).val) (word_val_addr_canonical (kickUsr I)))
 
 theorem assign_kickGalStorage (evm : EVM.State) (σ : AccountMap) (I : ExecutionEnv) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner
       (bidSlotOfWord (kickIdWord σ I) ⟨4⟩)
       (setAddressOffset0Word
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
           (bidSlotOfWord (kickIdWord σ I) ⟨4⟩))
         (kickGalKey I))
     assignStorageRef? config { contract := contract, locals := kickLocalsWithEnd σ I } evm
@@ -522,7 +522,7 @@ theorem assign_kickGalStorage (evm : EVM.State) (σ : AccountMap) (I : Execution
   rw [hvalue]
   exact assignStorageRef_storage_scalar_value (hbackend := rfl)
     (cfg := config)
-    (solm := { contract := contract, locals := kickLocalsWithEnd σ I })
+    (stele := { contract := contract, locals := kickLocalsWithEnd σ I })
     (evm := evm)
     (evm' := evm')
     (slot := bidsF (.var "id") "gal")
@@ -544,7 +544,7 @@ theorem assign_kickGalStorage (evm : EVM.State) (σ : AccountMap) (I : Execution
           (EVM.word (kickGal I).val) (word_val_addr_canonical (kickGal I)))
 
 theorem assign_kickTabStorage (evm : EVM.State) (σ : AccountMap) (I : ExecutionEnv) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner
       (bidSlotOfWord (kickIdWord σ I) ⟨5⟩) (kickTab I)
     assignStorageRef? config { contract := contract, locals := kickLocalsWithEnd σ I } evm
       .storage (bidsF (.var "id") "tab") (.int (Int.ofNat (kickTab I).toNat)) =
@@ -552,7 +552,7 @@ theorem assign_kickTabStorage (evm : EVM.State) (σ : AccountMap) (I : Execution
   intro evm'
   exact assignStorageRef_storage_scalar (hbackend := rfl)
     (cfg := config)
-    (solm := { contract := contract, locals := kickLocalsWithEnd σ I })
+    (stele := { contract := contract, locals := kickLocalsWithEnd σ I })
     (evm := evm)
     (evm' := evm')
     (slot := bidsF (.var "id") "tab")
@@ -587,32 +587,32 @@ theorem flipperKickSourcePrefixSplit {σ σ₀ A I} {g : UInt256}
     (hauth : solcSlotWordAt (flipperCallerWardsSlot I) σ I = ⟨1⟩)
     (hkicksLt : (kickKicksWord σ I).toNat < UInt256.size - 1) :
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-    let evmKicks := Solm.EVM.storageStore evm0 I.codeOwner ⟨6⟩ (kickIdWord σ I)
-    let evmBid := Solm.EVM.storageStore evmKicks I.codeOwner
+    let evmKicks := Stele.EVM.storageStore evm0 I.codeOwner ⟨6⟩ (kickIdWord σ I)
+    let evmBid := Stele.EVM.storageStore evmKicks I.codeOwner
       (bidBaseOfWord (kickIdWord σ I)) (kickBid I)
-    let evmLot := Solm.EVM.storageStore evmBid I.codeOwner
+    let evmLot := Stele.EVM.storageStore evmBid I.codeOwner
       (bidSlotOfWord (kickIdWord σ I) ⟨1⟩) (kickLot I)
-    let evmGuy := Solm.EVM.storageStore evmLot I.codeOwner
+    let evmGuy := Stele.EVM.storageStore evmLot I.codeOwner
       (bidPackedSlotOfWord (kickIdWord σ I))
       (setAddressOffset0Word
-        (Solm.EVM.storageLoad evmLot I.codeOwner (bidPackedSlotOfWord (kickIdWord σ I)))
+        (Stele.EVM.storageLoad evmLot I.codeOwner (bidPackedSlotOfWord (kickIdWord σ I)))
         (solcSourceWord I))
-    let evmEnd := Solm.EVM.storageStore evmGuy I.codeOwner
+    let evmEnd := Stele.EVM.storageStore evmGuy I.codeOwner
       (bidPackedSlotOfWord (kickIdWord σ I))
       (setUint48Offset26Word
-        (Solm.EVM.storageLoad evmGuy I.codeOwner (bidPackedSlotOfWord (kickIdWord σ I)))
+        (Stele.EVM.storageLoad evmGuy I.codeOwner (bidPackedSlotOfWord (kickIdWord σ I)))
         (kickEndNewWord (kickAfterGuyMap σ I) I))
-    let evmUsr := Solm.EVM.storageStore evmEnd I.codeOwner
+    let evmUsr := Stele.EVM.storageStore evmEnd I.codeOwner
       (bidSlotOfWord (kickIdWord σ I) ⟨3⟩)
       (setAddressOffset0Word
-        (Solm.EVM.storageLoad evmEnd I.codeOwner (bidSlotOfWord (kickIdWord σ I) ⟨3⟩))
+        (Stele.EVM.storageLoad evmEnd I.codeOwner (bidSlotOfWord (kickIdWord σ I) ⟨3⟩))
         (kickUsrKey I))
-    let evmGal := Solm.EVM.storageStore evmUsr I.codeOwner
+    let evmGal := Stele.EVM.storageStore evmUsr I.codeOwner
       (bidSlotOfWord (kickIdWord σ I) ⟨4⟩)
       (setAddressOffset0Word
-        (Solm.EVM.storageLoad evmUsr I.codeOwner (bidSlotOfWord (kickIdWord σ I) ⟨4⟩))
+        (Stele.EVM.storageLoad evmUsr I.codeOwner (bidSlotOfWord (kickIdWord σ I) ⟨4⟩))
         (kickGalKey I))
-    let evmTab := Solm.EVM.storageStore evmGal I.codeOwner
+    let evmTab := Stele.EVM.storageStore evmGal I.codeOwner
       (bidSlotOfWord (kickIdWord σ I) ⟨5⟩) (kickTab I)
     (((kickNow48 I).toNat + (kickTauWord (kickAfterGuyMap σ I) I).toNat < 2 ^ 48) →
       ExecBlock config { contract := contract, locals := kickLocals I } evm0
@@ -695,7 +695,7 @@ theorem flipperKickSourcePrefixSplit {σ σ₀ A I} {g : UInt256}
         (kickLocalsWithId_get_tau σ I)
       simpa [evmGuy, evmLot, evmBid, evmKicks, evm0, initState, storageStore_accountMap,
         storageStore_executionEnv, kickAfterGuyMap, kickAfterLotMap, kickAfterBidMap,
-        kickAfterKicksMap, kickGuyStoredWord, solcSlotWordAt, Solm.EVM.storageLoad,
+        kickAfterKicksMap, kickGuyStoredWord, solcSlotWordAt, Stele.EVM.storageLoad,
         State.lookupAccount] using hraw
     have hge := evalExpr_kickEndNewGeNow_true_evm (evm := evmGuy) (σ := σ) (I := I)
       (by simp [evmGuy, evmLot, evmBid, evmKicks, evm0, initState])
@@ -793,32 +793,32 @@ theorem flipperKickSourcePrefix {σ σ₀ A I} {g : UInt256}
     (hkicksLt : (kickKicksWord σ I).toNat < UInt256.size - 1)
     (hfit : (kickNow48 I).toNat + (kickTauWord (kickAfterGuyMap σ I) I).toNat < 2 ^ 48) :
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-    let evmKicks := Solm.EVM.storageStore evm0 I.codeOwner ⟨6⟩ (kickIdWord σ I)
-    let evmBid := Solm.EVM.storageStore evmKicks I.codeOwner
+    let evmKicks := Stele.EVM.storageStore evm0 I.codeOwner ⟨6⟩ (kickIdWord σ I)
+    let evmBid := Stele.EVM.storageStore evmKicks I.codeOwner
       (bidBaseOfWord (kickIdWord σ I)) (kickBid I)
-    let evmLot := Solm.EVM.storageStore evmBid I.codeOwner
+    let evmLot := Stele.EVM.storageStore evmBid I.codeOwner
       (bidSlotOfWord (kickIdWord σ I) ⟨1⟩) (kickLot I)
-    let evmGuy := Solm.EVM.storageStore evmLot I.codeOwner
+    let evmGuy := Stele.EVM.storageStore evmLot I.codeOwner
       (bidPackedSlotOfWord (kickIdWord σ I))
       (setAddressOffset0Word
-        (Solm.EVM.storageLoad evmLot I.codeOwner (bidPackedSlotOfWord (kickIdWord σ I)))
+        (Stele.EVM.storageLoad evmLot I.codeOwner (bidPackedSlotOfWord (kickIdWord σ I)))
         (solcSourceWord I))
-    let evmEnd := Solm.EVM.storageStore evmGuy I.codeOwner
+    let evmEnd := Stele.EVM.storageStore evmGuy I.codeOwner
       (bidPackedSlotOfWord (kickIdWord σ I))
       (setUint48Offset26Word
-        (Solm.EVM.storageLoad evmGuy I.codeOwner (bidPackedSlotOfWord (kickIdWord σ I)))
+        (Stele.EVM.storageLoad evmGuy I.codeOwner (bidPackedSlotOfWord (kickIdWord σ I)))
         (kickEndNewWord (kickAfterGuyMap σ I) I))
-    let evmUsr := Solm.EVM.storageStore evmEnd I.codeOwner
+    let evmUsr := Stele.EVM.storageStore evmEnd I.codeOwner
       (bidSlotOfWord (kickIdWord σ I) ⟨3⟩)
       (setAddressOffset0Word
-        (Solm.EVM.storageLoad evmEnd I.codeOwner (bidSlotOfWord (kickIdWord σ I) ⟨3⟩))
+        (Stele.EVM.storageLoad evmEnd I.codeOwner (bidSlotOfWord (kickIdWord σ I) ⟨3⟩))
         (kickUsrKey I))
-    let evmGal := Solm.EVM.storageStore evmUsr I.codeOwner
+    let evmGal := Stele.EVM.storageStore evmUsr I.codeOwner
       (bidSlotOfWord (kickIdWord σ I) ⟨4⟩)
       (setAddressOffset0Word
-        (Solm.EVM.storageLoad evmUsr I.codeOwner (bidSlotOfWord (kickIdWord σ I) ⟨4⟩))
+        (Stele.EVM.storageLoad evmUsr I.codeOwner (bidSlotOfWord (kickIdWord σ I) ⟨4⟩))
         (kickGalKey I))
-    let evmTab := Solm.EVM.storageStore evmGal I.codeOwner
+    let evmTab := Stele.EVM.storageStore evmGal I.codeOwner
       (bidSlotOfWord (kickIdWord σ I) ⟨5⟩) (kickTab I)
     ExecBlock config { contract := contract, locals := kickLocals I } evm0
       ([ .require (.binary .eq (.env .callvalue) (.intLit 0)),
@@ -836,15 +836,15 @@ theorem flipperKickSourceBodyAdd48Overflow {σ σ₀ A I} {g : UInt256}
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     ExecTransitionBody config contract evm0 (kickLocals I) kickTransition.body .reverted := by
   intro evm0
-  let evmKicks := Solm.EVM.storageStore evm0 I.codeOwner ⟨6⟩ (kickIdWord σ I)
-  let evmBid := Solm.EVM.storageStore evmKicks I.codeOwner
+  let evmKicks := Stele.EVM.storageStore evm0 I.codeOwner ⟨6⟩ (kickIdWord σ I)
+  let evmBid := Stele.EVM.storageStore evmKicks I.codeOwner
     (bidBaseOfWord (kickIdWord σ I)) (kickBid I)
-  let evmLot := Solm.EVM.storageStore evmBid I.codeOwner
+  let evmLot := Stele.EVM.storageStore evmBid I.codeOwner
     (bidSlotOfWord (kickIdWord σ I) ⟨1⟩) (kickLot I)
-  let evmGuy := Solm.EVM.storageStore evmLot I.codeOwner
+  let evmGuy := Stele.EVM.storageStore evmLot I.codeOwner
     (bidPackedSlotOfWord (kickIdWord σ I))
     (setAddressOffset0Word
-      (Solm.EVM.storageLoad evmLot I.codeOwner (bidPackedSlotOfWord (kickIdWord σ I)))
+      (Stele.EVM.storageLoad evmLot I.codeOwner (bidPackedSlotOfWord (kickIdWord σ I)))
       (solcSourceWord I))
   have hauthEval := flipperAuthGuardEval_true
     (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := Sat256.ofUInt256 g)
@@ -895,7 +895,7 @@ theorem flipperKickSourceBodyAdd48Overflow {σ σ₀ A I} {g : UInt256}
       (kickLocalsWithId_get_tau σ I)
     simpa [evmGuy, evmLot, evmBid, evmKicks, evm0, initState, storageStore_accountMap,
       storageStore_executionEnv, kickAfterGuyMap, kickAfterLotMap, kickAfterBidMap,
-      kickAfterKicksMap, kickGuyStoredWord, solcSlotWordAt, Solm.EVM.storageLoad,
+      kickAfterKicksMap, kickGuyStoredWord, solcSlotWordAt, Stele.EVM.storageLoad,
       State.lookupAccount] using hraw
   have hge :
       evalExpr? config { contract := contract, locals := kickLocalsWithEnd σ I } evmGuy
@@ -985,32 +985,32 @@ theorem flipperKickSourceBodyVatNoCode {σ σ₀ A I} {g : UInt256}
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     ExecTransitionBody config contract evm0 (kickLocals I) kickTransition.body .reverted := by
   intro evm0
-  let evmKicks := Solm.EVM.storageStore evm0 I.codeOwner ⟨6⟩ (kickIdWord σ I)
-  let evmBid := Solm.EVM.storageStore evmKicks I.codeOwner
+  let evmKicks := Stele.EVM.storageStore evm0 I.codeOwner ⟨6⟩ (kickIdWord σ I)
+  let evmBid := Stele.EVM.storageStore evmKicks I.codeOwner
     (bidBaseOfWord (kickIdWord σ I)) (kickBid I)
-  let evmLot := Solm.EVM.storageStore evmBid I.codeOwner
+  let evmLot := Stele.EVM.storageStore evmBid I.codeOwner
     (bidSlotOfWord (kickIdWord σ I) ⟨1⟩) (kickLot I)
-  let evmGuy := Solm.EVM.storageStore evmLot I.codeOwner
+  let evmGuy := Stele.EVM.storageStore evmLot I.codeOwner
     (bidPackedSlotOfWord (kickIdWord σ I))
     (setAddressOffset0Word
-      (Solm.EVM.storageLoad evmLot I.codeOwner (bidPackedSlotOfWord (kickIdWord σ I)))
+      (Stele.EVM.storageLoad evmLot I.codeOwner (bidPackedSlotOfWord (kickIdWord σ I)))
       (solcSourceWord I))
-  let evmEnd := Solm.EVM.storageStore evmGuy I.codeOwner
+  let evmEnd := Stele.EVM.storageStore evmGuy I.codeOwner
     (bidPackedSlotOfWord (kickIdWord σ I))
     (setUint48Offset26Word
-      (Solm.EVM.storageLoad evmGuy I.codeOwner (bidPackedSlotOfWord (kickIdWord σ I)))
+      (Stele.EVM.storageLoad evmGuy I.codeOwner (bidPackedSlotOfWord (kickIdWord σ I)))
       (kickEndNewWord (kickAfterGuyMap σ I) I))
-  let evmUsr := Solm.EVM.storageStore evmEnd I.codeOwner
+  let evmUsr := Stele.EVM.storageStore evmEnd I.codeOwner
     (bidSlotOfWord (kickIdWord σ I) ⟨3⟩)
     (setAddressOffset0Word
-      (Solm.EVM.storageLoad evmEnd I.codeOwner (bidSlotOfWord (kickIdWord σ I) ⟨3⟩))
+      (Stele.EVM.storageLoad evmEnd I.codeOwner (bidSlotOfWord (kickIdWord σ I) ⟨3⟩))
       (kickUsrKey I))
-  let evmGal := Solm.EVM.storageStore evmUsr I.codeOwner
+  let evmGal := Stele.EVM.storageStore evmUsr I.codeOwner
     (bidSlotOfWord (kickIdWord σ I) ⟨4⟩)
     (setAddressOffset0Word
-      (Solm.EVM.storageLoad evmUsr I.codeOwner (bidSlotOfWord (kickIdWord σ I) ⟨4⟩))
+      (Stele.EVM.storageLoad evmUsr I.codeOwner (bidSlotOfWord (kickIdWord σ I) ⟨4⟩))
       (kickGalKey I))
-  let evmTab := Solm.EVM.storageStore evmGal I.codeOwner
+  let evmTab := Stele.EVM.storageStore evmGal I.codeOwner
     (bidSlotOfWord (kickIdWord σ I) ⟨5⟩) (kickTab I)
   have hprefix :
       ExecBlock config { contract := contract, locals := kickLocals I } evm0
@@ -1034,7 +1034,7 @@ theorem flipperKickSourceBodyVatNoCode {σ σ₀ A I} {g : UInt256}
       initState, storageStore_accountMap, storageStore_executionEnv, kickAfterTabMap,
       kickAfterGalMap, kickAfterUsrMap, kickAfterEndMap, kickAfterGuyMap, kickAfterLotMap,
       kickAfterBidMap, kickAfterKicksMap, kickUsrStoredWord, kickGalStoredWord,
-      kickEndStoredWord, kickGuyStoredWord, solcSlotWordAt, Solm.EVM.storageLoad,
+      kickEndStoredWord, kickGuyStoredWord, solcSlotWordAt, Stele.EVM.storageLoad,
       State.lookupAccount] using hvatNoCode
   have hvatBlock :
       ExecBlock config { contract := contract, locals := kickLocalsWithEnd σ I } evmTab
@@ -1094,32 +1094,32 @@ theorem flipperKickSourceBodyVatCallFailure {σ σ₀ A I} {g : UInt256}
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     ExecTransitionBody config contract evm0 (kickLocals I) kickTransition.body .reverted := by
   intro evm0
-  let evmKicks := Solm.EVM.storageStore evm0 I.codeOwner ⟨6⟩ (kickIdWord σ I)
-  let evmBid := Solm.EVM.storageStore evmKicks I.codeOwner
+  let evmKicks := Stele.EVM.storageStore evm0 I.codeOwner ⟨6⟩ (kickIdWord σ I)
+  let evmBid := Stele.EVM.storageStore evmKicks I.codeOwner
     (bidBaseOfWord (kickIdWord σ I)) (kickBid I)
-  let evmLot := Solm.EVM.storageStore evmBid I.codeOwner
+  let evmLot := Stele.EVM.storageStore evmBid I.codeOwner
     (bidSlotOfWord (kickIdWord σ I) ⟨1⟩) (kickLot I)
-  let evmGuy := Solm.EVM.storageStore evmLot I.codeOwner
+  let evmGuy := Stele.EVM.storageStore evmLot I.codeOwner
     (bidPackedSlotOfWord (kickIdWord σ I))
     (setAddressOffset0Word
-      (Solm.EVM.storageLoad evmLot I.codeOwner (bidPackedSlotOfWord (kickIdWord σ I)))
+      (Stele.EVM.storageLoad evmLot I.codeOwner (bidPackedSlotOfWord (kickIdWord σ I)))
       (solcSourceWord I))
-  let evmEnd := Solm.EVM.storageStore evmGuy I.codeOwner
+  let evmEnd := Stele.EVM.storageStore evmGuy I.codeOwner
     (bidPackedSlotOfWord (kickIdWord σ I))
     (setUint48Offset26Word
-      (Solm.EVM.storageLoad evmGuy I.codeOwner (bidPackedSlotOfWord (kickIdWord σ I)))
+      (Stele.EVM.storageLoad evmGuy I.codeOwner (bidPackedSlotOfWord (kickIdWord σ I)))
       (kickEndNewWord (kickAfterGuyMap σ I) I))
-  let evmUsr := Solm.EVM.storageStore evmEnd I.codeOwner
+  let evmUsr := Stele.EVM.storageStore evmEnd I.codeOwner
     (bidSlotOfWord (kickIdWord σ I) ⟨3⟩)
     (setAddressOffset0Word
-      (Solm.EVM.storageLoad evmEnd I.codeOwner (bidSlotOfWord (kickIdWord σ I) ⟨3⟩))
+      (Stele.EVM.storageLoad evmEnd I.codeOwner (bidSlotOfWord (kickIdWord σ I) ⟨3⟩))
       (kickUsrKey I))
-  let evmGal := Solm.EVM.storageStore evmUsr I.codeOwner
+  let evmGal := Stele.EVM.storageStore evmUsr I.codeOwner
     (bidSlotOfWord (kickIdWord σ I) ⟨4⟩)
     (setAddressOffset0Word
-      (Solm.EVM.storageLoad evmUsr I.codeOwner (bidSlotOfWord (kickIdWord σ I) ⟨4⟩))
+      (Stele.EVM.storageLoad evmUsr I.codeOwner (bidSlotOfWord (kickIdWord σ I) ⟨4⟩))
       (kickGalKey I))
-  let evmTab := Solm.EVM.storageStore evmGal I.codeOwner
+  let evmTab := Stele.EVM.storageStore evmGal I.codeOwner
     (bidSlotOfWord (kickIdWord σ I) ⟨5⟩) (kickTab I)
   have hevmtab : evmTab = { evm0 with accountMap := kickAfterTabMap σ I } := by
     simpa [evm0, evmKicks, evmBid, evmLot, evmGuy, evmEnd, evmUsr, evmGal, evmTab] using
@@ -1221,32 +1221,32 @@ theorem flipperKickSourceBodySuccess {σ σ₀ A I} {g : UInt256}
       (.returned { contract := contract, locals := kickLocalsAfterFlux σ I } evmVat
         (some [.int (Int.ofNat (kickIdWord σ I).toNat)])) := by
   intro evm0
-  let evmKicks := Solm.EVM.storageStore evm0 I.codeOwner ⟨6⟩ (kickIdWord σ I)
-  let evmBid := Solm.EVM.storageStore evmKicks I.codeOwner
+  let evmKicks := Stele.EVM.storageStore evm0 I.codeOwner ⟨6⟩ (kickIdWord σ I)
+  let evmBid := Stele.EVM.storageStore evmKicks I.codeOwner
     (bidBaseOfWord (kickIdWord σ I)) (kickBid I)
-  let evmLot := Solm.EVM.storageStore evmBid I.codeOwner
+  let evmLot := Stele.EVM.storageStore evmBid I.codeOwner
     (bidSlotOfWord (kickIdWord σ I) ⟨1⟩) (kickLot I)
-  let evmGuy := Solm.EVM.storageStore evmLot I.codeOwner
+  let evmGuy := Stele.EVM.storageStore evmLot I.codeOwner
     (bidPackedSlotOfWord (kickIdWord σ I))
     (setAddressOffset0Word
-      (Solm.EVM.storageLoad evmLot I.codeOwner (bidPackedSlotOfWord (kickIdWord σ I)))
+      (Stele.EVM.storageLoad evmLot I.codeOwner (bidPackedSlotOfWord (kickIdWord σ I)))
       (solcSourceWord I))
-  let evmEnd := Solm.EVM.storageStore evmGuy I.codeOwner
+  let evmEnd := Stele.EVM.storageStore evmGuy I.codeOwner
     (bidPackedSlotOfWord (kickIdWord σ I))
     (setUint48Offset26Word
-      (Solm.EVM.storageLoad evmGuy I.codeOwner (bidPackedSlotOfWord (kickIdWord σ I)))
+      (Stele.EVM.storageLoad evmGuy I.codeOwner (bidPackedSlotOfWord (kickIdWord σ I)))
       (kickEndNewWord (kickAfterGuyMap σ I) I))
-  let evmUsr := Solm.EVM.storageStore evmEnd I.codeOwner
+  let evmUsr := Stele.EVM.storageStore evmEnd I.codeOwner
     (bidSlotOfWord (kickIdWord σ I) ⟨3⟩)
     (setAddressOffset0Word
-      (Solm.EVM.storageLoad evmEnd I.codeOwner (bidSlotOfWord (kickIdWord σ I) ⟨3⟩))
+      (Stele.EVM.storageLoad evmEnd I.codeOwner (bidSlotOfWord (kickIdWord σ I) ⟨3⟩))
       (kickUsrKey I))
-  let evmGal := Solm.EVM.storageStore evmUsr I.codeOwner
+  let evmGal := Stele.EVM.storageStore evmUsr I.codeOwner
     (bidSlotOfWord (kickIdWord σ I) ⟨4⟩)
     (setAddressOffset0Word
-      (Solm.EVM.storageLoad evmUsr I.codeOwner (bidSlotOfWord (kickIdWord σ I) ⟨4⟩))
+      (Stele.EVM.storageLoad evmUsr I.codeOwner (bidSlotOfWord (kickIdWord σ I) ⟨4⟩))
       (kickGalKey I))
-  let evmTab := Solm.EVM.storageStore evmGal I.codeOwner
+  let evmTab := Stele.EVM.storageStore evmGal I.codeOwner
     (bidSlotOfWord (kickIdWord σ I) ⟨5⟩) (kickTab I)
   have hevmtab : evmTab = { evm0 with accountMap := kickAfterTabMap σ I } := by
     simpa [evm0, evmKicks, evmBid, evmLot, evmGuy, evmEnd, evmUsr, evmGal, evmTab] using
@@ -1363,13 +1363,13 @@ theorem flipperKickBodyCore {σ σ₀ A I} {g : UInt256}
       hsz164 hsize hreach
     let callerSlot := flipperCallerWardsSlot I
     by_cases hauthEvm : solcSlotWordAt callerSlot σ I = ⟨1⟩
-    · have hauthSolm : solcSlotWordAt callerSlot σ I = ⟨1⟩ := hauthEvm
+    · have hauthStele : solcSlotWordAt callerSlot σ I = ⟨1⟩ := hauthEvm
       obtain ⟨_, _, hafterAuth⟩ := flipperKickX_authOk (I := I) hauthEvm hdecoded
       by_cases hkicksLt : (kickKicksWord σ I).toNat < UInt256.size - 1
       · have hkicksWord : kickKicksWord σ I = kickKicksWord σ I := rfl
         have hidWord : kickIdWord σ I = kickIdWord σ I := by
           simp [kickIdWord, hkicksWord]
-        have hkicksLtSolm : (kickKicksWord σ I).toNat < UInt256.size - 1 := by
+        have hkicksLtStele : (kickKicksWord σ I).toNat < UInt256.size - 1 := by
           simpa [← hkicksWord] using hkicksLt
         rcases flipperKickX_toAdd48Split hkicksLt hafterAuth with
             ⟨hperm, _, _, rd6272⟩ | ⟨hperm, hstatic⟩
@@ -1377,7 +1377,7 @@ theorem flipperKickBodyCore {σ σ₀ A I} {g : UInt256}
         · let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
           have hprefix := (flipperKickSourcePrefixSplit
             (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
-            hwv hauthSolm hkicksLtSolm).2 hperm
+            hwv hauthStele hkicksLtStele).2 hperm
           have hjoined : ExecBlock config { contract := contract, locals := kickLocals I }
               evm0 (([.require (.binary .eq (.env .callvalue) (.intLit 0)),
                 .require kickAuthGuard, .require kickKicksGuard] ++ kickStoragePrefixStmts) ++
@@ -1423,7 +1423,7 @@ theorem flipperKickBodyCore {σ σ₀ A I} {g : UInt256}
         by_cases hfitEvm :
             (kickNow48 I).toNat + (kickTauWord (kickAfterGuyMap σ I) I).toNat <
               2 ^ 48
-        · have hfitSolm :
+        · have hfitStele :
               (kickNow48 I).toNat + (kickTauWord (kickAfterGuyMap σ I) I).toNat <
                 2 ^ 48 := by
             simpa [← htauEq] using hfitEvm
@@ -1446,7 +1446,7 @@ theorem flipperKickBodyCore {σ σ₀ A I} {g : UInt256}
                 (fun old =>
                   setUint48Offset26Word old (kickEndNewWord (kickAfterGuyMap σ I) I))
                 hPackedAfterGuy
-          have hendStoredEqSolmId :
+          have hendStoredEqSteleId :
               kickEndStoredWord (kickIdWord σ I) (kickAfterGuyMap σ I) I =
                 kickEndStoredWord (kickIdWord σ I) (kickAfterGuyMap σ I) I := by
             simpa [hidWord] using hendStoredEq
@@ -1485,7 +1485,7 @@ theorem flipperKickBodyCore {σ σ₀ A I} {g : UInt256}
           by_cases hvatZero :
               Reasoning.Theory.extCodeSizeWord (kickAfterTabMap σ I)
                 (flipperVatTargetWord (kickAfterTabMap σ I) I) = ⟨0⟩
-          · have hvatZeroSolm :
+          · have hvatZeroStele :
                 Reasoning.Theory.extCodeSizeWord (kickAfterTabMap σ I)
                     (flipperVatTargetWord (kickAfterTabMap σ I) I) = ⟨0⟩ :=
               hvatZero
@@ -1497,21 +1497,21 @@ theorem flipperKickBodyCore {σ σ₀ A I} {g : UInt256}
                     (fun acc => acc.code.size))).toNat = 0 := by
               exact flipperVatCode_zero_of_codeSize_zero
                 (σ := kickAfterTabMap σ I) (σ₀ := σ₀)
-                (A := A) (I := I) (g := g) hvatZeroSolm
+                (A := A) (I := I) (g := g) hvatZeroStele
             have hbody :
                 ExecTransitionBody config contract
                   (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                   (kickLocals I) kickTransition.body .reverted := by
               exact flipperKickSourceBodyVatNoCode
                 (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
-                hwv hauthSolm hkicksLtSolm hfitSolm hvatNoCode
+                hwv hauthStele hkicksLtStele hfitStele hvatNoCode
             exact (test_flipperKickX_vatNoCode hvatZero rd2354)
               |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
-          · have hvatNeSolm :
+          · have hvatNeStele :
                 Reasoning.Theory.extCodeSizeWord (kickAfterTabMap σ I)
                     (flipperVatTargetWord (kickAfterTabMap σ I) I) ≠ ⟨0⟩ :=
               hvatZero
-            have hvatCodeSolm :
+            have hvatCodeStele :
                 0 <
                   (UInt256.ofNat
                     (((initState (kickAfterTabMap σ I) σ₀
@@ -1520,7 +1520,7 @@ theorem flipperKickBodyCore {σ σ₀ A I} {g : UInt256}
                       (fun acc => acc.code.size))).toNat := by
               exact flipperVatCode_pos_of_codeSize_ne_zero
                 (σ := kickAfterTabMap σ I) (σ₀ := σ₀)
-                (A := A) (I := I) (g := g) hvatNeSolm
+                (A := A) (I := I) (g := g) hvatNeStele
             by_cases hdepthLt : I.depth.val < 1024
             · obtain ⟨σ_vat, zVat, outVat, A_vat, k2438, C2438, rd2438,
                   hcallVatEvmRaw, houtVat⟩ :=
@@ -1530,7 +1530,7 @@ theorem flipperKickBodyCore {σ σ₀ A I} {g : UInt256}
               let evmTabEvm : EVM.State :=
                 { initState σ σ₀ (Sat256.ofUInt256 g) A I with
                   accountMap := kickAfterTabMap σ I }
-              let evmTabSolm : EVM.State := evmTabEvm
+              let evmTabStele : EVM.State := evmTabEvm
               let evmVatEvm : EVM.State :=
                 { evmTabEvm with
                   accountMap := σ_vat, substate := A_vat }
@@ -1539,31 +1539,31 @@ theorem flipperKickBodyCore {σ σ₀ A I} {g : UInt256}
                     (EVM.address (flipperVatAddress (kickAfterTabMap σ I) I)) "flux" 0
                     (kickFluxArgValsOf evmTabEvm) (zVat, evmVatEvm, outVat) true := by
                 simpa [evmTabEvm, evmVatEvm] using hcallVatEvmRaw
-              let evmVatSolm : EVM.State := evmVatEvm
-              have hcallVatSolm :
-                  typedCallViaEVM config evmTabSolm
+              let evmVatStele : EVM.State := evmVatEvm
+              have hcallVatStele :
+                  typedCallViaEVM config evmTabStele
                     (EVM.address
-                      (flipperVatAddress evmTabSolm.accountMap evmTabSolm.executionEnv))
-                    "flux" 0 (kickFluxArgValsOf evmTabSolm)
-                    (zVat, evmVatSolm, outVat) true := by
-                simpa [evmTabSolm, evmTabEvm, evmVatSolm, evmVatEvm, initState]
+                      (flipperVatAddress evmTabStele.accountMap evmTabStele.executionEnv))
+                    "flux" 0 (kickFluxArgValsOf evmTabStele)
+                    (zVat, evmVatStele, outVat) true := by
+                simpa [evmTabStele, evmTabEvm, evmVatStele, evmVatEvm, initState]
                   using hcallVatEvm
               cases zVat
-              · have hcallVatSolmFalse :
-                    typedCallViaEVM config evmTabSolm
+              · have hcallVatSteleFalse :
+                    typedCallViaEVM config evmTabStele
                       (EVM.address
-                        (flipperVatAddress evmTabSolm.accountMap evmTabSolm.executionEnv))
-                      "flux" 0 (kickFluxArgValsOf evmTabSolm)
-                      (false, evmVatSolm, outVat) true := by
-                  exact hcallVatSolm
+                        (flipperVatAddress evmTabStele.accountMap evmTabStele.executionEnv))
+                      "flux" 0 (kickFluxArgValsOf evmTabStele)
+                      (false, evmVatStele, outVat) true := by
+                  exact hcallVatStele
                 have hbody :
                     ExecTransitionBody config contract
                       (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                       (kickLocals I) kickTransition.body .reverted := by
                   exact flipperKickSourceBodyVatCallFailure
                     (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
-                    (evmVat := evmVatSolm) (outVat := outVat)
-                    hwv hauthSolm hkicksLtSolm hfitSolm hvatCodeSolm hcallVatSolmFalse
+                    (evmVat := evmVatStele) (outVat := outVat)
+                    hwv hauthStele hkicksLtStele hfitStele hvatCodeStele hcallVatSteleFalse
                 exact (test_flipperKickX_vatCallFailure (by simpa using rd2438) houtVat)
                   |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
               · obtain ⟨_, _, rd2457⟩ :=
@@ -1571,24 +1571,24 @@ theorem flipperKickBodyCore {σ σ₀ A I} {g : UInt256}
                 have hret := test_flipperKickX_logAndReturn
                   (σmem := σ) (σcall := kickAfterTabMap σ I)
                   (σacc := σ_vat) (σ := σ) hperm rd2457
-                have hcallVatSolmTrue :
-                    typedCallViaEVM config evmTabSolm
+                have hcallVatSteleTrue :
+                    typedCallViaEVM config evmTabStele
                       (EVM.address
-                        (flipperVatAddress evmTabSolm.accountMap evmTabSolm.executionEnv))
-                      "flux" 0 (kickFluxArgValsOf evmTabSolm)
-                      (true, evmVatSolm, outVat) true := by
-                  exact hcallVatSolm
+                        (flipperVatAddress evmTabStele.accountMap evmTabStele.executionEnv))
+                      "flux" 0 (kickFluxArgValsOf evmTabStele)
+                      (true, evmVatStele, outVat) true := by
+                  exact hcallVatStele
                 have hbody :
                     ExecTransitionBody config contract
                       (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                       (kickLocals I) kickTransition.body
                       (.returned { contract := contract, locals := kickLocalsAfterFlux σ I }
-                        evmVatSolm
+                        evmVatStele
                         (some [.int (Int.ofNat (kickIdWord σ I).toNat)])) := by
                   exact flipperKickSourceBodySuccess
                     (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
-                    (evmVat := evmVatSolm) (outVat := outVat)
-                    hwv hauthSolm hkicksLtSolm hfitSolm hvatCodeSolm hcallVatSolmTrue
+                    (evmVat := evmVatStele) (outVat := outVat)
+                    hwv hauthStele hkicksLtStele hfitStele hvatCodeStele hcallVatSteleTrue
                 exact hret.reEquivExecutionGen hcode hdispatch hdecode hbody
                   (by rfl)
                   (by
@@ -1600,49 +1600,49 @@ theorem flipperKickBodyCore {σ σ₀ A I} {g : UInt256}
                 apply Fin.ext
                 have hle : 1024 ≤ I.depth.val := by omega
                 exact Nat.le_antisymm (Nat.le_of_lt_succ I.depth.isLt) hle
-              let evmTabSolm : EVM.State :=
+              let evmTabStele : EVM.State :=
                 { initState σ σ₀ (Sat256.ofUInt256 g) A I with
                   accountMap := kickAfterTabMap σ I }
-              let targetSolm : EVM.Address :=
-                EVM.address (flipperVatAddress evmTabSolm.accountMap evmTabSolm.executionEnv)
-              let evmVatSolm : EVM.State :=
-                { evmTabSolm with substate := (evmTabSolm.addAccessedAccount targetSolm).substate }
-              have hcallVatSolmFalse :
-                  typedCallViaEVM config evmTabSolm targetSolm "flux" 0
-                    (kickFluxArgValsOf evmTabSolm)
-                    (false, evmVatSolm, ByteArray.empty) true := by
+              let targetStele : EVM.Address :=
+                EVM.address (flipperVatAddress evmTabStele.accountMap evmTabStele.executionEnv)
+              let evmVatStele : EVM.State :=
+                { evmTabStele with substate := (evmTabStele.addAccessedAccount targetStele).substate }
+              have hcallVatSteleFalse :
+                  typedCallViaEVM config evmTabStele targetStele "flux" 0
+                    (kickFluxArgValsOf evmTabStele)
+                    (false, evmVatStele, ByteArray.empty) true := by
                 refine ⟨(kickVatFluxCallMem σ (kickAfterTabMap σ I) I).readWithPadding
                   128 132, ?_, ?_⟩
-                · simpa [evmTabSolm, kickFluxArgValsOf, initState, solcSlotWordAt,
-                    solcSlotWord, Solm.EVM.storageLoad, State.lookupAccount] using
+                · simpa [evmTabStele, kickFluxArgValsOf, initState, solcSlotWordAt,
+                    solcSlotWord, Stele.EVM.storageLoad, State.lookupAccount] using
                     kickVatFluxCallMem_encode σ (kickAfterTabMap σ I) I
-                · exact callViaEVM.callNotMade (evm := evmTabSolm) (target := targetSolm)
+                · exact callViaEVM.callNotMade (evm := evmTabStele) (target := targetStele)
                     (value := 0)
                     (calldata :=
                       (kickVatFluxCallMem σ (kickAfterTabMap σ I) I).readWithPadding
                         128 132)
-                    (A' := (evmTabSolm.addAccessedAccount targetSolm).substate)
-                    (evm' := evmVatSolm)
+                    (A' := (evmTabStele.addAccessedAccount targetStele).substate)
+                    (evm' := evmVatStele)
                     rfl rfl
                     (by
                       intro hcan
-                      exact hcan.2 (by simpa [evmTabSolm, initState] using hdepthEq))
+                      exact hcan.2 (by simpa [evmTabStele, initState] using hdepthEq))
               have hbody :
                   ExecTransitionBody config contract
                     (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                     (kickLocals I) kickTransition.body .reverted := by
-                simpa [evmTabSolm, targetSolm, evmVatSolm] using
+                simpa [evmTabStele, targetStele, evmVatStele] using
                   (flipperKickSourceBodyVatCallFailure
                     (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
-                    (evmVat := evmVatSolm) (outVat := ByteArray.empty)
-                    hwv hauthSolm hkicksLtSolm hfitSolm hvatCodeSolm hcallVatSolmFalse)
+                    (evmVat := evmVatStele) (outVat := ByteArray.empty)
+                    hwv hauthStele hkicksLtStele hfitStele hvatCodeStele hcallVatSteleFalse)
               exact (test_flipperKickX_vatCallDepthLimit hvatZero hdepthEq rd2354)
                 |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
         · have hoverEvm :
               2 ^ 48 ≤
                 (kickNow48 I).toNat + (kickTauWord (kickAfterGuyMap σ I) I).toNat := by
             omega
-          have hoverSolm :
+          have hoverStele :
               2 ^ 48 ≤
                 (kickNow48 I).toNat + (kickTauWord (kickAfterGuyMap σ I) I).toNat := by
             simpa [← htauEq] using hoverEvm
@@ -1652,13 +1652,13 @@ theorem flipperKickBodyCore {σ σ₀ A I} {g : UInt256}
                 (kickLocals I) kickTransition.body .reverted := by
             exact flipperKickSourceBodyAdd48Overflow
               (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
-              hwv hauthSolm hkicksLtSolm hoverSolm
+              hwv hauthStele hkicksLtStele hoverStele
           exact (flipperKickX_add48Overflow hoverEvm rd6272)
             |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
       · have hmaxEvm : UInt256.size - 1 ≤ (kickKicksWord σ I).toNat := by
           omega
         have hkicksWord : kickKicksWord σ I = kickKicksWord σ I := rfl
-        have hmaxSolm : UInt256.size - 1 ≤ (kickKicksWord σ I).toNat := by
+        have hmaxStele : UInt256.size - 1 ≤ (kickKicksWord σ I).toNat := by
           simpa [← hkicksWord] using hmaxEvm
         have hbody :
             ExecTransitionBody config contract
@@ -1667,12 +1667,12 @@ theorem flipperKickBodyCore {σ σ₀ A I} {g : UInt256}
           rw [kickTransition_body_eq]
           exact flipperKickSourceBodyKicksOverflow
             (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
-            hwv hauthSolm hmaxSolm
+            hwv hauthStele hmaxStele
         exact (flipperKickX_kicksOverflow hmaxEvm hafterAuth)
           |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
-    · have hauthSolm : solcSlotWordAt callerSlot σ I ≠ ⟨1⟩ := by
-        intro hsolm
-        exact hauthEvm hsolm
+    · have hauthStele : solcSlotWordAt callerSlot σ I ≠ ⟨1⟩ := by
+        intro hstele
+        exact hauthEvm hstele
       have hbody :
           ExecTransitionBody config contract
             (initState σ σ₀ (Sat256.ofUInt256 g) A I)
@@ -1680,7 +1680,7 @@ theorem flipperKickBodyCore {σ σ₀ A I} {g : UInt256}
         rw [kickTransition_body_eq]
         exact flipperKickSourceBodyAuthReverts
           (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
-          hwv hauthSolm
+          hwv hauthStele
       exact (flipperKickX_authRevert (I := I) hauthEvm hdecoded)
         |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
   · have hsz4 : 4 ≤ I.calldata.size :=

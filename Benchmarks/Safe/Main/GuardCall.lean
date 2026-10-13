@@ -1,7 +1,7 @@
 import Benchmarks.Safe.Main.GuardTrace
 import Benchmarks.Safe.Main.TypedStaticCall
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.Main
 

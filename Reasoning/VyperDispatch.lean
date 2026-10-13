@@ -4,7 +4,7 @@ import Reasoning.VyperImmutables
 import Reasoning.Storage
 import Reasoning.Vyper
 import Reasoning.Dispatch
-import Solm.VyperLayout
+import Stele.VyperLayout
 
 /-!
 # Vyper's computed dispatcher
@@ -17,7 +17,7 @@ and show that the lookup reads the template even when a code suffix (Vyper immut
 appended.  `scripts/proof_skeleton.py` instantiates them per contract.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperImmutables
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperImmutables
 
 namespace Reasoning.VyperDispatch
 
@@ -59,14 +59,14 @@ theorem RDrev.reEquivOfDispatch {cfg : Config} {contract : ContractDecl} {t : Tr
 /-- A full-word Vyper leaf reads as the typed view of its storage word. -/
 theorem storageLocLoad_vyperWord (evm : EVM.State) (slot : UInt256) (ty : ElemType) :
     storageLocLoad evm (vyperWordLoc slot ty) =
-      wordToElem ty (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot) := by
+      wordToElem ty (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot) := by
   have htake :
-      (EVM.Word.toBytesLEWithSizeProof (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).1.extract 0
+      (EVM.Word.toBytesLEWithSizeProof (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).1.extract 0
           (32 : Fin 33).val =
-        (EVM.Word.toBytesLEWithSizeProof (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).1 := by
+        (EVM.Word.toBytesLEWithSizeProof (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).1 := by
     rw [List.extract_eq_take_drop, List.drop_zero]
     apply List.take_of_length_le
-    rw [(EVM.Word.toBytesLEWithSizeProof (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).2]
+    rw [(EVM.Word.toBytesLEWithSizeProof (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).2]
     decide
   unfold storageLocLoad vyperWordLoc
   simp only [Fin.val_zero, Nat.zero_add]
@@ -259,7 +259,7 @@ theorem ofNat_addr_inj {x y : AccountAddress} (h : UInt256.ofNat x.val = UInt256
   rw [ulit_toNat' _ hx, ulit_toNat' _ hy] at this
   exact Fin.ext this
 
-/-- Solm's address equality is decidable equality of the addresses. -/
+/-- Stele's address equality is decidable equality of the addresses. -/
 theorem value_address_beq (a b : AccountAddress) :
     (Value.address a == Value.address b) = decide (a = b) := by
   by_cases h : a = b
@@ -274,11 +274,11 @@ theorem value_address_beq (a b : AccountAddress) :
 /-- A full-word `bool` leaf stores the `Bool`'s word. -/
 theorem storageLocStore_vyperWord_bool (evm : EVM.State) (slot : UInt256) (b : Bool) :
     storageLocStore evm (vyperWordLoc slot .bool) (.bool b) =
-      some (Solm.EVM.storageStore evm evm.executionEnv.codeOwner slot b.toUInt256) := by
+      some (Stele.EVM.storageStore evm evm.executionEnv.codeOwner slot b.toUInt256) := by
   unfold storageLocStore storageLocWriteWord vyperWordLoc
   simp only [valueToWord, bind, Option.bind]
   have hslen := (EVM.Word.toBytesLEWithSizeProof
-    (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).2
+    (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).2
   have hvlen := (EVM.Word.toBytesLEWithSizeProof b.toUInt256).2
   congr 2
   apply u256_inj
@@ -291,18 +291,18 @@ theorem storageLocStore_vyperWord_bool (evm : EVM.State) (slot : UInt256) (b : B
 
 /-- `assignStorageRef_storage_vyper_scalar` for any scalar value (a `bool`, an address). -/
 theorem assignStorageRef_storage_vyper_scalar_value {cfg : Config} {layout : StorageLayout}
-    {bounds : VyperBounds} {solm : Frame} {evm evm' : EVM.State}
+    {bounds : VyperBounds} {stele : Frame} {evm evm' : EVM.State}
     {slot : StorageRef} {er : EvaledStorageRef} {ty : StorageType}
     {loc : StorageLoc} {value : Value}
-    (hbase : solm.locals.get? slot.base = none)
-    (her : evalStorageRef cfg solm evm slot = .ok er)
-    (hty : storageTypeAt? solm.contract.storage er = some ty)
+    (hbase : stele.locals.get? slot.base = none)
+    (her : evalStorageRef cfg stele evm slot = .ok er)
+    (hty : storageTypeAt? stele.contract.storage er = some ty)
     (hbackend : cfg.storageBackend = vyperStorageBackend layout bounds)
     (hcheck : vyperCheckRef? layout bounds evm er = .ok ())
     (hloc : layout er = some (.leaf loc))
     (hleaf : (∃ t, ty = .elem t) ∨ (∃ name, ty = .contract name))
     (hstore : storageLocStore evm loc value = some evm') :
-    assignStorageRef? cfg solm evm .storage slot value = .ok (solm, evm') := by
+    assignStorageRef? cfg stele evm .storage slot value = .ok (stele, evm') := by
   apply assignStorageRef_storage_of_write hbase her hty
   rw [hbackend]
   rcases hleaf with ⟨t, rfl⟩ | ⟨name, rfl⟩
@@ -313,50 +313,50 @@ theorem assignStorageRef_storage_vyper_scalar_value {cfg : Config} {layout : Sto
 
 /-! ## Frame-generic expression evaluation (checked `uint256` arithmetic, environment reads) -/
 
-theorem evalExpr_callvalue {cfg : Config} {solm : Frame} (evm : EVM.State) :
-    evalExpr? cfg solm evm (.env .callvalue) = .ok (uint256Value evm.executionEnv.weiValue) := by
+theorem evalExpr_callvalue {cfg : Config} {stele : Frame} (evm : EVM.State) :
+    evalExpr? cfg stele evm (.env .callvalue) = .ok (uint256Value evm.executionEnv.weiValue) := by
   rw [evalExpr?]; rfl
 
-theorem evalExpr_caller {cfg : Config} {solm : Frame} (evm : EVM.State) :
-    evalExpr? cfg solm evm (.env .caller) = .ok (.address evm.executionEnv.source) := by
+theorem evalExpr_caller {cfg : Config} {stele : Frame} (evm : EVM.State) :
+    evalExpr? cfg stele evm (.env .caller) = .ok (.address evm.executionEnv.source) := by
   rw [evalExpr?]; rfl
 
-theorem evalExpr_intLit_word {cfg : Config} {solm : Frame} (evm : EVM.State) (n : Nat)
+theorem evalExpr_intLit_word {cfg : Config} {stele : Frame} (evm : EVM.State) (n : Nat)
     (hn : n < UInt256.size) :
-    evalExpr? cfg solm evm (.intLit n) = .ok (uint256Value (UInt256.ofNat n)) := by
+    evalExpr? cfg stele evm (.intLit n) = .ok (uint256Value (UInt256.ofNat n)) := by
   rw [evalExpr?]
   simp only [uint256Value, ulit_toNat' n hn]
   rfl
 
-theorem evalExpr_not_bool {cfg : Config} {solm : Frame} {evm : EVM.State} {e : Expr} {b : Bool}
-    (he : evalExpr? cfg solm evm e = .ok (.bool b)) :
-    evalExpr? cfg solm evm (.unary .not e) = .ok (.bool (!b)) := by
+theorem evalExpr_not_bool {cfg : Config} {stele : Frame} {evm : EVM.State} {e : Expr} {b : Bool}
+    (he : evalExpr? cfg stele evm e = .ok (.bool b)) :
+    evalExpr? cfg stele evm (.unary .not e) = .ok (.bool (!b)) := by
   simp [evalExpr?, he, EvalResult.bind, bind, evalUnaryOp?, EvalResult.ofOption]
 
-theorem evalExpr_gt_zero {cfg : Config} {solm : Frame} {evm : EVM.State} {e : Expr} {a : UInt256}
-    (ha : evalExpr? cfg solm evm e = .ok (uint256Value a)) :
-    evalExpr? cfg solm evm (.binary .gt e (.intLit 0)) = .ok (.bool (decide (0 < a.toNat))) := by
+theorem evalExpr_gt_zero {cfg : Config} {stele : Frame} {evm : EVM.State} {e : Expr} {a : UInt256}
+    (ha : evalExpr? cfg stele evm e = .ok (uint256Value a)) :
+    evalExpr? cfg stele evm (.binary .gt e (.intLit 0)) = .ok (.bool (decide (0 < a.toNat))) := by
   rw [evalExpr_binary_nonshort (by decide) (by decide), ha, evalExpr?]
   simp [EvalResult.bind, bind, evalBinaryOp?, uint256Value]
 
-theorem evalExpr_uint256_add {cfg : Config} {solm : Frame} {evm : EVM.State}
+theorem evalExpr_uint256_add {cfg : Config} {stele : Frame} {evm : EVM.State}
     {lhs rhs : Expr} {a b : UInt256}
-    (ha : evalExpr? cfg solm evm lhs = .ok (uint256Value a))
-    (hb : evalExpr? cfg solm evm rhs = .ok (uint256Value b))
+    (ha : evalExpr? cfg stele evm lhs = .ok (uint256Value a))
+    (hb : evalExpr? cfg stele evm rhs = .ok (uint256Value b))
     (hfit : a.toNat + b.toNat < UInt256.size) :
-    evalExpr? cfg solm evm (.inRange (.uint ⟨256, by decide⟩) (.binary .add lhs rhs)) =
+    evalExpr? cfg stele evm (.inRange (.uint ⟨256, by decide⟩) (.binary .add lhs rhs)) =
       .ok (uint256Value (a + b)) := by
   apply evalExpr_uint256_inRange
   simp only [evalExpr?, ha, hb, EvalResult.bind, bind, uint256Value, evalBinaryOp?]
   rw [uadd_toNat, Nat.mod_eq_of_lt hfit]
   simp only [Int.ofNat_eq_natCast, Nat.cast_add]
 
-theorem evalExpr_uint256_add_overflow {cfg : Config} {solm : Frame} {evm : EVM.State}
+theorem evalExpr_uint256_add_overflow {cfg : Config} {stele : Frame} {evm : EVM.State}
     {lhs rhs : Expr} {a b : UInt256}
-    (ha : evalExpr? cfg solm evm lhs = .ok (uint256Value a))
-    (hb : evalExpr? cfg solm evm rhs = .ok (uint256Value b))
+    (ha : evalExpr? cfg stele evm lhs = .ok (uint256Value a))
+    (hb : evalExpr? cfg stele evm rhs = .ok (uint256Value b))
     (hover : UInt256.size ≤ a.toNat + b.toNat) :
-    evalExpr? cfg solm evm (.inRange (.uint ⟨256, by decide⟩) (.binary .add lhs rhs)) = .revert := by
+    evalExpr? cfg stele evm (.inRange (.uint ⟨256, by decide⟩) (.binary .add lhs rhs)) = .revert := by
   have hge : Int.ofNat (a.toNat + b.toNat) ≥ (2 : Int) ^ 256 := by
     rw [UInt256.size] at hover
     exact Int.ofNat_le.mpr hover
@@ -365,26 +365,26 @@ theorem evalExpr_uint256_add_overflow {cfg : Config} {solm : Frame} {evm : EVM.S
   simp only [Bool.or_eq_true, decide_eq_true_eq]
   exact Or.inr (by simpa [Nat.cast_add] using hge)
 
-theorem evalExpr_uint256_div {cfg : Config} {solm : Frame} {evm : EVM.State}
+theorem evalExpr_uint256_div {cfg : Config} {stele : Frame} {evm : EVM.State}
     {lhs rhs : Expr} {a b : UInt256}
-    (ha : evalExpr? cfg solm evm lhs = .ok (uint256Value a))
-    (hb : evalExpr? cfg solm evm rhs = .ok (uint256Value b)) (hb0 : b ≠ ⟨0⟩) :
-    evalExpr? cfg solm evm (.binary .div lhs rhs) = .ok (uint256Value (UInt256.div a b)) := by
+    (ha : evalExpr? cfg stele evm lhs = .ok (uint256Value a))
+    (hb : evalExpr? cfg stele evm rhs = .ok (uint256Value b)) (hb0 : b ≠ ⟨0⟩) :
+    evalExpr? cfg stele evm (.binary .div lhs rhs) = .ok (uint256Value (UInt256.div a b)) := by
   have hbNat : ¬ b.toNat = 0 := fun h => hb0 (uint256_toNat_eq_zero h)
   simp [evalExpr?, EvalResult.bind, bind, ha, hb, evalBinaryOp?, hbNat, uint256Value, udiv_toNat]
 
 /-- A reverting left operand reverts a non-short-circuit binary expression. -/
-theorem evalExpr_binary_revert_left {cfg : Config} {solm : Frame} {evm : EVM.State}
+theorem evalExpr_binary_revert_left {cfg : Config} {stele : Frame} {evm : EVM.State}
     {op : BinaryOp} {lhs rhs : Expr} (hand : op ≠ BinaryOp.and) (hor : op ≠ BinaryOp.or)
-    (h : evalExpr? cfg solm evm lhs = .revert) :
-    evalExpr? cfg solm evm (.binary op lhs rhs) = .revert := by
+    (h : evalExpr? cfg stele evm lhs = .revert) :
+    evalExpr? cfg stele evm (.binary op lhs rhs) = .revert := by
   rw [evalExpr_binary_nonshort hand hor, h]
   rfl
 
 /-! ## Storage views after a store -/
 
 theorem storageLoad_eq_slotWord (evm : EVM.State) (a : AccountAddress) (k : UInt256) :
-    Solm.EVM.storageLoad evm a k =
+    Stele.EVM.storageLoad evm a k =
       (evm.accountMap.get? a |>.option (⟨0⟩ : UInt256) (fun ac => ac.storage.getD k ⟨0⟩)) := rfl
 
 /-! ## Word reads around 32-byte writes -/
@@ -423,33 +423,33 @@ theorem value_int_beq (x y : Int) : (Value.int x == Value.int y) = decide (x = y
   · rw [decide_eq_false h]
     exact beq_eq_false_iff_ne.mpr (fun e => h (Value.int.inj e))
 
-theorem evalExpr_ne_words {cfg : Config} {solm : Frame} {evm : EVM.State} {lhs rhs : Expr} {a b : UInt256}
-    (ha : evalExpr? cfg solm evm lhs = .ok (uint256Value a))
-    (hb : evalExpr? cfg solm evm rhs = .ok (uint256Value b)) :
-    evalExpr? cfg solm evm (.binary .ne lhs rhs) = .ok (.bool (!decide (a.toNat = b.toNat))) := by
+theorem evalExpr_ne_words {cfg : Config} {stele : Frame} {evm : EVM.State} {lhs rhs : Expr} {a b : UInt256}
+    (ha : evalExpr? cfg stele evm lhs = .ok (uint256Value a))
+    (hb : evalExpr? cfg stele evm rhs = .ok (uint256Value b)) :
+    evalExpr? cfg stele evm (.binary .ne lhs rhs) = .ok (.bool (!decide (a.toNat = b.toNat))) := by
   rw [evalExpr_binary_nonshort (by decide) (by decide), ha, hb]
   simp [EvalResult.bind, bind, evalBinaryOp?, uint256Value, value_int_beq]
 
-theorem evalExpr_ge_words {cfg : Config} {solm : Frame} {evm : EVM.State} {lhs rhs : Expr} {a b : UInt256}
-    (ha : evalExpr? cfg solm evm lhs = .ok (uint256Value a))
-    (hb : evalExpr? cfg solm evm rhs = .ok (uint256Value b)) :
-    evalExpr? cfg solm evm (.binary .ge lhs rhs) = .ok (.bool (decide (b.toNat ≤ a.toNat))) := by
+theorem evalExpr_ge_words {cfg : Config} {stele : Frame} {evm : EVM.State} {lhs rhs : Expr} {a b : UInt256}
+    (ha : evalExpr? cfg stele evm lhs = .ok (uint256Value a))
+    (hb : evalExpr? cfg stele evm rhs = .ok (uint256Value b)) :
+    evalExpr? cfg stele evm (.binary .ge lhs rhs) = .ok (.bool (decide (b.toNat ≤ a.toNat))) := by
   rw [evalExpr_binary_nonshort (by decide) (by decide), ha, hb]
   simp [EvalResult.bind, bind, evalBinaryOp?, uint256Value]
 
-theorem evalExpr_uint256_sub_underflow {cfg : Config} {solm : Frame} {evm : EVM.State}
+theorem evalExpr_uint256_sub_underflow {cfg : Config} {stele : Frame} {evm : EVM.State}
     {lhs rhs : Expr} {a b : UInt256}
-    (ha : evalExpr? cfg solm evm lhs = .ok (uint256Value a))
-    (hb : evalExpr? cfg solm evm rhs = .ok (uint256Value b))
+    (ha : evalExpr? cfg stele evm lhs = .ok (uint256Value a))
+    (hb : evalExpr? cfg stele evm rhs = .ok (uint256Value b))
     (hlt : a.toNat < b.toNat) :
-    evalExpr? cfg solm evm (.inRange (.uint ⟨256, by decide⟩) (.binary .sub lhs rhs)) = .revert := by
+    evalExpr? cfg stele evm (.inRange (.uint ⟨256, by decide⟩) (.binary .sub lhs rhs)) = .revert := by
   simp only [evalExpr?, ha, hb, EvalResult.bind, bind, uint256Value, evalBinaryOp?]
   rw [if_pos]
   simp only [Bool.or_eq_true, decide_eq_true_eq]
   exact Or.inl (by simp only [Int.ofNat_eq_natCast]; omega)
 
-theorem evalExpr_newBytes_zero {cfg : Config} {solm : Frame} (evm : EVM.State) :
-    evalExpr? cfg solm evm (.newBytes (.intLit 0)) = .ok (.bytes ByteArray.empty) := by
+theorem evalExpr_newBytes_zero {cfg : Config} {stele : Frame} (evm : EVM.State) :
+    evalExpr? cfg stele evm (.newBytes (.intLit 0)) = .ok (.bytes ByteArray.empty) := by
   simp [evalExpr?, pure, bind, EvalResult.bind]
   rfl
 

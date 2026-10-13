@@ -9,7 +9,7 @@ source⟺EVM storage-slot reconciliations for `balanceOf[src]`, `balanceOf[dst]`
 `allowance[src][msg.sender]`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 1000000

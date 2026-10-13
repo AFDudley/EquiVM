@@ -1,7 +1,7 @@
 import Benchmarks.Dss.Clipper.KickRevertEVM
 import Benchmarks.Dss.Clipper.KickStateEquiv
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 namespace Benchmarks.Dss.Clipper
@@ -26,8 +26,8 @@ theorem clipperKickCallAligned_transport
       (z, { {s0 with accountMap := σ, executionEnv := I} with
             accountMap := σ', substate := A' }, out)
       callPerm) :
-    ∃ (σSolm : AccountMap) (ASolm : Substate) (evm' : EVM.State),
-      evm' = { evm with accountMap := σSolm, substate := ASolm } ∧
+    ∃ (σStele : AccountMap) (AStele : Substate) (evm' : EVM.State),
+      evm' = { evm with accountMap := σStele, substate := AStele } ∧
       typedCallViaEVM config evm tgt name value args (z, evm', out) callPerm ∧
       ClipperKickCallAligned s0 σ' I evm' := by
   have hInputAccounts : ({s0 with accountMap := σ, executionEnv := I} : EVM.State).accountMap =
@@ -36,11 +36,11 @@ theorem clipperKickCallAligned_transport
       evm.σ₀ := by simpa using halign.originalAccounts
   have hInputEnv : ({s0 with accountMap := σ, executionEnv := I} : EVM.State).executionEnv =
       evm.executionEnv := by simpa [halign.executionEnv]
-  obtain ⟨σSolm, ASolm, hcallSolm, hAccounts⟩ :=
+  obtain ⟨σStele, AStele, hcallStele, hAccounts⟩ :=
     typedCallViaEVM_sameInputs hcall hInputAccounts hInputOriginal hInputEnv
-  let evm' : EVM.State := { evm with accountMap := σSolm, substate := ASolm }
-  refine ⟨σSolm, ASolm, evm', rfl, ?_, ?_⟩
-  · simpa [evm'] using hcallSolm
+  let evm' : EVM.State := { evm with accountMap := σStele, substate := AStele }
+  refine ⟨σStele, AStele, evm', rfl, ?_, ?_⟩
+  · simpa [evm'] using hcallStele
   · exact ⟨by simpa [evm'] using hAccounts,
       halign.originalAccounts, halign.executionEnv⟩
 

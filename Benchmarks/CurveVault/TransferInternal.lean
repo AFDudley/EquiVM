@@ -1,6 +1,6 @@
 import Benchmarks.CurveVault.TransferTail
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 theorem vaultTransferRoutine {I : ExecutionEnv} {g : Sat256} {s0 evm : State}

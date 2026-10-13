@@ -7,7 +7,7 @@ Dispatcher bucket 5, arm entry pc 403: the `callvalue` guard and the raw `ownabl
 (slot 0), an address word under `storageWF`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
   Reasoning.VyperBounded
 
 namespace Tests.Pipeline.VyperRegistry

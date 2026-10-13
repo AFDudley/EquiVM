@@ -1,7 +1,7 @@
 import Benchmarks.CurveVault.AllowanceAdjustPrepare
 import Benchmarks.CurveVault.ApproveArguments
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
 namespace Benchmarks.CurveVault
 
 def vaultAdjustCallPc (increase : Bool) : UInt256 := if increase then UInt256.ofNat 6145 else UInt256.ofNat 6286
