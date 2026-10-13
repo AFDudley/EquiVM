@@ -1,4 +1,4 @@
-import Benchmarks.Safe.ViaIR.SetupOwnersFinish
+import Benchmarks.Safe.ViaIR.Common
 import Benchmarks.Safe.ViaIR.Blocks.Creation
 import Reasoning.Constructor
 
@@ -12,9 +12,18 @@ theorem safeConstructorSource (evm : EVM.State) (hv : evm.executionEnv.weiValue 
       (.returned { contract := contract, locals := ∅ }
         (Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨4⟩ ⟨1⟩) none) := by
   apply ExecFuncBody.execBlockOK
-  exact .consNormal (.requireTrue (evalCallvalueEq_true hv))
+  refine .consNormal (.requireTrue (evalCallvalueEq_true hv))
     (.consNormal (.assign (by simp [evalExpr?, pure]; rfl)
-      (safeAssignThresholdLocals evm ∅ ⟨1⟩ (by simp))) .nil)
+      ?_) .nil)
+  apply assignStorageRef_storage_scalar_value (er := { base := "threshold" })
+    (loc := uint256Loc ⟨4⟩)
+  · simp
+  · simp [evalStorageRef, evalStorageRefSteps, thresholdRef, EvalResult.bind, bind, pure]
+  · rfl
+  · rfl
+  · rfl
+  · exact .inl ⟨_, rfl⟩
+  · exact storageLocStore_uint256 evm ⟨4⟩ ⟨1⟩
 
 theorem safeConstructorSourceRevert (evm : EVM.State)
     (hv : evm.executionEnv.weiValue ≠ ⟨0⟩) :
@@ -22,7 +31,7 @@ theorem safeConstructorSourceRevert (evm : EVM.State)
   .execBlockRevert (.consRevert (.requireFalse (evalCallvalueEq_false hv)))
 
 theorem safeCreationRuntime :
-    ((safeCreationBytecode.write 33 solcFreePtrMem 0 11874).readWithPadding 0 11874) =
+    ((safeCreationBytecode.write 31 solcFreePtrMem 128 11003).readWithPadding 128 11003) =
       safeBytecode := by native_decide
 
 set_option maxRecDepth 100000 in
@@ -34,12 +43,12 @@ theorem safeConstructorTrace {σ σ₀ A I} {g : Sat256}
       ⟨0⟩ [] ByteArray.empty ⟨0⟩ ByteArray.empty σ 0 0 := by
     simpa only [ByteArray.append_empty] using RD.initState (σ := σ) (σ₀ := σ₀)
       (g := g) (A := A) hcode
-  have h₁ := safeCreation_block_0_taken (by simp) (by rw [hv]; decide) (by jump_dest) h₀
-  have h₂ := safeCreation_block_14 (by simp) hp h₁
+  have h₁ := safeCreation_block_0_fallthrough (by simp) hv h₀
+  have h₂ := safeCreation_block_10 (by simp) hp h₁
   simp only [ByteArray.append_empty] at h₂
   change RDret safeCreationBytecode g (initState σ σ₀ g A I)
     (sstoreAccountMap I.codeOwner σ ⟨4⟩ ⟨1⟩)
-    ((safeCreationBytecode.write 33 solcFreePtrMem 0 11874).readWithPadding 0 11874) at h₂
+    ((safeCreationBytecode.write 31 solcFreePtrMem 128 11003).readWithPadding 128 11003) at h₂
   rw [safeCreationRuntime] at h₂
   exact h₂
 
@@ -51,8 +60,8 @@ theorem safeConstructorTraceRevert {σ σ₀ A I} {g : Sat256}
       ⟨0⟩ [] ByteArray.empty ⟨0⟩ ByteArray.empty σ 0 0 := by
     simpa only [ByteArray.append_empty] using RD.initState (σ := σ) (σ₀ := σ₀)
       (g := g) (A := A) hcode
-  have h₁ := safeCreation_block_0_fallthrough (by simp) (isZero_eq_zero_of_ne hv) h₀
-  have h₂ := safeCreation_block_11 (by simp [safeCreation_block_0_fallthrough_stack]) h₁
+  have h₁ := safeCreation_block_0_taken (by simp) hv (by jump_dest) h₀
+  have h₂ := safeCreation_block_26 (by simp [safeCreation_block_0_taken_stack]) h₁
   simpa only [ByteArray.append_empty] using h₂
 
 end Benchmarks.Safe.ViaIR
