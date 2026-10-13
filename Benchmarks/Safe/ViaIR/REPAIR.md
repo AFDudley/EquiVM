@@ -5,6 +5,20 @@ constructor, shared dispatcher, and generated block summaries build. The huge-ca
 counterexample is addressed by a user-authorized decoder correction local to this benchmark.
 The remaining runtime proofs and whole-contract axiom audit have not been completed.
 
+Ten runtime obligations now build: receive, fallback, `nonce`, `getThreshold`, `signedMessages`,
+`approvedHashes`, `isOwner`, `isModuleEnabled`, `domainSeparator`, and `VERSION`. The zero-argument
+proofs include the new signed length failure; the mapping getters include short, huge, and
+noncanonical calldata where applicable. Fallback covers handler absence, call success and
+failure, static callers, call-depth failure, and oversized calldata exhausting gas.
+
+Their bytecode traces were repaired in place. Decoder and return-routine interfaces now use the
+IR entry PCs and stack layouts; removed legacy tuple-decoder paths were replaced by the inlined
+checks at their callers. The bytes32 decoding lemma keeps its statement and proof in the calldata
+layer. The existing selector-miss fold also proves arrival at the final selector arm, whose
+comparison consumes the selector. The module-membership trace uses the new branch order and
+preserves its memory guarantees. Source evaluation lemmas and the public refinement statements
+are unchanged.
+
 Solc `0.8.35+commit.47b9dedd`, with only `--via-ir` added, produces an 11,003-byte runtime and
 11,034-byte creation program. The constructor prelude shrinks from 33 to 31 bytes and copies
 the runtime into memory at 128 instead of 0. The binary dispatcher becomes a linear selector

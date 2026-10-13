@@ -1,8 +1,7 @@
-import Benchmarks.Safe.ViaIR.Dispatch
-import Benchmarks.Safe.ViaIR.Decoders
-import Benchmarks.Safe.ViaIR.Storage
-import Benchmarks.Safe.ViaIR.Routines
-import Benchmarks.Safe.ViaIR.Blocks.Runtime_008
+import Benchmarks.Safe.ViaIR.IRLengthCheck
+import Benchmarks.Safe.ViaIR.Calldata
+import Benchmarks.Safe.ViaIR.Blocks.Runtime_028
+import Benchmarks.Safe.ViaIR.Blocks.Runtime_029
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -37,18 +36,28 @@ theorem safeSignedMessagesSource (evm : EVM.State) (key : UInt256)
     rfl
 
 set_option maxRecDepth 100000 in
-theorem safeSignedMessagesTrace {I g s0 σ k C} {key : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨957⟩ (key :: ⟨974⟩ :: R) solcFreePtrMem
+theorem safeSignedMessagesTrace {I g s0 σ k C} {R : List UInt256}
+    (h : RD safeBytecode I g s0 ⟨6066⟩ R solcFreePtrMem
       (UInt256.ofNat 3) ByteArray.empty σ k C)
     (hov : R.length + 4 ≤ 1024) :
-    RDret safeBytecode g s0 σ (solcSlotWordAt (mapSlot key ⟨7⟩) σ I).toByteArray := by
-  obtain ⟨_, _, h974⟩ := safeRuntime_block_957 hov (by jump_dest) h
-  have hret := safeReturnWordFromScratch h974 (by simp; omega)
-    (solcMappingHashMem_size ⟨7⟩ key) (solcMappingHashMem_read64 ⟨7⟩ key)
-  change RDret safeBytecode g s0 σ (solcSlotWordAt
-    (keccakWord ⟨0⟩ (UInt256.ofNat 64) (solcMappingHashMem ⟨7⟩ key)) σ I).toByteArray at hret
-  rw [show keccakWord ⟨0⟩ (UInt256.ofNat 64) (solcMappingHashMem ⟨7⟩ key) =
-    mapSlot key ⟨7⟩ from solcMappingKeccakSlot ⟨7⟩ key] at hret
+    RDret safeBytecode g s0 σ
+      (solcSlotWordAt (mapSlot (calldataWord I.calldata 4) ⟨7⟩) σ I).toByteArray := by
+  let key := calldataWord I.calldata 4
+  let mem := twoWordHashMem key ⟨7⟩ solcFreePtrMem
+  have hmem : mem.size = 96 := twoWordHashMem_size_96 key ⟨7⟩ solcFreePtrMem_size
+  have hptr : memLoad ⟨64⟩ mem = ⟨128⟩ := mloadFreePtrValue (by rw [hmem]; decide)
+    (twoWordHashMem_read64 key ⟨7⟩ solcFreePtrMem_size solcFreePtrMem_read64)
+  have hslot : keccakWord ⟨0⟩ ⟨64⟩ mem = mapSlot key ⟨7⟩ :=
+    twoWordHashMem_solcMappingSlot ⟨7⟩ key solcFreePtrMem_size
+  have hret := safeRuntime_block_6066 hov h
+  change RDret safeBytecode g s0 σ
+    (((solcSlotWordAt (keccakWord ⟨0⟩ ⟨64⟩ mem) σ I).toByteArray.write 0 mem
+      (memLoad ⟨64⟩ mem).toNat 32).readWithPadding (memLoad ⟨64⟩ mem).toNat 32) at hret
+  rw [hptr, hslot] at hret
+  change RDret safeBytecode g s0 σ
+    ((solcScratchReturnMem mem (solcSlotWordAt (mapSlot key ⟨7⟩) σ I)).readWithPadding
+      128 32) at hret
+  rw [solcScratchReturnMem_read128 _ hmem] at hret
   exact hret
 
 set_option maxRecDepth 100000 in
@@ -59,18 +68,17 @@ theorem safeSignedmessagesBodyCore
     runtimeRefinementFor config contract σ σ₀ g A I := by
   obtain ⟨hlong, hword⟩ := selectorDispatchFacts 0x5a 0xe6 0xbd 0x37 ⟨0x5ae6bd37⟩
     hdispatch signedmessagesSelectorBytes (by decide)
-  obtain ⟨k, C, h931⟩ := safeReachEntry (σ := σ) (σ₀ := σ₀) (A := A)
-    (g := Sat256.ofUInt256 g) ⟨0x5ae6bd37⟩ 1 ⟨931⟩ hcode hsize hlong hword
+  obtain ⟨k, C, h6048⟩ := safeReachEntry (σ := σ) (σ₀ := σ₀) (A := A)
+    (g := Sat256.ofUInt256 g) ⟨0x5ae6bd37⟩ 8 ⟨6048⟩ hcode hsize hlong hword
     (by native_decide)
   by_cases hvalue : I.weiValue = ⟨0⟩
-  · have h942 := safeRuntime_block_931_taken (by simp)
-      (by rw [hvalue]; decide) (by jump_dest) h931
-    have h9894 := safeRuntime_block_942 (by simp) (by jump_dest) h942
+  · have h6054 := safeRuntime_block_6048_fallthrough (by simp) hvalue h6048
+    have hlenWord := safeIRArgumentSizeSub hlong hsize
     by_cases hbig : I.calldata.size < 2 ^ 255 + 4
     · by_cases hlen : 36 ≤ I.calldata.size
-      · obtain ⟨_, _, h957⟩ := safeDecodeWord h9894 (by simp)
-          (solcDecodeLenCheckOk_4_32 hlen hbig hsize) (by jump_dest)
-        have hret := safeSignedMessagesTrace h957 (by simp)
+      · have h6066 := safeRuntime_block_6054_fallthrough (by simp)
+          (by rw [hlenWord]; exact solcDecodeLenCheckOk_4_32 hlen hbig hsize) h6054
+        have hret := safeSignedMessagesTrace h6066 (by simp)
         have hbody := safeSignedMessagesSource (initState σ σ₀ (.ofUInt256 g) A I)
           (calldataWord I.calldata 4) hvalue
         refine RDret.reEquivElim hcode hret fun _ _ hsuccess ↦ ?_
@@ -80,18 +88,28 @@ theorem safeSignedmessagesBodyCore
               State.lookupAccount] using
                 (uint256ReturnEncoding
                   (solcSlotWordAt (mapSlot (calldataWord I.calldata 4) ⟨7⟩) σ I))))))
-      · have hrev := safeDecodeWordRevert h9894 (by simp)
-          (solcDecodeLenCheckShort_4_32 hlong (by omega) hsize)
+      · have h111 := safeRuntime_block_6054_taken (by simp)
+          (by
+            rw [hlenWord]
+            change UInt256.slt (UInt256.sub (UInt256.ofNat I.calldata.size) ⟨4⟩) ⟨32⟩ ≠ ⟨0⟩
+            rw [solcDecodeLenCheckShort_4_32 hlong (by omega) hsize]
+            decide)
+          (by jump_dest) h6054
         exact reEquivSelectorDecodingFailed (cfg := config) hcode hdispatch
-          (decodeCalldata_bytes32_none_short hlong (by omega)) hrev
-    · have hrev := safeDecodeWordRevert h9894 (by simp)
-        (solcDecodeLenCheckHuge_4_32 (by omega) hsize)
+          (decodeCalldata_bytes32_none_short hlong (by omega))
+          (safeRuntime_block_111 (by simp) h111)
+    · have h111 := safeRuntime_block_6054_taken (by simp)
+        (by
+          rw [hlenWord]
+          change UInt256.slt (UInt256.sub (UInt256.ofNat I.calldata.size) ⟨4⟩) ⟨32⟩ ≠ ⟨0⟩
+          rw [solcDecodeLenCheckHuge_4_32 (by omega) hsize]
+          decide)
+        (by jump_dest) h6054
       exact reEquivSelectorDecodingFailed (cfg := config) hcode hdispatch
-        (decodeCalldata_bytes32_none_huge (by omega)) hrev
-  · have h939 := safeRuntime_block_931_fallthrough (by simp)
-      (isZero_eq_zero_of_ne hvalue) h931
-    have hrev := safeRuntime_block_939 (by simp [safeRuntime_block_931_fallthrough_stack]) h939
-    exact reEquivSelectorRevert hcode hdispatch hrev fun _ ↦ bodyReverts_nonPayable hvalue
+        (decodeCalldata_bytes32_none_huge (by omega)) (safeRuntime_block_111 (by simp) h111)
+  · have h111 := safeRuntime_block_6048_taken (by simp) hvalue (by jump_dest) h6048
+    exact reEquivSelectorRevert hcode hdispatch (safeRuntime_block_111 (by simp) h111)
+      fun _ ↦ bodyReverts_nonPayable hvalue
 
 /-- Refinement obligation for `signedMessages` (`signedmessagesTransition`). -/
 theorem safeSignedmessagesRefines

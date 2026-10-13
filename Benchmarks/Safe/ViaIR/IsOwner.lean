@@ -1,7 +1,7 @@
-import Benchmarks.Safe.ViaIR.Dispatch
+import Benchmarks.Safe.ViaIR.IRLengthCheck
 import Benchmarks.Safe.ViaIR.Membership
 import Benchmarks.Safe.ViaIR.Routines
-import Benchmarks.Safe.ViaIR.Blocks.Runtime_017
+import Benchmarks.Safe.ViaIR.Blocks.Runtime_030
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -41,36 +41,35 @@ theorem safeIsOwnerSource (evm : EVM.State) (key : UInt256)
 
 set_option maxRecDepth 100000 in
 theorem safeIsOwnerTrace {I g s0 σ k C} {key : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨2859⟩ (key :: ⟨759⟩ :: R) solcFreePtrMem
+    (h : RD safeBytecode I g s0 ⟨6420⟩ (key :: solcAddrMask :: R) solcFreePtrMem
       (UInt256.ofNat 3) ByteArray.empty σ k C)
     (hov : R.length + 7 ≤ 1024) (hcanon : key.toNat < EVM.addressModulus) :
     RDret safeBytecode g s0 σ (addressMembership key
-      (UInt256.land (solcSlotWordAt (mapSlot key ⟨2⟩) σ I) solcAddrMask)).toUInt256.toByteArray :=
-        by
+      (UInt256.land (solcSlotWordAt (mapSlot key ⟨2⟩) σ I) solcAddrMask)).toUInt256.toByteArray := by
   by_cases hs : key = ⟨1⟩
-  · have h2907 := safeRuntime_block_2859_taken (by simp; omega)
-      (by rw [safeAddressMask, solcAddrMask_clean hcanon, hs]; decide) (by jump_dest) h
-    have h759 := safeRuntime_block_2907 (by omega) (by jump_dest) h2907
-    simp only [safeRuntime_block_2907_stack, hs, safeAddressMask,
-      show UInt256.land (⟨1⟩ : UInt256) solcAddrMask = ⟨1⟩ by decide] at h759
-    have hret := safeReturnBoolFromScratch (b := false) h759 (by omega)
+  · have h6432 := safeRuntime_block_6420_fallthrough (by omega)
+      (by rw [solcAddrMask_clean hcanon, hs]; decide) h
+    simp only [safeRuntime_block_6420_fallthrough_stack, solcAddrMask_clean hcanon, hs] at h6432
+    have hret := safeReturnIsZeroFromScratch h6432 (by simp; omega)
       solcFreePtrMem_size solcFreePtrMem_read64
     simpa [addressMembership, hs] using hret
-  · have h2879 := safeRuntime_block_2859_fallthrough (by simp; omega)
-      (by rw [safeAddressMask, solcAddrMask_clean hcanon]
-          exact uInt256_eq_zero_of_ne (fun he ↦ hs (uInt256_eq_one_eq he).symm)) h
-    obtain ⟨_, _, h2907⟩ := safeRuntime_block_2879 (by simp; omega) h2879
-    have h759 := safeRuntime_block_2907 (by omega) (by jump_dest) h2907
-    simp only [safeRuntime_block_2907_stack, safeRuntime_block_2879_memory,
-      safeAddressMask, solcAddrMask_clean_left hcanon] at h759
-    change RD safeBytecode I g s0 ⟨759⟩
-      (UInt256.isZero (UInt256.isZero (UInt256.land (solcSlotWordAt
+  · have heq : UInt256.eq key (UInt256.ofNat 1) = ⟨0⟩ :=
+      uInt256_eq_zero_of_ne (fun he ↦ hs (uInt256_eq_one_eq he))
+    have h6444 := safeRuntime_block_6420_taken (by omega)
+      (by rw [solcAddrMask_clean hcanon, heq]; decide) (by jump_dest) h
+    simp only [safeRuntime_block_6420_taken_stack, solcAddrMask_clean hcanon] at h6444
+    obtain ⟨_, _, h6432⟩ := safeRuntime_block_6444 (by omega) (by jump_dest) h6444
+    simp only [safeRuntime_block_6444_stack, safeRuntime_block_6444_memory,
+      safeAddressMask] at h6432
+    change RD safeBytecode I g s0 ⟨6432⟩
+      (UInt256.isZero (UInt256.land (solcSlotWordAt
         (keccakWord ⟨0⟩ (UInt256.ofNat 64) (twoWordHashMem key ⟨2⟩ solcFreePtrMem)) σ I)
-        solcAddrMask)) :: R) (twoWordHashMem key ⟨2⟩ solcFreePtrMem) _ _ σ _ _ at h759
-    rw [twoWordHashMemMapSlot key ⟨2⟩ solcFreePtrMem_size, normalizedNonzeroWord] at h759
-    have hret := safeReturnBoolFromScratch h759 (by omega)
+        solcAddrMask) :: ⟨32⟩ :: R) (twoWordHashMem key ⟨2⟩ solcFreePtrMem) _ _ σ _ _ at h6432
+    rw [twoWordHashMemMapSlot key ⟨2⟩ solcFreePtrMem_size] at h6432
+    have hret := safeReturnIsZeroFromScratch h6432 (by simp; omega)
       (twoWordHashMem_size_96 key ⟨2⟩ solcFreePtrMem_size)
       (twoWordHashMem_read64 key ⟨2⟩ solcFreePtrMem_size solcFreePtrMem_read64)
+    rw [normalizedNonzeroWord] at hret
     simpa [addressMembership, hs] using hret
 
 set_option maxRecDepth 100000 in
@@ -81,20 +80,22 @@ theorem safeIsownerBodyCore
     runtimeRefinementFor config contract σ σ₀ g A I := by
   obtain ⟨hlong, hword⟩ := selectorDispatchFacts 0x2f 0x54 0xbf 0x6e ⟨0x2f54bf6e⟩
     hdispatch isownerSelectorBytes (by decide)
-  obtain ⟨k, C, h780⟩ := safeReachEntry (σ := σ) (σ₀ := σ₀) (A := A)
-    (g := Sat256.ofUInt256 g) ⟨0x2f54bf6e⟩ 1 ⟨780⟩ hcode hsize hlong hword
+  obtain ⟨k, C, h6387⟩ := safeReachEntry (σ := σ) (σ₀ := σ₀) (A := A)
+    (g := Sat256.ofUInt256 g) ⟨0x2f54bf6e⟩ 4 ⟨6387⟩ hcode hsize hlong hword
     (by native_decide)
   by_cases hvalue : I.weiValue = ⟨0⟩
-  · have h791 := safeRuntime_block_780_taken (by simp)
-      (by rw [hvalue]; decide) (by jump_dest) h780
-    have h9591 := safeRuntime_block_791 (by simp) (by jump_dest) h791
+  · have h6393 := safeRuntime_block_6387_fallthrough (by simp) hvalue h6387
+    have hlenWord := safeIRArgumentSizeSub hlong hsize
     by_cases hbig : I.calldata.size < 2 ^ 255 + 4
     · by_cases hlen : 36 ≤ I.calldata.size
-      · have hcheck := solcDecodeLenCheckOk_4_32 hlen hbig hsize
+      · have h6405 := safeRuntime_block_6393_fallthrough (by simp)
+          (by rw [hlenWord]; exact solcDecodeLenCheckOk_4_32 hlen hbig hsize) h6393
+        have h6952 := safeRuntime_block_6405 (by simp) (by jump_dest) h6405
         by_cases hcanon : (calldataWord I.calldata 4).toNat < EVM.addressModulus
-        · obtain ⟨_, _, h806⟩ := safeDecodeAddress h9591 (by simp) hcheck hcanon (by jump_dest)
-          have h2859 := safeRuntime_block_806 (by simp) (by jump_dest) h806
-          have hret := safeIsOwnerTrace h2859 (by simp) hcanon
+        · obtain ⟨_, _, h6420⟩ := safeDecodeAddress h6952
+            (by simp [safeRuntime_block_6405_stack]) hcanon (by jump_dest)
+          simp only [safeRuntime_block_6405_stack, safeAddressMask] at h6420
+          have hret := safeIsOwnerTrace h6420 (by simp) hcanon
           have hbody := safeIsOwnerSource (initState σ σ₀ (.ofUInt256 g) A I)
             (calldataWord I.calldata 4) hcanon hvalue
           refine RDret.reEquivElim hcode hret fun _ _ hsuccess ↦ ?_
@@ -104,21 +105,30 @@ theorem safeIsownerBodyCore
                 State.lookupAccount] using (boolReturnEncoding (addressMembership
                 (calldataWord I.calldata 4) (UInt256.land
                   (solcSlotWordAt (mapSlot (calldataWord I.calldata 4) ⟨2⟩) σ I) solcAddrMask)))))))
-        · have hrev := safeDecodeAddressNoncanon h9591 (by simp) hcheck hcanon
+        · have hrev := safeDecodeAddressNoncanon h6952
+            (by simp [safeRuntime_block_6405_stack]) hcanon
           exact reEquivSelectorDecodingFailed (cfg := config) hcode hdispatch
             (decodeCalldata_address_none_noncanon hlen hbig hcanon) hrev
-      · have hrev := safeDecodeAddressRevert h9591 (by simp)
-          (solcDecodeLenCheckShort_4_32 hlong (by omega) hsize)
+      · have h111 := safeRuntime_block_6393_taken (by simp)
+          (by
+            rw [hlenWord]
+            change UInt256.slt (UInt256.sub (UInt256.ofNat I.calldata.size) ⟨4⟩) ⟨32⟩ ≠ ⟨0⟩
+            rw [solcDecodeLenCheckShort_4_32 hlong (by omega) hsize]
+            decide) (by jump_dest) h6393
         exact reEquivSelectorDecodingFailed (cfg := config) hcode hdispatch
-          (decodeCalldata_address_none_short hlong (by omega)) hrev
-    · have hrev := safeDecodeAddressRevert h9591 (by simp)
-        (solcDecodeLenCheckHuge_4_32 (by omega) hsize)
+          (decodeCalldata_address_none_short hlong (by omega))
+          (safeRuntime_block_111 (by simp) h111)
+    · have h111 := safeRuntime_block_6393_taken (by simp)
+        (by
+          rw [hlenWord]
+          change UInt256.slt (UInt256.sub (UInt256.ofNat I.calldata.size) ⟨4⟩) ⟨32⟩ ≠ ⟨0⟩
+          rw [solcDecodeLenCheckHuge_4_32 (by omega) hsize]
+          decide) (by jump_dest) h6393
       exact reEquivSelectorDecodingFailed (cfg := config) hcode hdispatch
-        (decodeCalldata_address_none_huge (by omega)) hrev
-  · have h788 := safeRuntime_block_780_fallthrough (by simp)
-      (isZero_eq_zero_of_ne hvalue) h780
-    have hrev := safeRuntime_block_788 (by simp [safeRuntime_block_780_fallthrough_stack]) h788
-    exact reEquivSelectorRevert hcode hdispatch hrev fun _ ↦ bodyReverts_nonPayable hvalue
+        (decodeCalldata_address_none_huge (by omega)) (safeRuntime_block_111 (by simp) h111)
+  · have h111 := safeRuntime_block_6387_taken (by simp) hvalue (by jump_dest) h6387
+    exact reEquivSelectorRevert hcode hdispatch (safeRuntime_block_111 (by simp) h111)
+      fun _ ↦ bodyReverts_nonPayable hvalue
 
 /-- Refinement obligation for `isOwner` (`isownerTransition`). -/
 theorem safeIsownerRefines

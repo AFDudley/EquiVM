@@ -1,5 +1,4 @@
-import Benchmarks.Safe.ViaIR.SelectorMiss
-import Benchmarks.Safe.ViaIR.Blocks.Runtime_005
+import Benchmarks.Safe.ViaIR.Dispatch
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -140,62 +139,38 @@ theorem safeSkipSelectorGroup {I : ExecutionEnv} {g : Sat256} {s0 : State}
     (fun j hj ↦ hm _ (hc.2.1 ⟨j, hj⟩)) hov
   exact ⟨k', C', hc.2.2 ▸ h'⟩
 
-theorem safeSelectorStart_mem (w : UInt256) :
-    safeSelectorStart w ∈ [⟨51⟩, ⟨100⟩, ⟨160⟩, ⟨209⟩, ⟨280⟩, ⟨329⟩, ⟨389⟩, ⟨438⟩] := by
-  unfold safeSelectorStart
-  split <;> split <;> split <;> simp
+theorem safeSelectorStart_mem (w : UInt256) : safeSelectorStart w ∈ [⟨168⟩] := by
+  simp [safeSelectorStart]
 
 set_option maxRecDepth 100000 in
 theorem safeReachFallbackLong {σ σ₀ A I} {g : Sat256}
     (hcode : I.code = safeBytecode) (hsize : I.calldata.size < UInt256.size)
     (hlong : 4 ≤ I.calldata.size) (hd : selectorDispatchMsg contract I.calldata = none) :
-    ∃ k C, RD safeBytecode I g (initState σ σ₀ g A I) ⟨535⟩ [selWord I]
+    ∃ k C, RD safeBytecode I g (initState σ σ₀ g A I) ⟨21⟩ []
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C := by
-  obtain ⟨k, C, h⟩ := safeReachSelectorGroup (σ := σ) (σ₀ := σ₀) (A := A)
-    (g := g) hcode hsize hlong
   have hm := safeSelectorMisses hd hlong
-  have hs := safeSelectorStart_mem (selWord I)
-  simp only [List.mem_cons, List.not_mem_nil, or_false] at hs
-  rcases hs with hs | hs | hs | hs | hs | hs | hs | hs
-  · rw [hs] at h
-    obtain ⟨k', C', h'⟩ := safeSkipSelectorGroup 4 ⟨95⟩ h hm
-      (by native_decide) (by decide)
-    exact ⟨_, _, safeRuntime_block_95 (by evm_ov) (by jump_dest) h'⟩
-  · rw [hs] at h
-    obtain ⟨k', C', h'⟩ := safeSkipSelectorGroup 4 ⟨144⟩ h hm
-      (by native_decide) (by decide)
-    exact ⟨_, _, safeRuntime_block_144 (by evm_ov) (by jump_dest) h'⟩
-  · rw [hs] at h
-    obtain ⟨k', C', h'⟩ := safeSkipSelectorGroup 4 ⟨204⟩ h hm
-      (by native_decide) (by decide)
-    exact ⟨_, _, safeRuntime_block_204 (by evm_ov) (by jump_dest) h'⟩
-  · rw [hs] at h
-    obtain ⟨k', C', h'⟩ := safeSkipSelectorGroup 4 ⟨253⟩ h hm
-      (by native_decide) (by decide)
-    exact ⟨_, _, safeRuntime_block_253 (by evm_ov) (by jump_dest) h'⟩
-  · rw [hs] at h
-    obtain ⟨k', C', h'⟩ := safeSkipSelectorGroup 4 ⟨324⟩ h hm
-      (by native_decide) (by decide)
-    exact ⟨_, _, safeRuntime_block_324 (by evm_ov) (by jump_dest) h'⟩
-  · rw [hs] at h
-    obtain ⟨k', C', h'⟩ := safeSkipSelectorGroup 4 ⟨373⟩ h hm
-      (by native_decide) (by decide)
-    exact ⟨_, _, safeRuntime_block_373 (by evm_ov) (by jump_dest) h'⟩
-  · rw [hs] at h
-    obtain ⟨k', C', h'⟩ := safeSkipSelectorGroup 4 ⟨433⟩ h hm
-      (by native_decide) (by decide)
-    exact ⟨_, _, safeRuntime_block_433 (by evm_ov) (by jump_dest) h'⟩
-  · rw [hs] at h
-    obtain ⟨k', C', h'⟩ := safeSkipSelectorGroup 3 ⟨471⟩ h hm
-      (by native_decide) (by decide)
-    exact ⟨_, _, safeRuntime_block_471 (by evm_ov) (by jump_dest) h'⟩
+  have hsel : ∀ j : Fin 30,
+      armSelNat safeBytecode (nthArmPc safeBytecode ⟨168⟩ j) ∈ safeSelectorWords := by
+    native_decide
+  obtain ⟨k, C, h498⟩ := safeReachSelectorEnd (σ := σ) (σ₀ := σ₀) (A := A)
+    (g := g) hcode hsize hlong (fun j ↦ hm _ (hsel j))
+  have h508 := safeRuntime_block_498_fallthrough (by simp) (hm _ (by decide)) h498
+  have h14 := safeRuntime_block_508 (by simp) (by jump_dest) h508
+  have hn : UInt256.ofNat I.calldata.size ≠ ⟨0⟩ := by
+    intro heq
+    have he := congrArg UInt256.toNat heq
+    rw [ulit_toNat' _ hsize] at he
+    change I.calldata.size = 0 at he
+    omega
+  exact ⟨_, _, safeRuntime_block_14_fallthrough (by simp)
+    (isZero_eq_zero_of_ne hn) h14⟩
 
 set_option maxRecDepth 100000 in
 theorem safeReachFallback {σ σ₀ A I} {g : Sat256}
     (hcode : I.code = safeBytecode) (hsize : I.calldata.size < UInt256.size)
     (hnonempty : I.calldata.size ≠ 0) (hd : selectorDispatchMsg contract I.calldata = none) :
     ∃ R k C, R.length ≤ 1 ∧
-      RD safeBytecode I g (initState σ σ₀ g A I) ⟨535⟩ R
+      RD safeBytecode I g (initState σ σ₀ g A I) ⟨21⟩ R
         solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C := by
   by_cases hlong : 4 ≤ I.calldata.size
   · obtain ⟨k, C, h⟩ := safeReachFallbackLong (σ := σ) (σ₀ := σ₀) (A := A)
@@ -209,6 +184,6 @@ theorem safeReachFallback {σ σ₀ A I} {g : Sat256}
       rw [ulit_toNat' _ hsize] at he'
       exact hnonempty he'
     exact ⟨[], _, _, by decide,
-      safeRuntime_block_475_taken (by decide) hn (by jump_dest) h⟩
+      safeRuntime_block_14_fallthrough (by decide) (isZero_eq_zero_of_ne hn) h⟩
 
 end Benchmarks.Safe.ViaIR

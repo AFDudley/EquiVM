@@ -1,4 +1,4 @@
-import Benchmarks.Safe.ViaIR.Common
+import Benchmarks.Safe.ViaIR.SelectorMiss
 import Benchmarks.Safe.ViaIR.Blocks.Runtime_001
 import Benchmarks.Safe.ViaIR.Blocks.Runtime_002
 import Benchmarks.Safe.ViaIR.Blocks.Runtime_003
@@ -73,5 +73,25 @@ theorem safeReachEntry {σ σ₀ A I} {g : Sat256} (w : UInt256) (i : ℕ) (body
   exact RD.dispatchTo bodyPc i hgroup
     (fun j hj ↦ hwf ⟨j, by omega⟩) (fun j hj ↦ hskip ⟨j, hj⟩)
     htake (by rw [hbody]; exact hjd) hbody (by decide)
+
+set_option synthInstance.maxSize 10000 in
+set_option maxRecDepth 100000 in
+theorem safeReachSelectorEnd {σ σ₀ A I} {g : Sat256}
+    (hcode : I.code = safeBytecode) (hsize : I.calldata.size < UInt256.size)
+    (hlong : 4 ≤ I.calldata.size)
+    (hskip : ∀ j : Fin 30, UInt256.eq
+      (armSelNat safeBytecode (nthArmPc safeBytecode ⟨168⟩ j)) (selWord I) = ⟨0⟩) :
+    ∃ k C, RD safeBytecode I g (initState σ σ₀ g A I) ⟨498⟩
+      [selWord I, ⟨0⟩] solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C := by
+  have hwf : ∀ j : Fin 30, armWellFormed safeBytecode
+      (nthArmPc safeBytecode ⟨168⟩ j) := by native_decide
+  obtain ⟨k, C, hgroup⟩ := safeReachSelectorGroup (σ := σ) (σ₀ := σ₀) (A := A)
+    (g := g) hcode hsize hlong
+  obtain ⟨k', C', hend⟩ := skipSelectorArms 30 hgroup
+    (fun j hj ↦ hwf ⟨j, hj⟩) (fun j hj ↦ hskip ⟨j, hj⟩) (by decide)
+  change RD safeBytecode I g (initState σ σ₀ g A I)
+    (nthArmPc safeBytecode ⟨168⟩ 30) _ _ _ _ _ _ _ at hend
+  rw [show nthArmPc safeBytecode ⟨168⟩ 30 = ⟨498⟩ from by native_decide] at hend
+  exact ⟨k', C', hend⟩
 
 end Benchmarks.Safe.ViaIR

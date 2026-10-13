@@ -1,6 +1,6 @@
 import Benchmarks.Safe.ViaIR.Memory
 import Benchmarks.Safe.ViaIR.PackedAddress
-import Benchmarks.Safe.ViaIR.Blocks.Runtime_005
+import Benchmarks.Safe.ViaIR.Blocks.Runtime_001
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -11,7 +11,7 @@ def fallbackCallData (cd : ByteArray) (caller : AccountAddress) : ByteArray :=
   cd ++ ((EVM.word caller.val).toBytesBE.drop 12).toByteArray
 
 def fallbackMemory (I : ExecutionEnv) : ByteArray :=
-  safeRuntime_block_588_memory (ee := I) (mem := solcFreePtrMem)
+  safeRuntime_block_66_memory (ee := I) (mem := solcFreePtrMem)
 
 def fallbackMemoryPrefix : ByteArray := solcFreePtrMem ++ ByteArray.zeroes 32
 
@@ -39,7 +39,7 @@ theorem fallbackMemory_eq (I : ExecutionEnv) (hn : I.calldata.size ≠ 0)
       I.calldata.extract 0 (0 + I.calldata.size) = _
     rw [Nat.zero_add, byteArray_extract_self]
     rfl
-  simp only [fallbackMemory, safeRuntime_block_588_memory, hf, hadd,
+  simp only [fallbackMemory, safeRuntime_block_66_memory, hf, hadd,
     ulit_toNat' _ hsize, show (⟨0⟩ : UInt256).toNat = 0 from rfl,
     show (⟨128⟩ : UInt256).toNat = 128 from rfl, hc]
   exact writeWordAtEnd _ _ (by rw [ByteArray.size_append, fallbackMemoryPrefix_size])

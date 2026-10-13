@@ -1,9 +1,8 @@
-import Benchmarks.Safe.ViaIR.Dispatch
+import Benchmarks.Safe.ViaIR.IRLengthCheck
 import Benchmarks.Safe.ViaIR.Decoders
 import Benchmarks.Safe.ViaIR.Calldata
 import Benchmarks.Safe.ViaIR.Storage
-import Benchmarks.Safe.ViaIR.Routines
-import Benchmarks.Safe.ViaIR.Blocks.Runtime_009
+import Benchmarks.Safe.ViaIR.Blocks.Runtime_020
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -43,35 +42,43 @@ theorem safeApprovedHashesSource (evm : EVM.State) (owner key : UInt256)
     rfl
 
 theorem safeApprovedHashesMemory (owner key : UInt256) :
-    safeRuntime_block_1095_memory (mem := solcFreePtrMem) (x0 := key) (x1 := owner) =
-      solcNestedMappingHashMem ⟨8⟩ owner key := by
-  change key.toByteArray.write 0 ((keccakWord ⟨0⟩ (UInt256.ofNat 64)
-    (solcMappingHashMem ⟨8⟩ owner)).toByteArray.write 0 (solcMappingHashMem ⟨8⟩ owner) 32 32)
-    0 32 = _
-  rw [show keccakWord ⟨0⟩ (UInt256.ofNat 64) (solcMappingHashMem ⟨8⟩ owner) =
-    solcMappingSlot ⟨8⟩ owner from solcMappingKeccakSlot ⟨8⟩ owner]
-  rfl
+    keccakWord ⟨0⟩ ⟨64⟩ (twoWordHashMem key
+      (keccakWord ⟨0⟩ ⟨64⟩ (twoWordHashMem owner ⟨8⟩ solcFreePtrMem))
+      (twoWordHashMem owner ⟨8⟩ solcFreePtrMem)) = mapSlot key (mapSlot owner ⟨8⟩) := by
+  rw [show keccakWord ⟨0⟩ ⟨64⟩ (twoWordHashMem owner ⟨8⟩ solcFreePtrMem) =
+    mapSlot owner ⟨8⟩ from twoWordHashMem_solcMappingSlot ⟨8⟩ owner solcFreePtrMem_size]
+  exact twoWordHashMem_solcMappingSlot (mapSlot owner ⟨8⟩) key
+    (twoWordHashMem_size_96 owner ⟨8⟩ solcFreePtrMem_size)
 
 set_option maxRecDepth 100000 in
-theorem safeApprovedHashesTrace {I g s0 σ k C} {owner key : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨1095⟩ (key :: owner :: ⟨974⟩ :: R) solcFreePtrMem
-      (UInt256.ofNat 3) ByteArray.empty σ k C)
-    (hov : R.length + 7 ≤ 1024) :
-    RDret safeBytecode g s0 σ (solcSlotWordAt (mapSlot key (mapSlot owner ⟨8⟩)) σ I).toByteArray
+theorem safeApprovedHashesTrace {I g s0 σ k C} {owner : UInt256} {R : List UInt256}
+    (h : RD safeBytecode I g s0 ⟨4327⟩ (owner :: solcAddrMask :: ⟨0⟩ :: ⟨64⟩ :: ⟨32⟩ :: R)
+      solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C)
+    (hov : R.length + 6 ≤ 1024) (hcanon : owner.toNat < EVM.addressModulus) :
+    RDret safeBytecode g s0 σ
+      (solcSlotWordAt (mapSlot (calldataWord I.calldata 36) (mapSlot owner ⟨8⟩)) σ I).toByteArray
       := by
-  obtain ⟨_, _, h974⟩ := safeRuntime_block_1095 hov (by jump_dest) h
-  have hstack : safeRuntime_block_1095_stack (ee := I) (mem := solcFreePtrMem) (σ := σ)
-      (x0 := key) (x1 := owner) (x2 := ⟨974⟩) (R := R) =
-      solcSlotWordAt (mapSlot key (mapSlot owner ⟨8⟩)) σ I :: ⟨974⟩ :: R := by
-    change solcSlotWordAt (keccakWord ⟨0⟩ (UInt256.ofNat 64)
-      (safeRuntime_block_1095_memory (mem := solcFreePtrMem) (x0 := key) (x1 := owner))) σ I ::
-      ⟨974⟩ :: R = _
-    rw [safeApprovedHashesMemory]
-    rw [show keccakWord ⟨0⟩ (UInt256.ofNat 64) (solcNestedMappingHashMem ⟨8⟩ owner key) =
-      mapSlot key (mapSlot owner ⟨8⟩) from solcNestedMappingKeccakSlot ⟨8⟩ owner key]
-  rw [hstack, safeApprovedHashesMemory] at h974
-  exact safeReturnWordFromScratch h974 (by simp; omega)
-    (solcNestedMappingHashMem_size ⟨8⟩ owner key) (solcNestedMappingHashMem_read64 ⟨8⟩ owner key)
+  let key := calldataWord I.calldata 36
+  let inner := twoWordHashMem owner ⟨8⟩ solcFreePtrMem
+  let mem := twoWordHashMem key (keccakWord ⟨0⟩ ⟨64⟩ inner) inner
+  have hinner : inner.size = 96 := twoWordHashMem_size_96 owner ⟨8⟩ solcFreePtrMem_size
+  have hmem : mem.size = 96 := twoWordHashMem_size_96 _ _ hinner
+  have hptr : memLoad ⟨64⟩ mem = ⟨128⟩ := mloadFreePtrValue (by rw [hmem]; decide)
+    (twoWordHashMem_read64 _ _ hinner
+      (twoWordHashMem_read64 owner ⟨8⟩ solcFreePtrMem_size solcFreePtrMem_read64))
+  have hslot : keccakWord ⟨0⟩ ⟨64⟩ mem = mapSlot key (mapSlot owner ⟨8⟩) :=
+    safeApprovedHashesMemory owner key
+  have hret := safeRuntime_block_4327 hov h
+  rw [solcAddrMask_clean hcanon] at hret
+  change RDret safeBytecode g s0 σ
+    (((solcSlotWordAt (keccakWord ⟨0⟩ ⟨64⟩ mem) σ I).toByteArray.write 0 mem
+      (memLoad ⟨64⟩ mem).toNat 32).readWithPadding (memLoad ⟨64⟩ mem).toNat 32) at hret
+  rw [hptr, hslot] at hret
+  change RDret safeBytecode g s0 σ
+    ((solcScratchReturnMem mem (solcSlotWordAt (mapSlot key (mapSlot owner ⟨8⟩)) σ I)).readWithPadding
+      128 32) at hret
+  rw [solcScratchReturnMem_read128 _ hmem] at hret
+  exact hret
 
 set_option maxRecDepth 100000 in
 theorem safeApprovedhashesBodyCore
@@ -81,19 +88,23 @@ theorem safeApprovedhashesBodyCore
     runtimeRefinementFor config contract σ σ₀ g A I := by
   obtain ⟨hlong, hword⟩ := selectorDispatchFacts 0x7d 0x83 0x29 0x74 ⟨0x7d832974⟩
     hdispatch approvedhashesSelectorBytes (by decide)
-  obtain ⟨k, C, h1069⟩ := safeReachEntry (σ := σ) (σ₀ := σ₀) (A := A)
-    (g := Sat256.ofUInt256 g) ⟨0x7d832974⟩ 1 ⟨1069⟩ hcode hsize hlong hword
+  obtain ⟨k, C, h4287⟩ := safeReachEntry (σ := σ) (σ₀ := σ₀) (A := A)
+    (g := Sat256.ofUInt256 g) ⟨0x7d832974⟩ 12 ⟨4287⟩ hcode hsize hlong hword
     (by native_decide)
   by_cases hvalue : I.weiValue = ⟨0⟩
-  · have h1080 := safeRuntime_block_1069_taken (by simp)
-      (by rw [hvalue]; decide) (by jump_dest) h1069
-    have h9112 := safeRuntime_block_1080 (by simp) (by jump_dest) h1080
+  · have h4294 := safeRuntime_block_4287_fallthrough (by simp) hvalue h4287
+    simp only [safeRuntime_block_4287_fallthrough_stack] at h4294
+    have hlenWord := safeIRArgumentSizeSub hlong hsize
     by_cases hbig : I.calldata.size < 2 ^ 255 + 4
     · by_cases hlen : 68 ≤ I.calldata.size
-      · have hcheck := solcDecodeLenCheckOk_4_64 hlen hbig hsize
+      · have h4306 := safeRuntime_block_4294_fallthrough (by simp)
+          (by rw [hlenWord]; exact solcDecodeLenCheckOk_4_64 hlen hbig hsize) h4294
+        have h6952 := safeRuntime_block_4306 (by simp) (by jump_dest) h4306
         by_cases hcanon : (calldataWord I.calldata 4).toNat < EVM.addressModulus
-        · obtain ⟨_, _, h1095⟩ := safeDecodeAddressWord h9112 (by simp) hcheck hcanon (by jump_dest)
-          have hret := safeApprovedHashesTrace h1095 (by simp)
+        · obtain ⟨_, _, h4327⟩ := safeDecodeAddress h6952
+            (by simp [safeRuntime_block_4306_stack]) hcanon (by jump_dest)
+          simp only [safeRuntime_block_4306_stack, safeAddressMask] at h4327
+          have hret := safeApprovedHashesTrace h4327 (by simp) hcanon
           have hbody := safeApprovedHashesSource (initState σ σ₀ (.ofUInt256 g) A I)
             (calldataWord I.calldata 4) (calldataWord I.calldata 36) hcanon hvalue
           refine RDret.reEquivElim hcode hret fun _ _ hsuccess ↦ ?_
@@ -103,21 +114,29 @@ theorem safeApprovedhashesBodyCore
                 State.lookupAccount] using (uint256ReturnEncoding
                 (solcSlotWordAt (mapSlot (calldataWord I.calldata 36)
                   (mapSlot (calldataWord I.calldata 4) ⟨8⟩)) σ I))))))
-        · have hrev := safeDecodeAddressWordNoncanon h9112 (by simp) hcheck hcanon
+        · have hrev := safeDecodeAddressNoncanon h6952
+            (by simp [safeRuntime_block_4306_stack]) hcanon
           exact reEquivSelectorDecodingFailed (cfg := config) hcode hdispatch
             (decodeAddressBytes32Noncanon hlen hbig hcanon) hrev
-      · have hrev := safeDecodeAddressWordRevert h9112 (by simp)
-          (solcDecodeLenCheckShort_4_64 hlong (by omega) hsize)
+      · have h589 := safeRuntime_block_4294_taken (by simp)
+          (by
+            rw [hlenWord]
+            change UInt256.slt (UInt256.sub (UInt256.ofNat I.calldata.size) ⟨4⟩) ⟨64⟩ ≠ ⟨0⟩
+            rw [solcDecodeLenCheckShort_4_64 hlong (by omega) hsize]
+            decide) (by jump_dest) h4294
         exact reEquivSelectorDecodingFailed (cfg := config) hcode hdispatch
-          (decodeAddressBytes32Short hlong (by omega)) hrev
-    · have hrev := safeDecodeAddressWordRevert h9112 (by simp)
-        (solcDecodeLenCheckHuge_4_64 (by omega) hsize)
+          (decodeAddressBytes32Short hlong (by omega)) (safeRuntime_block_589 (by simp) h589)
+    · have h589 := safeRuntime_block_4294_taken (by simp)
+        (by
+          rw [hlenWord]
+          change UInt256.slt (UInt256.sub (UInt256.ofNat I.calldata.size) ⟨4⟩) ⟨64⟩ ≠ ⟨0⟩
+          rw [solcDecodeLenCheckHuge_4_64 (by omega) hsize]
+          decide) (by jump_dest) h4294
       exact reEquivSelectorDecodingFailed (cfg := config) hcode hdispatch
-        (decodeAddressBytes32Huge (by omega)) hrev
-  · have h1077 := safeRuntime_block_1069_fallthrough (by simp)
-      (isZero_eq_zero_of_ne hvalue) h1069
-    have hrev := safeRuntime_block_1077 (by simp [safeRuntime_block_1069_fallthrough_stack]) h1077
-    exact reEquivSelectorRevert hcode hdispatch hrev fun _ ↦ bodyReverts_nonPayable hvalue
+        (decodeAddressBytes32Huge (by omega)) (safeRuntime_block_589 (by simp) h589)
+  · have h589 := safeRuntime_block_4287_taken (by simp) hvalue (by jump_dest) h4287
+    exact reEquivSelectorRevert hcode hdispatch (safeRuntime_block_589 (by simp) h589)
+      fun _ ↦ bodyReverts_nonPayable hvalue
 
 /-- Refinement obligation for `approvedHashes` (`approvedhashesTransition`). -/
 theorem safeApprovedhashesRefines

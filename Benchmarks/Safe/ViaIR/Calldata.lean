@@ -4,6 +4,20 @@ open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.ViaIR
 
+-- LIBRARY CANDIDATE: the bytes32 decoder expressed using the EVM's calldata word.
+theorem decodeCalldataBytes32Word {cd : ByteArray} {name : Solm.Ident}
+    (hlen : 36 ≤ cd.size) (hbig : cd.size < 2 ^ 255 + 4) :
+    decodeCalldata [name] [abiBytes32] cd =
+      some ((∅ : Store).insert name (wordBytes32Value (calldataWord cd 4))) := by
+  have hb : EVM.Word.toBytesBE (calldataWord cd 4) = (cd.toList.drop 4).take 32 := by
+    unfold calldataWord
+    rw [← decode_word_at_eq_any cd 4 hlen]
+    apply toBytesBE_bytesToWord_of_length
+    simp only [List.length_take, List.length_drop, byteArray_toList_eq, Array.length_toList]
+    change min 32 (cd.size - 4) = 32
+    omega
+  simpa only [wordBytes32Value, hb] using decodeCalldata_bytes32_ok (x := name) hlen hbig
+
 -- LIBRARY CANDIDATE: expose the guards and value decoder for a nonempty static ABI tuple.
 theorem decodeStaticCalldata {cd : ByteArray} {names : List Solm.Ident}
     {ty : ABIType} {types : List ABIType} {headSize : ℕ}

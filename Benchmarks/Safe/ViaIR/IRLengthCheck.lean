@@ -2,6 +2,7 @@ import Benchmarks.Safe.ViaIR.Dispatch
 import Benchmarks.Safe.ViaIR.Storage
 import Benchmarks.Safe.ViaIR.Blocks.Runtime_005
 import Benchmarks.Safe.ViaIR.Blocks.Runtime_019
+import Reasoning.WordArithmetic
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -25,6 +26,47 @@ theorem safeDecodeCalldata_cons (names : List Ident) (ty : ABIType) (types : Lis
     (cd : ByteArray) :
     safeDecodeCalldata names (ty :: types) cd =
       ABI.decodeCalldataWithMode .modern names (ty :: types) cd := rfl
+
+theorem safeDecodeCalldata_empty_ok {cd : ByteArray}
+    (hlong : 4 ≤ cd.size) (hsmall : cd.size < 2 ^ 255 + 4) :
+    safeDecodeCalldata [] [] cd = some ∅ := by
+  rw [safeDecodeCalldata_eq_modern_of_small hsmall]
+  exact decodeCalldataWithMode_empty_ok hlong
+
+theorem safeDecodeCalldata_empty_huge {cd : ByteArray}
+    (hhuge : 2 ^ 255 + 4 ≤ cd.size) : safeDecodeCalldata [] [] cd = none := by
+  have hguard : 2 ^ 255 ≤ cd.size - 4 := by omega
+  unfold safeDecodeCalldata
+  rw [if_pos ⟨rfl, hguard⟩]
+
+theorem safeIRArgumentSize {size : Nat} (hlong : 4 ≤ size) (hsize : size < UInt256.size) :
+    UInt256.ofNat size + UInt256.lnot ⟨3⟩ = UInt256.ofNat (size - 4) := by
+  rw [u256_add_comm, lnot3_add_returnSize hlong hsize]
+
+theorem safeIRArgumentSizeSub {size : Nat} (hlong : 4 ≤ size) (hsize : size < UInt256.size) :
+    UInt256.lnot (UInt256.ofNat 3) + UInt256.ofNat size =
+      UInt256.sub (UInt256.ofNat size) (UInt256.ofNat 4) := by
+  change UInt256.lnot ⟨3⟩ + UInt256.ofNat size = _
+  rw [lnot3_add_returnSize hlong hsize]
+  apply u256_inj
+  rw [ulit_toNat' _ (by omega), usub_ofNat_lit_toNat hlong hsize]
+
+theorem safeIRLengthCheckOk {size : Nat} (hlong : 4 ≤ size)
+    (hsmall : size < 2 ^ 255 + 4) (hsize : size < UInt256.size) :
+    UInt256.slt (UInt256.ofNat size + UInt256.lnot ⟨3⟩) ⟨0⟩ = ⟨0⟩ := by
+  rw [safeIRArgumentSize hlong hsize]
+  apply slt_lit_zero (by decide)
+  · exact Nat.zero_le _
+  · rw [ulit_toNat' _ (by omega)]
+    omega
+
+theorem safeIRLengthCheckHuge {size : Nat} (hhuge : 2 ^ 255 + 4 ≤ size)
+    (hsize : size < UInt256.size) :
+    UInt256.slt (UInt256.ofNat size + UInt256.lnot ⟨3⟩) ⟨0⟩ = ⟨1⟩ := by
+  rw [safeIRArgumentSize (by omega) hsize]
+  apply slt_lit_one_high (by decide)
+  rw [ulit_toNat' _ (by omega)]
+  omega
 
 def safeIRHugeNonceCalldata : ByteArray :=
   ⟨#[0xaf, 0xfe, 0xd0, 0xe0]⟩ ++ ByteArray.zeroes (2 ^ 255)

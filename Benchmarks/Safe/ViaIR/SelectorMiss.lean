@@ -1,4 +1,4 @@
-import Benchmarks.Safe.ViaIR.Dispatch
+import Benchmarks.Safe.ViaIR.Common
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 

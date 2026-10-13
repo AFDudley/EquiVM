@@ -1,8 +1,8 @@
-import Benchmarks.Safe.ViaIR.Dispatch
+import Benchmarks.Safe.ViaIR.IRLengthCheck
 import Benchmarks.Safe.ViaIR.ModuleMembership
 import Benchmarks.Safe.ViaIR.Routines
-import Benchmarks.Safe.ViaIR.Blocks.Runtime_006
-import Benchmarks.Safe.ViaIR.Blocks.Runtime_017
+import Benchmarks.Safe.ViaIR.Blocks.Runtime_030
+import Benchmarks.Safe.ViaIR.Blocks.Runtime_031
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -42,13 +42,13 @@ theorem safeIsModuleEnabledSource (evm : EVM.State) (key : UInt256)
 
 set_option maxRecDepth 100000 in
 theorem safeIsModuleEnabledTrace {I g s0 σ k C} {key : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨2802⟩ (key :: ⟨759⟩ :: R) solcFreePtrMem
+    (h : RD safeBytecode I g s0 ⟨8783⟩ (key :: ⟨6377⟩ :: ⟨32⟩ :: R) solcFreePtrMem
       (UInt256.ofNat 3) ByteArray.empty σ k C)
     (hov : R.length + 7 ≤ 1024) (hcanon : key.toNat < EVM.addressModulus) :
     RDret safeBytecode g s0 σ (addressMembership key
       (UInt256.land (solcSlotWordAt (mapSlot key ⟨1⟩) σ I) solcAddrMask)).toUInt256.toByteArray :=
         by
-  obtain ⟨mem', aw', k', C', hret, hmem, hread⟩ := safeModuleMembership h hov hcanon
+  obtain ⟨mem', aw', k', C', hret, hmem, hread⟩ := safeModuleMembership h (by simp; omega) hcanon
     solcFreePtrMem_size solcFreePtrMem_read64 (by jump_dest)
   exact safeReturnBoolFromScratch hret (by omega) hmem hread
 
@@ -60,20 +60,22 @@ theorem safeIsmoduleenabledBodyCore
     runtimeRefinementFor config contract σ σ₀ g A I := by
   obtain ⟨hlong, hword⟩ := selectorDispatchFacts 0x2d 0x9a 0xd5 0x3d ⟨0x2d9ad53d⟩
     hdispatch ismoduleenabledSelectorBytes (by decide)
-  obtain ⟨k, C, h728⟩ := safeReachEntry (σ := σ) (σ₀ := σ₀) (A := A)
-    (g := Sat256.ofUInt256 g) ⟨0x2d9ad53d⟩ 0 ⟨728⟩ hcode hsize hlong hword
+  obtain ⟨k, C, h6473⟩ := safeReachEntry (σ := σ) (σ₀ := σ₀) (A := A)
+    (g := Sat256.ofUInt256 g) ⟨0x2d9ad53d⟩ 3 ⟨6473⟩ hcode hsize hlong hword
     (by native_decide)
   by_cases hvalue : I.weiValue = ⟨0⟩
-  · have h739 := safeRuntime_block_728_taken (by simp)
-      (by rw [hvalue]; decide) (by jump_dest) h728
-    have h9591 := safeRuntime_block_739 (by simp) (by jump_dest) h739
+  · have h6479 := safeRuntime_block_6473_fallthrough (by simp) hvalue h6473
+    have hlenWord := safeIRArgumentSizeSub hlong hsize
     by_cases hbig : I.calldata.size < 2 ^ 255 + 4
     · by_cases hlen : 36 ≤ I.calldata.size
-      · have hcheck := solcDecodeLenCheckOk_4_32 hlen hbig hsize
+      · have h6491 := safeRuntime_block_6479_fallthrough (by simp)
+          (by rw [hlenWord]; exact solcDecodeLenCheckOk_4_32 hlen hbig hsize) h6479
+        have h6952 := safeRuntime_block_6491 (by simp) (by jump_dest) h6491
         by_cases hcanon : (calldataWord I.calldata 4).toNat < EVM.addressModulus
-        · obtain ⟨_, _, h754⟩ := safeDecodeAddress h9591 (by simp) hcheck hcanon (by jump_dest)
-          have h2802 := safeRuntime_block_754 (by simp) (by jump_dest) h754
-          have hret := safeIsModuleEnabledTrace h2802 (by simp) hcanon
+        · obtain ⟨_, _, h6503⟩ := safeDecodeAddress h6952
+            (by simp [safeRuntime_block_6491_stack]) hcanon (by jump_dest)
+          have h8783 := safeRuntime_block_6503 (by simp) (by jump_dest) h6503
+          have hret := safeIsModuleEnabledTrace h8783 (by simp) hcanon
           have hbody := safeIsModuleEnabledSource (initState σ σ₀ (.ofUInt256 g) A I)
             (calldataWord I.calldata 4) hcanon hvalue
           refine RDret.reEquivElim hcode hret fun _ _ hsuccess ↦ ?_
@@ -83,21 +85,30 @@ theorem safeIsmoduleenabledBodyCore
                 State.lookupAccount] using (boolReturnEncoding (addressMembership
                 (calldataWord I.calldata 4) (UInt256.land
                   (solcSlotWordAt (mapSlot (calldataWord I.calldata 4) ⟨1⟩) σ I) solcAddrMask)))))))
-        · have hrev := safeDecodeAddressNoncanon h9591 (by simp) hcheck hcanon
+        · have hrev := safeDecodeAddressNoncanon h6952
+            (by simp [safeRuntime_block_6491_stack]) hcanon
           exact reEquivSelectorDecodingFailed (cfg := config) hcode hdispatch
             (decodeCalldata_address_none_noncanon hlen hbig hcanon) hrev
-      · have hrev := safeDecodeAddressRevert h9591 (by simp)
-          (solcDecodeLenCheckShort_4_32 hlong (by omega) hsize)
+      · have h111 := safeRuntime_block_6479_taken (by simp)
+          (by
+            rw [hlenWord]
+            change UInt256.slt (UInt256.sub (UInt256.ofNat I.calldata.size) ⟨4⟩) ⟨32⟩ ≠ ⟨0⟩
+            rw [solcDecodeLenCheckShort_4_32 hlong (by omega) hsize]
+            decide) (by jump_dest) h6479
         exact reEquivSelectorDecodingFailed (cfg := config) hcode hdispatch
-          (decodeCalldata_address_none_short hlong (by omega)) hrev
-    · have hrev := safeDecodeAddressRevert h9591 (by simp)
-        (solcDecodeLenCheckHuge_4_32 (by omega) hsize)
+          (decodeCalldata_address_none_short hlong (by omega))
+          (safeRuntime_block_111 (by simp) h111)
+    · have h111 := safeRuntime_block_6479_taken (by simp)
+        (by
+          rw [hlenWord]
+          change UInt256.slt (UInt256.sub (UInt256.ofNat I.calldata.size) ⟨4⟩) ⟨32⟩ ≠ ⟨0⟩
+          rw [solcDecodeLenCheckHuge_4_32 (by omega) hsize]
+          decide) (by jump_dest) h6479
       exact reEquivSelectorDecodingFailed (cfg := config) hcode hdispatch
-        (decodeCalldata_address_none_huge (by omega)) hrev
-  · have h736 := safeRuntime_block_728_fallthrough (by simp)
-      (isZero_eq_zero_of_ne hvalue) h728
-    have hrev := safeRuntime_block_736 (by simp [safeRuntime_block_728_fallthrough_stack]) h736
-    exact reEquivSelectorRevert hcode hdispatch hrev fun _ ↦ bodyReverts_nonPayable hvalue
+        (decodeCalldata_address_none_huge (by omega)) (safeRuntime_block_111 (by simp) h111)
+  · have h111 := safeRuntime_block_6473_taken (by simp) hvalue (by jump_dest) h6473
+    exact reEquivSelectorRevert hcode hdispatch (safeRuntime_block_111 (by simp) h111)
+      fun _ ↦ bodyReverts_nonPayable hvalue
 
 /-- Refinement obligation for `isModuleEnabled` (`ismoduleenabledTransition`). -/
 theorem safeIsmoduleenabledRefines

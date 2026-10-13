@@ -1,5 +1,4 @@
 import Benchmarks.Safe.ViaIR.Membership
-import Benchmarks.Safe.ViaIR.Authorization
 import Reasoning.WordArithmetic
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
