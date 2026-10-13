@@ -1,7 +1,7 @@
 import Benchmarks.Safe.ViaIR.DelegatedAccount
 import Benchmarks.Safe.ViaIR.Membership
 import Benchmarks.Safe.ViaIR.Authorization
-import Benchmarks.Safe.ViaIR.Blocks.Runtime_037
+import Benchmarks.Safe.ViaIR.Blocks.Runtime_049
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -56,40 +56,40 @@ theorem safeEvalValidOwner (evm : EVM.State) (frame : Frame) (expr : Expr) (key 
 
 theorem safeOwnerValidationReach {I g s0 σ k C aw mem rdata} {key : UInt256}
     {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨8589⟩ (key :: R) mem aw rdata σ k C)
+    (h : RD safeBytecode I g s0 ⟨10862⟩ (key :: R) mem aw rdata σ k C)
     (hov : R.length + 4 ≤ 1024) (hcanon : key.toNat < EVM.addressModulus)
     (hz : key ≠ ⟨0⟩) (hs : key ≠ ⟨1⟩) :
-    ∃ k' C', RD safeBytecode I g s0 ⟨8626⟩ (⟨0⟩ :: key :: R) mem aw rdata σ k' C' := by
-  have hc : UInt256.land key
-      (UInt256.sub (UInt256.shiftLeft (UInt256.ofNat 1) (UInt256.ofNat 160))
-        (UInt256.ofNat 1)) = key := by rw [safeAddressMask, solcAddrMask_clean hcanon]
-  have he : UInt256.eq (UInt256.ofNat 1) key = ⟨0⟩ :=
-    uInt256_eq_zero_of_ne (fun he ↦ hs (uInt256_eq_one_eq he).symm)
-  have h₁ := safeRuntime_block_8589_fallthrough hov (by rw [hc]; exact isZero_eq_zero_of_ne hz) h
-  have h₂ := safeRuntime_block_8606 hov h₁
-  simp only [safeRuntime_block_8606_stack, hc, he] at h₂
-  exact ⟨_, _, safeRuntime_block_8620_fallthrough (by simp; omega) rfl h₂⟩
+    ∃ k' C', RD safeBytecode I g s0 ⟨10940⟩ (key :: ⟨0⟩ :: R) mem aw rdata σ k' C' := by
+  have h₁ := safeRuntime_block_10862_taken hov
+    (by
+      rw [safeAddressMask, solcAddrMask_clean_left hcanon, isZero_eq_zero_of_ne hz]
+      decide) (by jump_dest) h
+  simp only [safeRuntime_block_10862_taken_stack, safeAddressMask,
+    solcAddrMask_clean_left hcanon] at h₁
+  have h₂ := safeRuntime_block_10979 hov (by jump_dest) h₁
+  have he : UInt256.eq key (UInt256.ofNat 1) = ⟨0⟩ :=
+    uInt256_eq_zero_of_ne (fun he ↦ hs (uInt256_eq_one_eq he))
+  simp only [safeRuntime_block_10979_stack, he] at h₂
+  exact ⟨_, _, safeRuntime_block_10881_taken hov (by decide) (by jump_dest) h₂⟩
 
-theorem safeOwnerValidationReject {I g s0 σ k C aw mem rdata} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨8655⟩ (⟨1⟩ :: R) mem aw rdata σ k C)
+theorem safeOwnerValidationReject {I g s0 σ k C aw mem rdata} {key : UInt256}
+    {R : List UInt256}
+    (h : RD safeBytecode I g s0 ⟨10888⟩ (key :: ⟨1⟩ :: R) mem aw rdata σ k C)
     (hov : R.length + 6 ≤ 1024) : RDrev safeBytecode g s0 := by
-  have h₁ := safeRuntime_block_8655_fallthrough (by omega) (by decide) h
-  have h₂ := safeRuntime_block_8661
-    (by simp only [safeRuntime_block_8655_fallthrough_stack]; omega) (by jump_dest) h₁
-  exact safeRuntime_block_6898
-    (by simp only [safeRuntime_block_8655_fallthrough_stack, List.length_cons]; omega) h₂
+  have h₁ := safeRuntime_block_10888_taken (by omega) (by decide) (by jump_dest) h
+  exact safeRuntime_block_10895 (by simp [safeRuntime_block_10888_taken_stack]; omega) h₁
 
 theorem safeOwnerValidationReturn {I g s0 σ k C aw mem rdata} {key ret : UInt256}
     {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨8655⟩ (⟨0⟩ :: key :: ret :: R) mem aw rdata σ k C)
+    (h : RD safeBytecode I g s0 ⟨10888⟩ (key :: ⟨0⟩ :: ret :: R) mem aw rdata σ k C)
     (hov : R.length + 4 ≤ 1024) (hret : (D_J safeBytecode 0).contains ret = true) :
     ∃ k' C', RD safeBytecode I g s0 ret R mem aw rdata σ k' C' := by
-  have h₁ := safeRuntime_block_8655_taken (by simp; omega) (by decide) (by jump_dest) h
-  exact ⟨_, _, safeRuntime_block_6840 (by omega) hret h₁⟩
+  have h₁ := safeRuntime_block_10888_fallthrough (by simp; omega) rfl h
+  exact ⟨_, _, safeRuntime_block_10894 (by omega) hret h₁⟩
 
 theorem safeValidOwnerHeapTrace {I g s0 σ k C aw mem rdata} {key ret : UInt256}
     {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨8589⟩ (key :: ret :: R) mem aw rdata σ k C)
+    (h : RD safeBytecode I g s0 ⟨10862⟩ (key :: ret :: R) mem aw rdata σ k C)
     (hov : R.length + 8 ≤ 1024) (hcanon : key.toNat < EVM.addressModulus)
     (hmem : 96 ≤ mem.size) (hv : validOwner σ I key)
     (hret : (D_J safeBytecode 0).contains ret = true) :
@@ -98,35 +98,30 @@ theorem safeValidOwnerHeapTrace {I g s0 σ k C aw mem rdata} {key ret : UInt256}
         mem'.readWithPadding off count = mem.readWithPadding off count) ∧
       RD safeBytecode I g s0 ret R mem' aw' rdata σ k' C' := by
   obtain ⟨k₁, C₁, h₁⟩ := safeOwnerValidationReach h (by simp; omega) hcanon hv.1 hv.2.1
-  have hc : UInt256.land key
-      (UInt256.sub (UInt256.shiftLeft (UInt256.ofNat 1) (UInt256.ofNat 160))
-        (UInt256.ofNat 1)) = key := by rw [safeAddressMask, solcAddrMask_clean hcanon]
   by_cases ht : key = UInt256.ofNat I.codeOwner.val
   · have hd : delegatedAccount σ I := hv.2.2.resolve_left (fun hn ↦ hn ht)
-    have h₂ := safeRuntime_block_8626_fallthrough (by simp; omega)
-      (by rw [hc, ht, uInt256_eq_self]; rfl) h₁
-    have h₃ := safeRuntime_block_8645 (by simp; omega) (by jump_dest) h₂
-    obtain ⟨aw₄, k₄, C₄, h₄⟩ := safeDelegatedAccountTrace h₃ (by simp; omega)
-      (by omega) (by jump_dest)
-    simp only [hd, decide_true] at h₄
-    have h₅ := safeRuntime_block_8653 (by simp; omega) h₄
-    change RD safeBytecode I g s0 ⟨8655⟩ (⟨0⟩ :: key :: ret :: R)
-      ((thisCode σ I).write 0 mem 0 3) aw₄ rdata σ _ _ at h₅
-    obtain ⟨k', C', h'⟩ := safeOwnerValidationReturn h₅ (by omega) hret
+    have h₂ := safeRuntime_block_10940_taken (by simp; omega)
+      (by rw [ht, uInt256_eq_self]; decide) (by jump_dest) h₁
+    obtain ⟨aw₃, k₃, C₃, h₃⟩ := safeDelegatedAccountTrace h₂ (by simp; omega) (by omega)
+    simp only [hd, decide_true] at h₃
+    have h₄ := safeRuntime_block_10950 (by simp; omega) (by jump_dest) h₃
+    change RD safeBytecode I g s0 ⟨10888⟩ (⟨0⟩ :: ⟨0⟩ :: ret :: R)
+      ((thisCode σ I).write 0 mem 0 3) aw₃ rdata σ _ _ at h₄
+    obtain ⟨k', C', h'⟩ := safeOwnerValidationReturn h₄ (by omega) hret
     exact ⟨_, _, k', C', writePrefix3_size _ _ (by omega),
       fun off count hlo hin ↦ writePrefix3ReadAbove _ _ off count (by omega) hin (by omega),
       h'⟩
   · have he : UInt256.eq (UInt256.ofNat I.codeOwner.val) key = ⟨0⟩ :=
       uInt256_eq_zero_of_ne (fun he ↦ ht (uInt256_eq_one_eq he).symm)
-    have h₂ := safeRuntime_block_8626_taken (by simp; omega)
-      (by rw [hc, he]; decide) (by jump_dest) h₁
-    simp only [safeRuntime_block_8626_taken_stack, hc, he] at h₂
-    obtain ⟨k', C', h'⟩ := safeOwnerValidationReturn h₂ (by omega) hret
+    have h₂ := safeRuntime_block_10940_fallthrough (by simp; omega) he h₁
+    simp only [safeRuntime_block_10940_fallthrough_stack, he] at h₂
+    have h₃ := safeRuntime_block_10950 (by simp; omega) (by jump_dest) h₂
+    obtain ⟨k', C', h'⟩ := safeOwnerValidationReturn h₃ (by omega) hret
     exact ⟨mem, aw, k', C', rfl, fun _ _ _ _ ↦ rfl, h'⟩
 
 theorem safeValidOwnerTrace {I g s0 σ k C aw mem rdata} {key ret : UInt256}
     {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨8589⟩ (key :: ret :: R) mem aw rdata σ k C)
+    (h : RD safeBytecode I g s0 ⟨10862⟩ (key :: ret :: R) mem aw rdata σ k C)
     (hov : R.length + 8 ≤ 1024) (hcanon : key.toNat < EVM.addressModulus)
     (hmem : mem.size = 96) (hv : validOwner σ I key)
     (hret : (D_J safeBytecode 0).contains ret = true) :
@@ -139,42 +134,36 @@ theorem safeValidOwnerTrace {I g s0 σ k C aw mem rdata} {key ret : UInt256}
 
 theorem safeInvalidOwnerTrace {I g s0 σ k C aw mem rdata} {key : UInt256}
     {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨8589⟩ (key :: R) mem aw rdata σ k C)
+    (h : RD safeBytecode I g s0 ⟨10862⟩ (key :: R) mem aw rdata σ k C)
     (hov : R.length + 8 ≤ 1024) (hcanon : key.toNat < EVM.addressModulus)
     (hmem : 32 ≤ mem.size) (hv : ¬validOwner σ I key) :
     RDrev safeBytecode g s0 := by
-  have hc : UInt256.land key
-      (UInt256.sub (UInt256.shiftLeft (UInt256.ofNat 1) (UInt256.ofNat 160))
-        (UInt256.ofNat 1)) = key := by rw [safeAddressMask, solcAddrMask_clean hcanon]
   by_cases hz : key = ⟨0⟩
-  · have h₁ := safeRuntime_block_8589_taken (by omega)
-      (by rw [hc, hz]; decide) (by jump_dest) h
-    simp only [safeRuntime_block_8589_taken_stack, hc, hz,
-      show UInt256.isZero ⟨0⟩ = ⟨1⟩ from rfl] at h₁
-    have h₂ := safeRuntime_block_8620_taken (by simp; omega) (by decide) (by jump_dest) h₁
-    exact safeOwnerValidationReject h₂ (by simp; omega)
-  · have h₁ := safeRuntime_block_8589_fallthrough (by omega)
-      (by rw [hc]; exact isZero_eq_zero_of_ne hz) h
-    have h₂ := safeRuntime_block_8606 (by omega) h₁
-    by_cases hs : key = ⟨1⟩
-    · simp only [safeRuntime_block_8606_stack, hc, hs, uInt256_eq_self] at h₂
-      have h₃ := safeRuntime_block_8620_taken (by simp; omega) (by decide) (by jump_dest) h₂
-      exact safeOwnerValidationReject h₃ (by simp; omega)
+  · have h₁ := safeRuntime_block_10862_fallthrough (by omega)
+      (by rw [safeAddressMask, solcAddrMask_clean_left hcanon, hz]; decide) h
+    simp only [safeRuntime_block_10862_fallthrough_stack, safeAddressMask,
+      solcAddrMask_clean_left hcanon, hz] at h₁
+    have h₂ := safeRuntime_block_10881_fallthrough (by omega) (by decide) h₁
+    exact safeOwnerValidationReject h₂ (by omega)
+  · by_cases hs : key = ⟨1⟩
+    · have h₁ := safeRuntime_block_10862_taken (by omega)
+        (by rw [safeAddressMask, solcAddrMask_clean_left hcanon, hs]; decide) (by jump_dest) h
+      simp only [safeRuntime_block_10862_taken_stack, safeAddressMask,
+        solcAddrMask_clean_left hcanon] at h₁
+      have h₂ := safeRuntime_block_10979 (by omega) (by jump_dest) h₁
+      simp only [safeRuntime_block_10979_stack, hs] at h₂
+      have h₃ := safeRuntime_block_10881_fallthrough (by omega) (by decide) h₂
+      exact safeOwnerValidationReject h₃ (by omega)
     · have ht : key = UInt256.ofNat I.codeOwner.val := by
         by_contra hn
         exact hv ⟨hz, hs, Or.inl hn⟩
       have hd : ¬delegatedAccount σ I := fun hd ↦ hv ⟨hz, hs, Or.inr hd⟩
-      have he : UInt256.eq (UInt256.ofNat 1) key = ⟨0⟩ :=
-        uInt256_eq_zero_of_ne (fun he ↦ hs (uInt256_eq_one_eq he).symm)
-      simp only [safeRuntime_block_8606_stack, hc, he] at h₂
-      have h₃ := safeRuntime_block_8620_fallthrough (by simp; omega) rfl h₂
-      have h₄ := safeRuntime_block_8626_fallthrough (by omega)
-        (by rw [hc, ht, uInt256_eq_self]; rfl) h₃
-      have h₅ := safeRuntime_block_8645 (by simp; omega) (by jump_dest) h₄
-      obtain ⟨aw₆, k₆, C₆, h₆⟩ := safeDelegatedAccountTrace h₅ (by simp; omega)
-        hmem (by jump_dest)
-      simp only [hd, decide_false] at h₆
-      have h₇ := safeRuntime_block_8653 (by simp; omega) h₆
-      exact safeOwnerValidationReject h₇ (by simp; omega)
+      obtain ⟨_, _, h₁⟩ := safeOwnerValidationReach h (by omega) hcanon hz hs
+      have h₂ := safeRuntime_block_10940_taken (by omega)
+        (by rw [ht, uInt256_eq_self]; decide) (by jump_dest) h₁
+      obtain ⟨aw₃, k₃, C₃, h₃⟩ := safeDelegatedAccountTrace h₂ (by omega) hmem
+      simp only [hd, decide_false] at h₃
+      have h₄ := safeRuntime_block_10950 (by simp; omega) (by jump_dest) h₃
+      exact safeOwnerValidationReject h₄ (by omega)
 
 end Benchmarks.Safe.ViaIR

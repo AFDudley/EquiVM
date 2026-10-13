@@ -1,9 +1,10 @@
 import Benchmarks.Safe.ViaIR.Dispatch
 import Benchmarks.Safe.ViaIR.ModuleStorage
-import Benchmarks.Safe.ViaIR.Blocks.Runtime_006
-import Benchmarks.Safe.ViaIR.Blocks.Runtime_008
-import Benchmarks.Safe.ViaIR.Blocks.Runtime_018
-import Benchmarks.Safe.ViaIR.Blocks.Runtime_019
+import Benchmarks.Safe.ViaIR.Authorization
+import Benchmarks.Safe.ViaIR.IRLengthCheck
+import Benchmarks.Safe.ViaIR.Blocks.Runtime_011
+import Benchmarks.Safe.ViaIR.Blocks.Runtime_028
+import Benchmarks.Safe.ViaIR.Blocks.Runtime_044
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -132,15 +133,12 @@ theorem safeEnableModuleAccounts (evm : EVM.State) (key : UInt256) :
   rfl
 
 theorem safeEnableModuleTrace {I g s0 σ k C aw mem rdata} {key : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨3277⟩ (key :: ⟨664⟩ :: R) mem aw rdata σ k C)
+    (h : RD safeBytecode I g s0 ⟨5868⟩ (key :: R) mem aw rdata σ k C)
     (hov : R.length + 13 ≤ 1024) (hmem : mem.size = 96)
     (hcanon : key.toNat < EVM.addressModulus) (hperm : I.perm = true) :
     RDret safeBytecode g s0 (enableModuleAccounts σ I key) ByteArray.empty := by
-  obtain ⟨_, _, h3414⟩ := safeRuntime_block_3277 (by simp; omega) hperm h
-  have h664 := safeRuntime_block_3414 (by simp [safeRuntime_block_3277_stack]; omega)
-    (by jump_dest) h3414
-  have hret := safeRuntime_block_664 (by simp [safeRuntime_block_3414_stack]; omega) h664
-  simp only [safeAddressMask, solcAddrMask_clean_left hcanon] at hret
+  have hret := safeRuntime_block_5868 (by omega) hperm h
+  simp only [safeAddressMask] at hret
   have hhash := keyAfterSlotHash key ⟨1⟩ hmem
   change keccakWord ⟨0⟩ (UInt256.ofNat 64)
     (key.toByteArray.write 0 ((UInt256.ofNat 1).toByteArray.write 0 mem
@@ -152,86 +150,94 @@ theorem safeEnableModuleTrace {I g s0 σ k C aw mem rdata} {key : UInt256} {R : 
       setAddressOffset0Word old (UInt256.land next solcAddrMask) := by
     rw [setAddressOffset0Word, maskTwice, u256_land_comm (UInt256.lnot solcAddrMask) old]
   have hsecond (old : UInt256) :
-      UInt256.lor key (UInt256.land (UInt256.lnot solcAddrMask) old) =
+      UInt256.lor key (UInt256.land old (UInt256.lnot solcAddrMask)) =
       setAddressOffset0Word old key := by
-    rw [← solcAddrMask_clean hcanon, setAddressOffset0Word_bytecode, solcAddrMask_clean hcanon]
+    rw [setAddressOffset0Word, solcAddrMask_clean hcanon, u256_lor_comm]
   simp only [hfirst, hsecond] at hret
   exact hret
 
 theorem safeEnableModuleTraceStatic {I g s0 σ k C aw mem rdata} {key : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨3277⟩ (key :: R) mem aw rdata σ k C)
+    (h : RD safeBytecode I g s0 ⟨5868⟩ (key :: R) mem aw rdata σ k C)
     (hov : R.length + 12 ≤ 1024) (hperm : I.perm = false) :
     RDstatic safeBytecode g s0 := by
-  have hslot := evm_run h with [jumpdest, push1 ⟨1⟩, push1 ⟨32⟩, dup2, swap1, genMstore]
+  have hslot := evm_run h with [push1 ⟨1⟩, push1 ⟨32⟩, dup2, swap1, genMstore]
   have hsent := hslot.pushConst
     (UInt256.ofNat 92458281274488595289803937127152923398167637295201432141969818930235769911599)
     (width := 32) (op := .PUSH32) (by decide) (by native_decide) (by simp; omega)
   have hdup := evm_run hsent with [dup1]
   obtain ⟨_, _, hload⟩ := RD.sload hdup (by native_decide) (by simp; omega)
-  have hhash := evm_run hload with [push1 ⟨1⟩, push1 ⟨1⟩, push1 ⟨160⟩, shl, sub,
-    dup5, dup2, and, push0, dup2, dup2, genMstore, push1 ⟨64⟩, dup1, dup3, genKeccak256, dup1]
+  have hhash := evm_run hload with
+    [push0, dup5, dup2, genMstore, push1 ⟨64⟩, dup2, genKeccak256, dup1]
   obtain ⟨_, _, hload2⟩ := RD.sload hhash (by native_decide) (by simp; omega)
-  have hstore := evm_run hload2 with [swap5, swap1, swap6, and, push1 ⟨1⟩, push1 ⟨1⟩,
-    push1 ⟨160⟩, shl, sub, not, swap5, dup6, and, or, swap1, swap5]
+  have hstore := evm_run hload2 with [push1 ⟨1⟩, push1 ⟨1⟩, push1 ⟨160⟩, shl, sub,
+    swap1, swap4, and, push1 ⟨1⟩, push1 ⟨1⟩, push1 ⟨160⟩, shl, sub, not,
+    swap4, dup5, and, or, swap1]
   exact hstore.sstoreStatic hperm (by native_decide) (by simp; omega)
 
 theorem safeEnableModuleReachCheck {I g s0 σ k C aw mem rdata}
     {key : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨3176⟩ (key :: R) mem aw rdata σ k C)
+    (h : RD safeBytecode I g s0 ⟨5818⟩ (key :: R) mem aw rdata σ k C)
     (hov : R.length + 4 ≤ 1024) (hcanon : key.toNat < EVM.addressModulus)
     (hgood : key ≠ ⟨0⟩ ∧ key ≠ ⟨1⟩) :
-    ∃ k' C', RD safeBytecode I g s0 ⟨3229⟩ (key :: R) mem aw rdata σ k' C' := by
-  have h3193 := safeRuntime_block_3176_fallthrough hov
-    (by rw [safeAddressMask, solcAddrMask_clean hcanon]; exact isZero_eq_zero_of_ne hgood.1) h
-  have h3207 := safeRuntime_block_3193 hov h3193
-  have heq : UInt256.eq (UInt256.ofNat 1) key = ⟨0⟩ :=
-    uInt256_eq_zero_of_ne (fun he ↦ hgood.2 (uInt256_eq_one_eq he).symm)
-  simp only [safeRuntime_block_3193_stack, safeAddressMask, solcAddrMask_clean hcanon, heq] at h3207
-  exact ⟨_, _, safeRuntime_block_3207_taken (by simp; omega) (by decide) (by jump_dest) h3207⟩
+    ∃ k' C', RD safeBytecode I g s0 ⟨5841⟩ (key :: R) mem aw rdata σ k' C' := by
+  have h6038 := safeRuntime_block_5818_taken hov
+    (by
+      rw [safeAddressMask, solcAddrMask_clean_left hcanon, isZero_eq_zero_of_ne hgood.1]
+      decide) (by jump_dest) h
+  simp only [safeRuntime_block_5818_taken_stack, safeAddressMask,
+    solcAddrMask_clean_left hcanon] at h6038
+  have h5836 := safeRuntime_block_6038 (by omega) (by jump_dest) h6038
+  have heq : UInt256.eq key (UInt256.ofNat 1) = ⟨0⟩ :=
+    uInt256_eq_zero_of_ne (fun he ↦ hgood.2 (uInt256_eq_one_eq he))
+  simp only [safeRuntime_block_6038_stack, heq] at h5836
+  exact ⟨_, _, safeRuntime_block_5836_fallthrough (by simp; omega) rfl h5836⟩
 
 theorem safeEnableModuleReject {I g s0 σ k C aw mem rdata} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨3207⟩ (⟨1⟩ :: R) mem aw rdata σ k C)
+    (h : RD safeBytecode I g s0 ⟨5836⟩ (⟨1⟩ :: R) mem aw rdata σ k C)
     (hov : R.length + 6 ≤ 1024) : RDrev safeBytecode g s0 := by
-  have h3213 := safeRuntime_block_3207_fallthrough (by omega) (by decide) h
-  change RD safeBytecode I g s0 ⟨3213⟩ R mem aw rdata σ _ _ at h3213
-  have h6898 := safeRuntime_block_3213 (by omega) (by jump_dest) h3213
-  exact safeRuntime_block_6898 (by simp [safeRuntime_block_3213_stack]; omega) h6898
+  have h2231 := safeRuntime_block_5836_taken (by omega) (by decide) (by jump_dest) h
+  have h9592 := safeRuntime_block_2231
+    (by simp [safeRuntime_block_5836_taken_stack]; omega) (by jump_dest) h2231
+  exact safeRuntime_block_9592 (by simp [safeRuntime_block_5836_taken_stack]; omega) h9592
 
 theorem safeEnableModuleTraceInvalid {I g s0 σ k C aw mem rdata}
     {key : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨3176⟩ (key :: R) mem aw rdata σ k C)
+    (h : RD safeBytecode I g s0 ⟨5818⟩ (key :: R) mem aw rdata σ k C)
     (hov : R.length + 7 ≤ 1024) (hcanon : key.toNat < EVM.addressModulus)
     (hgood : ¬ (key ≠ ⟨0⟩ ∧ key ≠ ⟨1⟩)) : RDrev safeBytecode g s0 := by
   by_cases hz : key = ⟨0⟩
-  · have h3207 := safeRuntime_block_3176_taken (by omega)
-      (by rw [safeAddressMask, solcAddrMask_clean hcanon, hz]; decide) (by jump_dest) h
-    simp only [safeRuntime_block_3176_taken_stack, safeAddressMask,
-      solcAddrMask_clean hcanon, hz, show UInt256.isZero (⟨0⟩ : UInt256) = ⟨1⟩ by rfl] at h3207
-    exact safeEnableModuleReject h3207 (by simp; omega)
+  · have h5836 := safeRuntime_block_5818_fallthrough (by omega)
+      (by rw [safeAddressMask, solcAddrMask_clean_left hcanon, hz]; decide) h
+    simp only [safeRuntime_block_5818_fallthrough_stack, safeAddressMask,
+      solcAddrMask_clean_left hcanon, hz,
+      show UInt256.isZero (⟨0⟩ : UInt256) = ⟨1⟩ by rfl] at h5836
+    exact safeEnableModuleReject h5836 (by simp; omega)
   · have hone : key = ⟨1⟩ := by tauto
-    have h3193 := safeRuntime_block_3176_fallthrough (by omega)
-      (by rw [safeAddressMask, solcAddrMask_clean hcanon]; exact isZero_eq_zero_of_ne hz) h
-    have h3207 := safeRuntime_block_3193 (by omega) h3193
-    simp only [safeRuntime_block_3193_stack, safeAddressMask, solcAddrMask_clean hcanon,
-      hone, show UInt256.eq (UInt256.ofNat 1) ⟨1⟩ = ⟨1⟩ by decide] at h3207
-    exact safeEnableModuleReject h3207 (by simp; omega)
+    have h6038 := safeRuntime_block_5818_taken (by omega)
+      (by rw [safeAddressMask, solcAddrMask_clean_left hcanon, hone]; decide) (by jump_dest) h
+    simp only [safeRuntime_block_5818_taken_stack, safeAddressMask,
+      solcAddrMask_clean_left hcanon] at h6038
+    have h5836 := safeRuntime_block_6038 (by omega) (by jump_dest) h6038
+    simp only [safeRuntime_block_6038_stack, hone,
+      show UInt256.eq (⟨1⟩ : UInt256) (UInt256.ofNat 1) = ⟨1⟩ by decide] at h5836
+    exact safeEnableModuleReject h5836 (by simp; omega)
 
 theorem safeEnableModuleCheckWord (σ : AccountMap) (I : ExecutionEnv) (key : UInt256)
     (hcanon : key.toNat < EVM.addressModulus) :
-    UInt256.land (solcSlotWordAt (keccakWord ⟨0⟩ (UInt256.ofNat 64)
-      (safeRuntime_block_3229_taken_memory (mem := solcFreePtrMem) (x0 := key))) σ I)
-      (UInt256.sub (UInt256.shiftLeft (UInt256.ofNat 1) (UInt256.ofNat 160)) (UInt256.ofNat 1)) =
+    UInt256.land
+      (UInt256.sub (UInt256.shiftLeft (UInt256.ofNat 1) (UInt256.ofNat 160)) (UInt256.ofNat 1))
+      (solcSlotWordAt (keccakWord ⟨0⟩ (UInt256.ofNat 64)
+        (safeRuntime_block_5841_taken_memory (mem := solcFreePtrMem) (x0 := key))) σ I) =
     UInt256.land (solcSlotWordAt (mapSlot key ⟨1⟩) σ I) solcAddrMask := by
-  simp only [safeRuntime_block_3229_taken_memory, safeAddressMask, solcAddrMask_clean_left hcanon]
-  change UInt256.land (solcSlotWordAt (keccakWord ⟨0⟩ (UInt256.ofNat 64)
-    (twoWordHashMem key ⟨1⟩ solcFreePtrMem)) σ I) solcAddrMask = _
-  rw [twoWordHashMemMapSlot key ⟨1⟩ solcFreePtrMem_size]
+  simp only [safeRuntime_block_5841_taken_memory, safeAddressMask, solcAddrMask_clean_left hcanon]
+  change UInt256.land solcAddrMask (solcSlotWordAt (keccakWord ⟨0⟩ (UInt256.ofNat 64)
+    (twoWordHashMem key ⟨1⟩ solcFreePtrMem)) σ I) = _
+  rw [twoWordHashMemMapSlot key ⟨1⟩ solcFreePtrMem_size, u256_land_comm]
 
 theorem safeEnableModuleTraceExisting {I g s0 σ k C aw mem rdata} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨3261⟩ R mem aw rdata σ k C)
+    (h : RD safeBytecode I g s0 ⟨5993⟩ R mem aw rdata σ k C)
     (hov : R.length + 6 ≤ 1024) : RDrev safeBytecode g s0 := by
-  have h6898 := safeRuntime_block_3261 (by omega) (by jump_dest) h
-  exact safeRuntime_block_6898 (by simp [safeRuntime_block_3261_stack]; omega) h6898
+  exact safeRuntime_block_5993 (by omega) h
 
 theorem safeEnablemoduleBodyCore
     (hcode : I.code = safeBytecode)
@@ -240,33 +246,34 @@ theorem safeEnablemoduleBodyCore
     runtimeRefinementFor config contract σ σ₀ g A I := by
   obtain ⟨hlong, hword⟩ := selectorDispatchFacts 0x61 0x0b 0x59 0x25 ⟨0x610b5925⟩
     hdispatch enablemoduleSelectorBytes (by decide)
-  obtain ⟨k, C, h988⟩ := safeReachEntry (σ := σ) (σ₀ := σ₀) (A := A)
-    (g := Sat256.ofUInt256 g) ⟨0x610b5925⟩ 2 ⟨988⟩ hcode hsize hlong hword
+  obtain ⟨k, C, h5785⟩ := safeReachEntry (σ := σ) (σ₀ := σ₀) (A := A)
+    (g := Sat256.ofUInt256 g) ⟨0x610b5925⟩ 9 ⟨5785⟩ hcode hsize hlong hword
     (by native_decide)
+  have hlenWord := safeIRArgumentSizeSub hlong hsize
   by_cases hvalue : I.weiValue = ⟨0⟩
-  · have h999 := safeRuntime_block_988_taken (by simp)
-      (by rw [hvalue]; decide) (by jump_dest) h988
-    have h9591 := safeRuntime_block_999 (by simp) (by jump_dest) h999
+  · have h5791 := safeRuntime_block_5785_fallthrough (by simp) hvalue h5785
     by_cases hbig : I.calldata.size < 2 ^ 255 + 4
     · by_cases hlen : 36 ≤ I.calldata.size
-      · have hcheck := solcDecodeLenCheckOk_4_32 hlen hbig hsize
+      · have h5803 := safeRuntime_block_5791_fallthrough (by simp)
+          (by rw [hlenWord]; exact solcDecodeLenCheckOk_4_32 hlen hbig hsize) h5791
+        have h6952 := safeRuntime_block_5803 (by simp) (by jump_dest) h5803
         by_cases hcanon : (calldataWord I.calldata 4).toNat < EVM.addressModulus
-        · obtain ⟨_, _, h1014⟩ := safeDecodeAddress h9591 (by simp) hcheck hcanon (by jump_dest)
-          have h3168 := safeRuntime_block_1014 (by simp) (by jump_dest) h1014
-          have h6757 := safeRuntime_block_3168 (by simp) (by jump_dest) h3168
+        · obtain ⟨_, _, h5810⟩ := safeDecodeAddress h6952
+            (by simp [safeRuntime_block_5803_stack]) hcanon (by jump_dest)
+          have h9325 := safeRuntime_block_5810 (by simp) (by jump_dest) h5810
           have hdec : config.externalABI.decodeCalldata?
               (enablemoduleTransition.params.map Param.name)
               (transitionSignature enablemoduleTransition).paramTypes I.calldata =
               some (enableModuleArgs (calldataWord I.calldata 4)) :=
             decodeCalldata_address_ok hlen hbig hcanon
           by_cases hauth : I.source = I.codeOwner
-          · obtain ⟨_, _, h3176⟩ := safeAuthorizedTrace h6757 (by simp) hauth (by jump_dest)
-            change RD safeBytecode I (.ofUInt256 g) (initState σ σ₀ (.ofUInt256 g) A I) ⟨3176⟩
-              [calldataWord I.calldata 4, ⟨664⟩, selWord I] _ _ _ σ _ _ at h3176
+          · obtain ⟨_, _, h5818⟩ := safeAuthorizedTrace h9325 (by simp) hauth (by jump_dest)
+            change RD safeBytecode I (.ofUInt256 g) (initState σ σ₀ (.ofUInt256 g) A I) ⟨5818⟩
+              [calldataWord I.calldata 4, selWord I, ⟨0⟩] _ _ _ σ _ _ at h5818
             by_cases hgood : calldataWord I.calldata 4 ≠ ⟨0⟩ ∧ calldataWord I.calldata 4 ≠ ⟨1⟩
-            · obtain ⟨_, _, h3229⟩ := safeEnableModuleReachCheck h3176 (by simp) hcanon hgood
+            · obtain ⟨_, _, h5841⟩ := safeEnableModuleReachCheck h5818 (by simp) hcanon hgood
               have hword := safeEnableModuleCheckWord σ I (calldataWord I.calldata 4) hcanon
-              simp only [safeRuntime_block_3229_taken_memory] at hword
+              dsimp only [safeRuntime_block_5841_taken_memory, solcSlotWordAt] at hword
               have hmodule : moduleLink (initState σ σ₀ (.ofUInt256 g) A I)
                   (calldataWord I.calldata 4) =
                   UInt256.land (solcSlotWordAt (mapSlot (calldataWord I.calldata 4) ⟨1⟩) σ I)
@@ -275,26 +282,22 @@ theorem safeEnablemoduleBodyCore
               by_cases hempty : UInt256.land
                   (solcSlotWordAt (mapSlot (calldataWord I.calldata 4) ⟨1⟩) σ I) solcAddrMask = ⟨0⟩
               · have hempty' := hmodule.trans hempty
-                obtain ⟨_, _, h3277⟩ := safeRuntime_block_3229_taken (by simp)
-                  (by
-                    have hz := congrArg UInt256.isZero (hword.trans hempty)
-                    intro hn
-                    exact (by decide : UInt256.isZero (⟨0⟩ : UInt256) ≠ UInt256.ofNat 0)
-                      (hz.symm.trans hn)) (by jump_dest) h3229
+                obtain ⟨_, _, h5868⟩ := safeRuntime_block_5841_fallthrough (by simp)
+                  (hword.trans hempty) h5841
                 cases hperm : I.perm with
                 | false =>
-                    have hstatic := safeEnableModuleTraceStatic h3277 (by simp) hperm
+                    have hstatic := safeEnableModuleTraceStatic h5868 (by simp) hperm
                     have hbody := safeEnableModuleSourceStatic (initState σ σ₀ (.ofUInt256 g) A I)
                       (calldataWord I.calldata 4) hcanon hvalue hauth hgood hempty' hperm
                     exact RDstatic.reEquivElim hcode hstatic fun hΞ ↦
                       reEquivSelectorExecution hdispatch hdec hbody (.staticHalt hΞ rfl)
                 | true =>
-                    have hmem : (safeRuntime_block_3229_taken_memory
+                    have hmem : (safeRuntime_block_5841_taken_memory
                         (mem := solcFreePtrMem) (x0 := calldataWord I.calldata 4)).size = 96 := by
-                      simp only [safeRuntime_block_3229_taken_memory, safeAddressMask,
+                      simp only [safeRuntime_block_5841_taken_memory, safeAddressMask,
                         solcAddrMask_clean_left hcanon]
                       exact twoWordHashMem_size_96 _ _ solcFreePtrMem_size
-                    have hret := safeEnableModuleTrace h3277 (by simp) hmem hcanon hperm
+                    have hret := safeEnableModuleTrace h5868 (by simp) hmem hcanon hperm
                     have hbody := safeEnableModuleSource (initState σ σ₀ (.ofUInt256 g) A I)
                       (calldataWord I.calldata 4) hcanon hvalue hauth hgood hempty'
                     refine reEquivReturnElim hcode hret fun _ _ hsuccess ↦ ?_
@@ -303,35 +306,45 @@ theorem safeEnablemoduleBodyCore
                         g) A I)
                         (calldataWord I.calldata 4)).symm
                         (.abi (.fallthrough rfl rfl encodeReturnValues_nil)))
-              · obtain ⟨_, _, h3261⟩ := safeRuntime_block_3229_fallthrough (by simp)
-                  (isZero_eq_zero_of_ne (fun hz ↦ hempty (hword.symm.trans hz))) h3229
-                have hrev := safeEnableModuleTraceExisting h3261 (by simp)
+              · obtain ⟨_, _, h5993⟩ := safeRuntime_block_5841_taken (by simp)
+                  (fun hz ↦ hempty (hword.symm.trans hz)) (by jump_dest) h5841
+                have hrev := safeEnableModuleTraceExisting h5993 (by simp)
                 have hbody := safeEnableModuleSourceExisting (initState σ σ₀ (.ofUInt256 g) A I)
                   (calldataWord I.calldata 4) hcanon hvalue hauth hgood (by rwa [hmodule])
                 exact RDrev.reEquivElim hcode hrev fun _ _ hΞ ↦
                   reEquivSelectorExecution hdispatch hdec hbody (.revert hΞ rfl)
-            · have hrev := safeEnableModuleTraceInvalid h3176 (by simp) hcanon hgood
+            · have hrev := safeEnableModuleTraceInvalid h5818 (by simp) hcanon hgood
               have hbody := safeEnableModuleSourceInvalid (initState σ σ₀ (.ofUInt256 g) A I)
                 (calldataWord I.calldata 4) hcanon hvalue hauth hgood
               exact RDrev.reEquivElim hcode hrev fun _ _ hΞ ↦
                 reEquivSelectorExecution hdispatch hdec hbody (.revert hΞ rfl)
-          · have hrev := safeUnauthorizedTrace h6757 (by simp [safeRuntime_block_3168_stack]) hauth
+          · have hrev := safeUnauthorizedTrace h9325 (by simp [safeRuntime_block_5810_stack]) hauth
             exact reEquivSelectorRevert hcode hdispatch hrev fun locals ↦
               safeEnableModuleUnauthorized _ locals hvalue hauth
-        · have hrev := safeDecodeAddressNoncanon h9591 (by simp) hcheck hcanon
+        · have hrev := safeDecodeAddressNoncanon h6952
+            (by simp [safeRuntime_block_5803_stack]) hcanon
           exact reEquivSelectorDecodingFailed (cfg := config) hcode hdispatch
             (decodeCalldata_address_none_noncanon hlen hbig hcanon) hrev
-      · have hrev := safeDecodeAddressRevert h9591 (by simp)
-          (solcDecodeLenCheckShort_4_32 hlong (by omega) hsize)
+      · have h111 := safeRuntime_block_5791_taken (by simp)
+          (by
+            rw [hlenWord]
+            change UInt256.slt (UInt256.sub (UInt256.ofNat I.calldata.size) ⟨4⟩) ⟨32⟩ ≠ ⟨0⟩
+            rw [solcDecodeLenCheckShort_4_32 hlong (by omega) hsize]
+            decide) (by jump_dest) h5791
+        have hrev := safeRuntime_block_111 (by simp) h111
         exact reEquivSelectorDecodingFailed (cfg := config) hcode hdispatch
           (decodeCalldata_address_none_short hlong (by omega)) hrev
-    · have hrev := safeDecodeAddressRevert h9591 (by simp)
-        (solcDecodeLenCheckHuge_4_32 (by omega) hsize)
+    · have h111 := safeRuntime_block_5791_taken (by simp)
+        (by
+          rw [hlenWord]
+          change UInt256.slt (UInt256.sub (UInt256.ofNat I.calldata.size) ⟨4⟩) ⟨32⟩ ≠ ⟨0⟩
+          rw [solcDecodeLenCheckHuge_4_32 (by omega) hsize]
+          decide) (by jump_dest) h5791
+      have hrev := safeRuntime_block_111 (by simp) h111
       exact reEquivSelectorDecodingFailed (cfg := config) hcode hdispatch
         (decodeCalldata_address_none_huge (by omega)) hrev
-  · have h996 := safeRuntime_block_988_fallthrough (by simp)
-      (isZero_eq_zero_of_ne hvalue) h988
-    have hrev := safeRuntime_block_996 (by simp [safeRuntime_block_988_fallthrough_stack]) h996
+  · have h111 := safeRuntime_block_5785_taken (by simp) hvalue (by jump_dest) h5785
+    have hrev := safeRuntime_block_111 (by simp) h111
     exact reEquivSelectorRevert hcode hdispatch hrev fun _ ↦ bodyReverts_nonPayable hvalue
 
 /-- Refinement obligation for `enableModule` (`enablemoduleTransition`). -/

@@ -3,10 +3,14 @@
 The port is incomplete. Artifact regeneration and the executable semantic gates passed;
 constructor, shared dispatcher, and generated block summaries build. The huge-calldata
 counterexample is addressed by a user-authorized decoder correction local to this benchmark.
-The remaining runtime proofs and whole-contract axiom audit have not been completed.
+The remaining runtime proofs and whole-contract axiom audit have not been completed. A second,
+formally checked counterexample now blocks the unrestricted runtime claim: the model permits
+execution with no account at `I.codeOwner`, for which the IR caches a value that storage does
+not retain. The specification and protected theorem statements have not been changed for it.
 
-Ten runtime obligations now build: receive, fallback, `nonce`, `getThreshold`, `signedMessages`,
-`approvedHashes`, `isOwner`, `isModuleEnabled`, `domainSeparator`, and `VERSION`. The zero-argument
+Sixteen runtime obligations now build: receive, fallback, `nonce`, `getThreshold`, `signedMessages`,
+`approvedHashes`, `isOwner`, `isModuleEnabled`, `domainSeparator`, `VERSION`, `changeThreshold`,
+`setFallbackHandler`, `approveHash`, `enableModule`, `disableModule`, and `swapOwner`. The zero-argument
 proofs include the new signed length failure; the mapping getters include short, huge, and
 noncanonical calldata where applicable. Fallback covers handler absence, call success and
 failure, static callers, call-depth failure, and oversized calldata exhausting gas.
@@ -17,7 +21,13 @@ checks at their callers. The bytes32 decoding lemma keeps its statement and proo
 layer. The existing selector-miss fold also proves arrival at the final selector arm, whose
 comparison consumes the selector. The module-membership trace uses the new branch order and
 preserves its memory guarantees. Source evaluation lemmas and the public refinement statements
-are unchanged.
+are unchanged. The authorization and owner-validation traces now follow the IR's subtraction
+tests and changed stack order, including the delegated-account branch. Owner insertion/removal
+guards retain their memory-preservation conclusions. Pair/triple address decoding follows the
+inlined external entry paths and the three shared single-address routines. State-changing
+traces cover their new storage-write order, static violations, and inlined threshold/event
+returns. The scratch-memory preservation lemma was moved unchanged to the existing byte-copy
+layer to avoid importing unrelated, still-unported module execution traces.
 
 Solc `0.8.35+commit.47b9dedd`, with only `--via-ir` added, produces an 11,003-byte runtime and
 11,034-byte creation program. The constructor prelude shrinks from 33 to 31 bytes and copies
@@ -94,3 +104,33 @@ axioms or proof holes.
 This formal input is outside physically realizable calldata, which explains why the passing
 finite audits do not detect it. The local specification correction resolves this particular
 discrepancy; the remaining runtime proof repair is still required for whole-contract correctness.
+
+The new blocker is independent of ABI decoding. With an empty account map, set both caller and
+code owner to `0x1000`, provide the actual runtime as `I.code`, and call
+`addOwnerWithThreshold(0x2000, 1)` with zero value, write permission, and 100,000 gas. The input
+is 68 bytes and satisfies every current public premise. The actual `Ξ` execution succeeds,
+returns empty bytes, and leaves 28,205 gas. The source transition reverts: both models make
+storage writes to an absent account no-ops, so the source reads owner count zero after assigning
+one. The IR retains the computed one on its stack at PC 6831 and compares the new threshold
+against it at PC 6891, without reloading slot 3.
+
+`safeIRAbsentOwnerPremises` and `safeIRAbsentOwnerDecoding` check the input and successful
+decoding. `safeIRAbsentOwnerExecution` certifies the actual EVM success and gas remainder;
+`safeIRAbsentOwnerSourceReverts` constructs the source derivation. The independent inversion
+proof `safeIRAbsentOwnerSourceCannotReturn` excludes every successful source derivation,
+including the relation's alternative control-flow constructors. Consequently,
+`safeIRAbsentOwnerNotRefines` proves the negation of `runtimeRefinementFor` for this input.
+Build the witness with `lake build Benchmarks.Safe.ViaIR.IRAbsentAccount`.
+The witness builds, and its axiom audit contains the standard three axioms and eight
+native-decision certificates. The combined build of all sixteen repaired entrypoints passes;
+the six newly repaired public proofs also pass individual axiom scans with only the permitted
+axioms and native certificates. All 36 protected declarations still match the baseline text,
+and the copy contains no proof holes or added custom axioms.
+
+This is a gap between the theorem's unrestricted input domain and the model's storage
+semantics. The witness supplies executable code separately from the absent account; it is not
+evidence of a compiler error on ordinary deployed-account execution. Requiring an existing
+executing account would exclude this witness, but would change protected theorem statements.
+Changing absent-account storage semantics would require shared-library edits outside the
+authorized scope. Neither change has been made. Per the original instruction to investigate,
+report, and wait when a claim is unprovable, the port awaits a decision on this model boundary.

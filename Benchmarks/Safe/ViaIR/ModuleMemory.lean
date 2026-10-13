@@ -6,15 +6,6 @@ open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.ViaIR
 
--- GENERALIZES twoWordHashMem_read32_above64 to arbitrary in-bounds read lengths.
-theorem twoWordHashRead (key slot : UInt256) (mem : ByteArray) (off count : Nat)
-    (hin : off + count ≤ mem.size) (hlo : 64 ≤ off) :
-    (twoWordHashMem key slot mem).readWithPadding off count =
-      mem.readWithPadding off count := by
-  change (writeWord (writeWord mem 0 key) 32 slot).readWithPadding off count = _
-  rw [writeWordReadAbove _ _ _ _ _ (by rw [writeWord_sparse_size]; omega)
-    (by omega), writeWordReadAbove _ _ _ _ _ hin (by omega)]
-
 theorem preModuleReturnRead (mem out : ByteArray) (ptr : UInt256) (off count : Nat)
     (hm : ptr.toNat ≤ mem.size) (hlo : 96 ≤ off) (hhi : off + count ≤ ptr.toNat) :
     (preModuleReturnMemory mem out ptr).readWithPadding off count =

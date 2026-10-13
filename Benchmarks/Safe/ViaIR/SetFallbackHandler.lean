@@ -1,8 +1,8 @@
 import Benchmarks.Safe.ViaIR.Dispatch
 import Benchmarks.Safe.ViaIR.InternalSetFallbackHandler
-import Benchmarks.Safe.ViaIR.Blocks.Runtime_006
-import Benchmarks.Safe.ViaIR.Blocks.Runtime_012
-import Benchmarks.Safe.ViaIR.Blocks.Runtime_028
+import Benchmarks.Safe.ViaIR.IRLengthCheck
+import Benchmarks.Safe.ViaIR.Blocks.Runtime_004
+import Benchmarks.Safe.ViaIR.Blocks.Runtime_007
 
 open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open safeRuntimeBlocks
@@ -78,15 +78,14 @@ theorem safeSetFallbackHandlerUnauthorized (evm : EVM.State) (locals : Store)
     (by simpa [hauth] using safeEvalAuthorized evm _))
 
 theorem safeSetFallbackHandlerTrace {I g s0 σ k C} {handler : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨8283⟩ (handler :: ⟨6472⟩ :: handler :: ⟨664⟩ :: R)
+    (h : RD safeBytecode I g s0 ⟨10692⟩ (handler :: ⟨1106⟩ :: handler :: ⟨0⟩ :: R)
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C)
     (hov : R.length + 6 ≤ 1024) (hperm : I.perm = true) :
     RDret safeBytecode g s0 (sstoreAccountMap I.codeOwner σ fallbackHandlerSlot handler)
       ByteArray.empty := by
-  obtain ⟨_, _, h6472⟩ := safeInternalFallbackTrace h (by simp; omega) hperm (by jump_dest)
-  have h664 := safeRuntime_block_6472 hov hperm (by jump_dest) h6472
-  exact safeRuntime_block_664 (by simpa only [safeRuntime_block_6472_stack] using
-    (show R.length + 0 ≤ 1024 by omega)) h664
+  obtain ⟨_, _, h1106⟩ := safeInternalFallbackTrace h (by simp; omega) hperm (by jump_dest)
+  have hret := safeRuntime_block_1106 (by omega) hperm h1106
+  simpa only [show (⟨0⟩ : UInt256).toNat = 0 from rfl, byteArray_readWithPadding_zero] using hret
 
 theorem safeSetfallbackhandlerBodyCore
     (hcode : I.code = safeBytecode)
@@ -95,55 +94,58 @@ theorem safeSetfallbackhandlerBodyCore
     runtimeRefinementFor config contract σ σ₀ g A I := by
   obtain ⟨hlong, hword⟩ := selectorDispatchFacts 0xf0 0x8a 0x03 0x23 ⟨0xf08a0323⟩
     hdispatch setfallbackhandlerSelectorBytes (by decide)
-  obtain ⟨k, C, h1521⟩ := safeReachEntry (σ := σ) (σ₀ := σ₀) (A := A)
-    (g := Sat256.ofUInt256 g) ⟨0xf08a0323⟩ 3 ⟨1521⟩ hcode hsize hlong hword
+  obtain ⟨k, C, h1063⟩ := safeReachEntry (σ := σ) (σ₀ := σ₀) (A := A)
+    (g := Sat256.ofUInt256 g) ⟨0xf08a0323⟩ 26 ⟨1063⟩ hcode hsize hlong hword
     (by native_decide)
+  have hlenWord := safeIRArgumentSizeSub hlong hsize
   by_cases hvalue : I.weiValue = ⟨0⟩
-  · have h1532 := safeRuntime_block_1521_taken (by simp)
-      (by rw [hvalue]; decide) (by jump_dest) h1521
-    have h9591 := safeRuntime_block_1532 (by simp) (by jump_dest) h1532
+  · have h1070 := safeRuntime_block_1063_fallthrough (by simp) hvalue h1063
+    simp only [safeRuntime_block_1063_fallthrough_stack] at h1070
     by_cases hbig : I.calldata.size < 2 ^ 255 + 4
     · by_cases hlen : 36 ≤ I.calldata.size
-      · have hcheck := solcDecodeLenCheckOk_4_32 hlen hbig hsize
+      · have h1082 := safeRuntime_block_1070_fallthrough (by simp)
+          (by rw [hlenWord]; exact solcDecodeLenCheckOk_4_32 hlen hbig hsize) h1070
+        have h6952 := safeRuntime_block_1082 (by simp) (by jump_dest) h1082
         by_cases hcanon : (calldataWord I.calldata 4).toNat < EVM.addressModulus
-        · obtain ⟨_, _, h1547⟩ := safeDecodeAddress h9591 (by simp) hcheck hcanon (by jump_dest)
-          have h6455 := safeRuntime_block_1547 (by simp) (by jump_dest) h1547
-          have h6757 := safeRuntime_block_6455 (by simp) (by jump_dest) h6455
+        · obtain ⟨_, _, h1089⟩ := safeDecodeAddress h6952
+            (by simp [safeRuntime_block_1082_stack]) hcanon (by jump_dest)
+          have h9325 := safeRuntime_block_1089 (by simp) (by jump_dest) h1089
           have hdec : config.externalABI.decodeCalldata?
               (setfallbackhandlerTransition.params.map Param.name)
               (transitionSignature setfallbackhandlerTransition).paramTypes I.calldata =
               some (fallbackHandlerArgs (calldataWord I.calldata 4)) :=
             decodeCalldata_address_ok hlen hbig hcanon
           by_cases hauth : I.source = I.codeOwner
-          · obtain ⟨_, _, h6463⟩ := safeAuthorizedTrace h6757 (by simp) hauth (by jump_dest)
-            have h8250 := safeRuntime_block_6463 (by simp) (by jump_dest) h6463
+          · obtain ⟨_, _, h1097⟩ := safeAuthorizedTrace h9325 (by simp) hauth (by jump_dest)
+            have h10675 := safeRuntime_block_1097 (by simp) (by jump_dest) h1097
             by_cases heq : AccountAddress.ofNat (calldataWord I.calldata 4).toNat = I.codeOwner
-            · have h8267 := safeRuntime_block_8250_fallthrough (by simp)
-                (by rw [safeAddressMask, show (UInt256.ofNat 4).toNat = 4 by rfl,
-                      solcAddrMask_clean hcanon]
-                    exact u256_sub_eq_zero_iff_eq.mpr
-                      ((canonicalAddress_eq_address_iff _ _ hcanon).mp heq)) h8250
-              have hrev := safeInternalFallbackTraceRevert h8267 (by simp)
+            · have h10727 := safeRuntime_block_10675_taken (by simp)
+                (by
+                  rw [safeAddressMask, solcAddrMask_clean hcanon,
+                    (canonicalAddress_eq_address_iff _ _ hcanon).mp heq, uInt256_eq_self]
+                  decide) (by jump_dest) h10675
+              have hrev := safeInternalFallbackTraceRevert h10727
+                (by simp [safeRuntime_block_1097_stack])
               have hbody := safeSetFallbackHandlerSourceRevert
                 (initState σ σ₀ (.ofUInt256 g) A I) (calldataWord I.calldata 4) hvalue hauth heq
               exact RDrev.reEquivElim hcode hrev fun _ _ hΞ ↦
                 reEquivSelectorExecution hdispatch hdec hbody (.revert hΞ rfl)
-            · have h8283 := safeRuntime_block_8250_taken (by simp)
-                (by rw [safeAddressMask, show (UInt256.ofNat 4).toNat = 4 by rfl,
-                      solcAddrMask_clean hcanon]
-                    exact u256_sub_ne_zero_of_ne
-                      (fun hw ↦ heq ((canonicalAddress_eq_address_iff _ _ hcanon).mpr hw)))
-                (by jump_dest) h8250
+            · have h10692 := safeRuntime_block_10675_fallthrough (by simp)
+                (by
+                  rw [safeAddressMask, solcAddrMask_clean hcanon]
+                  exact uInt256_eq_zero_of_ne (fun hw ↦ heq
+                    ((canonicalAddress_eq_address_iff _ _ hcanon).mpr
+                      (uInt256_eq_one_eq hw).symm))) h10675
               cases hperm : I.perm with
               | false =>
-                  have hstatic := safeInternalFallbackTraceStatic h8283 (by simp) hperm
+                  have hstatic := safeInternalFallbackTraceStatic h10692 (by simp) hperm
                   have hbody := safeSetFallbackHandlerSourceStatic
                     (initState σ σ₀ (.ofUInt256 g) A I) (calldataWord I.calldata 4)
                     hcanon hvalue hauth heq hperm
                   exact RDstatic.reEquivElim hcode hstatic fun hΞ ↦
                     reEquivSelectorExecution hdispatch hdec hbody (.staticHalt hΞ rfl)
               | true =>
-                  have hret := safeSetFallbackHandlerTrace h8283 (by simp) hperm
+                  have hret := safeSetFallbackHandlerTrace h10692 (by simp) hperm
                   have hbody := safeSetFallbackHandlerSource
                     (initState σ σ₀ (.ofUInt256 g) A I) (calldataWord I.calldata 4)
                     hcanon hvalue hauth heq
@@ -151,23 +153,33 @@ theorem safeSetfallbackhandlerBodyCore
                   exact reEquivSelectorExecution hdispatch hdec hbody
                     (.success hsuccess rfl (by simp only [storageStore_accountMap]; rfl)
                       (.abi (.fallthrough rfl rfl encodeReturnValues_nil)))
-          · have hrev := safeUnauthorizedTrace h6757 (by simp [safeRuntime_block_6455_stack]) hauth
+          · have hrev := safeUnauthorizedTrace h9325 (by simp [safeRuntime_block_1089_stack]) hauth
             exact reEquivSelectorRevert hcode hdispatch hrev fun locals ↦
               safeSetFallbackHandlerUnauthorized _ locals hvalue hauth
-        · have hrev := safeDecodeAddressNoncanon h9591 (by simp) hcheck hcanon
+        · have hrev := safeDecodeAddressNoncanon h6952
+            (by simp [safeRuntime_block_1082_stack]) hcanon
           exact reEquivSelectorDecodingFailed (cfg := config) hcode hdispatch
             (decodeCalldata_address_none_noncanon hlen hbig hcanon) hrev
-      · have hrev := safeDecodeAddressRevert h9591 (by simp)
-          (solcDecodeLenCheckShort_4_32 hlong (by omega) hsize)
+      · have h589 := safeRuntime_block_1070_taken (by simp)
+          (by
+            rw [hlenWord]
+            change UInt256.slt (UInt256.sub (UInt256.ofNat I.calldata.size) ⟨4⟩) ⟨32⟩ ≠ ⟨0⟩
+            rw [solcDecodeLenCheckShort_4_32 hlong (by omega) hsize]
+            decide) (by jump_dest) h1070
+        have hrev := safeRuntime_block_589 (by simp) h589
         exact reEquivSelectorDecodingFailed (cfg := config) hcode hdispatch
           (decodeCalldata_address_none_short hlong (by omega)) hrev
-    · have hrev := safeDecodeAddressRevert h9591 (by simp)
-        (solcDecodeLenCheckHuge_4_32 (by omega) hsize)
+    · have h589 := safeRuntime_block_1070_taken (by simp)
+        (by
+          rw [hlenWord]
+          change UInt256.slt (UInt256.sub (UInt256.ofNat I.calldata.size) ⟨4⟩) ⟨32⟩ ≠ ⟨0⟩
+          rw [solcDecodeLenCheckHuge_4_32 (by omega) hsize]
+          decide) (by jump_dest) h1070
+      have hrev := safeRuntime_block_589 (by simp) h589
       exact reEquivSelectorDecodingFailed (cfg := config) hcode hdispatch
         (decodeCalldata_address_none_huge (by omega)) hrev
-  · have h1529 := safeRuntime_block_1521_fallthrough (by simp)
-      (isZero_eq_zero_of_ne hvalue) h1521
-    have hrev := safeRuntime_block_1529 (by simp [safeRuntime_block_1521_fallthrough_stack]) h1529
+  · have h589 := safeRuntime_block_1063_taken (by simp) hvalue (by jump_dest) h1063
+    have hrev := safeRuntime_block_589 (by simp) h589
     exact reEquivSelectorRevert hcode hdispatch hrev fun _ ↦ bodyReverts_nonPayable hvalue
 
 /-- Refinement obligation for `setFallbackHandler` (`setfallbackhandlerTransition`). -/

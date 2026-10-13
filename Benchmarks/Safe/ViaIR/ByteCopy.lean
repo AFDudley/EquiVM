@@ -67,4 +67,16 @@ theorem copyWindowReadAbove (src mem : ByteArray) (srcOff dest len off count : N
     extract_append_right_window _ _ _ _ (by rw [hp]; omega), hp, extract_extract_BA]
   congr 1 <;> omega
 
+-- GENERALIZES twoWordHashMem_read32_above64 to arbitrary in-bounds read lengths.
+theorem twoWordHashRead (key slot : UInt256) (mem : ByteArray) (off count : Nat)
+    (hin : off + count ≤ mem.size) (hlo : 64 ≤ off) :
+    (twoWordHashMem key slot mem).readWithPadding off count =
+      mem.readWithPadding off count := by
+  have hs := byteArray_write_size_ge_base key.toByteArray mem 0 0 32
+  change (slot.toByteArray.write 0 (key.toByteArray.write 0 mem 0 32) 32 32).readWithPadding
+    off count = _
+  rw [copyWindowReadAbove _ _ _ _ _ _ _ (by rw [toByteArray_size]) (by omega)
+    (by omega) (by omega),
+    copyWindowReadAbove _ _ _ _ _ _ _ (by rw [toByteArray_size]) (by omega) hin (by omega)]
+
 end Benchmarks.Safe.ViaIR
