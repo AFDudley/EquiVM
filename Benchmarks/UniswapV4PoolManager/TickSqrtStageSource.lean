@@ -33,7 +33,7 @@ theorem tickSqrtStageExec {f : Frame} {evm : EVM.State} {absTick price : UInt256
     let f' : Frame := {f with locals := f.locals.insert "price" (.int
       (Int.ofNat (UInt256.shiftRight (UInt256.mul price factor) (UInt256.ofNat 128)).toNat))}
     refine ⟨f', ExecStmt.iteTrue (by simpa only [decide_eq_true hb] using hc)
-      (execBlock_singleton (ExecStmt.assign hs (assignLocalValue hp))), ?_, ?_⟩
+      (execBlock_singleton (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hs (assignLocalValue hp))), ?_, ?_⟩
     · simpa only [tickSqrtStage, if_pos hb] using store_get_self f.locals "price" _
     · intro name hname
       exact store_get_ne _ _ (beq_eq_false_iff_ne.mpr (Ne.symm hname))

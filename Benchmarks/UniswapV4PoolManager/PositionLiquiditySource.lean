@@ -64,7 +64,7 @@ theorem positionLiquidityBranch {f : Frame} {evm : EVM.State} {id key liquidity 
       · rw [if_pos hp]
         exact ExecBlock.consNormal hcall (ExecBlock.consStatic (ExecStmt.assignStatic wordLocal_eval hwrite hp))
       · simp only [if_neg hp, positionChangeFrame, positionChangeState, if_neg hz]
-        exact ExecBlock.consNormal hcall (execBlock_singleton (ExecStmt.assign wordLocal_eval hwrite))
+        exact ExecBlock.consNormal hcall (execBlock_singleton (ExecStmt.assign (hperm := Or.inr (Bool.eq_true_of_not_eq_false hp)) wordLocal_eval hwrite))
     · rw [if_neg hfit] at hcall ⊢
       exact ExecBlock.consRevert hcall
 

@@ -27,7 +27,7 @@ theorem poolSwapInputAmountSource {f : Frame} {evm : State}
     have hr1 : f1.locals.get? "amountSpecifiedRemaining" = some (.int (EVM.signed remaining)) :=
       (store_get_ne _ _ (by decide : ("__c18" == "amountSpecifiedRemaining") = false)).trans hr
     have hremaining : ExecStmt config f1 evm poolSwapInputAmountStmts[1]! (.ok f2 evm) :=
-      ExecStmt.assign (evalSignedWordAdd (evalLocalValue hr1) (evalLocalValue (store_get_self _ _ _)))
+      ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalSignedWordAdd (evalLocalValue hr1) (evalLocalValue (store_get_self _ _ _)))
         (assignLocalValue hr1)
     have hs2 : f2.locals.get? "step" = some (poolSwapStepValue s) :=
       (store_get_ne2 _ _ _ (by decide : ("__c18" == "step") = false)
@@ -49,7 +49,7 @@ theorem poolSwapInputAmountSource {f : Frame} {evm : State}
           rw [← wordOfInt_signed_add, signed_wordOfInt hfit]
         rw [← he] at hlast
         exact ExecBlock.consNormal hfirst (ExecBlock.consNormal hremaining (ExecBlock.consNormal hsecond
-          (execBlock_singleton (ExecStmt.assign hlast (assignLocalValue hc3)))))
+          (execBlock_singleton (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hlast (assignLocalValue hc3)))))
       · rw [if_neg hfit] at hlast
         rw [if_neg (show ¬poolSwapInputAmountFits s calculated from fun h => hfit h.2.2)]
         exact ExecBlock.consNormal hfirst (ExecBlock.consNormal hremaining (ExecBlock.consNormal hsecond

@@ -72,6 +72,6 @@ theorem tickScanInitializedSource {f : Frame} {evm : EVM.State} {compressed spac
   have he := tickScanNext_eval lte hc1 hs1 (tickScanDistance_fits _ _ _)
     (tickScanDistance_eval (evm := evm) lte hb1 hi1)
   exact ExecBlock.consNormal (tickScanIndexCall lte hf (evalLocalValue hm) hn)
-    (execBlock_singleton (ExecStmt.assign he (assignLocalValue ho1)))
+    (execBlock_singleton (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) he (assignLocalValue ho1)))
 
 end Benchmarks.UniswapV4PoolManager

@@ -26,7 +26,7 @@ theorem poolSwapOutputAmountSource {f : Frame} {evm : State}
     have hr1 : f1.locals.get? "amountSpecifiedRemaining" = some (.int (EVM.signed remaining)) :=
       (store_get_ne _ _ (by decide : ("__c16" == "amountSpecifiedRemaining") = false)).trans hr
     have hremaining : ExecStmt config f1 evm poolSwapOutputAmountStmts[1]! (.ok f2 evm) :=
-      ExecStmt.assign (evalSignedWordSub (evalLocalValue hr1) (evalLocalValue (store_get_self _ _ _)))
+      ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalSignedWordSub (evalLocalValue hr1) (evalLocalValue (store_get_self _ _ _)))
         (assignLocalValue hr1)
     have hs2 : f2.locals.get? "step" = some (poolSwapStepValue s) :=
       (store_get_ne2 _ _ _ (by decide : ("__c16" == "step") = false)
@@ -51,7 +51,7 @@ theorem poolSwapOutputAmountSource {f : Frame} {evm : State}
             rw [← wordOfInt_signed_sub, signed_wordOfInt hfit]
           rw [← he] at hlast
           exact ExecBlock.consNormal hfirst (ExecBlock.consNormal hremaining (ExecBlock.consNormal hsecond
-            (execBlock_singleton (ExecStmt.assign hlast (assignLocalValue hc3)))))
+            (execBlock_singleton (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hlast (assignLocalValue hc3)))))
         · rw [if_neg (show ¬signedFits ⟨256, by decide⟩ (EVM.signed calculated-EVM.signed total) from hfit)] at hlast
           rw [if_neg (show ¬poolSwapOutputAmountFits s calculated from fun h => hfit h.2.2.2)]
           exact ExecBlock.consNormal hfirst (ExecBlock.consNormal hremaining (ExecBlock.consNormal hsecond

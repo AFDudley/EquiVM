@@ -29,6 +29,6 @@ theorem poolSwapBoundaryTickSource {f : Frame} {evm : State}
       exact evalSigned24Sub (poolSwapStep_tick_eval hs)
         (show evalExpr? config f evm (.intLit 1) = .ok (.int (EVM.signed (⟨1⟩ : UInt256))) by
           simp only [evalExpr?, pure]; rfl)
-  exact ExecStmt.assign he (assignLocalField hr rfl rfl)
+  exact ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) he (assignLocalField hr rfl rfl)
 
 end Benchmarks.UniswapV4PoolManager

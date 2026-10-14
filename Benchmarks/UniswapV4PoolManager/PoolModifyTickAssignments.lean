@@ -33,7 +33,7 @@ theorem poolModifyTickAssignments {f : Frame} {evm : State} {upper flipped fl fu
   let f1 := {f with locals := f.locals.insert "state" (poolModifyFlipValue upper flipped fl gl fu gu)}
   have he0 := evalTupleProjection (evalLocalValue (cfg := config) (f := f) (evm := evm) hr) (i := 0) rfl
   have h0 : ExecStmt config f evm (poolModifyTickAssignBlock upper)[0]! (.ok f1 evm) :=
-    ExecStmt.assign he0 (assignLocalField hs
+    ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) he0 (assignLocalField hs
       (show lookupField? (poolModifyStateValue fl gl fu gu) (poolModifyFlipField upper) =
         some (.bool (if upper then fu else fl)) by cases upper <;> rfl)
       (by cases upper <;> rfl))
@@ -42,7 +42,7 @@ theorem poolModifyTickAssignments {f : Frame} {evm : State} {upper flipped fl fu
   have he1 := evalTupleProjection (evalLocalValue (cfg := config) (f := f1) (evm := evm) hr1) (i := 1) rfl
   have h1 : ExecStmt config f1 evm (poolModifyTickAssignBlock upper)[1]!
       (.ok (poolModifyTickFrame f upper flipped gross fl gl fu gu) evm) :=
-    ExecStmt.assign he1 (assignLocalField (store_get_self _ _ _)
+    ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) he1 (assignLocalField (store_get_self _ _ _)
       (show lookupField? (poolModifyFlipValue upper flipped fl gl fu gu) (poolModifyGrossField upper) =
         some (.int (Int.ofNat (if upper then gu else gl).toNat)) by cases upper <;> rfl)
       (by cases upper <;> rfl))

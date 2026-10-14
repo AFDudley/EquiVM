@@ -24,7 +24,7 @@ theorem uintToUint160Body {f : Frame} {evm : EVM.State} {w : UInt256}
     (evalLocalValue (cfg := config) (f := f0) (evm := evm) hx0)
   rw [normalizeUintWord ⟨160, by decide⟩ w solcAddrMask rfl] at hc
   have h1 : ExecStmt config f0 evm uintToUint160Function.body[1]! (.ok f1 evm) :=
-    ExecStmt.assign hc (assignLocalValue (store_get_self _ _ _))
+    ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hc (assignLocalValue (store_get_self _ _ _))
   have hx1 : f1.locals.get? "x" = some (.int (Int.ofNat w.toNat)) :=
     (store_get_ne _ _ (by decide : ("y" == "x") = false)).trans hx0
   have hy : f1.locals.get? "y" = some (.int (Int.ofNat (UInt256.land w solcAddrMask).toNat)) :=

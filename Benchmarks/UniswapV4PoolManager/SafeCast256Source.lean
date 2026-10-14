@@ -31,7 +31,7 @@ theorem uintToInt256Body {f : Frame} {evm : EVM.State} {w : UInt256}
     (evalLocalValue (cfg := config) (f := f0) (evm := evm) hx0)
   rw [normalizeInt_sint256_word] at hcast
   have h1 : ExecStmt config f0 evm uintToInt256Function.body[1]! (.ok f1 evm) :=
-    ExecStmt.assign hcast (assignLocalValue (store_get_self _ _ _))
+    ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hcast (assignLocalValue (store_get_self _ _ _))
   have hy : f1.locals.get? "y" = some (.int (EVM.signed w)) := store_get_self _ _ _
   have hguard : evalExpr? config f1 evm (.binary .lt (.var "y") (.intLit 0)) =
       .ok (.bool (decide (EVM.signed w < 0))) := by

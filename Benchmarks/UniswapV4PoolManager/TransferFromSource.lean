@@ -118,7 +118,7 @@ theorem transferFromAuthExec {f : Frame} {evm : EVM.State} {sender receiver id a
             (ExecBlock.consStatic (ExecStmt.assignStatic heval hwrite hperm)))
         · rw [if_neg hperm]
           exact ExecBlock.consNormal (ExecStmt.iteTrue hcondTrue
-            (ExecBlock.consNormal (ExecStmt.assign heval hwrite) ExecBlock.nil)) ExecBlock.nil
+            (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (Bool.eq_true_of_not_eq_false hperm)) heval hwrite) ExecBlock.nil)) ExecBlock.nil
       · rw [if_neg hsub]
         exact ExecBlock.consRevert (ExecStmt.iteTrue hcondTrue
           (ExecBlock.consRevert (ExecStmt.assignExprRevert

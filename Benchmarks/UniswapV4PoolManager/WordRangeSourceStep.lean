@@ -55,8 +55,8 @@ theorem wordRangeLoopStep (evm : EVM.State) (imms locals : Store) (start : UInt2
   have hi1 : l1.get? "i" = some (.int (Int.ofNat i)) :=
     (store_get_ne _ _ (by decide)).trans hl.index_eq
   refine ⟨l2, ?_, ?_⟩
-  · refine ExecBlock.consNormal (ExecStmt.assign ?_ (assignLocalArrayIndex hl.result_eq hl.index_eq (by omega)))
-      (ExecBlock.consNormal (ExecStmt.assign
+  · refine ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) ?_ (assignLocalArrayIndex hl.result_eq hl.index_eq (by omega)))
+      (ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
         (naturalAddSource (evalLocalValue hi1) (by simp only [evalExpr?, pure]; rfl))
         (assignLocalValue hi1)) ExecBlock.nil)
     exact evalCastValue (rawSlots_read rfl hl.raw_eq (wordRangeSlot_eval hl.start_eq hl.index_eq))

@@ -42,7 +42,7 @@ theorem currencyTransferMemoryTrace {I : ExecutionEnv} {g : Sat256} {s0 evm : St
         (byteArray_readWithPadding_zero mem 0) (by decide) (by simp; omega)
       have hcall' : callViaEVM evm recipient (Int.ofNat amount.toNat) .empty (z, evm', out) := by
         simpa only [accountWord, accountAddress_roundtrip] using hcall
-      obtain ⟨f', hb⟩ := currencyTransferNativeBody hc ht ha hcall'
+      obtain ⟨f', hb⟩ := currencyTransferNativeBody (hperm := by simpa only [hI, or_comm] using hp) hc ht ha hcall'
       cases z with
       | false =>
         have rd4 := poolManagerBlocks.poolManager_block_12835_taken (by simp; omega) (by decide)

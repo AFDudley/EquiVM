@@ -64,8 +64,8 @@ theorem wordArrayLoopStep (transient : Bool) (evm : EVM.State) (locals imms : St
   have hlookup : slots[i]? = some (wordBytes32Value (wordArraySlot evm.executionEnv i)) := by
     simpa only [← lookupNth_eq_getElem, wordArraySlot] using hd.lookup hi
   refine ⟨l2, ?_, ?_⟩
-  · refine ExecBlock.consNormal (ExecStmt.assign ?_ (assignLocalArrayIndex hl.result_eq hl.index_eq
-      (by omega))) (ExecBlock.consNormal (ExecStmt.assign
+  · refine ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) ?_ (assignLocalArrayIndex hl.result_eq hl.index_eq
+      (by omega))) (ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
         (naturalAddSource (evalLocalValue hi1) (by simp only [evalExpr?, pure]; rfl))
         (assignLocalValue hi1)) ExecBlock.nil)
     exact evalCastValue (wordArrayRead_eval transient rfl hl.raw_eq (evalCastValue

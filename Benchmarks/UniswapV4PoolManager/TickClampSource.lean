@@ -42,7 +42,7 @@ theorem tickClampLowerSource {cfg : Config} {f : Frame} {evm : State} {s : PoolS
   · rw [tickClampLowerFrame, if_pos hl]
     apply ExecStmt.iteTrue (by simpa only [decide_eq_true hl] using hguard)
     apply execBlock_singleton
-    exact ExecStmt.assign (by simpa only [tickMinWord_signed] using he) (poolSwapStep_tick_assign hs tickMinWord)
+    exact ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (by simpa only [tickMinWord_signed] using he) (poolSwapStep_tick_assign hs tickMinWord)
   · rw [tickClampLowerFrame, if_neg hl]
     exact ExecStmt.iteFalse (by simpa only [decide_eq_false hl] using hguard) ExecBlock.nil
 
@@ -60,7 +60,7 @@ theorem tickClampUpperSource {cfg : Config} {f : Frame} {evm : State} {s : PoolS
   · rw [tickClampUpperFrame, if_pos hh]
     apply ExecStmt.iteTrue (by simpa only [decide_eq_true hh] using hguard)
     apply execBlock_singleton
-    exact ExecStmt.assign (by simpa only [tickMaxWord_signed] using he) (poolSwapStep_tick_assign hs tickMaxWord)
+    exact ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (by simpa only [tickMaxWord_signed] using he) (poolSwapStep_tick_assign hs tickMaxWord)
   · rw [tickClampUpperFrame, if_neg hh]
     exact ExecStmt.iteFalse (by simpa only [decide_eq_false hh] using hguard) ExecBlock.nil
 

@@ -37,7 +37,7 @@ theorem afterSwapUpdateSource {f : Frame} {evm : State} {unspecified : Int} {del
     have hsum := evalSignedRange ⟨128, by decide⟩ hadd
     by_cases hs : signedFits ⟨128, by decide⟩ (unspecified+EVM.signed delta)
     · rw [if_pos hs] at hsum ⊢
-      exact ExecBlock.consNormal hcast (execBlock_singleton (ExecStmt.assign hsum (assignLocalValue hu1)))
+      exact ExecBlock.consNormal hcast (execBlock_singleton (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hsum (assignLocalValue hu1)))
     · rw [if_neg hs] at hsum ⊢
       exact ExecBlock.consNormal hcast (ExecBlock.consRevert (ExecStmt.assignExprRevert hsum))
   · rw [if_neg hc] at hcast

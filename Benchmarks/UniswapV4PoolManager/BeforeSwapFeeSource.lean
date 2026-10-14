@@ -44,7 +44,7 @@ theorem beforeSwapFeeSource {f : Frame} {evm : State} {key : PoolKeyWords} {out 
     have hcast := evalExpr_cast_int (intType := .uint ⟨24, by decide⟩) hdecode
     rw [normalizeUintWord ⟨24, by decide⟩ _ ⟨16777215⟩ rfl] at hcast
     exact ExecStmt.iteTrue (hcondition.trans (by rw [decide_eq_true hd]))
-      (execBlock_singleton (ExecStmt.assign hcast (assignLocalValue hf)))
+      (execBlock_singleton (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hcast (assignLocalValue hf)))
   · rw [beforeSwapFeeFrame, if_neg hd]
     exact ExecStmt.iteFalse (hcondition.trans (by rw [decide_eq_false hd])) ExecBlock.nil
 

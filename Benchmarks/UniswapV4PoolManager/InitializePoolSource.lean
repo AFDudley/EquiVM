@@ -86,7 +86,9 @@ theorem initializePoolSource {f : Frame} {evm evm' : EVM.State} {key : PoolKeyWo
           (store_get_ne3 _ _ _ _ (by decide : ("id" == "tick") = false)
             (by decide : (initializePoolAlias == "tick") = false)
             (by decide : ("__c5" == "tick") = false)).trans ht
-        have hafter := initializeAfterPoolSource (f := f3)
+        have hafter := initializeAfterPoolSource (hperm := by
+          simpa only [poolInitializePost, storageStore_executionEnv] using
+            Bool.eq_true_of_not_eq_false hperm) (f := f3)
           (evm := poolInitializePost evm (poolKeyId key) price tick fee) hf hc hprice
           (tickPriceResult_canonical hresult) hk3 hp3 (store_get_self _ _ _) hi3 ht3
           (by simpa only [poolInitializePost, storageStore_executionEnv] using

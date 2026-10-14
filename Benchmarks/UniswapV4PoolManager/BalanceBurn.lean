@@ -38,7 +38,7 @@ theorem balanceBurnBodyExec {f : Frame} {evm : EVM.State} {sender id amount : UI
       exact ExecFuncBody.execBlockStatic (ExecBlock.consStatic (ExecStmt.assignStatic heval hwrite hp))
     · rw [if_neg hp]
       apply ExecFuncBody.execBlockOK
-      refine ExecBlock.consNormal (ExecStmt.assign heval hwrite) (ExecBlock.consNormal (ExecStmt.emit
+      refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (Bool.eq_true_of_not_eq_false hp)) heval hwrite) (ExecBlock.consNormal (ExecStmt.emit (hperm := by simpa only [balancePost_env] using Bool.eq_true_of_not_eq_false hp)
         (vals := [.address evm.executionEnv.source, .address (AccountAddress.ofNat sender.toNat),
           .address (AccountAddress.ofNat 0), .int (Int.ofNat id.toNat), .int (Int.ofNat amount.toNat)]) ?_) ExecBlock.nil)
       simp only [evalExprs?, evalExpr?, hr, hi, ha, EvalResult.ofOption, bind, EvalResult.bind,
