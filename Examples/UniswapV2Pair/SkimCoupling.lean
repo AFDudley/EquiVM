@@ -689,7 +689,8 @@ theorem uniswapSkimBodyCoreRevert_firstNoCode
         (transitionSignature skimTransition).paramTypes I.calldata = some (skimStore I))
     (hRuntime :
       RDrev uniswapV2PairBytecode (Sat256.ofUInt256 g)
-        (initState σ σ₀ (Sat256.ofUInt256 g) A I)) :
+        (initState σ σ₀ (Sat256.ofUInt256 g) A I))
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   let evmS := initState σ σ₀ (Sat256.ofUInt256 g) A I
   let _toWord := maskFn (skimToWord I)
@@ -701,7 +702,7 @@ theorem uniswapSkimBodyCoreRevert_firstNoCode
     skimToken0GuardFalse_initState_of_noCode htoken0NoCode
   have hbody :
       ExecTransitionBody config contract evmS (skimStore I) skimTransition.body .reverted := by
-    exact uniswapSkimBodyReverts_firstNoCode evmS I
+    exact uniswapSkimBodyReverts_firstNoCode (hperm := by assumption) evmS I
       (by simp only [evmS, initState]; exact hwv)
       hunlockedStele hguard0
   exact hRuntime.reEquivExecutionRevert hcode hdispatch hdecode hbody
@@ -725,7 +726,8 @@ theorem uniswapSkimBodyCoreRevert_firstCallDepth
         (transitionSignature skimTransition).paramTypes I.calldata = some (skimStore I))
     (hRuntime :
       RDrev uniswapV2PairBytecode (Sat256.ofUInt256 g)
-        (initState σ σ₀ (Sat256.ofUInt256 g) A I)) :
+        (initState σ σ₀ (Sat256.ofUInt256 g) A I))
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   let evmS := initState σ σ₀ (Sat256.ofUInt256 g) A I
   let evmL := uniswapLockEnteredState evmS
@@ -752,7 +754,7 @@ theorem uniswapSkimBodyCoreRevert_firstCallDepth
       hdepthStele
   have hbody :
       ExecTransitionBody config contract evmS (skimStore I) skimTransition.body .reverted := by
-    exact uniswapSkimBodyReverts_firstCallFailure evmS
+    exact uniswapSkimBodyReverts_firstCallFailure (hperm := by assumption) evmS
       { evmL with substate := (evmL.addAccessedAccount target).substate } I
       (by simp only [evmS, initState]; exact hwv)
       hunlockedStele hguard0 hcall0
@@ -810,9 +812,10 @@ theorem uniswapSkimBodyRevert_firstNoCode
         (transitionSignature skimTransition).paramTypes I.calldata = some (skimStore I))
     (hRuntime :
       RDrev uniswapV2PairBytecode (Sat256.ofUInt256 g)
-        (initState σ σ₀ (Sat256.ofUInt256 g) A I)) :
+        (initState σ σ₀ (Sat256.ofUInt256 g) A I))
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  exact uniswapSkimBodyCoreRevert_firstNoCode maskFn hcode hwv hunlocked htoken0NoCode
+  exact uniswapSkimBodyCoreRevert_firstNoCode (hperm := by assumption) maskFn hcode hwv hunlocked htoken0NoCode
     hdispatch hdecode hRuntime
 
 end UniswapV2Pair

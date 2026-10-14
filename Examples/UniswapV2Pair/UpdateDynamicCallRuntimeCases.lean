@@ -77,7 +77,7 @@ theorem uniswapUpdateCallRuntimeCases_dynamic
         obtain ⟨kRet, CRet, rdRet⟩ := RD.uniswapUpdateEmitSyncAndJump_dynamic rd7339 hin hlo hgap (by omega) haw hawLo hmem64 hperm
           hret (by omega)
         refine Or.inr ⟨syncUpdatePackedReserveState evm balance0 balance1, _, _, _, _,
-          uniswapUpdateCallReturnsConditionFalse evm balance0 balance1
+          uniswapUpdateCallReturnsConditionFalse (hperm := by simpa only [henv] using hperm) evm balance0 balance1
             reserve0 reserve1 hargs hb0S hb1S hskipS,
           syncUpdatePackedReserveState_accountMap_eq hAccounts henv hslot8 rfl,
           ?_, rdRet, ?_, ?_⟩
@@ -109,7 +109,7 @@ theorem uniswapUpdateCallRuntimeCases_dynamic
             reserve0 reserve1,
           uniswapUpdateCumulativePackedMapWith σ I balance0 balance1 reserve0 reserve1,
           uniswapUpdateCumulativePackedWordWith σ I balance0 balance1 reserve0 reserve1, kRet, CRet,
-          uniswapUpdateCallReturnsConditionTrue evm balance0 balance1
+          uniswapUpdateCallReturnsConditionTrue (hperm := by simpa only [henv] using hperm) evm balance0 balance1
             reserve0 reserve1 hargs hb0S hb1S htS hr0S hr1S,
           syncUpdateCumulativePackedMapWith_accounts_eq hAccounts henv hslot8
             (by rw [← hclean0]; exact reserve112Word_lt _)

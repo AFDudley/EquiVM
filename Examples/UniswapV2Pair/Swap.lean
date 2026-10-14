@@ -59,7 +59,7 @@ theorem uniswapSwapBody
             · have hunlocked := not_not.mp hlocked
               obtain ⟨_, _, rd1556⟩ := RD.uniswapSwapLockEntered rd1475 hunlocked hperm
                 (by simp only [List.length_cons, List.length_nil]; omega)
-              have hlockSource := uniswapLockEnterPrefix evmS (swapStore I)
+              have hlockSource := uniswapLockEnterPrefix (hperm := hperm) evmS (swapStore I)
                 (by simpa only [evmS, initState] using hwv) (by simp [swapStore]) (hstorage.trans hunlocked)
               let evmL := uniswapLockEnteredState evmS
               have hpost : sstoreAccountMap I.codeOwner σ ⟨12⟩ ⟨0⟩ = evmL.accountMap := by
@@ -310,7 +310,7 @@ theorem uniswapSwapBody
                                     (by simp only [List.length_cons, List.length_nil]; omega)
                                   have rdRet := RD.uniswapSwapUnlockAndStop rd2797 hperm
                                     (by simp only [List.length_cons, List.length_nil]; omega)
-                                  have hbody := uniswapSwapBodyReturns_afterUpdate evmS evmB evmU I _
+                                  have hbody := uniswapSwapBodyReturns_afterUpdate (hperm := by simpa only [heU] using hperm) evmS evmB evmU I _
                                     hinvariantPrefix hupdate
                                     (swapBeforeUpdateFrame_unlocked evmL I balance0 balance1 amount0In amount1In)
                                   have haFinal : sstoreAccountMap I.codeOwner σU ⟨12⟩ ⟨1⟩ =
