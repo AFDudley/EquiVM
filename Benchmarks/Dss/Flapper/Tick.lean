@@ -676,7 +676,7 @@ theorem flapperTickBodyReturns_successSplit (evm : EVM.State) (I : ExecutionEnv)
     (hendLt : (tickEndWord evm I).toNat < (tickTimestampWord evm).toNat)
     (htic : tickTicWord evm I = ⟨0⟩)
     (haddFit : (tickNow48Word evm).toNat + (tickTauWord evm).toNat < 2 ^ 48) :
-    (ExecTransitionBody config contract evm (tickLocals I) tickTransition.body
+    (evm.executionEnv.perm = true → ExecTransitionBody config contract evm (tickLocals I) tickTransition.body
       (.returned { contract := contract, locals := tickEndLocals evm I }
         (tickPostState evm I) none)) ∧
       (evm.executionEnv.perm = false →
@@ -702,8 +702,9 @@ theorem flapperTickBodyReturns_successSplit (evm : EVM.State) (I : ExecutionEnv)
   have hvalue := evalExpr_tick_end_var evm I
   have hassign := assign_tickEndStorage_value evm I haddFit
   constructor
-  · exact ExecFuncBody.execBlockOK
-      (hprefix (ExecBlock.consNormal (ExecStmt.assign hvalue hassign) ExecBlock.nil))
+  · intro hperm
+    exact ExecFuncBody.execBlockOK
+      (hprefix (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hvalue hassign) ExecBlock.nil))
   · intro hperm
     exact ExecFuncBody.execBlockStatic
       (hprefix (ExecBlock.consStatic (ExecStmt.assignStatic hvalue hassign hperm)))
@@ -1577,7 +1578,7 @@ theorem flapperTickBodyCoreSuccess
       (tickNow48Word evmStele).toNat + (tickTauWord evmStele).toNat < 2 ^ 48 := by
     simpa [evmStele, tickNow48Word, tickTimestampWord, initState, htau] using haddFit
   have hbodySplit :
-      (ExecTransitionBody config contract evmStele (tickLocals I) tickTransition.body
+      (I.perm = true → ExecTransitionBody config contract evmStele (tickLocals I) tickTransition.body
         (.returned { contract := contract, locals := tickEndLocals evmStele I }
           (tickPostState evmStele I) none)) ∧
       (I.perm = false → ExecTransitionBody config contract evmStele (tickLocals I)
@@ -1593,7 +1594,7 @@ theorem flapperTickBodyCoreSuccess
     tickRuntimeSuccessAccountMap_eq
       (σ₀ := σ₀) (A := A)
       (I := I) (g := g) haddFit
-  exact hret.reEquivExecutionGen hcode hdispatch hdecode hbodySplit.1
+  exact hret.reEquivExecutionGen hcode hdispatch hdecode (hbodySplit.1 _hperm)
     (by simpa [evmStele] using hpostAccounts)
     (by
       simpa [tickTransition] using

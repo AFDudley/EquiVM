@@ -1438,7 +1438,7 @@ theorem flapperKickBodyReverts_overLidSplit (evm : EVM.State) (I : ExecutionEnv)
     (hlive : kickLiveWord evm = ⟨1⟩)
     (hkicksLt : (kickKicksWord evm).toNat < UInt256.size - 1)
     (hfillFit : (kickFillWord evm).toNat + (kickLotWord I).toNat < UInt256.size) :
-    (((kickLidWord (kickAfterFillState evm I)).toNat <
+    (evm.executionEnv.perm = true → ((kickLidWord (kickAfterFillState evm I)).toNat <
         (kickFillWord (kickAfterFillState evm I)).toNat) →
       ExecTransitionBody config contract evm (kickLocals I) kickTransition.body .reverted) ∧
       (evm.executionEnv.perm = false →
@@ -1478,9 +1478,9 @@ theorem flapperKickBodyReverts_overLidSplit (evm : EVM.State) (I : ExecutionEnv)
   have hvalue := evalExpr_kick_fillNew_var evm evm I
   have hassign := assign_kickFillStorage evm I
   constructor
-  · intro hgt
+  · intro hperm hgt
     exact ExecFuncBody.execBlockRevert
-      (hprefix (ExecBlock.consNormal (ExecStmt.assign hvalue hassign)
+      (hprefix (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hvalue hassign)
         (ExecBlock.consRevert
           (ExecStmt.requireFalse (evalExpr_kick_fill_le_lid_false evm I hgt)))))
   · intro hperm
@@ -1497,9 +1497,10 @@ theorem flapperKickBodyReverts_overLid (evm : EVM.State) (I : ExecutionEnv)
     (hfillFit : (kickFillWord evm).toNat + (kickLotWord I).toNat < UInt256.size)
     (hgt :
       (kickLidWord (kickAfterFillState evm I)).toNat <
-        (kickFillWord (kickAfterFillState evm I)).toNat) :
+        (kickFillWord (kickAfterFillState evm I)).toNat)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (kickLocals I) kickTransition.body .reverted :=
-  (flapperKickBodyReverts_overLidSplit evm I hwv hsrc hauth hlive hkicksLt hfillFit).1 hgt
+  (flapperKickBodyReverts_overLidSplit evm I hwv hsrc hauth hlive hkicksLt hfillFit).1 hperm hgt
 
 theorem flapperKickBodyReverts_endAddOverflow (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
@@ -1514,7 +1515,8 @@ theorem flapperKickBodyReverts_endAddOverflow (evm : EVM.State) (I : ExecutionEn
         (kickLidWord (kickAfterFillState evm I)).toNat)
     (hendOverflow :
       2 ^ 48 ≤
-        (kickNow48Word evm).toNat + (kickTauWord (kickAfterGuyState evm I)).toNat) :
+        (kickNow48Word evm).toNat + (kickTauWord (kickAfterGuyState evm I)).toNat)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (kickLocals I) kickTransition.body .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
   simpa [kickTransition, nonpayable, auth, checkedAddUintInto, checkedAdd48Into,
@@ -1533,7 +1535,7 @@ theorem flapperKickBodyReverts_endAddOverflow (evm : EVM.State) (I : ExecutionEn
       ExecBlock.consNormal
         (ExecStmt.requireTrue (evalExpr_kick_fill_guard_true evm I hfillFit)) <|
       ExecBlock.consNormal
-        (ExecStmt.assign (evalExpr_kick_fillNew_var evm evm I)
+        (ExecStmt.assign (hperm := Or.inr (by simpa only [kickAfterFillState_executionEnv, kickAfterKicksState_executionEnv, kickAfterBidState_executionEnv, kickAfterLotState_executionEnv, kickAfterGuyState_executionEnv] using hperm)) (evalExpr_kick_fillNew_var evm evm I)
           (assign_kickFillStorage evm I)) <|
       ExecBlock.consNormal
         (ExecStmt.requireTrue (evalExpr_kick_fill_le_lid_true evm I hfillLe)) <|
@@ -1542,16 +1544,16 @@ theorem flapperKickBodyReverts_endAddOverflow (evm : EVM.State) (I : ExecutionEn
       ExecBlock.consNormal
         (ExecStmt.requireTrue (evalExpr_kick_id_guard_true_orig evm I hkicksLt)) <|
       ExecBlock.consNormal
-        (ExecStmt.assign (evalExpr_kick_id_var_idLocals_at evm (kickAfterFillState evm I) I)
+        (ExecStmt.assign (hperm := Or.inr (by simpa only [kickAfterFillState_executionEnv, kickAfterKicksState_executionEnv, kickAfterBidState_executionEnv, kickAfterLotState_executionEnv, kickAfterGuyState_executionEnv] using hperm)) (evalExpr_kick_id_var_idLocals_at evm (kickAfterFillState evm I) I)
           (assign_kickKicksStorage_orig evm I)) <|
       ExecBlock.consNormal
-        (ExecStmt.assign (evalExpr_kick_bid_var_at evm (kickAfterKicksState evm I) I)
+        (ExecStmt.assign (hperm := Or.inr (by simpa only [kickAfterFillState_executionEnv, kickAfterKicksState_executionEnv, kickAfterBidState_executionEnv, kickAfterLotState_executionEnv, kickAfterGuyState_executionEnv] using hperm)) (evalExpr_kick_bid_var_at evm (kickAfterKicksState evm I) I)
           (assign_kickBidStorage evm I)) <|
       ExecBlock.consNormal
-        (ExecStmt.assign (evalExpr_kick_lot_var_at evm (kickAfterBidState evm I) I)
+        (ExecStmt.assign (hperm := Or.inr (by simpa only [kickAfterFillState_executionEnv, kickAfterKicksState_executionEnv, kickAfterBidState_executionEnv, kickAfterLotState_executionEnv, kickAfterGuyState_executionEnv] using hperm)) (evalExpr_kick_lot_var_at evm (kickAfterBidState evm I) I)
           (assign_kickLotStorage evm I)) <|
       ExecBlock.consNormal
-        (ExecStmt.assign (evalExpr_kick_sender_afterLot evm I hsrc)
+        (ExecStmt.assign (hperm := Or.inr (by simpa only [kickAfterFillState_executionEnv, kickAfterKicksState_executionEnv, kickAfterBidState_executionEnv, kickAfterLotState_executionEnv, kickAfterGuyState_executionEnv] using hperm)) (evalExpr_kick_sender_afterLot evm I hsrc)
           (assign_kickGuyStorage evm I)) <|
       ExecBlock.consNormal
         (ExecStmt.letDecl (evalExpr_kick_endAdd_wrapped evm I)) <|
@@ -1575,7 +1577,8 @@ theorem flapperKickBodyReverts_moveNoCode (evm : EVM.State) (I : ExecutionEnv)
     (hnoCode :
       Reasoning.Theory.extCodeSizeWord (kickAfterEndState evm I).accountMap
         (kickVatWord (kickAfterEndState evm I).accountMap
-          (kickAfterEndState evm I).executionEnv) = ⟨0⟩) :
+          (kickAfterEndState evm I).executionEnv) = ⟨0⟩)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (kickLocals I) kickTransition.body .reverted := by
   let evmMove := kickAfterEndState evm I
   have hvat :
@@ -1633,7 +1636,7 @@ theorem flapperKickBodyReverts_moveNoCode (evm : EVM.State) (I : ExecutionEnv)
       ExecBlock.consNormal
         (ExecStmt.requireTrue (evalExpr_kick_fill_guard_true evm I hfillFit)) <|
       ExecBlock.consNormal
-        (ExecStmt.assign (evalExpr_kick_fillNew_var evm evm I)
+        (ExecStmt.assign (hperm := Or.inr (by simpa only [kickAfterFillState_executionEnv, kickAfterKicksState_executionEnv, kickAfterBidState_executionEnv, kickAfterLotState_executionEnv, kickAfterGuyState_executionEnv] using hperm)) (evalExpr_kick_fillNew_var evm evm I)
           (assign_kickFillStorage evm I)) <|
       ExecBlock.consNormal
         (ExecStmt.requireTrue (evalExpr_kick_fill_le_lid_true evm I hfillLe)) <|
@@ -1642,23 +1645,23 @@ theorem flapperKickBodyReverts_moveNoCode (evm : EVM.State) (I : ExecutionEnv)
       ExecBlock.consNormal
         (ExecStmt.requireTrue (evalExpr_kick_id_guard_true_orig evm I hkicksLt)) <|
       ExecBlock.consNormal
-        (ExecStmt.assign (evalExpr_kick_id_var_idLocals_at evm (kickAfterFillState evm I) I)
+        (ExecStmt.assign (hperm := Or.inr (by simpa only [kickAfterFillState_executionEnv, kickAfterKicksState_executionEnv, kickAfterBidState_executionEnv, kickAfterLotState_executionEnv, kickAfterGuyState_executionEnv] using hperm)) (evalExpr_kick_id_var_idLocals_at evm (kickAfterFillState evm I) I)
           (assign_kickKicksStorage_orig evm I)) <|
       ExecBlock.consNormal
-        (ExecStmt.assign (evalExpr_kick_bid_var_at evm (kickAfterKicksState evm I) I)
+        (ExecStmt.assign (hperm := Or.inr (by simpa only [kickAfterFillState_executionEnv, kickAfterKicksState_executionEnv, kickAfterBidState_executionEnv, kickAfterLotState_executionEnv, kickAfterGuyState_executionEnv] using hperm)) (evalExpr_kick_bid_var_at evm (kickAfterKicksState evm I) I)
           (assign_kickBidStorage evm I)) <|
       ExecBlock.consNormal
-        (ExecStmt.assign (evalExpr_kick_lot_var_at evm (kickAfterBidState evm I) I)
+        (ExecStmt.assign (hperm := Or.inr (by simpa only [kickAfterFillState_executionEnv, kickAfterKicksState_executionEnv, kickAfterBidState_executionEnv, kickAfterLotState_executionEnv, kickAfterGuyState_executionEnv] using hperm)) (evalExpr_kick_lot_var_at evm (kickAfterBidState evm I) I)
           (assign_kickLotStorage evm I)) <|
       ExecBlock.consNormal
-        (ExecStmt.assign (evalExpr_kick_sender_afterLot evm I hsrc)
+        (ExecStmt.assign (hperm := Or.inr (by simpa only [kickAfterFillState_executionEnv, kickAfterKicksState_executionEnv, kickAfterBidState_executionEnv, kickAfterLotState_executionEnv, kickAfterGuyState_executionEnv] using hperm)) (evalExpr_kick_sender_afterLot evm I hsrc)
           (assign_kickGuyStorage evm I)) <|
       ExecBlock.consNormal
         (ExecStmt.letDecl (evalExpr_kick_endAdd_ok evm I hendFit)) <|
       ExecBlock.consNormal
         (ExecStmt.requireTrue (evalExpr_kick_end_guard_true evm I hendFit)) <|
       ExecBlock.consNormal
-        (ExecStmt.assign (evalExpr_kick_end_var evm I)
+        (ExecStmt.assign (hperm := Or.inr (by simpa only [kickAfterFillState_executionEnv, kickAfterKicksState_executionEnv, kickAfterBidState_executionEnv, kickAfterLotState_executionEnv, kickAfterGuyState_executionEnv] using hperm)) (evalExpr_kick_end_var evm I)
           (assign_kickEndStorage_value evm I hendFit)) <|
       htail)
 
@@ -1688,7 +1691,8 @@ theorem flapperKickBodyReverts_moveCallFailure
         "move" 0
         [.address (kickAfterEndState evm I).executionEnv.source,
           .address (kickAfterEndState evm I).executionEnv.codeOwner, kickLotValue I]
-        (false, evm', out) true) :
+        (false, evm', out) true)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (kickLocals I) kickTransition.body .reverted := by
   let evmMove := kickAfterEndState evm I
   have hvat :
@@ -1722,7 +1726,7 @@ theorem flapperKickBodyReverts_moveCallFailure
         (checkedExternalCallStmts (.storage vatRef) "move" (.intLit 0)
           [sender, thisAddr, .var "lot"] "_moveRet")
         .reverted := by
-    exact checkedExternalCallFailure hguard hvat hargs (by simpa [evmMove] using hcall)
+    exact checkedExternalCallFailure (hperm := Or.inl rfl) hguard hvat hargs (by simpa [evmMove] using hcall)
   have htail :
       ExecBlock config { contract := contract, locals := kickEndLocals evm I } evmMove
         (checkedExternalCallStmts (.storage vatRef) "move" (.intLit 0)
@@ -1747,7 +1751,7 @@ theorem flapperKickBodyReverts_moveCallFailure
       ExecBlock.consNormal
         (ExecStmt.requireTrue (evalExpr_kick_fill_guard_true evm I hfillFit)) <|
       ExecBlock.consNormal
-        (ExecStmt.assign (evalExpr_kick_fillNew_var evm evm I)
+        (ExecStmt.assign (hperm := Or.inr (by simpa only [kickAfterFillState_executionEnv, kickAfterKicksState_executionEnv, kickAfterBidState_executionEnv, kickAfterLotState_executionEnv, kickAfterGuyState_executionEnv] using hperm)) (evalExpr_kick_fillNew_var evm evm I)
           (assign_kickFillStorage evm I)) <|
       ExecBlock.consNormal
         (ExecStmt.requireTrue (evalExpr_kick_fill_le_lid_true evm I hfillLe)) <|
@@ -1756,23 +1760,23 @@ theorem flapperKickBodyReverts_moveCallFailure
       ExecBlock.consNormal
         (ExecStmt.requireTrue (evalExpr_kick_id_guard_true_orig evm I hkicksLt)) <|
       ExecBlock.consNormal
-        (ExecStmt.assign (evalExpr_kick_id_var_idLocals_at evm (kickAfterFillState evm I) I)
+        (ExecStmt.assign (hperm := Or.inr (by simpa only [kickAfterFillState_executionEnv, kickAfterKicksState_executionEnv, kickAfterBidState_executionEnv, kickAfterLotState_executionEnv, kickAfterGuyState_executionEnv] using hperm)) (evalExpr_kick_id_var_idLocals_at evm (kickAfterFillState evm I) I)
           (assign_kickKicksStorage_orig evm I)) <|
       ExecBlock.consNormal
-        (ExecStmt.assign (evalExpr_kick_bid_var_at evm (kickAfterKicksState evm I) I)
+        (ExecStmt.assign (hperm := Or.inr (by simpa only [kickAfterFillState_executionEnv, kickAfterKicksState_executionEnv, kickAfterBidState_executionEnv, kickAfterLotState_executionEnv, kickAfterGuyState_executionEnv] using hperm)) (evalExpr_kick_bid_var_at evm (kickAfterKicksState evm I) I)
           (assign_kickBidStorage evm I)) <|
       ExecBlock.consNormal
-        (ExecStmt.assign (evalExpr_kick_lot_var_at evm (kickAfterBidState evm I) I)
+        (ExecStmt.assign (hperm := Or.inr (by simpa only [kickAfterFillState_executionEnv, kickAfterKicksState_executionEnv, kickAfterBidState_executionEnv, kickAfterLotState_executionEnv, kickAfterGuyState_executionEnv] using hperm)) (evalExpr_kick_lot_var_at evm (kickAfterBidState evm I) I)
           (assign_kickLotStorage evm I)) <|
       ExecBlock.consNormal
-        (ExecStmt.assign (evalExpr_kick_sender_afterLot evm I hsrc)
+        (ExecStmt.assign (hperm := Or.inr (by simpa only [kickAfterFillState_executionEnv, kickAfterKicksState_executionEnv, kickAfterBidState_executionEnv, kickAfterLotState_executionEnv, kickAfterGuyState_executionEnv] using hperm)) (evalExpr_kick_sender_afterLot evm I hsrc)
           (assign_kickGuyStorage evm I)) <|
       ExecBlock.consNormal
         (ExecStmt.letDecl (evalExpr_kick_endAdd_ok evm I hendFit)) <|
       ExecBlock.consNormal
         (ExecStmt.requireTrue (evalExpr_kick_end_guard_true evm I hendFit)) <|
       ExecBlock.consNormal
-        (ExecStmt.assign (evalExpr_kick_end_var evm I)
+        (ExecStmt.assign (hperm := Or.inr (by simpa only [kickAfterFillState_executionEnv, kickAfterKicksState_executionEnv, kickAfterBidState_executionEnv, kickAfterLotState_executionEnv, kickAfterGuyState_executionEnv] using hperm)) (evalExpr_kick_end_var evm I)
           (assign_kickEndStorage_value evm I hendFit)) <|
       htail)
 
@@ -1802,7 +1806,8 @@ theorem flapperKickBodyReturns_moveCallSuccess
         "move" 0
         [.address (kickAfterEndState evm I).executionEnv.source,
           .address (kickAfterEndState evm I).executionEnv.codeOwner, kickLotValue I]
-        (true, evm', out) true) :
+        (true, evm', out) true)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (kickLocals I) kickTransition.body
       (.returned { contract := contract, locals := kickMoveLocals evm I }
         evm' (some [.int (Int.ofNat (kickIdWord evm).toNat)])) := by
@@ -1841,7 +1846,7 @@ theorem flapperKickBodyReturns_moveCallSuccess
           [sender, thisAddr, .var "lot"] "_moveRet")
         (.ok { contract := contract, locals := kickMoveLocals evm I } evm') := by
     simpa [checkedExternalCallStmts, kickMoveLocals] using
-      checkedExternalCallSuccess hguard hvat hargs (by simpa [evmMove] using hcall) hdec
+      checkedExternalCallSuccess (hperm := Or.inl rfl) hguard hvat hargs (by simpa [evmMove] using hcall) hdec
   have hreturns :
       evalExprs? config { contract := contract, locals := kickMoveLocals evm I }
           evm' [.var "id"] =
@@ -1878,7 +1883,7 @@ theorem flapperKickBodyReturns_moveCallSuccess
       ExecBlock.consNormal
         (ExecStmt.requireTrue (evalExpr_kick_fill_guard_true evm I hfillFit)) <|
       ExecBlock.consNormal
-        (ExecStmt.assign (evalExpr_kick_fillNew_var evm evm I)
+        (ExecStmt.assign (hperm := Or.inr (by simpa only [kickAfterFillState_executionEnv, kickAfterKicksState_executionEnv, kickAfterBidState_executionEnv, kickAfterLotState_executionEnv, kickAfterGuyState_executionEnv] using hperm)) (evalExpr_kick_fillNew_var evm evm I)
           (assign_kickFillStorage evm I)) <|
       ExecBlock.consNormal
         (ExecStmt.requireTrue (evalExpr_kick_fill_le_lid_true evm I hfillLe)) <|
@@ -1887,23 +1892,23 @@ theorem flapperKickBodyReturns_moveCallSuccess
       ExecBlock.consNormal
         (ExecStmt.requireTrue (evalExpr_kick_id_guard_true_orig evm I hkicksLt)) <|
       ExecBlock.consNormal
-        (ExecStmt.assign (evalExpr_kick_id_var_idLocals_at evm (kickAfterFillState evm I) I)
+        (ExecStmt.assign (hperm := Or.inr (by simpa only [kickAfterFillState_executionEnv, kickAfterKicksState_executionEnv, kickAfterBidState_executionEnv, kickAfterLotState_executionEnv, kickAfterGuyState_executionEnv] using hperm)) (evalExpr_kick_id_var_idLocals_at evm (kickAfterFillState evm I) I)
           (assign_kickKicksStorage_orig evm I)) <|
       ExecBlock.consNormal
-        (ExecStmt.assign (evalExpr_kick_bid_var_at evm (kickAfterKicksState evm I) I)
+        (ExecStmt.assign (hperm := Or.inr (by simpa only [kickAfterFillState_executionEnv, kickAfterKicksState_executionEnv, kickAfterBidState_executionEnv, kickAfterLotState_executionEnv, kickAfterGuyState_executionEnv] using hperm)) (evalExpr_kick_bid_var_at evm (kickAfterKicksState evm I) I)
           (assign_kickBidStorage evm I)) <|
       ExecBlock.consNormal
-        (ExecStmt.assign (evalExpr_kick_lot_var_at evm (kickAfterBidState evm I) I)
+        (ExecStmt.assign (hperm := Or.inr (by simpa only [kickAfterFillState_executionEnv, kickAfterKicksState_executionEnv, kickAfterBidState_executionEnv, kickAfterLotState_executionEnv, kickAfterGuyState_executionEnv] using hperm)) (evalExpr_kick_lot_var_at evm (kickAfterBidState evm I) I)
           (assign_kickLotStorage evm I)) <|
       ExecBlock.consNormal
-        (ExecStmt.assign (evalExpr_kick_sender_afterLot evm I hsrc)
+        (ExecStmt.assign (hperm := Or.inr (by simpa only [kickAfterFillState_executionEnv, kickAfterKicksState_executionEnv, kickAfterBidState_executionEnv, kickAfterLotState_executionEnv, kickAfterGuyState_executionEnv] using hperm)) (evalExpr_kick_sender_afterLot evm I hsrc)
           (assign_kickGuyStorage evm I)) <|
       ExecBlock.consNormal
         (ExecStmt.letDecl (evalExpr_kick_endAdd_ok evm I hendFit)) <|
       ExecBlock.consNormal
         (ExecStmt.requireTrue (evalExpr_kick_end_guard_true evm I hendFit)) <|
       ExecBlock.consNormal
-        (ExecStmt.assign (evalExpr_kick_end_var evm I)
+        (ExecStmt.assign (hperm := Or.inr (by simpa only [kickAfterFillState_executionEnv, kickAfterKicksState_executionEnv, kickAfterBidState_executionEnv, kickAfterLotState_executionEnv, kickAfterGuyState_executionEnv] using hperm)) (evalExpr_kick_end_var evm I)
           (assign_kickEndStorage_value evm I hendFit)) <|
       htail)
 
@@ -3977,7 +3982,7 @@ theorem flapperKickBodyCore {σ σ₀ A I} {g : UInt256}
                   have hbody :
                       ExecTransitionBody config contract evmStele (kickLocals I)
                         kickTransition.body .reverted := by
-                    exact flapperKickBodyReverts_moveNoCode evmStele I
+                    exact flapperKickBodyReverts_moveNoCode (hperm := by assumption) evmStele I
                       (by simpa [evmStele, initState] using hwv)
                       (by simp [evmStele, initState])
                       hauthStele hliveStele hkicksLtStele hfillFitStele hfillLeStele
@@ -4062,7 +4067,7 @@ theorem flapperKickBodyCore {σ σ₀ A I} {g : UInt256}
                         ExecTransitionBody config contract evmStele (kickLocals I)
                           kickTransition.body .reverted := by
                       simpa [evmMoveStele] using
-                        flapperKickBodyReverts_moveCallFailure evmStele
+                        flapperKickBodyReverts_moveCallFailure (hperm := by assumption) evmStele
                           { evmMoveStele with substate := A_move } I ByteArray.empty
                           (by simpa [evmStele, initState] using hwv)
                           (by simp [evmStele, initState])
@@ -4155,7 +4160,7 @@ theorem flapperKickBodyCore {σ σ₀ A I} {g : UInt256}
                               evmCallStele
                               (some [.int (Int.ofNat (kickIdWord evmStele).toNat)])) := by
                         simpa [evmMoveStele, evmCallStele] using
-                          flapperKickBodyReturns_moveCallSuccess evmStele evmCallStele I out
+                          flapperKickBodyReturns_moveCallSuccess (hperm := by assumption) evmStele evmCallStele I out
                             (by simpa [evmStele, initState] using hwv)
                             (by simp [evmStele, initState])
                             hauthStele hliveStele hkicksLtStele hfillFitStele hfillLeStele
@@ -4204,7 +4209,7 @@ theorem flapperKickBodyCore {σ σ₀ A I} {g : UInt256}
                           ExecTransitionBody config contract evmStele (kickLocals I)
                             kickTransition.body .reverted := by
                         simpa [evmMoveStele, evmCallStele] using
-                          flapperKickBodyReverts_moveCallFailure evmStele evmCallStele I out
+                          flapperKickBodyReverts_moveCallFailure (hperm := by assumption) evmStele evmCallStele I out
                             (by simpa [evmStele, initState] using hwv)
                             (by simp [evmStele, initState])
                             hauthStele hliveStele hkicksLtStele hfillFitStele hfillLeStele
@@ -4224,7 +4229,7 @@ theorem flapperKickBodyCore {σ σ₀ A I} {g : UInt256}
                 have hbody :
                     ExecTransitionBody config contract evmStele (kickLocals I)
                       kickTransition.body .reverted := by
-                  exact flapperKickBodyReverts_endAddOverflow evmStele I
+                  exact flapperKickBodyReverts_endAddOverflow (hperm := by assumption) evmStele I
                     (by simpa [evmStele, initState] using hwv)
                     (by simp [evmStele, initState])
                     hauthStele hliveStele hkicksLtStele hfillFitStele hfillLeStele
@@ -4240,7 +4245,7 @@ theorem flapperKickBodyCore {σ σ₀ A I} {g : UInt256}
               have hbody :
                   ExecTransitionBody config contract evmStele (kickLocals I)
                     kickTransition.body .reverted := by
-                exact flapperKickBodyReverts_overLid evmStele I
+                exact flapperKickBodyReverts_overLid (hperm := hperm) evmStele I
                   (by simpa [evmStele, initState] using hwv)
                   (by simp [evmStele, initState])
                   hauthStele hliveStele hkicksLtStele hfillFitStele hgtStele

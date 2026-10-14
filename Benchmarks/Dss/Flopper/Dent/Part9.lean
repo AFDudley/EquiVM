@@ -408,7 +408,7 @@ theorem flopperDentBodyCoreAddOverflowCallerEq
     exact hstatic.reEquivStaticHalt hcode hdispatch hdecode hsource
   have hbody :
       ExecTransitionBody config contract evmStele (dentLocals I) dentTransition.body .reverted := by
-    exact flopperDentBodyReverts_addOverflow_callerEq evmStele I
+    exact flopperDentBodyReverts_addOverflow_callerEq (hperm := hperm) evmStele I
       (by simpa [evmStele, initState] using hwv) hliveStele hguyStele hticOkStele
       hendGtStele hbidStele hlotLtStele hbegFitStele hlotOneFitStele hsuffStele
       hcallerStele haddOverflowStele
@@ -520,7 +520,7 @@ theorem flopperDentBodyCoreSuccessCallerEq
       ExecTransitionBody config contract evmStele (dentLocals I) dentTransition.body
         (.returned { contract := contract, locals := dentTicLocals evmStele I }
           (dentPostState evmStele I) none) := by
-    exact flopperDentBodyReturns_success_callerEq evmStele I
+    exact flopperDentBodyReturns_success_callerEq (hperm := hperm) evmStele I
       (by simpa [evmStele, initState] using hwv) hliveStele hguyStele hticOkStele
       hendGtStele hbidStele hlotLtStele hbegFitStele hlotOneFitStele hsuffStele
       hcallerStele haddFitStele

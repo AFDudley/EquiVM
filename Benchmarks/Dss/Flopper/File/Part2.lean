@@ -125,7 +125,7 @@ theorem flopperFileBodyCoreBeg
   let evm1 := fileBegPostState evm0 I
   have hauthStele : relyAuthWord σ I = ⟨1⟩ := hauth
   have hbodySplit :
-      (ExecTransitionBody config contract evm0 locals fileTransition.body
+      (I.perm = true → ExecTransitionBody config contract evm0 locals fileTransition.body
         (.returned { contract := contract, locals := locals } evm1 none)) ∧
       (I.perm = false → ExecTransitionBody config contract evm0 locals
         fileTransition.body .staticViolation) := by
@@ -141,7 +141,7 @@ theorem flopperFileBodyCoreBeg
       ⟨_hperm, hret⟩ | ⟨hperm, hstatic⟩
   swap
   · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode (hbodySplit.2 hperm)
-  exact hret.reEquivExecutionGen hcode hdispatch hdecode hbodySplit.1
+  exact hret.reEquivExecutionGen hcode hdispatch hdecode (hbodySplit.1 _hperm)
     (by simp [evm1, evm0, initState, fileBegPostState, storageStore_accountMap, data])
     (by
       simpa [fileTransition] using
@@ -170,7 +170,7 @@ theorem flopperFileBodyCorePad
   let evm1 := filePadPostState evm0 I
   have hauthStele : relyAuthWord σ I = ⟨1⟩ := hauth
   have hbodySplit :
-      (ExecTransitionBody config contract evm0 locals fileTransition.body
+      (I.perm = true → ExecTransitionBody config contract evm0 locals fileTransition.body
         (.returned { contract := contract, locals := locals } evm1 none)) ∧
       (I.perm = false → ExecTransitionBody config contract evm0 locals
         fileTransition.body .staticViolation) := by
@@ -188,7 +188,7 @@ theorem flopperFileBodyCorePad
       ⟨_hperm, hret⟩ | ⟨hperm, hstatic⟩
   swap
   · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode (hbodySplit.2 hperm)
-  exact hret.reEquivExecutionGen hcode hdispatch hdecode hbodySplit.1
+  exact hret.reEquivExecutionGen hcode hdispatch hdecode (hbodySplit.1 _hperm)
     (by simp [evm1, evm0, initState, filePadPostState, storageStore_accountMap, data])
     (by
       simpa [fileTransition] using
@@ -217,7 +217,7 @@ theorem flopperFileBodyCoreTtl
   let evm1 := fileTtlPostState evm0 I
   have hauthStele : relyAuthWord σ I = ⟨1⟩ := hauth
   have hbodySplit :
-      (ExecTransitionBody config contract evm0 locals fileTransition.body
+      (I.perm = true → ExecTransitionBody config contract evm0 locals fileTransition.body
         (.returned { contract := contract, locals := locals } evm1 none)) ∧
       (I.perm = false → ExecTransitionBody config contract evm0 locals
         fileTransition.body .staticViolation) := by
@@ -237,7 +237,7 @@ theorem flopperFileBodyCoreTtl
       ⟨_hperm, hret⟩ | ⟨hperm, hstatic⟩
   swap
   · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode (hbodySplit.2 hperm)
-  exact hret.reEquivExecutionGen hcode hdispatch hdecode hbodySplit.1
+  exact hret.reEquivExecutionGen hcode hdispatch hdecode (hbodySplit.1 _hperm)
     (by
       simp [evm1, evm0, initState, fileTtlPostState, fileTtlPostAccountMap,
         fileTtlStoredWord, fileTtlStoredWordMap, storageStore_accountMap,
@@ -270,7 +270,7 @@ theorem flopperFileBodyCoreTau
   let evm1 := fileTauPostState evm0 I
   have hauthStele : relyAuthWord σ I = ⟨1⟩ := hauth
   have hbodySplit :
-      (ExecTransitionBody config contract evm0 locals fileTransition.body
+      (I.perm = true → ExecTransitionBody config contract evm0 locals fileTransition.body
         (.returned { contract := contract, locals := locals } evm1 none)) ∧
       (I.perm = false → ExecTransitionBody config contract evm0 locals
         fileTransition.body .staticViolation) := by
@@ -293,7 +293,7 @@ theorem flopperFileBodyCoreTau
       ⟨_hperm, hret⟩ | ⟨hperm, hstatic⟩
   swap
   · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode (hbodySplit.2 hperm)
-  exact hret.reEquivExecutionGen hcode hdispatch hdecode hbodySplit.1
+  exact hret.reEquivExecutionGen hcode hdispatch hdecode (hbodySplit.1 _hperm)
     (by
       simp [evm1, evm0, initState, fileTauPostState, fileTauPostAccountMap,
         fileTauStoredWord, fileTauStoredWordMap, storageStore_accountMap,

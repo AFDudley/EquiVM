@@ -955,7 +955,8 @@ theorem flopperTickBodyReverts_addOverflow (evm : EVM.State) (I : ExecutionEnv)
     (hmulFit : (tickPadWord evm).toNat * (tickLotWord evm I).toNat < UInt256.size)
     (haddOverflow :
       2 ^ 48 ≤
-        (tickNow48Word evm).toNat + (tickTauWord (tickAfterLotStore evm I)).toNat) :
+        (tickNow48Word evm).toNat + (tickTauWord (tickAfterLotStore evm I)).toNat)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (tickLocals I) tickTransition.body .reverted := by
   let evmLot := tickAfterLotStore evm I
   have hlotAssign :
@@ -964,7 +965,7 @@ theorem flopperTickBodyReverts_addOverflow (evm : EVM.State) (I : ExecutionEnv)
           (.binary .div (.var "lotBase") (.intLit ONE))]
         (.ok { contract := contract, locals := tickLotBaseLocals evm I } evmLot) := by
     exact ExecBlock.consNormal
-      (ExecStmt.assign (evalExpr_tick_lotPost evm I)
+      (ExecStmt.assign (hperm := Or.inr hperm) (evalExpr_tick_lotPost evm I)
         (by simpa [evmLot] using assign_tickLotStorage evm evm I))
       ExecBlock.nil
   have hendChecked :
@@ -1008,7 +1009,7 @@ theorem flopperTickBodyReturns_successSplit (evm : EVM.State) (I : ExecutionEnv)
     (hendLt : (tickEndWord evm I).toNat < (tickTimestampWord evm).toNat)
     (htic : tickTicWord evm I = ⟨0⟩)
     (hmulFit : (tickPadWord evm).toNat * (tickLotWord evm I).toNat < UInt256.size) :
-    (((tickNow48Word evm).toNat + (tickTauWord (tickAfterLotStore evm I)).toNat <
+    (evm.executionEnv.perm = true → ((tickNow48Word evm).toNat + (tickTauWord (tickAfterLotStore evm I)).toNat <
         2 ^ 48) →
       ExecTransitionBody config contract evm (tickLocals I) tickTransition.body
       (.returned { contract := contract, locals := tickEndLocals evm I }
@@ -1034,7 +1035,7 @@ theorem flopperTickBodyReturns_successSplit (evm : EVM.State) (I : ExecutionEnv)
           (ExecStmt.requireTrue (evalExpr_tick_mul_guard_true evm I hmulFit)) <|
         hwrite)
   constructor
-  · intro haddFit
+  · intro hperm haddFit
     let evmLot := tickAfterLotStore evm I
     have hlotAssign :
         ExecBlock config { contract := contract, locals := tickLotBaseLocals evm I } evm
@@ -1042,7 +1043,7 @@ theorem flopperTickBodyReturns_successSplit (evm : EVM.State) (I : ExecutionEnv)
             (.binary .div (.var "lotBase") (.intLit ONE))]
           (.ok { contract := contract, locals := tickLotBaseLocals evm I } evmLot) := by
       exact ExecBlock.consNormal
-        (ExecStmt.assign (evalExpr_tick_lotPost evm I)
+        (ExecStmt.assign (hperm := Or.inr hperm) (evalExpr_tick_lotPost evm I)
           (by simpa [evmLot] using assign_tickLotStorage evm evm I))
         ExecBlock.nil
     have hendLet :
@@ -1056,7 +1057,7 @@ theorem flopperTickBodyReturns_successSplit (evm : EVM.State) (I : ExecutionEnv)
           ExecBlock.consNormal
             (ExecStmt.requireTrue (evalExpr_tick_end_guard_true evm I haddFit)) <|
           ExecBlock.consNormal
-            (ExecStmt.assign (evalExpr_tick_end_var evm I)
+            (ExecStmt.assign (hperm := Or.inr (by simpa only [tickAfterLotStore_executionEnv] using hperm)) (evalExpr_tick_end_var evm I)
               (assign_tickEndStorage_value evm I haddFit))
             ExecBlock.nil)
     have htail :
@@ -1080,11 +1081,12 @@ theorem flopperTickBodyReturns_success (evm : EVM.State) (I : ExecutionEnv)
     (hmulFit : (tickPadWord evm).toNat * (tickLotWord evm I).toNat < UInt256.size)
     (haddFit :
       (tickNow48Word evm).toNat + (tickTauWord (tickAfterLotStore evm I)).toNat <
-        2 ^ 48) :
+        2 ^ 48)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (tickLocals I) tickTransition.body
       (.returned { contract := contract, locals := tickEndLocals evm I }
         (tickPostState evm I) none) :=
-  (flopperTickBodyReturns_successSplit evm I hwv hendLt htic hmulFit).1 haddFit
+  (flopperTickBodyReturns_successSplit evm I hwv hendLt htic hmulFit).1 hperm haddFit
 
 
 theorem flopperDecode_tick_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :

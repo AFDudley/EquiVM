@@ -1105,7 +1105,7 @@ theorem flapperYankBodyReverts_moveCallFailure
           [thisAddr, .storage (bidsF (.var "id") "guy"),
             .storage (bidsF (.var "id") "bid")] "_moveRet")
         .reverted := by
-    exact checkedExternalCallFailure hguard hvat hargs hcall
+    exact checkedExternalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hguard hvat hargs hcall
   have htail :
       ExecBlock config { contract := contract, locals := yankLocals I } evm
         (checkedExternalCallStmts (.storage gemRef) "move" (.intLit 0)
@@ -1146,7 +1146,7 @@ theorem flapperYankBodyReturns_moveCallSuccessSplit
           (solcSlotWordAt (auctionBidSlot (yankIdWord I)) evm.accountMap
             evm.executionEnv).toNat)]
         (true, evm', out) true) :
-    (ExecTransitionBody config contract evm (yankLocals I) yankTransition.body
+    (evm.executionEnv.perm = true → ExecTransitionBody config contract evm (yankLocals I) yankTransition.body
       (.returned { contract := contract, locals := yankMoveLocals I }
         (yankDeletePostState evm' I) none)) ∧
       (evm.executionEnv.perm = false →
@@ -1181,7 +1181,7 @@ theorem flapperYankBodyReturns_moveCallSuccessSplit
             .storage (bidsF (.var "id") "bid")] "_moveRet")
         (.ok { contract := contract, locals := yankMoveLocals I } evm') := by
     simpa [checkedExternalCallStmts, yankMoveLocals] using
-      checkedExternalCallSuccess hguard hvat hargs hcall hdec
+      checkedExternalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hguard hvat hargs hcall hdec
   have hprefix {result : ExecResult}
       (hdelete : ExecBlock config { contract := contract, locals := yankMoveLocals I } evm'
         [.delete (bidRef (.var "id"))] result) :
@@ -1205,8 +1205,9 @@ theorem flapperYankBodyReturns_moveCallSuccessSplit
         htail)
   have hdelete := deleteStorage_yankMove_bid evm' I
   constructor
-  · exact ExecFuncBody.execBlockOK
-      (hprefix (ExecBlock.consNormal (ExecStmt.delete hdelete) ExecBlock.nil))
+  · intro hperm
+    exact ExecFuncBody.execBlockOK
+      (hprefix (ExecBlock.consNormal (ExecStmt.delete (hperm := by rw [typedCallViaEVM_executionEnv_eq hcall]; exact hperm) hdelete) ExecBlock.nil))
   · intro hperm
     have hp : evm'.executionEnv.perm = false := by
       rw [typedCallViaEVM_executionEnv_eq hcall]
@@ -2379,7 +2380,7 @@ theorem flapperYankBodyCoreMoveCallSuccess
         (solcAddressSlotWord ⟨3⟩ σ I) ≠ ⟨0⟩ :=
     hcodeSize
   have hbodySplit :
-      (ExecTransitionBody config contract evmStele (yankLocals I)
+      (I.perm = true → ExecTransitionBody config contract evmStele (yankLocals I)
         yankTransition.body
         (.returned { contract := contract, locals := yankMoveLocals I }
           (yankDeletePostState evmCallStele I) none)) ∧
@@ -2405,7 +2406,7 @@ theorem flapperYankBodyCoreMoveCallSuccess
     simpa [evmCallStele] using
       yankDeletePostState_eq evmCallStele I
         (by simp [evmCallStele, evmStele, initState])
-  exact hret.reEquivExecutionGen hcode hdispatch hdecode hbodySplit.1
+  exact hret.reEquivExecutionGen hcode hdispatch hdecode (hbodySplit.1 _hperm)
     (by simpa [yankRuntimeDeleteAccountMap] using hFinalMap)
     (by
       simpa [yankTransition] using
