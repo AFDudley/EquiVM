@@ -83,7 +83,7 @@ theorem tryRecoverDecodeSource {L imms : Store} {evm : EVM.State} {out : ByteArr
     · apply ExecStmt.iteTrue
       · simp only [tryRecoverDecode,evalExpr?,readLocalPath?,hr,toByteArray_size,EvalResult.ofOption,EvalResult.bind,bind,pure,evalBinaryOp?]
         rfl
-      apply ExecBlock.consNormal (ExecStmt.assign ?_ (assignLocalBase_ok hz)) ExecBlock.nil
+      apply ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) ?_ (assignLocalBase_ok hz)) ExecBlock.nil
       simp only [evalExpr?,hr,EvalResult.ofOption,EvalResult.bind,bind]
       have hd := decodeReturnSolc08Address_word easPlanTable a
       change config.externalABI.decodeValue? (.elem .address) _ = _ at hd

@@ -30,7 +30,7 @@ theorem recordDataRun {L : Store} {evm : EVM.State} {ee : ExecutionEnv} {g : Sat
     else ExecStmt config {contract := contract,locals := L,immutables := immStore v} evm (attestationWriteStmt "data") .reverted ∧
       RDrev (deployedRuntime v) g s0 := by
   have hh : attestationHeader evm word = solcSlotWord σ ee (dbSlot word+⟨6⟩) := hs.storageRead _
-  have hsol := recordDataSource (imms := immStore v) (evm := evm) hd hu ha
+  have hsol := recordDataSource (hperm := by simpa only [hs.env] using hp) (imms := immStore v) (evm := evm) hd hu ha
   have hevm := easRecordBytesDecode v site (by omega) rd
   rw [← hh] at hevm
   by_cases hv : storedBytesValid (attestationHeader evm word)

@@ -25,10 +25,11 @@ theorem offchainArrayIteration_ok {evm : EVM.State} {locals imms : Store}
     {words : List UInt256} {time word : UInt256} {heap i : Nat}
     (h : TimeArrayInv locals words time heap i) (hi : i < words.length)
     (hw : lookupNth? words i = some word) (hlen : words.length < UInt256.size)
-    (hz : offchainWord evm evm.executionEnv.source word = ⟨0⟩) :
+    (hz : offchainWord evm evm.executionEnv.source word = ⟨0⟩)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config {contract := contract, locals := locals, immutables := imms} evm offchainArrayIteration
       (.ok {contract := contract, locals := timeArrayNext locals heap i, immutables := imms} (offchainStore evm evm.executionEnv.source word time)) := by
-  exact timeArrayFinish h hi hlen (offchainCall_ok (offchainArrayArgs_eval h hi hw) hz)
+  exact timeArrayFinish h hi hlen (offchainCall_ok (hperm := hperm) (offchainArrayArgs_eval h hi hw) hz)
 
 theorem offchainArrayIteration_revert {evm : EVM.State} {locals imms : Store}
     {words : List UInt256} {time word : UInt256} {heap i : Nat}

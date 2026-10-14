@@ -35,7 +35,8 @@ theorem timestampSource_ok {evm : EVM.State} {locals imms : Store} {word time : 
     (hkey : locals.get? "data" = some (wordBytes32Value word))
     (ht : locals.get? "time" = some (.int (Int.ofNat time.toNat)))
     (hh : locals.get? "$EAS.freeMemory" = some (.int (Int.ofNat heap)))
-    (hz : timestampWord evm word = ⟨0⟩) :
+    (hz : timestampWord evm word = ⟨0⟩)
+    (hperm : evm.executionEnv.perm = true) :
     ExecFuncBody config {contract := contract, locals := locals, immutables := imms} evm timestampFunction.body
       (.returned {contract := contract, locals := locals, immutables := imms} (timestampStore evm word time)
         (some [.tuple [], .int (Int.ofNat heap)])) := by
@@ -43,9 +44,9 @@ theorem timestampSource_ok {evm : EVM.State} {locals imms : Store} {word time : 
   apply ExecFuncBody.execBlockRet
   refine ExecBlock.consNormal (ExecStmt.requireTrue ?_) ?_
   · simpa only [timestampGuard, hz, decide_true] using evalWordEqZero (timestamp_read (evm := evm) (imms := imms) hnone hkey)
-  refine ExecBlock.consNormal (ExecStmt.assign (value := .int (Int.ofNat time.toNat))
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) (value := .int (Int.ofNat time.toNat))
     (by simp only [evalExpr?, ht, EvalResult.ofOption]) (timestamp_write (time := time) hnone hkey)) ?_
-  refine ExecBlock.consNormal (ExecStmt.emit (vals := [wordBytes32Value word, .int (Int.ofNat time.toNat)]) ?_) ?_
+  refine ExecBlock.consNormal (ExecStmt.emit (hperm := by simpa only [timestampStore, storageStore_executionEnv] using hperm) (vals := [wordBytes32Value word, .int (Int.ofNat time.toNat)]) ?_) ?_
   · simp only [evalExprs?, evalExpr?, hkey, ht, EvalResult.ofOption, EvalResult.bind, bind, pure]
   apply ExecBlock.consReturn
   apply ExecStmt.return
@@ -104,14 +105,15 @@ theorem timestampCall_ok {locals imms : Store} {evm : EVM.State}
     {args : List Expr} {word time : UInt256} {heap : Nat} {retVar : Ident}
     (hargs : evalExprs? config {contract := contract, locals := locals, immutables := imms} evm args =
       .ok [wordBytes32Value word, .int (Int.ofNat time.toNat), .int (Int.ofNat heap)])
-    (hz : timestampWord evm word = ⟨0⟩) :
+    (hz : timestampWord evm word = ⟨0⟩)
+    (hperm : evm.executionEnv.perm = true) :
     ExecStmt config {contract := contract, locals := locals, immutables := imms} evm
       (.internalCall "_timestamp" args retVar)
       (.ok {contract := contract, locals := locals.insert retVar (.tuple [.tuple [], .int (Int.ofNat heap)]), immutables := imms}
         (timestampStore evm word time)) := by
   have hf := timestampArgs_facts word time heap
   exact internalCallFunctionReturn hargs timestamp_lookup (timestamp_bind word time heap)
-    (timestampSource_ok hf.1 hf.2.1 hf.2.2.1 hf.2.2.2 hz)
+    (timestampSource_ok (hperm := by assumption) hf.1 hf.2.1 hf.2.2.1 hf.2.2.2 hz)
 
 theorem timestampCall_revert {locals imms : Store} {evm : EVM.State}
     {args : List Expr} {word time : UInt256} {heap : Nat} {retVar : Ident}

@@ -57,6 +57,7 @@ theorem revokeStoreCopyRun {L : Store} {evm : EVM.State} {ee : ExecutionEnv} {g 
     have hs1 : SourceState s0 ee (f.accounts σ ee) (f.apply evm) :=
       hs.readModifyWrite f.loc.slot (fun old => packedSliceWord old f.word (8*f.loc.offset.val) (8*f.loc.size.val))
     have hwrite := revokeWriteTime_source (imms := immStore v) (evm := evm) ha1 ht1
+    simp only [hs.env, hp, if_true] at hwrite
     have he : evalExprs? config {contract := contract,locals := L1,immutables := immStore v} (f.apply evm) revokeCopyArgs =
         .ok [wordBytes32Value r.uid,.int (Int.ofNat heap.toNat)] := by
       have hu : evalExpr? config {contract := contract,locals := L1,immutables := immStore v} (f.apply evm)

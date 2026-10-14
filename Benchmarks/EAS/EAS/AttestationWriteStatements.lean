@@ -6,14 +6,17 @@ namespace Benchmarks.EAS.EAS
 -- LIBRARY CANDIDATE: compose the successful scalar assignments of a struct prefix.
 theorem execScalarAssignments {cfg : Config} {frame : Frame} (fs : List ScalarFieldWrite)
     (ref : ScalarFieldWrite → StorageRef) (expr : ScalarFieldWrite → Expr) (evm : EVM.State)
-    (hstep : ∀ f ∈ fs, ∀ e, ExecStmt cfg frame e (.assign .storage (ref f) (expr f)) (.ok frame (f.apply e))) :
+    (hstep : ∀ f ∈ fs, ∀ e, e.executionEnv.perm = true →
+      ExecStmt cfg frame e (.assign .storage (ref f) (expr f)) (.ok frame (f.apply e)))
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock cfg frame evm (fs.map fun f => .assign .storage (ref f) (expr f))
       (.ok frame (writeScalarFields fs evm)) := by
   induction fs generalizing evm with
   | nil => exact ExecBlock.nil
   | cons f fs ih =>
-    exact ExecBlock.consNormal (hstep f List.mem_cons_self evm)
-      (ih (f.apply evm) (fun x hx => hstep x (List.mem_cons_of_mem f hx)))
+    exact ExecBlock.consNormal (hstep f List.mem_cons_self evm hperm)
+      (ih (f.apply evm) (fun x hx => hstep x (List.mem_cons_of_mem f hx))
+        (by simpa [ScalarFieldWrite.apply] using hperm))
 
 def attestationFieldRef (field : Ident) : StorageRef :=
   {base := "_db",steps := [.mindex (.var "uid"),.field field]}
@@ -47,8 +50,8 @@ theorem attestationScalarStmtRun {L imms : Store} {evm : EVM.State} {word : UInt
     (hd : L.get? "_db" = none) (hu : L.get? "uid" = some (wordBytes32Value word))
     (ha : L.get? "attestation" = some a.value) {f : ScalarFieldWrite} (hf : f ∈ attestationScalarWrites (dbSlot word) a) :
     ExecStmt config {contract := contract,locals := L,immutables := imms} evm (attestationWriteStmt f.name)
-      (.ok {contract := contract,locals := L,immutables := imms} (f.apply evm)) := by
-  apply ExecStmt.assign (attestationRecord_field ha _ _ (attestationScalarWrites_value _ _ _ hf))
+      (if evm.executionEnv.perm then .ok {contract := contract,locals := L,immutables := imms} (f.apply evm) else .staticViolation) := by
+  apply execStmt_assign_storage (attestationRecord_field ha _ _ (attestationScalarWrites_value _ _ _ hf))
   apply assignStorageRef_resolved_value
     (resolveStorageRef?_ok hd (attestationField_evalRef hu f.name) (attestationScalarWrites_type word a f hf)) easStorageBackend
   · exact attestationScalarWrites_layout word a f hf
@@ -58,12 +61,14 @@ theorem attestationScalarStmtRun {L imms : Store} {evm : EVM.State} {word : UInt
 theorem attestationScalarAssignmentsRun {L imms : Store} {evm : EVM.State} {word : UInt256} {a : AttestationRecord}
     (hd : L.get? "_db" = none) (hu : L.get? "uid" = some (wordBytes32Value word))
     (ha : L.get? "attestation" = some a.value) (fs : List ScalarFieldWrite)
-    (hfs : ∀ f ∈ fs, f ∈ attestationScalarWrites (dbSlot word) a) :
+    (hfs : ∀ f ∈ fs, f ∈ attestationScalarWrites (dbSlot word) a)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config {contract := contract,locals := L,immutables := imms} evm
       (fs.map fun f => attestationWriteStmt f.name)
       (.ok {contract := contract,locals := L,immutables := imms} (writeScalarFields fs evm)) := by
   exact execScalarAssignments fs (fun f => attestationFieldRef f.name) (fun f => .field (.var "attestation") f.name) evm
-    (fun f hf _ => attestationScalarStmtRun hd hu ha (hfs f hf))
+    (fun f hf e hp => by simpa only [hp, if_true] using
+      attestationScalarStmtRun (evm := e) hd hu ha (hfs f hf)) hperm
 
 theorem attestationWriteStatic {L imms : Store} {evm : EVM.State} {word : UInt256} {a : AttestationRecord} {rest : Body}
     (hd : L.get? "_db" = none) (hu : L.get? "uid" = some (wordBytes32Value word))

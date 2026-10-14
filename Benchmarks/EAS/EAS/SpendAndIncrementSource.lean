@@ -18,7 +18,7 @@ theorem spendAndIncrementSource {cfg : Config} {frame : Frame} {evm : EVM.State}
     (hb : i+1<UInt256.size) (hu : used.toNat ≤ available.toNat) :
     ExecBlock cfg frame evm (spendAndIncrement result)
       (.ok {frame with locals := spendAndIncrementLocals frame.locals available used i} evm) := by
-  apply ExecBlock.consNormal (ExecStmt.assign (evalExpr_uint256_sub (evalLocalValue ha) (evalLocalValue hr) hu) (assignLocalValue ha))
+  apply ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalExpr_uint256_sub (evalLocalValue ha) (evalLocalValue hr) hu) (assignLocalValue ha))
   apply ExecBlock.consNormal (execLocalCastIncrement ?_ hb) ExecBlock.nil
   simpa (disch := decide) only [store_get_ne] using hi
 

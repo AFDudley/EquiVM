@@ -34,7 +34,8 @@ private theorem offchainPublicSource_ok {evm : EVM.State} {locals imms : Store} 
     (hsize : evm.executionEnv.calldata.size < UInt256.size)
     (hs : evm.executionEnv.calldata.size - 4 < 2^255)
     (hkey : locals.get? "data" = some (wordBytes32Value word))
-    (hz : offchainWord evm evm.executionEnv.source word = ⟨0⟩) :
+    (hz : offchainWord evm evm.executionEnv.source word = ⟨0⟩)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm locals revokeOffchainTransition.body
       (.returned {contract := contract, locals := timePublicFinalLocals locals evm.executionEnv, immutables := imms}
         (offchainStore evm evm.executionEnv.source word (easTimeWord evm.executionEnv))
@@ -42,7 +43,7 @@ private theorem offchainPublicSource_ok {evm : EVM.State} {locals imms : Store} 
   rw [offchainPublic_body, ← List.append_assoc]
   apply ExecFuncBody.execBlockRet
   apply execBlock_append (timeEntrySource hv hsz hsize hs)
-  exact timePublicFinish (offchainCall_ok (offchainPublicArgs hkey) hz)
+  exact timePublicFinish (offchainCall_ok (hperm := hperm) (offchainPublicArgs hkey) hz)
 
 private theorem offchainPublicSource_revert {evm : EVM.State} {locals imms : Store} {word : UInt256}
     (hv : evm.executionEnv.weiValue = ⟨0⟩)
@@ -110,7 +111,7 @@ theorem easRevokeOffchainBody {σ σ₀ A I} {g : UInt256} (v : EASImmutables)
               (by simp) hz hp (by rw [easPatchedValidJumps v]; jump_dest) rd3
             have hr := easReturnWord v (by simp) rd4
             refine RDret.reEquivExecutionGen hcode hr hd hdec
-              (offchainPublicSource_ok hv hsz hsize hs (store_get_self _ _ _) hsourcezero) ?_ ?_
+              (offchainPublicSource_ok (hperm := hp) hv hsz hsize hs (store_get_self _ _ _) hsourcezero) ?_ ?_
             · exact (offchainStore_accounts (initState σ σ₀ (Sat256.ofUInt256 g) A I) I.source word time).symm
             · exact returnEquiv_of_encode (uintReturnEncoding ⟨64, by decide⟩ time
                 (u256LandMaskToNatLtOfToNat _ _ (by decide)))

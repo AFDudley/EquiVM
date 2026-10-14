@@ -30,7 +30,7 @@ theorem refundRun {cfg : Config} {locals imms : Store} {args : List Expr} {retVa
       by simpa only [u256_ofNat_toNat] using hh,refundCall_zero he,rd1⟩
   · by_cases hb : value.toNat ≤ (refundBalance evm).toNat
     · obtain ⟨evm',σ',success,out,hc,hs',hout,hr⟩ := refundEVM v hstack hperm hs hz hb hheap hh hret rd
-      have hsrc := refundCall (retVar := retVar) he hz hb hc
+      have hsrc := refundCall (hperm := (congrArg ExecutionEnv.perm hs.env).trans hperm) (retVar := retVar) he hz hb hc
       by_cases hv : refundResultValid ptr.toNat success out
       · rw [if_pos hv] at hr hsrc
         obtain ⟨aw1,k1,C1,rd1⟩ := hr

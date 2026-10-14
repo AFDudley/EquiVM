@@ -105,7 +105,7 @@ theorem resolveOneAmountSource {cfg : Config} {locals imms : Store} {evm : EVM.S
   by_cases hb : value.toNat ≤ available.toNat
   · rw [if_pos hb]
     apply ExecBlock.consNormal (ExecStmt.requireTrue (by simpa only [decide_eq_true hb] using he))
-    apply ExecBlock.consNormal (ExecStmt.assign (evalCastUint256Sub
+    apply ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalCastUint256Sub
       (by simp only [evalExpr?, ha, EvalResult.ofOption]) (by simp only [evalExpr?, hv, EvalResult.ofOption]) hb)
       (assignLocalBase_ok (frame := {contract := contract, locals := locals, immutables := imms}) ha)) ExecBlock.nil
   · rw [if_neg hb]
@@ -122,12 +122,13 @@ theorem resolveOneResolverSource {locals imms : Store} {evm evm' : EVM.State} {a
     (hh : locals.get? "$EAS.freeMemory" = some (.int (Int.ofNat heap)))
     (hrv : locals.get? "isRevocation" = some (.bool rev)) (hsize : a.data.size < UInt256.size)
     (hc : callViaEVM evm target (Int.ofNat value.toNat) (resolverOnePayload a rev) (success,evm',out))
-    (hout : out.size < 2^255) :
+    (hout : out.size < 2^255)
+    (hperm : EVM.wordOfInt (Int.ofNat value.toNat) = ⟨0⟩ ∨ evm.executionEnv.perm = true) :
     if callBoolAccepted heap success out then
       ExecStmt config {contract := contract, locals := locals, immutables := imms} evm resolveOneResolver
         (.ok {contract := contract, locals := resolveOneResolverLocals locals rev heap out, immutables := imms} evm')
     else ExecStmt config {contract := contract, locals := locals, immutables := imms} evm resolveOneResolver .reverted := by
-  have hcall := resolverOneCall (heap := heap) (imms := imms) (locals := locals)
+  have hcall := resolverOneCall (hperm := hperm) (heap := heap) (imms := imms) (locals := locals)
     (args := [.var "resolver", .var "attestation", .boolLit rev, .var "value", .var "$EAS.freeMemory"])
     (retVar := resolveOneCallTmp rev)
     (by simp only [evalExprs?, evalExpr?, hr, ha, hv, hh, EvalResult.ofOption, EvalResult.bind, bind, pure]) hsize hc hout

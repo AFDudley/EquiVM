@@ -61,7 +61,7 @@ theorem uidIteration_next {L imms : Store} {evm : EVM.State} {a : AttestationRec
   refine ExecBlock.consNormal (ExecStmt.iteFalse ?_ ExecBlock.nil) ?_
   · simpa only [decide_eq_false hz] using uidAvailable_eval (imms := imms) (evm := evm)
       (hf.compute (word := word) (next := next)).db (store_get_self _ _ _)
-  · exact ExecBlock.consNormal (ExecStmt.assign
+  · exact ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
       (uidBump_eval (hf.compute (word := word) (next := next)).bump hb)
       (assignLocalBase_ok (hf.compute (word := word) (next := next)).bump)) ExecBlock.nil
 
