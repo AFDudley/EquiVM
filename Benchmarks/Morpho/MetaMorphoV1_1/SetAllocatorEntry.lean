@@ -6,7 +6,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.RuntimeBlocks_021
 
 /-! Calldata and owner-call setup for setting an allocator flag. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 

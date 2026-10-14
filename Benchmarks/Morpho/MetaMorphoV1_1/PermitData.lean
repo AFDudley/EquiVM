@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.PermitHashSource
 
 /-! Typed permit arguments and the source frames surrounding signature recovery. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1

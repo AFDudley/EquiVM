@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.ApprovalSource
 
 /-! Internal-call composition for the two approval overloads and the caller accessor. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 
@@ -119,7 +119,7 @@ theorem msgSenderCall (locals imms : Store) (evm : State) (ret : Ident) :
       (.ok ⟨contract, locals.insert ret (.address evm.executionEnv.source), imms⟩ evm) := by
   apply internalCallFunctionReturn (callee := contract.functions[4]!) (argVals := [])
     (value := some [.address evm.executionEnv.source])
-    (calleeSolm := ⟨contract, ∅, imms⟩) rfl rfl rfl
+    (calleeStele := ⟨contract, ∅, imms⟩) rfl rfl rfl
   apply ExecFuncBody.execBlockRet
   apply ExecBlock.consReturn (ExecStmt.return ?_)
   simp only [evalExprs?, evalExpr?, envValue, bind, EvalResult.bind, pure]

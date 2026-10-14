@@ -7,7 +7,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.RuntimeBlocks_046
 
 /-! Last-update and storage guards before choosing a cap-submission branch. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables metaMorphoV1_1Blocks
 

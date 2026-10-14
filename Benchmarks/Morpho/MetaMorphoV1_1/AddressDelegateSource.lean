@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.DelegateCallSimulation
 
 /-! The allocated Address delegate-call helper reuses the ordinary call's result checks. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
 

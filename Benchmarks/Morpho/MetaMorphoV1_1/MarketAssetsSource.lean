@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.CastFieldSource
 
 /-! Source continuations for the two interest casts and asset balance updates. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
 

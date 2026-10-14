@@ -13,7 +13,7 @@ caller's return address leaving `[slot]` on the stack.  This file discharges tha
 `RD.whileLoopCarryFull` (variant = words remaining) and the `⟨244⟩→⟨274⟩→⟨244⟩→retAddr` dance.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.WETH9
 
@@ -103,16 +103,16 @@ theorem weth9ClearLoopAndReturn
     jumpdest, swap1, jump (by native_decide),
     jumpdest, pop, swap1, jump hRA]⟩
 
-/-! ## Reconciling the EVM store-then-clear order with the Solm clear-then-store order -/
+/-! ## Reconciling the EVM store-then-clear order with the Stele clear-then-store order -/
 
 
 /-- For `name`/`symbol` slots, every cleared cursor `keccak(slot)+i` (`i < oldWords`) differs from
     the small `slot` itself. -/
 theorem weth9ClearSlotDisjoint (slot : UInt256) (hslot : slot = ⟨0⟩ ∨ slot = ⟨1⟩) (ow i : Nat)
-    (hK : (Solm.solidityBytesDataBaseSlot slot).toNat + ow < UInt256.size) (hi : i < ow) :
-    slot ≠ Solm.solidityBytesDataBaseSlot slot + UInt256.ofNat i := by
+    (hK : (Stele.solidityBytesDataBaseSlot slot).toNat + ow < UInt256.size) (hi : i < ow) :
+    slot ≠ Stele.solidityBytesDataBaseSlot slot + UInt256.ofNat i := by
   intro heq
-  have hval := clearCursor_toNat (Solm.solidityBytesDataBaseSlot slot) ow i hK (by omega)
+  have hval := clearCursor_toNat (Stele.solidityBytesDataBaseSlot slot) ow i hK (by omega)
   have hslotval := congrArg UInt256.toNat heq
   rw [hval] at hslotval
   rcases hslot with h | h <;> subst h
@@ -128,15 +128,15 @@ theorem weth9ClearSlotDisjoint (slot : UInt256) (hslot : slot = ⟨0⟩ ∨ slot
     omega
 
 /-- Combined reconciliation for `name`/`symbol`: the EVM's clear-after-store map equals the
-    Solm's store-after-clear map. -/
+    Stele's store-after-clear map. -/
 theorem weth9ClearStoreCommEquiv (cO : AccountAddress) (σ : AccountMap) (slot sw : UInt256)
     (hslot : slot = ⟨0⟩ ∨ slot = ⟨1⟩) (ow : Nat)
-    (hK : (Solm.solidityBytesDataBaseSlot slot).toNat + ow < UInt256.size) :
+    (hK : (Stele.solidityBytesDataBaseSlot slot).toNat + ow < UInt256.size) :
     clearDataWordsForwardFrom cO (sstoreAccountMap cO σ slot sw)
-        (Solm.solidityBytesDataBaseSlot slot) ⟨0⟩ ow =
+        (Stele.solidityBytesDataBaseSlot slot) ⟨0⟩ ow =
       sstoreAccountMap cO
-        (clearDataWordsForwardFrom cO σ (Solm.solidityBytesDataBaseSlot slot) ⟨0⟩ ow) slot sw :=
-  clearDataWordsForwardFrom_sstore_comm cO (Solm.solidityBytesDataBaseSlot slot) slot sw ow σ
+        (clearDataWordsForwardFrom cO σ (Stele.solidityBytesDataBaseSlot slot) ⟨0⟩ ow) slot sw :=
+  clearDataWordsForwardFrom_sstore_comm cO (Stele.solidityBytesDataBaseSlot slot) slot sw ow σ
     (fun i hi => weth9ClearSlotDisjoint slot hslot ow i hK hi)
 
 end Benchmarks.WETH9

@@ -3,7 +3,7 @@ import Reasoning.ABIViews
 
 /-! ABI encoding of the singleton storage-read request passed to Morpho. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 

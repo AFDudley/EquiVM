@@ -2,9 +2,9 @@ import Reasoning.WordArithmetic
 import Examples.OpenZeppelinBench.ERC6909.Storage
 import Examples.OpenZeppelinBench.ERC6909.Approve
 import Examples.OpenZeppelinBench.Pausable.Storage
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 2000000
@@ -107,9 +107,9 @@ def setOperatorBoolWord (old approved : UInt256) : UInt256 :=
     (UInt256.isZero (UInt256.isZero approved))
 
 def setOperatorPostState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (setOperatorSlot evm I)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (setOperatorSlot evm I)
     (setOperatorBoolWord
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (setOperatorSlot evm I))
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (setOperatorSlot evm I))
       (setOperatorApprovedWord I))
 
 theorem setOperatorOwnerWord_toNat (I : ExecutionEnv) :
@@ -191,9 +191,9 @@ theorem setOperatorAssign (evm : EVM.State) (I : ExecutionEnv) :
       (er := setOperatorEvaledRef evm I) (ty := boolSt)
       (loc := boolLoc (setOperatorSlot evm I))
       (word := setOperatorApprovedWord I)
-      (evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner (setOperatorSlot evm I)
+      (evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner (setOperatorSlot evm I)
         (setOperatorBoolWord
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (setOperatorSlot evm I))
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (setOperatorSlot evm I))
           (setOperatorApprovedWord I)))
       (hbase := by
         simpa [operatorApprovalRef] using setOperatorStore_operatorApprovals I)
@@ -925,7 +925,7 @@ theorem erc6909SetOperatorX_loaded {σ σ₀ A I} {g : Sat256} {sel : UInt256}
   obtain ⟨_, _, rd1082raw⟩ := rd1081.sload (by decide) (by evm_ov)
   exact ⟨_, _, by
     simpa [setOperatorStoredSlotStack, setOperatorStoredLoadedStack, setOperatorStorageWord,
-      Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage, initState]
+      Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage, initState]
       using rd1082raw⟩
 
 theorem erc6909SetOperatorX_toPreStore {σ σ₀ A I} {g : Sat256}
@@ -1180,7 +1180,7 @@ theorem erc6909SetOperatorBodyCore
                   |>.reEquivExecutionGen hcode hd hdec hbody
                     (by simp [evmS, setOperatorPostState, setOperatorSlot, setOperatorSlotI,
                       setOperatorStoredWord, setOperatorStorageWord, initState,
-                      Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
+                      Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
                       storageStore_accountMap])
                     (returnEquiv_of_encode (by simpa [boolTy] using boolTrueReturnEncoding))
               · have hpf : I.perm = false := by simpa using hperm

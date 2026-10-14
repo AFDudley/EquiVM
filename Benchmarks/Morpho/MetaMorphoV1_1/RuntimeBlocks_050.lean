@@ -3,7 +3,7 @@ import Reasoning.Immutables
 import Benchmarks.Morpho.MetaMorphoV1_1.Bytecode
 import Benchmarks.Morpho.MetaMorphoV1_1.ImmutableCode
 
-open Solm ABI Ethereum Ethereum.EVM
+open Stele ABI Ethereum Ethereum.EVM
 open Reasoning.Theory Reasoning.Reach
 
 namespace metaMorphoV1_1Blocks

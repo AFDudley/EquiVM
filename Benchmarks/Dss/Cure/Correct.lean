@@ -19,7 +19,7 @@ import Benchmarks.Dss.Cure.Tell
 import Benchmarks.Dss.Cure.Wait
 import Benchmarks.Dss.Cure.Wards
 import Benchmarks.Dss.Cure.When
-import Solm.Refine
+import Stele.Refine
 
 /-!
 # MakerDAO/Sky DSS Cure benchmark correctness scaffold
@@ -28,16 +28,16 @@ The runtime proof now follows the phase-1 shape: this file is a thin selector ro
 function has a separate `...BodyCore` proof obligation in its own file.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
 namespace Benchmarks.Dss.Cure
 
 theorem cureCorrect :
-    runtimeRefinementWithWF cureStorageWF config cureBytecode contract := by
+    runtimeRefinementWithWF cureStorageWF noGasBound config cureBytecode contract := by
   refine runtimeRefinementWithWF.intro ?_
-  intro σ σ₀ g A I hcode hsize hStorageWF
+  intro σ σ₀ g A I hcode hsize hStorageWF _
   by_cases hwv : I.weiValue = ⟨0⟩
   · by_cases hamt : selIs I (cureSelBytes 0)
     · exact cureAmtBodyCore hcode hsize hwv hamt
@@ -87,7 +87,7 @@ theorem cureCorrect :
   · exact cureNonPayable hcode hwv
 
 theorem cureContractCorrect :
-    contractRefinementWF cureStorageWF config cureCreationBytecode contract :=
+    contractRefinementWF cureStorageWF noGasBound config cureCreationBytecode contract :=
   contractRefinementWF.of_constant cureConstructorCorrect cureCorrect
 
 end Benchmarks.Dss.Cure

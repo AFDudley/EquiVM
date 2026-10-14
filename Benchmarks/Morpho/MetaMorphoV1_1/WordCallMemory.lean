@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.WordPrefixMemory
 
 /-! A selector followed by a fixed sequence of ABI words. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
 

@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.PackedDeletion
 
 /-! Source executions of pending guardian and timelock revocations. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 
@@ -14,7 +14,7 @@ def revocationEvent (guardian : Bool) : Ident :=
   if guardian then "RevokePendingGuardian" else "RevokePendingTimelock"
 
 def revocationState (guardian : Bool) (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (revocationSlot guardian) ⟨0⟩
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (revocationSlot guardian) ⟨0⟩
 
 def revocationFrame (evm : EVM.State) (locals imms : Store) : Frame :=
   { contract := contract

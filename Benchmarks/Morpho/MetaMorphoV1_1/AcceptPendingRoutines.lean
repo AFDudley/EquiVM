@@ -4,7 +4,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.RuntimeBlocks_013
 
 /-! Complete the accepted update through its setter and the shared return point. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables metaMorphoV1_1Blocks
 

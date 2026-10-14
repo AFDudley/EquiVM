@@ -1,6 +1,6 @@
 import Benchmarks.Dss.End.Rely
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 0
@@ -60,7 +60,7 @@ theorem endFileUintWhatWord_ne_of_bytes_ne {I : ExecutionEnv} {bs : List UInt8}
 
 
 theorem endDecode_fileUint_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (fileUintTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (fileUintTransition.params.map Param.name)
       (transitionSignature fileUintTransition).paramTypes I.calldata =
         some (endFileUintLocals I) := by
   simpa [config, fileUintTransition, bytes32, bytes32Width, uint256, uint256Int,
@@ -71,7 +71,7 @@ theorem endDecode_fileUint_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size
 
 theorem endDecode_fileUint_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 68) :
-    decodeCalldataWithMode config.abiDecodeMode (fileUintTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (fileUintTransition.params.map Param.name)
       (transitionSignature fileUintTransition).paramTypes I.calldata = none := by
   simpa [config, fileUintTransition, bytes32, bytes32Width, uint256, uint256Int,
     abiBytes32, abiBytes32Width, abiUInt256] using
@@ -162,7 +162,7 @@ theorem evalStorageRef_endFileUint_auth (evm : EVM.State) (I : ExecutionEnv)
 theorem evalExpr_endFileUint_auth_true (evm : EVM.State) (I : ExecutionEnv)
     (hsrc : evm.executionEnv.source = I.source)
     (hload :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (endRelyAuthStorageSlot I) =
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (endRelyAuthStorageSlot I) =
         ⟨1⟩) :
     evalExpr? config { contract := contract, locals := endFileUintLocals I } evm
       (.binary .eq (.storage (wardsRef sender)) (.intLit 1)) = .ok (.bool true) := by
@@ -171,7 +171,7 @@ theorem evalExpr_endFileUint_auth_true (evm : EVM.State) (I : ExecutionEnv)
         (.storage (wardsRef sender)) = .ok (.int 1) := by
     rw [evalExpr_storage_scalar_value (hbackend := rfl)
       (cfg := config)
-      (solm := { contract := contract, locals := endFileUintLocals I })
+      (stele := { contract := contract, locals := endFileUintLocals I })
       (slot := wardsRef sender)
       (er := endRelyAuthEvaledRef I)
       (t := .int uint256Int)
@@ -189,7 +189,7 @@ theorem evalExpr_endFileUint_auth_true (evm : EVM.State) (I : ExecutionEnv)
 theorem evalExpr_endFileUint_auth_false (evm : EVM.State) (I : ExecutionEnv)
     (hsrc : evm.executionEnv.source = I.source)
     (hload :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (endRelyAuthStorageSlot I) ≠
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (endRelyAuthStorageSlot I) ≠
         ⟨1⟩) :
     evalExpr? config { contract := contract, locals := endFileUintLocals I } evm
       (.binary .eq (.storage (wardsRef sender)) (.intLit 1)) = .ok (.bool false) := by
@@ -197,11 +197,11 @@ theorem evalExpr_endFileUint_auth_false (evm : EVM.State) (I : ExecutionEnv)
       evalExpr? config { contract := contract, locals := endFileUintLocals I } evm
         (.storage (wardsRef sender)) =
           .ok (.int (Int.ofNat
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
               (endRelyAuthStorageSlot I)).toNat)) := by
     exact evalExpr_storage_scalar_value (hbackend := rfl)
       (cfg := config)
-      (solm := { contract := contract, locals := endFileUintLocals I })
+      (stele := { contract := contract, locals := endFileUintLocals I })
       (slot := wardsRef sender)
       (er := endRelyAuthEvaledRef I)
       (t := .int uint256Int)
@@ -213,7 +213,7 @@ theorem evalExpr_endFileUint_auth_false (evm : EVM.State) (I : ExecutionEnv)
       (hload := by exact storageLocLoad_uint256 evm (endRelyAuthStorageSlot I))
   have hne :
       Value.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
             (endRelyAuthStorageSlot I)).toNat) ≠ Value.int 1 := by
     intro hbad
     rw [Value.int.injEq] at hbad
@@ -221,13 +221,13 @@ theorem evalExpr_endFileUint_auth_false (evm : EVM.State) (I : ExecutionEnv)
     exact uInt256_toNat_eq_one (Int.ofNat.inj hbad)
   have hbeq :
       (Value.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
             (endRelyAuthStorageSlot I)).toNat) == Value.int 1) = false := by
     exact beq_eq_false_iff_ne.mpr hne
   simp only [evalExpr?, hstorage, EvalResult.bind, bind, pure]
   change evalBinaryOp? BinaryOp.eq
       (Value.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
           (endRelyAuthStorageSlot I)).toNat))
       (Value.int 1) = .ok (.bool false)
   simp only [evalBinaryOp?]
@@ -243,7 +243,7 @@ theorem evalStorageRef_endFileUint_live (evm : EVM.State) (I : ExecutionEnv) :
     pure, bind]
 
 theorem evalExpr_endFileUint_live_true (evm : EVM.State) (I : ExecutionEnv)
-    (hload : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩ = ⟨1⟩) :
+    (hload : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩ = ⟨1⟩) :
     evalExpr? config { contract := contract, locals := endFileUintLocals I } evm
       (.binary .eq (.storage liveRef) (.intLit 1)) = .ok (.bool true) := by
   have hstorage :
@@ -251,7 +251,7 @@ theorem evalExpr_endFileUint_live_true (evm : EVM.State) (I : ExecutionEnv)
         (.storage liveRef) = .ok (.int 1) := by
     rw [evalExpr_storage_scalar_value (hbackend := rfl)
       (cfg := config)
-      (solm := { contract := contract, locals := endFileUintLocals I })
+      (stele := { contract := contract, locals := endFileUintLocals I })
       (slot := liveRef)
       (er := endLiveEvaledRef)
       (t := .int uint256Int)
@@ -266,17 +266,17 @@ theorem evalExpr_endFileUint_live_true (evm : EVM.State) (I : ExecutionEnv)
   rfl
 
 theorem evalExpr_endFileUint_live_false (evm : EVM.State) (I : ExecutionEnv)
-    (hload : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩ ≠ ⟨1⟩) :
+    (hload : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩ ≠ ⟨1⟩) :
     evalExpr? config { contract := contract, locals := endFileUintLocals I } evm
       (.binary .eq (.storage liveRef) (.intLit 1)) = .ok (.bool false) := by
   have hstorage :
       evalExpr? config { contract := contract, locals := endFileUintLocals I } evm
         (.storage liveRef) =
           .ok (.int (Int.ofNat
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩).toNat)) := by
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩).toNat)) := by
     exact evalExpr_storage_scalar_value (hbackend := rfl)
       (cfg := config)
-      (solm := { contract := contract, locals := endFileUintLocals I })
+      (stele := { contract := contract, locals := endFileUintLocals I })
       (slot := liveRef)
       (er := endLiveEvaledRef)
       (t := .int uint256Int)
@@ -288,7 +288,7 @@ theorem evalExpr_endFileUint_live_false (evm : EVM.State) (I : ExecutionEnv)
       (hload := by exact storageLocLoad_uint256 evm ⟨8⟩)
   have hne :
       Value.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩).toNat) ≠
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩).toNat) ≠
         Value.int 1 := by
     intro hbad
     rw [Value.int.injEq] at hbad
@@ -296,19 +296,19 @@ theorem evalExpr_endFileUint_live_false (evm : EVM.State) (I : ExecutionEnv)
     exact uInt256_toNat_eq_one (Int.ofNat.inj hbad)
   have hbeq :
       (Value.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩).toNat) ==
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩).toNat) ==
         Value.int 1) = false := by
     exact beq_eq_false_iff_ne.mpr hne
   simp only [evalExpr?, hstorage, EvalResult.bind, bind, pure]
   change evalBinaryOp? BinaryOp.eq
       (Value.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩).toNat))
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩).toNat))
       (Value.int 1) = .ok (.bool false)
   simp only [evalBinaryOp?]
   rw [hbeq]
 
 def endFileUintPostState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨10⟩ (endFileUintData I)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨10⟩ (endFileUintData I)
 
 theorem endFileUintAssignWait (evm : EVM.State) (I : ExecutionEnv) :
     assignStorageRef? config { contract := contract, locals := endFileUintLocals I } evm
@@ -342,13 +342,13 @@ theorem endFileUintSourceWaitOkSplit {σ σ₀ A I} {g : UInt256}
   have hguardAuth :
       evalExpr? config { contract := contract, locals := locals } evm0
         (.binary .eq (.storage (wardsRef sender)) (.intLit 1)) = .ok (.bool true) := by
-    simpa [locals, evm0, endRelyAuthWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [locals, evm0, endRelyAuthWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       evalExpr_endFileUint_auth_true evm0 I (by simp [evm0, initState]) hauth
   have hguardLive :
       evalExpr? config { contract := contract, locals := locals } evm0
         (.binary .eq (.storage liveRef) (.intLit 1)) = .ok (.bool true) := by
-    simpa [locals, evm0, solcSlotWordAt, initState, Solm.EVM.storageLoad, State.lookupAccount]
+    simpa [locals, evm0, solcSlotWordAt, initState, Stele.EVM.storageLoad, State.lookupAccount]
       using evalExpr_endFileUint_live_true evm0 I hlive
   have hcond :
       evalExpr? config { contract := contract, locals := locals } evm0
@@ -396,14 +396,14 @@ theorem endFileUintSourceAuthReverts {σ σ₀ A I} {g : UInt256}
   have hguard :
       evalExpr? config { contract := contract, locals := locals } evm0
         (.binary .eq (.storage (wardsRef sender)) (.intLit 1)) = .ok (.bool false) := by
-    simpa [locals, evm0, endRelyAuthWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [locals, evm0, endRelyAuthWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       evalExpr_endFileUint_auth_false evm0 I (by simp [evm0, initState]) hauth
   refine ExecFuncBody.execBlockRevert ?_
   simpa [fileUintTransition, nonpayable, auth] using
     nonpayableSecondRequireReverts
       (cfg := config)
-      (solm := { contract := contract, locals := locals })
+      (stele := { contract := contract, locals := locals })
       (evm := evm0)
       (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
       (rest := ([
@@ -426,13 +426,13 @@ theorem endFileUintSourceLiveReverts {σ σ₀ A I} {g : UInt256}
   have hguardAuth :
       evalExpr? config { contract := contract, locals := locals } evm0
         (.binary .eq (.storage (wardsRef sender)) (.intLit 1)) = .ok (.bool true) := by
-    simpa [locals, evm0, endRelyAuthWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [locals, evm0, endRelyAuthWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       evalExpr_endFileUint_auth_true evm0 I (by simp [evm0, initState]) hauth
   have hguardLive :
       evalExpr? config { contract := contract, locals := locals } evm0
         (.binary .eq (.storage liveRef) (.intLit 1)) = .ok (.bool false) := by
-    simpa [locals, evm0, solcSlotWordAt, initState, Solm.EVM.storageLoad, State.lookupAccount]
+    simpa [locals, evm0, solcSlotWordAt, initState, Stele.EVM.storageLoad, State.lookupAccount]
       using evalExpr_endFileUint_live_false evm0 I hlive
   have hblock :
       ExecBlock config { contract := contract, locals := locals } evm0 fileUintTransition.body
@@ -456,13 +456,13 @@ theorem endFileUintSourceUnrecognizedReverts {σ σ₀ A I} {g : UInt256}
   have hguardAuth :
       evalExpr? config { contract := contract, locals := locals } evm0
         (.binary .eq (.storage (wardsRef sender)) (.intLit 1)) = .ok (.bool true) := by
-    simpa [locals, evm0, endRelyAuthWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [locals, evm0, endRelyAuthWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       evalExpr_endFileUint_auth_true evm0 I (by simp [evm0, initState]) hauth
   have hguardLive :
       evalExpr? config { contract := contract, locals := locals } evm0
         (.binary .eq (.storage liveRef) (.intLit 1)) = .ok (.bool true) := by
-    simpa [locals, evm0, solcSlotWordAt, initState, Solm.EVM.storageLoad, State.lookupAccount]
+    simpa [locals, evm0, solcSlotWordAt, initState, Stele.EVM.storageLoad, State.lookupAccount]
       using evalExpr_endFileUint_live_true evm0 I hlive
   have hwait :
       evalExpr? config { contract := contract, locals := locals } evm0
@@ -1031,12 +1031,12 @@ theorem endFileUintBody {σ σ₀ A I} {g : UInt256}
   · have hdecode := endDecode_fileUint_ok (I := I) hsz68
     obtain ⟨_, _, hdecoded⟩ :=
       endFileUintX_decoded (g := Sat256.ofUInt256 g) hsz68 hsize hreach
-    let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+    let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
     by_cases hauth : endRelyAuthWord σ I = ⟨1⟩
-    · have hauthSolm : endRelyAuthWord σ I = ⟨1⟩ := hauth
+    · have hauthStele : endRelyAuthWord σ I = ⟨1⟩ := hauth
       obtain ⟨_, _, hauthPc⟩ := endFileUintX_authorized (I := I) hauth hdecoded
       by_cases hlive : solcSlotWordAt ⟨8⟩ σ I = ⟨1⟩
-      · have hliveSolm : solcSlotWordAt ⟨8⟩ σ I = ⟨1⟩ := hlive
+      · have hliveStele : solcSlotWordAt ⟨8⟩ σ I = ⟨1⟩ := hlive
         obtain ⟨_, _, hswitch⟩ := endFileUintX_live (I := I) hlive hauthPc
         have hsz36 : 36 ≤ I.calldata.size := by omega
         by_cases hwait : endFileUintWhat I = endFileUintWaitBytes
@@ -1044,22 +1044,22 @@ theorem endFileUintBody {σ σ₀ A I} {g : UInt256}
               calldataWord I.calldata 4 = ABI.bytesToWord endFileUintWaitBytes := by
             rw [← endFileUintWhatWord_eq (I := I) hsz36, hwait]
           have hbodySplit :
-              (ExecTransitionBody config contract evmSolm (endFileUintLocals I)
+              (ExecTransitionBody config contract evmStele (endFileUintLocals I)
                 fileUintTransition.body
                 (.returned { contract := contract, locals := endFileUintLocals I }
-                  (endFileUintPostState evmSolm I) none)) ∧
-              (I.perm = false → ExecTransitionBody config contract evmSolm
+                  (endFileUintPostState evmStele I) none)) ∧
+              (I.perm = false → ExecTransitionBody config contract evmStele
                 (endFileUintLocals I) fileUintTransition.body .staticViolation) := by
-            simpa [evmSolm] using
+            simpa [evmStele] using
               endFileUintSourceWaitOkSplit
                 (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
-                hwv hauthSolm hliveSolm hwait
+                hwv hauthStele hliveStele hwait
           rcases endFileUintX_wait_okSplit hwaitWord hswitch with
             ⟨_hperm, hret⟩ | ⟨hperm, hstatic⟩
           swap
           · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode (hbodySplit.2 hperm)
           exact hret.reEquivExecutionGen hcode hdispatch hdecode hbodySplit.1
-              (by simp [endFileUintPostState, evmSolm, initState, storageStore_accountMap])
+              (by simp [endFileUintPostState, evmStele, initState, storageStore_accountMap])
               (by
                 simpa [fileUintTransition] using
                   (returnEquiv.fallthrough (o := ByteArray.empty) (r := none) (t := [])
@@ -1068,36 +1068,36 @@ theorem endFileUintBody {σ σ₀ A I} {g : UInt256}
               calldataWord I.calldata 4 ≠ ABI.bytesToWord endFileUintWaitBytes :=
             endFileUintWhatWord_ne_of_bytes_ne hsz36 hwait endFileUintWaitBytes_length
           have hbody :
-              ExecTransitionBody config contract evmSolm (endFileUintLocals I)
+              ExecTransitionBody config contract evmStele (endFileUintLocals I)
                 fileUintTransition.body .reverted := by
-            simpa [evmSolm] using
+            simpa [evmStele] using
               endFileUintSourceUnrecognizedReverts
                 (σ := σ) (σ₀ := σ₀)
-                (A := A) (I := I) (g := g) hwv hauthSolm hliveSolm hwait
+                (A := A) (I := I) (g := g) hwv hauthStele hliveStele hwait
           exact (endFileUintX_unrecognized hnotWaitWord hswitch)
             |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
-      · have hliveSolm : solcSlotWordAt ⟨8⟩ σ I ≠ ⟨1⟩ := by
+      · have hliveStele : solcSlotWordAt ⟨8⟩ σ I ≠ ⟨1⟩ := by
           intro hbad
           exact hlive hbad
         have hbody :
-            ExecTransitionBody config contract evmSolm (endFileUintLocals I)
+            ExecTransitionBody config contract evmStele (endFileUintLocals I)
               fileUintTransition.body .reverted := by
-          simpa [evmSolm] using
+          simpa [evmStele] using
             endFileUintSourceLiveReverts
               (σ := σ) (σ₀ := σ₀)
-              (A := A) (I := I) (g := g) hwv hauthSolm hliveSolm
+              (A := A) (I := I) (g := g) hwv hauthStele hliveStele
         exact (endFileUintX_notLive (I := I) hlive hauthPc)
           |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
-    · have hauthSolm : endRelyAuthWord σ I ≠ ⟨1⟩ := by
+    · have hauthStele : endRelyAuthWord σ I ≠ ⟨1⟩ := by
         intro hbad
         exact hauth hbad
       have hbody :
-          ExecTransitionBody config contract evmSolm (endFileUintLocals I)
+          ExecTransitionBody config contract evmStele (endFileUintLocals I)
             fileUintTransition.body .reverted := by
-        simpa [evmSolm] using
+        simpa [evmStele] using
           endFileUintSourceAuthReverts
             (σ := σ) (σ₀ := σ₀)
-            (A := A) (I := I) (g := g) hwv hauthSolm
+            (A := A) (I := I) (g := g) hwv hauthStele
       exact (endFileUintX_unauthorized (I := I) hauth hdecoded)
         |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
   · exact (endFileUintX_shortarg (g := Sat256.ofUInt256 g) hsz4 hsize (by omega) hreach)

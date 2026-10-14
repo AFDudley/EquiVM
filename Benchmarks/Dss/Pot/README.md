@@ -33,8 +33,8 @@ Generated artifacts and scaffold files:
 - `runtime.hex`: optimized deployed runtime bytecode, 2595 bytes.
 - `Pot.abi.json`: ABI emitted by solc.
 - `Bytecode.lean`: creation/runtime bytecode as Lean `ByteArray`s plus verified `JUMPDEST` sets.
-- `Spec.lean`: Solm AST benchmark scaffold with storage layout and full public ABI surface.
-- `SpecSyntax.lean`: Solm notation presentation for representative fragments, checked by `rfl`.
+- `Spec.lean`: Stele AST benchmark scaffold with storage layout and full public ABI surface.
+- `SpecSyntax.lean`: Stele notation presentation for representative fragments, checked by `rfl`.
 - `Constructor.lean`: top-level constructor-equivalence theorem, intentionally `sorry`.
 - `Correct.lean`: top-level runtime-equivalence theorem plus whole-contract wrapper,
   intentionally `sorry` at the runtime target.
@@ -63,8 +63,8 @@ Scaffold notes:
 - The runtime has two optimized `CALL` sites and two matching `EXTCODESIZE` guards. The source has
   three high-level `VatLike` calls because `join` and `exit` share one optimized bytecode call path;
   the spec models solc's guard on all three source-level calls.
-- The assembly `_rpow` helper is modeled structurally as a Solm loop with the same checked multiply,
+- The assembly `_rpow` helper is modeled structurally as a Stele loop with the same checked multiply,
   rounding-add, division, and odd-exponent update shape. Reusable proof work should isolate `_rpow`,
   `_rmul`, and typed external-call lemmas.
-- No known Solm syntax or semantics change is required to start proving this benchmark. The likely
+- No known Stele syntax or semantics change is required to start proving this benchmark. The likely
   proof hotspot is the optimized assembly `_rpow` loop.

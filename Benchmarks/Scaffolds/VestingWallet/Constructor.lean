@@ -1,5 +1,5 @@
 import Benchmarks.Scaffolds.VestingWallet.Bytecode
-import Solm.Refine
+import Stele.Refine
 
 /-!
 # OpenZeppelin VestingWallet constructor correctness stub
@@ -8,7 +8,7 @@ The optimized creation bytecode returns the runtime bytecode with the concrete i
 `start = 0` and `duration = 365 days`. The proof is intentionally left as the benchmark target.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM
+open Stele ABI Ethereum Ethereum.EVM
 
 namespace OpenZeppelinBench.VestingWallet
 

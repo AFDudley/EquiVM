@@ -2,7 +2,7 @@ import Benchmarks.Dss.Clipper.TakeFluxCallbackEVM
 import Benchmarks.Dss.Clipper.TakeNonzeroFromFluxEquiv
 import Benchmarks.Dss.Clipper.TakeGenericCallbackSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 namespace Benchmarks.Dss.Clipper
@@ -21,7 +21,7 @@ theorem clipperTakeFromFluxDataEmptyEquiv
     (hpatch : patchRuntime clipperBytecode (patches v) = some code)
     (hcode : I.code = code)
     (hdispatch : dispatchMsg contract I.calldata = some takeTransition)
-    (hdec : decodeCalldataWithMode config.abiDecodeMode
+    (hdec : config.externalABI.decodeCalldata?
       (List.map Param.name takeTransition.params)
       (transitionSignature takeTransition).paramTypes I.calldata =
         some (clipperTakeStore I))
@@ -104,7 +104,7 @@ theorem clipperTakeFromFluxDataEmptyEquiv
   let evmPriceEvm : EVM.State :=
     { initState σ σ₀ (Sat256.ofUInt256 g) A I with
       accountMap := σPost }
-  have hvatCodeSolmOf
+  have hvatCodeSteleOf
       (hne : Reasoning.Theory.extCodeSizeWord σPost (clipperTakeVatTarget v) ≠ ⟨0⟩) :
       0 < (UInt256.ofNat ((evmPrice.lookupAccount v.vat).option 0
         (fun acc => acc.code.size))).toNat := by
@@ -142,7 +142,7 @@ theorem clipperTakeFromFluxDataEmptyEquiv
   apply RD.clipperTakeFluxDataEmptyElim v hpatch rd4223 hbaseSize hbaseRead64
     hdataLen hdepth hperm (by simp)
   · intro hnoCode hrev
-    have hnoCodeSolm : (UInt256.ofNat ((evmPrice.lookupAccount v.vat).option 0
+    have hnoCodeStele : (UInt256.ofNat ((evmPrice.lookupAccount v.vat).option 0
         (fun acc => acc.code.size))).toNat = 0 := by
       have hnoCodeEvm :
           Reasoning.Theory.extCodeSizeWord evmPrice.accountMap
@@ -151,22 +151,22 @@ theorem clipperTakeFromFluxDataEmptyEquiv
       simpa [State.lookupAccount] using
         extCodeSizeWord_zero_lookup_code_zero
           (clipperTakeVatTargetAddress v).symm hnoCodeEvm
-    exact closeRevert hrev (hsourceVatNoCode hnoCodeSolm)
+    exact closeRevert hrev (hsourceVatNoCode hnoCodeStele)
   · intro σVat outVat AVat hcall hvatCode hrev
-    obtain ⟨evmVat, hcallSolm, _, _, _, _, _, _⟩ :=
+    obtain ⟨evmVat, hcallStele, _, _, _, _, _, _⟩ :=
       syncFlux (by simpa [evmPriceEvm] using hcall)
-    exact closeRevert hrev (hsourceVatFailure (hvatCodeSolmOf hvatCode)
-      (by simpa [hevmPriceEnv] using hcallSolm))
+    exact closeRevert hrev (hsourceVatFailure (hvatCodeSteleOf hvatCode)
+      (by simpa [hevmPriceEnv] using hcallStele))
   · intro σVat outVat AVat memVat awVat kVat CVat hcall hvatCode hmem
       rd4701
-    obtain ⟨evmVat, hcallSolm, hAccountsVat, hevmVatSigma0, hevmVatEnv⟩ :=
+    obtain ⟨evmVat, hcallStele, hAccountsVat, hevmVatSigma0, hevmVatEnv⟩ :=
       syncFlux (by simpa [evmPriceEvm] using hcall)
-    have hcallSolm' : typedCallViaEVM config evmPrice (EVM.address v.vat)
+    have hcallStele' : typedCallViaEVM config evmPrice (EVM.address v.vat)
         "flux" 0 [v.ilk, .address evmPrice.executionEnv.codeOwner,
           .address (AccountAddress.ofNat who.toNat), .int (Int.ofNat slice.toNat)]
         (true, evmVat, outVat) true := by
-      simpa [hevmPriceEnv] using hcallSolm
-    have hflux := hsourceFluxSuccess (hvatCodeSolmOf hvatCode) hcallSolm'
+      simpa [hevmPriceEnv] using hcallStele
+    have hflux := hsourceFluxSuccess (hvatCodeSteleOf hvatCode) hcallStele'
     let dogLocals := fluxLocals.insert "dog_"
       (.address (AccountAddress.ofNat (clipperTakeDogEVMWord evmVat).toNat))
     have hletDog : ExecStmt config (Frame.mk contract fluxLocals (immStore v)) evmVat
@@ -174,7 +174,7 @@ theorem clipperTakeFromFluxDataEmptyEquiv
         (.ok (Frame.mk contract dogLocals (immStore v)) evmVat) := by
       simpa [dogLocals] using
         (ExecStmt.letDecl (cfg := config)
-          (solm := Frame.mk contract fluxLocals (immStore v)) (evm := evmVat)
+          (stele := Frame.mk contract fluxLocals (immStore v)) (evm := evmVat)
           (name := "dog_") (ty := some addr) (expr := .storage dogRef)
           (value := .address
             (AccountAddress.ofNat (clipperTakeDogEVMWord evmVat).toNat))

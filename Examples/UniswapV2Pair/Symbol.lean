@@ -1,7 +1,7 @@
 import Examples.UniswapV2Pair.StringReturn
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -16,7 +16,7 @@ theorem symbolReturnEncoding :
     encodeReturnValue? .string (.bytes symbolBytes) = some symbolReturnBytes := by
   native_decide
 
-/-- The Solm `symbol()` body returns `"UNI-V2"` as a dynamic string value. -/
+/-- The Stele `symbol()` body returns `"UNI-V2"` as a dynamic string value. -/
 theorem uniswapSymbolBodyReturns (evm : EVM.State) (locals : Store)
     (h : evm.executionEnv.weiValue = ⟨0⟩) :
     ExecTransitionBody config contract evm locals symbolTransition.body
@@ -144,7 +144,7 @@ theorem uniswapSymbolBodyCore
     (hcode : I.code = uniswapV2PairBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some symbolTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (symbolTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (symbolTransition.params.map Param.name)
         (transitionSignature symbolTransition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD uniswapV2PairBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1226⟩ [sel]

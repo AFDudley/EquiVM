@@ -3,7 +3,7 @@ import Reasoning.HeapMemory
 
 /-! Memory facts for the two-word packed buffers used in Morpho storage-slot hashes. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 

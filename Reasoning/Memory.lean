@@ -14,7 +14,7 @@ byte round-trip, `fromByteArrayBigEndian ∘ toByteArray = toNat`, the
 encode/decode reasoning lives in `Reasoning.ABI` (which imports this module).
 -/
 
-open Ethereum Ethereum.EVM Solm ABI
+open Ethereum Ethereum.EVM Stele ABI
 
 set_option maxRecDepth 8000
 
@@ -1528,7 +1528,7 @@ theorem readBytes_at_toList_any (cd : ByteArray) (off : ℕ) (hsz : off + 32 ≤
     rw [ByteArray.data_append, Array.toList_append, byteArray_zeroes_toList, hreadSize]
     simp [byteArray_toList_eq]
 
-/-- The Solm decoder's word at byte offset `off` equals the EVM's `uInt256OfByteArray (readBytes off)`. -/
+/-- The Stele decoder's word at byte offset `off` equals the EVM's `uInt256OfByteArray (readBytes off)`. -/
 theorem decode_word_at_eq (cd : ByteArray) (off : ℕ) (hsz : off + 32 ≤ cd.size) (hoff : off < 2 ^ 64) :
     ABI.bytesToWord ((cd.toList.drop off).take 32)
       = uInt256OfByteArray (cd.readBytes off 32) := by
@@ -1575,23 +1575,23 @@ theorem decode_word_at_eq_any (cd : ByteArray) (off : ℕ) (hsz : off + 32 ≤ c
 /-! ## 9. Mapping storage-slot and load coupling
 
 Solidity stores `mapping[key]` at base slot `s` in `keccak256(key ‖ s)` (each a 32-byte big-endian
-word); the Solm layout (`Solm.SolidityLayout`) computes exactly
+word); the Stele layout (`Stele.SolidityLayout`) computes exactly
 `uInt256OfByteArray (KEC (keyWord.toByteArray ++ s.toByteArray))`.  The EVM bytecode writes the key
 and slot into scratch memory and runs `KECCAK256`, and `RD.keccak256` pushes
 `UInt256.ofNat (fromByteArrayBigEndian (KEC …))`.  These lemmas bridge the two representations so a
-mapping `SLOAD`/`SSTORE` at the EVM-computed slot couples to the Solm storage ref's slot, and
-`RD.sload`'s pushed value couples to the Solm `storageLoad`.  The byte-preimage (that the scratch
+mapping `SLOAD`/`SSTORE` at the EVM-computed slot couples to the Stele storage ref's slot, and
+`RD.sload`'s pushed value couples to the Stele `storageLoad`.  The byte-preimage (that the scratch
 memory reads back as `key ++ slot`) and the partial-slot store decoding are reused from the existing
 memory/`storageLocStore` lemmas; these supply the mapping-specific keccak-slot identities. -/
 
 /-- The slot word an EVM `KECCAK256` pushes (`RD.keccak256`'s result — the big-endian decode of the
-    hash) is exactly the Solm layout's mapping-slot interpretation `uInt256OfByteArray (KEC …)`. -/
+    hash) is exactly the Stele layout's mapping-slot interpretation `uInt256OfByteArray (KEC …)`. -/
 theorem keccakSlot_eq (b : ByteArray) :
     UInt256.ofNat (fromByteArrayBigEndian (KEC b)) = uInt256OfByteArray (KEC b) :=
   (uInt256OfByteArray_eq _).symm
 
 /-- **Single-mapping slot.**  The EVM `KECCAK256` over the 64-byte preimage `key ‖ baseSlot` (both
-    32-byte big-endian words) yields the Solm layout slot for `mapping[key]` at base `baseSlot`. -/
+    32-byte big-endian words) yields the Stele layout slot for `mapping[key]` at base `baseSlot`. -/
 theorem mappingSlot_single (key baseSlot : UInt256) :
     UInt256.ofNat (fromByteArrayBigEndian
         (KEC (key.toByteArray ++ baseSlot.toByteArray)))
@@ -2249,7 +2249,7 @@ end Reasoning.Theory
 
 namespace Reasoning.Theory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 set_option autoImplicit false
 set_option maxRecDepth 2000000

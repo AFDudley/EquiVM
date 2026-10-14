@@ -6,7 +6,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.RuntimeBlocks_083
 
 /-! The storage fallback branches of the two EIP-712 string getters. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables metaMorphoV1_1Blocks
 open Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
 

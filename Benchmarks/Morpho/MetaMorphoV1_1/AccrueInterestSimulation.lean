@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.AccrueInterestRoutines
 
 /-! Complete interest-accrual simulation, including calls, stores, minting, and failures. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
@@ -12,7 +12,7 @@ set_option maxRecDepth 2000
 
 theorem sourceStateStoreSelf {s0 evm : State} {I : ExecutionEnv} {σ : AccountMap}
     (hs : SourceState s0 I σ evm) (slot value : UInt256) :
-    let changed := Solm.EVM.storageStore evm evm.executionEnv.codeOwner slot value
+    let changed := Stele.EVM.storageStore evm evm.executionEnv.codeOwner slot value
     SourceState s0 I changed.accountMap changed := by
   refine ⟨?_, (storageStore_executionEnv _ _ _ _).trans hs.env, rfl⟩
   have hw := (hs.storageWrite slot value).world

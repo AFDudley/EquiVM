@@ -1,7 +1,7 @@
 import Examples.UniswapV2Pair.Dispatch
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -17,15 +17,15 @@ theorem uniswapBytesLiteralBodyReturns (evm : EVM.State) (locals : Store) (bytes
     nonpayableBytesLiteralBodyReturns (cfg := config) (contract := contract) evm locals bytes h
 
 theorem uniswapDecode_name {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (nameTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (nameTransition.params.map Param.name)
       (transitionSignature nameTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 theorem uniswapDecode_symbol {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (symbolTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (symbolTransition.params.map Param.name)
       (transitionSignature symbolTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 /-- Reach the `name()` body entry through the optimized dispatcher. -/

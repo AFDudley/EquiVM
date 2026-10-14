@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.AllocationSyntax
 
 /-! Cursor accounting for the two domain strings and the empty extensions array. -/
 
-open Solm ABI
+open Stele ABI
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
 

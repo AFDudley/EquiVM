@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.MaxMintAllocationSyntax
 
 /-! Cursor propagation through the withdrawal-limit calculation. -/
 
-open Solm ABI
+open Stele ABI
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
 

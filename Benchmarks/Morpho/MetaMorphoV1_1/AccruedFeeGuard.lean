@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.AccruedAssetsTotalsRoutines
 
 /-! The short-circuit fee guard and its return path. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables metaMorphoV1_1Blocks
 

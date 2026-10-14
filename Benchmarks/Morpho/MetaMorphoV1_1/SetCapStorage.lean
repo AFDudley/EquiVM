@@ -4,22 +4,22 @@ import Benchmarks.Morpho.MetaMorphoV1_1.MarketRevocationMutation
 
 /-! Packed writes and final pending-cap deletion in the cap setter. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 
 open SourceMemory
 
 def setCapValueState (evm : State) (id cap : UInt256) : State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (solcMappingSlot ⟨13⟩ id)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (solcMappingSlot ⟨13⟩ id)
     (setLowBytesWord (marketRemovalConfigWord evm id) cap 23)
 
 def setCapClearTimeState (evm : State) (id : UInt256) : State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (solcMappingSlot ⟨13⟩ id)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (solcMappingSlot ⟨13⟩ id)
     (UInt256.land (UInt256.ofNat (2 ^ 192 - 1)) (marketRemovalConfigWord evm id))
 
 def setCapFinalState (evm : State) (id cap : UInt256) : State :=
-  Solm.EVM.storageStore (setCapValueState evm id cap) evm.executionEnv.codeOwner
+  Stele.EVM.storageStore (setCapValueState evm id cap) evm.executionEnv.codeOwner
     (solcMappingSlot ⟨16⟩ id) ⟨0⟩
 
 @[simp] theorem setCapValueState_executionEnv (evm : State) (id cap : UInt256) :

@@ -1,0 +1,1 @@
+Vyper transient declarations need an explicit Vyper transient backend; automatic Spec generation is not supported for this contract

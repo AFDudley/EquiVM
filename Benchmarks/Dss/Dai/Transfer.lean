@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Dai.TransferFrom
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -36,10 +36,10 @@ theorem transferStore_index_wad (I : ExecutionEnv) :
 
 theorem daiDecode_transfer_ok {I : ExecutionEnv}
     (hsel : selIs I (daiSelBytes 18)) (hsz68 : 68 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (transferTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (transferTransition.params.map Param.name)
       (transitionSignature transferTransition).paramTypes I.calldata =
         some (transferStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["dst", "wad"] [addr, uint256]
+  show config.externalABI.decodeCalldata? ["dst", "wad"] [addr, uint256]
     I.calldata = _
   unfold transferStore transferFromDstValue transferFromWadValue
   rw [transferFromDstWord_of_transfer I hsel, transferFromWadWord_of_transfer I hsel]
@@ -53,9 +53,9 @@ theorem daiDecode_transfer_ok {I : ExecutionEnv}
 
 theorem daiDecode_transfer_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 68) :
-    decodeCalldataWithMode config.abiDecodeMode (transferTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (transferTransition.params.map Param.name)
       (transitionSignature transferTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["dst", "wad"] [addr, uint256]
+  show config.externalABI.decodeCalldata? ["dst", "wad"] [addr, uint256]
     I.calldata = none
   simpa using decodeCalldata_legacyAddress_uint256_none_short
     (cd := I.calldata) (x := "dst") (y := "wad") hsz4 hshort
@@ -65,7 +65,7 @@ theorem daiLookupTransferFrom :
   rfl
 
 theorem daiBindTransferFromStore (I : ExecutionEnv) :
-    bindParams? transferFromTransition.params
+    bindParams? (transferFromTransition.params.map Param.toFunctionParam)
         [transferFromSrcValue I, transferFromDstValue I, transferFromWadValue I] =
       some (transferFromCallStore I) := by
   exact daiBindTransferFromCallStore I
@@ -105,7 +105,7 @@ theorem daiTransferBodyReturns_from_transferFrom (evm evmPost : EVM.State) (I : 
         (retVar := "_ok")
         (argVals := [transferFromSrcValue I, transferFromDstValue I, transferFromWadValue I])
         (callee := transferFromTransition) (locals := transferFromCallStore I)
-        (calleeSolm := { contract := contract, locals := transferFromCallStore I })
+        (calleeStele := { contract := contract, locals := transferFromCallStore I })
         (value := .bool true)
         (evalExprs_transfer_internalCall evm I hsel hsrc)
         daiLookupTransferFrom
@@ -159,7 +159,7 @@ theorem daiTransferBodyStatic_from_transferFrom (evm : EVM.State) (I : Execution
   have hcall : ExecStmt config caller evm
       (.internalCall "transferFrom" [sender, .var "dst", .var "wad"] "_ok") .staticViolation := by
     exact ExecStmt.internalCallStatic (cfg := config)
-      (solm := caller) (evm := evm)
+      (stele := caller) (evm := evm)
       (name := "transferFrom") (args := [sender, .var "dst", .var "wad"])
       (retVar := "_ok")
       (argVals := [transferFromSrcValue I, transferFromDstValue I, transferFromWadValue I])
@@ -269,7 +269,7 @@ theorem daiTransferBodyCoreDecodeFailed_short
   exact (daiTransferX_shortarg (g := Sat256.ofUInt256 g) hsz4 hsize hshort hreach)
     |>.reEquivDecodingFailed hcode hdispatch hdec
 
-/-- `transfer(address,uint256)` body refines its Solm transition. -/
+/-- `transfer(address,uint256)` body refines its Stele transition. -/
 theorem daiTransferBodyCore {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = daiBytecode) (hsize : I.calldata.size < UInt256.size)
     (hwv : I.weiValue = ⟨0⟩)

@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.ApprovalSource
 
 /-! The internal allowance reader used before a delegated transfer or withdrawal. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 
@@ -11,7 +11,7 @@ set_option autoImplicit false
 def allowanceInternalFunction : FunctionDecl := contract.functions[74]!
 
 def allowanceWord (evm : State) (owner spender : AccountAddress) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (approvalSlot owner spender)
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (approvalSlot owner spender)
 
 def allowanceInternalFrame (imms : Store) (owner spender : AccountAddress) : Frame :=
   ⟨contract, ((∅ : Store).insert "spender" (.address spender)).insert "owner" (.address owner),

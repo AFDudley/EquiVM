@@ -3,7 +3,7 @@ import Reasoning.SolcRoutines
 import Benchmarks.Dss.Vow.Rely
 import Benchmarks.Dss.Vow.VatDaiCall
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -247,7 +247,7 @@ abbrev cageAshEvaledRef : EvaledStorageRef :=
 
 theorem assign_cageLiveStorage (evm : EVM.State) {locals : Store} (value : UInt256)
     (hbase : locals.get? "live" = none) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨12⟩ value
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨12⟩ value
     assignStorageRef? config { contract := contract, locals := locals } evm
       .storage liveRef (.int (Int.ofNat value.toNat)) =
         .ok ({ contract := contract, locals := locals }, evm') := by
@@ -271,7 +271,7 @@ theorem assign_cageLiveStorage (evm : EVM.State) {locals : Store} (value : UInt2
 
 theorem assign_cageSinStorage (evm : EVM.State) {locals : Store} (value : UInt256)
     (hbase : locals.get? "Sin" = none) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨5⟩ value
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨5⟩ value
     assignStorageRef? config { contract := contract, locals := locals } evm
       .storage SinRef (.int (Int.ofNat value.toNat)) =
         .ok ({ contract := contract, locals := locals }, evm') := by
@@ -295,7 +295,7 @@ theorem assign_cageSinStorage (evm : EVM.State) {locals : Store} (value : UInt25
 
 theorem assign_cageAshStorage (evm : EVM.State) {locals : Store} (value : UInt256)
     (hbase : locals.get? "Ash" = none) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨6⟩ value
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨6⟩ value
     assignStorageRef? config { contract := contract, locals := locals } evm
       .storage AshRef (.int (Int.ofNat value.toNat)) =
         .ok ({ contract := contract, locals := locals }, evm') := by
@@ -323,9 +323,9 @@ theorem vowCageSourceClearPrefixSplit {σ σ₀ A I} {g : UInt256}
     (hlive : solcSlotWordAt ⟨12⟩ σ I = ⟨1⟩) :
     let locals : Store := ∅
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-    let evmLive := Solm.EVM.storageStore evm0 I.codeOwner ⟨12⟩ ⟨0⟩
-    let evmSin := Solm.EVM.storageStore evmLive I.codeOwner ⟨5⟩ ⟨0⟩
-    let evmAsh := Solm.EVM.storageStore evmSin I.codeOwner ⟨6⟩ ⟨0⟩
+    let evmLive := Stele.EVM.storageStore evm0 I.codeOwner ⟨12⟩ ⟨0⟩
+    let evmSin := Stele.EVM.storageStore evmLive I.codeOwner ⟨5⟩ ⟨0⟩
+    let evmAsh := Stele.EVM.storageStore evmSin I.codeOwner ⟨6⟩ ⟨0⟩
     ExecBlock config { contract := contract, locals := locals } evm0
       (.require (.binary .eq (.env .callvalue) (.intLit 0)) ::
         .require (.binary .eq (.storage (wardsRef sender)) (.intLit 1)) ::
@@ -393,9 +393,9 @@ theorem vowCageSourceClearPrefix {σ σ₀ A I} {g : UInt256}
     (hlive : solcSlotWordAt ⟨12⟩ σ I = ⟨1⟩) :
     let locals : Store := ∅
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-    let evmLive := Solm.EVM.storageStore evm0 I.codeOwner ⟨12⟩ ⟨0⟩
-    let evmSin := Solm.EVM.storageStore evmLive I.codeOwner ⟨5⟩ ⟨0⟩
-    let evmAsh := Solm.EVM.storageStore evmSin I.codeOwner ⟨6⟩ ⟨0⟩
+    let evmLive := Stele.EVM.storageStore evm0 I.codeOwner ⟨12⟩ ⟨0⟩
+    let evmSin := Stele.EVM.storageStore evmLive I.codeOwner ⟨5⟩ ⟨0⟩
+    let evmAsh := Stele.EVM.storageStore evmSin I.codeOwner ⟨6⟩ ⟨0⟩
     ExecBlock config { contract := contract, locals := locals } evm0
       (.require (.binary .eq (.env .callvalue) (.intLit 0)) ::
         .require (.binary .eq (.storage (wardsRef sender)) (.intLit 1)) ::
@@ -512,9 +512,9 @@ theorem vowDispatch_cage {I : ExecutionEnv}
     exact hsel
 
 theorem vowDecode_cage {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (cageTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (cageTransition.params.map Param.name)
       (transitionSignature cageTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 theorem vowReachCageBody {σ σ₀ A I} {g : Sat256}
@@ -1528,17 +1528,17 @@ theorem vowCageAuthRevert {σ σ₀ A I} {g : UInt256}
   have hsz : 4 ≤ I.calldata.size :=
     calldata_size_ge_of_selIs I ⟨#[0x69, 0x24, 0x50, 0x09]⟩ rfl hsel
   have hcallerWord : solcSlotWordAt callerSlot σ I = solcSlotWordAt callerSlot σ I := rfl
-  have hauthSolm : solcSlotWordAt callerSlot σ I ≠ ⟨1⟩ := by
-    intro hsolm
-    exact hauthEvm (by rw [hcallerWord, hsolm])
+  have hauthStele : solcSlotWordAt callerSlot σ I ≠ ⟨1⟩ := by
+    intro hstele
+    exact hauthEvm (by rw [hcallerWord, hstele])
   let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
   have hbody : ExecTransitionBody config contract evm0 locals cageTransition.body .reverted := by
     have hguard := vowAuthGuardEval_false
       (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
       (g := Sat256.ofUInt256 g) (locals := locals)
-      (by simp [locals]) hauthSolm
+      (by simp [locals]) hauthStele
     have hblock := nonpayableSecondRequireReverts
-      (cfg := config) (solm := { contract := contract, locals := locals })
+      (cfg := config) (stele := { contract := contract, locals := locals })
       (evm := evm0)
       (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
       (rest := cageAfterAuth)
@@ -1587,22 +1587,22 @@ theorem vowCageLiveRevert {σ σ₀ A I} {g : UInt256}
     calldata_size_ge_of_selIs I ⟨#[0x69, 0x24, 0x50, 0x09]⟩ rfl hsel
   have hcallerWord : solcSlotWordAt callerSlot σ I = solcSlotWordAt callerSlot σ I := rfl
   have hliveWord : solcSlotWordAt ⟨12⟩ σ I = solcSlotWordAt ⟨12⟩ σ I := rfl
-  have hauthSolm : solcSlotWordAt callerSlot σ I = ⟨1⟩ := by
+  have hauthStele : solcSlotWordAt callerSlot σ I = ⟨1⟩ := by
     rw [← hcallerWord]
     exact hauthEvm
-  have hliveSolm : solcSlotWordAt ⟨12⟩ σ I ≠ ⟨1⟩ := by
-    intro hsolm
-    exact hliveEvm (by rw [hliveWord, hsolm])
+  have hliveStele : solcSlotWordAt ⟨12⟩ σ I ≠ ⟨1⟩ := by
+    intro hstele
+    exact hliveEvm (by rw [hliveWord, hstele])
   let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
   have hbody : ExecTransitionBody config contract evm0 locals cageTransition.body .reverted := by
     have hguardAuth := vowAuthGuardEval_true
       (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
       (g := Sat256.ofUInt256 g) (locals := locals)
-      (by simp [locals]) hauthSolm
+      (by simp [locals]) hauthStele
     have hguardLive := vowLiveGuardEval_false
       (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
       (g := Sat256.ofUInt256 g) (locals := locals)
-      (by simp [locals]) hliveSolm
+      (by simp [locals]) hliveStele
     have hblock :
         ExecBlock config { contract := contract, locals := locals } evm0
           (.require (.binary .eq (.env .callvalue) (.intLit 0)) ::

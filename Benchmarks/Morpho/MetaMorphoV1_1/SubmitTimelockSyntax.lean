@@ -6,7 +6,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.Uint128Cast
 
 /-! Source expressions and frames for submitting a timelock update. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 

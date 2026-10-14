@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.ScheduledGuardianSource
 
 /-! Complete source outcomes for submitting a guardian update. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 

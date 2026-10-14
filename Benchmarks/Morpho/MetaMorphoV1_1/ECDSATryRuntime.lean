@@ -6,7 +6,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.RuntimeBlocks_018
 
 /-! Recovery's s check, precompile input setup, and returned signer/error tuple. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables metaMorphoV1_1Blocks
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1

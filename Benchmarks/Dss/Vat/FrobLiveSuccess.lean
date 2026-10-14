@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Vat.FrobLiveBase
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Vat
 
@@ -16,12 +16,12 @@ theorem execFrobFinalStoreTailFromConstructedLocals {evmDebt : EVM.State} {I : E
     (hdtabRange : -((2 : Int) ^ 255) ≤ dtab ∧ dtab < (2 : Int) ^ 255)
     (hdtabMod : dtab % (Int.ofNat EVM.wordModulus) = Int.ofNat dtabWord.toNat)
     (hloadGem :
-      Solm.EVM.storageLoad evmDebt evmDebt.executionEnv.codeOwner
+      Stele.EVM.storageLoad evmDebt evmDebt.executionEnv.codeOwner
         (frobGemVSourceSlot I) = gemOld)
     (hloadDai :
-      let evmGem := Solm.EVM.storageStore evmDebt evmDebt.executionEnv.codeOwner
+      let evmGem := Stele.EVM.storageStore evmDebt evmDebt.executionEnv.codeOwner
         (frobGemVSourceSlot I) gemNew
-      Solm.EVM.storageLoad evmGem evmGem.executionEnv.codeOwner
+      Stele.EVM.storageLoad evmGem evmGem.executionEnv.codeOwner
         (frobDaiWSourceSlot I) = daiOld)
     (hgemNew : gemNew = UInt256.sub gemOld (frobDinkWord I))
     (hdaiNew : daiNew = dtabWord + daiOld)
@@ -58,23 +58,23 @@ theorem execFrobFinalStoreTailFromConstructedLocals {evmDebt : EVM.State} {I : E
       (localsDebt.insert "ceilingDebt"
         (.int (Int.ofNat ceilingDebt.toNat))).insert "inkSpot"
         (.int (Int.ofNat inkSpot.toNat))
-    let evmGem := Solm.EVM.storageStore evmDebt evmDebt.executionEnv.codeOwner
+    let evmGem := Stele.EVM.storageStore evmDebt evmDebt.executionEnv.codeOwner
       (frobGemVSourceSlot I) gemNew
-    let evmDai := Solm.EVM.storageStore evmGem evmGem.executionEnv.codeOwner
+    let evmDai := Stele.EVM.storageStore evmGem evmGem.executionEnv.codeOwner
       (frobDaiWSourceSlot I) daiNew
-    let evmInk := Solm.EVM.storageStore evmDai evmDai.executionEnv.codeOwner
+    let evmInk := Stele.EVM.storageStore evmDai evmDai.executionEnv.codeOwner
       (frobUrnInkSourceSlot I) urnInkNew
-    let evmArt := Solm.EVM.storageStore evmInk evmInk.executionEnv.codeOwner
+    let evmArt := Stele.EVM.storageStore evmInk evmInk.executionEnv.codeOwner
       (frobUrnArtSourceSlot I) urnArtNew
-    let evmIlk := Solm.EVM.storageStore evmArt evmArt.executionEnv.codeOwner
+    let evmIlk := Stele.EVM.storageStore evmArt evmArt.executionEnv.codeOwner
       (frobIlkArtSourceSlot I) ilkArtNew
-    let evmRate := Solm.EVM.storageStore evmIlk evmIlk.executionEnv.codeOwner
+    let evmRate := Stele.EVM.storageStore evmIlk evmIlk.executionEnv.codeOwner
       (frobIlkRateSourceSlot I) ilkRate
-    let evmSpot := Solm.EVM.storageStore evmRate evmRate.executionEnv.codeOwner
+    let evmSpot := Stele.EVM.storageStore evmRate evmRate.executionEnv.codeOwner
       (frobIlkSpotSourceSlot I) ilkSpot
-    let evmLine := Solm.EVM.storageStore evmSpot evmSpot.executionEnv.codeOwner
+    let evmLine := Stele.EVM.storageStore evmSpot evmSpot.executionEnv.codeOwner
       (frobIlkLineSourceSlot I) ilkLine
-    let evmDust := Solm.EVM.storageStore evmLine evmLine.executionEnv.codeOwner
+    let evmDust := Stele.EVM.storageStore evmLine evmLine.executionEnv.codeOwner
       (frobIlkDustSourceSlot I) ilkDust
     ExecBlock config { contract := contract, locals := localsSafe } evmDebt
       (checkedSubSignedInto "gemNew" (.storage (gemRef (.var "i") (.var "v")))
@@ -172,12 +172,12 @@ theorem execFrobGemDaiUpdatesOk {evm : EVM.State} {I : ExecutionEnv}
     (hbaseGem : locals.get? "gem" = none)
     (hbaseDai : locals.get? "dai" = none)
     (hloadGem :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (frobGemVSourceSlot I) = gemOld)
     (hloadDai :
-      let evmGem := Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+      let evmGem := Stele.EVM.storageStore evm evm.executionEnv.codeOwner
         (frobGemVSourceSlot I) gemNew
-      Solm.EVM.storageLoad evmGem evmGem.executionEnv.codeOwner
+      Stele.EVM.storageLoad evmGem evmGem.executionEnv.codeOwner
         (frobDaiWSourceSlot I) = daiOld)
     (hgemNew : gemNew = UInt256.sub gemOld (frobDinkWord I))
     (hdaiNew : daiNew = dtabWord + daiOld)
@@ -186,9 +186,9 @@ theorem execFrobGemDaiUpdatesOk {evm : EVM.State} {I : ExecutionEnv}
     (hGemPos : 0 ≤ frobDinkInt I ∨ gemOld.toNat ≤ gemNew.toNat)
     (hDaiNeg : 0 ≤ dtab ∨ daiNew.toNat ≤ daiOld.toNat)
     (hDaiPos : dtab ≤ 0 ∨ daiOld.toNat ≤ daiNew.toNat) :
-    let evmGem := Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+    let evmGem := Stele.EVM.storageStore evm evm.executionEnv.codeOwner
       (frobGemVSourceSlot I) gemNew
-    let evmDai := Solm.EVM.storageStore evmGem evmGem.executionEnv.codeOwner
+    let evmDai := Stele.EVM.storageStore evmGem evmGem.executionEnv.codeOwner
       (frobDaiWSourceSlot I) daiNew
     let localsGem := locals.insert "gemNew" (.int (Int.ofNat gemNew.toNat))
     let localsDai := localsGem.insert "daiNew" (.int (Int.ofNat daiNew.toNat))
@@ -258,19 +258,19 @@ theorem execFrobFinalStorageAssignmentsOk {evmDai : EVM.State} {I : ExecutionEnv
       localsDai.get? "ilkLine" = some (.int (Int.ofNat ilkLine.toNat)))
     (hilkDust :
       localsDai.get? "ilkDust" = some (.int (Int.ofNat ilkDust.toNat))) :
-    let evmInk := Solm.EVM.storageStore evmDai evmDai.executionEnv.codeOwner
+    let evmInk := Stele.EVM.storageStore evmDai evmDai.executionEnv.codeOwner
       (frobUrnInkSourceSlot I) urnInkNew
-    let evmArt := Solm.EVM.storageStore evmInk evmInk.executionEnv.codeOwner
+    let evmArt := Stele.EVM.storageStore evmInk evmInk.executionEnv.codeOwner
       (frobUrnArtSourceSlot I) urnArtNew
-    let evmIlk := Solm.EVM.storageStore evmArt evmArt.executionEnv.codeOwner
+    let evmIlk := Stele.EVM.storageStore evmArt evmArt.executionEnv.codeOwner
       (frobIlkArtSourceSlot I) ilkArtNew
-    let evmRate := Solm.EVM.storageStore evmIlk evmIlk.executionEnv.codeOwner
+    let evmRate := Stele.EVM.storageStore evmIlk evmIlk.executionEnv.codeOwner
       (frobIlkRateSourceSlot I) ilkRate
-    let evmSpot := Solm.EVM.storageStore evmRate evmRate.executionEnv.codeOwner
+    let evmSpot := Stele.EVM.storageStore evmRate evmRate.executionEnv.codeOwner
       (frobIlkSpotSourceSlot I) ilkSpot
-    let evmLine := Solm.EVM.storageStore evmSpot evmSpot.executionEnv.codeOwner
+    let evmLine := Stele.EVM.storageStore evmSpot evmSpot.executionEnv.codeOwner
       (frobIlkLineSourceSlot I) ilkLine
-    let evmDust := Solm.EVM.storageStore evmLine evmLine.executionEnv.codeOwner
+    let evmDust := Stele.EVM.storageStore evmLine evmLine.executionEnv.codeOwner
       (frobIlkDustSourceSlot I) ilkDust
     ExecBlock config { contract := contract, locals := localsDai } evmDai
       [ .assign .storage (urnsF (.var "i") (.var "u") "ink") (.var "urnInkNew"),
@@ -724,12 +724,12 @@ theorem execFrobFinalStoreTailFromConstructedLocalsSplit {evmDebt : EVM.State}
     (hdtabRange : -((2 : Int) ^ 255) ≤ dtab ∧ dtab < (2 : Int) ^ 255)
     (hdtabMod : dtab % (Int.ofNat EVM.wordModulus) = Int.ofNat dtabWord.toNat)
     (hloadGem :
-      Solm.EVM.storageLoad evmDebt evmDebt.executionEnv.codeOwner
+      Stele.EVM.storageLoad evmDebt evmDebt.executionEnv.codeOwner
         (frobGemVSourceSlot I) = gemOld)
     (hloadDai :
-      let evmGem := Solm.EVM.storageStore evmDebt evmDebt.executionEnv.codeOwner
+      let evmGem := Stele.EVM.storageStore evmDebt evmDebt.executionEnv.codeOwner
         (frobGemVSourceSlot I) gemNew
-      Solm.EVM.storageLoad evmGem evmGem.executionEnv.codeOwner
+      Stele.EVM.storageLoad evmGem evmGem.executionEnv.codeOwner
         (frobDaiWSourceSlot I) = daiOld)
     (hgemNew : gemNew = UInt256.sub gemOld (frobDinkWord I))
     (hdaiNew : daiNew = dtabWord + daiOld)
@@ -766,23 +766,23 @@ theorem execFrobFinalStoreTailFromConstructedLocalsSplit {evmDebt : EVM.State}
       (localsDebt.insert "ceilingDebt"
         (.int (Int.ofNat ceilingDebt.toNat))).insert "inkSpot"
         (.int (Int.ofNat inkSpot.toNat))
-    let evmGem := Solm.EVM.storageStore evmDebt evmDebt.executionEnv.codeOwner
+    let evmGem := Stele.EVM.storageStore evmDebt evmDebt.executionEnv.codeOwner
       (frobGemVSourceSlot I) gemNew
-    let evmDai := Solm.EVM.storageStore evmGem evmGem.executionEnv.codeOwner
+    let evmDai := Stele.EVM.storageStore evmGem evmGem.executionEnv.codeOwner
       (frobDaiWSourceSlot I) daiNew
-    let evmInk := Solm.EVM.storageStore evmDai evmDai.executionEnv.codeOwner
+    let evmInk := Stele.EVM.storageStore evmDai evmDai.executionEnv.codeOwner
       (frobUrnInkSourceSlot I) urnInkNew
-    let evmArt := Solm.EVM.storageStore evmInk evmInk.executionEnv.codeOwner
+    let evmArt := Stele.EVM.storageStore evmInk evmInk.executionEnv.codeOwner
       (frobUrnArtSourceSlot I) urnArtNew
-    let evmIlk := Solm.EVM.storageStore evmArt evmArt.executionEnv.codeOwner
+    let evmIlk := Stele.EVM.storageStore evmArt evmArt.executionEnv.codeOwner
       (frobIlkArtSourceSlot I) ilkArtNew
-    let evmRate := Solm.EVM.storageStore evmIlk evmIlk.executionEnv.codeOwner
+    let evmRate := Stele.EVM.storageStore evmIlk evmIlk.executionEnv.codeOwner
       (frobIlkRateSourceSlot I) ilkRate
-    let evmSpot := Solm.EVM.storageStore evmRate evmRate.executionEnv.codeOwner
+    let evmSpot := Stele.EVM.storageStore evmRate evmRate.executionEnv.codeOwner
       (frobIlkSpotSourceSlot I) ilkSpot
-    let evmLine := Solm.EVM.storageStore evmSpot evmSpot.executionEnv.codeOwner
+    let evmLine := Stele.EVM.storageStore evmSpot evmSpot.executionEnv.codeOwner
       (frobIlkLineSourceSlot I) ilkLine
-    let evmDust := Solm.EVM.storageStore evmLine evmLine.executionEnv.codeOwner
+    let evmDust := Stele.EVM.storageStore evmLine evmLine.executionEnv.codeOwner
       (frobIlkDustSourceSlot I) ilkDust
     ExecBlock config { contract := contract, locals := localsSafe } evmDebt
       (checkedSubSignedInto "gemNew" (.storage (gemRef (.var "i") (.var "v")))
@@ -1001,7 +1001,7 @@ theorem vatFrobSourceBodySuccessFromDustBlock
         (localsDtab.insert "tab" (.int (Int.ofNat tab.toNat))).insert
           "debtNew" (.int (Int.ofNat debtNew.toNat))
       let evmDebt :=
-        Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner foldDebtSlot
+        Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner foldDebtSlot
           debtNew
       let ceilingDebt := UInt256.mul ilkArtNew ilkRate
       let inkSpot := UInt256.mul urnInkNew ilkSpot
@@ -1109,7 +1109,7 @@ theorem vatFrobSourceBodySuccessFromDustBlock
       (localsDtab.insert "tab" (.int (Int.ofNat tab.toNat))).insert
         "debtNew" (.int (Int.ofNat debtNew.toNat))
     let evmDebt :=
-      Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner foldDebtSlot
+      Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner foldDebtSlot
         debtNew
     let ceilingDebt := UInt256.mul ilkArtNew ilkRate
     let inkSpot := UInt256.mul urnInkNew ilkSpot
@@ -1120,7 +1120,7 @@ theorem vatFrobSourceBodySuccessFromDustBlock
     let gemOld := solcSlotWord (frobAfterDebt σ I) I (frobGemVSlot I)
     let gemNew := frobGemNew σ I
     let evmGem :=
-      Solm.EVM.storageStore evmDebt evmDebt.executionEnv.codeOwner
+      Stele.EVM.storageStore evmDebt evmDebt.executionEnv.codeOwner
         (frobGemVSourceSlot I) gemNew
     let daiOld := solcSlotWord (frobAfterGem σ I) I (frobDaiWSlot I)
     let daiNew := frobDaiNew σ I
@@ -1128,44 +1128,44 @@ theorem vatFrobSourceBodySuccessFromDustBlock
       (localsSafe.insert "gemNew" (.int (Int.ofNat gemNew.toNat))).insert
         "daiNew" (.int (Int.ofNat daiNew.toNat))
     let evmDai :=
-      Solm.EVM.storageStore evmGem evmGem.executionEnv.codeOwner
+      Stele.EVM.storageStore evmGem evmGem.executionEnv.codeOwner
         (frobDaiWSourceSlot I) daiNew
     let evmInk :=
-      Solm.EVM.storageStore evmDai evmDai.executionEnv.codeOwner
+      Stele.EVM.storageStore evmDai evmDai.executionEnv.codeOwner
         (frobUrnInkSourceSlot I) urnInkNew
     let evmArt :=
-      Solm.EVM.storageStore evmInk evmInk.executionEnv.codeOwner
+      Stele.EVM.storageStore evmInk evmInk.executionEnv.codeOwner
         (frobUrnArtSourceSlot I) urnArtNew
     let evmIlk :=
-      Solm.EVM.storageStore evmArt evmArt.executionEnv.codeOwner
+      Stele.EVM.storageStore evmArt evmArt.executionEnv.codeOwner
         (frobIlkArtSourceSlot I) ilkArtNew
     let evmRate :=
-      Solm.EVM.storageStore evmIlk evmIlk.executionEnv.codeOwner
+      Stele.EVM.storageStore evmIlk evmIlk.executionEnv.codeOwner
         (frobIlkRateSourceSlot I) ilkRate
     let evmSpot :=
-      Solm.EVM.storageStore evmRate evmRate.executionEnv.codeOwner
+      Stele.EVM.storageStore evmRate evmRate.executionEnv.codeOwner
         (frobIlkSpotSourceSlot I) ilkSpot
     let evmLine :=
-      Solm.EVM.storageStore evmSpot evmSpot.executionEnv.codeOwner
+      Stele.EVM.storageStore evmSpot evmSpot.executionEnv.codeOwner
         (frobIlkLineSourceSlot I) ilkLine
     let evmDust :=
-      Solm.EVM.storageStore evmLine evmLine.executionEnv.codeOwner
+      Stele.EVM.storageStore evmLine evmLine.executionEnv.codeOwner
         (frobIlkDustSourceSlot I) ilkDust
-    let evmDai := Solm.EVM.storageStore evmGem evmGem.executionEnv.codeOwner
+    let evmDai := Stele.EVM.storageStore evmGem evmGem.executionEnv.codeOwner
       (frobDaiWSourceSlot I) daiNew
-    let evmInk := Solm.EVM.storageStore evmDai evmDai.executionEnv.codeOwner
+    let evmInk := Stele.EVM.storageStore evmDai evmDai.executionEnv.codeOwner
       (frobUrnInkSourceSlot I) urnInkNew
-    let evmArt := Solm.EVM.storageStore evmInk evmInk.executionEnv.codeOwner
+    let evmArt := Stele.EVM.storageStore evmInk evmInk.executionEnv.codeOwner
       (frobUrnArtSourceSlot I) urnArtNew
-    let evmIlk := Solm.EVM.storageStore evmArt evmArt.executionEnv.codeOwner
+    let evmIlk := Stele.EVM.storageStore evmArt evmArt.executionEnv.codeOwner
       (frobIlkArtSourceSlot I) ilkArtNew
-    let evmRate := Solm.EVM.storageStore evmIlk evmIlk.executionEnv.codeOwner
+    let evmRate := Stele.EVM.storageStore evmIlk evmIlk.executionEnv.codeOwner
       (frobIlkRateSourceSlot I) ilkRate
-    let evmSpot := Solm.EVM.storageStore evmRate evmRate.executionEnv.codeOwner
+    let evmSpot := Stele.EVM.storageStore evmRate evmRate.executionEnv.codeOwner
       (frobIlkSpotSourceSlot I) ilkSpot
-    let evmLine := Solm.EVM.storageStore evmSpot evmSpot.executionEnv.codeOwner
+    let evmLine := Stele.EVM.storageStore evmSpot evmSpot.executionEnv.codeOwner
       (frobIlkLineSourceSlot I) ilkLine
-    let evmDust := Solm.EVM.storageStore evmLine evmLine.executionEnv.codeOwner
+    let evmDust := Stele.EVM.storageStore evmLine evmLine.executionEnv.codeOwner
       (frobIlkDustSourceSlot I) ilkDust
     ExecTransitionBody config contract evm0 (frobStore I) frobTransition.body
       (.returned { contract := contract, locals := finalLocals } evmDust none) := by
@@ -1182,17 +1182,17 @@ theorem vatFrobSourceBodySuccessFromDustBlock
         Int.ofNat (UInt256.mul (frobDartWord I) ilkRate).toNat
     exact frobDtab_mod_word I ilkRate
   have hloadGem :
-      Solm.EVM.storageLoad evmDebt evmDebt.executionEnv.codeOwner
+      Stele.EVM.storageLoad evmDebt evmDebt.executionEnv.codeOwner
         (frobGemVSourceSlot I) = gemOld := by
-    simp [evmDebt, evm0, initState, Solm.EVM.storageLoad, State.lookupAccount,
+    simp [evmDebt, evm0, initState, Stele.EVM.storageLoad, State.lookupAccount,
       Account.lookupStorage, storageStore_accountMap, storageStore_executionEnv,
       frobAfterDebt, frobDebtNew, gemOld, debtNew, dtabWord, debtOld,
       frobDtabWord, ilkRate, solcSlotWordAt, frobGemVSourceSlot_eq I hsz196]
     simp only [solcSlotWord, Std.ExtTreeMap.get?_eq_getElem?]
   have hloadDai :
-      Solm.EVM.storageLoad evmGem evmGem.executionEnv.codeOwner
+      Stele.EVM.storageLoad evmGem evmGem.executionEnv.codeOwner
         (frobDaiWSourceSlot I) = daiOld := by
-    simp [evmGem, evmDebt, evm0, initState, Solm.EVM.storageLoad,
+    simp [evmGem, evmDebt, evm0, initState, Stele.EVM.storageLoad,
       State.lookupAccount, Account.lookupStorage, storageStore_accountMap,
       storageStore_executionEnv, frobAfterGem, frobAfterDebt, frobDebtNew,
       frobGemNew, gemNew, gemOld, daiOld, debtNew, dtabWord, debtOld,
@@ -1200,23 +1200,23 @@ theorem vatFrobSourceBodySuccessFromDustBlock
       frobDaiWSourceSlot_eq I]
     simp only [solcSlotWord, Std.ExtTreeMap.get?_eq_getElem?]
   have htail :
-      let evmGem := Solm.EVM.storageStore evmDebt evmDebt.executionEnv.codeOwner
+      let evmGem := Stele.EVM.storageStore evmDebt evmDebt.executionEnv.codeOwner
         (frobGemVSourceSlot I) gemNew
-      let evmDai := Solm.EVM.storageStore evmGem evmGem.executionEnv.codeOwner
+      let evmDai := Stele.EVM.storageStore evmGem evmGem.executionEnv.codeOwner
         (frobDaiWSourceSlot I) daiNew
-      let evmInk := Solm.EVM.storageStore evmDai evmDai.executionEnv.codeOwner
+      let evmInk := Stele.EVM.storageStore evmDai evmDai.executionEnv.codeOwner
         (frobUrnInkSourceSlot I) urnInkNew
-      let evmArt := Solm.EVM.storageStore evmInk evmInk.executionEnv.codeOwner
+      let evmArt := Stele.EVM.storageStore evmInk evmInk.executionEnv.codeOwner
         (frobUrnArtSourceSlot I) urnArtNew
-      let evmIlk := Solm.EVM.storageStore evmArt evmArt.executionEnv.codeOwner
+      let evmIlk := Stele.EVM.storageStore evmArt evmArt.executionEnv.codeOwner
         (frobIlkArtSourceSlot I) ilkArtNew
-      let evmRate := Solm.EVM.storageStore evmIlk evmIlk.executionEnv.codeOwner
+      let evmRate := Stele.EVM.storageStore evmIlk evmIlk.executionEnv.codeOwner
         (frobIlkRateSourceSlot I) ilkRate
-      let evmSpot := Solm.EVM.storageStore evmRate evmRate.executionEnv.codeOwner
+      let evmSpot := Stele.EVM.storageStore evmRate evmRate.executionEnv.codeOwner
         (frobIlkSpotSourceSlot I) ilkSpot
-      let evmLine := Solm.EVM.storageStore evmSpot evmSpot.executionEnv.codeOwner
+      let evmLine := Stele.EVM.storageStore evmSpot evmSpot.executionEnv.codeOwner
         (frobIlkLineSourceSlot I) ilkLine
-      let evmDust := Solm.EVM.storageStore evmLine evmLine.executionEnv.codeOwner
+      let evmDust := Stele.EVM.storageStore evmLine evmLine.executionEnv.codeOwner
         (frobIlkDustSourceSlot I) ilkDust
       ExecBlock config { contract := contract, locals := localsSafe } evmDebt
         (checkedSubSignedInto "gemNew" (.storage (gemRef (.var "i") (.var "v")))
@@ -1337,7 +1337,7 @@ theorem vatFrobLiveSuccessFinish
     (hcode : I.code = vatBytecode)
     (hsel : selIs I (vatSelBytes 11))
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (frobTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (frobTransition.params.map Param.name)
         (transitionSignature frobTransition).paramTypes I.calldata = some (frobStore I))
     (hsz196 : 196 ≤ I.calldata.size)
     (hret : RDret vatBytecode (Sat256.ofUInt256 g)
@@ -1371,7 +1371,7 @@ theorem vatFrobLiveSuccessFinish
         (localsDtab.insert "tab" (.int (Int.ofNat tab.toNat))).insert
           "debtNew" (.int (Int.ofNat debtNew.toNat))
       let evmDebt :=
-        Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner foldDebtSlot
+        Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner foldDebtSlot
           debtNew
       let ceilingDebt := UInt256.mul ilkArtNew ilkRate
       let inkSpot := UInt256.mul urnInkNew ilkSpot
@@ -1480,7 +1480,7 @@ theorem vatFrobLiveSuccessFinish
     (localsDtab.insert "tab" (.int (Int.ofNat tab.toNat))).insert
       "debtNew" (.int (Int.ofNat debtNew.toNat))
   let evmDebt :=
-    Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner foldDebtSlot
+    Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner foldDebtSlot
       debtNew
   let ceilingDebt := UInt256.mul ilkArtNew ilkRate
   let inkSpot := UInt256.mul urnInkNew ilkSpot
@@ -1491,7 +1491,7 @@ theorem vatFrobLiveSuccessFinish
   let gemOld := solcSlotWord (frobAfterDebt σ I) I (frobGemVSlot I)
   let gemNew := frobGemNew σ I
   let evmGem :=
-    Solm.EVM.storageStore evmDebt evmDebt.executionEnv.codeOwner
+    Stele.EVM.storageStore evmDebt evmDebt.executionEnv.codeOwner
       (frobGemVSourceSlot I) gemNew
   let daiOld := solcSlotWord (frobAfterGem σ I) I (frobDaiWSlot I)
   let daiNew := frobDaiNew σ I
@@ -1499,28 +1499,28 @@ theorem vatFrobLiveSuccessFinish
     (localsSafe.insert "gemNew" (.int (Int.ofNat gemNew.toNat))).insert
       "daiNew" (.int (Int.ofNat daiNew.toNat))
   let evmDai :=
-    Solm.EVM.storageStore evmGem evmGem.executionEnv.codeOwner
+    Stele.EVM.storageStore evmGem evmGem.executionEnv.codeOwner
       (frobDaiWSourceSlot I) daiNew
   let evmInk :=
-    Solm.EVM.storageStore evmDai evmDai.executionEnv.codeOwner
+    Stele.EVM.storageStore evmDai evmDai.executionEnv.codeOwner
       (frobUrnInkSourceSlot I) urnInkNew
   let evmArt :=
-    Solm.EVM.storageStore evmInk evmInk.executionEnv.codeOwner
+    Stele.EVM.storageStore evmInk evmInk.executionEnv.codeOwner
       (frobUrnArtSourceSlot I) urnArtNew
   let evmIlk :=
-    Solm.EVM.storageStore evmArt evmArt.executionEnv.codeOwner
+    Stele.EVM.storageStore evmArt evmArt.executionEnv.codeOwner
       (frobIlkArtSourceSlot I) ilkArtNew
   let evmRate :=
-    Solm.EVM.storageStore evmIlk evmIlk.executionEnv.codeOwner
+    Stele.EVM.storageStore evmIlk evmIlk.executionEnv.codeOwner
       (frobIlkRateSourceSlot I) ilkRate
   let evmSpot :=
-    Solm.EVM.storageStore evmRate evmRate.executionEnv.codeOwner
+    Stele.EVM.storageStore evmRate evmRate.executionEnv.codeOwner
       (frobIlkSpotSourceSlot I) ilkSpot
   let evmLine :=
-    Solm.EVM.storageStore evmSpot evmSpot.executionEnv.codeOwner
+    Stele.EVM.storageStore evmSpot evmSpot.executionEnv.codeOwner
       (frobIlkLineSourceSlot I) ilkLine
   let evmDust :=
-    Solm.EVM.storageStore evmLine evmLine.executionEnv.codeOwner
+    Stele.EVM.storageStore evmLine evmLine.executionEnv.codeOwner
       (frobIlkDustSourceSlot I) ilkDust
   have hbody :
       ExecTransitionBody config contract evm0 (frobStore I) frobTransition.body
@@ -1534,25 +1534,25 @@ theorem vatFrobLiveSuccessFinish
     change
       Eq (frobAfterRuntimeFinal σ I)
         (let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-         let evmDebt := Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner
+         let evmDebt := Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner
           foldDebtSlot (frobDebtNew σ I)
-         let evmGem := Solm.EVM.storageStore evmDebt evmDebt.executionEnv.codeOwner
+         let evmGem := Stele.EVM.storageStore evmDebt evmDebt.executionEnv.codeOwner
           (frobGemVSourceSlot I) (frobGemNew σ I)
-         let evmDai := Solm.EVM.storageStore evmGem evmGem.executionEnv.codeOwner
+         let evmDai := Stele.EVM.storageStore evmGem evmGem.executionEnv.codeOwner
           (frobDaiWSourceSlot I) (frobDaiNew σ I)
-         let evmInk := Solm.EVM.storageStore evmDai evmDai.executionEnv.codeOwner
+         let evmInk := Stele.EVM.storageStore evmDai evmDai.executionEnv.codeOwner
           (frobUrnInkSourceSlot I) (frobUrnInkNew σ I)
-         let evmArt := Solm.EVM.storageStore evmInk evmInk.executionEnv.codeOwner
+         let evmArt := Stele.EVM.storageStore evmInk evmInk.executionEnv.codeOwner
           (frobUrnArtSourceSlot I) (frobUrnArtNew σ I)
-         let evmIlk := Solm.EVM.storageStore evmArt evmArt.executionEnv.codeOwner
+         let evmIlk := Stele.EVM.storageStore evmArt evmArt.executionEnv.codeOwner
           (frobIlkArtSourceSlot I) (frobIlkArtNew σ I)
-         let evmRate := Solm.EVM.storageStore evmIlk evmIlk.executionEnv.codeOwner
+         let evmRate := Stele.EVM.storageStore evmIlk evmIlk.executionEnv.codeOwner
           (frobIlkRateSourceSlot I) (solcSlotWord σ I (frobIlkRateSlot I))
-         let evmSpot := Solm.EVM.storageStore evmRate evmRate.executionEnv.codeOwner
+         let evmSpot := Stele.EVM.storageStore evmRate evmRate.executionEnv.codeOwner
           (frobIlkSpotSourceSlot I) (solcSlotWord σ I (frobIlkSpotSlot I))
-         let evmLine := Solm.EVM.storageStore evmSpot evmSpot.executionEnv.codeOwner
+         let evmLine := Stele.EVM.storageStore evmSpot evmSpot.executionEnv.codeOwner
           (frobIlkLineSourceSlot I) (solcSlotWord σ I (frobIlkLineSlot I))
-         Solm.EVM.storageStore evmLine evmLine.executionEnv.codeOwner
+         Stele.EVM.storageStore evmLine evmLine.executionEnv.codeOwner
           (frobIlkDustSourceSlot I) (solcSlotWord σ I (frobIlkDustSlot I))).accountMap
     exact frobSourceFinal_accountMap_eq
       (σ := σ) (σ₀ := σ₀)
@@ -1573,7 +1573,7 @@ theorem vatFrobBodyCoreLiveSuccessGuards
     (hsel : selIs I (vatSelBytes 11))
     (hsz196 : 196 ≤ I.calldata.size)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (frobTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (frobTransition.params.map Param.name)
         (transitionSignature frobTransition).paramTypes I.calldata = some (frobStore I))
     (hdecoded :
       ∃ k C,
@@ -1654,9 +1654,9 @@ theorem vatFrobBodyCoreLiveSuccessGuards
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     have hrateWordNe :
         solcSlotWordAt (frobIlkRateSlot I) σ I ≠ ⟨0⟩ := by
-      intro hzeroSolm
+      intro hzeroStele
       apply hrateZeroEvm
-      simpa [solcSlotWordAt] using hzeroSolm
+      simpa [solcSlotWordAt] using hzeroStele
     have hratePos : 0 < ilkRate.toNat := by
       have hnat : ilkRate.toNat ≠ 0 := by
         intro hzeroNat
@@ -2566,7 +2566,7 @@ theorem vatFrobBodyCoreLiveSuccessGuards
               locals :=
                 (localsDtab.insert "tab" (.int (Int.ofNat tab.toNat))).insert
                   "debtNew" (.int (Int.ofNat debtNew.toNat)) }
-            (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner foldDebtSlot
+            (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner foldDebtSlot
               debtNew)) := by
       intro hInkNeg hInkPos hArtNeg hArtPos hIlkNeg hIlkPos hRateMax hDtabMul
         hTabMul hDebtNeg hDebtPos
@@ -2605,7 +2605,7 @@ theorem vatFrobBodyCoreLiveSuccessGuards
             Int.ofNat (UInt256.mul (frobDartWord I) ilkRate).toNat
         exact frobDtab_mod_word I ilkRate
       have hdebtLoad :
-          Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner foldDebtSlot =
+          Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner foldDebtSlot =
             debtOld := by
         simpa [evm0, debtOld, solcSlotWordAt, solcSlotWord,
           codeOwnerStorageWord] using
@@ -2621,7 +2621,7 @@ theorem vatFrobBodyCoreLiveSuccessGuards
               { contract := contract,
                 locals :=
                   localsTab.insert "debtNew" (.int (Int.ofNat debtNew.toNat)) }
-              (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner
+              (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner
                 foldDebtSlot debtNew)) := by
         exact execFrobDebtAddStoreOk
           (evm := evm0) (locals := localsTab)
@@ -2780,7 +2780,7 @@ theorem vatFrobBodyCoreLiveSuccessGuards
           (localsDtab.insert "tab" (.int (Int.ofNat tab.toNat))).insert
             "debtNew" (.int (Int.ofNat debtNew.toNat))
         let evmDebt :=
-          Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner foldDebtSlot
+          Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner foldDebtSlot
             debtNew
         let ceilingDebt := UInt256.mul ilkArtNew ilkRate
         let inkSpot := UInt256.mul urnInkNew ilkSpot
@@ -2847,7 +2847,7 @@ theorem vatFrobBodyCoreLiveSuccessGuards
       let dtabWord := UInt256.mul (frobDartWord I) ilkRate
       let debtNew := dtabWord + debtOld
       let evmDebt :=
-        Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner foldDebtSlot debtNew
+        Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner foldDebtSlot debtNew
       let ceilingDebt := UInt256.mul ilkArtNew ilkRate
       let inkSpot := UInt256.mul urnInkNew ilkSpot
       have hsourceDebt :=
@@ -2887,12 +2887,12 @@ theorem vatFrobBodyCoreLiveSuccessGuards
           ilkSpot, solcSlotWordAt]
           using hSafetyOk
       have hlineLoad :
-          Solm.EVM.storageLoad evmDebt evmDebt.executionEnv.codeOwner ⟨9⟩ =
+          Stele.EVM.storageLoad evmDebt evmDebt.executionEnv.codeOwner ⟨9⟩ =
             solcSlotWordAt ⟨9⟩ σ I := by
         have hne : (⟨9⟩ : UInt256) ≠ foldDebtSlot := by
           simp [foldDebtSlot]
         have hload0 :
-            Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner ⟨9⟩ =
+            Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner ⟨9⟩ =
               solcSlotWordAt ⟨9⟩ σ I := by
           simpa [evm0, initState, solcSlotWordAt, solcSlotWord,
             codeOwnerStorageWord] using
@@ -2901,11 +2901,11 @@ theorem vatFrobBodyCoreLiveSuccessGuards
               (σ₀ := σ₀) (A := A) (I := I)
               (g := Sat256.ofUInt256 g) ⟨9⟩)
         have hstore :
-            Solm.EVM.storageLoad
-                (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner foldDebtSlot
+            Stele.EVM.storageLoad
+                (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner foldDebtSlot
                   debtNew)
                 evm0.executionEnv.codeOwner ⟨9⟩ =
-              Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner ⟨9⟩ :=
+              Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner ⟨9⟩ :=
           storageLoad_storageStore_ne evm0 evm0.executionEnv.codeOwner hne
         simpa [evmDebt, storageStore_executionEnv] using hstore.trans hload0
       have hlocalsDebtIlkArtNew :
@@ -3313,7 +3313,7 @@ theorem vatFrobBodyCoreLiveSuccessGuards
           (localsDtab.insert "tab" (.int (Int.ofNat tab.toNat))).insert
             "debtNew" (.int (Int.ofNat debtNew.toNat))
         let evmDebt :=
-          Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner foldDebtSlot
+          Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner foldDebtSlot
             debtNew
         let ceilingDebt := UInt256.mul ilkArtNew ilkRate
         let inkSpot := UInt256.mul urnInkNew ilkSpot
@@ -3393,7 +3393,7 @@ theorem vatFrobBodyCoreLiveSuccessGuards
       let dtabWord := UInt256.mul (frobDartWord I) ilkRate
       let debtNew := dtabWord + debtOld
       let evmDebt :=
-        Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner foldDebtSlot debtNew
+        Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner foldDebtSlot debtNew
       let ceilingDebt := UInt256.mul ilkArtNew ilkRate
       let inkSpot := UInt256.mul urnInkNew ilkSpot
       let localsSafe :=
@@ -3443,7 +3443,7 @@ theorem vatFrobBodyCoreLiveSuccessGuards
             (UInt256.eq ⟨0⟩ urnArtNew) ≠ ⟨0⟩ := by
         simpa [tab, urnArtNew, urnArt, ilkRate, ilkDust, solcSlotWordAt] using hDust
       have hloadU :
-          Solm.EVM.storageLoad evmDebt evmDebt.executionEnv.codeOwner
+          Stele.EVM.storageLoad evmDebt evmDebt.executionEnv.codeOwner
             (frobUWishSlot I) = uWish := by
         have hmap :
             evmDebt.accountMap =
@@ -3452,16 +3452,16 @@ theorem vatFrobBodyCoreLiveSuccessGuards
             storageStore_accountMap evm0 evm0.executionEnv.codeOwner
               foldDebtSlot debtNew
         change
-          Solm.EVM.storageLoad evmDebt evmDebt.executionEnv.codeOwner
+          Stele.EVM.storageLoad evmDebt evmDebt.executionEnv.codeOwner
             (frobUWishSlot I) =
           solcSlotWord (sstoreAccountMap I.codeOwner σ foldDebtSlot
             debtNew) I (frobUWishSlot I)
-        simp only [Solm.EVM.storageLoad, State.lookupAccount,
+        simp only [Stele.EVM.storageLoad, State.lookupAccount,
           Account.lookupStorage]
         rw [hmap]
         simp [solcSlotWord, evmDebt, evm0, initState, storageStore_executionEnv]
       have hloadV :
-          Solm.EVM.storageLoad evmDebt evmDebt.executionEnv.codeOwner
+          Stele.EVM.storageLoad evmDebt evmDebt.executionEnv.codeOwner
             (frobVWishSlot I) = vWish := by
         have hmap :
             evmDebt.accountMap =
@@ -3470,16 +3470,16 @@ theorem vatFrobBodyCoreLiveSuccessGuards
             storageStore_accountMap evm0 evm0.executionEnv.codeOwner
               foldDebtSlot debtNew
         change
-          Solm.EVM.storageLoad evmDebt evmDebt.executionEnv.codeOwner
+          Stele.EVM.storageLoad evmDebt evmDebt.executionEnv.codeOwner
             (frobVWishSlot I) =
           solcSlotWord (sstoreAccountMap I.codeOwner σ foldDebtSlot
             debtNew) I (frobVWishSlot I)
-        simp only [Solm.EVM.storageLoad, State.lookupAccount,
+        simp only [Stele.EVM.storageLoad, State.lookupAccount,
           Account.lookupStorage]
         rw [hmap]
         simp [solcSlotWord, evmDebt, evm0, initState, storageStore_executionEnv]
       have hloadW :
-          Solm.EVM.storageLoad evmDebt evmDebt.executionEnv.codeOwner
+          Stele.EVM.storageLoad evmDebt evmDebt.executionEnv.codeOwner
             (frobWWishSlot I) = wWish := by
         have hmap :
             evmDebt.accountMap =
@@ -3488,11 +3488,11 @@ theorem vatFrobBodyCoreLiveSuccessGuards
             storageStore_accountMap evm0 evm0.executionEnv.codeOwner
               foldDebtSlot debtNew
         change
-          Solm.EVM.storageLoad evmDebt evmDebt.executionEnv.codeOwner
+          Stele.EVM.storageLoad evmDebt evmDebt.executionEnv.codeOwner
             (frobWWishSlot I) =
           solcSlotWord (sstoreAccountMap I.codeOwner σ foldDebtSlot
             debtNew) I (frobWWishSlot I)
-        simp only [Solm.EVM.storageLoad, State.lookupAccount,
+        simp only [Stele.EVM.storageLoad, State.lookupAccount,
           Account.lookupStorage]
         rw [hmap]
         simp [solcSlotWord, evmDebt, evm0, initState, storageStore_executionEnv]
@@ -4857,7 +4857,7 @@ theorem vatFrobBodyCoreLiveSuccessGuards
       (localsDtab.insert "tab" (.int (Int.ofNat tab.toNat))).insert
         "debtNew" (.int (Int.ofNat debtNew.toNat))
     let evmDebt :=
-      Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner foldDebtSlot
+      Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner foldDebtSlot
         debtNew
     let ceilingDebt := UInt256.mul ilkArtNew ilkRate
     let inkSpot := UInt256.mul urnInkNew ilkSpot
@@ -4868,7 +4868,7 @@ theorem vatFrobBodyCoreLiveSuccessGuards
     let gemOld := solcSlotWord (frobAfterDebt σ I) I (frobGemVSlot I)
     let gemNew := frobGemNew σ I
     let evmGem :=
-      Solm.EVM.storageStore evmDebt evmDebt.executionEnv.codeOwner
+      Stele.EVM.storageStore evmDebt evmDebt.executionEnv.codeOwner
         (frobGemVSourceSlot I) gemNew
     let daiOld := solcSlotWord (frobAfterGem σ I) I (frobDaiWSlot I)
     let daiNew := frobDaiNew σ I

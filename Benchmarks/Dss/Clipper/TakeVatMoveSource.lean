@@ -3,16 +3,16 @@ import Benchmarks.Dss.Clipper.TakeVatFluxSource
 import Benchmarks.Dss.Clipper.TakeVatMove
 import Benchmarks.Dss.Clipper.Vow
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 namespace Benchmarks.Dss.Clipper
 
 abbrev clipperTakeDogEVMWord (evm : EVM.State) : UInt256 :=
-  UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) solcAddrMask
+  UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) solcAddrMask
 
 abbrev clipperTakeVowEVMWord (evm : EVM.State) : UInt256 :=
-  UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩) solcAddrMask
+  UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩) solcAddrMask
 
 abbrev clipperTakeLocalsDogLoaded (evmLoc evmRead evmVat : EVM.State)
     (I : ExecutionEnv) (price slice owe0 owe slice' tabNew lotNew : UInt256) : Store :=
@@ -668,7 +668,7 @@ theorem clipperTakeVatMoveNoCodeBlock (v : ClipperImmutables)
         (.ok dogFrame evmVat) := by
     simpa [startFrame, dogFrame, clipperTakeLocalsDogLoaded] using
       (ExecStmt.letDecl
-        (cfg := config) (solm := startFrame) (evm := evmVat) (name := "dog_")
+        (cfg := config) (stele := startFrame) (evm := evmVat) (name := "dog_")
         (ty := some addr) (expr := .storage dogRef)
         (value := .address (AccountAddress.ofNat (clipperTakeDogEVMWord evmVat).toNat))
         (by
@@ -761,7 +761,7 @@ theorem clipperTakeVatMoveCallFailureBlock (v : ClipperImmutables)
         (.ok dogFrame evmVat) := by
     simpa [startFrame, dogFrame, clipperTakeLocalsDogLoaded] using
       (ExecStmt.letDecl
-        (cfg := config) (solm := startFrame) (evm := evmVat) (name := "dog_")
+        (cfg := config) (stele := startFrame) (evm := evmVat) (name := "dog_")
         (ty := some addr) (expr := .storage dogRef)
         (value := .address (AccountAddress.ofNat (clipperTakeDogEVMWord evmVat).toNat))
         (by
@@ -880,7 +880,7 @@ theorem clipperTakeVatMoveNoCodeBlockOfCallbackFalse (v : ClipperImmutables)
         (.ok dogFrame evmVat) := by
     simpa [startFrame, dogFrame, clipperTakeLocalsDogLoaded] using
       (ExecStmt.letDecl
-        (cfg := config) (solm := startFrame) (evm := evmVat) (name := "dog_")
+        (cfg := config) (stele := startFrame) (evm := evmVat) (name := "dog_")
         (ty := some addr) (expr := .storage dogRef)
         (value := .address (AccountAddress.ofNat (clipperTakeDogEVMWord evmVat).toNat))
         (by
@@ -973,7 +973,7 @@ theorem clipperTakeVatMoveCallFailureBlockOfCallbackFalse (v : ClipperImmutables
         (.ok dogFrame evmVat) := by
     simpa [startFrame, dogFrame, clipperTakeLocalsDogLoaded] using
       (ExecStmt.letDecl
-        (cfg := config) (solm := startFrame) (evm := evmVat) (name := "dog_")
+        (cfg := config) (stele := startFrame) (evm := evmVat) (name := "dog_")
         (ty := some addr) (expr := .storage dogRef)
         (value := .address (AccountAddress.ofNat (clipperTakeDogEVMWord evmVat).toNat))
         (by
@@ -1087,7 +1087,7 @@ theorem clipperTakeVatMoveCallSuccessBlockOfCallbackFalse (v : ClipperImmutables
         (.ok dogFrame evmVat) := by
     simpa [startFrame, dogFrame, clipperTakeLocalsDogLoaded] using
       (ExecStmt.letDecl
-        (cfg := config) (solm := startFrame) (evm := evmVat) (name := "dog_")
+        (cfg := config) (stele := startFrame) (evm := evmVat) (name := "dog_")
         (ty := some addr) (expr := .storage dogRef)
         (value := .address (AccountAddress.ofNat (clipperTakeDogEVMWord evmVat).toNat))
         (by

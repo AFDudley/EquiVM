@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Flipper.TendTail
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxHeartbeats 0
 
@@ -423,17 +423,17 @@ theorem flipperTendSourceBodySuccessSameCallerSplit {σ σ₀ A I}
     (hpayOwner : evmPay.executionEnv.codeOwner = I.codeOwner) :
     let locals := tendLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-    let evmBid := Solm.EVM.storageStore evmPay evmPay.executionEnv.codeOwner
+    let evmBid := Stele.EVM.storageStore evmPay evmPay.executionEnv.codeOwner
       (bidBaseOfWord (tendId I)) (tendBid I)
-    let evmTic := Solm.EVM.storageStore evmBid evmBid.executionEnv.codeOwner
+    let evmTic := Stele.EVM.storageStore evmBid evmBid.executionEnv.codeOwner
       (bidPackedSlotOfWord (tendId I))
       (setUint48Offset20Word
-        (Solm.EVM.storageLoad evmBid evmBid.executionEnv.codeOwner
+        (Stele.EVM.storageLoad evmBid evmBid.executionEnv.codeOwner
           (bidPackedSlotOfWord (tendId I)))
         (tendTicNewWord evmBid.accountMap I))
     (((tendNow48 I).toNat +
           (tendTtlWord
-            (Solm.EVM.storageStore evmPay evmPay.executionEnv.codeOwner
+            (Stele.EVM.storageStore evmPay evmPay.executionEnv.codeOwner
               (bidBaseOfWord (tendId I)) (tendBid I)).accountMap I).toNat <
         2 ^ 48) →
       ExecTransitionBody config contract evm0 locals tendTransition.body
@@ -642,17 +642,17 @@ theorem flipperTendSourceBodySuccessSameCaller {σ σ₀ A I}
     (hfitTic :
       (tendNow48 I).toNat +
           (tendTtlWord
-            (Solm.EVM.storageStore evmPay evmPay.executionEnv.codeOwner
+            (Stele.EVM.storageStore evmPay evmPay.executionEnv.codeOwner
               (bidBaseOfWord (tendId I)) (tendBid I)).accountMap I).toNat <
         2 ^ 48) :
     let locals := tendLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-    let evmBid := Solm.EVM.storageStore evmPay evmPay.executionEnv.codeOwner
+    let evmBid := Stele.EVM.storageStore evmPay evmPay.executionEnv.codeOwner
       (bidBaseOfWord (tendId I)) (tendBid I)
-    let evmTic := Solm.EVM.storageStore evmBid evmBid.executionEnv.codeOwner
+    let evmTic := Stele.EVM.storageStore evmBid evmBid.executionEnv.codeOwner
       (bidPackedSlotOfWord (tendId I))
       (setUint48Offset20Word
-        (Solm.EVM.storageLoad evmBid evmBid.executionEnv.codeOwner
+        (Stele.EVM.storageLoad evmBid evmBid.executionEnv.codeOwner
           (bidPackedSlotOfWord (tendId I)))
         (tendTicNewWord evmBid.accountMap I))
     ExecTransitionBody config contract evm0 locals tendTransition.body
@@ -720,13 +720,13 @@ theorem flipperTendSourceBodyAdd48OverflowSameCaller {σ σ₀ A I}
       2 ^ 48 ≤
         (tendNow48 I).toNat +
           (tendTtlWord
-            (Solm.EVM.storageStore evmPay evmPay.executionEnv.codeOwner
+            (Stele.EVM.storageStore evmPay evmPay.executionEnv.codeOwner
               (bidBaseOfWord (tendId I)) (tendBid I)).accountMap I).toNat) :
     let locals := tendLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     ExecTransitionBody config contract evm0 locals tendTransition.body .reverted := by
   intro locals evm0
-  let evmBid := Solm.EVM.storageStore evmPay evmPay.executionEnv.codeOwner
+  let evmBid := Stele.EVM.storageStore evmPay evmPay.executionEnv.codeOwner
     (bidBaseOfWord (tendId I)) (tendBid I)
   have hvat :
       evalExpr? config { contract := contract, locals := tendLocalsBidOneBegBid σ I } evm0

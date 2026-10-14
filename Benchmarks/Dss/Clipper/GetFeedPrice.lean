@@ -3,13 +3,13 @@ import Benchmarks.Dss.Clipper.Arithmetic
 import Reasoning.ExternalCall
 import Benchmarks.Dss.Clipper.GetStatusEVM
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 section
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 2000000
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Clipper
 
@@ -860,7 +860,7 @@ theorem clipperGetFeedPriceFunctionRevertsPipPeekBlock
     simpa [spotterFrame, pipFrame, clipperGetFeedPricePipLocals] using
       ExecStmt.letDecl
         (cfg := config)
-        (solm := spotterFrame)
+        (stele := spotterFrame)
         (evm := evmIlks) (name := "pip") (ty := some addr)
         (expr := tuple0 (.var "spotterIlk"))
         (value := .address (clipperSpotterIlksPipAddress outIlks))
@@ -1026,7 +1026,7 @@ theorem clipperGetFeedPriceFunctionRevertsPipPeekHasFalse
     simpa [spotterFrame, pipFrame, clipperGetFeedPricePipLocals] using
       ExecStmt.letDecl
         (cfg := config)
-        (solm := spotterFrame)
+        (stele := spotterFrame)
         (evm := evmIlks) (name := "pip") (ty := some addr)
         (expr := tuple0 (.var "spotterIlk"))
         (value := .address (clipperSpotterIlksPipAddress outIlks))
@@ -1056,7 +1056,7 @@ theorem clipperGetFeedPriceFunctionRevertsPipPeekHasFalse
         (.ok valFrame evmPeek) := by
     simpa [peekFrame, valFrame, clipperGetFeedPriceValLocals] using
       ExecStmt.letDecl
-        (cfg := config) (solm := peekFrame) (evm := evmPeek)
+        (cfg := config) (stele := peekFrame) (evm := evmPeek)
         (name := "val") (ty := some bytes32) (expr := tuple0 (.var "peekRet"))
         (value := .fixedBytes abiBytes32Width (clipperPipPeekValueBytes outPeek))
         (clipperEvalGetFeedPricePeekVal v evmPeek outIlks outPeek)
@@ -1066,7 +1066,7 @@ theorem clipperGetFeedPriceFunctionRevertsPipPeekHasFalse
         (.ok hasFrame evmPeek) := by
     simpa [valFrame, hasFrame, clipperGetFeedPriceHasLocals] using
       ExecStmt.letDecl
-        (cfg := config) (solm := valFrame) (evm := evmPeek)
+        (cfg := config) (stele := valFrame) (evm := evmPeek)
         (name := "has") (ty := some boolTy) (expr := tuple1 (.var "peekRet"))
         (value := .bool (clipperPipPeekHasWord outPeek != ⟨0⟩))
         (clipperEvalGetFeedPricePeekHas v evmPeek outIlks outPeek)

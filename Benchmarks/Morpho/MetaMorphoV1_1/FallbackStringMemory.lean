@@ -3,7 +3,7 @@ import Benchmarks.EAS.Attester.StructAllocMemory
 
 /-! Storage-string copies at an arbitrary cursor, as used by the domain fallbacks. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 

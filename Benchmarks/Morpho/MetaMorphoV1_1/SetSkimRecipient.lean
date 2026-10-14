@@ -10,11 +10,11 @@ import Benchmarks.Morpho.MetaMorphoV1_1.RuntimeBlocks_048
 # MetaMorphoV1_1 `setSkimRecipient(address)`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 9855; reach lemma `metaMorphoV1_1ReachSetSkimRecipientBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 
@@ -23,8 +23,8 @@ namespace Benchmarks.Morpho.MetaMorphoV1_1
 attribute [local irreducible] metaMorphoV1_1Bytecode
 
 def setSkimRecipientState (evm : EVM.State) (w : UInt256) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨19⟩
-    (setAddressOffset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨19⟩) w)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨19⟩
+    (setAddressOffset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨19⟩) w)
 
 theorem setSkimRecipientComparison (evm : EVM.State) (locals imms : Store) (w : UInt256)
     (hbase : locals.get? "skimRecipient" = none)
@@ -32,7 +32,7 @@ theorem setSkimRecipientComparison (evm : EVM.State) (locals imms : Store) (w : 
     evalExpr? config (adminFrame evm locals imms) evm
       (.binary .ne (.var "newSkimRecipient") (.storage ⟨"skimRecipient", []⟩)) =
       .ok (.bool (decide (AccountAddress.ofNat w.toNat ≠ AccountAddress.ofNat
-        (UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨19⟩)
+        (UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨19⟩)
           solcAddrMask).toNat))) := by
   apply evalExpr_addressNe
   · rw [evalExpr?]
@@ -48,7 +48,7 @@ theorem setSkimRecipientPrefix (evm : EVM.State) (locals imms : Store) (w : UInt
     (hbase : locals.get? "skimRecipient" = none)
     (hget : locals.get? "newSkimRecipient" = some (.address (AccountAddress.ofNat w.toNat)))
     (hne : AccountAddress.ofNat w.toNat ≠ AccountAddress.ofNat
-      (UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨19⟩)
+      (UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨19⟩)
         solcAddrMask).toNat) :
     ABlock config evm { contract := contract, locals := locals, immutables := imms }
       setSkimRecipientTransition.body (adminFrame evm locals imms)
@@ -81,7 +81,7 @@ theorem setSkimRecipientBodyReturns (v : MetaMorphoV1_1Immutables)
     (hget : locals.get? "newSkimRecipient" = some (.address (AccountAddress.ofNat w.toNat)))
     (hcanon : w.toNat < EVM.addressModulus)
     (hne : AccountAddress.ofNat w.toNat ≠ AccountAddress.ofNat
-      (UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨19⟩)
+      (UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨19⟩)
         solcAddrMask).toNat) :
     ExecTransitionBody config contract evm locals setSkimRecipientTransition.body
       (.returned (adminFrame evm locals (immStore v)) (setSkimRecipientState evm w) none)
@@ -105,7 +105,7 @@ theorem setSkimRecipientBodyStatic (v : MetaMorphoV1_1Immutables)
     (hget : locals.get? "newSkimRecipient" = some (.address (AccountAddress.ofNat w.toNat)))
     (hcanon : w.toNat < EVM.addressModulus)
     (hne : AccountAddress.ofNat w.toNat ≠ AccountAddress.ofNat
-      (UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨19⟩)
+      (UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨19⟩)
         solcAddrMask).toNat) (hperm : evm.executionEnv.perm = false) :
     ExecTransitionBody config contract evm locals setSkimRecipientTransition.body
       .staticViolation (immStore v) := by
@@ -123,7 +123,7 @@ theorem setSkimRecipientBodyRevertsAlreadySet (v : MetaMorphoV1_1Immutables)
     (hbase : locals.get? "skimRecipient" = none)
     (hget : locals.get? "newSkimRecipient" = some (.address (AccountAddress.ofNat w.toNat)))
     (heq : AccountAddress.ofNat w.toNat = AccountAddress.ofNat
-      (UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨19⟩)
+      (UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨19⟩)
         solcAddrMask).toNat) :
     ExecTransitionBody config contract evm locals setSkimRecipientTransition.body
       .reverted (immStore v) := by

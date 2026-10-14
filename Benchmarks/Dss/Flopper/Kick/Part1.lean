@@ -3,7 +3,7 @@ import Reasoning.Reach
 import Benchmarks.Dss.Flopper.Rely
 import Benchmarks.Dss.Flopper.Tick
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -61,26 +61,26 @@ abbrev kickNow48Word (evm : EVM.State) : UInt256 :=
   UInt256.land (kickTimestampWord evm) uint48Mask
 
 def kickAfterKicksState (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨7⟩ (kickIdWord evm)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨7⟩ (kickIdWord evm)
 
 def kickAfterBidState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore (kickAfterKicksState evm)
+  Stele.EVM.storageStore (kickAfterKicksState evm)
     (kickAfterKicksState evm).executionEnv.codeOwner (auctionBidSlot (kickIdWord evm))
     (kickBidWord I)
 
 def kickAfterLotState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore (kickAfterBidState evm I)
+  Stele.EVM.storageStore (kickAfterBidState evm I)
     (kickAfterBidState evm I).executionEnv.codeOwner (auctionLotSlot (kickIdWord evm))
     (kickLotWord I)
 
 def kickGuyStoredWord (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
   setAddressOffset0Word
-    (Solm.EVM.storageLoad (kickAfterLotState evm I)
+    (Stele.EVM.storageLoad (kickAfterLotState evm I)
       (kickAfterLotState evm I).executionEnv.codeOwner (auctionPackedSlot (kickIdWord evm)))
     (kickGalMaskedWord I)
 
 def kickAfterGuyState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore (kickAfterLotState evm I)
+  Stele.EVM.storageStore (kickAfterLotState evm I)
     (kickAfterLotState evm I).executionEnv.codeOwner (auctionPackedSlot (kickIdWord evm))
     (kickGuyStoredWord evm I)
 
@@ -99,12 +99,12 @@ abbrev kickEndWrappedLocals (evm : EVM.State) (I : ExecutionEnv) : Store :=
 
 def kickEndStoredWord (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
   setUint48Offset26Word
-    (Solm.EVM.storageLoad (kickAfterGuyState evm I)
+    (Stele.EVM.storageLoad (kickAfterGuyState evm I)
       (kickAfterGuyState evm I).executionEnv.codeOwner (auctionPackedSlot (kickIdWord evm)))
     (kickEndPostWord evm I)
 
 def kickPostState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore (kickAfterGuyState evm I)
+  Stele.EVM.storageStore (kickAfterGuyState evm I)
     (kickAfterGuyState evm I).executionEnv.codeOwner (auctionPackedSlot (kickIdWord evm))
     (kickEndStoredWord evm I)
 
@@ -276,7 +276,7 @@ theorem evalExpr_kick_live_storage (evm : EVM.State) (I : ExecutionEnv) :
       .ok (.int (Int.ofNat (kickLiveWord evm).toNat)) := by
   let frame : Frame := { contract := contract, locals := kickLocals I }
   exact evalExpr_storage_scalar_value (hbackend := rfl)
-    (cfg := config) (solm := frame) (evm := evm)
+    (cfg := config) (stele := frame) (evm := evm)
     (slot := liveRef) (er := ({ base := "live", steps := [] } : EvaledStorageRef))
     (t := .int uint256Int) (loc := wordLoc ⟨8⟩)
     (value := .int (Int.ofNat (kickLiveWord evm).toNat))
@@ -319,7 +319,7 @@ theorem evalExpr_kick_kicks_storage (evm : EVM.State) (I : ExecutionEnv) :
       .ok (.int (Int.ofNat (kickKicksWord evm).toNat)) := by
   let frame : Frame := { contract := contract, locals := kickLocals I }
   exact evalExpr_storage_scalar_value (hbackend := rfl)
-    (cfg := config) (solm := frame) (evm := evm)
+    (cfg := config) (stele := frame) (evm := evm)
     (slot := kicksRef) (er := ({ base := "kicks", steps := [] } : EvaledStorageRef))
     (t := .int uint256Int) (loc := wordLoc ⟨7⟩)
     (value := .int (Int.ofNat (kickKicksWord evm).toNat))
@@ -558,11 +558,11 @@ theorem evalExpr_kick_tau_storage (evm0 evm : EVM.State) (I : ExecutionEnv) :
         .int (Int.ofNat (kickTauWord evm).toNat) := by
     erw [storageLocLoad_uint48_offset6]
     rw [u256_land_comm
-      (UInt256.div (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨6⟩)
+      (UInt256.div (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨6⟩)
         (UInt256.ofNat (256 ^ 6))) uint48Mask]
     rfl
   exact evalExpr_storage_scalar_value (hbackend := rfl)
-    (cfg := config) (solm := frame) (evm := evm)
+    (cfg := config) (stele := frame) (evm := evm)
     (slot := tauRef) (er := ({ base := "tau", steps := [] } : EvaledStorageRef))
     (t := .int uint48Int) (loc := uint48Loc ⟨6⟩ ⟨6, by decide⟩ (by decide))
     (value := .int (Int.ofNat (kickTauWord evm).toNat))
@@ -797,13 +797,13 @@ theorem flopperKickBodyReverts_unauthorized (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hsrc : evm.executionEnv.source = I.source)
     (hauth :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (relyAuthStorageSlot I) ≠ ⟨1⟩) :
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (relyAuthStorageSlot I) ≠ ⟨1⟩) :
     ExecTransitionBody config contract evm (kickLocals I) kickTransition.body .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
   simpa [kickTransition, nonpayable, auth] using
     nonpayableSecondRequireReverts
       (cfg := config)
-      (solm := { contract := contract, locals := kickLocals I })
+      (stele := { contract := contract, locals := kickLocals I })
       (evm := evm)
       (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
       (rest :=
@@ -825,7 +825,7 @@ theorem flopperKickBodyReverts_notLive (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hsrc : evm.executionEnv.source = I.source)
     (hauth :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (relyAuthStorageSlot I) = ⟨1⟩)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (relyAuthStorageSlot I) = ⟨1⟩)
     (hlive : kickLiveWord evm ≠ ⟨1⟩) :
     ExecTransitionBody config contract evm (kickLocals I) kickTransition.body .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
@@ -842,7 +842,7 @@ theorem flopperKickBodyReverts_kicksOverflow (evm : EVM.State) (I : ExecutionEnv
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hsrc : evm.executionEnv.source = I.source)
     (hauth :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (relyAuthStorageSlot I) = ⟨1⟩)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (relyAuthStorageSlot I) = ⟨1⟩)
     (hlive : kickLiveWord evm = ⟨1⟩)
     (hkicksGe : UInt256.size - 1 ≤ (kickKicksWord evm).toNat) :
     ExecTransitionBody config contract evm (kickLocals I) kickTransition.body .reverted := by
@@ -862,7 +862,7 @@ theorem flopperKickBodyReverts_addOverflow (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hsrc : evm.executionEnv.source = I.source)
     (hauth :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (relyAuthStorageSlot I) = ⟨1⟩)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (relyAuthStorageSlot I) = ⟨1⟩)
     (hlive : kickLiveWord evm = ⟨1⟩)
     (hkicksLt : (kickKicksWord evm).toNat < UInt256.size - 1)
     (haddOverflow :
@@ -905,7 +905,7 @@ theorem flopperKickBodyReturns_successSplit (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hsrc : evm.executionEnv.source = I.source)
     (hauth :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (relyAuthStorageSlot I) = ⟨1⟩)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (relyAuthStorageSlot I) = ⟨1⟩)
     (hlive : kickLiveWord evm = ⟨1⟩)
     (hkicksLt : (kickKicksWord evm).toNat < UInt256.size - 1) :
     (((kickNow48Word evm).toNat + (kickTauWord (kickAfterGuyState evm I)).toNat <
@@ -975,7 +975,7 @@ theorem flopperKickBodyReturns_success (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hsrc : evm.executionEnv.source = I.source)
     (hauth :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (relyAuthStorageSlot I) = ⟨1⟩)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (relyAuthStorageSlot I) = ⟨1⟩)
     (hlive : kickLiveWord evm = ⟨1⟩)
     (hkicksLt : (kickKicksWord evm).toNat < UInt256.size - 1)
     (haddFit :
@@ -987,7 +987,7 @@ theorem flopperKickBodyReturns_success (evm : EVM.State) (I : ExecutionEnv)
   (flopperKickBodyReturns_successSplit evm I hwv hsrc hauth hlive hkicksLt).1 haddFit
 
 theorem flopperDecode_kick_ok {I : ExecutionEnv} (hsz100 : 100 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (kickTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (kickTransition.params.map Param.name)
       (transitionSignature kickTransition).paramTypes I.calldata = some (kickLocals I) := by
   change decodeCalldataWithMode DecodeMode.legacySolc05 ["gal", "lot", "bid"]
       [abiAddress, abiUInt256, abiUInt256] I.calldata =
@@ -998,7 +998,7 @@ theorem flopperDecode_kick_ok {I : ExecutionEnv} (hsz100 : 100 ≤ I.calldata.si
 
 theorem flopperDecode_kick_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 100) :
-    decodeCalldataWithMode config.abiDecodeMode (kickTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (kickTransition.params.map Param.name)
       (transitionSignature kickTransition).paramTypes I.calldata = none := by
   change decodeCalldataWithMode DecodeMode.legacySolc05 ["gal", "lot", "bid"]
       [abiAddress, abiUInt256, abiUInt256] I.calldata = none

@@ -7,11 +7,11 @@ import Benchmarks.Morpho.MetaMorphoV1_1.RuntimeBlocks_009
 # MetaMorphoV1_1 `lostAssets()`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 10497; reach lemma `metaMorphoV1_1ReachLostAssetsBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 
@@ -28,7 +28,7 @@ theorem lostAssetsBodyReturns (v : MetaMorphoV1_1Immutables)
         { contract := contract
           locals := locals.insert "__calldata" (.bytes evm.executionEnv.calldata)
           immutables := immStore v }
-        evm (some [.int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+        evm (some [.int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
           ⟨23⟩).toNat)])) (immStore v) := by
   apply ExecFuncBody.execBlockRet
   exact (nonpayableCalldataPrefix "__calldata" (2 ^ 255 + 4) hwv hhi).returns
@@ -99,7 +99,7 @@ theorem metaMorphoV1_1LostAssetsBody {σ σ₀ A I} {g : UInt256} (v : MetaMorph
   have hd : dispatchMsg contract I.calldata = some lostAssetsTransition := by
     apply metaMorphoV1_1Dispatch_lostAssets <;>
       first | exact hsel | exact selectorMismatch hsel (by decide +kernel)
-  have hdec : decodeCalldataWithMode config.abiDecodeMode
+  have hdec : config.externalABI.decodeCalldata?
       (lostAssetsTransition.params.map Param.name)
       (transitionSignature lostAssetsTransition).paramTypes I.calldata = some ∅ := by
     exact decodeCalldata_empty_ok hsz

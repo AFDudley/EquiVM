@@ -7,11 +7,11 @@ import Benchmarks.Morpho.MetaMorphoV1_1.Storage
 # MetaMorphoV1_1 `totalSupply()`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 10631; reach lemma `metaMorphoV1_1ReachTotalSupplyBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 
@@ -27,9 +27,9 @@ theorem totalSupplyBodyReturns (v : MetaMorphoV1_1Immutables)
       (.returned
         { contract := contract
           locals := (locals.insert "__calldata" (.bytes evm.executionEnv.calldata)).insert
-            "__r" (.int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩).toNat))
+            "__r" (.int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩).toNat))
           immutables := immStore v }
-        evm (some [.int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+        evm (some [.int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
           ⟨2⟩).toNat)])) (immStore v) := by
   apply ExecFuncBody.execBlockRet
   apply (nonpayableCalldataPrefix "__calldata" (2 ^ 255 + 4) hwv hhi).run
@@ -103,7 +103,7 @@ theorem metaMorphoV1_1TotalSupplyBody {σ σ₀ A I} {g : UInt256} (v : MetaMorp
   have hd : dispatchMsg contract I.calldata = some totalSupplyTransition := by
     apply metaMorphoV1_1Dispatch_totalSupply <;>
       first | exact hsel | exact selectorMismatch hsel (by decide +kernel)
-  have hdec : decodeCalldataWithMode config.abiDecodeMode
+  have hdec : config.externalABI.decodeCalldata?
       (totalSupplyTransition.params.map Param.name)
       (transitionSignature totalSupplyTransition).paramTypes I.calldata = some ∅ := by
     exact decodeCalldata_empty_ok hsz

@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Clipper.Fallback
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 namespace Benchmarks.Dss.Clipper
@@ -76,9 +76,9 @@ theorem clipperDispatch_spotter {I : ExecutionEnv}
 
 theorem clipperDecode_spotter {I : ExecutionEnv}
     (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (spotterTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (spotterTransition.params.map Param.name)
       (transitionSignature spotterTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  change decodeCalldataWithMode .legacySolc05 [] [] I.calldata = some ∅
   exact decodeCalldataWithMode_empty_ok hsz
 
 theorem clipperEvalSpotter (v : ClipperImmutables) (evm : EVM.State) (locals : Store)
@@ -86,7 +86,7 @@ theorem clipperEvalSpotter (v : ClipperImmutables) (evm : EVM.State) (locals : S
     evalExpr? config { contract := contract, locals := locals, immutables := immStore v } evm
       (.storage spotterRef) =
       .ok (.address (AccountAddress.ofNat
-        (UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩)
+        (UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩)
           solcAddrMask).toNat)) := by
   let er : EvaledStorageRef := { base := "spotter", steps := [] }
   have her : evalStorageRef config
@@ -106,7 +106,7 @@ theorem clipperSpotterBodyReturns (v : ClipperImmutables) (evm : EVM.State) (loc
     ExecTransitionBody config contract evm locals spotterTransition.body
       (.returned { contract := contract, locals := locals, immutables := immStore v } evm
         (some [(.address (AccountAddress.ofNat
-          (UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩)
+          (UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩)
             solcAddrMask).toNat))])) (immStore v) := by
   simpa [spotterTransition] using
     nonpayableReturnExprBodyReturns (cfg := config) (contract := contract) h
@@ -320,7 +320,7 @@ theorem clipperSpotterBody (v : ClipperImmutables) {code : ByteArray}
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.address (AccountAddress.ofNat
             (UInt256.land (solcSlotWord σ I ⟨3⟩) solcAddrMask).toNat))])) (immStore v) := by
-    simpa [solcSlotWord, initState, Solm.EVM.storageLoad, State.lookupAccount] using
+    simpa [solcSlotWord, initState, Stele.EVM.storageLoad, State.lookupAccount] using
       clipperSpotterBodyReturns v
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
         (by simp only [initState]; exact hwv) (by simp)

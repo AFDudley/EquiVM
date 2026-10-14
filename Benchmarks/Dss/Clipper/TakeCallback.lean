@@ -3,13 +3,13 @@ import Reasoning.Stepping
 import Reasoning.Reach
 import Benchmarks.Dss.Clipper.TakeVatMoveSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 section
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 2000000
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Clipper
 
@@ -236,8 +236,8 @@ theorem clipperEvalTakeCallbackGuardWhoDog (v : ClipperImmutables)
           (.binary .ne (.var "who") (.var "dog_")))) =
         .ok (.bool false) := by
   have hwhoAddr :
-      Solm.Value.address (AccountAddress.ofNat (clipperTakeWhoWord I).toNat) =
-        Solm.Value.address (AccountAddress.ofNat (clipperTakeDogEVMWord evmVat).toNat) := by
+      Stele.Value.address (AccountAddress.ofNat (clipperTakeWhoWord I).toNat) =
+        Stele.Value.address (AccountAddress.ofNat (clipperTakeDogEVMWord evmVat).toNat) := by
     rw [solcAddressValue_masked (clipperTakeWhoWord I),
       solcAddressValue_masked (clipperTakeDogEVMWord evmVat),
       u256_land_comm solcAddrMask (clipperTakeWhoWord I),

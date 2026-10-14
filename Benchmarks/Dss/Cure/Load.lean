@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Cure.LoadTrace
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -21,7 +21,7 @@ theorem cureDispatchLoad {I : ExecutionEnv}
   native_decide
 
 theorem cureDecode_load_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (loadTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (loadTransition.params.map Param.name)
       (transitionSignature loadTransition).paramTypes I.calldata =
         some (loadLocals I) := by
   simpa [config, loadTransition, loadLocals, loadSrc] using
@@ -29,7 +29,7 @@ theorem cureDecode_load_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
 
 theorem cureDecode_load_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (loadTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (loadTransition.params.map Param.name)
       (transitionSignature loadTransition).paramTypes I.calldata = none := by
   simpa [config, loadTransition] using
     (decodeCalldata_legacyAddress_none_short (cd := I.calldata) (x := "src") hsz4 hshort)
@@ -51,7 +51,7 @@ theorem cureLoadBodyCore {σ σ₀ A I} {g : UInt256}
     hcode hwv hsz4 hsize hsel
   by_cases hsz36 : 36 ≤ I.calldata.size
   · have hdecode :
-        decodeCalldataWithMode config.abiDecodeMode (loadTransition.params.map Param.name)
+        config.externalABI.decodeCalldata? (loadTransition.params.map Param.name)
           (transitionSignature loadTransition).paramTypes I.calldata = some (loadLocals I) :=
       cureDecode_load_ok hsz36
     let key := loadKey I
@@ -162,7 +162,7 @@ theorem cureLoadBodyCore {σ σ₀ A I} {g : UInt256}
                         substate := A' },
                       out) false := by
                 simpa [initState] using hcallEvm
-              have hcallSolmSrc :
+              have hcallSteleSrc :
                   typedCallViaEVM config
                     (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                     (EVM.address (loadSrc I)) "cure" 0 []
@@ -182,7 +182,7 @@ theorem cureLoadBodyCore {σ σ₀ A I} {g : UInt256}
                       { initState σ σ₀ (Sat256.ofUInt256 g) A I with
                         accountMap := σCallEvm
                         substate := A' })
-                    (out := out) hwv hliveEvm hposEvm hcodeSizeEvm hcallSolmSrc)
+                    (out := out) hwv hliveEvm hposEvm hcodeSizeEvm hcallSteleSrc)
               have hrev := RD.cureLoadCallFailure rd1602 houtsz (by simp)
               exact hrev.reEquivExecutionRevert hcode hdispatch hdecode hbody
             · by_cases hshort : out.size < 32
@@ -254,7 +254,7 @@ theorem cureLoadBodyCore {σ σ₀ A I} {g : UInt256}
                           substate := A' },
                         out) false := by
                   simpa [initState] using hcallEvm
-                have hcallSolmSrc :
+                have hcallSteleSrc :
                     typedCallViaEVM config
                       (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                       (EVM.address (loadSrc I)) "cure" 0 []
@@ -276,7 +276,7 @@ theorem cureLoadBodyCore {σ σ₀ A I} {g : UInt256}
                         { initState σ σ₀ (Sat256.ofUInt256 g) A I with
                           accountMap := σCallEvm
                           substate := A' })
-                      (out := out) hwv hliveEvm hposEvm hcodeSizeEvm hcallSolmSrc
+                      (out := out) hwv hliveEvm hposEvm hcodeSizeEvm hcallSteleSrc
                       hdecOut)
                 exact hrev.reEquivExecutionRevert hcode hdispatch hdecode hbody
               · have ho32 : 32 ≤ out.size := Nat.le_of_not_lt hshort
@@ -381,16 +381,16 @@ theorem cureLoadBodyCore {σ σ₀ A I} {g : UInt256}
                           substate := A' },
                         out) false := by
                   simpa [initState] using hcallEvm
-                let evmCallSolm :=
+                let evmCallStele :=
                   { initState σ σ₀ (Sat256.ofUInt256 g) A I with
                     accountMap := σCallEvm
                     substate := A' }
-                have hcallSolmSrc :
+                have hcallSteleSrc :
                     typedCallViaEVM config
                       (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                       (EVM.address (loadSrc I)) "cure" 0 []
-                      (true, evmCallSolm, out) false := by
-                  simpa [evmCallSolm, key, loadKey_address_eq I] using hcallEvmInit
+                      (true, evmCallStele, out) false := by
+                  simpa [evmCallStele, key, loadKey_address_eq I] using hcallEvmInit
                 have hdecOut :
                     config.externalABI.decode? "cure" out =
                       some [.int (Int.ofNat newAmt.toNat)] := by
@@ -405,8 +405,8 @@ theorem cureLoadBodyCore {σ σ₀ A I} {g : UInt256}
                 swap
                 · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode
                     ((cureLoadSourceBodySubRevertSplit
-                      hwv hliveEvm hposEvm hcodeSizeEvm hcallSolmSrc hdecOut).2
-                      (by simpa [evmCallSolm, initState] using hperm))
+                      hwv hliveEvm hposEvm hcodeSizeEvm hcallSteleSrc hdecOut).2
+                      (by simpa [evmCallStele, initState] using hperm))
                 obtain ⟨k3666, C3666, rd3666⟩ :=
                   RD.cureLoadToSubRoutine
                     (key := key) (ret := ⟨484⟩) (newAmt := newAmt)
@@ -447,37 +447,37 @@ theorem cureLoadBodyCore {σ σ₀ A I} {g : UInt256}
                     let σSayEvm := sstoreAccountMap I.codeOwner σAmtEvm ⟨9⟩
                       (withoutOld + newAmt)
                     have hsayeq :
-                        Solm.EVM.storageLoad
-                          (Solm.EVM.storageStore evmCallSolm evmCallSolm.executionEnv.codeOwner
+                        Stele.EVM.storageLoad
+                          (Stele.EVM.storageStore evmCallStele evmCallStele.executionEnv.codeOwner
                             (loadAmtSlotFor I) newAmt)
-                          evmCallSolm.executionEnv.codeOwner ⟨9⟩ =
+                          evmCallStele.executionEnv.codeOwner ⟨9⟩ =
                           sayAfterEvm := by
-                      simp only [evmCallSolm, loadAmtSlotFor_eq I, storageStore_accountMap,
-                        Solm.EVM.storageLoad, State.lookupAccount, solcSlotWord, sayAfterEvm,
+                      simp only [evmCallStele, loadAmtSlotFor_eq I, storageStore_accountMap,
+                        Stele.EVM.storageLoad, State.lookupAccount, solcSlotWord, sayAfterEvm,
                         σAmtEvm, Account.lookupStorage, initState, key]
                     have holdeq :
-                        Solm.EVM.storageLoad
+                        Stele.EVM.storageLoad
                           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                           I.codeOwner (loadAmtSlotFor I) =
                           oldAmtEvm := by
-                      simp only [loadAmtSlotFor_eq I, Solm.EVM.storageLoad, initState,
+                      simp only [loadAmtSlotFor_eq I, Stele.EVM.storageLoad, initState,
                         State.lookupAccount, solcSlotWord, oldAmtEvm, Account.lookupStorage, key]
-                    have hsubOkSolm :
-                        (Solm.EVM.storageLoad
+                    have hsubOkStele :
+                        (Stele.EVM.storageLoad
                           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                           I.codeOwner (loadAmtSlotFor I)).toNat ≤
-                          (Solm.EVM.storageLoad
-                            (Solm.EVM.storageStore evmCallSolm evmCallSolm.executionEnv.codeOwner
+                          (Stele.EVM.storageLoad
+                            (Stele.EVM.storageStore evmCallStele evmCallStele.executionEnv.codeOwner
                               (loadAmtSlotFor I) newAmt)
-                            evmCallSolm.executionEnv.codeOwner ⟨9⟩).toNat := by
+                            evmCallStele.executionEnv.codeOwner ⟨9⟩).toNat := by
                       simpa [oldAmtEvm, sayAfterEvm, hsayeq, holdeq] using hsubOk
-                    have haddOkSolm :
+                    have haddOkStele :
                         (UInt256.sub
-                          (Solm.EVM.storageLoad
-                            (Solm.EVM.storageStore evmCallSolm evmCallSolm.executionEnv.codeOwner
+                          (Stele.EVM.storageLoad
+                            (Stele.EVM.storageStore evmCallStele evmCallStele.executionEnv.codeOwner
                               (loadAmtSlotFor I) newAmt)
-                            evmCallSolm.executionEnv.codeOwner ⟨9⟩)
-                          (Solm.EVM.storageLoad
+                            evmCallStele.executionEnv.codeOwner ⟨9⟩)
+                          (Stele.EVM.storageLoad
                             (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                             I.codeOwner (loadAmtSlotFor I))).toNat + newAmt.toNat <
                           UInt256.size := by
@@ -519,57 +519,57 @@ theorem cureLoadBodyCore {σ σ₀ A I} {g : UInt256}
                     by_cases hloadedEvm :
                         solcSlotWord σSayEvm I (solcMappingSlot ⟨7⟩ key) = ⟨0⟩
                     · let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-                      let oldAmtSolm :=
-                        Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (loadAmtSlotFor I)
-                      let evmAmtSolm := Solm.EVM.storageStore evmCallSolm
-                        evmCallSolm.executionEnv.codeOwner (loadAmtSlotFor I) newAmt
-                      let sayAfterSolm :=
-                        Solm.EVM.storageLoad evmAmtSolm evmAmtSolm.executionEnv.codeOwner ⟨9⟩
-                      let withoutOldSolm := UInt256.sub sayAfterSolm oldAmtSolm
-                      let evmSaySolm := Solm.EVM.storageStore evmAmtSolm
-                        evmAmtSolm.executionEnv.codeOwner ⟨9⟩ (withoutOldSolm + newAmt)
-                      let evmLoadedSolm := Solm.EVM.storageStore evmSaySolm
-                        evmSaySolm.executionEnv.codeOwner (loadLoadedSlotFor I) ⟨1⟩
-                      let countSolm :=
-                        Solm.EVM.storageLoad evmLoadedSolm evmLoadedSolm.executionEnv.codeOwner ⟨8⟩
-                      let evmCountSolm := Solm.EVM.storageStore evmLoadedSolm
-                        evmLoadedSolm.executionEnv.codeOwner ⟨8⟩ (countSolm + ⟨1⟩)
-                      let localsSaySolm : Store :=
+                      let oldAmtStele :=
+                        Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (loadAmtSlotFor I)
+                      let evmAmtStele := Stele.EVM.storageStore evmCallStele
+                        evmCallStele.executionEnv.codeOwner (loadAmtSlotFor I) newAmt
+                      let sayAfterStele :=
+                        Stele.EVM.storageLoad evmAmtStele evmAmtStele.executionEnv.codeOwner ⟨9⟩
+                      let withoutOldStele := UInt256.sub sayAfterStele oldAmtStele
+                      let evmSayStele := Stele.EVM.storageStore evmAmtStele
+                        evmAmtStele.executionEnv.codeOwner ⟨9⟩ (withoutOldStele + newAmt)
+                      let evmLoadedStele := Stele.EVM.storageStore evmSayStele
+                        evmSayStele.executionEnv.codeOwner (loadLoadedSlotFor I) ⟨1⟩
+                      let countStele :=
+                        Stele.EVM.storageLoad evmLoadedStele evmLoadedStele.executionEnv.codeOwner ⟨8⟩
+                      let evmCountStele := Stele.EVM.storageStore evmLoadedStele
+                        evmLoadedStele.executionEnv.codeOwner ⟨8⟩ (countStele + ⟨1⟩)
+                      let localsSayStele : Store :=
                         (((locals.insert "oldAmt_" (.int (Int.ofNat oldAmtEvm.toNat))).insert
                           "newAmt_" (.int (Int.ofNat newAmt.toNat))).insert
-                            "withoutOld" (.int (Int.ofNat withoutOldSolm.toNat))).insert
-                            "sayNew" (.int (Int.ofNat (withoutOldSolm + newAmt).toNat))
-                      have hwithoutSolmEq : withoutOldSolm = withoutOld := by
+                            "withoutOld" (.int (Int.ofNat withoutOldStele.toNat))).insert
+                            "sayNew" (.int (Int.ofNat (withoutOldStele + newAmt).toNat))
+                      have hwithoutSteleEq : withoutOldStele = withoutOld := by
                         have hold' :
-                            Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner
+                            Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner
                               (loadAmtSlotFor I) = oldAmtEvm := by
                           simpa [evm0] using holdeq
                         have hsay' :
-                            Solm.EVM.storageLoad evmAmtSolm evmAmtSolm.executionEnv.codeOwner
+                            Stele.EVM.storageLoad evmAmtStele evmAmtStele.executionEnv.codeOwner
                               ⟨9⟩ = sayAfterEvm := by
-                          simpa [evmAmtSolm, storageStore_executionEnv] using hsayeq
-                        simp [withoutOldSolm, sayAfterSolm, oldAmtSolm, withoutOld,
+                          simpa [evmAmtStele, storageStore_executionEnv] using hsayeq
+                        simp [withoutOldStele, sayAfterStele, oldAmtStele, withoutOld,
                           sayAfterEvm, oldAmtEvm, hsay', hold']
-                      have hloadedSolm :
-                          Solm.EVM.storageLoad evmSaySolm evmSaySolm.executionEnv.codeOwner
+                      have hloadedStele :
+                          Stele.EVM.storageLoad evmSayStele evmSayStele.executionEnv.codeOwner
                             (loadLoadedSlotFor I) = ⟨0⟩ := by
                         have hslot :
-                            Solm.EVM.storageLoad evmSaySolm evmSaySolm.executionEnv.codeOwner
+                            Stele.EVM.storageLoad evmSayStele evmSayStele.executionEnv.codeOwner
                                 (loadLoadedSlotFor I) =
                               solcSlotWord σSayEvm I (solcMappingSlot ⟨7⟩ key) := by
-                          simp only [evmSaySolm, evmAmtSolm, evmCallSolm,
-                            Solm.EVM.storageLoad, State.lookupAccount,
+                          simp only [evmSayStele, evmAmtStele, evmCallStele,
+                            Stele.EVM.storageLoad, State.lookupAccount,
                             Account.lookupStorage, solcSlotWord, loadLoadedSlotFor_eq I,
                             storageStore_executionEnv, key, storageStore_accountMap,
-                            initState, σSayEvm, σAmtEvm, hwithoutSolmEq,
+                            initState, σSayEvm, σAmtEvm, hwithoutSteleEq,
                             loadAmtSlotFor_eq I]
                         exact hslot.trans hloadedEvm
                       have hbody :=
                         (cureLoadSourceBodyOkLoadedZero
                           (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
-                          (evmCall := evmCallSolm) (out := out) (newAmt := newAmt)
-                          hwv hliveEvm hposEvm hcodeSizeEvm hcallSolmSrc hdecOut
-                            hsubOkSolm haddOkSolm hloadedSolm)
+                          (evmCall := evmCallStele) (out := out) (newAmt := newAmt)
+                          hwv hliveEvm hposEvm hcodeSizeEvm hcallSteleSrc hdecOut
+                            hsubOkStele haddOkStele hloadedStele)
                       obtain ⟨_, _, hretPcRd⟩ :=
                         RD.cureLoadSuccessLoadedZero
                           (ee := I) (k := k1695) (C := C1695)
@@ -599,15 +599,15 @@ theorem cureLoadBodyCore {σ σ₀ A I} {g : UInt256}
                             ByteArray.empty := by
                         simpa [σSayEvm] using RD.stop hretPc' (by native_decide) (by simp)
                       have hcountEq :
-                          countSolm =
+                          countStele =
                             solcSlotWord
                               (sstoreAccountMap I.codeOwner σSayEvm (solcMappingSlot ⟨7⟩ key) ⟨1⟩)
                               I ⟨8⟩ := by
-                        simp only [countSolm, evmLoadedSolm, evmSaySolm, evmAmtSolm, evmCallSolm,
-                          Solm.EVM.storageLoad,
+                        simp only [countStele, evmLoadedStele, evmSayStele, evmAmtStele, evmCallStele,
+                          Stele.EVM.storageLoad,
                           State.lookupAccount, Account.lookupStorage, solcSlotWord,
                           storageStore_executionEnv, storageStore_accountMap,
-                          initState, σSayEvm, σAmtEvm, hwithoutSolmEq,
+                          initState, σSayEvm, σAmtEvm, hwithoutSteleEq,
                           loadAmtSlotFor_eq I, loadLoadedSlotFor_eq I, key]
                       have haccounts :
                           (sstoreAccountMap I.codeOwner
@@ -615,10 +615,10 @@ theorem cureLoadBodyCore {σ σ₀ A I} {g : UInt256}
                               ⟨8⟩
                               (solcSlotWord
                                 (sstoreAccountMap I.codeOwner σSayEvm (solcMappingSlot ⟨7⟩ key) ⟨1⟩)
-                                I ⟨8⟩ + ⟨1⟩)) = evmCountSolm.accountMap := by
-                        simp only [evmCountSolm, evmLoadedSolm, evmSaySolm, evmAmtSolm, evmCallSolm,
+                                I ⟨8⟩ + ⟨1⟩)) = evmCountStele.accountMap := by
+                        simp only [evmCountStele, evmLoadedStele, evmSayStele, evmAmtStele, evmCallStele,
                           storageStore_accountMap,
-                          storageStore_executionEnv, hcountEq, hwithoutSolmEq, key,
+                          storageStore_executionEnv, hcountEq, hwithoutSteleEq, key,
                           loadAmtSlotFor_eq I, loadLoadedSlotFor_eq I, initState,
                           σSayEvm, σAmtEvm]
                       have henc : returnEquiv ByteArray.empty none loadTransition.returnType := by
@@ -627,53 +627,53 @@ theorem cureLoadBodyCore {σ σ₀ A I} {g : UInt256}
                       exact hret.reEquivExecutionGen hcode hdispatch hdecode hbody
                         haccounts henc
                     · let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-                      let oldAmtSolm :=
-                        Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (loadAmtSlotFor I)
-                      let evmAmtSolm := Solm.EVM.storageStore evmCallSolm
-                        evmCallSolm.executionEnv.codeOwner (loadAmtSlotFor I) newAmt
-                      let sayAfterSolm :=
-                        Solm.EVM.storageLoad evmAmtSolm evmAmtSolm.executionEnv.codeOwner ⟨9⟩
-                      let withoutOldSolm := UInt256.sub sayAfterSolm oldAmtSolm
-                      let evmSaySolm := Solm.EVM.storageStore evmAmtSolm
-                        evmAmtSolm.executionEnv.codeOwner ⟨9⟩ (withoutOldSolm + newAmt)
-                      let localsSaySolm : Store :=
+                      let oldAmtStele :=
+                        Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (loadAmtSlotFor I)
+                      let evmAmtStele := Stele.EVM.storageStore evmCallStele
+                        evmCallStele.executionEnv.codeOwner (loadAmtSlotFor I) newAmt
+                      let sayAfterStele :=
+                        Stele.EVM.storageLoad evmAmtStele evmAmtStele.executionEnv.codeOwner ⟨9⟩
+                      let withoutOldStele := UInt256.sub sayAfterStele oldAmtStele
+                      let evmSayStele := Stele.EVM.storageStore evmAmtStele
+                        evmAmtStele.executionEnv.codeOwner ⟨9⟩ (withoutOldStele + newAmt)
+                      let localsSayStele : Store :=
                         (((locals.insert "oldAmt_" (.int (Int.ofNat oldAmtEvm.toNat))).insert
                           "newAmt_" (.int (Int.ofNat newAmt.toNat))).insert
-                          "withoutOld" (.int (Int.ofNat withoutOldSolm.toNat))).insert
-                          "sayNew" (.int (Int.ofNat (withoutOldSolm + newAmt).toNat))
-                      have hwithoutSolmEq : withoutOldSolm = withoutOld := by
+                          "withoutOld" (.int (Int.ofNat withoutOldStele.toNat))).insert
+                          "sayNew" (.int (Int.ofNat (withoutOldStele + newAmt).toNat))
+                      have hwithoutSteleEq : withoutOldStele = withoutOld := by
                         have hold' :
-                            Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner
+                            Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner
                               (loadAmtSlotFor I) = oldAmtEvm := by
                           simpa [evm0] using holdeq
                         have hsay' :
-                            Solm.EVM.storageLoad evmAmtSolm evmAmtSolm.executionEnv.codeOwner
+                            Stele.EVM.storageLoad evmAmtStele evmAmtStele.executionEnv.codeOwner
                               ⟨9⟩ = sayAfterEvm := by
-                          simpa [evmAmtSolm, storageStore_executionEnv] using hsayeq
-                        simp [withoutOldSolm, sayAfterSolm, oldAmtSolm, withoutOld,
+                          simpa [evmAmtStele, storageStore_executionEnv] using hsayeq
+                        simp [withoutOldStele, sayAfterStele, oldAmtStele, withoutOld,
                           sayAfterEvm, oldAmtEvm, hsay', hold']
-                      have hloadedSolm :
-                          Solm.EVM.storageLoad evmSaySolm evmSaySolm.executionEnv.codeOwner
+                      have hloadedStele :
+                          Stele.EVM.storageLoad evmSayStele evmSayStele.executionEnv.codeOwner
                             (loadLoadedSlotFor I) ≠ ⟨0⟩ := by
                         intro hz
                         apply hloadedEvm
                         have hslot :
-                            Solm.EVM.storageLoad evmSaySolm evmSaySolm.executionEnv.codeOwner
+                            Stele.EVM.storageLoad evmSayStele evmSayStele.executionEnv.codeOwner
                                 (loadLoadedSlotFor I) =
                               solcSlotWord σSayEvm I (solcMappingSlot ⟨7⟩ key) := by
-                          simp only [evmSaySolm, evmAmtSolm, evmCallSolm,
-                            Solm.EVM.storageLoad, State.lookupAccount,
+                          simp only [evmSayStele, evmAmtStele, evmCallStele,
+                            Stele.EVM.storageLoad, State.lookupAccount,
                             Account.lookupStorage, solcSlotWord, loadLoadedSlotFor_eq I,
                             storageStore_executionEnv, key, storageStore_accountMap,
-                            initState, σSayEvm, σAmtEvm, hwithoutSolmEq,
+                            initState, σSayEvm, σAmtEvm, hwithoutSteleEq,
                             loadAmtSlotFor_eq I]
                         exact hslot.symm.trans hz
                       have hbody :=
                         (cureLoadSourceBodyOkLoadedNonzero
                           (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
-                          (evmCall := evmCallSolm) (out := out) (newAmt := newAmt)
-                          hwv hliveEvm hposEvm hcodeSizeEvm hcallSolmSrc hdecOut
-                            hsubOkSolm haddOkSolm hloadedSolm)
+                          (evmCall := evmCallStele) (out := out) (newAmt := newAmt)
+                          hwv hliveEvm hposEvm hcodeSizeEvm hcallSteleSrc hdecOut
+                            hsubOkStele haddOkStele hloadedStele)
                       obtain ⟨_, _, hretPcRd⟩ :=
                         RD.cureLoadSuccessLoadedNonzero
                           (ee := I) (k := k1695) (C := C1695)
@@ -696,10 +696,10 @@ theorem cureLoadBodyCore {σ σ₀ A I} {g : UInt256}
                             (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                             σSayEvm ByteArray.empty := by
                         simpa [σSayEvm] using RD.stop hretPc' (by native_decide) (by simp)
-                      have haccounts : σSayEvm = evmSaySolm.accountMap := by
-                        simp only [σSayEvm, evmSaySolm, evmAmtSolm, evmCallSolm,
+                      have haccounts : σSayEvm = evmSayStele.accountMap := by
+                        simp only [σSayEvm, evmSayStele, evmAmtStele, evmCallStele,
                           storageStore_accountMap, storageStore_executionEnv, key,
-                          loadAmtSlotFor_eq I, hwithoutSolmEq, initState, σAmtEvm]
+                          loadAmtSlotFor_eq I, hwithoutSteleEq, initState, σAmtEvm]
                       have henc : returnEquiv ByteArray.empty none loadTransition.returnType := by
                         rw [show loadTransition.returnType = [] by rfl]
                         exact returnEquiv.fallthrough rfl (by rfl) (by native_decide)
@@ -708,40 +708,40 @@ theorem cureLoadBodyCore {σ σ₀ A I} {g : UInt256}
                   · have hoverEvm : UInt256.size ≤ withoutOld.toNat + newAmt.toNat :=
                         Nat.le_of_not_lt haddOk
                     have hsayeq :
-                        Solm.EVM.storageLoad
-                          (Solm.EVM.storageStore evmCallSolm evmCallSolm.executionEnv.codeOwner
+                        Stele.EVM.storageLoad
+                          (Stele.EVM.storageStore evmCallStele evmCallStele.executionEnv.codeOwner
                             (loadAmtSlotFor I) newAmt)
-                          evmCallSolm.executionEnv.codeOwner ⟨9⟩ =
+                          evmCallStele.executionEnv.codeOwner ⟨9⟩ =
                           solcSlotWord
                             (sstoreAccountMap I.codeOwner σCallEvm (solcMappingSlot ⟨6⟩ key) newAmt)
                             I ⟨9⟩ := by
-                      simp only [evmCallSolm, loadAmtSlotFor_eq I, storageStore_accountMap,
-                        Solm.EVM.storageLoad, State.lookupAccount, solcSlotWord,
+                      simp only [evmCallStele, loadAmtSlotFor_eq I, storageStore_accountMap,
+                        Stele.EVM.storageLoad, State.lookupAccount, solcSlotWord,
                         Account.lookupStorage, initState, key]
                     have holdeq :
-                        Solm.EVM.storageLoad
+                        Stele.EVM.storageLoad
                           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                           I.codeOwner (loadAmtSlotFor I) =
                           solcSlotWord σ I (solcMappingSlot ⟨6⟩ key) := by
-                      simp only [loadAmtSlotFor_eq I, Solm.EVM.storageLoad, initState,
+                      simp only [loadAmtSlotFor_eq I, Stele.EVM.storageLoad, initState,
                         State.lookupAccount, solcSlotWord, Account.lookupStorage, key]
-                    have hsubOkSolm :
-                        (Solm.EVM.storageLoad
+                    have hsubOkStele :
+                        (Stele.EVM.storageLoad
                           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                           I.codeOwner (loadAmtSlotFor I)).toNat ≤
-                          (Solm.EVM.storageLoad
-                            (Solm.EVM.storageStore evmCallSolm evmCallSolm.executionEnv.codeOwner
+                          (Stele.EVM.storageLoad
+                            (Stele.EVM.storageStore evmCallStele evmCallStele.executionEnv.codeOwner
                               (loadAmtSlotFor I) newAmt)
-                            evmCallSolm.executionEnv.codeOwner ⟨9⟩).toNat := by
+                            evmCallStele.executionEnv.codeOwner ⟨9⟩).toNat := by
                       simpa [oldAmtEvm, sayAfterEvm, hsayeq, holdeq] using hsubOk
-                    have hoverSolm :
+                    have hoverStele :
                         UInt256.size ≤
                           (UInt256.sub
-                            (Solm.EVM.storageLoad
-                              (Solm.EVM.storageStore evmCallSolm evmCallSolm.executionEnv.codeOwner
+                            (Stele.EVM.storageLoad
+                              (Stele.EVM.storageStore evmCallStele evmCallStele.executionEnv.codeOwner
                                 (loadAmtSlotFor I) newAmt)
-                              evmCallSolm.executionEnv.codeOwner ⟨9⟩)
-                            (Solm.EVM.storageLoad
+                              evmCallStele.executionEnv.codeOwner ⟨9⟩)
+                            (Stele.EVM.storageLoad
                               (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                               I.codeOwner (loadAmtSlotFor I))).toNat + newAmt.toNat := by
                       simpa [withoutOld, oldAmtEvm, sayAfterEvm, hsayeq, holdeq] using hoverEvm
@@ -751,9 +751,9 @@ theorem cureLoadBodyCore {σ σ₀ A I} {g : UInt256}
                       simpa [evm0, locals, key] using
                         (cureLoadSourceBodyAddRevert
                           (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
-                          (evmCall := evmCallSolm) (out := out) (newAmt := newAmt)
-                          hwv hliveEvm hposEvm hcodeSizeEvm hcallSolmSrc hdecOut
-                          hsubOkSolm hoverSolm)
+                          (evmCall := evmCallStele) (out := out) (newAmt := newAmt)
+                          hwv hliveEvm hposEvm hcodeSizeEvm hcallSteleSrc hdecOut
+                          hsubOkStele hoverStele)
                     have hstoreMemSize :
                         (twoWordHashMem key ⟨6⟩
                           (out.write 0
@@ -796,29 +796,29 @@ theorem cureLoadBodyCore {σ σ₀ A I} {g : UInt256}
                       · simp
                     exact hrev.reEquivExecutionRevert hcode hdispatch hdecode hbody
                 · have hsayeq :
-                      Solm.EVM.storageLoad
-                        (Solm.EVM.storageStore evmCallSolm evmCallSolm.executionEnv.codeOwner
+                      Stele.EVM.storageLoad
+                        (Stele.EVM.storageStore evmCallStele evmCallStele.executionEnv.codeOwner
                           (loadAmtSlotFor I) newAmt)
-                        evmCallSolm.executionEnv.codeOwner ⟨9⟩ =
+                        evmCallStele.executionEnv.codeOwner ⟨9⟩ =
                         solcSlotWord
                           (sstoreAccountMap I.codeOwner σCallEvm (solcMappingSlot ⟨6⟩ key) newAmt)
                           I ⟨9⟩ := by
-                    simp only [evmCallSolm, loadAmtSlotFor_eq I, storageStore_accountMap,
-                      Solm.EVM.storageLoad, State.lookupAccount, solcSlotWord,
+                    simp only [evmCallStele, loadAmtSlotFor_eq I, storageStore_accountMap,
+                      Stele.EVM.storageLoad, State.lookupAccount, solcSlotWord,
                       Account.lookupStorage, initState, key]
                   have holdeq :
-                      Solm.EVM.storageLoad
+                      Stele.EVM.storageLoad
                         (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                         I.codeOwner (loadAmtSlotFor I) =
                         solcSlotWord σ I (solcMappingSlot ⟨6⟩ key) := by
-                    simp only [loadAmtSlotFor_eq I, Solm.EVM.storageLoad, initState,
+                    simp only [loadAmtSlotFor_eq I, Stele.EVM.storageLoad, initState,
                       State.lookupAccount, solcSlotWord, Account.lookupStorage, key]
-                  have hunderSolm :
-                      (Solm.EVM.storageLoad
-                        (Solm.EVM.storageStore evmCallSolm evmCallSolm.executionEnv.codeOwner
+                  have hunderStele :
+                      (Stele.EVM.storageLoad
+                        (Stele.EVM.storageStore evmCallStele evmCallStele.executionEnv.codeOwner
                           (loadAmtSlotFor I) newAmt)
-                        evmCallSolm.executionEnv.codeOwner ⟨9⟩).toNat <
-                        (Solm.EVM.storageLoad
+                        evmCallStele.executionEnv.codeOwner ⟨9⟩).toNat <
+                        (Stele.EVM.storageLoad
                           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                           I.codeOwner (loadAmtSlotFor I)).toNat := by
                     have hlt :
@@ -831,11 +831,11 @@ theorem cureLoadBodyCore {σ σ₀ A I} {g : UInt256}
                   let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
                   have hbody :
                       ExecTransitionBody config contract evm0 locals loadTransition.body .reverted := by
-                    simpa [evm0, locals, key, evmCallSolm] using
+                    simpa [evm0, locals, key, evmCallStele] using
                       (cureLoadSourceBodySubRevert
                         (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
-                        (evmCall := evmCallSolm) (out := out) (newAmt := newAmt)
-                        hwv hliveEvm hposEvm hcodeSizeEvm hcallSolmSrc hdecOut hunderSolm)
+                        (evmCall := evmCallStele) (out := out) (newAmt := newAmt)
+                        hwv hliveEvm hposEvm hcodeSizeEvm hcallSteleSrc hdecOut hunderStele)
                   have hsubLt :
                       (solcSlotWord
                         (sstoreAccountMap I.codeOwner σCallEvm (solcMappingSlot ⟨6⟩ key) newAmt)

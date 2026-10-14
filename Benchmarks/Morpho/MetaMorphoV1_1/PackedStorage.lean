@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.Storage
 
 /-! Reads of packed pending-update structs. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 
@@ -23,7 +23,7 @@ theorem storageLocLoad_uint_shift (evm : EVM.State) (slot : UInt256)
       { slot := slot, offset := offset, size := size, hbound := hbound,
         type := .int (.uint width) } =
       .int (Int.ofNat (UInt256.land
-        (UInt256.shiftRight (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
+        (UInt256.shiftRight (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
           (UInt256.ofNat (8 * offset.val))) (UInt256.ofNat (2 ^ (8 * size.val) - 1))).toNat) := by
   rw [storageLocLoad_uint_offset evm slot offset size width hwidth hoff hsize]
   rw [wordShiftRight_eq_div _ _ hoff]
@@ -46,13 +46,13 @@ theorem storageLocLoad_uint_high (evm : EVM.State) (slot : UInt256)
       { slot := slot, offset := offset, size := size, hbound := hbound,
         type := .int (.uint width) } =
       .int (Int.ofNat (UInt256.shiftRight
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
         (UInt256.ofNat (8 * offset.val))).toNat) := by
   have hoff : 8 * offset.val < 256 := by have := offset.isLt; omega
   have hbits : 8 * size.val ≤ 256 := by omega
   rw [storageLocLoad_uint_shift evm slot offset size width hwidth hoff hbits]
   have hcanon := wordShiftRight_lt
-    (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot) (8 * offset.val) hoff
+    (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot) (8 * offset.val) hoff
   rw [show 256 - 8 * offset.val = 8 * size.val by omega] at hcanon
   have hpow : 2 ^ (8 * size.val) ≤ UInt256.size := Nat.pow_le_pow_right (by decide) hbits
   have hpos : 0 < 2 ^ (8 * size.val) := by positivity
@@ -63,7 +63,7 @@ theorem evalStorage_pendingTimelockValue (evm : EVM.State) (locals imms : Store)
     evalExpr? config { contract := contract, locals := locals, immutables := imms } evm
       (.storage ⟨"pendingTimelock", [.field "value"]⟩) =
       .ok (.int (Int.ofNat (UInt256.land
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨17⟩)
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨17⟩)
         (UInt256.ofNat (2 ^ 192 - 1))).toNat)) := by
   exact evalExpr_storage_scalar_value (er := ⟨"pendingTimelock", [.field "value"]⟩)
     (t := .int (.uint ⟨192, by decide⟩)) hbase
@@ -78,7 +78,7 @@ theorem evalStorage_pendingTimelockValidAt (evm : EVM.State) (locals imms : Stor
     evalExpr? config { contract := contract, locals := locals, immutables := imms } evm
       (.storage ⟨"pendingTimelock", [.field "validAt"]⟩) =
       .ok (.int (Int.ofNat (UInt256.shiftRight
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨17⟩) ⟨192⟩).toNat)) := by
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨17⟩) ⟨192⟩).toNat)) := by
   apply evalExpr_storage_scalar_value (er := ⟨"pendingTimelock", [.field "validAt"]⟩)
     (t := .int (.uint ⟨64, by decide⟩)) hbase
     (by simp [evalStorageRef, evalStorageRefSteps, evalStorageRefStep,
@@ -92,7 +92,7 @@ theorem evalStorage_pendingGuardianValue (evm : EVM.State) (locals imms : Store)
     evalExpr? config { contract := contract, locals := locals, immutables := imms } evm
       (.storage ⟨"pendingGuardian", [.field "value"]⟩) =
       .ok (.address (AccountAddress.ofNat (UInt256.land
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨15⟩) solcAddrMask).toNat)) := by
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨15⟩) solcAddrMask).toNat)) := by
   exact evalExpr_storage_scalar_value (er := ⟨"pendingGuardian", [.field "value"]⟩)
     (t := .address) hbase
     (by simp [evalStorageRef, evalStorageRefSteps, evalStorageRefStep,
@@ -106,7 +106,7 @@ theorem evalStorage_pendingGuardianValidAt (evm : EVM.State) (locals imms : Stor
     evalExpr? config { contract := contract, locals := locals, immutables := imms } evm
       (.storage ⟨"pendingGuardian", [.field "validAt"]⟩) =
       .ok (.int (Int.ofNat (UInt256.land
-        (UInt256.shiftRight (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨15⟩) ⟨160⟩)
+        (UInt256.shiftRight (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨15⟩) ⟨160⟩)
         (UInt256.ofNat (2 ^ 64 - 1))).toNat)) := by
   exact evalExpr_storage_scalar_value (er := ⟨"pendingGuardian", [.field "validAt"]⟩)
     (t := .int (.uint ⟨64, by decide⟩)) hbase

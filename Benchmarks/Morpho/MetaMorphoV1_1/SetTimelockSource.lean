@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.PackedDeletion
 
 /-! The timelock setter stores its value, emits its event, and clears the pending record. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 
@@ -14,11 +14,11 @@ def setTimelockFrame (imms : Store) (value : UInt256) : Frame :=
     immutables := imms }
 
 def setTimelockValueState (evm : EVM.State) (value : UInt256) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨14⟩ value
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨14⟩ value
 
 def setTimelockState (evm : EVM.State) (value : UInt256) : EVM.State :=
   let changed := setTimelockValueState evm value
-  Solm.EVM.storageStore changed changed.executionEnv.codeOwner ⟨17⟩ ⟨0⟩
+  Stele.EVM.storageStore changed changed.executionEnv.codeOwner ⟨17⟩ ⟨0⟩
 
 def setTimelockFinalFrame (evm : EVM.State) (imms : Store) (value : UInt256) : Frame :=
   { contract := contract

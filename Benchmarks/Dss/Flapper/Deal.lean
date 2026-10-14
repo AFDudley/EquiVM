@@ -1,7 +1,7 @@
 import Reasoning.Memory
 import Benchmarks.Dss.Flapper.Yank
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -120,32 +120,32 @@ theorem resolveStorageRef_auction_bid (evm : EVM.State) (locals : Store) (id : U
     EvalResult.ofOption, EvalResult.bind, bind, pure]
 
 def auctionDeleteAfterBid (id : UInt256) (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (auctionBidSlot id) ⟨0⟩
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (auctionBidSlot id) ⟨0⟩
 
 def auctionDeleteAfterLot (id : UInt256) (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore (auctionDeleteAfterBid id evm)
+  Stele.EVM.storageStore (auctionDeleteAfterBid id evm)
     (auctionDeleteAfterBid id evm).executionEnv.codeOwner (auctionLotSlot id) ⟨0⟩
 
 def auctionDeleteAfterGuy (id : UInt256) (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore (auctionDeleteAfterLot id evm)
+  Stele.EVM.storageStore (auctionDeleteAfterLot id evm)
     (auctionDeleteAfterLot id evm).executionEnv.codeOwner (auctionPackedSlot id)
     (setAddressOffset0Word
-      (Solm.EVM.storageLoad (auctionDeleteAfterLot id evm)
+      (Stele.EVM.storageLoad (auctionDeleteAfterLot id evm)
         (auctionDeleteAfterLot id evm).executionEnv.codeOwner (auctionPackedSlot id))
       ⟨0⟩)
 
 def auctionDeleteAfterTic (id : UInt256) (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore (auctionDeleteAfterGuy id evm)
+  Stele.EVM.storageStore (auctionDeleteAfterGuy id evm)
     (auctionDeleteAfterGuy id evm).executionEnv.codeOwner (auctionPackedSlot id)
     (clearUint48Offset20Word
-      (Solm.EVM.storageLoad (auctionDeleteAfterGuy id evm)
+      (Stele.EVM.storageLoad (auctionDeleteAfterGuy id evm)
         (auctionDeleteAfterGuy id evm).executionEnv.codeOwner (auctionPackedSlot id)))
 
 def auctionDeletePostState (id : UInt256) (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore (auctionDeleteAfterTic id evm)
+  Stele.EVM.storageStore (auctionDeleteAfterTic id evm)
     (auctionDeleteAfterTic id evm).executionEnv.codeOwner (auctionPackedSlot id)
     (clearUint48Offset26Word
-      (Solm.EVM.storageLoad (auctionDeleteAfterTic id evm)
+      (Stele.EVM.storageLoad (auctionDeleteAfterTic id evm)
         (auctionDeleteAfterTic id evm).executionEnv.codeOwner (auctionPackedSlot id)))
 
 theorem deleteStorage_auction_bid (evm : EVM.State) (locals : Store) (id : UInt256)
@@ -210,7 +210,7 @@ theorem deleteStorage_auction_bid (evm : EVM.State) (locals : Store) (id : UInt2
 
 theorem auctionDeletePackedFinalWord_zero (id : UInt256) (evm : EVM.State) :
     clearUint48Offset26Word
-        (Solm.EVM.storageLoad (auctionDeleteAfterTic id evm)
+        (Stele.EVM.storageLoad (auctionDeleteAfterTic id evm)
           (auctionDeleteAfterTic id evm).executionEnv.codeOwner (auctionPackedSlot id)) =
       ⟨0⟩ := by
   by_cases hacc0 : evm.accountMap.get? evm.executionEnv.codeOwner = none
@@ -224,17 +224,17 @@ theorem auctionDeletePackedFinalWord_zero (id : UInt256) (evm : EVM.State) :
         storageStore_absent evm evm.executionEnv.codeOwner hacc0
           (auctionPackedSlot id)
           (setAddressOffset0Word
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (auctionPackedSlot id)) ⟨0⟩)]
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (auctionPackedSlot id)) ⟨0⟩)]
     have htic : auctionDeleteAfterTic id evm = evm := by
       simp [auctionDeleteAfterTic, hguy,
         storageStore_absent evm evm.executionEnv.codeOwner hacc0
           (auctionPackedSlot id)
           (clearUint48Offset20Word
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (auctionPackedSlot id)))]
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (auctionPackedSlot id)))]
     have hload :
-        Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (auctionPackedSlot id) = ⟨0⟩ := by
+        Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (auctionPackedSlot id) = ⟨0⟩ := by
       rw [Std.ExtTreeMap.get?_eq_getElem?] at hacc0
-      simp [Solm.EVM.storageLoad, State.lookupAccount, hacc0, Option.option]
+      simp [Stele.EVM.storageLoad, State.lookupAccount, hacc0, Option.option]
     rw [htic, hload]
     exact clearUint48Offset26Word_zero
   · obtain ⟨_, hacc0some⟩ := Option.ne_none_iff_exists'.mp hacc0
@@ -243,17 +243,17 @@ theorem auctionDeletePackedFinalWord_zero (id : UInt256) (evm : EVM.State) :
     have haccLotExists :
         ∃ acc, (auctionDeleteAfterLot id evm).accountMap.get?
           (auctionDeleteAfterLot id evm).executionEnv.codeOwner = some acc := by
-      simp [auctionDeleteAfterLot, auctionDeleteAfterBid, Solm.EVM.storageStore,
+      simp [auctionDeleteAfterLot, auctionDeleteAfterBid, Stele.EVM.storageStore,
         State.lookupAccount, hacc0someElem, Option.option, State.setAccount,
         Std.ExtTreeMap.getElem?_insert_self]
     obtain ⟨_, haccLot⟩ := haccLotExists
     have haccLotElem := haccLot
     rw [Std.ExtTreeMap.get?_eq_getElem?] at haccLotElem
     have hloadGuy :
-        Solm.EVM.storageLoad (auctionDeleteAfterGuy id evm)
+        Stele.EVM.storageLoad (auctionDeleteAfterGuy id evm)
             (auctionDeleteAfterGuy id evm).executionEnv.codeOwner (auctionPackedSlot id) =
           setAddressOffset0Word
-            (Solm.EVM.storageLoad (auctionDeleteAfterLot id evm)
+            (Stele.EVM.storageLoad (auctionDeleteAfterLot id evm)
               (auctionDeleteAfterLot id evm).executionEnv.codeOwner (auctionPackedSlot id))
             ⟨0⟩ := by
       rw [show (auctionDeleteAfterGuy id evm).executionEnv =
@@ -263,19 +263,19 @@ theorem auctionDeletePackedFinalWord_zero (id : UInt256) (evm : EVM.State) :
         (auctionDeleteAfterLot id evm).executionEnv.codeOwner haccLot
         (auctionPackedSlot id)
         (setAddressOffset0Word
-          (Solm.EVM.storageLoad (auctionDeleteAfterLot id evm)
+          (Stele.EVM.storageLoad (auctionDeleteAfterLot id evm)
             (auctionDeleteAfterLot id evm).executionEnv.codeOwner (auctionPackedSlot id)) ⟨0⟩)
     have haccGuyExists :
         ∃ acc, (auctionDeleteAfterGuy id evm).accountMap.get?
           (auctionDeleteAfterGuy id evm).executionEnv.codeOwner = some acc := by
-      simp [auctionDeleteAfterGuy, haccLotElem, Solm.EVM.storageStore, State.lookupAccount,
+      simp [auctionDeleteAfterGuy, haccLotElem, Stele.EVM.storageStore, State.lookupAccount,
         Option.option, State.setAccount, Std.ExtTreeMap.getElem?_insert_self]
     obtain ⟨_, haccGuy⟩ := haccGuyExists
     have hloadTic :
-        Solm.EVM.storageLoad (auctionDeleteAfterTic id evm)
+        Stele.EVM.storageLoad (auctionDeleteAfterTic id evm)
             (auctionDeleteAfterTic id evm).executionEnv.codeOwner (auctionPackedSlot id) =
           clearUint48Offset20Word
-            (Solm.EVM.storageLoad (auctionDeleteAfterGuy id evm)
+            (Stele.EVM.storageLoad (auctionDeleteAfterGuy id evm)
               (auctionDeleteAfterGuy id evm).executionEnv.codeOwner (auctionPackedSlot id)) := by
       rw [show (auctionDeleteAfterTic id evm).executionEnv =
           (auctionDeleteAfterGuy id evm).executionEnv by
@@ -284,7 +284,7 @@ theorem auctionDeletePackedFinalWord_zero (id : UInt256) (evm : EVM.State) :
         (auctionDeleteAfterGuy id evm).executionEnv.codeOwner haccGuy
         (auctionPackedSlot id)
         (clearUint48Offset20Word
-          (Solm.EVM.storageLoad (auctionDeleteAfterGuy id evm)
+          (Stele.EVM.storageLoad (auctionDeleteAfterGuy id evm)
             (auctionDeleteAfterGuy id evm).executionEnv.codeOwner (auctionPackedSlot id)))
     rw [hloadTic, hloadGuy]
     exact clearUint48Offset26_after_offset20_after_address_zero _
@@ -303,15 +303,15 @@ theorem auctionRuntimeDeleteAccountMap_eq_postState (id : UInt256) (evm : EVM.St
       lotSlot ⟨0⟩
   let vGuy :=
     setAddressOffset0Word
-      (Solm.EVM.storageLoad (auctionDeleteAfterLot id evm)
+      (Stele.EVM.storageLoad (auctionDeleteAfterLot id evm)
         (auctionDeleteAfterLot id evm).executionEnv.codeOwner packedSlot) ⟨0⟩
   let vTic :=
     clearUint48Offset20Word
-      (Solm.EVM.storageLoad (auctionDeleteAfterGuy id evm)
+      (Stele.EVM.storageLoad (auctionDeleteAfterGuy id evm)
         (auctionDeleteAfterGuy id evm).executionEnv.codeOwner packedSlot)
   let vEnd :=
     clearUint48Offset26Word
-      (Solm.EVM.storageLoad (auctionDeleteAfterTic id evm)
+      (Stele.EVM.storageLoad (auctionDeleteAfterTic id evm)
         (auctionDeleteAfterTic id evm).executionEnv.codeOwner packedSlot)
   have hfinal : vEnd = ⟨0⟩ := by
     simpa [vEnd, packedSlot] using auctionDeletePackedFinalWord_zero id evm
@@ -855,14 +855,14 @@ theorem dealSubFunctionRevert (evm : EVM.State) {x y : UInt256}
 
 theorem evalExpr_deal_live_storage (evm : EVM.State) (I : ExecutionEnv) :
     evalExpr? config { contract := contract, locals := dealLocals I } evm (.storage liveRef) =
-      .ok (.int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨7⟩).toNat)) := by
+      .ok (.int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨7⟩).toNat)) := by
   let frame : Frame := { contract := contract, locals := dealLocals I }
   exact evalExpr_storage_scalar_value (hbackend := rfl)
-    (cfg := config) (solm := frame) (evm := evm)
+    (cfg := config) (stele := frame) (evm := evm)
     (slot := liveRef) (er := dealLiveEvaledRef)
     (t := .int uint256Int) (loc := wordLoc ⟨7⟩)
     (value := .int (Int.ofNat
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨7⟩).toNat))
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨7⟩).toNat))
     (by simp [frame, liveRef])
     (by simp [frame, dealLiveEvaledRef, evalStorageRef, evalStorageRefSteps,
       liveRef, EvalResult.bind, bind, pure])
@@ -871,7 +871,7 @@ theorem evalExpr_deal_live_storage (evm : EVM.State) (I : ExecutionEnv) :
     (by exact storageLocLoad_uint256 evm ⟨7⟩)
 
 theorem evalExpr_deal_live_one_true (evm : EVM.State) (I : ExecutionEnv)
-    (hload : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨7⟩ = ⟨1⟩) :
+    (hload : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨7⟩ = ⟨1⟩) :
     evalExpr? config { contract := contract, locals := dealLocals I } evm
       (.binary .eq (.storage liveRef) (.intLit 1)) = .ok (.bool true) := by
   have hstorage :
@@ -882,13 +882,13 @@ theorem evalExpr_deal_live_one_true (evm : EVM.State) (I : ExecutionEnv)
   rfl
 
 theorem evalExpr_deal_live_one_false (evm : EVM.State) (I : ExecutionEnv)
-    (hload : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨7⟩ ≠ ⟨1⟩) :
+    (hload : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨7⟩ ≠ ⟨1⟩) :
     evalExpr? config { contract := contract, locals := dealLocals I } evm
       (.binary .eq (.storage liveRef) (.intLit 1)) = .ok (.bool false) := by
   have hstorage := evalExpr_deal_live_storage evm I
   have hne :
       Value.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨7⟩).toNat) ≠
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨7⟩).toNat) ≠
         Value.int 1 := by
     intro hbad
     rw [Value.int.injEq] at hbad
@@ -897,7 +897,7 @@ theorem evalExpr_deal_live_one_false (evm : EVM.State) (I : ExecutionEnv)
     exact Int.ofNat.inj hbad
   have hbeq :
       (Value.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨7⟩).toNat) ==
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨7⟩).toNat) ==
         Value.int 1) = false :=
     beq_eq_false_iff_ne.mpr hne
   simp only [evalExpr?, hstorage, EvalResult.bind, bind, pure]
@@ -916,13 +916,13 @@ theorem evalExpr_deal_tic_storage (evm : EVM.State) (I : ExecutionEnv) :
     erw [storageLocLoad_uint48_offset20]
     rw [u256_land_comm
       (UInt256.div
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
           (auctionPackedSlot (dealIdWord I)))
         (UInt256.ofNat (256 ^ 20)))
       uint48Mask]
     rfl
   exact evalExpr_storage_scalar_value (hbackend := rfl)
-    (cfg := config) (solm := frame) (evm := evm)
+    (cfg := config) (stele := frame) (evm := evm)
     (slot := bidsF (.var "id") "tic") (er := dealTicEvaledRef I)
     (t := .int uint48Int)
     (loc := uint48Loc (auctionPackedSlot (dealIdWord I)) ⟨20, by decide⟩ (by decide))
@@ -950,13 +950,13 @@ theorem evalExpr_deal_end_storage (evm : EVM.State) (I : ExecutionEnv) :
     erw [storageLocLoad_uint48_offset26]
     rw [u256_land_comm
       (UInt256.div
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
           (auctionPackedSlot (dealIdWord I)))
         (UInt256.ofNat (256 ^ 26)))
       uint48Mask]
     rfl
   exact evalExpr_storage_scalar_value (hbackend := rfl)
-    (cfg := config) (solm := frame) (evm := evm)
+    (cfg := config) (stele := frame) (evm := evm)
     (slot := bidsF (.var "id") "end") (er := dealEndEvaledRef I)
     (t := .int uint48Int)
     (loc := uint48Loc (auctionPackedSlot (dealIdWord I)) ⟨26, by decide⟩ (by decide))
@@ -978,7 +978,7 @@ theorem evalExpr_deal_lot_storage (evm : EVM.State) (I : ExecutionEnv) :
       .ok (.int (Int.ofNat (dealLotWord evm I).toNat)) := by
   let frame : Frame := { contract := contract, locals := dealLocals I }
   exact evalExpr_storage_scalar_value (hbackend := rfl)
-    (cfg := config) (solm := frame) (evm := evm)
+    (cfg := config) (stele := frame) (evm := evm)
     (slot := bidsF (.var "id") "lot") (er := dealLotEvaledRef I)
     (t := .int uint256Int) (loc := wordLoc (auctionLotSlot (dealIdWord I)))
     (value := .int (Int.ofNat (dealLotWord evm I).toNat))
@@ -1007,7 +1007,7 @@ theorem evalExpr_deal_gem_storage_of_locals
       .ok (.address (AccountAddress.ofNat (dealGemWord evm).toNat)) := by
   let frame : Frame := { contract := contract, locals := locals }
   exact evalExpr_storage_scalar_value (hbackend := rfl)
-    (cfg := config) (solm := frame) (evm := evm)
+    (cfg := config) (stele := frame) (evm := evm)
     (slot := gemRef) (er := dealGemEvaledRef)
     (t := .address) (loc := addrLoc ⟨3⟩)
     (value := .address (AccountAddress.ofNat (dealGemWord evm).toNat))
@@ -1026,7 +1026,7 @@ theorem evalExpr_deal_guy_storage_of_lotLocals (evm : EVM.State) (I : ExecutionE
       .ok (.address (AccountAddress.ofNat (dealGuyWord evm I).toNat)) := by
   let frame : Frame := { contract := contract, locals := dealLotLocals evm I }
   exact evalExpr_storage_scalar_value (hbackend := rfl)
-    (cfg := config) (solm := frame) (evm := evm)
+    (cfg := config) (stele := frame) (evm := evm)
     (slot := bidsF (.var "id") "guy") (er := dealGuyEvaledRef I)
     (t := .address) (loc := addrLoc (auctionPackedSlot (dealIdWord I)))
     (value := .address (AccountAddress.ofNat (dealGuyWord evm I).toNat))
@@ -1097,7 +1097,7 @@ theorem evalExpr_deal_bid_storage_of_moveLocals (evm0 evm : EVM.State) (I : Exec
       .ok (.int (Int.ofNat (dealBidWord evm I).toNat)) := by
   let frame : Frame := { contract := contract, locals := dealMoveLocals evm0 I }
   exact evalExpr_storage_scalar_value (hbackend := rfl)
-    (cfg := config) (solm := frame) (evm := evm)
+    (cfg := config) (stele := frame) (evm := evm)
     (slot := bidsF (.var "id") "bid") (er := dealBidEvaledRef I)
     (t := .int uint256Int) (loc := wordLoc (auctionBidSlot (dealIdWord I)))
     (value := .int (Int.ofNat (dealBidWord evm I).toNat))
@@ -1120,7 +1120,7 @@ theorem evalExpr_deal_fill_storage_of_locals
       .ok (.int (Int.ofNat (dealFillWord evm).toNat)) := by
   let frame : Frame := { contract := contract, locals := locals }
   exact evalExpr_storage_scalar_value (hbackend := rfl)
-    (cfg := config) (solm := frame) (evm := evm)
+    (cfg := config) (stele := frame) (evm := evm)
     (slot := fillRef) (er := dealFillEvaledRef)
     (t := .int uint256Int) (loc := wordLoc ⟨9⟩)
     (value := .int (Int.ofNat (dealFillWord evm).toNat))
@@ -1154,7 +1154,7 @@ theorem assign_deal_fillNew (evm0 evmFill : EVM.State) (I : ExecutionEnv) :
       evmFill .storage fillRef
       (.int (Int.ofNat (UInt256.sub (dealFillWord evmFill) (dealLotWord evm0 I)).toNat)) =
         .ok ({ contract := contract, locals := dealFillNewLocals evm0 evmFill I },
-          Solm.EVM.storageStore evmFill evmFill.executionEnv.codeOwner ⟨9⟩
+          Stele.EVM.storageStore evmFill evmFill.executionEnv.codeOwner ⟨9⟩
             (UInt256.sub (dealFillWord evmFill) (dealLotWord evm0 I))) := by
   apply assignStorageRef_storage_scalar (hbackend := rfl)
       (ty := uint256St)
@@ -1324,13 +1324,13 @@ theorem evalExpr_deal_finished_true (evm : EVM.State) (I : ExecutionEnv)
 
 theorem flapperDealBodyReverts_notLive (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hlive : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨7⟩ ≠ ⟨1⟩) :
+    (hlive : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨7⟩ ≠ ⟨1⟩) :
     ExecTransitionBody config contract evm (dealLocals I) dealTransition.body .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
   simpa [dealTransition, nonpayable] using
     nonpayableSecondRequireReverts
       (cfg := config)
-      (solm := { contract := contract, locals := dealLocals I })
+      (stele := { contract := contract, locals := dealLocals I })
       (evm := evm)
       (guard := .binary .eq (.storage liveRef) (.intLit 1))
       (rest :=
@@ -1353,7 +1353,7 @@ theorem flapperDealBodyReverts_notLive (evm : EVM.State) (I : ExecutionEnv)
 
 theorem flapperDealBodyReverts_ticZero (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hlive : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨7⟩ = ⟨1⟩)
+    (hlive : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨7⟩ = ⟨1⟩)
     (htic : dealTicWord evm I = ⟨0⟩) :
     ExecTransitionBody config contract evm (dealLocals I) dealTransition.body .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
@@ -1366,7 +1366,7 @@ theorem flapperDealBodyReverts_ticZero (evm : EVM.State) (I : ExecutionEnv)
 
 theorem flapperDealBodyReverts_notFinished (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hlive : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨7⟩ = ⟨1⟩)
+    (hlive : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨7⟩ = ⟨1⟩)
     (htic : dealTicWord evm I ≠ ⟨0⟩)
     (hticGe : (dealTimestampWord evm).toNat ≤ (dealTicWord evm I).toNat)
     (hendGe : (dealTimestampWord evm).toNat ≤ (dealEndWord evm I).toNat) :
@@ -1382,7 +1382,7 @@ theorem flapperDealBodyReverts_notFinished (evm : EVM.State) (I : ExecutionEnv)
 
 theorem flapperDealBodyReverts_moveNoCode (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hlive : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨7⟩ = ⟨1⟩)
+    (hlive : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨7⟩ = ⟨1⟩)
     (htic : dealTicWord evm I ≠ ⟨0⟩)
     (hfinished :
       (dealTicWord evm I).toNat < (dealTimestampWord evm).toNat ∨
@@ -1448,7 +1448,7 @@ theorem flapperDealBodyReverts_moveNoCode (evm : EVM.State) (I : ExecutionEnv)
 theorem flapperDealBodyReverts_moveCallFailure
     (evm evm' : EVM.State) (I : ExecutionEnv) (out : ByteArray)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hlive : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨7⟩ = ⟨1⟩)
+    (hlive : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨7⟩ = ⟨1⟩)
     (htic : dealTicWord evm I ≠ ⟨0⟩)
     (hfinished :
       (dealTicWord evm I).toNat < (dealTimestampWord evm).toNat ∨
@@ -1523,7 +1523,7 @@ theorem flapperDealBodyReverts_moveCallFailure
 theorem flapperDealBodyReverts_burnNoCode
     (evm evmMove : EVM.State) (I : ExecutionEnv) (outMove : ByteArray)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hlive : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨7⟩ = ⟨1⟩)
+    (hlive : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨7⟩ = ⟨1⟩)
     (htic : dealTicWord evm I ≠ ⟨0⟩)
     (hfinished :
       (dealTicWord evm I).toNat < (dealTimestampWord evm).toNat ∨
@@ -1628,7 +1628,7 @@ theorem flapperDealBodyReverts_burnCallFailure
     (evm evmMove evmBurn : EVM.State) (I : ExecutionEnv)
     (outMove outBurn : ByteArray)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hlive : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨7⟩ = ⟨1⟩)
+    (hlive : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨7⟩ = ⟨1⟩)
     (htic : dealTicWord evm I ≠ ⟨0⟩)
     (hfinished :
       (dealTicWord evm I).toNat < (dealTimestampWord evm).toNat ∨
@@ -1826,7 +1826,7 @@ theorem flapperDealBodyReverts_fillSubUnderflowSplit
     (evm evmMove evmBurn : EVM.State) (I : ExecutionEnv)
     (outMove outBurn : ByteArray)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hlive : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨7⟩ = ⟨1⟩)
+    (hlive : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨7⟩ = ⟨1⟩)
     (htic : dealTicWord evm I ≠ ⟨0⟩)
     (hfinished :
       (dealTicWord evm I).toNat < (dealTimestampWord evm).toNat ∨
@@ -1931,7 +1931,7 @@ theorem flapperDealBodyReverts_fillSubUnderflow
     (evm evmMove evmBurn : EVM.State) (I : ExecutionEnv)
     (outMove outBurn : ByteArray)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hlive : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨7⟩ = ⟨1⟩)
+    (hlive : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨7⟩ = ⟨1⟩)
     (htic : dealTicWord evm I ≠ ⟨0⟩)
     (hfinished :
       (dealTicWord evm I).toNat < (dealTimestampWord evm).toNat ∨
@@ -1967,7 +1967,7 @@ theorem flapperDealBodyReturns_success
     (evm evmMove evmBurn : EVM.State) (I : ExecutionEnv)
     (outMove outBurn : ByteArray)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hlive : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨7⟩ = ⟨1⟩)
+    (hlive : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨7⟩ = ⟨1⟩)
     (htic : dealTicWord evm I ≠ ⟨0⟩)
     (hfinished :
       (dealTicWord evm I).toNat < (dealTimestampWord evm).toNat ∨
@@ -1999,7 +1999,7 @@ theorem flapperDealBodyReturns_success
       (.returned
         { contract := contract,
           locals := dealFillNewLocals evm (auctionDeletePostState (dealIdWord I) evmBurn) I }
-        (Solm.EVM.storageStore (auctionDeletePostState (dealIdWord I) evmBurn)
+        (Stele.EVM.storageStore (auctionDeletePostState (dealIdWord I) evmBurn)
           (auctionDeletePostState (dealIdWord I) evmBurn).executionEnv.codeOwner ⟨9⟩
           (UInt256.sub
             (dealFillWord (auctionDeletePostState (dealIdWord I) evmBurn))
@@ -2008,7 +2008,7 @@ theorem flapperDealBodyReturns_success
   let evmDelete := auctionDeletePostState (dealIdWord I) evmBurn
   let diff := UInt256.sub (dealFillWord evmDelete) (dealLotWord evm I)
   let evmFinal :=
-    Solm.EVM.storageStore evmDelete evmDelete.executionEnv.codeOwner ⟨9⟩ diff
+    Stele.EVM.storageStore evmDelete evmDelete.executionEnv.codeOwner ⟨9⟩ diff
   have hprefix :=
     flapperDealBodyBurnSuccessPrefix evm evmMove evmBurn I outMove outBurn
       hmoveCodeSize hmoveCall hburnCodeSize hburnCall
@@ -2085,14 +2085,14 @@ theorem flapperDealBodyReturns_success
       htail)
 
 theorem flapperDecode_deal_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (dealTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (dealTransition.params.map Param.name)
       (transitionSignature dealTransition).paramTypes I.calldata = some (dealLocals I) := by
   simpa [config, dealTransition, dealLocals, dealIdValue, dealIdWord, calldataWord] using
     decodeCalldata_legacyUInt256_ok (cd := I.calldata) (x := "id") hsz36
 
 theorem flapperDecode_deal_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (dealTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (dealTransition.params.map Param.name)
       (transitionSignature dealTransition).paramTypes I.calldata = none := by
   simpa [config, dealTransition] using
     decodeCalldata_legacyUInt256_none_short (cd := I.calldata) (x := "id") hsz4 hshort
@@ -3963,22 +3963,22 @@ theorem flapperDealBodyCoreNotLive
     (hlive : solcSlotWordAt ⟨7⟩ σ I ≠ ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some dealTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (dealTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (dealTransition.params.map Param.name)
         (transitionSignature dealTransition).paramTypes I.calldata = some (dealLocals I))
     (hreach : ∃ k C, RD flapperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨767⟩ [sel]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  have hliveSolmWord : solcSlotWordAt ⟨7⟩ σ I ≠ ⟨1⟩ := hlive
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  have hliveSteleWord : solcSlotWordAt ⟨7⟩ σ I ≠ ⟨1⟩ := hlive
   have hbody :
-      ExecTransitionBody config contract evmSolm (dealLocals I)
+      ExecTransitionBody config contract evmStele (dealLocals I)
         dealTransition.body .reverted := by
-    simpa [evmSolm, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [evmStele, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
-      flapperDealBodyReverts_notLive evmSolm I
-        (by simp only [evmSolm, initState]; exact hwv)
-        hliveSolmWord
+      flapperDealBodyReverts_notLive evmStele I
+        (by simp only [evmStele, initState]; exact hwv)
+        hliveSteleWord
   exact (flapperDealX_notLive (g := Sat256.ofUInt256 g) hlive
       (flapperDealX_decoded (g := Sat256.ofUInt256 g) hsz36 hsize hreach))
     |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
@@ -3992,25 +3992,25 @@ theorem flapperDealBodyCoreTicZero
     (htic : uint48Offset20Word (auctionPackedSlot (dealIdWord I)) σ I = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some dealTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (dealTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (dealTransition.params.map Param.name)
         (transitionSignature dealTransition).paramTypes I.calldata = some (dealLocals I))
     (hreach : ∃ k C, RD flapperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨767⟩ [sel]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  have hliveSolmWord : solcSlotWordAt ⟨7⟩ σ I = ⟨1⟩ := hlive
-  have hticSolm : dealTicWord evmSolm I = ⟨0⟩ := by
-    simpa [evmSolm, initState, dealTicWord] using htic
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  have hliveSteleWord : solcSlotWordAt ⟨7⟩ σ I = ⟨1⟩ := hlive
+  have hticStele : dealTicWord evmStele I = ⟨0⟩ := by
+    simpa [evmStele, initState, dealTicWord] using htic
   have hbody :
-      ExecTransitionBody config contract evmSolm (dealLocals I)
+      ExecTransitionBody config contract evmStele (dealLocals I)
         dealTransition.body .reverted := by
-    simpa [evmSolm, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [evmStele, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
-      flapperDealBodyReverts_ticZero evmSolm I
-        (by simp only [evmSolm, initState]; exact hwv)
-        hliveSolmWord
-        hticSolm
+      flapperDealBodyReverts_ticZero evmStele I
+        (by simp only [evmStele, initState]; exact hwv)
+        hliveSteleWord
+        hticStele
   obtain ⟨_, _, rd3408⟩ :=
     flapperDealX_liveOk (g := Sat256.ofUInt256 g) hlive
       (flapperDealX_decoded (g := Sat256.ofUInt256 g) hsz36 hsize hreach)
@@ -4032,29 +4032,29 @@ theorem flapperDealBodyCoreNotFinished
         (uint48Offset26Word (auctionPackedSlot (dealIdWord I)) σ I).toNat)
     (hdispatch : dispatchMsg contract I.calldata = some dealTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (dealTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (dealTransition.params.map Param.name)
         (transitionSignature dealTransition).paramTypes I.calldata = some (dealLocals I))
     (hreach : ∃ k C, RD flapperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨767⟩ [sel]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  have hliveSolmWord : solcSlotWordAt ⟨7⟩ σ I = ⟨1⟩ := hlive
-  have hticSolm : dealTicWord evmSolm I ≠ ⟨0⟩ := by
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  have hliveSteleWord : solcSlotWordAt ⟨7⟩ σ I = ⟨1⟩ := hlive
+  have hticStele : dealTicWord evmStele I ≠ ⟨0⟩ := by
     intro hzero
-    exact htic (by simpa [evmSolm, initState, dealTicWord] using hzero)
-  have hticGeSolm : (dealTimestampWord evmSolm).toNat ≤ (dealTicWord evmSolm I).toNat := by
-    simpa [evmSolm, initState, dealTicWord, dealTimestampWord] using hticGe
-  have hendGeSolm : (dealTimestampWord evmSolm).toNat ≤ (dealEndWord evmSolm I).toNat := by
-    simpa [evmSolm, initState, dealEndWord, dealTimestampWord] using hendGe
+    exact htic (by simpa [evmStele, initState, dealTicWord] using hzero)
+  have hticGeStele : (dealTimestampWord evmStele).toNat ≤ (dealTicWord evmStele I).toNat := by
+    simpa [evmStele, initState, dealTicWord, dealTimestampWord] using hticGe
+  have hendGeStele : (dealTimestampWord evmStele).toNat ≤ (dealEndWord evmStele I).toNat := by
+    simpa [evmStele, initState, dealEndWord, dealTimestampWord] using hendGe
   have hbody :
-      ExecTransitionBody config contract evmSolm (dealLocals I)
+      ExecTransitionBody config contract evmStele (dealLocals I)
         dealTransition.body .reverted := by
-    simpa [evmSolm, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [evmStele, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
-      flapperDealBodyReverts_notFinished evmSolm I
-        (by simp only [evmSolm, initState]; exact hwv)
-        hliveSolmWord hticSolm hticGeSolm hendGeSolm
+      flapperDealBodyReverts_notFinished evmStele I
+        (by simp only [evmStele, initState]; exact hwv)
+        hliveSteleWord hticStele hticGeStele hendGeStele
   obtain ⟨_, _, rd3408⟩ :=
     flapperDealX_liveOk (g := Sat256.ofUInt256 g) hlive
       (flapperDealX_decoded (g := Sat256.ofUInt256 g) hsz36 hsize hreach)
@@ -4079,40 +4079,40 @@ theorem flapperDealBodyCoreMoveNoCode
         (solcAddressSlotWord ⟨2⟩ σ I) = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some dealTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (dealTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (dealTransition.params.map Param.name)
         (transitionSignature dealTransition).paramTypes I.calldata = some (dealLocals I))
     (hreach : ∃ k C, RD flapperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨767⟩ [sel]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  have hliveSolmWord : solcSlotWordAt ⟨7⟩ σ I = ⟨1⟩ := hlive
-  have hticSolm : dealTicWord evmSolm I ≠ ⟨0⟩ := by
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  have hliveSteleWord : solcSlotWordAt ⟨7⟩ σ I = ⟨1⟩ := hlive
+  have hticStele : dealTicWord evmStele I ≠ ⟨0⟩ := by
     intro hzero
-    exact htic (by simpa [evmSolm, initState, dealTicWord] using hzero)
-  have hfinishedSolm :
-      (dealTicWord evmSolm I).toNat < (dealTimestampWord evmSolm).toNat ∨
-      (dealEndWord evmSolm I).toNat < (dealTimestampWord evmSolm).toNat := by
+    exact htic (by simpa [evmStele, initState, dealTicWord] using hzero)
+  have hfinishedStele :
+      (dealTicWord evmStele I).toNat < (dealTimestampWord evmStele).toNat ∨
+      (dealEndWord evmStele I).toNat < (dealTimestampWord evmStele).toNat := by
     cases hfinished with
     | inl h =>
         left
-        simpa [evmSolm, initState, dealTicWord, dealTimestampWord] using h
+        simpa [evmStele, initState, dealTicWord, dealTimestampWord] using h
     | inr h =>
         right
-        simpa [evmSolm, initState, dealEndWord, dealTimestampWord] using h
-  have hnoCodeSolm :
+        simpa [evmStele, initState, dealEndWord, dealTimestampWord] using h
+  have hnoCodeStele :
       Reasoning.Theory.extCodeSizeWord σ
         (solcAddressSlotWord ⟨2⟩ σ I) = ⟨0⟩ :=
     hnoCode
   have hbody :
-      ExecTransitionBody config contract evmSolm (dealLocals I)
+      ExecTransitionBody config contract evmStele (dealLocals I)
         dealTransition.body .reverted := by
-    simpa [evmSolm, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [evmStele, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
-      flapperDealBodyReverts_moveNoCode evmSolm I
-        (by simp only [evmSolm, initState]; exact hwv)
-        hliveSolmWord hticSolm hfinishedSolm
-        (by simpa [evmSolm, initState] using hnoCodeSolm)
+      flapperDealBodyReverts_moveNoCode evmStele I
+        (by simp only [evmStele, initState]; exact hwv)
+        hliveSteleWord hticStele hfinishedStele
+        (by simpa [evmStele, initState] using hnoCodeStele)
   obtain ⟨_, _, rd3408⟩ :=
     flapperDealX_liveOk (g := Sat256.ofUInt256 g) hlive
       (flapperDealX_decoded (g := Sat256.ofUInt256 g) hsz36 hsize hreach)
@@ -4162,14 +4162,14 @@ theorem flapperDealBodyCoreMoveCallFailure
     (houtSize : out.size < UInt256.size)
     (hdispatch : dispatchMsg contract I.calldata = some dealTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (dealTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (dealTransition.params.map Param.name)
         (transitionSignature dealTransition).paramTypes I.calldata = some (dealLocals I)) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  let evmCallSolm : EVM.State :=
-    { evmSolm with accountMap := σ', substate := A' }
-  have hcallSolm :
-      typedCallViaEVM config evmSolm
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmCallStele : EVM.State :=
+    { evmStele with accountMap := σ', substate := A' }
+  have hcallStele :
+      typedCallViaEVM config evmStele
         (EVM.address (AccountAddress.ofNat
           (solcAddressSlotWord ⟨2⟩ σ I).toNat))
         "move" 0
@@ -4178,36 +4178,36 @@ theorem flapperDealBodyCoreMoveCallFailure
           (solcAddressSlotWord (auctionPackedSlot (dealIdWord I)) σ I).toNat),
         .int (Int.ofNat
           (solcSlotWordAt (auctionLotSlot (dealIdWord I)) σ I).toNat)]
-        (false, evmCallSolm, out) true := by
-    simpa [evmSolm, evmCallSolm] using hcall
-  have hliveSolmWord : solcSlotWordAt ⟨7⟩ σ I = ⟨1⟩ := hlive
-  have hticSolm : dealTicWord evmSolm I ≠ ⟨0⟩ := by
+        (false, evmCallStele, out) true := by
+    simpa [evmStele, evmCallStele] using hcall
+  have hliveSteleWord : solcSlotWordAt ⟨7⟩ σ I = ⟨1⟩ := hlive
+  have hticStele : dealTicWord evmStele I ≠ ⟨0⟩ := by
     intro hzero
-    exact htic (by simpa [evmSolm, initState, dealTicWord] using hzero)
-  have hfinishedSolm :
-      (dealTicWord evmSolm I).toNat < (dealTimestampWord evmSolm).toNat ∨
-      (dealEndWord evmSolm I).toNat < (dealTimestampWord evmSolm).toNat := by
+    exact htic (by simpa [evmStele, initState, dealTicWord] using hzero)
+  have hfinishedStele :
+      (dealTicWord evmStele I).toNat < (dealTimestampWord evmStele).toNat ∨
+      (dealEndWord evmStele I).toNat < (dealTimestampWord evmStele).toNat := by
     cases hfinished with
     | inl h =>
         left
-        simpa [evmSolm, initState, dealTicWord, dealTimestampWord] using h
+        simpa [evmStele, initState, dealTicWord, dealTimestampWord] using h
     | inr h =>
         right
-        simpa [evmSolm, initState, dealEndWord, dealTimestampWord] using h
-  have hcodeSizeSolm :
+        simpa [evmStele, initState, dealEndWord, dealTimestampWord] using h
+  have hcodeSizeStele :
       Reasoning.Theory.extCodeSizeWord σ
         (solcAddressSlotWord ⟨2⟩ σ I) ≠ ⟨0⟩ :=
     hcodeSize
   have hbody :
-      ExecTransitionBody config contract evmSolm (dealLocals I)
+      ExecTransitionBody config contract evmStele (dealLocals I)
         dealTransition.body .reverted := by
-    simpa [evmSolm, evmCallSolm, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [evmStele, evmCallStele, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
-      flapperDealBodyReverts_moveCallFailure evmSolm evmCallSolm I out
-        (by simp only [evmSolm, initState]; exact hwv)
-        hliveSolmWord hticSolm hfinishedSolm
-        (by simpa [evmSolm, initState] using hcodeSizeSolm)
-        hcallSolm
+      flapperDealBodyReverts_moveCallFailure evmStele evmCallStele I out
+        (by simp only [evmStele, initState]; exact hwv)
+        hliveSteleWord hticStele hfinishedStele
+        (by simpa [evmStele, initState] using hcodeSizeStele)
+        hcallStele
   exact (flapperDealX_moveCallFailure rd3715 houtSize)
     |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
 
@@ -4229,20 +4229,20 @@ theorem flapperDealBodyCoreMoveCallDepthLimit
     (hdepth : I.depth = 1024)
     (hdispatch : dispatchMsg contract I.calldata = some dealTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (dealTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (dealTransition.params.map Param.name)
         (transitionSignature dealTransition).paramTypes I.calldata = some (dealLocals I))
     (hreach : ∃ k C, RD flapperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨767⟩ [sel]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
   let id := dealIdWord I
   let memMap := twoWordHashMem id ⟨1⟩ solcFreePtrMem
   let vat := solcAddressSlotWord ⟨2⟩ σ I
   let src := yankThisWord I
   let guy := solcAddressSlotWord (auctionPackedSlot id) σ I
   let lot := solcSlotWordAt (auctionLotSlot id) σ I
-  let A_move := (evmSolm.addAccessedAccount (EVM.address (AccountAddress.ofNat vat.toNat))).substate
+  let A_move := (evmStele.addAccessedAccount (EVM.address (AccountAddress.ofNat vat.toNat))).substate
   have hmemMap : memMap.size = 96 := by
     simpa [memMap, id] using
       twoWordHashMem_size_96 (dealIdWord I) ⟨1⟩ solcFreePtrMem_size
@@ -4258,16 +4258,16 @@ theorem flapperDealBodyCoreMoveCallDepthLimit
   have hsrcAddr : AccountAddress.ofNat src.toNat = I.codeOwner := by
     rw [← accountAddress_ofUInt256_eq_ofNat_toNat]
     simpa [src, yankThisWord] using accountAddress_roundtrip I.codeOwner
-  have hdepthInit : evmSolm.executionEnv.depth = 1024 := by
-    simpa [evmSolm, initState] using hdepth
-  have hcallSolm :
-      typedCallViaEVM config evmSolm
+  have hdepthInit : evmStele.executionEnv.depth = 1024 := by
+    simpa [evmStele, initState] using hdepth
+  have hcallStele :
+      typedCallViaEVM config evmStele
         (EVM.address (AccountAddress.ofNat vat.toNat)) "move" 0
         [.address I.codeOwner, .address (AccountAddress.ofNat guy.toNat),
           .int (Int.ofNat lot.toNat)]
-        (false, { evmSolm with substate := A_move }, ByteArray.empty) true := by
+        (false, { evmStele with substate := A_move }, ByteArray.empty) true := by
     simpa [A_move, hsrcAddr] using
-      (callNotMade_depthLimit (cfg := config) (evm := evmSolm)
+      (callNotMade_depthLimit (cfg := config) (evm := evmStele)
         (tgt := EVM.address (AccountAddress.ofNat vat.toNat)) (name := "move")
         (args := [.address (AccountAddress.ofNat src.toNat),
           .address (AccountAddress.ofNat guy.toNat), .int (Int.ofNat lot.toNat)])
@@ -4276,35 +4276,35 @@ theorem flapperDealBodyCoreMoveCallDepthLimit
           yankMoveOutPtr.toNat yankMoveInSize.toNat)
         (yankMoveEncode_eq src guy lot hmemMap hsrcCanon hguyCanon)
         hdepthInit)
-  have hliveSolmWord : solcSlotWordAt ⟨7⟩ σ I = ⟨1⟩ := hlive
-  have hticSolm : dealTicWord evmSolm I ≠ ⟨0⟩ := by
+  have hliveSteleWord : solcSlotWordAt ⟨7⟩ σ I = ⟨1⟩ := hlive
+  have hticStele : dealTicWord evmStele I ≠ ⟨0⟩ := by
     intro hzero
-    exact htic (by simpa [evmSolm, initState, dealTicWord] using hzero)
-  have hfinishedSolm :
-      (dealTicWord evmSolm I).toNat < (dealTimestampWord evmSolm).toNat ∨
-      (dealEndWord evmSolm I).toNat < (dealTimestampWord evmSolm).toNat := by
+    exact htic (by simpa [evmStele, initState, dealTicWord] using hzero)
+  have hfinishedStele :
+      (dealTicWord evmStele I).toNat < (dealTimestampWord evmStele).toNat ∨
+      (dealEndWord evmStele I).toNat < (dealTimestampWord evmStele).toNat := by
     cases hfinished with
     | inl h =>
         left
-        simpa [evmSolm, initState, dealTicWord, dealTimestampWord] using h
+        simpa [evmStele, initState, dealTicWord, dealTimestampWord] using h
     | inr h =>
         right
-        simpa [evmSolm, initState, dealEndWord, dealTimestampWord] using h
-  have hcodeSizeSolm :
+        simpa [evmStele, initState, dealEndWord, dealTimestampWord] using h
+  have hcodeSizeStele :
       Reasoning.Theory.extCodeSizeWord σ
         (solcAddressSlotWord ⟨2⟩ σ I) ≠ ⟨0⟩ :=
     hcodeSize
   have hbody :
-      ExecTransitionBody config contract evmSolm (dealLocals I)
+      ExecTransitionBody config contract evmStele (dealLocals I)
         dealTransition.body .reverted := by
-    simpa [evmSolm, vat, src, guy, lot, id, solcSlotWordAt, initState,
-      Solm.EVM.storageLoad, State.lookupAccount] using
-      flapperDealBodyReverts_moveCallFailure evmSolm
-        { evmSolm with substate := A_move } I ByteArray.empty
-        (by simp only [evmSolm, initState]; exact hwv)
-        hliveSolmWord hticSolm hfinishedSolm
-        (by simpa [evmSolm, initState] using hcodeSizeSolm)
-        hcallSolm
+    simpa [evmStele, vat, src, guy, lot, id, solcSlotWordAt, initState,
+      Stele.EVM.storageLoad, State.lookupAccount] using
+      flapperDealBodyReverts_moveCallFailure evmStele
+        { evmStele with substate := A_move } I ByteArray.empty
+        (by simp only [evmStele, initState]; exact hwv)
+        hliveSteleWord hticStele hfinishedStele
+        (by simpa [evmStele, initState] using hcodeSizeStele)
+        hcallStele
   obtain ⟨_, _, rd3408⟩ :=
     flapperDealX_liveOk (g := Sat256.ofUInt256 g) hlive
       (flapperDealX_decoded (g := Sat256.ofUInt256 g) hsz36 hsize hreach)
@@ -4359,14 +4359,14 @@ theorem flapperDealBodyCoreBurnNoCode
     (hread64 : mem.readWithPadding 64 32 = UInt256.toByteArray ⟨128⟩)
     (hdispatch : dispatchMsg contract I.calldata = some dealTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (dealTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (dealTransition.params.map Param.name)
         (transitionSignature dealTransition).paramTypes I.calldata = some (dealLocals I)) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  let evmMoveSolm : EVM.State :=
-    { evmSolm with accountMap := σMove, substate := AMove }
-  have hmoveCallSolm :
-      typedCallViaEVM config evmSolm
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmMoveStele : EVM.State :=
+    { evmStele with accountMap := σMove, substate := AMove }
+  have hmoveCallStele :
+      typedCallViaEVM config evmStele
         (EVM.address (AccountAddress.ofNat
           (solcAddressSlotWord ⟨2⟩ σ I).toNat))
         "move" 0
@@ -4375,41 +4375,41 @@ theorem flapperDealBodyCoreBurnNoCode
           (solcAddressSlotWord (auctionPackedSlot (dealIdWord I)) σ I).toNat),
         .int (Int.ofNat
           (solcSlotWordAt (auctionLotSlot (dealIdWord I)) σ I).toNat)]
-        (true, evmMoveSolm, outMove) true := by
-    simpa [evmSolm, evmMoveSolm] using hmoveCall
-  have hliveSolmWord : solcSlotWordAt ⟨7⟩ σ I = ⟨1⟩ := hlive
-  have hticSolm : dealTicWord evmSolm I ≠ ⟨0⟩ := by
+        (true, evmMoveStele, outMove) true := by
+    simpa [evmStele, evmMoveStele] using hmoveCall
+  have hliveSteleWord : solcSlotWordAt ⟨7⟩ σ I = ⟨1⟩ := hlive
+  have hticStele : dealTicWord evmStele I ≠ ⟨0⟩ := by
     intro hzero
-    exact htic (by simpa [evmSolm, initState, dealTicWord] using hzero)
-  have hfinishedSolm :
-      (dealTicWord evmSolm I).toNat < (dealTimestampWord evmSolm).toNat ∨
-      (dealEndWord evmSolm I).toNat < (dealTimestampWord evmSolm).toNat := by
+    exact htic (by simpa [evmStele, initState, dealTicWord] using hzero)
+  have hfinishedStele :
+      (dealTicWord evmStele I).toNat < (dealTimestampWord evmStele).toNat ∨
+      (dealEndWord evmStele I).toNat < (dealTimestampWord evmStele).toNat := by
     cases hfinished with
     | inl h =>
         left
-        simpa [evmSolm, initState, dealTicWord, dealTimestampWord] using h
+        simpa [evmStele, initState, dealTicWord, dealTimestampWord] using h
     | inr h =>
         right
-        simpa [evmSolm, initState, dealEndWord, dealTimestampWord] using h
-  have hmoveCodeSizeSolm :
+        simpa [evmStele, initState, dealEndWord, dealTimestampWord] using h
+  have hmoveCodeSizeStele :
       Reasoning.Theory.extCodeSizeWord σ
         (solcAddressSlotWord ⟨2⟩ σ I) ≠ ⟨0⟩ :=
     hmoveCodeSize
-  have hnoCodeSolm :
+  have hnoCodeStele :
       Reasoning.Theory.extCodeSizeWord σMove
         (solcAddressSlotWord ⟨3⟩ σMove I) = ⟨0⟩ :=
     hnoCode
   have hbody :
-      ExecTransitionBody config contract evmSolm (dealLocals I)
+      ExecTransitionBody config contract evmStele (dealLocals I)
         dealTransition.body .reverted := by
-    simpa [evmSolm, evmMoveSolm, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [evmStele, evmMoveStele, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
-      flapperDealBodyReverts_burnNoCode evmSolm evmMoveSolm I outMove
-        (by simp only [evmSolm, initState]; exact hwv)
-        hliveSolmWord hticSolm hfinishedSolm
-        (by simpa [evmSolm, initState] using hmoveCodeSizeSolm)
-        hmoveCallSolm
-        (by simpa [evmMoveSolm, initState] using hnoCodeSolm)
+      flapperDealBodyReverts_burnNoCode evmStele evmMoveStele I outMove
+        (by simp only [evmStele, initState]; exact hwv)
+        hliveSteleWord hticStele hfinishedStele
+        (by simpa [evmStele, initState] using hmoveCodeSizeStele)
+        hmoveCallStele
+        (by simpa [evmMoveStele, initState] using hnoCodeStele)
   exact (flapperDealX_burnNoCode hnoCode hmem hread64 rd3715)
     |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
 
@@ -4457,14 +4457,14 @@ theorem flapperDealBodyCoreMoveCallSuccess
           outMove) true)
     (hdispatch : dispatchMsg contract I.calldata = some dealTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (dealTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (dealTransition.params.map Param.name)
         (transitionSignature dealTransition).paramTypes I.calldata = some (dealLocals I)) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  let evmMoveSolm : EVM.State :=
-    { evmSolm with accountMap := σMove, substate := AMove }
-  have hmoveCallSolm :
-      typedCallViaEVM config evmSolm
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmMoveStele : EVM.State :=
+    { evmStele with accountMap := σMove, substate := AMove }
+  have hmoveCallStele :
+      typedCallViaEVM config evmStele
         (EVM.address (AccountAddress.ofNat
           (solcAddressSlotWord ⟨2⟩ σ I).toNat))
         "move" 0
@@ -4473,23 +4473,23 @@ theorem flapperDealBodyCoreMoveCallSuccess
           (solcAddressSlotWord (auctionPackedSlot (dealIdWord I)) σ I).toNat),
         .int (Int.ofNat
           (solcSlotWordAt (auctionLotSlot (dealIdWord I)) σ I).toNat)]
-        (true, evmMoveSolm, outMove) true := by
-    simpa [evmSolm, evmMoveSolm] using hmoveCall
-  have hliveSolmWord : solcSlotWordAt ⟨7⟩ σ I = ⟨1⟩ := hlive
-  have hticSolm : dealTicWord evmSolm I ≠ ⟨0⟩ := by
+        (true, evmMoveStele, outMove) true := by
+    simpa [evmStele, evmMoveStele] using hmoveCall
+  have hliveSteleWord : solcSlotWordAt ⟨7⟩ σ I = ⟨1⟩ := hlive
+  have hticStele : dealTicWord evmStele I ≠ ⟨0⟩ := by
     intro hzero
-    exact htic (by simpa [evmSolm, initState, dealTicWord] using hzero)
-  have hfinishedSolm :
-      (dealTicWord evmSolm I).toNat < (dealTimestampWord evmSolm).toNat ∨
-      (dealEndWord evmSolm I).toNat < (dealTimestampWord evmSolm).toNat := by
+    exact htic (by simpa [evmStele, initState, dealTicWord] using hzero)
+  have hfinishedStele :
+      (dealTicWord evmStele I).toNat < (dealTimestampWord evmStele).toNat ∨
+      (dealEndWord evmStele I).toNat < (dealTimestampWord evmStele).toNat := by
     cases hfinished with
     | inl h =>
         left
-        simpa [evmSolm, initState, dealTicWord, dealTimestampWord] using h
+        simpa [evmStele, initState, dealTicWord, dealTimestampWord] using h
     | inr h =>
         right
-        simpa [evmSolm, initState, dealEndWord, dealTimestampWord] using h
-  have hmoveCodeSizeSolm :
+        simpa [evmStele, initState, dealEndWord, dealTimestampWord] using h
+  have hmoveCodeSizeStele :
       Reasoning.Theory.extCodeSizeWord σ
         (solcAddressSlotWord ⟨2⟩ σ I) ≠ ⟨0⟩ :=
     hmoveCodeSize
@@ -4509,19 +4509,19 @@ theorem flapperDealBodyCoreMoveCallSuccess
         (I := I) (g := Sat256.ofUInt256 g) (sel := sel) (mem := memMove)
         (out := outMove) (k := k) (C := C)
         hburnCodeSize hdepth hmemMove hread64Move rd3715
-    let evmBurnSolm : EVM.State :=
-      { evmMoveSolm with accountMap := σBurn, substate := ABurn }
-    have hburnCallSolm :
-        typedCallViaEVM config evmMoveSolm
+    let evmBurnStele : EVM.State :=
+      { evmMoveStele with accountMap := σBurn, substate := ABurn }
+    have hburnCallStele :
+        typedCallViaEVM config evmMoveStele
           (EVM.address (AccountAddress.ofNat
             (solcAddressSlotWord ⟨3⟩ σMove I).toNat))
           "burn" 0
           [.address I.codeOwner,
             .int (Int.ofNat
               (solcSlotWordAt (auctionBidSlot (dealIdWord I)) σMove I).toNat)]
-          (z, evmBurnSolm, outBurn) true := by
-      simpa [evmMoveSolm, evmBurnSolm, evmSolm] using hburnCall
-    have hburnCodeSizeSolm :
+          (z, evmBurnStele, outBurn) true := by
+      simpa [evmMoveStele, evmBurnStele, evmStele] using hburnCall
+    have hburnCodeSizeStele :
         Reasoning.Theory.extCodeSizeWord σMove
           (solcAddressSlotWord ⟨3⟩ σMove I) ≠ ⟨0⟩ :=
       hburnCodeSize
@@ -4535,76 +4535,76 @@ theorem flapperDealBodyCoreMoveCallSuccess
           memBurn (UInt256.ofNat 8) outBurn σBurn k3832 C3832 := by
         simpa [hz] using rd3832
       have hburnCallTrue :
-          typedCallViaEVM config evmMoveSolm
+          typedCallViaEVM config evmMoveStele
             (EVM.address (AccountAddress.ofNat
               (solcAddressSlotWord ⟨3⟩ σMove I).toNat))
             "burn" 0
             [.address I.codeOwner,
               .int (Int.ofNat
                 (solcSlotWordAt (auctionBidSlot (dealIdWord I)) σMove I).toNat)]
-            (true, evmBurnSolm, outBurn) true := by
-        simpa [hz] using hburnCallSolm
+            (true, evmBurnStele, outBurn) true := by
+        simpa [hz] using hburnCallStele
       by_cases hperm : I.perm = true
       swap
       · have hp : I.perm = false := by simpa using hperm
         obtain ⟨_, _, rd3850⟩ := flapperDealX_burnCallSuccessToDelete rd3832True
         have hstatic := permSplit_false hp (flapperDealX_deleteToFillSubSplit rd3850)
-        have hsource : ExecTransitionBody config contract evmSolm (dealLocals I)
+        have hsource : ExecTransitionBody config contract evmStele (dealLocals I)
             dealTransition.body .staticViolation := by
           apply (flapperDealBodyReverts_fillSubUnderflowSplit
-            evmSolm evmMoveSolm evmBurnSolm I outMove outBurn
-            (by simpa [evmSolm, initState] using hwv)
-            hliveSolmWord hticSolm hfinishedSolm
-            (by simpa [evmSolm, initState] using hmoveCodeSizeSolm)
-            hmoveCallSolm
-            (by simpa [evmMoveSolm, initState] using hburnCodeSizeSolm)
+            evmStele evmMoveStele evmBurnStele I outMove outBurn
+            (by simpa [evmStele, initState] using hwv)
+            hliveSteleWord hticStele hfinishedStele
+            (by simpa [evmStele, initState] using hmoveCodeSizeStele)
+            hmoveCallStele
+            (by simpa [evmMoveStele, initState] using hburnCodeSizeStele)
             hburnCallTrue).2
           exact hp
         exact hstatic.reEquivStaticHalt hcode hdispatch hdecode hsource
       let id := dealIdWord I
       let σDel := auctionRuntimeDeleteAccountMap I.codeOwner id σBurn
-      let evmDeleteSolm := auctionDeletePostState id evmBurnSolm
-      have hDeleteAccounts : Eq σDel evmDeleteSolm.accountMap := by
-        simpa [σDel, evmDeleteSolm, evmBurnSolm] using
-          auctionRuntimeDeleteAccountMap_eq_postState id evmBurnSolm I.codeOwner
-            (by simp [evmBurnSolm, evmMoveSolm, evmSolm, initState])
-      have hDeleteEnv : evmDeleteSolm.executionEnv = I := by
-        simp [evmDeleteSolm, auctionDeletePostState, auctionDeleteAfterTic,
+      let evmDeleteStele := auctionDeletePostState id evmBurnStele
+      have hDeleteAccounts : Eq σDel evmDeleteStele.accountMap := by
+        simpa [σDel, evmDeleteStele, evmBurnStele] using
+          auctionRuntimeDeleteAccountMap_eq_postState id evmBurnStele I.codeOwner
+            (by simp [evmBurnStele, evmMoveStele, evmStele, initState])
+      have hDeleteEnv : evmDeleteStele.executionEnv = I := by
+        simp [evmDeleteStele, auctionDeletePostState, auctionDeleteAfterTic,
           auctionDeleteAfterGuy, auctionDeleteAfterLot, auctionDeleteAfterBid,
-          evmBurnSolm, evmMoveSolm, evmSolm, initState, storageStore_executionEnv]
+          evmBurnStele, evmMoveStele, evmStele, initState, storageStore_executionEnv]
       have hlotSource :
-          dealLotWord evmSolm I = solcSlotWordAt (auctionLotSlot id) σ I := by
-        simp [dealLotWord, evmSolm, initState, id]
+          dealLotWord evmStele I = solcSlotWordAt (auctionLotSlot id) σ I := by
+        simp [dealLotWord, evmStele, initState, id]
       have hfillSource :
-          dealFillWord evmDeleteSolm = solcSlotWordAt ⟨9⟩ σDel I := by
+          dealFillWord evmDeleteStele = solcSlotWordAt ⟨9⟩ σDel I := by
         have hslot :=
-          congrArg (fun accounts => solcSlotWordAt ⟨9⟩ accounts evmDeleteSolm.executionEnv)
+          congrArg (fun accounts => solcSlotWordAt ⟨9⟩ accounts evmDeleteStele.executionEnv)
             hDeleteAccounts
-        simpa [dealFillWord, evmDeleteSolm, hDeleteEnv] using hslot.symm
+        simpa [dealFillWord, evmDeleteStele, hDeleteEnv] using hslot.symm
       by_cases hfillLe :
           (solcSlotWordAt (auctionLotSlot id) σ I).toNat ≤
             (solcSlotWordAt ⟨9⟩ σDel I).toNat
-      · have hfillLeSolm :
-            (dealLotWord evmSolm I).toNat ≤ (dealFillWord evmDeleteSolm).toNat := by
+      · have hfillLeStele :
+            (dealLotWord evmStele I).toNat ≤ (dealFillWord evmDeleteStele).toNat := by
           simpa [hlotSource, hfillSource] using hfillLe
         have hbody :
-            ExecTransitionBody config contract evmSolm (dealLocals I)
+            ExecTransitionBody config contract evmStele (dealLocals I)
               dealTransition.body
-              (.returned { contract := contract, locals := dealFillNewLocals evmSolm evmDeleteSolm I }
-                (Solm.EVM.storageStore evmDeleteSolm
-                  evmDeleteSolm.executionEnv.codeOwner ⟨9⟩
-                  (UInt256.sub (dealFillWord evmDeleteSolm) (dealLotWord evmSolm I)))
+              (.returned { contract := contract, locals := dealFillNewLocals evmStele evmDeleteStele I }
+                (Stele.EVM.storageStore evmDeleteStele
+                  evmDeleteStele.executionEnv.codeOwner ⟨9⟩
+                  (UInt256.sub (dealFillWord evmDeleteStele) (dealLotWord evmStele I)))
                 none) := by
-          simpa [evmSolm, evmMoveSolm, evmBurnSolm, evmDeleteSolm, solcSlotWordAt,
-            initState, Solm.EVM.storageLoad, State.lookupAccount] using
-            flapperDealBodyReturns_success evmSolm evmMoveSolm evmBurnSolm I outMove outBurn
-              (by simp only [evmSolm, initState]; exact hwv)
-              hliveSolmWord hticSolm hfinishedSolm
-              (by simpa [evmSolm, initState] using hmoveCodeSizeSolm)
-              hmoveCallSolm
-              (by simpa [evmMoveSolm, initState] using hburnCodeSizeSolm)
+          simpa [evmStele, evmMoveStele, evmBurnStele, evmDeleteStele, solcSlotWordAt,
+            initState, Stele.EVM.storageLoad, State.lookupAccount] using
+            flapperDealBodyReturns_success evmStele evmMoveStele evmBurnStele I outMove outBurn
+              (by simp only [evmStele, initState]; exact hwv)
+              hliveSteleWord hticStele hfinishedStele
+              (by simpa [evmStele, initState] using hmoveCodeSizeStele)
+              hmoveCallStele
+              (by simpa [evmMoveStele, initState] using hburnCodeSizeStele)
               hburnCallTrue
-              hfillLeSolm
+              hfillLeStele
         have hret :=
           flapperDealX_burnCallSuccessFill
             (g := Sat256.ofUInt256 g) (σ := σ) (σMove := σMove)
@@ -4612,16 +4612,16 @@ theorem flapperDealBodyCoreMoveCallSuccess
         let fillRuntime := solcSlotWordAt ⟨9⟩ σDel I
         let lotRuntime := solcSlotWordAt (auctionLotSlot id) σ I
         let diffRuntime := UInt256.sub fillRuntime lotRuntime
-        let diffSource := UInt256.sub (dealFillWord evmDeleteSolm) (dealLotWord evmSolm I)
+        let diffSource := UInt256.sub (dealFillWord evmDeleteStele) (dealLotWord evmStele I)
         have hdiff : diffRuntime = diffSource := by
           simp [diffRuntime, diffSource, fillRuntime, lotRuntime, hfillSource, hlotSource]
         have hFinalAccounts :
             Eq (sstoreAccountMap I.codeOwner σDel ⟨9⟩ diffRuntime)
-              (Solm.EVM.storageStore evmDeleteSolm evmDeleteSolm.executionEnv.codeOwner
+              (Stele.EVM.storageStore evmDeleteStele evmDeleteStele.executionEnv.codeOwner
                 ⟨9⟩ diffSource).accountMap := by
-          have hDeleteOwner : evmDeleteSolm.executionEnv.codeOwner = I.codeOwner := by
+          have hDeleteOwner : evmDeleteStele.executionEnv.codeOwner = I.codeOwner := by
             simp [hDeleteEnv]
-          simpa [storageStore_accountMap, evmDeleteSolm, hdiff, hDeleteOwner] using
+          simpa [storageStore_accountMap, evmDeleteStele, hdiff, hDeleteOwner] using
             congrArg (fun accounts => sstoreAccountMap I.codeOwner accounts ⟨9⟩
               diffRuntime) hDeleteAccounts
         exact hret.reEquivExecutionGen hcode hdispatch hdecode hbody
@@ -4635,23 +4635,23 @@ theorem flapperDealBodyCoreMoveCallSuccess
             (solcSlotWordAt ⟨9⟩ σDel I).toNat <
               (solcSlotWordAt (auctionLotSlot id) σ I).toNat :=
           Nat.lt_of_not_ge hfillLe
-        have hfillLtSolm :
-            (dealFillWord evmDeleteSolm).toNat < (dealLotWord evmSolm I).toNat := by
+        have hfillLtStele :
+            (dealFillWord evmDeleteStele).toNat < (dealLotWord evmStele I).toNat := by
           simpa [hlotSource, hfillSource] using hfillLt
         have hbody :
-            ExecTransitionBody config contract evmSolm (dealLocals I)
+            ExecTransitionBody config contract evmStele (dealLocals I)
               dealTransition.body .reverted := by
-          simpa [evmSolm, evmMoveSolm, evmBurnSolm, evmDeleteSolm, solcSlotWordAt,
-            initState, Solm.EVM.storageLoad, State.lookupAccount] using
-            flapperDealBodyReverts_fillSubUnderflow evmSolm evmMoveSolm evmBurnSolm I
+          simpa [evmStele, evmMoveStele, evmBurnStele, evmDeleteStele, solcSlotWordAt,
+            initState, Stele.EVM.storageLoad, State.lookupAccount] using
+            flapperDealBodyReverts_fillSubUnderflow evmStele evmMoveStele evmBurnStele I
               outMove outBurn
-              (by simp only [evmSolm, initState]; exact hwv)
-              hliveSolmWord hticSolm hfinishedSolm
-              (by simpa [evmSolm, initState] using hmoveCodeSizeSolm)
-              hmoveCallSolm
-              (by simpa [evmMoveSolm, initState] using hburnCodeSizeSolm)
+              (by simp only [evmStele, initState]; exact hwv)
+              hliveSteleWord hticStele hfinishedStele
+              (by simpa [evmStele, initState] using hmoveCodeSizeStele)
+              hmoveCallStele
+              (by simpa [evmMoveStele, initState] using hburnCodeSizeStele)
               hburnCallTrue
-              hfillLtSolm
+              hfillLtStele
         exact (flapperDealX_fillSubUnderflow
             (g := Sat256.ofUInt256 g) (σ := σ) (σMove := σMove)
             (σBurn := σBurn) (sel := sel) hperm hfillLt rd3832True)
@@ -4667,27 +4667,27 @@ theorem flapperDealBodyCoreMoveCallSuccess
           memBurn (UInt256.ofNat 8) outBurn σBurn k3832 C3832 := by
         simpa [hzFalse] using rd3832
       have hburnCallFalse :
-          typedCallViaEVM config evmMoveSolm
+          typedCallViaEVM config evmMoveStele
             (EVM.address (AccountAddress.ofNat
               (solcAddressSlotWord ⟨3⟩ σMove I).toNat))
             "burn" 0
             [.address I.codeOwner,
               .int (Int.ofNat
                 (solcSlotWordAt (auctionBidSlot (dealIdWord I)) σMove I).toNat)]
-            (false, evmBurnSolm, outBurn) true := by
-        simpa [hzFalse] using hburnCallSolm
+            (false, evmBurnStele, outBurn) true := by
+        simpa [hzFalse] using hburnCallStele
       have hbody :
-          ExecTransitionBody config contract evmSolm (dealLocals I)
+          ExecTransitionBody config contract evmStele (dealLocals I)
             dealTransition.body .reverted := by
-        simpa [evmSolm, evmMoveSolm, evmBurnSolm, solcSlotWordAt, initState,
-          Solm.EVM.storageLoad, State.lookupAccount] using
-          flapperDealBodyReverts_burnCallFailure evmSolm evmMoveSolm evmBurnSolm I
+        simpa [evmStele, evmMoveStele, evmBurnStele, solcSlotWordAt, initState,
+          Stele.EVM.storageLoad, State.lookupAccount] using
+          flapperDealBodyReverts_burnCallFailure evmStele evmMoveStele evmBurnStele I
             outMove outBurn
-            (by simp only [evmSolm, initState]; exact hwv)
-            hliveSolmWord hticSolm hfinishedSolm
-            (by simpa [evmSolm, initState] using hmoveCodeSizeSolm)
-            hmoveCallSolm
-            (by simpa [evmMoveSolm, initState] using hburnCodeSizeSolm)
+            (by simp only [evmStele, initState]; exact hwv)
+            hliveSteleWord hticStele hfinishedStele
+            (by simpa [evmStele, initState] using hmoveCodeSizeStele)
+            hmoveCallStele
+            (by simpa [evmMoveStele, initState] using hburnCodeSizeStele)
             hburnCallFalse
       exact (flapperDealX_burnCallFailure rd3832False houtBurnSize)
         |>.reEquivExecutionRevert hcode hdispatch hdecode hbody

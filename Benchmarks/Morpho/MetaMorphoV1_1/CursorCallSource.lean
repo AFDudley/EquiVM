@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.AllocationSource
 
 /-! Resume a source caller after a helper returns a value and its memory cursor. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
 

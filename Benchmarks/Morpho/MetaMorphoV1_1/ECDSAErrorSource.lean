@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.ECDSATryReturn
 
 /-! ECDSA's error handler returns exactly for the zero error code. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 

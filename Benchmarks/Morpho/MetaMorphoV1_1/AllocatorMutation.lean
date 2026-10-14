@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.Mutation
 
 /-! Packed boolean reads and writes for the allocator mapping. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 
@@ -11,14 +11,14 @@ def allocatorSlot (addr : AccountAddress) : UInt256 :=
   solcMappingSlot ⟨11⟩ (UInt256.ofNat addr.val)
 
 def allocatorByte (evm : EVM.State) (addr : AccountAddress) : UInt256 :=
-  UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (allocatorSlot addr)) ⟨255⟩
+  UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (allocatorSlot addr)) ⟨255⟩
 
 def allocatorBoolWord (evm : EVM.State) (addr : AccountAddress) : UInt256 :=
   UInt256.isZero (UInt256.isZero (allocatorByte evm addr))
 
 def setAllocatorState (evm : EVM.State) (addr : AccountAddress) (flag : UInt256) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (allocatorSlot addr)
-    (setBoolOffset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (allocatorSlot addr))
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (allocatorSlot addr)
+    (setBoolOffset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (allocatorSlot addr))
       flag)
 
 theorem evalStorage_allocator (evm : EVM.State) (locals imms : Store) (name : Ident)

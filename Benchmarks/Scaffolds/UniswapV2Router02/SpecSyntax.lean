@@ -1,8 +1,8 @@
 import Benchmarks.Scaffolds.UniswapV2Router02.Spec
-import Solm.Notation
+import Stele.Notation
 
 /-!
-# UniswapV2Router02 spec in the Solidity-faithful Solm frontend
+# UniswapV2Router02 spec in the Solidity-faithful Stele frontend
 
 The whole Router02 benchmark spec, written with `solidity%` and proven definitionally equal to
 the AST spec in `Spec.lean`.  The immutables `factory` and `WETH` are declared and assigned as in
@@ -12,7 +12,7 @@ fixed-bytes pairs use the `T(T(e))` double annotation; the create2 init-code has
 own `initCodeHashLit`.  Transition order matches `contract.transitions` (selector order).
 -/
 
-open Solm Solm.Notation
+open Stele Stele.Notation
 open Benchmarks.UniswapV2Router02.Immutables
 
 namespace Benchmarks.UniswapV2Router02.Syntax

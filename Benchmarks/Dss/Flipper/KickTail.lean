@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Flipper.Kick
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 0
@@ -767,7 +767,7 @@ theorem test_flipperKickX_vatPostCall
       (flipperVatEvmAddress_eq_target σcall I)
       ?_ ?_
     · simpa [σcall, kickFluxArgValsOf, initState, solcSlotWordAt, solcSlotWord,
-        Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage] using
+        Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage] using
         kickVatFluxCallMem_encode σ σcall I
     · simpa [initState, hperm] using hΘ
 

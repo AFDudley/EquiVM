@@ -6,7 +6,7 @@ import Benchmarks.EAS.Attester.WordHelpers
 
 /-! The two instances of immutable short-string decoding and allocation. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables metaMorphoV1_1Blocks
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1

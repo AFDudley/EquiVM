@@ -1,7 +1,7 @@
 import Benchmarks.Auction.SetterSource
 import Benchmarks.Auction.Uint256Setter
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 100000
 
@@ -16,7 +16,7 @@ theorem setReservePriceBodySplit (evm : EVM.State) (value : UInt256)
       (.returned
         { contract := auctionContract
           locals := (∅ : Store).insert "_reservePrice" (.int (Int.ofNat value.toNat)) }
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨204⟩ value) none)) ∧
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨204⟩ value) none)) ∧
       (evm.executionEnv.perm = false → ExecTransitionBody auctionConfig auctionContract evm
       ((∅ : Store).insert "_reservePrice" (.int (Int.ofNat value.toNat)))
       setReservePriceTransition.body .staticViolation) := by
@@ -32,7 +32,7 @@ theorem setReservePriceBody (evm : EVM.State) (value : UInt256)
       (.returned
         { contract := auctionContract
           locals := (∅ : Store).insert "_reservePrice" (.int (Int.ofNat value.toNat)) }
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨204⟩ value) none) :=
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨204⟩ value) none) :=
   (setReservePriceBodySplit evm value hwv ho).1
 
 theorem setReservePriceBodyCore {σ σ₀ A I} {g : UInt256}
@@ -49,7 +49,7 @@ theorem setReservePriceBodyCore {σ σ₀ A I} {g : UInt256}
     obtain ⟨_, _, rd5357⟩ := setterToDecoder 1 rd841 (by evm_ov)
     by_cases hlen : 36 ≤ I.calldata.size
     · by_cases hhi : I.calldata.size < 2 ^ 255 + 4
-      · have hdec : decodeCalldataWithMode auctionConfig.abiDecodeMode
+      · have hdec : auctionConfig.externalABI.decodeCalldata?
             (setReservePriceTransition.params.map Param.name)
             (transitionSignature setReservePriceTransition).paramTypes I.calldata =
               some ((∅ : Store).insert "_reservePrice"
@@ -84,14 +84,14 @@ theorem setReservePriceBodyCore {σ σ₀ A I} {g : UInt256}
             · simp
           exact (ownerDenied 5 rd2478 ho (by evm_ov)).reEquivExecutionRevert
             hcode hd hdec hbody
-      · have hdec : decodeCalldataWithMode auctionConfig.abiDecodeMode
+      · have hdec : auctionConfig.externalABI.decodeCalldata?
             (setReservePriceTransition.params.map Param.name)
             (transitionSignature setReservePriceTransition).paramTypes I.calldata = none :=
           decodeCalldata_uint256_none_huge (by omega)
         exact (decodeUint256Fail rd5357
           (solcDecodeLenCheckHuge_4_32 (by omega) hsize) (by evm_ov)).reEquivDecodingFailed
           hcode hd hdec
-    · have hdec : decodeCalldataWithMode auctionConfig.abiDecodeMode
+    · have hdec : auctionConfig.externalABI.decodeCalldata?
           (setReservePriceTransition.params.map Param.name)
           (transitionSignature setReservePriceTransition).paramTypes I.calldata = none :=
         decodeCalldata_uint256_none_short (by omega)

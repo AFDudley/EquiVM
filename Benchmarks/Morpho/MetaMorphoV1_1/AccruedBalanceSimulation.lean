@@ -4,7 +4,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.MarketFeeRoutines
 
 /-! Composition of interest casts, balance updates, optional fees, and the four-word return. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables metaMorphoV1_1Blocks
 

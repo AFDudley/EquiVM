@@ -4,7 +4,7 @@ import Benchmarks.EAS.Attester.WordHelpers
 
 /-! Size arithmetic and source calls for allocating arrays of one-word elements. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
 

@@ -2,7 +2,7 @@ import Reasoning.EVMWord
 import Examples.UniswapV2Pair.Sync
 import Reasoning.ExternalCall
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -149,7 +149,7 @@ theorem uniswapFirstBalanceTypedCall_source
   have htarget : target = EVM.address (uniswapAddressAtSlot evmSL ⟨6⟩) := by
     have haddr : AccountAddress.ofUInt256 token0Clean = uniswapAddressAtSlot evmSL ⟨6⟩ := by
       simp [token0Clean, token0Word, uniswapAddressAtSlot, solcSlotWordAt, solcSlotWord,
-        Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage, hPost, henv,
+        Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage, hPost, henv,
         accountAddress_ofUInt256_eq_ofNat_toNat, u256_land_comm]
     change AccountAddress.ofUInt256 token0Clean =
       EVM.address (uniswapAddressAtSlot evmSL ⟨6⟩)
@@ -197,8 +197,8 @@ theorem uniswapSyncSecondBalanceTypedCall_source
       evm1S.σ₀ = evm0S.σ₀ := by
   let token1WordE := solcSlotWordAt ⟨7⟩ σ1 I
   let token1CleanE := UInt256.land solcAddrMask token1WordE
-  have hslot : token1WordE = Solm.EVM.storageLoad evm0S evm0S.executionEnv.codeOwner ⟨7⟩ := by
-    simpa [token1WordE, solcSlotWordAt, solcSlotWord, Solm.EVM.storageLoad, State.lookupAccount,
+  have hslot : token1WordE = Stele.EVM.storageLoad evm0S evm0S.executionEnv.codeOwner ⟨7⟩ := by
+    simpa [token1WordE, solcSlotWordAt, solcSlotWord, Stele.EVM.storageLoad, State.lookupAccount,
       Account.lookupStorage, henv, hPost]
   have htarget : AccountAddress.ofUInt256 token1CleanE =
       EVM.address (uniswapAddressAtSlot evm0S ⟨7⟩) := by

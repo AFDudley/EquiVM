@@ -6,7 +6,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.RuntimeBlocks_009
 
 /-! Skim entry guards, canonical address decoding, and the stored recipient check. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables metaMorphoV1_1Blocks
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
@@ -57,7 +57,7 @@ theorem skimReachDecoder {I : ExecutionEnv} {g : Sat256} {s0 : State}
 
 theorem skimRecipientWord (evm : State) :
     UInt256.ofNat (skimRecipientAddress evm).toNat = UInt256.land solcAddrMask
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨19⟩) := by
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨19⟩) := by
   change EVM.word (AccountAddress.ofNat (UInt256.land _ solcAddrMask).toNat).val = _
   rw [word_of_addressOfNat_eq_mask, solcAddrMask_clean (solcAddrMask_result_canonical _),
     u256_land_comm]

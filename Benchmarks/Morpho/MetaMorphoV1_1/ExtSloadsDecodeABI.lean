@@ -4,7 +4,7 @@ import Benchmarks.EAS.Attester.ReturnArrayABI
 
 /-! Reuse the general bytes32-array decoder facts and derive bounds from the actual call. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
 
@@ -40,7 +40,7 @@ abbrev extSloadsReturnCount := Benchmarks.EAS.Attester.returnArrayCount
 
 theorem extSloadsDecodeFacts {out : ByteArray} {value : Value}
     (hout : out.size < 2 ^ 138)
-    (hdecode : ABI.decodeReturnValueWithMode? config.abiDecodeMode
+    (hdecode : config.externalABI.decodeValue?
       (.dynamicArray (.elem (.bytes ⟨31, by decide⟩))) out = some value) :
     ∃ values, value = .array values ∧ extSloadsReturnChecks out ∧
       values.length = extSloadsReturnCount out ∧ 32 + 32 * values.length < UInt256.size := by
@@ -76,7 +76,7 @@ theorem extSloadsBodyCases {frame : Frame} {evm evm' : State}
   | false => exact .inl (extSloadsBodyCallReverts ptr morpho _ out hcall)
   | true =>
       by_cases hfit : allocationFits ptr (UInt256.ofNat out.size)
-      · cases hdecode : ABI.decodeReturnValueWithMode? config.abiDecodeMode
+      · cases hdecode : config.externalABI.decodeValue?
             (.dynamicArray (.elem (.bytes ⟨31, by decide⟩))) out with
         | none =>
             exact .inl (extSloadsBodyDecodeReverts ptr morpho _ out hlookup hcall hword

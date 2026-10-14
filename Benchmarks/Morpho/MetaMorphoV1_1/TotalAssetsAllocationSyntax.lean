@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.MaxMintAllocationSyntax
 
 /-! The totalAssets boundary supplies the compiler's initial allocation cursor. -/
 
-open Solm ABI
+open Stele ABI
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
 

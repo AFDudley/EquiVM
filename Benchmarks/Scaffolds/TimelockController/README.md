@@ -14,6 +14,6 @@ The wrapper fixes deployment parameters only: `minDelay = 1 days`, `msg.sender` 
 admin/proposer/canceller, and `address(0)` as initial executor. The runtime surface is the inherited
 OpenZeppelin controller.
 
-The Solm spec omits events, custom-error payloads, and bubbled revert bytes because the current
+The Stele spec omits events, custom-error payloads, and bubbled revert bytes because the current
 equivalence does not observe logs or revert data. Operation-id hashing uses the standard ABI tuple
 encoder through benchmark-local `abi.encode` hooks.

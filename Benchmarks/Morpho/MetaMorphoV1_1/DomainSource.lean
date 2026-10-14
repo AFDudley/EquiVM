@@ -4,7 +4,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.AllocationSource
 
 /-! Cached and rebuilt domain separators in the source semantics. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1

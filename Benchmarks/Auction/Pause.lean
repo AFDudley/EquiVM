@@ -1,7 +1,7 @@
 import Benchmarks.Auction.PauseRoutine
 import Benchmarks.Auction.OwnershipRoutine
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 100000
 
@@ -13,8 +13,8 @@ theorem pauseBodySplit (evm : EVM.State)
     (hp : pausedWord evm.accountMap evm.executionEnv = ⟨0⟩) :
     (ExecTransitionBody auctionConfig auctionContract evm ∅ pauseTransition.body
       (.returned { contract := auctionContract, locals := ∅ }
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨51⟩
-          (pauseWord (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨51⟩))) none)) ∧
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨51⟩
+          (pauseWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨51⟩))) none)) ∧
       (evm.executionEnv.perm = false →
         ExecTransitionBody auctionConfig auctionContract evm ∅
           pauseTransition.body .staticViolation) := by
@@ -35,8 +35,8 @@ theorem pauseBody (evm : EVM.State)
     (hp : pausedWord evm.accountMap evm.executionEnv = ⟨0⟩) :
     ExecTransitionBody auctionConfig auctionContract evm ∅ pauseTransition.body
       (.returned { contract := auctionContract, locals := ∅ }
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨51⟩
-          (pauseWord (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨51⟩))) none) :=
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨51⟩
+          (pauseWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨51⟩))) none) :=
   (pauseBodySplit evm hwv ho hp).1
 
 theorem pauseBodyAlreadyPaused (evm : EVM.State)
@@ -56,7 +56,7 @@ theorem pauseBodyCore {σ σ₀ A I} {g : UInt256}
   by_cases hwv : I.weiValue = ⟨0⟩
   · have hd := dispatchEntry 10 hsel
     have hsz := calldata_size_ge_of_selIs I (entryBytes 10) (entryBytes_size 10) hsel
-    have hdec : decodeCalldataWithMode auctionConfig.abiDecodeMode
+    have hdec : auctionConfig.externalABI.decodeCalldata?
         (pauseTransition.params.map Param.name)
         (transitionSignature pauseTransition).paramTypes I.calldata = some ∅ :=
       decodeCalldata_empty_ok hsz
@@ -79,7 +79,7 @@ theorem pauseBodyCore {σ σ₀ A I} {g : UInt256}
           (initState σ σ₀ (Sat256.ofUInt256 g) A I) hwv ho hp
         exact (auctionStop rd413 (by evm_ov)).reEquivExecutionGen
           hcode hd hdec hbody (by simp [storageStore_accountMap, initState,
-            solcSlotWord, Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage])
+            solcSlotWord, Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage])
           (.fallthrough rfl rfl (by native_decide))
       · have hbody := pauseBodyAlreadyPaused
           (initState σ σ₀ (Sat256.ofUInt256 g) A I) hwv ho hp

@@ -2,7 +2,7 @@ import Examples.UniswapV2Pair.ExternalWrappers
 import Examples.UniswapV2Pair.Dispatch
 import Examples.UniswapV2Pair.TransferFrom
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -417,7 +417,7 @@ theorem uniswapTransferFromX_allowanceMaxAfterCreditCalc_masked {σ σ₀ A I}
         transferFromToBalanceWordMax (initState σ σ₀ g A I) I := by
     simp [-Std.ExtTreeMap.get?_eq_getElem?, σDebit, uniswapCodeOwnerStorageWord,
       transferFromToBalanceWordMax,
-      transferFromAfterBalanceStateMax, initState, Solm.EVM.storageLoad, State.lookupAccount,
+      transferFromAfterBalanceStateMax, initState, Stele.EVM.storageLoad, State.lookupAccount,
       Account.lookupStorage, storageStore_accountMap, hfromSlot, htoSlot]
   have hfitWord :
       (uniswapCodeOwnerStorageWord I σDebit (mapSlot (transferFromToMaskedWord I) ⟨1⟩)).toNat +
@@ -610,7 +610,7 @@ theorem uniswapTransferFromX_overflowMaxAllowance_masked {σ σ₀ A I}
         transferFromToBalanceWordMax (initState σ σ₀ g A I) I := by
     simp [-Std.ExtTreeMap.get?_eq_getElem?, σDebit, uniswapCodeOwnerStorageWord,
       transferFromToBalanceWordMax,
-      transferFromAfterBalanceStateMax, initState, Solm.EVM.storageLoad, State.lookupAccount,
+      transferFromAfterBalanceStateMax, initState, Stele.EVM.storageLoad, State.lookupAccount,
       Account.lookupStorage, storageStore_accountMap, hfromSlot, htoSlot]
   have hoverWord :
       UInt256.size ≤
@@ -682,7 +682,7 @@ theorem uniswapTransferFromBodyCoreRevert_allowance_masked
         (transferFromValueWord I).toNat)
     (hdispatch : dispatchMsg contract I.calldata = some transferFromTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (transferFromTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (transferFromTransition.params.map Param.name)
         (transitionSignature transferFromTransition).paramTypes I.calldata = some (transferFromStore I))
     (hreach : ∃ k C, RD uniswapV2PairBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨879⟩ [sel]
@@ -717,7 +717,7 @@ theorem uniswapTransferFromBodyRevert_allowance_masked
         (transferFromValueWord I).toNat)
     (hdispatch : dispatchMsg contract I.calldata = some transferFromTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (transferFromTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (transferFromTransition.params.map Param.name)
         (transitionSignature transferFromTransition).paramTypes I.calldata = some (transferFromStore I)) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   have hsz4 : 4 ≤ I.calldata.size :=
@@ -740,7 +740,7 @@ theorem uniswapTransferFromBodyCoreRevert_balance_maxAllowance_masked
         (transferFromValueWord I).toNat)
     (hdispatch : dispatchMsg contract I.calldata = some transferFromTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (transferFromTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (transferFromTransition.params.map Param.name)
         (transitionSignature transferFromTransition).paramTypes I.calldata = some (transferFromStore I))
     (hreach : ∃ k C, RD uniswapV2PairBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨879⟩ [sel]
@@ -776,7 +776,7 @@ theorem uniswapTransferFromBodyRevert_balance_maxAllowance_masked
         (transferFromValueWord I).toNat)
     (hdispatch : dispatchMsg contract I.calldata = some transferFromTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (transferFromTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (transferFromTransition.params.map Param.name)
         (transitionSignature transferFromTransition).paramTypes I.calldata = some (transferFromStore I)) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   have hsz4 : 4 ≤ I.calldata.size :=
@@ -801,7 +801,7 @@ theorem uniswapTransferFromBodyCoreRevert_overflow_maxAllowance_masked
       transferFromNewToNatMax (initState σ σ₀ (Sat256.ofUInt256 g) A I) I)
     (hdispatch : dispatchMsg contract I.calldata = some transferFromTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (transferFromTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (transferFromTransition.params.map Param.name)
         (transitionSignature transferFromTransition).paramTypes I.calldata = some (transferFromStore I))
     (hreach : ∃ k C, RD uniswapV2PairBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨879⟩ [sel]
@@ -842,7 +842,7 @@ theorem uniswapTransferFromBodyRevert_overflow_maxAllowance_masked
       transferFromNewToNatMax (initState σ σ₀ (Sat256.ofUInt256 g) A I) I)
     (hdispatch : dispatchMsg contract I.calldata = some transferFromTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (transferFromTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (transferFromTransition.params.map Param.name)
         (transitionSignature transferFromTransition).paramTypes I.calldata = some (transferFromStore I)) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   have hsz4 : 4 ≤ I.calldata.size :=
@@ -868,7 +868,7 @@ theorem uniswapTransferFromBodyCoreOk_maxAllowance_masked
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) I < UInt256.size)
     (hdispatch : dispatchMsg contract I.calldata = some transferFromTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (transferFromTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (transferFromTransition.params.map Param.name)
         (transitionSignature transferFromTransition).paramTypes I.calldata = some (transferFromStore I))
     (hreach : ∃ k C, RD uniswapV2PairBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨879⟩ [sel]
@@ -922,7 +922,7 @@ theorem uniswapTransferFromBodyOk_maxAllowance_masked
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) I < UInt256.size)
     (hdispatch : dispatchMsg contract I.calldata = some transferFromTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (transferFromTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (transferFromTransition.params.map Param.name)
         (transitionSignature transferFromTransition).paramTypes I.calldata = some (transferFromStore I)) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   have hsz4 : 4 ≤ I.calldata.size :=

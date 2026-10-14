@@ -6,7 +6,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.RuntimeBlocks_057
 
 /-! The four canonical-address checks and five stores in the calldata struct decoder. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables metaMorphoV1_1Blocks
 

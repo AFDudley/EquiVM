@@ -1,16 +1,16 @@
 import Benchmarks.Dss.Dog.ConstructorSource
 import Benchmarks.Dss.Dog.ConstructorTrace
-import Solm.Refine
+import Stele.Refine
 import Reasoning.Immutables
 
 /-!
 # MakerDAO/Sky DSS Dog constructor correctness stub
 
-The optimized creation bytecode, deployed runtime bytecode, and Solm constructor specification are
+The optimized creation bytecode, deployed runtime bytecode, and Stele constructor specification are
 present. The constructor-equivalence proof is intentionally left as the benchmark target.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Dog.Immutables
 open Reasoning.Immutables (wordsOf wordsOf_of_get Layout.deployed)
 
@@ -76,7 +76,7 @@ theorem dogConstructorCorrect :
         (by simpa [Sat256.ofUInt256, σLive, σWards] using hsuccess)
         (by
           simpa [evm0s, evm1s, evm2s] using
-            dogSolmCtorExecSuccess
+            dogSteleCtorExecSuccess
               (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
               (g := g) vat hwv)
         ?_ ?_
@@ -91,7 +91,7 @@ theorem dogConstructorCorrect :
     · exact .outOfGas (by simpa [Sat256.ofUInt256] using hOOG)
     · exact .execution
         (by simpa [Sat256.ofUInt256] using hrev)
-        (dogSolmCtorExecReverts_nonpayable
+        (dogSteleCtorExecReverts_nonpayable
           (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) vat hwv)
         (ctorResultEquiv.revert rfl rfl) trivial
 

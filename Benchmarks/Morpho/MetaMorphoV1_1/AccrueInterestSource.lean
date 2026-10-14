@@ -4,7 +4,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.CursorCallSource
 
 /-! Interest accrual resumes the allocated fee calculation, then records the returned assets. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
@@ -28,7 +28,7 @@ def accrueInterestStoredFrame (imms : Store) (ptr lost total shares ptr' : UInt2
 
 def accrueInterestStoredState (evm : State) (lost total : UInt256) : State :=
   let changed := updateLastAssetsState evm total
-  Solm.EVM.storageStore changed changed.executionEnv.codeOwner ⟨23⟩ lost
+  Stele.EVM.storageStore changed changed.executionEnv.codeOwner ⟨23⟩ lost
 
 theorem allocatedAccrueInterestFunction_prefix :
     allocatedAccrueInterestFunction.body =

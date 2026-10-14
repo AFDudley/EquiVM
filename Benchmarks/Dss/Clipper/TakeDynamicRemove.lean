@@ -1,7 +1,7 @@
 import Benchmarks.Dss.Clipper.TakeDynamicEvent
 import Benchmarks.Dss.Clipper.TakeOweVatFlux
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 namespace Benchmarks.Dss.Clipper

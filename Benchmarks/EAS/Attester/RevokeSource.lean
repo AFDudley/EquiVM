@@ -1,7 +1,7 @@
 import Benchmarks.EAS.Attester.Decode
 import Reasoning.ExternalCall
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.EAS.Attester.Immutables
 
 namespace Benchmarks.EAS.Attester
@@ -11,7 +11,7 @@ def revokeLocals (schema uid : UInt256) : Store :=
 
 theorem attesterRevokeDecode {cd : ByteArray} (hlen : 68 ≤ cd.size)
     (hhi : cd.size < 2 ^ 255 + 4) :
-    decodeCalldataWithMode config.abiDecodeMode (revokeTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (revokeTransition.params.map Param.name)
       (transitionSignature revokeTransition).paramTypes cd =
         some (revokeLocals (calldataWord cd 4) (calldataWord cd 36)) := by
   have hlenList : cd.toList.length = cd.size := by
@@ -27,12 +27,12 @@ theorem attesterRevokeDecode {cd : ByteArray} (hlen : 68 ≤ cd.size)
     calldata_bytes32_value (cd := cd) (off := 36) (by omega) (by decide)] using hd
 
 theorem attesterRevokeDecodeShort {cd : ByteArray} (hshort : cd.size < 68) :
-    decodeCalldataWithMode config.abiDecodeMode (revokeTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (revokeTransition.params.map Param.name)
       (transitionSignature revokeTransition).paramTypes cd = none :=
   decodeCalldata_head_none_short (headSize := 64) (by native_decide) hshort
 
 theorem attesterRevokeDecodeHuge {cd : ByteArray} (hhi : 2 ^ 255 + 4 ≤ cd.size) :
-    decodeCalldataWithMode config.abiDecodeMode (revokeTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (revokeTransition.params.map Param.name)
       (transitionSignature revokeTransition).paramTypes cd = none :=
   decodeCalldata_nonempty_none_huge hhi
 

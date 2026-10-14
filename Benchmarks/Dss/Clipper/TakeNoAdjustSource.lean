@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Clipper.TakeSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 namespace Benchmarks.Dss.Clipper
@@ -121,7 +121,7 @@ theorem clipperTakeNoAdjustLetTabNew (v : ClipperImmutables)
       clipperEvalTakeTabSubOweAtOwe v evmLoc evmRead I price slice owe0 owe howeTab
   simpa [oweFrame, tabNewFrame, clipperTakeLocalsNoAdjustTabNew] using
     (ExecStmt.letDecl
-      (cfg := config) (solm := oweFrame) (evm := evmRead) (name := "tabNew")
+      (cfg := config) (stele := oweFrame) (evm := evmRead) (name := "tabNew")
       (ty := some uint256) (expr := wrap256 (.binary .sub (.var "tab") (.var "owe")))
       (value := .int (Int.ofNat tabNew.toNat)) hrhs)
 
@@ -222,7 +222,7 @@ theorem clipperTakeNoAdjustLetLotNew (v : ClipperImmutables)
         tabNew hsliceLot
   simpa [tabNewFrame, lotNewFrame, clipperTakeLocalsNoAdjustLotNew] using
     (ExecStmt.letDecl
-      (cfg := config) (solm := tabNewFrame) (evm := evmRead) (name := "lotNew")
+      (cfg := config) (stele := tabNewFrame) (evm := evmRead) (name := "lotNew")
       (ty := some uint256)
       (expr := wrap256 (.binary .sub (.var "lot") (.var "slice")))
       (value := .int (Int.ofNat lotNew.toNat)) hrhs)

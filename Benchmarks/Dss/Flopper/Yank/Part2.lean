@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Flopper.Yank.Part1
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -192,22 +192,22 @@ theorem flopperYankBodyCoreStillLive
     (hlive : solcSlotWordAt ⟨8⟩ σ I ≠ ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some yankTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (yankTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (yankTransition.params.map Param.name)
         (transitionSignature yankTransition).paramTypes I.calldata = some (yankLocals I))
     (hreach : ∃ k C, RD flopperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨305⟩ [sel]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  have hliveSolmWord : solcSlotWordAt ⟨8⟩ σ I ≠ ⟨0⟩ := hlive
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  have hliveSteleWord : solcSlotWordAt ⟨8⟩ σ I ≠ ⟨0⟩ := hlive
   have hbody :
-      ExecTransitionBody config contract evmSolm (yankLocals I)
+      ExecTransitionBody config contract evmStele (yankLocals I)
         yankTransition.body .reverted := by
-    simpa [evmSolm, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [evmStele, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
-      flopperYankBodyReverts_stillLive evmSolm I
-        (by simp only [evmSolm, initState]; exact hwv)
-        hliveSolmWord
+      flopperYankBodyReverts_stillLive evmStele I
+        (by simp only [evmStele, initState]; exact hwv)
+        hliveSteleWord
   exact (flopperYankX_stillLive (g := Sat256.ofUInt256 g) hlive
       (flopperYankX_decoded (g := Sat256.ofUInt256 g) hsz36 hsize hreach))
     |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
@@ -221,25 +221,25 @@ theorem flopperYankBodyCoreGuyNotSet
     (hguy : solcAddressSlotWord (auctionPackedSlot (yankIdWord I)) σ I = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some yankTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (yankTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (yankTransition.params.map Param.name)
         (transitionSignature yankTransition).paramTypes I.calldata = some (yankLocals I))
     (hreach : ∃ k C, RD flopperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨305⟩ [sel]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  have hliveSolmWord : solcSlotWordAt ⟨8⟩ σ I = ⟨0⟩ := hlive
-  have hguySolm :
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  have hliveSteleWord : solcSlotWordAt ⟨8⟩ σ I = ⟨0⟩ := hlive
+  have hguyStele :
       solcAddressSlotWord (auctionPackedSlot (yankIdWord I)) σ I = ⟨0⟩ := hguy
   have hbody :
-      ExecTransitionBody config contract evmSolm (yankLocals I)
+      ExecTransitionBody config contract evmStele (yankLocals I)
         yankTransition.body .reverted := by
-    simpa [evmSolm, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [evmStele, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
-      flopperYankBodyReverts_guyNotSet evmSolm I
-        (by simp only [evmSolm, initState]; exact hwv)
-        hliveSolmWord
-        (by simpa [evmSolm, initState] using hguySolm)
+      flopperYankBodyReverts_guyNotSet evmStele I
+        (by simp only [evmStele, initState]; exact hwv)
+        hliveSteleWord
+        (by simpa [evmStele, initState] using hguyStele)
   exact (flopperYankX_guyNotSet (g := Sat256.ofUInt256 g) hlive hguy
       (flopperYankX_decoded (g := Sat256.ofUInt256 g) hsz36 hsize hreach))
     |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
@@ -256,30 +256,30 @@ theorem flopperYankBodyCoreSuckNoCode
         (solcAddressSlotWord ⟨2⟩ σ I) = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some yankTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (yankTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (yankTransition.params.map Param.name)
         (transitionSignature yankTransition).paramTypes I.calldata = some (yankLocals I))
     (hreach : ∃ k C, RD flopperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨305⟩ [sel]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  have hliveSolmWord : solcSlotWordAt ⟨8⟩ σ I = ⟨0⟩ := hlive
-  have hguySolm :
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  have hliveSteleWord : solcSlotWordAt ⟨8⟩ σ I = ⟨0⟩ := hlive
+  have hguyStele :
       solcAddressSlotWord (auctionPackedSlot (yankIdWord I)) σ I ≠ ⟨0⟩ := hguy
-  have hnoCodeSolm :
+  have hnoCodeStele :
       Reasoning.Theory.extCodeSizeWord σ
         (solcAddressSlotWord ⟨2⟩ σ I) = ⟨0⟩ :=
     hnoCode
   have hbody :
-      ExecTransitionBody config contract evmSolm (yankLocals I)
+      ExecTransitionBody config contract evmStele (yankLocals I)
         yankTransition.body .reverted := by
-    simpa [evmSolm, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [evmStele, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
-      flopperYankBodyReverts_suckNoCode evmSolm I
-        (by simp only [evmSolm, initState]; exact hwv)
-        hliveSolmWord
-        (by simpa [evmSolm, initState] using hguySolm)
-        (by simpa [evmSolm, initState] using hnoCodeSolm)
+      flopperYankBodyReverts_suckNoCode evmStele I
+        (by simp only [evmStele, initState]; exact hwv)
+        hliveSteleWord
+        (by simpa [evmStele, initState] using hguyStele)
+        (by simpa [evmStele, initState] using hnoCodeStele)
   obtain ⟨_, _, rd1050⟩ :=
     flopperYankX_readyToSuck (g := Sat256.ofUInt256 g) hlive hguy
       (flopperYankX_decoded (g := Sat256.ofUInt256 g) hsz36 hsize hreach)
@@ -327,14 +327,14 @@ theorem flopperYankBodyCoreSuckCallFailure
     (houtSize : out.size < UInt256.size)
     (hdispatch : dispatchMsg contract I.calldata = some yankTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (yankTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (yankTransition.params.map Param.name)
         (transitionSignature yankTransition).paramTypes I.calldata = some (yankLocals I)) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  let evmCallSolm : EVM.State :=
-    { evmSolm with accountMap := σ', substate := A' }
-  have hcallSolm :
-      typedCallViaEVM config evmSolm
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmCallStele : EVM.State :=
+    { evmStele with accountMap := σ', substate := A' }
+  have hcallStele :
+      typedCallViaEVM config evmStele
         (EVM.address (AccountAddress.ofNat
           (solcAddressSlotWord ⟨2⟩ σ I).toNat))
         "suck" 0
@@ -344,26 +344,26 @@ theorem flopperYankBodyCoreSuckCallFailure
           (solcAddressSlotWord (auctionPackedSlot (yankIdWord I)) σ I).toNat),
         .int (Int.ofNat
           (solcSlotWordAt (auctionBidSlot (yankIdWord I)) σ I).toNat)]
-        (false, evmCallSolm, out) true := by
-    simpa [evmSolm, evmCallSolm] using hcall
-  have hliveSolmWord : solcSlotWordAt ⟨8⟩ σ I = ⟨0⟩ := hlive
-  have hguySolm :
+        (false, evmCallStele, out) true := by
+    simpa [evmStele, evmCallStele] using hcall
+  have hliveSteleWord : solcSlotWordAt ⟨8⟩ σ I = ⟨0⟩ := hlive
+  have hguyStele :
       solcAddressSlotWord (auctionPackedSlot (yankIdWord I)) σ I ≠ ⟨0⟩ := hguy
-  have hcodeSizeSolm :
+  have hcodeSizeStele :
       Reasoning.Theory.extCodeSizeWord σ
         (solcAddressSlotWord ⟨2⟩ σ I) ≠ ⟨0⟩ :=
     hcodeSize
   have hbody :
-      ExecTransitionBody config contract evmSolm (yankLocals I)
+      ExecTransitionBody config contract evmStele (yankLocals I)
         yankTransition.body .reverted := by
-    simpa [evmSolm, evmCallSolm, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [evmStele, evmCallStele, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
-      flopperYankBodyReverts_suckCallFailure evmSolm evmCallSolm I out
-        (by simp only [evmSolm, initState]; exact hwv)
-        hliveSolmWord
-        (by simpa [evmSolm, initState] using hguySolm)
-        (by simpa [evmSolm, initState] using hcodeSizeSolm)
-        hcallSolm
+      flopperYankBodyReverts_suckCallFailure evmStele evmCallStele I out
+        (by simp only [evmStele, initState]; exact hwv)
+        hliveSteleWord
+        (by simpa [evmStele, initState] using hguyStele)
+        (by simpa [evmStele, initState] using hcodeSizeStele)
+        hcallStele
   exact (flopperYankX_suckCallFailure rd1164 houtSize)
     |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
 
@@ -380,13 +380,13 @@ theorem flopperYankBodyCoreSuckCallDepthLimit
     (hdepth : I.depth = 1024)
     (hdispatch : dispatchMsg contract I.calldata = some yankTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (yankTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (yankTransition.params.map Param.name)
         (transitionSignature yankTransition).paramTypes I.calldata = some (yankLocals I))
     (hreach : ∃ k C, RD flopperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨305⟩ [sel]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
   let id := yankIdWord I
   let memHash := twoWordHashMem id ⟨1⟩ solcFreePtrMem
   let memMap := twoWordHashMem id ⟨1⟩ memHash
@@ -394,7 +394,7 @@ theorem flopperYankBodyCoreSuckCallDepthLimit
   let vow := solcAddressSlotWord ⟨9⟩ σ I
   let guy := solcAddressSlotWord (auctionPackedSlot id) σ I
   let bid := solcSlotWordAt (auctionBidSlot id) σ I
-  let A_suck := (evmSolm.addAccessedAccount (EVM.address (AccountAddress.ofNat vat.toNat))).substate
+  let A_suck := (evmStele.addAccessedAccount (EVM.address (AccountAddress.ofNat vat.toNat))).substate
   have hmemHash : memHash.size = 96 := by
     simpa [memHash, id] using
       twoWordHashMem_size_96 (yankIdWord I) ⟨1⟩ solcFreePtrMem_size
@@ -406,16 +406,16 @@ theorem flopperYankBodyCoreSuckCallDepthLimit
   have hguyCanon : guy.toNat < EVM.addressModulus := by
     simpa [guy, solcAddressSlotWord] using
       solcAddrMask_result_canonical (solcSlotWordAt (auctionPackedSlot id) σ I)
-  have hdepthInit : evmSolm.executionEnv.depth = 1024 := by
-    simpa [evmSolm, initState] using hdepth
-  have hcallSolm :
-      typedCallViaEVM config evmSolm
+  have hdepthInit : evmStele.executionEnv.depth = 1024 := by
+    simpa [evmStele, initState] using hdepth
+  have hcallStele :
+      typedCallViaEVM config evmStele
         (EVM.address (AccountAddress.ofNat vat.toNat)) "suck" 0
         [.address (AccountAddress.ofNat vow.toNat),
           .address (AccountAddress.ofNat guy.toNat), .int (Int.ofNat bid.toNat)]
-        (false, { evmSolm with substate := A_suck }, ByteArray.empty) true := by
+        (false, { evmStele with substate := A_suck }, ByteArray.empty) true := by
     simpa [A_suck] using
-      (callNotMade_depthLimit (cfg := config) (evm := evmSolm)
+      (callNotMade_depthLimit (cfg := config) (evm := evmStele)
         (tgt := EVM.address (AccountAddress.ofNat vat.toNat)) (name := "suck")
         (args := [.address (AccountAddress.ofNat vow.toNat),
           .address (AccountAddress.ofNat guy.toNat), .int (Int.ofNat bid.toNat)])
@@ -424,25 +424,25 @@ theorem flopperYankBodyCoreSuckCallDepthLimit
           yankSuckOutPtr.toNat yankSuckInSize.toNat)
         (yankSuckEncode_eq vow guy bid hmemMap hvowCanon hguyCanon)
         hdepthInit)
-  have hliveSolmWord : solcSlotWordAt ⟨8⟩ σ I = ⟨0⟩ := hlive
-  have hguySolm :
+  have hliveSteleWord : solcSlotWordAt ⟨8⟩ σ I = ⟨0⟩ := hlive
+  have hguyStele :
       solcAddressSlotWord (auctionPackedSlot (yankIdWord I)) σ I ≠ ⟨0⟩ := hguy
-  have hcodeSizeSolm :
+  have hcodeSizeStele :
       Reasoning.Theory.extCodeSizeWord σ
         (solcAddressSlotWord ⟨2⟩ σ I) ≠ ⟨0⟩ :=
     hcodeSize
   have hbody :
-      ExecTransitionBody config contract evmSolm (yankLocals I)
+      ExecTransitionBody config contract evmStele (yankLocals I)
         yankTransition.body .reverted := by
-    simpa [evmSolm, vat, vow, guy, bid, id, solcSlotWordAt, initState,
-      Solm.EVM.storageLoad, State.lookupAccount] using
-      flopperYankBodyReverts_suckCallFailure evmSolm
-        { evmSolm with substate := A_suck } I ByteArray.empty
-        (by simp only [evmSolm, initState]; exact hwv)
-        hliveSolmWord
-        (by simpa [evmSolm, initState] using hguySolm)
-        (by simpa [evmSolm, initState] using hcodeSizeSolm)
-        hcallSolm
+    simpa [evmStele, vat, vow, guy, bid, id, solcSlotWordAt, initState,
+      Stele.EVM.storageLoad, State.lookupAccount] using
+      flopperYankBodyReverts_suckCallFailure evmStele
+        { evmStele with substate := A_suck } I ByteArray.empty
+        (by simp only [evmStele, initState]; exact hwv)
+        hliveSteleWord
+        (by simpa [evmStele, initState] using hguyStele)
+        (by simpa [evmStele, initState] using hcodeSizeStele)
+        hcallStele
   obtain ⟨_, _, rd1050⟩ :=
     flopperYankX_readyToSuck (g := Sat256.ofUInt256 g) hlive hguy
       (flopperYankX_decoded (g := Sat256.ofUInt256 g) hsz36 hsize hreach)
@@ -491,14 +491,14 @@ theorem flopperYankBodyCoreSuckCallSuccess
           out) true)
     (hdispatch : dispatchMsg contract I.calldata = some yankTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (yankTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (yankTransition.params.map Param.name)
         (transitionSignature yankTransition).paramTypes I.calldata = some (yankLocals I)) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  let evmCallSolm : EVM.State :=
-    { evmSolm with accountMap := σ', substate := A' }
-  have hcallSolm :
-      typedCallViaEVM config evmSolm
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmCallStele : EVM.State :=
+    { evmStele with accountMap := σ', substate := A' }
+  have hcallStele :
+      typedCallViaEVM config evmStele
         (EVM.address (AccountAddress.ofNat
           (solcAddressSlotWord ⟨2⟩ σ I).toNat))
         "suck" 0
@@ -508,30 +508,30 @@ theorem flopperYankBodyCoreSuckCallSuccess
           (solcAddressSlotWord (auctionPackedSlot (yankIdWord I)) σ I).toNat),
         .int (Int.ofNat
           (solcSlotWordAt (auctionBidSlot (yankIdWord I)) σ I).toNat)]
-        (true, evmCallSolm, out) true := by
-    simpa [evmSolm, evmCallSolm] using hcall
-  have hliveSolmWord : solcSlotWordAt ⟨8⟩ σ I = ⟨0⟩ := hlive
-  have hguySolm :
+        (true, evmCallStele, out) true := by
+    simpa [evmStele, evmCallStele] using hcall
+  have hliveSteleWord : solcSlotWordAt ⟨8⟩ σ I = ⟨0⟩ := hlive
+  have hguyStele :
       solcAddressSlotWord (auctionPackedSlot (yankIdWord I)) σ I ≠ ⟨0⟩ := hguy
-  have hcodeSizeSolm :
+  have hcodeSizeStele :
       Reasoning.Theory.extCodeSizeWord σ
         (solcAddressSlotWord ⟨2⟩ σ I) ≠ ⟨0⟩ :=
     hcodeSize
   have hbodySplit :
-      (ExecTransitionBody config contract evmSolm (yankLocals I)
+      (ExecTransitionBody config contract evmStele (yankLocals I)
         yankTransition.body
         (.returned { contract := contract, locals := yankSuckLocals I }
-          (yankDeletePostState evmCallSolm I) none)) ∧
-      (I.perm = false → ExecTransitionBody config contract evmSolm (yankLocals I)
+          (yankDeletePostState evmCallStele I) none)) ∧
+      (I.perm = false → ExecTransitionBody config contract evmStele (yankLocals I)
         yankTransition.body .staticViolation) := by
-    simpa [evmSolm, evmCallSolm, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [evmStele, evmCallStele, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
-      flopperYankBodyReturns_suckCallSuccessSplit evmSolm evmCallSolm I out
-        (by simp only [evmSolm, initState]; exact hwv)
-        hliveSolmWord
-        (by simpa [evmSolm, initState] using hguySolm)
-        (by simpa [evmSolm, initState] using hcodeSizeSolm)
-        hcallSolm
+      flopperYankBodyReturns_suckCallSuccessSplit evmStele evmCallStele I out
+        (by simp only [evmStele, initState]; exact hwv)
+        hliveSteleWord
+        (by simpa [evmStele, initState] using hguyStele)
+        (by simpa [evmStele, initState] using hcodeSizeStele)
+        hcallStele
   rcases
     flopperYankX_suckCallSuccessDeleteSplit
       (g := Sat256.ofUInt256 g) (σ := σ) (sel := sel)
@@ -541,10 +541,10 @@ theorem flopperYankBodyCoreSuckCallSuccess
   · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode (hbodySplit.2 hperm)
   have hFinalAccounts :
       Eq (yankRuntimeDeleteAccountMap I σ')
-        (yankDeletePostState evmCallSolm I).accountMap := by
-    simpa [evmCallSolm] using
-      yankRuntimeDeleteAccountMap_eq_postState evmCallSolm I
-        (by simp [evmCallSolm, evmSolm, initState])
+        (yankDeletePostState evmCallStele I).accountMap := by
+    simpa [evmCallStele] using
+      yankRuntimeDeleteAccountMap_eq_postState evmCallStele I
+        (by simp [evmCallStele, evmStele, initState])
   exact hret.reEquivExecutionGen hcode hdispatch hdecode hbodySplit.1
     (by simpa [yankRuntimeDeleteAccountMap] using hFinalAccounts)
     (by

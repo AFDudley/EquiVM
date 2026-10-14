@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.BodyCommon
 
 /-! Scalar storage access through a resolved local storage reference. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 
@@ -16,7 +16,7 @@ theorem resolveStorageAliasField {cfg : Config} {frame : Frame} {evm : State}
   simp only [resolveStorageRef?, halias, evalStorageRefFrom?, evalStorageRefStep,
     hfield, EvalResult.ofOption, bind, EvalResult.bind, pure]
 
--- GENERALIZES Reasoning.SolmBody.evalExpr_storage_scalar_value to resolved storage aliases.
+-- GENERALIZES Reasoning.SteleBody.evalExpr_storage_scalar_value to resolved storage aliases.
 theorem evalStorageResolved {cfg : Config} {layout : StorageLayout}
     {frame : Frame} {evm : State} {ref : StorageRef} {er : EvaledStorageRef}
     {t : ElemType} {loc : StorageLoc} {value : Value}
@@ -27,7 +27,7 @@ theorem evalStorageResolved {cfg : Config} {layout : StorageLayout}
   rw [evalExpr?]
   simp only [hresolve, bind, EvalResult.bind, readStorage?_elem hbackend hloc, hload]
 
--- GENERALIZES Reasoning.SolmBody.assignStorageRef_storage_scalar_value to resolved aliases.
+-- GENERALIZES Reasoning.SteleBody.assignStorageRef_storage_scalar_value to resolved aliases.
 theorem assignStorageResolved {cfg : Config} {layout : StorageLayout}
     {frame : Frame} {evm evm' : State} {ref : StorageRef} {er : EvaledStorageRef}
     {t : ElemType} {loc : StorageLoc} {value : Value}

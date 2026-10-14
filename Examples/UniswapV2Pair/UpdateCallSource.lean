@@ -1,5 +1,5 @@
 import Examples.UniswapV2Pair.UpdateCouplingHelpers
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace UniswapV2Pair
 set_option maxRecDepth 2000000
 
@@ -73,7 +73,7 @@ theorem uniswapUpdateCallReturnsConditionTrue
     (argVals := syncUpdateCallArgValsWith balance0 balance1 reserve0 reserve1)
     (callee := updateFunction)
     (locals := syncUpdateCallStoreWith balance0 balance1 reserve0 reserve1)
-    (calleeSolm :=
+    (calleeStele :=
       { contract := contract,
         locals := syncUpdateTimeElapsedStoreWith evm balance0 balance1 reserve0 reserve1 })
     (value := none)
@@ -114,7 +114,7 @@ theorem uniswapUpdateCallReturnsConditionFalse
     (argVals := syncUpdateCallArgValsWith balance0 balance1 reserve0 reserve1)
     (callee := updateFunction)
     (locals := syncUpdateCallStoreWith balance0 balance1 reserve0 reserve1)
-    (calleeSolm :=
+    (calleeStele :=
       { contract := contract,
         locals := syncUpdateTimeElapsedStoreWith evm balance0 balance1 reserve0 reserve1 })
     (value := none)

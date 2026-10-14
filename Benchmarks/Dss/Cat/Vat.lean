@@ -1,7 +1,7 @@
 import Benchmarks.Dss.Cat.Common
-import Solm.Refine
+import Stele.Refine
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -29,9 +29,9 @@ theorem catDispatch_vat {I : ExecutionEnv} (hsel : selIs I ⟨#[0x36, 0x56, 0x9e
   · rw [selectorOf, vatSelectorBytes]; exact hsel
 
 theorem catDecode_vat {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (vatTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (vatTransition.params.map Param.name)
       (transitionSignature vatTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 theorem catReachVatBody {σ σ₀ A I} {g : Sat256}
@@ -72,7 +72,7 @@ theorem catVatBody {σ σ₀ A I} {g : UInt256}
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.address (AccountAddress.ofNat
             (solcAddressSlotWord ⟨3⟩ σ I).toNat))])) := by
-    simpa [vatTransition, solcAddressSlotWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [vatTransition, solcAddressSlotWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount, solcSlotWord] using
       catAddressGetterBodyReturns (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
         (ref := vatRef) (er := ({ base := "vat", steps := [] } : EvaledStorageRef)) (slot := ⟨3⟩)

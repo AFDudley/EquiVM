@@ -9,7 +9,7 @@ import Reasoning.Memory
 import Reasoning.Storage
 import Reasoning.Dispatch
 import Reasoning.Initcode
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 import Mathlib.Tactic.IntervalCases
 
 /-!
@@ -18,7 +18,7 @@ import Mathlib.Tactic.IntervalCases
 Contract-wide selector notation and constants for the optimized Dog runtime.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Dog.Immutables
 
 set_option maxRecDepth 2000000
@@ -26,7 +26,7 @@ set_option maxRecDepth 2000000
 section
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 2000000
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Dog
 
@@ -189,7 +189,7 @@ theorem dogAddressGetterBodyReturns (v : DogImmutables) (evm : EVM.State) (local
     ExecTransitionBody config contract evm locals (nonpayable ++ [ .return [(.storage ref)] ])
       (.returned { contract := contract, locals := locals, immutables := immStore v } evm
         (some [(.address (AccountAddress.ofNat
-          (UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
+          (UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
             solcAddrMask).toNat))])) (immStore v) := by
   simpa [nonpayable] using
     nonpayableReturnExprBodyReturns (cfg := config) (contract := contract) h (by
@@ -206,7 +206,7 @@ theorem dogUint256GetterBodyReturns (v : DogImmutables) (evm : EVM.State) (local
     ExecTransitionBody config contract evm locals (nonpayable ++ [ .return [(.storage ref)] ])
       (.returned { contract := contract, locals := locals, immutables := immStore v } evm
         (some [(.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot).toNat))])) (immStore v) := by
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot).toNat))])) (immStore v) := by
   simpa [nonpayable] using
     nonpayableReturnExprBodyReturns (cfg := config) (contract := contract) h (by
       rw [evalExpr_storage_scalar (hbackend := rfl) (hbase := hbase) (her := her) (hty := hty) (hloc := hloc)]
@@ -219,7 +219,7 @@ theorem dogAddressGetterBodyCore
     (hcode : I.code = code)
     (hdispatch : dispatchMsg contract I.calldata = some transition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (transition.params.map Param.name)
+      config.externalABI.decodeCalldata? (transition.params.map Param.name)
         (transitionSignature transition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD code I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) entry [sel]
@@ -267,7 +267,7 @@ theorem dogUint256GetterBodyCore
     (hcode : I.code = code)
     (hdispatch : dispatchMsg contract I.calldata = some transition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (transition.params.map Param.name)
+      config.externalABI.decodeCalldata? (transition.params.map Param.name)
         (transitionSignature transition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD code I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) entry [sel]
@@ -374,7 +374,7 @@ theorem dogAuthGuardEval_true {v : DogImmutables}
       (.binary .eq (.storage (wardsRef sender)) (.intLit 1)) = .ok (.bool true) := by
   have her := dogCallerWardsEvaledRef_ok (v := v)
     (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) (locals := locals) hbase
-  have hload : Solm.EVM.storageLoad (initState σ σ₀ g A I) I.codeOwner
+  have hload : Stele.EVM.storageLoad (initState σ σ₀ g A I) I.codeOwner
       (dogCallerWardsSlot I) = ⟨1⟩ := by
     simpa [solcSlotWordAt] using hauth
   rw [evalExpr?]
@@ -403,7 +403,7 @@ theorem dogAuthGuardEval_false {v : DogImmutables}
       (.binary .eq (.storage (wardsRef sender)) (.intLit 1)) = .ok (.bool false) := by
   have her := dogCallerWardsEvaledRef_ok (v := v)
     (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) (locals := locals) hbase
-  let w := Solm.EVM.storageLoad (initState σ σ₀ g A I) I.codeOwner
+  let w := Stele.EVM.storageLoad (initState σ σ₀ g A I) I.codeOwner
       (dogCallerWardsSlot I)
   have hload : w ≠ ⟨1⟩ := by
     intro hw

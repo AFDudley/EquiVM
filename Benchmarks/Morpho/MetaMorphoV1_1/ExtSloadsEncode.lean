@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.RuntimeBlocks_065
 
 /-! The shared dynamic-array argument encoder, specialized to a singleton word array. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 

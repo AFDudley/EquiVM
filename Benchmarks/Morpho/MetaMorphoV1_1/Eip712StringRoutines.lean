@@ -4,7 +4,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.Eip712StringMemory
 
 /-! A common bytecode interface for the EIP-712 name and version getters. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables metaMorphoV1_1Blocks
 open Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
 

@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.MarketArithmetic
 
 /-! Loop locals and the saturating subtraction followed by the early-exit test. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory

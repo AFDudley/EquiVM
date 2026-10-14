@@ -4,7 +4,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.RuntimeBlocks_064
 
 /-! Bytecode allocation and hashing of the five-word domain preimage. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables metaMorphoV1_1Blocks
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1

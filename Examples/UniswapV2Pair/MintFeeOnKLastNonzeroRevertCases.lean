@@ -2,7 +2,7 @@ import Examples.UniswapV2Pair.MintFeeRootArithmeticReverts
 import Examples.UniswapV2Pair.MintFeeOnKLastNonzeroInitialOverflowCases
 import Examples.UniswapV2Pair.MintInternalMintReverts
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -395,7 +395,7 @@ theorem uniswapMintAfterMintFeeReverts_of_call
     (evm evm0 evm1 : EVM.State) (I : ExecutionEnv)
     {out0 out1 : ByteArray} {balance0 balance1 : UInt256}
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 :
       evalExpr? config
         { contract := contract, locals := mintReserveStore (uniswapLockEnteredState evm) I }
@@ -568,8 +568,8 @@ theorem uniswapMintFeeOnKLastNonzeroRootArithmeticOverflowFromFactoryCase
     (hdispatch : dispatchMsg contract I.calldata = some mintTransition)
     (hsz36 : 36 ≤ I.calldata.size)
     (hwv : I.weiValue = ⟨0⟩)
-    (hunlockedSolm :
-      Solm.EVM.storageLoad
+    (hunlockedStele :
+      Stele.EVM.storageLoad
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
           ⟨12⟩ =
@@ -750,7 +750,7 @@ theorem uniswapMintFeeOnKLastNonzeroRootArithmeticOverflowFromFactoryCase
         ExecTransitionBody config contract evmS (mintStore I) mintTransition.body .reverted :=
       ExecFuncBody.execBlockRevert
         (uniswapMintAfterMintFeeReverts_of_call evmS evm0S evm1S I
-          (by simp [evmS, initState]; exact hwv) hunlockedSolm hguard0 hguard1 hcall0
+          (by simp [evmS, initState]; exact hwv) hunlockedStele hguard0 hguard1 hcall0
           hdec0 hcall1 hdec1 hle0Source hle1Source hfeeRevert)
     exact rdRev.reEquivExecutionRevert hcode hdispatch (uniswapDecode_mint_ok hsz36) hbody
   rcases hoverflow with hnumOverflow | hrest

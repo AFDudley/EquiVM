@@ -1,0 +1,2959 @@
+⚠ [1218/1226] Replayed Reasoning.EVMWord
+warning: Reasoning/EVMWord.lean:1146:32: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+⚠ [1224/1226] Replayed Reasoning.Memory
+warning: Reasoning/Memory.lean:1888:36: unused variable `hgap`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Reasoning/Memory.lean:1919:2: 'change
+  (base.data ++ (ByteArray.zeroes (destAddr - base.size)).data).extract 0 destAddr ++
+        (src.data ++
+              (ByteArray.zeroes
+                  (min base.size (destAddr + len) - (destAddr + min len (src.size - srcAddr)))).data).extract
+          srcAddr
+          (srcAddr +
+            (min len (src.size - srcAddr) +
+              (min base.size (destAddr + len) - (destAddr + min len (src.size - srcAddr))))) ++
+      (base.data ++ (ByteArray.zeroes (destAddr - base.size)).data).extract
+        (destAddr +
+          min
+            (min len (src.size - srcAddr) +
+              (min base.size (destAddr + len) - (destAddr + min len (src.size - srcAddr))))
+            ((src.data ++
+                  (ByteArray.zeroes
+                      (min base.size (destAddr + len) - (destAddr + min len (src.size - srcAddr)))).data).size -
+              srcAddr)) =
+    base.data ++ (ByteArray.zeroes (destAddr - base.size)).data ++
+      (src.extract srcAddr (srcAddr + len)).data' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+warning: Reasoning/Memory.lean:2201:2: 'change
+  (base.data ++ (ByteArray.zeroes (destAddr - base.size)).data).extract 0 destAddr ++
+        (src.data ++
+              (ByteArray.zeroes
+                  (min base.size (destAddr + len) - (destAddr + min len (src.size - srcAddr)))).data).extract
+          srcAddr
+          (srcAddr +
+            (min len (src.size - srcAddr) +
+              (min base.size (destAddr + len) - (destAddr + min len (src.size - srcAddr))))) ++
+      (base.data ++ (ByteArray.zeroes (destAddr - base.size)).data).extract
+        (destAddr +
+          min
+            (min len (src.size - srcAddr) +
+              (min base.size (destAddr + len) - (destAddr + min len (src.size - srcAddr))))
+            ((src.data ++
+                  (ByteArray.zeroes
+                      (min base.size (destAddr + len) - (destAddr + min len (src.size - srcAddr)))).data).size -
+              srcAddr)) =
+    base.data ++ (ByteArray.zeroes (destAddr - base.size)).data ++
+      (src.extract srcAddr (srcAddr + len)).data' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+warning: Reasoning/Memory.lean:2899:52: unused variable `hr`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Reasoning/Memory.lean:2924:32: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+warning: Reasoning/Memory.lean:3470:34: unused variable `hgap`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Reasoning/Memory.lean:3480:28: This simp argument is unused:
+  show (destAddr - base.size) = destAddr - base.size from rfl
+
+Hint: Omit it from the simp argument list.
+  simp only [hcopy, htail, ByteArray.data_copySlice, ByteArray.data_append, B̵y̵t̵e̵A̵r̵r̵a̵y̵.̵d̵a̵t̵a̵_̵e̵x̵t̵r̵a̵c̵t̵,̵ ̵s̵h̵o̵w̵ ̵(̵d̵e̵s̵t̵A̵d̵d̵r̵ ̵-̵ ̵b̵a̵s̵e̵.̵s̵i̵z̵e̵)̵ ̵=̵
+  ̵ ̵ ̵ ̵ ̵ ̵ ̵d̵e̵s̵t̵A̵d̵d̵r̵ ̵-̵ ̵b̵a̵s̵e̵.̵s̵i̵z̵e̵ ̵f̵r̵o̵m̵ ̵r̵f̵l̵]̵B̲y̲t̲e̲A̲r̲r̲a̲y̲.̲d̲a̲t̲a̲_̲e̲x̲t̲r̲a̲c̲t̲]̲
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+⚠ [1225/1226] Replayed Reasoning.ABI
+warning: Reasoning/ABI.lean:4620:28: This simp argument is unused:
+  abiUInt256
+
+Hint: Omit it from the simp argument list.
+  simp [encodePackedValue?, a̵b̵i̵U̵I̵n̵t̵2̵5̵6̵,̵ ̵encodeABIWord?, hword, hlt]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABI.lean:4627:28: This simp argument is unused:
+  abiBytes32
+
+Hint: Omit it from the simp argument list.
+  simp [encodePackedValue?, abiBytes32,̵ ̵a̵b̵i̵B̵y̵t̵e̵s̵3̵2̵Width, wordBytes32Value,
+  ̵  ̵ ̵ ̵fixedBytesSize, hlen]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABI.lean:4627:57: This simp argument is unused:
+  wordBytes32Value
+
+Hint: Omit it from the simp argument list.
+  simp [encodePackedValue?, abiBytes32, abiBytes32Width, w̵o̵r̵d̵B̵y̵t̵e̵s̵3̵2̵V̵a̵l̵u̵e̵,̵
+  ̵ ̵ ̵ ̵ ̵fixedBytesSize, hlen]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+⚠ [3473/3634] Replayed Reasoning.Solc
+warning: Reasoning/Solc.lean:8246:2: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+⚠ [3476/3634] Replayed Reasoning.Storage
+warning: Reasoning/Storage.lean:2027:41: This simp argument is unused:
+  Std.ExtTreeMap.getElem?_insert_self
+
+Hint: Omit it from the simp argument list.
+  simp [Option.option, State.setAccount,̵ ̵S̵t̵d̵.̵E̵x̵t̵T̵r̵e̵e̵M̵a̵p̵.̵g̵e̵t̵E̵l̵e̵m̵?̵_̵i̵n̵s̵e̵r̵t̵_̵s̵e̵l̵f̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+⚠ [3480/3634] Replayed Reasoning.WordArithmetic
+warning: Reasoning/WordArithmetic.lean:884:2: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+warning: Reasoning/WordArithmetic.lean:989:6: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+warning: Reasoning/WordArithmetic.lean:1144:33: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+warning: Reasoning/WordArithmetic.lean:1175:43: unused variable `ha`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Reasoning/WordArithmetic.lean:1806:2: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+warning: Reasoning/WordArithmetic.lean:1982:23: `Int.ofNat_nonneg` has been deprecated: Use `Int.natCast_nonneg` instead
+warning: Reasoning/WordArithmetic.lean:2385:2: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+⚠ [3481/3634] Replayed Reasoning.ABIComposite
+warning: Reasoning/ABIComposite.lean:86:8: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+warning: Reasoning/ABIComposite.lean:96:8: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+warning: Reasoning/ABIComposite.lean:144:6: This simp argument is unused:
+  abiBytes32
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?,
+  ̵  ̵ ̵ ̵ ̵ ̵abiBytes32,̵ ̵a̵b̵i̵B̵y̵t̵e̵s̵3̵2̵Width, abiUInt256,
+  ̲  ̲ ̲ ̲ ̲ ̲abiAddress, abiInt256, abiBytes]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:144:18: This simp argument is unused:
+  abiBytes32Width
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?, abiBytes32, a̵b̵i̵B̵y̵t̵e̵s̵3̵2̵W̵i̵d̵t̵h̵,̵ ̵abiUInt256,
+  ̲  ̲ ̲ ̲ ̲ ̲abiAddress, abiInt256, abiBytes]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:144:47: This simp argument is unused:
+  abiAddress
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?,
+  ̵  ̵ ̵ ̵ ̵ ̵abiBytes32, abiBytes32Width,
+  ̲  ̲ ̲ ̲ ̲ ̲abiUInt256, abiA̵d̵d̵r̵e̵s̵s̵,̵ ̵a̵b̵i̵Int256, abiBytes]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:144:59: This simp argument is unused:
+  abiInt256
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?,
+  ̵  ̵ ̵ ̵ ̵ ̵abiBytes32, abiBytes32Width,
+  ̲  ̲ ̲ ̲ ̲ ̲abiUInt256, abiAddress, abiI̵n̵t̵2̵5̵6̵,̵ ̵a̵b̵i̵Bytes]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:144:70: This simp argument is unused:
+  abiBytes
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?,
+  ̵  ̵ ̵ ̵ ̵ ̵abiBytes32, abiBytes32Width,
+  ̲  ̲ ̲ ̲ ̲ ̲abiUInt256, abiAddress, abiInt256,̵ ̵a̵b̵i̵B̵y̵t̵e̵s̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:167:6: This simp argument is unused:
+  abiBytes32
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?,
+  ̵  ̵ ̵ ̵ ̵ ̵abiBytes32,̵ ̵a̵b̵i̵B̵y̵t̵e̵s̵3̵2̵Width, abiUInt256,
+  ̲  ̲ ̲ ̲ ̲ ̲abiAddress, abiInt256, abiBytes]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:167:18: This simp argument is unused:
+  abiBytes32Width
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?, abiBytes32, a̵b̵i̵B̵y̵t̵e̵s̵3̵2̵W̵i̵d̵t̵h̵,̵ ̵abiUInt256,
+  ̲  ̲ ̲ ̲ ̲ ̲abiAddress, abiInt256, abiBytes]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:167:47: This simp argument is unused:
+  abiAddress
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?,
+  ̵  ̵ ̵ ̵ ̵ ̵abiBytes32, abiBytes32Width,
+  ̲  ̲ ̲ ̲ ̲ ̲abiUInt256, abiA̵d̵d̵r̵e̵s̵s̵,̵ ̵a̵b̵i̵Int256, abiBytes]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:167:59: This simp argument is unused:
+  abiInt256
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?,
+  ̵  ̵ ̵ ̵ ̵ ̵abiBytes32, abiBytes32Width,
+  ̲  ̲ ̲ ̲ ̲ ̲abiUInt256, abiAddress, abiI̵n̵t̵2̵5̵6̵,̵ ̵a̵b̵i̵Bytes]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:167:70: This simp argument is unused:
+  abiBytes
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?,
+  ̵  ̵ ̵ ̵ ̵ ̵abiBytes32, abiBytes32Width,
+  ̲  ̲ ̲ ̲ ̲ ̲abiUInt256, abiAddress, abiInt256,̵ ̵a̵b̵i̵B̵y̵t̵e̵s̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:322:13: This simp argument is unused:
+  abiUInt8Int
+
+Hint: Omit it from the simp argument list.
+  simp only [a̵b̵i̵U̵I̵n̵t̵8̵I̵n̵t̵,̵ ̵decodeScalarWordWithMode?, readWord?, readBytes?, decodeABIWord?, bind,
+  ̵  ̵ ̵ ̵Option.bind]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:358:74: This simp argument is unused:
+  abiInt256
+
+Hint: Omit it from the simp argument list.
+  simp [decodeScalarWordWithMode?, readWord?, readBytes?, decodeABIWord?, abiInt256,̵
+  ̵ ̵ ̵ ̵ ̵a̵b̵i̵Int2̵5̵6̵I̵n̵t̵, hlen]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:359:4: This simp argument is unused:
+  abiInt256Int
+
+Hint: Omit it from the simp argument list.
+  simp [decodeScalarWordWithMode?, readWord?, readBytes?, decodeABIWord?, abiInt256, a̵b̵i̵I̵n̵t̵2̵5̵6̵I̵n̵t̵,̵ ̵hlen]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:1114:51: This simp argument is unused:
+  UInt256.toNat
+
+Hint: Omit it from the simp argument list.
+  simp [readWord?, readBytes?, decodeABIWord?, U̵I̵n̵t̵2̵5̵6̵.̵t̵o̵N̵a̵t̵,̵ ̵htake32]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:1121:12: This simp argument is unused:
+  readWord?
+
+Hint: Omit it from the simp argument list.
+  simp [readW̵o̵r̵d̵?̵,̵ ̵r̵e̵a̵d̵Bytes?, hnot]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:1121:23: This simp argument is unused:
+  readBytes?
+
+Hint: Omit it from the simp argument list.
+  simp [readWord?, r̵e̵a̵d̵B̵y̵t̵e̵s̵?̵,̵ ̵hnot]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:1153:35: This simp argument is unused:
+  abiUInt256
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?,
+  ̵  ̵ ̵ ̵ ̵ ̵abiBytes32, abiBytes32Width,
+  ̲ a̵b̵i̵U̵I̵n̵t̵2̵5̵6̵,̵  ̲ ̲ ̲ ̲abiAddress, abiInt256, abiBytes]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:1153:59: This simp argument is unused:
+  abiInt256
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?,
+  ̵  ̵ ̵ ̵ ̵ ̵abiBytes32, abiBytes32Width,
+  ̲  ̲ ̲ ̲ ̲ ̲abiUInt256, abiAddress, abiI̵n̵t̵2̵5̵6̵,̵ ̵a̵b̵i̵Bytes]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:1153:70: This simp argument is unused:
+  abiBytes
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?,
+  ̵  ̵ ̵ ̵ ̵ ̵abiBytes32, abiBytes32Width,
+  ̲  ̲ ̲ ̲ ̲ ̲abiUInt256, abiAddress, abiInt256,̵ ̵a̵b̵i̵B̵y̵t̵e̵s̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:1178:35: This simp argument is unused:
+  abiUInt256
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?,
+  ̵  ̵ ̵ ̵ ̵ ̵abiBytes32, abiBytes32Width,
+  ̲ a̵b̵i̵U̵I̵n̵t̵2̵5̵6̵,̵  ̲ ̲ ̲ ̲abiAddress, abiInt256, abiBytes]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:1178:59: This simp argument is unused:
+  abiInt256
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?,
+  ̵  ̵ ̵ ̵ ̵ ̵abiBytes32, abiBytes32Width,
+  ̲  ̲ ̲ ̲ ̲ ̲abiUInt256, abiAddress, abiI̵n̵t̵2̵5̵6̵,̵ ̵a̵b̵i̵Bytes]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:1178:70: This simp argument is unused:
+  abiBytes
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?,
+  ̵  ̵ ̵ ̵ ̵ ̵abiBytes32, abiBytes32Width,
+  ̲  ̲ ̲ ̲ ̲ ̲abiUInt256, abiAddress, abiInt256,̵ ̵a̵b̵i̵B̵y̵t̵e̵s̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:1230:35: This simp argument is unused:
+  abiUInt256
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?,
+  ̵  ̵ ̵ ̵ ̵ ̵abiBytes32, abiBytes32Width,
+  ̲ a̵b̵i̵U̵I̵n̵t̵2̵5̵6̵,̵  ̲ ̲ ̲ ̲abiAddress, abiInt256, abiBytes]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:1230:47: This simp argument is unused:
+  abiAddress
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?,
+  ̵  ̵ ̵ ̵ ̵ ̵abiBytes32, abiBytes32Width,
+  ̲  ̲ ̲ ̲ ̲ ̲abiUInt256, abiA̵d̵d̵r̵e̵s̵s̵,̵ ̵a̵b̵i̵Int256, abiBytes]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:1230:59: This simp argument is unused:
+  abiInt256
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?,
+  ̵  ̵ ̵ ̵ ̵ ̵abiBytes32, abiBytes32Width,
+  ̲  ̲ ̲ ̲ ̲ ̲abiUInt256, abiAddress, abiI̵n̵t̵2̵5̵6̵,̵ ̵a̵b̵i̵Bytes]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:1230:70: This simp argument is unused:
+  abiBytes
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?,
+  ̵  ̵ ̵ ̵ ̵ ̵abiBytes32, abiBytes32Width,
+  ̲  ̲ ̲ ̲ ̲ ̲abiUInt256, abiAddress, abiInt256,̵ ̵a̵b̵i̵B̵y̵t̵e̵s̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:1244:35: This simp argument is unused:
+  abiUInt256
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?,
+  ̵  ̵ ̵ ̵ ̵ ̵abiBytes32, abiBytes32Width,
+  ̲ a̵b̵i̵U̵I̵n̵t̵2̵5̵6̵,̵  ̲ ̲ ̲ ̲abiAddress, abiInt256, abiBytes]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:1244:47: This simp argument is unused:
+  abiAddress
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?,
+  ̵  ̵ ̵ ̵ ̵ ̵abiBytes32, abiBytes32Width,
+  ̲  ̲ ̲ ̲ ̲ ̲abiUInt256, abiA̵d̵d̵r̵e̵s̵s̵,̵ ̵a̵b̵i̵Int256, abiBytes]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:1244:59: This simp argument is unused:
+  abiInt256
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?,
+  ̵  ̵ ̵ ̵ ̵ ̵abiBytes32, abiBytes32Width,
+  ̲  ̲ ̲ ̲ ̲ ̲abiUInt256, abiAddress, abiI̵n̵t̵2̵5̵6̵,̵ ̵a̵b̵i̵Bytes]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:1244:70: This simp argument is unused:
+  abiBytes
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?,
+  ̵  ̵ ̵ ̵ ̵ ̵abiBytes32, abiBytes32Width,
+  ̲  ̲ ̲ ̲ ̲ ̲abiUInt256, abiAddress, abiInt256,̵ ̵a̵b̵i̵B̵y̵t̵e̵s̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:1320:26: This simp argument is unused:
+  bind
+
+Hint: Omit it from the simp argument list.
+  simp only [Option.bind,̵ ̵b̵i̵n̵d̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:1322:13: This simp argument is unused:
+  Option.bind
+
+Hint: Omit it from the simp argument list.
+  simp only [̵O̵p̵t̵i̵o̵n̵.̵b̵i̵n̵d̵,̵ ̵b̵i̵n̵d̵]̵[̲b̲i̲n̲d̲]̲
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:1322:26: This simp argument is unused:
+  bind
+
+Hint: Omit it from the simp argument list.
+  simp only [Option.bind,̵ ̵b̵i̵n̵d̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:1324:13: This simp argument is unused:
+  Option.bind
+
+Hint: Omit it from the simp argument list.
+  simp only [̵O̵p̵t̵i̵o̵n̵.̵b̵i̵n̵d̵,̵ ̵b̵i̵n̵d̵]̵[̲b̲i̲n̲d̲]̲
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:1324:26: This simp argument is unused:
+  bind
+
+Hint: Omit it from the simp argument list.
+  simp only [Option.bind,̵ ̵b̵i̵n̵d̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:1326:13: This simp argument is unused:
+  Option.bind
+
+Hint: Omit it from the simp argument list.
+  simp only [̵O̵p̵t̵i̵o̵n̵.̵b̵i̵n̵d̵,̵ ̵b̵i̵n̵d̵]̵[̲b̲i̲n̲d̲]̲
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:1326:26: This simp argument is unused:
+  bind
+
+Hint: Omit it from the simp argument list.
+  simp only [Option.bind,̵ ̵b̵i̵n̵d̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:1367:12: This simp argument is unused:
+  zeroPadding?
+
+Hint: Omit it from the simp argument list.
+  simp [̵z̵e̵r̵o̵P̵a̵d̵d̵i̵n̵g̵?̵,̵ ̵r̵e̵a̵d̵B̵y̵t̵e̵s̵?̵]̵[̲r̲e̲a̲d̲B̲y̲t̲e̲s̲?̲]̲
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:1367:26: This simp argument is unused:
+  readBytes?
+
+Hint: Omit it from the simp argument list.
+  simp [zeroPadding?,̵ ̵r̵e̵a̵d̵B̵y̵t̵e̵s̵?̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:1403:15: This simp argument is unused:
+  Option.bind
+
+Hint: Omit it from the simp argument list.
+  simp only [̵O̵p̵t̵i̵o̵n̵.̵b̵i̵n̵d̵,̵ ̵b̵i̵n̵d̵]̵[̲b̲i̲n̲d̲]̲
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:1403:28: This simp argument is unused:
+  bind
+
+Hint: Omit it from the simp argument list.
+  simp only [Option.bind,̵ ̵b̵i̵n̵d̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:1468:35: This simp argument is unused:
+  abiUInt256
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?,
+  ̵  ̵ ̵ ̵ ̵ ̵abiBytes32, abiBytes32Width,
+  ̲ a̵b̵i̵U̵I̵n̵t̵2̵5̵6̵,̵  ̲ ̲ ̲ ̲abiAddress, abiInt256, abiBytes]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:1468:70: This simp argument is unused:
+  abiBytes
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?,
+  ̵  ̵ ̵ ̵ ̵ ̵abiBytes32, abiBytes32Width,
+  ̲  ̲ ̲ ̲ ̲ ̲abiUInt256, abiAddress, abiInt256,̵ ̵a̵b̵i̵B̵y̵t̵e̵s̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:1500:13: This simp argument is unused:
+  Option.bind
+
+Hint: Omit it from the simp argument list.
+  simp only [̵O̵p̵t̵i̵o̵n̵.̵b̵i̵n̵d̵,̵ ̵b̵i̵n̵d̵]̵[̲b̲i̲n̲d̲]̲
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:1500:26: This simp argument is unused:
+  bind
+
+Hint: Omit it from the simp argument list.
+  simp only [Option.bind,̵ ̵b̵i̵n̵d̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:1558:57: This simp argument is unused:
+  abiUInt256Int
+
+Hint: Omit it from the simp argument list.
+  simp [decodeABIValues?, decodeABIValue?, readBytes?, readWord?, decodeABIWord?,
+  ̵  ̵ ̵ ̵abiBytes32,
+  ̲  ̲ ̲ ̲abiAddress, abiUInt256, abiBytes32Width, a̵b̵iU̵I̵n̵t̵2̵5̵6̵I̵n̵t̵,̵ ̵i̵sDynamicABIType,
+  ̵  ̵ ̵ ̵staticABIEncodedSize?, hlen0, hge32,
+  ̲  ̲ ̲ ̲hge64, hge96, UInt256.toNat]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:1600:59: This simp argument is unused:
+  abiInt256
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?,
+  ̵  ̵ ̵ ̵ ̵ ̵abiBytes32, abiBytes32Width,
+  ̲  ̲ ̲ ̲ ̲ ̲abiUInt256, abiAddress, abiI̵n̵t̵2̵5̵6̵,̵ ̵a̵b̵i̵Bytes]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:1600:70: This simp argument is unused:
+  abiBytes
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?,
+  ̵  ̵ ̵ ̵ ̵ ̵abiBytes32, abiBytes32Width,
+  ̲  ̲ ̲ ̲ ̲ ̲abiUInt256, abiAddress, abiInt256,̵ ̵a̵b̵i̵B̵y̵t̵e̵s̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:1657:10: This simp argument is unused:
+  zeroPadding?
+
+Hint: Omit it from the simp argument list.
+  simp [̵z̵e̵r̵o̵P̵a̵d̵d̵i̵n̵g̵?̵,̵ ̵r̵e̵a̵d̵B̵y̵t̵e̵s̵?̵]̵[̲r̲e̲a̲d̲B̲y̲t̲e̲s̲?̲]̲
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:1657:24: This simp argument is unused:
+  readBytes?
+
+Hint: Omit it from the simp argument list.
+  simp [zeroPadding?,̵ ̵r̵e̵a̵d̵B̵y̵t̵e̵s̵?̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:1697:28: This simp argument is unused:
+  bind
+
+Hint: Omit it from the simp argument list.
+  simp only [Option.bind,̵ ̵b̵i̵n̵d̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:1699:15: This simp argument is unused:
+  Option.bind
+
+Hint: Omit it from the simp argument list.
+  simp only [̵O̵p̵t̵i̵o̵n̵.̵b̵i̵n̵d̵,̵ ̵b̵i̵n̵d̵]̵[̲b̲i̲n̲d̲]̲
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:1699:28: This simp argument is unused:
+  bind
+
+Hint: Omit it from the simp argument list.
+  simp only [Option.bind,̵ ̵b̵i̵n̵d̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:1701:15: This simp argument is unused:
+  Option.bind
+
+Hint: Omit it from the simp argument list.
+  simp only [̵O̵p̵t̵i̵o̵n̵.̵b̵i̵n̵d̵,̵ ̵b̵i̵n̵d̵]̵[̲b̲i̲n̲d̲]̲
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:1701:28: This simp argument is unused:
+  bind
+
+Hint: Omit it from the simp argument list.
+  simp only [Option.bind,̵ ̵b̵i̵n̵d̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:1708:13: This simp argument is unused:
+  Option.bind
+
+Hint: Omit it from the simp argument list.
+  simp only [̵O̵p̵t̵i̵o̵n̵.̵b̵i̵n̵d̵,̵ ̵b̵i̵n̵d̵]̵[̲b̲i̲n̲d̲]̲
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:1708:26: This simp argument is unused:
+  bind
+
+Hint: Omit it from the simp argument list.
+  simp only [Option.bind,̵ ̵b̵i̵n̵d̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:1771:35: This simp argument is unused:
+  abiUInt256
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?,
+  ̵  ̵ ̵ ̵ ̵ ̵abiBytes32, abiBytes32Width,
+  ̲ a̵b̵i̵U̵I̵n̵t̵2̵5̵6̵,̵  ̲ ̲ ̲ ̲abiAddress, abiInt256, abiBytes]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:1771:70: This simp argument is unused:
+  abiBytes
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?,
+  ̵  ̵ ̵ ̵ ̵ ̵abiBytes32, abiBytes32Width,
+  ̲  ̲ ̲ ̲ ̲ ̲abiUInt256, abiAddress, abiInt256,̵ ̵a̵b̵i̵B̵y̵t̵e̵s̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:1863:35: This simp argument is unused:
+  abiUInt256
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?,
+  ̵  ̵ ̵ ̵ ̵ ̵abiBytes32, abiBytes32Width,
+  ̲ a̵b̵i̵U̵I̵n̵t̵2̵5̵6̵,̵  ̲ ̲ ̲ ̲abiAddress, abiInt256, abiBytes]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:1863:70: This simp argument is unused:
+  abiBytes
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?,
+  ̵  ̵ ̵ ̵ ̵ ̵abiBytes32, abiBytes32Width,
+  ̲  ̲ ̲ ̲ ̲ ̲abiUInt256, abiAddress, abiInt256,̵ ̵a̵b̵i̵B̵y̵t̵e̵s̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:1918:71: This simp argument is unused:
+  zeroPadding?
+
+Hint: Omit it from the simp argument list.
+  simp only [abiBytes32, abiBytes32Width, decodeABIValue?, readBytes?, z̵e̵r̵o̵P̵a̵d̵d̵i̵n̵g̵?̵,̵ ̵bind, Option.bind]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:2065:6: This simp argument is unused:
+  abiBytes32
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?,
+  ̵  ̵ ̵ ̵ ̵ ̵abiBytes32,̵ ̵a̵b̵i̵B̵y̵t̵e̵s̵3̵2̵Width, abiUInt256,
+  ̲  ̲ ̲ ̲ ̲ ̲abiAddress, abiInt256, abiBytes]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:2065:18: This simp argument is unused:
+  abiBytes32Width
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?, abiBytes32, a̵b̵i̵B̵y̵t̵e̵s̵3̵2̵W̵i̵d̵t̵h̵,̵ ̵abiUInt256,
+  ̲  ̲ ̲ ̲ ̲ ̲abiAddress, abiInt256, abiBytes]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:2065:59: This simp argument is unused:
+  abiInt256
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?,
+  ̵  ̵ ̵ ̵ ̵ ̵abiBytes32, abiBytes32Width,
+  ̲  ̲ ̲ ̲ ̲ ̲abiUInt256, abiAddress, abiI̵n̵t̵2̵5̵6̵,̵ ̵a̵b̵i̵Bytes]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:2144:6: This simp argument is unused:
+  abiBytes32
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?,
+  ̵  ̵ ̵ ̵ ̵ ̵abiBytes32,̵ ̵a̵b̵i̵B̵y̵t̵e̵s̵3̵2̵Width, abiUInt256,
+  ̲  ̲ ̲ ̲ ̲ ̲abiAddress, abiInt256, abiBytes]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:2144:18: This simp argument is unused:
+  abiBytes32Width
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?, abiBytes32, a̵b̵i̵B̵y̵t̵e̵s̵3̵2̵W̵i̵d̵t̵h̵,̵ ̵abiUInt256,
+  ̲  ̲ ̲ ̲ ̲ ̲abiAddress, abiInt256, abiBytes]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:2144:59: This simp argument is unused:
+  abiInt256
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?,
+  ̵  ̵ ̵ ̵ ̵ ̵abiBytes32, abiBytes32Width,
+  ̲  ̲ ̲ ̲ ̲ ̲abiUInt256, abiAddress, abiI̵n̵t̵2̵5̵6̵,̵ ̵a̵b̵i̵Bytes]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:2193:6: This simp argument is unused:
+  abiBytes32
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?,
+  ̵  ̵ ̵ ̵ ̵ ̵abiBytes32,̵ ̵a̵b̵i̵B̵y̵t̵e̵s̵3̵2̵Width, abiUInt256,
+  ̲  ̲ ̲ ̲ ̲ ̲abiAddress, abiInt256, abiBytes]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:2193:18: This simp argument is unused:
+  abiBytes32Width
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?, abiBytes32, a̵b̵i̵B̵y̵t̵e̵s̵3̵2̵W̵i̵d̵t̵h̵,̵ ̵abiUInt256,
+  ̲  ̲ ̲ ̲ ̲ ̲abiAddress, abiInt256, abiBytes]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:2193:59: This simp argument is unused:
+  abiInt256
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?,
+  ̵  ̵ ̵ ̵ ̵ ̵abiBytes32, abiBytes32Width,
+  ̲  ̲ ̲ ̲ ̲ ̲abiUInt256, abiAddress, abiI̵n̵t̵2̵5̵6̵,̵ ̵a̵b̵i̵Bytes]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:2238:8: This simp argument is unused:
+  abiBytes
+
+Hint: Omit it from the simp argument list.
+  simp [a̵b̵i̵B̵y̵t̵e̵s̵,̵ ̵hreadLen, Option.bind, bind]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:2245:8: This simp argument is unused:
+  abiBytes
+
+Hint: Omit it from the simp argument list.
+  simp [a̵b̵i̵B̵y̵t̵e̵s̵,̵ ̵hreadLen, Option.bind, bind, hlenHuge]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:2253:13: This simp argument is unused:
+  abiBytes
+
+Hint: Omit it from the simp argument list.
+  simp only [a̵b̵i̵B̵y̵t̵e̵s̵,̵ ̵hreadLen, Option.bind, bind]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:2316:6: This simp argument is unused:
+  abiBytes32
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?,
+  ̵  ̵ ̵ ̵ ̵ ̵abiBytes32,̵ ̵a̵b̵i̵B̵y̵t̵e̵s̵3̵2̵Width, abiUInt256,
+  ̲  ̲ ̲ ̲ ̲ ̲abiAddress, abiInt256, abiBytes]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:2316:18: This simp argument is unused:
+  abiBytes32Width
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?, abiBytes32, a̵b̵i̵B̵y̵t̵e̵s̵3̵2̵W̵i̵d̵t̵h̵,̵ ̵abiUInt256,
+  ̲  ̲ ̲ ̲ ̲ ̲abiAddress, abiInt256, abiBytes]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:2316:59: This simp argument is unused:
+  abiInt256
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?,
+  ̵  ̵ ̵ ̵ ̵ ̵abiBytes32, abiBytes32Width,
+  ̲  ̲ ̲ ̲ ̲ ̲abiUInt256, abiAddress, abiI̵n̵t̵2̵5̵6̵,̵ ̵a̵b̵i̵Bytes]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:2415:6: This simp argument is unused:
+  abiBytes32
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?,
+  ̵  ̵ ̵ ̵ ̵ ̵abiBytes32,̵ ̵a̵b̵i̵B̵y̵t̵e̵s̵3̵2̵Width, abiUInt256,
+  ̲  ̲ ̲ ̲ ̲ ̲abiAddress, abiInt256, abiBytes]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:2415:18: This simp argument is unused:
+  abiBytes32Width
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?, abiBytes32, a̵b̵i̵B̵y̵t̵e̵s̵3̵2̵W̵i̵d̵t̵h̵,̵ ̵abiUInt256,
+  ̲  ̲ ̲ ̲ ̲ ̲abiAddress, abiInt256, abiBytes]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:2415:59: This simp argument is unused:
+  abiInt256
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?,
+  ̵  ̵ ̵ ̵ ̵ ̵abiBytes32, abiBytes32Width,
+  ̲  ̲ ̲ ̲ ̲ ̲abiUInt256, abiAddress, abiI̵n̵t̵2̵5̵6̵,̵ ̵a̵b̵i̵Bytes]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:2517:6: This simp argument is unused:
+  abiBytes32
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?,
+  ̵  ̵ ̵ ̵ ̵ ̵abiBytes32,̵ ̵a̵b̵i̵B̵y̵t̵e̵s̵3̵2̵Width, abiUInt256,
+  ̲  ̲ ̲ ̲ ̲ ̲abiAddress, abiInt256, abiBytes]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:2517:18: This simp argument is unused:
+  abiBytes32Width
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?, abiBytes32, a̵b̵i̵B̵y̵t̵e̵s̵3̵2̵W̵i̵d̵t̵h̵,̵ ̵abiUInt256,
+  ̲  ̲ ̲ ̲ ̲ ̲abiAddress, abiInt256, abiBytes]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:2517:59: This simp argument is unused:
+  abiInt256
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?,
+  ̵  ̵ ̵ ̵ ̵ ̵abiBytes32, abiBytes32Width,
+  ̲  ̲ ̲ ̲ ̲ ̲abiUInt256, abiAddress, abiI̵n̵t̵2̵5̵6̵,̵ ̵a̵b̵i̵Bytes]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:2622:47: This simp argument is unused:
+  abiAddress
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?, abiBytes32, abiBytes32Width,
+  ̲  ̲ ̲ ̲ ̲ ̲a̵b̵i̵U̵I̵n̵t̵2̵5̵6̵,̵ ̵a̵b̵i̵A̵d̵d̵r̵e̵s̵s̵]̵a̲b̲i̲U̲I̲n̲t̲2̲5̲6̲]̲
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:2668:47: This simp argument is unused:
+  abiAddress
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?, abiBytes32, abiBytes32Width,
+  ̲  ̲ ̲ ̲ ̲ ̲a̵b̵i̵U̵I̵n̵t̵2̵5̵6̵,̵ ̵a̵b̵i̵A̵d̵d̵r̵e̵s̵s̵]̵a̲b̲i̲U̲I̲n̲t̲2̲5̲6̲]̲
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:2711:35: This simp argument is unused:
+  abiUInt256
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?,
+  ̵  ̵ ̵ ̵ ̵ ̵abiBytes32, abiBytes32Width,
+  ̲ a̵b̵i̵U̵I̵n̵t̵2̵5̵6̵,̵  ̲ ̲ ̲ ̲abiAddress]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:2757:35: This simp argument is unused:
+  abiUInt256
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?,
+  ̵  ̵ ̵ ̵ ̵ ̵abiBytes32, abiBytes32Width,
+  ̲ a̵b̵i̵U̵I̵n̵t̵2̵5̵6̵,̵  ̲ ̲ ̲ ̲abiAddress]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:2815:47: This simp argument is unused:
+  abiAddress
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?, abiBytes32, abiBytes32Width,
+  ̲  ̲ ̲ ̲ ̲ ̲a̵b̵i̵U̵I̵n̵t̵2̵5̵6̵,̵ ̵a̵b̵i̵A̵d̵d̵r̵e̵s̵s̵]̵a̲b̲i̲U̲I̲n̲t̲2̲5̲6̲]̲
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:2846:12: This simp argument is unused:
+  readBytes?
+
+Hint: Omit it from the simp argument list.
+  simp [r̵e̵a̵d̵B̵y̵t̵e̵s̵?̵,̵ ̵hnot]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:2869:47: This simp argument is unused:
+  abiAddress
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?, abiBytes32, abiBytes32Width,
+  ̲  ̲ ̲ ̲ ̲ ̲a̵b̵i̵U̵I̵n̵t̵2̵5̵6̵,̵ ̵a̵b̵i̵A̵d̵d̵r̵e̵s̵s̵]̵a̲b̲i̲U̲I̲n̲t̲2̲5̲6̲]̲
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:2928:35: This simp argument is unused:
+  abiUInt256
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?,
+  ̵  ̵ ̵ ̵ ̵ ̵abiBytes32, abiBytes32Width,
+  ̲ a̵b̵i̵U̵I̵n̵t̵2̵5̵6̵,̵  ̲ ̲ ̲ ̲abiAddress]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIComposite.lean:2974:35: This simp argument is unused:
+  abiUInt256
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?,
+  ̵  ̵ ̵ ̵ ̵ ̵abiBytes32, abiBytes32Width,
+  ̲ a̵b̵i̵U̵I̵n̵t̵2̵5̵6̵,̵  ̲ ̲ ̲ ̲abiAddress]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+⚠ [3482/3634] Replayed Reasoning.ABIViews
+warning: Reasoning/ABIViews.lean:42:22: This simp argument is unused:
+  abiUInt256Int
+
+Hint: Omit it from the simp argument list.
+  simp [abiUInt256, a̵b̵i̵U̵I̵n̵t̵2̵5̵6̵I̵n̵t̵,̵ ̵encodeABIValue?, encodeABIWord?, hword, hlt]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIViews.lean:48:22: This simp argument is unused:
+  abiUInt256Int
+
+Hint: Omit it from the simp argument list.
+  simp [abiUInt256, a̵b̵i̵U̵I̵n̵t̵2̵5̵6̵I̵n̵t̵,̵ ̵encodeABIValue?, encodeABIWord?, hword, hlt]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIViews.lean:59:6: This simp argument is unused:
+  abiBytes32
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?, abiUInt256, abiAddress,
+        abiBytes32,̵ ̵a̵b̵i̵B̵y̵t̵e̵s̵3̵2̵Width, abiBool]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIViews.lean:59:18: This simp argument is unused:
+  abiBytes32Width
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?, abiUInt256, abiAddress,
+        abiBytes32, abiBy̵t̵e̵s̵3̵2̵W̵i̵d̵t̵h̵,̵ ̵a̵b̵i̵B̵ool]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIViews.lean:59:35: This simp argument is unused:
+  abiBool
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?, abiUInt256, abiAddress,
+        abiBytes32, abiBytes32Width,̵ ̵a̵b̵i̵B̵o̵o̵l̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIViews.lean:136:70: This simp argument is unused:
+  abiUInt256
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?, abiU̵I̵n̵t̵2̵5̵6̵,̵ ̵a̵b̵i̵Address,
+  ̵  ̵ ̵ ̵ ̵ ̵abiBytes32,
+  ̲  ̲ ̲ ̲ ̲ ̲abiBytes32Width, abiBool]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIViews.lean:136:82: This simp argument is unused:
+  abiAddress
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?, abiUInt256, abiA̵d̵d̵r̵e̵s̵s̵,̵
+  ̵ ̵ ̵ ̵ ̵ ̵ ̵a̵b̵i̵Bytes32,
+  ̲  ̲ ̲ ̲ ̲ ̲abiBytes32Width, abiBool]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIViews.lean:221:22: This simp argument is unused:
+  abiUInt256Int
+
+Hint: Omit it from the simp argument list.
+  simp [abiUInt256, a̵b̵i̵U̵I̵n̵t̵2̵5̵6̵I̵n̵t̵,̵ ̵encodeABIValue?, encodeABIWord?, hword, hlt]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIViews.lean:235:6: This simp argument is unused:
+  abiBytes32
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?, abiUInt256, abiAddress,
+        abiBytes32,̵ ̵a̵b̵i̵B̵y̵t̵e̵s̵3̵2̵Width, abiBool]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIViews.lean:235:18: This simp argument is unused:
+  abiBytes32Width
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?, abiUInt256, abiAddress,
+        abiBytes32, abiBy̵t̵e̵s̵3̵2̵W̵i̵d̵t̵h̵,̵ ̵a̵b̵i̵B̵ool]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIViews.lean:235:35: This simp argument is unused:
+  abiBool
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?, abiUInt256, abiAddress,
+        abiBytes32, abiBytes32Width,̵ ̵a̵b̵i̵B̵o̵o̵l̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIViews.lean:281:70: This simp argument is unused:
+  abiUInt256
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?, abiU̵I̵n̵t̵2̵5̵6̵,̵ ̵a̵b̵i̵Address,
+  ̵  ̵ ̵ ̵ ̵ ̵abiBytes32,
+  ̲  ̲ ̲ ̲ ̲ ̲abiBytes32Width, abiBool]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIViews.lean:282:35: This simp argument is unused:
+  abiBool
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?, abiUInt256, abiAddress,
+        abiBytes32, abiBytes32Width,̵ ̵a̵b̵i̵B̵o̵o̵l̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIViews.lean:303:70: This simp argument is unused:
+  abiUInt256
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?, abiU̵I̵n̵t̵2̵5̵6̵,̵ ̵a̵b̵i̵Address,
+  ̵  ̵ ̵ ̵ ̵ ̵abiBytes32,
+  ̲  ̲ ̲ ̲ ̲ ̲abiBytes32Width, abiBool]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIViews.lean:304:35: This simp argument is unused:
+  abiBool
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?, abiUInt256, abiAddress,
+        abiBytes32, abiBytes32Width,̵ ̵a̵b̵i̵B̵o̵o̵l̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIViews.lean:376:82: This simp argument is unused:
+  abiAddress
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?, abiUInt256, abiA̵d̵d̵r̵e̵s̵s̵,̵
+  ̵ ̵ ̵ ̵ ̵ ̵ ̵a̵b̵i̵Bytes32,
+  ̲  ̲ ̲ ̲ ̲ ̲abiBytes32Width, abiBool]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIViews.lean:377:35: This simp argument is unused:
+  abiBool
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?, abiUInt256, abiAddress,
+        abiBytes32, abiBytes32Width,̵ ̵a̵b̵i̵B̵o̵o̵l̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIViews.lean:398:82: This simp argument is unused:
+  abiAddress
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?, abiUInt256, abiA̵d̵d̵r̵e̵s̵s̵,̵
+  ̵ ̵ ̵ ̵ ̵ ̵ ̵a̵b̵i̵Bytes32,
+  ̲  ̲ ̲ ̲ ̲ ̲abiBytes32Width, abiBool]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIViews.lean:399:35: This simp argument is unused:
+  abiBool
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?, abiUInt256, abiAddress,
+        abiBytes32, abiBytes32Width,̵ ̵a̵b̵i̵B̵o̵o̵l̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIViews.lean:441:20: This simp argument is unused:
+  abiUInt256Int
+
+Hint: Omit it from the simp argument list.
+  simp [abiUInt256, a̵b̵i̵U̵I̵n̵t̵2̵5̵6̵I̵n̵t̵,̵ ̵encodeABIValue?, encodeABIWord?, hlt, hword, toByteArray_eq_toBytesBE,
+  ̲  ̲ ̲ ̲byteArray_toList_eq]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIViews.lean:457:53: This simp argument is unused:
+  AccountAddress.ofNat
+
+Hint: Omit it from the simp argument list.
+  simp [abiAddress, encodeABIValue?, encodeABIWord?, A̵c̵c̵o̵u̵n̵t̵A̵d̵d̵r̵e̵s̵s̵.̵o̵f̵N̵a̵t̵,̵EVM.addressModulus, hword,
+  ̲  ̲ ̲ ̲toByteArray_eq_toBytesBE, byteArray_toList_eq]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIViews.lean:458:4: This simp argument is unused:
+  EVM.addressModulus
+
+Hint: Omit it from the simp argument list.
+  simp [abiAddress, encodeABIValue?, encodeABIWord?, AccountAddress.ofNat, E̵V̵M̵.̵a̵d̵d̵r̵e̵s̵s̵M̵o̵d̵u̵l̵u̵s̵,̵ ̵hword,
+  ̲  ̲ ̲ ̲toByteArray_eq_toBytesBE, byteArray_toList_eq]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIViews.lean:458:24: This simp argument is unused:
+  hword
+
+Hint: Omit it from the simp argument list.
+  simp [abiAddress, encodeABIValue?, encodeABIWord?, AccountAddress.ofNat,
+  ̵  ̵ ̵ ̵EVM.addressModulus,
+  ̲ h̵w̵o̵r̵d̵,̵  ̲ ̲toByteArray_eq_toBytesBE, byteArray_toList_eq]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIViews.lean:464:53: This simp argument is unused:
+  AccountAddress.ofNat
+
+Hint: Omit it from the simp argument list.
+  simp [abiAddress, encodeABIValue?, encodeABIWord?, A̵c̵c̵o̵u̵n̵t̵A̵d̵d̵r̵e̵s̵s̵.̵o̵f̵N̵a̵t̵,̵ ̵EVM.addressModulus, hword,
+  ̲  ̲ ̲ ̲toByteArray_eq_toBytesBE, byteArray_toList_eq]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIViews.lean:464:75: This simp argument is unused:
+  EVM.addressModulus
+
+Hint: Omit it from the simp argument list.
+  simp [abiAddress, encodeABIValue?, encodeABIWord?, AccountAddress.ofNat, E̵V̵M̵.̵a̵d̵d̵r̵e̵s̵s̵M̵o̵d̵u̵l̵u̵s̵,̵hword,
+      toByteArray_eq_toBytesBE, byteArray_toList_eq]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIViews.lean:480:22: This simp argument is unused:
+  abiUInt256Int
+
+Hint: Omit it from the simp argument list.
+  simp [abiUInt256, a̵b̵i̵U̵I̵n̵t̵2̵5̵6̵I̵n̵t̵,̵ ̵encodeABIValue?, encodeABIWord?, hword, hlt]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIViews.lean:490:22: This simp argument is unused:
+  abiUInt256Int
+
+Hint: Omit it from the simp argument list.
+  simp [abiUInt256, a̵b̵i̵U̵I̵n̵t̵2̵5̵6̵I̵n̵t̵,̵ ̵encodeABIValue?, encodeABIWord?, hword, hlt]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIViews.lean:497:82: This simp argument is unused:
+  abiAddress
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?, abiUInt256, abiA̵d̵d̵r̵e̵s̵s̵,̵
+  ̵ ̵ ̵ ̵ ̵ ̵ ̵a̵b̵i̵Bytes32,
+  ̲  ̲ ̲ ̲ ̲ ̲abiBytes32Width, abiBool]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIViews.lean:498:6: This simp argument is unused:
+  abiBytes32
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?, abiUInt256, abiAddress,
+        abiBytes32,̵ ̵a̵b̵i̵B̵y̵t̵e̵s̵3̵2̵Width, abiBool]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIViews.lean:498:18: This simp argument is unused:
+  abiBytes32Width
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?, abiUInt256, abiAddress,
+        abiBytes32, abiBy̵t̵e̵s̵3̵2̵W̵i̵d̵t̵h̵,̵ ̵a̵b̵i̵B̵ool]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIViews.lean:498:35: This simp argument is unused:
+  abiBool
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?, abiUInt256, abiAddress,
+        abiBytes32, abiBytes32Width,̵ ̵a̵b̵i̵B̵o̵o̵l̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIViews.lean:543:22: This simp argument is unused:
+  abiUInt256Int
+
+Hint: Omit it from the simp argument list.
+  simp [abiUInt256, a̵b̵i̵U̵I̵n̵t̵2̵5̵6̵I̵n̵t̵,̵ ̵encodeABIValue?, encodeABIWord?, hword, hlt]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIViews.lean:553:6: This simp argument is unused:
+  abiBytes32
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?, abiUInt256, abiAddress,
+        abiBytes32,̵ ̵a̵b̵i̵B̵y̵t̵e̵s̵3̵2̵Width, abiBool]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIViews.lean:553:18: This simp argument is unused:
+  abiBytes32Width
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?, abiUInt256, abiAddress,
+        abiBytes32, abiBy̵t̵e̵s̵3̵2̵W̵i̵d̵t̵h̵,̵ ̵a̵b̵i̵B̵ool]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIViews.lean:553:35: This simp argument is unused:
+  abiBool
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?, abiUInt256, abiAddress,
+        abiBytes32, abiBytes32Width,̵ ̵a̵b̵i̵B̵o̵o̵l̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIViews.lean:592:70: This simp argument is unused:
+  abiUInt256
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?, abiU̵I̵n̵t̵2̵5̵6̵,̵ ̵a̵b̵i̵Address,
+  ̵  ̵ ̵ ̵ ̵ ̵abiBytes32,
+  ̲  ̲ ̲ ̲ ̲ ̲abiBytes32Width, abiBool]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIViews.lean:593:35: This simp argument is unused:
+  abiBool
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?, abiUInt256, abiAddress,
+        abiBytes32, abiBytes32Width,̵ ̵a̵b̵i̵B̵o̵o̵l̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIViews.lean:626:85: This simp argument is unused:
+  abiAddress
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?, abiUInt256, abiA̵d̵d̵r̵e̵s̵s̵,̵
+  ̵ ̵ ̵ ̵ ̵ ̵ ̵a̵b̵i̵Bytes32,
+  ̲  ̲ ̲ ̲ ̲ ̲abiBytes32Width, abiBool]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIViews.lean:627:6: This simp argument is unused:
+  abiBytes32
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?, abiUInt256, abiAddress,
+        abiBytes32,̵ ̵a̵b̵i̵B̵y̵t̵e̵s̵3̵2̵Width, abiBool]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIViews.lean:627:18: This simp argument is unused:
+  abiBytes32Width
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?, abiUInt256, abiAddress,
+        abiBytes32, abiBy̵t̵e̵s̵3̵2̵W̵i̵d̵t̵h̵,̵ ̵a̵b̵i̵B̵ool]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIViews.lean:627:35: This simp argument is unused:
+  abiBool
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?, abiUInt256, abiAddress,
+        abiBytes32, abiBytes32Width,̵ ̵a̵b̵i̵B̵o̵o̵l̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIViews.lean:675:22: This simp argument is unused:
+  abiUInt256Int
+
+Hint: Omit it from the simp argument list.
+  simp [abiUInt256, a̵b̵i̵U̵I̵n̵t̵2̵5̵6̵I̵n̵t̵,̵ ̵encodeABIValue?, encodeABIWord?, hword, hlt]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIViews.lean:677:82: This simp argument is unused:
+  abiAddress
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?, abiUInt256, abiA̵d̵d̵r̵e̵s̵s̵,̵
+  ̵ ̵ ̵ ̵ ̵ ̵ ̵a̵b̵i̵Bytes32,
+  ̲  ̲ ̲ ̲ ̲ ̲abiBytes32Width, abiBool]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIViews.lean:678:35: This simp argument is unused:
+  abiBool
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?, abiUInt256, abiAddress,
+        abiBytes32, abiBytes32Width,̵ ̵a̵b̵i̵B̵o̵o̵l̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIViews.lean:710:22: This simp argument is unused:
+  abiUInt256Int
+
+Hint: Omit it from the simp argument list.
+  simp [abiUInt256, a̵b̵i̵U̵I̵n̵t̵2̵5̵6̵I̵n̵t̵,̵ ̵encodeABIValue?, encodeABIWord?, hword, hlt]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIViews.lean:712:82: This simp argument is unused:
+  abiAddress
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?, abiUInt256, abiA̵d̵d̵r̵e̵s̵s̵,̵
+  ̵ ̵ ̵ ̵ ̵ ̵ ̵a̵b̵i̵Bytes32,
+  ̲  ̲ ̲ ̲ ̲ ̲abiBytes32Width, abiBool]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIViews.lean:713:35: This simp argument is unused:
+  abiBool
+
+Hint: Omit it from the simp argument list.
+  simp [abiTupleHeadSize?, isDynamicABIType, staticABIEncodedSize?, abiUInt256, abiAddress,
+        abiBytes32, abiBytes32Width,̵ ̵a̵b̵i̵B̵o̵o̵l̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIViews.lean:1346:28: This simp argument is unused:
+  abiBytes32
+
+Hint: Omit it from the simp argument list.
+  simp [encodePackedValue?, abiBytes32,̵ ̵a̵b̵i̵B̵y̵t̵e̵s̵3̵2̵Width, fixedBytesSize, hlen]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIViews.lean:1355:28: This simp argument is unused:
+  abiUInt256
+
+Hint: Omit it from the simp argument list.
+  simp [encodePackedValue?, abiUInt256,̵ ̵a̵b̵i̵U̵Int2̵5̵6̵I̵n̵t̵, encodeABIWord?, hword, hlt]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIViews.lean:1355:40: This simp argument is unused:
+  abiUInt256Int
+
+Hint: Omit it from the simp argument list.
+  simp [encodePackedValue?, abiUInt256, a̵b̵i̵U̵I̵n̵t̵2̵5̵6̵I̵n̵t̵,̵ ̵encodeABIWord?, hword, hlt]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIViews.lean:1470:28: This simp argument is unused:
+  abiBytes32
+
+Hint: Omit it from the simp argument list.
+  simp [encodePackedValue?, abiBytes32,̵ ̵a̵b̵i̵B̵y̵t̵e̵s̵3̵2̵Width, fixedBytesSize, hlen]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/ABIViews.lean:1475:2: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+warning: Reasoning/ABIViews.lean:1512:18: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+warning: Reasoning/ABIViews.lean:2469:8: 'change fp.toNat + 32 + 65 + 31 < UInt256.size' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+warning: Reasoning/ABIViews.lean:2476:43: This simp argument is unused:
+  abiBool
+
+Hint: Omit it from the simp argument list.
+  simp [encodePackedValue?,̵ ̵a̵b̵i̵B̵o̵o̵l̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+⚠ [3485/3634] Replayed Reasoning.BytecodePatching
+warning: Reasoning/BytecodePatching.lean:328:4: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+warning: Reasoning/BytecodePatching.lean:1163:4: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+warning: Reasoning/BytecodePatching.lean:1166:4: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+⚠ [3487/3634] Replayed Reasoning.VyperDispatch
+warning: Reasoning/VyperDispatch.lean:340:46: This simp argument is unused:
+  uint256Value
+
+Hint: Omit it from the simp argument list.
+  simp [EvalResult.bind, bind, evalBinaryOp?,̵ ̵u̵i̵n̵t̵2̵5̵6̵V̵a̵l̵u̵e̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/VyperDispatch.lean:438:46: This simp argument is unused:
+  uint256Value
+
+Hint: Omit it from the simp argument list.
+  simp [EvalResult.bind, bind, evalBinaryOp?,̵ ̵u̵i̵n̵t̵2̵5̵6̵V̵a̵l̵u̵e̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+⚠ [3488/3634] Replayed Benchmarks.CurveVault.Common
+warning: Benchmarks/CurveVault/Common.lean:45:16: 'simp [contract, Syntax.contractSyntax]' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+warning: Benchmarks/CurveVault/Common.lean:45:16: this tactic is never executed
+
+Note: This linter can be disabled with `set_option linter.unreachableTactic false`
+warning: Benchmarks/CurveVault/Common.lean:56:51: This simp argument is unused:
+  show Nat.repr 8 = "8" by decide +kernel
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel,̵ ̵s̵h̵o̵w̵ ̵N̵a̵t̵.̵r̵e̵p̵r̵ ̵8̵ ̵=̵ ̵"̵8̵"̵ ̵b̵y̵ ̵d̵e̵c̵i̵d̵e̵ ̵+̵k̵e̵r̵n̵e̵l̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:57:4: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: Benchmarks/CurveVault/Common.lean:69:51: This simp argument is unused:
+  show Nat.repr 8 = "8" by decide +kernel
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel,̵ ̵s̵h̵o̵w̵ ̵N̵a̵t̵.̵r̵e̵p̵r̵ ̵8̵ ̵=̵ ̵"̵8̵"̵ ̵b̵y̵ ̵d̵e̵c̵i̵d̵e̵ ̵+̵k̵e̵r̵n̵e̵l̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:70:4: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: Benchmarks/CurveVault/Common.lean:82:51: This simp argument is unused:
+  show Nat.repr 8 = "8" by decide +kernel
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel,̵ ̵s̵h̵o̵w̵ ̵N̵a̵t̵.̵r̵e̵p̵r̵ ̵8̵ ̵=̵ ̵"̵8̵"̵ ̵b̵y̵ ̵d̵e̵c̵i̵d̵e̵ ̵+̵k̵e̵r̵n̵e̵l̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:83:4: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: Benchmarks/CurveVault/Common.lean:94:30: This simp argument is unused:
+  ABI.abiToSigStr
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.a̵b̵i̵T̵o̵S̵i̵g̵S̵t̵r̵,̵ ̵A̵B̵I̵.̵elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel, show Nat.repr 8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:94:47: This simp argument is unused:
+  ABI.elemToSigStr
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.e̵l̵e̵m̵T̵o̵S̵ig̵S̵t̵r̵,̵ ̵A̵B̵I̵.̵i̵ntTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel, show Nat.repr 8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:94:65: This simp argument is unused:
+  ABI.intTypeToSigStr
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ̵A̵B̵I̵.̵i̵n̵t̵T̵y̵p̵e̵T̵o̵S̵i̵g̵S̵t̵r̵,̵
+        show Nat.repr 256 = "256" by decide +kernel, show Nat.repr 8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:95:6: This simp argument is unused:
+  show Nat.repr 256 = "256" by decide +kernel
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 2̵5̵6̵ ̵=̵ ̵"̵2̵5̵6̵"̵ ̵b̵y̵ ̵d̵e̵c̵i̵d̵e̵ ̵+̵k̵e̵r̵n̵e̵l̵,̵ ̵s̵h̵o̵w̵ ̵N̵a̵t̵.̵r̵e̵p̵r̵ ̵8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:95:51: This simp argument is unused:
+  show Nat.repr 8 = "8" by decide +kernel
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel,̵ ̵s̵h̵o̵w̵ ̵N̵a̵t̵.̵r̵e̵p̵r̵ ̵8̵ ̵=̵ ̵"̵8̵"̵ ̵b̵y̵ ̵d̵e̵c̵i̵d̵e̵ ̵+̵k̵e̵r̵n̵e̵l̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:96:4: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: Benchmarks/CurveVault/Common.lean:107:30: This simp argument is unused:
+  ABI.abiToSigStr
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.a̵b̵i̵T̵o̵S̵i̵g̵S̵t̵r̵,̵ ̵A̵B̵I̵.̵elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel, show Nat.repr 8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:107:47: This simp argument is unused:
+  ABI.elemToSigStr
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.e̵l̵e̵m̵T̵o̵S̵ig̵S̵t̵r̵,̵ ̵A̵B̵I̵.̵i̵ntTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel, show Nat.repr 8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:107:65: This simp argument is unused:
+  ABI.intTypeToSigStr
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ̵A̵B̵I̵.̵i̵n̵t̵T̵y̵p̵e̵T̵o̵S̵i̵g̵S̵t̵r̵,̵
+        show Nat.repr 256 = "256" by decide +kernel, show Nat.repr 8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:108:6: This simp argument is unused:
+  show Nat.repr 256 = "256" by decide +kernel
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 2̵5̵6̵ ̵=̵ ̵"̵2̵5̵6̵"̵ ̵b̵y̵ ̵d̵e̵c̵i̵d̵e̵ ̵+̵k̵e̵r̵n̵e̵l̵,̵ ̵s̵h̵o̵w̵ ̵N̵a̵t̵.̵r̵e̵p̵r̵ ̵8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:108:51: This simp argument is unused:
+  show Nat.repr 8 = "8" by decide +kernel
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel,̵ ̵s̵h̵o̵w̵ ̵N̵a̵t̵.̵r̵e̵p̵r̵ ̵8̵ ̵=̵ ̵"̵8̵"̵ ̵b̵y̵ ̵d̵e̵c̵i̵d̵e̵ ̵+̵k̵e̵r̵n̵e̵l̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:109:4: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: Benchmarks/CurveVault/Common.lean:121:51: This simp argument is unused:
+  show Nat.repr 8 = "8" by decide +kernel
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel,̵ ̵s̵h̵o̵w̵ ̵N̵a̵t̵.̵r̵e̵p̵r̵ ̵8̵ ̵=̵ ̵"̵8̵"̵ ̵b̵y̵ ̵d̵e̵c̵i̵d̵e̵ ̵+̵k̵e̵r̵n̵e̵l̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:122:4: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: Benchmarks/CurveVault/Common.lean:134:51: This simp argument is unused:
+  show Nat.repr 8 = "8" by decide +kernel
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel,̵ ̵s̵h̵o̵w̵ ̵N̵a̵t̵.̵r̵e̵p̵r̵ ̵8̵ ̵=̵ ̵"̵8̵"̵ ̵b̵y̵ ̵d̵e̵c̵i̵d̵e̵ ̵+̵k̵e̵r̵n̵e̵l̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:135:4: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: Benchmarks/CurveVault/Common.lean:147:51: This simp argument is unused:
+  show Nat.repr 8 = "8" by decide +kernel
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel,̵ ̵s̵h̵o̵w̵ ̵N̵a̵t̵.̵r̵e̵p̵r̵ ̵8̵ ̵=̵ ̵"̵8̵"̵ ̵b̵y̵ ̵d̵e̵c̵i̵d̵e̵ ̵+̵k̵e̵r̵n̵e̵l̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:148:4: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: Benchmarks/CurveVault/Common.lean:159:30: This simp argument is unused:
+  ABI.abiToSigStr
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.a̵b̵i̵T̵o̵S̵i̵g̵S̵t̵r̵,̵ ̵A̵B̵I̵.̵elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel, show Nat.repr 8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:159:47: This simp argument is unused:
+  ABI.elemToSigStr
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.e̵l̵e̵m̵T̵o̵S̵ig̵S̵t̵r̵,̵ ̵A̵B̵I̵.̵i̵ntTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel, show Nat.repr 8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:159:65: This simp argument is unused:
+  ABI.intTypeToSigStr
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ̵A̵B̵I̵.̵i̵n̵t̵T̵y̵p̵e̵T̵o̵S̵i̵g̵S̵t̵r̵,̵
+        show Nat.repr 256 = "256" by decide +kernel, show Nat.repr 8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:160:6: This simp argument is unused:
+  show Nat.repr 256 = "256" by decide +kernel
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 2̵5̵6̵ ̵=̵ ̵"̵2̵5̵6̵"̵ ̵b̵y̵ ̵d̵e̵c̵i̵d̵e̵ ̵+̵k̵e̵r̵n̵e̵l̵,̵ ̵s̵h̵o̵w̵ ̵N̵a̵t̵.̵r̵e̵p̵r̵ ̵8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:160:51: This simp argument is unused:
+  show Nat.repr 8 = "8" by decide +kernel
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel,̵ ̵s̵h̵o̵w̵ ̵N̵a̵t̵.̵r̵e̵p̵r̵ ̵8̵ ̵=̵ ̵"̵8̵"̵ ̵b̵y̵ ̵d̵e̵c̵i̵d̵e̵ ̵+̵k̵e̵r̵n̵e̵l̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:161:4: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: Benchmarks/CurveVault/Common.lean:173:51: This simp argument is unused:
+  show Nat.repr 8 = "8" by decide +kernel
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel,̵ ̵s̵h̵o̵w̵ ̵N̵a̵t̵.̵r̵e̵p̵r̵ ̵8̵ ̵=̵ ̵"̵8̵"̵ ̵b̵y̵ ̵d̵e̵c̵i̵d̵e̵ ̵+̵k̵e̵r̵n̵e̵l̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:174:4: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: Benchmarks/CurveVault/Common.lean:185:30: This simp argument is unused:
+  ABI.abiToSigStr
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.a̵b̵i̵T̵o̵S̵i̵g̵S̵t̵r̵,̵ ̵A̵B̵I̵.̵elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel, show Nat.repr 8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:185:47: This simp argument is unused:
+  ABI.elemToSigStr
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.e̵l̵e̵m̵T̵o̵S̵ig̵S̵t̵r̵,̵ ̵A̵B̵I̵.̵i̵ntTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel, show Nat.repr 8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:185:65: This simp argument is unused:
+  ABI.intTypeToSigStr
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ̵A̵B̵I̵.̵i̵n̵t̵T̵y̵p̵e̵T̵o̵S̵i̵g̵S̵t̵r̵,̵
+        show Nat.repr 256 = "256" by decide +kernel, show Nat.repr 8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:186:6: This simp argument is unused:
+  show Nat.repr 256 = "256" by decide +kernel
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 2̵5̵6̵ ̵=̵ ̵"̵2̵5̵6̵"̵ ̵b̵y̵ ̵d̵e̵c̵i̵d̵e̵ ̵+̵k̵e̵r̵n̵e̵l̵,̵ ̵s̵h̵o̵w̵ ̵N̵a̵t̵.̵r̵e̵p̵r̵ ̵8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:186:51: This simp argument is unused:
+  show Nat.repr 8 = "8" by decide +kernel
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel,̵ ̵s̵h̵o̵w̵ ̵N̵a̵t̵.̵r̵e̵p̵r̵ ̵8̵ ̵=̵ ̵"̵8̵"̵ ̵b̵y̵ ̵d̵e̵c̵i̵d̵e̵ ̵+̵k̵e̵r̵n̵e̵l̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:187:4: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: Benchmarks/CurveVault/Common.lean:198:65: This simp argument is unused:
+  ABI.intTypeToSigStr
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ̵A̵B̵I̵.̵i̵n̵t̵T̵y̵p̵e̵T̵o̵S̵i̵g̵S̵t̵r̵,̵
+        show Nat.repr 256 = "256" by decide +kernel, show Nat.repr 8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:199:6: This simp argument is unused:
+  show Nat.repr 256 = "256" by decide +kernel
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 2̵5̵6̵ ̵=̵ ̵"̵2̵5̵6̵"̵ ̵b̵y̵ ̵d̵e̵c̵i̵d̵e̵ ̵+̵k̵e̵r̵n̵e̵l̵,̵ ̵s̵h̵o̵w̵ ̵N̵a̵t̵.̵r̵e̵p̵r̵ ̵8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:199:51: This simp argument is unused:
+  show Nat.repr 8 = "8" by decide +kernel
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel,̵ ̵s̵h̵o̵w̵ ̵N̵a̵t̵.̵r̵e̵p̵r̵ ̵8̵ ̵=̵ ̵"̵8̵"̵ ̵b̵y̵ ̵d̵e̵c̵i̵d̵e̵ ̵+̵k̵e̵r̵n̵e̵l̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:200:4: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: Benchmarks/CurveVault/Common.lean:211:30: This simp argument is unused:
+  ABI.abiToSigStr
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.a̵b̵i̵T̵o̵S̵i̵g̵S̵t̵r̵,̵ ̵A̵B̵I̵.̵elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel, show Nat.repr 8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:211:47: This simp argument is unused:
+  ABI.elemToSigStr
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.e̵l̵e̵m̵T̵o̵S̵ig̵S̵t̵r̵,̵ ̵A̵B̵I̵.̵i̵ntTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel, show Nat.repr 8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:211:65: This simp argument is unused:
+  ABI.intTypeToSigStr
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ̵A̵B̵I̵.̵i̵n̵t̵T̵y̵p̵e̵T̵o̵S̵i̵g̵S̵t̵r̵,̵
+        show Nat.repr 256 = "256" by decide +kernel, show Nat.repr 8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:212:6: This simp argument is unused:
+  show Nat.repr 256 = "256" by decide +kernel
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 2̵5̵6̵ ̵=̵ ̵"̵2̵5̵6̵"̵ ̵b̵y̵ ̵d̵e̵c̵i̵d̵e̵ ̵+̵k̵e̵r̵n̵e̵l̵,̵ ̵s̵h̵o̵w̵ ̵N̵a̵t̵.̵r̵e̵p̵r̵ ̵8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:212:51: This simp argument is unused:
+  show Nat.repr 8 = "8" by decide +kernel
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel,̵ ̵s̵h̵o̵w̵ ̵N̵a̵t̵.̵r̵e̵p̵r̵ ̵8̵ ̵=̵ ̵"̵8̵"̵ ̵b̵y̵ ̵d̵e̵c̵i̵d̵e̵ ̵+̵k̵e̵r̵n̵e̵l̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:213:4: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: Benchmarks/CurveVault/Common.lean:224:30: This simp argument is unused:
+  ABI.abiToSigStr
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.a̵b̵i̵T̵o̵S̵i̵g̵S̵t̵r̵,̵ ̵A̵B̵I̵.̵elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel, show Nat.repr 8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:224:47: This simp argument is unused:
+  ABI.elemToSigStr
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.e̵l̵e̵m̵T̵o̵S̵ig̵S̵t̵r̵,̵ ̵A̵B̵I̵.̵i̵ntTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel, show Nat.repr 8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:224:65: This simp argument is unused:
+  ABI.intTypeToSigStr
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ̵A̵B̵I̵.̵i̵n̵t̵T̵y̵p̵e̵T̵o̵S̵i̵g̵S̵t̵r̵,̵
+        show Nat.repr 256 = "256" by decide +kernel, show Nat.repr 8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:225:6: This simp argument is unused:
+  show Nat.repr 256 = "256" by decide +kernel
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 2̵5̵6̵ ̵=̵ ̵"̵2̵5̵6̵"̵ ̵b̵y̵ ̵d̵e̵c̵i̵d̵e̵ ̵+̵k̵e̵r̵n̵e̵l̵,̵ ̵s̵h̵o̵w̵ ̵N̵a̵t̵.̵r̵e̵p̵r̵ ̵8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:225:51: This simp argument is unused:
+  show Nat.repr 8 = "8" by decide +kernel
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel,̵ ̵s̵h̵o̵w̵ ̵N̵a̵t̵.̵r̵e̵p̵r̵ ̵8̵ ̵=̵ ̵"̵8̵"̵ ̵b̵y̵ ̵d̵e̵c̵i̵d̵e̵ ̵+̵k̵e̵r̵n̵e̵l̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:226:4: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: Benchmarks/CurveVault/Common.lean:237:30: This simp argument is unused:
+  ABI.abiToSigStr
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.a̵b̵i̵T̵o̵S̵i̵g̵S̵t̵r̵,̵ ̵A̵B̵I̵.̵elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel, show Nat.repr 8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:237:47: This simp argument is unused:
+  ABI.elemToSigStr
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.e̵l̵e̵m̵T̵o̵S̵ig̵S̵t̵r̵,̵ ̵A̵B̵I̵.̵i̵ntTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel, show Nat.repr 8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:237:65: This simp argument is unused:
+  ABI.intTypeToSigStr
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ̵A̵B̵I̵.̵i̵n̵t̵T̵y̵p̵e̵T̵o̵S̵i̵g̵S̵t̵r̵,̵
+        show Nat.repr 256 = "256" by decide +kernel, show Nat.repr 8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:238:6: This simp argument is unused:
+  show Nat.repr 256 = "256" by decide +kernel
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 2̵5̵6̵ ̵=̵ ̵"̵2̵5̵6̵"̵ ̵b̵y̵ ̵d̵e̵c̵i̵d̵e̵ ̵+̵k̵e̵r̵n̵e̵l̵,̵ ̵s̵h̵o̵w̵ ̵N̵a̵t̵.̵r̵e̵p̵r̵ ̵8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:238:51: This simp argument is unused:
+  show Nat.repr 8 = "8" by decide +kernel
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel,̵ ̵s̵h̵o̵w̵ ̵N̵a̵t̵.̵r̵e̵p̵r̵ ̵8̵ ̵=̵ ̵"̵8̵"̵ ̵b̵y̵ ̵d̵e̵c̵i̵d̵e̵ ̵+̵k̵e̵r̵n̵e̵l̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:239:4: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: Benchmarks/CurveVault/Common.lean:250:30: This simp argument is unused:
+  ABI.abiToSigStr
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.a̵b̵i̵T̵o̵S̵i̵g̵S̵t̵r̵,̵ ̵A̵B̵I̵.̵elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel, show Nat.repr 8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:250:47: This simp argument is unused:
+  ABI.elemToSigStr
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.e̵l̵e̵m̵T̵o̵S̵ig̵S̵t̵r̵,̵ ̵A̵B̵I̵.̵i̵ntTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel, show Nat.repr 8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:250:65: This simp argument is unused:
+  ABI.intTypeToSigStr
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ̵A̵B̵I̵.̵i̵n̵t̵T̵y̵p̵e̵T̵o̵S̵i̵g̵S̵t̵r̵,̵
+        show Nat.repr 256 = "256" by decide +kernel, show Nat.repr 8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:251:6: This simp argument is unused:
+  show Nat.repr 256 = "256" by decide +kernel
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 2̵5̵6̵ ̵=̵ ̵"̵2̵5̵6̵"̵ ̵b̵y̵ ̵d̵e̵c̵i̵d̵e̵ ̵+̵k̵e̵r̵n̵e̵l̵,̵ ̵s̵h̵o̵w̵ ̵N̵a̵t̵.̵r̵e̵p̵r̵ ̵8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:251:51: This simp argument is unused:
+  show Nat.repr 8 = "8" by decide +kernel
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel,̵ ̵s̵h̵o̵w̵ ̵N̵a̵t̵.̵r̵e̵p̵r̵ ̵8̵ ̵=̵ ̵"̵8̵"̵ ̵b̵y̵ ̵d̵e̵c̵i̵d̵e̵ ̵+̵k̵e̵r̵n̵e̵l̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:252:4: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: Benchmarks/CurveVault/Common.lean:264:51: This simp argument is unused:
+  show Nat.repr 8 = "8" by decide +kernel
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel,̵ ̵s̵h̵o̵w̵ ̵N̵a̵t̵.̵r̵e̵p̵r̵ ̵8̵ ̵=̵ ̵"̵8̵"̵ ̵b̵y̵ ̵d̵e̵c̵i̵d̵e̵ ̵+̵k̵e̵r̵n̵e̵l̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:265:4: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: Benchmarks/CurveVault/Common.lean:276:65: This simp argument is unused:
+  ABI.intTypeToSigStr
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ̵A̵B̵I̵.̵i̵n̵t̵T̵y̵p̵e̵T̵o̵S̵i̵g̵S̵t̵r̵,̵
+        show Nat.repr 256 = "256" by decide +kernel, show Nat.repr 8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:277:6: This simp argument is unused:
+  show Nat.repr 256 = "256" by decide +kernel
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 2̵5̵6̵ ̵=̵ ̵"̵2̵5̵6̵"̵ ̵b̵y̵ ̵d̵e̵c̵i̵d̵e̵ ̵+̵k̵e̵r̵n̵e̵l̵,̵ ̵s̵h̵o̵w̵ ̵N̵a̵t̵.̵r̵e̵p̵r̵ ̵8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:277:51: This simp argument is unused:
+  show Nat.repr 8 = "8" by decide +kernel
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel,̵ ̵s̵h̵o̵w̵ ̵N̵a̵t̵.̵r̵e̵p̵r̵ ̵8̵ ̵=̵ ̵"̵8̵"̵ ̵b̵y̵ ̵d̵e̵c̵i̵d̵e̵ ̵+̵k̵e̵r̵n̵e̵l̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:278:4: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: Benchmarks/CurveVault/Common.lean:290:51: This simp argument is unused:
+  show Nat.repr 8 = "8" by decide +kernel
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel,̵ ̵s̵h̵o̵w̵ ̵N̵a̵t̵.̵r̵e̵p̵r̵ ̵8̵ ̵=̵ ̵"̵8̵"̵ ̵b̵y̵ ̵d̵e̵c̵i̵d̵e̵ ̵+̵k̵e̵r̵n̵e̵l̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:291:4: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: Benchmarks/CurveVault/Common.lean:303:51: This simp argument is unused:
+  show Nat.repr 8 = "8" by decide +kernel
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel,̵ ̵s̵h̵o̵w̵ ̵N̵a̵t̵.̵r̵e̵p̵r̵ ̵8̵ ̵=̵ ̵"̵8̵"̵ ̵b̵y̵ ̵d̵e̵c̵i̵d̵e̵ ̵+̵k̵e̵r̵n̵e̵l̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:304:4: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: Benchmarks/CurveVault/Common.lean:316:51: This simp argument is unused:
+  show Nat.repr 8 = "8" by decide +kernel
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel,̵ ̵s̵h̵o̵w̵ ̵N̵a̵t̵.̵r̵e̵p̵r̵ ̵8̵ ̵=̵ ̵"̵8̵"̵ ̵b̵y̵ ̵d̵e̵c̵i̵d̵e̵ ̵+̵k̵e̵r̵n̵e̵l̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:317:4: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: Benchmarks/CurveVault/Common.lean:328:65: This simp argument is unused:
+  ABI.intTypeToSigStr
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ̵A̵B̵I̵.̵i̵n̵t̵T̵y̵p̵e̵T̵o̵S̵i̵g̵S̵t̵r̵,̵
+        show Nat.repr 256 = "256" by decide +kernel, show Nat.repr 8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:329:6: This simp argument is unused:
+  show Nat.repr 256 = "256" by decide +kernel
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 2̵5̵6̵ ̵=̵ ̵"̵2̵5̵6̵"̵ ̵b̵y̵ ̵d̵e̵c̵i̵d̵e̵ ̵+̵k̵e̵r̵n̵e̵l̵,̵ ̵s̵h̵o̵w̵ ̵N̵a̵t̵.̵r̵e̵p̵r̵ ̵8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:329:51: This simp argument is unused:
+  show Nat.repr 8 = "8" by decide +kernel
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel,̵ ̵s̵h̵o̵w̵ ̵N̵a̵t̵.̵r̵e̵p̵r̵ ̵8̵ ̵=̵ ̵"̵8̵"̵ ̵b̵y̵ ̵d̵e̵c̵i̵d̵e̵ ̵+̵k̵e̵r̵n̵e̵l̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:330:4: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: Benchmarks/CurveVault/Common.lean:341:30: This simp argument is unused:
+  ABI.abiToSigStr
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.a̵b̵i̵T̵o̵S̵i̵g̵S̵t̵r̵,̵ ̵A̵B̵I̵.̵elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel, show Nat.repr 8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:341:47: This simp argument is unused:
+  ABI.elemToSigStr
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.e̵l̵e̵m̵T̵o̵S̵ig̵S̵t̵r̵,̵ ̵A̵B̵I̵.̵i̵ntTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel, show Nat.repr 8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:341:65: This simp argument is unused:
+  ABI.intTypeToSigStr
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ̵A̵B̵I̵.̵i̵n̵t̵T̵y̵p̵e̵T̵o̵S̵i̵g̵S̵t̵r̵,̵
+        show Nat.repr 256 = "256" by decide +kernel, show Nat.repr 8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:342:6: This simp argument is unused:
+  show Nat.repr 256 = "256" by decide +kernel
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 2̵5̵6̵ ̵=̵ ̵"̵2̵5̵6̵"̵ ̵b̵y̵ ̵d̵e̵c̵i̵d̵e̵ ̵+̵k̵e̵r̵n̵e̵l̵,̵ ̵s̵h̵o̵w̵ ̵N̵a̵t̵.̵r̵e̵p̵r̵ ̵8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:342:51: This simp argument is unused:
+  show Nat.repr 8 = "8" by decide +kernel
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel,̵ ̵s̵h̵o̵w̵ ̵N̵a̵t̵.̵r̵e̵p̵r̵ ̵8̵ ̵=̵ ̵"̵8̵"̵ ̵b̵y̵ ̵d̵e̵c̵i̵d̵e̵ ̵+̵k̵e̵r̵n̵e̵l̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:343:4: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: Benchmarks/CurveVault/Common.lean:355:51: This simp argument is unused:
+  show Nat.repr 8 = "8" by decide +kernel
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel,̵ ̵s̵h̵o̵w̵ ̵N̵a̵t̵.̵r̵e̵p̵r̵ ̵8̵ ̵=̵ ̵"̵8̵"̵ ̵b̵y̵ ̵d̵e̵c̵i̵d̵e̵ ̵+̵k̵e̵r̵n̵e̵l̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:356:4: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: Benchmarks/CurveVault/Common.lean:368:51: This simp argument is unused:
+  show Nat.repr 8 = "8" by decide +kernel
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel,̵ ̵s̵h̵o̵w̵ ̵N̵a̵t̵.̵r̵e̵p̵r̵ ̵8̵ ̵=̵ ̵"̵8̵"̵ ̵b̵y̵ ̵d̵e̵c̵i̵d̵e̵ ̵+̵k̵e̵r̵n̵e̵l̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:369:4: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: Benchmarks/CurveVault/Common.lean:381:51: This simp argument is unused:
+  show Nat.repr 8 = "8" by decide +kernel
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel,̵ ̵s̵h̵o̵w̵ ̵N̵a̵t̵.̵r̵e̵p̵r̵ ̵8̵ ̵=̵ ̵"̵8̵"̵ ̵b̵y̵ ̵d̵e̵c̵i̵d̵e̵ ̵+̵k̵e̵r̵n̵e̵l̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:382:4: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: Benchmarks/CurveVault/Common.lean:394:51: This simp argument is unused:
+  show Nat.repr 8 = "8" by decide +kernel
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel,̵ ̵s̵h̵o̵w̵ ̵N̵a̵t̵.̵r̵e̵p̵r̵ ̵8̵ ̵=̵ ̵"̵8̵"̵ ̵b̵y̵ ̵d̵e̵c̵i̵d̵e̵ ̵+̵k̵e̵r̵n̵e̵l̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:395:4: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: Benchmarks/CurveVault/Common.lean:407:51: This simp argument is unused:
+  show Nat.repr 8 = "8" by decide +kernel
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel,̵ ̵s̵h̵o̵w̵ ̵N̵a̵t̵.̵r̵e̵p̵r̵ ̵8̵ ̵=̵ ̵"̵8̵"̵ ̵b̵y̵ ̵d̵e̵c̵i̵d̵e̵ ̵+̵k̵e̵r̵n̵e̵l̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:408:4: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: Benchmarks/CurveVault/Common.lean:420:51: This simp argument is unused:
+  show Nat.repr 8 = "8" by decide +kernel
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel,̵ ̵s̵h̵o̵w̵ ̵N̵a̵t̵.̵r̵e̵p̵r̵ ̵8̵ ̵=̵ ̵"̵8̵"̵ ̵b̵y̵ ̵d̵e̵c̵i̵d̵e̵ ̵+̵k̵e̵r̵n̵e̵l̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:421:4: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: Benchmarks/CurveVault/Common.lean:432:30: This simp argument is unused:
+  ABI.abiToSigStr
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.a̵b̵i̵T̵o̵S̵i̵g̵S̵t̵r̵,̵ ̵A̵B̵I̵.̵elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel, show Nat.repr 8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:432:47: This simp argument is unused:
+  ABI.elemToSigStr
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.e̵l̵e̵m̵T̵o̵S̵ig̵S̵t̵r̵,̵ ̵A̵B̵I̵.̵i̵ntTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel, show Nat.repr 8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:432:65: This simp argument is unused:
+  ABI.intTypeToSigStr
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ̵A̵B̵I̵.̵i̵n̵t̵T̵y̵p̵e̵T̵o̵S̵i̵g̵S̵t̵r̵,̵
+        show Nat.repr 256 = "256" by decide +kernel, show Nat.repr 8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:433:6: This simp argument is unused:
+  show Nat.repr 256 = "256" by decide +kernel
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 2̵5̵6̵ ̵=̵ ̵"̵2̵5̵6̵"̵ ̵b̵y̵ ̵d̵e̵c̵i̵d̵e̵ ̵+̵k̵e̵r̵n̵e̵l̵,̵ ̵s̵h̵o̵w̵ ̵N̵a̵t̵.̵r̵e̵p̵r̵ ̵8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:433:51: This simp argument is unused:
+  show Nat.repr 8 = "8" by decide +kernel
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel,̵ ̵s̵h̵o̵w̵ ̵N̵a̵t̵.̵r̵e̵p̵r̵ ̵8̵ ̵=̵ ̵"̵8̵"̵ ̵b̵y̵ ̵d̵e̵c̵i̵d̵e̵ ̵+̵k̵e̵r̵n̵e̵l̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:434:4: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: Benchmarks/CurveVault/Common.lean:446:51: This simp argument is unused:
+  show Nat.repr 8 = "8" by decide +kernel
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel,̵ ̵s̵h̵o̵w̵ ̵N̵a̵t̵.̵r̵e̵p̵r̵ ̵8̵ ̵=̵ ̵"̵8̵"̵ ̵b̵y̵ ̵d̵e̵c̵i̵d̵e̵ ̵+̵k̵e̵r̵n̵e̵l̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:447:4: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: Benchmarks/CurveVault/Common.lean:459:51: This simp argument is unused:
+  show Nat.repr 8 = "8" by decide +kernel
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel,̵ ̵s̵h̵o̵w̵ ̵N̵a̵t̵.̵r̵e̵p̵r̵ ̵8̵ ̵=̵ ̵"̵8̵"̵ ̵b̵y̵ ̵d̵e̵c̵i̵d̵e̵ ̵+̵k̵e̵r̵n̵e̵l̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:460:4: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: Benchmarks/CurveVault/Common.lean:471:30: This simp argument is unused:
+  ABI.abiToSigStr
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.a̵b̵i̵T̵o̵S̵i̵g̵S̵t̵r̵,̵ ̵A̵B̵I̵.̵elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel, show Nat.repr 8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:471:47: This simp argument is unused:
+  ABI.elemToSigStr
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.e̵l̵e̵m̵T̵o̵S̵ig̵S̵t̵r̵,̵ ̵A̵B̵I̵.̵i̵ntTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel, show Nat.repr 8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:471:65: This simp argument is unused:
+  ABI.intTypeToSigStr
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ̵A̵B̵I̵.̵i̵n̵t̵T̵y̵p̵e̵T̵o̵S̵i̵g̵S̵t̵r̵,̵
+        show Nat.repr 256 = "256" by decide +kernel, show Nat.repr 8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:472:6: This simp argument is unused:
+  show Nat.repr 256 = "256" by decide +kernel
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 2̵5̵6̵ ̵=̵ ̵"̵2̵5̵6̵"̵ ̵b̵y̵ ̵d̵e̵c̵i̵d̵e̵ ̵+̵k̵e̵r̵n̵e̵l̵,̵ ̵s̵h̵o̵w̵ ̵N̵a̵t̵.̵r̵e̵p̵r̵ ̵8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:472:51: This simp argument is unused:
+  show Nat.repr 8 = "8" by decide +kernel
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel,̵ ̵s̵h̵o̵w̵ ̵N̵a̵t̵.̵r̵e̵p̵r̵ ̵8̵ ̵=̵ ̵"̵8̵"̵ ̵b̵y̵ ̵d̵e̵c̵i̵d̵e̵ ̵+̵k̵e̵r̵n̵e̵l̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:473:4: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: Benchmarks/CurveVault/Common.lean:485:51: This simp argument is unused:
+  show Nat.repr 8 = "8" by decide +kernel
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel,̵ ̵s̵h̵o̵w̵ ̵N̵a̵t̵.̵r̵e̵p̵r̵ ̵8̵ ̵=̵ ̵"̵8̵"̵ ̵b̵y̵ ̵d̵e̵c̵i̵d̵e̵ ̵+̵k̵e̵r̵n̵e̵l̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:486:4: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: Benchmarks/CurveVault/Common.lean:497:30: This simp argument is unused:
+  ABI.abiToSigStr
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.a̵b̵i̵T̵o̵S̵i̵g̵S̵t̵r̵,̵ ̵A̵B̵I̵.̵elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel, show Nat.repr 8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:497:47: This simp argument is unused:
+  ABI.elemToSigStr
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.e̵l̵e̵m̵T̵o̵S̵ig̵S̵t̵r̵,̵ ̵A̵B̵I̵.̵i̵ntTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel, show Nat.repr 8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:497:65: This simp argument is unused:
+  ABI.intTypeToSigStr
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ̵A̵B̵I̵.̵i̵n̵t̵T̵y̵p̵e̵T̵o̵S̵i̵g̵S̵t̵r̵,̵
+        show Nat.repr 256 = "256" by decide +kernel, show Nat.repr 8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:498:6: This simp argument is unused:
+  show Nat.repr 256 = "256" by decide +kernel
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 2̵5̵6̵ ̵=̵ ̵"̵2̵5̵6̵"̵ ̵b̵y̵ ̵d̵e̵c̵i̵d̵e̵ ̵+̵k̵e̵r̵n̵e̵l̵,̵ ̵s̵h̵o̵w̵ ̵N̵a̵t̵.̵r̵e̵p̵r̵ ̵8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:498:51: This simp argument is unused:
+  show Nat.repr 8 = "8" by decide +kernel
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel,̵ ̵s̵h̵o̵w̵ ̵N̵a̵t̵.̵r̵e̵p̵r̵ ̵8̵ ̵=̵ ̵"̵8̵"̵ ̵b̵y̵ ̵d̵e̵c̵i̵d̵e̵ ̵+̵k̵e̵r̵n̵e̵l̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:499:4: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: Benchmarks/CurveVault/Common.lean:510:30: This simp argument is unused:
+  ABI.abiToSigStr
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.a̵b̵i̵T̵o̵S̵i̵g̵S̵t̵r̵,̵ ̵A̵B̵I̵.̵elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel, show Nat.repr 8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:510:47: This simp argument is unused:
+  ABI.elemToSigStr
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.e̵l̵e̵m̵T̵o̵S̵ig̵S̵t̵r̵,̵ ̵A̵B̵I̵.̵i̵ntTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel, show Nat.repr 8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:510:65: This simp argument is unused:
+  ABI.intTypeToSigStr
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ̵A̵B̵I̵.̵i̵n̵t̵T̵y̵p̵e̵T̵o̵S̵i̵g̵S̵t̵r̵,̵
+        show Nat.repr 256 = "256" by decide +kernel, show Nat.repr 8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:511:6: This simp argument is unused:
+  show Nat.repr 256 = "256" by decide +kernel
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 2̵5̵6̵ ̵=̵ ̵"̵2̵5̵6̵"̵ ̵b̵y̵ ̵d̵e̵c̵i̵d̵e̵ ̵+̵k̵e̵r̵n̵e̵l̵,̵ ̵s̵h̵o̵w̵ ̵N̵a̵t̵.̵r̵e̵p̵r̵ ̵8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:511:51: This simp argument is unused:
+  show Nat.repr 8 = "8" by decide +kernel
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel,̵ ̵s̵h̵o̵w̵ ̵N̵a̵t̵.̵r̵e̵p̵r̵ ̵8̵ ̵=̵ ̵"̵8̵"̵ ̵b̵y̵ ̵d̵e̵c̵i̵d̵e̵ ̵+̵k̵e̵r̵n̵e̵l̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:512:4: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: Benchmarks/CurveVault/Common.lean:523:65: This simp argument is unused:
+  ABI.intTypeToSigStr
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ̵A̵B̵I̵.̵i̵n̵t̵T̵y̵p̵e̵T̵o̵S̵i̵g̵S̵t̵r̵,̵
+        show Nat.repr 256 = "256" by decide +kernel, show Nat.repr 8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:524:6: This simp argument is unused:
+  show Nat.repr 256 = "256" by decide +kernel
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 2̵5̵6̵ ̵=̵ ̵"̵2̵5̵6̵"̵ ̵b̵y̵ ̵d̵e̵c̵i̵d̵e̵ ̵+̵k̵e̵r̵n̵e̵l̵,̵ ̵s̵h̵o̵w̵ ̵N̵a̵t̵.̵r̵e̵p̵r̵ ̵8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:524:51: This simp argument is unused:
+  show Nat.repr 8 = "8" by decide +kernel
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel,̵ ̵s̵h̵o̵w̵ ̵N̵a̵t̵.̵r̵e̵p̵r̵ ̵8̵ ̵=̵ ̵"̵8̵"̵ ̵b̵y̵ ̵d̵e̵c̵i̵d̵e̵ ̵+̵k̵e̵r̵n̵e̵l̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:525:4: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: Benchmarks/CurveVault/Common.lean:537:51: This simp argument is unused:
+  show Nat.repr 8 = "8" by decide +kernel
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel,̵ ̵s̵h̵o̵w̵ ̵N̵a̵t̵.̵r̵e̵p̵r̵ ̵8̵ ̵=̵ ̵"̵8̵"̵ ̵b̵y̵ ̵d̵e̵c̵i̵d̵e̵ ̵+̵k̵e̵r̵n̵e̵l̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:538:4: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: Benchmarks/CurveVault/Common.lean:549:65: This simp argument is unused:
+  ABI.intTypeToSigStr
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ̵A̵B̵I̵.̵i̵n̵t̵T̵y̵p̵e̵T̵o̵S̵i̵g̵S̵t̵r̵,̵
+        show Nat.repr 256 = "256" by decide +kernel, show Nat.repr 8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:550:6: This simp argument is unused:
+  show Nat.repr 256 = "256" by decide +kernel
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 2̵5̵6̵ ̵=̵ ̵"̵2̵5̵6̵"̵ ̵b̵y̵ ̵d̵e̵c̵i̵d̵e̵ ̵+̵k̵e̵r̵n̵e̵l̵,̵ ̵s̵h̵o̵w̵ ̵N̵a̵t̵.̵r̵e̵p̵r̵ ̵8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:550:51: This simp argument is unused:
+  show Nat.repr 8 = "8" by decide +kernel
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel,̵ ̵s̵h̵o̵w̵ ̵N̵a̵t̵.̵r̵e̵p̵r̵ ̵8̵ ̵=̵ ̵"̵8̵"̵ ̵b̵y̵ ̵d̵e̵c̵i̵d̵e̵ ̵+̵k̵e̵r̵n̵e̵l̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:551:4: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: Benchmarks/CurveVault/Common.lean:562:30: This simp argument is unused:
+  ABI.abiToSigStr
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.a̵b̵i̵T̵o̵S̵i̵g̵S̵t̵r̵,̵ ̵A̵B̵I̵.̵elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel, show Nat.repr 8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:562:47: This simp argument is unused:
+  ABI.elemToSigStr
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.e̵l̵e̵m̵T̵o̵S̵ig̵S̵t̵r̵,̵ ̵A̵B̵I̵.̵i̵ntTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel, show Nat.repr 8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:562:65: This simp argument is unused:
+  ABI.intTypeToSigStr
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ̵A̵B̵I̵.̵i̵n̵t̵T̵y̵p̵e̵T̵o̵S̵i̵g̵S̵t̵r̵,̵
+        show Nat.repr 256 = "256" by decide +kernel, show Nat.repr 8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:563:6: This simp argument is unused:
+  show Nat.repr 256 = "256" by decide +kernel
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 2̵5̵6̵ ̵=̵ ̵"̵2̵5̵6̵"̵ ̵b̵y̵ ̵d̵e̵c̵i̵d̵e̵ ̵+̵k̵e̵r̵n̵e̵l̵,̵ ̵s̵h̵o̵w̵ ̵N̵a̵t̵.̵r̵e̵p̵r̵ ̵8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:563:51: This simp argument is unused:
+  show Nat.repr 8 = "8" by decide +kernel
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel,̵ ̵s̵h̵o̵w̵ ̵N̵a̵t̵.̵r̵e̵p̵r̵ ̵8̵ ̵=̵ ̵"̵8̵"̵ ̵b̵y̵ ̵d̵e̵c̵i̵d̵e̵ ̵+̵k̵e̵r̵n̵e̵l̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:564:4: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: Benchmarks/CurveVault/Common.lean:575:65: This simp argument is unused:
+  ABI.intTypeToSigStr
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ̵A̵B̵I̵.̵i̵n̵t̵T̵y̵p̵e̵T̵o̵S̵i̵g̵S̵t̵r̵,̵
+        show Nat.repr 256 = "256" by decide +kernel, show Nat.repr 8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:576:6: This simp argument is unused:
+  show Nat.repr 256 = "256" by decide +kernel
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 2̵5̵6̵ ̵=̵ ̵"̵2̵5̵6̵"̵ ̵b̵y̵ ̵d̵e̵c̵i̵d̵e̵ ̵+̵k̵e̵r̵n̵e̵l̵,̵ ̵s̵h̵o̵w̵ ̵N̵a̵t̵.̵r̵e̵p̵r̵ ̵8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:576:51: This simp argument is unused:
+  show Nat.repr 8 = "8" by decide +kernel
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel,̵ ̵s̵h̵o̵w̵ ̵N̵a̵t̵.̵r̵e̵p̵r̵ ̵8̵ ̵=̵ ̵"̵8̵"̵ ̵b̵y̵ ̵d̵e̵c̵i̵d̵e̵ ̵+̵k̵e̵r̵n̵e̵l̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:577:4: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: Benchmarks/CurveVault/Common.lean:588:65: This simp argument is unused:
+  ABI.intTypeToSigStr
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ̵A̵B̵I̵.̵i̵n̵t̵T̵y̵p̵e̵T̵o̵S̵i̵g̵S̵t̵r̵,̵
+        show Nat.repr 256 = "256" by decide +kernel, show Nat.repr 8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:589:6: This simp argument is unused:
+  show Nat.repr 256 = "256" by decide +kernel
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 2̵5̵6̵ ̵=̵ ̵"̵2̵5̵6̵"̵ ̵b̵y̵ ̵d̵e̵c̵i̵d̵e̵ ̵+̵k̵e̵r̵n̵e̵l̵,̵ ̵s̵h̵o̵w̵ ̵N̵a̵t̵.̵r̵e̵p̵r̵ ̵8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:589:51: This simp argument is unused:
+  show Nat.repr 8 = "8" by decide +kernel
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel,̵ ̵s̵h̵o̵w̵ ̵N̵a̵t̵.̵r̵e̵p̵r̵ ̵8̵ ̵=̵ ̵"̵8̵"̵ ̵b̵y̵ ̵d̵e̵c̵i̵d̵e̵ ̵+̵k̵e̵r̵n̵e̵l̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:590:4: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: Benchmarks/CurveVault/Common.lean:602:51: This simp argument is unused:
+  show Nat.repr 8 = "8" by decide +kernel
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel,̵ ̵s̵h̵o̵w̵ ̵N̵a̵t̵.̵r̵e̵p̵r̵ ̵8̵ ̵=̵ ̵"̵8̵"̵ ̵b̵y̵ ̵d̵e̵c̵i̵d̵e̵ ̵+̵k̵e̵r̵n̵e̵l̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:603:4: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: Benchmarks/CurveVault/Common.lean:614:30: This simp argument is unused:
+  ABI.abiToSigStr
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.a̵b̵i̵T̵o̵S̵i̵g̵S̵t̵r̵,̵ ̵A̵B̵I̵.̵elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel, show Nat.repr 8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:614:47: This simp argument is unused:
+  ABI.elemToSigStr
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.e̵l̵e̵m̵T̵o̵S̵ig̵S̵t̵r̵,̵ ̵A̵B̵I̵.̵i̵ntTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel, show Nat.repr 8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:614:65: This simp argument is unused:
+  ABI.intTypeToSigStr
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ̵A̵B̵I̵.̵i̵n̵t̵T̵y̵p̵e̵T̵o̵S̵i̵g̵S̵t̵r̵,̵
+        show Nat.repr 256 = "256" by decide +kernel, show Nat.repr 8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:615:6: This simp argument is unused:
+  show Nat.repr 256 = "256" by decide +kernel
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 2̵5̵6̵ ̵=̵ ̵"̵2̵5̵6̵"̵ ̵b̵y̵ ̵d̵e̵c̵i̵d̵e̵ ̵+̵k̵e̵r̵n̵e̵l̵,̵ ̵s̵h̵o̵w̵ ̵N̵a̵t̵.̵r̵e̵p̵r̵ ̵8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:615:51: This simp argument is unused:
+  show Nat.repr 8 = "8" by decide +kernel
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel,̵ ̵s̵h̵o̵w̵ ̵N̵a̵t̵.̵r̵e̵p̵r̵ ̵8̵ ̵=̵ ̵"̵8̵"̵ ̵b̵y̵ ̵d̵e̵c̵i̵d̵e̵ ̵+̵k̵e̵r̵n̵e̵l̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:616:4: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: Benchmarks/CurveVault/Common.lean:627:30: This simp argument is unused:
+  ABI.abiToSigStr
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.a̵b̵i̵T̵o̵S̵i̵g̵S̵t̵r̵,̵ ̵A̵B̵I̵.̵elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel, show Nat.repr 8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:627:47: This simp argument is unused:
+  ABI.elemToSigStr
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.e̵l̵e̵m̵T̵o̵S̵ig̵S̵t̵r̵,̵ ̵A̵B̵I̵.̵i̵ntTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel, show Nat.repr 8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:627:65: This simp argument is unused:
+  ABI.intTypeToSigStr
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ̵A̵B̵I̵.̵i̵n̵t̵T̵y̵p̵e̵T̵o̵S̵i̵g̵S̵t̵r̵,̵
+        show Nat.repr 256 = "256" by decide +kernel, show Nat.repr 8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:628:6: This simp argument is unused:
+  show Nat.repr 256 = "256" by decide +kernel
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 2̵5̵6̵ ̵=̵ ̵"̵2̵5̵6̵"̵ ̵b̵y̵ ̵d̵e̵c̵i̵d̵e̵ ̵+̵k̵e̵r̵n̵e̵l̵,̵ ̵s̵h̵o̵w̵ ̵N̵a̵t̵.̵r̵e̵p̵r̵ ̵8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:628:51: This simp argument is unused:
+  show Nat.repr 8 = "8" by decide +kernel
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel,̵ ̵s̵h̵o̵w̵ ̵N̵a̵t̵.̵r̵e̵p̵r̵ ̵8̵ ̵=̵ ̵"̵8̵"̵ ̵b̵y̵ ̵d̵e̵c̵i̵d̵e̵ ̵+̵k̵e̵r̵n̵e̵l̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:629:4: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: Benchmarks/CurveVault/Common.lean:640:65: This simp argument is unused:
+  ABI.intTypeToSigStr
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ̵A̵B̵I̵.̵i̵n̵t̵T̵y̵p̵e̵T̵o̵S̵i̵g̵S̵t̵r̵,̵
+        show Nat.repr 256 = "256" by decide +kernel, show Nat.repr 8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:641:6: This simp argument is unused:
+  show Nat.repr 256 = "256" by decide +kernel
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 2̵5̵6̵ ̵=̵ ̵"̵2̵5̵6̵"̵ ̵b̵y̵ ̵d̵e̵c̵i̵d̵e̵ ̵+̵k̵e̵r̵n̵e̵l̵,̵ ̵s̵h̵o̵w̵ ̵N̵a̵t̵.̵r̵e̵p̵r̵ ̵8 = "8" by decide +kernel]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:641:51: This simp argument is unused:
+  show Nat.repr 8 = "8" by decide +kernel
+
+Hint: Omit it from the simp argument list.
+  simp [ABI.printSignature, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
+        show Nat.repr 256 = "256" by decide +kernel,̵ ̵s̵h̵o̵w̵ ̵N̵a̵t̵.̵r̵e̵p̵r̵ ̵8̵ ̵=̵ ̵"̵8̵"̵ ̵b̵y̵ ̵d̵e̵c̵i̵d̵e̵ ̵+̵k̵e̵r̵n̵e̵l̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Common.lean:642:4: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+⚠ [3495/3634] Replayed Benchmarks.CurveVault.Dispatch
+warning: Benchmarks/CurveVault/Dispatch.lean:925:5: unused variable `hsize`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+⚠ [3496/3634] Replayed Benchmarks.CurveVault.Storage
+warning: Benchmarks/CurveVault/Storage.lean:68:42: This simp argument is unused:
+  pure
+
+Hint: Omit it from the simp argument list.
+  simp only [vyperCheckRef?, vyperCheckSteps?, vyperWriteRaw?, vyperLeafLoc?, hloc,
+  ̵  ̵ ̵ ̵EvalResult.bind,
+  ̲  ̲ ̲ ̲EvalResult.ofOption, p̵u̵r̵e̵,̵ ̵bind, storageLocStore_uint256]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+⚠ [3497/3634] Replayed Benchmarks.CurveVault.AllowanceStorage
+warning: Benchmarks/CurveVault/AllowanceStorage.lean:49:42: This simp argument is unused:
+  pure
+
+Hint: Omit it from the simp argument list.
+  simp only [vyperCheckRef?, vyperCheckSteps?, vyperWriteRaw?, vyperLeafLoc?, hloc,
+  ̵  ̵ ̵ ̵EvalResult.bind,
+  ̲  ̲ ̲ ̲EvalResult.ofOption, p̵u̵r̵e̵,̵ ̵bind, storageLocStore_uint256]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+⚠ [3500/3634] Replayed Reasoning.ExternalCall
+warning: Reasoning/ExternalCall.lean:720:2: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+warning: Reasoning/ExternalCall.lean:845:23: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+⚠ [3511/3634] Replayed Reasoning.SolmArithmetic
+warning: Reasoning/SolmArithmetic.lean:1175:51: This simp argument is unused:
+  abiUInt256Int
+
+Hint: Omit it from the simp argument list.
+  simp only [castValue?, packedUInt256StorageType,̵ ̵a̵b̵i̵U̵I̵n̵t̵2̵5̵6̵I̵n̵t̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+⚠ [3552/3634] Replayed Benchmarks.CurveVault.BalanceStorage
+warning: Benchmarks/CurveVault/BalanceStorage.lean:40:42: This simp argument is unused:
+  pure
+
+Hint: Omit it from the simp argument list.
+  simp only [vyperCheckRef?, vyperCheckSteps?, vyperWriteRaw?, vyperLeafLoc?, hloc,
+  ̵  ̵ ̵ ̵EvalResult.bind,
+  ̲  ̲ ̲ ̲EvalResult.ofOption, p̵u̵r̵e̵,̵ ̵bind, storageLocStore_uint256]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+⚠ [3556/3634] Replayed Benchmarks.CurveVault.SupplyForward
+warning: Benchmarks/CurveVault/SupplyForward.lean:45:68: This simp argument is unused:
+  Std.HashMap.getElem?_insert
+
+Hint: Omit it from the simp argument list.
+  simp [calleeLocals, vaultSupplyLocals, vaultBurnLocals,̵ ̵S̵t̵d̵.̵H̵a̵s̵h̵M̵a̵p̵.̵g̵e̵t̵E̵l̵e̵m̵?̵_̵i̵n̵s̵e̵r̵t̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/SupplyForward.lean:46:68: This simp argument is unused:
+  Std.HashMap.getElem?_insert
+
+Hint: Omit it from the simp argument list.
+  simp [calleeLocals, vaultSupplyLocals, vaultBurnLocals,̵ ̵S̵t̵d̵.̵H̵a̵s̵h̵M̵a̵p̵.̵g̵e̵t̵E̵l̵e̵m̵?̵_̵i̵n̵s̵e̵r̵t̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/SupplyForward.lean:52:68: This simp argument is unused:
+  Std.HashMap.getElem?_insert
+
+Hint: Omit it from the simp argument list.
+  simp [calleeLocals, vaultSupplyLocals, vaultMintLocals,̵ ̵S̵t̵d̵.̵H̵a̵s̵h̵M̵a̵p̵.̵g̵e̵t̵E̵l̵e̵m̵?̵_̵i̵n̵s̵e̵r̵t̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/SupplyForward.lean:53:68: This simp argument is unused:
+  Std.HashMap.getElem?_insert
+
+Hint: Omit it from the simp argument list.
+  simp [calleeLocals, vaultSupplyLocals, vaultMintLocals,̵ ̵S̵t̵d̵.̵H̵a̵s̵h̵M̵a̵p̵.̵g̵e̵t̵E̵l̵e̵m̵?̵_̵i̵n̵s̵e̵r̵t̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+⚠ [3595/3634] Replayed Benchmarks.CurveVault.MutationEntry
+warning: Benchmarks/CurveVault/MutationEntry.lean:124:56: This simp argument is unused:
+  collapseReturns
+
+Hint: Omit it from the simp argument list.
+  simp only [evalExprs?, evalExpr?, store_get_self, c̵o̵l̵l̵a̵p̵s̵e̵R̵e̵t̵u̵r̵n̵s̵,̵ ̵EvalResult.ofOption, EvalResult.bind, pure,
+  ̲  ̲ ̲ ̲ ̲ ̲ ̲ ̲bind]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+⚠ [3598/3634] Replayed Benchmarks.CurveVault.UintAddressABI
+warning: Benchmarks/CurveVault/UintAddressABI.lean:25:34: This simp argument is unused:
+  Nat.zero_add
+
+Hint: Omit it from the simp argument list.
+  simp only [Option.bind, bind,̵ ̵N̵a̵t̵.̵z̵e̵r̵o̵_̵a̵d̵d̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/UintAddressABI.lean:27:15: This simp argument is unused:
+  Option.bind
+
+Hint: Omit it from the simp argument list.
+  simp only [̵O̵p̵t̵i̵o̵n̵.̵b̵i̵n̵d̵,̵ ̵b̵i̵n̵d̵,̵[̲b̲i̲n̲d̲,̲ hword0, hword32]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/UintAddressABI.lean:27:28: This simp argument is unused:
+  bind
+
+Hint: Omit it from the simp argument list.
+  simp only [Option.bind, b̵i̵n̵d̵,̵ ̵hword0, hword32]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/UintAddressABI.lean:46:34: This simp argument is unused:
+  Nat.zero_add
+
+Hint: Omit it from the simp argument list.
+  simp only [Option.bind, bind,̵ ̵N̵a̵t̵.̵z̵e̵r̵o̵_̵a̵d̵d̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/UintAddressABI.lean:64:36: This simp argument is unused:
+  Nat.zero_add
+
+Hint: Omit it from the simp argument list.
+  simp only [Option.bind, bind,̵ ̵N̵a̵t̵.̵z̵e̵r̵o̵_̵a̵d̵d̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+⚠ [3599/3634] Replayed Benchmarks.CurveVault.Withdraw_uint256_address
+warning: Benchmarks/CurveVault/Withdraw_uint256_address.lean:47:14: This simp argument is unused:
+  vaultBlocks.vault_block_4122_fallthrough_stack
+
+Hint: Omit it from the simp argument list.
+  simp ̵[̵v̵a̵u̵l̵t̵B̵l̵o̵c̵k̵s̵.̵v̵a̵u̵l̵t̵_̵b̵l̵o̵c̵k̵_̵4̵1̵2̵2̵_̵f̵a̵l̵l̵t̵h̵r̵o̵u̵g̵h̵_̵s̵t̵a̵c̵k̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Withdraw_uint256_address.lean:17:35: 'exact selIs_exclusive (by decide +kernel) hsel' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+warning: Benchmarks/CurveVault/Withdraw_uint256_address.lean:17:35: this tactic is never executed
+
+Note: This linter can be disabled with `set_option linter.unreachableTactic false`
+⚠ [3602/3634] Replayed Benchmarks.CurveVault.UintTwoAddressABI
+warning: Benchmarks/CurveVault/UintTwoAddressABI.lean:31:15: This simp argument is unused:
+  Option.bind
+
+Hint: Omit it from the simp argument list.
+  simp only [̵O̵p̵t̵i̵o̵n̵.̵b̵i̵n̵d̵,̵ ̵b̵i̵n̵d̵]̵[̲b̲i̲n̲d̲]̲
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/UintTwoAddressABI.lean:31:28: This simp argument is unused:
+  bind
+
+Hint: Omit it from the simp argument list.
+  simp only [Option.bind,̵ ̵b̵i̵n̵d̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/UintTwoAddressABI.lean:35:17: This simp argument is unused:
+  Option.bind
+
+Hint: Omit it from the simp argument list.
+  simp only [O̵p̵t̵i̵o̵n̵.̵bind, b̵i̵n̵d̵,̵ ̵hword 0 (by omega), hword 32 (by omega), hword 64 (by omega)]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/UintTwoAddressABI.lean:35:30: This simp argument is unused:
+  bind
+
+Hint: Omit it from the simp argument list.
+  simp only [Option.bind, b̵i̵n̵d̵,̵ ̵hword 0 (by omega), hword 32 (by omega), hword 64 (by omega)]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/UintTwoAddressABI.lean:86:19: This simp argument is unused:
+  Option.bind
+
+Hint: Omit it from the simp argument list.
+  simp only [̵O̵p̵t̵i̵o̵n̵.̵b̵i̵n̵d̵,̵ ̵b̵i̵n̵d̵]̵[̲b̲i̲n̲d̲]̲
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/UintTwoAddressABI.lean:86:32: This simp argument is unused:
+  bind
+
+Hint: Omit it from the simp argument list.
+  simp only [Option.bind,̵ ̵b̵i̵n̵d̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+⚠ [3603/3634] Replayed Benchmarks.CurveVault.Withdraw_uint256_address_address
+warning: Benchmarks/CurveVault/Withdraw_uint256_address_address.lean:36:16: This simp argument is unused:
+  vaultBlocks.vault_block_4147_fallthrough_stack
+
+Hint: Omit it from the simp argument list.
+  simp ̵[̵v̵a̵u̵l̵t̵B̵l̵o̵c̵k̵s̵.̵v̵a̵u̵l̵t̵_̵b̵l̵o̵c̵k̵_̵4̵1̵4̵7̵_̵f̵a̵l̵l̵t̵h̵r̵o̵u̵g̵h̵_̵s̵t̵a̵c̵k̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Withdraw_uint256_address_address.lean:53:14: This simp argument is unused:
+  vaultBlocks.vault_block_4147_fallthrough_stack
+
+Hint: Omit it from the simp argument list.
+  simp ̵[̵v̵a̵u̵l̵t̵B̵l̵o̵c̵k̵s̵.̵v̵a̵u̵l̵t̵_̵b̵l̵o̵c̵k̵_̵4̵1̵4̵7̵_̵f̵a̵l̵l̵t̵h̵r̵o̵u̵g̵h̵_̵s̵t̵a̵c̵k̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Withdraw_uint256_address_address.lean:56:14: This simp argument is unused:
+  vaultBlocks.vault_block_4159_fallthrough_stack
+
+Hint: Omit it from the simp argument list.
+  simp ̵[̵v̵a̵u̵l̵t̵B̵l̵o̵c̵k̵s̵.̵v̵a̵u̵l̵t̵_̵b̵l̵o̵c̵k̵_̵4̵1̵5̵9̵_̵f̵a̵l̵l̵t̵h̵r̵o̵u̵g̵h̵_̵s̵t̵a̵c̵k̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+⚠ [3605/3634] Replayed Benchmarks.CurveVault.TotalAssets
+warning: Benchmarks/CurveVault/TotalAssets.lean:35:5: unused variable `hwf`
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+⚠ [3637/3754] Replayed Benchmarks.CurveVault.PriceFinishSource
+warning: Benchmarks/CurveVault/PriceFinishSource.lean:35:55: This simp argument is unused:
+  initial
+
+Hint: Omit it from the simp argument list.
+  simp ̵[̵i̵n̵i̵t̵i̵a̵l̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/PriceFinishSource.lean:45:86: This simp argument is unused:
+  vaultConversionResult
+
+Hint: Omit it from the simp argument list.
+  simp [resumeAfterInternalCall, collapseReturns, evalExpr?, EvalResult.ofOption,̵ ̵v̵a̵u̵l̵t̵C̵o̵n̵v̵e̵r̵s̵i̵o̵n̵R̵e̵s̵u̵l̵t̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/PriceFinishSource.lean:47:17: This simp argument is unused:
+  resumeAfterInternalCall
+
+Hint: Omit it from the simp argument list.
+  simp only [̵r̵e̵s̵u̵m̵e̵A̵f̵t̵e̵r̵I̵n̵t̵e̵r̵n̵a̵l̵C̵a̵l̵l̵,̵ ̵c̵o̵l̵l̵a̵p̵s̵e̵R̵e̵t̵u̵r̵n̵s̵,̵[̲c̲o̲l̲l̲a̲p̲s̲e̲R̲e̲t̲u̲r̲n̲s̲,̲ initial, Std.HashMap.get?_eq_getElem?,
+  ̲  ̲ ̲ ̲ ̲ ̲ ̲ ̲Std.HashMap.getElem?_insert]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+⚠ [3640/3754] Replayed Benchmarks.CurveVault.PricePerShare_bool
+warning: Benchmarks/CurveVault/PricePerShare_bool.lean:27:58: This simp argument is unused:
+  vaultBlocks.vault_block_1517_fallthrough_stack
+
+Hint: Omit it from the simp argument list.
+  simp ̵[̵v̵a̵u̵l̵t̵B̵l̵o̵c̵k̵s̵.̵v̵a̵u̵l̵t̵_̵b̵l̵o̵c̵k̵_̵1̵5̵1̵7̵_̵f̵a̵l̵l̵t̵h̵r̵o̵u̵g̵h̵_̵s̵t̵a̵c̵k̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+⚠ [3646/3754] Replayed Benchmarks.CurveVault.AllowanceAdjustSource
+warning: Benchmarks/CurveVault/AllowanceAdjustSource.lean:90:76: This simp argument is unused:
+  pure
+
+Hint: Omit it from the simp argument list.
+  simp [evalExpr?, hevalRaw, hevalOld1, evalBinaryOp?, EvalResult.bind, p̵u̵r̵e̵b̲i̲n̲d̲,
+  ̲ b̵i̵n̵d̵,̵  ̲ ̲ ̲ ̲ ̲ ̲vaultAdjustOverflow]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+⚠ [3653/3754] Replayed Benchmarks.CurveVault.Limits
+warning: Benchmarks/CurveVault/Limits.lean:76:52: This simp argument is unused:
+  pure
+
+Hint: Omit it from the simp argument list.
+  simp only [evalExpr?, ha, hb, bind, EvalResult.bind, evalBinaryOp?, hd, castValue?,
+      normalizeInt_uint256_word, EvalResult.ofOption,̵ ̵p̵u̵r̵e̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+⚠ [3657/3754] Replayed Benchmarks.CurveVault.CreditLimitsEVM
+warning: Benchmarks/CurveVault/CreditLimitsEVM.lean:131:10: 'change
+  UInt256.lt (memLoad (UInt256.ofNat 640) prepared + memLoad (UInt256.ofNat 672) prepared)
+      (memLoad (UInt256.ofNat 640) prepared) =
+    _' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+⚠ [3671/3754] Replayed Benchmarks.CurveVault.Deposit_uint256_address
+warning: Benchmarks/CurveVault/Deposit_uint256_address.lean:43:14: This simp argument is unused:
+  vaultBlocks.vault_block_2143_fallthrough_stack
+
+Hint: Omit it from the simp argument list.
+  simp ̵[̵v̵a̵u̵l̵t̵B̵l̵o̵c̵k̵s̵.̵v̵a̵u̵l̵t̵_̵b̵l̵o̵c̵k̵_̵2̵1̵4̵3̵_̵f̵a̵l̵l̵t̵h̵r̵o̵u̵g̵h̵_̵s̵t̵a̵c̵k̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+⚠ [3675/3754] Replayed Benchmarks.CurveVault.Redeem_uint256_address
+warning: Benchmarks/CurveVault/Redeem_uint256_address.lean:47:14: This simp argument is unused:
+  vaultBlocks.vault_block_5024_fallthrough_stack
+
+Hint: Omit it from the simp argument list.
+  simp ̵[̵v̵a̵u̵l̵t̵B̵l̵o̵c̵k̵s̵.̵v̵a̵u̵l̵t̵_̵b̵l̵o̵c̵k̵_̵5̵0̵2̵4̵_̵f̵a̵l̵l̵t̵h̵r̵o̵u̵g̵h̵_̵s̵t̵a̵c̵k̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+⚠ [3676/3754] Replayed Benchmarks.CurveVault.Redeem_uint256_address_address
+warning: Benchmarks/CurveVault/Redeem_uint256_address_address.lean:36:16: This simp argument is unused:
+  vaultBlocks.vault_block_5049_fallthrough_stack
+
+Hint: Omit it from the simp argument list.
+  simp ̵[̵v̵a̵u̵l̵t̵B̵l̵o̵c̵k̵s̵.̵v̵a̵u̵l̵t̵_̵b̵l̵o̵c̵k̵_̵5̵0̵4̵9̵_̵f̵a̵l̵l̵t̵h̵r̵o̵u̵g̵h̵_̵s̵t̵a̵c̵k̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Redeem_uint256_address_address.lean:53:14: This simp argument is unused:
+  vaultBlocks.vault_block_5049_fallthrough_stack
+
+Hint: Omit it from the simp argument list.
+  simp ̵[̵v̵a̵u̵l̵t̵B̵l̵o̵c̵k̵s̵.̵v̵a̵u̵l̵t̵_̵b̵l̵o̵c̵k̵_̵5̵0̵4̵9̵_̵f̵a̵l̵l̵t̵h̵r̵o̵u̵g̵h̵_̵s̵t̵a̵c̵k̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/Redeem_uint256_address_address.lean:56:14: This simp argument is unused:
+  vaultBlocks.vault_block_5061_fallthrough_stack
+
+Hint: Omit it from the simp argument list.
+  simp ̵[̵v̵a̵u̵l̵t̵B̵l̵o̵c̵k̵s̵.̵v̵a̵u̵l̵t̵_̵b̵l̵o̵c̵k̵_̵5̵0̵6̵1̵_̵f̵a̵l̵l̵t̵h̵r̵o̵u̵g̵h̵_̵s̵t̵a̵c̵k̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+⚠ [3684/3754] Replayed Benchmarks.CurveVault.Mint_uint256_address
+warning: Benchmarks/CurveVault/Mint_uint256_address.lean:43:14: This simp argument is unused:
+  vaultBlocks.vault_block_3146_fallthrough_stack
+
+Hint: Omit it from the simp argument list.
+  simp ̵[̵v̵a̵u̵l̵t̵B̵l̵o̵c̵k̵s̵.̵v̵a̵u̵l̵t̵_̵b̵l̵o̵c̵k̵_̵3̵1̵4̵6̵_̵f̵a̵l̵l̵t̵h̵r̵o̵u̵g̵h̵_̵s̵t̵a̵c̵k̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+⚠ [3719/3754] Replayed Benchmarks.CurveVault.InitializeABI
+warning: Benchmarks/CurveVault/InitializeABI.lean:32:62: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+⚠ [3724/3754] Replayed Reasoning.VyperBounded
+warning: Reasoning/VyperBounded.lean:101:27: This simp argument is unused:
+  pure
+
+Hint: Omit it from the simp argument list.
+  simp [vyperCheckRef?, vyperCheckSteps?, hbounds, vyperLength_ok hbounds hanchor, hlt,
+  ̵  ̵ ̵ ̵bind,
+  ̲  ̲ ̲ ̲EvalResult.bind,̵ ̵p̵u̵r̵e̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/VyperBounded.lean:165:57: This simp argument is unused:
+  bind
+
+Hint: Omit it from the simp argument list.
+  simp [show ¬ ̵((Solm.EVM.storageLoad evm evm.executionEnv.codeOwner s).toNat ≥ cap) from by omega,
+      hwrite', vyperAnchor?, hanchor, EvalResult.ofOption, b̵i̵n̵d̵,̵ ̵EvalResult.bind]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/VyperBounded.lean:165:63: This simp argument is unused:
+  EvalResult.bind
+
+Hint: Omit it from the simp argument list.
+  simp [show ¬ ̵((Solm.EVM.storageLoad evm evm.executionEnv.codeOwner s).toNat ≥ cap) from by omega,
+      hwrite', vyperAnchor?, hanchor, EvalResult.ofOption, bind,̵ ̵E̵v̵a̵l̵R̵e̵s̵u̵l̵t̵.̵b̵i̵n̵d̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/VyperBounded.lean:204:48: This simp argument is unused:
+  bind
+
+Hint: Omit it from the simp argument list.
+  simp [show (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner s).toNat ≠ 0 from by omega,
+      vyperAnchor?, hanchor, EvalResult.ofOption, b̵i̵n̵d̵,̵ ̵EvalResult.bind]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/VyperBounded.lean:204:54: This simp argument is unused:
+  EvalResult.bind
+
+Hint: Omit it from the simp argument list.
+  simp [show (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner s).toNat ≠ 0 from by omega,
+      vyperAnchor?, hanchor, EvalResult.ofOption, bind,̵ ̵E̵v̵a̵l̵R̵e̵s̵u̵l̵t̵.̵b̵i̵n̵d̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Reasoning/VyperBounded.lean:228:25: This simp argument is unused:
+  pure
+
+Hint: Omit it from the simp argument list.
+  simp [vyperWriteRaw?, vyperWriteFields?, vyperLeafLoc?, h1, h2, h3, hs1, hs2, hs3, bind,
+  ̲  ̲ ̲ ̲EvalResult.bind,
+  ̵  ̵ ̵ ̵EvalResult.ofOption,̵ ̵p̵u̵r̵e̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+⚠ [3725/3754] Replayed Benchmarks.CurveVault.InitializeStorage
+warning: Benchmarks/CurveVault/InitializeStorage.lean:22:42: This simp argument is unused:
+  pure
+
+Hint: Omit it from the simp argument list.
+  simp only [vyperCheckRef?, vyperCheckSteps?, vyperWriteRaw?, vyperLeafLoc?, hloc,
+  ̵  ̵ ̵ ̵EvalResult.bind,
+  ̲  ̲ ̲ ̲EvalResult.ofOption, p̵u̵r̵e̵,̵ ̵bind, storageLocStore_vyperWord_address]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/InitializeStorage.lean:50:42: This simp argument is unused:
+  pure
+
+Hint: Omit it from the simp argument list.
+  simp only [vyperCheckRef?, vyperCheckSteps?, vyperWriteRaw?, vyperLeafLoc?, hloc,
+  ̵  ̵ ̵ ̵EvalResult.bind,
+  ̲  ̲ ̲ ̲EvalResult.ofOption, p̵u̵r̵e̵,̵ ̵bind, storageLocStore_uint256]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+⚠ [3729/3754] Replayed Benchmarks.CurveVault.SymbolReturnABI
+warning: Benchmarks/CurveVault/SymbolReturnABI.lean:43:15: This simp argument is unused:
+  List.toList_toArray
+
+Hint: Omit it from the simp argument list.
+  simp only [L̵i̵s̵t̵.̵t̵o̵L̵i̵s̵t̵_̵t̵o̵A̵r̵r̵a̵y̵,̵ ̵← byteArray_toList_eq, byteArray_extract_toList, Nat.add_sub_cancel_left]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/SymbolReturnABI.lean:91:13: This simp argument is unused:
+  Option.bind
+
+Hint: Omit it from the simp argument list.
+  simp only [̵O̵p̵t̵i̵o̵n̵.̵b̵i̵n̵d̵,̵ ̵b̵i̵n̵d̵,̵[̲b̲i̲n̲d̲,̲ Bool.or_eq_true, decide_eq_true_eq]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/SymbolReturnABI.lean:91:26: This simp argument is unused:
+  bind
+
+Hint: Omit it from the simp argument list.
+  simp only [Option.bind, b̵i̵n̵d̵,̵ ̵Bool.or_eq_true, decide_eq_true_eq]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+⚠ [3730/3754] Replayed Benchmarks.CurveVault.SymbolReturnMemory
+warning: Benchmarks/CurveVault/SymbolReturnMemory.lean:57:92: This simp argument is unused:
+  List.take_take
+
+Hint: Omit it from the simp argument list.
+  simp only [← byteArray_toList_eq, byteArray_extract_toList, List.drop_zero, Nat.sub_zero,̵ ̵L̵i̵s̵t̵.̵t̵a̵k̵e̵_̵t̵a̵k̵e̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+⚠ [3733/3754] Replayed Benchmarks.CurveVault.InitializeSymbolDecode
+warning: Benchmarks/CurveVault/InitializeSymbolDecode.lean:72:21: This simp argument is unused:
+  vaultBlocks.vault_block_441_fallthrough_stack
+
+Hint: Omit it from the simp argument list.
+  simp only [v̵a̵u̵l̵t̵B̵l̵o̵c̵k̵s̵.̵v̵a̵u̵l̵t̵_̵b̵l̵o̵c̵k̵_̵4̵4̵1̵_̵f̵a̵l̵l̵t̵h̵r̵o̵u̵g̵h̵_̵s̵t̵a̵c̵k̵,̵ ̵List.length_cons]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/InitializeSymbolDecode.lean:75:21: This simp argument is unused:
+  vaultBlocks.vault_block_441_fallthrough_stack
+
+Hint: Omit it from the simp argument list.
+  simp only [v̵a̵u̵l̵t̵B̵l̵o̵c̵k̵s̵.̵v̵a̵u̵l̵t̵_̵b̵l̵o̵c̵k̵_̵4̵4̵1̵_̵f̵a̵l̵l̵t̵h̵r̵o̵u̵g̵h̵_̵s̵t̵a̵c̵k̵,̵ ̵List.length_cons]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/InitializeSymbolDecode.lean:80:19: This simp argument is unused:
+  vaultBlocks.vault_block_441_fallthrough_stack
+
+Hint: Omit it from the simp argument list.
+  simp only [v̵a̵u̵l̵t̵B̵l̵o̵c̵k̵s̵.̵v̵a̵u̵l̵t̵_̵b̵l̵o̵c̵k̵_̵4̵4̵1̵_̵f̵a̵l̵l̵t̵h̵r̵o̵u̵g̵h̵_̵s̵t̵a̵c̵k̵,̵ ̵List.length_cons]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+⚠ [3742/3754] Replayed Benchmarks.CurveVault.PackedStringValues
+warning: Benchmarks/CurveVault/PackedStringValues.lean:64:21: This simp argument is unused:
+  toByteArray_size
+
+Hint: Omit it from the simp argument list.
+  simp [sliceBytes?,̵ ̵t̵o̵B̵y̵t̵e̵A̵r̵r̵a̵y̵_̵s̵i̵z̵e̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+⚠ [3744/3754] Replayed Benchmarks.CurveVault.InitializeStringStorage
+warning: Benchmarks/CurveVault/InitializeStringStorage.lean:33:70: This simp argument is unused:
+  Bool.false_or
+
+Hint: Omit it from the simp argument list.
+  simp only [config, storageBackend, Bool.false_eq_true, ↓reduceIte,
+  ̵  ̵ ̵ ̵ ̵ ̵Int.ofNat_eq_natCast,
+  ̲  ̲ ̲ ̲ ̲ ̲Int.toNat_natCast, hnonneg, decide_false, B̵o̵o̵l̵.̵f̵a̵l̵s̵e̵_̵o̵r̵,̵ ̵hdata, bne_self_eq_false,
+  ̵  ̵ ̵ ̵ ̵ ̵Bool.or_false,
+  ̲  ̲ ̲ ̲ ̲ ̲decide_eq_true_eq, not_lt.mpr hcap, vaultStringState, beq_self_eq_true,
+        (show ("symbol" == "name") = false from rfl),
+  ̵  ̵ ̵ ̵ ̵ ̵EvalResult.bind, bind, pure]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Benchmarks/CurveVault/InitializeStringStorage.lean:34:21: This simp argument is unused:
+  decide_eq_true_eq
+
+Hint: Omit it from the simp argument list.
+  simp only [config, storageBackend, Bool.false_eq_true, ↓reduceIte,
+  ̵  ̵ ̵ ̵ ̵ ̵Int.ofNat_eq_natCast,
+  ̲  ̲ ̲ ̲ ̲ ̲Int.toNat_natCast, hnonneg, decide_false, Bool.false_or, hdata, bne_self_eq_false,
+        Bool.or_false, d̵e̵c̵i̵d̵e̵_̵e̵q̵_̵t̵r̵u̵e̵_̵e̵q̵,̵ ̵not_lt.mpr hcap, vaultStringState, beq_self_eq_true,
+        (show ("symbol" == "name") = false from rfl),
+  ̵  ̵ ̵ ̵ ̵ ̵EvalResult.bind, bind, pure]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+✔ [3753/3754] Built Benchmarks.CurveVault.Borrow_apr (3.9s)
+Build completed successfully (3754 jobs).

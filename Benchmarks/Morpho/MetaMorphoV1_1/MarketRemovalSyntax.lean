@@ -5,7 +5,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.DomainSource
 
 /-! Source frames and guard expressions for submitting market removal. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 

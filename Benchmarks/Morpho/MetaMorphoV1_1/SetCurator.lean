@@ -9,11 +9,11 @@ import Benchmarks.Morpho.MetaMorphoV1_1.RuntimeBlocks_010
 # MetaMorphoV1_1 `setCurator(address)`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 1034; reach lemma `metaMorphoV1_1ReachSetCuratorBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 
@@ -22,8 +22,8 @@ namespace Benchmarks.Morpho.MetaMorphoV1_1
 attribute [local irreducible] metaMorphoV1_1Bytecode
 
 def setCuratorState (evm : EVM.State) (w : UInt256) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨10⟩
-    (setAddressOffset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨10⟩) w)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨10⟩
+    (setAddressOffset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨10⟩) w)
 
 theorem setCuratorComparison (evm : EVM.State) (locals imms : Store) (w : UInt256)
     (hbase : locals.get? "curator" = none)
@@ -31,7 +31,7 @@ theorem setCuratorComparison (evm : EVM.State) (locals imms : Store) (w : UInt25
     evalExpr? config (adminFrame evm locals imms) evm
       (.binary .ne (.var "newCurator") (.storage ⟨"curator", []⟩)) =
       .ok (.bool (decide (AccountAddress.ofNat w.toNat ≠ AccountAddress.ofNat
-        (UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨10⟩)
+        (UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨10⟩)
           solcAddrMask).toNat))) := by
   apply evalExpr_addressNe
   · rw [evalExpr?]
@@ -47,7 +47,7 @@ theorem setCuratorPrefix (evm : EVM.State) (locals imms : Store) (w : UInt256)
     (hbase : locals.get? "curator" = none)
     (hget : locals.get? "newCurator" = some (.address (AccountAddress.ofNat w.toNat)))
     (hne : AccountAddress.ofNat w.toNat ≠ AccountAddress.ofNat
-      (UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨10⟩)
+      (UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨10⟩)
         solcAddrMask).toNat) :
     ABlock config evm { contract := contract, locals := locals, immutables := imms }
       setCuratorTransition.body (adminFrame evm locals imms)
@@ -79,7 +79,7 @@ theorem setCuratorBodyReturns (v : MetaMorphoV1_1Immutables)
     (hget : locals.get? "newCurator" = some (.address (AccountAddress.ofNat w.toNat)))
     (hcanon : w.toNat < EVM.addressModulus)
     (hne : AccountAddress.ofNat w.toNat ≠ AccountAddress.ofNat
-      (UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨10⟩)
+      (UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨10⟩)
         solcAddrMask).toNat) :
     ExecTransitionBody config contract evm locals setCuratorTransition.body
       (.returned (adminFrame evm locals (immStore v)) (setCuratorState evm w) none)
@@ -102,7 +102,7 @@ theorem setCuratorBodyStatic (v : MetaMorphoV1_1Immutables)
     (hget : locals.get? "newCurator" = some (.address (AccountAddress.ofNat w.toNat)))
     (hcanon : w.toNat < EVM.addressModulus)
     (hne : AccountAddress.ofNat w.toNat ≠ AccountAddress.ofNat
-      (UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨10⟩)
+      (UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨10⟩)
         solcAddrMask).toNat) (hperm : evm.executionEnv.perm = false) :
     ExecTransitionBody config contract evm locals setCuratorTransition.body
       .staticViolation (immStore v) := by
@@ -119,7 +119,7 @@ theorem setCuratorBodyRevertsAlreadySet (v : MetaMorphoV1_1Immutables)
     (hbase : locals.get? "curator" = none)
     (hget : locals.get? "newCurator" = some (.address (AccountAddress.ofNat w.toNat)))
     (heq : AccountAddress.ofNat w.toNat = AccountAddress.ofNat
-      (UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨10⟩)
+      (UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨10⟩)
         solcAddrMask).toNat) :
     ExecTransitionBody config contract evm locals setCuratorTransition.body
       .reverted (immStore v) := by

@@ -5,7 +5,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.MarketBalancesSource
 
 /-! Source guard evaluation and preserved locals at the cap-submission branches. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1

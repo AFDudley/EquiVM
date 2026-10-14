@@ -1,7 +1,7 @@
 import Benchmarks.Auction.OwnershipRoutine
 import Benchmarks.Auction.AddressSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 100000
 
@@ -12,9 +12,9 @@ theorem renounceOwnershipBodySplit (evm : EVM.State)
     (ho : solcSourceWord evm.executionEnv = ownerWord evm.accountMap evm.executionEnv) :
     (ExecTransitionBody auctionConfig auctionContract evm ∅ renounceOwnershipTransition.body
       (.returned { contract := auctionContract, locals := ∅ }
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨151⟩
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨151⟩
           (setAddressOffset0Word
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨151⟩) ⟨0⟩)) none)) ∧
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨151⟩) ⟨0⟩)) none)) ∧
       (evm.executionEnv.perm = false →
         ExecTransitionBody auctionConfig auctionContract evm ∅
           renounceOwnershipTransition.body .staticViolation) := by
@@ -33,9 +33,9 @@ theorem renounceOwnershipBody (evm : EVM.State)
     (ho : solcSourceWord evm.executionEnv = ownerWord evm.accountMap evm.executionEnv) :
     ExecTransitionBody auctionConfig auctionContract evm ∅ renounceOwnershipTransition.body
       (.returned { contract := auctionContract, locals := ∅ }
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨151⟩
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨151⟩
           (setAddressOffset0Word
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨151⟩) ⟨0⟩)) none) :=
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨151⟩) ⟨0⟩)) none) :=
   (renounceOwnershipBodySplit evm hwv ho).1
 
 theorem renounceOwnershipBodyCore {σ σ₀ A I} {g : UInt256}
@@ -46,7 +46,7 @@ theorem renounceOwnershipBodyCore {σ σ₀ A I} {g : UInt256}
   by_cases hwv : I.weiValue = ⟨0⟩
   · have hd := dispatchEntry 8 hsel
     have hsz := calldata_size_ge_of_selIs I (entryBytes 8) (entryBytes_size 8) hsel
-    have hdec : decodeCalldataWithMode auctionConfig.abiDecodeMode
+    have hdec : auctionConfig.externalABI.decodeCalldata?
         (renounceOwnershipTransition.params.map Param.name)
         (transitionSignature renounceOwnershipTransition).paramTypes I.calldata = some ∅ :=
       decodeCalldata_empty_ok hsz

@@ -1,7 +1,7 @@
 import Reasoning.SolcRoutines
 import Benchmarks.Dss.Vow.Common
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -57,7 +57,7 @@ theorem vowDispatch_wards {I : ExecutionEnv}
     exact hsel
 
 theorem vowDecode_wards_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (wardsTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (wardsTransition.params.map Param.name)
       (transitionSignature wardsTransition).paramTypes I.calldata =
         some ((∅ : Store).insert "arg0" (.address (wardsMappingArg I))) := by
   simpa [config, wardsTransition, wardsMappingArg] using
@@ -65,7 +65,7 @@ theorem vowDecode_wards_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
 
 theorem vowDecode_wards_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (wardsTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (wardsTransition.params.map Param.name)
       (transitionSignature wardsTransition).paramTypes I.calldata = none := by
   simpa [config, wardsTransition] using
     (decodeCalldata_legacyAddress_none_short (cd := I.calldata) (x := "arg0") hsz4 hshort)
@@ -105,7 +105,7 @@ theorem vowWardsBodyCore
     (hsz36 : 36 ≤ I.calldata.size) (hsize : I.calldata.size < UInt256.size)
     (hdispatch : dispatchMsg contract I.calldata = some wardsTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (wardsTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (wardsTransition.params.map Param.name)
         (transitionSignature wardsTransition).paramTypes I.calldata =
           some ((∅ : Store).insert "arg0" (.address (wardsMappingArg I))))
     (hreach : ∃ k C, RD vowBytecode I (Sat256.ofUInt256 g)
@@ -123,7 +123,7 @@ theorem vowWardsBodyCore
         (.returned { contract := contract, locals := locals }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.int (Int.ofNat (solcSlotWordAt (wardsMappingSlotFor I) σ I).toNat))])) := by
-    simpa [wardsTransition, wardsMappingSlotFor, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [wardsTransition, wardsMappingSlotFor, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount, locals, key] using
       vowUint256GetterBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) locals

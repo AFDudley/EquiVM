@@ -1,7 +1,7 @@
 import Examples.OpenZeppelinBench.Ownable2Step.Storage
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -21,7 +21,7 @@ theorem ownable2StepOwnerBodyReturns (evm : EVM.State) (locals : Store)
     ExecTransitionBody config contract evm locals ownerTransition.body
       (.returned { contract := contract, locals := locals } evm
         (some [(.address (AccountAddress.ofNat
-          (UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
+          (UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
             solcAddrMask).toNat))])) := by
   exact ExecFuncBody.execBlockRet <|
     (ABlock.start.requireStep (evalCallvalueEq_true h)).returns (by
@@ -103,7 +103,7 @@ theorem ownable2StepOwnerBody {σ σ₀ A I}
         (.returned { contract := contract, locals := ∅ }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.address (AccountAddress.ofNat (ownerReturnWord σ I).toNat))])) := by
-    simpa [ownerWord, ownerReturnWord, initState, Solm.EVM.storageLoad, State.lookupAccount] using
+    simpa [ownerWord, ownerReturnWord, initState, Stele.EVM.storageLoad, State.lookupAccount] using
       ownable2StepOwnerBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
         (by simp only [initState]; exact hwv) (by simp)

@@ -4,7 +4,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.Mutation
 
 /-! Allowance writes and the internal approval helper, including static execution. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 
@@ -19,7 +19,7 @@ def approvalSlot (owner spender : AccountAddress) : UInt256 :=
     (UInt256.ofNat spender.toNat)
 
 def approvalState (evm : State) (owner spender : AccountAddress) (value : UInt256) : State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (approvalSlot owner spender) value
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (approvalSlot owner spender) value
 
 def approvalFrame (imms : Store) (owner spender : AccountAddress) (value : UInt256)
     (emitEvent : Bool) : Frame :=

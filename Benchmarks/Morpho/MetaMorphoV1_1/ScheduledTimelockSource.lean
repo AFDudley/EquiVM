@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.SubmitTimelockSyntax
 
 /-! Source execution of the deferred timelock update, including overflow and static failure. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 
@@ -22,7 +22,7 @@ theorem scheduledTimelockTimeSourceRevert (evm : EVM.State) (imms : Store)
     evalExpr? config (scheduledTimelockFrame evm imms value)
       (pendingTimelockValueState evm value) scheduledTimelockTimeExpr = .revert := by
   have h := checkedAddSourceOverflow
-    (cfg := config) (solm := scheduledTimelockFrame evm imms value)
+    (cfg := config) (stele := scheduledTimelockFrame evm imms value)
     (evm := pendingTimelockValueState evm value)
     (lhs := .env .timestamp) (rhs := .var "__pendingTime3")
     (a := UInt256.ofNat evm.executionEnv.header.timestamp) (b := pendingTimelockDelay evm)

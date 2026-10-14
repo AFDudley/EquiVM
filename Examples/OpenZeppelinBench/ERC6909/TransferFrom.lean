@@ -1,7 +1,7 @@
 import Examples.OpenZeppelinBench.ERC6909.TransferFrom.Cases
 import Examples.OpenZeppelinBench.ERC6909.TransferFrom.Traces
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 4000000
@@ -373,7 +373,7 @@ theorem erc6909TransferFromBodyCore
                     cases hfind : σ.get? I.codeOwner <;>
                       simp [-Std.ExtTreeMap.get?_eq_getElem?, evmE, σAllowance, transferFromAfterAllowanceState,
                         transferFromAllowanceSlot, transferFromAllowanceSlotI, initState,
-                        Solm.EVM.storageStore, State.lookupAccount, hfind, sstoreAccountMap,
+                        Stele.EVM.storageStore, State.lookupAccount, hfind, sstoreAccountMap,
                         Option.option, State.setAccount, Account.updateStorage]
                   have hAfterAllowanceMap :
                       (transferFromAfterAllowanceState evmE I).accountMap =

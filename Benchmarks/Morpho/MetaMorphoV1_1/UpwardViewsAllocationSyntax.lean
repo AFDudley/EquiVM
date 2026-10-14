@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.AssetViewsAllocationSyntax
 
 /-! Cursor-aware upward conversion views. -/
 
-open Solm ABI
+open Stele ABI
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
 

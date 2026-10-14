@@ -10,7 +10,7 @@ Splicing immutable values into bytecode preserves bytes, decoded instructions, a
 destinations outside the patched windows.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM
+open Stele ABI Ethereum Ethereum.EVM
 
 namespace Reasoning.Theory
 
@@ -1109,7 +1109,7 @@ end Reasoning.Theory
 
 namespace Reasoning.Theory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 set_option autoImplicit false
 set_option maxRecDepth 2000000

@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.MappingScratchMemory
 
 /-! Preserve the completed queue arrays while external readers advance the allocation cursor. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 

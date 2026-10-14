@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.Eip712StringMemory
 
 /-! Source frames and the ordered string/allocation prefix of `eip712Domain`. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
 

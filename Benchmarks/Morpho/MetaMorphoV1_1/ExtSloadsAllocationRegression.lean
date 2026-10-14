@@ -7,7 +7,7 @@ The large buffer is a mathematical value; these proofs never evaluate or allocat
 This file checks the decoder/allocator boundary, not an end-to-end transaction counterexample.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 

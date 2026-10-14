@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.AllocationRoutines
 
 /-! Allocation arithmetic for a storage string copied at the initial free-memory cursor. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 open Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1

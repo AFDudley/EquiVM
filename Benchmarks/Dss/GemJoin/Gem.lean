@@ -1,6 +1,6 @@
 import Benchmarks.Dss.GemJoin.Dispatch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.GemJoin
 
@@ -10,9 +10,9 @@ def gemJoinGemWord (σ : AccountMap) (I : ExecutionEnv) : UInt256 :=
   solcAddressSlotWord ⟨3⟩ σ I
 
 theorem gemJoinDecode_gem {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (gemTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (gemTransition.params.map Param.name)
       (transitionSignature gemTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 theorem gemJoinReachGemBody {σ σ₀ A I} {g : Sat256}
@@ -57,7 +57,7 @@ theorem gemJoinGemBodyCore {σ σ₀ A I} {g : UInt256}
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.address (AccountAddress.ofNat (gemJoinGemWord σ I).toNat))])) := by
     simpa [gemTransition, gemJoinGemWord, solcAddressSlotWord, initState,
-      Solm.EVM.storageLoad, State.lookupAccount] using
+      Stele.EVM.storageLoad, State.lookupAccount] using
       gemJoinAddressGetterBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
         (ref := gemRef) (er := ({ base := "gem", steps := [] } : EvaledStorageRef))

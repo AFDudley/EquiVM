@@ -6,11 +6,11 @@ import Benchmarks.Morpho.MetaMorphoV1_1.TotalAssetsRoutines
 # MetaMorphoV1_1 `totalAssets()`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 11049; reach lemma `metaMorphoV1_1ReachTotalAssetsBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 
@@ -30,7 +30,7 @@ theorem metaMorphoV1_1TotalAssetsBody {σ σ₀ A I} {g : UInt256} (v : MetaMorp
   have hd : dispatchMsg contract I.calldata = some totalAssetsTransition := by
     apply metaMorphoV1_1Dispatch_totalAssets <;>
       first | exact hsel | exact selectorMismatch hsel (by decide +kernel)
-  have hdec : decodeCalldataWithMode config.abiDecodeMode
+  have hdec : config.externalABI.decodeCalldata?
       (totalAssetsTransition.params.map Param.name)
       (transitionSignature totalAssetsTransition).paramTypes I.calldata = some ∅ :=
     decodeCalldata_empty_ok hsz

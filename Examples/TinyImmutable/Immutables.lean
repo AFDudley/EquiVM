@@ -1,6 +1,6 @@
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 import Reasoning.BytecodePatching
-import Solm
+import Stele
 
 /-!
 # TinyImmutable immutable valuation and offset table
@@ -14,7 +14,7 @@ The offsets below are from solc `0.8.35` standard JSON
 800 runs, EVM version Shanghai, and `metadata.bytecodeHash: none`.
 -/
 
-open Solm ABI
+open Stele ABI
 
 namespace TinyImmutable.Immutables
 
@@ -23,7 +23,7 @@ structure TinyImmutables where
   owner : EVM.Address
   scale : EVM.Word
 
-/-- solc `immutableReferences`: each immutable's Solm name and patch offsets, in the order the
+/-- solc `immutableReferences`: each immutable's Stele name and patch offsets, in the order the
     constructor writes them. -/
 def immutableReferences : List (Ident × List Nat) :=
   [ ("scale", [186, 361]),

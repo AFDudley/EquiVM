@@ -1,6 +1,6 @@
 import Benchmarks.Dss.End.Dispatch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 0
@@ -26,7 +26,7 @@ theorem endTagSlotFor_eq {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
   rw [endKeyValueToWord_bytes32ArgKey hsz36]
 
 theorem endDecode_tag_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (tagTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (tagTransition.params.map Param.name)
       (transitionSignature tagTransition).paramTypes I.calldata =
         some ((∅ : Store).insert "arg0" (endBytes32ArgValue I)) := by
   simpa [config, tagTransition, endBytes32ArgValue, endBytes32ArgBytes, bytes32,
@@ -35,7 +35,7 @@ theorem endDecode_tag_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
 
 theorem endDecode_tag_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (tagTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (tagTransition.params.map Param.name)
       (transitionSignature tagTransition).paramTypes I.calldata = none := by
   simpa [config, tagTransition, bytes32, bytes32Width, abiBytes32, abiBytes32Width] using
     (decodeCalldataWithMode_legacyBytes32_none_short (cd := I.calldata) (x := "arg0") hsz4 hshort)
@@ -85,7 +85,7 @@ theorem endTagBodyCoreOk
     (hsz36 : 36 ≤ I.calldata.size) (hsize : I.calldata.size < UInt256.size)
     (hdispatch : dispatchMsg contract I.calldata = some tagTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (tagTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (tagTransition.params.map Param.name)
         (transitionSignature tagTransition).paramTypes I.calldata =
           some ((∅ : Store).insert "arg0" (endBytes32ArgValue I)))
     (hreach : ∃ k C, RD endBytecode I (Sat256.ofUInt256 g)
@@ -103,7 +103,7 @@ theorem endTagBodyCoreOk
         (.returned { contract := contract, locals := locals }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.int (Int.ofNat (solcSlotWordAt (endTagSlotFor I) σ I).toNat))])) := by
-    simpa [tagTransition, endTagSlotFor, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [tagTransition, endTagSlotFor, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount, locals, key] using
       endUint256GetterBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) locals

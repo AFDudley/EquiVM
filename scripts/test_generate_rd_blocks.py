@@ -7,8 +7,10 @@ import tempfile
 import unittest
 from pathlib import Path
 import sys
+from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import check_all_benchmark_blocks as benchmarks
 import generate_rd_blocks as rd
 
 
@@ -192,6 +194,15 @@ class GeneratorTests(unittest.TestCase):
         self.assertIn("decode_append_left_of_decode", rendered)
         self.assertIn("RD (sampleCode ++ tail)", rendered)
 
+    def test_creation_jump_destination_substitutes_codecopy_source(self) -> None:
+        from bytecode_io import read_bytecode
+        creation = read_bytecode(Path(__file__).resolve().parent.parent /
+                                 "Examples/VyperImmutable/creation.hex")
+        rendered = "\n".join(rd.generate_units(
+            creation, "sample", "sampleCode", creation_code=True))
+        self.assertIn("(j tail (memLoad", rendered)
+        self.assertNotIn("__CODE__", rendered)
+
     def test_index_covers_generated_theorems(self) -> None:
         records = rd.generate_unit_records(bytes.fromhex("6001"), "sample", "sampleCode",
                                            keep_metadata=True)
@@ -212,6 +223,40 @@ class GeneratorTests(unittest.TestCase):
             index = output.with_suffix(".index").read_text()
             for shard in shards:
                 self.assertIn(shard.name + ":", index)
+
+
+class BenchmarkInputTests(unittest.TestCase):
+    def test_discovery_is_independent_of_temporary_scaffolds(self) -> None:
+        for with_scaffolds in (False, True):
+            with self.subTest(with_scaffolds=with_scaffolds), tempfile.TemporaryDirectory() as tmp:
+                root = Path(tmp) / "Benchmarks"
+                expected = [root / "Dss/End/Bytecode.lean",
+                            root / "UniswapV3/Pool/Bytecode.lean"]
+                paths = expected + ([root / "Scaffolds/Temporary/Bytecode.lean"]
+                                    if with_scaffolds else [])
+                for path in reversed(paths):
+                    path.parent.mkdir(parents=True)
+                    path.touch()
+                self.assertEqual(benchmarks.benchmark_paths(root), expected)
+
+    def test_layout_module_supports_both_benchmark_formats(self) -> None:
+        for files, expected in (((), None),
+                                (("Immutables.lean",), "Immutables.lean"),
+                                (("Immutables.lean", "ImmutableCode.lean"), "ImmutableCode.lean")):
+            with self.subTest(files=files), tempfile.TemporaryDirectory() as tmp:
+                root = Path(tmp)
+                path = root / "Benchmarks/Sample/Bytecode.lean"
+                path.parent.mkdir(parents=True)
+                path.write_text("namespace Sample\ndef sampleBytecode : ByteArray := ⟨#[0]⟩\n",
+                                encoding="utf-8")
+                for name in files:
+                    path.with_name(name).touch()
+                with patch.object(benchmarks, "ROOT", root):
+                    self.assertEqual(
+                        benchmarks.benchmark_inputs(path),
+                        ("Sample.sampleBytecode", "Benchmarks.Sample.Bytecode",
+                         path.with_name(expected) if expected else None),
+                    )
 
 
 if __name__ == "__main__":

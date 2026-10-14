@@ -8,11 +8,11 @@ import Benchmarks.Morpho.MetaMorphoV1_1.RuntimeBlocks_014
 # MetaMorphoV1_1 `config(bytes32)`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 1980; reach lemma `metaMorphoV1_1ReachConfigBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 
@@ -33,13 +33,13 @@ theorem configBodyReturns (v : MetaMorphoV1_1Immutables)
           locals := locals.insert "__calldata" (.bytes evm.executionEnv.calldata)
           immutables := immStore v }
         evm (some [.int (Int.ofNat (UInt256.land
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (solcMappingSlot ⟨13⟩ w))
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (solcMappingSlot ⟨13⟩ w))
           (UInt256.ofNat (2 ^ 184 - 1))).toNat),
           wordToElem .bool (UInt256.land (UInt256.shiftRight
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (solcMappingSlot ⟨13⟩ w))
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (solcMappingSlot ⟨13⟩ w))
             ⟨184⟩) ⟨255⟩),
           .int (Int.ofNat (UInt256.shiftRight
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (solcMappingSlot ⟨13⟩ w))
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (solcMappingSlot ⟨13⟩ w))
             ⟨192⟩).toNat)])) (immStore v) := by
   apply ExecFuncBody.execBlockRet
   apply (nonpayableCalldataPrefix "__calldata" (2 ^ 255 + 4) hwv hhi).run

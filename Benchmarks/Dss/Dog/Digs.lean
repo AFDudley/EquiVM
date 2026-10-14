@@ -1,8 +1,8 @@
-import Reasoning.SolmArithmetic
+import Reasoning.SteleArithmetic
 import Benchmarks.Dss.Dog.Dispatch
 import Reasoning.MemCascade
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Dog.Immutables
 
 set_option maxHeartbeats 0
@@ -50,7 +50,7 @@ abbrev dogDigsLogTopic : UInt256 :=
 
 theorem dogDecode_digs_ok {I : ExecutionEnv}
     (hsz68 : 68 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (digsTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (digsTransition.params.map Param.name)
       (transitionSignature digsTransition).paramTypes I.calldata =
         some (digsLocals I) := by
   simpa [config, digsTransition, bytes32, bytes32Width, uint256, uint256Int,
@@ -61,7 +61,7 @@ theorem dogDecode_digs_ok {I : ExecutionEnv}
 
 theorem dogDecode_digs_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 68) :
-    decodeCalldataWithMode config.abiDecodeMode (digsTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (digsTransition.params.map Param.name)
       (transitionSignature digsTransition).paramTypes I.calldata = none := by
   simpa [config, digsTransition, bytes32, bytes32Width, uint256, uint256Int,
     abiBytes32, abiBytes32Width, abiUInt256] using
@@ -296,7 +296,7 @@ theorem evalExpr_digsDirtStorage {v : DogImmutables} {evm : EVM.State}
       (.storage DirtRef) =
         .ok (.int (Int.ofNat (solcSlotWordAt ⟨5⟩ evm.accountMap evm.executionEnv).toNat)) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
-    (cfg := config) (solm := { contract := contract, locals := locals, immutables := immStore v }) (evm := evm)
+    (cfg := config) (stele := { contract := contract, locals := locals, immutables := immStore v }) (evm := evm)
     (slot := DirtRef) (er := ({ base := "Dirt", steps := [] } : EvaledStorageRef))
     (t := .int uint256Int) (loc := wordLoc ⟨5⟩)
     (value := .int (Int.ofNat (solcSlotWordAt ⟨5⟩ evm.accountMap evm.executionEnv).toNat))
@@ -326,7 +326,7 @@ theorem evalExpr_digsIlkDirtStorage {v : DogImmutables} {evm : EVM.State}
     rw [hilk]
     rfl
   exact evalExpr_storage_scalar_value (hbackend := rfl)
-    (cfg := config) (solm := { contract := contract, locals := locals, immutables := immStore v }) (evm := evm)
+    (cfg := config) (stele := { contract := contract, locals := locals, immutables := immStore v }) (evm := evm)
     (slot := ilksF (.var "ilk") "dirt") (er := digsDirtEvaledRef I)
     (t := .int uint256Int) (loc := wordLoc (digsDirtSlotFor I))
     (value := .int (Int.ofNat
@@ -343,7 +343,7 @@ theorem evalExpr_digsIlkDirtStorage {v : DogImmutables} {evm : EVM.State}
 
 theorem assign_digsDirtStorage {v : DogImmutables} (evm : EVM.State)
     {locals : Store} (dirtNew : UInt256) (hbase : locals.get? "Dirt" = none) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨5⟩ dirtNew
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨5⟩ dirtNew
     assignStorageRef? config { contract := contract, locals := locals, immutables := immStore v } evm
       .storage DirtRef (.int (Int.ofNat dirtNew.toNat)) =
         .ok ({ contract := contract, locals := locals, immutables := immStore v }, evm') := by
@@ -366,7 +366,7 @@ theorem assign_digsIlkDirtStorage {v : DogImmutables} (evm : EVM.State)
     (ilkDirtNew : UInt256)
     (hbase : locals.get? "ilks" = none)
     (hilk : locals.get? "ilk" = some (digsIlkValue I)) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner
       (digsDirtSlotFor I) ilkDirtNew
     assignStorageRef? config { contract := contract, locals := locals, immutables := immStore v } evm
       .storage (ilksF (.var "ilk") "dirt") (.int (Int.ofNat ilkDirtNew.toNat)) =
@@ -413,10 +413,10 @@ theorem digsSuccessSourceBody {v : DogImmutables} {σ σ₀ A I} {g : UInt256}
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let dirt0 := solcSlotWordAt ⟨5⟩ σ I
     let dirtNew := UInt256.sub dirt0 (digsRad I)
-    let evm1 := Solm.EVM.storageStore evm0 I.codeOwner ⟨5⟩ dirtNew
+    let evm1 := Stele.EVM.storageStore evm0 I.codeOwner ⟨5⟩ dirtNew
     let ilkDirt0 := solcSlotWordAt (digsDirtSlotFor I) evm1.accountMap evm1.executionEnv
     let ilkDirtNew := UInt256.sub ilkDirt0 (digsRad I)
-    let evm2 := Solm.EVM.storageStore evm1 I.codeOwner (digsDirtSlotFor I) ilkDirtNew
+    let evm2 := Stele.EVM.storageStore evm1 I.codeOwner (digsDirtSlotFor I) ilkDirtNew
     ExecTransitionBody config contract evm0 locals digsTransition.body
       (.returned
         (Frame.mk contract (digsLocalsDirtNewIlkDirtNew I dirtNew ilkDirtNew) (immStore v))
@@ -460,7 +460,7 @@ theorem digsSuccessSourceBody {v : DogImmutables} {σ σ₀ A I} {g : UInt256}
         (args := [.storage DirtRef, .var "rad"])
         (argVals := [.int (Int.ofNat dirt0.toNat), .int (Int.ofNat (digsRad I).toNat)])
         (callee := subFunction) (locals := uintBinaryLocals dirt0 (digsRad I))
-        (calleeSolm :=
+        (calleeStele :=
           { contract := contract, locals := uintBinaryLocalsZ dirt0 (digsRad I) dirtNew, immutables := immStore v })
         (value := some [.int (Int.ofNat dirtNew.toNat)])
         hargs1 (by rfl) hbind1 hbody)
@@ -537,7 +537,7 @@ theorem digsSuccessSourceBody {v : DogImmutables} {σ σ₀ A I} {g : UInt256}
         (argVals := [.int (Int.ofNat ilkDirt0.toNat),
           .int (Int.ofNat (digsRad I).toNat)])
         (callee := subFunction) (locals := uintBinaryLocals ilkDirt0 (digsRad I))
-        (calleeSolm :=
+        (calleeStele :=
           { contract := contract,
             locals := uintBinaryLocalsZ ilkDirt0 (digsRad I) ilkDirtNew, immutables := immStore v })
         (value := some [.int (Int.ofNat ilkDirtNew.toNat)])
@@ -681,7 +681,7 @@ theorem digsSecondSubUnderflowSourceBodySplit {v : DogImmutables}
   intro locals evm0
   let dirt0 := solcSlotWordAt ⟨5⟩ σ I
   let dirtNew := UInt256.sub dirt0 (digsRad I)
-  let evm1 := Solm.EVM.storageStore evm0 I.codeOwner ⟨5⟩ dirtNew
+  let evm1 := Stele.EVM.storageStore evm0 I.codeOwner ⟨5⟩ dirtNew
   let ilkDirt0 := solcSlotWordAt (digsDirtSlotFor I) evm1.accountMap evm1.executionEnv
   have hguard := dogAuthGuardEval_true (v := v)
     (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := Sat256.ofUInt256 g)
@@ -721,7 +721,7 @@ theorem digsSecondSubUnderflowSourceBodySplit {v : DogImmutables}
         (args := [.storage DirtRef, .var "rad"])
         (argVals := [.int (Int.ofNat dirt0.toNat), .int (Int.ofNat (digsRad I).toNat)])
         (callee := subFunction) (locals := uintBinaryLocals dirt0 (digsRad I))
-        (calleeSolm :=
+        (calleeStele :=
           { contract := contract, locals := uintBinaryLocalsZ dirt0 (digsRad I) dirtNew, immutables := immStore v })
         (value := some [.int (Int.ofNat dirtNew.toNat)])
         hargs1 (by rfl) hbind1 hbody)
@@ -1930,7 +1930,7 @@ theorem dogDigsBodyCore {v : DogImmutables} {code : ByteArray}
     let sourceSlot := digsDirtSlotFor I
     let locals := digsLocals I
     have hdecode :
-        decodeCalldataWithMode config.abiDecodeMode
+        config.externalABI.decodeCalldata?
           (digsTransition.params.map Param.name)
           (transitionSignature digsTransition).paramTypes I.calldata =
             some locals := by
@@ -1947,14 +1947,14 @@ theorem dogDigsBodyCore {v : DogImmutables} {code : ByteArray}
       rw [show digsTransition.returnType = [] by rfl]
       exact returnEquiv.fallthrough rfl (by rfl) (by native_decide)
     by_cases hauthEvm : solcSlotWordAt callerSlot σ I = ⟨1⟩
-    · have hauthSolm : solcSlotWordAt callerSlot σ I = ⟨1⟩ := by
+    · have hauthStele : solcSlotWordAt callerSlot σ I = ⟨1⟩ := by
         rw [← hcallerWord]
         exact hauthEvm
       have hauthSolc :
           solcSlotWord σ I (solcMappingSlot ⟨0⟩ (solcSourceWord I)) = ⟨1⟩ := by
         simpa [callerSlot, dogCallerWardsSlot, solcSlotWordAt] using hauthEvm
       by_cases hDirtLtEvm : (solcSlotWordAt ⟨5⟩ σ I).toNat < rad.toNat
-      · have hDirtLtSolm : (solcSlotWordAt ⟨5⟩ σ I).toNat < rad.toNat := by
+      · have hDirtLtStele : (solcSlotWordAt ⟨5⟩ σ I).toNat < rad.toNat := by
           rw [← hDirtWord]
           exact hDirtLtEvm
         let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
@@ -1964,13 +1964,13 @@ theorem dogDigsBodyCore {v : DogImmutables} {code : ByteArray}
           simpa [evm0, locals, rad] using
             (digsFirstSubUnderflowSourceBody (v := v)
               (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
-              hwv hauthSolm hDirtLtSolm)
+              hwv hauthStele hDirtLtStele)
         have hrev := RD.dogDigsFirstSubUnderflowRevert
           hpatch hreach hsz68 hsize hauthSolc (by simpa [rad] using hDirtLtEvm)
         exact hrev.reEquivExecutionRevert hcode hdispatch hdecode hbody
       · have hDirtLeEvm : rad.toNat ≤ (solcSlotWordAt ⟨5⟩ σ I).toNat := by
           exact Nat.le_of_not_gt hDirtLtEvm
-        have hDirtLeSolm : rad.toNat ≤ (solcSlotWordAt ⟨5⟩ σ I).toNat := by
+        have hDirtLeStele : rad.toNat ≤ (solcSlotWordAt ⟨5⟩ σ I).toNat := by
           rw [← hDirtWord]
           exact hDirtLeEvm
         by_cases hperm : I.perm = true
@@ -1979,31 +1979,31 @@ theorem dogDigsBodyCore {v : DogImmutables} {code : ByteArray}
           have hbody :=
             (digsSecondSubUnderflowSourceBodySplit (v := v)
               (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
-              hwv hsz68 hauthSolm (by simpa [rad] using hDirtLeSolm)).2 hstatic
+              hwv hsz68 hauthStele (by simpa [rad] using hDirtLeStele)).2 hstatic
           have hreachStatic := permSplit_false hstatic
             (RD.dogDigsSecondSubUnderflowRevertSplit
               hpatch hreach hsz68 hsize hauthSolc (by simpa [rad] using hDirtLeEvm))
           exact hreachStatic.reEquivStaticHalt hcode hdispatch hdecode hbody
         let dirtNewEvm := UInt256.sub (solcSlotWordAt ⟨5⟩ σ I) rad
-        let dirtNewSolm := UInt256.sub (solcSlotWordAt ⟨5⟩ σ I) rad
+        let dirtNewStele := UInt256.sub (solcSlotWordAt ⟨5⟩ σ I) rad
         let σ1_evm := sstoreAccountMap I.codeOwner σ ⟨5⟩ dirtNewEvm
-        let σ1_solm := sstoreAccountMap I.codeOwner σ ⟨5⟩ dirtNewSolm
+        let σ1_stele := sstoreAccountMap I.codeOwner σ ⟨5⟩ dirtNewStele
         have hIlkWord :
-            solcSlotWordAt actualSlot σ1_evm I = solcSlotWordAt sourceSlot σ1_solm I := by
-          simpa [hslotEq, σ1_evm, σ1_solm, dirtNewEvm, dirtNewSolm]
+            solcSlotWordAt actualSlot σ1_evm I = solcSlotWordAt sourceSlot σ1_stele I := by
+          simpa [hslotEq, σ1_evm, σ1_stele, dirtNewEvm, dirtNewStele]
         by_cases hIlkLtEvm : (solcSlotWordAt actualSlot σ1_evm I).toNat < rad.toNat
-        · have hIlkLtSolm : (solcSlotWordAt sourceSlot σ1_solm I).toNat < rad.toNat := by
+        · have hIlkLtStele : (solcSlotWordAt sourceSlot σ1_stele I).toNat < rad.toNat := by
             rw [← hIlkWord]
             exact hIlkLtEvm
           let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
           have hbody :
               ExecTransitionBody config contract evm0 locals digsTransition.body
                 .reverted (immStore v) := by
-            simpa [evm0, locals, rad, sourceSlot, σ1_solm, dirtNewSolm] using
+            simpa [evm0, locals, rad, sourceSlot, σ1_stele, dirtNewStele] using
               (digsSecondSubUnderflowSourceBody (v := v)
                 (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
-                hwv hsz68 hauthSolm (by simpa [rad] using hDirtLeSolm)
-                (by simpa [rad, sourceSlot, σ1_solm, dirtNewSolm] using hIlkLtSolm))
+                hwv hsz68 hauthStele (by simpa [rad] using hDirtLeStele)
+                (by simpa [rad, sourceSlot, σ1_stele, dirtNewStele] using hIlkLtStele))
           have hrev := RD.dogDigsSecondSubUnderflowRevert
             hpatch hreach hperm hsz68 hsize hauthSolc
             (by simpa [rad] using hDirtLeEvm)
@@ -2011,39 +2011,39 @@ theorem dogDigsBodyCore {v : DogImmutables} {code : ByteArray}
           exact hrev.reEquivExecutionRevert hcode hdispatch hdecode hbody
         · have hIlkLeEvm : rad.toNat ≤ (solcSlotWordAt actualSlot σ1_evm I).toNat := by
             exact Nat.le_of_not_gt hIlkLtEvm
-          have hIlkLeSolm : rad.toNat ≤ (solcSlotWordAt sourceSlot σ1_solm I).toNat := by
+          have hIlkLeStele : rad.toNat ≤ (solcSlotWordAt sourceSlot σ1_stele I).toNat := by
             rw [← hIlkWord]
             exact hIlkLeEvm
           let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-          let evm1 := Solm.EVM.storageStore evm0 I.codeOwner ⟨5⟩ dirtNewSolm
-          let ilkDirt0Solm := solcSlotWordAt sourceSlot evm1.accountMap evm1.executionEnv
-          let ilkDirtNewSolm := UInt256.sub ilkDirt0Solm rad
-          let evm2 := Solm.EVM.storageStore evm1 I.codeOwner sourceSlot ilkDirtNewSolm
+          let evm1 := Stele.EVM.storageStore evm0 I.codeOwner ⟨5⟩ dirtNewStele
+          let ilkDirt0Stele := solcSlotWordAt sourceSlot evm1.accountMap evm1.executionEnv
+          let ilkDirtNewStele := UInt256.sub ilkDirt0Stele rad
+          let evm2 := Stele.EVM.storageStore evm1 I.codeOwner sourceSlot ilkDirtNewStele
           have hbody :
               ExecTransitionBody config contract evm0 locals digsTransition.body
                 (.returned
-                  (Frame.mk contract (digsLocalsDirtNewIlkDirtNew I dirtNewSolm ilkDirtNewSolm) (immStore v))
+                  (Frame.mk contract (digsLocalsDirtNewIlkDirtNew I dirtNewStele ilkDirtNewStele) (immStore v))
                   evm2 none) (immStore v) := by
-            simpa [evm0, evm1, evm2, locals, rad, sourceSlot, dirtNewSolm,
-              ilkDirt0Solm, ilkDirtNewSolm] using
+            simpa [evm0, evm1, evm2, locals, rad, sourceSlot, dirtNewStele,
+              ilkDirt0Stele, ilkDirtNewStele] using
               (digsSuccessSourceBody (v := v)
                 (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
-                hwv hsz68 hauthSolm (by simpa [rad] using hDirtLeSolm)
-                (by simpa [rad, sourceSlot, σ1_solm, dirtNewSolm] using hIlkLeSolm))
+                hwv hsz68 hauthStele (by simpa [rad] using hDirtLeStele)
+                (by simpa [rad, sourceSlot, σ1_stele, dirtNewStele] using hIlkLeStele))
           have hret := RD.dogDigsSuccess
             hpatch hreach hperm hsz68 hsize hauthSolc
             (by simpa [rad] using hDirtLeEvm)
             (by simpa [rad, actualSlot, σ1_evm, dirtNewEvm] using hIlkLeEvm)
           have hIlkNewEq :
               UInt256.sub (solcSlotWordAt actualSlot σ1_evm I) rad =
-                UInt256.sub (solcSlotWordAt sourceSlot σ1_solm I) rad := by
+                UInt256.sub (solcSlotWordAt sourceSlot σ1_stele I) rad := by
             rw [hIlkWord]
           have haccountsBase :
               Eq
                 (sstoreAccountMap I.codeOwner σ1_evm sourceSlot
                   (UInt256.sub (solcSlotWordAt actualSlot σ1_evm I) rad))
-                (sstoreAccountMap I.codeOwner σ1_solm sourceSlot
-                  (UInt256.sub (solcSlotWordAt sourceSlot σ1_solm I) rad)) := by
+                (sstoreAccountMap I.codeOwner σ1_stele sourceSlot
+                  (UInt256.sub (solcSlotWordAt sourceSlot σ1_stele I) rad)) := by
             rw [hIlkWord]
           have haccounts :
               Eq
@@ -2052,12 +2052,12 @@ theorem dogDigsBodyCore {v : DogImmutables} {code : ByteArray}
                 evm2.accountMap := by
             simpa [evm2, evm1, evm0, initState, storageStore_accountMap,
               storageStore_executionEnv, actualSlot, sourceSlot, hslotEq, hIlkWord,
-              σ1_solm, ilkDirt0Solm, ilkDirtNewSolm] using haccountsBase
+              σ1_stele, ilkDirt0Stele, ilkDirtNewStele] using haccountsBase
           exact hret.reEquivExecutionGen hcode hdispatch hdecode hbody
             haccounts henc
-    · have hauthSolm : solcSlotWordAt callerSlot σ I ≠ ⟨1⟩ := by
-        intro hsolm
-        exact hauthEvm (by rw [hcallerWord, hsolm])
+    · have hauthStele : solcSlotWordAt callerSlot σ I ≠ ⟨1⟩ := by
+        intro hstele
+        exact hauthEvm (by rw [hcallerWord, hstele])
       let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
       have hbody :
           ExecTransitionBody config contract evm0 locals digsTransition.body
@@ -2065,9 +2065,9 @@ theorem dogDigsBodyCore {v : DogImmutables} {code : ByteArray}
         have hguard := dogAuthGuardEval_false (v := v)
           (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
           (g := Sat256.ofUInt256 g) (locals := locals)
-          (by simp [locals, digsLocals]) hauthSolm
+          (by simp [locals, digsLocals]) hauthStele
         have hblock := nonpayableSecondRequireReverts
-          (cfg := config) (solm := { contract := contract, locals := locals, immutables := immStore v })
+          (cfg := config) (stele := { contract := contract, locals := locals, immutables := immStore v })
           (evm := evm0)
           (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
           (rest := [

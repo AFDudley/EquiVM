@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.BalanceMutation
 
 /-! The transfer balance check and ordered balance stores. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables metaMorphoV1_1Blocks
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
@@ -24,7 +24,7 @@ theorem balanceMoveState_accounts (evm : State)
     (balanceMoveState evm sender recipient value).accountMap =
       balanceMoveAccounts evm.executionEnv evm.accountMap sender recipient value := by
   simp only [balanceMoveState, balanceDebitState, balanceStore, balanceWord, balanceMoveAccounts,
-    storageStore_accountMap, storageStore_executionEnv, Solm.EVM.storageLoad,
+    storageStore_accountMap, storageStore_executionEnv, Stele.EVM.storageLoad,
     State.lookupAccount, Account.lookupStorage, codeOwnerStorageWord]
 
 theorem transferReadBalance {I : ExecutionEnv} {g : Sat256} {s0 : State}

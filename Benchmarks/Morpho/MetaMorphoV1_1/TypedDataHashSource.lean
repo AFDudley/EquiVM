@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.DomainSource
 
 /-! The EIP-712 envelope and the source helper that obtains its domain separator. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1

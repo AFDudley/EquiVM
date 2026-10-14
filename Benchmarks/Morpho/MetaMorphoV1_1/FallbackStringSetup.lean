@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.FallbackStringMemory
 
 /-! Header decoding and the short/long branches of the generic storage-string copier. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables metaMorphoV1_1Blocks
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1

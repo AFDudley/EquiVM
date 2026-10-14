@@ -1,7 +1,7 @@
 import Examples.OpenZeppelinBench.Ownable2Step.Storage
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -36,16 +36,16 @@ def transferOwnershipStore (I : ExecutionEnv) : Store :=
   (∅ : Store).insert "newOwner" (transferOwnershipNewOwnerValue I)
 
 def transferOwnershipAfterPendingState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨1⟩
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨1⟩
       (ownable2StepSetAddressWord
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩)
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩)
         (transferOwnershipNewOwnerWord I))
 
 theorem transferOwnershipAfterPendingState_accountMap (evm : EVM.State) (I : ExecutionEnv) :
     (transferOwnershipAfterPendingState evm I).accountMap =
       sstoreAccountMap evm.executionEnv.codeOwner evm.accountMap ⟨1⟩
         (ownable2StepSetAddressWord
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩)
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩)
           (transferOwnershipNewOwnerWord I)) := by
   simp [transferOwnershipAfterPendingState, storageStore_accountMap]
 
@@ -71,7 +71,7 @@ theorem evalExpr_transferOwnership_owner (evm : EVM.State) (I : ExecutionEnv) :
     evalExpr? config { contract := contract, locals := transferOwnershipStore I } evm
       (.storage ownerRef) =
       .ok (.address (AccountAddress.ofNat
-        (UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
+        (UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
           solcAddrMask).toNat)) := by
   have her : evalStorageRef config { contract := contract, locals := transferOwnershipStore I } evm
       ownerRef = .ok { base := "_owner", steps := [] } := by
@@ -89,7 +89,7 @@ theorem evalExpr_transferOwnership_sender (evm : EVM.State) (I : ExecutionEnv) :
 
 theorem evalExpr_transferOwnership_owner_eq_true (evm : EVM.State) (I : ExecutionEnv)
     (howner :
-      UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩) solcAddrMask =
+      UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩) solcAddrMask =
         ownable2StepSourceWord evm.executionEnv) :
     evalExpr? config { contract := contract, locals := transferOwnershipStore I } evm
       (.binary .eq (.storage ownerRef) sender) = .ok (.bool true) := by
@@ -100,7 +100,7 @@ theorem evalExpr_transferOwnership_owner_eq_true (evm : EVM.State) (I : Executio
 
 theorem evalExpr_transferOwnership_owner_eq_false (evm : EVM.State) (I : ExecutionEnv)
     (howner :
-      UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩) solcAddrMask ≠
+      UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩) solcAddrMask ≠
         ownable2StepSourceWord evm.executionEnv) :
     evalExpr? config { contract := contract, locals := transferOwnershipStore I } evm
       (.binary .eq (.storage ownerRef) sender) = .ok (.bool false) := by
@@ -108,12 +108,12 @@ theorem evalExpr_transferOwnership_owner_eq_false (evm : EVM.State) (I : Executi
     bind, EvalResult.bind, evalBinaryOp?]
   have haddr :
       AccountAddress.ofNat
-          (UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
+          (UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
             solcAddrMask).toNat ≠ evm.executionEnv.source := by
     intro haddr
     exact howner (ownable2StepWord_eq_of_maskedAddress_eq_source haddr)
   rw [show ((.address (AccountAddress.ofNat
-          (UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
+          (UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
             solcAddrMask).toNat) : Value) == .address evm.executionEnv.source) = false by
     simp [BEq.beq, haddr]]
 
@@ -143,7 +143,7 @@ theorem transferOwnershipAssignPending (evm : EVM.State) (I : ExecutionEnv)
       storageLocStore_address_offset0 evm ⟨1⟩
         (transferOwnershipNewOwnerWord I) hcanon
   exact assignStorageRef_storage_scalar_value (hbackend := rfl) (cfg := config)
-    (solm := { contract := contract, locals := transferOwnershipStore I })
+    (stele := { contract := contract, locals := transferOwnershipStore I })
     (evm := evm) (evm' := transferOwnershipAfterPendingState evm I)
     (slot := pendingOwnerRef) (er := { base := "_pendingOwner", steps := [] })
     (ty := .elem .address) (loc := addrLoc ⟨1⟩)
@@ -154,7 +154,7 @@ theorem transferOwnershipAssignPending (evm : EVM.State) (I : ExecutionEnv)
 theorem ownable2StepTransferOwnershipBodyReturns (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (howner :
-      UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩) solcAddrMask =
+      UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩) solcAddrMask =
         ownable2StepSourceWord evm.executionEnv)
     (hcanon : (transferOwnershipNewOwnerWord I).toNat < EVM.addressModulus) :
     ExecTransitionBody config contract evm (transferOwnershipStore I)
@@ -174,7 +174,7 @@ theorem ownable2StepTransferOwnershipBodyReturns (evm : EVM.State) (I : Executio
 theorem ownable2StepTransferOwnershipBodyStatic (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (howner :
-      UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩) solcAddrMask =
+      UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩) solcAddrMask =
         ownable2StepSourceWord evm.executionEnv)
     (hcanon : (transferOwnershipNewOwnerWord I).toNat < EVM.addressModulus)
     (hperm : evm.executionEnv.perm = false) :
@@ -191,7 +191,7 @@ theorem ownable2StepTransferOwnershipBodyStatic (evm : EVM.State) (I : Execution
 theorem ownable2StepTransferOwnershipBodyReverts_owner (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (howner :
-      UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩) solcAddrMask ≠
+      UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩) solcAddrMask ≠
         ownable2StepSourceWord evm.executionEnv) :
     ExecTransitionBody config contract evm (transferOwnershipStore I)
       transferOwnershipTransition.body .reverted := by
@@ -559,16 +559,16 @@ theorem ownable2StepTransferOwnershipBody {σ σ₀ A I}
         by_cases howner :
             UInt256.land (transferOwnershipOwnerWord σ I) solcAddrMask =
               ownable2StepSourceWord I
-        · have hownerSolm :
-              UInt256.land (Solm.EVM.storageLoad evmS evmS.executionEnv.codeOwner ⟨0⟩)
+        · have hownerStele :
+              UInt256.land (Stele.EVM.storageLoad evmS evmS.executionEnv.codeOwner ⟨0⟩)
                   solcAddrMask =
                 ownable2StepSourceWord evmS.executionEnv := by
-            simpa [evmS, initState, Solm.EVM.storageLoad, State.lookupAccount,
+            simpa [evmS, initState, Stele.EVM.storageLoad, State.lookupAccount,
               transferOwnershipOwnerWord, ownable2StepSourceWord] using howner
           have hdec := ownable2StepDecode_transferOwnership_ok (I := I) hsz36 hbig hcanon
           by_cases hperm : I.perm = true
           · have hbody := ownable2StepTransferOwnershipBodyReturns evmS I
-              (by simp only [evmS, initState]; exact hwv) hownerSolm hcanon
+              (by simp only [evmS, initState]; exact hwv) hownerStele hcanon
             exact (permSplit_true hperm (ownable2StepX_transferOwnership_success
                 (g := Sat256.ofUInt256 g) hsz36 hsize hbig hcanon howner hreach))
               |>.reEquivExecutionGen hcode hd hdec hbody
@@ -576,26 +576,26 @@ theorem ownable2StepTransferOwnershipBody {σ σ₀ A I}
                   rw [transferOwnershipAfterPendingState_accountMap]
                   simp [evmS, initState, transferOwnershipAfterPendingMap,
                     transferOwnershipSetPendingWord, transferOwnershipPendingOwnerWord,
-                    Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage])
+                    Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage])
                 (returnEquiv.fallthrough rfl rfl (by native_decide))
           · have hpf : I.perm = false := by simpa using hperm
             have hbody := ownable2StepTransferOwnershipBodyStatic evmS I
-              (by simp only [evmS, initState]; exact hwv) hownerSolm hcanon
+              (by simp only [evmS, initState]; exact hwv) hownerStele hcanon
               (by simp only [evmS, initState]; exact hpf)
             exact (permSplit_false hpf (ownable2StepX_transferOwnership_success
                 (g := Sat256.ofUInt256 g) hsz36 hsize hbig hcanon howner hreach))
               |>.reEquivStaticHalt hcode hd hdec hbody
-        · have hownerSolm :
-              UInt256.land (Solm.EVM.storageLoad evmS evmS.executionEnv.codeOwner ⟨0⟩)
+        · have hownerStele :
+              UInt256.land (Stele.EVM.storageLoad evmS evmS.executionEnv.codeOwner ⟨0⟩)
                   solcAddrMask ≠
                 ownable2StepSourceWord evmS.executionEnv := by
             intro h
             apply howner
-            simpa [evmS, initState, Solm.EVM.storageLoad, State.lookupAccount,
+            simpa [evmS, initState, Stele.EVM.storageLoad, State.lookupAccount,
               transferOwnershipOwnerWord, ownable2StepSourceWord] using h
           have hdec := ownable2StepDecode_transferOwnership_ok (I := I) hsz36 hbig hcanon
           have hbody := ownable2StepTransferOwnershipBodyReverts_owner evmS I
-            (by simp only [evmS, initState]; exact hwv) hownerSolm
+            (by simp only [evmS, initState]; exact hwv) hownerStele
           exact (ownable2StepX_transferOwnership_revert_owner (g := Sat256.ofUInt256 g)
               hsz36 hsize hbig hcanon howner hreach)
             |>.reEquivExecutionRevert hcode hd hdec hbody

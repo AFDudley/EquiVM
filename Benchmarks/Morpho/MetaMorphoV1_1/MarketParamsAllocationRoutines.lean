@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.MarketParamsAllocationSource
 
 /-! Complete source/bytecode simulation of the market-parameter reader. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 

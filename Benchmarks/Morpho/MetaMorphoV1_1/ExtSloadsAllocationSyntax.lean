@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.AllocationSyntax
 
 /-! The `extSloads` call with its compiled return-buffer and array reservations explicit. -/
 
-open Solm ABI
+open Stele ABI
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
 

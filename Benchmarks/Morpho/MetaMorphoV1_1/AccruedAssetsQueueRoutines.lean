@@ -4,7 +4,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.RuntimeBlocks_062
 
 /-! Withdraw-queue indexing up to the market-parameter reader in one accrued-assets iteration. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables metaMorphoV1_1Blocks
 

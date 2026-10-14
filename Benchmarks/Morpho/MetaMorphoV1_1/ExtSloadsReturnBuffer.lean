@@ -5,7 +5,7 @@ import Benchmarks.EAS.Attester.ReturnArrayMemory
 
 /-! Return-buffer reservation and the memory view used by the dynamic decoder. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables metaMorphoV1_1Blocks
 

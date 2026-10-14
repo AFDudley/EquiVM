@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.ExtSloadsAllocationSource
 
 /-! Remaining source branches of the cursor-aware `extSloads` helper. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
 
@@ -91,11 +91,11 @@ theorem abiDecodeSource {cfg : Config} {frame : Frame} {evm : State}
     {name : Ident} {out : ByteArray} {ty : ABIType}
     (hdata : frame.locals.get? name = some (.bytes out)) :
     evalExpr? cfg frame evm (.abiDecode ty (.var name)) =
-      match ABI.decodeReturnValueWithMode? cfg.abiDecodeMode ty out with
+      match cfg.externalABI.decodeValue? ty out with
       | some value => .ok value
       | none => .revert := by
   simp only [evalExpr?, hdata, EvalResult.ofOption, bind, EvalResult.bind]
-  cases ABI.decodeReturnValueWithMode? cfg.abiDecodeMode ty out <;> rfl
+  cases cfg.externalABI.decodeValue? ty out <;> rfl
 
 theorem extSloadsBodyDecodeReverts {cfg : Config} {frame : Frame} {evm evm' : State}
     (ptr : UInt256) (morpho : AccountAddress) (slots : List Value) (out : ByteArray)
@@ -105,7 +105,7 @@ theorem extSloadsBodyDecodeReverts {cfg : Config} {frame : Frame} {evm evm' : St
       (true, evm', out) false)
     (hout : out.size < UInt256.size)
     (hfit : allocationFits ptr (UInt256.ofNat out.size))
-    (hdecode : ABI.decodeReturnValueWithMode? cfg.abiDecodeMode
+    (hdecode : cfg.externalABI.decodeValue?
       (.dynamicArray (.elem (.bytes ⟨31, by decide⟩))) out = none) :
     ExecFuncBody cfg (extSloadsFrame frame ptr morpho slots) evm extSloadsFunction.body
       .reverted := by
@@ -141,7 +141,7 @@ theorem extSloadsBodyArrayReverts {cfg : Config} {frame : Frame} {evm evm' : Sta
       (true, evm', out) false)
     (hout : out.size < UInt256.size)
     (hfit : allocationFits ptr (UInt256.ofNat out.size))
-    (hdecode : ABI.decodeReturnValueWithMode? cfg.abiDecodeMode
+    (hdecode : cfg.externalABI.decodeValue?
       (.dynamicArray (.elem (.bytes ⟨31, by decide⟩))) out = some (.array values))
     (hsize : 32 + 32 * values.length < UInt256.size)
     (harray : ¬ allocationFits (nextCursor ptr (UInt256.ofNat out.size))
@@ -168,7 +168,7 @@ theorem extSloadsBodyReturns {cfg : Config} {frame : Frame} {evm evm' : State}
       (true, evm', out) false)
     (hout : out.size < UInt256.size)
     (hfit : allocationFits ptr (UInt256.ofNat out.size))
-    (hdecode : ABI.decodeReturnValueWithMode? cfg.abiDecodeMode
+    (hdecode : cfg.externalABI.decodeValue?
       (.dynamicArray (.elem (.bytes ⟨31, by decide⟩))) out = some (.array values))
     (hsize : 32 + 32 * values.length < UInt256.size)
     (harray : allocationFits (nextCursor ptr (UInt256.ofNat out.size))
@@ -180,7 +180,7 @@ theorem extSloadsBodyReturns {cfg : Config} {frame : Frame} {evm evm' : State}
   apply extSloadsBufferPrefix ptr morpho slots out hlookup hcall hout hfit
   apply (ABlock.start.letStep (by
     rw [abiDecodeSource (extSloadsBufferFrame_data frame ptr morpho slots out), hdecode])).run
-  refine ExecBlock.consNormal (solm' := extSloadsResultFrame frame ptr morpho slots out values)
+  refine ExecBlock.consNormal (stele' := extSloadsResultFrame frame ptr morpho slots out values)
     (evm' := evm') ?_ ?_
   · refine allocateCallReturns (cfg := cfg) (evm := evm')
       (frame := extSloadsDecodedFrame frame ptr morpho slots out values)

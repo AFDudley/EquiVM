@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.WordWindow
 
 /-! Connect a decoded parameter struct to its canonical five-word memory representation. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
 

@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.Eip712StringSource
 
 /-! Allocation checks after evaluating either EIP-712 domain string. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1

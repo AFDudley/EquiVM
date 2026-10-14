@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.Eip712SourcePrefix
 
 /-! Success and revert outcomes for the complete `eip712Domain` source body. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
 

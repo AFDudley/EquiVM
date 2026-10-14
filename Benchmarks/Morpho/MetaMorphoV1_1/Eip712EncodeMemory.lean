@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.StringEncoderRoutines
 
 /-! The two encoded strings and the first three words of the domain return header. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1

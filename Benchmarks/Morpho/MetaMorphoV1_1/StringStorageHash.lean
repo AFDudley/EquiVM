@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.StringStorageSource
 
 /-! The two constant hashes shared by metadata reads and writes. -/
 
-open Solm Ethereum
+open Stele Ethereum
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 

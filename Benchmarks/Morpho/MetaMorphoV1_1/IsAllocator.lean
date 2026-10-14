@@ -7,11 +7,11 @@ import Benchmarks.Morpho.MetaMorphoV1_1.RuntimeBlocks_039
 # MetaMorphoV1_1 `isAllocator(address)`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 7673; reach lemma `metaMorphoV1_1ReachIsAllocatorBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 
@@ -32,7 +32,7 @@ theorem isAllocatorBodyReturns (v : MetaMorphoV1_1Immutables)
           locals := locals.insert "__calldata" (.bytes evm.executionEnv.calldata)
           immutables := immStore v }
         evm (some [wordToElem .bool (UInt256.land
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (solcMappingSlot ⟨11⟩ w))
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (solcMappingSlot ⟨11⟩ w))
           ⟨255⟩)])) (immStore v) := by
   apply ExecFuncBody.execBlockRet
   exact (nonpayableCalldataPrefix "__calldata" (2 ^ 255 + 4) hwv hhi).returns

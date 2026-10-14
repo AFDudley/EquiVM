@@ -3,7 +3,7 @@ import Reasoning.ExternalCall
 
 /-! The recovery precompile returns either no bytes or one canonical address word. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 

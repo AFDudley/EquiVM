@@ -1,7 +1,7 @@
 import Benchmarks.Dss.Dai.Dispatch
 import Benchmarks.Dss.Dai.Storage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -40,7 +40,7 @@ def approveStorageSlot (I : ExecutionEnv) : UInt256 :=
   allowanceSlot (approveOwnerKey I) (approveUsrKey I)
 
 def approvePostState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (approveStorageSlot I) (approveWadWord I)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (approveStorageSlot I) (approveWadWord I)
 
 abbrev approveEvaledRef (I : ExecutionEnv) : EvaledStorageRef :=
   { base := "allowance", steps := [.mindex (approveOwnerKey I), .mindex (approveUsrKey I)] }
@@ -90,10 +90,10 @@ theorem approveStorageSlot_eq_mapSlot_masked (I : ExecutionEnv) :
   rw [keyValueToWord_address_ofNat_mask, keyValueToWord_address]
 
 theorem daiDecode_approve_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (approveTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (approveTransition.params.map Param.name)
       (transitionSignature approveTransition).paramTypes I.calldata =
         some (approveStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["usr", "wad"] [addr, uint256]
+  show config.externalABI.decodeCalldata? ["usr", "wad"] [addr, uint256]
     I.calldata = _
   simpa [approveStore, approveUsrValue, approveWadValue, approveUsrWord, approveWadWord,
     calldataWord]
@@ -102,9 +102,9 @@ theorem daiDecode_approve_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size)
 
 theorem daiDecode_approve_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 68) :
-    decodeCalldataWithMode config.abiDecodeMode (approveTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (approveTransition.params.map Param.name)
       (transitionSignature approveTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["usr", "wad"] [addr, uint256]
+  show config.externalABI.decodeCalldata? ["usr", "wad"] [addr, uint256]
     I.calldata = none
   simpa using decodeCalldata_legacyAddress_uint256_none_short
     (cd := I.calldata) (x := "usr") (y := "wad") hsz4 hshort
@@ -142,7 +142,7 @@ theorem approveAssign (evm : EVM.State) (I : ExecutionEnv)
   simpa [approvePostState, wordLoc, uint256Loc, uint256Int] using
     storageLocStore_uint256 evm (approveStorageSlot I) (approveWadWord I)
 
-/-- The Solm `approve(address,uint256)` body stores `allowance[msg.sender][usr] = wad`. -/
+/-- The Stele `approve(address,uint256)` body stores `allowance[msg.sender][usr] = wad`. -/
 theorem daiApproveBodyReturns (evm : EVM.State) (I : ExecutionEnv)
     (h : evm.executionEnv.weiValue = ⟨0⟩)
     (hsrc : evm.executionEnv.source = I.source) :
@@ -477,23 +477,23 @@ theorem daiApproveBodyCoreStatic
     (hsz68 : 68 ≤ I.calldata.size)
     (hdispatch : dispatchMsg contract I.calldata = some approveTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (approveTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (approveTransition.params.map Param.name)
         (transitionSignature approveTransition).paramTypes I.calldata =
           some (approveStore I))
     (hreach : ∃ k C, RD daiBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨452⟩ [sel]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
   have hbody :
-      ExecTransitionBody config contract evmSolm (approveStore I)
+      ExecTransitionBody config contract evmStele (approveStore I)
         approveTransition.body
         .staticViolation := by
-    simpa [evmSolm] using
-      daiApproveBodyStatic evmSolm I
-        (by simp only [evmSolm, initState]; exact hwv)
-        (by simp [evmSolm, initState])
-        (by simp only [evmSolm, initState]; exact hperm)
+    simpa [evmStele] using
+      daiApproveBodyStatic evmStele I
+        (by simp only [evmStele, initState]; exact hwv)
+        (by simp [evmStele, initState])
+        (by simp only [evmStele, initState]; exact hperm)
   exact (permSplit_false hperm (daiX_approve_okSplit
       (g := Sat256.ofUInt256 g) hsz68 hsize hreach))
     |>.reEquivStaticHalt hcode hdispatch hdecode hbody
@@ -505,7 +505,7 @@ theorem daiApproveBodyCoreOk
     (hsz68 : 68 ≤ I.calldata.size)
     (hdispatch : dispatchMsg contract I.calldata = some approveTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (approveTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (approveTransition.params.map Param.name)
         (transitionSignature approveTransition).paramTypes I.calldata =
           some (approveStore I))
     (hreach : ∃ k C, RD daiBytecode I (Sat256.ofUInt256 g)
@@ -516,20 +516,20 @@ theorem daiApproveBodyCoreOk
   swap
   · exact daiApproveBodyCoreStatic hcode hsize (by simpa using hperm) hwv hsz68
       hdispatch hdecode hreach
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
   have hbody :
-      ExecTransitionBody config contract evmSolm (approveStore I)
+      ExecTransitionBody config contract evmStele (approveStore I)
         approveTransition.body
         (.returned { contract := contract, locals := approveStore I }
-          (approvePostState evmSolm I) (some [.bool true])) := by
-    simpa [evmSolm] using
-      daiApproveBodyReturns evmSolm I
-        (by simp only [evmSolm, initState]; exact hwv)
-        (by simp [evmSolm, initState])
+          (approvePostState evmStele I) (some [.bool true])) := by
+    simpa [evmStele] using
+      daiApproveBodyReturns evmStele I
+        (by simp only [evmStele, initState]; exact hwv)
+        (by simp [evmStele, initState])
   exact (daiX_approve_ok (g := Sat256.ofUInt256 g) hsz68 hsize hperm hreach)
     |>.reEquivExecutionGen hcode hdispatch hdecode hbody
       (by
-        simp [approvePostState, evmSolm, initState, storageStore_accountMap])
+        simp [approvePostState, evmStele, initState, storageStore_accountMap])
       (returnEquiv_of_encode
         (by simpa [boolTy] using boolTrueReturnEncoding))
 
@@ -546,7 +546,7 @@ theorem daiApproveBodyCoreDecodeFailed_short
   exact (daiApproveX_shortarg (g := Sat256.ofUInt256 g) hsz4 hsize hshort hreach)
     |>.reEquivDecodingFailed hcode hdispatch hdec
 
-/-- `approve(address,uint256)` body refines its Solm transition. -/
+/-- `approve(address,uint256)` body refines its Stele transition. -/
 theorem daiApproveBodyCore {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = daiBytecode) (hsize : I.calldata.size < UInt256.size)
     (hwv : I.weiValue = ⟨0⟩)

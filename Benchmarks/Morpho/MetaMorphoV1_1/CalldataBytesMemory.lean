@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.StringBuffer
 
 /-! Length, payload, and free-pointer facts after dynamic calldata copying. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
 

@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.MulDiv
 
 /-! Rounded-down shares for canonical uint128 market totals, including product overflow. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 

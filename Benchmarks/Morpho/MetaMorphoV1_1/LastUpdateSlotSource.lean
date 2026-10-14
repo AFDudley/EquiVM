@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.MorphoSlots
 
 /-! The checked offset in Morpho's last-update storage-slot helper. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 

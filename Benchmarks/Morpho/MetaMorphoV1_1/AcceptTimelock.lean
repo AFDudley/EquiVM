@@ -6,11 +6,11 @@ import Benchmarks.Morpho.MetaMorphoV1_1.AcceptPendingRoutines
 # MetaMorphoV1_1 `acceptTimelock()`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 4895; reach lemma `metaMorphoV1_1ReachAcceptTimelockBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 
@@ -27,7 +27,7 @@ theorem metaMorphoV1_1AcceptTimelockBody {σ σ₀ A I} {g : UInt256} (v : MetaM
   have hd : dispatchMsg contract I.calldata = some acceptTimelockTransition := by
     apply metaMorphoV1_1Dispatch_acceptTimelock <;>
       first | exact hsel | exact selectorMismatch hsel (by decide +kernel)
-  have hdec : decodeCalldataWithMode config.abiDecodeMode
+  have hdec : config.externalABI.decodeCalldata?
       (acceptTimelockTransition.params.map Param.name)
       (transitionSignature acceptTimelockTransition).paramTypes I.calldata = some ∅ :=
     decodeCalldata_empty_ok hsz

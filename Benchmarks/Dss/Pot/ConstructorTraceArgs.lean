@@ -4,7 +4,7 @@ import Benchmarks.Dss.Pot.ConstructorBase
 # MakerDAO/Sky DSS Pot constructor argument and guard traces
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Pot
 

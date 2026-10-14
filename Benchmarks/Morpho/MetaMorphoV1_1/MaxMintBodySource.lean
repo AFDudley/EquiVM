@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.AllocatedConvertSimulation
 
 /-! Source composition for maxMint's capacity and accrued-share conversion calls. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory

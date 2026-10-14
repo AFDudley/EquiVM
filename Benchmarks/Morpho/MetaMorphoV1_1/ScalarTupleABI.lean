@@ -3,7 +3,7 @@ import Reasoning.ABI
 
 /-! Scalar tuple return decoding shared by the two Morpho struct readers. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
 

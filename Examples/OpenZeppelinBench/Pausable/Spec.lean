@@ -1,16 +1,16 @@
-import Solm.Semantics
-import Solm.SolidityLayout
-import Solm.MetaSolidityLayout
+import Stele.Semantics
+import Stele.SolidityLayout
+import Stele.MetaSolidityLayout
 
 /-!
 # OpenZeppelin Pausable benchmark spec
 
-Solm specification for `PausableBench`, a concrete wrapper around the abstract OpenZeppelin
+Stele specification for `PausableBench`, a concrete wrapper around the abstract OpenZeppelin
 `Pausable` utility.  Events are intentionally omitted; storage, guards, and return values are
 modelled.
 -/
 
-open Solm ABI
+open Stele ABI
 
 namespace OpenZeppelinBench.Pausable
 

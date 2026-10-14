@@ -2,15 +2,15 @@ import Benchmarks.Morpho.MetaMorphoV1_1.Storage
 
 /-! Mapping reads and scratch-memory facts shared by the mapping getters. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 
 -- LIBRARY CANDIDATE: resolve one address-valued mapping index held in a local variable.
-theorem evalStorageRef_addressIndex {cfg : Config} {solm : Frame} {evm : EVM.State}
+theorem evalStorageRef_addressIndex {cfg : Config} {stele : Frame} {evm : EVM.State}
     (base name : Ident) (addr : AccountAddress)
-    (hget : solm.locals.get? name = some (.address addr)) :
-    evalStorageRef cfg solm evm ⟨base, [.mindex (.var name)]⟩ =
+    (hget : stele.locals.get? name = some (.address addr)) :
+    evalStorageRef cfg stele evm ⟨base, [.mindex (.var name)]⟩ =
       .ok ⟨base, [.mindex (.address addr)]⟩ := by
   simp only [evalStorageRef, evalStorageRefSteps, evalStorageRefStep, evalExpr?, hget,
     valueToKey?, EvalResult.ofOption, EvalResult.bind, bind, pure]
@@ -21,7 +21,7 @@ theorem evalStorage_balanceOf (evm : EVM.State) (locals imms : Store) (w : UInt2
     (hcanon : w.toNat < EVM.addressModulus) :
     evalExpr? config { contract := contract, locals := locals, immutables := imms } evm
       (.storage ⟨"_balances", [.mindex (.var "account")]⟩) =
-      .ok (.int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      .ok (.int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (solcMappingSlot ⟨0⟩ w)).toNat)) := by
   apply evalExpr_storage_scalar_value
     (er := ⟨"_balances", [.mindex (.address (AccountAddress.ofNat w.toNat))]⟩)
@@ -39,7 +39,7 @@ theorem evalStorage_nonces (evm : EVM.State) (locals imms : Store) (w : UInt256)
     (hcanon : w.toNat < EVM.addressModulus) :
     evalExpr? config { contract := contract, locals := locals, immutables := imms } evm
       (.storage ⟨"_nonces", [.mindex (.var "owner")]⟩) =
-      .ok (.int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      .ok (.int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (solcMappingSlot ⟨7⟩ w)).toNat)) := by
   apply evalExpr_storage_scalar_value
     (er := ⟨"_nonces", [.mindex (.address (AccountAddress.ofNat w.toNat))]⟩)
@@ -58,7 +58,7 @@ theorem evalStorage_isAllocator (evm : EVM.State) (locals imms : Store) (w : UIn
     evalExpr? config { contract := contract, locals := locals, immutables := imms } evm
       (.storage ⟨"isAllocator", [.mindex (.var "arg0")]⟩) =
       .ok (wordToElem .bool (UInt256.land
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (solcMappingSlot ⟨11⟩ w))
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (solcMappingSlot ⟨11⟩ w))
         ⟨255⟩)) := by
   apply evalExpr_storage_scalar_value
     (er := ⟨"isAllocator", [.mindex (.address (AccountAddress.ofNat w.toNat))]⟩)

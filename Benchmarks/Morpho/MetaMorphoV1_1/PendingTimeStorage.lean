@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.Mutation
 
 /-! The uint64 timestamp field at byte offset twenty in a pending guardian record. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 
@@ -77,23 +77,23 @@ theorem storageLocStore_pendingTime (evm : EVM.State) (slot data : UInt256) :
       { slot := slot, offset := 20, size := 8, hbound := by decide,
         type := .int (.uint ⟨64, by decide⟩) }
       (uint256Value data) =
-      some (Solm.EVM.storageStore evm evm.executionEnv.codeOwner slot
-        (setPendingTimeWord (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot) data)) := by
+      some (Stele.EVM.storageStore evm evm.executionEnv.codeOwner slot
+        (setPendingTimeWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot) data)) := by
   unfold storageLocStore storageLocWriteWord
   simp only [valueToWord, wordOfInt_ofNat_toNat, bind, Option.bind]
   congr 2
   apply u256_inj
   change fromBytes'
     ((EVM.Word.toBytesLEWithSizeProof
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).1.take 20 ++
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).1.take 20 ++
       (EVM.Word.toBytesLEWithSizeProof data).1.take 8 ++
       (EVM.Word.toBytesLEWithSizeProof
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).1.drop 28) = _
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).1.drop 28) = _
   rw [fromBytes'_append, fromBytes'_append, fromBytes'_take_wordLE,
     fromBytes'_take_wordLE, fromBytes'_drop_wordLE, setPendingTimeWord_toNat]
   simp only [List.length_append, List.length_take,
     (EVM.Word.toBytesLEWithSizeProof
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).2,
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).2,
     (EVM.Word.toBytesLEWithSizeProof data).2]
   change _ % 2 ^ 160 + 2 ^ 160 * (data.toNat % 2 ^ 64) + 2 ^ 224 * (_ / 2 ^ 224) = _
   omega

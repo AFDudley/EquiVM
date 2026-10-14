@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.StringBufferWords
 
 /-! The masks used by metadata setters retain precisely the payload prefix of a word. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 

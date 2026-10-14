@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.AcceptPendingSyntax
 
 /-! Source expressions and frames for submitting a guardian update. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 
@@ -117,7 +117,7 @@ theorem scheduledGuardianTimeSourceRevert (evm : EVM.State) (imms : Store)
     evalExpr? config (scheduledGuardianFrame evm imms value)
       (pendingGuardianValueState evm value) scheduledGuardianTimeExpr = .revert := by
   have h := checkedAddSourceOverflow
-    (cfg := config) (solm := scheduledGuardianFrame evm imms value)
+    (cfg := config) (stele := scheduledGuardianFrame evm imms value)
     (evm := pendingGuardianValueState evm value)
     (lhs := .env .timestamp) (rhs := .var "__pendingTime2")
     (a := UInt256.ofNat evm.executionEnv.header.timestamp) (b := pendingGuardianDelay evm)

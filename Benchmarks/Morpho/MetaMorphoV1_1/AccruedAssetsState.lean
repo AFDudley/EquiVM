@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.AccruedAssetsQueueSource
 
 /-! Loop locals, checked accumulation, and preservation of the later fee-calculation locals. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory

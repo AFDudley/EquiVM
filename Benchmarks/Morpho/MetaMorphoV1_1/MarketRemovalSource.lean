@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.MarketRemovalGuardsSource
 
 /-! Source outcomes for market-removal scheduling: guards, overflow, storage, and static mode. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 
@@ -26,7 +26,7 @@ theorem marketRemovalTimeSourceRevert {frame : Frame} {evm : State}
     (hcontract : frame.contract = contract) (hbase : frame.locals.get? "timelock" = none)
     (hover : ¬ pendingTimelockScheduleFits evm) :
     evalExpr? config frame evm marketRemovalTimeExpr = .revert := by
-  have h := checkedAddSourceOverflow (cfg := config) (solm := frame) (evm := evm)
+  have h := checkedAddSourceOverflow (cfg := config) (stele := frame) (evm := evm)
     (lhs := .env .timestamp) (rhs := .storage ⟨"timelock", []⟩)
     (a := UInt256.ofNat evm.executionEnv.header.timestamp) (b := pendingTimelockDelay evm)
     (by simp only [evalExpr?, envValue, pure])

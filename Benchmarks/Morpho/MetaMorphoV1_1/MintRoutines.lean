@@ -5,7 +5,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.RuntimeBlocks_079
 
 /-! The checked supply addition and ordered storage updates of the compiled mint helper. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables metaMorphoV1_1Blocks
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
@@ -93,7 +93,7 @@ theorem mintReturn {evm : EVM.State} {g : Sat256} {s0 : State}
   rw [hh] at h2
   refine ⟨aw2, k2, C2, ?_⟩
   simpa only [mintBalanceState, balanceStore, balanceWord, storageStore_accountMap,
-    mintSupplyState, storageStore_executionEnv, Solm.EVM.storageLoad,
+    mintSupplyState, storageStore_executionEnv, Stele.EVM.storageLoad,
     State.lookupAccount, Account.lookupStorage, codeOwnerStorageWord] using h2
 
 theorem mintRevert {evm : EVM.State} {g : Sat256} {s0 : State}

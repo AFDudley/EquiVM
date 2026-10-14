@@ -1,7 +1,7 @@
 import Benchmarks.Dss.Cat.BiteBody
 import Benchmarks.Dss.Cat.BiteRevertBranch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 1000000
@@ -81,7 +81,7 @@ theorem catBiteRevertUrnsDecode {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = catBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some biteTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (biteTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (biteTransition.params.map Param.name)
         (transitionSignature biteTransition).paramTypes I.calldata = some (biteLocals I))
     (hdepth : (I.depth : ℕ) < 1024)
     (hvatCode :
@@ -112,7 +112,7 @@ theorem catBiteRevertUrnsDecode {σ σ₀ A I} {g : UInt256}
       (catBiteUrnsPostCallMem I (catBiteIlksPostCallMem I o') ou) ⟨9⟩ ou σu ku Cu) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   have hdepthNe : I.depth ≠ 1024 := by omega
-  obtain ⟨σs, As, σus, Aus, hIlksSolm, hUrnsSolm, _hAmEq, hvatCodeIlkS⟩ :=
+  obtain ⟨σs, As, σus, Aus, hIlksStele, hUrnsStele, _hAmEq, hvatCodeIlkS⟩ :=
     catBiteMapUrns hdepthNe hUrnsVatCode hIlksCall hUrnsCall
   obtain ⟨_, _, rd1420⟩ := RD.catBiteUrnsCallSucceeded rd1399 (by decide) (by simp)
   have hmemI : 196 ≤ (catBiteIlksPostCallMem I o').size := by
@@ -126,7 +126,7 @@ theorem catBiteRevertUrnsDecode {σ σ₀ A I} {g : UInt256}
     (awInv32 (⟨9⟩ : UInt256) (by native_decide))
     (by simp only [List.length_cons, List.length_nil]; omega)
     (catBiteSourceUrnsDecodeRevert hwv (catBiteVatCodePos_of_uniswap hvatCode)
-      hIlksSolm (catBiteIlksDecode_ok hilkslen) hvatCodeIlkS hUrnsSolm
+      hIlksStele (catBiteIlksDecode_ok hilkslen) hvatCodeIlkS hUrnsStele
       (catBiteUrnsDecode_none hurnsShort))
 
 /-! # Cat `bite` — the integrator walk (`catBiteBodyImpl`)
@@ -150,7 +150,7 @@ theorem catBiteBodyImpl {σ σ₀ A I} {g : UInt256}
     have hsz36 : 36 ≤ I.calldata.size := by omega
     have hdispatch : dispatchMsg contract I.calldata = some biteTransition := catDispatch_bite hsel
     have hdecode :
-        decodeCalldataWithMode config.abiDecodeMode (biteTransition.params.map Param.name)
+        config.externalABI.decodeCalldata? (biteTransition.params.map Param.name)
           (transitionSignature biteTransition).paramTypes I.calldata = some (biteLocals I) :=
       biteDecode_ok hsz68
     by_cases hvatCode :
@@ -245,16 +245,16 @@ theorem catBiteBodyImpl {σ σ₀ A I} {g : UInt256}
                           rw [hf] at hw
                           simp only [Option.option, Function.comp] at hw ⊢
                           exact hposNe _ hw
-                    obtain ⟨σs, As, hIlksSolm, hEqIlk⟩ := catBiteMapIlksCall hIlksCall
+                    obtain ⟨σs, As, hIlksStele, hEqIlk⟩ := catBiteMapIlksCall hIlksCall
                     have hσIlk : σ' = σs := by simpa [initState] using hEqIlk
                     have htgt : (AccountAddress.ofUInt256 (catBiteVatTargetWord σ I))
                         = EVM.address (biteVatAddr (initState σ σ₀ (Sat256.ofUInt256 g) A I)) := by
                       exact catBiteVatEvmAddr_eq_target.symm
-                    rw [htgt] at hIlksSolm
+                    rw [htgt] at hIlksStele
                     obtain ⟨AU, hUrnsCall'⟩ :=
                       typedCallViaEVM_zero_setSubstate hUrnsCall (by simpa [initState] using hdepthNe) A'
-                    obtain ⟨σus, Aus, hUrnsSolm, hEqUrn⟩ :=
-                      catBiteMapCall (A_x_solm := As) hUrnsCall' hdepthNe
+                    obtain ⟨σus, Aus, hUrnsStele, hEqUrn⟩ :=
+                      catBiteMapCall (A_x_stele := As) hUrnsCall' hdepthNe
                     have hslot3 : solcSlotWordAt ⟨3⟩ σ' I = solcSlotWordAt ⟨3⟩ σs I := by
                       exact congrArg (fun accounts => solcSlotWordAt ⟨3⟩ accounts I) hEqIlk
                     set eI := { initState σ σ₀ (Sat256.ofUInt256 g) A I with
@@ -265,7 +265,7 @@ theorem catBiteBodyImpl {σ σ₀ A I} {g : UInt256}
                         = AccountAddress.ofUInt256 ((solcSlotWordAt ⟨3⟩ σs I).land biteAddrMaskWord) := by
                       rw [addrId, accountAddress_ofUInt256_eq_ofNat_toNat]
                       simp only [biteVatAddr, solcSlotWordAt, heIam, heIee, hmask]
-                    rw [hslot3, ← haddr] at hUrnsSolm
+                    rw [hslot3, ← haddr] at hUrnsStele
                     have hvatCodeIlk : 0 < (UInt256.ofNat
                         ((eI.lookupAccount (biteVatAddr eI)).option 0 (fun acc => acc.code.size))).toNat := by
                       have hva : biteVatAddr eI
@@ -283,9 +283,9 @@ theorem catBiteBodyImpl {σ σ₀ A I} {g : UInt256}
                     refine catBiteUrnsFailLeaf hcode hdispatch hdecode rd1399 hoszu
                       (by simp only [List.length_cons, List.length_nil]; omega) ?_
                     exact catBiteSourceUrnsFailRevert hwv
-                      (catBiteVatCodePos_of_uniswap hvatCode) hIlksSolm
+                      (catBiteVatCodePos_of_uniswap hvatCode) hIlksStele
                       (catBiteIlksDecode_ok hilkslen) hvatCodeIlk
-                      (by simpa [eI, hσIlk, initState] using hUrnsSolm)
+                      (by simpa [eI, hσIlk, initState] using hUrnsStele)
                 | true =>
                     by_cases hurnslen : 64 ≤ ou.size
                     · by_cases hlive : solcSlotWordAt ⟨2⟩ σu I = ⟨1⟩
@@ -985,7 +985,7 @@ theorem catBiteBodyImpl {σ σ₀ A I} {g : UInt256}
                                           by_cases hk32 : 32 ≤ ok.size
                                           swap
                                           · -- kick return decode short (returndatasize < 32): all heavy work (free-ptr
-                                            -- MLOAD facts + Solm mapping) is inside `catBiteRevertKickDecodeW` (own budget);
+                                            -- MLOAD facts + Stele mapping) is inside `catBiteRevertKickDecodeW` (own budget);
                                             -- the walk supplies rd2532/reads by cheap metavar assignment.
                                             exact catBiteRevertKickDecodeW hcode hdispatch hdecode
                                               hwv hsz36 hdepth
@@ -1298,10 +1298,10 @@ theorem catBiteBodyImpl {σ σ₀ A I} {g : UInt256}
                                             (hKickCall := by
                                               rw [hzk] at hKickCall'
                                               have storeFlat : ∀ (ev : EVM.State) (aa : AccountAddress)
-                                                  (k v : UInt256), Solm.EVM.storageStore ev aa k v =
+                                                  (k v : UInt256), Stele.EVM.storageStore ev aa k v =
                                                     { ev with accountMap := sstoreAccountMap aa ev.accountMap k v } := by
                                                 intro ev aa k v
-                                                simp only [Solm.EVM.storageStore, sstoreAccountMap, State.lookupAccount]
+                                                simp only [Stele.EVM.storageStore, sstoreAccountMap, State.lookupAccount]
                                                 cases h : ev.accountMap.get? aa with
                                                 | none => simp [Option.option]
                                                 | some acc => simp [Option.option, State.setAccount, Account.updateStorage]
@@ -1318,7 +1318,7 @@ theorem catBiteBodyImpl {σ σ₀ A I} {g : UInt256}
                                                   (by rw [u256_land_comm]; exact solcAddrMask_result_canonical _),
                                                   u256_land_comm]
                                               have hvowArg :
-                                                  biteVowAddrV (Solm.EVM.storageStore eFess eFess.executionEnv.codeOwner
+                                                  biteVowAddrV (Stele.EVM.storageStore eFess eFess.executionEnv.codeOwner
                                                       ⟨6⟩ litterNew)
                                                     = AccountAddress.ofNat
                                                       (seg8VowM (sstoreAccountMap I.codeOwner σf ⟨6⟩ litterNew) I).toNat := by

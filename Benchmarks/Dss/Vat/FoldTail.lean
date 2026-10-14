@@ -2,14 +2,14 @@ import Benchmarks.Dss.Vat.FoldCommon
 
 namespace Benchmarks.Dss.Vat
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
 theorem vatFoldDaiAddRevertGuardNeg (evm : EVM.State) (I : ExecutionEnv)
     {rateNew daiOld daiNew radWord : UInt256} {rad : Int}
     (hload :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (foldDaiSlot I) = daiOld)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (foldDaiSlot I) = daiOld)
     (hradWord : rad % (Int.ofNat EVM.wordModulus) = Int.ofNat radWord.toNat)
     (hdaiNew : daiNew = radWord + daiOld)
     (hguardNeg :
@@ -52,7 +52,7 @@ theorem vatFoldDaiAddRevertGuardNeg (evm : EVM.State) (I : ExecutionEnv)
 theorem vatFoldDaiAddRevertGuardPos (evm : EVM.State) (I : ExecutionEnv)
     {rateNew daiOld daiNew radWord : UInt256} {rad : Int}
     (hload :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (foldDaiSlot I) = daiOld)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (foldDaiSlot I) = daiOld)
     (hradWord : rad % (Int.ofNat EVM.wordModulus) = Int.ofNat radWord.toNat)
     (hdaiNew : daiNew = radWord + daiOld)
     (hguardNeg :
@@ -101,7 +101,7 @@ theorem vatFoldDaiAddRevertGuardPos (evm : EVM.State) (I : ExecutionEnv)
 theorem vatFoldDebtAddRevertGuardNeg (evm : EVM.State) (I : ExecutionEnv)
     {rateNew daiNew debtOld debtNew radWord : UInt256} {rad : Int}
     (hload :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner foldDebtSlot = debtOld)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner foldDebtSlot = debtOld)
     (hradWord : rad % (Int.ofNat EVM.wordModulus) = Int.ofNat radWord.toNat)
     (hdebtNew : debtNew = radWord + debtOld)
     (hguardNeg :
@@ -146,7 +146,7 @@ theorem vatFoldDebtAddRevertGuardNeg (evm : EVM.State) (I : ExecutionEnv)
 theorem vatFoldDebtAddRevertGuardPos (evm : EVM.State) (I : ExecutionEnv)
     {rateNew daiNew debtOld debtNew radWord : UInt256} {rad : Int}
     (hload :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner foldDebtSlot = debtOld)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner foldDebtSlot = debtOld)
     (hradWord : rad % (Int.ofNat EVM.wordModulus) = Int.ofNat radWord.toNat)
     (hdebtNew : debtNew = radWord + debtOld)
     (hguardNeg :
@@ -198,7 +198,7 @@ theorem vatFoldDebtAddRevertGuardPos (evm : EVM.State) (I : ExecutionEnv)
 theorem vatFoldRateAddAssignSplit (evm : EVM.State) (I : ExecutionEnv)
     {rateOld rateNew : UInt256} (hsz100 : 100 ≤ I.calldata.size)
     (hload :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (foldRateSlot I) = rateOld)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (foldRateSlot I) = rateOld)
     (hrateNew : rateNew = foldRateWord I + rateOld)
     (hguardNeg :
       evalExpr? config { contract := contract, locals := foldStoreRateNew I rateNew } evm
@@ -214,7 +214,7 @@ theorem vatFoldRateAddAssignSplit (evm : EVM.State) (I : ExecutionEnv)
       (checkedAddSignedInto "rateNew" (.storage (ilksF (.var "i") "rate")) (.var "rate") ++
         [ .assign .storage (ilksF (.var "i") "rate") (.var "rateNew") ])
       (.ok { contract := contract, locals := foldStoreRateNew I rateNew }
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner (foldRateSlot I) rateNew)) ∧
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner (foldRateSlot I) rateNew)) ∧
     (evm.executionEnv.perm = false →
       ExecBlock config { contract := contract, locals := foldStore I } evm
         (checkedAddSignedInto "rateNew" (.storage (ilksF (.var "i") "rate")) (.var "rate") ++
@@ -244,7 +244,7 @@ theorem vatFoldRateAddAssignSplit (evm : EVM.State) (I : ExecutionEnv)
       assignStorageRef? config { contract := contract, locals := foldStoreRateNew I rateNew }
         evm .storage (ilksF (.var "i") "rate") (.int (Int.ofNat rateNew.toNat)) =
       .ok ({ contract := contract, locals := foldStoreRateNew I rateNew },
-        Solm.EVM.storageStore evm evm.executionEnv.codeOwner (foldRateSlot I) rateNew) :=
+        Stele.EVM.storageStore evm evm.executionEnv.codeOwner (foldRateSlot I) rateNew) :=
     assign_fold_rate evm I (foldStoreRateNew I rateNew) rateNew hsz100
       (foldStoreRateNew_get_i I rateNew) (foldStoreRateNew_ilks I rateNew)
   have hpre : ∀ r, ExecBlock config { contract := contract, locals := foldStoreRateNew I rateNew }
@@ -272,7 +272,7 @@ theorem vatFoldRateAddAssignSplit (evm : EVM.State) (I : ExecutionEnv)
 theorem vatFoldRateAddAssignOk (evm : EVM.State) (I : ExecutionEnv)
     {rateOld rateNew : UInt256} (hsz100 : 100 ≤ I.calldata.size)
     (hload :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (foldRateSlot I) = rateOld)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (foldRateSlot I) = rateOld)
     (hrateNew : rateNew = foldRateWord I + rateOld)
     (hguardNeg :
       evalExpr? config { contract := contract, locals := foldStoreRateNew I rateNew } evm
@@ -288,7 +288,7 @@ theorem vatFoldRateAddAssignOk (evm : EVM.State) (I : ExecutionEnv)
       (checkedAddSignedInto "rateNew" (.storage (ilksF (.var "i") "rate")) (.var "rate") ++
         [ .assign .storage (ilksF (.var "i") "rate") (.var "rateNew") ])
       (.ok { contract := contract, locals := foldStoreRateNew I rateNew }
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner (foldRateSlot I) rateNew)) :=
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner (foldRateSlot I) rateNew)) :=
   (vatFoldRateAddAssignSplit evm I hsz100 hload hrateNew hguardNeg hguardPos).1
 
 theorem vatFoldSourceRevertAfterRateBlock (evm : EVM.State) (I : ExecutionEnv)
@@ -416,7 +416,7 @@ theorem vatFoldSourceRevertAfterRadBlock (evm evmRate : EVM.State) (I : Executio
 theorem vatFoldRadMulOk (evm : EVM.State) (I : ExecutionEnv)
     {rateNew artOld : UInt256} {rad : Int} (hsz100 : 100 ≤ I.calldata.size)
     (hload :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (foldArtSlot I) = artOld)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (foldArtSlot I) = artOld)
     (hrad : rad = Int.ofNat artOld.toNat * foldRateInt I)
     (hradLo : -((2 : Int) ^ 255) ≤ rad)
     (hradHi : rad < (2 : Int) ^ 255)
@@ -470,7 +470,7 @@ theorem vatFoldRadMulOk (evm : EVM.State) (I : ExecutionEnv)
 
 theorem vatFoldRadMulOk_zero_art (evm : EVM.State) (I : ExecutionEnv)
     {rateNew artOld : UInt256} (hsz100 : 100 ≤ I.calldata.size)
-    (hload : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (foldArtSlot I) = artOld)
+    (hload : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (foldArtSlot I) = artOld)
     (hartZero : artOld = ⟨0⟩)
     (hrateWordNe : foldRateWord I ≠ ⟨0⟩) :
     ExecBlock config { contract := contract, locals := foldStoreRateNew I rateNew } evm
@@ -511,7 +511,7 @@ theorem vatFoldRadMulOk_zero_art (evm : EVM.State) (I : ExecutionEnv)
 
 theorem vatFoldRadMulRevertMax (evm : EVM.State) (I : ExecutionEnv)
     {rateNew artOld : UInt256} (hsz100 : 100 ≤ I.calldata.size)
-    (hload : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (foldArtSlot I) = artOld)
+    (hload : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (foldArtSlot I) = artOld)
     (hgt : Reasoning.Theory.maxInt256 < Int.ofNat artOld.toNat) :
     ExecBlock config { contract := contract, locals := foldStoreRateNew I rateNew } evm
       (checkedMulSignedInto "rad" (.storage (ilksF (.var "i") "Art")) (.var "rate"))
@@ -563,7 +563,7 @@ theorem vatFoldRadMulRevertMax (evm : EVM.State) (I : ExecutionEnv)
 theorem vatFoldDaiAddOk (evm : EVM.State) (I : ExecutionEnv)
     {rateNew daiOld daiNew radWord : UInt256} {rad : Int}
     (hload :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (foldDaiSlot I) = daiOld)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (foldDaiSlot I) = daiOld)
     (hradWord : rad % (Int.ofNat EVM.wordModulus) = Int.ofNat radWord.toNat)
     (hdaiNew : daiNew = radWord + daiOld)
     (hguardNeg :
@@ -612,7 +612,7 @@ theorem vatFoldDaiAddOk (evm : EVM.State) (I : ExecutionEnv)
 theorem vatFoldDebtAddOk (evm : EVM.State) (I : ExecutionEnv)
     {rateNew daiNew debtOld debtNew radWord : UInt256} {rad : Int}
     (hload :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner foldDebtSlot = debtOld)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner foldDebtSlot = debtOld)
     (hradWord : rad % (Int.ofNat EVM.wordModulus) = Int.ofNat radWord.toNat)
     (hdebtNew : debtNew = radWord + debtOld)
     (hguardNeg :
@@ -667,7 +667,7 @@ theorem vatFoldAssignDaiOk (evm : EVM.State) (I : ExecutionEnv)
       { contract := contract, locals := foldStoreDaiNew I rateNew rad daiNew } evm
       [ .assign .storage (daiRef (.var "u")) (.var "daiNew") ]
       (.ok { contract := contract, locals := foldStoreDaiNew I rateNew rad daiNew }
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner (foldDaiSlot I) daiNew)) := by
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner (foldDaiSlot I) daiNew)) := by
   have hdaiNewVar :
       evalExpr? config
         { contract := contract, locals := foldStoreDaiNew I rateNew rad daiNew }
@@ -678,7 +678,7 @@ theorem vatFoldAssignDaiOk (evm : EVM.State) (I : ExecutionEnv)
         { contract := contract, locals := foldStoreDaiNew I rateNew rad daiNew }
         evm .storage (daiRef (.var "u")) (.int (Int.ofNat daiNew.toNat)) =
       .ok ({ contract := contract, locals := foldStoreDaiNew I rateNew rad daiNew },
-        Solm.EVM.storageStore evm evm.executionEnv.codeOwner (foldDaiSlot I) daiNew) :=
+        Stele.EVM.storageStore evm evm.executionEnv.codeOwner (foldDaiSlot I) daiNew) :=
     assign_fold_dai_u evm I (foldStoreDaiNew I rateNew rad daiNew) daiNew
       (foldStoreDaiNew_get_u I rateNew rad daiNew)
       (foldStoreDaiNew_dai I rateNew rad daiNew)
@@ -690,7 +690,7 @@ theorem vatFoldAssignDebtOk (evm : EVM.State) (I : ExecutionEnv)
       { contract := contract, locals := foldStoreDebtNew I rateNew rad daiNew debtNew } evm
       [ .assign .storage debtRef (.var "debtNew") ]
       (.ok { contract := contract, locals := foldStoreDebtNew I rateNew rad daiNew debtNew }
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner foldDebtSlot debtNew)) := by
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner foldDebtSlot debtNew)) := by
   have hdebtNewVar :
       evalExpr? config
         { contract := contract, locals := foldStoreDebtNew I rateNew rad daiNew debtNew }
@@ -701,7 +701,7 @@ theorem vatFoldAssignDebtOk (evm : EVM.State) (I : ExecutionEnv)
         { contract := contract, locals := foldStoreDebtNew I rateNew rad daiNew debtNew }
         evm .storage debtRef (.int (Int.ofNat debtNew.toNat)) =
       .ok ({ contract := contract, locals := foldStoreDebtNew I rateNew rad daiNew debtNew },
-        Solm.EVM.storageStore evm evm.executionEnv.codeOwner foldDebtSlot debtNew) :=
+        Stele.EVM.storageStore evm evm.executionEnv.codeOwner foldDebtSlot debtNew) :=
     assign_fold_debt evm (foldStoreDebtNew I rateNew rad daiNew debtNew) debtNew
       (foldStoreDebtNew_debt I rateNew rad daiNew debtNew)
   exact ExecBlock.consNormal (ExecStmt.assign hdebtNewVar hdebtAssign) ExecBlock.nil
@@ -719,7 +719,7 @@ theorem vatFoldSourceSuccess (evm : EVM.State) (I : ExecutionEnv)
       evalExpr? config { contract := contract, locals := foldStore I } evm
         (.binary .eq (.storage liveRef) (.intLit 1)) = .ok (.bool true))
     (hloadRate :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (foldRateSlot I) = rateOld)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (foldRateSlot I) = rateOld)
     (hrateNew : rateNew = foldRateWord I + rateOld)
     (hRateGuardNeg :
       evalExpr? config { contract := contract, locals := foldStoreRateNew I rateNew } evm
@@ -732,54 +732,54 @@ theorem vatFoldSourceSuccess (evm : EVM.State) (I : ExecutionEnv)
           (.binary .ge (.var "rateNew") (.storage (ilksF (.var "i") "rate")))) =
         .ok (.bool true))
     (hloadArt :
-      Solm.EVM.storageLoad
-          (Solm.EVM.storageStore evm evm.executionEnv.codeOwner (foldRateSlot I) rateNew)
+      Stele.EVM.storageLoad
+          (Stele.EVM.storageStore evm evm.executionEnv.codeOwner (foldRateSlot I) rateNew)
           evm.executionEnv.codeOwner (foldArtSlot I) = artOld)
     (hrad : rad = Int.ofNat artOld.toNat * foldRateInt I)
     (hradLo : -((2 : Int) ^ 255) ≤ rad)
     (hradHi : rad < (2 : Int) ^ 255)
     (hMulGuardMax :
       evalExpr? config { contract := contract, locals := foldStoreRad I rateNew rad }
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner (foldRateSlot I) rateNew)
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner (foldRateSlot I) rateNew)
         (.binary .le (.storage (ilksF (.var "i") "Art")) (.intLit Reasoning.Theory.maxInt256)) =
         .ok (.bool true))
     (hMulGuard :
       evalExpr? config { contract := contract, locals := foldStoreRad I rateNew rad }
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner (foldRateSlot I) rateNew)
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner (foldRateSlot I) rateNew)
         (eitherExpr (.binary .eq (.var "rate") (.intLit 0))
           (.binary .eq (.binary .div (.var "rad") (.var "rate"))
             (.storage (ilksF (.var "i") "Art")))) =
         .ok (.bool true))
     (hloadDai :
-      Solm.EVM.storageLoad
-          (Solm.EVM.storageStore evm evm.executionEnv.codeOwner (foldRateSlot I) rateNew)
+      Stele.EVM.storageLoad
+          (Stele.EVM.storageStore evm evm.executionEnv.codeOwner (foldRateSlot I) rateNew)
           evm.executionEnv.codeOwner (foldDaiSlot I) = daiOld)
     (hradWord : rad % (Int.ofNat EVM.wordModulus) = Int.ofNat radWord.toNat)
     (hdaiNew : daiNew = radWord + daiOld)
     (hDaiGuardNeg :
       evalExpr? config { contract := contract, locals := foldStoreDaiNew I rateNew rad daiNew }
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner (foldRateSlot I) rateNew)
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner (foldRateSlot I) rateNew)
         (eitherExpr (.binary .ge (.var "rad") (.intLit 0))
           (.binary .le (.var "daiNew") (.storage (daiRef (.var "u"))))) =
         .ok (.bool true))
     (hDaiGuardPos :
       evalExpr? config { contract := contract, locals := foldStoreDaiNew I rateNew rad daiNew }
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner (foldRateSlot I) rateNew)
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner (foldRateSlot I) rateNew)
         (eitherExpr (.binary .le (.var "rad") (.intLit 0))
           (.binary .ge (.var "daiNew") (.storage (daiRef (.var "u"))))) =
         .ok (.bool true))
     (hloadDebt :
-      Solm.EVM.storageLoad
-          (Solm.EVM.storageStore
-            (Solm.EVM.storageStore evm evm.executionEnv.codeOwner (foldRateSlot I) rateNew)
+      Stele.EVM.storageLoad
+          (Stele.EVM.storageStore
+            (Stele.EVM.storageStore evm evm.executionEnv.codeOwner (foldRateSlot I) rateNew)
             evm.executionEnv.codeOwner (foldDaiSlot I) daiNew)
           evm.executionEnv.codeOwner foldDebtSlot = debtOld)
     (hdebtNew : debtNew = radWord + debtOld)
     (hDebtGuardNeg :
       evalExpr? config
         { contract := contract, locals := foldStoreDebtNew I rateNew rad daiNew debtNew }
-        (Solm.EVM.storageStore
-          (Solm.EVM.storageStore evm evm.executionEnv.codeOwner (foldRateSlot I) rateNew)
+        (Stele.EVM.storageStore
+          (Stele.EVM.storageStore evm evm.executionEnv.codeOwner (foldRateSlot I) rateNew)
           evm.executionEnv.codeOwner (foldDaiSlot I) daiNew)
         (eitherExpr (.binary .ge (.var "rad") (.intLit 0))
           (.binary .le (.var "debtNew") (.storage debtRef))) =
@@ -787,8 +787,8 @@ theorem vatFoldSourceSuccess (evm : EVM.State) (I : ExecutionEnv)
     (hDebtGuardPos :
       evalExpr? config
         { contract := contract, locals := foldStoreDebtNew I rateNew rad daiNew debtNew }
-        (Solm.EVM.storageStore
-          (Solm.EVM.storageStore evm evm.executionEnv.codeOwner (foldRateSlot I) rateNew)
+        (Stele.EVM.storageStore
+          (Stele.EVM.storageStore evm evm.executionEnv.codeOwner (foldRateSlot I) rateNew)
           evm.executionEnv.codeOwner (foldDaiSlot I) daiNew)
         (eitherExpr (.binary .le (.var "rad") (.intLit 0))
           (.binary .ge (.var "debtNew") (.storage debtRef))) =
@@ -796,8 +796,8 @@ theorem vatFoldSourceSuccess (evm : EVM.State) (I : ExecutionEnv)
     ExecTransitionBody config contract evm (foldStore I) foldTransition.body
       (.returned { contract := contract, locals := foldStoreDebtNew I rateNew rad daiNew debtNew }
         (foldPostState evm I rateNew daiNew debtNew) none) := by
-  let evmRate := Solm.EVM.storageStore evm evm.executionEnv.codeOwner (foldRateSlot I) rateNew
-  let evmDai := Solm.EVM.storageStore evmRate evmRate.executionEnv.codeOwner (foldDaiSlot I) daiNew
+  let evmRate := Stele.EVM.storageStore evm evm.executionEnv.codeOwner (foldRateSlot I) rateNew
+  let evmDai := Stele.EVM.storageStore evmRate evmRate.executionEnv.codeOwner (foldDaiSlot I) daiNew
   have hprefix :
       ExecBlock config { contract := contract, locals := foldStore I } evm
         (nonpayable ++ auth ++ requireLive)
@@ -842,9 +842,9 @@ theorem vatFoldSourceSuccess (evm : EVM.State) (I : ExecutionEnv)
 
 set_option maxHeartbeats 0 in
 theorem vatDecode_fold_ok {I : ExecutionEnv} (hsz100 : 100 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (foldTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (foldTransition.params.map Param.name)
       (transitionSignature foldTransition).paramTypes I.calldata = some (foldStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["i", "u", "rate"]
+  show config.externalABI.decodeCalldata? ["i", "u", "rate"]
     [bytes32, addr, int256] I.calldata = _
   change decodeCalldataWithMode DecodeMode.legacySolc05 ["i", "u", "rate"]
     [bytes32, addr, int256] I.calldata =
@@ -857,9 +857,9 @@ theorem vatDecode_fold_ok {I : ExecutionEnv} (hsz100 : 100 ≤ I.calldata.size) 
 
 theorem vatDecode_fold_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 100) :
-    decodeCalldataWithMode config.abiDecodeMode (foldTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (foldTransition.params.map Param.name)
       (transitionSignature foldTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["i", "u", "rate"]
+  show config.externalABI.decodeCalldata? ["i", "u", "rate"]
     [bytes32, addr, int256] I.calldata = none
   change decodeCalldataWithMode DecodeMode.legacySolc05 ["i", "u", "rate"]
     [bytes32, addr, int256] I.calldata = none

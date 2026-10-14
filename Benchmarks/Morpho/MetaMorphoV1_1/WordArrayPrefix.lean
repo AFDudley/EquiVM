@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.WordArrayInitMemory
 
 /-! Memory invariants for arrays whose elements are initialized incrementally. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 

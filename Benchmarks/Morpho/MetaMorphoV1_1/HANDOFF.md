@@ -64,7 +64,7 @@ python3 scripts/scaffold.py check --dir Benchmarks/Morpho/MetaMorphoV1_1
 lake build Benchmarks.Morpho.MetaMorphoV1_1.Correct \
   Benchmarks.Morpho.MetaMorphoV1_1.DiffTarget \
   Benchmarks.Morpho.MetaMorphoV1_1.FixedBlue.DiffTarget
-lake exe solm-difftest --only MetaMorphoV1_1 --count 50 --seed 2026
+lake exe stele-difftest --only MetaMorphoV1_1 --count 50 --seed 2026
 lake env lean --run Benchmarks/Morpho/MetaMorphoV1_1/DifferentialScenarios.lean
 lake env lean --run Benchmarks/Morpho/MetaMorphoV1_1/ArrayCleanupRegression.lean
 lake env lean --run Benchmarks/Morpho/MetaMorphoV1_1/PackedStorageRegression.lean
@@ -331,10 +331,10 @@ buffer. Thus decoder well-formedness alone cannot discharge the allocator guard.
 explicit `ptr + 256 < 2^64` obligation also requires a cumulative memory invariant at callers.
 
 The recommended repair is to retain the unconditional theorem and explicitly model allocation
-failure: add a memory cursor and allocation operation to Solm, propagate the cursor across
+failure: add a memory cursor and allocation operation to Stele, propagate the cursor across
 internal calls, and annotate the benchmark's compiler allocation sites, including the raw
 return-buffer copy and decoded array. Likely library changes would involve
-`Solm/Semantics/Types.lean`, `Solm/Syntax/Basic.lean`, `Solm/Semantics/Exec.lean`, the interpreter
+`Stele/Semantics/Types.lean`, `Stele/Syntax/Basic.lean`, `Stele/Semantics/Exec.lean`, the interpreter
 and syntax support, and the affected `Reasoning` combinators. This exceeds the current
 benchmark-only edit scope and needs a scope decision before implementation. A smaller gas
 domain is an alternative change to the theorem's claim, not an implicit assumption we may add.
@@ -360,7 +360,7 @@ This resumption extended that file with the following checked facts:
 
 These results close the callee-reachability gap in the earlier boundary evidence. They do
 **not** assert an end-to-end vault transaction counterexample or refute `Correct`: the vault's
-post-call state in `oversizedReturn_evmReverts` is still a hypothesis. In addition, Solm's
+post-call state in `oversizedReturn_evmReverts` is still a hypothesis. In addition, Stele's
 external-call relation existentially quantifies the callee gas, so a boundary discrepancy
 alone is insufficient to refute the existential top-level refinement. Replacing the actual
 successful call with a different failing call would not satisfy the requested same-call proof
@@ -372,17 +372,17 @@ library was changed, and no placeholder or assumption was added. The 45 existing
 remain.
 
 The allocation-model repair remains unresolved. A benchmark-local alternative to shared
-Solm changes is explicit cursor passing through internal helper arguments and results, with
+Stele changes is explicit cursor passing through internal helper arguments and results, with
 raw return-buffer reservation and decoded-value allocation checks at the compiled sites.
 That requires updating the affected source helpers and their proofs, not merely adding a
 fixed output-size check. The user has been asked to choose between that local rewrite and an
-explicit scope expansion for shared Solm memory accounting. Keep the directory restriction
+explicit scope expansion for shared Stele memory accounting. Keep the directory restriction
 in force unless the user changes it.
 
 ## Local allocation repair: checked helpers and complete supply-share routine
 
 The benchmark-local cursor-passing repair is now underway within the existing directory
-restriction. No shared Solm or Reasoning source has been edited. The earlier scope question
+restriction. No shared Stele or Reasoning source has been edited. The earlier scope question
 does not prevent this local work; there is no authorization to expand the edit scope.
 
 `Spec.lean` now appends three internal helpers, preserving every original function index:

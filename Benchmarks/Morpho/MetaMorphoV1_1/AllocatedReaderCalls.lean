@@ -4,7 +4,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.MarketBalancesAllocationSource
 
 /-! Internal-call boundaries for the three allocated Morpho readers. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory

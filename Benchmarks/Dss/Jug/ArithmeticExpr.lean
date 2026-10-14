@@ -1,15 +1,15 @@
 import Reasoning.WordArithmetic
-import Reasoning.SolmArithmetic
+import Reasoning.SteleArithmetic
 import Reasoning.EVMWord
 import Benchmarks.Dss.Jug.Dispatch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
 namespace Benchmarks.Dss.Jug
 
-/-! ## Solm-side arithmetic helpers for `drip` -/
+/-! ## Stele-side arithmetic helpers for `drip` -/
 
 abbrev jugRay : UInt256 :=
   ⟨1000000000000000000000000000⟩

@@ -6,7 +6,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.StringBuffer
 
 /-! Cursor and memory invariants shared by the two domain-string representations. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
 

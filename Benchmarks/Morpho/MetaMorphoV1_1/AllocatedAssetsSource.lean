@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.ConvertAssetsRoutines
 
 /-! Cursor-aware internal asset conversion: accrued totals, supply adjustment, and return. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
@@ -44,7 +44,7 @@ theorem allocatedAssetsPrefixSource (v : MetaMorphoV1_1Immutables)
       allocatedAccruedFeeAssetsFunction.body
       (.returned final evm' [.tuple [uint256Value shares, uint256Value total, uint256Value lost],
         uint256Value ptr']))
-    (hs : Solm.EVM.storageLoad evm' evm'.executionEnv.codeOwner ⟨2⟩ = supply)
+    (hs : Stele.EVM.storageLoad evm' evm'.executionEnv.codeOwner ⟨2⟩ = supply)
     {outcome : ExecResult}
     (htail : ExecBlock config
       (allocatedConvertTotalsFrame (allocatedAssetsFrame (immStore v) assets ptr rounding)

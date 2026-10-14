@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.SimulateWithdrawFunction
 
 /-! Calling the withdrawal simulation and returning the available assets and accrued totals. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory

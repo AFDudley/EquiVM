@@ -1,8 +1,8 @@
 import Reasoning.ExternalCall
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 import Benchmarks.Dss.Vow.FlopDai
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -34,7 +34,7 @@ theorem flopLocalsVatSinFreeSinDebtDaiAshNewId_get_id
 
 def flopFlopperAddressOf (evm : EVM.State) : AccountAddress :=
   AccountAddress.ofNat
-    (UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩)
+    (UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩)
       solcAddrMask).toNat
 
 theorem evalExpr_flopFlopperStorage (evm : EVM.State) {locals : Store}
@@ -57,7 +57,7 @@ theorem evalExpr_flopDumpStorage (evm : EVM.State) {locals : Store}
     (hbase : locals.get? "dump" = none) :
     evalExpr? config { contract := contract, locals := locals } evm (.storage dumpRef) =
       .ok (.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩).toNat)) := by
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩).toNat)) := by
   rw [evalExpr_storage_scalar (hbackend := rfl) (er := flopDumpEvaledRef) (t := .int uint256Int)
     (loc := wordLoc ⟨8⟩)]
   · exact congrArg EvalResult.ok (storageLocLoad_uint256 _ ⟨8⟩)
@@ -356,14 +356,14 @@ theorem flopAshAddAssignSplit
     {evmDai : EVM.State}
     {vatSin freeSin flopDebt vatDai AshValDai SumpValDai AshNew : UInt256}
     (hAshLoadDai :
-      Solm.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner ⟨6⟩ = AshValDai)
+      Stele.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner ⟨6⟩ = AshValDai)
     (hSumpLoadDai :
-      Solm.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner ⟨9⟩ = SumpValDai)
+      Stele.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner ⟨9⟩ = SumpValDai)
     (hAshNew : AshNew = AshValDai + SumpValDai)
     (hfit : AshValDai.toNat + SumpValDai.toNat < UInt256.size) :
     let locals4 := flopLocalsVatSinFreeSinDebtDai vatSin freeSin flopDebt vatDai
     let locals5 := flopLocalsVatSinFreeSinDebtDaiAshNew vatSin freeSin flopDebt vatDai AshNew
-    let evmAsh := Solm.EVM.storageStore evmDai evmDai.executionEnv.codeOwner ⟨6⟩ AshNew
+    let evmAsh := Stele.EVM.storageStore evmDai evmDai.executionEnv.codeOwner ⟨6⟩ AshNew
     ExecBlock config { contract := contract, locals := locals4 } evmDai
       [ .internalCall "add" [.storage AshRef, .storage sumpRef] "AshNew",
         .assign .storage AshRef (.var "AshNew") ]
@@ -411,7 +411,7 @@ theorem flopAshAddAssignSplit
         (args := [.storage AshRef, .storage sumpRef])
         (argVals := [.int (Int.ofNat AshValDai.toNat), .int (Int.ofNat SumpValDai.toNat)])
         (callee := addFunction) (locals := uintBinaryLocals AshValDai SumpValDai)
-        (calleeSolm := { contract := contract, locals := uintBinaryLocalsZ AshValDai SumpValDai AshNew })
+        (calleeStele := { contract := contract, locals := uintBinaryLocalsZ AshValDai SumpValDai AshNew })
         (value := some [.int (Int.ofNat AshNew.toNat)]) hargsAdd (by rfl) hbindAdd hbody)
   have hAshNewVar :
       evalExpr? config { contract := contract, locals := locals5 } evmDai (.var "AshNew") =
@@ -440,14 +440,14 @@ theorem flopAshAddAssignSuccess
     {evmDai : EVM.State}
     {vatSin freeSin flopDebt vatDai AshValDai SumpValDai AshNew : UInt256}
     (hAshLoadDai :
-      Solm.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner ⟨6⟩ = AshValDai)
+      Stele.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner ⟨6⟩ = AshValDai)
     (hSumpLoadDai :
-      Solm.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner ⟨9⟩ = SumpValDai)
+      Stele.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner ⟨9⟩ = SumpValDai)
     (hAshNew : AshNew = AshValDai + SumpValDai)
     (hfit : AshValDai.toNat + SumpValDai.toNat < UInt256.size) :
     let locals4 := flopLocalsVatSinFreeSinDebtDai vatSin freeSin flopDebt vatDai
     let locals5 := flopLocalsVatSinFreeSinDebtDaiAshNew vatSin freeSin flopDebt vatDai AshNew
-    let evmAsh := Solm.EVM.storageStore evmDai evmDai.executionEnv.codeOwner ⟨6⟩ AshNew
+    let evmAsh := Stele.EVM.storageStore evmDai evmDai.executionEnv.codeOwner ⟨6⟩ AshNew
     ExecBlock config { contract := contract, locals := locals4 } evmDai
       [ .internalCall "add" [.storage AshRef, .storage sumpRef] "AshNew",
         .assign .storage AshRef (.var "AshNew") ]
@@ -460,36 +460,36 @@ theorem flopAshAssignThenKickSuccess
     {outKick : ByteArray}
     {vatSin freeSin flopDebt vatDai AshValDai SumpValDai AshNew DumpVal SumpVal id : UInt256}
     (hAshLoadDai :
-      Solm.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner ⟨6⟩ = AshValDai)
+      Stele.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner ⟨6⟩ = AshValDai)
     (hSumpLoadDai :
-      Solm.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner ⟨9⟩ = SumpValDai)
+      Stele.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner ⟨9⟩ = SumpValDai)
     (hAshNew : AshNew = AshValDai + SumpValDai)
     (hfit : AshValDai.toNat + SumpValDai.toNat < UInt256.size)
     (hDumpLoadAsh :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore evmDai evmDai.executionEnv.codeOwner ⟨6⟩ AshNew)
-        (Solm.EVM.storageStore evmDai evmDai.executionEnv.codeOwner ⟨6⟩ AshNew).executionEnv.codeOwner
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore evmDai evmDai.executionEnv.codeOwner ⟨6⟩ AshNew)
+        (Stele.EVM.storageStore evmDai evmDai.executionEnv.codeOwner ⟨6⟩ AshNew).executionEnv.codeOwner
         ⟨8⟩ = DumpVal)
     (hSumpLoadAsh :
-      Solm.EVM.storageLoad
-        (Solm.EVM.storageStore evmDai evmDai.executionEnv.codeOwner ⟨6⟩ AshNew)
-        (Solm.EVM.storageStore evmDai evmDai.executionEnv.codeOwner ⟨6⟩ AshNew).executionEnv.codeOwner
+      Stele.EVM.storageLoad
+        (Stele.EVM.storageStore evmDai evmDai.executionEnv.codeOwner ⟨6⟩ AshNew)
+        (Stele.EVM.storageStore evmDai evmDai.executionEnv.codeOwner ⟨6⟩ AshNew).executionEnv.codeOwner
         ⟨9⟩ = SumpVal)
     (hflopperCode :
       0 < (UInt256.ofNat
-        (((Solm.EVM.storageStore evmDai evmDai.executionEnv.codeOwner ⟨6⟩ AshNew).lookupAccount
+        (((Stele.EVM.storageStore evmDai evmDai.executionEnv.codeOwner ⟨6⟩ AshNew).lookupAccount
           (flopFlopperAddressOf
-            (Solm.EVM.storageStore evmDai evmDai.executionEnv.codeOwner ⟨6⟩ AshNew))).option
+            (Stele.EVM.storageStore evmDai evmDai.executionEnv.codeOwner ⟨6⟩ AshNew))).option
           0 (fun acc => acc.code.size))).toNat)
     (hcallKick :
       typedCallViaEVM config
-        (Solm.EVM.storageStore evmDai evmDai.executionEnv.codeOwner ⟨6⟩ AshNew)
+        (Stele.EVM.storageStore evmDai evmDai.executionEnv.codeOwner ⟨6⟩ AshNew)
         (EVM.address
           (flopFlopperAddressOf
-            (Solm.EVM.storageStore evmDai evmDai.executionEnv.codeOwner ⟨6⟩ AshNew)))
+            (Stele.EVM.storageStore evmDai evmDai.executionEnv.codeOwner ⟨6⟩ AshNew)))
         "kick" 0
         [.address
-          (Solm.EVM.storageStore evmDai evmDai.executionEnv.codeOwner ⟨6⟩ AshNew).executionEnv.codeOwner,
+          (Stele.EVM.storageStore evmDai evmDai.executionEnv.codeOwner ⟨6⟩ AshNew).executionEnv.codeOwner,
           .int (Int.ofNat DumpVal.toNat), .int (Int.ofNat SumpVal.toNat)]
         (true, evmKick, outKick) true)
     (hdecKick :
@@ -503,12 +503,12 @@ theorem flopAshAssignThenKickSuccess
         (some [.int (Int.ofNat id.toNat)])) := by
   intro locals4 locals6
   let locals5 := flopLocalsVatSinFreeSinDebtDaiAshNew vatSin freeSin flopDebt vatDai AshNew
-  let evmAsh := Solm.EVM.storageStore evmDai evmDai.executionEnv.codeOwner ⟨6⟩ AshNew
+  let evmAsh := Stele.EVM.storageStore evmDai evmDai.executionEnv.codeOwner ⟨6⟩ AshNew
   have hDumpLoadAsh' :
-      Solm.EVM.storageLoad evmAsh evmAsh.executionEnv.codeOwner ⟨8⟩ = DumpVal := by
+      Stele.EVM.storageLoad evmAsh evmAsh.executionEnv.codeOwner ⟨8⟩ = DumpVal := by
     simpa [evmAsh] using hDumpLoadAsh
   have hSumpLoadAsh' :
-      Solm.EVM.storageLoad evmAsh evmAsh.executionEnv.codeOwner ⟨9⟩ = SumpVal := by
+      Stele.EVM.storageLoad evmAsh evmAsh.executionEnv.codeOwner ⟨9⟩ = SumpVal := by
     simpa [evmAsh] using hSumpLoadAsh
   have hflopperCode' :
       0 < (UInt256.ofNat
@@ -617,18 +617,18 @@ theorem vowFlopSourceAshAddOverflow
       config.externalABI.decode? "sin" outSin =
         some [.int (Int.ofNat vatSin.toNat)])
     (hSinLoad :
-      Solm.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨5⟩ = SinVal)
+      Stele.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨5⟩ = SinVal)
     (hfree : freeSin = UInt256.sub vatSin SinVal)
     (hfreeOk : SinVal.toNat ≤ vatSin.toNat)
     (hAshLoad :
-      Solm.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨6⟩ = AshVal)
+      Stele.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨6⟩ = AshVal)
     (hdebt : flopDebt = UInt256.sub freeSin AshVal)
     (hdebtOk : AshVal.toNat ≤ freeSin.toNat)
     (hSumpLoad :
-      Solm.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨9⟩ = SumpVal)
+      Stele.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨9⟩ = SumpVal)
     (henough : SumpVal.toNat ≤ flopDebt.toNat)
     (hvatLoadSin :
-      Solm.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨1⟩ =
+      Stele.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨1⟩ =
         solcSlotWordAt ⟨1⟩ σ I)
     (hvatCodeDai :
       0 < (UInt256.ofNat
@@ -642,9 +642,9 @@ theorem vowFlopSourceAshAddOverflow
         some [.int (Int.ofNat vatDai.toNat)])
     (hvatDaiZero : vatDai = ⟨0⟩)
     (hAshLoadDai :
-      Solm.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner ⟨6⟩ = AshValDai)
+      Stele.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner ⟨6⟩ = AshValDai)
     (hSumpLoadDai :
-      Solm.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner ⟨9⟩ = SumpValDai)
+      Stele.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner ⟨9⟩ = SumpValDai)
     (hover : UInt256.size ≤ AshValDai.toNat + SumpValDai.toNat) :
     let locals := (∅ : Store)
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
@@ -709,7 +709,7 @@ theorem vowFlopSourceAshAddOverflow
         (args := [.var "vatSin", .storage SinRef])
         (argVals := [.int (Int.ofNat vatSin.toNat), .int (Int.ofNat SinVal.toNat)])
         (callee := subFunction) (locals := uintBinaryLocals vatSin SinVal)
-        (calleeSolm := { contract := contract, locals := uintBinaryLocalsZ vatSin SinVal freeSin })
+        (calleeStele := { contract := contract, locals := uintBinaryLocalsZ vatSin SinVal freeSin })
         (value := some [.int (Int.ofNat freeSin.toNat)]) hargsFree (by rfl) hbindFree hbody)
   have hfreeVar :
       evalExpr? config { contract := contract, locals := locals2 } evmSin (.var "freeSin") =
@@ -748,7 +748,7 @@ theorem vowFlopSourceAshAddOverflow
         (args := [.var "freeSin", .storage AshRef])
         (argVals := [.int (Int.ofNat freeSin.toNat), .int (Int.ofNat AshVal.toNat)])
         (callee := subFunction) (locals := uintBinaryLocals freeSin AshVal)
-        (calleeSolm := { contract := contract, locals := uintBinaryLocalsZ freeSin AshVal flopDebt })
+        (calleeStele := { contract := contract, locals := uintBinaryLocalsZ freeSin AshVal flopDebt })
         (value := some [.int (Int.ofNat flopDebt.toNat)]) hargsDebt (by rfl) hbindDebt hbody)
   have hsump :
       evalExpr? config { contract := contract, locals := locals3 } evmSin (.storage sumpRef) =
@@ -870,7 +870,7 @@ theorem vowFlopAshAddOverflowBodyCore
     (hcode : I.code = vowBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some flopTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (flopTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (flopTransition.params.map Param.name)
         (transitionSignature flopTransition).paramTypes I.calldata = some ∅)
     (rd3832 : RD vowBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨3832⟩
@@ -897,18 +897,18 @@ theorem vowFlopAshAddOverflowBodyCore
       config.externalABI.decode? "sin" outSin =
         some [.int (Int.ofNat vatSin.toNat)])
     (hSinLoad :
-      Solm.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨5⟩ = SinVal)
+      Stele.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨5⟩ = SinVal)
     (hfree : freeSin = UInt256.sub vatSin SinVal)
     (hfreeOk : SinVal.toNat ≤ vatSin.toNat)
     (hAshLoad :
-      Solm.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨6⟩ = AshVal)
+      Stele.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨6⟩ = AshVal)
     (hdebt : flopDebt = UInt256.sub freeSin AshVal)
     (hdebtOk : AshVal.toNat ≤ freeSin.toNat)
     (hSumpLoad :
-      Solm.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨9⟩ = SumpVal)
+      Stele.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨9⟩ = SumpVal)
     (henough : SumpVal.toNat ≤ flopDebt.toNat)
     (hvatLoadSin :
-      Solm.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨1⟩ =
+      Stele.EVM.storageLoad evmSin evmSin.executionEnv.codeOwner ⟨1⟩ =
         solcSlotWordAt ⟨1⟩ σ I)
     (hvatCodeDai :
       0 < (UInt256.ofNat
@@ -918,9 +918,9 @@ theorem vowFlopAshAddOverflowBodyCore
       typedCallViaEVM config evmSin (EVM.address (kissVatAddress σ I)) "dai" 0
         [.address I.codeOwner] (true, evmDai, outDai) false)
     (hAshLoadDai :
-      Solm.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner ⟨6⟩ = AshValDai)
+      Stele.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner ⟨6⟩ = AshValDai)
     (hSumpLoadDai :
-      Solm.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner ⟨9⟩ = SumpValDai)
+      Stele.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner ⟨9⟩ = SumpValDai)
     (hAshEvm : AshValDai = solcSlotWordAt ⟨6⟩ acc I)
     (hSumpEvm : SumpValDai = solcSlotWordAt ⟨9⟩ acc I)
     (hover : UInt256.size ≤ AshValDai.toNat + SumpValDai.toNat) :

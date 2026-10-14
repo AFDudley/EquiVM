@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.Arithmetic
 
 /-! Exact decimal scaling and its uint256 overflow boundary. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1

@@ -3,20 +3,20 @@ import Benchmarks.Morpho.MetaMorphoV1_1.SetTimelockSource
 
 /-! Source storage assignments for scheduling a timelock update. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 
 def pendingTimelockValueState (evm : EVM.State) (value : UInt256) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨17⟩
-    (setPendingUint192Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨17⟩) value)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨17⟩
+    (setPendingUint192Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨17⟩) value)
 
 def pendingTimelockTimeState (evm : EVM.State) (time : UInt256) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨17⟩
-    (setPendingTimeHighWord (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨17⟩) time)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨17⟩
+    (setPendingTimeHighWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨17⟩) time)
 
 def pendingTimelockDelay (evm : EVM.State) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨14⟩
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨14⟩
 
 def pendingTimelockTime (evm : EVM.State) : UInt256 :=
   UInt256.ofNat evm.executionEnv.header.timestamp + pendingTimelockDelay evm

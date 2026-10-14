@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.RuntimeBlocks_017
 
 /-! The final Skim log rejects a static entry, after both token calls have completed. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1

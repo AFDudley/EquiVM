@@ -3,7 +3,7 @@ import Benchmarks.EAS.Attester.WordHelpers
 
 /-! Allocation arithmetic for storage strings at a cursor following earlier allocations. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 open Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1

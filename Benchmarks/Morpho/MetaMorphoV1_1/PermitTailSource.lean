@@ -4,7 +4,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.ECDSARecoverSource
 
 /-! Source composition from signature recovery through the final permit approval. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1

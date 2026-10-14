@@ -9,7 +9,7 @@ The huge length is an artificial raw-storage state, not an ordinary vault state.
 runtime skips cleanup; the upgraded runtime enters the loop and exhausts the finite gas budget.
 -/
 
-open Solm Solm.Interp Solm.DiffTest Ethereum Ethereum.EVM
+open Stele Stele.Interp Stele.DiffTest Ethereum Ethereum.EVM
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.ArrayCleanupRegression
 

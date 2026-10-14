@@ -1,6 +1,6 @@
 import Examples.BlindAuction.Reveal.PostLoop
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 10000000
@@ -42,29 +42,29 @@ theorem scratch_blindAuctionReveal_decoded_empty_bids
     runtimeRefinementFor blindAuctionConfig blindAuctionContract
       σ σ₀ g A I := by
   obtain ⟨_, _, rd963⟩ := h963
-  let evmSolm : EVM.State :=
+  let evmStele : EVM.State :=
     initState σ σ₀ (Sat256.ofUInt256 g) A I
-  have hwvSolm : evmSolm.executionEnv.weiValue = ⟨0⟩ := by
-    simpa [evmSolm, initState] using hwv
+  have hwvStele : evmStele.executionEnv.weiValue = ⟨0⟩ := by
+    simpa [evmStele, initState] using hwv
   have hbiddingAbsent : callargs.get? biddingEndRef.base = none :=
     blindAuctionDecode_reveal_callargs_absent hdec (by decide) (by decide) (by decide)
   have hrevealAbsent : callargs.get? revealEndRef.base = none :=
     blindAuctionDecode_reveal_callargs_absent hdec (by decide) (by decide) (by decide)
   have hafterBody :
-      (Solm.EVM.storageLoad evmSolm evmSolm.executionEnv.codeOwner ⟨1⟩).toNat <
-        (UInt256.ofNat evmSolm.executionEnv.header.timestamp).toNat := by
+      (Stele.EVM.storageLoad evmStele evmStele.executionEnv.codeOwner ⟨1⟩).toNat <
+        (UInt256.ofNat evmStele.executionEnv.header.timestamp).toNat := by
     change (revealScratchBiddingEndWord σ I).toNat <
       (revealScratchTimestampWord I).toNat
     exact hafter
   have hbeforeBody :
-      (UInt256.ofNat evmSolm.executionEnv.header.timestamp).toNat <
-        (Solm.EVM.storageLoad evmSolm evmSolm.executionEnv.codeOwner ⟨2⟩).toNat := by
+      (UInt256.ofNat evmStele.executionEnv.header.timestamp).toNat <
+        (Stele.EVM.storageLoad evmStele evmStele.executionEnv.codeOwner ⟨2⟩).toNat := by
     change (revealScratchTimestampWord I).toNat <
       (revealScratchRevealEndWord σ I).toNat
     exact hbefore
   have hlenBody :
-      Solm.EVM.storageLoad evmSolm evmSolm.executionEnv.codeOwner
-        (bidsBase (.address evmSolm.executionEnv.source)) =
+      Stele.EVM.storageLoad evmStele evmStele.executionEnv.codeOwner
+        (bidsBase (.address evmStele.executionEnv.source)) =
           revealScratchBidsLengthWord σ I := by
     rfl
   have hbidsHash := revealScratchBidsMappingBaseKeccak I
@@ -102,8 +102,8 @@ theorem scratch_blindAuctionReveal_decoded_empty_bids
     blindAuctionDecode_reveal_callargs_empty_eq hdec hvaluesGetEmpty
       hfakesGetEmpty hsecretsGetEmpty
   have hlenZeroBody :
-      Solm.EVM.storageLoad evmSolm evmSolm.executionEnv.codeOwner
-        (bidsBase (.address evmSolm.executionEnv.source)) = ⟨0⟩ := by
+      Stele.EVM.storageLoad evmStele evmStele.executionEnv.codeOwner
+        (bidsBase (.address evmStele.executionEnv.source)) = ⟨0⟩ := by
     rw [hlenBody, hbidsZero]
   by_cases hdepthEq : I.depth = 1024
   · obtain ⟨_, _, rd1350⟩ :=
@@ -117,26 +117,26 @@ theorem scratch_blindAuctionReveal_decoded_empty_bids
               using rd963)
           hbidsZero hbidsHash
     let evmSFail : EVM.State :=
-      { evmSolm with
-        substate := (evmSolm.addAccessedAccount
-          (EVM.address evmSolm.executionEnv.source)).substate }
+      { evmStele with
+        substate := (evmStele.addAccessedAccount
+          (EVM.address evmStele.executionEnv.source)).substate }
     have hcallS :
-        callViaEVM evmSolm (EVM.address evmSolm.executionEnv.source)
+        callViaEVM evmStele (EVM.address evmStele.executionEnv.source)
           0 ByteArray.empty (false, evmSFail, ByteArray.empty) := by
       apply callViaEVM.callNotMade
       · rfl
       · rfl
       · rintro ⟨_, hdepthNe⟩
         exact hdepthNe (by
-          simpa [evmSolm, initState] using hdepthEq)
+          simpa [evmStele, initState] using hdepthEq)
     have hbody :
-        ExecTransitionBody blindAuctionConfig blindAuctionContract evmSolm
+        ExecTransitionBody blindAuctionConfig blindAuctionContract evmStele
           callargs revealTransition.body .reverted := by
       have hbodyEmpty :
-          ExecTransitionBody blindAuctionConfig blindAuctionContract evmSolm
+          ExecTransitionBody blindAuctionConfig blindAuctionContract evmStele
             revealEmptyStore revealTransition.body .reverted :=
-        blindAuctionRevealBodyReverts_empty_callFailure evmSolm evmSFail
-          ByteArray.empty hwvSolm hafterBody hbeforeBody hlenZeroBody
+        blindAuctionRevealBodyReverts_empty_callFailure evmStele evmSFail
+          ByteArray.empty hwvStele hafterBody hbeforeBody hlenZeroBody
           hcallS
       simpa [hcallargsEmpty] using hbodyEmpty
     have hrev : RDrev blindAuctionBytecode (Sat256.ofUInt256 g)
@@ -193,18 +193,18 @@ theorem scratch_blindAuctionReveal_decoded_empty_bids
         simpa [initState] using hd'
     let evmSCall : EVM.State := evmECall
     have hcallS :
-        callViaEVM evmSolm (EVM.address evmSolm.executionEnv.source)
+        callViaEVM evmStele (EVM.address evmStele.executionEnv.source)
           0 ByteArray.empty (z, evmSCall, out) := by
-      simpa [evmSolm, evmSCall] using hcallE
+      simpa [evmStele, evmSCall] using hcallE
     cases z
     · have hbody :
           ExecTransitionBody blindAuctionConfig blindAuctionContract
-            evmSolm callargs revealTransition.body .reverted := by
+            evmStele callargs revealTransition.body .reverted := by
         have hbodyEmpty :
             ExecTransitionBody blindAuctionConfig blindAuctionContract
-              evmSolm revealEmptyStore revealTransition.body .reverted :=
-          blindAuctionRevealBodyReverts_empty_callFailure evmSolm evmSCall
-            out hwvSolm hafterBody hbeforeBody hlenZeroBody hcallS
+              evmStele revealEmptyStore revealTransition.body .reverted :=
+          blindAuctionRevealBodyReverts_empty_callFailure evmStele evmSCall
+            out hwvStele hafterBody hbeforeBody hlenZeroBody hcallS
         simpa [hcallargsEmpty] using hbodyEmpty
       by_cases hout0 : out.size = 0
       · have houtEmpty : out = ByteArray.empty := by
@@ -231,20 +231,20 @@ theorem scratch_blindAuctionReveal_decoded_empty_bids
         exact hrev.reEquivExecutionRevert hcode hd hdec hbody
     · have hbody :
           ExecTransitionBody blindAuctionConfig blindAuctionContract
-            evmSolm callargs revealTransition.body
+            evmStele callargs revealTransition.body
           (.returned
             { contract := blindAuctionContract,
               locals := revealCallStore ⟨0⟩ ⟨0⟩ true out }
             evmSCall none) := by
         have hbodyEmpty :
             ExecTransitionBody blindAuctionConfig blindAuctionContract
-              evmSolm revealEmptyStore revealTransition.body
+              evmStele revealEmptyStore revealTransition.body
               (.returned
                 { contract := blindAuctionContract,
                   locals := revealCallStore ⟨0⟩ ⟨0⟩ true out }
                 evmSCall none) :=
-          blindAuctionRevealBodyReturns_empty_callSuccess evmSolm
-            evmSCall out hwvSolm hafterBody hbeforeBody hlenZeroBody
+          blindAuctionRevealBodyReturns_empty_callSuccess evmStele
+            evmSCall out hwvStele hafterBody hbeforeBody hlenZeroBody
             hcallS
         simpa [hcallargsEmpty] using hbodyEmpty
       by_cases hout0 : out.size = 0

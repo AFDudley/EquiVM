@@ -1,7 +1,7 @@
 import Benchmarks.Auction.SettleEntry
 import Benchmarks.Auction.Events
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 100000
 
@@ -15,7 +15,7 @@ theorem settleAuctionBodyCore {σ σ₀ A I} {g : UInt256}
   by_cases hwv : I.weiValue = ⟨0⟩
   · have hd := dispatchEntry 13 hsel
     have hsz := calldata_size_ge_of_selIs I (entryBytes 13) (entryBytes_size 13) hsel
-    have hdec : decodeCalldataWithMode auctionConfig.abiDecodeMode
+    have hdec : auctionConfig.externalABI.decodeCalldata?
         (settleAuctionTransition.params.map Param.name)
         (transitionSignature settleAuctionTransition).paramTypes I.calldata = some ∅ :=
       decodeCalldata_empty_ok hsz

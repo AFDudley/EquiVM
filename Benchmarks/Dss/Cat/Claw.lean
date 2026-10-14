@@ -1,7 +1,7 @@
 import Benchmarks.Dss.Cat.Storage
 import Benchmarks.Dss.Cat.Arithmetic
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 0
@@ -177,14 +177,14 @@ theorem catDispatch_claw {I : ExecutionEnv}
     exact hsel
 
 theorem catDecode_claw_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (clawTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (clawTransition.params.map Param.name)
       (transitionSignature clawTransition).paramTypes I.calldata = some (clawLocals I) := by
   simpa [config, clawTransition, clawRad, clawLocals, uint256] using
     (decodeCalldata_legacyUInt256_ok (cd := I.calldata) (x := "rad") hsz36)
 
 theorem catDecode_claw_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (clawTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (clawTransition.params.map Param.name)
       (transitionSignature clawTransition).paramTypes I.calldata = none := by
   simpa [config, clawTransition, uint256] using
     (decodeCalldata_legacyUInt256_none_short (cd := I.calldata) (x := "rad") hsz4 hshort)
@@ -227,7 +227,7 @@ theorem catClawBodyCore
     (hsize : I.calldata.size < UInt256.size)
     (hdispatch : dispatchMsg contract I.calldata = some clawTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (clawTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (clawTransition.params.map Param.name)
         (transitionSignature clawTransition).paramTypes I.calldata = some (clawLocals I))
     (hreach : ∃ k C, RD catBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨704⟩ [sel]
@@ -251,7 +251,7 @@ theorem catClawBodyCore
     (code := catBytecode) (ret := ⟨302⟩) (R := [sel]) hdecoded rfl (by jump_dest) (by simp)
   by_cases hauthEvm : solcSlotWordAt callerSlot σ I = ⟨1⟩
   · -- AUTH OK.
-    have hauthSolm : solcSlotWordAt callerSlot σ I = ⟨1⟩ := by
+    have hauthStele : solcSlotWordAt callerSlot σ I = ⟨1⟩ := by
       exact hauthEvm
     have hauthSolc : solcSlotWord σ I (solcMappingSlot ⟨0⟩ (solcSourceWord I)) = ⟨1⟩ := by
       simpa [callerSlot, catCallerWardsSlot, solcSlotWordAt] using hauthEvm
@@ -263,13 +263,13 @@ theorem catClawBodyCore
         unfold solcAuthCheckWf
         repeat' first | apply And.intro | native_decide)
       hauthSolc (by jump_dest) (by simp)
-    -- Shared Solm-side prologue facts.
+    -- Shared Stele-side prologue facts.
     have hcv := evalCallvalueEq_true (cfg := config)
-      (solm := { contract := contract, locals := clawLocals I }) (evm := evm0)
+      (stele := { contract := contract, locals := clawLocals I }) (evm := evm0)
       (by simp [evm0, initState]; exact hwv)
     have hguard := catAuthGuardEval_true
       (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := Sat256.ofUInt256 g)
-      (locals := clawLocals I) (by simp [clawLocals]) hauthSolm
+      (locals := clawLocals I) (by simp [clawLocals]) hauthStele
     have hlitterRef :
         evalStorageRef config { contract := contract, locals := clawLocals I } evm0 litterRef =
           .ok ({ base := "litter", steps := [] } : EvaledStorageRef) := by
@@ -284,7 +284,7 @@ theorem catClawBodyCore
         (hloc := by
           simp [config, storageLayout, solidityStorageBackend, storageLayoutRaw])]
       rw [show wordLoc = uint256Loc from rfl, storageLocLoad_uint256]
-      simp [evm0, initState, Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
+      simp [evm0, initState, Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
         solcSlotWord]
     have hradExpr :
         evalExpr? config { contract := contract, locals := clawLocals I } evm0 (.var "rad") =
@@ -308,7 +308,7 @@ theorem catClawBodyCore
         (ret := ⟨302⟩) (R := [sel]) hokPc (by jump_dest)
         (by rw [hword]; exact hle) (by simp)
       let diff := UInt256.sub (solcSlotWord σ I ⟨6⟩) (clawRad I)
-      let evm1 := Solm.EVM.storageStore evm0 I.codeOwner ⟨6⟩ diff
+      let evm1 := Stele.EVM.storageStore evm0 I.codeOwner ⟨6⟩ diff
       have hbodySplit :
           ExecTransitionBody config contract evm0 (clawLocals I) clawTransition.body
             (.returned
@@ -327,7 +327,7 @@ theorem catClawBodyCore
             .int (Int.ofNat (clawRad I).toNat)])
           (callee := subFunction)
           (locals := uintBinaryLocals (solcSlotWord σ I ⟨6⟩) (clawRad I))
-          (calleeSolm :=
+          (calleeStele :=
             { contract := contract,
               locals := uintBinaryLocalsZ (solcSlotWord σ I ⟨6⟩) (clawRad I) diff })
           (value := some [.int (Int.ofNat diff.toNat)])
@@ -430,9 +430,9 @@ theorem catClawBodyCore
           ExecFuncBody.execBlockRevert hblock
       exact hrev.reEquivExecutionRevert hcode hdispatch hdecode hbody
   · -- AUTH FAIL.
-    have hauthSolm : solcSlotWordAt callerSlot σ I ≠ ⟨1⟩ := by
-      intro hsolm
-      exact hauthEvm (by rw [hcallerWord, hsolm])
+    have hauthStele : solcSlotWordAt callerSlot σ I ≠ ⟨1⟩ := by
+      intro hstele
+      exact hauthEvm (by rw [hcallerWord, hstele])
     have hauthSolc : solcSlotWord σ I (solcMappingSlot ⟨0⟩ (solcSourceWord I)) ≠ ⟨1⟩ := by
       simpa [callerSlot, catCallerWardsSlot, solcSlotWordAt] using hauthEvm
     have hbody :
@@ -440,9 +440,9 @@ theorem catClawBodyCore
       have hguard := catAuthGuardEval_false
         (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
         (g := Sat256.ofUInt256 g) (locals := clawLocals I)
-        (by simp [clawLocals]) hauthSolm
+        (by simp [clawLocals]) hauthStele
       have hblock := nonpayableSecondRequireReverts
-        (cfg := config) (solm := { contract := contract, locals := clawLocals I })
+        (cfg := config) (stele := { contract := contract, locals := clawLocals I })
         (evm := evm0)
         (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
         (rest := [.internalCall "sub" [.storage litterRef, .var "rad"] "litterNew",

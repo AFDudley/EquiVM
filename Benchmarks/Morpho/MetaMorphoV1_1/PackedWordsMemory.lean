@@ -2,7 +2,7 @@ import Benchmarks.EAS.Attester.StructAllocMemory
 
 /-! A byte-length header, packed words, and the allocator cursor used by hash preimages. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 

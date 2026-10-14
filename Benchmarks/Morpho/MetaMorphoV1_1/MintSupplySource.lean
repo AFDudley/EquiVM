@@ -2,18 +2,18 @@ import Benchmarks.Morpho.MetaMorphoV1_1.BalanceUpdateSource
 
 /-! The minting branch of the ERC20 update helper, including checked supply growth. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 
 def mintOldSupply (evm : State) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩
 
 abbrev mintSupplyFits (evm : State) (value : UInt256) : Prop :=
   (mintOldSupply evm).toNat + value.toNat < UInt256.size
 
 def mintSupplyState (evm : State) (value : UInt256) : State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨2⟩ (mintOldSupply evm + value)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨2⟩ (mintOldSupply evm + value)
 
 def mintBalanceState (evm : State) (recipient : AccountAddress) (value : UInt256) : State :=
   let changed := mintSupplyState evm value
@@ -66,14 +66,14 @@ theorem balanceMintTail (imms : Store) (evm : State) (recipient : AccountAddress
       (balanceUpdateFrame imms (AccountAddress.ofNat 0) recipient value) evm
       (.binary .eq (.var "to") (.cast (.intLit 0) (.elem .address))) = .ok (.bool false) := by
     have h := evalExpr_addressEq (cfg := config)
-      (solm := balanceUpdateFrame imms (AccountAddress.ofNat 0) recipient value) (evm := evm)
+      (stele := balanceUpdateFrame imms (AccountAddress.ofNat 0) recipient value) (evm := evm)
       (a := recipient) (b := AccountAddress.ofNat 0)
       (lhs := .var "to") (rhs := .cast (.intLit 0) (.elem .address))
       (by simp [evalExpr?, balanceUpdateFrame, Std.HashMap.getElem_insert, EvalResult.ofOption])
       (evalAddressLiteral _ _ _ (AccountAddress.ofNat 0))
     simpa only [decide_eq_false hto] using h
   refine ExecBlock.consNormal
-    (solm' := balanceUpdateFrame imms (AccountAddress.ofNat 0) recipient value)
+    (stele' := balanceUpdateFrame imms (AccountAddress.ofNat 0) recipient value)
     (evm' := balanceStore evm recipient (balanceWord evm recipient + value))
     (ExecStmt.iteFalse hc ?_) ?_
   · apply ExecBlock.consNormal (ExecStmt.assign (value := uint256Value
@@ -102,7 +102,7 @@ theorem balanceMintBody (imms : Store) (evm : State) (recipient : AccountAddress
   apply ExecFuncBody.execBlockOK
   rw [balanceUpdateFunction_body]
   refine ExecBlock.consNormal
-    (solm' := balanceUpdateFrame imms (AccountAddress.ofNat 0) recipient value)
+    (stele' := balanceUpdateFrame imms (AccountAddress.ofNat 0) recipient value)
     (evm' := mintSupplyState evm value) (ExecStmt.iteTrue ?_ ?_) ?_
   · rw [balanceUpdateFromCondition]; rfl
   · exact ExecBlock.consNormal (mintSupplyAssignment imms evm recipient value hfit) ExecBlock.nil

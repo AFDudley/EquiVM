@@ -1,7 +1,7 @@
 import Reasoning.ABIComposite
 import Benchmarks.Dss.Clipper.Fallback
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 namespace Benchmarks.Dss.Clipper
@@ -88,10 +88,10 @@ theorem clipperDispatch_kick {I : ExecutionEnv}
 
 theorem clipperDecode_kick_ok {I : ExecutionEnv}
     (hsz132 : 132 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (kickTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (kickTransition.params.map Param.name)
       (transitionSignature kickTransition).paramTypes I.calldata =
         some (clipperKickStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["tab", "lot", "usr", "kpr"]
+  show config.externalABI.decodeCalldata? ["tab", "lot", "usr", "kpr"]
     [uint256, uint256, addr, addr] I.calldata = _
   simpa [config, clipperKickStore, clipperKickTabValue, clipperKickLotValue,
     clipperKickUsrValue, clipperKickKprValue, clipperKickTabWord, clipperKickLotWord,
@@ -101,9 +101,9 @@ theorem clipperDecode_kick_ok {I : ExecutionEnv}
 
 theorem clipperDecode_kick_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 132) :
-    decodeCalldataWithMode config.abiDecodeMode (kickTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (kickTransition.params.map Param.name)
       (transitionSignature kickTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["tab", "lot", "usr", "kpr"]
+  show config.externalABI.decodeCalldata? ["tab", "lot", "usr", "kpr"]
     [uint256, uint256, addr, addr] I.calldata = none
   simpa [config] using
     decodeCalldata_legacyUint256_uint256_address_address_none_short

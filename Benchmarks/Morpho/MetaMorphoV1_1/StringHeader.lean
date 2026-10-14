@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.PackedStorage
 
 /-! The validated short and long Solidity storage-string header encodings. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 

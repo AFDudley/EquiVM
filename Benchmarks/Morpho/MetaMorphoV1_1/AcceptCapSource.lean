@@ -5,7 +5,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.SetCapSyntax
 
 /-! Acceptance guards and the allocated cap-setter call in the public source transition. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 

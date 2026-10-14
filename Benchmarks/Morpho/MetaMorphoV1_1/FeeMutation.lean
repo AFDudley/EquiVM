@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.Mutation
 
 /-! The low twelve-byte fee assignment preserves the packed recipient address. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 
@@ -34,8 +34,8 @@ theorem storageLocStore_fee (evm : EVM.State) (slot data : UInt256) :
       { slot := slot, offset := 0, size := 12, hbound := by decide,
         type := .int (.uint ⟨96, by decide⟩) }
       (uint256Value data) =
-      some (Solm.EVM.storageStore evm evm.executionEnv.codeOwner slot
-        (setFeeWord (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
+      some (Stele.EVM.storageStore evm evm.executionEnv.codeOwner slot
+        (setFeeWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
           data)) := by
   unfold storageLocStore storageLocWriteWord
   simp only [valueToWord, wordOfInt_ofNat_toNat, bind, Option.bind]
@@ -44,7 +44,7 @@ theorem storageLocStore_fee (evm : EVM.State) (slot data : UInt256) :
   change fromBytes'
     ((EVM.Word.toBytesLEWithSizeProof data).1.take 12 ++
       (EVM.Word.toBytesLEWithSizeProof
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).1.drop 12) = _
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).1.drop 12) = _
   rw [fromBytes'_append, fromBytes'_take_wordLE, fromBytes'_drop_wordLE,
     setFeeWord_toNat]
   simp only [List.length_take, (EVM.Word.toBytesLEWithSizeProof data).2]
@@ -52,8 +52,8 @@ theorem storageLocStore_fee (evm : EVM.State) (slot data : UInt256) :
   omega
 
 def setFeeState (evm : EVM.State) (value : UInt256) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨18⟩
-    (setFeeWord (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨18⟩) value)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨18⟩
+    (setFeeWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨18⟩) value)
 
 theorem assignStorage_fee (evm : EVM.State) (locals imms : Store)
     (value : UInt256) (hbase : locals.get? "fee" = none) :

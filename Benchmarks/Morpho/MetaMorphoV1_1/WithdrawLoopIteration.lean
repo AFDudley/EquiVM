@@ -4,7 +4,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.WithdrawLoopRoutines
 
 /-! One complete withdrawal simulation iteration, including its early-exit branch. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory

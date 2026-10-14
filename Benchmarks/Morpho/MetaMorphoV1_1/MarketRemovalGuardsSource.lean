@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.MarketRemovalSyntax
 
 /-! Source evaluation and short-circuit failure of the four market-removal guards. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 

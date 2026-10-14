@@ -2,7 +2,7 @@ import Benchmarks.Dss.Vat.FoldTail
 
 namespace Benchmarks.Dss.Vat
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -257,7 +257,7 @@ theorem vatFoldFinishSuccess
     (hcode : I.code = vatBytecode)
     (hdispatch : dispatchMsg contract I.calldata = some foldTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (foldTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (foldTransition.params.map Param.name)
         (transitionSignature foldTransition).paramTypes I.calldata = some (foldStore I))
     (hbody :
       ExecTransitionBody config contract
@@ -298,7 +298,7 @@ theorem vatFoldBodyCore : VatBodyTheoremAnyPerm 9 := by
       hsz100 hsize hreach
     let callerSlot := vatCallerWardsSlot I
     by_cases hauthEvm : solcSlotWordAt callerSlot σ I = ⟨1⟩
-    · have hauthSolm : solcSlotWordAt callerSlot σ I = ⟨1⟩ := hauthEvm
+    · have hauthStele : solcSlotWordAt callerSlot σ I = ⟨1⟩ := hauthEvm
       have hauthSolc :
           solcSlotWord σ I (solcMappingSlot ⟨0⟩ (hopeSourceWord I)) = ⟨1⟩ := by
         simpa [callerSlot, vatCallerWardsSlot, solcSlotWordAt] using hauthEvm
@@ -311,7 +311,7 @@ theorem vatFoldBodyCore : VatBodyTheoremAnyPerm 9 := by
         hauthSolc (by jump_dest) (by simp)
       let liveSlot : UInt256 := ⟨10⟩
       by_cases hliveEvm : solcSlotWordAt liveSlot σ I = ⟨1⟩
-      · have hliveSolm : solcSlotWordAt liveSlot σ I = ⟨1⟩ := hliveEvm
+      · have hliveStele : solcSlotWordAt liveSlot σ I = ⟨1⟩ := hliveEvm
         have hliveSolc : solcSlotWord σ I ⟨10⟩ = ⟨1⟩ := by
           simpa [liveSlot, solcSlotWordAt] using hliveEvm
         obtain ⟨_, _, hafterLive⟩ := RD.vatLiveGuardOk
@@ -330,17 +330,17 @@ theorem vatFoldBodyCore : VatBodyTheoremAnyPerm 9 := by
         have hrateWord : rateOldE = rateOldS := by
           simp [rateOldE, rateOldS, rateSlotS, hrateSlotEq]
         have hloadRateS :
-            Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner rateSlotS = rateOldS := by
+            Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner rateSlotS = rateOldS := by
           simp [evm0, rateOldS, rateSlotS, solcSlotWordAt, solcSlotWord, initState,
-            Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage]
+            Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage]
         have hguardAuth := vatAuthGuardEval_true
           (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
           (g := Sat256.ofUInt256 g) (locals := foldStore I)
-          (foldStore_wards I) (by simpa [callerSlot] using hauthSolm)
+          (foldStore_wards I) (by simpa [callerSlot] using hauthStele)
         have hguardLive := vatLiveGuardEval_true
           (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
           (g := Sat256.ofUInt256 g) (locals := foldStore I)
-          (foldStore_live I) (by simpa [liveSlot] using hliveSolm)
+          (foldStore_live I) (by simpa [liveSlot] using hliveStele)
         have hmemLive :
             (twoWordHashMem (hopeSourceWord I) ⟨0⟩ solcFreePtrMem).size = 96 :=
           twoWordHashMem_size_96 (hopeSourceWord I) ⟨0⟩ solcFreePtrMem_size
@@ -447,13 +447,13 @@ theorem vatFoldBodyCore : VatBodyTheoremAnyPerm 9 := by
                 (vatFoldSourceStatic evm0 I hwv hguardAuth hguardLive
                   ((vatFoldRateAddAssignSplit evm0 I hsz100 hloadRateS (by rfl) hRateGuardNeg
                     hRateGuardPos).2 (by simpa [evm0, initState] using hpf)))
-            let evmRate := Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner
+            let evmRate := Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner
               rateSlotS rateNewS
             let artSlotE := solcMappingSlot ⟨2⟩ (foldIlkWord I)
             let artOldE := solcSlotWord
               (sstoreAccountMap I.codeOwner σ rateSlotE rateNewE) I artSlotE
             let artOldS :=
-              Solm.EVM.storageLoad evmRate evmRate.executionEnv.codeOwner (foldArtSlot I)
+              Stele.EVM.storageLoad evmRate evmRate.executionEnv.codeOwner (foldArtSlot I)
             have hrateNewWord : rateNewE = rateNewS := by
               simp [rateNewE, rateNewS, hrateWord]
             have hAccountsRate :
@@ -468,7 +468,7 @@ theorem vatFoldBodyCore : VatBodyTheoremAnyPerm 9 := by
               have h := congrArg (fun accounts =>
                 solcSlotWord accounts I (foldArtSlot I)) hAccountsRate
               simpa [artOldE, artOldS, artSlotE, hartSlotEq, evmRate, solcSlotWordAt,
-                solcSlotWord, Solm.EVM.storageLoad, State.lookupAccount,
+                solcSlotWord, Stele.EVM.storageLoad, State.lookupAccount,
                 Account.lookupStorage, storageStore_executionEnv] using h
             by_cases hArtMaxE : UInt256.slt artOldE ⟨0⟩ = ⟨0⟩
             · have hArtMaxSolc :
@@ -515,7 +515,7 @@ theorem vatFoldBodyCore : VatBodyTheoremAnyPerm 9 := by
                   let daiOldE := solcSlotWord
                     (sstoreAccountMap I.codeOwner σ rateSlotE rateNewE) I daiSlotE
                   let daiOldS :=
-                    Solm.EVM.storageLoad evmRate evmRate.executionEnv.codeOwner
+                    Stele.EVM.storageLoad evmRate evmRate.executionEnv.codeOwner
                       (foldDaiSlot I)
                   have hdaiSlotEq : foldDaiSlot I = daiSlotE := by
                     simpa [daiSlotE] using foldDaiSlot_eq I
@@ -523,7 +523,7 @@ theorem vatFoldBodyCore : VatBodyTheoremAnyPerm 9 := by
                     have h := congrArg (fun accounts =>
                       solcSlotWord accounts I (foldDaiSlot I)) hAccountsRate
                     simpa [daiOldE, daiOldS, daiSlotE, hdaiSlotEq, evmRate,
-                      solcSlotWordAt, solcSlotWord, Solm.EVM.storageLoad,
+                      solcSlotWordAt, solcSlotWord, Stele.EVM.storageLoad,
                       State.lookupAccount, Account.lookupStorage, storageStore_executionEnv]
                       using h
                   have hDaiWordSlot :
@@ -557,7 +557,7 @@ theorem vatFoldBodyCore : VatBodyTheoremAnyPerm 9 := by
                     (rad := ⟨0⟩) (base := solcMappingSlot ⟨2⟩ (foldIlkWord I))
                     (by simpa [artOldE, artSlotE, hRadE] using hafterArt)
                     hmemArt hDaiNegSolc hDaiPosSolc hperm
-                  let evmDai := Solm.EVM.storageStore evmRate evmRate.executionEnv.codeOwner
+                  let evmDai := Stele.EVM.storageStore evmRate evmRate.executionEnv.codeOwner
                     (foldDaiSlot I) daiOldS
                   have hAccountsDai :
                       Eq
@@ -585,12 +585,12 @@ theorem vatFoldBodyCore : VatBodyTheoremAnyPerm 9 := by
                           I daiSlotE))
                     I ⟨7⟩
                   let debtOldS :=
-                    Solm.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner foldDebtSlot
+                    Stele.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner foldDebtSlot
                   have hDebtWord : debtOldE = debtOldS := by
                     have h := congrArg (fun accounts =>
                       solcSlotWord accounts I foldDebtSlot) hAccountsDai
                     simpa [debtOldE, debtOldS, evmDai, evmRate, evm0, initState,
-                      foldDebtSlot, solcSlotWordAt, solcSlotWord, Solm.EVM.storageLoad,
+                      foldDebtSlot, solcSlotWordAt, solcSlotWord, Stele.EVM.storageLoad,
                       State.lookupAccount,
                       Account.lookupStorage, storageStore_executionEnv] using h
                   have hDebtWordSimple :
@@ -648,7 +648,7 @@ theorem vatFoldBodyCore : VatBodyTheoremAnyPerm 9 := by
                   obtain ⟨_, _, hafterDebt⟩ := RD.vatFoldDebtStoreReturnOk
                     (rad := ⟨0⟩) (base := solcMappingSlot ⟨2⟩ (foldIlkWord I))
                     hafterDai hDebtNegSolc hDebtPosSolc hperm
-                  let evmDebt := Solm.EVM.storageStore evmDai evmDai.executionEnv.codeOwner
+                  let evmDebt := Stele.EVM.storageStore evmDai evmDai.executionEnv.codeOwner
                     foldDebtSlot debtOldS
                   have hAccountsDebt :
                       Eq
@@ -668,15 +668,15 @@ theorem vatFoldBodyCore : VatBodyTheoremAnyPerm 9 := by
                   have hArtMaxS : UInt256.slt artOldS ⟨0⟩ = ⟨0⟩ := by
                     simpa [hArtWord] using hArtMaxE
                   have hloadArtS :
-                      Solm.EVM.storageLoad
-                          (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner
+                      Stele.EVM.storageLoad
+                          (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner
                             (foldRateSlot I) rateNewS)
                           evm0.executionEnv.codeOwner (foldArtSlot I) = artOldS := by
                     simp [artOldS, evmRate, rateSlotS, storageStore_executionEnv]
                   have hmulGuardMax :
                       evalExpr? config
                         { contract := contract, locals := foldStoreRad I rateNewS 0 }
-                        (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner
+                        (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner
                           (foldRateSlot I) rateNewS)
                         (.binary .le (.storage (ilksF (.var "i") "Art"))
                           (.intLit Reasoning.Theory.maxInt256)) =
@@ -702,7 +702,7 @@ theorem vatFoldBodyCore : VatBodyTheoremAnyPerm 9 := by
                   have hmulGuard :
                       evalExpr? config
                         { contract := contract, locals := foldStoreRad I rateNewS 0 }
-                        (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner
+                        (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner
                           (foldRateSlot I) rateNewS)
                         (eitherExpr (.binary .eq (.var "rate") (.intLit 0))
                           (.binary .eq (.binary .div (.var "rad") (.var "rate"))
@@ -712,8 +712,8 @@ theorem vatFoldBodyCore : VatBodyTheoremAnyPerm 9 := by
                       evalExpr_fold_mul_guard_rate_zero_true evmRate I rateNewS 0
                         hRateIntZero
                   have hloadDaiS :
-                      Solm.EVM.storageLoad
-                          (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner
+                      Stele.EVM.storageLoad
+                          (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner
                             (foldRateSlot I) rateNewS)
                           evm0.executionEnv.codeOwner (foldDaiSlot I) = daiOldS := by
                     simp [daiOldS, evmRate, rateSlotS, storageStore_executionEnv]
@@ -725,7 +725,7 @@ theorem vatFoldBodyCore : VatBodyTheoremAnyPerm 9 := by
                       evalExpr? config
                         { contract := contract,
                           locals := foldStoreDaiNew I rateNewS 0 daiOldS }
-                        (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner
+                        (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner
                           (foldRateSlot I) rateNewS)
                         (eitherExpr (.binary .ge (.var "rad") (.intLit 0))
                           (.binary .le (.var "daiNew") (.storage (daiRef (.var "u"))))) =
@@ -751,7 +751,7 @@ theorem vatFoldBodyCore : VatBodyTheoremAnyPerm 9 := by
                       evalExpr? config
                         { contract := contract,
                           locals := foldStoreDaiNew I rateNewS 0 daiOldS }
-                        (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner
+                        (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner
                           (foldRateSlot I) rateNewS)
                         (eitherExpr (.binary .le (.var "rad") (.intLit 0))
                           (.binary .ge (.var "daiNew") (.storage (daiRef (.var "u"))))) =
@@ -774,9 +774,9 @@ theorem vatFoldBodyCore : VatBodyTheoremAnyPerm 9 := by
                       evalSignedAddGuardPos_true hrad0 hdaiNewVar hdaiLoad
                         (Or.inl (by norm_num))
                   have hloadDebtS :
-                      Solm.EVM.storageLoad
-                          (Solm.EVM.storageStore
-                          (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner
+                      Stele.EVM.storageLoad
+                          (Stele.EVM.storageStore
+                          (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner
                               (foldRateSlot I) rateNewS)
                             evm0.executionEnv.codeOwner (foldDaiSlot I) daiOldS)
                           evm0.executionEnv.codeOwner foldDebtSlot = debtOldS := by
@@ -785,8 +785,8 @@ theorem vatFoldBodyCore : VatBodyTheoremAnyPerm 9 := by
                       evalExpr? config
                         { contract := contract,
                           locals := foldStoreDebtNew I rateNewS 0 daiOldS debtOldS }
-                        (Solm.EVM.storageStore
-                          (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner
+                        (Stele.EVM.storageStore
+                          (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner
                             (foldRateSlot I) rateNewS)
                           evm0.executionEnv.codeOwner (foldDaiSlot I) daiOldS)
                         (eitherExpr (.binary .ge (.var "rad") (.intLit 0))
@@ -812,8 +812,8 @@ theorem vatFoldBodyCore : VatBodyTheoremAnyPerm 9 := by
                       evalExpr? config
                         { contract := contract,
                           locals := foldStoreDebtNew I rateNewS 0 daiOldS debtOldS }
-                        (Solm.EVM.storageStore
-                          (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner
+                        (Stele.EVM.storageStore
+                          (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner
                             (foldRateSlot I) rateNewS)
                           evm0.executionEnv.codeOwner (foldDaiSlot I) daiOldS)
                         (eitherExpr (.binary .le (.var "rad") (.intLit 0))
@@ -869,15 +869,15 @@ theorem vatFoldBodyCore : VatBodyTheoremAnyPerm 9 := by
                   have hArtLowS : artOldS.toNat < EVM.twoPow 255 := by
                     simpa [hArtWord] using hArtLowE
                   have hloadArtS :
-                      Solm.EVM.storageLoad
-                          (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner
+                      Stele.EVM.storageLoad
+                          (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner
                             (foldRateSlot I) rateNewS)
                           evm0.executionEnv.codeOwner (foldArtSlot I) = artOldS := by
                     simp [artOldS, evmRate, rateSlotS, storageStore_executionEnv]
                   have hmulGuardMax :
                       evalExpr? config
                         { contract := contract, locals := foldStoreRad I rateNewS rad }
-                        (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner
+                        (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner
                           (foldRateSlot I) rateNewS)
                         (.binary .le (.storage (ilksF (.var "i") "Art"))
                           (.intLit Reasoning.Theory.maxInt256)) =
@@ -908,7 +908,7 @@ theorem vatFoldBodyCore : VatBodyTheoremAnyPerm 9 := by
                   have hmulGuard :
                       evalExpr? config
                         { contract := contract, locals := foldStoreRad I rateNewS rad }
-                        (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner
+                        (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner
                           (foldRateSlot I) rateNewS)
                         (eitherExpr (.binary .eq (.var "rate") (.intLit 0))
                           (.binary .eq (.binary .div (.var "rad") (.var "rate"))
@@ -954,7 +954,7 @@ theorem vatFoldBodyCore : VatBodyTheoremAnyPerm 9 := by
                   let daiOldE := solcSlotWord
                     (sstoreAccountMap I.codeOwner σ rateSlotE rateNewE) I daiSlotE
                   let daiOldS :=
-                    Solm.EVM.storageLoad evmRate evmRate.executionEnv.codeOwner
+                    Stele.EVM.storageLoad evmRate evmRate.executionEnv.codeOwner
                       (foldDaiSlot I)
                   have hdaiSlotEq : foldDaiSlot I = daiSlotE := by
                     simpa [daiSlotE] using foldDaiSlot_eq I
@@ -962,7 +962,7 @@ theorem vatFoldBodyCore : VatBodyTheoremAnyPerm 9 := by
                     have h := congrArg (fun accounts =>
                       solcSlotWord accounts I (foldDaiSlot I)) hAccountsRate
                     simpa [daiOldE, daiOldS, evmRate, evm0, initState, daiSlotE,
-                      hdaiSlotEq, solcSlotWordAt, solcSlotWord, Solm.EVM.storageLoad,
+                      hdaiSlotEq, solcSlotWordAt, solcSlotWord, Stele.EVM.storageLoad,
                       State.lookupAccount, Account.lookupStorage,
                       storageStore_executionEnv] using h
                   let daiNewE := radWord + daiOldE
@@ -996,7 +996,7 @@ theorem vatFoldBodyCore : VatBodyTheoremAnyPerm 9 := by
                       obtain ⟨_, _, hafterDai⟩ := RD.vatFoldDaiStoreOk
                         (rad := radWord) (base := solcMappingSlot ⟨2⟩ (foldIlkWord I))
                         hafterArt hmemArt hDaiNegSolc hDaiPosSolc hperm
-                      let evmDai := Solm.EVM.storageStore evmRate
+                      let evmDai := Stele.EVM.storageStore evmRate
                         evmRate.executionEnv.codeOwner (foldDaiSlot I) daiNewS
                       have hAccountsDai :
                           Eq
@@ -1015,14 +1015,14 @@ theorem vatFoldBodyCore : VatBodyTheoremAnyPerm 9 := by
                           (sstoreAccountMap I.codeOwner σ rateSlotE rateNewE)
                           daiSlotE daiNewE) I ⟨7⟩
                       let debtOldS :=
-                        Solm.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner
+                        Stele.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner
                           foldDebtSlot
                       have hDebtWord : debtOldE = debtOldS := by
                         have h := congrArg (fun accounts =>
                           solcSlotWord accounts I foldDebtSlot) hAccountsDai
                         simpa [debtOldE, debtOldS, evmDai, evmRate, evm0, initState,
                           foldDebtSlot, solcSlotWordAt, solcSlotWord,
-                          Solm.EVM.storageLoad, State.lookupAccount,
+                          Stele.EVM.storageLoad, State.lookupAccount,
                           Account.lookupStorage, storageStore_executionEnv] using h
                       let debtNewE := radWord + debtOldE
                       let debtNewS := radWord + debtOldS
@@ -1063,7 +1063,7 @@ theorem vatFoldBodyCore : VatBodyTheoremAnyPerm 9 := by
                           obtain ⟨_, _, hafterDebt⟩ := RD.vatFoldDebtStoreReturnOk
                             (rad := radWord) (base := solcMappingSlot ⟨2⟩ (foldIlkWord I))
                             hafterDai hDebtNegSolc hDebtPosSolc hperm
-                          let evmDebt := Solm.EVM.storageStore evmDai
+                          let evmDebt := Stele.EVM.storageStore evmDai
                             evmDai.executionEnv.codeOwner foldDebtSlot debtNewS
                           have hAccountsDebt :
                               Eq
@@ -1082,8 +1082,8 @@ theorem vatFoldBodyCore : VatBodyTheoremAnyPerm 9 := by
                                 sstoreAccountMap I.codeOwner accounts foldDebtSlot debtNewE)
                                 hAccountsDai
                           have hloadDaiS :
-                              Solm.EVM.storageLoad
-                                  (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner
+                              Stele.EVM.storageLoad
+                                  (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner
                                     (foldRateSlot I) rateNewS)
                                   evm0.executionEnv.codeOwner (foldDaiSlot I) =
                                 daiOldS := by
@@ -1093,7 +1093,7 @@ theorem vatFoldBodyCore : VatBodyTheoremAnyPerm 9 := by
                               evalExpr? config
                                 { contract := contract,
                                   locals := foldStoreDaiNew I rateNewS rad daiNewS }
-                                (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner
+                                (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner
                                   (foldRateSlot I) rateNewS)
                                 (eitherExpr (.binary .ge (.var "rad") (.intLit 0))
                                   (.binary .le (.var "daiNew")
@@ -1122,7 +1122,7 @@ theorem vatFoldBodyCore : VatBodyTheoremAnyPerm 9 := by
                               evalExpr? config
                                 { contract := contract,
                                   locals := foldStoreDaiNew I rateNewS rad daiNewS }
-                                (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner
+                                (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner
                                   (foldRateSlot I) rateNewS)
                                 (eitherExpr (.binary .le (.var "rad") (.intLit 0))
                                   (.binary .ge (.var "daiNew")
@@ -1148,9 +1148,9 @@ theorem vatFoldBodyCore : VatBodyTheoremAnyPerm 9 := by
                             simpa [evmRate] using
                               evalSignedAddGuardPos_true hradv hnewv hloadv hcond
                           have hloadDebtS :
-                              Solm.EVM.storageLoad
-                                  (Solm.EVM.storageStore
-                                    (Solm.EVM.storageStore evm0
+                              Stele.EVM.storageLoad
+                                  (Stele.EVM.storageStore
+                                    (Stele.EVM.storageStore evm0
                                       evm0.executionEnv.codeOwner (foldRateSlot I)
                                       rateNewS)
                                     evm0.executionEnv.codeOwner (foldDaiSlot I) daiNewS)
@@ -1162,8 +1162,8 @@ theorem vatFoldBodyCore : VatBodyTheoremAnyPerm 9 := by
                                 { contract := contract,
                                   locals :=
                                     foldStoreDebtNew I rateNewS rad daiNewS debtNewS }
-                                (Solm.EVM.storageStore
-                                  (Solm.EVM.storageStore evm0
+                                (Stele.EVM.storageStore
+                                  (Stele.EVM.storageStore evm0
                                     evm0.executionEnv.codeOwner (foldRateSlot I)
                                     rateNewS)
                                   evm0.executionEnv.codeOwner (foldDaiSlot I) daiNewS)
@@ -1196,8 +1196,8 @@ theorem vatFoldBodyCore : VatBodyTheoremAnyPerm 9 := by
                                 { contract := contract,
                                   locals :=
                                     foldStoreDebtNew I rateNewS rad daiNewS debtNewS }
-                                (Solm.EVM.storageStore
-                                  (Solm.EVM.storageStore evm0
+                                (Stele.EVM.storageStore
+                                  (Stele.EVM.storageStore evm0
                                     evm0.executionEnv.codeOwner (foldRateSlot I)
                                     rateNewS)
                                   evm0.executionEnv.codeOwner (foldDaiSlot I) daiNewS)
@@ -1285,8 +1285,8 @@ theorem vatFoldBodyCore : VatBodyTheoremAnyPerm 9 := by
                             (rad := radWord) (base := solcMappingSlot ⟨2⟩ (foldIlkWord I))
                             hafterDai (Or.inr ⟨hDebtNegSolc, hDebtPosFailSolc⟩)
                           have hloadDaiS :
-                              Solm.EVM.storageLoad
-                                  (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner
+                              Stele.EVM.storageLoad
+                                  (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner
                                     (foldRateSlot I) rateNewS)
                                   evm0.executionEnv.codeOwner (foldDaiSlot I) =
                                 daiOldS := by
@@ -1350,7 +1350,7 @@ theorem vatFoldBodyCore : VatBodyTheoremAnyPerm 9 := by
                           have hdaiAssign := vatFoldAssignDaiOk evmRate I
                             (rateNew := rateNewS) (rad := rad) (daiNew := daiNewS)
                           have hloadDebtS :
-                              Solm.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner
+                              Stele.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner
                                 foldDebtSlot = debtOldS := by
                             simp [debtOldS]
                           have hDebtGuardNeg :
@@ -1436,8 +1436,8 @@ theorem vatFoldBodyCore : VatBodyTheoremAnyPerm 9 := by
                           (rad := radWord) (base := solcMappingSlot ⟨2⟩ (foldIlkWord I))
                           hafterDai (Or.inl hDebtNegFailSolc)
                         have hloadDaiS :
-                            Solm.EVM.storageLoad
-                                (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner
+                            Stele.EVM.storageLoad
+                                (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner
                                   (foldRateSlot I) rateNewS)
                                 evm0.executionEnv.codeOwner (foldDaiSlot I) = daiOldS := by
                           simp [daiOldS, evmRate, rateSlotS, storageStore_executionEnv]
@@ -1497,7 +1497,7 @@ theorem vatFoldBodyCore : VatBodyTheoremAnyPerm 9 := by
                         have hdaiAssign := vatFoldAssignDaiOk evmRate I
                           (rateNew := rateNewS) (rad := rad) (daiNew := daiNewS)
                         have hloadDebtS :
-                            Solm.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner
+                            Stele.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner
                               foldDebtSlot = debtOldS := by
                           simp [debtOldS]
                         have hDebtGuardNeg :
@@ -1561,8 +1561,8 @@ theorem vatFoldBodyCore : VatBodyTheoremAnyPerm 9 := by
                         (rad := radWord) (base := solcMappingSlot ⟨2⟩ (foldIlkWord I))
                         hafterArt hmemArt (Or.inr ⟨hDaiNegSolc, hDaiPosFailSolc⟩)
                       have hloadDaiS :
-                          Solm.EVM.storageLoad
-                              (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner
+                          Stele.EVM.storageLoad
+                              (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner
                                 (foldRateSlot I) rateNewS)
                               evm0.executionEnv.codeOwner (foldDaiSlot I) = daiOldS := by
                         simp [daiOldS, evmRate, rateSlotS, storageStore_executionEnv]
@@ -1640,8 +1640,8 @@ theorem vatFoldBodyCore : VatBodyTheoremAnyPerm 9 := by
                       (rad := radWord) (base := solcMappingSlot ⟨2⟩ (foldIlkWord I))
                       hafterArt hmemArt (Or.inl hDaiNegFailSolc)
                     have hloadDaiS :
-                        Solm.EVM.storageLoad
-                            (Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner
+                        Stele.EVM.storageLoad
+                            (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner
                               (foldRateSlot I) rateNewS)
                             evm0.executionEnv.codeOwner (foldDaiSlot I) = daiOldS := by
                       simp [daiOldS, evmRate, rateSlotS, storageStore_executionEnv]
@@ -1900,20 +1900,20 @@ theorem vatFoldBodyCore : VatBodyTheoremAnyPerm 9 := by
             (A := A) (I := I) (g := Sat256.ofUInt256 g) (sel := vatSelWord I)
             hafterLive hmemLive (Or.inl hRateNegFailSolc)
           exact hrev.reEquivExecutionRevert hcode hdispatch hdecode hbody
-      · have hliveSolm : solcSlotWordAt liveSlot σ I ≠ ⟨1⟩ := by
-          intro hsolm
-          exact hliveEvm hsolm
+      · have hliveStele : solcSlotWordAt liveSlot σ I ≠ ⟨1⟩ := by
+          intro hstele
+          exact hliveEvm hstele
         let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
         have hbody :
             ExecTransitionBody config contract evm0 (foldStore I) foldTransition.body .reverted := by
           have hguardAuth := vatAuthGuardEval_true
             (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
             (g := Sat256.ofUInt256 g) (locals := foldStore I)
-            (foldStore_wards I) (by simpa [callerSlot] using hauthSolm)
+            (foldStore_wards I) (by simpa [callerSlot] using hauthStele)
           have hguardLive := vatLiveGuardEval_false
             (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
             (g := Sat256.ofUInt256 g) (locals := foldStore I)
-            (foldStore_live I) (by simpa [liveSlot] using hliveSolm)
+            (foldStore_live I) (by simpa [liveSlot] using hliveStele)
           have hblock :
               ExecBlock config { contract := contract, locals := foldStore I } evm0
                 ([ .require (.binary .eq (.env .callvalue) (.intLit 0)),
@@ -1955,18 +1955,18 @@ theorem vatFoldBodyCore : VatBodyTheoremAnyPerm 9 := by
             repeat' first | apply And.intro | native_decide)
           hliveSolc hmemAuth hread64 (by simp)
         exact hrev.reEquivExecutionRevert hcode hdispatch hdecode hbody
-    · have hauthSolm : solcSlotWordAt callerSlot σ I ≠ ⟨1⟩ := by
-        intro hsolm
-        exact hauthEvm hsolm
+    · have hauthStele : solcSlotWordAt callerSlot σ I ≠ ⟨1⟩ := by
+        intro hstele
+        exact hauthEvm hstele
       let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
       have hbody :
           ExecTransitionBody config contract evm0 (foldStore I) foldTransition.body .reverted := by
         have hguard := vatAuthGuardEval_false
           (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
           (g := Sat256.ofUInt256 g) (locals := foldStore I)
-          (foldStore_wards I) (by simpa [callerSlot] using hauthSolm)
+          (foldStore_wards I) (by simpa [callerSlot] using hauthStele)
         have hblock := nonpayableSecondRequireReverts
-          (cfg := config) (solm := { contract := contract, locals := foldStore I })
+          (cfg := config) (stele := { contract := contract, locals := foldStore I })
           (evm := evm0)
           (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
           (rest :=

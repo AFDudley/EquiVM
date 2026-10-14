@@ -4,7 +4,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.SharesToAssetsDown
 
 /-! Source frames and calls for the allocated expected-supply-assets helper. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
 

@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Flipper.DentRefundMain
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxHeartbeats 0
 
@@ -14,10 +14,10 @@ theorem flipperDentBodyFrom4601LotLower
     (hcode : I.code = flipperBytecode)
     (hdispatch : dispatchMsg contract I.calldata = some dentTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (dentTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (dentTransition.params.map Param.name)
         (transitionSignature dentTransition).paramTypes I.calldata = some (dentLocals I))
     (hwv : I.weiValue = ⟨0⟩)
-    (hguySolm : bidGuyWord (dentId I) σ I ≠ ⟨0⟩)
+    (hguyStele : bidGuyWord (dentId I) σ I ≠ ⟨0⟩)
     (hticGuard :
       evalExpr? config { contract := contract, locals := dentLocals I }
         (initState σ σ₀ (Sat256.ofUInt256 g) A I)
@@ -68,7 +68,7 @@ theorem flipperDentBodyFrom4601LotLower
     simp [dentBegLotWord, hbegWordEq]
   by_cases hoverLot :
       UInt256.size ≤ (bidLotWord (dentId I) σ I).toNat * flipperONEWord.toNat
-  · have hoverLotSolm :
+  · have hoverLotStele :
         UInt256.size ≤ (bidLotWord (dentId I) σ I).toNat * flipperONEWord.toNat := by
       simpa [← hlotWordEq] using hoverLot
     have hbody :
@@ -76,17 +76,17 @@ theorem flipperDentBodyFrom4601LotLower
       simpa [evm0, locals] using
         (flipperDentSourceBodyLotOneOverflow
           (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
-          hwv hguySolm hticGuard hendGuard hbidGuard htabGuard hlotGuard hoverLotSolm)
+          hwv hguyStele hticGuard hendGuard hbidGuard htabGuard hlotGuard hoverLotStele)
     exact (flipperDentX_lotOneOverflow hmemSize hoverLot h)
       |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
   · have hfitLotEvm :
         (bidLotWord (dentId I) σ I).toNat * flipperONEWord.toNat < UInt256.size :=
       Nat.lt_of_not_ge hoverLot
-    have hfitLotSolm :
+    have hfitLotStele :
         (bidLotWord (dentId I) σ I).toNat * flipperONEWord.toNat < UInt256.size := by
       simpa [← hlotWordEq] using hfitLotEvm
     by_cases hoverBeg : UInt256.size ≤ (dentBegWord σ I).toNat * (dentLot I).toNat
-    · have hoverBegSolm :
+    · have hoverBegStele :
           UInt256.size ≤ (dentBegWord σ I).toNat * (dentLot I).toNat := by
         simpa [← hbegWordEq] using hoverBeg
       have hbody :
@@ -94,14 +94,14 @@ theorem flipperDentBodyFrom4601LotLower
         simpa [evm0, locals] using
           (flipperDentSourceBodyBegLotOverflow
             (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
-            hwv hguySolm hticGuard hendGuard hbidGuard htabGuard hlotGuard hfitLotSolm
-            hoverBegSolm)
+            hwv hguyStele hticGuard hendGuard hbidGuard htabGuard hlotGuard hfitLotStele
+            hoverBegStele)
       exact (flipperDentX_begLotOverflow hmemSize hfitLotEvm hoverBeg h)
         |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
     · have hfitBegEvm :
           (dentBegWord σ I).toNat * (dentLot I).toNat < UInt256.size :=
         Nat.lt_of_not_ge hoverBeg
-      have hfitBegSolm :
+      have hfitBegStele :
           (dentBegWord σ I).toNat * (dentLot I).toNat < UInt256.size := by
         simpa [← hbegWordEq] using hfitBegEvm
       obtain ⟨_, _, rd4650⟩ :=
@@ -116,7 +116,7 @@ theorem flipperDentBodyFrom4601LotLower
         exact twoWordHashMem_read64 (dentId I) ⟨1⟩ hmemSize hmemRead64
       by_cases hdecEvm :
           (dentBegLotWord σ I).toNat ≤ (dentLotOneWord σ I).toNat
-      · have hdecSolmNat :
+      · have hdecSteleNat :
             (dentBegLotWord σ I).toNat ≤ (dentLotOneWord σ I).toNat := by
           simpa [← hbegLotWordEq, ← hlotOneWordEq] using hdecEvm
         have hdec :
@@ -125,24 +125,24 @@ theorem flipperDentBodyFrom4601LotLower
               (.binary .le (.var "begLot") (.var "lotOne")) = .ok (.bool true) :=
           evalExpr_dentDecreaseRequire_true
             (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := Sat256.ofUInt256 g)
-            hdecSolmNat
+            hdecSteleNat
         obtain ⟨_, _, rd4733⟩ := flipperDentX_decreaseOk hdecEvm rd4650
         by_cases hcallerEvm : solcSourceWord I = bidGuyWord (dentId I) σ I
-        · have hcallerSolm : solcSourceWord I = bidGuyWord (dentId I) σ I := by
+        · have hcallerStele : solcSourceWord I = bidGuyWord (dentId I) σ I := by
             simpa [hguyEq] using hcallerEvm
           exact flipperDentBodyFrom4733SameCaller hcode hdispatch hdecode hwv
-            hguySolm hticGuard hendGuard hbidGuard htabGuard hlotGuard hfitLotSolm
-            hfitBegSolm hdec hcallerEvm hcallerSolm hmem4650Size hmem4650Read64 rd4733
-        · have hcallerSolm : solcSourceWord I ≠ bidGuyWord (dentId I) σ I := by
+            hguyStele hticGuard hendGuard hbidGuard htabGuard hlotGuard hfitLotStele
+            hfitBegStele hdec hcallerEvm hcallerStele hmem4650Size hmem4650Read64 rd4733
+        · have hcallerStele : solcSourceWord I ≠ bidGuyWord (dentId I) σ I := by
             intro hcaller
             exact hcallerEvm (by simpa [hguyEq] using hcaller)
           exact flipperDentBodyFrom4733Refund hcode hdispatch hdecode hwv
-            hguySolm hticGuard hendGuard hbidGuard htabGuard hlotGuard hfitLotSolm hfitBegSolm
-            hdec hcallerEvm hcallerSolm hmem4650Size hmem4650Read64 rd4733
+            hguyStele hticGuard hendGuard hbidGuard htabGuard hlotGuard hfitLotStele hfitBegStele
+            hdec hcallerEvm hcallerStele hmem4650Size hmem4650Read64 rd4733
       · have hgtEvm :
             (dentLotOneWord σ I).toNat < (dentBegLotWord σ I).toNat :=
           Nat.lt_of_not_ge hdecEvm
-        have hgtSolm :
+        have hgtStele :
             (dentLotOneWord σ I).toNat < (dentBegLotWord σ I).toNat := by
           simpa [← hlotOneWordEq, ← hbegLotWordEq] using hgtEvm
         have hbody :
@@ -150,8 +150,8 @@ theorem flipperDentBodyFrom4601LotLower
           simpa [evm0, locals] using
             (flipperDentSourceBodyInsufficientDecrease
               (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
-              hwv hguySolm hticGuard hendGuard hbidGuard htabGuard hlotGuard hfitBegSolm
-              hfitLotSolm hgtSolm)
+              hwv hguyStele hticGuard hendGuard hbidGuard htabGuard hlotGuard hfitBegStele
+              hfitLotStele hgtStele)
         exact (flipperDentX_insufficientDecrease hmem4650Size hmem4650Read64 hgtEvm rd4650)
           |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
 

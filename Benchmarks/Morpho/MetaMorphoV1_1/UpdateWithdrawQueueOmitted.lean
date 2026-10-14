@@ -5,7 +5,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.UpdateWithdrawQueueDelete
 
 /-! Complete simulation of an omitted market, with fresh storage reads and modular reader calls. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 
@@ -52,7 +52,7 @@ theorem updateWithdrawQueueOmittedSimulation {I : ExecutionEnv} {g : Sat256} {s0
   rw [ulit_toNat' _ hfit] at hbound
   let id := codeOwnerStorageWord I evm.accountMap
     (uInt256OfByteArray (KEC (UInt256.toByteArray ⟨21⟩)) + UInt256.ofNat i)
-  have hid_eq : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+  have hid_eq : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
       (uInt256OfByteArray (KEC (UInt256.toByteArray ⟨21⟩)) + UInt256.ofNat i) = id := by
     change codeOwnerStorageWord evm.executionEnv evm.accountMap _ = id
     rw [hs.env]

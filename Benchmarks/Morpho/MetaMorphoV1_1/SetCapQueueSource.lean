@@ -3,18 +3,18 @@ import Benchmarks.Morpho.MetaMorphoV1_1.WordArrayPush
 
 /-! Withdrawal-queue length guards and the exact append performed when enabling a market. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 
 open SourceMemory
 
 def setCapQueueLength (evm : State) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨21⟩
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨21⟩
 
 def setCapQueuePushState (evm : State) (id : UInt256) : State :=
-  Solm.EVM.storageStore
-    (Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨21⟩ (setCapQueueLength evm + ⟨1⟩))
+  Stele.EVM.storageStore
+    (Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨21⟩ (setCapQueueLength evm + ⟨1⟩))
     evm.executionEnv.codeOwner (solidityBytesDataBaseSlot ⟨21⟩ + setCapQueueLength evm) id
 
 @[simp] theorem setCapQueuePushState_executionEnv (evm : State) (id : UInt256) :

@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.StringStorageWrite
 
 /-! Relate the storage writer's account maps to the source state, without slot assumptions. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 

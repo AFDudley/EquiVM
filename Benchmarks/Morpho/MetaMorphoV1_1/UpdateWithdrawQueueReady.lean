@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.ArrayStorage
 
 /-! Source-frame invariants shared by the withdrawal queue's two loops. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 
@@ -73,7 +73,7 @@ theorem updateWithdrawQueuePostSource {frame : Frame} {imms : Store}
   execLocalIncrement h.index hfit
 
 theorem updateWithdrawQueueInitialReady (evm : State) (imms : Store) (indexes : List Value) :
-    let curr := (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨21⟩).toNat
+    let curr := (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨21⟩).toNat
     UpdateWithdrawQueueReady (updateWithdrawQueueIndexFrame
       (updateWithdrawQueueAllocatedFrame (updateWithdrawQueuePrefixFrame evm imms indexes)
         curr indexes.length) 0) imms indexes curr 0 (List.replicate curr false)

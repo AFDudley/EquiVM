@@ -7,7 +7,7 @@ import Reasoning.Dispatch
 The selectors depend only on transition names and parameter types, not on immutable values.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 open TinyImmutable.Immutables
 
 namespace TinyImmutable
@@ -21,7 +21,7 @@ set_option maxRecDepth 1000000 in
 /-- Selector fact: `keccak256("owner()")[0:4]`. -/
 theorem ownerSelectorOf :
     selectorOf ownerTransition = ownerSelBytes := by
-  simp only [selectorOf, ownerTransition, Solm.transitionSigStr,
+  simp only [selectorOf, ownerTransition, Stele.transitionSigStr,
     transitionSignature, ABI.printSignature]
   decide +kernel
 
@@ -30,8 +30,8 @@ set_option maxRecDepth 1000000 in
 /-- Selector fact: `keccak256("quote(uint256)")[0:4]`. -/
 theorem quoteSelectorOf :
     selectorOf quoteTransition = quoteSelBytes := by
-  have hsig : Solm.transitionSigStr quoteTransition = "quote(uint256)" := by
-    simp [Solm.transitionSigStr, ABI.printSignature, transitionSignature,
+  have hsig : Stele.transitionSigStr quoteTransition = "quote(uint256)" := by
+    simp [Stele.transitionSigStr, ABI.printSignature, transitionSignature,
       quoteTransition, uint256, uint256Int, ABI.abiToSigStr,
       ABI.elemToSigStr, ABI.intTypeToSigStr,
       show Nat.repr 256 = "256" by decide +kernel]
@@ -45,7 +45,7 @@ set_option maxRecDepth 1000000 in
 /-- Selector fact: `keccak256("scale()")[0:4]`. -/
 theorem scaleSelectorOf :
     selectorOf scaleTransition = scaleSelBytes := by
-  simp only [selectorOf, scaleTransition, Solm.transitionSigStr,
+  simp only [selectorOf, scaleTransition, Stele.transitionSigStr,
     transitionSignature, ABI.printSignature]
   decide +kernel
 

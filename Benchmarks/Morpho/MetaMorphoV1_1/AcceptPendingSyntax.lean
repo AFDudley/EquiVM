@@ -6,12 +6,12 @@ import Benchmarks.Morpho.MetaMorphoV1_1.MarketBalancesSource
 
 /-! Pending record reads and time guards shared by timelock and guardian acceptance. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 
 def pendingUpdateWord (guardian : Bool) (evm : EVM.State) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (revocationSlot guardian)
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (revocationSlot guardian)
 
 def pendingUpdateTime (guardian : Bool) (word : UInt256) : UInt256 :=
   if guardian then UInt256.land (UInt256.shiftRight word ⟨160⟩) (UInt256.ofNat (2 ^ 64 - 1))

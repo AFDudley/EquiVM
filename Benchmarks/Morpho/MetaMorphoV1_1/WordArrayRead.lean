@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.WordArrayStorage
 
 /-! Reading complete bytes32 arrays from a Solidity storage layout. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 
@@ -14,7 +14,7 @@ theorem solidityReadWordArray {layout : StorageLayout} {er : EvaledStorageRef}
     (evm : State) (index n : Nat) :
     solidityReadArray? layout evm er (.elem (.bytes abiBytes32Width)) index n =
       .ok (wordArrayValues
-        (fun i ↦ Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (base + UInt256.ofNat i))
+        (fun i ↦ Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (base + UInt256.ofNat i))
         index n) := by
   have hl (i : Nat) : layout { er with steps := er.steps ++ [.aindex (.int (i : Int))] } =
       some (.leaf (bytes32Loc (base + UInt256.ofNat i))) := hloc i

@@ -4,14 +4,14 @@ import Benchmarks.Morpho.MetaMorphoV1_1.SupplyAssetsSource
 
 /-! Enabling a market and reading the previous total after the queue writes. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 
 open SourceMemory
 
 def setCapEnableState (evm : State) (id : UInt256) : State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (solcMappingSlot ⟨13⟩ id)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (solcMappingSlot ⟨13⟩ id)
     (setBoolByteTrueWord (marketRemovalConfigWord evm id) 23)
 
 @[simp] theorem setCapEnableState_executionEnv (evm : State) (id : UInt256) :
@@ -46,7 +46,7 @@ theorem setCapEnableAssignedPrefix {frame : Frame} {evm : State} {p : MarketPara
     (hready : SetCapReady frame p id cap ptr)
     (htail : ExecBlock config
       (setCapPreviousFrame frame
-        (Solm.EVM.storageLoad (setCapEnableState evm id) evm.executionEnv.codeOwner ⟨22⟩))
+        (Stele.EVM.storageLoad (setCapEnableState evm id) evm.executionEnv.codeOwner ⟨22⟩))
       (setCapEnableState evm id) (setCapEnableBody.drop 5) result) :
     ExecBlock config frame evm (setCapEnableBody.drop 3) result := by
   refine ExecBlock.consNormal (setCapEnableAssign hready.reference) ?_

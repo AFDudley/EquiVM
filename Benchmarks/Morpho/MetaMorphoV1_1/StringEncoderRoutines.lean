@@ -4,7 +4,7 @@ import Benchmarks.EAS.Attester.WordHelpers
 
 /-! The shared dynamic-string encoder, independent of its source and destination pointers. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables metaMorphoV1_1Blocks
 open Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
 

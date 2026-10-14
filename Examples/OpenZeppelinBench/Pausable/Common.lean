@@ -3,10 +3,10 @@ import Examples.OpenZeppelinBench.Pausable.Storage
 import Reasoning.ABI
 import Reasoning.Dispatch
 import Reasoning.Solc
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 import Mathlib.Tactic.IntervalCases
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -80,9 +80,9 @@ theorem pausableEvalPausedFalse (evm : EVM.State) (locals : Store)
     evalExpr? config { contract := contract, locals := locals } evm (.storage pausedRef) =
       .ok (.bool false) := by
   have hstorageZero :
-      UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩) ⟨255⟩ =
+      UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩) ⟨255⟩ =
         ⟨0⟩ := by
-    simpa [pausedWord, pausedRawWord, Solm.EVM.storageLoad] using hzero
+    simpa [pausedWord, pausedRawWord, Stele.EVM.storageLoad] using hzero
   have her : evalStorageRef config { contract := contract, locals := locals } evm pausedRef =
       .ok { base := "_paused", steps := [] } := by
     simp [evalStorageRef, evalStorageRefSteps, pausedRef, EvalResult.bind, pure, bind]
@@ -98,9 +98,9 @@ theorem pausableEvalPausedTrue (evm : EVM.State) (locals : Store)
     evalExpr? config { contract := contract, locals := locals } evm (.storage pausedRef) =
       .ok (.bool true) := by
   have hstorageNz :
-      UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩) ⟨255⟩ ≠
+      UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩) ⟨255⟩ ≠
         ⟨0⟩ := by
-    simpa [pausedWord, pausedRawWord, Solm.EVM.storageLoad] using hnz
+    simpa [pausedWord, pausedRawWord, Stele.EVM.storageLoad] using hnz
   have her : evalStorageRef config { contract := contract, locals := locals } evm pausedRef =
       .ok { base := "_paused", steps := [] } := by
     simp [evalStorageRef, evalStorageRefSteps, pausedRef, EvalResult.bind, pure, bind]
@@ -356,7 +356,7 @@ end OpenZeppelinBench.Pausable
 
 namespace Reasoning.Reach
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory OpenZeppelinBench.Pausable
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory OpenZeppelinBench.Pausable
 
 /-! ## PausableBench shared modifier routines -/
 

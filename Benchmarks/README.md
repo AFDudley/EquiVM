@@ -6,7 +6,7 @@ active proof targets, and prepared scaffolds:
 - **This directory** holds completed proofs (top-level `…ContractCorrect` theorem, no `sorry`)
   and targets promoted for active proof work. Their status is listed separately below.
 - **`Scaffolds/`** holds benchmarks that are prepared for proving but not yet
-  proved: the Sol⁻ specification, the exact compiled bytecode, the verified
+  proved: the Stele specification, the exact compiled bytecode, the verified
   jump-destination table, and the top-level theorem statements (as `sorry`
   stubs) are checked in and compile (`lake build Benchmarks.Scaffolds`), so a
   proving agent can start immediately. NOte that the specification may need 
@@ -57,7 +57,6 @@ and [semantic audit](EAS/Attester/AUDIT.md). Its refinement proof is not complet
 
 | Benchmark | Upstream source | solc | Runtime bytes |
 |---|---|---|---|
-| `Scaffolds/Safe` | [`safe-global/safe-smart-account`](https://github.com/safe-global/safe-smart-account/blob/77901a5a1ad835b74ad3b72f73a8412cfe491c57/contracts/Safe.sol) | 0.8.35 | 11874 |
 | `Scaffolds/Klima` | [`KlimaDAO/klimadao-solidity`](https://github.com/KlimaDAO/klimadao-solidity/blob/0eb4770c1e9cbead8dd23ef0c23a9a27d761d029/src/protocol/tokens/regular/KlimaToken.sol) | 0.7.5 | 6975 |
 | `Scaffolds/ERC721` | Benchmark-local compact ERC721 core ([`ERC721.sol`](Scaffolds/ERC721/ERC721.sol)) | 0.8.35 | 1482 |
 | `Scaffolds/CometRewards` | [`compound-finance/comet`](https://github.com/compound-finance/comet/blob/f766f51583c23acc33b2a7824654ef2029a96804/contracts/CometRewards.sol) | 0.8.15 via-IR | 4063 |
@@ -74,7 +73,7 @@ respective scaffolds.
 
 Each benchmark directory contains:
 
-- `Spec.lean` — the Sol⁻ contract: storage layout, transitions, typed external-call hooks.
+- `Spec.lean` — the Stele contract: storage layout, transitions, typed external-call hooks.
 - `SpecSyntax.lean` — the same spec in Solidity-like surface syntax, proved equal to `Spec.lean`.
 - `Bytecode.lean` — the compiled creation/runtime bytecode as Lean byte arrays with the verified
   jump-destination table.

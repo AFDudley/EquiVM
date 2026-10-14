@@ -4,7 +4,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.WadMultiply
 
 /-! The two source calls that compute accrued interest after reading the borrow rate. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
 

@@ -1,7 +1,7 @@
 import Benchmarks.Dss.End.Dispatch
 import Reasoning.ExternalCall
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 0
@@ -9,7 +9,7 @@ set_option maxHeartbeats 0
 section
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 2000000
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.End
 
@@ -194,7 +194,7 @@ abbrev endPackEvaledBagRef (I : ExecutionEnv) : EvaledStorageRef :=
   { base := "bag", steps := [.mindex (endPackBagKey I)] }
 
 def endPackPostState (evm : EVM.State) (I : ExecutionEnv) (bagNew : UInt256) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (endPackBagSlot I) bagNew
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (endPackBagSlot I) bagNew
 
 def endPackMoveSelectorMem (mem : ByteArray) : ByteArray :=
   endPackMoveSelectorShifted.toByteArray.write 0 mem endPackMoveOutPtr.toNat 32
@@ -1460,10 +1460,10 @@ theorem evalExpr_endPack_debt (evm : EVM.State) (I : ExecutionEnv) :
     evalExpr? config { contract := contract, locals := endPackStore I } evm
       (.storage debtRef) =
         .ok (.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨11⟩).toNat)) := by
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨11⟩).toNat)) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
     (cfg := config)
-    (solm := { contract := contract, locals := endPackStore I })
+    (stele := { contract := contract, locals := endPackStore I })
     (slot := debtRef)
     (er := ({ base := "debt", steps := [] } : EvaledStorageRef))
     (t := .int uint256Int)
@@ -1475,7 +1475,7 @@ theorem evalExpr_endPack_debt (evm : EVM.State) (I : ExecutionEnv) :
     (hload := storageLocLoad_uint256 evm ⟨11⟩)
 
 theorem evalExpr_endPack_debt_ne_false (evm : EVM.State) (I : ExecutionEnv)
-    (hdebt : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨11⟩ = ⟨0⟩) :
+    (hdebt : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨11⟩ = ⟨0⟩) :
     evalExpr? config { contract := contract, locals := endPackStore I } evm
       (.binary .ne (.storage debtRef) (.intLit 0)) = .ok (.bool false) := by
   have hstorage :
@@ -1489,14 +1489,14 @@ theorem evalExpr_endPack_debt_ne_false (evm : EVM.State) (I : ExecutionEnv)
   exact endEvalExpr_ne_int_false hstorage hzero rfl
 
 theorem evalExpr_endPack_debt_ne_true (evm : EVM.State) (I : ExecutionEnv)
-    (hdebt : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨11⟩ ≠ ⟨0⟩) :
+    (hdebt : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨11⟩ ≠ ⟨0⟩) :
     evalExpr? config { contract := contract, locals := endPackStore I } evm
       (.binary .ne (.storage debtRef) (.intLit 0)) = .ok (.bool true) := by
   have hstorage :
       evalExpr? config { contract := contract, locals := endPackStore I } evm
         (.storage debtRef) =
           .ok (.int (Int.ofNat
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨11⟩).toNat)) :=
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨11⟩).toNat)) :=
     evalExpr_endPack_debt evm I
   have hzero :
       evalExpr? config { contract := contract, locals := endPackStore I } evm
@@ -1517,11 +1517,11 @@ theorem evalExpr_endPack_vat {locals : Store} (evm : EVM.State)
     (hbase : locals.get? "vat" = none) :
     evalExpr? config { contract := contract, locals := locals } evm (.storage vatRef) =
       .ok (.address (AccountAddress.ofNat
-        (UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩)
+        (UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩)
           solcAddrMask).toNat)) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
     (cfg := config)
-    (solm := { contract := contract, locals := locals })
+    (stele := { contract := contract, locals := locals })
     (slot := vatRef)
     (er := ({ base := "vat", steps := [] } : EvaledStorageRef))
     (t := .address)
@@ -1537,7 +1537,7 @@ theorem evalExpr_endPack_vat_addr {locals : Store} (evm : EVM.State)
     (howner : evm.executionEnv.codeOwner = I.codeOwner) :
     evalExpr? config { contract := contract, locals := locals } evm (.storage vatRef) =
       .ok (.address (endPackVatAddr evm.accountMap I)) := by
-  simpa [howner, Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
+  simpa [howner, Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
     endPackVatAddr, endPackVatWord, solcSlotWordAt, solcSlotWord] using
     evalExpr_endPack_vat (locals := locals) evm hbase
 
@@ -1551,11 +1551,11 @@ theorem evalExpr_endPack_vow {locals : Store} (evm : EVM.State)
     (hbase : locals.get? "vow" = none) :
     evalExpr? config { contract := contract, locals := locals } evm (.storage vowRef) =
       .ok (.address (AccountAddress.ofNat
-        (UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨4⟩)
+        (UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨4⟩)
           solcAddrMask).toNat)) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
     (cfg := config)
-    (solm := { contract := contract, locals := locals })
+    (stele := { contract := contract, locals := locals })
     (slot := vowRef)
     (er := ({ base := "vow", steps := [] } : EvaledStorageRef))
     (t := .address)
@@ -1571,7 +1571,7 @@ theorem evalExpr_endPack_vow_addr {locals : Store} (evm : EVM.State)
     (howner : evm.executionEnv.codeOwner = I.codeOwner) :
     evalExpr? config { contract := contract, locals := locals } evm vowAddr =
       .ok (.address (endPackVowAddr evm.accountMap I)) := by
-  simpa [vowAddr, howner, Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
+  simpa [vowAddr, howner, Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
     endPackVowAddr, endPackVowWord, solcSlotWordAt, solcSlotWord] using
     evalExpr_endPack_vow (locals := locals) evm hbase
 
@@ -1589,10 +1589,10 @@ theorem evalExpr_endPack_bag {locals : Store} (evm : EVM.State) (I : ExecutionEn
     (hsrc : evm.executionEnv.source = I.source) :
     evalExpr? config { contract := contract, locals := locals } evm (.storage (bagRef sender)) =
       .ok (.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (endPackBagSlot I)).toNat)) := by
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (endPackBagSlot I)).toNat)) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
     (cfg := config)
-    (solm := { contract := contract, locals := locals })
+    (stele := { contract := contract, locals := locals })
     (slot := bagRef sender)
     (er := endPackEvaledBagRef I)
     (t := .int uint256Int)
@@ -1624,13 +1624,13 @@ theorem endPackTailReverts_bagAddOverflow (evm : EVM.State) (I : ExecutionEnv)
     (hsrc : evm.executionEnv.source = I.source)
     (hover :
       UInt256.size ≤
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (endPackBagSlot I)).toNat +
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (endPackBagSlot I)).toNat +
           (endPackWadWord I).toNat) :
     ExecBlock config { contract := contract, locals := endPackStoreMove I } evm
       [ .internalCall "add" [.storage (bagRef sender), .var "wad"] "bagNew",
         .assign .storage (bagRef sender) (.var "bagNew") ]
       .reverted := by
-  let bagWord := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (endPackBagSlot I)
+  let bagWord := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (endPackBagSlot I)
   have hbase : (endPackStoreMove I).get? "bag" = none := by
     simp [endPackStoreMove, endPackStoreAmt, endPackStore]
   have hbag :
@@ -1679,7 +1679,7 @@ theorem endPackTailReverts_bagAddOverflow (evm : EVM.State) (I : ExecutionEnv)
 theorem endPackTailReturnsSplit (evm : EVM.State) (I : ExecutionEnv)
     (hsrc : evm.executionEnv.source = I.source)
     (hfit :
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (endPackBagSlot I)).toNat +
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (endPackBagSlot I)).toNat +
           (endPackWadWord I).toNat <
         UInt256.size) :
     (ExecBlock config { contract := contract, locals := endPackStoreMove I } evm
@@ -1689,16 +1689,16 @@ theorem endPackTailReturnsSplit (evm : EVM.State) (I : ExecutionEnv)
         { contract := contract,
           locals :=
             endPackStoreBagNew I
-              (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (endPackBagSlot I) +
+              (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (endPackBagSlot I) +
                 endPackWadWord I) }
         (endPackPostState evm I
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (endPackBagSlot I) +
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (endPackBagSlot I) +
             endPackWadWord I)))) ∧
       (evm.executionEnv.perm = false →
         ExecBlock config { contract := contract, locals := endPackStoreMove I } evm
           [.internalCall "add" [.storage (bagRef sender), .var "wad"] "bagNew",
             .assign .storage (bagRef sender) (.var "bagNew")] .staticViolation) := by
-  let bagWord := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (endPackBagSlot I)
+  let bagWord := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (endPackBagSlot I)
   let bagNew := bagWord + endPackWadWord I
   have hbaseMove : (endPackStoreMove I).get? "bag" = none := by
     simp [endPackStoreMove, endPackStoreAmt, endPackStore]
@@ -1769,7 +1769,7 @@ theorem endPackTailReturnsSplit (evm : EVM.State) (I : ExecutionEnv)
 theorem endPackTailReturns (evm : EVM.State) (I : ExecutionEnv)
     (hsrc : evm.executionEnv.source = I.source)
     (hfit :
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (endPackBagSlot I)).toNat +
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (endPackBagSlot I)).toNat +
           (endPackWadWord I).toNat <
         UInt256.size) :
     ExecBlock config { contract := contract, locals := endPackStoreMove I } evm
@@ -1779,10 +1779,10 @@ theorem endPackTailReturns (evm : EVM.State) (I : ExecutionEnv)
         { contract := contract,
           locals :=
             endPackStoreBagNew I
-              (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (endPackBagSlot I) +
+              (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (endPackBagSlot I) +
                 endPackWadWord I) }
         (endPackPostState evm I
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (endPackBagSlot I) +
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (endPackBagSlot I) +
             endPackWadWord I))) :=
   (endPackTailReturnsSplit evm I hsrc hfit).1
 
@@ -1818,8 +1818,8 @@ theorem endPackBodyReverts_debtZero {σ σ₀ A I} {g : UInt256}
     ExecTransitionBody config contract evm0 (endPackStore I) packTransition.body .reverted := by
   intro evm0
   have hdebtLoad :
-      Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner ⟨11⟩ = ⟨0⟩ := by
-    simpa [evm0, initState, Solm.EVM.storageLoad, State.lookupAccount,
+      Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner ⟨11⟩ = ⟨0⟩ := by
+    simpa [evm0, initState, Stele.EVM.storageLoad, State.lookupAccount,
       endPackDebtWord, solcSlotWordAt, solcSlotWord] using hdebt
   have hguard :
       evalExpr? config { contract := contract, locals := endPackStore I } evm0
@@ -1829,7 +1829,7 @@ theorem endPackBodyReverts_debtZero {σ σ₀ A I} {g : UInt256}
   simpa [packTransition, nonpayable, checkedExternalCallStmts] using
     nonpayableSecondRequireReverts
       (cfg := config)
-      (solm := { contract := contract, locals := endPackStore I })
+      (stele := { contract := contract, locals := endPackStore I })
       (evm := evm0)
       (guard := .binary .ne (.storage debtRef) (.intLit 0))
       (rest :=
@@ -1849,10 +1849,10 @@ theorem endPackBodyReverts_mulOverflow {σ σ₀ A I} {g : UInt256}
     ExecTransitionBody config contract evm0 (endPackStore I) packTransition.body .reverted := by
   intro evm0
   have hdebtLoad :
-      Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner ⟨11⟩ ≠ ⟨0⟩ := by
+      Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner ⟨11⟩ ≠ ⟨0⟩ := by
     intro hbad
     apply hdebt
-    simpa [evm0, initState, Solm.EVM.storageLoad, State.lookupAccount,
+    simpa [evm0, initState, Stele.EVM.storageLoad, State.lookupAccount,
       endPackDebtWord, solcSlotWordAt, solcSlotWord] using hbad
   have hguard :
       evalExpr? config { contract := contract, locals := endPackStore I } evm0
@@ -1918,10 +1918,10 @@ theorem endPackBodyReverts_moveNoCode {σ σ₀ A I} {g : UInt256}
     ExecTransitionBody config contract evm0 (endPackStore I) packTransition.body .reverted := by
   intro evm0
   have hdebtLoad :
-      Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner ⟨11⟩ ≠ ⟨0⟩ := by
+      Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner ⟨11⟩ ≠ ⟨0⟩ := by
     intro hbad
     apply hdebt
-    simpa [evm0, initState, Solm.EVM.storageLoad, State.lookupAccount,
+    simpa [evm0, initState, Stele.EVM.storageLoad, State.lookupAccount,
       endPackDebtWord, solcSlotWordAt, solcSlotWord] using hbad
   have hguardDebt :
       evalExpr? config { contract := contract, locals := endPackStore I } evm0
@@ -1974,7 +1974,7 @@ theorem endPackBodyReverts_moveNoCode {σ σ₀ A I} {g : UInt256}
         (.storage vatRef) = .ok (.address (endPackVatAddr σ I)) := by
     have hbase : (endPackStoreAmt I).get? "vat" = none := by
       simp [endPackStoreAmt, endPackStore]
-    simpa [evm0, initState, Solm.EVM.storageLoad, State.lookupAccount,
+    simpa [evm0, initState, Stele.EVM.storageLoad, State.lookupAccount,
       endPackVatAddr, endPackVatWord, solcSlotWordAt, solcSlotWord] using
       evalExpr_endPack_vat (locals := endPackStoreAmt I) evm0 hbase
   have hcodeZero :
@@ -2041,10 +2041,10 @@ theorem endPackBodyReverts_moveCallFailed {σ σ₀ A I} {g : UInt256}
     ExecTransitionBody config contract evm0 (endPackStore I) packTransition.body .reverted := by
   intro evm0
   have hdebtLoad :
-      Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner ⟨11⟩ ≠ ⟨0⟩ := by
+      Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner ⟨11⟩ ≠ ⟨0⟩ := by
     intro hbad
     apply hdebt
-    simpa [evm0, initState, Solm.EVM.storageLoad, State.lookupAccount,
+    simpa [evm0, initState, Stele.EVM.storageLoad, State.lookupAccount,
       endPackDebtWord, solcSlotWordAt, solcSlotWord] using hbad
   have hguardDebt :
       evalExpr? config { contract := contract, locals := endPackStore I } evm0
@@ -2097,7 +2097,7 @@ theorem endPackBodyReverts_moveCallFailed {σ σ₀ A I} {g : UInt256}
         (.storage vatRef) = .ok (.address (endPackVatAddr σ I)) := by
     have hbase : (endPackStoreAmt I).get? "vat" = none := by
       simp [endPackStoreAmt, endPackStore]
-    simpa [evm0, initState, Solm.EVM.storageLoad, State.lookupAccount,
+    simpa [evm0, initState, Stele.EVM.storageLoad, State.lookupAccount,
       endPackVatAddr, endPackVatWord, solcSlotWordAt, solcSlotWord] using
       evalExpr_endPack_vat (locals := endPackStoreAmt I) evm0 hbase
   have hcodePos :
@@ -2120,7 +2120,7 @@ theorem endPackBodyReverts_moveCallFailed {σ σ₀ A I} {g : UInt256}
         vowAddr = .ok (.address (endPackVowAddr σ I)) := by
     have hbase : (endPackStoreAmt I).get? "vow" = none := by
       simp [endPackStoreAmt, endPackStore]
-    simpa [vowAddr, evm0, initState, Solm.EVM.storageLoad, State.lookupAccount,
+    simpa [vowAddr, evm0, initState, Stele.EVM.storageLoad, State.lookupAccount,
       endPackVowAddr, endPackVowWord, solcSlotWordAt, solcSlotWord] using
       evalExpr_endPack_vow (locals := endPackStoreAmt I) evm0 hbase
   have hamt :
@@ -2197,10 +2197,10 @@ theorem endPackPrefixMoveSuccess {σ σ₀ A I} {g : UInt256}
       (.ok { contract := contract, locals := endPackStoreMove I } evmMove) := by
   intro evm0
   have hdebtLoad :
-      Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner ⟨11⟩ ≠ ⟨0⟩ := by
+      Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner ⟨11⟩ ≠ ⟨0⟩ := by
     intro hbad
     apply hdebt
-    simpa [evm0, initState, Solm.EVM.storageLoad, State.lookupAccount,
+    simpa [evm0, initState, Stele.EVM.storageLoad, State.lookupAccount,
       endPackDebtWord, solcSlotWordAt, solcSlotWord] using hbad
   have hguardDebt :
       evalExpr? config { contract := contract, locals := endPackStore I } evm0
@@ -2253,7 +2253,7 @@ theorem endPackPrefixMoveSuccess {σ σ₀ A I} {g : UInt256}
         (.storage vatRef) = .ok (.address (endPackVatAddr σ I)) := by
     have hbase : (endPackStoreAmt I).get? "vat" = none := by
       simp [endPackStoreAmt, endPackStore]
-    simpa [evm0, initState, Solm.EVM.storageLoad, State.lookupAccount,
+    simpa [evm0, initState, Stele.EVM.storageLoad, State.lookupAccount,
       endPackVatAddr, endPackVatWord, solcSlotWordAt, solcSlotWord] using
       evalExpr_endPack_vat (locals := endPackStoreAmt I) evm0 hbase
   have hcodePos :
@@ -2276,7 +2276,7 @@ theorem endPackPrefixMoveSuccess {σ σ₀ A I} {g : UInt256}
         vowAddr = .ok (.address (endPackVowAddr σ I)) := by
     have hbase : (endPackStoreAmt I).get? "vow" = none := by
       simp [endPackStoreAmt, endPackStore]
-    simpa [vowAddr, evm0, initState, Solm.EVM.storageLoad, State.lookupAccount,
+    simpa [vowAddr, evm0, initState, Stele.EVM.storageLoad, State.lookupAccount,
       endPackVowAddr, endPackVowWord, solcSlotWordAt, solcSlotWord] using
       evalExpr_endPack_vow (locals := endPackStoreAmt I) evm0 hbase
   have hamt :
@@ -2341,7 +2341,7 @@ theorem endPackBodyReverts_bagAddOverflow {σ σ₀ A I} {g : UInt256}
     (hsrcMove : evmMove.executionEnv.source = I.source)
     (hover :
       UInt256.size ≤
-        (Solm.EVM.storageLoad evmMove evmMove.executionEnv.codeOwner (endPackBagSlot I)).toNat +
+        (Stele.EVM.storageLoad evmMove evmMove.executionEnv.codeOwner (endPackBagSlot I)).toNat +
           (endPackWadWord I).toNat) :
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     ExecTransitionBody config contract evm0 (endPackStore I) packTransition.body .reverted := by
@@ -2387,7 +2387,7 @@ theorem endPackBodyReturnsSplit {σ σ₀ A I} {g : UInt256}
         (true, evmMove, out) true)
     (hsrcMove : evmMove.executionEnv.source = I.source)
     (hfitAdd :
-      (Solm.EVM.storageLoad evmMove evmMove.executionEnv.codeOwner (endPackBagSlot I)).toNat +
+      (Stele.EVM.storageLoad evmMove evmMove.executionEnv.codeOwner (endPackBagSlot I)).toNat +
           (endPackWadWord I).toNat <
         UInt256.size) :
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
@@ -2396,16 +2396,16 @@ theorem endPackBodyReturnsSplit {σ σ₀ A I} {g : UInt256}
         { contract := contract,
           locals :=
             endPackStoreBagNew I
-              (Solm.EVM.storageLoad evmMove evmMove.executionEnv.codeOwner (endPackBagSlot I) +
+              (Stele.EVM.storageLoad evmMove evmMove.executionEnv.codeOwner (endPackBagSlot I) +
                 endPackWadWord I) }
         (endPackPostState evmMove I
-          (Solm.EVM.storageLoad evmMove evmMove.executionEnv.codeOwner (endPackBagSlot I) +
+          (Stele.EVM.storageLoad evmMove evmMove.executionEnv.codeOwner (endPackBagSlot I) +
             endPackWadWord I))
         none)) ∧
       (I.perm = false → ExecTransitionBody config contract evm0 (endPackStore I)
         packTransition.body .staticViolation) := by
   intro evm0
-  let bagWord := Solm.EVM.storageLoad evmMove evmMove.executionEnv.codeOwner (endPackBagSlot I)
+  let bagWord := Stele.EVM.storageLoad evmMove evmMove.executionEnv.codeOwner (endPackBagSlot I)
   let bagNew := bagWord + endPackWadWord I
   have hprefix :
       ExecBlock config { contract := contract, locals := endPackStore I } evm0
@@ -2449,7 +2449,7 @@ theorem endPackBodyReturns {σ σ₀ A I} {g : UInt256}
         (true, evmMove, out) true)
     (hsrcMove : evmMove.executionEnv.source = I.source)
     (hfitAdd :
-      (Solm.EVM.storageLoad evmMove evmMove.executionEnv.codeOwner (endPackBagSlot I)).toNat +
+      (Stele.EVM.storageLoad evmMove evmMove.executionEnv.codeOwner (endPackBagSlot I)).toNat +
           (endPackWadWord I).toNat <
         UInt256.size) :
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
@@ -2458,26 +2458,26 @@ theorem endPackBodyReturns {σ σ₀ A I} {g : UInt256}
         { contract := contract,
           locals :=
             endPackStoreBagNew I
-              (Solm.EVM.storageLoad evmMove evmMove.executionEnv.codeOwner (endPackBagSlot I) +
+              (Stele.EVM.storageLoad evmMove evmMove.executionEnv.codeOwner (endPackBagSlot I) +
                 endPackWadWord I) }
         (endPackPostState evmMove I
-          (Solm.EVM.storageLoad evmMove evmMove.executionEnv.codeOwner (endPackBagSlot I) +
+          (Stele.EVM.storageLoad evmMove evmMove.executionEnv.codeOwner (endPackBagSlot I) +
             endPackWadWord I))
         none) :=
   (endPackBodyReturnsSplit hwv hdebt hfit hcodeSize hcall hsrcMove hfitAdd).1
 
 theorem endDecode_pack_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (packTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (packTransition.params.map Param.name)
       (transitionSignature packTransition).paramTypes I.calldata = some (endPackStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["wad"] [uint256] I.calldata = _
+  show config.externalABI.decodeCalldata? ["wad"] [uint256] I.calldata = _
   simpa [config, endPackStore, endPackWadValue, endPackWadWord, uint256, uint256Int]
     using decode_legacyUint256_ok (cd := I.calldata) (x := "wad") hsz36
 
 theorem endDecode_pack_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (packTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (packTransition.params.map Param.name)
       (transitionSignature packTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["wad"] [uint256] I.calldata = none
+  show config.externalABI.decodeCalldata? ["wad"] [uint256] I.calldata = none
   simpa [config, uint256, uint256Int] using
     decode_legacyUint256_none_short (cd := I.calldata) (x := "wad") hsz4 hshort
 
@@ -2600,13 +2600,13 @@ theorem endPackBody {σ σ₀ A I} {g : UInt256}
   · have hdecode := endDecode_pack_ok (I := I) hsz36
     obtain ⟨_, _, hbodyReach⟩ :=
       endPackX_decoded (g := Sat256.ofUInt256 g) hsz36 hsize hreach
-    let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+    let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
     by_cases hdebt : endPackDebtWord σ I = ⟨0⟩
     ·
       have hbody :
-          ExecTransitionBody config contract evmSolm (endPackStore I)
+          ExecTransitionBody config contract evmStele (endPackStore I)
             packTransition.body .reverted := by
-        simpa [evmSolm] using
+        simpa [evmStele] using
           endPackBodyReverts_debtZero
             (σ := σ) (σ₀ := σ₀)
             (A := A) (I := I) (g := g) hwv hdebt
@@ -2617,9 +2617,9 @@ theorem endPackBody {σ σ₀ A I} {g : UInt256}
         endPackX_mulEntry (g := Sat256.ofUInt256 g) hdebt hbodyReach
       by_cases hover : UInt256.size ≤ (endPackWadWord I).toNat * endPackRayWord.toNat
       · have hbody :
-            ExecTransitionBody config contract evmSolm (endPackStore I)
+            ExecTransitionBody config contract evmStele (endPackStore I)
               packTransition.body .reverted := by
-          simpa [evmSolm] using
+          simpa [evmStele] using
             endPackBodyReverts_mulOverflow
               (σ := σ) (σ₀ := σ₀)
               (A := A) (I := I) (g := g) hwv hdebt hover
@@ -2634,9 +2634,9 @@ theorem endPackBody {σ σ₀ A I} {g : UInt256}
               ⟨0⟩
         ·
           have hbody :
-              ExecTransitionBody config contract evmSolm (endPackStore I)
+              ExecTransitionBody config contract evmStele (endPackStore I)
                 packTransition.body .reverted := by
-            simpa [evmSolm] using
+            simpa [evmStele] using
               endPackBodyReverts_moveNoCode
                 (σ := σ) (σ₀ := σ₀)
                 (A := A) (I := I) (g := g) hwv hdebt hfit hvatCode
@@ -2701,80 +2701,80 @@ theorem endPackBody {σ σ₀ A I} {g : UInt256}
                 hdepthNe htgt
                 (endPackMoveEncode_eq σ I (endPackAmtWord I) solcFreePtrMem_size)
                 (by simpa [initState] using hΘeq)
-            have hcallSolm :
-                typedCallViaEVM config evmSolm
+            have hcallStele :
+                typedCallViaEVM config evmStele
                   (EVM.address (endPackVatAddr σ I)) "move" 0
                   [.address I.source, .address (endPackVowAddr σ I),
                     .int (Int.ofNat (endPackAmtWord I).toNat)]
                   (z,
-                    { evmSolm with
+                    { evmStele with
                       accountMap := σ'
                       substate := A' },
                   out) true := by
-              simpa [evmSolm] using hcallEvm
+              simpa [evmStele] using hcallEvm
             cases z
             · have hbody :
-                  ExecTransitionBody config contract evmSolm (endPackStore I)
+                  ExecTransitionBody config contract evmStele (endPackStore I)
                     packTransition.body .reverted := by
-                simpa [evmSolm] using
+                simpa [evmStele] using
                   endPackBodyReverts_moveCallFailed
                     (σ := σ) (σ₀ := σ₀)
                     (A := A) (I := I) (g := g)
                     (evmMove :=
-                      { evmSolm with
+                      { evmStele with
                         accountMap := σ'
                         substate := A' })
                     (out := out)
-                    hwv hdebt hfit hvatCodeNE (by simpa [evmSolm] using hcallSolm)
+                    hwv hdebt hfit hvatCodeNE (by simpa [evmStele] using hcallStele)
               exact (endPackX_moveCallFailed (g := g) rd6552 hout)
                 |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
             · let evmMoveEvm :=
                 { initState σ σ₀ (Sat256.ofUInt256 g) A I with
                   accountMap := σ'
                   substate := A' }
-              let evmMoveSolm :=
-                { evmSolm with
+              let evmMoveStele :=
+                { evmStele with
                   accountMap := σ'
                   substate := A' }
-              have hsrcMove : evmMoveSolm.executionEnv.source = I.source := by
-                simp [evmMoveSolm, evmSolm, initState]
+              have hsrcMove : evmMoveStele.executionEnv.source = I.source := by
+                simp [evmMoveStele, evmStele, initState]
               have hbagCouple :
                   endPackBagWord σ' I =
-                    Solm.EVM.storageLoad evmMoveSolm evmMoveSolm.executionEnv.codeOwner
+                    Stele.EVM.storageLoad evmMoveStele evmMoveStele.executionEnv.codeOwner
                       (endPackBagSlot I) := by
-                simp [evmMoveSolm, evmSolm, initState, Solm.EVM.storageLoad,
+                simp [evmMoveStele, evmStele, initState, Stele.EVM.storageLoad,
                   State.lookupAccount, Account.lookupStorage, endPackBagWord,
                   solcSlotWordAt, solcSlotWord]
               obtain ⟨_, _, rdAddEntry⟩ := endPackX_bagAddEntry (g := g) rd6552
               by_cases hoverAdd :
                   UInt256.size ≤
                     (endPackBagWord σ' I).toNat + (endPackWadWord I).toNat
-              · have hoverSolm :
+              · have hoverStele :
                     UInt256.size ≤
-                      (Solm.EVM.storageLoad evmMoveSolm evmMoveSolm.executionEnv.codeOwner
+                      (Stele.EVM.storageLoad evmMoveStele evmMoveStele.executionEnv.codeOwner
                             (endPackBagSlot I)).toNat +
                         (endPackWadWord I).toNat := by
                   rw [← hbagCouple]
                   exact hoverAdd
                 have hbody :
-                    ExecTransitionBody config contract evmSolm (endPackStore I)
+                    ExecTransitionBody config contract evmStele (endPackStore I)
                       packTransition.body .reverted := by
-                  simpa [evmMoveSolm, evmSolm] using
+                  simpa [evmMoveStele, evmStele] using
                     endPackBodyReverts_bagAddOverflow
                       (σ := σ) (σ₀ := σ₀)
                       (A := A) (I := I) (g := g)
-                      (evmMove := evmMoveSolm) (out := out)
+                      (evmMove := evmMoveStele) (out := out)
                       hwv hdebt hfit hvatCodeNE
-                      (by simpa [evmMoveSolm, evmSolm] using hcallSolm)
-                      hsrcMove hoverSolm
+                      (by simpa [evmMoveStele, evmStele] using hcallStele)
+                      hsrcMove hoverStele
                 exact (endPackX_bagAddOverflow hoverAdd rdAddEntry)
                   |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
               · have hfitAdd :
                     (endPackBagWord σ' I).toNat + (endPackWadWord I).toNat <
                       UInt256.size :=
                   Nat.lt_of_not_ge hoverAdd
-                have hfitAddSolm :
-                    (Solm.EVM.storageLoad evmMoveSolm evmMoveSolm.executionEnv.codeOwner
+                have hfitAddStele :
+                    (Stele.EVM.storageLoad evmMoveStele evmMoveStele.executionEnv.codeOwner
                           (endPackBagSlot I)).toNat +
                         (endPackWadWord I).toNat <
                       UInt256.size := by
@@ -2783,36 +2783,36 @@ theorem endPackBody {σ σ₀ A I} {g : UInt256}
                 obtain ⟨_, _, rdBagStore⟩ := endPackX_bagAddSuccess hfitAdd rdAddEntry
                 have hretSplit := endPackX_bagStoreReturnSplit rdBagStore
                 have hbodySplit :
-                    (ExecTransitionBody config contract evmSolm (endPackStore I)
+                    (ExecTransitionBody config contract evmStele (endPackStore I)
                       packTransition.body
                       (.returned
                         { contract := contract,
                           locals :=
                             endPackStoreBagNew I
-                              (Solm.EVM.storageLoad evmMoveSolm
-                                  evmMoveSolm.executionEnv.codeOwner (endPackBagSlot I) +
+                              (Stele.EVM.storageLoad evmMoveStele
+                                  evmMoveStele.executionEnv.codeOwner (endPackBagSlot I) +
                                 endPackWadWord I) }
-                        (endPackPostState evmMoveSolm I
-                          (Solm.EVM.storageLoad evmMoveSolm evmMoveSolm.executionEnv.codeOwner
+                        (endPackPostState evmMoveStele I
+                          (Stele.EVM.storageLoad evmMoveStele evmMoveStele.executionEnv.codeOwner
                               (endPackBagSlot I) +
                             endPackWadWord I))
                         none)) ∧
-                    (I.perm = false → ExecTransitionBody config contract evmSolm
+                    (I.perm = false → ExecTransitionBody config contract evmStele
                       (endPackStore I) packTransition.body .staticViolation) := by
-                  simpa [evmMoveSolm, evmSolm] using
+                  simpa [evmMoveStele, evmStele] using
                     endPackBodyReturnsSplit
                       (σ := σ) (σ₀ := σ₀)
                       (A := A) (I := I) (g := g)
-                      (evmMove := evmMoveSolm) (out := out)
+                      (evmMove := evmMoveStele) (out := out)
                       hwv hdebt hfit hvatCodeNE
-                      (by simpa [evmMoveSolm, evmSolm] using hcallSolm)
-                      hsrcMove hfitAddSolm
+                      (by simpa [evmMoveStele, evmStele] using hcallStele)
+                      hsrcMove hfitAddStele
                 rw [← hbagCouple] at hbodySplit
                 rcases hretSplit with ⟨_hperm, hret⟩ | ⟨hperm, hstatic⟩
                 swap
                 · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode (hbodySplit.2 hperm)
                 have hbody' :
-                    ExecTransitionBody config contract evmSolm (endPackStore I)
+                    ExecTransitionBody config contract evmStele (endPackStore I)
                       packTransition.body
                       (.returned
                         { contract := contract,
@@ -2820,7 +2820,7 @@ theorem endPackBody {σ σ₀ A I} {g : UInt256}
                             (endPackBagWord σ' I + endPackWadWord I) }
                         (endPackPostState evmMoveEvm I
                           (endPackBagWord σ' I + endPackWadWord I)) none) := by
-                  simpa [evmMoveEvm, evmMoveSolm, evmSolm] using hbodySplit.1
+                  simpa [evmMoveEvm, evmMoveStele, evmStele] using hbodySplit.1
                 exact hret.reEquivExecutionGen
                   hcode hdispatch hdecode hbody'
                   (by simp [evmMoveEvm, endPackPostState, initState,
@@ -2835,32 +2835,32 @@ theorem endPackBody {σ σ₀ A I} {g : UInt256}
             obtain ⟨_, _, rd6552⟩ :=
               endPackX_moveCallDepthLimit (g := g) hcallReady hdepthEq
             let A_move :=
-              (evmSolm.addAccessedAccount (EVM.address (endPackVatAddr σ I))).substate
-            have hcallSolm :
-                typedCallViaEVM config evmSolm
+              (evmStele.addAccessedAccount (EVM.address (endPackVatAddr σ I))).substate
+            have hcallStele :
+                typedCallViaEVM config evmStele
                   (EVM.address (endPackVatAddr σ I)) "move" 0
                   [.address I.source, .address (endPackVowAddr σ I),
                     .int (Int.ofNat (endPackAmtWord I).toNat)]
-                  (false, { evmSolm with substate := A_move }, ByteArray.empty) true := by
-              simpa [evmSolm, A_move] using
-                (callNotMade_depthLimit (cfg := config) (evm := evmSolm)
+                  (false, { evmStele with substate := A_move }, ByteArray.empty) true := by
+              simpa [evmStele, A_move] using
+                (callNotMade_depthLimit (cfg := config) (evm := evmStele)
                   (tgt := EVM.address (endPackVatAddr σ I)) (name := "move")
                   (args :=
                     [.address I.source, .address (endPackVowAddr σ I),
                       .int (Int.ofNat (endPackAmtWord I).toNat)])
                   (callPerm := true)
                   (endPackMoveEncode_eq σ I (endPackAmtWord I) solcFreePtrMem_size)
-                  (by simpa [evmSolm, initState] using hdepthEq))
+                  (by simpa [evmStele, initState] using hdepthEq))
             have hbody :
-                ExecTransitionBody config contract evmSolm (endPackStore I)
+                ExecTransitionBody config contract evmStele (endPackStore I)
                   packTransition.body .reverted := by
-              simpa [evmSolm] using
+              simpa [evmStele] using
                 endPackBodyReverts_moveCallFailed
                   (σ := σ) (σ₀ := σ₀)
                   (A := A) (I := I) (g := g)
-                  (evmMove := { evmSolm with substate := A_move })
+                  (evmMove := { evmStele with substate := A_move })
                   (out := ByteArray.empty)
-                  hwv hdebt hfit hvatCodeNE (by simpa [evmSolm] using hcallSolm)
+                  hwv hdebt hfit hvatCodeNE (by simpa [evmStele] using hcallStele)
             exact (endPackX_moveCallFailed (g := g) rd6552 (by native_decide))
               |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
   · exact endPackBodyCoreDecodeFailed_short hcode hsize hsz4 (by omega) hdispatch hreach

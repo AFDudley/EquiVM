@@ -4,7 +4,7 @@ import Reasoning.ABIViews
 
 /-! Packed struct fields stored in bytes32-keyed mappings. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 
@@ -14,14 +14,14 @@ theorem storageLocLoad_bool_shift (evm : EVM.State) (slot : UInt256) (offset : F
       { slot := slot, offset := offset, size := 1,
         hbound := by have := offset.isLt; omega, type := .bool } =
       wordToElem .bool (UInt256.land
-        (UInt256.shiftRight (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
+        (UInt256.shiftRight (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
           (UInt256.ofNat (8 * offset.val))) ⟨255⟩) := by
   have hoff : 8 * offset.val < 256 := by have := offset.isLt; omega
   unfold storageLocLoad
   apply congrArg (wordToElem .bool)
   apply u256_inj
   change fromBytes' ((EVM.Word.toBytesLEWithSizeProof
-    (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).1.extract
+    (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).1.extract
       offset.val (offset.val + 1)) = _
   rw [List.extract_eq_take_drop, Nat.add_sub_cancel_left,
     fromBytes'_drop_take_wordLE_land_div_mask _ _ 1 hoff (by decide),
@@ -43,18 +43,18 @@ theorem calldataBytes32Key {cd : ByteArray} (hlen : 36 ≤ cd.size) :
   simp [bytesToWord, EVM.Word.ofNat, fromByteArrayBigEndian, byteArray_toList_eq]
 
 -- LIBRARY CANDIDATE: resolve a struct field after a bytes32-valued mapping-key expression.
-theorem evalStorageRef_bytes32FieldExpr {cfg : Config} {solm : Frame} {evm : EVM.State}
+theorem evalStorageRef_bytes32FieldExpr {cfg : Config} {stele : Frame} {evm : EVM.State}
     (base field : Ident) (key : Expr) (bs : List UInt8) (hlen : bs.length = 32)
-    (hkey : evalExpr? cfg solm evm key = .ok (.fixedBytes abiBytes32Width bs)) :
-    evalStorageRef cfg solm evm ⟨base, [.mindex key, .field field]⟩ =
+    (hkey : evalExpr? cfg stele evm key = .ok (.fixedBytes abiBytes32Width bs)) :
+    evalStorageRef cfg stele evm ⟨base, [.mindex key, .field field]⟩ =
       .ok ⟨base, [.mindex (.fixedBytes abiBytes32Width bs), .field field]⟩ := by
   simp only [evalStorageRef, evalStorageRefSteps, evalStorageRefStep, hkey,
     valueToKey_bytes32_of_length hlen, EvalResult.ofOption, EvalResult.bind, bind, pure]
 
-theorem evalStorageRef_bytes32Field {cfg : Config} {solm : Frame} {evm : EVM.State}
+theorem evalStorageRef_bytes32Field {cfg : Config} {stele : Frame} {evm : EVM.State}
     (base name field : Ident) (bs : List UInt8) (hlen : bs.length = 32)
-    (hget : solm.locals.get? name = some (.fixedBytes abiBytes32Width bs)) :
-    evalStorageRef cfg solm evm ⟨base, [.mindex (.var name), .field field]⟩ =
+    (hget : stele.locals.get? name = some (.fixedBytes abiBytes32Width bs)) :
+    evalStorageRef cfg stele evm ⟨base, [.mindex (.var name), .field field]⟩ =
       .ok ⟨base, [.mindex (.fixedBytes abiBytes32Width bs), .field field]⟩ := by
   exact evalStorageRef_bytes32FieldExpr base field (.var name) bs hlen
     (by simp only [evalExpr?, hget, EvalResult.ofOption])
@@ -67,7 +67,7 @@ theorem evalStorage_pendingCapValue (evm : EVM.State) (locals imms : Store)
     evalExpr? config { contract := contract, locals := locals, immutables := imms } evm
       (.storage ⟨"pendingCap", [.mindex (.var "arg0"), .field "value"]⟩) =
       .ok (.int (Int.ofNat (UInt256.land
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (solcMappingSlot ⟨16⟩ w))
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (solcMappingSlot ⟨16⟩ w))
         (UInt256.ofNat (2 ^ 192 - 1))).toNat)) := by
   apply evalExpr_storage_scalar_value
     (er := ⟨"pendingCap", [.mindex (.fixedBytes abiBytes32Width bs), .field "value"]⟩)
@@ -91,7 +91,7 @@ theorem evalStorage_pendingCapValidAt (evm : EVM.State) (locals imms : Store)
     evalExpr? config { contract := contract, locals := locals, immutables := imms } evm
       (.storage ⟨"pendingCap", [.mindex (.var "arg0"), .field "validAt"]⟩) =
       .ok (.int (Int.ofNat (UInt256.shiftRight
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (solcMappingSlot ⟨16⟩ w))
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (solcMappingSlot ⟨16⟩ w))
         ⟨192⟩).toNat)) := by
   apply evalExpr_storage_scalar_value
     (er := ⟨"pendingCap", [.mindex (.fixedBytes abiBytes32Width bs), .field "validAt"]⟩)
@@ -115,7 +115,7 @@ theorem evalStorage_configCap (evm : EVM.State) (locals imms : Store)
     evalExpr? config { contract := contract, locals := locals, immutables := imms } evm
       (.storage ⟨"config", [.mindex (.var "arg0"), .field "cap"]⟩) =
       .ok (.int (Int.ofNat (UInt256.land
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (solcMappingSlot ⟨13⟩ w))
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (solcMappingSlot ⟨13⟩ w))
         (UInt256.ofNat (2 ^ 184 - 1))).toNat)) := by
   apply evalExpr_storage_scalar_value
     (er := ⟨"config", [.mindex (.fixedBytes abiBytes32Width bs), .field "cap"]⟩)
@@ -140,7 +140,7 @@ theorem evalStorage_configEnabled (evm : EVM.State) (locals imms : Store)
       (.storage ⟨"config", [.mindex (.var "arg0"), .field "enabled"]⟩) =
       .ok (wordToElem .bool (UInt256.land
         (UInt256.shiftRight
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (solcMappingSlot ⟨13⟩ w))
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (solcMappingSlot ⟨13⟩ w))
           ⟨184⟩) ⟨255⟩)) := by
   apply evalExpr_storage_scalar_value
     (er := ⟨"config", [.mindex (.fixedBytes abiBytes32Width bs), .field "enabled"]⟩)
@@ -163,7 +163,7 @@ theorem evalStorage_configRemovableAt (evm : EVM.State) (locals imms : Store)
     evalExpr? config { contract := contract, locals := locals, immutables := imms } evm
       (.storage ⟨"config", [.mindex (.var "arg0"), .field "removableAt"]⟩) =
       .ok (.int (Int.ofNat (UInt256.shiftRight
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (solcMappingSlot ⟨13⟩ w))
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (solcMappingSlot ⟨13⟩ w))
         ⟨192⟩).toNat)) := by
   apply evalExpr_storage_scalar_value
     (er := ⟨"config", [.mindex (.fixedBytes abiBytes32Width bs), .field "removableAt"]⟩)

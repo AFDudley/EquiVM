@@ -2,13 +2,13 @@ import Benchmarks.Morpho.MetaMorphoV1_1.AccessControl
 
 /-! The owner-or-guardian authorization shared by pending-change revocations. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 
 def guardianAddress (evm : EVM.State) : AccountAddress :=
   AccountAddress.ofNat (UInt256.land
-    (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩) solcAddrMask).toNat
+    (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩) solcAddrMask).toNat
 
 abbrev guardianRoleAllowed (evm : EVM.State) : Prop :=
   ownerAddress evm = evm.executionEnv.source ∨ guardianAddress evm = evm.executionEnv.source

@@ -3,7 +3,7 @@ import Reasoning.ExternalCall
 
 /-! Source behavior of Address.verifyCallResultFromTarget and its revert helper. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
 

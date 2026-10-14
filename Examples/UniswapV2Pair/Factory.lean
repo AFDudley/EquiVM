@@ -1,7 +1,7 @@
 import Examples.UniswapV2Pair.Dispatch
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -15,14 +15,14 @@ def factoryWord (σ : AccountMap) (I : ExecutionEnv) : UInt256 :=
 abbrev factoryReturnWord (σ : AccountMap) (I : ExecutionEnv) : UInt256 :=
   solcAddressSlotWord ⟨5⟩ σ I
 
-/-- The Solm `factory()` body returns the address stored in slot 5. -/
+/-- The Stele `factory()` body returns the address stored in slot 5. -/
 theorem uniswapFactoryBodyReturns (evm : EVM.State) (locals : Store)
     (h : evm.executionEnv.weiValue = ⟨0⟩)
     (hlocals : locals.get? "factory" = none) :
     ExecTransitionBody config contract evm locals factoryTransition.body
       (.returned { contract := contract, locals := locals } evm
         (some [(.address (AccountAddress.ofNat
-          (UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩)
+          (UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩)
             solcAddrMask).toNat))])) := by
   simpa [factoryTransition] using
     uniswapAddressGetterBodyReturns (slot := ⟨5⟩) (ref := factoryRef)
@@ -43,9 +43,9 @@ theorem uniswapX_factory {σ σ₀ A I} {g : Sat256} {sel : UInt256}
     (by jump_dest) (by jump_dest)
 
 theorem uniswapDecode_factory {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (factoryTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (factoryTransition.params.map Param.name)
       (transitionSignature factoryTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 /-- `factory()` body core, parameterized by the dispatcher/decode facts still owned by `Correct`. -/
@@ -54,7 +54,7 @@ theorem uniswapFactoryBodyCore
     (hcode : I.code = uniswapV2PairBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some factoryTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (factoryTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (factoryTransition.params.map Param.name)
         (transitionSignature factoryTransition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD uniswapV2PairBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1324⟩ [sel]
@@ -66,7 +66,7 @@ theorem uniswapFactoryBodyCore
         (.returned { contract := contract, locals := ∅ }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.address (AccountAddress.ofNat (factoryReturnWord σ I).toNat))])) := by
-    simpa [factoryWord, factoryReturnWord, initState, Solm.EVM.storageLoad, State.lookupAccount]
+    simpa [factoryWord, factoryReturnWord, initState, Stele.EVM.storageLoad, State.lookupAccount]
       using uniswapFactoryBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
         (by simp only [initState]; exact hwv) (by simp)

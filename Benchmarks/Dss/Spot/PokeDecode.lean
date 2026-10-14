@@ -1,12 +1,12 @@
 import Reasoning.EVMWord
 import Benchmarks.Dss.Spot.PokeBase
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Spot
 
 theorem spotDecode_poke_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (pokeTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (pokeTransition.params.map Param.name)
       (transitionSignature pokeTransition).paramTypes I.calldata = some (pokeLocals I) := by
   simpa [config, pokeTransition, pokeLocals, pokeIlkValue, pokeIlkBytes, bytes32, bytes32Width]
     using
@@ -15,7 +15,7 @@ theorem spotDecode_poke_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
 
 theorem spotDecode_poke_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (pokeTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (pokeTransition.params.map Param.name)
       (transitionSignature pokeTransition).paramTypes I.calldata = none := by
   simpa [config, pokeTransition, bytes32, bytes32Width] using
     (Reasoning.Theory.decodeCalldataWithMode_legacyBytes32_none_short
@@ -467,7 +467,7 @@ theorem evalExpr_pokeStorageParOfLocals {evm : EVM.State} {locals : Store}
     evalExpr? config { contract := contract, locals := locals } evm (.storage parRef) =
       .ok (.int (Int.ofNat (pokeParWord evm.accountMap evm.executionEnv).toNat)) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
-    (cfg := config) (solm := { contract := contract, locals := locals }) (evm := evm)
+    (cfg := config) (stele := { contract := contract, locals := locals }) (evm := evm)
     (slot := parRef) (er := ({ base := "par", steps := [] } : EvaledStorageRef))
     (t := .int uint256Int) (loc := wordLoc ⟨3⟩)
     (value := .int (Int.ofNat (pokeParWord evm.accountMap evm.executionEnv).toNat))
@@ -486,7 +486,7 @@ theorem evalExpr_pokeStorageMatOfLocals {evm : EVM.State} {I : ExecutionEnv}
       (.storage (ilksF (.var "ilk") "mat")) =
         .ok (.int (Int.ofNat (pokeMatWord evm.accountMap I).toNat)) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
-    (cfg := config) (solm := { contract := contract, locals := locals }) (evm := evm)
+    (cfg := config) (stele := { contract := contract, locals := locals }) (evm := evm)
     (slot := ilksF (.var "ilk") "mat")
     (er := ({ base := "ilks", steps := [.mindex (pokeIlkKey I), .field "mat"] } :
       EvaledStorageRef))

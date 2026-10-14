@@ -1,6 +1,6 @@
 import Examples.UniswapV2Pair.SkimCommon
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -10,7 +10,7 @@ namespace UniswapV2Pair
 
 theorem uniswapSkimLockEnterPrefix (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩) :
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩) :
     ExecBlock config { contract := contract, locals := skimStore I } evm lockEnter
       (.ok { contract := contract, locals := skimStore I } (uniswapLockEnteredState evm)) := by
   exact uniswapLockEnterPrefix evm (skimStore I) hwv (by simp [skimStore]) hunlocked
@@ -33,7 +33,7 @@ abbrev skimToken1GuardTrue (evm0 : EVM.State) (I : ExecutionEnv) (balance0 : Val
 
 theorem uniswapSkimTokenPrefix (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩) :
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩) :
     ExecBlock config { contract := contract, locals := skimStore I } evm
       (lockEnter ++
         [ .letDecl "_token0" (some addr) (.storage token0Ref),
@@ -117,7 +117,7 @@ theorem skimToken0GuardFalse_cached (evm : EVM.State) (I : ExecutionEnv)
 theorem uniswapSkimCachedFirstCallFailure (evm evm0 : EVM.State) (I : ExecutionEnv)
     {out0 : ByteArray}
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 : skimToken0GuardTrue evm I)
     (hcall0 : typedCallViaEVM config (uniswapLockEnteredState evm)
       (EVM.address (uniswapAddressAtSlot (uniswapLockEnteredState evm) ⟨6⟩))
@@ -149,7 +149,7 @@ theorem uniswapSkimCachedFirstCallFailure (evm evm0 : EVM.State) (I : ExecutionE
 theorem uniswapSkimCachedFirstCallDecodeRevert (evm evm0 : EVM.State) (I : ExecutionEnv)
     {out0 : ByteArray}
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 : skimToken0GuardTrue evm I)
     (hcall0 : typedCallViaEVM config (uniswapLockEnteredState evm)
       (EVM.address (uniswapAddressAtSlot (uniswapLockEnteredState evm) ⟨6⟩))
@@ -182,7 +182,7 @@ theorem uniswapSkimCachedFirstCallDecodeRevert (evm evm0 : EVM.State) (I : Execu
 theorem uniswapSkimCachedFirstCallSuccess (evm evm0 : EVM.State) (I : ExecutionEnv)
     {out0 : ByteArray} {balance0 : UInt256}
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 : skimToken0GuardTrue evm I)
     (hcall0 : typedCallViaEVM config (uniswapLockEnteredState evm)
       (EVM.address (uniswapAddressAtSlot (uniswapLockEnteredState evm) ⟨6⟩))
@@ -217,7 +217,7 @@ theorem uniswapSkimCachedFirstCallSuccess (evm evm0 : EVM.State) (I : ExecutionE
 theorem uniswapSkimBalanceOfCallsPrefix (evm evm0 evm1 : EVM.State) (I : ExecutionEnv)
     {out0 out1 : ByteArray} {balance0 balance1 : Value}
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 : skimToken0GuardTrue evm I)
     (hcall0 : typedCallViaEVM config (uniswapLockEnteredState evm)
       (EVM.address (uniswapAddressAtSlot (uniswapLockEnteredState evm) ⟨6⟩))
@@ -242,7 +242,7 @@ theorem uniswapSkimBalanceOfCallsPrefix (evm evm0 evm1 : EVM.State) (I : Executi
 theorem uniswapSkimBalanceOfFirstCallFailure (evm evm0 : EVM.State) (I : ExecutionEnv)
     {out0 : ByteArray}
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 : skimToken0GuardTrue evm I)
     (hcall0 : typedCallViaEVM config (uniswapLockEnteredState evm)
       (EVM.address (uniswapAddressAtSlot (uniswapLockEnteredState evm) ⟨6⟩))
@@ -260,7 +260,7 @@ theorem uniswapSkimBalanceOfFirstCallFailure (evm evm0 : EVM.State) (I : Executi
 theorem uniswapSkimBalanceOfFirstCallDecodeRevert (evm evm0 : EVM.State) (I : ExecutionEnv)
     {out0 : ByteArray}
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 : skimToken0GuardTrue evm I)
     (hcall0 : typedCallViaEVM config (uniswapLockEnteredState evm)
       (EVM.address (uniswapAddressAtSlot (uniswapLockEnteredState evm) ⟨6⟩))
@@ -279,7 +279,7 @@ theorem uniswapSkimBalanceOfFirstCallDecodeRevert (evm evm0 : EVM.State) (I : Ex
 theorem uniswapSkimBalanceOfSecondCallFailure (evm evm0 evm1 : EVM.State) (I : ExecutionEnv)
     {out0 out1 : ByteArray} {balance0 : Value}
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 : skimToken0GuardTrue evm I)
     (hcall0 : typedCallViaEVM config (uniswapLockEnteredState evm)
       (EVM.address (uniswapAddressAtSlot (uniswapLockEnteredState evm) ⟨6⟩))
@@ -303,7 +303,7 @@ theorem uniswapSkimBalanceOfSecondCallFailure (evm evm0 evm1 : EVM.State) (I : E
 theorem uniswapSkimBalanceOfSecondCallDecodeRevert (evm evm0 evm1 : EVM.State)
     (I : ExecutionEnv) {out0 out1 : ByteArray} {balance0 : Value}
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 : skimToken0GuardTrue evm I)
     (hcall0 : typedCallViaEVM config (uniswapLockEnteredState evm)
       (EVM.address (uniswapAddressAtSlot (uniswapLockEnteredState evm) ⟨6⟩))
@@ -624,7 +624,7 @@ abbrev skimAfterSecondExcessBody : List Stmt :=
 theorem uniswapSkimFirstSafeTransferPrefix (evm evm0 evm1 : EVM.State)
     (I : ExecutionEnv) {out0 : ByteArray} {balance0 : UInt256}
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 : skimToken0GuardTrue evm I)
     (hcall0 : typedCallViaEVM config (uniswapLockEnteredState evm)
       (EVM.address (uniswapAddressAtSlot (uniswapLockEnteredState evm) ⟨6⟩))
@@ -716,14 +716,14 @@ theorem uniswapSkimBodyReverts_nonpayable (evm : EVM.State) (I : ExecutionEnv)
 
 theorem uniswapSkimBodyReverts_locked (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ ≠ ⟨1⟩) :
+    (hlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ ≠ ⟨1⟩) :
     ExecTransitionBody config contract evm (skimStore I) skimTransition.body .reverted := by
   exact uniswapSkimBodyReverts_of_lockEnterRevert
     (uniswapLockEnterLockedRevert evm (skimStore I) hwv (by simp [skimStore]) hlocked)
 
 theorem uniswapSkimBodyStatic (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hperm : evm.executionEnv.perm = false) :
     ExecTransitionBody config contract evm (skimStore I) skimTransition.body
       .staticViolation := by
@@ -737,7 +737,7 @@ theorem uniswapSkimBodyStatic (evm : EVM.State) (I : ExecutionEnv)
 
 theorem uniswapSkimBodyReverts_firstNoCode (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 : skimToken0GuardFalse evm I) :
     ExecTransitionBody config contract evm (skimStore I) skimTransition.body .reverted := by
   have hprefix := uniswapSkimTokenPrefix evm I hwv hunlocked
@@ -756,7 +756,7 @@ theorem uniswapSkimBodyReverts_firstNoCode (evm : EVM.State) (I : ExecutionEnv)
 theorem uniswapSkimBodyReverts_firstCallFailure (evm evm0 : EVM.State) (I : ExecutionEnv)
     {out0 : ByteArray}
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 : skimToken0GuardTrue evm I)
     (hcall0 : typedCallViaEVM config (uniswapLockEnteredState evm)
       (EVM.address (uniswapAddressAtSlot (uniswapLockEnteredState evm) ⟨6⟩))
@@ -769,7 +769,7 @@ theorem uniswapSkimBodyReverts_firstCallFailure (evm evm0 : EVM.State) (I : Exec
 theorem uniswapSkimBodyReverts_firstCallDecode (evm evm0 : EVM.State) (I : ExecutionEnv)
     {out0 : ByteArray}
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 : skimToken0GuardTrue evm I)
     (hcall0 : typedCallViaEVM config (uniswapLockEnteredState evm)
       (EVM.address (uniswapAddressAtSlot (uniswapLockEnteredState evm) ⟨6⟩))
@@ -783,7 +783,7 @@ theorem uniswapSkimBodyReverts_firstCallDecode (evm evm0 : EVM.State) (I : Execu
 theorem uniswapSkimBodyReverts_firstExcessUnderflow
     (evm evm0 : EVM.State) (I : ExecutionEnv) {out0 : ByteArray} {balance0 : UInt256}
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 : skimToken0GuardTrue evm I)
     (hcall0 : typedCallViaEVM config (uniswapLockEnteredState evm)
       (EVM.address (uniswapAddressAtSlot (uniswapLockEnteredState evm) ⟨6⟩))
@@ -810,7 +810,7 @@ theorem uniswapSkimBodyReverts_firstExcessUnderflow
 theorem uniswapSkimBodyReverts_secondCallFailure (evm evm0 evm1 evm2 : EVM.State)
     (I : ExecutionEnv) {out0 out1 : ByteArray} {balance0 : UInt256}
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 : skimToken0GuardTrue evm I)
     (hcall0 : typedCallViaEVM config (uniswapLockEnteredState evm)
       (EVM.address (uniswapAddressAtSlot (uniswapLockEnteredState evm) ⟨6⟩))
@@ -858,7 +858,7 @@ theorem uniswapSkimBodyReverts_secondCallFailure (evm evm0 evm1 evm2 : EVM.State
 theorem uniswapSkimBodyReverts_secondCallDecode (evm evm0 evm1 evm2 : EVM.State)
     (I : ExecutionEnv) {out0 out1 : ByteArray} {balance0 : UInt256}
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 : skimToken0GuardTrue evm I)
     (hcall0 : typedCallViaEVM config (uniswapLockEnteredState evm)
       (EVM.address (uniswapAddressAtSlot (uniswapLockEnteredState evm) ⟨6⟩))
@@ -907,7 +907,7 @@ theorem uniswapSkimBodyReverts_secondCallDecode (evm evm0 evm1 evm2 : EVM.State)
 theorem uniswapSkimBodyReverts_secondNoCode (evm evm0 evm1 : EVM.State)
     (I : ExecutionEnv) {out0 : ByteArray} {balance0 : UInt256}
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 : skimToken0GuardTrue evm I)
     (hcall0 : typedCallViaEVM config (uniswapLockEnteredState evm)
       (EVM.address (uniswapAddressAtSlot (uniswapLockEnteredState evm) ⟨6⟩))
@@ -949,7 +949,7 @@ theorem uniswapSkimBodyReverts_firstSafeTransferFailure
     (evm evm0 evm1 : EVM.State) (I : ExecutionEnv)
     {out0 out1 calldata0 : ByteArray} {balance0 : UInt256}
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 : skimToken0GuardTrue evm I)
     (hcall0 : typedCallViaEVM config (uniswapLockEnteredState evm)
       (EVM.address (uniswapAddressAtSlot (uniswapLockEnteredState evm) ⟨6⟩))
@@ -1011,7 +1011,7 @@ theorem uniswapSkimBodyReverts_secondSafeTransferFailure
     (evm evm0 evm1 evm2 evm3 : EVM.State) (I : ExecutionEnv)
     {out0 out1 calldata1 out2 : ByteArray} {balance0 balance1 : UInt256}
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 : skimToken0GuardTrue evm I)
     (hcall0 : typedCallViaEVM config (uniswapLockEnteredState evm)
       (EVM.address (uniswapAddressAtSlot (uniswapLockEnteredState evm) ⟨6⟩))
@@ -1118,7 +1118,7 @@ theorem uniswapSkimBodyReverts_secondSafeTransferStmt
     (evm evm0 evm1 evm2 : EVM.State) (I : ExecutionEnv)
     {out0 out1 : ByteArray} {balance0 balance1 : UInt256}
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 : skimToken0GuardTrue evm I)
     (hcall0 : typedCallViaEVM config (uniswapLockEnteredState evm)
       (EVM.address (uniswapAddressAtSlot (uniswapLockEnteredState evm) ⟨6⟩))
@@ -1206,7 +1206,7 @@ theorem uniswapSkimBodyReverts_secondSafeTransferDecode
     (evm evm0 evm1 evm2 evm3 : EVM.State) (I : ExecutionEnv)
     {out0 out1 out2 calldata1 : ByteArray} {balance0 balance1 : UInt256}
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 : skimToken0GuardTrue evm I)
     (hcall0 : typedCallViaEVM config (uniswapLockEnteredState evm)
       (EVM.address (uniswapAddressAtSlot (uniswapLockEnteredState evm) ⟨6⟩))
@@ -1235,7 +1235,7 @@ theorem uniswapSkimBodyReverts_secondSafeTransferDecode
       (EVM.address (uniswapAddressAtSlot (uniswapLockEnteredState evm) ⟨7⟩)) 0 calldata1
       (true, evm3, out2))
     (hsize : out2.size ≠ 0)
-    (hdec : ABI.decodeReturnValueWithMode? config.abiDecodeMode boolTy out2 = none) :
+    (hdec : config.externalABI.decodeValue? boolTy out2 = none) :
     ExecTransitionBody config contract evm (skimStore I) skimTransition.body .reverted := by
   have hsafeStmt :
       ExecStmt config
@@ -1265,7 +1265,7 @@ theorem uniswapSkimBodyReverts_secondSafeTransferDecodeFalse
     (evm evm0 evm1 evm2 evm3 : EVM.State) (I : ExecutionEnv)
     {out0 out1 out2 calldata1 : ByteArray} {balance0 balance1 : UInt256}
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 : skimToken0GuardTrue evm I)
     (hcall0 : typedCallViaEVM config (uniswapLockEnteredState evm)
       (EVM.address (uniswapAddressAtSlot (uniswapLockEnteredState evm) ⟨6⟩))
@@ -1295,7 +1295,7 @@ theorem uniswapSkimBodyReverts_secondSafeTransferDecodeFalse
       (true, evm3, out2))
     (hsize : out2.size ≠ 0)
     (hdec :
-      ABI.decodeReturnValueWithMode? config.abiDecodeMode boolTy out2 = some (.bool false)) :
+      config.externalABI.decodeValue? boolTy out2 = some (.bool false)) :
     ExecTransitionBody config contract evm (skimStore I) skimTransition.body .reverted := by
   have hsafeStmt :
       ExecStmt config
@@ -1324,7 +1324,7 @@ theorem uniswapSkimBodyReverts_secondSafeTransferDecodeFalse
 theorem uniswapSkimBodyReverts_firstSafeTransferStmt
     (evm evm0 : EVM.State) (I : ExecutionEnv) {out0 : ByteArray} {balance0 : UInt256}
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 : skimToken0GuardTrue evm I)
     (hcall0 : typedCallViaEVM config (uniswapLockEnteredState evm)
       (EVM.address (uniswapAddressAtSlot (uniswapLockEnteredState evm) ⟨6⟩))
@@ -1369,7 +1369,7 @@ theorem uniswapSkimBodyReverts_firstSafeTransferDecode
     (evm evm0 evm1 : EVM.State) (I : ExecutionEnv)
     {out0 out1 calldata0 : ByteArray} {balance0 : UInt256}
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 : skimToken0GuardTrue evm I)
     (hcall0 : typedCallViaEVM config (uniswapLockEnteredState evm)
       (EVM.address (uniswapAddressAtSlot (uniswapLockEnteredState evm) ⟨6⟩))
@@ -1383,7 +1383,7 @@ theorem uniswapSkimBodyReverts_firstSafeTransferDecode
       (EVM.address (uniswapAddressAtSlot (uniswapLockEnteredState evm) ⟨6⟩)) 0 calldata0
       (true, evm1, out1))
     (hsize : out1.size ≠ 0)
-    (hdec : ABI.decodeReturnValueWithMode? config.abiDecodeMode boolTy out1 = none) :
+    (hdec : config.externalABI.decodeValue? boolTy out1 = none) :
     ExecTransitionBody config contract evm (skimStore I) skimTransition.body .reverted := by
   have hsafeStmt :
       ExecStmt config
@@ -1409,7 +1409,7 @@ theorem uniswapSkimBodyReverts_firstSafeTransferDecodeFalse
     (evm evm0 evm1 : EVM.State) (I : ExecutionEnv)
     {out0 out1 calldata0 : ByteArray} {balance0 : UInt256}
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 : skimToken0GuardTrue evm I)
     (hcall0 : typedCallViaEVM config (uniswapLockEnteredState evm)
       (EVM.address (uniswapAddressAtSlot (uniswapLockEnteredState evm) ⟨6⟩))
@@ -1424,7 +1424,7 @@ theorem uniswapSkimBodyReverts_firstSafeTransferDecodeFalse
       (true, evm1, out1))
     (hsize : out1.size ≠ 0)
     (hdec :
-      ABI.decodeReturnValueWithMode? config.abiDecodeMode boolTy out1 = some (.bool false)) :
+      config.externalABI.decodeValue? boolTy out1 = some (.bool false)) :
     ExecTransitionBody config contract evm (skimStore I) skimTransition.body .reverted := by
   have hsafeStmt :
       ExecStmt config
@@ -1450,7 +1450,7 @@ theorem uniswapSkimBodyReverts_secondExcessUnderflow
     (evm evm0 evm1 evm2 : EVM.State) (I : ExecutionEnv)
     {out0 out1 : ByteArray} {balance0 balance1 : UInt256}
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 : skimToken0GuardTrue evm I)
     (hcall0 : typedCallViaEVM config (uniswapLockEnteredState evm)
       (EVM.address (uniswapAddressAtSlot (uniswapLockEnteredState evm) ⟨6⟩))
@@ -1515,7 +1515,7 @@ theorem uniswapSkimBodyReverts_secondExcessUnderflow
 theorem uniswapSkimBodyReturns (evm evm0 evm1 evm2 evm3 : EVM.State)
     (I : ExecutionEnv) {out0 out1 : ByteArray} {balance0 balance1 : UInt256}
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 : skimToken0GuardTrue evm I)
     (hcall0 : typedCallViaEVM config (uniswapLockEnteredState evm)
       (EVM.address (uniswapAddressAtSlot (uniswapLockEnteredState evm) ⟨6⟩))

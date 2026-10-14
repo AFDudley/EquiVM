@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.StringMemoryRead
 
 /-! A dynamic ABI string tail: length, payload copy, and zero padding. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 

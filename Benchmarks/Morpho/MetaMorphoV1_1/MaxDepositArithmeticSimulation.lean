@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.SharesToAssetsUpRoutines
 
 /-! The conversion and checked accumulation following the max-deposit market reads. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables metaMorphoV1_1Blocks
 

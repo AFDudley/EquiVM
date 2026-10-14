@@ -4,7 +4,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.TransferStatic
 
 /-! Runtime interface for a transfer called after other storage updates. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1

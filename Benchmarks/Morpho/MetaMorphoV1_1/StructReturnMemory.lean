@@ -3,7 +3,7 @@ import Benchmarks.EAS.Attester.WordArrayMemory
 
 /-! Memory facts shared by fixed-size external return decoders. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
 

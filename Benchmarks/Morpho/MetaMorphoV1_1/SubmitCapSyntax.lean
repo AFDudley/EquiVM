@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.LastUpdateSource
 
 /-! Source blocks and frames for cap submission with an explicit allocation cursor. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1

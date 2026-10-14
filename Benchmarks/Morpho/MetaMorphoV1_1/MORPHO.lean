@@ -8,11 +8,11 @@ import Benchmarks.Morpho.MetaMorphoV1_1.RuntimeBlocks_009
 # MetaMorphoV1_1 `MORPHO()`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 9513; reach lemma `metaMorphoV1_1ReachMORPHOBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 
@@ -101,7 +101,7 @@ theorem metaMorphoV1_1MORPHOBody {σ σ₀ A I} {g : UInt256} (v : MetaMorphoV1_
   have hd : dispatchMsg contract I.calldata = some mORPHOTransition := by
     apply metaMorphoV1_1Dispatch_mORPHO <;>
       first | exact hsel | exact selectorMismatch hsel (by decide +kernel)
-  have hdec : decodeCalldataWithMode config.abiDecodeMode
+  have hdec : config.externalABI.decodeCalldata?
       (mORPHOTransition.params.map Param.name)
       (transitionSignature mORPHOTransition).paramTypes I.calldata = some ∅ := by
     exact decodeCalldata_empty_ok hsz

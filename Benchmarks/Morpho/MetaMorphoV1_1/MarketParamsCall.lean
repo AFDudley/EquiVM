@@ -4,7 +4,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.StaticCallSimulation
 
 /-! Share the market-parameter STATICCALL witness with the source semantics. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 

@@ -3,7 +3,7 @@ import Reasoning.WordArithmetic
 import Reasoning.ABIComposite
 import Examples.UniswapV2Pair.MutatorDispatch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 2000000
@@ -210,7 +210,7 @@ theorem uniswapDecode_swap_ok {I : ExecutionEnv} (hsz132 : 132 ≤ I.calldata.si
     (hlenMax : ¬ solcLegacyMaxU32 < swapDataSize I)
     (hpayload : (((I.calldata.toList.drop 4).drop (swapDataOffset I + 32)).take
       (swapDataSize I)).length = swapDataSize I) :
-    decodeCalldataWithMode config.abiDecodeMode (swapTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (swapTransition.params.map Param.name)
       (transitionSignature swapTransition).paramTypes I.calldata = some (swapStore I) := by
   show decodeCalldataWithMode DecodeMode.legacySolc05
     ["amount0Out", "amount1Out", "to", "data"] [uint256, uint256, legacyAddr, ABIType.bytes]
@@ -246,7 +246,7 @@ theorem uniswapDecode_swap_ok {I : ExecutionEnv} (hsz132 : 132 ≤ I.calldata.si
 
 theorem uniswapDecode_swap_none_head_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 132) :
-    decodeCalldataWithMode config.abiDecodeMode (swapTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (swapTransition.params.map Param.name)
       (transitionSignature swapTransition).paramTypes I.calldata = none := by
   show decodeCalldataWithMode DecodeMode.legacySolc05
     ["amount0Out", "amount1Out", "to", "data"] [uint256, uint256, legacyAddr, ABIType.bytes]
@@ -440,7 +440,7 @@ theorem uniswapDecode_swap_none_of_values_none {I : ExecutionEnv}
     (hsz132 : 132 ≤ I.calldata.size)
     (hvals : decodeABIValues? [uint256, uint256, legacyAddr, ABIType.bytes]
       (I.calldata.toList.drop 4) 0 0 128 128 DecodeMode.legacySolc05 = none) :
-    decodeCalldataWithMode config.abiDecodeMode (swapTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (swapTransition.params.map Param.name)
       (transitionSignature swapTransition).paramTypes I.calldata = none := by
   show decodeCalldataWithMode DecodeMode.legacySolc05
     ["amount0Out", "amount1Out", "to", "data"] [uint256, uint256, legacyAddr, ABIType.bytes]
@@ -471,7 +471,7 @@ theorem uniswapDecode_swap_none_of_values_none {I : ExecutionEnv}
 
 theorem uniswapDecode_swap_none_offset_huge {I : ExecutionEnv}
     (hsz132 : 132 ≤ I.calldata.size) (hoff : solcLegacyMaxU32 < swapDataOffset I) :
-    decodeCalldataWithMode config.abiDecodeMode (swapTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (swapTransition.params.map Param.name)
       (transitionSignature swapTransition).paramTypes I.calldata = none :=
   uniswapDecode_swap_none_of_values_none hsz132
     (swapDecodeABIValues_none_offset_huge (I := I) hsz132 hoff)
@@ -479,7 +479,7 @@ theorem uniswapDecode_swap_none_offset_huge {I : ExecutionEnv}
 theorem uniswapDecode_swap_none_length_short {I : ExecutionEnv}
     (hsz132 : 132 ≤ I.calldata.size) (hoffMax : ¬ solcLegacyMaxU32 < swapDataOffset I)
     (hshort : I.calldata.size < 4 + swapDataOffset I + 32) :
-    decodeCalldataWithMode config.abiDecodeMode (swapTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (swapTransition.params.map Param.name)
       (transitionSignature swapTransition).paramTypes I.calldata = none :=
   uniswapDecode_swap_none_of_values_none hsz132
     (swapDecodeABIValues_none_data (I := I) hsz132 hoffMax
@@ -489,7 +489,7 @@ theorem uniswapDecode_swap_none_length_huge {I : ExecutionEnv}
     (hsz132 : 132 ≤ I.calldata.size) (hoffMax : ¬ solcLegacyMaxU32 < swapDataOffset I)
     (hlenWord : 4 + swapDataOffset I + 32 ≤ I.calldata.size)
     (hlenHuge : solcLegacyMaxU32 < swapDataSize I) :
-    decodeCalldataWithMode config.abiDecodeMode (swapTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (swapTransition.params.map Param.name)
       (transitionSignature swapTransition).paramTypes I.calldata = none :=
   uniswapDecode_swap_none_of_values_none hsz132
     (swapDecodeABIValues_none_data (I := I) hsz132 hoffMax
@@ -501,7 +501,7 @@ theorem uniswapDecode_swap_none_payload_short {I : ExecutionEnv}
     (hlenMax : ¬ solcLegacyMaxU32 < swapDataSize I)
     (hpayload : (((I.calldata.toList.drop 4).drop (swapDataOffset I + 32)).take
       (swapDataSize I)).length ≠ swapDataSize I) :
-    decodeCalldataWithMode config.abiDecodeMode (swapTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (swapTransition.params.map Param.name)
       (transitionSignature swapTransition).paramTypes I.calldata = none :=
   uniswapDecode_swap_none_of_values_none hsz132
     (swapDecodeABIValues_none_data (I := I) hsz132 hoffMax

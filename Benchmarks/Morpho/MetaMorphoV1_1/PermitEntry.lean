@@ -5,7 +5,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.RuntimeBlocks_013
 
 /-! Permit entry guards, ordered argument decoding, and the deadline check. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables metaMorphoV1_1Blocks
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1

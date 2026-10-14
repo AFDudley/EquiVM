@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.ConvertSharesSource
 
 /-! The fee-charging branch after asset totals have been computed. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
@@ -49,7 +49,7 @@ theorem totalSupplyInternalCall (locals imms : Store) (evm : State) (ret : Ident
       (.ok
         { contract := contract
           locals := locals.insert ret
-            (uint256Value (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩))
+            (uint256Value (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩))
           immutables := imms } evm) := by
   exact internalCallReturnExpr rfl (evalStorage_totalSupply evm ∅ imms (by simp))
 
@@ -118,7 +118,7 @@ theorem accruedFeeBodySource (v : MetaMorphoV1_1Immutables) (locals : Store) (ev
       evm (.storage ⟨"fee", []⟩) = .ok (uint256Value fee))
     (ht : locals.get? "newTotalAssets" = some (uint256Value total))
     (hsh : locals.get? "feeShares" = some (uint256Value ⟨0⟩))
-    (hs : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩ = supply)
+    (hs : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩ = supply)
     (hfit : accruedFeeFits v.DECIMALS_OFFSET interest fee supply total) :
     let frame : Frame := { contract := contract, locals := locals, immutables := immStore v }
     ExecBlock config frame evm accruedFeeBody
@@ -152,7 +152,7 @@ theorem accruedFeeBodyReverts (v : MetaMorphoV1_1Immutables) (locals : Store) (e
     (hf : evalExpr? config { contract := contract, locals := locals, immutables := immStore v }
       evm (.storage ⟨"fee", []⟩) = .ok (uint256Value fee))
     (ht : locals.get? "newTotalAssets" = some (uint256Value total))
-    (hs : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩ = supply)
+    (hs : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩ = supply)
     (hbad : ¬ accruedFeeFits v.DECIMALS_OFFSET interest fee supply total) :
     ExecBlock config { contract := contract, locals := locals, immutables := immStore v }
       evm accruedFeeBody .reverted := by

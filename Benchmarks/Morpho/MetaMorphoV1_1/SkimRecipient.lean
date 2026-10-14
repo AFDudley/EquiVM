@@ -7,11 +7,11 @@ import Benchmarks.Morpho.MetaMorphoV1_1.RuntimeBlocks_009
 # MetaMorphoV1_1 `skimRecipient()`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 9649; reach lemma `metaMorphoV1_1ReachSkimRecipientBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 
@@ -29,7 +29,7 @@ theorem skimRecipientBodyReturns (v : MetaMorphoV1_1Immutables)
           locals := locals.insert "__calldata" (.bytes evm.executionEnv.calldata)
           immutables := immStore v }
         evm (some [.address (AccountAddress.ofNat (UInt256.land
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨19⟩) solcAddrMask).toNat)]))
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨19⟩) solcAddrMask).toNat)]))
             (immStore v) := by
   apply ExecFuncBody.execBlockRet
   exact (nonpayableCalldataPrefix "__calldata" (2 ^ 255 + 4) hwv hhi).returns
@@ -101,7 +101,7 @@ theorem metaMorphoV1_1SkimRecipientBody {σ σ₀ A I} {g : UInt256} (v : MetaMo
   have hd : dispatchMsg contract I.calldata = some skimRecipientTransition := by
     apply metaMorphoV1_1Dispatch_skimRecipient <;>
       first | exact hsel | exact selectorMismatch hsel (by decide +kernel)
-  have hdec : decodeCalldataWithMode config.abiDecodeMode
+  have hdec : config.externalABI.decodeCalldata?
       (skimRecipientTransition.params.map Param.name)
       (transitionSignature skimRecipientTransition).paramTypes I.calldata = some ∅ := by
     exact decodeCalldata_empty_ok hsz

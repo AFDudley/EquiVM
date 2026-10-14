@@ -2,26 +2,26 @@ import Benchmarks.Morpho.MetaMorphoV1_1.BodyCommon
 
 /-! Shared arithmetic evaluation facts, including checked unsigned results. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 
 -- LIBRARY CANDIDATE: evaluate addition of two nonnegative source integers in any frame.
-theorem evalExpr_natAdd {cfg : Config} {solm : Frame} {evm : EVM.State}
+theorem evalExpr_natAdd {cfg : Config} {stele : Frame} {evm : EVM.State}
     {lhs rhs : Expr} {a b : Nat}
-    (ha : evalExpr? cfg solm evm lhs = .ok (.int (Int.ofNat a)))
-    (hb : evalExpr? cfg solm evm rhs = .ok (.int (Int.ofNat b))) :
-    evalExpr? cfg solm evm (.binary .add lhs rhs) = .ok (.int (Int.ofNat (a + b))) := by
+    (ha : evalExpr? cfg stele evm lhs = .ok (.int (Int.ofNat a)))
+    (hb : evalExpr? cfg stele evm rhs = .ok (.int (Int.ofNat b))) :
+    evalExpr? cfg stele evm (.binary .add lhs rhs) = .ok (.int (Int.ofNat (a + b))) := by
   exact naturalAddSource ha hb
 
 -- LIBRARY CANDIDATE: evaluate an unsigned subtraction clamped at zero.
-theorem evalExpr_zeroFloorSub {cfg : Config} {solm : Frame} {evm : EVM.State}
+theorem evalExpr_zeroFloorSub {cfg : Config} {stele : Frame} {evm : EVM.State}
     {lhs rhs : Expr} {a b : Nat}
-    (ha : evalExpr? cfg solm evm lhs = .ok (.int (Int.ofNat a)))
-    (hb : evalExpr? cfg solm evm rhs = .ok (.int (Int.ofNat b))) :
-    evalExpr? cfg solm evm (.ite (.binary .gt lhs rhs) (.binary .sub lhs rhs) (.intLit 0)) =
+    (ha : evalExpr? cfg stele evm lhs = .ok (.int (Int.ofNat a)))
+    (hb : evalExpr? cfg stele evm rhs = .ok (.int (Int.ofNat b))) :
+    evalExpr? cfg stele evm (.ite (.binary .gt lhs rhs) (.binary .sub lhs rhs) (.intLit 0)) =
       .ok (.int (Int.ofNat (a - b))) := by
-  have hcmp : evalExpr? cfg solm evm (.binary .gt lhs rhs) =
+  have hcmp : evalExpr? cfg stele evm (.binary .gt lhs rhs) =
       .ok (.bool (decide (b < a))) := by
     rw [evalExpr_binary_nonshort (by decide) (by decide)]
     simp only [ha, hb, bind, EvalResult.bind, evalBinaryOpGtInt, gt_iff_lt,
@@ -76,19 +76,19 @@ theorem checkedMulGuardOverflow (a b : UInt256) (hover : UInt256.size ≤ a.toNa
   decide
 
 -- LIBRARY CANDIDATE: a scalar return whose expression reverts propagates that revert.
-theorem scalarReturnReverts {cfg : Config} {solm : Frame} {evm : EVM.State} {expr : Expr}
-    (he : evalExpr? cfg solm evm expr = .revert) :
-    ExecFuncBody cfg solm evm [.return [expr]] .reverted := by
+theorem scalarReturnReverts {cfg : Config} {stele : Frame} {evm : EVM.State} {expr : Expr}
+    (he : evalExpr? cfg stele evm expr = .revert) :
+    ExecFuncBody cfg stele evm [.return [expr]] .reverted := by
   exact ExecFuncBody.execBlockRevert (ExecBlock.consRevert (ExecStmt.returnRevert (by
     simp only [evalExprs?, he, EvalResult.bind, bind])))
 
--- GENERALIZES Reasoning.SolmArithmetic.evalExpr_checkedSub256_revert to any frame.
-theorem checkedSubSourceUnderflow {cfg : Config} {solm : Frame} {evm : EVM.State}
+-- GENERALIZES Reasoning.SteleArithmetic.evalExpr_checkedSub256_revert to any frame.
+theorem checkedSubSourceUnderflow {cfg : Config} {stele : Frame} {evm : EVM.State}
     {lhs rhs : Expr} {a b : UInt256}
-    (ha : evalExpr? cfg solm evm lhs = .ok (uint256Value a))
-    (hb : evalExpr? cfg solm evm rhs = .ok (uint256Value b))
+    (ha : evalExpr? cfg stele evm lhs = .ok (uint256Value a))
+    (hb : evalExpr? cfg stele evm rhs = .ok (uint256Value b))
     (hlt : a.toNat < b.toNat) :
-    evalExpr? cfg solm evm (.inRange (.uint ⟨256, by decide⟩) (.binary .sub lhs rhs)) =
+    evalExpr? cfg stele evm (.inRange (.uint ⟨256, by decide⟩) (.binary .sub lhs rhs)) =
       .revert := by
   have hnegative : Int.ofNat a.toNat - Int.ofNat b.toNat < 0 := by
     simp only [Int.ofNat_eq_natCast]
@@ -97,44 +97,44 @@ theorem checkedSubSourceUnderflow {cfg : Config} {solm : Frame} {evm : EVM.State
     hnegative, decide_true, Bool.true_or, if_true]
 
 -- LIBRARY CANDIDATE: division by zero reverts after its numerator evaluates.
-theorem divSourceZero {cfg : Config} {solm : Frame} {evm : EVM.State}
+theorem divSourceZero {cfg : Config} {stele : Frame} {evm : EVM.State}
     {lhs rhs : Expr} {a : UInt256}
-    (ha : evalExpr? cfg solm evm lhs = .ok (uint256Value a))
-    (hb : evalExpr? cfg solm evm rhs = .ok (uint256Value ⟨0⟩)) :
-    evalExpr? cfg solm evm (.binary .div lhs rhs) = .revert := by
+    (ha : evalExpr? cfg stele evm lhs = .ok (uint256Value a))
+    (hb : evalExpr? cfg stele evm rhs = .ok (uint256Value ⟨0⟩)) :
+    evalExpr? cfg stele evm (.binary .div lhs rhs) = .revert := by
   simp only [evalExpr?, ha, hb, uint256Value, EvalResult.bind, bind, evalBinaryOp?]
   rfl
 
 -- LIBRARY CANDIDATE: a non-short-circuit binary expression propagates a left-hand revert.
-theorem binarySourceRevertLeft {cfg : Config} {solm : Frame} {evm : EVM.State}
+theorem binarySourceRevertLeft {cfg : Config} {stele : Frame} {evm : EVM.State}
     {op : BinaryOp} {lhs rhs : Expr} (hand : op ≠ .and) (hor : op ≠ .or)
-    (he : evalExpr? cfg solm evm lhs = .revert) :
-    evalExpr? cfg solm evm (.binary op lhs rhs) = .revert := by
+    (he : evalExpr? cfg stele evm lhs = .revert) :
+    evalExpr? cfg stele evm (.binary op lhs rhs) = .revert := by
   rw [evalExpr_binary_nonshort hand hor, he]
   rfl
 
 -- LIBRARY CANDIDATE: a binary expression propagates a right-hand revert after its left value.
-theorem binarySourceRevertRight {cfg : Config} {solm : Frame} {evm : EVM.State}
+theorem binarySourceRevertRight {cfg : Config} {stele : Frame} {evm : EVM.State}
     {op : BinaryOp} {lhs rhs : Expr} {value : Value} (hand : op ≠ .and) (hor : op ≠ .or)
-    (ha : evalExpr? cfg solm evm lhs = .ok value)
-    (hb : evalExpr? cfg solm evm rhs = .revert) :
-    evalExpr? cfg solm evm (.binary op lhs rhs) = .revert := by
+    (ha : evalExpr? cfg stele evm lhs = .ok value)
+    (hb : evalExpr? cfg stele evm rhs = .revert) :
+    evalExpr? cfg stele evm (.binary op lhs rhs) = .revert := by
   rw [evalExpr_binary_nonshort hand hor, ha, hb]
   rfl
 
 -- LIBRARY CANDIDATE: a checked range expression propagates its operand's revert.
-theorem rangeSourceRevert {cfg : Config} {solm : Frame} {evm : EVM.State}
-    {expr : Expr} {ty : IntType} (he : evalExpr? cfg solm evm expr = .revert) :
-    evalExpr? cfg solm evm (.inRange ty expr) = .revert := by
+theorem rangeSourceRevert {cfg : Config} {stele : Frame} {evm : EVM.State}
+    {expr : Expr} {ty : IntType} (he : evalExpr? cfg stele evm expr = .revert) :
+    evalExpr? cfg stele evm (.inRange ty expr) = .revert := by
   rw [evalExpr?, he]
   rfl
 
--- GENERALIZES Reasoning.SolmBody.evalExpr_uint256_inRange to arbitrary unsigned widths.
-theorem evalExpr_uintInRange {cfg : Config} {solm : Frame} {evm : EVM.State}
+-- GENERALIZES Reasoning.SteleBody.evalExpr_uint256_inRange to arbitrary unsigned widths.
+theorem evalExpr_uintInRange {cfg : Config} {stele : Frame} {evm : EVM.State}
     {expr : Expr} {value : Nat} (width : ABI.BitWidth)
-    (he : evalExpr? cfg solm evm expr = .ok (.int (Int.ofNat value)))
+    (he : evalExpr? cfg stele evm expr = .ok (.int (Int.ofNat value)))
     (hfit : value < 2 ^ width.val) :
-    evalExpr? cfg solm evm (.inRange (.uint width) expr) = .ok (.int (Int.ofNat value)) := by
+    evalExpr? cfg stele evm (.inRange (.uint width) expr) = .ok (.int (Int.ofNat value)) := by
   simp only [evalExpr?, he, EvalResult.bind, bind]
   have hnegative : ¬ Int.ofNat value < 0 := by
     simp only [Int.ofNat_eq_natCast]
@@ -145,11 +145,11 @@ theorem evalExpr_uintInRange {cfg : Config} {solm : Frame} {evm : EVM.State}
   simp only [hnegative, hlarge, decide_false, Bool.false_or, Bool.false_eq_true, if_false, pure]
 
 -- LIBRARY CANDIDATE: a nonnegative integer beyond an unsigned range reverts.
-theorem evalExpr_uintInRange_revert {cfg : Config} {solm : Frame} {evm : EVM.State}
+theorem evalExpr_uintInRange_revert {cfg : Config} {stele : Frame} {evm : EVM.State}
     {expr : Expr} {value : Nat} (width : ABI.BitWidth)
-    (he : evalExpr? cfg solm evm expr = .ok (.int (Int.ofNat value)))
+    (he : evalExpr? cfg stele evm expr = .ok (.int (Int.ofNat value)))
     (hover : 2 ^ width.val ≤ value) :
-    evalExpr? cfg solm evm (.inRange (.uint width) expr) = .revert := by
+    evalExpr? cfg stele evm (.inRange (.uint width) expr) = .revert := by
   simp only [evalExpr?, he, EvalResult.bind, bind]
   have hlarge : Int.ofNat value ≥ (2 : Int) ^ width.val := by
     simp only [Int.ofNat_eq_natCast]
@@ -157,12 +157,12 @@ theorem evalExpr_uintInRange_revert {cfg : Config} {solm : Frame} {evm : EVM.Sta
   simp only [hlarge, decide_true, Bool.or_true, if_true]
 
 -- LIBRARY CANDIDATE: an internal scalar getter propagates a reverting return expression.
-theorem internalCallRevertExpr {cfg : Config} {solm : Frame} {evm : EVM.State}
+theorem internalCallRevertExpr {cfg : Config} {stele : Frame} {evm : EVM.State}
     {name retVar : Ident} {retTy : List ABIType} {expr : Expr}
-    (hlookup : lookupCallable? solm.contract name =
+    (hlookup : lookupCallable? stele.contract name =
       some { params := [], returnType := retTy, body := [.return [expr]] })
-    (heval : evalExpr? cfg { solm with locals := ∅ } evm expr = .revert) :
-    ExecStmt cfg solm evm (.internalCall name [] retVar) .reverted := by
+    (heval : evalExpr? cfg { stele with locals := ∅ } evm expr = .revert) :
+    ExecStmt cfg stele evm (.internalCall name [] retVar) .reverted := by
   exact ExecStmt.internalCallRevert (by rfl) hlookup rfl
     (ExecFuncBody.execBlockRevert (ExecBlock.consRevert (ExecStmt.returnRevert (by
       simp only [evalExprs?, heval, bind, EvalResult.bind]))))

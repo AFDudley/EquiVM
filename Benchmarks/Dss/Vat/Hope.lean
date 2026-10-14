@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Vat.Dispatch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -33,7 +33,7 @@ def hopeStorageSlot (I : ExecutionEnv) : UInt256 :=
   canSlot (hopeSourceKey I) (hopeUsrKey I)
 
 def hopePostState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (hopeStorageSlot I) ⟨1⟩
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (hopeStorageSlot I) ⟨1⟩
 
 abbrev hopeEvaledRef (I : ExecutionEnv) : EvaledStorageRef :=
   { base := "can", steps := [.mindex (hopeSourceKey I), .mindex (hopeUsrKey I)] }
@@ -69,14 +69,14 @@ theorem hopeStorageSlot_eq_mapSlot_masked (I : ExecutionEnv) :
   rw [keyValueToWord_address_ofNat_mask, keyValueToWord_address]
 
 theorem vatDecode_hope_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (hopeTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (hopeTransition.params.map Param.name)
       (transitionSignature hopeTransition).paramTypes I.calldata = some (hopeStore I) := by
   simpa [config, hopeTransition, hopeStore, hopeUsrValue, hopeUsrWord, calldataWord] using
     decodeCalldata_legacyAddress_ok (cd := I.calldata) (x := "usr") hsz36
 
 theorem vatDecode_hope_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (hopeTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (hopeTransition.params.map Param.name)
       (transitionSignature hopeTransition).paramTypes I.calldata = none := by
   simpa [config, hopeTransition] using
     decodeCalldata_legacyAddress_none_short (cd := I.calldata) (x := "usr") hsz4 hshort
@@ -358,27 +358,27 @@ theorem vatHopeBodyCoreOk
     (hsz36 : 36 ≤ I.calldata.size)
     (hdispatch : dispatchMsg contract I.calldata = some hopeTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (hopeTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (hopeTransition.params.map Param.name)
         (transitionSignature hopeTransition).paramTypes I.calldata = some (hopeStore I))
     (hreach : ∃ k C, RD vatBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1207⟩ [sel]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
   have hbody :
-      ExecTransitionBody config contract evmSolm (hopeStore I)
+      ExecTransitionBody config contract evmStele (hopeStore I)
         hopeTransition.body
         (.returned { contract := contract, locals := hopeStore I }
-          (hopePostState evmSolm I) none) := by
-    simpa [evmSolm] using
-      vatHopeBodyReturns evmSolm I
-        (by simp only [evmSolm, initState]; exact hwv)
-        (by simp [evmSolm, initState])
+          (hopePostState evmStele I) none) := by
+    simpa [evmStele] using
+      vatHopeBodyReturns evmStele I
+        (by simp only [evmStele, initState]; exact hwv)
+        (by simp [evmStele, initState])
   obtain ⟨_, _, rd5540⟩ := vatHopeX_decoded (g := Sat256.ofUInt256 g)
     hsz36 hsize hreach
   exact (vatHopeX_storeOk (I := I) hperm rd5540)
     |>.reEquivExecutionGen hcode hdispatch hdecode hbody
-      (by simp [hopePostState, evmSolm, initState, storageStore_accountMap])
+      (by simp [hopePostState, evmStele, initState, storageStore_accountMap])
       (by
         simpa [hopeTransition] using
           (returnEquiv.fallthrough (o := ByteArray.empty) (r := none) (t := [])
@@ -391,21 +391,21 @@ theorem vatHopeBodyCoreStatic
     (hsz36 : 36 ≤ I.calldata.size)
     (hdispatch : dispatchMsg contract I.calldata = some hopeTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (hopeTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (hopeTransition.params.map Param.name)
         (transitionSignature hopeTransition).paramTypes I.calldata = some (hopeStore I))
     (hreach : ∃ k C, RD vatBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1207⟩ [sel]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
   have hbody :
-      ExecTransitionBody config contract evmSolm (hopeStore I)
+      ExecTransitionBody config contract evmStele (hopeStore I)
         hopeTransition.body .staticViolation := by
-    simpa [evmSolm] using
-      vatHopeBodyStatic evmSolm I
-        (by simp only [evmSolm, initState]; exact hwv)
-        (by simp [evmSolm, initState])
-        (by simp only [evmSolm, initState]; exact hperm)
+    simpa [evmStele] using
+      vatHopeBodyStatic evmStele I
+        (by simp only [evmStele, initState]; exact hwv)
+        (by simp [evmStele, initState])
+        (by simp only [evmStele, initState]; exact hperm)
   obtain ⟨_, _, rd5540⟩ := vatHopeX_decoded (g := Sat256.ofUInt256 g)
     hsz36 hsize hreach
   exact (permSplit_false hperm (vatHopeX_storeOkSplit (I := I) rd5540))

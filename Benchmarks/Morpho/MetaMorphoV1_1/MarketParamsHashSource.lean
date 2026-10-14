@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.PackedSource
 
 /-! Source evaluation of a market identifier from its five parameter fields. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
 

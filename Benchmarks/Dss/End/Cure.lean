@@ -1,6 +1,6 @@
 import Benchmarks.Dss.End.Dispatch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 0
@@ -13,9 +13,9 @@ def cureWord (σ : AccountMap) (I : ExecutionEnv) : UInt256 :=
   solcAddressSlotWord ⟨7⟩ σ I
 
 theorem endDecode_cure {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (cureTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (cureTransition.params.map Param.name)
       (transitionSignature cureTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 abbrev endCureConcreteSelector : ByteArray := selectorBytes 0x84 0x07 0x82 0xed
@@ -67,7 +67,7 @@ theorem endCureBodyCore
     (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some cureTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (cureTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (cureTransition.params.map Param.name)
         (transitionSignature cureTransition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD endBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨843⟩ [sel]
@@ -80,7 +80,7 @@ theorem endCureBodyCore
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.address (AccountAddress.ofNat (cureWord σ I).toNat))])) := by
     simpa [cureTransition, cureWord, solcAddressSlotWord, solcSlotWordAt, initState,
-      Solm.EVM.storageLoad, State.lookupAccount] using
+      Stele.EVM.storageLoad, State.lookupAccount] using
       endAddressGetterBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
         (ref := cureRef) (er := ({ base := "cure", steps := [] } : EvaledStorageRef))

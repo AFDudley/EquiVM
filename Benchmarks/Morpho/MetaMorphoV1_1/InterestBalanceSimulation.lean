@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.MarketInterestRoutines
 
 /-! Taylor expansion, interest, asset updates, optional fees, and the final balances. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables metaMorphoV1_1Blocks
 

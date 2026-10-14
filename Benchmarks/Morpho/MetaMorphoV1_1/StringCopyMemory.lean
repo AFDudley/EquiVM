@@ -4,7 +4,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.StringAllocation
 
 /-! Memory layouts produced by copying a short or long storage string. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 

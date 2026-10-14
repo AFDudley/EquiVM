@@ -15,10 +15,10 @@ import Benchmarks.Morpho.MetaMorphoV1_1.SetCapAllocationSyntax
 import Benchmarks.Morpho.MetaMorphoV1_1.SubmitCapAllocationSyntax
 import Benchmarks.Morpho.MetaMorphoV1_1.UpdateWithdrawQueueAllocationSyntax
 import Benchmarks.Morpho.MetaMorphoV1_1.MulticallAllocationSyntax
-import Solm.Semantics
-import Solm.SolidityLayout
-import Solm.MetaSolidityLayout
-import Solm.Refine
+import Stele.Semantics
+import Stele.SolidityLayout
+import Stele.MetaSolidityLayout
+import Stele.Refine
 
 import Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 /-!
@@ -30,7 +30,7 @@ transition carries the cursor through those helpers. This file also names the tr
 storage backend, external-call ABI, and `Config`.
 -/
 
-open Solm ABI
+open Stele ABI
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 

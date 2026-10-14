@@ -12,7 +12,7 @@ over fitting immutable stores, so the proof valuation must enforce the declared 
 Run with `lake env lean --run Benchmarks/Morpho/MetaMorphoV1_1/ImmutableTypeRegression.lean`.
 -/
 
-open Solm Solm.DiffTest Ethereum
+open Stele Stele.DiffTest Ethereum
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.ImmutableTypeRegression
 

@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.Arithmetic
 
 /-! The checked uint128 conversion used before adding interest and fee shares. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 

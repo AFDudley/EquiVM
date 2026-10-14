@@ -2,7 +2,7 @@ import Reasoning.ABIViews
 import Benchmarks.Dss.Jug.FileBase
 import Benchmarks.Dss.Jug.Ilks
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 0
@@ -131,7 +131,7 @@ theorem fileDutyIlkStoreHashMem_size (I : ExecutionEnv) :
 
 
 theorem jugDecode_fileDuty_ok {I : ExecutionEnv} (hsz100 : 100 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (fileDutyTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (fileDutyTransition.params.map Param.name)
       (transitionSignature fileDutyTransition).paramTypes I.calldata =
         some (fileDutyLocals I) := by
   simpa [config, fileDutyTransition, bytes32, bytes32Width, uint256, uint256Int,
@@ -142,7 +142,7 @@ theorem jugDecode_fileDuty_ok {I : ExecutionEnv} (hsz100 : 100 ≤ I.calldata.si
 
 theorem jugDecode_fileDuty_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 100) :
-    decodeCalldataWithMode config.abiDecodeMode (fileDutyTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (fileDutyTransition.params.map Param.name)
       (transitionSignature fileDutyTransition).paramTypes I.calldata = none := by
   simpa [config, fileDutyTransition, bytes32, bytes32Width, uint256, uint256Int,
     abiBytes32, abiBytes32Width, abiUInt256] using
@@ -232,7 +232,7 @@ theorem evalExpr_fileDutyStorageDuty (evm : EVM.State) (I : ExecutionEnv)
         .ok (.int (Int.ofNat
           (solcSlotWordAt (fileDutyDutySlotFor I) evm.accountMap evm.executionEnv).toNat)) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
-    (cfg := config) (solm := { contract := contract, locals := fileDutyLocals I }) (evm := evm)
+    (cfg := config) (stele := { contract := contract, locals := fileDutyLocals I }) (evm := evm)
     (slot := ilksF (.var "ilk") "duty") (er := fileDutyDutyEvaledRef I)
     (t := .int uint256Int) (loc := wordLoc (fileDutyDutySlotFor I))
     (value := .int (Int.ofNat
@@ -258,7 +258,7 @@ theorem evalExpr_fileDutyStorageRho (evm : EVM.State) (I : ExecutionEnv)
         .ok (.int (Int.ofNat
           (solcSlotWordAt (fileDutyRhoSlotFor I) evm.accountMap evm.executionEnv).toNat)) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
-    (cfg := config) (solm := { contract := contract, locals := fileDutyLocals I }) (evm := evm)
+    (cfg := config) (stele := { contract := contract, locals := fileDutyLocals I }) (evm := evm)
     (slot := ilksF (.var "ilk") "rho") (er := fileDutyRhoEvaledRef I)
     (t := .int uint256Int) (loc := wordLoc (fileDutyRhoSlotFor I))
     (value := .int (Int.ofNat
@@ -317,7 +317,7 @@ theorem evalExpr_fileDutyNowEqRho_false {evm : EVM.State} {I : ExecutionEnv}
 
 theorem assign_fileDutyStorage (evm : EVM.State) (I : ExecutionEnv)
     (hsz36 : 36 ≤ I.calldata.size) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner (fileDutyDutySlotFor I)
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner (fileDutyDutySlotFor I)
       (fileDutyData I)
     assignStorageRef? config { contract := contract, locals := fileDutyLocals I } evm
       .storage (ilksF (.var "ilk") "duty") (.int (Int.ofNat (fileDutyData I).toNat)) =
@@ -349,7 +349,7 @@ theorem jugFileDutySourceBodySplit {σ σ₀ A I} {g : UInt256}
     (hwhat : fileDutyWhatBytes I = fileDutyBytes) :
     let locals := fileDutyLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-    let evm1 := Solm.EVM.storageStore evm0 I.codeOwner (fileDutyDutySlotFor I) (fileDutyData I)
+    let evm1 := Stele.EVM.storageStore evm0 I.codeOwner (fileDutyDutySlotFor I) (fileDutyData I)
     ExecTransitionBody config contract evm0 locals fileDutyTransition.body
       (.returned { contract := contract, locals := locals } evm1 none) ∧
     (I.perm = false →
@@ -362,7 +362,7 @@ theorem jugFileDutySourceBodySplit {σ σ₀ A I} {g : UInt256}
       (by simpa [locals] using fileDutyLocals_get_wards I)
       (by simp [evm0, initState])
       (by
-        simpa [evm0, relyAuthWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+        simpa [evm0, relyAuthWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
           State.lookupAccount] using hauth)
   have htimeGuard :
       evalExpr? config { contract := contract, locals := locals } evm0
@@ -412,7 +412,7 @@ theorem jugFileDutySourceBody {σ σ₀ A I} {g : UInt256}
     (hwhat : fileDutyWhatBytes I = fileDutyBytes) :
     let locals := fileDutyLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-    let evm1 := Solm.EVM.storageStore evm0 I.codeOwner (fileDutyDutySlotFor I) (fileDutyData I)
+    let evm1 := Stele.EVM.storageStore evm0 I.codeOwner (fileDutyDutySlotFor I) (fileDutyData I)
     ExecTransitionBody config contract evm0 locals fileDutyTransition.body
       (.returned { contract := contract, locals := locals } evm1 none) :=
   (jugFileDutySourceBodySplit (σ₀ := σ₀) (A := A) (g := g) hwv hsz36 hauth htime hwhat).1
@@ -444,13 +444,13 @@ theorem jugFileDutySourceBodyAuthReverts {σ σ₀ A I} {g : UInt256}
       (by simpa [locals] using fileDutyLocals_get_wards I)
       (by simp [evm0, initState])
       (by
-        simpa [evm0, relyAuthWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+        simpa [evm0, relyAuthWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
           State.lookupAccount] using hauth)
   refine ExecFuncBody.execBlockRevert ?_
   simpa [fileDutyTransition, nonpayable, auth] using
     nonpayableSecondRequireReverts
       (cfg := config)
-      (solm := { contract := contract, locals := locals })
+      (stele := { contract := contract, locals := locals })
       (evm := evm0)
       (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
       (rest := [.require (.binary .eq (.env .timestamp) (.storage (ilksF (.var "ilk") "rho"))),
@@ -477,7 +477,7 @@ theorem jugFileDutySourceBodyRhoReverts {σ σ₀ A I} {g : UInt256}
       (by simpa [locals] using fileDutyLocals_get_wards I)
       (by simp [evm0, initState])
       (by
-        simpa [evm0, relyAuthWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+        simpa [evm0, relyAuthWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
           State.lookupAccount] using hauth)
   have htimeGuard :
       evalExpr? config { contract := contract, locals := locals } evm0
@@ -512,7 +512,7 @@ theorem jugFileDutySourceBodyUnrecognized {σ σ₀ A I} {g : UInt256}
       (by simpa [locals] using fileDutyLocals_get_wards I)
       (by simp [evm0, initState])
       (by
-        simpa [evm0, relyAuthWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+        simpa [evm0, relyAuthWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
           State.lookupAccount] using hauth)
   have htimeGuard :
       evalExpr? config { contract := contract, locals := locals } evm0
@@ -1005,7 +1005,7 @@ theorem jugFileDutyBodyCoreOk
     (hwhat : fileDutyWhatBytes I = fileDutyBytes)
     (hdispatch : dispatchMsg contract I.calldata = some fileDutyTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileDutyTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileDutyTransition.params.map Param.name)
         (transitionSignature fileDutyTransition).paramTypes I.calldata = some (fileDutyLocals I))
     (hreach : ∃ k C, RD jugBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨185⟩ [sel]
@@ -1015,17 +1015,17 @@ theorem jugFileDutyBodyCoreOk
   let dutySlot := fileDutyDutySlotFor I
   let locals := fileDutyLocals I
   let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  let evm1 := Solm.EVM.storageStore evm0 I.codeOwner dutySlot data
-  have hauthSolm : relyAuthWord σ I = ⟨1⟩ := hauth
-  have htimeSolm : solcSlotWordAt (fileDutyRhoSlotFor I) σ I =
+  let evm1 := Stele.EVM.storageStore evm0 I.codeOwner dutySlot data
+  have hauthStele : relyAuthWord σ I = ⟨1⟩ := hauth
+  have htimeStele : solcSlotWordAt (fileDutyRhoSlotFor I) σ I =
       UInt256.ofNat I.header.timestamp := htime
   have hbody :
       ExecTransitionBody config contract evm0 locals fileDutyTransition.body
         (.returned { contract := contract, locals := locals } evm1 none) := by
     simpa [evm0, evm1, locals, dutySlot, data] using
       (jugFileDutySourceBody (σ := σ)
-        (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv (by omega) hauthSolm
-        htimeSolm hwhat)
+        (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv (by omega) hauthStele
+        htimeStele hwhat)
   obtain ⟨_, _, hdecoded⟩ := jugFileDutyX_decoded (g := Sat256.ofUInt256 g)
     hsz100 hsize hreach
   obtain ⟨_, _, hauthz⟩ := jugFileDutyX_authorized (I := I) hauth hdecoded
@@ -1050,7 +1050,7 @@ theorem jugFileDutyBodyCoreStatic
     (hwhat : fileDutyWhatBytes I = fileDutyBytes)
     (hdispatch : dispatchMsg contract I.calldata = some fileDutyTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileDutyTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileDutyTransition.params.map Param.name)
         (transitionSignature fileDutyTransition).paramTypes I.calldata = some (fileDutyLocals I))
     (hreach : ∃ k C, RD jugBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨185⟩ [sel]
@@ -1076,7 +1076,7 @@ theorem jugFileDutyBodyCoreUnauthorized
     (hauth : relyAuthWord σ I ≠ ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some fileDutyTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileDutyTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileDutyTransition.params.map Param.name)
         (transitionSignature fileDutyTransition).paramTypes I.calldata = some (fileDutyLocals I))
     (hreach : ∃ k C, RD jugBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨185⟩ [sel]
@@ -1084,12 +1084,12 @@ theorem jugFileDutyBodyCoreUnauthorized
     runtimeRefinementFor config contract σ σ₀ g A I := by
   let locals := fileDutyLocals I
   let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  have hauthSolm : relyAuthWord σ I ≠ ⟨1⟩ := hauth
+  have hauthStele : relyAuthWord σ I ≠ ⟨1⟩ := hauth
   have hbody :
       ExecTransitionBody config contract evm0 locals fileDutyTransition.body .reverted := by
     simpa [evm0, locals] using
       (jugFileDutySourceBodyAuthReverts (σ := σ)
-        (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hauthSolm)
+        (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hauthStele)
   obtain ⟨_, _, hdecoded⟩ := jugFileDutyX_decoded (g := Sat256.ofUInt256 g)
     hsz100 hsize hreach
   exact (jugFileDutyX_unauthorized (I := I) hauth hdecoded)
@@ -1105,7 +1105,7 @@ theorem jugFileDutyBodyCoreRhoMismatch
       UInt256.ofNat I.header.timestamp ≠ solcSlotWordAt (fileDutyRhoSlotFor I) σ I)
     (hdispatch : dispatchMsg contract I.calldata = some fileDutyTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileDutyTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileDutyTransition.params.map Param.name)
         (transitionSignature fileDutyTransition).paramTypes I.calldata = some (fileDutyLocals I))
     (hreach : ∃ k C, RD jugBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨185⟩ [sel]
@@ -1113,14 +1113,14 @@ theorem jugFileDutyBodyCoreRhoMismatch
     runtimeRefinementFor config contract σ σ₀ g A I := by
   let locals := fileDutyLocals I
   let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  have hauthSolm : relyAuthWord σ I = ⟨1⟩ := hauth
-  have htimeSolm :
+  have hauthStele : relyAuthWord σ I = ⟨1⟩ := hauth
+  have htimeStele :
       UInt256.ofNat I.header.timestamp ≠ solcSlotWordAt (fileDutyRhoSlotFor I) σ I := htime
   have hbody :
       ExecTransitionBody config contract evm0 locals fileDutyTransition.body .reverted := by
     simpa [evm0, locals] using
       (jugFileDutySourceBodyRhoReverts (σ := σ)
-        (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv (by omega) hauthSolm htimeSolm)
+        (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv (by omega) hauthStele htimeStele)
   obtain ⟨_, _, hdecoded⟩ := jugFileDutyX_decoded (g := Sat256.ofUInt256 g)
     hsz100 hsize hreach
   obtain ⟨_, _, hauthz⟩ := jugFileDutyX_authorized (I := I) hauth hdecoded
@@ -1137,7 +1137,7 @@ theorem jugFileDutyBodyCoreUnrecognized
     (hwhat : fileDutyWhatBytes I ≠ fileDutyBytes)
     (hdispatch : dispatchMsg contract I.calldata = some fileDutyTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileDutyTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileDutyTransition.params.map Param.name)
         (transitionSignature fileDutyTransition).paramTypes I.calldata = some (fileDutyLocals I))
     (hreach : ∃ k C, RD jugBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨185⟩ [sel]
@@ -1145,15 +1145,15 @@ theorem jugFileDutyBodyCoreUnrecognized
     runtimeRefinementFor config contract σ σ₀ g A I := by
   let locals := fileDutyLocals I
   let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  have hauthSolm : relyAuthWord σ I = ⟨1⟩ := hauth
-  have htimeSolm : solcSlotWordAt (fileDutyRhoSlotFor I) σ I =
+  have hauthStele : relyAuthWord σ I = ⟨1⟩ := hauth
+  have htimeStele : solcSlotWordAt (fileDutyRhoSlotFor I) σ I =
       UInt256.ofNat I.header.timestamp := htime
   have hbody :
       ExecTransitionBody config contract evm0 locals fileDutyTransition.body .reverted := by
     simpa [evm0, locals] using
       (jugFileDutySourceBodyUnrecognized (σ := σ)
-        (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv (by omega) hauthSolm
-        htimeSolm hwhat)
+        (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv (by omega) hauthStele
+        htimeStele hwhat)
   obtain ⟨_, _, hdecoded⟩ := jugFileDutyX_decoded (g := Sat256.ofUInt256 g)
     hsz100 hsize hreach
   obtain ⟨_, _, hauthz⟩ := jugFileDutyX_authorized (I := I) hauth hdecoded

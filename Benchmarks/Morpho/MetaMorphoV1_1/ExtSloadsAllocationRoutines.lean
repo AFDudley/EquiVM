@@ -4,7 +4,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.ExtSloadsCall
 
 /-! Allocation failure immediately after the actual `extSloads` call. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 

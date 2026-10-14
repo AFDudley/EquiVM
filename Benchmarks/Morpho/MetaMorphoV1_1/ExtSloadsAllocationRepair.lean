@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.ExtSloadsOversizedCallee
 
 /-! The explicit source allocation rejects the previously exhibited real oversized return. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.ExtSloadsAllocationRegression
 

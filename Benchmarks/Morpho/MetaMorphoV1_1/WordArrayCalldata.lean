@@ -4,7 +4,7 @@ import Benchmarks.EAS.Attester.LocalArray
 
 /-! Canonical bytes32 arrays decoded from calldata, with complete boundary checks. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 

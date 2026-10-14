@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.PendingCapStorage
 
 /-! Source scheduling captures the delay before writing the pending-cap record. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 
@@ -70,7 +70,7 @@ theorem submitCapTimeSourceRevert {frame : Frame} {evm : State} {id cap : UInt25
     (htime : frame.locals.get? "__pendingTime8" = some (uint256Value (pendingTimelockDelay evm)))
     (hover : ¬ pendingTimelockScheduleFits evm) :
     evalExpr? config frame (pendingCapValueState evm id cap) submitCapTimeExpr = .revert := by
-  have h := checkedAddSourceOverflow (cfg := config) (solm := frame)
+  have h := checkedAddSourceOverflow (cfg := config) (stele := frame)
     (evm := pendingCapValueState evm id cap) (lhs := .env .timestamp) (rhs := .var "__pendingTime8")
     (a := UInt256.ofNat evm.executionEnv.header.timestamp) (b := pendingTimelockDelay evm)
     (by simp only [evalExpr?, envValue, pendingCapValueState_env, pure])

@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.MappingStructs
 
 /-! Packed mapping deletes for cap and market-removal revocations. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 
@@ -24,10 +24,10 @@ theorem deleteStorage_pendingCap (evm : EVM.State) (locals imms : Store)
     (hkey : keyValueToWord (.fixedBytes abiBytes32Width bs) = w) :
     deleteStorage? config { contract := contract, locals := locals, immutables := imms }
       evm ⟨"pendingCap", [.mindex (.var "id")]⟩ =
-      .ok (Solm.EVM.storageStore evm evm.executionEnv.codeOwner (solcMappingSlot ⟨16⟩ w)
+      .ok (Stele.EVM.storageStore evm evm.executionEnv.codeOwner (solcMappingSlot ⟨16⟩ w)
         ⟨0⟩) := by
   have hr := resolveStorageRef?_ok (cfg := config) (evm := evm)
-    (solm := { contract := contract, locals := locals, immutables := imms })
+    (stele := { contract := contract, locals := locals, immutables := imms })
     (slot := ⟨"pendingCap", [.mindex (.var "id")]⟩)
     (er := ⟨"pendingCap", [.mindex (.fixedBytes abiBytes32Width bs)]⟩) hbase
     (by simp only [evalStorageRef, evalStorageRefSteps, evalStorageRefStep, evalExpr?, hget,
@@ -67,11 +67,11 @@ theorem deleteStorage_configRemovableAt (evm : EVM.State) (locals imms : Store)
     (hkey : keyValueToWord (.fixedBytes abiBytes32Width bs) = w) :
     deleteStorage? config { contract := contract, locals := locals, immutables := imms }
       evm ⟨"config", [.mindex (.var "id"), .field "removableAt"]⟩ =
-      .ok (Solm.EVM.storageStore evm evm.executionEnv.codeOwner (solcMappingSlot ⟨13⟩ w)
+      .ok (Stele.EVM.storageStore evm evm.executionEnv.codeOwner (solcMappingSlot ⟨13⟩ w)
         (UInt256.land (UInt256.ofNat (2 ^ 192 - 1))
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (solcMappingSlot ⟨13⟩ w)))) := by
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (solcMappingSlot ⟨13⟩ w)))) := by
   have hr := resolveStorageRef?_ok (cfg := config) (evm := evm)
-    (solm := { contract := contract, locals := locals, immutables := imms })
+    (stele := { contract := contract, locals := locals, immutables := imms })
     (slot := ⟨"config", [.mindex (.var "id"), .field "removableAt"]⟩)
     (er := ⟨"config", [.mindex (.fixedBytes abiBytes32Width bs), .field "removableAt"]⟩)
     hbase (evalStorageRef_bytes32Field "config" "id" "removableAt" bs hlen hget)

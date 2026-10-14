@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.MarketAssetsRoutines
 
 /-! Market memory after adding the same interest amount to borrow and supply assets. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
 

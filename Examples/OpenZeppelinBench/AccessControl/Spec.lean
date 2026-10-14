@@ -1,16 +1,16 @@
-import Solm.Semantics
-import Solm.SolidityLayout
-import Solm.MetaSolidityLayout
+import Stele.Semantics
+import Stele.SolidityLayout
+import Stele.MetaSolidityLayout
 
 /-!
 # OpenZeppelin AccessControl benchmark spec
 
-Solm specification for the concrete `AccessControlBench` wrapper.  The wrapper grants
+Stele specification for the concrete `AccessControlBench` wrapper.  The wrapper grants
 `DEFAULT_ADMIN_ROLE` to `msg.sender` in its constructor.  Events and custom-error payloads are
 omitted; storage effects and return values are modelled.
 -/
 
-open Solm ABI Ethereum
+open Stele ABI Ethereum
 
 namespace OpenZeppelinBench.AccessControl
 

@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.SupplyQueueSyntax
 
 /-! Exact source storage updates for supply-queue assignment. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 

@@ -2,7 +2,7 @@ import Reasoning.WordArithmetic
 import Benchmarks.Dss.Vow.Arithmetic
 import Reasoning.ExternalCall
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 0
@@ -253,7 +253,7 @@ theorem evalExpr_kissAshStorage (evm : EVM.State) {locals : Store}
     (hbase : locals.get? "Ash" = none) :
     evalExpr? config { contract := contract, locals := locals } evm (.storage AshRef) =
       .ok (.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨6⟩).toNat)) := by
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨6⟩).toNat)) := by
   rw [evalExpr_storage_scalar (hbackend := rfl) (er := kissAshEvaledRef) (t := .int uint256Int)
     (loc := wordLoc ⟨6⟩)]
   · exact congrArg EvalResult.ok (storageLocLoad_uint256 _ ⟨6⟩)
@@ -269,7 +269,7 @@ theorem evalExpr_kissVatStorage (evm : EVM.State) {locals : Store}
     evalExpr? config { contract := contract, locals := locals } evm (.storage vatRef) =
       .ok (.address (AccountAddress.ofNat
         (UInt256.land
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩)
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩)
           solcAddrMask).toNat)) := by
   rw [evalExpr_storage_scalar (hbackend := rfl) (er := kissVatEvaledRef) (t := .address)
     (loc := addrLoc ⟨1⟩)]
@@ -321,7 +321,7 @@ theorem evalExpr_kissVatCodeGuard_false {evm : EVM.State} {locals : Store}
 
 theorem assign_kissAshStorage (evm : EVM.State) {locals : Store} (AshNew : UInt256)
     (hbase : locals.get? "Ash" = none) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨6⟩ AshNew
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨6⟩ AshNew
     assignStorageRef? config { contract := contract, locals := locals } evm
       .storage AshRef (.int (Int.ofNat AshNew.toNat)) =
         .ok ({ contract := contract, locals := locals }, evm') := by
@@ -346,7 +346,7 @@ theorem assign_kissAshStorage (evm : EVM.State) {locals : Store} (AshNew : UInt2
 theorem kissInternalSubReturn (I : ExecutionEnv) (evm : EVM.State)
     {locals : Store} {AshVal AshNew : UInt256}
     (hAshLoad :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨6⟩ = AshVal)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨6⟩ = AshVal)
     (hrad : locals.get? "rad" = some (.int (Int.ofNat (kissRad I).toNat)))
     (hbaseAsh : locals.get? "Ash" = none)
     (hAshNew : AshNew = UInt256.sub AshVal (kissRad I))
@@ -382,7 +382,7 @@ theorem kissInternalSubReturn (I : ExecutionEnv) (evm : EVM.State)
       (args := [.storage AshRef, .var "rad"])
       (argVals := [.int (Int.ofNat AshVal.toNat), .int (Int.ofNat (kissRad I).toNat)])
       (callee := subFunction) (locals := uintBinaryLocals AshVal (kissRad I))
-      (calleeSolm := { contract := contract, locals := uintBinaryLocalsZ AshVal (kissRad I) AshNew })
+      (calleeStele := { contract := contract, locals := uintBinaryLocalsZ AshVal (kissRad I) AshNew })
       (value := some [.int (Int.ofNat AshNew.toNat)])
       hargs (by rfl) hbind hbody)
 
@@ -415,7 +415,7 @@ theorem vowDispatch_kiss {I : ExecutionEnv}
     exact hsel
 
 theorem vowDecode_kiss_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (kissTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (kissTransition.params.map Param.name)
       (transitionSignature kissTransition).paramTypes I.calldata =
         some (kissLocals I) := by
   simpa [config, kissTransition, kissLocals, kissRad, uint256, uint256Int] using
@@ -423,7 +423,7 @@ theorem vowDecode_kiss_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
 
 theorem vowDecode_kiss_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (kissTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (kissTransition.params.map Param.name)
       (transitionSignature kissTransition).paramTypes I.calldata = none := by
   simpa [config, kissTransition, uint256, uint256Int] using
     (decodeCalldata_legacyUInt256_none_short (cd := I.calldata) (x := "rad") hsz4 hshort)
@@ -1244,13 +1244,13 @@ theorem vowKissSourceStoreAshSplit
         some [.int (Int.ofNat vatDai.toNat)])
     (hvatDaiEnough : (kissRad I).toNat ≤ vatDai.toNat)
     (hAshLoadDai :
-      Solm.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner ⟨6⟩ =
+      Stele.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner ⟨6⟩ =
         solcSlotWordAt ⟨6⟩ σ I)
     (hAshNew : AshNew = UInt256.sub (solcSlotWordAt ⟨6⟩ σ I) (kissRad I)) :
     let locals := kissLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let locals2 := kissLocalsVatDaiAshNew I vatDai AshNew
-    let evmAsh := Solm.EVM.storageStore evmDai evmDai.executionEnv.codeOwner ⟨6⟩ AshNew
+    let evmAsh := Stele.EVM.storageStore evmDai evmDai.executionEnv.codeOwner ⟨6⟩ AshNew
     (∀ r, ExecBlock config { contract := contract, locals := locals2 } evmAsh
         [ .require (.binary .gt (.extCodeSize (.storage vatRef)) (.intLit 0)),
           .externalCall (.storage vatRef) "heal" (.intLit 0) [.var "rad"] "_healRet" ] r →
@@ -1376,19 +1376,19 @@ theorem vowKissSourceSuccess
         some [.int (Int.ofNat vatDai.toNat)])
     (hvatDaiEnough : (kissRad I).toNat ≤ vatDai.toNat)
     (hAshLoadDai :
-      Solm.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner ⟨6⟩ =
+      Stele.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner ⟨6⟩ =
         solcSlotWordAt ⟨6⟩ σ I)
     (hvatLoadDai :
-      Solm.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner ⟨1⟩ =
+      Stele.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner ⟨1⟩ =
         solcSlotWordAt ⟨1⟩ σ I)
     (hAshNew : AshNew = UInt256.sub (solcSlotWordAt ⟨6⟩ σ I) (kissRad I))
     (hvatCodeHeal :
       0 < (UInt256.ofNat
-        (((Solm.EVM.storageStore evmDai evmDai.executionEnv.codeOwner ⟨6⟩ AshNew).lookupAccount
+        (((Stele.EVM.storageStore evmDai evmDai.executionEnv.codeOwner ⟨6⟩ AshNew).lookupAccount
           (kissVatAddress σ I)).option 0 (fun acc => acc.code.size))).toNat)
     (hcallHeal :
       typedCallViaEVM config
-        (Solm.EVM.storageStore evmDai evmDai.executionEnv.codeOwner ⟨6⟩ AshNew)
+        (Stele.EVM.storageStore evmDai evmDai.executionEnv.codeOwner ⟨6⟩ AshNew)
         (EVM.address (kissVatAddress σ I)) "heal" 0
         [.int (Int.ofNat (kissRad I).toNat)] (true, evmHeal, outHeal) true)
     (hdecHeal : config.externalABI.decode? "heal" outHeal = some []) :
@@ -1397,18 +1397,18 @@ theorem vowKissSourceSuccess
     ExecTransitionBody config contract evm0 locals kissTransition.body
       (.returned { contract := contract, locals := kissLocalsDone I vatDai AshNew } evmHeal none) := by
   intro locals evm0
-  let evmAsh := Solm.EVM.storageStore evmDai evmDai.executionEnv.codeOwner ⟨6⟩ AshNew
+  let evmAsh := Stele.EVM.storageStore evmDai evmDai.executionEnv.codeOwner ⟨6⟩ AshNew
   let locals2 := kissLocalsVatDaiAshNew I vatDai AshNew
   have hvatLoadAsh :
-      Solm.EVM.storageLoad evmAsh evmAsh.executionEnv.codeOwner ⟨1⟩ =
+      Stele.EVM.storageLoad evmAsh evmAsh.executionEnv.codeOwner ⟨1⟩ =
         solcSlotWordAt ⟨1⟩ σ I := by
     calc
-      Solm.EVM.storageLoad evmAsh evmAsh.executionEnv.codeOwner ⟨1⟩
-          = Solm.EVM.storageLoad
-              (Solm.EVM.storageStore evmDai evmDai.executionEnv.codeOwner ⟨6⟩ AshNew)
+      Stele.EVM.storageLoad evmAsh evmAsh.executionEnv.codeOwner ⟨1⟩
+          = Stele.EVM.storageLoad
+              (Stele.EVM.storageStore evmDai evmDai.executionEnv.codeOwner ⟨6⟩ AshNew)
               evmDai.executionEnv.codeOwner ⟨1⟩ := by
             simp [evmAsh, storageStore_executionEnv]
-      _ = Solm.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner ⟨1⟩ := by
+      _ = Stele.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner ⟨1⟩ := by
             exact storageLoad_storageStore_ne evmDai evmDai.executionEnv.codeOwner
               (by decide : (⟨1⟩ : UInt256) ≠ ⟨6⟩)
       _ = solcSlotWordAt ⟨1⟩ σ I := hvatLoadDai
@@ -1450,7 +1450,7 @@ theorem vowKissDaiSuccessInsufficientSurplusBodyCore
     (hcode : I.code = vowBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some kissTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (kissTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (kissTransition.params.map Param.name)
         (transitionSignature kissTransition).paramTypes I.calldata = some (kissLocals I))
     (rd1704 : RD vowBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1704⟩
@@ -1470,7 +1470,7 @@ theorem vowKissDaiSuccessInsufficientSurplusBodyCore
     (hosz : o.size < UInt256.size)
     (ho32 : 32 ≤ o.size)
     (hashEnough : (kissRad I).toNat ≤ (solcSlotWordAt ⟨6⟩ σ I).toNat)
-    (hvatCodeSolm :
+    (hvatCodeStele :
       0 < (UInt256.ofNat
         (((initState σ σ₀ (Sat256.ofUInt256 g) A I).lookupAccount
           (kissVatAddress σ I)).option 0 (fun acc => acc.code.size))).toNat)
@@ -1515,7 +1515,7 @@ theorem vowKissDaiSuccessInsufficientSurplusBodyCore
     RD.vowKissDaiReturnDecodeOk (retWord := vatDai) rd1722 ho32 hosz hmload64 hmload128
   have hrev := RD.vowKissInsufficientSurplus rd1745
     (by simpa [vatDai] using hinsuff) hmem hread64
-  have hashEnoughSolm : (kissRad I).toNat ≤ (solcSlotWordAt ⟨6⟩ σ I).toNat :=
+  have hashEnoughStele : (kissRad I).toNat ≤ (solcSlotWordAt ⟨6⟩ σ I).toNat :=
     hashEnough
   have hdecDai :
       config.externalABI.decode? "dai" o = some [.int (Int.ofNat vatDai.toNat)] := by
@@ -1526,7 +1526,7 @@ theorem vowKissDaiSuccessInsufficientSurplusBodyCore
       { initState σ σ₀ (Sat256.ofUInt256 g) A I with
           accountMap := σ'_evm
           substate := A'_evm })
-    (out := o) (vatDai := vatDai) hwv hashEnoughSolm hvatCodeSolm hcallDai
+    (out := o) (vatDai := vatDai) hwv hashEnoughStele hvatCodeStele hcallDai
     hdecDai (by simpa [vatDai] using hinsuff)
   exact hrev.reEquivExecutionRevert hcode hdispatch hdecode hbody
 
@@ -1536,7 +1536,7 @@ theorem vowKissNoVatCodeBodyCore
     (hsz36 : 36 ≤ I.calldata.size) (hsize : I.calldata.size < UInt256.size)
     (hdispatch : dispatchMsg contract I.calldata = some kissTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (kissTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (kissTransition.params.map Param.name)
         (transitionSignature kissTransition).paramTypes I.calldata = some (kissLocals I))
     (hreach : ∃ k C, RD vowBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨383⟩ [sel]
@@ -1545,11 +1545,11 @@ theorem vowKissNoVatCodeBodyCore
     (hnoCode :
       Reasoning.Theory.extCodeSizeWord σ (kissDaiTargetWord σ I) = ⟨0⟩) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  have hashEnoughSolm : (kissRad I).toNat ≤ (solcSlotWordAt ⟨6⟩ σ I).toNat :=
+  have hashEnoughStele : (kissRad I).toNat ≤ (solcSlotWordAt ⟨6⟩ σ I).toNat :=
     hashEnough
   have hTarget : kissDaiTargetWord σ I = kissDaiTargetWord σ I := by
     rfl
-  have hnoCodeSolm :
+  have hnoCodeStele :
       Reasoning.Theory.extCodeSizeWord σ (kissDaiTargetWord σ I) = ⟨0⟩ := by
     exact hnoCode
   have hvatAddr :
@@ -1562,7 +1562,7 @@ theorem vowKissNoVatCodeBodyCore
         (((initState σ σ₀ (Sat256.ofUInt256 g) A I).lookupAccount
           (kissVatAddress σ I)).option 0 (fun acc => acc.code.size))).toNat = 0 := by
     rw [hvatAddr]
-    unfold Reasoning.Theory.extCodeSizeWord at hnoCodeSolm
+    unfold Reasoning.Theory.extCodeSizeWord at hnoCodeStele
     cases hacc :
       σ.get? (AccountAddress.ofUInt256 (kissDaiTargetWord σ I)) with
     | none =>
@@ -1570,12 +1570,12 @@ theorem vowKissNoVatCodeBodyCore
           State.lookupAccount, hacc] using
           (show (UInt256.ofNat 0).toNat = 0 from by native_decide)
     | some acc =>
-        have hword := congrArg UInt256.toNat hnoCodeSolm
+        have hword := congrArg UInt256.toNat hnoCodeStele
         simpa [-Std.ExtTreeMap.get?_eq_getElem?, initState,
           State.lookupAccount, hacc] using hword
   have hbody := vowKissSourceNoVatCode
     (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
-    hwv hashEnoughSolm hvatNoCode
+    hwv hashEnoughStele hvatNoCode
   have hrev := RD.vowKissDaiNoCode hreach hsz36 hsize hashEnough hnoCode
   exact hrev.reEquivExecutionRevert hcode hdispatch hdecode hbody
 
@@ -1586,7 +1586,7 @@ theorem vowKissDaiCallFailureBodyCore
     (hcode : I.code = vowBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some kissTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (kissTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (kissTransition.params.map Param.name)
         (transitionSignature kissTransition).paramTypes I.calldata = some (kissLocals I))
     (rd1704 : RD vowBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1704⟩
@@ -1603,13 +1603,13 @@ theorem vowKissDaiCallFailureBodyCore
           o) false)
     (hosz : o.size < UInt256.size)
     (hashEnough : (kissRad I).toNat ≤ (solcSlotWordAt ⟨6⟩ σ I).toNat)
-    (hvatCodeSolm :
+    (hvatCodeStele :
       0 < (UInt256.ofNat
         (((initState σ σ₀ (Sat256.ofUInt256 g) A I).lookupAccount
           (kissVatAddress σ I)).option 0 (fun acc => acc.code.size))).toNat) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   have hrev := RD.vowKissDaiCallFailure rd1704 hosz (by simp)
-  have hashEnoughSolm : (kissRad I).toNat ≤ (solcSlotWordAt ⟨6⟩ σ I).toNat :=
+  have hashEnoughStele : (kissRad I).toNat ≤ (solcSlotWordAt ⟨6⟩ σ I).toNat :=
     hashEnough
   have hbody := vowKissSourceDaiCallFailure
     (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
@@ -1617,7 +1617,7 @@ theorem vowKissDaiCallFailureBodyCore
       { initState σ σ₀ (Sat256.ofUInt256 g) A I with
           accountMap := σ'_evm
           substate := A'_evm })
-    (out := o) hwv hashEnoughSolm hvatCodeSolm hcallDai
+    (out := o) hwv hashEnoughStele hvatCodeStele hcallDai
   exact hrev.reEquivExecutionRevert hcode hdispatch hdecode hbody
 
 theorem vowKissDaiDecodeShortBodyCore
@@ -1627,7 +1627,7 @@ theorem vowKissDaiDecodeShortBodyCore
     (hcode : I.code = vowBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some kissTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (kissTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (kissTransition.params.map Param.name)
         (transitionSignature kissTransition).paramTypes I.calldata = some (kissLocals I))
     (rd1704 : RD vowBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1704⟩
@@ -1647,7 +1647,7 @@ theorem vowKissDaiDecodeShortBodyCore
     (hosz : o.size < UInt256.size)
     (hshort : o.size < 32)
     (hashEnough : (kissRad I).toNat ≤ (solcSlotWordAt ⟨6⟩ σ I).toNat)
-    (hvatCodeSolm :
+    (hvatCodeStele :
       0 < (UInt256.ofNat
         (((initState σ σ₀ (Sat256.ofUInt256 g) A I).lookupAccount
           (kissVatAddress σ I)).option 0 (fun acc => acc.code.size))).toNat) :
@@ -1673,7 +1673,7 @@ theorem vowKissDaiDecodeShortBodyCore
         ⟨128⟩ :=
     mloadFreePtrValue (by rw [hmem]; decide) hread64
   have hrev := RD.vowKissDaiReturnDecodeShortReverts rd1722 hshort hosz hmload64
-  have hashEnoughSolm : (kissRad I).toNat ≤ (solcSlotWordAt ⟨6⟩ σ I).toNat :=
+  have hashEnoughStele : (kissRad I).toNat ≤ (solcSlotWordAt ⟨6⟩ σ I).toNat :=
     hashEnough
   have hdecDai : config.externalABI.decode? "dai" o = none :=
     kissDaiDecode_none_short hshort
@@ -1683,7 +1683,7 @@ theorem vowKissDaiDecodeShortBodyCore
       { initState σ σ₀ (Sat256.ofUInt256 g) A I with
           accountMap := σ'_evm
           substate := A'_evm })
-    (out := o) hwv hashEnoughSolm hvatCodeSolm hcallDai hdecDai
+    (out := o) hwv hashEnoughStele hvatCodeStele hcallDai hdecDai
   exact hrev.reEquivExecutionRevert hcode hdispatch hdecode hbody
 
 theorem vowKissNotEnoughAshBodyCore
@@ -1692,17 +1692,17 @@ theorem vowKissNotEnoughAshBodyCore
     (hsz36 : 36 ≤ I.calldata.size) (hsize : I.calldata.size < UInt256.size)
     (hdispatch : dispatchMsg contract I.calldata = some kissTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (kissTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (kissTransition.params.map Param.name)
         (transitionSignature kissTransition).paramTypes I.calldata = some (kissLocals I))
     (hreach : ∃ k C, RD vowBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨383⟩ [sel]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C)
     (hnotEnough : (solcSlotWordAt ⟨6⟩ σ I).toNat < (kissRad I).toNat) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  have hnotEnoughSolm : (solcSlotWordAt ⟨6⟩ σ I).toNat < (kissRad I).toNat :=
+  have hnotEnoughStele : (solcSlotWordAt ⟨6⟩ σ I).toNat < (kissRad I).toNat :=
     hnotEnough
   have hbody := vowKissSourceNotEnoughAsh
-    (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hnotEnoughSolm
+    (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hnotEnoughStele
   have hrev := RD.vowKissNotEnoughAsh hreach hsz36 hsize hnotEnough
   exact hrev.reEquivExecutionRevert hcode hdispatch hdecode hbody
 

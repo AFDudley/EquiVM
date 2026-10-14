@@ -5,7 +5,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.MarketBalancesSource
 
 /-! Source execution of the allowance reader, guard, and finite allowance debit. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 

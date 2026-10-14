@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.AccruedAssetsIteration
 
 /-! Induction over the withdrawal queue while accumulating expected supply assets. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables metaMorphoV1_1Blocks
 

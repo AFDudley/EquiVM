@@ -5,7 +5,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.UintArrayCalldata
 
 /-! Source entry through the role check and the two queue lengths. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 
@@ -14,7 +14,7 @@ def updateWithdrawQueuePrefixFrame (evm : State) (imms : Store) (values : List V
     locals := (((((∅ : Store).insert "indexes" (.array values)).insert "__calldata"
       (.bytes evm.executionEnv.calldata)).insert "__role" .unit).insert "newLength"
       (.int (Int.ofNat values.length))).insert "currLength"
-      (uint256Value (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨21⟩))
+      (uint256Value (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨21⟩))
     immutables := imms }
 
 theorem updateWithdrawQueuePrefix (evm : State) (imms : Store) (values : List Value)

@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.StructReturnMemory
 
 /-! Preservation and the market-field writes in the rate-model call encoder. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach metaMorphoV1_1Blocks
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach metaMorphoV1_1Blocks
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
 

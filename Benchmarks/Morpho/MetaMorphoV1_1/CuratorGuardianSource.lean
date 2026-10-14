@@ -2,13 +2,13 @@ import Benchmarks.Morpho.MetaMorphoV1_1.GuardianRoleSource
 
 /-! Authorization by the guardian, curator, or owner. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 
 def curatorAddress (evm : EVM.State) : AccountAddress :=
   AccountAddress.ofNat (UInt256.land
-    (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨10⟩) solcAddrMask).toNat
+    (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨10⟩) solcAddrMask).toNat
 
 abbrev curatorGuardianAllowed (evm : EVM.State) : Prop :=
   guardianAddress evm = evm.executionEnv.source ∨
@@ -21,11 +21,11 @@ def curatorGuardianCondition : Expr :=
     (.binary .or (.binary .eq (.var "sender") (.storage ⟨"curator", []⟩))
       (.binary .eq (.var "sender") (.storage ⟨"_owner", []⟩)))
 
-theorem evalExpr_boolOr {cfg : Config} {solm : Frame} {evm : EVM.State}
+theorem evalExpr_boolOr {cfg : Config} {stele : Frame} {evm : EVM.State}
     {lhs rhs : Expr} {a b : Bool}
-    (ha : evalExpr? cfg solm evm lhs = .ok (.bool a))
-    (hb : evalExpr? cfg solm evm rhs = .ok (.bool b)) :
-    evalExpr? cfg solm evm (.binary .or lhs rhs) = .ok (.bool (a || b)) := by
+    (ha : evalExpr? cfg stele evm lhs = .ok (.bool a))
+    (hb : evalExpr? cfg stele evm rhs = .ok (.bool b)) :
+    evalExpr? cfg stele evm (.binary .or lhs rhs) = .ok (.bool (a || b)) := by
   rw [evalExpr?]
   simp only [ha, bind, EvalResult.bind]
   cases a <;> simp [hb, pure]

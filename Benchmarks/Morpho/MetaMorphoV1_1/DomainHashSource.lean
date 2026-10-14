@@ -3,7 +3,7 @@ import Benchmarks.EAS.Attester.WordSequenceMemory
 
 /-! The five-word EIP-712 domain preimage and its source hash helper. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1

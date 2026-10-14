@@ -5,7 +5,7 @@ import Reasoning.Stepping
 import Reasoning.Reach
 import Benchmarks.Dss.Clipper.Fallback
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 set_option maxRecDepth 2000000
@@ -45,7 +45,7 @@ def clipperRelyAuthWord (σ : AccountMap) (I : ExecutionEnv) : UInt256 :=
   solcSlotWord σ I (clipperRelyAuthStorageSlot I)
 
 def clipperRelyPostState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (clipperRelyUsrStorageSlot I) ⟨1⟩
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (clipperRelyUsrStorageSlot I) ⟨1⟩
 
 abbrev clipperRelyUsrEvaledRef (I : ExecutionEnv) : EvaledStorageRef :=
   { base := "wards", steps := [.mindex (clipperRelyUsrKey I)] }
@@ -77,19 +77,19 @@ theorem clipperRelyAuthStorageSlot_eq_mapSlot_source (I : ExecutionEnv) :
 
 theorem clipperDecode_rely_ok {I : ExecutionEnv}
     (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (relyTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (relyTransition.params.map Param.name)
       (transitionSignature relyTransition).paramTypes I.calldata =
         some (clipperRelyStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["usr"] [addr] I.calldata = _
+  show config.externalABI.decodeCalldata? ["usr"] [addr] I.calldata = _
   simpa [config, clipperRelyStore, clipperRelyUsrValue, clipperRelyUsrWord,
     calldataWord] using
       decodeCalldata_legacyAddress_ok (cd := I.calldata) (x := "usr") hsz36
 
 theorem clipperDecode_rely_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (relyTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (relyTransition.params.map Param.name)
       (transitionSignature relyTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["usr"] [addr] I.calldata = none
+  show config.externalABI.decodeCalldata? ["usr"] [addr] I.calldata = none
   simpa [config] using
     decodeCalldata_legacyAddress_none_short (cd := I.calldata) (x := "usr") hsz4 hshort
 
@@ -113,7 +113,7 @@ theorem evalStorageRef_clipperRely_auth (v : ClipperImmutables) (evm : EVM.State
 theorem evalExpr_clipperRely_auth_true (v : ClipperImmutables) (evm : EVM.State)
     (I : ExecutionEnv) (hsrc : evm.executionEnv.source = I.source)
     (hload :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (clipperRelyAuthStorageSlot I) = ⟨1⟩) :
     evalExpr? config { contract := contract, locals := clipperRelyStore I, immutables := immStore v } evm
       (.binary .eq (.storage (wardsRef sender)) (.intLit 1)) = .ok (.bool true) := by
@@ -122,7 +122,7 @@ theorem evalExpr_clipperRely_auth_true (v : ClipperImmutables) (evm : EVM.State)
         (.storage (wardsRef sender)) = .ok (.int 1) := by
     rw [evalExpr_storage_scalar_value (hbackend := rfl)
       (cfg := config)
-      (solm := { contract := contract, locals := clipperRelyStore I, immutables := immStore v })
+      (stele := { contract := contract, locals := clipperRelyStore I, immutables := immStore v })
       (slot := wardsRef sender)
       (er := clipperRelyAuthEvaledRef I)
       (t := .int uint256Int)
@@ -141,7 +141,7 @@ theorem evalExpr_clipperRely_auth_true (v : ClipperImmutables) (evm : EVM.State)
 theorem evalExpr_clipperRely_auth_false (v : ClipperImmutables) (evm : EVM.State)
     (I : ExecutionEnv) (hsrc : evm.executionEnv.source = I.source)
     (hload :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (clipperRelyAuthStorageSlot I) ≠ ⟨1⟩) :
     evalExpr? config { contract := contract, locals := clipperRelyStore I, immutables := immStore v } evm
       (.binary .eq (.storage (wardsRef sender)) (.intLit 1)) = .ok (.bool false) := by
@@ -149,11 +149,11 @@ theorem evalExpr_clipperRely_auth_false (v : ClipperImmutables) (evm : EVM.State
       evalExpr? config { contract := contract, locals := clipperRelyStore I, immutables := immStore v } evm
         (.storage (wardsRef sender)) =
           .ok (.int (Int.ofNat
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
               (clipperRelyAuthStorageSlot I)).toNat)) := by
     exact evalExpr_storage_scalar_value (hbackend := rfl)
       (cfg := config)
-      (solm := { contract := contract, locals := clipperRelyStore I, immutables := immStore v })
+      (stele := { contract := contract, locals := clipperRelyStore I, immutables := immStore v })
       (slot := wardsRef sender)
       (er := clipperRelyAuthEvaledRef I)
       (t := .int uint256Int)
@@ -166,7 +166,7 @@ theorem evalExpr_clipperRely_auth_false (v : ClipperImmutables) (evm : EVM.State
         exact storageLocLoad_uint256 evm (clipperRelyAuthStorageSlot I))
   have hne :
       Value.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
             (clipperRelyAuthStorageSlot I)).toNat) ≠ Value.int 1 := by
     intro hbad
     rw [Value.int.injEq] at hbad
@@ -174,13 +174,13 @@ theorem evalExpr_clipperRely_auth_false (v : ClipperImmutables) (evm : EVM.State
     exact uInt256_toNat_eq_one (Int.ofNat.inj hbad)
   have hbeq :
       (Value.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
             (clipperRelyAuthStorageSlot I)).toNat) == Value.int 1) = false := by
     exact beq_eq_false_iff_ne.mpr hne
   simp only [evalExpr?, hstorage, EvalResult.bind, bind, pure]
   change evalBinaryOp? BinaryOp.eq
       (Value.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
           (clipperRelyAuthStorageSlot I)).toNat))
       (Value.int 1) = .ok (.bool false)
   simp only [evalBinaryOp?]
@@ -205,7 +205,7 @@ theorem clipperRelyBodyReturns (v : ClipperImmutables) (evm : EVM.State)
     (I : ExecutionEnv) (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hsrc : evm.executionEnv.source = I.source)
     (hauth :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (clipperRelyAuthStorageSlot I) = ⟨1⟩) :
     ExecTransitionBody config contract evm (clipperRelyStore I) relyTransition.body
       (.returned { contract := contract, locals := clipperRelyStore I, immutables := immStore v }
@@ -214,7 +214,7 @@ theorem clipperRelyBodyReturns (v : ClipperImmutables) (evm : EVM.State)
   simpa [relyTransition, nonpayable, auth] using
     nonpayableRequireAssignStorageBlock
       (cfg := config)
-      (solm := { contract := contract, locals := clipperRelyStore I, immutables := immStore v })
+      (stele := { contract := contract, locals := clipperRelyStore I, immutables := immStore v })
       (evm := evm)
       (evm' := clipperRelyPostState evm I)
       (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
@@ -230,7 +230,7 @@ theorem clipperRelyBodyStatic (v : ClipperImmutables) (evm : EVM.State)
     (I : ExecutionEnv) (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hsrc : evm.executionEnv.source = I.source)
     (hauth :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (clipperRelyAuthStorageSlot I) = ⟨1⟩) (hperm : evm.executionEnv.perm = false) :
     ExecTransitionBody config contract evm (clipperRelyStore I) relyTransition.body
       .staticViolation (immStore v) := by
@@ -238,7 +238,7 @@ theorem clipperRelyBodyStatic (v : ClipperImmutables) (evm : EVM.State)
   simpa [relyTransition, nonpayable, auth] using
     nonpayableRequireAssignStorageBlockStatic
       (cfg := config)
-      (solm := { contract := contract, locals := clipperRelyStore I, immutables := immStore v })
+      (stele := { contract := contract, locals := clipperRelyStore I, immutables := immStore v })
       (evm := evm)
       (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
       (rhs := .intLit 1)
@@ -255,7 +255,7 @@ theorem clipperRelyBodyReverts (v : ClipperImmutables) (evm : EVM.State)
     (I : ExecutionEnv) (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hsrc : evm.executionEnv.source = I.source)
     (hauth :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (clipperRelyAuthStorageSlot I) ≠ ⟨1⟩) :
     ExecTransitionBody config contract evm (clipperRelyStore I)
       relyTransition.body .reverted (immStore v) := by
@@ -263,7 +263,7 @@ theorem clipperRelyBodyReverts (v : ClipperImmutables) (evm : EVM.State)
   simpa [relyTransition, nonpayable, auth] using
     nonpayableSecondRequireReverts
       (cfg := config)
-      (solm := { contract := contract, locals := clipperRelyStore I, immutables := immStore v })
+      (stele := { contract := contract, locals := clipperRelyStore I, immutables := immStore v })
       (evm := evm)
       (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
       (rest := [.assign .storage (wardsRef (.var "usr")) (.intLit 1)])
@@ -1253,30 +1253,30 @@ theorem clipperRelyBodyCoreOk
     (hauth : clipperRelyAuthWord σ I = ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some relyTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (relyTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (relyTransition.params.map Param.name)
         (transitionSignature relyTransition).paramTypes I.calldata = some (clipperRelyStore I))
     (hreach : ∃ k C, RD code I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) (⟨837⟩ : UInt256) [sel]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C) :
     runtimeRefinementFor config contract σ σ₀ g A I (immStore v) := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
   have hauthWord : clipperRelyAuthWord σ I = ⟨1⟩ := by
     exact hauth
   have hbody :
-      ExecTransitionBody config contract evmSolm (clipperRelyStore I)
+      ExecTransitionBody config contract evmStele (clipperRelyStore I)
         relyTransition.body
         (.returned { contract := contract, locals := clipperRelyStore I, immutables := immStore v }
-          (clipperRelyPostState evmSolm I) none) (immStore v) := by
-    simpa [evmSolm, clipperRelyAuthWord, solcSlotWord, initState,
-      Solm.EVM.storageLoad, State.lookupAccount] using
-      clipperRelyBodyReturns v evmSolm I
-        (by simp only [evmSolm, initState]; exact hwv)
-        (by simp [evmSolm, initState])
+          (clipperRelyPostState evmStele I) none) (immStore v) := by
+    simpa [evmStele, clipperRelyAuthWord, solcSlotWord, initState,
+      Stele.EVM.storageLoad, State.lookupAccount] using
+      clipperRelyBodyReturns v evmStele I
+        (by simp only [evmStele, initState]; exact hwv)
+        (by simp [evmStele, initState])
         hauthWord
   exact (clipperX_rely_ok (v := v) (g := Sat256.ofUInt256 g) hpatch hsz36 hsize
       hperm hauth hreach)
     |>.reEquivExecutionGen hcode hdispatch hdecode hbody
-      (by simp [clipperRelyPostState, evmSolm, initState, storageStore_accountMap])
+      (by simp [clipperRelyPostState, evmStele, initState, storageStore_accountMap])
       (by
         simpa [relyTransition] using
           (returnEquiv.fallthrough (o := ByteArray.empty) (r := none) (t := [])
@@ -1292,26 +1292,26 @@ theorem clipperRelyBodyCoreStatic
     (hauth : clipperRelyAuthWord σ I = ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some relyTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (relyTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (relyTransition.params.map Param.name)
         (transitionSignature relyTransition).paramTypes I.calldata = some (clipperRelyStore I))
     (hreach : ∃ k C, RD code I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) (⟨837⟩ : UInt256) [sel]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C) :
     runtimeRefinementFor config contract σ σ₀ g A I (immStore v) := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
   have hauthWord : clipperRelyAuthWord σ I = ⟨1⟩ := by
     exact hauth
   have hbody :
-      ExecTransitionBody config contract evmSolm (clipperRelyStore I)
+      ExecTransitionBody config contract evmStele (clipperRelyStore I)
         relyTransition.body
         .staticViolation (immStore v) := by
-    simpa [evmSolm, clipperRelyAuthWord, solcSlotWord, initState,
-      Solm.EVM.storageLoad, State.lookupAccount] using
-      clipperRelyBodyStatic v evmSolm I
-        (by simp only [evmSolm, initState]; exact hwv)
-        (by simp [evmSolm, initState])
+    simpa [evmStele, clipperRelyAuthWord, solcSlotWord, initState,
+      Stele.EVM.storageLoad, State.lookupAccount] using
+      clipperRelyBodyStatic v evmStele I
+        (by simp only [evmStele, initState]; exact hwv)
+        (by simp [evmStele, initState])
         hauthWord
-        (by simp only [evmSolm, initState]; exact hperm)
+        (by simp only [evmStele, initState]; exact hperm)
   exact (permSplit_false hperm (clipperX_rely_okSplit
       (v := v) (g := Sat256.ofUInt256 g) hpatch hsz36 hsize hauth hreach))
     |>.reEquivStaticHalt hcode hdispatch hdecode hbody
@@ -1326,24 +1326,24 @@ theorem clipperRelyBodyCoreUnauthorized
     (hauth : clipperRelyAuthWord σ I ≠ ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some relyTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (relyTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (relyTransition.params.map Param.name)
         (transitionSignature relyTransition).paramTypes I.calldata = some (clipperRelyStore I))
     (hreach : ∃ k C, RD code I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) (⟨837⟩ : UInt256) [sel]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C) :
     runtimeRefinementFor config contract σ σ₀ g A I (immStore v) := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
   have hauthWord : clipperRelyAuthWord σ I ≠ ⟨1⟩ := by
     intro hbad
     exact hauth hbad
   have hbody :
-      ExecTransitionBody config contract evmSolm (clipperRelyStore I)
+      ExecTransitionBody config contract evmStele (clipperRelyStore I)
         relyTransition.body .reverted (immStore v) := by
-    simpa [evmSolm, clipperRelyAuthWord, solcSlotWord, initState,
-      Solm.EVM.storageLoad, State.lookupAccount] using
-      clipperRelyBodyReverts v evmSolm I
-        (by simp only [evmSolm, initState]; exact hwv)
-        (by simp [evmSolm, initState])
+    simpa [evmStele, clipperRelyAuthWord, solcSlotWord, initState,
+      Stele.EVM.storageLoad, State.lookupAccount] using
+      clipperRelyBodyReverts v evmStele I
+        (by simp only [evmStele, initState]; exact hwv)
+        (by simp [evmStele, initState])
         hauthWord
   exact (clipperX_rely_unauthorized (v := v) (g := Sat256.ofUInt256 g) hpatch hsz36
       hsize hauth hreach)

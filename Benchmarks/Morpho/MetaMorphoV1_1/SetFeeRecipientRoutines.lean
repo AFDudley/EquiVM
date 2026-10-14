@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.FeeRecipientMutation
 
 /-! The final recipient store and event after interest accrual returns. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables metaMorphoV1_1Blocks
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
@@ -29,7 +29,7 @@ theorem setFeeRecipientStoreReturn {evm : EVM.State} {g : Sat256} {s0 : State}
   rw [hw] at hword
   dsimp only [codeOwnerStorageWord] at hword
   rw [hword] at hret
-  simpa only [setFeeRecipientState, storageStore_accountMap, Solm.EVM.storageLoad,
+  simpa only [setFeeRecipientState, storageStore_accountMap, Stele.EVM.storageLoad,
     State.lookupAccount, Account.lookupStorage, codeOwnerStorageWord] using hret
 
 end Benchmarks.Morpho.MetaMorphoV1_1

@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.AllocationSyntax
 
 /-! The transfer helpers with the compiler's request and return buffers made explicit. -/
 
-open Solm ABI
+open Stele ABI
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
 

@@ -2,7 +2,7 @@ import Benchmarks.EAS.Attester.LocalArray
 import Benchmarks.EAS.Attester.AttestSource
 import Benchmarks.EAS.Attester.AttestCellABI
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.EAS.Attester
 
@@ -66,7 +66,7 @@ theorem attestInnerRun {C : ContractDecl} {imms : Store} {evm : State}
             List.getElem?_eq_none (Nat.le_of_not_gt hkp)]
       refine ⟨locals, ExecForLoop.falseDone ?_, by simpa only [hdata] using hd, ?_⟩
       · simpa only [attestInnerCond, hjn, Nat.lt_irrefl, decide_false] using
-          (evalLocalNatLt (cfg := config) (solm := ⟨C, locals, imms⟩) (evm := evm) hi hcount)
+          (evalLocalNatLt (cfg := config) (stele := ⟨C, locals, imms⟩) (evm := evm) hi hcount)
       · intro name _ _ _; rfl
   | succ remaining ih =>
       have hju : j < inputs.length := by omega
@@ -79,7 +79,7 @@ theorem attestInnerRun {C : ContractDecl} {imms : Store} {evm : State}
       have hencode : evalExpr? config ⟨C, locals, imms⟩ evm
           (.abiEncodeCall "__abi_encode_uint256" [.index (.var "inputs") (.var "j")]) =
           .ok (.bytes (abiEncodeUint256Selector ++ (values j).toByteArray)) := by
-        have hv := evalLocalArrayIndex (cfg := config) (solm := ⟨C, locals, imms⟩)
+        have hv := evalLocalArrayIndex (cfg := config) (stele := ⟨C, locals, imms⟩)
           (evm := evm) hu hi (hinputs j hju) (by rfl)
         simp only [evalExpr?, evalExprs?, evalExprList?, hv, bind, EvalResult.bind, pure,
           encodeInput, EvalResult.ofOption]
@@ -112,7 +112,7 @@ theorem attestInnerRun {C : ContractDecl} {imms : Store} {evm : State}
         (by simpa using hlen) hfilled'
       refine ⟨result, ExecForLoop.iterate ?_ hbody hpost hrun, hdata, ?_⟩
       · simpa only [attestInnerCond, hju, decide_true] using
-          (evalLocalNatLt (cfg := config) (solm := ⟨C, locals, imms⟩) (evm := evm) hi hcount)
+          (evalLocalNatLt (cfg := config) (stele := ⟨C, locals, imms⟩) (evm := evm) hi hcount)
       · intro name hdataName hjName hencName
         rw [hsame name hdataName hjName hencName]
         simp [afterStep, afterData, encoded, Std.HashMap.getElem?_insert,

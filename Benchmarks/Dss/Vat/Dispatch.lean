@@ -3,11 +3,11 @@ import Benchmarks.Dss.Vat.Selectors
 /-!
 # MakerDAO/Sky DSS Vat dispatcher facts
 
-This file is the local home for Solm dispatch routing facts and shared dispatcher/revert proof
+This file is the local home for Stele dispatch routing facts and shared dispatcher/revert proof
 infrastructure. The first scaffold pass keeps the hard EVM reachability leaves as body stubs.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 

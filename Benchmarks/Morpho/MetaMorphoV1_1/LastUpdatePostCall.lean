@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.RuntimeBlocks_045
 
 /-! Last-update return-buffer allocation and the shared dynamic return decoder. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables metaMorphoV1_1Blocks
 

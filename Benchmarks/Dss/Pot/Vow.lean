@@ -1,15 +1,15 @@
 import Benchmarks.Dss.Pot.Dispatch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Pot
 
 /-! ## `vow()` public getter (debt engine address, slot 6). Group @174 arm 3. -/
 
 theorem potDecode_vow {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (vowTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (vowTransition.params.map Param.name)
       (transitionSignature vowTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 theorem potReachVowBody {σ σ₀ A I} {g : Sat256}
@@ -40,7 +40,7 @@ theorem potVowBodyCore
     (hcode : I.code = potBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some vowTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (vowTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (vowTransition.params.map Param.name)
         (transitionSignature vowTransition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD potBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨454⟩ [sel]
@@ -52,7 +52,7 @@ theorem potVowBodyCore
         (.returned { contract := contract, locals := ∅ }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.address (AccountAddress.ofNat (solcAddressSlotWord ⟨6⟩ σ I).toNat))])) := by
-    simpa [vowTransition, solcAddressSlotWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [vowTransition, solcAddressSlotWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       potAddressGetterBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅

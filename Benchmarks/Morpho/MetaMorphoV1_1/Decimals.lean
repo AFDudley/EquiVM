@@ -8,11 +8,11 @@ import Benchmarks.Morpho.MetaMorphoV1_1.RuntimeBlocks_009
 # MetaMorphoV1_1 `decimals()`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 9744; reach lemma `metaMorphoV1_1ReachDecimalsBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 
@@ -196,7 +196,7 @@ theorem metaMorphoV1_1DecimalsBody {σ σ₀ A I} {g : UInt256} (v : MetaMorphoV
   have hd : dispatchMsg contract I.calldata = some decimalsTransition := by
     apply metaMorphoV1_1Dispatch_decimals <;>
       first | exact hsel | exact selectorMismatch hsel (by decide +kernel)
-  have hdec : decodeCalldataWithMode config.abiDecodeMode
+  have hdec : config.externalABI.decodeCalldata?
       (decimalsTransition.params.map Param.name)
       (transitionSignature decimalsTransition).paramTypes I.calldata = some ∅ := by
     exact decodeCalldata_empty_ok hsz

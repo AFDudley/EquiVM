@@ -1,7 +1,7 @@
 import Benchmarks.Dss.Vow.FileUint
 import Reasoning.ExternalCall
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 0
@@ -99,7 +99,7 @@ theorem vowDispatch_fileAddress {I : ExecutionEnv}
     exact hsel
 
 theorem vowDecode_fileAddress_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (fileAddressTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (fileAddressTransition.params.map Param.name)
       (transitionSignature fileAddressTransition).paramTypes I.calldata =
         some (((∅ : Store).insert "what" (.fixedBytes bytes32Width (fileAddressWhat I))).insert
           "data" (.address (fileAddressData I))) := by
@@ -110,7 +110,7 @@ theorem vowDecode_fileAddress_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.s
 
 theorem vowDecode_fileAddress_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 68) :
-    decodeCalldataWithMode config.abiDecodeMode (fileAddressTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (fileAddressTransition.params.map Param.name)
       (transitionSignature fileAddressTransition).paramTypes I.calldata = none := by
   simpa [config, fileAddressTransition, bytes32, bytes32Width, addr, abiBytes32,
     abiBytes32Width, abiAddress] using
@@ -155,26 +155,26 @@ theorem fileAddressLocalsNope_get_flapper (I : ExecutionEnv) :
   simp
 
 theorem vowExternalABI_decode_nope (out : ByteArray) :
-    config.externalABI.decode? "nope" out = some ([] : List Solm.Value) := by
+    config.externalABI.decode? "nope" out = some ([] : List Stele.Value) := by
   simp [config, vowExternalABI, decodeVoid?]
 
 theorem vowExternalABI_decode_hope (out : ByteArray) :
-    config.externalABI.decode? "hope" out = some ([] : List Solm.Value) := by
+    config.externalABI.decode? "hope" out = some ([] : List Stele.Value) := by
   simp [config, vowExternalABI, decodeVoid?]
 
 abbrev fileAddressVatAddressOf (evm : EVM.State) : AccountAddress :=
   AccountAddress.ofNat
-    (UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩)
+    (UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩)
       solcAddrMask).toNat
 
 abbrev fileAddressFlapperAddressOf (evm : EVM.State) : AccountAddress :=
   AccountAddress.ofNat
-    (UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩)
+    (UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩)
       solcAddrMask).toNat
 
 abbrev fileAddressSetFlapperEVM (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨2⟩
-    (setAddressOffset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨2⟩
+    (setAddressOffset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩)
       (fileAddressDataKey I))
 
 abbrev fileAddressVatTargetWord (σ : AccountMap) (I : ExecutionEnv) : UInt256 :=
@@ -431,8 +431,8 @@ theorem evalExprs_fileAddressHopeArgs {evm : EVM.State} {I : ExecutionEnv} {loca
 
 theorem assign_fileAddressFlopperStorage (evm : EVM.State) {locals : Store} (data : UInt256)
     (hbase : locals.get? "flopper" = none) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨3⟩
-      (setAddressOffset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩)
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨3⟩
+      (setAddressOffset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩)
         (UInt256.land solcAddrMask data))
     assignStorageRef? config { contract := contract, locals := locals } evm
       .storage flopperRef (.address (AccountAddress.ofNat data.toNat)) =
@@ -467,8 +467,8 @@ theorem assign_fileAddressFlopperStorage (evm : EVM.State) {locals : Store} (dat
 
 theorem assign_fileAddressFlapperStorage (evm : EVM.State) {locals : Store} (data : UInt256)
     (hbase : locals.get? "flapper" = none) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨2⟩
-      (setAddressOffset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩)
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨2⟩
+      (setAddressOffset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩)
         (UInt256.land solcAddrMask data))
     assignStorageRef? config { contract := contract, locals := locals } evm
       .storage flapperRef (.address (AccountAddress.ofNat data.toNat)) =
@@ -675,8 +675,8 @@ theorem fileAddressFlopperSourceBodySplit {σ σ₀ A I} {g : UInt256}
     (hwhat : fileAddressWhat I = fileAddressFlopperBytes) :
     let locals := fileAddressLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-    let evm1 := Solm.EVM.storageStore evm0 I.codeOwner ⟨3⟩
-      (setAddressOffset0Word (Solm.EVM.storageLoad evm0 I.codeOwner ⟨3⟩)
+    let evm1 := Stele.EVM.storageStore evm0 I.codeOwner ⟨3⟩
+      (setAddressOffset0Word (Stele.EVM.storageLoad evm0 I.codeOwner ⟨3⟩)
         (fileAddressDataKey I))
     ExecTransitionBody config contract evm0 locals fileAddressTransition.body
       (.returned { contract := contract, locals := locals } evm1 none) ∧
@@ -738,8 +738,8 @@ theorem fileAddressFlopperSourceBody {σ σ₀ A I} {g : UInt256}
     (hwhat : fileAddressWhat I = fileAddressFlopperBytes) :
     let locals := fileAddressLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-    let evm1 := Solm.EVM.storageStore evm0 I.codeOwner ⟨3⟩
-      (setAddressOffset0Word (Solm.EVM.storageLoad evm0 I.codeOwner ⟨3⟩)
+    let evm1 := Stele.EVM.storageStore evm0 I.codeOwner ⟨3⟩
+      (setAddressOffset0Word (Stele.EVM.storageLoad evm0 I.codeOwner ⟨3⟩)
         (fileAddressDataKey I))
     ExecTransitionBody config contract evm0 locals fileAddressTransition.body
       (.returned { contract := contract, locals := locals } evm1 none) :=
@@ -1467,7 +1467,7 @@ theorem vowFileAddressFlopperAuthorizedBodyCore
     (hsize : I.calldata.size < UInt256.size)
     (hdispatch : dispatchMsg contract I.calldata = some fileAddressTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileAddressTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileAddressTransition.params.map Param.name)
         (transitionSignature fileAddressTransition).paramTypes I.calldata =
           some (fileAddressLocals I))
     (hreach : ∃ k C, RD vowBytecode I (Sat256.ofUInt256 g)
@@ -1480,30 +1480,30 @@ theorem vowFileAddressFlopperAuthorizedBodyCore
   let dataKey := fileAddressDataKey I
   let locals := fileAddressLocals I
   let callerSlot := vowCallerWardsSlot I
-  have hauthSolm : solcSlotWordAt callerSlot σ I = ⟨1⟩ := hauthEvm
+  have hauthStele : solcSlotWordAt callerSlot σ I = ⟨1⟩ := hauthEvm
   have hauthSolc :
       solcSlotWord σ I (solcMappingSlot ⟨0⟩ (solcSourceWord I)) = ⟨1⟩ := by
     simpa [callerSlot, vowCallerWardsSlot, solcSlotWordAt] using hauthEvm
   let stored := setAddressOffset0Word (solcSlotWord σ I ⟨3⟩) dataKey
   let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  let evm1 := Solm.EVM.storageStore evm0 I.codeOwner ⟨3⟩ stored
-  have hstoredSolm :
+  let evm1 := Stele.EVM.storageStore evm0 I.codeOwner ⟨3⟩ stored
+  have hstoredStele :
       stored = setAddressOffset0Word (solcSlotWord σ I ⟨3⟩) dataKey := by
     rfl
   have hbody :
       ExecTransitionBody config contract evm0 locals fileAddressTransition.body
         (.returned { contract := contract, locals := locals } evm1 none) := by
-    simpa [evm0, evm1, locals, dataKey, stored, hstoredSolm, solcSlotWord, initState,
-      Solm.EVM.storageLoad] using
+    simpa [evm0, evm1, locals, dataKey, stored, hstoredStele, solcSlotWord, initState,
+      Stele.EVM.storageLoad] using
         (fileAddressFlopperSourceBody
           (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
-          hwv hauthSolm hnotFlapper hwhat)
+          hwv hauthStele hnotFlapper hwhat)
   rcases RD.vowFileAddressFlopperSuccessSplit hreach hsz68 hsize hauthSolc hnotFlapper hwhat with
     ⟨_, hret⟩ | ⟨hpf, hstatic⟩
   swap
   · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode
       ((fileAddressFlopperSourceBodySplit (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
-        hwv hauthSolm hnotFlapper hwhat).2 hpf)
+        hwv hauthStele hnotFlapper hwhat).2 hpf)
   have haccounts :
       sstoreAccountMap I.codeOwner σ ⟨3⟩ stored = evm1.accountMap := by
     simp [evm1, evm0, initState, storageStore_accountMap, stored]
@@ -1525,7 +1525,7 @@ theorem vowFileAddressUnrecognizedAuthorizedBodyCore
     (hsize : I.calldata.size < UInt256.size)
     (hdispatch : dispatchMsg contract I.calldata = some fileAddressTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileAddressTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileAddressTransition.params.map Param.name)
         (transitionSignature fileAddressTransition).paramTypes I.calldata =
           some (fileAddressLocals I))
     (hreach : ∃ k C, RD vowBytecode I (Sat256.ofUInt256 g)
@@ -1537,7 +1537,7 @@ theorem vowFileAddressUnrecognizedAuthorizedBodyCore
     runtimeRefinementFor config contract σ σ₀ g A I := by
   let locals := fileAddressLocals I
   let callerSlot := vowCallerWardsSlot I
-  have hauthSolm : solcSlotWordAt callerSlot σ I = ⟨1⟩ := hauthEvm
+  have hauthStele : solcSlotWordAt callerSlot σ I = ⟨1⟩ := hauthEvm
   have hauthSolc :
       solcSlotWord σ I (solcMappingSlot ⟨0⟩ (solcSourceWord I)) = ⟨1⟩ := by
     simpa [callerSlot, vowCallerWardsSlot, solcSlotWordAt] using hauthEvm
@@ -1547,7 +1547,7 @@ theorem vowFileAddressUnrecognizedAuthorizedBodyCore
     simpa [evm0, locals] using
       (fileAddressUnrecognizedSourceBody
         (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
-        hwv hauthSolm hnotFlapper hnotFlopper)
+        hwv hauthStele hnotFlapper hnotFlopper)
   have hrev := RD.vowFileAddressUnrecognizedParamRevert hreach hsz68 hsize hauthSolc
     hnotFlapper hnotFlopper
   exact hrev.reEquivExecutionRevert hcode hdispatch hdecode hbody
@@ -1559,7 +1559,7 @@ theorem vowFileAddressAuthRevertBodyCore
     (hsize : I.calldata.size < UInt256.size)
     (hdispatch : dispatchMsg contract I.calldata = some fileAddressTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileAddressTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileAddressTransition.params.map Param.name)
         (transitionSignature fileAddressTransition).paramTypes I.calldata =
           some (fileAddressLocals I))
     (hreach : ∃ k C, RD vowBytecode I (Sat256.ofUInt256 g)
@@ -1569,15 +1569,15 @@ theorem vowFileAddressAuthRevertBodyCore
     runtimeRefinementFor config contract σ σ₀ g A I := by
   let locals := fileAddressLocals I
   let callerSlot := vowCallerWardsSlot I
-  have hauthSolm : solcSlotWordAt callerSlot σ I ≠ ⟨1⟩ := hauthEvm
+  have hauthStele : solcSlotWordAt callerSlot σ I ≠ ⟨1⟩ := hauthEvm
   let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
   have hbody : ExecTransitionBody config contract evm0 locals fileAddressTransition.body .reverted := by
     have hguard := vowAuthGuardEval_false
       (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
       (g := Sat256.ofUInt256 g) (locals := locals)
-      (by simp [locals, fileAddressLocals]) hauthSolm
+      (by simp [locals, fileAddressLocals]) hauthStele
     have hblock := nonpayableSecondRequireReverts
-      (cfg := config) (solm := { contract := contract, locals := locals })
+      (cfg := config) (stele := { contract := contract, locals := locals })
       (evm := evm0)
       (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
       (rest := [
@@ -1609,7 +1609,7 @@ theorem vowFileAddressNonFlapperBodyCore
     (hsize : I.calldata.size < UInt256.size)
     (hdispatch : dispatchMsg contract I.calldata = some fileAddressTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileAddressTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileAddressTransition.params.map Param.name)
         (transitionSignature fileAddressTransition).paramTypes I.calldata =
           some (fileAddressLocals I))
     (hreach : ∃ k C, RD vowBytecode I (Sat256.ofUInt256 g)

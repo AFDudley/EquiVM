@@ -4,7 +4,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.CastAddFieldRoutines
 
 /-! Source execution of a cursor-returning cast followed by a checked market-field sum. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
 

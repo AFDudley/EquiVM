@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.MappingStorage
 
 /-! The internal ERC20 balance reader used by the withdrawal limit. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
 
@@ -16,7 +16,7 @@ def balanceInternalFrame (imms : Store) (owner : AccountAddress) : Frame :=
     immutables := imms }
 
 def balanceInternalWord (evm : State) (owner : AccountAddress) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
     (solcMappingSlot ⟨0⟩ (UInt256.ofNat owner.toNat))
 
 theorem balanceInternalBody (evm : State) (imms : Store) (owner : AccountAddress) :

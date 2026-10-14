@@ -2,14 +2,14 @@ import Benchmarks.Morpho.MetaMorphoV1_1.MarketRevocationMutation
 
 /-! Deleting the three adjacent fields clears exactly one market-configuration slot. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 
 set_option maxRecDepth 2000
 
 def deletedMarketConfigState (evm : State) (id : UInt256) : State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (solcMappingSlot ⟨13⟩ id) ⟨0⟩
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (solcMappingSlot ⟨13⟩ id) ⟨0⟩
 
 theorem deleteStorage_config {frame : Frame} {evm : State} {id : UInt256}
     (hc : frame.contract = contract) (hbase : frame.locals.get? "config" = none)
@@ -18,7 +18,7 @@ theorem deleteStorage_config {frame : Frame} {evm : State} {id : UInt256}
       .ok (deletedMarketConfigState evm id) := by
   have hkey : keyValueToWord (.fixedBytes abiBytes32Width (EVM.Word.toBytesBE id)) = id :=
     keyValueToWord_fixedBytes32 id
-  have hr := resolveStorageRef?_ok (cfg := config) (evm := evm) (solm := frame)
+  have hr := resolveStorageRef?_ok (cfg := config) (evm := evm) (stele := frame)
     (slot := ⟨"config", [.mindex (.var "id")]⟩)
     (er := ⟨"config", [.mindex (.fixedBytes abiBytes32Width (EVM.Word.toBytesBE id))]⟩)
     hbase

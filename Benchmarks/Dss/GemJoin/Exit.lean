@@ -1,6 +1,6 @@
 import Benchmarks.Dss.GemJoin.Join
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -12,9 +12,9 @@ abbrev exitStore (I : ExecutionEnv) : Store :=
   joinStore I
 
 theorem gemJoinDecode_exit_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (exitTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (exitTransition.params.map Param.name)
       (transitionSignature exitTransition).paramTypes I.calldata = some (exitStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["usr", "wad"] [addr, uint256]
+  show config.externalABI.decodeCalldata? ["usr", "wad"] [addr, uint256]
     I.calldata = _
   simpa [exitStore, joinStore, joinUsrValue, joinWadValue, joinUsrWord, joinWadWord,
     calldataWord] using
@@ -23,9 +23,9 @@ theorem gemJoinDecode_exit_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size
 
 theorem gemJoinDecode_exit_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 68) :
-    decodeCalldataWithMode config.abiDecodeMode (exitTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (exitTransition.params.map Param.name)
       (transitionSignature exitTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["usr", "wad"] [addr, uint256]
+  show config.externalABI.decodeCalldata? ["usr", "wad"] [addr, uint256]
     I.calldata = none
   simpa using decodeCalldata_legacyAddress_uint256_none_short
     (cd := I.calldata) (x := "usr") (y := "wad") hsz4 hshort
@@ -741,7 +741,7 @@ theorem RD.gemJoinExitSlipPostCall
             (initState σ σ₀ (Sat256.ofUInt256 g) A I)) =
           AccountAddress.ofUInt256 (solcAddressSlotWord ⟨1⟩ σ I) := by
       apply Fin.ext
-      simp [EVM.address, EVM.uintN, joinVatAddressOf, initState, Solm.EVM.storageLoad,
+      simp [EVM.address, EVM.uintN, joinVatAddressOf, initState, Stele.EVM.storageLoad,
         State.lookupAccount, Account.lookupStorage, solcAddressSlotWord,
         solcSlotWordAt, solcSlotWord, accountAddress_ofUInt256_eq_ofNat_toNat,
         AccountAddress.ofNat]
@@ -1314,7 +1314,7 @@ theorem RD.gemJoinExitTransferPostCall
               accountMap := σcur, substate := Acur, }) =
           AccountAddress.ofUInt256 (solcAddressSlotWord ⟨3⟩ σcur I) := by
       apply Fin.ext
-      simp [EVM.address, EVM.uintN, joinGemAddressOf, initState, Solm.EVM.storageLoad,
+      simp [EVM.address, EVM.uintN, joinGemAddressOf, initState, Stele.EVM.storageLoad,
         State.lookupAccount, Account.lookupStorage, solcAddressSlotWord,
         solcSlotWordAt, solcSlotWord, accountAddress_ofUInt256_eq_ofNat_toNat,
         AccountAddress.ofNat]
@@ -1751,7 +1751,7 @@ theorem evalExprs_exit_slipArgs (evm : EVM.State) (I : ExecutionEnv)
         .ok
           [.fixedBytes bytes32Width
             (EVM.Word.toBytesBE
-              (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩)),
+              (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩)),
             .address evm.executionEnv.source, exitNegWadValue I] := by
   simp [evalExprs?, evalExpr_join_ilk evm I, sender, evalExpr?, envValue,
     evalExpr_exit_neg_asInt256_wad evm I hwadOk, EvalResult.bind, bind, pure, exitStore]
@@ -1761,7 +1761,7 @@ theorem evalExpr_exit_gem_afterSlip (evm : EVM.State) (I : ExecutionEnv) :
       (.storage gemRef) = .ok (.address (joinGemAddressOf evm)) := by
   rw [evalExpr_storage_scalar_value (hbackend := rfl)
     (cfg := config)
-    (solm := { contract := contract, locals := exitLocalsAfterSlip I })
+    (stele := { contract := contract, locals := exitLocalsAfterSlip I })
     (slot := gemRef)
     (er := ({ base := "gem", steps := [] } : EvaledStorageRef))
     (t := .address)
@@ -1847,7 +1847,7 @@ theorem gemJoinExitBodySuccessSplit (evm evmSlip evmTransfer : EVM.State) (I : E
       typedCallViaEVM config evm (EVM.address (joinVatAddressOf evm)) "slip" 0
         [.fixedBytes bytes32Width
           (EVM.Word.toBytesBE
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩)),
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩)),
           .address evm.executionEnv.source, exitNegWadValue I]
         (true, evmSlip, outSlip) true)
     (hgemCode :
@@ -1879,7 +1879,7 @@ theorem gemJoinExitBodySuccessSplit (evm evmSlip evmTransfer : EVM.State) (I : E
           .ok
             [.fixedBytes bytes32Width
               (EVM.Word.toBytesBE
-                (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩)),
+                (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩)),
               .address evm.executionEnv.source, exitNegWadValue I] :=
     evalExprs_exit_slipArgs evm I hwadOk
   have hslipStmt :
@@ -1978,7 +1978,7 @@ theorem gemJoinExitBodyRevertsSlipCallFailure
       typedCallViaEVM config evm (EVM.address (joinVatAddressOf evm)) "slip" 0
         [.fixedBytes bytes32Width
           (EVM.Word.toBytesBE
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩)),
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩)),
           .address evm.executionEnv.source, exitNegWadValue I]
         (false, evmSlip, outSlip) true) :
     ExecTransitionBody config contract evm (exitStore I) exitTransition.body .reverted := by
@@ -1996,7 +1996,7 @@ theorem gemJoinExitBodyRevertsSlipCallFailure
           .ok
             [.fixedBytes bytes32Width
               (EVM.Word.toBytesBE
-                (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩)),
+                (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩)),
               .address evm.executionEnv.source, exitNegWadValue I] :=
     evalExprs_exit_slipArgs evm I hwadOk
   have hslipStmt :
@@ -2025,7 +2025,7 @@ theorem gemJoinExitBodyRevertsGemNoCode
       typedCallViaEVM config evm (EVM.address (joinVatAddressOf evm)) "slip" 0
         [.fixedBytes bytes32Width
           (EVM.Word.toBytesBE
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩)),
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩)),
           .address evm.executionEnv.source, exitNegWadValue I]
         (true, evmSlip, outSlip) true)
     (hgemNoCode :
@@ -2047,7 +2047,7 @@ theorem gemJoinExitBodyRevertsGemNoCode
           .ok
             [.fixedBytes bytes32Width
               (EVM.Word.toBytesBE
-                (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩)),
+                (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩)),
               .address evm.executionEnv.source, exitNegWadValue I] :=
     evalExprs_exit_slipArgs evm I hwadOk
   have hslipStmt :
@@ -2086,7 +2086,7 @@ theorem gemJoinExitBodyRevertsTransferCallFailure
       typedCallViaEVM config evm (EVM.address (joinVatAddressOf evm)) "slip" 0
         [.fixedBytes bytes32Width
           (EVM.Word.toBytesBE
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩)),
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩)),
           .address evm.executionEnv.source, exitNegWadValue I]
         (true, evmSlip, outSlip) true)
     (hgemCode :
@@ -2112,7 +2112,7 @@ theorem gemJoinExitBodyRevertsTransferCallFailure
           .ok
             [.fixedBytes bytes32Width
               (EVM.Word.toBytesBE
-                (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩)),
+                (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩)),
               .address evm.executionEnv.source, exitNegWadValue I] :=
     evalExprs_exit_slipArgs evm I hwadOk
   have hslipStmt :
@@ -2167,7 +2167,7 @@ theorem gemJoinExitBodyRevertsTransferDecode
       typedCallViaEVM config evm (EVM.address (joinVatAddressOf evm)) "slip" 0
         [.fixedBytes bytes32Width
           (EVM.Word.toBytesBE
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩)),
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩)),
           .address evm.executionEnv.source, exitNegWadValue I]
         (true, evmSlip, outSlip) true)
     (hgemCode :
@@ -2194,7 +2194,7 @@ theorem gemJoinExitBodyRevertsTransferDecode
           .ok
             [.fixedBytes bytes32Width
               (EVM.Word.toBytesBE
-                (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩)),
+                (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩)),
               .address evm.executionEnv.source, exitNegWadValue I] :=
     evalExprs_exit_slipArgs evm I hwadOk
   have hslipStmt :
@@ -2249,7 +2249,7 @@ theorem gemJoinExitBodyRevertsTransferFalse
       typedCallViaEVM config evm (EVM.address (joinVatAddressOf evm)) "slip" 0
         [.fixedBytes bytes32Width
           (EVM.Word.toBytesBE
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩)),
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩)),
           .address evm.executionEnv.source, exitNegWadValue I]
         (true, evmSlip, outSlip) true)
     (hgemCode :
@@ -2276,7 +2276,7 @@ theorem gemJoinExitBodyRevertsTransferFalse
           .ok
             [.fixedBytes bytes32Width
               (EVM.Word.toBytesBE
-                (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩)),
+                (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩)),
               .address evm.executionEnv.source, exitNegWadValue I] :=
     evalExprs_exit_slipArgs evm I hwadOk
   have hslipStmt :
@@ -2340,21 +2340,21 @@ theorem gemJoinExitBodyCoreOverflow
     (hwadHigh : intLimit < (joinWadWord I).toNat)
     (hdispatch : dispatchMsg contract I.calldata = some exitTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (exitTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (exitTransition.params.map Param.name)
         (transitionSignature exitTransition).paramTypes I.calldata = some (exitStore I))
     (hreach : ∃ k C, RD gemJoinBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨428⟩ [sel]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
   obtain ⟨_, _, rd1544⟩ :=
     gemJoinExitX_decoded (g := Sat256.ofUInt256 g) hsz68 hsize hreach
   have hrev := gemJoinExitX_overflowRevert (g := Sat256.ofUInt256 g) hwadHigh rd1544
   have hbody :
-      ExecTransitionBody config contract evmSolm (exitStore I) exitTransition.body .reverted := by
-    simpa [evmSolm, initState] using
-      gemJoinExitBodyRevertsOverflow evmSolm I
-        (by simp only [evmSolm, initState]; exact hwv)
+      ExecTransitionBody config contract evmStele (exitStore I) exitTransition.body .reverted := by
+    simpa [evmStele, initState] using
+      gemJoinExitBodyRevertsOverflow evmStele I
+        (by simp only [evmStele, initState]; exact hwv)
         hwadHigh
   exact hrev.reEquivExecutionRevert hcode hdispatch hdecode hbody
 
@@ -2369,13 +2369,13 @@ theorem gemJoinExitBodyCoreVatNoCode
         (solcAddressSlotWord ⟨1⟩ σ I) = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some exitTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (exitTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (exitTransition.params.map Param.name)
         (transitionSignature exitTransition).paramTypes I.calldata = some (exitStore I))
     (hreach : ∃ k C, RD gemJoinBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨428⟩ [sel]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
   obtain ⟨_, _, rd1544⟩ :=
     gemJoinExitX_decoded (g := Sat256.ofUInt256 g) hsz68 hsize hreach
   obtain ⟨_, _, rd1620⟩ := gemJoinExitX_nonoverflowOk (g := Sat256.ofUInt256 g)
@@ -2388,7 +2388,7 @@ theorem gemJoinExitBodyCoreVatNoCode
     have hword : solcSlotWordAt ⟨1⟩ σ I = solcSlotWordAt ⟨1⟩ σ I :=
       rfl
     simp [solcAddressSlotWord, hword]
-  have hnoCodeSolm :
+  have hnoCodeStele :
       Reasoning.Theory.extCodeSizeWord σ
         (solcAddressSlotWord ⟨1⟩ σ I) = ⟨0⟩ := by
     have hsame :
@@ -2396,38 +2396,38 @@ theorem gemJoinExitBodyCoreVatNoCode
           (solcAddressSlotWord ⟨1⟩ σ I) =
         Reasoning.Theory.extCodeSizeWord σ
           (solcAddressSlotWord ⟨1⟩ σ I) := rfl
-    have hsolmAtEvmTarget :
+    have hsteleAtEvmTarget :
         Reasoning.Theory.extCodeSizeWord σ
           (solcAddressSlotWord ⟨1⟩ σ I) = ⟨0⟩ := by
       rw [← hsame]
       exact hvatNoCode
-    simpa [hVatSlot] using hsolmAtEvmTarget
+    simpa [hVatSlot] using hsteleAtEvmTarget
   have hvatAddr :
-      joinVatAddressOf evmSolm =
+      joinVatAddressOf evmStele =
         AccountAddress.ofUInt256 (solcAddressSlotWord ⟨1⟩ σ I) := by
     apply Fin.ext
-    simp [evmSolm, joinVatAddressOf, initState, Solm.EVM.storageLoad, State.lookupAccount,
+    simp [evmStele, joinVatAddressOf, initState, Stele.EVM.storageLoad, State.lookupAccount,
       Account.lookupStorage, solcAddressSlotWord, solcSlotWordAt, solcSlotWord,
       accountAddress_ofUInt256_eq_ofNat_toNat, AccountAddress.ofNat]
-  have hvatNoCodeSolm :
+  have hvatNoCodeStele :
       (UInt256.ofNat
-        ((evmSolm.lookupAccount (joinVatAddressOf evmSolm)).option 0
+        ((evmStele.lookupAccount (joinVatAddressOf evmStele)).option 0
           (fun acc => acc.code.size))).toNat = 0 := by
     rw [hvatAddr]
-    unfold Reasoning.Theory.extCodeSizeWord at hnoCodeSolm
+    unfold Reasoning.Theory.extCodeSizeWord at hnoCodeStele
     cases hacc :
       σ.get? (AccountAddress.ofUInt256 (solcAddressSlotWord ⟨1⟩ σ I)) with
     | none =>
-        simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmSolm, initState, State.lookupAccount, hacc] using
+        simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmStele, initState, State.lookupAccount, hacc] using
           (show (UInt256.ofNat 0).toNat = 0 from by native_decide)
     | some acc =>
-        have hword := congrArg UInt256.toNat hnoCodeSolm
-        simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmSolm, initState, State.lookupAccount, hacc] using hword
+        have hword := congrArg UInt256.toNat hnoCodeStele
+        simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmStele, initState, State.lookupAccount, hacc] using hword
   have hbody :
-      ExecTransitionBody config contract evmSolm (exitStore I) exitTransition.body .reverted := by
-    exact gemJoinExitBodyRevertsVatNoCode evmSolm I
-      (by simp only [evmSolm, initState]; exact hwv)
-      hwadOk hvatNoCodeSolm
+      ExecTransitionBody config contract evmStele (exitStore I) exitTransition.body .reverted := by
+    exact gemJoinExitBodyRevertsVatNoCode evmStele I
+      (by simp only [evmStele, initState]; exact hwv)
+      hwadOk hvatNoCodeStele
   exact hrev.reEquivExecutionRevert hcode hdispatch hdecode hbody
 
 theorem gemJoinExitBodyCoreSlipCallDepthLimit
@@ -2442,13 +2442,13 @@ theorem gemJoinExitBodyCoreSlipCallDepthLimit
     (hdepth : I.depth = 1024)
     (hdispatch : dispatchMsg contract I.calldata = some exitTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (exitTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (exitTransition.params.map Param.name)
         (transitionSignature exitTransition).paramTypes I.calldata = some (exitStore I))
     (hreach : ∃ k C, RD gemJoinBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨428⟩ [sel]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
   obtain ⟨_, _, rd1544⟩ :=
     gemJoinExitX_decoded (g := Sat256.ofUInt256 g) hsz68 hsize hreach
   obtain ⟨_, _, rd1620⟩ := gemJoinExitX_nonoverflowOk (g := Sat256.ofUInt256 g)
@@ -2463,7 +2463,7 @@ theorem gemJoinExitBodyCoreSlipCallDepthLimit
     have hword : solcSlotWordAt ⟨1⟩ σ I = solcSlotWordAt ⟨1⟩ σ I :=
       rfl
     simp [solcAddressSlotWord, hword]
-  have hcodeSolmWord :
+  have hcodeSteleWord :
       Reasoning.Theory.extCodeSizeWord σ
         (solcAddressSlotWord ⟨1⟩ σ I) ≠ ⟨0⟩ := by
     intro hzero
@@ -2479,51 +2479,51 @@ theorem gemJoinExitBodyCoreSlipCallDepthLimit
       simpa [hVatSlot] using hzero
     rw [hsame]
     exact hzeroAtEvmTarget
-  have hvatAddrSolm :
-      joinVatAddressOf evmSolm =
+  have hvatAddrStele :
+      joinVatAddressOf evmStele =
         AccountAddress.ofUInt256 (solcAddressSlotWord ⟨1⟩ σ I) := by
     apply Fin.ext
-    simp [evmSolm, joinVatAddressOf, initState, Solm.EVM.storageLoad, State.lookupAccount,
+    simp [evmStele, joinVatAddressOf, initState, Stele.EVM.storageLoad, State.lookupAccount,
       Account.lookupStorage, solcAddressSlotWord, solcSlotWordAt, solcSlotWord,
       accountAddress_ofUInt256_eq_ofNat_toNat, AccountAddress.ofNat]
-  have hvatCodeSolm :
+  have hvatCodeStele :
       0 < (UInt256.ofNat
-        ((evmSolm.lookupAccount (joinVatAddressOf evmSolm)).option 0
+        ((evmStele.lookupAccount (joinVatAddressOf evmStele)).option 0
           (fun acc => acc.code.size))).toNat := by
-    rw [hvatAddrSolm]
-    simpa [evmSolm, initState, State.lookupAccount] using
+    rw [hvatAddrStele]
+    simpa [evmStele, initState, State.lookupAccount] using
       extCodeSizeWord_ne_zero_lookup_code_pos
         (σ := σ) (target := solcAddressSlotWord ⟨1⟩ σ I)
         (addr := AccountAddress.ofUInt256 (solcAddressSlotWord ⟨1⟩ σ I))
-        rfl hcodeSolmWord
+        rfl hcodeSteleWord
   let evmSlip :=
-    { evmSolm with
-      substate := (evmSolm.addAccessedAccount (EVM.address (joinVatAddressOf evmSolm))).substate }
+    { evmStele with
+      substate := (evmStele.addAccessedAccount (EVM.address (joinVatAddressOf evmStele))).substate }
   have hcallSlipDepth :
-      typedCallViaEVM config evmSolm (EVM.address (joinVatAddressOf evmSolm)) "slip" 0
+      typedCallViaEVM config evmStele (EVM.address (joinVatAddressOf evmStele)) "slip" 0
         [.fixedBytes bytes32Width
           (EVM.Word.toBytesBE
-            (Solm.EVM.storageLoad evmSolm evmSolm.executionEnv.codeOwner ⟨2⟩)),
-          .address evmSolm.executionEnv.source, exitNegWadValue I]
+            (Stele.EVM.storageLoad evmStele evmStele.executionEnv.codeOwner ⟨2⟩)),
+          .address evmStele.executionEnv.source, exitNegWadValue I]
         (false, evmSlip, ByteArray.empty) true := by
-    simpa [evmSlip, evmSolm, initState] using
-      (callNotMade_depthLimit (cfg := config) (evm := evmSolm)
-        (tgt := EVM.address (joinVatAddressOf evmSolm)) (name := "slip")
+    simpa [evmSlip, evmStele, initState] using
+      (callNotMade_depthLimit (cfg := config) (evm := evmStele)
+        (tgt := EVM.address (joinVatAddressOf evmStele)) (name := "slip")
         (args :=
           [.fixedBytes bytes32Width
             (EVM.Word.toBytesBE
-              (Solm.EVM.storageLoad evmSolm evmSolm.executionEnv.codeOwner ⟨2⟩)),
-            .address evmSolm.executionEnv.source, exitNegWadValue I])
+              (Stele.EVM.storageLoad evmStele evmStele.executionEnv.codeOwner ⟨2⟩)),
+            .address evmStele.executionEnv.source, exitNegWadValue I])
         (callPerm := true)
         (by
-          simpa [evmSolm, initState, joinSlipInSize] using
+          simpa [evmStele, initState, joinSlipInSize] using
             exitSlipEncode_eq I σ solcFreePtrMem_size hwadOk)
-        (by simpa [evmSolm, initState] using hdepth))
+        (by simpa [evmStele, initState] using hdepth))
   have hbody :
-      ExecTransitionBody config contract evmSolm (exitStore I) exitTransition.body .reverted := by
-    exact gemJoinExitBodyRevertsSlipCallFailure evmSolm evmSlip I
-      (by simp only [evmSolm, initState]; exact hwv)
-      hwadOk hvatCodeSolm hcallSlipDepth
+      ExecTransitionBody config contract evmStele (exitStore I) exitTransition.body .reverted := by
+    exact gemJoinExitBodyRevertsSlipCallFailure evmStele evmSlip I
+      (by simp only [evmStele, initState]; exact hwv)
+      hwadOk hvatCodeStele hcallSlipDepth
   exact hrev.reEquivExecutionRevert hcode hdispatch hdecode hbody
 
 theorem gemJoinExitBodyCoreSlipCallFailure
@@ -2539,7 +2539,7 @@ theorem gemJoinExitBodyCoreSlipCallFailure
         (solcAddressSlotWord ⟨1⟩ σ I) ≠ ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some exitTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (exitTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (exitTransition.params.map Param.name)
         (transitionSignature exitTransition).paramTypes I.calldata = some (exitStore I))
     (rd1717 : RD gemJoinBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1717⟩
@@ -2560,7 +2560,7 @@ theorem gemJoinExitBodyCoreSlipCallFailure
     (houtSlipSize : outSlip.size < UInt256.size) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   let evmEvm := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
   have hrev := RD.gemJoinExitSlipCallFailure rd1717 houtSlipSize
   have hVatSlot :
       solcAddressSlotWord ⟨1⟩ σ I =
@@ -2568,8 +2568,8 @@ theorem gemJoinExitBodyCoreSlipCallFailure
     have hword : solcSlotWordAt ⟨1⟩ σ I = solcSlotWordAt ⟨1⟩ σ I :=
       rfl
     simp [solcAddressSlotWord, hword]
-  have hVatAddrOrig : joinVatAddressOf evmEvm = joinVatAddressOf evmSolm := rfl
-  have hcodeSolmWord :
+  have hVatAddrOrig : joinVatAddressOf evmEvm = joinVatAddressOf evmStele := rfl
+  have hcodeSteleWord :
       Reasoning.Theory.extCodeSizeWord σ
         (solcAddressSlotWord ⟨1⟩ σ I) ≠ ⟨0⟩ := by
     intro hzero
@@ -2585,23 +2585,23 @@ theorem gemJoinExitBodyCoreSlipCallFailure
       simpa [hVatSlot] using hzero
     rw [hsame]
     exact hzeroAtEvmTarget
-  have hvatAddrSolm :
-      joinVatAddressOf evmSolm =
+  have hvatAddrStele :
+      joinVatAddressOf evmStele =
         AccountAddress.ofUInt256 (solcAddressSlotWord ⟨1⟩ σ I) := by
     apply Fin.ext
-    simp [evmSolm, joinVatAddressOf, initState, Solm.EVM.storageLoad, State.lookupAccount,
+    simp [evmStele, joinVatAddressOf, initState, Stele.EVM.storageLoad, State.lookupAccount,
       Account.lookupStorage, solcAddressSlotWord, solcSlotWordAt, solcSlotWord,
       accountAddress_ofUInt256_eq_ofNat_toNat, AccountAddress.ofNat]
-  have hvatCodeSolm :
+  have hvatCodeStele :
       0 < (UInt256.ofNat
-        ((evmSolm.lookupAccount (joinVatAddressOf evmSolm)).option 0
+        ((evmStele.lookupAccount (joinVatAddressOf evmStele)).option 0
           (fun acc => acc.code.size))).toNat := by
-    rw [hvatAddrSolm]
-    simpa [evmSolm, initState, State.lookupAccount] using
+    rw [hvatAddrStele]
+    simpa [evmStele, initState, State.lookupAccount] using
       extCodeSizeWord_ne_zero_lookup_code_pos
         (σ := σ) (target := solcAddressSlotWord ⟨1⟩ σ I)
         (addr := AccountAddress.ofUInt256 (solcAddressSlotWord ⟨1⟩ σ I))
-        rfl hcodeSolmWord
+        rfl hcodeSteleWord
   let evmEvmSlip : State := { evmEvm with
     accountMap := σ_slip,
     substate := A_slip,
@@ -2612,45 +2612,45 @@ theorem gemJoinExitBodyCoreSlipCallFailure
           .address I.source, exitNegWadValue I]
         (false, evmEvmSlip, outSlip) true := by
     simpa [evmEvm, evmEvmSlip] using hcallSlipEvmRaw
-  let σ_slip_solm := σ_slip
-  let A_slip_solm := A_slip
-  have hcallSlipSolmRaw := by
-    simpa [evmSolm, evmEvm] using hcallSlipEvm
+  let σ_slip_stele := σ_slip
+  let A_slip_stele := A_slip
+  have hcallSlipSteleRaw := by
+    simpa [evmStele, evmEvm] using hcallSlipEvm
   have hIlkSlot :
       solcSlotWordAt ⟨2⟩ σ I = solcSlotWordAt ⟨2⟩ σ I :=
     rfl
-  let evmSolmSlip := { evmSolm with
-    accountMap := σ_slip_solm,
-    substate := A_slip_solm,
+  let evmSteleSlip := { evmStele with
+    accountMap := σ_slip_stele,
+    substate := A_slip_stele,
     }
-  have hcallSlipSolmEvmIlk :
-      typedCallViaEVM config evmSolm (EVM.address (joinVatAddressOf evmSolm)) "slip" 0
+  have hcallSlipSteleEvmIlk :
+      typedCallViaEVM config evmStele (EVM.address (joinVatAddressOf evmStele)) "slip" 0
         [.fixedBytes bytes32Width
             (EVM.Word.toBytesBE (solcSlotWordAt ⟨2⟩ σ I)),
           .address I.source, exitNegWadValue I]
-        (false, evmSolmSlip, outSlip) true := by
-    simpa [evmSolm, evmSolmSlip, evmEvmSlip, initState, hVatAddrOrig]
-      using hcallSlipSolmRaw
-  have hcallSlipSolm :
-      typedCallViaEVM config evmSolm (EVM.address (joinVatAddressOf evmSolm)) "slip" 0
+        (false, evmSteleSlip, outSlip) true := by
+    simpa [evmStele, evmSteleSlip, evmEvmSlip, initState, hVatAddrOrig]
+      using hcallSlipSteleRaw
+  have hcallSlipStele :
+      typedCallViaEVM config evmStele (EVM.address (joinVatAddressOf evmStele)) "slip" 0
         [.fixedBytes bytes32Width
             (EVM.Word.toBytesBE
-              (Solm.EVM.storageLoad evmSolm evmSolm.executionEnv.codeOwner ⟨2⟩)),
-          .address evmSolm.executionEnv.source, exitNegWadValue I]
-        (false, evmSolmSlip, outSlip) true := by
+              (Stele.EVM.storageLoad evmStele evmStele.executionEnv.codeOwner ⟨2⟩)),
+          .address evmStele.executionEnv.source, exitNegWadValue I]
+        (false, evmSteleSlip, outSlip) true := by
     have hIlkArg :
-        Solm.EVM.storageLoad evmSolm evmSolm.executionEnv.codeOwner ⟨2⟩ =
+        Stele.EVM.storageLoad evmStele evmStele.executionEnv.codeOwner ⟨2⟩ =
           solcSlotWordAt ⟨2⟩ σ I := by
-      simpa [evmSolm, initState, Solm.EVM.storageLoad, State.lookupAccount,
+      simpa [evmStele, initState, Stele.EVM.storageLoad, State.lookupAccount,
         Account.lookupStorage, solcSlotWordAt, solcSlotWord] using hIlkSlot.symm
-    have hcallSlipSolmStorage := hcallSlipSolmEvmIlk
-    rw [← hIlkArg] at hcallSlipSolmStorage
-    simpa [evmSolm, initState] using hcallSlipSolmStorage
+    have hcallSlipSteleStorage := hcallSlipSteleEvmIlk
+    rw [← hIlkArg] at hcallSlipSteleStorage
+    simpa [evmStele, initState] using hcallSlipSteleStorage
   have hbody :
-      ExecTransitionBody config contract evmSolm (exitStore I) exitTransition.body .reverted := by
-    exact gemJoinExitBodyRevertsSlipCallFailure evmSolm evmSolmSlip I
-      (by simp only [evmSolm, initState]; exact hwv)
-      hwadOk hvatCodeSolm hcallSlipSolm
+      ExecTransitionBody config contract evmStele (exitStore I) exitTransition.body .reverted := by
+    exact gemJoinExitBodyRevertsSlipCallFailure evmStele evmSteleSlip I
+      (by simp only [evmStele, initState]; exact hwv)
+      hwadOk hvatCodeStele hcallSlipStele
   exact hrev.reEquivExecutionRevert hcode hdispatch hdecode hbody
 
 theorem gemJoinExitBodyCoreGemNoCode
@@ -2669,7 +2669,7 @@ theorem gemJoinExitBodyCoreGemNoCode
         (solcAddressSlotWord ⟨3⟩ σ_slip I) = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some exitTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (exitTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (exitTransition.params.map Param.name)
         (transitionSignature exitTransition).paramTypes I.calldata = some (exitStore I))
     (rd1736 : RD gemJoinBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1736⟩
@@ -2688,7 +2688,7 @@ theorem gemJoinExitBodyCoreGemNoCode
           outSlip) true) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   let evmEvm := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
   let evmEvmSlip : State := { evmEvm with
     accountMap := σ_slip,
     substate := A_slip,
@@ -2700,8 +2700,8 @@ theorem gemJoinExitBodyCoreGemNoCode
     have hword : solcSlotWordAt ⟨1⟩ σ I = solcSlotWordAt ⟨1⟩ σ I :=
       rfl
     simp [solcAddressSlotWord, hword]
-  have hVatAddrOrig : joinVatAddressOf evmEvm = joinVatAddressOf evmSolm := rfl
-  have hcodeSolmWord :
+  have hVatAddrOrig : joinVatAddressOf evmEvm = joinVatAddressOf evmStele := rfl
+  have hcodeSteleWord :
       Reasoning.Theory.extCodeSizeWord σ
         (solcAddressSlotWord ⟨1⟩ σ I) ≠ ⟨0⟩ := by
     intro hzero
@@ -2717,109 +2717,109 @@ theorem gemJoinExitBodyCoreGemNoCode
       simpa [hVatSlot] using hzero
     rw [hsame]
     exact hzeroAtEvmTarget
-  have hvatAddrSolm :
-      joinVatAddressOf evmSolm =
+  have hvatAddrStele :
+      joinVatAddressOf evmStele =
         AccountAddress.ofUInt256 (solcAddressSlotWord ⟨1⟩ σ I) := by
     apply Fin.ext
-    simp [evmSolm, joinVatAddressOf, initState, Solm.EVM.storageLoad, State.lookupAccount,
+    simp [evmStele, joinVatAddressOf, initState, Stele.EVM.storageLoad, State.lookupAccount,
       Account.lookupStorage, solcAddressSlotWord, solcSlotWordAt, solcSlotWord,
       accountAddress_ofUInt256_eq_ofNat_toNat, AccountAddress.ofNat]
-  have hvatCodeSolm :
+  have hvatCodeStele :
       0 < (UInt256.ofNat
-        ((evmSolm.lookupAccount (joinVatAddressOf evmSolm)).option 0
+        ((evmStele.lookupAccount (joinVatAddressOf evmStele)).option 0
           (fun acc => acc.code.size))).toNat := by
-    rw [hvatAddrSolm]
-    simpa [evmSolm, initState, State.lookupAccount] using
+    rw [hvatAddrStele]
+    simpa [evmStele, initState, State.lookupAccount] using
       extCodeSizeWord_ne_zero_lookup_code_pos
         (σ := σ) (target := solcAddressSlotWord ⟨1⟩ σ I)
         (addr := AccountAddress.ofUInt256 (solcAddressSlotWord ⟨1⟩ σ I))
-        rfl hcodeSolmWord
+        rfl hcodeSteleWord
   have hcallSlipEvm :
       typedCallViaEVM config evmEvm (EVM.address (joinVatAddressOf evmEvm)) "slip" 0
         [.fixedBytes bytes32Width (EVM.Word.toBytesBE (solcSlotWordAt ⟨2⟩ σ I)),
           .address I.source, exitNegWadValue I]
         (true, evmEvmSlip, outSlip) true := by
     simpa [evmEvm, evmEvmSlip] using hcallSlipEvmRaw
-  let σ_slip_solm := σ_slip
-  let A_slip_solm := A_slip
-  have hcallSlipSolmRaw := by
-    simpa [evmSolm, evmEvm] using hcallSlipEvm
-  let evmSolmSlip : State := { evmSolm with
-    accountMap := σ_slip_solm,
-    substate := A_slip_solm,
+  let σ_slip_stele := σ_slip
+  let A_slip_stele := A_slip
+  have hcallSlipSteleRaw := by
+    simpa [evmStele, evmEvm] using hcallSlipEvm
+  let evmSteleSlip : State := { evmStele with
+    accountMap := σ_slip_stele,
+    substate := A_slip_stele,
     }
   have hIlkSlot :
       solcSlotWordAt ⟨2⟩ σ I = solcSlotWordAt ⟨2⟩ σ I :=
     rfl
-  have hcallSlipSolmEvmIlk :
-      typedCallViaEVM config evmSolm (EVM.address (joinVatAddressOf evmSolm)) "slip" 0
+  have hcallSlipSteleEvmIlk :
+      typedCallViaEVM config evmStele (EVM.address (joinVatAddressOf evmStele)) "slip" 0
         [.fixedBytes bytes32Width
             (EVM.Word.toBytesBE (solcSlotWordAt ⟨2⟩ σ I)),
           .address I.source, exitNegWadValue I]
-        (true, evmSolmSlip, outSlip) true := by
-    simpa [evmSolm, evmSolmSlip, evmEvmSlip, initState, hVatAddrOrig]
-      using hcallSlipSolmRaw
-  have hcallSlipSolm :
-      typedCallViaEVM config evmSolm (EVM.address (joinVatAddressOf evmSolm)) "slip" 0
+        (true, evmSteleSlip, outSlip) true := by
+    simpa [evmStele, evmSteleSlip, evmEvmSlip, initState, hVatAddrOrig]
+      using hcallSlipSteleRaw
+  have hcallSlipStele :
+      typedCallViaEVM config evmStele (EVM.address (joinVatAddressOf evmStele)) "slip" 0
         [.fixedBytes bytes32Width
             (EVM.Word.toBytesBE
-              (Solm.EVM.storageLoad evmSolm evmSolm.executionEnv.codeOwner ⟨2⟩)),
-          .address evmSolm.executionEnv.source, exitNegWadValue I]
-        (true, evmSolmSlip, outSlip) true := by
+              (Stele.EVM.storageLoad evmStele evmStele.executionEnv.codeOwner ⟨2⟩)),
+          .address evmStele.executionEnv.source, exitNegWadValue I]
+        (true, evmSteleSlip, outSlip) true := by
     have hIlkArg :
-        Solm.EVM.storageLoad evmSolm evmSolm.executionEnv.codeOwner ⟨2⟩ =
+        Stele.EVM.storageLoad evmStele evmStele.executionEnv.codeOwner ⟨2⟩ =
           solcSlotWordAt ⟨2⟩ σ I := by
-      simpa [evmSolm, initState, Solm.EVM.storageLoad, State.lookupAccount,
+      simpa [evmStele, initState, Stele.EVM.storageLoad, State.lookupAccount,
         Account.lookupStorage, solcSlotWordAt, solcSlotWord] using hIlkSlot.symm
-    have hcallSlipSolmStorage := hcallSlipSolmEvmIlk
-    rw [← hIlkArg] at hcallSlipSolmStorage
-    simpa [evmSolm, initState] using hcallSlipSolmStorage
+    have hcallSlipSteleStorage := hcallSlipSteleEvmIlk
+    rw [← hIlkArg] at hcallSlipSteleStorage
+    simpa [evmStele, initState] using hcallSlipSteleStorage
   have hGemSlot :
       solcAddressSlotWord ⟨3⟩ σ_slip I =
-        solcAddressSlotWord ⟨3⟩ σ_slip_solm I := rfl
-  have hgemNoCodeSolmWord :
-      Reasoning.Theory.extCodeSizeWord σ_slip_solm
-        (solcAddressSlotWord ⟨3⟩ σ_slip_solm I) = ⟨0⟩ := by
+        solcAddressSlotWord ⟨3⟩ σ_slip_stele I := rfl
+  have hgemNoCodeSteleWord :
+      Reasoning.Theory.extCodeSizeWord σ_slip_stele
+        (solcAddressSlotWord ⟨3⟩ σ_slip_stele I) = ⟨0⟩ := by
     have hsame :
         Reasoning.Theory.extCodeSizeWord σ_slip
           (solcAddressSlotWord ⟨3⟩ σ_slip I) =
-        Reasoning.Theory.extCodeSizeWord σ_slip_solm
+        Reasoning.Theory.extCodeSizeWord σ_slip_stele
           (solcAddressSlotWord ⟨3⟩ σ_slip I) := by
       rfl
     have hzeroAtEvmTarget :
-        Reasoning.Theory.extCodeSizeWord σ_slip_solm
+        Reasoning.Theory.extCodeSizeWord σ_slip_stele
           (solcAddressSlotWord ⟨3⟩ σ_slip I) = ⟨0⟩ := by
       rw [← hsame]
       exact hgemNoCode
     simpa [hGemSlot] using hzeroAtEvmTarget
-  have hgemAddrSolm :
-      joinGemAddressOf evmSolmSlip =
-        AccountAddress.ofUInt256 (solcAddressSlotWord ⟨3⟩ σ_slip_solm I) := by
+  have hgemAddrStele :
+      joinGemAddressOf evmSteleSlip =
+        AccountAddress.ofUInt256 (solcAddressSlotWord ⟨3⟩ σ_slip_stele I) := by
     apply Fin.ext
-    simp [evmSolmSlip, evmSolm, joinGemAddressOf, initState, Solm.EVM.storageLoad,
+    simp [evmSteleSlip, evmStele, joinGemAddressOf, initState, Stele.EVM.storageLoad,
       State.lookupAccount, Account.lookupStorage, solcAddressSlotWord,
       solcSlotWordAt, solcSlotWord, accountAddress_ofUInt256_eq_ofNat_toNat,
       AccountAddress.ofNat]
-  have hgemNoCodeSolm :
+  have hgemNoCodeStele :
       (UInt256.ofNat
-        ((evmSolmSlip.lookupAccount (joinGemAddressOf evmSolmSlip)).option 0
+        ((evmSteleSlip.lookupAccount (joinGemAddressOf evmSteleSlip)).option 0
           (fun acc => acc.code.size))).toNat = 0 := by
-    rw [hgemAddrSolm]
-    unfold Reasoning.Theory.extCodeSizeWord at hgemNoCodeSolmWord
+    rw [hgemAddrStele]
+    unfold Reasoning.Theory.extCodeSizeWord at hgemNoCodeSteleWord
     cases hacc :
-      σ_slip_solm.get? (AccountAddress.ofUInt256
-        (solcAddressSlotWord ⟨3⟩ σ_slip_solm I)) with
+      σ_slip_stele.get? (AccountAddress.ofUInt256
+        (solcAddressSlotWord ⟨3⟩ σ_slip_stele I)) with
     | none =>
-        simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmSolmSlip, evmSolm, initState, State.lookupAccount, hacc] using
+        simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmSteleSlip, evmStele, initState, State.lookupAccount, hacc] using
           (show (UInt256.ofNat 0).toNat = 0 from by native_decide)
     | some acc =>
-        have hword := congrArg UInt256.toNat hgemNoCodeSolmWord
-        simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmSolmSlip, evmSolm, initState, State.lookupAccount, hacc] using hword
+        have hword := congrArg UInt256.toNat hgemNoCodeSteleWord
+        simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmSteleSlip, evmStele, initState, State.lookupAccount, hacc] using hword
   have hbody :
-      ExecTransitionBody config contract evmSolm (exitStore I) exitTransition.body .reverted := by
-    exact gemJoinExitBodyRevertsGemNoCode evmSolm evmSolmSlip I
-      (by simp only [evmSolm, initState]; exact hwv)
-      hwadOk hvatCodeSolm hcallSlipSolm hgemNoCodeSolm
+      ExecTransitionBody config contract evmStele (exitStore I) exitTransition.body .reverted := by
+    exact gemJoinExitBodyRevertsGemNoCode evmStele evmSteleSlip I
+      (by simp only [evmStele, initState]; exact hwv)
+      hwadOk hvatCodeStele hcallSlipStele hgemNoCodeStele
   exact hrev.reEquivExecutionRevert hcode hdispatch hdecode hbody
 
 theorem gemJoinExitBodyCoreTransferCallFailure
@@ -2840,7 +2840,7 @@ theorem gemJoinExitBodyCoreTransferCallFailure
     (hdepth : I.depth.val < 1024)
     (hdispatch : dispatchMsg contract I.calldata = some exitTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (exitTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (exitTransition.params.map Param.name)
         (transitionSignature exitTransition).paramTypes I.calldata = some (exitStore I))
     (rd1827 : RD gemJoinBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1827⟩
@@ -2876,7 +2876,7 @@ theorem gemJoinExitBodyCoreTransferCallFailure
     (houtTransferSize : outTransfer.size < UInt256.size) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   let evmEvm := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
   let evmEvmSlip : State := { evmEvm with
     accountMap := σ_slip,
     substate := A_slip,
@@ -2892,8 +2892,8 @@ theorem gemJoinExitBodyCoreTransferCallFailure
     have hword : solcSlotWordAt ⟨1⟩ σ I = solcSlotWordAt ⟨1⟩ σ I :=
       rfl
     simp [solcAddressSlotWord, hword]
-  have hVatAddrOrig : joinVatAddressOf evmEvm = joinVatAddressOf evmSolm := rfl
-  have hcodeSolmWord :
+  have hVatAddrOrig : joinVatAddressOf evmEvm = joinVatAddressOf evmStele := rfl
+  have hcodeSteleWord :
       Reasoning.Theory.extCodeSizeWord σ
         (solcAddressSlotWord ⟨1⟩ σ I) ≠ ⟨0⟩ := by
     intro hzero
@@ -2909,138 +2909,138 @@ theorem gemJoinExitBodyCoreTransferCallFailure
       simpa [hVatSlot] using hzero
     rw [hsame]
     exact hzeroAtEvmTarget
-  have hvatAddrSolm :
-      joinVatAddressOf evmSolm =
+  have hvatAddrStele :
+      joinVatAddressOf evmStele =
         AccountAddress.ofUInt256 (solcAddressSlotWord ⟨1⟩ σ I) := by
     apply Fin.ext
-    simp [evmSolm, joinVatAddressOf, initState, Solm.EVM.storageLoad, State.lookupAccount,
+    simp [evmStele, joinVatAddressOf, initState, Stele.EVM.storageLoad, State.lookupAccount,
       Account.lookupStorage, solcAddressSlotWord, solcSlotWordAt, solcSlotWord,
       accountAddress_ofUInt256_eq_ofNat_toNat, AccountAddress.ofNat]
-  have hvatCodeSolm :
+  have hvatCodeStele :
       0 < (UInt256.ofNat
-        ((evmSolm.lookupAccount (joinVatAddressOf evmSolm)).option 0
+        ((evmStele.lookupAccount (joinVatAddressOf evmStele)).option 0
           (fun acc => acc.code.size))).toNat := by
-    rw [hvatAddrSolm]
-    simpa [evmSolm, initState, State.lookupAccount] using
+    rw [hvatAddrStele]
+    simpa [evmStele, initState, State.lookupAccount] using
       extCodeSizeWord_ne_zero_lookup_code_pos
         (σ := σ) (target := solcAddressSlotWord ⟨1⟩ σ I)
         (addr := AccountAddress.ofUInt256 (solcAddressSlotWord ⟨1⟩ σ I))
-        rfl hcodeSolmWord
+        rfl hcodeSteleWord
   have hcallSlipEvm :
       typedCallViaEVM config evmEvm (EVM.address (joinVatAddressOf evmEvm)) "slip" 0
         [.fixedBytes bytes32Width (EVM.Word.toBytesBE (solcSlotWordAt ⟨2⟩ σ I)),
           .address I.source, exitNegWadValue I]
         (true, evmEvmSlip, outSlip) true := by
     simpa [evmEvm, evmEvmSlip] using hcallSlipEvmRaw
-  let σ_slip_solm := σ_slip
-  let A_slip_solm := A_slip
-  have hcallSlipSolmRaw := by
-    simpa [evmSolm, evmEvm] using hcallSlipEvm
-  let evmSolmSlip : State := { evmSolm with
-    accountMap := σ_slip_solm,
-    substate := A_slip_solm,
+  let σ_slip_stele := σ_slip
+  let A_slip_stele := A_slip
+  have hcallSlipSteleRaw := by
+    simpa [evmStele, evmEvm] using hcallSlipEvm
+  let evmSteleSlip : State := { evmStele with
+    accountMap := σ_slip_stele,
+    substate := A_slip_stele,
     }
   have hIlkSlot :
       solcSlotWordAt ⟨2⟩ σ I = solcSlotWordAt ⟨2⟩ σ I :=
     rfl
-  have hcallSlipSolmEvmIlk :
-      typedCallViaEVM config evmSolm (EVM.address (joinVatAddressOf evmSolm)) "slip" 0
+  have hcallSlipSteleEvmIlk :
+      typedCallViaEVM config evmStele (EVM.address (joinVatAddressOf evmStele)) "slip" 0
         [.fixedBytes bytes32Width
             (EVM.Word.toBytesBE (solcSlotWordAt ⟨2⟩ σ I)),
           .address I.source, exitNegWadValue I]
-        (true, evmSolmSlip, outSlip) true := by
-    simpa [evmSolm, evmSolmSlip, evmEvmSlip, initState, hVatAddrOrig]
-      using hcallSlipSolmRaw
-  have hcallSlipSolm :
-      typedCallViaEVM config evmSolm (EVM.address (joinVatAddressOf evmSolm)) "slip" 0
+        (true, evmSteleSlip, outSlip) true := by
+    simpa [evmStele, evmSteleSlip, evmEvmSlip, initState, hVatAddrOrig]
+      using hcallSlipSteleRaw
+  have hcallSlipStele :
+      typedCallViaEVM config evmStele (EVM.address (joinVatAddressOf evmStele)) "slip" 0
         [.fixedBytes bytes32Width
             (EVM.Word.toBytesBE
-              (Solm.EVM.storageLoad evmSolm evmSolm.executionEnv.codeOwner ⟨2⟩)),
-          .address evmSolm.executionEnv.source, exitNegWadValue I]
-        (true, evmSolmSlip, outSlip) true := by
+              (Stele.EVM.storageLoad evmStele evmStele.executionEnv.codeOwner ⟨2⟩)),
+          .address evmStele.executionEnv.source, exitNegWadValue I]
+        (true, evmSteleSlip, outSlip) true := by
     have hIlkArg :
-        Solm.EVM.storageLoad evmSolm evmSolm.executionEnv.codeOwner ⟨2⟩ =
+        Stele.EVM.storageLoad evmStele evmStele.executionEnv.codeOwner ⟨2⟩ =
           solcSlotWordAt ⟨2⟩ σ I := by
-      simpa [evmSolm, initState, Solm.EVM.storageLoad, State.lookupAccount,
+      simpa [evmStele, initState, Stele.EVM.storageLoad, State.lookupAccount,
         Account.lookupStorage, solcSlotWordAt, solcSlotWord] using hIlkSlot.symm
-    have hcallSlipSolmStorage := hcallSlipSolmEvmIlk
-    rw [← hIlkArg] at hcallSlipSolmStorage
-    simpa [evmSolm, initState] using hcallSlipSolmStorage
+    have hcallSlipSteleStorage := hcallSlipSteleEvmIlk
+    rw [← hIlkArg] at hcallSlipSteleStorage
+    simpa [evmStele, initState] using hcallSlipSteleStorage
   have hGemSlot :
       solcAddressSlotWord ⟨3⟩ σ_slip I =
-        solcAddressSlotWord ⟨3⟩ σ_slip_solm I := rfl
-  have hgemCodeSolmWord :
-      Reasoning.Theory.extCodeSizeWord σ_slip_solm
-        (solcAddressSlotWord ⟨3⟩ σ_slip_solm I) ≠ ⟨0⟩ := by
+        solcAddressSlotWord ⟨3⟩ σ_slip_stele I := rfl
+  have hgemCodeSteleWord :
+      Reasoning.Theory.extCodeSizeWord σ_slip_stele
+        (solcAddressSlotWord ⟨3⟩ σ_slip_stele I) ≠ ⟨0⟩ := by
     intro hzero
     apply hgemCode
     have hsame :
         Reasoning.Theory.extCodeSizeWord σ_slip
           (solcAddressSlotWord ⟨3⟩ σ_slip I) =
-        Reasoning.Theory.extCodeSizeWord σ_slip_solm
+        Reasoning.Theory.extCodeSizeWord σ_slip_stele
           (solcAddressSlotWord ⟨3⟩ σ_slip I) := by
       rfl
     have hzeroAtEvmTarget :
-        Reasoning.Theory.extCodeSizeWord σ_slip_solm
+        Reasoning.Theory.extCodeSizeWord σ_slip_stele
           (solcAddressSlotWord ⟨3⟩ σ_slip I) = ⟨0⟩ := by
       simpa [hGemSlot] using hzero
     rw [hsame]
     exact hzeroAtEvmTarget
-  have hgemAddrSolm :
-      joinGemAddressOf evmSolmSlip =
-        AccountAddress.ofUInt256 (solcAddressSlotWord ⟨3⟩ σ_slip_solm I) := by
+  have hgemAddrStele :
+      joinGemAddressOf evmSteleSlip =
+        AccountAddress.ofUInt256 (solcAddressSlotWord ⟨3⟩ σ_slip_stele I) := by
     apply Fin.ext
-    simp [evmSolmSlip, evmSolm, joinGemAddressOf, initState, Solm.EVM.storageLoad,
+    simp [evmSteleSlip, evmStele, joinGemAddressOf, initState, Stele.EVM.storageLoad,
       State.lookupAccount, Account.lookupStorage, solcAddressSlotWord,
       solcSlotWordAt, solcSlotWord, accountAddress_ofUInt256_eq_ofNat_toNat,
       AccountAddress.ofNat]
-  have hgemCodeSolm :
+  have hgemCodeStele :
       0 < (UInt256.ofNat
-        ((evmSolmSlip.lookupAccount (joinGemAddressOf evmSolmSlip)).option 0
+        ((evmSteleSlip.lookupAccount (joinGemAddressOf evmSteleSlip)).option 0
           (fun acc => acc.code.size))).toNat := by
-    rw [hgemAddrSolm]
-    simpa [evmSolmSlip, evmSolm, initState, State.lookupAccount] using
+    rw [hgemAddrStele]
+    simpa [evmSteleSlip, evmStele, initState, State.lookupAccount] using
       extCodeSizeWord_ne_zero_lookup_code_pos
-        (σ := σ_slip_solm) (target := solcAddressSlotWord ⟨3⟩ σ_slip_solm I)
-        (addr := AccountAddress.ofUInt256 (solcAddressSlotWord ⟨3⟩ σ_slip_solm I))
-        rfl hgemCodeSolmWord
-  have hGemAddrOrig : joinGemAddressOf evmEvmSlip = joinGemAddressOf evmSolmSlip := rfl
+        (σ := σ_slip_stele) (target := solcAddressSlotWord ⟨3⟩ σ_slip_stele I)
+        (addr := AccountAddress.ofUInt256 (solcAddressSlotWord ⟨3⟩ σ_slip_stele I))
+        rfl hgemCodeSteleWord
+  have hGemAddrOrig : joinGemAddressOf evmEvmSlip = joinGemAddressOf evmSteleSlip := rfl
   have hcallTransferEvm :
       typedCallViaEVM config evmEvmSlip (EVM.address (joinGemAddressOf evmEvmSlip))
         "transfer" 0 [joinUsrValue I, joinWadValue I]
         (false, evmEvmTransfer, outTransfer) true := by
     simpa [evmEvm, evmEvmSlip, evmEvmTransfer] using hcallTransferEvmRaw
-  let evmSolmSlipBase : State := { evmSolmSlip with substate := evmEvmSlip.substate }
-  let σ_transfer_solm := σ_transfer
-  let A_transfer_solm0 := A_transfer
-  have hcallTransferSolmBase := by
-    simpa [evmSolmSlipBase, evmSolmSlip, evmEvmSlip, evmEvm, evmSolm, initState]
+  let evmSteleSlipBase : State := { evmSteleSlip with substate := evmEvmSlip.substate }
+  let σ_transfer_stele := σ_transfer
+  let A_transfer_stele0 := A_transfer
+  have hcallTransferSteleBase := by
+    simpa [evmSteleSlipBase, evmSteleSlip, evmEvmSlip, evmEvm, evmStele, initState]
       using hcallTransferEvm
-  have hMapTransferEq : σ_transfer = σ_transfer_solm := rfl
-  have hdepthNeBase : evmSolmSlipBase.executionEnv.depth ≠ 1024 := by
+  have hMapTransferEq : σ_transfer = σ_transfer_stele := rfl
+  have hdepthNeBase : evmSteleSlipBase.executionEnv.depth ≠ 1024 := by
     intro hdepthEq
     have hI : I.depth = 1024 := by
-      simpa [evmSolmSlipBase, evmSolmSlip, evmSolm, initState] using hdepthEq
+      simpa [evmSteleSlipBase, evmSteleSlip, evmStele, initState] using hdepthEq
     rw [hI] at hdepth
     norm_num at hdepth
-  obtain ⟨A_transfer_solm, hcallTransferSolmRaw⟩ :=
-    typedCallViaEVM_zero_setSubstate hcallTransferSolmBase hdepthNeBase
-      evmSolmSlip.substate
-  let evmSolmTransfer : State := { evmSolmSlip with
-    accountMap := σ_transfer_solm,
-    substate := A_transfer_solm,
+  obtain ⟨A_transfer_stele, hcallTransferSteleRaw⟩ :=
+    typedCallViaEVM_zero_setSubstate hcallTransferSteleBase hdepthNeBase
+      evmSteleSlip.substate
+  let evmSteleTransfer : State := { evmSteleSlip with
+    accountMap := σ_transfer_stele,
+    substate := A_transfer_stele,
     }
-  have hcallTransferSolm :
-      typedCallViaEVM config evmSolmSlip (EVM.address (joinGemAddressOf evmSolmSlip))
+  have hcallTransferStele :
+      typedCallViaEVM config evmSteleSlip (EVM.address (joinGemAddressOf evmSteleSlip))
         "transfer" 0 [joinUsrValue I, joinWadValue I]
-        (false, evmSolmTransfer, outTransfer) true := by
-    simpa [evmSolmTransfer, evmSolmSlipBase, evmSolmSlip, evmSolm, initState, hGemAddrOrig]
-      using hcallTransferSolmRaw
+        (false, evmSteleTransfer, outTransfer) true := by
+    simpa [evmSteleTransfer, evmSteleSlipBase, evmSteleSlip, evmStele, initState, hGemAddrOrig]
+      using hcallTransferSteleRaw
   have hbody :
-      ExecTransitionBody config contract evmSolm (exitStore I) exitTransition.body .reverted := by
-    exact gemJoinExitBodyRevertsTransferCallFailure evmSolm evmSolmSlip evmSolmTransfer I
-      (by simp only [evmSolm, initState]; exact hwv)
-      hwadOk hvatCodeSolm hcallSlipSolm hgemCodeSolm hcallTransferSolm
+      ExecTransitionBody config contract evmStele (exitStore I) exitTransition.body .reverted := by
+    exact gemJoinExitBodyRevertsTransferCallFailure evmStele evmSteleSlip evmSteleTransfer I
+      (by simp only [evmStele, initState]; exact hwv)
+      hwadOk hvatCodeStele hcallSlipStele hgemCodeStele hcallTransferStele
   exact hrev.reEquivExecutionRevert hcode hdispatch hdecode hbody
 
 theorem gemJoinExitBodyCoreTransferDecodeShort
@@ -3062,7 +3062,7 @@ theorem gemJoinExitBodyCoreTransferDecodeShort
     (hshort : outTransfer.size < 32)
     (hdispatch : dispatchMsg contract I.calldata = some exitTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (exitTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (exitTransition.params.map Param.name)
         (transitionSignature exitTransition).paramTypes I.calldata = some (exitStore I))
     (rd1845 : RD gemJoinBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1845⟩
@@ -3098,7 +3098,7 @@ theorem gemJoinExitBodyCoreTransferDecodeShort
     (houtTransferSize : outTransfer.size < UInt256.size) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   let evmEvm := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
   let evmEvmSlip : State := { evmEvm with
     accountMap := σ_slip,
     substate := A_slip,
@@ -3160,8 +3160,8 @@ theorem gemJoinExitBodyCoreTransferDecodeShort
     have hword : solcSlotWordAt ⟨1⟩ σ I = solcSlotWordAt ⟨1⟩ σ I :=
       rfl
     simp [solcAddressSlotWord, hword]
-  have hVatAddrOrig : joinVatAddressOf evmEvm = joinVatAddressOf evmSolm := rfl
-  have hcodeSolmWord :
+  have hVatAddrOrig : joinVatAddressOf evmEvm = joinVatAddressOf evmStele := rfl
+  have hcodeSteleWord :
       Reasoning.Theory.extCodeSizeWord σ
         (solcAddressSlotWord ⟨1⟩ σ I) ≠ ⟨0⟩ := by
     intro hzero
@@ -3177,140 +3177,140 @@ theorem gemJoinExitBodyCoreTransferDecodeShort
       simpa [hVatSlot] using hzero
     rw [hsame]
     exact hzeroAtEvmTarget
-  have hvatAddrSolm :
-      joinVatAddressOf evmSolm =
+  have hvatAddrStele :
+      joinVatAddressOf evmStele =
         AccountAddress.ofUInt256 (solcAddressSlotWord ⟨1⟩ σ I) := by
     apply Fin.ext
-    simp [evmSolm, joinVatAddressOf, initState, Solm.EVM.storageLoad, State.lookupAccount,
+    simp [evmStele, joinVatAddressOf, initState, Stele.EVM.storageLoad, State.lookupAccount,
       Account.lookupStorage, solcAddressSlotWord, solcSlotWordAt, solcSlotWord,
       accountAddress_ofUInt256_eq_ofNat_toNat, AccountAddress.ofNat]
-  have hvatCodeSolm :
+  have hvatCodeStele :
       0 < (UInt256.ofNat
-        ((evmSolm.lookupAccount (joinVatAddressOf evmSolm)).option 0
+        ((evmStele.lookupAccount (joinVatAddressOf evmStele)).option 0
           (fun acc => acc.code.size))).toNat := by
-    rw [hvatAddrSolm]
-    simpa [evmSolm, initState, State.lookupAccount] using
+    rw [hvatAddrStele]
+    simpa [evmStele, initState, State.lookupAccount] using
       extCodeSizeWord_ne_zero_lookup_code_pos
         (σ := σ) (target := solcAddressSlotWord ⟨1⟩ σ I)
         (addr := AccountAddress.ofUInt256 (solcAddressSlotWord ⟨1⟩ σ I))
-        rfl hcodeSolmWord
+        rfl hcodeSteleWord
   have hcallSlipEvm :
       typedCallViaEVM config evmEvm (EVM.address (joinVatAddressOf evmEvm)) "slip" 0
         [.fixedBytes bytes32Width (EVM.Word.toBytesBE (solcSlotWordAt ⟨2⟩ σ I)),
           .address I.source, exitNegWadValue I]
         (true, evmEvmSlip, outSlip) true := by
     simpa [evmEvm, evmEvmSlip] using hcallSlipEvmRaw
-  let σ_slip_solm := σ_slip
-  let A_slip_solm := A_slip
-  have hcallSlipSolmRaw := by
-    simpa [evmSolm, evmEvm] using hcallSlipEvm
-  let evmSolmSlip : State := { evmSolm with
-    accountMap := σ_slip_solm,
-    substate := A_slip_solm,
+  let σ_slip_stele := σ_slip
+  let A_slip_stele := A_slip
+  have hcallSlipSteleRaw := by
+    simpa [evmStele, evmEvm] using hcallSlipEvm
+  let evmSteleSlip : State := { evmStele with
+    accountMap := σ_slip_stele,
+    substate := A_slip_stele,
     }
   have hIlkSlot :
       solcSlotWordAt ⟨2⟩ σ I = solcSlotWordAt ⟨2⟩ σ I :=
     rfl
-  have hcallSlipSolmEvmIlk :
-      typedCallViaEVM config evmSolm (EVM.address (joinVatAddressOf evmSolm)) "slip" 0
+  have hcallSlipSteleEvmIlk :
+      typedCallViaEVM config evmStele (EVM.address (joinVatAddressOf evmStele)) "slip" 0
         [.fixedBytes bytes32Width
             (EVM.Word.toBytesBE (solcSlotWordAt ⟨2⟩ σ I)),
           .address I.source, exitNegWadValue I]
-        (true, evmSolmSlip, outSlip) true := by
-    simpa [evmSolm, evmSolmSlip, evmEvmSlip, initState, hVatAddrOrig]
-      using hcallSlipSolmRaw
-  have hcallSlipSolm :
-      typedCallViaEVM config evmSolm (EVM.address (joinVatAddressOf evmSolm)) "slip" 0
+        (true, evmSteleSlip, outSlip) true := by
+    simpa [evmStele, evmSteleSlip, evmEvmSlip, initState, hVatAddrOrig]
+      using hcallSlipSteleRaw
+  have hcallSlipStele :
+      typedCallViaEVM config evmStele (EVM.address (joinVatAddressOf evmStele)) "slip" 0
         [.fixedBytes bytes32Width
             (EVM.Word.toBytesBE
-              (Solm.EVM.storageLoad evmSolm evmSolm.executionEnv.codeOwner ⟨2⟩)),
-          .address evmSolm.executionEnv.source, exitNegWadValue I]
-        (true, evmSolmSlip, outSlip) true := by
+              (Stele.EVM.storageLoad evmStele evmStele.executionEnv.codeOwner ⟨2⟩)),
+          .address evmStele.executionEnv.source, exitNegWadValue I]
+        (true, evmSteleSlip, outSlip) true := by
     have hIlkArg :
-        Solm.EVM.storageLoad evmSolm evmSolm.executionEnv.codeOwner ⟨2⟩ =
+        Stele.EVM.storageLoad evmStele evmStele.executionEnv.codeOwner ⟨2⟩ =
           solcSlotWordAt ⟨2⟩ σ I := by
-      simpa [evmSolm, initState, Solm.EVM.storageLoad, State.lookupAccount,
+      simpa [evmStele, initState, Stele.EVM.storageLoad, State.lookupAccount,
         Account.lookupStorage, solcSlotWordAt, solcSlotWord] using hIlkSlot.symm
-    have hcallSlipSolmStorage := hcallSlipSolmEvmIlk
-    rw [← hIlkArg] at hcallSlipSolmStorage
-    simpa [evmSolm, initState] using hcallSlipSolmStorage
+    have hcallSlipSteleStorage := hcallSlipSteleEvmIlk
+    rw [← hIlkArg] at hcallSlipSteleStorage
+    simpa [evmStele, initState] using hcallSlipSteleStorage
   have hGemSlot :
       solcAddressSlotWord ⟨3⟩ σ_slip I =
-        solcAddressSlotWord ⟨3⟩ σ_slip_solm I := rfl
-  have hgemCodeSolmWord :
-      Reasoning.Theory.extCodeSizeWord σ_slip_solm
-        (solcAddressSlotWord ⟨3⟩ σ_slip_solm I) ≠ ⟨0⟩ := by
+        solcAddressSlotWord ⟨3⟩ σ_slip_stele I := rfl
+  have hgemCodeSteleWord :
+      Reasoning.Theory.extCodeSizeWord σ_slip_stele
+        (solcAddressSlotWord ⟨3⟩ σ_slip_stele I) ≠ ⟨0⟩ := by
     intro hzero
     apply hgemCode
     have hsame :
         Reasoning.Theory.extCodeSizeWord σ_slip
           (solcAddressSlotWord ⟨3⟩ σ_slip I) =
-        Reasoning.Theory.extCodeSizeWord σ_slip_solm
+        Reasoning.Theory.extCodeSizeWord σ_slip_stele
           (solcAddressSlotWord ⟨3⟩ σ_slip I) := by
       rfl
     have hzeroAtEvmTarget :
-        Reasoning.Theory.extCodeSizeWord σ_slip_solm
+        Reasoning.Theory.extCodeSizeWord σ_slip_stele
           (solcAddressSlotWord ⟨3⟩ σ_slip I) = ⟨0⟩ := by
       simpa [hGemSlot] using hzero
     rw [hsame]
     exact hzeroAtEvmTarget
-  have hgemAddrSolm :
-      joinGemAddressOf evmSolmSlip =
-        AccountAddress.ofUInt256 (solcAddressSlotWord ⟨3⟩ σ_slip_solm I) := by
+  have hgemAddrStele :
+      joinGemAddressOf evmSteleSlip =
+        AccountAddress.ofUInt256 (solcAddressSlotWord ⟨3⟩ σ_slip_stele I) := by
     apply Fin.ext
-    simp [evmSolmSlip, evmSolm, joinGemAddressOf, initState, Solm.EVM.storageLoad,
+    simp [evmSteleSlip, evmStele, joinGemAddressOf, initState, Stele.EVM.storageLoad,
       State.lookupAccount, Account.lookupStorage, solcAddressSlotWord,
       solcSlotWordAt, solcSlotWord, accountAddress_ofUInt256_eq_ofNat_toNat,
       AccountAddress.ofNat]
-  have hgemCodeSolm :
+  have hgemCodeStele :
       0 < (UInt256.ofNat
-        ((evmSolmSlip.lookupAccount (joinGemAddressOf evmSolmSlip)).option 0
+        ((evmSteleSlip.lookupAccount (joinGemAddressOf evmSteleSlip)).option 0
           (fun acc => acc.code.size))).toNat := by
-    rw [hgemAddrSolm]
-    simpa [evmSolmSlip, evmSolm, initState, State.lookupAccount] using
+    rw [hgemAddrStele]
+    simpa [evmSteleSlip, evmStele, initState, State.lookupAccount] using
       extCodeSizeWord_ne_zero_lookup_code_pos
-        (σ := σ_slip_solm) (target := solcAddressSlotWord ⟨3⟩ σ_slip_solm I)
-        (addr := AccountAddress.ofUInt256 (solcAddressSlotWord ⟨3⟩ σ_slip_solm I))
-        rfl hgemCodeSolmWord
-  have hGemAddrOrig : joinGemAddressOf evmEvmSlip = joinGemAddressOf evmSolmSlip := rfl
+        (σ := σ_slip_stele) (target := solcAddressSlotWord ⟨3⟩ σ_slip_stele I)
+        (addr := AccountAddress.ofUInt256 (solcAddressSlotWord ⟨3⟩ σ_slip_stele I))
+        rfl hgemCodeSteleWord
+  have hGemAddrOrig : joinGemAddressOf evmEvmSlip = joinGemAddressOf evmSteleSlip := rfl
   have hcallTransferEvm :
       typedCallViaEVM config evmEvmSlip (EVM.address (joinGemAddressOf evmEvmSlip))
         "transfer" 0 [joinUsrValue I, joinWadValue I]
         (true, evmEvmTransfer, outTransfer) true := by
     simpa [evmEvm, evmEvmSlip, evmEvmTransfer] using hcallTransferEvmRaw
-  let evmSolmSlipBase : State := { evmSolmSlip with substate := evmEvmSlip.substate }
-  let σ_transfer_solm := σ_transfer
-  let A_transfer_solm0 := A_transfer
-  have hcallTransferSolmBase := by
-    simpa [evmSolmSlipBase, evmSolmSlip, evmEvmSlip, evmEvm, evmSolm, initState]
+  let evmSteleSlipBase : State := { evmSteleSlip with substate := evmEvmSlip.substate }
+  let σ_transfer_stele := σ_transfer
+  let A_transfer_stele0 := A_transfer
+  have hcallTransferSteleBase := by
+    simpa [evmSteleSlipBase, evmSteleSlip, evmEvmSlip, evmEvm, evmStele, initState]
       using hcallTransferEvm
-  have hMapTransferEq : σ_transfer = σ_transfer_solm := rfl
-  have hdepthNeBase : evmSolmSlipBase.executionEnv.depth ≠ 1024 := by
+  have hMapTransferEq : σ_transfer = σ_transfer_stele := rfl
+  have hdepthNeBase : evmSteleSlipBase.executionEnv.depth ≠ 1024 := by
     intro hdepthEq
     have hI : I.depth = 1024 := by
-      simpa [evmSolmSlipBase, evmSolmSlip, evmSolm, initState] using hdepthEq
+      simpa [evmSteleSlipBase, evmSteleSlip, evmStele, initState] using hdepthEq
     rw [hI] at hdepth
     norm_num at hdepth
-  obtain ⟨A_transfer_solm, hcallTransferSolmRaw⟩ :=
-    typedCallViaEVM_zero_setSubstate hcallTransferSolmBase hdepthNeBase
-      evmSolmSlip.substate
-  let evmSolmTransfer : State := { evmSolmSlip with
-    accountMap := σ_transfer_solm,
-    substate := A_transfer_solm,
+  obtain ⟨A_transfer_stele, hcallTransferSteleRaw⟩ :=
+    typedCallViaEVM_zero_setSubstate hcallTransferSteleBase hdepthNeBase
+      evmSteleSlip.substate
+  let evmSteleTransfer : State := { evmSteleSlip with
+    accountMap := σ_transfer_stele,
+    substate := A_transfer_stele,
     }
-  have hcallTransferSolm :
-      typedCallViaEVM config evmSolmSlip (EVM.address (joinGemAddressOf evmSolmSlip))
+  have hcallTransferStele :
+      typedCallViaEVM config evmSteleSlip (EVM.address (joinGemAddressOf evmSteleSlip))
         "transfer" 0 [joinUsrValue I, joinWadValue I]
-        (true, evmSolmTransfer, outTransfer) true := by
-    simpa [evmSolmTransfer, evmSolmSlipBase, evmSolmSlip, evmSolm, initState, hGemAddrOrig]
-      using hcallTransferSolmRaw
+        (true, evmSteleTransfer, outTransfer) true := by
+    simpa [evmSteleTransfer, evmSteleSlipBase, evmSteleSlip, evmStele, initState, hGemAddrOrig]
+      using hcallTransferSteleRaw
   have hdecTransfer : config.externalABI.decode? "transfer" outTransfer = none :=
     gemJoinDecode_transferReturn_none_short hshort
   have hbody :
-      ExecTransitionBody config contract evmSolm (exitStore I) exitTransition.body .reverted := by
-    exact gemJoinExitBodyRevertsTransferDecode evmSolm evmSolmSlip evmSolmTransfer I
-      (by simp only [evmSolm, initState]; exact hwv)
-      hwadOk hvatCodeSolm hcallSlipSolm hgemCodeSolm hcallTransferSolm
+      ExecTransitionBody config contract evmStele (exitStore I) exitTransition.body .reverted := by
+    exact gemJoinExitBodyRevertsTransferDecode evmStele evmSteleSlip evmSteleTransfer I
+      (by simp only [evmStele, initState]; exact hwv)
+      hwadOk hvatCodeStele hcallSlipStele hgemCodeStele hcallTransferStele
       hdecTransfer
   exact hrev.reEquivExecutionRevert hcode hdispatch hdecode hbody
 
@@ -3337,7 +3337,7 @@ theorem gemJoinExitBodyCoreTransferReturnTrueSmall
     (hread64 : mem.readWithPadding 64 32 = UInt256.toByteArray ⟨128⟩)
     (hdispatch : dispatchMsg contract I.calldata = some exitTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (exitTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (exitTransition.params.map Param.name)
         (transitionSignature exitTransition).paramTypes I.calldata = some (exitStore I))
     (rd1868 : RD gemJoinBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1868⟩
@@ -3366,7 +3366,7 @@ theorem gemJoinExitBodyCoreTransferReturnTrueSmall
           outTransfer) true) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   let evmEvm := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
   let evmEvmSlip : State := { evmEvm with
     accountMap := σ_slip,
     substate := A_slip,
@@ -3382,8 +3382,8 @@ theorem gemJoinExitBodyCoreTransferReturnTrueSmall
     have hwordSlot : solcSlotWordAt ⟨1⟩ σ I = solcSlotWordAt ⟨1⟩ σ I :=
       rfl
     simp [solcAddressSlotWord, hwordSlot]
-  have hVatAddrOrig : joinVatAddressOf evmEvm = joinVatAddressOf evmSolm := rfl
-  have hcodeSolmWord :
+  have hVatAddrOrig : joinVatAddressOf evmEvm = joinVatAddressOf evmStele := rfl
+  have hcodeSteleWord :
       Reasoning.Theory.extCodeSizeWord σ
         (solcAddressSlotWord ⟨1⟩ σ I) ≠ ⟨0⟩ := by
     intro hzero
@@ -3399,151 +3399,151 @@ theorem gemJoinExitBodyCoreTransferReturnTrueSmall
       simpa [hVatSlot] using hzero
     rw [hsame]
     exact hzeroAtEvmTarget
-  have hvatAddrSolm :
-      joinVatAddressOf evmSolm =
+  have hvatAddrStele :
+      joinVatAddressOf evmStele =
         AccountAddress.ofUInt256 (solcAddressSlotWord ⟨1⟩ σ I) := by
     apply Fin.ext
-    simp [evmSolm, joinVatAddressOf, initState, Solm.EVM.storageLoad, State.lookupAccount,
+    simp [evmStele, joinVatAddressOf, initState, Stele.EVM.storageLoad, State.lookupAccount,
       Account.lookupStorage, solcAddressSlotWord, solcSlotWordAt, solcSlotWord,
       accountAddress_ofUInt256_eq_ofNat_toNat, AccountAddress.ofNat]
-  have hvatCodeSolm :
+  have hvatCodeStele :
       0 < (UInt256.ofNat
-        ((evmSolm.lookupAccount (joinVatAddressOf evmSolm)).option 0
+        ((evmStele.lookupAccount (joinVatAddressOf evmStele)).option 0
           (fun acc => acc.code.size))).toNat := by
-    rw [hvatAddrSolm]
-    simpa [evmSolm, initState, State.lookupAccount] using
+    rw [hvatAddrStele]
+    simpa [evmStele, initState, State.lookupAccount] using
       extCodeSizeWord_ne_zero_lookup_code_pos
         (σ := σ) (target := solcAddressSlotWord ⟨1⟩ σ I)
         (addr := AccountAddress.ofUInt256 (solcAddressSlotWord ⟨1⟩ σ I))
-        rfl hcodeSolmWord
+        rfl hcodeSteleWord
   have hcallSlipEvm :
       typedCallViaEVM config evmEvm (EVM.address (joinVatAddressOf evmEvm)) "slip" 0
         [.fixedBytes bytes32Width (EVM.Word.toBytesBE (solcSlotWordAt ⟨2⟩ σ I)),
           .address I.source, exitNegWadValue I]
         (true, evmEvmSlip, outSlip) true := by
     simpa [evmEvm, evmEvmSlip] using hcallSlipEvmRaw
-  let σ_slip_solm := σ_slip
-  let A_slip_solm := A_slip
-  have hcallSlipSolmRaw := by
-    simpa [evmSolm, evmEvm] using hcallSlipEvm
-  let evmSolmSlip : State := { evmSolm with
-    accountMap := σ_slip_solm,
-    substate := A_slip_solm,
+  let σ_slip_stele := σ_slip
+  let A_slip_stele := A_slip
+  have hcallSlipSteleRaw := by
+    simpa [evmStele, evmEvm] using hcallSlipEvm
+  let evmSteleSlip : State := { evmStele with
+    accountMap := σ_slip_stele,
+    substate := A_slip_stele,
     }
   have hIlkSlot :
       solcSlotWordAt ⟨2⟩ σ I = solcSlotWordAt ⟨2⟩ σ I :=
     rfl
-  have hcallSlipSolmEvmIlk :
-      typedCallViaEVM config evmSolm (EVM.address (joinVatAddressOf evmSolm)) "slip" 0
+  have hcallSlipSteleEvmIlk :
+      typedCallViaEVM config evmStele (EVM.address (joinVatAddressOf evmStele)) "slip" 0
         [.fixedBytes bytes32Width
             (EVM.Word.toBytesBE (solcSlotWordAt ⟨2⟩ σ I)),
           .address I.source, exitNegWadValue I]
-        (true, evmSolmSlip, outSlip) true := by
-    simpa [evmSolm, evmSolmSlip, evmEvmSlip, initState, hVatAddrOrig]
-      using hcallSlipSolmRaw
-  have hcallSlipSolm :
-      typedCallViaEVM config evmSolm (EVM.address (joinVatAddressOf evmSolm)) "slip" 0
+        (true, evmSteleSlip, outSlip) true := by
+    simpa [evmStele, evmSteleSlip, evmEvmSlip, initState, hVatAddrOrig]
+      using hcallSlipSteleRaw
+  have hcallSlipStele :
+      typedCallViaEVM config evmStele (EVM.address (joinVatAddressOf evmStele)) "slip" 0
         [.fixedBytes bytes32Width
             (EVM.Word.toBytesBE
-              (Solm.EVM.storageLoad evmSolm evmSolm.executionEnv.codeOwner ⟨2⟩)),
-          .address evmSolm.executionEnv.source, exitNegWadValue I]
-        (true, evmSolmSlip, outSlip) true := by
+              (Stele.EVM.storageLoad evmStele evmStele.executionEnv.codeOwner ⟨2⟩)),
+          .address evmStele.executionEnv.source, exitNegWadValue I]
+        (true, evmSteleSlip, outSlip) true := by
     have hIlkArg :
-        Solm.EVM.storageLoad evmSolm evmSolm.executionEnv.codeOwner ⟨2⟩ =
+        Stele.EVM.storageLoad evmStele evmStele.executionEnv.codeOwner ⟨2⟩ =
           solcSlotWordAt ⟨2⟩ σ I := by
-      simpa [evmSolm, initState, Solm.EVM.storageLoad, State.lookupAccount,
+      simpa [evmStele, initState, Stele.EVM.storageLoad, State.lookupAccount,
         Account.lookupStorage, solcSlotWordAt, solcSlotWord] using hIlkSlot.symm
-    simpa [hIlkArg] using hcallSlipSolmEvmIlk
+    simpa [hIlkArg] using hcallSlipSteleEvmIlk
   have hGemSlot :
       solcAddressSlotWord ⟨3⟩ σ_slip I =
-        solcAddressSlotWord ⟨3⟩ σ_slip_solm I := by
+        solcAddressSlotWord ⟨3⟩ σ_slip_stele I := by
     have hwordSlot : solcSlotWordAt ⟨3⟩ σ_slip I =
-        solcSlotWordAt ⟨3⟩ σ_slip_solm I :=
+        solcSlotWordAt ⟨3⟩ σ_slip_stele I :=
       by
         rfl
     simp [solcAddressSlotWord, hwordSlot]
-  have hgemCodeSolmWord :
-      Reasoning.Theory.extCodeSizeWord σ_slip_solm
-        (solcAddressSlotWord ⟨3⟩ σ_slip_solm I) ≠ ⟨0⟩ := by
+  have hgemCodeSteleWord :
+      Reasoning.Theory.extCodeSizeWord σ_slip_stele
+        (solcAddressSlotWord ⟨3⟩ σ_slip_stele I) ≠ ⟨0⟩ := by
     intro hzero
     apply hgemCode
     have hsame :
         Reasoning.Theory.extCodeSizeWord σ_slip
           (solcAddressSlotWord ⟨3⟩ σ_slip I) =
-        Reasoning.Theory.extCodeSizeWord σ_slip_solm
+        Reasoning.Theory.extCodeSizeWord σ_slip_stele
           (solcAddressSlotWord ⟨3⟩ σ_slip I) := by
       rfl
     have hzeroAtEvmTarget :
-        Reasoning.Theory.extCodeSizeWord σ_slip_solm
+        Reasoning.Theory.extCodeSizeWord σ_slip_stele
           (solcAddressSlotWord ⟨3⟩ σ_slip I) = ⟨0⟩ := by
       simpa [hGemSlot] using hzero
     rw [hsame]
     exact hzeroAtEvmTarget
-  have hgemAddrSolm :
-      joinGemAddressOf evmSolmSlip =
-        AccountAddress.ofUInt256 (solcAddressSlotWord ⟨3⟩ σ_slip_solm I) := by
+  have hgemAddrStele :
+      joinGemAddressOf evmSteleSlip =
+        AccountAddress.ofUInt256 (solcAddressSlotWord ⟨3⟩ σ_slip_stele I) := by
     apply Fin.ext
-    simp [evmSolmSlip, evmSolm, joinGemAddressOf, initState, Solm.EVM.storageLoad,
+    simp [evmSteleSlip, evmStele, joinGemAddressOf, initState, Stele.EVM.storageLoad,
       State.lookupAccount, Account.lookupStorage, solcAddressSlotWord,
       solcSlotWordAt, solcSlotWord, accountAddress_ofUInt256_eq_ofNat_toNat,
       AccountAddress.ofNat]
-  have hgemCodeSolm :
+  have hgemCodeStele :
       0 < (UInt256.ofNat
-        ((evmSolmSlip.lookupAccount (joinGemAddressOf evmSolmSlip)).option 0
+        ((evmSteleSlip.lookupAccount (joinGemAddressOf evmSteleSlip)).option 0
           (fun acc => acc.code.size))).toNat := by
-    rw [hgemAddrSolm]
-    simpa [evmSolmSlip, evmSolm, initState, State.lookupAccount] using
+    rw [hgemAddrStele]
+    simpa [evmSteleSlip, evmStele, initState, State.lookupAccount] using
       extCodeSizeWord_ne_zero_lookup_code_pos
-        (σ := σ_slip_solm) (target := solcAddressSlotWord ⟨3⟩ σ_slip_solm I)
-        (addr := AccountAddress.ofUInt256 (solcAddressSlotWord ⟨3⟩ σ_slip_solm I))
-        rfl hgemCodeSolmWord
-  have hGemAddrOrig : joinGemAddressOf evmEvmSlip = joinGemAddressOf evmSolmSlip := rfl
+        (σ := σ_slip_stele) (target := solcAddressSlotWord ⟨3⟩ σ_slip_stele I)
+        (addr := AccountAddress.ofUInt256 (solcAddressSlotWord ⟨3⟩ σ_slip_stele I))
+        rfl hgemCodeSteleWord
+  have hGemAddrOrig : joinGemAddressOf evmEvmSlip = joinGemAddressOf evmSteleSlip := rfl
   have hcallTransferEvm :
       typedCallViaEVM config evmEvmSlip (EVM.address (joinGemAddressOf evmEvmSlip))
         "transfer" 0 [joinUsrValue I, joinWadValue I]
         (true, evmEvmTransfer, outTransfer) true := by
     simpa [evmEvm, evmEvmSlip, evmEvmTransfer] using hcallTransferEvmRaw
-  let evmSolmSlipBase : State := { evmSolmSlip with substate := evmEvmSlip.substate }
-  let σ_transfer_solm := σ_transfer
-  let A_transfer_solm0 := A_transfer
-  have hcallTransferSolmBase := by
-    simpa [evmSolmSlipBase, evmSolmSlip, evmEvmSlip, evmEvm, evmSolm, initState]
+  let evmSteleSlipBase : State := { evmSteleSlip with substate := evmEvmSlip.substate }
+  let σ_transfer_stele := σ_transfer
+  let A_transfer_stele0 := A_transfer
+  have hcallTransferSteleBase := by
+    simpa [evmSteleSlipBase, evmSteleSlip, evmEvmSlip, evmEvm, evmStele, initState]
       using hcallTransferEvm
-  have hMapTransferEq : σ_transfer = σ_transfer_solm := rfl
-  have hdepthNeBase : evmSolmSlipBase.executionEnv.depth ≠ 1024 := by
+  have hMapTransferEq : σ_transfer = σ_transfer_stele := rfl
+  have hdepthNeBase : evmSteleSlipBase.executionEnv.depth ≠ 1024 := by
     intro hdepthEq
     have hI : I.depth = 1024 := by
-      simpa [evmSolmSlipBase, evmSolmSlip, evmSolm, initState] using hdepthEq
+      simpa [evmSteleSlipBase, evmSteleSlip, evmStele, initState] using hdepthEq
     rw [hI] at hdepth
     norm_num at hdepth
-  obtain ⟨A_transfer_solm, hcallTransferSolmRaw⟩ :=
-    typedCallViaEVM_zero_setSubstate hcallTransferSolmBase hdepthNeBase
-      evmSolmSlip.substate
-  let evmSolmTransfer : State := { evmSolmSlip with
-    accountMap := σ_transfer_solm,
-    substate := A_transfer_solm,
+  obtain ⟨A_transfer_stele, hcallTransferSteleRaw⟩ :=
+    typedCallViaEVM_zero_setSubstate hcallTransferSteleBase hdepthNeBase
+      evmSteleSlip.substate
+  let evmSteleTransfer : State := { evmSteleSlip with
+    accountMap := σ_transfer_stele,
+    substate := A_transfer_stele,
     }
-  have hcallTransferSolm :
-      typedCallViaEVM config evmSolmSlip (EVM.address (joinGemAddressOf evmSolmSlip))
+  have hcallTransferStele :
+      typedCallViaEVM config evmSteleSlip (EVM.address (joinGemAddressOf evmSteleSlip))
         "transfer" 0
         [joinUsrValue I, joinWadValue I]
-        (true, evmSolmTransfer, outTransfer) true := by
-    simpa [evmSolmTransfer, evmSolmSlipBase, evmSolmSlip, evmSolm, initState, hGemAddrOrig]
-      using hcallTransferSolmRaw
+        (true, evmSteleTransfer, outTransfer) true := by
+    simpa [evmSteleTransfer, evmSteleSlipBase, evmSteleSlip, evmStele, initState, hGemAddrOrig]
+      using hcallTransferSteleRaw
   have hdecTransfer : config.externalABI.decode? "transfer" outTransfer = some [.bool true] :=
     gemJoinDecode_transferReturn_true hlo hword
   have hbodySplit :
-      (ExecTransitionBody config contract evmSolm (exitStore I) exitTransition.body
+      (ExecTransitionBody config contract evmStele (exitStore I) exitTransition.body
         (.returned { contract := contract, locals := exitLocalsAfterTransferOk I }
-          evmSolmTransfer none)) ∧
-      (I.perm = false → ExecTransitionBody config contract evmSolm
+          evmSteleTransfer none)) ∧
+      (I.perm = false → ExecTransitionBody config contract evmStele
         (exitStore I) exitTransition.body .staticViolation) := by
-    exact gemJoinExitBodySuccessSplit evmSolm evmSolmSlip evmSolmTransfer I
-      (by simp only [evmSolm, initState]; exact hwv)
-      hwadOk hvatCodeSolm hcallSlipSolm hgemCodeSolm hcallTransferSolm
+    exact gemJoinExitBodySuccessSplit evmStele evmSteleSlip evmSteleTransfer I
+      (by simp only [evmStele, initState]; exact hwv)
+      hwadOk hvatCodeStele hcallSlipStele hgemCodeStele hcallTransferStele
       hdecTransfer
-  have haccounts : σ_transfer = evmSolmTransfer.accountMap := by
-    simpa [evmSolmTransfer] using hMapTransferEq
+  have haccounts : σ_transfer = evmSteleTransfer.accountMap := by
+    simpa [evmSteleTransfer] using hMapTransferEq
   have henc : returnEquiv ByteArray.empty none exitTransition.returnType := by
     rw [show exitTransition.returnType = [] by rfl]
     exact returnEquiv.fallthrough rfl (by rfl) (by native_decide)
@@ -3577,7 +3577,7 @@ theorem gemJoinExitBodyCoreTransferReturnFalseSmall
     (hread64 : mem.readWithPadding 64 32 = UInt256.toByteArray ⟨128⟩)
     (hdispatch : dispatchMsg contract I.calldata = some exitTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (exitTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (exitTransition.params.map Param.name)
         (transitionSignature exitTransition).paramTypes I.calldata = some (exitStore I))
     (rd1868 : RD gemJoinBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1868⟩
@@ -3606,7 +3606,7 @@ theorem gemJoinExitBodyCoreTransferReturnFalseSmall
           outTransfer) true) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   let evmEvm := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
   let evmEvmSlip : State := { evmEvm with
     accountMap := σ_slip,
     substate := A_slip,
@@ -3622,8 +3622,8 @@ theorem gemJoinExitBodyCoreTransferReturnFalseSmall
     have hwordSlot : solcSlotWordAt ⟨1⟩ σ I = solcSlotWordAt ⟨1⟩ σ I :=
       rfl
     simp [solcAddressSlotWord, hwordSlot]
-  have hVatAddrOrig : joinVatAddressOf evmEvm = joinVatAddressOf evmSolm := rfl
-  have hcodeSolmWord :
+  have hVatAddrOrig : joinVatAddressOf evmEvm = joinVatAddressOf evmStele := rfl
+  have hcodeSteleWord :
       Reasoning.Theory.extCodeSizeWord σ
         (solcAddressSlotWord ⟨1⟩ σ I) ≠ ⟨0⟩ := by
     intro hzero
@@ -3639,144 +3639,144 @@ theorem gemJoinExitBodyCoreTransferReturnFalseSmall
       simpa [hVatSlot] using hzero
     rw [hsame]
     exact hzeroAtEvmTarget
-  have hvatAddrSolm :
-      joinVatAddressOf evmSolm =
+  have hvatAddrStele :
+      joinVatAddressOf evmStele =
         AccountAddress.ofUInt256 (solcAddressSlotWord ⟨1⟩ σ I) := by
     apply Fin.ext
-    simp [evmSolm, joinVatAddressOf, initState, Solm.EVM.storageLoad, State.lookupAccount,
+    simp [evmStele, joinVatAddressOf, initState, Stele.EVM.storageLoad, State.lookupAccount,
       Account.lookupStorage, solcAddressSlotWord, solcSlotWordAt, solcSlotWord,
       accountAddress_ofUInt256_eq_ofNat_toNat, AccountAddress.ofNat]
-  have hvatCodeSolm :
+  have hvatCodeStele :
       0 < (UInt256.ofNat
-        ((evmSolm.lookupAccount (joinVatAddressOf evmSolm)).option 0
+        ((evmStele.lookupAccount (joinVatAddressOf evmStele)).option 0
           (fun acc => acc.code.size))).toNat := by
-    rw [hvatAddrSolm]
-    simpa [evmSolm, initState, State.lookupAccount] using
+    rw [hvatAddrStele]
+    simpa [evmStele, initState, State.lookupAccount] using
       extCodeSizeWord_ne_zero_lookup_code_pos
         (σ := σ) (target := solcAddressSlotWord ⟨1⟩ σ I)
         (addr := AccountAddress.ofUInt256 (solcAddressSlotWord ⟨1⟩ σ I))
-        rfl hcodeSolmWord
+        rfl hcodeSteleWord
   have hcallSlipEvm :
       typedCallViaEVM config evmEvm (EVM.address (joinVatAddressOf evmEvm)) "slip" 0
         [.fixedBytes bytes32Width (EVM.Word.toBytesBE (solcSlotWordAt ⟨2⟩ σ I)),
           .address I.source, exitNegWadValue I]
         (true, evmEvmSlip, outSlip) true := by
     simpa [evmEvm, evmEvmSlip] using hcallSlipEvmRaw
-  let σ_slip_solm := σ_slip
-  let A_slip_solm := A_slip
-  have hcallSlipSolmRaw := by
-    simpa [evmSolm, evmEvm] using hcallSlipEvm
-  let evmSolmSlip : State := { evmSolm with
-    accountMap := σ_slip_solm,
-    substate := A_slip_solm,
+  let σ_slip_stele := σ_slip
+  let A_slip_stele := A_slip
+  have hcallSlipSteleRaw := by
+    simpa [evmStele, evmEvm] using hcallSlipEvm
+  let evmSteleSlip : State := { evmStele with
+    accountMap := σ_slip_stele,
+    substate := A_slip_stele,
     }
   have hIlkSlot :
       solcSlotWordAt ⟨2⟩ σ I = solcSlotWordAt ⟨2⟩ σ I :=
     rfl
-  have hcallSlipSolmEvmIlk :
-      typedCallViaEVM config evmSolm (EVM.address (joinVatAddressOf evmSolm)) "slip" 0
+  have hcallSlipSteleEvmIlk :
+      typedCallViaEVM config evmStele (EVM.address (joinVatAddressOf evmStele)) "slip" 0
         [.fixedBytes bytes32Width
             (EVM.Word.toBytesBE (solcSlotWordAt ⟨2⟩ σ I)),
           .address I.source, exitNegWadValue I]
-        (true, evmSolmSlip, outSlip) true := by
-    simpa [evmSolm, evmSolmSlip, evmEvmSlip, initState, hVatAddrOrig]
-      using hcallSlipSolmRaw
-  have hcallSlipSolm :
-      typedCallViaEVM config evmSolm (EVM.address (joinVatAddressOf evmSolm)) "slip" 0
+        (true, evmSteleSlip, outSlip) true := by
+    simpa [evmStele, evmSteleSlip, evmEvmSlip, initState, hVatAddrOrig]
+      using hcallSlipSteleRaw
+  have hcallSlipStele :
+      typedCallViaEVM config evmStele (EVM.address (joinVatAddressOf evmStele)) "slip" 0
         [.fixedBytes bytes32Width
             (EVM.Word.toBytesBE
-              (Solm.EVM.storageLoad evmSolm evmSolm.executionEnv.codeOwner ⟨2⟩)),
-          .address evmSolm.executionEnv.source, exitNegWadValue I]
-        (true, evmSolmSlip, outSlip) true := by
+              (Stele.EVM.storageLoad evmStele evmStele.executionEnv.codeOwner ⟨2⟩)),
+          .address evmStele.executionEnv.source, exitNegWadValue I]
+        (true, evmSteleSlip, outSlip) true := by
     have hIlkArg :
-        Solm.EVM.storageLoad evmSolm evmSolm.executionEnv.codeOwner ⟨2⟩ =
+        Stele.EVM.storageLoad evmStele evmStele.executionEnv.codeOwner ⟨2⟩ =
           solcSlotWordAt ⟨2⟩ σ I := by
-      simpa [evmSolm, initState, Solm.EVM.storageLoad, State.lookupAccount,
+      simpa [evmStele, initState, Stele.EVM.storageLoad, State.lookupAccount,
         Account.lookupStorage, solcSlotWordAt, solcSlotWord] using hIlkSlot.symm
-    simpa [hIlkArg] using hcallSlipSolmEvmIlk
+    simpa [hIlkArg] using hcallSlipSteleEvmIlk
   have hGemSlot :
       solcAddressSlotWord ⟨3⟩ σ_slip I =
-        solcAddressSlotWord ⟨3⟩ σ_slip_solm I := by
+        solcAddressSlotWord ⟨3⟩ σ_slip_stele I := by
     have hwordSlot : solcSlotWordAt ⟨3⟩ σ_slip I =
-        solcSlotWordAt ⟨3⟩ σ_slip_solm I :=
+        solcSlotWordAt ⟨3⟩ σ_slip_stele I :=
       by
         rfl
     simp [solcAddressSlotWord, hwordSlot]
-  have hgemCodeSolmWord :
-      Reasoning.Theory.extCodeSizeWord σ_slip_solm
-        (solcAddressSlotWord ⟨3⟩ σ_slip_solm I) ≠ ⟨0⟩ := by
+  have hgemCodeSteleWord :
+      Reasoning.Theory.extCodeSizeWord σ_slip_stele
+        (solcAddressSlotWord ⟨3⟩ σ_slip_stele I) ≠ ⟨0⟩ := by
     intro hzero
     apply hgemCode
     have hsame :
         Reasoning.Theory.extCodeSizeWord σ_slip
           (solcAddressSlotWord ⟨3⟩ σ_slip I) =
-        Reasoning.Theory.extCodeSizeWord σ_slip_solm
+        Reasoning.Theory.extCodeSizeWord σ_slip_stele
           (solcAddressSlotWord ⟨3⟩ σ_slip I) := by
       rfl
     have hzeroAtEvmTarget :
-        Reasoning.Theory.extCodeSizeWord σ_slip_solm
+        Reasoning.Theory.extCodeSizeWord σ_slip_stele
           (solcAddressSlotWord ⟨3⟩ σ_slip I) = ⟨0⟩ := by
       simpa [hGemSlot] using hzero
     rw [hsame]
     exact hzeroAtEvmTarget
-  have hgemAddrSolm :
-      joinGemAddressOf evmSolmSlip =
-        AccountAddress.ofUInt256 (solcAddressSlotWord ⟨3⟩ σ_slip_solm I) := by
+  have hgemAddrStele :
+      joinGemAddressOf evmSteleSlip =
+        AccountAddress.ofUInt256 (solcAddressSlotWord ⟨3⟩ σ_slip_stele I) := by
     apply Fin.ext
-    simp [evmSolmSlip, evmSolm, joinGemAddressOf, initState, Solm.EVM.storageLoad,
+    simp [evmSteleSlip, evmStele, joinGemAddressOf, initState, Stele.EVM.storageLoad,
       State.lookupAccount, Account.lookupStorage, solcAddressSlotWord,
       solcSlotWordAt, solcSlotWord, accountAddress_ofUInt256_eq_ofNat_toNat,
       AccountAddress.ofNat]
-  have hgemCodeSolm :
+  have hgemCodeStele :
       0 < (UInt256.ofNat
-        ((evmSolmSlip.lookupAccount (joinGemAddressOf evmSolmSlip)).option 0
+        ((evmSteleSlip.lookupAccount (joinGemAddressOf evmSteleSlip)).option 0
           (fun acc => acc.code.size))).toNat := by
-    rw [hgemAddrSolm]
-    simpa [evmSolmSlip, evmSolm, initState, State.lookupAccount] using
+    rw [hgemAddrStele]
+    simpa [evmSteleSlip, evmStele, initState, State.lookupAccount] using
       extCodeSizeWord_ne_zero_lookup_code_pos
-        (σ := σ_slip_solm) (target := solcAddressSlotWord ⟨3⟩ σ_slip_solm I)
-        (addr := AccountAddress.ofUInt256 (solcAddressSlotWord ⟨3⟩ σ_slip_solm I))
-        rfl hgemCodeSolmWord
-  have hGemAddrOrig : joinGemAddressOf evmEvmSlip = joinGemAddressOf evmSolmSlip := rfl
+        (σ := σ_slip_stele) (target := solcAddressSlotWord ⟨3⟩ σ_slip_stele I)
+        (addr := AccountAddress.ofUInt256 (solcAddressSlotWord ⟨3⟩ σ_slip_stele I))
+        rfl hgemCodeSteleWord
+  have hGemAddrOrig : joinGemAddressOf evmEvmSlip = joinGemAddressOf evmSteleSlip := rfl
   have hcallTransferEvm :
       typedCallViaEVM config evmEvmSlip (EVM.address (joinGemAddressOf evmEvmSlip))
         "transfer" 0 [joinUsrValue I, joinWadValue I]
         (true, evmEvmTransfer, outTransfer) true := by
     simpa [evmEvm, evmEvmSlip, evmEvmTransfer] using hcallTransferEvmRaw
-  let evmSolmSlipBase : State := { evmSolmSlip with substate := evmEvmSlip.substate }
-  let σ_transfer_solm := σ_transfer
-  let A_transfer_solm0 := A_transfer
-  have hcallTransferSolmBase := by
-    simpa [evmSolmSlipBase, evmSolmSlip, evmEvmSlip, evmEvm, evmSolm, initState]
+  let evmSteleSlipBase : State := { evmSteleSlip with substate := evmEvmSlip.substate }
+  let σ_transfer_stele := σ_transfer
+  let A_transfer_stele0 := A_transfer
+  have hcallTransferSteleBase := by
+    simpa [evmSteleSlipBase, evmSteleSlip, evmEvmSlip, evmEvm, evmStele, initState]
       using hcallTransferEvm
-  have hMapTransferEq : σ_transfer = σ_transfer_solm := rfl
-  have hdepthNeBase : evmSolmSlipBase.executionEnv.depth ≠ 1024 := by
+  have hMapTransferEq : σ_transfer = σ_transfer_stele := rfl
+  have hdepthNeBase : evmSteleSlipBase.executionEnv.depth ≠ 1024 := by
     intro hdepthEq
     have hI : I.depth = 1024 := by
-      simpa [evmSolmSlipBase, evmSolmSlip, evmSolm, initState] using hdepthEq
+      simpa [evmSteleSlipBase, evmSteleSlip, evmStele, initState] using hdepthEq
     rw [hI] at hdepth
     norm_num at hdepth
-  obtain ⟨A_transfer_solm, hcallTransferSolmRaw⟩ :=
-    typedCallViaEVM_zero_setSubstate hcallTransferSolmBase hdepthNeBase
-      evmSolmSlip.substate
-  let evmSolmTransfer : State := { evmSolmSlip with
-    accountMap := σ_transfer_solm,
-    substate := A_transfer_solm,
+  obtain ⟨A_transfer_stele, hcallTransferSteleRaw⟩ :=
+    typedCallViaEVM_zero_setSubstate hcallTransferSteleBase hdepthNeBase
+      evmSteleSlip.substate
+  let evmSteleTransfer : State := { evmSteleSlip with
+    accountMap := σ_transfer_stele,
+    substate := A_transfer_stele,
     }
-  have hcallTransferSolm :
-      typedCallViaEVM config evmSolmSlip (EVM.address (joinGemAddressOf evmSolmSlip))
+  have hcallTransferStele :
+      typedCallViaEVM config evmSteleSlip (EVM.address (joinGemAddressOf evmSteleSlip))
         "transfer" 0
         [joinUsrValue I, joinWadValue I]
-        (true, evmSolmTransfer, outTransfer) true := by
-    simpa [evmSolmTransfer, evmSolmSlipBase, evmSolmSlip, evmSolm, initState, hGemAddrOrig]
-      using hcallTransferSolmRaw
+        (true, evmSteleTransfer, outTransfer) true := by
+    simpa [evmSteleTransfer, evmSteleSlipBase, evmSteleSlip, evmStele, initState, hGemAddrOrig]
+      using hcallTransferSteleRaw
   have hdecTransfer : config.externalABI.decode? "transfer" outTransfer = some [.bool false] :=
     gemJoinDecode_transferReturn_false hlo hword
   have hbody :
-      ExecTransitionBody config contract evmSolm (exitStore I) exitTransition.body .reverted := by
-    exact gemJoinExitBodyRevertsTransferFalse evmSolm evmSolmSlip evmSolmTransfer I
-      (by simp only [evmSolm, initState]; exact hwv)
-      hwadOk hvatCodeSolm hcallSlipSolm hgemCodeSolm hcallTransferSolm
+      ExecTransitionBody config contract evmStele (exitStore I) exitTransition.body .reverted := by
+    exact gemJoinExitBodyRevertsTransferFalse evmStele evmSteleSlip evmSteleTransfer I
+      (by simp only [evmStele, initState]; exact hwv)
+      hwadOk hvatCodeStele hcallSlipStele hgemCodeStele hcallTransferStele
       hdecTransfer
   exact hrev.reEquivExecutionRevert hcode hdispatch hdecode hbody
 

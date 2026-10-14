@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.SetCapTailRuntime
 
 /-! Source states and bytecode returns for the cap setter's final stores. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1

@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.FeeMutation
 
 /-! The final fee store and event after interest accrual returns. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables metaMorphoV1_1Blocks
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
@@ -30,7 +30,7 @@ theorem setFeeStoreReturn {evm : EVM.State} {g : Sat256} {s0 : State}
     (evm.accountMap.get? evm.executionEnv.codeOwner |>.option (⟨0⟩ : UInt256)
       (fun ac ↦ ac.storage.getD (UInt256.ofNat 18) (⟨0⟩ : UInt256)))] at hret
   rw [hword] at hret
-  simpa only [setFeeState, storageStore_accountMap, Solm.EVM.storageLoad,
+  simpa only [setFeeState, storageStore_accountMap, Stele.EVM.storageLoad,
     State.lookupAccount, Account.lookupStorage, codeOwnerStorageWord] using hret
 
 end Benchmarks.Morpho.MetaMorphoV1_1

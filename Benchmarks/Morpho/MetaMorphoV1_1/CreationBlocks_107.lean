@@ -2,7 +2,7 @@ import Reasoning.Reach
 import Reasoning.Initcode
 import Benchmarks.Morpho.MetaMorphoV1_1.Bytecode
 
-open Solm ABI Ethereum Ethereum.EVM
+open Stele ABI Ethereum Ethereum.EVM
 open Reasoning.Theory Reasoning.Reach
 
 namespace metaMorphoV1_1CreationBlocks
@@ -166,7 +166,7 @@ theorem metaMorphoV1_1Creation_block_23608 {tail : ByteArray} {ee : ExecutionEnv
   have r1 := r0.push0 (by exact d tail _ _ _ (by native_decide) (by rw [hcreationCodeSize]; native_decide) (by native_decide)) (by evm_ov)
   have r2 := r1.blockhash (by exact d tail _ _ _ (by native_decide) (by rw [hcreationCodeSize]; native_decide) (by native_decide)) (by evm_ov)
   have rFinal := RD.normalizePC (pc' := (UInt256.ofNat 23610)) r2 (by native_decide)
-  exact RD.normalizeCounters rFinal (by omega) (by omega)
+  exact RD.normalizeCounters rFinal (by omega) (by simp [GasConstants.Gblockhash])
 
 /-- Packed RD summary for bytecode block with abstract final counters and active words. -/
 theorem metaMorphoV1_1Creation_block_23608_packed {tail : ByteArray} {ee : ExecutionEnv} {g : Sat256} {s0 : State} {mem : ByteArray} {aw : UInt256} {rdata : ByteArray} {σ : AccountMap} {k C : ℕ} {R : List UInt256}
@@ -416,7 +416,7 @@ theorem metaMorphoV1_1Creation_block_23659 {tail : ByteArray} {ee : ExecutionEnv
   have hcreationCodeSize : Benchmarks.Morpho.MetaMorphoV1_1.metaMorphoV1_1CreationBytecode.size = 23666 := by native_decide
   have r1 := r0.blockhash (by exact d tail _ _ _ (by native_decide) (by rw [hcreationCodeSize]; native_decide) (by native_decide)) (by evm_ov)
   have rFinal := RD.normalizePC (pc' := (UInt256.ofNat 23660)) r1 (by native_decide)
-  exact RD.normalizeCounters rFinal (by omega) (by omega)
+  exact RD.normalizeCounters rFinal (by omega) (by simp [GasConstants.Gblockhash])
 
 /-- Packed RD summary for bytecode block with abstract final counters and active words. -/
 theorem metaMorphoV1_1Creation_block_23659_packed {tail : ByteArray} {ee : ExecutionEnv} {g : Sat256} {s0 : State} {mem : ByteArray} {aw : UInt256} {rdata : ByteArray} {σ : AccountMap} {k C : ℕ} {x0 : UInt256} {R : List UInt256}

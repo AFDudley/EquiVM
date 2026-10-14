@@ -4,7 +4,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.AllocationSource
 
 /-! Source execution of the loan-token balance call and its return-buffer reservation. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
 

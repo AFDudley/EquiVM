@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Vat.Dispatch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -55,9 +55,9 @@ theorem canStorageSlot_eq (I : ExecutionEnv) :
   rw [keyValueToWord_address_ofNat_mask, keyValueToWord_address_ofNat_mask]
 
 theorem vatDecode_can_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (canTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (canTransition.params.map Param.name)
       (transitionSignature canTransition).paramTypes I.calldata = some (canStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["arg0", "arg1"] [addr, addr]
+  show config.externalABI.decodeCalldata? ["arg0", "arg1"] [addr, addr]
     I.calldata = _
   simpa [canStore, canSrcValue, canUsrValue, canSrcWord, canUsrWord, calldataWord]
     using decodeCalldata_legacyAddress_legacyAddress_ok
@@ -65,9 +65,9 @@ theorem vatDecode_can_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size) :
 
 theorem vatDecode_can_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 68) :
-    decodeCalldataWithMode config.abiDecodeMode (canTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (canTransition.params.map Param.name)
       (transitionSignature canTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["arg0", "arg1"] [addr, addr]
+  show config.externalABI.decodeCalldata? ["arg0", "arg1"] [addr, addr]
     I.calldata = none
   simpa using decodeCalldata_legacyAddress_legacyAddress_none_short
     (cd := I.calldata) (x := "arg0") (y := "arg1") hsz4 hshort
@@ -111,7 +111,7 @@ theorem vatCanBodyCoreOk
     (hsz68 : 68 ≤ I.calldata.size) (hsize : I.calldata.size < UInt256.size)
     (hdispatch : dispatchMsg contract I.calldata = some canTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (canTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (canTransition.params.map Param.name)
         (transitionSignature canTransition).paramTypes I.calldata = some (canStore I))
     (hreach : ∃ k C, RD vatBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨711⟩ [sel]
@@ -127,7 +127,7 @@ theorem vatCanBodyCoreOk
         (.returned { contract := contract, locals := canStore I }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.int (Int.ofNat (solcSlotWordAt (canStorageSlot I) σ I).toNat))])) := by
-    simpa [canTransition, canStorageSlot, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [canTransition, canStorageSlot, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       vatUint256GetterBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) (canStore I)

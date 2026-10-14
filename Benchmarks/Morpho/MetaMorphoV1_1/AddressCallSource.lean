@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.CallReturnSource
 
 /-! The zero-value Address call, its explicit buffer reservation, and target validation. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
 

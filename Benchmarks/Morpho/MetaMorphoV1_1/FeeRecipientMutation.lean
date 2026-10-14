@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.Mutation
 
 /-! Storing the high twenty-byte fee-recipient address preserves the low twelve-byte fee. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 
@@ -46,8 +46,8 @@ theorem storageLocStore_highAddress (evm : EVM.State) (slot : UInt256)
     storageLocStore evm
       { slot := slot, offset := 12, size := 20, hbound := by decide, type := .address }
       (.address recipient) =
-      some (Solm.EVM.storageStore evm evm.executionEnv.codeOwner slot
-        (setHighAddressWord (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
+      some (Stele.EVM.storageStore evm evm.executionEnv.codeOwner slot
+        (setHighAddressWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
           recipient)) := by
   unfold storageLocStore storageLocWriteWord
   simp only [valueToWord, bind, Option.bind]
@@ -55,15 +55,15 @@ theorem storageLocStore_highAddress (evm : EVM.State) (slot : UInt256)
   apply u256_inj
   change fromBytes'
     ((EVM.Word.toBytesLEWithSizeProof
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).1.take 12 ++
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).1.take 12 ++
       (EVM.Word.toBytesLEWithSizeProof (UInt256.ofNat recipient.toNat)).1.take 20 ++
       (EVM.Word.toBytesLEWithSizeProof
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).1.drop 32) = _
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).1.drop 32) = _
   rw [fromBytes'_append, fromBytes'_append, fromBytes'_take_wordLE,
     fromBytes'_take_wordLE, fromBytes'_drop_wordLE, setHighAddressWord_toNat]
   simp only [List.length_append, List.length_take,
     (EVM.Word.toBytesLEWithSizeProof
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).2,
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).2,
     (EVM.Word.toBytesLEWithSizeProof (UInt256.ofNat recipient.toNat)).2]
   have hr : (UInt256.ofNat recipient.toNat).toNat = recipient.toNat :=
     UInt256.toNat_ofNat_of_lt (lt_of_lt_of_le recipient.isLt (by decide))
@@ -71,14 +71,14 @@ theorem storageLocStore_highAddress (evm : EVM.State) (slot : UInt256)
   change _ % 2 ^ 96 + 2 ^ 96 * (recipient.toNat % 2 ^ 160) +
     2 ^ 256 * (_ / 2 ^ 256) = _
   have ha : recipient.toNat < 2 ^ 160 := recipient.isLt
-  have hw : (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot).toNat < 2 ^ 256 :=
-    (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot).val.isLt
+  have hw : (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot).toNat < 2 ^ 256 :=
+    (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot).val.isLt
   rw [Nat.mod_eq_of_lt ha, Nat.div_eq_of_lt hw]
   omega
 
 def setFeeRecipientState (evm : EVM.State) (recipient : AccountAddress) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨18⟩
-    (setHighAddressWord (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨18⟩) recipient)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨18⟩
+    (setHighAddressWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨18⟩) recipient)
 
 theorem assignStorage_feeRecipient (evm : EVM.State) (locals imms : Store)
     (recipient : AccountAddress) (hbase : locals.get? "feeRecipient" = none) :

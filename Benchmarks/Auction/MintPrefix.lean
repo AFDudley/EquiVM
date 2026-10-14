@@ -1,7 +1,7 @@
 import Benchmarks.Auction.DepositPrefix
 import Benchmarks.Auction.BurnPrefix
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Auction
 

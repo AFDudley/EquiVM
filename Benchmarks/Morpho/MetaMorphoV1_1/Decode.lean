@@ -4,7 +4,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.RuntimeBlocks_009
 
 /-! Shared calldata guards and the runtime address decoder. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 
@@ -44,7 +44,7 @@ theorem dispatchedRevert {cfg : Config} {ctr : ContractDecl} {transition : Trans
       args transition.body .reverted imms)
     (hfallback : ctr.fallback = none := by rfl) (hreceive : ctr.receive = none := by rfl) :
     runtimeRefinementFor cfg ctr σ σ₀ g.toUInt256 A I imms := by
-  cases hdec : decodeCalldataWithMode cfg.abiDecodeMode (transition.params.map Param.name)
+  cases hdec : cfg.externalABI.decodeCalldata? (transition.params.map Param.name)
       (transitionSignature transition).paramTypes I.calldata with
   | none => exact h.reEquivDecodingFailed hcode hd hdec hfallback hreceive
   | some args =>

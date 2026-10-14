@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.AllocationSource
 
 /-! Source outcomes for the name and symbol getters, including compiler allocation failure. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 open Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1

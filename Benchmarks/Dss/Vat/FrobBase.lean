@@ -15,7 +15,7 @@ open Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 section
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 2000000
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Vat
 
@@ -295,7 +295,7 @@ end Reasoning.Reach
 
 namespace Benchmarks.Dss.Vat
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 /-! ## `frob(bytes32,address,address,address,int256,int256)` -/
 
@@ -780,25 +780,25 @@ def frobSourceFinalState
     (I : ExecutionEnv) (g : UInt256)
     (urnInkNew urnArtNew ilkArtNew gemNew daiNew : UInt256) : State :=
   let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  let evmDebt := Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner
+  let evmDebt := Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner
     foldDebtSlot (frobDebtNew σ I)
-  let evmGem := Solm.EVM.storageStore evmDebt evmDebt.executionEnv.codeOwner
+  let evmGem := Stele.EVM.storageStore evmDebt evmDebt.executionEnv.codeOwner
     (frobGemVSourceSlot I) gemNew
-  let evmDai := Solm.EVM.storageStore evmGem evmGem.executionEnv.codeOwner
+  let evmDai := Stele.EVM.storageStore evmGem evmGem.executionEnv.codeOwner
     (frobDaiWSourceSlot I) daiNew
-  let evmInk := Solm.EVM.storageStore evmDai evmDai.executionEnv.codeOwner
+  let evmInk := Stele.EVM.storageStore evmDai evmDai.executionEnv.codeOwner
     (frobUrnInkSourceSlot I) urnInkNew
-  let evmArt := Solm.EVM.storageStore evmInk evmInk.executionEnv.codeOwner
+  let evmArt := Stele.EVM.storageStore evmInk evmInk.executionEnv.codeOwner
     (frobUrnArtSourceSlot I) urnArtNew
-  let evmIlk := Solm.EVM.storageStore evmArt evmArt.executionEnv.codeOwner
+  let evmIlk := Stele.EVM.storageStore evmArt evmArt.executionEnv.codeOwner
     (frobIlkArtSourceSlot I) ilkArtNew
-  let evmRate := Solm.EVM.storageStore evmIlk evmIlk.executionEnv.codeOwner
+  let evmRate := Stele.EVM.storageStore evmIlk evmIlk.executionEnv.codeOwner
     (frobIlkRateSourceSlot I) (solcSlotWord σ I (frobIlkRateSlot I))
-  let evmSpot := Solm.EVM.storageStore evmRate evmRate.executionEnv.codeOwner
+  let evmSpot := Stele.EVM.storageStore evmRate evmRate.executionEnv.codeOwner
     (frobIlkSpotSourceSlot I) (solcSlotWord σ I (frobIlkSpotSlot I))
-  let evmLine := Solm.EVM.storageStore evmSpot evmSpot.executionEnv.codeOwner
+  let evmLine := Stele.EVM.storageStore evmSpot evmSpot.executionEnv.codeOwner
     (frobIlkLineSourceSlot I) (solcSlotWord σ I (frobIlkLineSlot I))
-  Solm.EVM.storageStore evmLine evmLine.executionEnv.codeOwner
+  Stele.EVM.storageStore evmLine evmLine.executionEnv.codeOwner
     (frobIlkDustSourceSlot I) (solcSlotWord σ I (frobIlkDustSlot I))
 
 theorem frobDinkSubGuardNegCond {I : ExecutionEnv} {old new : UInt256}
@@ -1351,25 +1351,25 @@ theorem frobSourceFinal_accountMap_eq
     (hGem : gemNew = frobGemNew σ I)
     (hDai : daiNew = frobDaiNew σ I) :
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-    let evmDebt := Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner
+    let evmDebt := Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner
       foldDebtSlot (frobDebtNew σ I)
-    let evmGem := Solm.EVM.storageStore evmDebt evmDebt.executionEnv.codeOwner
+    let evmGem := Stele.EVM.storageStore evmDebt evmDebt.executionEnv.codeOwner
       (frobGemVSourceSlot I) gemNew
-    let evmDai := Solm.EVM.storageStore evmGem evmGem.executionEnv.codeOwner
+    let evmDai := Stele.EVM.storageStore evmGem evmGem.executionEnv.codeOwner
       (frobDaiWSourceSlot I) daiNew
-    let evmInk := Solm.EVM.storageStore evmDai evmDai.executionEnv.codeOwner
+    let evmInk := Stele.EVM.storageStore evmDai evmDai.executionEnv.codeOwner
       (frobUrnInkSourceSlot I) urnInkNew
-    let evmArt := Solm.EVM.storageStore evmInk evmInk.executionEnv.codeOwner
+    let evmArt := Stele.EVM.storageStore evmInk evmInk.executionEnv.codeOwner
       (frobUrnArtSourceSlot I) urnArtNew
-    let evmIlk := Solm.EVM.storageStore evmArt evmArt.executionEnv.codeOwner
+    let evmIlk := Stele.EVM.storageStore evmArt evmArt.executionEnv.codeOwner
       (frobIlkArtSourceSlot I) ilkArtNew
-    let evmRate := Solm.EVM.storageStore evmIlk evmIlk.executionEnv.codeOwner
+    let evmRate := Stele.EVM.storageStore evmIlk evmIlk.executionEnv.codeOwner
       (frobIlkRateSourceSlot I) (solcSlotWord σ I (frobIlkRateSlot I))
-    let evmSpot := Solm.EVM.storageStore evmRate evmRate.executionEnv.codeOwner
+    let evmSpot := Stele.EVM.storageStore evmRate evmRate.executionEnv.codeOwner
       (frobIlkSpotSourceSlot I) (solcSlotWord σ I (frobIlkSpotSlot I))
-    let evmLine := Solm.EVM.storageStore evmSpot evmSpot.executionEnv.codeOwner
+    let evmLine := Stele.EVM.storageStore evmSpot evmSpot.executionEnv.codeOwner
       (frobIlkLineSourceSlot I) (solcSlotWord σ I (frobIlkLineSlot I))
-    let evmDust := Solm.EVM.storageStore evmLine evmLine.executionEnv.codeOwner
+    let evmDust := Stele.EVM.storageStore evmLine evmLine.executionEnv.codeOwner
       (frobIlkDustSourceSlot I) (solcSlotWord σ I (frobIlkDustSlot I))
     Eq (frobAfterRuntimeFinal σ I) evmDust.accountMap := by
   intro evm0 evmDebt evmGem evmDai evmInk evmArt evmIlk evmRate evmSpot evmLine evmDust
@@ -1477,82 +1477,82 @@ theorem frobSourceFinalState_accountMap_eq
 
 theorem frobSourceLoad_urnInk {σ σ₀ A I} {g : UInt256}
     (hsz196 : 196 ≤ I.calldata.size) :
-    Solm.EVM.storageLoad (initState σ σ₀ (Sat256.ofUInt256 g) A I)
+    Stele.EVM.storageLoad (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
         (frobUrnInkSourceSlot I) =
       solcSlotWordAt (frobUrnInkSlot I) σ I := by
-  simp [initState, Solm.EVM.storageLoad, solcSlotWordAt, solcSlotWord,
+  simp [initState, Stele.EVM.storageLoad, solcSlotWordAt, solcSlotWord,
     State.lookupAccount, Account.lookupStorage, frobUrnInkSourceSlot_eq I hsz196]
 
 theorem frobSourceLoad_urnArt {σ σ₀ A I} {g : UInt256}
     (hsz196 : 196 ≤ I.calldata.size) :
-    Solm.EVM.storageLoad (initState σ σ₀ (Sat256.ofUInt256 g) A I)
+    Stele.EVM.storageLoad (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
         (frobUrnArtSourceSlot I) =
       solcSlotWordAt (frobUrnArtSlot I) σ I := by
-  simp [initState, Solm.EVM.storageLoad, solcSlotWordAt, solcSlotWord,
+  simp [initState, Stele.EVM.storageLoad, solcSlotWordAt, solcSlotWord,
     State.lookupAccount, Account.lookupStorage, frobUrnArtSourceSlot_eq I hsz196]
 
 theorem frobSourceLoad_ilkArt {σ σ₀ A I} {g : UInt256}
     (hsz196 : 196 ≤ I.calldata.size) :
-    Solm.EVM.storageLoad (initState σ σ₀ (Sat256.ofUInt256 g) A I)
+    Stele.EVM.storageLoad (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
         (frobIlkArtSourceSlot I) =
       solcSlotWordAt (frobIlkArtSlot I) σ I := by
-  simp [initState, Solm.EVM.storageLoad, solcSlotWordAt, solcSlotWord,
+  simp [initState, Stele.EVM.storageLoad, solcSlotWordAt, solcSlotWord,
     State.lookupAccount, Account.lookupStorage, frobIlkArtSourceSlot_eq I hsz196]
 
 theorem frobSourceLoad_gemV {σ σ₀ A I} {g : UInt256}
     (hsz196 : 196 ≤ I.calldata.size) :
-    Solm.EVM.storageLoad (initState σ σ₀ (Sat256.ofUInt256 g) A I)
+    Stele.EVM.storageLoad (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
         (frobGemVSourceSlot I) =
       solcSlotWordAt (frobGemVSlot I) σ I := by
-  simp [initState, Solm.EVM.storageLoad, solcSlotWordAt, solcSlotWord,
+  simp [initState, Stele.EVM.storageLoad, solcSlotWordAt, solcSlotWord,
     State.lookupAccount, Account.lookupStorage, frobGemVSourceSlot_eq I hsz196]
 
 theorem frobSourceLoad_daiW {σ σ₀ A I} {g : UInt256} :
-    Solm.EVM.storageLoad (initState σ σ₀ (Sat256.ofUInt256 g) A I)
+    Stele.EVM.storageLoad (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
         (frobDaiWSourceSlot I) =
       solcSlotWordAt (frobDaiWSlot I) σ I := by
-  simp [initState, Solm.EVM.storageLoad, solcSlotWordAt, solcSlotWord,
+  simp [initState, Stele.EVM.storageLoad, solcSlotWordAt, solcSlotWord,
     State.lookupAccount, Account.lookupStorage, frobDaiWSourceSlot_eq I]
 
 theorem frobSourceLoad_ilkRate {σ σ₀ A I} {g : UInt256}
     (hsz196 : 196 ≤ I.calldata.size) :
-    Solm.EVM.storageLoad (initState σ σ₀ (Sat256.ofUInt256 g) A I)
+    Stele.EVM.storageLoad (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
         (frobIlkRateSourceSlot I) =
       solcSlotWordAt (frobIlkRateSlot I) σ I := by
-  simp [initState, Solm.EVM.storageLoad, solcSlotWordAt, solcSlotWord,
+  simp [initState, Stele.EVM.storageLoad, solcSlotWordAt, solcSlotWord,
     State.lookupAccount, Account.lookupStorage, frobIlkRateSourceSlot_eq I hsz196]
 
 theorem frobSourceLoad_ilkSpot {σ σ₀ A I} {g : UInt256}
     (hsz196 : 196 ≤ I.calldata.size) :
-    Solm.EVM.storageLoad (initState σ σ₀ (Sat256.ofUInt256 g) A I)
+    Stele.EVM.storageLoad (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
         (frobIlkSpotSourceSlot I) =
       solcSlotWordAt (frobIlkSpotSlot I) σ I := by
-  simp [initState, Solm.EVM.storageLoad, solcSlotWordAt, solcSlotWord,
+  simp [initState, Stele.EVM.storageLoad, solcSlotWordAt, solcSlotWord,
     State.lookupAccount, Account.lookupStorage, frobIlkSpotSourceSlot_eq I hsz196]
 
 theorem frobSourceLoad_ilkLine {σ σ₀ A I} {g : UInt256}
     (hsz196 : 196 ≤ I.calldata.size) :
-    Solm.EVM.storageLoad (initState σ σ₀ (Sat256.ofUInt256 g) A I)
+    Stele.EVM.storageLoad (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
         (frobIlkLineSourceSlot I) =
       solcSlotWordAt (frobIlkLineSlot I) σ I := by
-  simp [initState, Solm.EVM.storageLoad, solcSlotWordAt, solcSlotWord,
+  simp [initState, Stele.EVM.storageLoad, solcSlotWordAt, solcSlotWord,
     State.lookupAccount, Account.lookupStorage, frobIlkLineSourceSlot_eq I hsz196]
 
 theorem frobSourceLoad_ilkDust {σ σ₀ A I} {g : UInt256}
     (hsz196 : 196 ≤ I.calldata.size) :
-    Solm.EVM.storageLoad (initState σ σ₀ (Sat256.ofUInt256 g) A I)
+    Stele.EVM.storageLoad (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
         (frobIlkDustSourceSlot I) =
       solcSlotWordAt (frobIlkDustSlot I) σ I := by
-  simp [initState, Solm.EVM.storageLoad, solcSlotWordAt, solcSlotWord,
+  simp [initState, Stele.EVM.storageLoad, solcSlotWordAt, solcSlotWord,
     State.lookupAccount, Account.lookupStorage, frobIlkDustSourceSlot_eq I hsz196]
 
 
@@ -8780,7 +8780,7 @@ theorem evalExpr_frob_urn_ink_locals {evm : EVM.State} {I : ExecutionEnv}
     evalExpr? config { contract := contract, locals := locals } evm
       (.storage (urnsF (.var "i") (.var "u") "ink")) =
       .ok (.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
           (frobUrnInkSourceSlot I)).toNat)) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
     (hbase := hbase)
@@ -8797,7 +8797,7 @@ theorem evalExpr_frob_urn_art_locals {evm : EVM.State} {I : ExecutionEnv}
     evalExpr? config { contract := contract, locals := locals } evm
       (.storage (urnsF (.var "i") (.var "u") "art")) =
       .ok (.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
           (frobUrnArtSourceSlot I)).toNat)) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
     (hbase := hbase)
@@ -8813,7 +8813,7 @@ theorem evalExpr_frob_ilk_art_locals {evm : EVM.State} {I : ExecutionEnv}
     evalExpr? config { contract := contract, locals := locals } evm
       (.storage (ilksF (.var "i") "Art")) =
       .ok (.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
           (frobIlkArtSourceSlot I)).toNat)) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
     (hbase := hbase)
@@ -8829,7 +8829,7 @@ theorem evalExpr_frob_ilk_rate_locals {evm : EVM.State} {I : ExecutionEnv}
     evalExpr? config { contract := contract, locals := locals } evm
       (.storage (ilksF (.var "i") "rate")) =
       .ok (.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
           (frobIlkRateSourceSlot I)).toNat)) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
     (hbase := hbase)
@@ -8845,7 +8845,7 @@ theorem evalExpr_frob_ilk_spot_locals {evm : EVM.State} {I : ExecutionEnv}
     evalExpr? config { contract := contract, locals := locals } evm
       (.storage (ilksF (.var "i") "spot")) =
       .ok (.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
           (frobIlkSpotSourceSlot I)).toNat)) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
     (hbase := hbase)
@@ -8861,7 +8861,7 @@ theorem evalExpr_frob_ilk_line_locals {evm : EVM.State} {I : ExecutionEnv}
     evalExpr? config { contract := contract, locals := locals } evm
       (.storage (ilksF (.var "i") "line")) =
       .ok (.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
           (frobIlkLineSourceSlot I)).toNat)) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
     (hbase := hbase)
@@ -8877,7 +8877,7 @@ theorem evalExpr_frob_ilk_dust_locals {evm : EVM.State} {I : ExecutionEnv}
     evalExpr? config { contract := contract, locals := locals } evm
       (.storage (ilksF (.var "i") "dust")) =
       .ok (.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
           (frobIlkDustSourceSlot I)).toNat)) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
     (hbase := hbase)
@@ -8894,7 +8894,7 @@ theorem evalExpr_frob_can_u_locals {evm : EVM.State} {I : ExecutionEnv}
     evalExpr? config { contract := contract, locals := locals } evm
       (.storage (canRef (.var "u") sender)) =
       .ok (.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
           (frobUWishSlot I)).toNat)) := by
   have h := evalExpr_storage_scalar_value (hbackend := rfl)
     (hbase := hbase)
@@ -8912,7 +8912,7 @@ theorem evalExpr_frob_can_v_locals {evm : EVM.State} {I : ExecutionEnv}
     evalExpr? config { contract := contract, locals := locals } evm
       (.storage (canRef (.var "v") sender)) =
       .ok (.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
           (frobVWishSlot I)).toNat)) := by
   have h := evalExpr_storage_scalar_value (hbackend := rfl)
     (hbase := hbase)
@@ -8930,7 +8930,7 @@ theorem evalExpr_frob_can_w_locals {evm : EVM.State} {I : ExecutionEnv}
     evalExpr? config { contract := contract, locals := locals } evm
       (.storage (canRef (.var "w") sender)) =
       .ok (.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
           (frobWWishSlot I)).toNat)) := by
   have h := evalExpr_storage_scalar_value (hbackend := rfl)
     (hbase := hbase)
@@ -8945,7 +8945,7 @@ theorem evalExpr_frob_can_u_eq_true {evm : EVM.State} {I : ExecutionEnv}
     (hsrc : evm.executionEnv.source = I.source)
     (hu : locals.get? "u" = some (frobUValue I))
     (hbase : locals.get? "can" = none)
-    (hcan : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (frobUWishSlot I) = ⟨1⟩) :
+    (hcan : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (frobUWishSlot I) = ⟨1⟩) :
     evalExpr? config { contract := contract, locals := locals } evm
       (.binary .eq (.storage (canRef (.var "u") sender)) (.intLit 1)) =
       .ok (.bool true) := by
@@ -8958,7 +8958,7 @@ theorem evalExpr_frob_can_v_eq_true {evm : EVM.State} {I : ExecutionEnv}
     (hsrc : evm.executionEnv.source = I.source)
     (hv : locals.get? "v" = some (frobVValue I))
     (hbase : locals.get? "can" = none)
-    (hcan : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (frobVWishSlot I) = ⟨1⟩) :
+    (hcan : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (frobVWishSlot I) = ⟨1⟩) :
     evalExpr? config { contract := contract, locals := locals } evm
       (.binary .eq (.storage (canRef (.var "v") sender)) (.intLit 1)) =
       .ok (.bool true) := by
@@ -8971,7 +8971,7 @@ theorem evalExpr_frob_can_w_eq_true {evm : EVM.State} {I : ExecutionEnv}
     (hsrc : evm.executionEnv.source = I.source)
     (hw : locals.get? "w" = some (frobWValue I))
     (hbase : locals.get? "can" = none)
-    (hcan : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (frobWWishSlot I) = ⟨1⟩) :
+    (hcan : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (frobWWishSlot I) = ⟨1⟩) :
     evalExpr? config { contract := contract, locals := locals } evm
       (.binary .eq (.storage (canRef (.var "w") sender)) (.intLit 1)) =
       .ok (.bool true) := by
@@ -8984,12 +8984,12 @@ theorem evalExpr_frob_can_u_eq_false {evm : EVM.State} {I : ExecutionEnv}
     (hsrc : evm.executionEnv.source = I.source)
     (hu : locals.get? "u" = some (frobUValue I))
     (hbase : locals.get? "can" = none)
-    (hcan : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (frobUWishSlot I) ≠ ⟨1⟩) :
+    (hcan : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (frobUWishSlot I) ≠ ⟨1⟩) :
     evalExpr? config { contract := contract, locals := locals } evm
       (.binary .eq (.storage (canRef (.var "u") sender)) (.intLit 1)) =
       .ok (.bool false) := by
   have hneNat :
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (frobUWishSlot I)).toNat ≠ 1 := by
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (frobUWishSlot I)).toNat ≠ 1 := by
     intro hnat
     apply hcan
     apply u256_inj
@@ -9003,12 +9003,12 @@ theorem evalExpr_frob_can_v_eq_false {evm : EVM.State} {I : ExecutionEnv}
     (hsrc : evm.executionEnv.source = I.source)
     (hv : locals.get? "v" = some (frobVValue I))
     (hbase : locals.get? "can" = none)
-    (hcan : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (frobVWishSlot I) ≠ ⟨1⟩) :
+    (hcan : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (frobVWishSlot I) ≠ ⟨1⟩) :
     evalExpr? config { contract := contract, locals := locals } evm
       (.binary .eq (.storage (canRef (.var "v") sender)) (.intLit 1)) =
       .ok (.bool false) := by
   have hneNat :
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (frobVWishSlot I)).toNat ≠ 1 := by
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (frobVWishSlot I)).toNat ≠ 1 := by
     intro hnat
     apply hcan
     apply u256_inj
@@ -9022,12 +9022,12 @@ theorem evalExpr_frob_can_w_eq_false {evm : EVM.State} {I : ExecutionEnv}
     (hsrc : evm.executionEnv.source = I.source)
     (hw : locals.get? "w" = some (frobWValue I))
     (hbase : locals.get? "can" = none)
-    (hcan : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (frobWWishSlot I) ≠ ⟨1⟩) :
+    (hcan : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (frobWWishSlot I) ≠ ⟨1⟩) :
     evalExpr? config { contract := contract, locals := locals } evm
       (.binary .eq (.storage (canRef (.var "w") sender)) (.intLit 1)) =
       .ok (.bool false) := by
   have hneNat :
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (frobWWishSlot I)).toNat ≠ 1 := by
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (frobWWishSlot I)).toNat ≠ 1 := by
     intro hnat
     apply hcan
     apply u256_inj
@@ -9044,7 +9044,7 @@ theorem evalExpr_frob_gem_v_locals {evm : EVM.State} {I : ExecutionEnv}
     evalExpr? config { contract := contract, locals := locals } evm
       (.storage (gemRef (.var "i") (.var "v"))) =
       .ok (.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
           (frobGemVSourceSlot I)).toNat)) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
     (hbase := hbase)
@@ -9060,7 +9060,7 @@ theorem evalExpr_frob_dai_w_locals {evm : EVM.State} {I : ExecutionEnv}
     evalExpr? config { contract := contract, locals := locals } evm
       (.storage (daiRef (.var "w"))) =
       .ok (.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
           (frobDaiWSourceSlot I)).toNat)) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
     (hbase := hbase)
@@ -9264,7 +9264,7 @@ theorem evalExpr_frob_wish_u_true_can {evm : EVM.State} {I : ExecutionEnv}
     (hu : locals.get? "u" = some (frobUValue I))
     (hbase : locals.get? "can" = none)
     (hne : frobUMaskedWord I ≠ hopeSourceWord I)
-    (hcan : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (frobUWishSlot I) = ⟨1⟩) :
+    (hcan : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (frobUWishSlot I) = ⟨1⟩) :
     evalExpr? config { contract := contract, locals := locals } evm
       (wishExpr (.var "u") sender) = .ok (.bool true) := by
   exact vatEvalExpr_or_false_right
@@ -9279,7 +9279,7 @@ theorem evalExpr_frob_wish_v_true_can {evm : EVM.State} {I : ExecutionEnv}
     (hv : locals.get? "v" = some (frobVValue I))
     (hbase : locals.get? "can" = none)
     (hne : frobVMaskedWord I ≠ hopeSourceWord I)
-    (hcan : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (frobVWishSlot I) = ⟨1⟩) :
+    (hcan : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (frobVWishSlot I) = ⟨1⟩) :
     evalExpr? config { contract := contract, locals := locals } evm
       (wishExpr (.var "v") sender) = .ok (.bool true) := by
   exact vatEvalExpr_or_false_right
@@ -9294,7 +9294,7 @@ theorem evalExpr_frob_wish_w_true_can {evm : EVM.State} {I : ExecutionEnv}
     (hw : locals.get? "w" = some (frobWValue I))
     (hbase : locals.get? "can" = none)
     (hne : frobWMaskedWord I ≠ hopeSourceWord I)
-    (hcan : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (frobWWishSlot I) = ⟨1⟩) :
+    (hcan : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (frobWWishSlot I) = ⟨1⟩) :
     evalExpr? config { contract := contract, locals := locals } evm
       (wishExpr (.var "w") sender) = .ok (.bool true) := by
   exact vatEvalExpr_or_false_right
@@ -9309,7 +9309,7 @@ theorem evalExpr_frob_wish_u_false {evm : EVM.State} {I : ExecutionEnv}
     (hu : locals.get? "u" = some (frobUValue I))
     (hbase : locals.get? "can" = none)
     (hne : frobUMaskedWord I ≠ hopeSourceWord I)
-    (hcan : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (frobUWishSlot I) ≠ ⟨1⟩) :
+    (hcan : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (frobUWishSlot I) ≠ ⟨1⟩) :
     evalExpr? config { contract := contract, locals := locals } evm
       (wishExpr (.var "u") sender) = .ok (.bool false) := by
   exact vatEvalExpr_or_false_right
@@ -9324,7 +9324,7 @@ theorem evalExpr_frob_wish_v_false {evm : EVM.State} {I : ExecutionEnv}
     (hv : locals.get? "v" = some (frobVValue I))
     (hbase : locals.get? "can" = none)
     (hne : frobVMaskedWord I ≠ hopeSourceWord I)
-    (hcan : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (frobVWishSlot I) ≠ ⟨1⟩) :
+    (hcan : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (frobVWishSlot I) ≠ ⟨1⟩) :
     evalExpr? config { contract := contract, locals := locals } evm
       (wishExpr (.var "v") sender) = .ok (.bool false) := by
   exact vatEvalExpr_or_false_right
@@ -9339,7 +9339,7 @@ theorem evalExpr_frob_wish_w_false {evm : EVM.State} {I : ExecutionEnv}
     (hw : locals.get? "w" = some (frobWValue I))
     (hbase : locals.get? "can" = none)
     (hne : frobWMaskedWord I ≠ hopeSourceWord I)
-    (hcan : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (frobWWishSlot I) ≠ ⟨1⟩) :
+    (hcan : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (frobWWishSlot I) ≠ ⟨1⟩) :
     evalExpr? config { contract := contract, locals := locals } evm
       (wishExpr (.var "w") sender) = .ok (.bool false) := by
   exact vatEvalExpr_or_false_right
@@ -9404,7 +9404,7 @@ theorem evalExpr_frob_LineRef {evm : EVM.State} {locals : Store}
     (hbase : locals.get? "Line" = none) :
     evalExpr? config { contract := contract, locals := locals } evm (.storage LineRef) =
       .ok (.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨9⟩).toNat)) := by
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨9⟩).toNat)) := by
   rw [evalExpr_storage_scalar (hbackend := rfl)
     (er := ({ base := "Line", steps := [] } : EvaledStorageRef))
     (t := .int uint256Int) (hbase := hbase)
@@ -9710,7 +9710,7 @@ theorem evalExpr_frob_auth_u_req_true {evm : EVM.State} {I : ExecutionEnv}
     (hbase : locals.get? "can" = none)
     (hsrc : evm.executionEnv.source = I.source)
     (hcanLoad :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (frobUWishSlot I) = uWish)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (frobUWishSlot I) = uWish)
     (hok :
       (frobDartInt I ≤ 0 ∧ 0 ≤ frobDinkInt I) ∨
         (uWish = ⟨1⟩ ∨ frobUMaskedWord I = hopeSourceWord I)) :
@@ -9882,7 +9882,7 @@ theorem evalExpr_frob_auth_u_req_false {evm : EVM.State} {I : ExecutionEnv}
     (hbase : locals.get? "can" = none)
     (hsrc : evm.executionEnv.source = I.source)
     (hcanLoad :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (frobUWishSlot I) = uWish)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (frobUWishSlot I) = uWish)
     (hbad :
       ¬ (frobDartInt I ≤ 0 ∧ 0 ≤ frobDinkInt I) ∧
         uWish ≠ ⟨1⟩ ∧ frobUMaskedWord I ≠ hopeSourceWord I) :
@@ -9931,7 +9931,7 @@ theorem evalExpr_frob_auth_v_req_true {evm : EVM.State} {I : ExecutionEnv}
     (hbase : locals.get? "can" = none)
     (hsrc : evm.executionEnv.source = I.source)
     (hcanLoad :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (frobVWishSlot I) = vWish)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (frobVWishSlot I) = vWish)
     (hok :
       frobDinkInt I ≤ 0 ∨
         (vWish = ⟨1⟩ ∨ frobVMaskedWord I = hopeSourceWord I)) :
@@ -10022,7 +10022,7 @@ theorem evalExpr_frob_auth_v_req_false {evm : EVM.State} {I : ExecutionEnv}
     (hbase : locals.get? "can" = none)
     (hsrc : evm.executionEnv.source = I.source)
     (hcanLoad :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (frobVWishSlot I) = vWish)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (frobVWishSlot I) = vWish)
     (hbad :
       ¬ frobDinkInt I ≤ 0 ∧
         vWish ≠ ⟨1⟩ ∧ frobVMaskedWord I ≠ hopeSourceWord I) :
@@ -10047,7 +10047,7 @@ theorem evalExpr_frob_auth_w_req_true {evm : EVM.State} {I : ExecutionEnv}
     (hbase : locals.get? "can" = none)
     (hsrc : evm.executionEnv.source = I.source)
     (hcanLoad :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (frobWWishSlot I) = wWish)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (frobWWishSlot I) = wWish)
     (hok :
       0 ≤ frobDartInt I ∨
         (wWish = ⟨1⟩ ∨ frobWMaskedWord I = hopeSourceWord I)) :
@@ -10138,7 +10138,7 @@ theorem evalExpr_frob_auth_w_req_false {evm : EVM.State} {I : ExecutionEnv}
     (hbase : locals.get? "can" = none)
     (hsrc : evm.executionEnv.source = I.source)
     (hcanLoad :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (frobWWishSlot I) = wWish)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (frobWWishSlot I) = wWish)
     (hbad :
       ¬ 0 ≤ frobDartInt I ∧
         wWish ≠ ⟨1⟩ ∧ frobWMaskedWord I ≠ hopeSourceWord I) :
@@ -10192,7 +10192,7 @@ theorem evalExpr_frob_ceiling_req_true {evm : EVM.State} {I : ExecutionEnv}
     (hilkLine : locals.get? "ilkLine" = some (.int (Int.ofNat ilkLine.toNat)))
     (hdebtNew : locals.get? "debtNew" = some (.int (Int.ofNat debtNew.toNat)))
     (hbaseLine : locals.get? "Line" = none)
-    (hlineLoad : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨9⟩ = Line)
+    (hlineLoad : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨9⟩ = Line)
     (hok :
       frobDartInt I ≤ 0 ∨
         (ceilingDebt.toNat ≤ ilkLine.toNat ∧ debtNew.toNat ≤ Line.toNat)) :
@@ -10262,7 +10262,7 @@ theorem evalExpr_frob_ceiling_req_false {evm : EVM.State} {I : ExecutionEnv}
     (hilkLine : locals.get? "ilkLine" = some (.int (Int.ofNat ilkLine.toNat)))
     (hdebtNew : locals.get? "debtNew" = some (.int (Int.ofNat debtNew.toNat)))
     (hbaseLine : locals.get? "Line" = none)
-    (hlineLoad : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨9⟩ = Line)
+    (hlineLoad : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨9⟩ = Line)
     (hdartPos : 0 < frobDartInt I)
     (hbad :
       ¬ (ceilingDebt.toNat ≤ ilkLine.toNat ∧ debtNew.toNat ≤ Line.toNat)) :
@@ -10449,37 +10449,37 @@ theorem vatFrobSourceBodyRateZero {σ σ₀ A I} {g : UInt256}
     (hsz196 : 196 ≤ I.calldata.size)
     (hlive : solcSlotWordAt ⟨10⟩ σ I = ⟨1⟩)
     (hloadUrnInk :
-      Solm.EVM.storageLoad
+      Stele.EVM.storageLoad
         (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
         (frobUrnInkSourceSlot I) = urnInk)
     (hloadUrnArt :
-      Solm.EVM.storageLoad
+      Stele.EVM.storageLoad
         (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
         (frobUrnArtSourceSlot I) = urnArt)
     (hloadIlkArt :
-      Solm.EVM.storageLoad
+      Stele.EVM.storageLoad
         (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
         (frobIlkArtSourceSlot I) = ilkArt)
     (hloadIlkRate :
-      Solm.EVM.storageLoad
+      Stele.EVM.storageLoad
         (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
         (frobIlkRateSourceSlot I) = ilkRate)
     (hloadIlkSpot :
-      Solm.EVM.storageLoad
+      Stele.EVM.storageLoad
         (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
         (frobIlkSpotSourceSlot I) = ilkSpot)
     (hloadIlkLine :
-      Solm.EVM.storageLoad
+      Stele.EVM.storageLoad
         (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
         (frobIlkLineSourceSlot I) = ilkLine)
     (hloadIlkDust :
-      Solm.EVM.storageLoad
+      Stele.EVM.storageLoad
         (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
         (frobIlkDustSourceSlot I) = ilkDust)
@@ -10597,37 +10597,37 @@ theorem vatFrobSourceRateNonzeroPrefix {σ σ₀ A I} {g : UInt256}
     (hsz196 : 196 ≤ I.calldata.size)
     (hlive : solcSlotWordAt ⟨10⟩ σ I = ⟨1⟩)
     (hloadUrnInk :
-      Solm.EVM.storageLoad
+      Stele.EVM.storageLoad
         (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
         (frobUrnInkSourceSlot I) = urnInk)
     (hloadUrnArt :
-      Solm.EVM.storageLoad
+      Stele.EVM.storageLoad
         (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
         (frobUrnArtSourceSlot I) = urnArt)
     (hloadIlkArt :
-      Solm.EVM.storageLoad
+      Stele.EVM.storageLoad
         (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
         (frobIlkArtSourceSlot I) = ilkArt)
     (hloadIlkRate :
-      Solm.EVM.storageLoad
+      Stele.EVM.storageLoad
         (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
         (frobIlkRateSourceSlot I) = ilkRate)
     (hloadIlkSpot :
-      Solm.EVM.storageLoad
+      Stele.EVM.storageLoad
         (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
         (frobIlkSpotSourceSlot I) = ilkSpot)
     (hloadIlkLine :
-      Solm.EVM.storageLoad
+      Stele.EVM.storageLoad
         (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
         (frobIlkLineSourceSlot I) = ilkLine)
     (hloadIlkDust :
-      Solm.EVM.storageLoad
+      Stele.EVM.storageLoad
         (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
         (frobIlkDustSourceSlot I) = ilkDust)
@@ -12300,11 +12300,11 @@ theorem execFrobAuthorizationDustOk_from_sourceConds {evm : EVM.State}
     (hbaseCan : locals.get? "can" = none)
     (hsrc : evm.executionEnv.source = I.source)
     (hloadU :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (frobUWishSlot I) = uWish)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (frobUWishSlot I) = uWish)
     (hloadV :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (frobVWishSlot I) = vWish)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (frobVWishSlot I) = vWish)
     (hloadW :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (frobWWishSlot I) = wWish)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (frobWWishSlot I) = wWish)
     (hurnArtNew :
       locals.get? "urnArtNew" = some (.int (Int.ofNat urnArtNew.toNat)))
     (htab : locals.get? "tab" = some (.int (Int.ofNat tab.toNat)))
@@ -12350,7 +12350,7 @@ theorem assignStorageRef_frob_urn_ink (evm : EVM.State) (I : ExecutionEnv)
     (hi : locals.get? "i" = some (frobIValue I))
     (hu : locals.get? "u" = some (frobUValue I))
     (hbase : locals.get? "urns" = none) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner
       (frobUrnInkSourceSlot I) urnInkNew
     assignStorageRef? config { contract := contract, locals := locals } evm .storage
       (urnsF (.var "i") (.var "u") "ink") (.int (Int.ofNat urnInkNew.toNat)) =
@@ -12371,7 +12371,7 @@ theorem assignStorageRef_frob_urn_art (evm : EVM.State) (I : ExecutionEnv)
     (hi : locals.get? "i" = some (frobIValue I))
     (hu : locals.get? "u" = some (frobUValue I))
     (hbase : locals.get? "urns" = none) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner
       (frobUrnArtSourceSlot I) urnArtNew
     assignStorageRef? config { contract := contract, locals := locals } evm .storage
       (urnsF (.var "i") (.var "u") "art") (.int (Int.ofNat urnArtNew.toNat)) =
@@ -12391,7 +12391,7 @@ theorem assignStorageRef_frob_ilk_art (evm : EVM.State) (I : ExecutionEnv)
     (hsz196 : 196 ≤ I.calldata.size)
     (hi : locals.get? "i" = some (frobIValue I))
     (hbase : locals.get? "ilks" = none) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner
       (frobIlkArtSourceSlot I) ilkArtNew
     assignStorageRef? config { contract := contract, locals := locals } evm .storage
       (ilksF (.var "i") "Art") (.int (Int.ofNat ilkArtNew.toNat)) =
@@ -12411,7 +12411,7 @@ theorem assignStorageRef_frob_ilk_rate (evm : EVM.State) (I : ExecutionEnv)
     (hsz196 : 196 ≤ I.calldata.size)
     (hi : locals.get? "i" = some (frobIValue I))
     (hbase : locals.get? "ilks" = none) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner
       (frobIlkRateSourceSlot I) ilkRate
     assignStorageRef? config { contract := contract, locals := locals } evm .storage
       (ilksF (.var "i") "rate") (.int (Int.ofNat ilkRate.toNat)) =
@@ -12431,7 +12431,7 @@ theorem assignStorageRef_frob_ilk_spot (evm : EVM.State) (I : ExecutionEnv)
     (hsz196 : 196 ≤ I.calldata.size)
     (hi : locals.get? "i" = some (frobIValue I))
     (hbase : locals.get? "ilks" = none) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner
       (frobIlkSpotSourceSlot I) ilkSpot
     assignStorageRef? config { contract := contract, locals := locals } evm .storage
       (ilksF (.var "i") "spot") (.int (Int.ofNat ilkSpot.toNat)) =
@@ -12451,7 +12451,7 @@ theorem assignStorageRef_frob_ilk_line (evm : EVM.State) (I : ExecutionEnv)
     (hsz196 : 196 ≤ I.calldata.size)
     (hi : locals.get? "i" = some (frobIValue I))
     (hbase : locals.get? "ilks" = none) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner
       (frobIlkLineSourceSlot I) ilkLine
     assignStorageRef? config { contract := contract, locals := locals } evm .storage
       (ilksF (.var "i") "line") (.int (Int.ofNat ilkLine.toNat)) =
@@ -12471,7 +12471,7 @@ theorem assignStorageRef_frob_ilk_dust (evm : EVM.State) (I : ExecutionEnv)
     (hsz196 : 196 ≤ I.calldata.size)
     (hi : locals.get? "i" = some (frobIValue I))
     (hbase : locals.get? "ilks" = none) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner
       (frobIlkDustSourceSlot I) ilkDust
     assignStorageRef? config { contract := contract, locals := locals } evm .storage
       (ilksF (.var "i") "dust") (.int (Int.ofNat ilkDust.toNat)) =
@@ -12492,7 +12492,7 @@ theorem assignStorageRef_frob_gem_v (evm : EVM.State) (I : ExecutionEnv)
     (hi : locals.get? "i" = some (frobIValue I))
     (hv : locals.get? "v" = some (frobVValue I))
     (hbase : locals.get? "gem" = none) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner
       (frobGemVSourceSlot I) gemNew
     assignStorageRef? config { contract := contract, locals := locals } evm .storage
       (gemRef (.var "i") (.var "v")) (.int (Int.ofNat gemNew.toNat)) =
@@ -12511,7 +12511,7 @@ theorem assignStorageRef_frob_dai_w (evm : EVM.State) (I : ExecutionEnv)
     (locals : Store) (daiNew : UInt256)
     (hw : locals.get? "w" = some (frobWValue I))
     (hbase : locals.get? "dai" = none) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner
       (frobDaiWSourceSlot I) daiNew
     assignStorageRef? config { contract := contract, locals := locals } evm .storage
       (daiRef (.var "w")) (.int (Int.ofNat daiNew.toNat)) =
@@ -12737,7 +12737,7 @@ theorem execFrobGemSubCheckedOk {evm : EVM.State} {I : ExecutionEnv}
     (hdink : locals.get? "dink" = some (frobDinkValue I))
     (hbase : locals.get? "gem" = none)
     (hload :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (frobGemVSourceSlot I) = gemOld)
     (hnew : gemNew = UInt256.sub gemOld (frobDinkWord I))
     (hguardNeg : frobDinkInt I ≤ 0 ∨ gemNew.toNat ≤ gemOld.toNat)
@@ -12802,7 +12802,7 @@ theorem execFrobGemSubCheckedRevertGuardNeg {evm : EVM.State} {I : ExecutionEnv}
     (hdink : locals.get? "dink" = some (frobDinkValue I))
     (hbase : locals.get? "gem" = none)
     (hload :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (frobGemVSourceSlot I) = gemOld)
     (hnew : gemNew = UInt256.sub gemOld (frobDinkWord I))
     (hfail :
@@ -12865,7 +12865,7 @@ theorem execFrobGemSubCheckedRevertGuardPos {evm : EVM.State} {I : ExecutionEnv}
     (hdink : locals.get? "dink" = some (frobDinkValue I))
     (hbase : locals.get? "gem" = none)
     (hload :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (frobGemVSourceSlot I) = gemOld)
     (hnew : gemNew = UInt256.sub gemOld (frobDinkWord I))
     (hguardNeg :
@@ -12943,7 +12943,7 @@ theorem execFrobGemUpdateOk {evm : EVM.State} {I : ExecutionEnv}
     (hdink : locals.get? "dink" = some (frobDinkValue I))
     (hbase : locals.get? "gem" = none)
     (hload :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (frobGemVSourceSlot I) = gemOld)
     (hnew : gemNew = UInt256.sub gemOld (frobDinkWord I))
     (hguardNeg : frobDinkInt I ≤ 0 ∨ gemNew.toNat ≤ gemOld.toNat)
@@ -12954,11 +12954,11 @@ theorem execFrobGemUpdateOk {evm : EVM.State} {I : ExecutionEnv}
       (.ok
         { contract := contract,
           locals := locals.insert "gemNew" (.int (Int.ofNat gemNew.toNat)) }
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner (frobGemVSourceSlot I)
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner (frobGemVSourceSlot I)
           gemNew)) := by
   let localsGem := locals.insert "gemNew" (.int (Int.ofNat gemNew.toNat))
   let evmGem :=
-    Solm.EVM.storageStore evm evm.executionEnv.codeOwner (frobGemVSourceSlot I) gemNew
+    Stele.EVM.storageStore evm evm.executionEnv.codeOwner (frobGemVSourceSlot I) gemNew
   have hsub :
       ExecBlock config { contract := contract, locals := locals } evm
         (checkedSubSignedInto "gemNew" (.storage (gemRef (.var "i") (.var "v"))) (.var "dink"))
@@ -13003,7 +13003,7 @@ theorem execFrobDaiAddCheckedOk {evm : EVM.State} {I : ExecutionEnv}
     (hdtab : locals.get? "dtab" = some (.int dtab))
     (hbase : locals.get? "dai" = none)
     (hload :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (frobDaiWSourceSlot I) = daiOld)
     (hdtabMod : dtab % (Int.ofNat EVM.wordModulus) = Int.ofNat dtabWord.toNat)
     (hnew : daiNew = dtabWord + daiOld)
@@ -13060,7 +13060,7 @@ theorem execFrobDaiAddCheckedRevertGuardNeg {evm : EVM.State} {I : ExecutionEnv}
     (hdtab : locals.get? "dtab" = some (.int dtab))
     (hbase : locals.get? "dai" = none)
     (hload :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (frobDaiWSourceSlot I) = daiOld)
     (hdtabMod : dtab % (Int.ofNat EVM.wordModulus) = Int.ofNat dtabWord.toNat)
     (hnew : daiNew = dtabWord + daiOld)
@@ -13117,7 +13117,7 @@ theorem execFrobDaiAddCheckedRevertGuardPos {evm : EVM.State} {I : ExecutionEnv}
     (hdtab : locals.get? "dtab" = some (.int dtab))
     (hbase : locals.get? "dai" = none)
     (hload :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (frobDaiWSourceSlot I) = daiOld)
     (hdtabMod : dtab % (Int.ofNat EVM.wordModulus) = Int.ofNat dtabWord.toNat)
     (hnew : daiNew = dtabWord + daiOld)
@@ -13189,7 +13189,7 @@ theorem execFrobDaiUpdateOk {evm : EVM.State} {I : ExecutionEnv}
     (hdtab : locals.get? "dtab" = some (.int dtab))
     (hbase : locals.get? "dai" = none)
     (hload :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (frobDaiWSourceSlot I) = daiOld)
     (hdtabMod : dtab % (Int.ofNat EVM.wordModulus) = Int.ofNat dtabWord.toNat)
     (hnew : daiNew = dtabWord + daiOld)
@@ -13201,11 +13201,11 @@ theorem execFrobDaiUpdateOk {evm : EVM.State} {I : ExecutionEnv}
       (.ok
         { contract := contract,
           locals := locals.insert "daiNew" (.int (Int.ofNat daiNew.toNat)) }
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner (frobDaiWSourceSlot I)
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner (frobDaiWSourceSlot I)
           daiNew)) := by
   let localsDai := locals.insert "daiNew" (.int (Int.ofNat daiNew.toNat))
   let evmDai :=
-    Solm.EVM.storageStore evm evm.executionEnv.codeOwner (frobDaiWSourceSlot I) daiNew
+    Stele.EVM.storageStore evm evm.executionEnv.codeOwner (frobDaiWSourceSlot I) daiNew
   have hadd :
       ExecBlock config { contract := contract, locals := locals } evm
         (checkedAddSignedInto "daiNew" (.storage (daiRef (.var "w"))) (.var "dtab"))
@@ -13339,12 +13339,12 @@ theorem execFrobFinalStoreTailOk {evm : EVM.State} {I : ExecutionEnv}
     (hbaseUrns : locals.get? "urns" = none)
     (hbaseIlks : locals.get? "ilks" = none)
     (hloadGem :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (frobGemVSourceSlot I) = gemOld)
     (hloadDai :
-      let evmGem := Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+      let evmGem := Stele.EVM.storageStore evm evm.executionEnv.codeOwner
         (frobGemVSourceSlot I) gemNew
-      Solm.EVM.storageLoad evmGem evmGem.executionEnv.codeOwner
+      Stele.EVM.storageLoad evmGem evmGem.executionEnv.codeOwner
         (frobDaiWSourceSlot I) = daiOld)
     (hgemNew : gemNew = UInt256.sub gemOld (frobDinkWord I))
     (hdaiNew : daiNew = dtabWord + daiOld)
@@ -13353,23 +13353,23 @@ theorem execFrobFinalStoreTailOk {evm : EVM.State} {I : ExecutionEnv}
     (hGemPos : 0 ≤ frobDinkInt I ∨ gemOld.toNat ≤ gemNew.toNat)
     (hDaiNeg : 0 ≤ dtab ∨ daiNew.toNat ≤ daiOld.toNat)
     (hDaiPos : dtab ≤ 0 ∨ daiOld.toNat ≤ daiNew.toNat) :
-    let evmGem := Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+    let evmGem := Stele.EVM.storageStore evm evm.executionEnv.codeOwner
       (frobGemVSourceSlot I) gemNew
-    let evmDai := Solm.EVM.storageStore evmGem evmGem.executionEnv.codeOwner
+    let evmDai := Stele.EVM.storageStore evmGem evmGem.executionEnv.codeOwner
       (frobDaiWSourceSlot I) daiNew
-    let evmInk := Solm.EVM.storageStore evmDai evmDai.executionEnv.codeOwner
+    let evmInk := Stele.EVM.storageStore evmDai evmDai.executionEnv.codeOwner
       (frobUrnInkSourceSlot I) urnInkNew
-    let evmArt := Solm.EVM.storageStore evmInk evmInk.executionEnv.codeOwner
+    let evmArt := Stele.EVM.storageStore evmInk evmInk.executionEnv.codeOwner
       (frobUrnArtSourceSlot I) urnArtNew
-    let evmIlk := Solm.EVM.storageStore evmArt evmArt.executionEnv.codeOwner
+    let evmIlk := Stele.EVM.storageStore evmArt evmArt.executionEnv.codeOwner
       (frobIlkArtSourceSlot I) ilkArtNew
-    let evmRate := Solm.EVM.storageStore evmIlk evmIlk.executionEnv.codeOwner
+    let evmRate := Stele.EVM.storageStore evmIlk evmIlk.executionEnv.codeOwner
       (frobIlkRateSourceSlot I) ilkRate
-    let evmSpot := Solm.EVM.storageStore evmRate evmRate.executionEnv.codeOwner
+    let evmSpot := Stele.EVM.storageStore evmRate evmRate.executionEnv.codeOwner
       (frobIlkSpotSourceSlot I) ilkSpot
-    let evmLine := Solm.EVM.storageStore evmSpot evmSpot.executionEnv.codeOwner
+    let evmLine := Stele.EVM.storageStore evmSpot evmSpot.executionEnv.codeOwner
       (frobIlkLineSourceSlot I) ilkLine
-    let evmDust := Solm.EVM.storageStore evmLine evmLine.executionEnv.codeOwner
+    let evmDust := Stele.EVM.storageStore evmLine evmLine.executionEnv.codeOwner
       (frobIlkDustSourceSlot I) ilkDust
     ExecBlock config { contract := contract, locals := locals } evm
       (checkedSubSignedInto "gemNew" (.storage (gemRef (.var "i") (.var "v"))) (.var "dink") ++
@@ -13565,7 +13565,7 @@ theorem execFrobDebtAddStoreSplit {evm : EVM.State} {locals : Store}
     (hbase : locals.get? "debt" = none)
     (hdtab : locals.get? "dtab" = some (.int dtab))
     (hload :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner foldDebtSlot = debtOld)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner foldDebtSlot = debtOld)
     (hdtabMod : dtab % (Int.ofNat EVM.wordModulus) = Int.ofNat dtabWord.toNat)
     (hnew : debtNew = dtabWord + debtOld)
     (hguardNeg : 0 ≤ dtab ∨ debtNew.toNat ≤ debtOld.toNat)
@@ -13576,14 +13576,14 @@ theorem execFrobDebtAddStoreSplit {evm : EVM.State} {locals : Store}
       (.ok
         { contract := contract,
           locals := locals.insert "debtNew" (.int (Int.ofNat debtNew.toNat)) }
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner foldDebtSlot debtNew)) ∧
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner foldDebtSlot debtNew)) ∧
     (evm.executionEnv.perm = false →
       ExecBlock config { contract := contract, locals := locals } evm
         (checkedAddSignedInto "debtNew" (.storage debtRef) (.var "dtab") ++
           [ .assign .storage debtRef (.var "debtNew") ])
         .staticViolation) := by
   let localsDebt := locals.insert "debtNew" (.int (Int.ofNat debtNew.toNat))
-  let evmDebt := Solm.EVM.storageStore evm evm.executionEnv.codeOwner foldDebtSlot debtNew
+  let evmDebt := Stele.EVM.storageStore evm evm.executionEnv.codeOwner foldDebtSlot debtNew
   have hdebt :
       evalExpr? config { contract := contract, locals := locals } evm (.storage debtRef) =
         .ok (.int (Int.ofNat debtOld.toNat)) := by
@@ -13669,7 +13669,7 @@ theorem execFrobDebtAddStoreOk {evm : EVM.State} {locals : Store}
     (hbase : locals.get? "debt" = none)
     (hdtab : locals.get? "dtab" = some (.int dtab))
     (hload :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner foldDebtSlot = debtOld)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner foldDebtSlot = debtOld)
     (hdtabMod : dtab % (Int.ofNat EVM.wordModulus) = Int.ofNat dtabWord.toNat)
     (hnew : debtNew = dtabWord + debtOld)
     (hguardNeg : 0 ≤ dtab ∨ debtNew.toNat ≤ debtOld.toNat)
@@ -13680,7 +13680,7 @@ theorem execFrobDebtAddStoreOk {evm : EVM.State} {locals : Store}
       (.ok
         { contract := contract,
           locals := locals.insert "debtNew" (.int (Int.ofNat debtNew.toNat)) }
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner foldDebtSlot debtNew)) :=
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner foldDebtSlot debtNew)) :=
   (execFrobDebtAddStoreSplit debtOld debtNew dtabWord dtab hbase hdtab hload hdtabMod hnew
     hguardNeg hguardPos).1
 
@@ -13689,7 +13689,7 @@ theorem execFrobDebtAddCheckedRevertGuardNeg {evm : EVM.State} {locals : Store}
     (hbase : locals.get? "debt" = none)
     (hdtab : locals.get? "dtab" = some (.int dtab))
     (hload :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner foldDebtSlot = debtOld)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner foldDebtSlot = debtOld)
     (hdtabMod : dtab % (Int.ofNat EVM.wordModulus) = Int.ofNat dtabWord.toNat)
     (hnew : debtNew = dtabWord + debtOld)
     (hcond : dtab < 0 ∧ debtOld.toNat < debtNew.toNat) :
@@ -13734,7 +13734,7 @@ theorem execFrobDebtAddCheckedRevertGuardPos {evm : EVM.State} {locals : Store}
     (hbase : locals.get? "debt" = none)
     (hdtab : locals.get? "dtab" = some (.int dtab))
     (hload :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner foldDebtSlot = debtOld)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner foldDebtSlot = debtOld)
     (hdtabMod : dtab % (Int.ofNat EVM.wordModulus) = Int.ofNat dtabWord.toNat)
     (hnew : debtNew = dtabWord + debtOld)
     (hguardNeg : 0 ≤ dtab ∨ debtNew.toNat ≤ debtOld.toNat)
@@ -14240,9 +14240,9 @@ theorem vatFrobSourceBodyNotLive {σ σ₀ A I} {g : UInt256}
 
 theorem vatDecode_frob_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 196) :
-    decodeCalldataWithMode config.abiDecodeMode (frobTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (frobTransition.params.map Param.name)
       (transitionSignature frobTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["i", "u", "v", "w", "dink", "dart"]
+  show config.externalABI.decodeCalldata? ["i", "u", "v", "w", "dink", "dart"]
     [bytes32, addr, addr, addr, int256, int256] I.calldata = none
   change decodeCalldataWithMode DecodeMode.legacySolc05 ["i", "u", "v", "w", "dink", "dart"]
     [bytes32, addr, addr, addr, int256, int256] I.calldata = none
@@ -14261,9 +14261,9 @@ theorem vatDecode_frob_none_short {I : ExecutionEnv}
     (I.calldata.toList.drop 4).length < 192)]
 
 theorem vatDecode_frob_ok {I : ExecutionEnv} (hsz196 : 196 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (frobTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (frobTransition.params.map Param.name)
       (transitionSignature frobTransition).paramTypes I.calldata = some (frobStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["i", "u", "v", "w", "dink", "dart"]
+  show config.externalABI.decodeCalldata? ["i", "u", "v", "w", "dink", "dart"]
     [bytes32, addr, addr, addr, int256, int256] I.calldata = some (frobStore I)
   change decodeCalldataWithMode DecodeMode.legacySolc05 ["i", "u", "v", "w", "dink", "dart"]
     [bytes32, addr, addr, addr, int256, int256] I.calldata = some (frobStore I)
@@ -14392,7 +14392,7 @@ theorem vatFrobBodyCoreNotLive
     (hlive : solcSlotWordAt ⟨10⟩ σ I ≠ ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some frobTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (frobTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (frobTransition.params.map Param.name)
         (transitionSignature frobTransition).paramTypes I.calldata = some (frobStore I))
     (hreach : ∃ k C, RD vatBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨901⟩ [sel]

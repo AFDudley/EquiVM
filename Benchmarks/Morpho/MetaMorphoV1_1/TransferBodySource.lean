@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.TransferInternalSource
 
 /-! Source execution of the public transfer transition. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1

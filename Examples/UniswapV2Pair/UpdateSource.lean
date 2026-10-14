@@ -1,7 +1,7 @@
 import Examples.UniswapV2Pair.SyncRuntime
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -11,9 +11,9 @@ namespace UniswapV2Pair
 
 
 theorem uniswapDecode_sync {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (syncTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (syncTransition.params.map Param.name)
       (transitionSignature syncTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 
@@ -374,7 +374,7 @@ abbrev syncUpdateBlockTimestampStoreWith
 
 abbrev syncBlockTimestampLastWord (evm : EVM.State) : UInt256 :=
   UInt256.land
-    (UInt256.div (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩)
+    (UInt256.div (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩)
       reserve224Shift)
     reserve32Mask
 
@@ -386,7 +386,7 @@ abbrev syncTimeElapsedValue (evm : EVM.State) : Value :=
   .int (syncTimeElapsedInt evm)
 
 abbrev syncPrice0CumulativeIntAt (storageEvm updateEvm : EVM.State) : Int :=
-  (Int.ofNat (Solm.EVM.storageLoad storageEvm storageEvm.executionEnv.codeOwner ⟨9⟩).toNat +
+  (Int.ofNat (Stele.EVM.storageLoad storageEvm storageEvm.executionEnv.codeOwner ⟨9⟩).toNat +
     ((Int.ofNat (uniswapReserve1Word updateEvm).toNat * q112) /
       Int.ofNat (uniswapReserve0Word updateEvm).toNat) *
         syncTimeElapsedInt updateEvm) % twoPow256
@@ -401,7 +401,7 @@ abbrev syncPrice0CumulativeValue (evm : EVM.State) : Value :=
   .int (syncPrice0CumulativeInt evm)
 
 abbrev syncPrice1CumulativeIntAt (storageEvm updateEvm : EVM.State) : Int :=
-  (Int.ofNat (Solm.EVM.storageLoad storageEvm storageEvm.executionEnv.codeOwner ⟨10⟩).toNat +
+  (Int.ofNat (Stele.EVM.storageLoad storageEvm storageEvm.executionEnv.codeOwner ⟨10⟩).toNat +
     ((Int.ofNat (uniswapReserve0Word updateEvm).toNat * q112) /
       Int.ofNat (uniswapReserve1Word updateEvm).toNat) *
         syncTimeElapsedInt updateEvm) % twoPow256
@@ -714,7 +714,7 @@ theorem evalExpr_sync_blockTimestamp (evm : EVM.State) (balance0 balance1 : UInt
   simpa [Reasoning.Theory.u256_32_toNat, now, syncBlockTimestampValue, syncBlockTimestampInt,
     twoPow32, uint32Int] using
     evalExpr_timestampModUint32
-      (cfg := config) (solm := { contract := contract, locals := syncBalanceStore balance0 balance1 })
+      (cfg := config) (stele := { contract := contract, locals := syncBalanceStore balance0 balance1 })
       evm
 
 theorem evalExpr_sync_update_blockTimestamp
@@ -725,7 +725,7 @@ theorem evalExpr_sync_update_blockTimestamp
   simpa [Reasoning.Theory.u256_32_toNat, now, syncBlockTimestampValue, syncBlockTimestampInt,
     twoPow32, uint32Int] using
     evalExpr_timestampModUint32
-      (cfg := config) (solm := syncUpdateCallFrame evm balance0 balance1) evm
+      (cfg := config) (stele := syncUpdateCallFrame evm balance0 balance1) evm
 
 theorem evalExpr_sync_update_blockTimestamp_with
     (evm : EVM.State) (balance0 balance1 reserve0 reserve1 : UInt256) :
@@ -736,7 +736,7 @@ theorem evalExpr_sync_update_blockTimestamp_with
     twoPow32, uint32Int] using
     evalExpr_timestampModUint32
       (cfg := config)
-      (solm := syncUpdateCallFrameWith balance0 balance1 reserve0 reserve1) evm
+      (stele := syncUpdateCallFrameWith balance0 balance1 reserve0 reserve1) evm
 
 theorem evalExpr_sync_blockTimestampLast (evm : EVM.State) (locals : Store)
     (hbase : locals.get? "blockTimestampLast" = none) :
@@ -760,11 +760,11 @@ theorem evalExpr_sync_price0CumulativeLast (evm : EVM.State) (locals : Store)
     evalExpr? config { contract := contract, locals := locals } evm
       (.storage price0CumulativeLastRef) =
         .ok (.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨9⟩).toNat)) := by
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨9⟩).toNat)) := by
   have hload :
       storageLocLoad evm (wordLoc ⟨9⟩) =
         .int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨9⟩).toNat) := by
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨9⟩).toNat) := by
     exact storageLocLoad_uint256 evm ⟨9⟩
   rw [evalExpr_storage_scalar (hbackend := rfl) (t := .int uint256Int) (slot := price0CumulativeLastRef)
     (er := ({ base := "price0CumulativeLast", steps := [] } : EvaledStorageRef))
@@ -781,11 +781,11 @@ theorem evalExpr_sync_price1CumulativeLast (evm : EVM.State) (locals : Store)
     evalExpr? config { contract := contract, locals := locals } evm
       (.storage price1CumulativeLastRef) =
         .ok (.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨10⟩).toNat)) := by
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨10⟩).toNat)) := by
   have hload :
       storageLocLoad evm (wordLoc ⟨10⟩) =
         .int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨10⟩).toNat) := by
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨10⟩).toNat) := by
     exact storageLocLoad_uint256 evm ⟨10⟩
   rw [evalExpr_storage_scalar (hbackend := rfl) (t := .int uint256Int) (slot := price1CumulativeLastRef)
     (er := ({ base := "price1CumulativeLast", steps := [] } : EvaledStorageRef))
@@ -1247,7 +1247,7 @@ theorem syncTimeElapsedInt_eq_updateElapsedWord_toNat (evm : EVM.State) :
       Int.ofNat
         (UInt256.land
           (uniswapUpdateElapsedWord
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩)
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩)
             evm.executionEnv)
           reserve32Mask).toNat := by
   rw [syncTimeElapsedInt]
@@ -1259,7 +1259,7 @@ theorem syncTimeElapsedInt_eq_updateElapsedWord_toNat (evm : EVM.State) :
   have hb : (syncBlockTimestampLastWord evm).toNat < 2 ^ 32 := by
     simpa [syncBlockTimestampLastWord, u256_land_comm] using
       uniswapUint32Masked_lt
-        (UInt256.div (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩)
+        (UInt256.div (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩)
           reserve224Shift)
   have hsub :=
     uint32MaskedSub_toInt (uniswapUpdateTimestampWord evm.executionEnv)
@@ -1269,16 +1269,16 @@ theorem syncTimeElapsedInt_eq_updateElapsedWord_toNat (evm : EVM.State) :
 abbrev syncUpdatePackedReserveState
     (evm : EVM.State) (balance0 balance1 : UInt256) : EVM.State :=
   let evm0 :=
-    Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨8⟩
+    Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨8⟩
       (setUint112Offset0Word
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩) balance0)
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩) balance0)
   let evm1 :=
-    Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner ⟨8⟩
+    Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner ⟨8⟩
       (setUint112Offset14Word
-        (Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner ⟨8⟩) balance1)
-  Solm.EVM.storageStore evm1 evm1.executionEnv.codeOwner ⟨8⟩
+        (Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner ⟨8⟩) balance1)
+  Stele.EVM.storageStore evm1 evm1.executionEnv.codeOwner ⟨8⟩
     (setUint32Offset28Word
-      (Solm.EVM.storageLoad evm1 evm1.executionEnv.codeOwner ⟨8⟩)
+      (Stele.EVM.storageLoad evm1 evm1.executionEnv.codeOwner ⟨8⟩)
       (uniswapUpdateTimestampWord evm.executionEnv))
 
 theorem uniswapUpdateFunctionReturns_conditionFalse
@@ -1535,7 +1535,7 @@ theorem uniswapSyncUpdateCallReturns_elapsedZero
       (args := [ .var "balance0", .var "balance1", .storage reserve0Ref, .storage reserve1Ref ])
       (argVals := syncUpdateCallArgVals evm balance0 balance1) (callee := updateFunction)
       (locals := syncUpdateCallStore evm balance0 balance1)
-      (calleeSolm :=
+      (calleeStele :=
         { contract := contract, locals := syncUpdateTimeElapsedStore evm balance0 balance1 })
       (value := none)
       (evalExprs_sync_update_call_args evm balance0 balance1)
@@ -1574,7 +1574,7 @@ theorem uniswapSyncUpdateCallReturns_conditionFalse
       (args := [ .var "balance0", .var "balance1", .storage reserve0Ref, .storage reserve1Ref ])
       (argVals := syncUpdateCallArgVals evm balance0 balance1) (callee := updateFunction)
       (locals := syncUpdateCallStore evm balance0 balance1)
-      (calleeSolm :=
+      (calleeStele :=
         { contract := contract, locals := syncUpdateTimeElapsedStore evm balance0 balance1 })
       (value := none)
       (evalExprs_sync_update_call_args evm balance0 balance1)
@@ -1608,7 +1608,7 @@ theorem uniswapSyncUpdateCallReturns_conditionTrue
       (args := [ .var "balance0", .var "balance1", .storage reserve0Ref, .storage reserve1Ref ])
       (argVals := syncUpdateCallArgVals evm balance0 balance1) (callee := updateFunction)
       (locals := syncUpdateCallStore evm balance0 balance1)
-      (calleeSolm :=
+      (calleeStele :=
         { contract := contract, locals := syncUpdateTimeElapsedStore evm balance0 balance1 })
       (value := none)
       (evalExprs_sync_update_call_args evm balance0 balance1)

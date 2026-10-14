@@ -4,7 +4,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.RuntimeBlocks_025
 
 /-! Runtime scheduling of a guardian, with checked timestamp addition between the two stores. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables metaMorphoV1_1Blocks
 
@@ -34,7 +34,7 @@ theorem scheduledGuardianReachAdd {evm : EVM.State} {g : Sat256} {s0 : State}
       (UInt256.land (codeOwnerStorageWord evm.executionEnv evm.accountMap (UInt256.ofNat 15))
         (UInt256.lnot solcAddrMask)) (UInt256.ofNat value.val) =
       setAddressOffset0Word
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨15⟩) (UInt256.ofNat value.val) := by
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨15⟩) (UInt256.ofNat value.val) := by
     rw [setAddressOffset0Word, solcAddrMask_clean (w := UInt256.ofNat value.val)
       (addressWord_val_canonical value)]
     rfl
@@ -59,7 +59,7 @@ theorem scheduledGuardianTimeReturn {evm : EVM.State} {g : Sat256} {s0 : State}
       (UInt256.land (UInt256.lnot
         (UInt256.shiftLeft (UInt256.ofNat 18446744073709551615) (UInt256.ofNat 160)))
         (codeOwnerStorageWord evm.executionEnv evm.accountMap (UInt256.ofNat 15))) =
-      setPendingTimeWord (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨15⟩) time :=
+      setPendingTimeWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨15⟩) time :=
     setPendingTimeWord_bytecode _ _
   rw [hm] at hret
   simpa only [pendingGuardianTimeState, storageStore_accountMap] using hret

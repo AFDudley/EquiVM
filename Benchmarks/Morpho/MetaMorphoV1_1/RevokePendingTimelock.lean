@@ -5,11 +5,11 @@ import Benchmarks.Morpho.MetaMorphoV1_1.RevocationEntry
 # MetaMorphoV1_1 `revokePendingTimelock()`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 2053; reach lemma `metaMorphoV1_1ReachRevokePendingTimelockBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 
@@ -27,7 +27,7 @@ theorem metaMorphoV1_1RevokePendingTimelockBody {σ σ₀ A I} {g : UInt256}
   have hd : dispatchMsg contract I.calldata = some revokePendingTimelockTransition := by
     apply metaMorphoV1_1Dispatch_revokePendingTimelock <;>
       first | exact hsel | exact selectorMismatch hsel (by decide +kernel)
-  have hdec : decodeCalldataWithMode config.abiDecodeMode
+  have hdec : config.externalABI.decodeCalldata?
       (revokePendingTimelockTransition.params.map Param.name)
       (transitionSignature revokePendingTimelockTransition).paramTypes I.calldata = some ∅ :=
     decodeCalldata_empty_ok hsz

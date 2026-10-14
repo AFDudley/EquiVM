@@ -9,11 +9,11 @@ import Benchmarks.Morpho.MetaMorphoV1_1.RuntimeBlocks_009
 # MetaMorphoV1_1 `pendingTimelock()`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 5595; reach lemma `metaMorphoV1_1ReachPendingTimelockBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 
@@ -31,10 +31,10 @@ theorem pendingTimelockBodyReturns (v : MetaMorphoV1_1Immutables)
           locals := locals.insert "__calldata" (.bytes evm.executionEnv.calldata)
           immutables := immStore v }
         evm (some [.int (Int.ofNat (UInt256.land
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨17⟩)
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨17⟩)
           (UInt256.ofNat (2 ^ 192 - 1))).toNat),
           .int (Int.ofNat (UInt256.shiftRight
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨17⟩)
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨17⟩)
             ⟨192⟩).toNat)])) (immStore v) := by
   apply ExecFuncBody.execBlockRet
   apply (nonpayableCalldataPrefix "__calldata" (2 ^ 255 + 4) hwv hhi).run
@@ -114,7 +114,7 @@ theorem metaMorphoV1_1PendingTimelockBody {σ σ₀ A I} {g : UInt256} (v : Meta
   have hd : dispatchMsg contract I.calldata = some pendingTimelockTransition := by
     apply metaMorphoV1_1Dispatch_pendingTimelock <;>
       first | exact hsel | exact selectorMismatch hsel (by decide +kernel)
-  have hdec : decodeCalldataWithMode config.abiDecodeMode
+  have hdec : config.externalABI.decodeCalldata?
       (pendingTimelockTransition.params.map Param.name)
       (transitionSignature pendingTimelockTransition).paramTypes I.calldata = some ∅ := by
     exact decodeCalldata_empty_ok hsz

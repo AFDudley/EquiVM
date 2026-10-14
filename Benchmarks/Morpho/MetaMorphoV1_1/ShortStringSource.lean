@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.PackedSource
 
 /-! Source decoding of the immutable short strings used by EIP-712. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 

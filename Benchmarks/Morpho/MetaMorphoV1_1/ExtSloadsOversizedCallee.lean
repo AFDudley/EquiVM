@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.ExtSloadsAllocationRegression
 /-! A concrete callee that returns the oversized buffer from the allocation regression.
 The trace is symbolic; no executable test attempts to allocate the returned byte array. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.ExtSloadsAllocationRegression
 

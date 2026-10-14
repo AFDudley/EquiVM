@@ -1,0 +1,13 @@
+Ξ_PointEval failed: PointEval failed
+Ξ_PointEval failed: PointEval failed
+Ξ_PointEval failed: PointEval failed
+Ξ_PointEval failed: PointEval failed
+Ξ_PointEval failed: PointEval failed
+Ξ_PointEval failed: PointEval failed
+Ξ_PointEval failed: PointEval failed
+failed
+Ξ_PointEval failed: PointEval failed
+Ξ_PointEval failed: PointEval failed
+solm-difftest: 1 target(s), seed 2026, 50 cases per transition
+Vault: 2525 cases: 2525 agree (756 successful), 0 disagree, 0 stuck, 0 EVM out of gas, 0 spec out of fuel
+  successful/cases: constructor 25/25, withdraw(uint256,address) 0/50, withdraw(uint256) 0/52, withdraw(uint256,address,address) 0/51, totalAssets() 1/53, name() 49/53, convertToAssets(uint256) 0/52, approve(address,uint256) 22/53, previewWithdraw(uint256) 0/51, totalSupply() 45/52, transferFrom(address,address,uint256) 3/51, collateral_token() 44/50, pricePerShare(bool) 9/52, pricePerShare() 17/52, amm() 45/51, decimals() 49/52, asset() 36/52, increaseAllowance(address,uint256) 24/53, maxDeposit(address) 3/52, previewRedeem(uint256) 2/52, deposit(uint256,address) 0/51, deposit(uint256) 0/51, balanceOf(address) 47/57, borrowed_token() 44/53, redeem(uint256,address) 0/55, redeem(uint256,address,address) 0/52, redeem(uint256) 0/58, set_max_supply(uint256) 0/50, mint(uint256,address) 0/51, mint(uint256) 0/51, symbol() 44/52, decreaseAllowance(address,uint256) 38/52, transfer(address,uint256) 9/51, lend_apr() 0/54, previewMint(uint256) 0/51, borrow_apr() 6/56, factory() 49/52, maxMint(address) 2/52, convertToShares(uint256) 0/51, maxWithdraw(address) 0/50, maxSupply() 47/53, maxRedeem(address) 0/51, allowance(address,address) 42/53, previewDeposit(uint256) 0/52, controller() 43/54, admin() 4/51, initialize(address,address,address,address) 7/52, stray 0/100

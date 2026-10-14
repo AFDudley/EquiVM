@@ -4,14 +4,14 @@ import Benchmarks.Morpho.MetaMorphoV1_1.UpdateLastAssetsSource
 
 /-! Checked total-assets update and withdrawal-queue event in the cap setter. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 
 open SourceMemory
 
 def setCapQueueValues (evm : State) : List Value :=
-  wordArrayValues (fun i ↦ Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+  wordArrayValues (fun i ↦ Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
     (solidityBytesDataBaseSlot ⟨21⟩ + UInt256.ofNat i)) 0 (setCapQueueLength evm).toNat
 
 theorem setCapQueueRead {frame : Frame} {evm : State}

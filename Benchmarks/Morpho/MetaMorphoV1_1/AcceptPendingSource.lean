@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.AcceptPendingSyntax
 
 /-! Source executions of timelock and guardian acceptance. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 

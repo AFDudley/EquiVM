@@ -1,7 +1,7 @@
 import Examples.VyperERC20.Allowance
 import Examples.ERC20.Approve
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option linter.unusedSimpArgs false
@@ -35,7 +35,7 @@ def approveSlotI (I : ExecutionEnv) : UInt256 :=
     (.address (AccountAddress.ofNat (approveSpenderWord I).toNat))
 
 def approvePostState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (approveSlot evm I) (approveValueWord I)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (approveSlot evm I) (approveValueWord I)
 
 def approveSelectorWord : UInt256 :=
   ⟨0x095ea7b3⟩
@@ -110,7 +110,7 @@ theorem approveAssign (evm : EVM.State) (I : ExecutionEnv) :
       .storage (allowanceRef sender (.var "spender")) (approveValueValue I) =
         .ok ({ contract := erc20Contract, locals := approveStore I }, approvePostState evm I) := by
   simp only [allowanceRef]
-  apply assignStorageRef_storage_scalar (hbackend := rfl)
+  apply assignStorageRef_storage_vyper_scalar (hbackend := rfl) (hcheck := by rfl)
       (hleaf := Or.inl ⟨_, rfl⟩) (ty := uint256Storage)
       (hbase := approveStore_allowance I)
       (her := evalStorageRef_approve_allowance evm I)
@@ -651,7 +651,7 @@ theorem erc20ApproveBodyCore
   · by_cases hcanonSpender : (approveSpenderWord I).toNat < EVM.addressModulus
     · have hdec0 := erc20Decode_approve_ok (I := I) hsz68 hcanonSpender
       have hdec :
-          decodeCalldataWithMode vyperERC20Config.abiDecodeMode
+          vyperERC20Config.externalABI.decodeCalldata?
             (ERC20.approveTransition.params.map Param.name)
             (transitionSignature ERC20.approveTransition).paramTypes I.calldata =
               some (approveStore I) := by
@@ -671,7 +671,7 @@ theorem erc20ApproveBodyCore
               (by simp only [evm, initState]; exact hpf))
     · have hdec0 := erc20Decode_approve_none_noncanon (I := I) hsz68 hcanonSpender
       have hdec :
-          decodeCalldataWithMode vyperERC20Config.abiDecodeMode
+          vyperERC20Config.externalABI.decodeCalldata?
             (ERC20.approveTransition.params.map Param.name)
             (transitionSignature ERC20.approveTransition).paramTypes I.calldata = none := by
         simpa [vyperERC20Config] using hdec0
@@ -681,7 +681,7 @@ theorem erc20ApproveBodyCore
   · have hshort : I.calldata.size < 68 := by omega
     have hdec0 := erc20Decode_approve_none_short (I := I) hsz4 hshort
     have hdec :
-        decodeCalldataWithMode vyperERC20Config.abiDecodeMode
+        vyperERC20Config.externalABI.decodeCalldata?
           (ERC20.approveTransition.params.map Param.name)
           (transitionSignature ERC20.approveTransition).paramTypes I.calldata = none := by
       simpa [vyperERC20Config] using hdec0

@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.Mutation
 
 /-! Internal ownership changes shared by acceptance and renunciation. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 
@@ -12,12 +12,12 @@ def ownableTransferFunction : FunctionDecl := contract.functions[68]!
 def transferOwnershipFunction : FunctionDecl := contract.functions[32]!
 
 def clearPendingOwnerState (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨9⟩
-    (setAddressOffset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨9⟩) ⟨0⟩)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨9⟩
+    (setAddressOffset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨9⟩) ⟨0⟩)
 
 def setOwnerState (evm : EVM.State) (w : UInt256) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨8⟩
-    (setAddressOffset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩) w)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨8⟩
+    (setAddressOffset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩) w)
 
 def ownershipState (evm : EVM.State) (w : UInt256) : EVM.State :=
   setOwnerState (clearPendingOwnerState evm) w
@@ -31,7 +31,7 @@ def ownershipAccounts (I : ExecutionEnv) (accounts : AccountMap) (w : UInt256) :
 theorem ownershipState_accounts (evm : EVM.State) (w : UInt256) :
     (ownershipState evm w).accountMap = ownershipAccounts evm.executionEnv evm.accountMap w := by
   simp only [ownershipState, setOwnerState, clearPendingOwnerState, ownershipAccounts,
-    storageStore_accountMap, storageStore_executionEnv, Solm.EVM.storageLoad,
+    storageStore_accountMap, storageStore_executionEnv, Stele.EVM.storageLoad,
     State.lookupAccount, Account.lookupStorage, codeOwnerStorageWord]
 
 

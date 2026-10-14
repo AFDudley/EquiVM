@@ -7,11 +7,11 @@ import Benchmarks.Morpho.MetaMorphoV1_1.MaxDepositEntry
 # MetaMorphoV1_1 `DOMAIN_SEPARATOR()`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 9689; reach lemma `metaMorphoV1_1ReachDOMAIN_SEPARATORBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 
@@ -30,7 +30,7 @@ theorem metaMorphoV1_1DOMAIN_SEPARATORBody {σ σ₀ A I} {g : UInt256} (v : Met
   have hd : dispatchMsg contract I.calldata = some dOMAIN_SEPARATORTransition := by
     apply metaMorphoV1_1Dispatch_dOMAIN_SEPARATOR <;>
       first | exact hsel | exact selectorMismatch hsel (by decide +kernel)
-  have hdec : decodeCalldataWithMode config.abiDecodeMode
+  have hdec : config.externalABI.decodeCalldata?
       (dOMAIN_SEPARATORTransition.params.map Param.name)
       (transitionSignature dOMAIN_SEPARATORTransition).paramTypes I.calldata = some ∅ :=
     decodeCalldata_empty_ok hsz

@@ -2,7 +2,7 @@ import Benchmarks.Auction.UnpauseRoutine
 import Benchmarks.Auction.UnpauseAfter
 import Benchmarks.Auction.Events
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 100000
 
@@ -16,7 +16,7 @@ theorem unpauseBodyCore {σ σ₀ A I} {g : UInt256}
   by_cases hwv : I.weiValue = ⟨0⟩
   · have hd := dispatchEntry 3 hsel
     have hsz := calldata_size_ge_of_selIs I (entryBytes 3) (entryBytes_size 3) hsel
-    have hdec : decodeCalldataWithMode auctionConfig.abiDecodeMode
+    have hdec : auctionConfig.externalABI.decodeCalldata?
         (unpauseTransition.params.map Param.name)
         (transitionSignature unpauseTransition).paramTypes I.calldata = some ∅ :=
       decodeCalldata_empty_ok hsz

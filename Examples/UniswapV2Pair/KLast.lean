@@ -1,7 +1,7 @@
 import Examples.UniswapV2Pair.Dispatch
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -12,14 +12,14 @@ namespace UniswapV2Pair
 def kLastWord (σ : AccountMap) (I : ExecutionEnv) : UInt256 :=
   solcSlotWordAt ⟨11⟩ σ I
 
-/-- The Solm `kLast()` body returns the uint256 stored in slot 11. -/
+/-- The Stele `kLast()` body returns the uint256 stored in slot 11. -/
 theorem uniswapKLastBodyReturns (evm : EVM.State) (locals : Store)
     (h : evm.executionEnv.weiValue = ⟨0⟩)
     (hlocals : locals.get? "kLast" = none) :
     ExecTransitionBody config contract evm locals kLastTransition.body
       (.returned { contract := contract, locals := locals } evm
         (some [(.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨11⟩).toNat))])) := by
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨11⟩).toNat))])) := by
   simpa [kLastTransition] using
     uniswapUint256GetterBodyReturns (slot := ⟨11⟩) (ref := kLastRef)
       (er := ({ base := "kLast", steps := [] } : EvaledStorageRef)) evm locals h
@@ -39,9 +39,9 @@ theorem uniswapX_kLast {σ σ₀ A I} {g : Sat256} {sel : UInt256}
     (by jump_dest) (by jump_dest)
 
 theorem uniswapDecode_kLast {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (kLastTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (kLastTransition.params.map Param.name)
       (transitionSignature kLastTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 /-- `kLast()` body core, parameterized by dispatcher/decode facts owned by `Correct`. -/
@@ -50,7 +50,7 @@ theorem uniswapKLastBodyCore
     (hcode : I.code = uniswapV2PairBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some kLastTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (kLastTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (kLastTransition.params.map Param.name)
         (transitionSignature kLastTransition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD uniswapV2PairBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1117⟩ [sel]
@@ -62,7 +62,7 @@ theorem uniswapKLastBodyCore
         (.returned { contract := contract, locals := ∅ }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.int (Int.ofNat (kLastWord σ I).toNat))])) := by
-    simpa [kLastWord, solcSlotWordAt, solcSlotWord, initState, Solm.EVM.storageLoad,
+    simpa [kLastWord, solcSlotWordAt, solcSlotWord, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       uniswapKLastBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅

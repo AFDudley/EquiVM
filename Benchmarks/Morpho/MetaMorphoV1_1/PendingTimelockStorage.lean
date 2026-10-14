@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.PendingGuardianMutation
 
 /-! The two fields of the pending timelock record. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 
@@ -75,8 +75,8 @@ theorem storageLocStore_pendingUint192 (evm : EVM.State) (slot data : UInt256) :
       { slot := slot, offset := 0, size := 24, hbound := by decide,
         type := .int (.uint ⟨192, by decide⟩) }
       (uint256Value data) =
-      some (Solm.EVM.storageStore evm evm.executionEnv.codeOwner slot
-        (setPendingUint192Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
+      some (Stele.EVM.storageStore evm evm.executionEnv.codeOwner slot
+        (setPendingUint192Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
           data)) := by
   unfold storageLocStore storageLocWriteWord
   simp only [valueToWord, wordOfInt_ofNat_toNat, bind, Option.bind]
@@ -85,7 +85,7 @@ theorem storageLocStore_pendingUint192 (evm : EVM.State) (slot data : UInt256) :
   change fromBytes'
     ((EVM.Word.toBytesLEWithSizeProof data).1.take 24 ++
       (EVM.Word.toBytesLEWithSizeProof
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).1.drop 24) = _
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).1.drop 24) = _
   rw [fromBytes'_append, fromBytes'_take_wordLE, fromBytes'_drop_wordLE,
     setPendingUint192Word_toNat]
   simp only [List.length_take, (EVM.Word.toBytesLEWithSizeProof data).2]
@@ -97,8 +97,8 @@ theorem storageLocStore_pendingTimeHigh (evm : EVM.State) (slot data : UInt256) 
       { slot := slot, offset := 24, size := 8, hbound := by decide,
         type := .int (.uint ⟨64, by decide⟩) }
       (uint256Value data) =
-      some (Solm.EVM.storageStore evm evm.executionEnv.codeOwner slot
-        (setPendingTimeHighWord (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
+      some (Stele.EVM.storageStore evm evm.executionEnv.codeOwner slot
+        (setPendingTimeHighWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
           data)) := by
   unfold storageLocStore storageLocWriteWord
   simp only [valueToWord, wordOfInt_ofNat_toNat, bind, Option.bind]
@@ -106,19 +106,19 @@ theorem storageLocStore_pendingTimeHigh (evm : EVM.State) (slot data : UInt256) 
   apply u256_inj
   change fromBytes'
     ((EVM.Word.toBytesLEWithSizeProof
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).1.take 24 ++
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).1.take 24 ++
       (EVM.Word.toBytesLEWithSizeProof data).1.take 8 ++
       (EVM.Word.toBytesLEWithSizeProof
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).1.drop 32) = _
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).1.drop 32) = _
   rw [fromBytes'_append, fromBytes'_append, fromBytes'_take_wordLE,
     fromBytes'_take_wordLE, fromBytes'_drop_wordLE, setPendingTimeHighWord_toNat]
   simp only [List.length_append, List.length_take,
     (EVM.Word.toBytesLEWithSizeProof
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).2,
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).2,
     (EVM.Word.toBytesLEWithSizeProof data).2]
   change _ % 2 ^ 192 + 2 ^ 192 * (data.toNat % 2 ^ 64) + 2 ^ 256 * (_ / 2 ^ 256) = _
-  have hw : (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot).toNat < 2 ^ 256 :=
-    (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot).val.isLt
+  have hw : (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot).toNat < 2 ^ 256 :=
+    (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot).val.isLt
   rw [Nat.div_eq_of_lt hw]
   omega
 

@@ -4,7 +4,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.DomainSource
 
 /-! Immutable or storage-backed EIP-712 name and version values. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1

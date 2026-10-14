@@ -1,7 +1,7 @@
 import Examples.UniswapV2Pair.MintFeeFactoryCallRuntime
 import Examples.UniswapV2Pair.MintFeeAfterFactoryCases
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace UniswapV2Pair
 
 set_option maxRecDepth 2000000 in
@@ -120,7 +120,7 @@ theorem uniswapMintFeeCallRuntimeCasesWithMemory
       (bindParams_mintFeeFunction_call reserve0 reserve1)
       (by simpa only [hcontract, himm] using hbody)
   · refine Or.inr ⟨feeOn, e, σ', m, data, k', C', ?_, ha, he, hs, rd, hm, h64, h96⟩
-    exact internalCallFunctionReturn (callee := mintFeeFunction) (calleeSolm := f)
+    exact internalCallFunctionReturn (callee := mintFeeFunction) (calleeStele := f)
       (locals := mintFeeCallStore reserve0 reserve1) hargs
       (by simpa only [hcontract, himm] using uniswapLookupMintFeeFunction)
       (bindParams_mintFeeFunction_call reserve0 reserve1)

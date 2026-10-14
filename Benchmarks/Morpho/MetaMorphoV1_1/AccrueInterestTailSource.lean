@@ -3,14 +3,14 @@ import Benchmarks.Morpho.MetaMorphoV1_1.MintInternalSource
 
 /-! Optional fee-share minting and the final interest-accrual event. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
 
 def accrueFeeRecipient (evm : State) : AccountAddress :=
   AccountAddress.ofNat
-    (UInt256.shiftRight (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨18⟩) ⟨96⟩).toNat
+    (UInt256.shiftRight (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨18⟩) ⟨96⟩).toNat
 
 def accrueInterestCondition : Expr := .binary .ne (.var "feeShares") (.intLit 0)
 

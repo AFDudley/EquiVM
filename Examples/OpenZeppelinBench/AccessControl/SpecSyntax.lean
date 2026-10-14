@@ -1,8 +1,8 @@
 import Examples.OpenZeppelinBench.AccessControl.Spec
-import Solm.Notation
+import Stele.Notation
 
 /-!
-# AccessControl spec in the Solidity-faithful Solm frontend
+# AccessControl spec in the Solidity-faithful Stele frontend
 
 The OpenZeppelin `AccessControlBench` spec written with `solidity%` and proven definitionally
 equal to the AST spec in `Examples/OpenZeppelinBench/AccessControl/Spec.lean`.
@@ -12,7 +12,7 @@ The AST constructor has no callvalue guard, so the surface constructor is marked
 Transition order matches `contract.transitions` (selector order).
 -/
 
-open Solm Solm.Notation
+open Stele Stele.Notation
 
 namespace OpenZeppelinBench.AccessControl.Syntax
 

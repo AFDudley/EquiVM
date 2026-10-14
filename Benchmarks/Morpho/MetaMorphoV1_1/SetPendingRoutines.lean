@@ -5,7 +5,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.RuntimeBlocks_071
 
 /-! Bytecode implementations of the internal pending-update setters. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables metaMorphoV1_1Blocks
 
@@ -48,11 +48,11 @@ theorem setGuardianReturn {evm : EVM.State} {g : Sat256} {s0 : State}
       (UInt256.land (UInt256.lnot (UInt256.sub
         (UInt256.shiftLeft (UInt256.ofNat 1) (UInt256.ofNat 160)) (UInt256.ofNat 1)))
         (codeOwnerStorageWord evm.executionEnv evm.accountMap (UInt256.ofNat 12))) =
-      setAddressOffset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩)
+      setAddressOffset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩)
         (UInt256.ofNat value.val) := by
     change UInt256.lor (UInt256.land solcAddrMask (UInt256.ofNat value.val))
       (UInt256.land (UInt256.lnot solcAddrMask)
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩)) = _
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩)) = _
     rw [u256_land_comm solcAddrMask]
     exact setAddressOffset0Word_bytecode _ _
   rw [hm] at h

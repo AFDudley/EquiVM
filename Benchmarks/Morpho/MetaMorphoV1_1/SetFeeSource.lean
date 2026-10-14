@@ -5,7 +5,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.ApprovalCalls
 
 /-! Source guards, interest accrual, and the packed fee assignment. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
 
@@ -27,7 +27,7 @@ def setFeeFinalFrame (evm evm' : State) (imms : Store) (value ptr : UInt256) : F
       (.address evm'.executionEnv.source) }
 
 def setFeeOld (evm : State) : UInt256 :=
-  UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨18⟩)
+  UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨18⟩)
     (UInt256.ofNat (2 ^ 96 - 1))
 
 def setFeeDifferent : Expr := .binary .ne (.var "newFee") (.storage ⟨"fee", []⟩)

@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.UpdateWithdrawQueueWriteLoop
 
 /-! Event-data copying and the successful terminal of withdrawal-queue replacement. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables metaMorphoV1_1Blocks
 

@@ -1,7 +1,7 @@
 import Benchmarks.EAS.Attester.AttestCellMemory
 import Benchmarks.EAS.Attester.AttestHeap
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.EAS.Attester
 

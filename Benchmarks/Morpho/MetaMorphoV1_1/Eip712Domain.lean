@@ -6,11 +6,11 @@ import Benchmarks.Morpho.MetaMorphoV1_1.Eip712ExtensionsRoutines
 # MetaMorphoV1_1 `eip712Domain()`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 4948; reach lemma `metaMorphoV1_1ReachEip712DomainBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 
@@ -31,7 +31,7 @@ theorem metaMorphoV1_1Eip712DomainBody {σ σ₀ A I} {g : UInt256} (v : MetaMor
   have hd : dispatchMsg contract I.calldata = some eip712DomainTransition := by
     apply metaMorphoV1_1Dispatch_eip712Domain <;>
       first | exact hsel | exact selectorMismatch hsel (by decide +kernel)
-  have hdec : decodeCalldataWithMode config.abiDecodeMode
+  have hdec : config.externalABI.decodeCalldata?
       (eip712DomainTransition.params.map Param.name)
       (transitionSignature eip712DomainTransition).paramTypes I.calldata = some ∅ :=
     decodeCalldata_empty_ok hsz

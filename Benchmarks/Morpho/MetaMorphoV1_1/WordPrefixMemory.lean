@@ -3,7 +3,7 @@ import Benchmarks.EAS.Attester.WordSequenceMemory
 
 /-! A short prefix followed by packed words, including overlapping prefix stores. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
 

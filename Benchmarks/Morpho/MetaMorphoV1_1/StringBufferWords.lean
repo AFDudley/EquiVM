@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.WordWindow
 
 /-! Word reads from the abstract string buffer used by the storage writer. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 

@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.ExtSloadsAllocationSyntax
 
 /-! The supply-share reader with an explicit compiler-memory cursor. -/
 
-open Solm ABI
+open Stele ABI
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
 

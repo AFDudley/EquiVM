@@ -1,10 +1,11 @@
 import Examples.ERC20.Spec
-import Solm.VyperLayout
+import Stele.VyperLayout
+import Stele.MetaVyperLayout
 
 /-!
-# Vyper ERC20 — Solm specification and storage layout
+# Vyper ERC20 — Stele specification and storage layout
 
-The source behavior is the same ERC20 Solm AST used by `Examples/ERC20`; the compiler-specific
+The source behavior is the same ERC20 Stele AST used by `Examples/ERC20`; the compiler-specific
 part is the Vyper storage layout.  Vyper 0.4.3's `layout` output for `ERC20.vy` is:
 
 * `balanceOf`: slot 0
@@ -15,7 +16,7 @@ For `HashMap`, Vyper derives entries as `keccak256(baseSlot ++ key)`, unlike Sol
 `keccak256(key ++ baseSlot)`.
 -/
 
-open Solm ABI
+open Stele ABI
 
 namespace VyperERC20
 
@@ -50,13 +51,8 @@ def erc20AllowanceOwnerSlot (owner : KeyValue) : Ethereum.UInt256 :=
 def erc20AllowanceSlot (owner spender : KeyValue) : Ethereum.UInt256 :=
   vyperMappingSlot (erc20AllowanceOwnerSlot owner) spender
 
-def erc20StorageLayout : StorageLayout := fun ref =>
-    match ref.base, ref.steps with
-    | "balanceOf", [.mindex owner] => some (.leaf (vyperUint256Loc (erc20BalanceOfSlot owner)))
-    | "allowance", [.mindex owner, .mindex spender] =>
-        some (.leaf (vyperUint256Loc (erc20AllowanceSlot owner spender)))
-    | "totalSupply", [] => some (.leaf (vyperUint256Loc ⟨2⟩))
-    | _, _ => none
+def erc20StorageLayout : StorageLayout :=
+  vyperLayout! [erc20StorageDecls]
 
 @[simp] theorem erc20BalanceOfSlot_eq (owner : KeyValue) :
     erc20BalanceOfSlot owner = vyperMappingSlot ⟨0⟩ owner :=
@@ -88,12 +84,11 @@ def erc20StorageLayout : StorageLayout := fun ref =>
 
 end VyperERC20
 
-/-- The ERC20 leaves are full-word integers. Their reads and writes use the Solidity scalar
-operations, while the handwritten Vyper locator determines the mapping slots. -/
+/-- The ERC20 leaves are full-word integers in the generated Vyper layout. -/
 def vyperERC20Config : Config :=
-  { storageBackend := solidityStorageBackend VyperERC20.erc20StorageLayout
-    externalABI := defaultExternalCallABI
-    abiDecodeMode := DecodeMode.vyper
+  { storageBackend := vyperStorageBackend VyperERC20.erc20StorageLayout
+      (vyperBounds! [VyperERC20.erc20StorageDecls])
+    externalABI := (defaultExternalCallABI).withMode DecodeMode.vyper
     selfDeployment := genSolidityConstructorDeployment VyperERC20.erc20Contract.ctor.params }
 
 @[simp] theorem vyperERC20Config_storage_totalSupply :

@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Flipper.DentRefundEVM
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxHeartbeats 0
 
@@ -14,10 +14,10 @@ theorem flipperDentBodyFrom4733Refund
     (hcode : I.code = flipperBytecode)
     (hdispatch : dispatchMsg contract I.calldata = some dentTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (dentTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (dentTransition.params.map Param.name)
         (transitionSignature dentTransition).paramTypes I.calldata = some (dentLocals I))
     (hwv : I.weiValue = ⟨0⟩)
-    (hguySolm : bidGuyWord (dentId I) σ I ≠ ⟨0⟩)
+    (hguyStele : bidGuyWord (dentId I) σ I ≠ ⟨0⟩)
     (hticGuard :
       evalExpr? config { contract := contract, locals := dentLocals I }
         (initState σ σ₀ (Sat256.ofUInt256 g) A I)
@@ -53,7 +53,7 @@ theorem flipperDentBodyFrom4733Refund
         (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         (.binary .le (.var "begLot") (.var "lotOne")) = .ok (.bool true))
     (hcallerEvm : solcSourceWord I ≠ bidGuyWord (dentId I) σ I)
-    (hcallerSolm : solcSourceWord I ≠ bidGuyWord (dentId I) σ I)
+    (hcallerStele : solcSourceWord I ≠ bidGuyWord (dentId I) σ I)
     (hmemSize : mem.size = 96)
     (hmemRead64 : mem.readWithPadding 64 32 = UInt256.toByteArray ⟨128⟩)
     (h : RD flipperBytecode I (Sat256.ofUInt256 g)
@@ -71,12 +71,12 @@ theorem flipperDentBodyFrom4733Refund
   by_cases hrefundZero :
       Reasoning.Theory.extCodeSizeWord σ
         (flipperVatTargetWord σ I) = ⟨0⟩
-  · have hrefundZeroSolm :
+  · have hrefundZeroStele :
         Reasoning.Theory.extCodeSizeWord σ
             (flipperVatTargetWord σ I) = ⟨0⟩ := hrefundZero
     have hvatNoCode :=
       flipperVatCode_zero_of_codeSize_zero
-        (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) hrefundZeroSolm
+        (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) hrefundZeroStele
     have hbody :
         ExecTransitionBody config contract
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
@@ -84,56 +84,56 @@ theorem flipperDentBodyFrom4733Refund
       simpa using
         (flipperDentSourceBodyRefundNoCode
           (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
-          hwv hguySolm hticGuard hendGuard hbidGuard htabGuard hlotGuard hfitLot
-          hfitBeg hdec hcallerSolm hvatNoCode)
+          hwv hguyStele hticGuard hendGuard hbidGuard htabGuard hlotGuard hfitLot
+          hfitBeg hdec hcallerStele hvatNoCode)
     exact (flipperDentX_refundNoCode hmemSize hmemRead64 hcallerEvm hrefundZero h)
       |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
-  · have hrefundNeSolm :
+  · have hrefundNeStele :
         Reasoning.Theory.extCodeSizeWord σ
             (flipperVatTargetWord σ I) ≠ ⟨0⟩ := hrefundZero
-    have hrefundCodeSolm :=
+    have hrefundCodeStele :=
       flipperVatCode_pos_of_codeSize_ne_zero
-        (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) hrefundNeSolm
+        (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) hrefundNeStele
     by_cases hdepthEq : I.depth = (1024 : Fin 1025)
     · obtain ⟨_, _, rd4873⟩ :=
         flipperDentX_refundDepthLimit hmemSize hmemRead64 hcallerEvm hrefundZero
           hdepthEq h
-      let evm0Solm := initState σ σ₀ (Sat256.ofUInt256 g) A I
-      let evmRefundSolm :=
-        { evm0Solm with
+      let evm0Stele := initState σ σ₀ (Sat256.ofUInt256 g) A I
+      let evmRefundStele :=
+        { evm0Stele with
           substate :=
-            (evm0Solm.addAccessedAccount
+            (evm0Stele.addAccessedAccount
               (EVM.address
-                (flipperVatAddress evm0Solm.accountMap evm0Solm.executionEnv))).substate }
+                (flipperVatAddress evm0Stele.accountMap evm0Stele.executionEnv))).substate }
       have hrefundEncode :
-          config.externalABI.encode? "move" (dentRefundMoveArgValsOf evm0Solm I) =
+          config.externalABI.encode? "move" (dentRefundMoveArgValsOf evm0Stele I) =
             some ((dentVatRefundCallMem memHash σ I).readWithPadding 128 100) := by
-        simpa [evm0Solm, memHash, dentRefundMoveArgValsOf, initState, solcSlotWordAt,
-          solcSlotWord, Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
+        simpa [evm0Stele, memHash, dentRefundMoveArgValsOf, initState, solcSlotWordAt,
+          solcSlotWord, Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
           bidGuyWord, bidPackedSlotOfWord, solcAddressSlotWord]
           using dentVatRefundCallMem_encode (mem := memHash) (σ := σ) (I := I)
             hhashSize
-      have hcallRefundSolm :
-          typedCallViaEVM config evm0Solm
-            (EVM.address (flipperVatAddress evm0Solm.accountMap evm0Solm.executionEnv))
-            "move" 0 (dentRefundMoveArgValsOf evm0Solm I)
-            (false, evmRefundSolm, ByteArray.empty) true := by
-        exact Reasoning.Theory.callNotMade_depthLimit (cfg := config) (evm := evm0Solm)
+      have hcallRefundStele :
+          typedCallViaEVM config evm0Stele
+            (EVM.address (flipperVatAddress evm0Stele.accountMap evm0Stele.executionEnv))
+            "move" 0 (dentRefundMoveArgValsOf evm0Stele I)
+            (false, evmRefundStele, ByteArray.empty) true := by
+        exact Reasoning.Theory.callNotMade_depthLimit (cfg := config) (evm := evm0Stele)
           (tgt := EVM.address
-            (flipperVatAddress evm0Solm.accountMap evm0Solm.executionEnv))
-          (name := "move") (args := dentRefundMoveArgValsOf evm0Solm I)
+            (flipperVatAddress evm0Stele.accountMap evm0Stele.executionEnv))
+          (name := "move") (args := dentRefundMoveArgValsOf evm0Stele I)
           (calldata := (dentVatRefundCallMem memHash σ I).readWithPadding 128 100)
-          (callPerm := true) hrefundEncode (by simpa [evm0Solm, initState] using hdepthEq)
+          (callPerm := true) hrefundEncode (by simpa [evm0Stele, initState] using hdepthEq)
       have hbody :
-          ExecTransitionBody config contract evm0Solm (dentLocals I) dentTransition.body
+          ExecTransitionBody config contract evm0Stele (dentLocals I) dentTransition.body
             .reverted := by
-        simpa [evm0Solm] using
+        simpa [evm0Stele] using
           (flipperDentSourceBodyRefundCallFailure
             (σ := σ) (σ₀ := σ₀)
-            (A := A) (I := I) (g := g) (evmRefund := evmRefundSolm)
+            (A := A) (I := I) (g := g) (evmRefund := evmRefundStele)
             (outRefund := ByteArray.empty)
-            hwv hguySolm hticGuard hendGuard hbidGuard htabGuard hlotGuard hfitLot
-            hfitBeg hdec hcallerSolm hrefundCodeSolm hcallRefundSolm)
+            hwv hguyStele hticGuard hendGuard hbidGuard htabGuard hlotGuard hfitLot
+            hfitBeg hdec hcallerStele hrefundCodeStele hcallRefundStele)
       exact (flipperDentX_refundCallFailure (by simpa using rd4873)
           (by norm_num [UInt256.size]))
         |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
@@ -148,7 +148,7 @@ theorem flipperDentBodyFrom4733Refund
         flipperDentX_refundPostCall (Acur := A) hmemSize hmemRead64 hcallerEvm
           hrefundZero hdepthLt h
       let evm0Evm := initState σ σ₀ (Sat256.ofUInt256 g) A I
-      let evm0Solm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+      let evm0Stele := initState σ σ₀ (Sat256.ofUInt256 g) A I
       let evmRefundEvm : EVM.State :=
         { evm0Evm with
           accountMap := σ_ref
@@ -160,53 +160,53 @@ theorem flipperDentBodyFrom4733Refund
             (dentRefundMoveArgValsOf evm0Evm I) (zRefund, evmRefundEvm, outRefund)
             true := by
         simpa [evm0Evm, evmRefundEvm] using hcallRefundEvmRaw
-      obtain ⟨σ_ref_solm, A_ref_solm, hcallRefundSolmRaw, hRefundStateEquiv⟩ :=
+      obtain ⟨σ_ref_stele, A_ref_stele, hcallRefundSteleRaw, hRefundStateEquiv⟩ :=
         typedCallViaEVM_sameInputs_stateEquiv
-          (evm_solm := evm0Solm) hcallRefundEvm
+          (evm_stele := evm0Stele) hcallRefundEvm
           rfl
-          (by simp [evm0Evm, evm0Solm, initState])
-          (by simp [evm0Evm, evm0Solm, initState])
-      let evmRefundSolm : EVM.State :=
-        { evm0Solm with
-          accountMap := σ_ref_solm
-          substate := A_ref_solm
+          (by simp [evm0Evm, evm0Stele, initState])
+          (by simp [evm0Evm, evm0Stele, initState])
+      let evmRefundStele : EVM.State :=
+        { evm0Stele with
+          accountMap := σ_ref_stele
+          substate := A_ref_stele
           }
       have hrefundTargetEq :
           EVM.address (flipperVatAddress σ I) =
-            EVM.address (flipperVatAddress evm0Solm.accountMap evm0Solm.executionEnv) := by
-        simp [evm0Solm, initState]
+            EVM.address (flipperVatAddress evm0Stele.accountMap evm0Stele.executionEnv) := by
+        simp [evm0Stele, initState]
       have hrefundArgsEq :
-          dentRefundMoveArgValsOf evm0Evm I = dentRefundMoveArgValsOf evm0Solm I := rfl
-      have hcallRefundSolm :
-          typedCallViaEVM config evm0Solm
-            (EVM.address (flipperVatAddress evm0Solm.accountMap evm0Solm.executionEnv))
-            "move" 0 (dentRefundMoveArgValsOf evm0Solm I)
-            (zRefund, evmRefundSolm, outRefund) true := by
-        have hcallRefundSolmRaw' :
-            typedCallViaEVM config evm0Solm
+          dentRefundMoveArgValsOf evm0Evm I = dentRefundMoveArgValsOf evm0Stele I := rfl
+      have hcallRefundStele :
+          typedCallViaEVM config evm0Stele
+            (EVM.address (flipperVatAddress evm0Stele.accountMap evm0Stele.executionEnv))
+            "move" 0 (dentRefundMoveArgValsOf evm0Stele I)
+            (zRefund, evmRefundStele, outRefund) true := by
+        have hcallRefundSteleRaw' :
+            typedCallViaEVM config evm0Stele
               (EVM.address (flipperVatAddress σ I)) "move" 0
-              (dentRefundMoveArgValsOf evm0Evm I) (zRefund, evmRefundSolm, outRefund)
+              (dentRefundMoveArgValsOf evm0Evm I) (zRefund, evmRefundStele, outRefund)
               true := by
-          simpa [evmRefundSolm, evmRefundEvm] using hcallRefundSolmRaw
-        rw [hrefundTargetEq, hrefundArgsEq] at hcallRefundSolmRaw'
-        exact hcallRefundSolmRaw'
+          simpa [evmRefundStele, evmRefundEvm] using hcallRefundSteleRaw
+        rw [hrefundTargetEq, hrefundArgsEq] at hcallRefundSteleRaw'
+        exact hcallRefundSteleRaw'
       cases zRefund
-      · have hcallRefundSolmFalse :
-            typedCallViaEVM config evm0Solm
-              (EVM.address (flipperVatAddress evm0Solm.accountMap evm0Solm.executionEnv))
-              "move" 0 (dentRefundMoveArgValsOf evm0Solm I)
-              (false, evmRefundSolm, outRefund) true := by
-          simpa using hcallRefundSolm
+      · have hcallRefundSteleFalse :
+            typedCallViaEVM config evm0Stele
+              (EVM.address (flipperVatAddress evm0Stele.accountMap evm0Stele.executionEnv))
+              "move" 0 (dentRefundMoveArgValsOf evm0Stele I)
+              (false, evmRefundStele, outRefund) true := by
+          simpa using hcallRefundStele
         have hbody :
-            ExecTransitionBody config contract evm0Solm (dentLocals I) dentTransition.body
+            ExecTransitionBody config contract evm0Stele (dentLocals I) dentTransition.body
               .reverted := by
-          simpa [evm0Solm] using
+          simpa [evm0Stele] using
             (flipperDentSourceBodyRefundCallFailure
               (σ := σ) (σ₀ := σ₀)
-              (A := A) (I := I) (g := g) (evmRefund := evmRefundSolm)
+              (A := A) (I := I) (g := g) (evmRefund := evmRefundStele)
               (outRefund := outRefund)
-              hwv hguySolm hticGuard hendGuard hbidGuard htabGuard hlotGuard hfitLot
-              hfitBeg hdec hcallerSolm hrefundCodeSolm hcallRefundSolmFalse)
+              hwv hguyStele hticGuard hendGuard hbidGuard htabGuard hlotGuard hfitLot
+              hfitBeg hdec hcallerStele hrefundCodeStele hcallRefundSteleFalse)
         exact (flipperDentX_refundCallFailure (by simpa using rd4873) houtRefund)
           |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
       · have rd4873True : RD flipperBytecode I (Sat256.ofUInt256 g)
@@ -233,52 +233,52 @@ theorem flipperDentBodyFrom4733Refund
         · have hsource := ExecFuncBody.execBlockStatic
             ((flipperDentSourceBlockAfterRefundSuccessTailSplit
               (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
-              (evmRefund := evmRefundSolm) (outRefund := outRefund) (r := .staticViolation)
-              hwv hguySolm hticGuard hendGuard hbidGuard htabGuard hlotGuard hfitLot
-              hfitBeg hdec hcallerSolm hrefundCodeSolm
-              (by simpa [evm0Solm] using hcallRefundSolm)).2 hperm)
+              (evmRefund := evmRefundStele) (outRefund := outRefund) (r := .staticViolation)
+              hwv hguyStele hticGuard hendGuard hbidGuard htabGuard hlotGuard hfitLot
+              hfitBeg hdec hcallerStele hrefundCodeStele
+              (by simpa [evm0Stele] using hcallRefundStele)).2 hperm)
           exact hstatic.reEquivStaticHalt hcode hdispatch hdecode hsource
-        let evmGuyEvm := Solm.EVM.storageStore evmRefundEvm
+        let evmGuyEvm := Stele.EVM.storageStore evmRefundEvm
           evmRefundEvm.executionEnv.codeOwner (bidPackedSlotOfWord (dentId I))
           (setAddressOffset0Word
-            (Solm.EVM.storageLoad evmRefundEvm evmRefundEvm.executionEnv.codeOwner
+            (Stele.EVM.storageLoad evmRefundEvm evmRefundEvm.executionEnv.codeOwner
               (bidPackedSlotOfWord (dentId I)))
             (solcSourceWord evmRefundEvm.executionEnv))
-        let evmGuySolm := Solm.EVM.storageStore evmRefundSolm
-          evmRefundSolm.executionEnv.codeOwner (bidPackedSlotOfWord (dentId I))
+        let evmGuyStele := Stele.EVM.storageStore evmRefundStele
+          evmRefundStele.executionEnv.codeOwner (bidPackedSlotOfWord (dentId I))
           (setAddressOffset0Word
-            (Solm.EVM.storageLoad evmRefundSolm evmRefundSolm.executionEnv.codeOwner
+            (Stele.EVM.storageLoad evmRefundStele evmRefundStele.executionEnv.codeOwner
               (bidPackedSlotOfWord (dentId I)))
-            (solcSourceWord evmRefundSolm.executionEnv))
-        have hRefundStateEquiv' : EVMStateEquiv evmRefundEvm evmRefundSolm := by
-          simpa [evmRefundEvm, evmRefundSolm] using hRefundStateEquiv
+            (solcSourceWord evmRefundStele.executionEnv))
+        have hRefundStateEquiv' : EVMStateEquiv evmRefundEvm evmRefundStele := by
+          simpa [evmRefundEvm, evmRefundStele] using hRefundStateEquiv
         have hpackedLoadEq :
-            Solm.EVM.storageLoad evmRefundEvm evmRefundEvm.executionEnv.codeOwner
+            Stele.EVM.storageLoad evmRefundEvm evmRefundEvm.executionEnv.codeOwner
                 (bidPackedSlotOfWord (dentId I)) =
-              Solm.EVM.storageLoad evmRefundSolm evmRefundSolm.executionEnv.codeOwner
+              Stele.EVM.storageLoad evmRefundStele evmRefundStele.executionEnv.codeOwner
                 (bidPackedSlotOfWord (dentId I)) :=
           hRefundStateEquiv'.storageLoad_codeOwner (bidPackedSlotOfWord (dentId I))
         have hsourceEq :
             solcSourceWord evmRefundEvm.executionEnv =
-              solcSourceWord evmRefundSolm.executionEnv := by
+              solcSourceWord evmRefundStele.executionEnv := by
           rw [hRefundStateEquiv'.executionEnv]
         have hstoredGuyEq :
             setAddressOffset0Word
-                (Solm.EVM.storageLoad evmRefundEvm evmRefundEvm.executionEnv.codeOwner
+                (Stele.EVM.storageLoad evmRefundEvm evmRefundEvm.executionEnv.codeOwner
                   (bidPackedSlotOfWord (dentId I)))
                 (solcSourceWord evmRefundEvm.executionEnv) =
               setAddressOffset0Word
-                (Solm.EVM.storageLoad evmRefundSolm evmRefundSolm.executionEnv.codeOwner
+                (Stele.EVM.storageLoad evmRefundStele evmRefundStele.executionEnv.codeOwner
                   (bidPackedSlotOfWord (dentId I)))
-                (solcSourceWord evmRefundSolm.executionEnv) := by
+                (solcSourceWord evmRefundStele.executionEnv) := by
           rw [hpackedLoadEq, hsourceEq]
-        have hGuyStateEquiv : EVMStateEquiv evmGuyEvm evmGuySolm := by
-          simpa [evmGuyEvm, evmGuySolm] using
+        have hGuyStateEquiv : EVMStateEquiv evmGuyEvm evmGuyStele := by
+          simpa [evmGuyEvm, evmGuyStele] using
             EVMStateEquiv.storageStore_codeOwner hRefundStateEquiv'
               (bidPackedSlotOfWord (dentId I)) hstoredGuyEq
         have hmapGuyEvm : evmGuyEvm.accountMap = dentAfterRefundMap σ_ref I := by
           simpa [evmGuyEvm, evmRefundEvm, evm0Evm, dentAfterRefundMap,
-            storageStore_accountMap, initState, Solm.EVM.storageLoad, State.lookupAccount,
+            storageStore_accountMap, initState, Stele.EVM.storageLoad, State.lookupAccount,
             Account.lookupStorage, solcSlotWordAt, solcSlotWord]
         let memFlux := twoWordHashMem (dentId I) ⟨1⟩ (dentVatRefundCallMem memHash σ I)
         have hmemFluxSize : memFlux.size = 228 := by
@@ -295,12 +295,12 @@ theorem flipperDentBodyFrom4733Refund
             memFlux.readWithPadding 64 32 = UInt256.toByteArray ⟨128⟩ := by
           dsimp [memFlux]
           exact dentVatHashMem_read64_228 (I := I) hrefundMemSize hrefundMemRead64
-        have hcallRefundSolmTrue :
-            typedCallViaEVM config evm0Solm
-              (EVM.address (flipperVatAddress evm0Solm.accountMap evm0Solm.executionEnv))
-              "move" 0 (dentRefundMoveArgValsOf evm0Solm I)
-              (true, evmRefundSolm, outRefund) true := by
-          simpa using hcallRefundSolm
+        have hcallRefundSteleTrue :
+            typedCallViaEVM config evm0Stele
+              (EVM.address (flipperVatAddress evm0Stele.accountMap evm0Stele.executionEnv))
+              "move" 0 (dentRefundMoveArgValsOf evm0Stele I)
+              (true, evmRefundStele, outRefund) true := by
+          simpa using hcallRefundStele
         by_cases hfluxZero :
             Reasoning.Theory.extCodeSizeWord (dentAfterRefundMap σ_ref I)
               (flipperVatTargetWord (dentAfterRefundMap σ_ref I) I) = ⟨0⟩
@@ -308,66 +308,66 @@ theorem flipperDentBodyFrom4733Refund
               Reasoning.Theory.extCodeSizeWord evmGuyEvm.accountMap
                 (flipperVatTargetWord evmGuyEvm.accountMap I) = ⟨0⟩ := by
             simpa [hmapGuyEvm] using hfluxZero
-          have hfluxZeroSolm :
-              Reasoning.Theory.extCodeSizeWord evmGuySolm.accountMap
-                (flipperVatTargetWord evmGuySolm.accountMap I) = ⟨0⟩ :=
+          have hfluxZeroStele :
+              Reasoning.Theory.extCodeSizeWord evmGuyStele.accountMap
+                (flipperVatTargetWord evmGuyStele.accountMap I) = ⟨0⟩ :=
             by rw [← hGuyStateEquiv.accountMap]; exact hfluxZeroEvm
-          have hfluxNoCodeSolm :
+          have hfluxNoCodeStele :
               (UInt256.ofNat
-                ((evmGuySolm.lookupAccount
-                  (flipperVatAddress evmGuySolm.accountMap
-                    evmGuySolm.executionEnv)).option
+                ((evmGuyStele.lookupAccount
+                  (flipperVatAddress evmGuyStele.accountMap
+                    evmGuyStele.executionEnv)).option
                   0 (fun acc => acc.code.size))).toNat = 0 := by
-            simpa [evmGuySolm, evmRefundSolm, evm0Solm, initState,
+            simpa [evmGuyStele, evmRefundStele, evm0Stele, initState,
               storageStore_executionEnv, State.lookupAccount] using
               extCodeSizeWord_zero_lookup_code_zero
-                (σ := evmGuySolm.accountMap)
-                (target := flipperVatTargetWord evmGuySolm.accountMap I)
-                (addr := flipperVatAddress evmGuySolm.accountMap I)
-                (flipperVatAddress_eq_target evmGuySolm.accountMap I) hfluxZeroSolm
+                (σ := evmGuyStele.accountMap)
+                (target := flipperVatTargetWord evmGuyStele.accountMap I)
+                (addr := flipperVatAddress evmGuyStele.accountMap I)
+                (flipperVatAddress_eq_target evmGuyStele.accountMap I) hfluxZeroStele
           have hbody :
-              ExecTransitionBody config contract evm0Solm (dentLocals I) dentTransition.body
+              ExecTransitionBody config contract evm0Stele (dentLocals I) dentTransition.body
                 .reverted := by
-            simpa [evm0Solm, evmGuySolm] using
+            simpa [evm0Stele, evmGuyStele] using
               (flipperDentSourceBodyFluxNoCodeAfterRefund
                 (σ := σ) (σ₀ := σ₀)
-                (A := A) (I := I) (g := g) (evmRefund := evmRefundSolm)
+                (A := A) (I := I) (g := g) (evmRefund := evmRefundStele)
                 (outRefund := outRefund)
-                hwv hguySolm hticGuard hendGuard hbidGuard htabGuard hlotGuard hfitLot
-                hfitBeg hdec hcallerSolm hrefundCodeSolm hcallRefundSolmTrue
-                hfluxNoCodeSolm)
+                hwv hguyStele hticGuard hendGuard hbidGuard htabGuard hlotGuard hfitLot
+                hfitBeg hdec hcallerStele hrefundCodeStele hcallRefundSteleTrue
+                hfluxNoCodeStele)
           exact (flipperDentX_fluxNoCodeAw8 hmemFluxSize hmemFluxRead64 hfluxZero rd4927)
             |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
         · have hfluxNeEvm :
               Reasoning.Theory.extCodeSizeWord evmGuyEvm.accountMap
                 (flipperVatTargetWord evmGuyEvm.accountMap I) ≠ ⟨0⟩ := by
             simpa [hmapGuyEvm] using hfluxZero
-          have hfluxNeSolm :
-              Reasoning.Theory.extCodeSizeWord evmGuySolm.accountMap
-                (flipperVatTargetWord evmGuySolm.accountMap I) ≠ ⟨0⟩ :=
+          have hfluxNeStele :
+              Reasoning.Theory.extCodeSizeWord evmGuyStele.accountMap
+                (flipperVatTargetWord evmGuyStele.accountMap I) ≠ ⟨0⟩ :=
             by rw [← hGuyStateEquiv.accountMap]; exact hfluxNeEvm
-          have hfluxCodeSolm :
+          have hfluxCodeStele :
               0 <
                 (UInt256.ofNat
-                  ((evmGuySolm.lookupAccount
-                    (flipperVatAddress evmGuySolm.accountMap
-                      evmGuySolm.executionEnv)).option
+                  ((evmGuyStele.lookupAccount
+                    (flipperVatAddress evmGuyStele.accountMap
+                      evmGuyStele.executionEnv)).option
                     0 (fun acc => acc.code.size))).toNat := by
-            simpa [evmGuySolm, evmRefundSolm, evm0Solm, initState,
+            simpa [evmGuyStele, evmRefundStele, evm0Stele, initState,
               storageStore_executionEnv, State.lookupAccount] using
               extCodeSizeWord_ne_zero_lookup_code_pos
-                (σ := evmGuySolm.accountMap)
-                (target := flipperVatTargetWord evmGuySolm.accountMap I)
-                (addr := flipperVatAddress evmGuySolm.accountMap I)
-                (flipperVatAddress_eq_target evmGuySolm.accountMap I) hfluxNeSolm
+                (σ := evmGuyStele.accountMap)
+                (target := flipperVatTargetWord evmGuyStele.accountMap I)
+                (addr := flipperVatAddress evmGuyStele.accountMap I)
+                (flipperVatAddress_eq_target evmGuyStele.accountMap I) hfluxNeStele
           let evmGuyCallEvm : EVM.State :=
             { evm0Evm with
               accountMap := dentAfterRefundMap σ_ref I
               substate := A_ref
               }
-          have hGuyCallStateEquiv : EVMStateEquiv evmGuyCallEvm evmGuySolm := by
+          have hGuyCallStateEquiv : EVMStateEquiv evmGuyCallEvm evmGuyStele := by
             refine ⟨?_, ?_⟩
-            · simp [evmGuyCallEvm, evmGuySolm, evmRefundSolm, evm0Evm, evm0Solm,
+            · simp [evmGuyCallEvm, evmGuyStele, evmRefundStele, evm0Evm, evm0Stele,
                 storageStore_executionEnv, initState]
             · simpa [evmGuyCallEvm, hmapGuyEvm] using hGuyStateEquiv.accountMap
           obtain ⟨σ_flux, zFlux, outFlux, A_flux, k5053, C5053, rd5053,
@@ -386,39 +386,39 @@ theorem flipperDentBodyFrom4733Refund
                 "flux" 0 (dentFluxArgValsOf evmGuyCallEvm I)
                 (zFlux, evmFluxEvm, outFlux) true := by
             simpa [evmFluxEvm, evmGuyCallEvm, evm0Evm] using hcallFluxEvmRaw
-          obtain ⟨σ_flux_solm, A_flux_solm, hcallFluxSolmRaw, hFluxStateEquiv⟩ :=
+          obtain ⟨σ_flux_stele, A_flux_stele, hcallFluxSteleRaw, hFluxStateEquiv⟩ :=
             typedCallViaEVM_sameInputs_stateEquiv
-              (evm_solm := evmGuySolm) hcallFluxEvm hGuyCallStateEquiv.accountMap
-              (by simp [evmGuyCallEvm, evmGuySolm, evmRefundSolm, evm0Evm, evm0Solm,
+              (evm_stele := evmGuyStele) hcallFluxEvm hGuyCallStateEquiv.accountMap
+              (by simp [evmGuyCallEvm, evmGuyStele, evmRefundStele, evm0Evm, evm0Stele,
                 storageStore_σ₀, initState])
               hGuyCallStateEquiv.executionEnv
-          let evmFluxSolm : EVM.State :=
-            { evmGuySolm with
-              accountMap := σ_flux_solm
-              substate := A_flux_solm
+          let evmFluxStele : EVM.State :=
+            { evmGuyStele with
+              accountMap := σ_flux_stele
+              substate := A_flux_stele
               }
           have hfluxTargetEq :
               EVM.address
                   (flipperVatAddress evmGuyCallEvm.accountMap evmGuyCallEvm.executionEnv) =
                 EVM.address
-                  (flipperVatAddress evmGuySolm.accountMap evmGuySolm.executionEnv) := by
+                  (flipperVatAddress evmGuyStele.accountMap evmGuyStele.executionEnv) := by
             rw [hGuyCallStateEquiv.executionEnv, hGuyCallStateEquiv.accountMap]
           have hfluxArgsEq :
-              dentFluxArgValsOf evmGuyCallEvm I = dentFluxArgValsOf evmGuySolm I := by
+              dentFluxArgValsOf evmGuyCallEvm I = dentFluxArgValsOf evmGuyStele I := by
             have hloadIlk :
-                Solm.EVM.storageLoad evmGuyCallEvm evmGuyCallEvm.executionEnv.codeOwner ⟨3⟩ =
-                  Solm.EVM.storageLoad evmGuySolm evmGuySolm.executionEnv.codeOwner ⟨3⟩ :=
+                Stele.EVM.storageLoad evmGuyCallEvm evmGuyCallEvm.executionEnv.codeOwner ⟨3⟩ =
+                  Stele.EVM.storageLoad evmGuyStele evmGuyStele.executionEnv.codeOwner ⟨3⟩ :=
               hGuyCallStateEquiv.storageLoad_codeOwner ⟨3⟩
             have hloadUsr :
-                Solm.EVM.storageLoad evmGuyCallEvm evmGuyCallEvm.executionEnv.codeOwner
+                Stele.EVM.storageLoad evmGuyCallEvm evmGuyCallEvm.executionEnv.codeOwner
                     (bidSlotOfWord (dentId I) ⟨3⟩) =
-                  Solm.EVM.storageLoad evmGuySolm evmGuySolm.executionEnv.codeOwner
+                  Stele.EVM.storageLoad evmGuyStele evmGuyStele.executionEnv.codeOwner
                     (bidSlotOfWord (dentId I) ⟨3⟩) :=
               hGuyCallStateEquiv.storageLoad_codeOwner (bidSlotOfWord (dentId I) ⟨3⟩)
             have hloadLot :
-                Solm.EVM.storageLoad evmGuyCallEvm evmGuyCallEvm.executionEnv.codeOwner
+                Stele.EVM.storageLoad evmGuyCallEvm evmGuyCallEvm.executionEnv.codeOwner
                     (bidSlotOfWord (dentId I) ⟨1⟩) =
-                  Solm.EVM.storageLoad evmGuySolm evmGuySolm.executionEnv.codeOwner
+                  Stele.EVM.storageLoad evmGuyStele evmGuyStele.executionEnv.codeOwner
                     (bidSlotOfWord (dentId I) ⟨1⟩) :=
               hGuyCallStateEquiv.storageLoad_codeOwner (bidSlotOfWord (dentId I) ⟨1⟩)
             simp [dentFluxArgValsOf]
@@ -431,40 +431,40 @@ theorem flipperDentBodyFrom4733Refund
                     congrArg (fun w => AccountAddress.ofNat (UInt256.land w solcAddrMask).toNat)
                       hloadUsr
                 · simpa using congrArg (fun w => (UInt256.sub w (dentLot I)).toNat) hloadLot
-          have hcallFluxSolm :
-              typedCallViaEVM config evmGuySolm
+          have hcallFluxStele :
+              typedCallViaEVM config evmGuyStele
                 (EVM.address
-                  (flipperVatAddress evmGuySolm.accountMap evmGuySolm.executionEnv))
-                "flux" 0 (dentFluxArgValsOf evmGuySolm I)
-                (zFlux, evmFluxSolm, outFlux) true := by
-            have hcallFluxSolmRaw' :
-                typedCallViaEVM config evmGuySolm
+                  (flipperVatAddress evmGuyStele.accountMap evmGuyStele.executionEnv))
+                "flux" 0 (dentFluxArgValsOf evmGuyStele I)
+                (zFlux, evmFluxStele, outFlux) true := by
+            have hcallFluxSteleRaw' :
+                typedCallViaEVM config evmGuyStele
                   (EVM.address
                     (flipperVatAddress evmGuyCallEvm.accountMap evmGuyCallEvm.executionEnv))
                   "flux" 0 (dentFluxArgValsOf evmGuyCallEvm I)
-                  (zFlux, evmFluxSolm, outFlux) true := by
-              simpa [evmFluxSolm, evmFluxEvm] using hcallFluxSolmRaw
-            rw [hfluxTargetEq, hfluxArgsEq] at hcallFluxSolmRaw'
-            exact hcallFluxSolmRaw'
+                  (zFlux, evmFluxStele, outFlux) true := by
+              simpa [evmFluxStele, evmFluxEvm] using hcallFluxSteleRaw
+            rw [hfluxTargetEq, hfluxArgsEq] at hcallFluxSteleRaw'
+            exact hcallFluxSteleRaw'
           cases zFlux
-          · have hcallFluxSolmFalse :
-                typedCallViaEVM config evmGuySolm
+          · have hcallFluxSteleFalse :
+                typedCallViaEVM config evmGuyStele
                   (EVM.address
-                    (flipperVatAddress evmGuySolm.accountMap evmGuySolm.executionEnv))
-                  "flux" 0 (dentFluxArgValsOf evmGuySolm I)
-                  (false, evmFluxSolm, outFlux) true := by
-              simpa using hcallFluxSolm
+                    (flipperVatAddress evmGuyStele.accountMap evmGuyStele.executionEnv))
+                  "flux" 0 (dentFluxArgValsOf evmGuyStele I)
+                  (false, evmFluxStele, outFlux) true := by
+              simpa using hcallFluxStele
             have hbody :
-                ExecTransitionBody config contract evm0Solm (dentLocals I) dentTransition.body
+                ExecTransitionBody config contract evm0Stele (dentLocals I) dentTransition.body
                   .reverted := by
-              simpa [evm0Solm, evmGuySolm] using
+              simpa [evm0Stele, evmGuyStele] using
                 (flipperDentSourceBodyFluxCallFailureAfterRefund
                   (σ := σ) (σ₀ := σ₀)
-                  (A := A) (I := I) (g := g) (evmRefund := evmRefundSolm)
-                  (evmFlux := evmFluxSolm) (outRefund := outRefund) (outFlux := outFlux)
-                  hwv hguySolm hticGuard hendGuard hbidGuard htabGuard hlotGuard hfitLot
-                  hfitBeg hdec hcallerSolm hrefundCodeSolm hcallRefundSolmTrue
-                  hfluxCodeSolm hcallFluxSolmFalse)
+                  (A := A) (I := I) (g := g) (evmRefund := evmRefundStele)
+                  (evmFlux := evmFluxStele) (outRefund := outRefund) (outFlux := outFlux)
+                  hwv hguyStele hticGuard hendGuard hbidGuard htabGuard hlotGuard hfitLot
+                  hfitBeg hdec hcallerStele hrefundCodeStele hcallRefundSteleTrue
+                  hfluxCodeStele hcallFluxSteleFalse)
             exact (flipperDentX_fluxCallFailure (by simpa using rd5053) houtFlux)
               |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
           · have rd5053True : RD flipperBytecode I (Sat256.ofUInt256 g)
@@ -481,28 +481,28 @@ theorem flipperDentBodyFrom4733Refund
               rw [dentVatFluxCallMem_size_228 (dentAfterRefundMap σ_ref I) I hmemFluxSize]
               norm_num
             obtain ⟨_, _, rd6272⟩ := flipperDentX_storeLotToAdd48 hperm hfluxMemGe rd5073
-            have hcallFluxSolmTrue :
-                typedCallViaEVM config evmGuySolm
+            have hcallFluxSteleTrue :
+                typedCallViaEVM config evmGuyStele
                   (EVM.address
-                    (flipperVatAddress evmGuySolm.accountMap evmGuySolm.executionEnv))
-                  "flux" 0 (dentFluxArgValsOf evmGuySolm I)
-                  (true, evmFluxSolm, outFlux) true := by
-              simpa using hcallFluxSolm
-            let evmLotEvm := Solm.EVM.storageStore evmFluxEvm
+                    (flipperVatAddress evmGuyStele.accountMap evmGuyStele.executionEnv))
+                  "flux" 0 (dentFluxArgValsOf evmGuyStele I)
+                  (true, evmFluxStele, outFlux) true := by
+              simpa using hcallFluxStele
+            let evmLotEvm := Stele.EVM.storageStore evmFluxEvm
               evmFluxEvm.executionEnv.codeOwner (bidSlotOfWord (dentId I) ⟨1⟩) (dentLot I)
-            let evmLotSolm := Solm.EVM.storageStore evmFluxSolm
-              evmFluxSolm.executionEnv.codeOwner (bidSlotOfWord (dentId I) ⟨1⟩) (dentLot I)
-            have hFluxStateEquiv' : EVMStateEquiv evmFluxEvm evmFluxSolm := by
-              simpa [evmFluxEvm, evmFluxSolm] using hFluxStateEquiv
-            have hLotStateEquiv : EVMStateEquiv evmLotEvm evmLotSolm := by
-              simpa [evmLotEvm, evmLotSolm] using
+            let evmLotStele := Stele.EVM.storageStore evmFluxStele
+              evmFluxStele.executionEnv.codeOwner (bidSlotOfWord (dentId I) ⟨1⟩) (dentLot I)
+            have hFluxStateEquiv' : EVMStateEquiv evmFluxEvm evmFluxStele := by
+              simpa [evmFluxEvm, evmFluxStele] using hFluxStateEquiv
+            have hLotStateEquiv : EVMStateEquiv evmLotEvm evmLotStele := by
+              simpa [evmLotEvm, evmLotStele] using
                 EVMStateEquiv.storageStore_codeOwner hFluxStateEquiv'
                   (bidSlotOfWord (dentId I) ⟨1⟩) (by rfl : dentLot I = dentLot I)
             have hmapLotEvm : evmLotEvm.accountMap = dentAfterLotMap σ_flux I := by
               simpa [evmLotEvm, evmFluxEvm, evmGuyCallEvm, evm0Evm, dentAfterLotMap,
                 storageStore_accountMap, storageStore_executionEnv, initState]
             have httlEq :
-                tendTtlWord evmLotEvm.accountMap I = tendTtlWord evmLotSolm.accountMap I := by
+                tendTtlWord evmLotEvm.accountMap I = tendTtlWord evmLotStele.accountMap I := by
               exact congrArg (fun accounts => tendTtlWord accounts I)
                 hLotStateEquiv.accountMap
             have httlEvmMap :
@@ -522,68 +522,68 @@ theorem flipperDentBodyFrom4733Refund
                 · exact hfluxMemGe
                 · exact hfluxMemGe
               have hret := flipperDentX_storeTicReturn hperm hticMemGe rd3859
-              have hfitTicSolm :
-                  (tendNow48 I).toNat + (tendTtlWord evmLotSolm.accountMap I).toNat <
+              have hfitTicStele :
+                  (tendNow48 I).toNat + (tendTtlWord evmLotStele.accountMap I).toNat <
                     2 ^ 48 := by
-                have httlSolmMap :
-                    tendTtlWord evmLotSolm.accountMap I =
+                have httlSteleMap :
+                    tendTtlWord evmLotStele.accountMap I =
                       tendTtlWord (dentAfterLotMap σ_flux I) I := by
                   rw [← httlEq, httlEvmMap]
-                simpa [httlSolmMap] using hfitTicEvm
-              let evmTicEvm := Solm.EVM.storageStore evmLotEvm
+                simpa [httlSteleMap] using hfitTicEvm
+              let evmTicEvm := Stele.EVM.storageStore evmLotEvm
                 evmLotEvm.executionEnv.codeOwner (bidPackedSlotOfWord (dentId I))
                 (setUint48Offset20Word
-                  (Solm.EVM.storageLoad evmLotEvm evmLotEvm.executionEnv.codeOwner
+                  (Stele.EVM.storageLoad evmLotEvm evmLotEvm.executionEnv.codeOwner
                     (bidPackedSlotOfWord (dentId I)))
                   (tendTicNewWord evmLotEvm.accountMap I))
-              let evmTicSolm := Solm.EVM.storageStore evmLotSolm
-                evmLotSolm.executionEnv.codeOwner (bidPackedSlotOfWord (dentId I))
+              let evmTicStele := Stele.EVM.storageStore evmLotStele
+                evmLotStele.executionEnv.codeOwner (bidPackedSlotOfWord (dentId I))
                 (setUint48Offset20Word
-                  (Solm.EVM.storageLoad evmLotSolm evmLotSolm.executionEnv.codeOwner
+                  (Stele.EVM.storageLoad evmLotStele evmLotStele.executionEnv.codeOwner
                     (bidPackedSlotOfWord (dentId I)))
-                  (tendTicNewWord evmLotSolm.accountMap I))
+                  (tendTicNewWord evmLotStele.accountMap I))
               have hbody :
-                  ExecTransitionBody config contract evm0Solm (dentLocals I)
+                  ExecTransitionBody config contract evm0Stele (dentLocals I)
                     dentTransition.body
                     (.returned
                       { contract := contract,
                         locals :=
-                          dentLocalsAfterRefundWithTicFrom σ evmLotSolm.accountMap I }
-                      evmTicSolm none) := by
-                simpa [evm0Solm, evmGuySolm, evmLotSolm, evmTicSolm] using
+                          dentLocalsAfterRefundWithTicFrom σ evmLotStele.accountMap I }
+                      evmTicStele none) := by
+                simpa [evm0Stele, evmGuyStele, evmLotStele, evmTicStele] using
                   (flipperDentSourceBodySuccessAfterRefund
                     (σ := σ) (σ₀ := σ₀)
-                    (A := A) (I := I) (g := g) (evmRefund := evmRefundSolm)
-                    (evmFlux := evmFluxSolm) (outRefund := outRefund) (outFlux := outFlux)
-                    hwv hguySolm hticGuard hendGuard hbidGuard htabGuard hlotGuard hfitLot
-                    hfitBeg hdec hcallerSolm hrefundCodeSolm hcallRefundSolmTrue
-                    hfluxCodeSolm hcallFluxSolmTrue
-                    (by simp [evmFluxSolm, evmGuySolm, evmRefundSolm, evm0Solm, initState,
+                    (A := A) (I := I) (g := g) (evmRefund := evmRefundStele)
+                    (evmFlux := evmFluxStele) (outRefund := outRefund) (outFlux := outFlux)
+                    hwv hguyStele hticGuard hendGuard hbidGuard htabGuard hlotGuard hfitLot
+                    hfitBeg hdec hcallerStele hrefundCodeStele hcallRefundSteleTrue
+                    hfluxCodeStele hcallFluxSteleTrue
+                    (by simp [evmFluxStele, evmGuyStele, evmRefundStele, evm0Stele, initState,
                       storageStore_executionEnv])
-                    (by simp [evmFluxSolm, evmGuySolm, evmRefundSolm, evm0Solm, initState,
-                      storageStore_executionEnv]) hfitTicSolm)
+                    (by simp [evmFluxStele, evmGuyStele, evmRefundStele, evm0Stele, initState,
+                      storageStore_executionEnv]) hfitTicStele)
               have hpackedLoadEq :
-                  Solm.EVM.storageLoad evmLotEvm evmLotEvm.executionEnv.codeOwner
+                  Stele.EVM.storageLoad evmLotEvm evmLotEvm.executionEnv.codeOwner
                       (bidPackedSlotOfWord (dentId I)) =
-                    Solm.EVM.storageLoad evmLotSolm evmLotSolm.executionEnv.codeOwner
+                    Stele.EVM.storageLoad evmLotStele evmLotStele.executionEnv.codeOwner
                       (bidPackedSlotOfWord (dentId I)) :=
                 hLotStateEquiv.storageLoad_codeOwner (bidPackedSlotOfWord (dentId I))
               have hticNewEq :
                   tendTicNewWord evmLotEvm.accountMap I =
-                    tendTicNewWord evmLotSolm.accountMap I := by
+                    tendTicNewWord evmLotStele.accountMap I := by
                 simp [tendTicNewWord, httlEq]
               have hstoredTicEq :
                   setUint48Offset20Word
-                      (Solm.EVM.storageLoad evmLotEvm evmLotEvm.executionEnv.codeOwner
+                      (Stele.EVM.storageLoad evmLotEvm evmLotEvm.executionEnv.codeOwner
                         (bidPackedSlotOfWord (dentId I)))
                       (tendTicNewWord evmLotEvm.accountMap I) =
                     setUint48Offset20Word
-                      (Solm.EVM.storageLoad evmLotSolm evmLotSolm.executionEnv.codeOwner
+                      (Stele.EVM.storageLoad evmLotStele evmLotStele.executionEnv.codeOwner
                         (bidPackedSlotOfWord (dentId I)))
-                      (tendTicNewWord evmLotSolm.accountMap I) := by
+                      (tendTicNewWord evmLotStele.accountMap I) := by
                 rw [hpackedLoadEq, hticNewEq]
-              have hTicStateEquiv : EVMStateEquiv evmTicEvm evmTicSolm := by
-                simpa [evmTicEvm, evmTicSolm] using
+              have hTicStateEquiv : EVMStateEquiv evmTicEvm evmTicStele := by
+                simpa [evmTicEvm, evmTicStele] using
                   EVMStateEquiv.storageStore_codeOwner hLotStateEquiv
                     (bidPackedSlotOfWord (dentId I)) hstoredTicEq
               have hAccountsRet :
@@ -593,7 +593,7 @@ theorem flipperDentBodyFrom4733Refund
                   simp [evmLotEvm, evmFluxEvm, evmGuyCallEvm, evm0Evm,
                     storageStore_executionEnv, initState]
                 simpa [evmTicEvm, hmapLotEvm, hownerLot, tendStoreTicMap,
-                  tendStoredTicWord, solcSlotWordAt, solcSlotWord, Solm.EVM.storageLoad,
+                  tendStoredTicWord, solcSlotWordAt, solcSlotWord, Stele.EVM.storageLoad,
                   State.lookupAccount, Account.lookupStorage, storageStore_accountMap, dentId,
                   tendId] using rfl
               have henc : returnEquiv ByteArray.empty none dentTransition.returnType := by
@@ -606,29 +606,29 @@ theorem flipperDentBodyFrom4733Refund
                     (tendNow48 I).toNat +
                       (tendTtlWord (dentAfterLotMap σ_flux I) I).toNat :=
                 Nat.le_of_not_gt hfitTicEvm
-              have hoverTicSolm :
+              have hoverTicStele :
                   2 ^ 48 ≤ (tendNow48 I).toNat +
-                    (tendTtlWord evmLotSolm.accountMap I).toNat := by
-                have httlSolmMap :
-                    tendTtlWord evmLotSolm.accountMap I =
+                    (tendTtlWord evmLotStele.accountMap I).toNat := by
+                have httlSteleMap :
+                    tendTtlWord evmLotStele.accountMap I =
                       tendTtlWord (dentAfterLotMap σ_flux I) I := by
                   rw [← httlEq, httlEvmMap]
-                simpa [httlSolmMap] using hoverTicEvm
+                simpa [httlSteleMap] using hoverTicEvm
               have hbody :
-                  ExecTransitionBody config contract evm0Solm (dentLocals I)
+                  ExecTransitionBody config contract evm0Stele (dentLocals I)
                     dentTransition.body .reverted := by
-                simpa [evm0Solm, evmGuySolm, evmLotSolm] using
+                simpa [evm0Stele, evmGuyStele, evmLotStele] using
                   (flipperDentSourceBodyAdd48OverflowAfterRefund
                     (σ := σ) (σ₀ := σ₀)
-                    (A := A) (I := I) (g := g) (evmRefund := evmRefundSolm)
-                    (evmFlux := evmFluxSolm) (outRefund := outRefund) (outFlux := outFlux)
-                    hwv hguySolm hticGuard hendGuard hbidGuard htabGuard hlotGuard hfitLot
-                    hfitBeg hdec hcallerSolm hrefundCodeSolm hcallRefundSolmTrue
-                    hfluxCodeSolm hcallFluxSolmTrue
-                    (by simp [evmFluxSolm, evmGuySolm, evmRefundSolm, evm0Solm, initState,
+                    (A := A) (I := I) (g := g) (evmRefund := evmRefundStele)
+                    (evmFlux := evmFluxStele) (outRefund := outRefund) (outFlux := outFlux)
+                    hwv hguyStele hticGuard hendGuard hbidGuard htabGuard hlotGuard hfitLot
+                    hfitBeg hdec hcallerStele hrefundCodeStele hcallRefundSteleTrue
+                    hfluxCodeStele hcallFluxSteleTrue
+                    (by simp [evmFluxStele, evmGuyStele, evmRefundStele, evm0Stele, initState,
                       storageStore_executionEnv])
-                    (by simp [evmFluxSolm, evmGuySolm, evmRefundSolm, evm0Solm, initState,
-                      storageStore_executionEnv]) hoverTicSolm)
+                    (by simp [evmFluxStele, evmGuyStele, evmRefundStele, evm0Stele, initState,
+                      storageStore_executionEnv]) hoverTicStele)
               exact (flipperDentX_add48Overflow hoverTicEvm rd6272)
                 |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
 

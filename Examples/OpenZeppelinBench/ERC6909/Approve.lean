@@ -2,9 +2,9 @@ import Reasoning.WordArithmetic
 import Reasoning.Memory
 import Reasoning.ABIComposite
 import Examples.OpenZeppelinBench.ERC6909.Storage
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 2000000
@@ -52,7 +52,7 @@ def approveSlotI (I : ExecutionEnv) : UInt256 :=
     (.int (Int.ofNat (approveIdWord I).toNat))
 
 def approvePostState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (approveSlot evm I)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (approveSlot evm I)
     (approveAmountWord I)
 
 

@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.MaxMintAllocationSyntax
 
 /-! Cursor propagation through cap enablement and its balance readers. -/
 
-open Solm ABI
+open Stele ABI
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
 

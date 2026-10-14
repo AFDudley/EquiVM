@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.ScheduledTimelockSource
 
 /-! Complete source outcomes for submitting a timelock update. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 

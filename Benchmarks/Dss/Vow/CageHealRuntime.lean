@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Vow.CageTailRuntime
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -17,17 +17,17 @@ theorem cageSourceVatSinSuccessTailRevertFromBlock
     (hlive : solcSlotWordAt ⟨12⟩ σ I = ⟨1⟩)
     (hvatCode :
       let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-      let evmLive := Solm.EVM.storageStore evm0 I.codeOwner ⟨12⟩ ⟨0⟩
-      let evmSin := Solm.EVM.storageStore evmLive I.codeOwner ⟨5⟩ ⟨0⟩
-      let evmAsh := Solm.EVM.storageStore evmSin I.codeOwner ⟨6⟩ ⟨0⟩
+      let evmLive := Stele.EVM.storageStore evm0 I.codeOwner ⟨12⟩ ⟨0⟩
+      let evmSin := Stele.EVM.storageStore evmLive I.codeOwner ⟨5⟩ ⟨0⟩
+      let evmAsh := Stele.EVM.storageStore evmSin I.codeOwner ⟨6⟩ ⟨0⟩
       0 < (UInt256.ofNat
         ((evmAsh.lookupAccount (cageVatAddressOf evmAsh)).option 0
           (fun acc => acc.code.size))).toNat)
     (hcallDai :
       let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-      let evmLive := Solm.EVM.storageStore evm0 I.codeOwner ⟨12⟩ ⟨0⟩
-      let evmSin := Solm.EVM.storageStore evmLive I.codeOwner ⟨5⟩ ⟨0⟩
-      let evmAsh := Solm.EVM.storageStore evmSin I.codeOwner ⟨6⟩ ⟨0⟩
+      let evmLive := Stele.EVM.storageStore evm0 I.codeOwner ⟨12⟩ ⟨0⟩
+      let evmSin := Stele.EVM.storageStore evmLive I.codeOwner ⟨5⟩ ⟨0⟩
+      let evmAsh := Stele.EVM.storageStore evmSin I.codeOwner ⟨6⟩ ⟨0⟩
       typedCallViaEVM config evmAsh (EVM.address (cageVatAddressOf evmAsh))
         "dai" 0 [.address (flapFlapperAddressOf evmAsh)] (true, evmDai, outDai)
         false)
@@ -75,9 +75,9 @@ theorem cageSourceVatSinSuccessTailRevertFromBlock
       cageTransition.body .reverted := by
   let locals : Store := ∅
   let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  let evmLive := Solm.EVM.storageStore evm0 I.codeOwner ⟨12⟩ ⟨0⟩
-  let evmSin0 := Solm.EVM.storageStore evmLive I.codeOwner ⟨5⟩ ⟨0⟩
-  let evmAsh := Solm.EVM.storageStore evmSin0 I.codeOwner ⟨6⟩ ⟨0⟩
+  let evmLive := Stele.EVM.storageStore evm0 I.codeOwner ⟨12⟩ ⟨0⟩
+  let evmSin0 := Stele.EVM.storageStore evmLive I.codeOwner ⟨5⟩ ⟨0⟩
+  let evmAsh := Stele.EVM.storageStore evmSin0 I.codeOwner ⟨6⟩ ⟨0⟩
   have hclear :
       ExecBlock config { contract := contract, locals := locals } evm0
         (.require (.binary .eq (.env .callvalue) (.intLit 0)) ::
@@ -152,17 +152,17 @@ theorem cageSourceVatSinSuccessTailOkFromBlock
     (hlive : solcSlotWordAt ⟨12⟩ σ I = ⟨1⟩)
     (hvatCode :
       let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-      let evmLive := Solm.EVM.storageStore evm0 I.codeOwner ⟨12⟩ ⟨0⟩
-      let evmSin := Solm.EVM.storageStore evmLive I.codeOwner ⟨5⟩ ⟨0⟩
-      let evmAsh := Solm.EVM.storageStore evmSin I.codeOwner ⟨6⟩ ⟨0⟩
+      let evmLive := Stele.EVM.storageStore evm0 I.codeOwner ⟨12⟩ ⟨0⟩
+      let evmSin := Stele.EVM.storageStore evmLive I.codeOwner ⟨5⟩ ⟨0⟩
+      let evmAsh := Stele.EVM.storageStore evmSin I.codeOwner ⟨6⟩ ⟨0⟩
       0 < (UInt256.ofNat
         ((evmAsh.lookupAccount (cageVatAddressOf evmAsh)).option 0
           (fun acc => acc.code.size))).toNat)
     (hcallDai :
       let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-      let evmLive := Solm.EVM.storageStore evm0 I.codeOwner ⟨12⟩ ⟨0⟩
-      let evmSin := Solm.EVM.storageStore evmLive I.codeOwner ⟨5⟩ ⟨0⟩
-      let evmAsh := Solm.EVM.storageStore evmSin I.codeOwner ⟨6⟩ ⟨0⟩
+      let evmLive := Stele.EVM.storageStore evm0 I.codeOwner ⟨12⟩ ⟨0⟩
+      let evmSin := Stele.EVM.storageStore evmLive I.codeOwner ⟨5⟩ ⟨0⟩
+      let evmAsh := Stele.EVM.storageStore evmSin I.codeOwner ⟨6⟩ ⟨0⟩
       typedCallViaEVM config evmAsh (EVM.address (cageVatAddressOf evmAsh))
         "dai" 0 [.address (flapFlapperAddressOf evmAsh)] (true, evmDai, outDai)
         false)
@@ -215,9 +215,9 @@ theorem cageSourceVatSinSuccessTailOkFromBlock
         evmHeal none) := by
   let locals : Store := ∅
   let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  let evmLive := Solm.EVM.storageStore evm0 I.codeOwner ⟨12⟩ ⟨0⟩
-  let evmSin0 := Solm.EVM.storageStore evmLive I.codeOwner ⟨5⟩ ⟨0⟩
-  let evmAsh := Solm.EVM.storageStore evmSin0 I.codeOwner ⟨6⟩ ⟨0⟩
+  let evmLive := Stele.EVM.storageStore evm0 I.codeOwner ⟨12⟩ ⟨0⟩
+  let evmSin0 := Stele.EVM.storageStore evmLive I.codeOwner ⟨5⟩ ⟨0⟩
+  let evmAsh := Stele.EVM.storageStore evmSin0 I.codeOwner ⟨6⟩ ⟨0⟩
   have hclear :
       ExecBlock config { contract := contract, locals := locals } evm0
         (.require (.binary .eq (.env .callvalue) (.intLit 0)) ::
@@ -292,17 +292,17 @@ theorem cageSourceMinHealLeftNoCode
     (hlive : solcSlotWordAt ⟨12⟩ σ I = ⟨1⟩)
     (hvatCode :
       let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-      let evmLive := Solm.EVM.storageStore evm0 I.codeOwner ⟨12⟩ ⟨0⟩
-      let evmSin0 := Solm.EVM.storageStore evmLive I.codeOwner ⟨5⟩ ⟨0⟩
-      let evmAsh := Solm.EVM.storageStore evmSin0 I.codeOwner ⟨6⟩ ⟨0⟩
+      let evmLive := Stele.EVM.storageStore evm0 I.codeOwner ⟨12⟩ ⟨0⟩
+      let evmSin0 := Stele.EVM.storageStore evmLive I.codeOwner ⟨5⟩ ⟨0⟩
+      let evmAsh := Stele.EVM.storageStore evmSin0 I.codeOwner ⟨6⟩ ⟨0⟩
       0 < (UInt256.ofNat
         ((evmAsh.lookupAccount (cageVatAddressOf evmAsh)).option 0
           (fun acc => acc.code.size))).toNat)
     (hcallDai :
       let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-      let evmLive := Solm.EVM.storageStore evm0 I.codeOwner ⟨12⟩ ⟨0⟩
-      let evmSin0 := Solm.EVM.storageStore evmLive I.codeOwner ⟨5⟩ ⟨0⟩
-      let evmAsh := Solm.EVM.storageStore evmSin0 I.codeOwner ⟨6⟩ ⟨0⟩
+      let evmLive := Stele.EVM.storageStore evm0 I.codeOwner ⟨12⟩ ⟨0⟩
+      let evmSin0 := Stele.EVM.storageStore evmLive I.codeOwner ⟨5⟩ ⟨0⟩
+      let evmAsh := Stele.EVM.storageStore evmSin0 I.codeOwner ⟨6⟩ ⟨0⟩
       typedCallViaEVM config evmAsh (EVM.address (cageVatAddressOf evmAsh))
         "dai" 0 [.address (flapFlapperAddressOf evmAsh)] (true, evmDai, outDai)
         false)
@@ -387,17 +387,17 @@ theorem cageSourceMinHealRightNoCode
     (hlive : solcSlotWordAt ⟨12⟩ σ I = ⟨1⟩)
     (hvatCode :
       let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-      let evmLive := Solm.EVM.storageStore evm0 I.codeOwner ⟨12⟩ ⟨0⟩
-      let evmSin0 := Solm.EVM.storageStore evmLive I.codeOwner ⟨5⟩ ⟨0⟩
-      let evmAsh := Solm.EVM.storageStore evmSin0 I.codeOwner ⟨6⟩ ⟨0⟩
+      let evmLive := Stele.EVM.storageStore evm0 I.codeOwner ⟨12⟩ ⟨0⟩
+      let evmSin0 := Stele.EVM.storageStore evmLive I.codeOwner ⟨5⟩ ⟨0⟩
+      let evmAsh := Stele.EVM.storageStore evmSin0 I.codeOwner ⟨6⟩ ⟨0⟩
       0 < (UInt256.ofNat
         ((evmAsh.lookupAccount (cageVatAddressOf evmAsh)).option 0
           (fun acc => acc.code.size))).toNat)
     (hcallDai :
       let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-      let evmLive := Solm.EVM.storageStore evm0 I.codeOwner ⟨12⟩ ⟨0⟩
-      let evmSin0 := Solm.EVM.storageStore evmLive I.codeOwner ⟨5⟩ ⟨0⟩
-      let evmAsh := Solm.EVM.storageStore evmSin0 I.codeOwner ⟨6⟩ ⟨0⟩
+      let evmLive := Stele.EVM.storageStore evm0 I.codeOwner ⟨12⟩ ⟨0⟩
+      let evmSin0 := Stele.EVM.storageStore evmLive I.codeOwner ⟨5⟩ ⟨0⟩
+      let evmAsh := Stele.EVM.storageStore evmSin0 I.codeOwner ⟨6⟩ ⟨0⟩
       typedCallViaEVM config evmAsh (EVM.address (cageVatAddressOf evmAsh))
         "dai" 0 [.address (flapFlapperAddressOf evmAsh)] (true, evmDai, outDai)
         false)
@@ -482,17 +482,17 @@ theorem cageSourceMinHealLeftCallFailure
     (hlive : solcSlotWordAt ⟨12⟩ σ I = ⟨1⟩)
     (hvatCode :
       let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-      let evmLive := Solm.EVM.storageStore evm0 I.codeOwner ⟨12⟩ ⟨0⟩
-      let evmSin0 := Solm.EVM.storageStore evmLive I.codeOwner ⟨5⟩ ⟨0⟩
-      let evmAsh := Solm.EVM.storageStore evmSin0 I.codeOwner ⟨6⟩ ⟨0⟩
+      let evmLive := Stele.EVM.storageStore evm0 I.codeOwner ⟨12⟩ ⟨0⟩
+      let evmSin0 := Stele.EVM.storageStore evmLive I.codeOwner ⟨5⟩ ⟨0⟩
+      let evmAsh := Stele.EVM.storageStore evmSin0 I.codeOwner ⟨6⟩ ⟨0⟩
       0 < (UInt256.ofNat
         ((evmAsh.lookupAccount (cageVatAddressOf evmAsh)).option 0
           (fun acc => acc.code.size))).toNat)
     (hcallDai :
       let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-      let evmLive := Solm.EVM.storageStore evm0 I.codeOwner ⟨12⟩ ⟨0⟩
-      let evmSin0 := Solm.EVM.storageStore evmLive I.codeOwner ⟨5⟩ ⟨0⟩
-      let evmAsh := Solm.EVM.storageStore evmSin0 I.codeOwner ⟨6⟩ ⟨0⟩
+      let evmLive := Stele.EVM.storageStore evm0 I.codeOwner ⟨12⟩ ⟨0⟩
+      let evmSin0 := Stele.EVM.storageStore evmLive I.codeOwner ⟨5⟩ ⟨0⟩
+      let evmAsh := Stele.EVM.storageStore evmSin0 I.codeOwner ⟨6⟩ ⟨0⟩
       typedCallViaEVM config evmAsh (EVM.address (cageVatAddressOf evmAsh))
         "dai" 0 [.address (flapFlapperAddressOf evmAsh)] (true, evmDai, outDai)
         false)
@@ -580,17 +580,17 @@ theorem cageSourceMinHealRightCallFailure
     (hlive : solcSlotWordAt ⟨12⟩ σ I = ⟨1⟩)
     (hvatCode :
       let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-      let evmLive := Solm.EVM.storageStore evm0 I.codeOwner ⟨12⟩ ⟨0⟩
-      let evmSin0 := Solm.EVM.storageStore evmLive I.codeOwner ⟨5⟩ ⟨0⟩
-      let evmAsh := Solm.EVM.storageStore evmSin0 I.codeOwner ⟨6⟩ ⟨0⟩
+      let evmLive := Stele.EVM.storageStore evm0 I.codeOwner ⟨12⟩ ⟨0⟩
+      let evmSin0 := Stele.EVM.storageStore evmLive I.codeOwner ⟨5⟩ ⟨0⟩
+      let evmAsh := Stele.EVM.storageStore evmSin0 I.codeOwner ⟨6⟩ ⟨0⟩
       0 < (UInt256.ofNat
         ((evmAsh.lookupAccount (cageVatAddressOf evmAsh)).option 0
           (fun acc => acc.code.size))).toNat)
     (hcallDai :
       let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-      let evmLive := Solm.EVM.storageStore evm0 I.codeOwner ⟨12⟩ ⟨0⟩
-      let evmSin0 := Solm.EVM.storageStore evmLive I.codeOwner ⟨5⟩ ⟨0⟩
-      let evmAsh := Solm.EVM.storageStore evmSin0 I.codeOwner ⟨6⟩ ⟨0⟩
+      let evmLive := Stele.EVM.storageStore evm0 I.codeOwner ⟨12⟩ ⟨0⟩
+      let evmSin0 := Stele.EVM.storageStore evmLive I.codeOwner ⟨5⟩ ⟨0⟩
+      let evmAsh := Stele.EVM.storageStore evmSin0 I.codeOwner ⟨6⟩ ⟨0⟩
       typedCallViaEVM config evmAsh (EVM.address (cageVatAddressOf evmAsh))
         "dai" 0 [.address (flapFlapperAddressOf evmAsh)] (true, evmDai, outDai)
         false)
@@ -678,17 +678,17 @@ theorem cageSourceMinHealLeftSuccess
     (hlive : solcSlotWordAt ⟨12⟩ σ I = ⟨1⟩)
     (hvatCode :
       let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-      let evmLive := Solm.EVM.storageStore evm0 I.codeOwner ⟨12⟩ ⟨0⟩
-      let evmSin0 := Solm.EVM.storageStore evmLive I.codeOwner ⟨5⟩ ⟨0⟩
-      let evmAsh := Solm.EVM.storageStore evmSin0 I.codeOwner ⟨6⟩ ⟨0⟩
+      let evmLive := Stele.EVM.storageStore evm0 I.codeOwner ⟨12⟩ ⟨0⟩
+      let evmSin0 := Stele.EVM.storageStore evmLive I.codeOwner ⟨5⟩ ⟨0⟩
+      let evmAsh := Stele.EVM.storageStore evmSin0 I.codeOwner ⟨6⟩ ⟨0⟩
       0 < (UInt256.ofNat
         ((evmAsh.lookupAccount (cageVatAddressOf evmAsh)).option 0
           (fun acc => acc.code.size))).toNat)
     (hcallDai :
       let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-      let evmLive := Solm.EVM.storageStore evm0 I.codeOwner ⟨12⟩ ⟨0⟩
-      let evmSin0 := Solm.EVM.storageStore evmLive I.codeOwner ⟨5⟩ ⟨0⟩
-      let evmAsh := Solm.EVM.storageStore evmSin0 I.codeOwner ⟨6⟩ ⟨0⟩
+      let evmLive := Stele.EVM.storageStore evm0 I.codeOwner ⟨12⟩ ⟨0⟩
+      let evmSin0 := Stele.EVM.storageStore evmLive I.codeOwner ⟨5⟩ ⟨0⟩
+      let evmAsh := Stele.EVM.storageStore evmSin0 I.codeOwner ⟨6⟩ ⟨0⟩
       typedCallViaEVM config evmAsh (EVM.address (cageVatAddressOf evmAsh))
         "dai" 0 [.address (flapFlapperAddressOf evmAsh)] (true, evmDai, outDai)
         false)
@@ -782,17 +782,17 @@ theorem cageSourceMinHealRightSuccess
     (hlive : solcSlotWordAt ⟨12⟩ σ I = ⟨1⟩)
     (hvatCode :
       let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-      let evmLive := Solm.EVM.storageStore evm0 I.codeOwner ⟨12⟩ ⟨0⟩
-      let evmSin0 := Solm.EVM.storageStore evmLive I.codeOwner ⟨5⟩ ⟨0⟩
-      let evmAsh := Solm.EVM.storageStore evmSin0 I.codeOwner ⟨6⟩ ⟨0⟩
+      let evmLive := Stele.EVM.storageStore evm0 I.codeOwner ⟨12⟩ ⟨0⟩
+      let evmSin0 := Stele.EVM.storageStore evmLive I.codeOwner ⟨5⟩ ⟨0⟩
+      let evmAsh := Stele.EVM.storageStore evmSin0 I.codeOwner ⟨6⟩ ⟨0⟩
       0 < (UInt256.ofNat
         ((evmAsh.lookupAccount (cageVatAddressOf evmAsh)).option 0
           (fun acc => acc.code.size))).toNat)
     (hcallDai :
       let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-      let evmLive := Solm.EVM.storageStore evm0 I.codeOwner ⟨12⟩ ⟨0⟩
-      let evmSin0 := Solm.EVM.storageStore evmLive I.codeOwner ⟨5⟩ ⟨0⟩
-      let evmAsh := Solm.EVM.storageStore evmSin0 I.codeOwner ⟨6⟩ ⟨0⟩
+      let evmLive := Stele.EVM.storageStore evm0 I.codeOwner ⟨12⟩ ⟨0⟩
+      let evmSin0 := Stele.EVM.storageStore evmLive I.codeOwner ⟨5⟩ ⟨0⟩
+      let evmAsh := Stele.EVM.storageStore evmSin0 I.codeOwner ⟨6⟩ ⟨0⟩
       typedCallViaEVM config evmAsh (EVM.address (cageVatAddressOf evmAsh))
         "dai" 0 [.address (flapFlapperAddressOf evmAsh)] (true, evmDai, outDai)
         false)
@@ -888,7 +888,7 @@ theorem vowCageMinHealLeftNoCodeBodyCore
     (hlive : solcSlotWordAt ⟨12⟩ σ I = ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some cageTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (cageTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (cageTransition.params.map Param.name)
         (transitionSignature cageTransition).paramTypes I.calldata = some ∅)
     (rd3234 : RD vowBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨3234⟩
@@ -903,17 +903,17 @@ theorem vowCageMinHealLeftNoCodeBodyCore
     (hov : R.length + 15 ≤ 1024)
     (hvatCode :
       let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-      let evmLive := Solm.EVM.storageStore evm0 I.codeOwner ⟨12⟩ ⟨0⟩
-      let evmSin0 := Solm.EVM.storageStore evmLive I.codeOwner ⟨5⟩ ⟨0⟩
-      let evmAsh := Solm.EVM.storageStore evmSin0 I.codeOwner ⟨6⟩ ⟨0⟩
+      let evmLive := Stele.EVM.storageStore evm0 I.codeOwner ⟨12⟩ ⟨0⟩
+      let evmSin0 := Stele.EVM.storageStore evmLive I.codeOwner ⟨5⟩ ⟨0⟩
+      let evmAsh := Stele.EVM.storageStore evmSin0 I.codeOwner ⟨6⟩ ⟨0⟩
       0 < (UInt256.ofNat
         ((evmAsh.lookupAccount (cageVatAddressOf evmAsh)).option 0
           (fun acc => acc.code.size))).toNat)
     (hcallDai :
       let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-      let evmLive := Solm.EVM.storageStore evm0 I.codeOwner ⟨12⟩ ⟨0⟩
-      let evmSin0 := Solm.EVM.storageStore evmLive I.codeOwner ⟨5⟩ ⟨0⟩
-      let evmAsh := Solm.EVM.storageStore evmSin0 I.codeOwner ⟨6⟩ ⟨0⟩
+      let evmLive := Stele.EVM.storageStore evm0 I.codeOwner ⟨12⟩ ⟨0⟩
+      let evmSin0 := Stele.EVM.storageStore evmLive I.codeOwner ⟨5⟩ ⟨0⟩
+      let evmAsh := Stele.EVM.storageStore evmSin0 I.codeOwner ⟨6⟩ ⟨0⟩
       typedCallViaEVM config evmAsh (EVM.address (cageVatAddressOf evmAsh))
         "dai" 0 [.address (flapFlapperAddressOf evmAsh)] (true, evmDai, outDai)
         false)
@@ -989,7 +989,7 @@ theorem vowCageMinHealRightNoCodeBodyCore
     (hlive : solcSlotWordAt ⟨12⟩ σ I = ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some cageTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (cageTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (cageTransition.params.map Param.name)
         (transitionSignature cageTransition).paramTypes I.calldata = some ∅)
     (rd3234 : RD vowBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨3234⟩
@@ -1004,17 +1004,17 @@ theorem vowCageMinHealRightNoCodeBodyCore
     (hov : R.length + 15 ≤ 1024)
     (hvatCode :
       let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-      let evmLive := Solm.EVM.storageStore evm0 I.codeOwner ⟨12⟩ ⟨0⟩
-      let evmSin0 := Solm.EVM.storageStore evmLive I.codeOwner ⟨5⟩ ⟨0⟩
-      let evmAsh := Solm.EVM.storageStore evmSin0 I.codeOwner ⟨6⟩ ⟨0⟩
+      let evmLive := Stele.EVM.storageStore evm0 I.codeOwner ⟨12⟩ ⟨0⟩
+      let evmSin0 := Stele.EVM.storageStore evmLive I.codeOwner ⟨5⟩ ⟨0⟩
+      let evmAsh := Stele.EVM.storageStore evmSin0 I.codeOwner ⟨6⟩ ⟨0⟩
       0 < (UInt256.ofNat
         ((evmAsh.lookupAccount (cageVatAddressOf evmAsh)).option 0
           (fun acc => acc.code.size))).toNat)
     (hcallDai :
       let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-      let evmLive := Solm.EVM.storageStore evm0 I.codeOwner ⟨12⟩ ⟨0⟩
-      let evmSin0 := Solm.EVM.storageStore evmLive I.codeOwner ⟨5⟩ ⟨0⟩
-      let evmAsh := Solm.EVM.storageStore evmSin0 I.codeOwner ⟨6⟩ ⟨0⟩
+      let evmLive := Stele.EVM.storageStore evm0 I.codeOwner ⟨12⟩ ⟨0⟩
+      let evmSin0 := Stele.EVM.storageStore evmLive I.codeOwner ⟨5⟩ ⟨0⟩
+      let evmAsh := Stele.EVM.storageStore evmSin0 I.codeOwner ⟨6⟩ ⟨0⟩
       typedCallViaEVM config evmAsh (EVM.address (cageVatAddressOf evmAsh))
         "dai" 0 [.address (flapFlapperAddressOf evmAsh)] (true, evmDai, outDai)
         false)
@@ -1090,7 +1090,7 @@ theorem vowCageMinHealLeftCallFailureBodyCore
     (hlive : solcSlotWordAt ⟨12⟩ σ I = ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some cageTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (cageTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (cageTransition.params.map Param.name)
         (transitionSignature cageTransition).paramTypes I.calldata = some ∅)
     (rd3296 : RD vowBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨3296⟩
@@ -1100,17 +1100,17 @@ theorem vowCageMinHealLeftCallFailureBodyCore
     (hov : R.length + 8 ≤ 1024)
     (hvatCode :
       let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-      let evmLive := Solm.EVM.storageStore evm0 I.codeOwner ⟨12⟩ ⟨0⟩
-      let evmSin0 := Solm.EVM.storageStore evmLive I.codeOwner ⟨5⟩ ⟨0⟩
-      let evmAsh := Solm.EVM.storageStore evmSin0 I.codeOwner ⟨6⟩ ⟨0⟩
+      let evmLive := Stele.EVM.storageStore evm0 I.codeOwner ⟨12⟩ ⟨0⟩
+      let evmSin0 := Stele.EVM.storageStore evmLive I.codeOwner ⟨5⟩ ⟨0⟩
+      let evmAsh := Stele.EVM.storageStore evmSin0 I.codeOwner ⟨6⟩ ⟨0⟩
       0 < (UInt256.ofNat
         ((evmAsh.lookupAccount (cageVatAddressOf evmAsh)).option 0
           (fun acc => acc.code.size))).toNat)
     (hcallDai :
       let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-      let evmLive := Solm.EVM.storageStore evm0 I.codeOwner ⟨12⟩ ⟨0⟩
-      let evmSin0 := Solm.EVM.storageStore evmLive I.codeOwner ⟨5⟩ ⟨0⟩
-      let evmAsh := Solm.EVM.storageStore evmSin0 I.codeOwner ⟨6⟩ ⟨0⟩
+      let evmLive := Stele.EVM.storageStore evm0 I.codeOwner ⟨12⟩ ⟨0⟩
+      let evmSin0 := Stele.EVM.storageStore evmLive I.codeOwner ⟨5⟩ ⟨0⟩
+      let evmAsh := Stele.EVM.storageStore evmSin0 I.codeOwner ⟨6⟩ ⟨0⟩
       typedCallViaEVM config evmAsh (EVM.address (cageVatAddressOf evmAsh))
         "dai" 0 [.address (flapFlapperAddressOf evmAsh)] (true, evmDai, outDai)
         false)
@@ -1189,7 +1189,7 @@ theorem vowCageMinHealRightCallFailureBodyCore
     (hlive : solcSlotWordAt ⟨12⟩ σ I = ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some cageTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (cageTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (cageTransition.params.map Param.name)
         (transitionSignature cageTransition).paramTypes I.calldata = some ∅)
     (rd3296 : RD vowBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨3296⟩
@@ -1199,17 +1199,17 @@ theorem vowCageMinHealRightCallFailureBodyCore
     (hov : R.length + 8 ≤ 1024)
     (hvatCode :
       let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-      let evmLive := Solm.EVM.storageStore evm0 I.codeOwner ⟨12⟩ ⟨0⟩
-      let evmSin0 := Solm.EVM.storageStore evmLive I.codeOwner ⟨5⟩ ⟨0⟩
-      let evmAsh := Solm.EVM.storageStore evmSin0 I.codeOwner ⟨6⟩ ⟨0⟩
+      let evmLive := Stele.EVM.storageStore evm0 I.codeOwner ⟨12⟩ ⟨0⟩
+      let evmSin0 := Stele.EVM.storageStore evmLive I.codeOwner ⟨5⟩ ⟨0⟩
+      let evmAsh := Stele.EVM.storageStore evmSin0 I.codeOwner ⟨6⟩ ⟨0⟩
       0 < (UInt256.ofNat
         ((evmAsh.lookupAccount (cageVatAddressOf evmAsh)).option 0
           (fun acc => acc.code.size))).toNat)
     (hcallDai :
       let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-      let evmLive := Solm.EVM.storageStore evm0 I.codeOwner ⟨12⟩ ⟨0⟩
-      let evmSin0 := Solm.EVM.storageStore evmLive I.codeOwner ⟨5⟩ ⟨0⟩
-      let evmAsh := Solm.EVM.storageStore evmSin0 I.codeOwner ⟨6⟩ ⟨0⟩
+      let evmLive := Stele.EVM.storageStore evm0 I.codeOwner ⟨12⟩ ⟨0⟩
+      let evmSin0 := Stele.EVM.storageStore evmLive I.codeOwner ⟨5⟩ ⟨0⟩
+      let evmAsh := Stele.EVM.storageStore evmSin0 I.codeOwner ⟨6⟩ ⟨0⟩
       typedCallViaEVM config evmAsh (EVM.address (cageVatAddressOf evmAsh))
         "dai" 0 [.address (flapFlapperAddressOf evmAsh)] (true, evmDai, outDai)
         false)
@@ -1288,7 +1288,7 @@ theorem vowCageMinHealLeftSuccessBodyCore
     (hlive : solcSlotWordAt ⟨12⟩ σ I = ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some cageTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (cageTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (cageTransition.params.map Param.name)
         (transitionSignature cageTransition).paramTypes I.calldata = some ∅)
     (rd3296 : RD vowBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨3296⟩
@@ -1296,17 +1296,17 @@ theorem vowCageMinHealLeftSuccessBodyCore
       mem aw outHeal acc k C)
     (hvatCode :
       let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-      let evmLive := Solm.EVM.storageStore evm0 I.codeOwner ⟨12⟩ ⟨0⟩
-      let evmSin0 := Solm.EVM.storageStore evmLive I.codeOwner ⟨5⟩ ⟨0⟩
-      let evmAsh := Solm.EVM.storageStore evmSin0 I.codeOwner ⟨6⟩ ⟨0⟩
+      let evmLive := Stele.EVM.storageStore evm0 I.codeOwner ⟨12⟩ ⟨0⟩
+      let evmSin0 := Stele.EVM.storageStore evmLive I.codeOwner ⟨5⟩ ⟨0⟩
+      let evmAsh := Stele.EVM.storageStore evmSin0 I.codeOwner ⟨6⟩ ⟨0⟩
       0 < (UInt256.ofNat
         ((evmAsh.lookupAccount (cageVatAddressOf evmAsh)).option 0
           (fun acc => acc.code.size))).toNat)
     (hcallDai :
       let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-      let evmLive := Solm.EVM.storageStore evm0 I.codeOwner ⟨12⟩ ⟨0⟩
-      let evmSin0 := Solm.EVM.storageStore evmLive I.codeOwner ⟨5⟩ ⟨0⟩
-      let evmAsh := Solm.EVM.storageStore evmSin0 I.codeOwner ⟨6⟩ ⟨0⟩
+      let evmLive := Stele.EVM.storageStore evm0 I.codeOwner ⟨12⟩ ⟨0⟩
+      let evmSin0 := Stele.EVM.storageStore evmLive I.codeOwner ⟨5⟩ ⟨0⟩
+      let evmAsh := Stele.EVM.storageStore evmSin0 I.codeOwner ⟨6⟩ ⟨0⟩
       typedCallViaEVM config evmAsh (EVM.address (cageVatAddressOf evmAsh))
         "dai" 0 [.address (flapFlapperAddressOf evmAsh)] (true, evmDai, outDai)
         false)
@@ -1390,7 +1390,7 @@ theorem vowCageMinHealRightSuccessBodyCore
     (hlive : solcSlotWordAt ⟨12⟩ σ I = ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some cageTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (cageTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (cageTransition.params.map Param.name)
         (transitionSignature cageTransition).paramTypes I.calldata = some ∅)
     (rd3296 : RD vowBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨3296⟩
@@ -1398,17 +1398,17 @@ theorem vowCageMinHealRightSuccessBodyCore
       mem aw outHeal acc k C)
     (hvatCode :
       let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-      let evmLive := Solm.EVM.storageStore evm0 I.codeOwner ⟨12⟩ ⟨0⟩
-      let evmSin0 := Solm.EVM.storageStore evmLive I.codeOwner ⟨5⟩ ⟨0⟩
-      let evmAsh := Solm.EVM.storageStore evmSin0 I.codeOwner ⟨6⟩ ⟨0⟩
+      let evmLive := Stele.EVM.storageStore evm0 I.codeOwner ⟨12⟩ ⟨0⟩
+      let evmSin0 := Stele.EVM.storageStore evmLive I.codeOwner ⟨5⟩ ⟨0⟩
+      let evmAsh := Stele.EVM.storageStore evmSin0 I.codeOwner ⟨6⟩ ⟨0⟩
       0 < (UInt256.ofNat
         ((evmAsh.lookupAccount (cageVatAddressOf evmAsh)).option 0
           (fun acc => acc.code.size))).toNat)
     (hcallDai :
       let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-      let evmLive := Solm.EVM.storageStore evm0 I.codeOwner ⟨12⟩ ⟨0⟩
-      let evmSin0 := Solm.EVM.storageStore evmLive I.codeOwner ⟨5⟩ ⟨0⟩
-      let evmAsh := Solm.EVM.storageStore evmSin0 I.codeOwner ⟨6⟩ ⟨0⟩
+      let evmLive := Stele.EVM.storageStore evm0 I.codeOwner ⟨12⟩ ⟨0⟩
+      let evmSin0 := Stele.EVM.storageStore evmLive I.codeOwner ⟨5⟩ ⟨0⟩
+      let evmAsh := Stele.EVM.storageStore evmSin0 I.codeOwner ⟨6⟩ ⟨0⟩
       typedCallViaEVM config evmAsh (EVM.address (cageVatAddressOf evmAsh))
         "dai" 0 [.address (flapFlapperAddressOf evmAsh)] (true, evmDai, outDai)
         false)

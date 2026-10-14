@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.HeapWordWindow
 
 /-! Contents and preservation of an allocated memory string. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 

@@ -1,8 +1,8 @@
-import Solm.Syntax
+import Stele.Syntax
 
-/-! Explicit memory-cursor accounting, expressed in the existing Solm language. -/
+/-! Explicit memory-cursor accounting, expressed in the existing Stele language. -/
 
-open Solm ABI
+open Stele ABI
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
 

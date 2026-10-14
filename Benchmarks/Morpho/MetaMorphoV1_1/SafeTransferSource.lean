@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.SafeTransferABI
 
 /-! Source composition for the transfer request allocation and optional-return call. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
 

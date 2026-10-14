@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.AllocationSyntax
 
 /-! Metadata setters reserve the ABI-decoded length word and padded string before owner checks. -/
 
-open Solm ABI
+open Stele ABI
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
 

@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.SetCapFinishSimulation
 
 /-! The enabled-market branch from its packed flag write through the queue event. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
@@ -48,7 +48,7 @@ theorem setCapEnableSimulation {I : ExecutionEnv} {g : Sat256} {s0 evm : State}
     setCapEnableState_source hs id
   have hready1 : SetCapReady frame1 p id cap ptr := hready.previous previous
   have hprevious :
-      Solm.EVM.storageLoad (setCapEnableState evm id) evm.executionEnv.codeOwner ⟨22⟩ =
+      Stele.EVM.storageLoad (setCapEnableState evm id) evm.executionEnv.codeOwner ⟨22⟩ =
         previous := by
     simpa only [evm1, setCapEnableState_executionEnv] using hs1.storageRead ⟨22⟩
   have hprefix (result : ExecResult)

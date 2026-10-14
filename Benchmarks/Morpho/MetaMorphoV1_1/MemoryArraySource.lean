@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.BodyCommon
 
 /-! Source evaluation of the singleton arrays used by Morpho's storage-reader calls. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 

@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.MarketRemovalRole
 
 /-! Nonpayable and calldata entry paths for market-removal scheduling. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables metaMorphoV1_1Blocks
 

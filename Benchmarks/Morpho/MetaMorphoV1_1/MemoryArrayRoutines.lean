@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.MemoryRoutines
 
 /-! The EVM routine constructing a singleton array, with its final memory contents. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 

@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.ArrayStorage
 
 /-! Source storage reads and loop control for accrued assets. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
 
@@ -18,10 +18,10 @@ def accruedAssetsIdWord (I : ExecutionEnv) (σ : AccountMap) (i : UInt256) : UIn
 theorem accruedAssetsQueueRead {frame : Frame} {evm : State} {i : UInt256}
     (hcontract : frame.contract = contract) (hbase : frame.locals.get? "withdrawQueue" = none)
     (hi : frame.locals.get? "i" = some (uint256Value i))
-    (hbound : i.toNat < (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨21⟩).toNat) :
+    (hbound : i.toNat < (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨21⟩).toNat) :
     evalExpr? config frame evm (.storage ⟨"withdrawQueue", [.aindex (.var "i")]⟩) =
       .ok (wordBytes32Value
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (accruedAssetsQueueSlot i))) := by
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (accruedAssetsQueueSlot i))) := by
   rcases frame with ⟨c, locals, imms⟩
   dsimp only at hcontract hbase hi
   subst c
@@ -30,7 +30,7 @@ theorem accruedAssetsQueueRead {frame : Frame} {evm : State} {i : UInt256}
 theorem accruedAssetsConditionSource {frame : Frame} {evm : State} {i len : UInt256}
     (hcontract : frame.contract = contract) (hbase : frame.locals.get? "withdrawQueue" = none)
     (hi : frame.locals.get? "i" = some (uint256Value i))
-    (hlen : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨21⟩ = len) :
+    (hlen : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨21⟩ = len) :
     evalExpr? config frame evm accruedAssetsCondition =
       .ok (.bool (decide (i.toNat < len.toNat))) := by
   rcases frame with ⟨c, locals, imms⟩

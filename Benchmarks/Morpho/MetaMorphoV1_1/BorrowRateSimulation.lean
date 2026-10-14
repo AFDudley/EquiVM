@@ -4,7 +4,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.BorrowRateSource
 
 /-! One actual rate-model call, through source/bytecode reverts or the decoded rate word. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 

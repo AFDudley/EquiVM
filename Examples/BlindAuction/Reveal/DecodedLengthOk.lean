@@ -1,7 +1,7 @@
 import Examples.BlindAuction.Reveal.DecodedEmpty
 import Examples.BlindAuction.Reveal.DecodedNonempty
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 10000000
@@ -47,29 +47,29 @@ theorem scratch_blindAuctionReveal_decoded_times_lengths_ok
     runtimeRefinementFor blindAuctionConfig blindAuctionContract
       σ σ₀ g A I := by
   obtain ⟨_, _, rd887⟩ := h887
-  let evmSolm : EVM.State :=
+  let evmStele : EVM.State :=
     initState σ σ₀ (Sat256.ofUInt256 g) A I
-  have hwvSolm : evmSolm.executionEnv.weiValue = ⟨0⟩ := by
-    simpa [evmSolm, initState] using hwv
+  have hwvStele : evmStele.executionEnv.weiValue = ⟨0⟩ := by
+    simpa [evmStele, initState] using hwv
   have hbiddingAbsent : callargs.get? biddingEndRef.base = none :=
     blindAuctionDecode_reveal_callargs_absent hdec (by decide) (by decide) (by decide)
   have hrevealAbsent : callargs.get? revealEndRef.base = none :=
     blindAuctionDecode_reveal_callargs_absent hdec (by decide) (by decide) (by decide)
   have hafterBody :
-      (Solm.EVM.storageLoad evmSolm evmSolm.executionEnv.codeOwner ⟨1⟩).toNat <
-        (UInt256.ofNat evmSolm.executionEnv.header.timestamp).toNat := by
+      (Stele.EVM.storageLoad evmStele evmStele.executionEnv.codeOwner ⟨1⟩).toNat <
+        (UInt256.ofNat evmStele.executionEnv.header.timestamp).toNat := by
     change (revealScratchBiddingEndWord σ I).toNat <
       (revealScratchTimestampWord I).toNat
     exact hafter
   have hbeforeBody :
-      (UInt256.ofNat evmSolm.executionEnv.header.timestamp).toNat <
-        (Solm.EVM.storageLoad evmSolm evmSolm.executionEnv.codeOwner ⟨2⟩).toNat := by
+      (UInt256.ofNat evmStele.executionEnv.header.timestamp).toNat <
+        (Stele.EVM.storageLoad evmStele evmStele.executionEnv.codeOwner ⟨2⟩).toNat := by
     change (revealScratchTimestampWord I).toNat <
       (revealScratchRevealEndWord σ I).toNat
     exact hbefore
   have hlenBody :
-      Solm.EVM.storageLoad evmSolm evmSolm.executionEnv.codeOwner
-        (bidsBase (.address evmSolm.executionEnv.source)) =
+      Stele.EVM.storageLoad evmStele evmStele.executionEnv.codeOwner
+        (bidsBase (.address evmStele.executionEnv.source)) =
           revealScratchBidsLengthWord σ I := by
     rfl
   have hbidsHash := revealScratchBidsMappingBaseKeccak I

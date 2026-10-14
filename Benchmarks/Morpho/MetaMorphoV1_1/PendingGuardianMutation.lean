@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.SetGuardianSource
 
 /-! Source storage assignments for scheduling a guardian update. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 
@@ -26,16 +26,16 @@ theorem uint64CastSource {cfg : Config} {frame : Frame} {evm : EVM.State} {expr 
   norm_num [Int.natCast_mod, EVM.twoPow]
 
 def pendingGuardianValueState (evm : EVM.State) (value : AccountAddress) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨15⟩
-    (setAddressOffset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨15⟩)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨15⟩
+    (setAddressOffset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨15⟩)
       (UInt256.ofNat value.val))
 
 def pendingGuardianTimeState (evm : EVM.State) (time : UInt256) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨15⟩
-    (setPendingTimeWord (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨15⟩) time)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨15⟩
+    (setPendingTimeWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨15⟩) time)
 
 def pendingGuardianDelay (evm : EVM.State) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨14⟩
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨14⟩
 
 def pendingGuardianTime (evm : EVM.State) : UInt256 :=
   UInt256.ofNat evm.executionEnv.header.timestamp + pendingGuardianDelay evm

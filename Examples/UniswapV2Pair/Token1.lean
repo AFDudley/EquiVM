@@ -1,7 +1,7 @@
 import Examples.UniswapV2Pair.Dispatch
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -15,14 +15,14 @@ def token1Word (σ : AccountMap) (I : ExecutionEnv) : UInt256 :=
 abbrev token1ReturnWord (σ : AccountMap) (I : ExecutionEnv) : UInt256 :=
   solcAddressSlotWord ⟨7⟩ σ I
 
-/-- The Solm `token1()` body returns the address stored in slot 7. -/
+/-- The Stele `token1()` body returns the address stored in slot 7. -/
 theorem uniswapToken1BodyReturns (evm : EVM.State) (locals : Store)
     (h : evm.executionEnv.weiValue = ⟨0⟩)
     (hlocals : locals.get? "token1" = none) :
     ExecTransitionBody config contract evm locals token1Transition.body
       (.returned { contract := contract, locals := locals } evm
         (some [(.address (AccountAddress.ofNat
-          (UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨7⟩)
+          (UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨7⟩)
             solcAddrMask).toNat))])) := by
   simpa [token1Transition] using
     uniswapAddressGetterBodyReturns (slot := ⟨7⟩) (ref := token1Ref)
@@ -43,9 +43,9 @@ theorem uniswapX_token1 {σ σ₀ A I} {g : Sat256} {sel : UInt256}
     (by jump_dest) (by jump_dest)
 
 theorem uniswapDecode_token1 {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (token1Transition.params.map Param.name)
+    config.externalABI.decodeCalldata? (token1Transition.params.map Param.name)
       (transitionSignature token1Transition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 /-- `token1()` body core, parameterized by the dispatcher/decode facts still owned by `Correct`. -/
@@ -54,7 +54,7 @@ theorem uniswapToken1BodyCore
     (hcode : I.code = uniswapV2PairBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some token1Transition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (token1Transition.params.map Param.name)
+      config.externalABI.decodeCalldata? (token1Transition.params.map Param.name)
         (transitionSignature token1Transition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD uniswapV2PairBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1332⟩ [sel]
@@ -66,7 +66,7 @@ theorem uniswapToken1BodyCore
         (.returned { contract := contract, locals := ∅ }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.address (AccountAddress.ofNat (token1ReturnWord σ I).toNat))])) := by
-    simpa [token1Word, token1ReturnWord, initState, Solm.EVM.storageLoad, State.lookupAccount]
+    simpa [token1Word, token1ReturnWord, initState, Stele.EVM.storageLoad, State.lookupAccount]
       using uniswapToken1BodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
         (by simp only [initState]; exact hwv) (by simp)

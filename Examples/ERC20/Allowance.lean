@@ -1,7 +1,7 @@
 import Examples.ERC20.Common
 import Reasoning.Storage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -116,7 +116,7 @@ theorem evalExpr_allowance_storage (evm : EVM.State) (I : ExecutionEnv) :
     evalExpr? erc20Config { contract := erc20Contract, locals := allowanceStore I } evm
       (.storage (allowanceRef (.var "owner") (.var "spender"))) =
         .ok (.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (allowanceSlot I)).toNat)) := by
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (allowanceSlot I)).toNat)) := by
   have hgowner := allowanceStore_owner_getElem? I
   have hgspender := allowanceStore_spender_getElem? I
   have her : evalStorageRef erc20Config { contract := erc20Contract, locals := allowanceStore I }
@@ -154,7 +154,7 @@ theorem erc20AllowanceBodyReturns (evm : EVM.State) (I : ExecutionEnv)
     ExecTransitionBody erc20Config erc20Contract evm (allowanceStore I) allowanceTransition.body
       (.returned { contract := erc20Contract, locals := allowanceStore I } evm
         (some [(.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (allowanceSlot I)).toNat))])) := by
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (allowanceSlot I)).toNat))])) := by
   exact ExecFuncBody.execBlockRet <|
     (ABlock.start.requireStep (evalCallvalueEq_true h)).returns (by
       simpa [allowanceRef] using evalExpr_allowance_storage evm I)
@@ -772,7 +772,7 @@ theorem erc20AllowanceBodyCore
                 (.returned { contract := erc20Contract, locals := allowanceStore I }
                   (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                   (some [(.int (Int.ofNat (allowanceWord σ I).toNat))])) := by
-            simpa [allowanceWord, allowanceSlot, initState, Solm.EVM.storageLoad,
+            simpa [allowanceWord, allowanceSlot, initState, Stele.EVM.storageLoad,
               State.lookupAccount] using erc20AllowanceBodyReturns
                 (initState σ σ₀ (Sat256.ofUInt256 g) A I) I
                 (by simp only [initState]; exact hwv)

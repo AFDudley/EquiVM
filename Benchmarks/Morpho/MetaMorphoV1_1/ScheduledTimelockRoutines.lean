@@ -5,7 +5,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.RuntimeBlocks_035
 
 /-! Runtime scheduling of a timelock with checked addition between the two stores. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables metaMorphoV1_1Blocks
 

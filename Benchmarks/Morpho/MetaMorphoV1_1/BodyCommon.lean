@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.Common
 
 /-! Shared source-body guards and ABI-return facts for the runtime proofs. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 
@@ -27,10 +27,10 @@ theorem calldataLengthCheckHuge {size : Nat} (hhi : 2 ^ 255 + 4 ≤ size)
   omega
 
 -- LIBRARY CANDIDATE: evaluate a length guard on a byte array held in a local variable.
-theorem evalLocalBytesLengthLt {cfg : Config} {solm : Frame} {evm : EVM.State}
+theorem evalLocalBytesLengthLt {cfg : Config} {stele : Frame} {evm : EVM.State}
     {name : Ident} {bytes : ByteArray} (limit : Nat)
-    (hget : solm.locals.get? name = some (.bytes bytes)) :
-    evalExpr? cfg solm evm
+    (hget : stele.locals.get? name = some (.bytes bytes)) :
+    evalExpr? cfg stele evm
       (.binary .lt (.arrayLength .localVar ⟨name, []⟩) (.intLit (Int.ofNat limit))) =
       .ok (.bool (decide (bytes.size < limit))) := by
   simp only [evalExpr?, hget, readLocalPath?, evalBinaryOp?, pure, bind, EvalResult.bind]
@@ -44,20 +44,20 @@ theorem selectorMismatch {hit other cd : ByteArray} (h : (hit == cd) = true)
   exact hne ((byteArray_eq_of_beq ho).trans (byteArray_eq_of_beq h).symm)
 
 -- LIBRARY CANDIDATE: advance through the common nonpayable/calldata-bound prefix.
-theorem nonpayableCalldataPrefix {cfg : Config} {evm : EVM.State} {solm : Frame}
+theorem nonpayableCalldataPrefix {cfg : Config} {evm : EVM.State} {stele : Frame}
     {rest : List Stmt} (name : Ident) (limit : Nat)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩) (hhi : evm.executionEnv.calldata.size < limit) :
-    ABlock cfg evm solm
+    ABlock cfg evm stele
       (.require (.binary .eq (.env .callvalue) (.intLit 0)) ::
         .letDecl name (some .bytes) (.env .msgData) ::
         .require (.binary .lt (.arrayLength .localVar ⟨name, []⟩) (.intLit (Int.ofNat limit))) ::
         rest)
-      { solm with locals := solm.locals.insert name (.bytes evm.executionEnv.calldata) } rest := by
+      { stele with locals := stele.locals.insert name (.bytes evm.executionEnv.calldata) } rest := by
   refine ((ABlock.start.requireStep (evalCallvalueEq_true hwv)).letStep ?_).requireStep ?_
   · simp only [evalExpr?, envValue, pure]
   · simpa only [hhi, decide_true] using
       (evalLocalBytesLengthLt (cfg := cfg) (evm := evm)
-        (solm := { solm with locals := solm.locals.insert name (.bytes evm.executionEnv.calldata) })
+        (stele := { stele with locals := stele.locals.insert name (.bytes evm.executionEnv.calldata) })
         limit (store_get_self _ _ _))
 
 -- LIBRARY CANDIDATE: the common nonpayable/calldata-bound prefix rejects an oversized input.
@@ -76,7 +76,7 @@ theorem bodyReverts_calldataBound {cfg : Config} {imms : Store} {C : ContractDec
   · have hh : ¬ evm.executionEnv.calldata.size < limit := by omega
     simpa only [hh, decide_false] using
       (evalLocalBytesLengthLt (cfg := cfg) (evm := evm)
-        (solm :=
+        (stele :=
           { contract := C
             locals := locals.insert name (.bytes evm.executionEnv.calldata)
             immutables := imms }) limit (store_get_self _ _ _))
@@ -99,14 +99,14 @@ theorem addressReturnEncoding (addr : EVM.Address) :
     (by simp [encodeABIValue?, encodeABIWord?])
 
 -- LIBRARY CANDIDATE: call an argument-free internal helper that returns one expression.
-theorem internalCallReturnExpr {cfg : Config} {solm : Frame} {evm : EVM.State}
-    {name retVar : Ident} {retTy : List ABIType} {expr : Expr} {value : Value}
-    (hlookup : lookupCallable? solm.contract name =
+theorem internalCallReturnExpr {cfg : Config} {stele : Frame} {evm : EVM.State}
+    {name retVar : Ident} {retTy : List StorageType} {expr : Expr} {value : Value}
+    (hlookup : lookupCallable? stele.contract name =
       some { params := [], returnType := retTy, body := [.return [expr]] })
-    (heval : evalExpr? cfg { solm with locals := ∅ } evm expr = .ok value) :
-    ExecStmt cfg solm evm (.internalCall name [] retVar)
-      (.ok { solm with locals := solm.locals.insert retVar value } evm) := by
-  exact ExecStmt.internalCallReturn (calleeSolm := { solm with locals := ∅ })
+    (heval : evalExpr? cfg { stele with locals := ∅ } evm expr = .ok value) :
+    ExecStmt cfg stele evm (.internalCall name [] retVar)
+      (.ok { stele with locals := stele.locals.insert retVar value } evm) := by
+  exact ExecStmt.internalCallReturn (calleeStele := { stele with locals := ∅ })
     (value := some [value]) (by rfl) hlookup rfl
     (ExecFuncBody.execBlockRet (ABlock.start.returns heval))
 

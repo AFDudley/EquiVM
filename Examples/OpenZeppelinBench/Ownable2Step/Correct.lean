@@ -4,13 +4,13 @@ import Examples.OpenZeppelinBench.Ownable2Step.PendingOwner
 import Examples.OpenZeppelinBench.Ownable2Step.RenounceOwnership
 import Examples.OpenZeppelinBench.Ownable2Step.TransferOwnership
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
 namespace OpenZeppelinBench.Ownable2Step
 
-/-- The deployed Ownable2Step benchmark runtime bytecode refines the Solm specification. -/
+/-- The deployed Ownable2Step benchmark runtime bytecode refines the Stele specification. -/
 theorem ownable2StepCorrect :
     runtimeRefinement config ownable2StepBenchBytecode contract := by
   refine ⟨fun σ σ₀ g A I hcode hsize => ?_⟩

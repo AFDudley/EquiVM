@@ -1,8 +1,8 @@
 import Benchmarks.Morpho.MetaMorphoV1_1.Common
 
-/-! ## Solm dispatch: which transition a selector reaches -/
+/-! ## Stele dispatch: which transition a selector reaches -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 

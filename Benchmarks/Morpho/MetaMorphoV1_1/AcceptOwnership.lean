@@ -7,11 +7,11 @@ import Benchmarks.Morpho.MetaMorphoV1_1.RuntimeBlocks_009
 # MetaMorphoV1_1 `acceptOwnership()`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 5644; reach lemma `metaMorphoV1_1ReachAcceptOwnershipBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 
@@ -21,7 +21,7 @@ attribute [local irreducible] metaMorphoV1_1Bytecode
 
 def pendingOwnerAddress (evm : EVM.State) : AccountAddress :=
   AccountAddress.ofNat (UInt256.land
-    (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨9⟩) solcAddrMask).toNat
+    (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨9⟩) solcAddrMask).toNat
 
 def acceptOwnershipFrame (evm : EVM.State) (locals imms : Store) : Frame :=
   { contract := contract
@@ -301,7 +301,7 @@ theorem metaMorphoV1_1AcceptOwnershipBody {σ σ₀ A I} {g : UInt256} (v : Meta
   have hd : dispatchMsg contract I.calldata = some acceptOwnershipTransition := by
     apply metaMorphoV1_1Dispatch_acceptOwnership <;>
       first | exact hsel | exact selectorMismatch hsel (by decide +kernel)
-  have hdec : decodeCalldataWithMode config.abiDecodeMode
+  have hdec : config.externalABI.decodeCalldata?
       (acceptOwnershipTransition.params.map Param.name)
       (transitionSignature acceptOwnershipTransition).paramTypes I.calldata = some ∅ := by
     exact decodeCalldata_empty_ok hsz

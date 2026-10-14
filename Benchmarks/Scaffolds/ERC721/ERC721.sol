@@ -5,7 +5,7 @@
 //
 // Solmate-style ERC721 *core* (IERC721 transfer/approval/ownership surface).  Deliberately omits:
 //   * the ERC721Metadata extension (name/symbol/tokenURI): `string` ABI returns are not yet
-//     encodable by the Solm equivalence machinery;
+//     encodable by the Stele equivalence machinery;
 //   * `safeTransferFrom`: outside this compact source-level benchmark;
 //   * ERC165 `supportsInterface(bytes4)`: needs a fixed-bytes (`bytes4`) literal compare.
 pragma solidity ^0.8.20;

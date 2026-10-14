@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.LocalArrayBoolSource
 
 /-! Source reads, duplicate checks, and writes in the queue-construction loop. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 
@@ -53,8 +53,8 @@ theorem updateWithdrawQueueBuildRead {frame : Frame} {imms : Store} {evm : State
     {cursor prev : UInt256}
     (h : UpdateWithdrawQueueReady frame imms indexes curr i seen queue cursor)
     (hprev : indexes[i]? = some (uint256Value prev))
-    (hbound : prev.toNat < (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨21⟩).toNat) :
-    let id := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+    (hbound : prev.toNat < (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨21⟩).toNat) :
+    let id := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
       (uInt256OfByteArray (KEC (UInt256.toByteArray ⟨21⟩)) + prev)
     ABlock config evm frame updateWithdrawQueueBuildBody
       (updateWithdrawQueueReadFrame frame prev id) (updateWithdrawQueueBuildBody.drop 2) := by
@@ -79,7 +79,7 @@ theorem updateWithdrawQueueBuildReadRevert {frame : Frame} {imms : Store} {evm :
     (h : UpdateWithdrawQueueReady frame imms indexes curr i seen queue cursor)
     (hprev : indexes[i]? = some (uint256Value prev))
     (hbound : ¬ prev.toNat <
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨21⟩).toNat) :
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨21⟩).toNat) :
     ExecBlock config frame evm updateWithdrawQueueBuildBody .reverted := by
   refine ExecBlock.consNormal
     (ExecStmt.letDecl (evalLocalArrayIndex h.input h.index hprev rfl)) ?_
@@ -130,7 +130,7 @@ theorem updateWithdrawQueueBuildTailPass {frame : Frame} {imms : Store} {evm : S
   have hqueue := assignLocalArrayIndex (cfg := config) (evm := evm)
     (array := "newWithdrawQueue") (index := "i") (values := queue.map wordBytes32Value)
     (i := i)
-    (solm := { updateWithdrawQueueReadFrame frame prev id with
+    (stele := { updateWithdrawQueueReadFrame frame prev id with
       locals := (updateWithdrawQueueReadFrame frame prev id).locals.insert "seen"
         (.array ((seen.map Value.bool).set prev.toNat (.bool true))) })
     (value := wordBytes32Value id)
@@ -145,6 +145,6 @@ theorem updateWithdrawQueueBuildTailPass {frame : Frame} {imms : Store} {evm : S
       updateWithdrawQueueReadFrame, store_get_self, EvalResult.ofOption]
   · simpa only [updateWithdrawQueueStepFrame, List.map_set] using
       (ExecBlock.nil (cfg := config)
-        (solm := updateWithdrawQueueStepFrame frame prev id seen queue i) (evm := evm))
+        (stele := updateWithdrawQueueStepFrame frame prev id seen queue i) (evm := evm))
 
 end Benchmarks.Morpho.MetaMorphoV1_1

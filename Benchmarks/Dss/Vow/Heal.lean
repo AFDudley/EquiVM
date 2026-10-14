@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Vow.Kiss
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 0
@@ -187,14 +187,14 @@ theorem vowDispatch_heal {I : ExecutionEnv}
     exact hsel
 
 theorem vowDecode_heal_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (healTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (healTransition.params.map Param.name)
       (transitionSignature healTransition).paramTypes I.calldata = some (healLocals I) := by
   simpa [config, healTransition, healLocals, healRad, uint256] using
     (decodeCalldata_legacyUInt256_ok (cd := I.calldata) (x := "rad") hsz36)
 
 theorem vowDecode_heal_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (healTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (healTransition.params.map Param.name)
       (transitionSignature healTransition).paramTypes I.calldata = none := by
   simpa [config, healTransition, uint256] using
     (decodeCalldata_legacyUInt256_none_short (cd := I.calldata) (x := "rad") hsz4 hshort)
@@ -1131,7 +1131,7 @@ theorem vowHealSourceSinNoCode
         some [.int (Int.ofNat vatDai.toNat)])
     (hvatDaiEnough : (healRad I).toNat ≤ vatDai.toNat)
     (hvatLoadDai :
-      Solm.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner ⟨1⟩ =
+      Stele.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner ⟨1⟩ =
         solcSlotWordAt ⟨1⟩ σ I)
     (hvatNoCodeSin :
       (UInt256.ofNat
@@ -1218,7 +1218,7 @@ theorem vowHealSourceSinCallFailure
         some [.int (Int.ofNat vatDai.toNat)])
     (hvatDaiEnough : (healRad I).toNat ≤ vatDai.toNat)
     (hvatLoadDai :
-      Solm.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner ⟨1⟩ =
+      Stele.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner ⟨1⟩ =
         solcSlotWordAt ⟨1⟩ σ I)
     (hvatCodeSin :
       0 < (UInt256.ofNat
@@ -1309,7 +1309,7 @@ theorem vowHealDaiNoCodeBodyCore
     (hsz36 : 36 ≤ I.calldata.size) (hsize : I.calldata.size < UInt256.size)
     (hdispatch : dispatchMsg contract I.calldata = some healTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (healTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (healTransition.params.map Param.name)
         (transitionSignature healTransition).paramTypes I.calldata = some (healLocals I))
     (hreach : ∃ k C, RD vowBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨818⟩ [sel]
@@ -1317,7 +1317,7 @@ theorem vowHealDaiNoCodeBodyCore
     (hnoCode :
       Reasoning.Theory.extCodeSizeWord σ (kissDaiTargetWord σ I) = ⟨0⟩) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  have hnoCodeSolm :
+  have hnoCodeStele :
       Reasoning.Theory.extCodeSizeWord σ (kissDaiTargetWord σ I) = ⟨0⟩ := hnoCode
   have hvatAddr :
       kissVatAddress σ I = AccountAddress.ofUInt256 (kissDaiTargetWord σ I) := by
@@ -1329,14 +1329,14 @@ theorem vowHealDaiNoCodeBodyCore
         (((initState σ σ₀ (Sat256.ofUInt256 g) A I).lookupAccount
           (kissVatAddress σ I)).option 0 (fun acc => acc.code.size))).toNat = 0 := by
     rw [hvatAddr]
-    unfold Reasoning.Theory.extCodeSizeWord at hnoCodeSolm
+    unfold Reasoning.Theory.extCodeSizeWord at hnoCodeStele
     cases hacc :
       σ.get? (AccountAddress.ofUInt256 (kissDaiTargetWord σ I)) with
     | none =>
         simpa [-Std.ExtTreeMap.get?_eq_getElem?, initState, State.lookupAccount, hacc] using
           (show (UInt256.ofNat 0).toNat = 0 from by native_decide)
     | some acc =>
-        have hword := congrArg UInt256.toNat hnoCodeSolm
+        have hword := congrArg UInt256.toNat hnoCodeStele
         simpa [-Std.ExtTreeMap.get?_eq_getElem?, initState, State.lookupAccount, hacc] using hword
   have hbody := vowHealSourceDaiNoCode
     (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hvatNoCode
@@ -1350,7 +1350,7 @@ theorem vowHealDaiCallFailureBodyCore
     (hcode : I.code = vowBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some healTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (healTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (healTransition.params.map Param.name)
         (transitionSignature healTransition).paramTypes I.calldata = some (healLocals I))
     (rd4719 : RD vowBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨4719⟩
@@ -1366,7 +1366,7 @@ theorem vowHealDaiCallFailureBodyCore
               substate := A'_evm },
           o) false)
     (hosz : o.size < UInt256.size)
-    (hvatCodeSolm :
+    (hvatCodeStele :
       0 < (UInt256.ofNat
         (((initState σ σ₀ (Sat256.ofUInt256 g) A I).lookupAccount
           (kissVatAddress σ I)).option 0 (fun acc => acc.code.size))).toNat) :
@@ -1378,7 +1378,7 @@ theorem vowHealDaiCallFailureBodyCore
       { initState σ σ₀ (Sat256.ofUInt256 g) A I with
           accountMap := σ'_evm
           substate := A'_evm })
-    (out := o) hwv hvatCodeSolm hcallDai
+    (out := o) hwv hvatCodeStele hcallDai
   exact hrev.reEquivExecutionRevert hcode hdispatch hdecode hbody
 
 theorem vowHealDaiDecodeShortBodyCore
@@ -1389,7 +1389,7 @@ theorem vowHealDaiDecodeShortBodyCore
     (hcode : I.code = vowBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some healTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (healTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (healTransition.params.map Param.name)
         (transitionSignature healTransition).paramTypes I.calldata = some (healLocals I))
     (rd4737 : RD vowBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨4737⟩
@@ -1410,7 +1410,7 @@ theorem vowHealDaiDecodeShortBodyCore
        else UInt256.ofNat
          (fromByteArrayBigEndian (mem.readWithPadding (⟨64⟩ : UInt256).toNat 32))) =
         ⟨128⟩)
-    (hvatCodeSolm :
+    (hvatCodeStele :
       0 < (UInt256.ofNat
         (((initState σ σ₀ (Sat256.ofUInt256 g) A I).lookupAccount
           (kissVatAddress σ I)).option 0 (fun acc => acc.code.size))).toNat) :
@@ -1422,7 +1422,7 @@ theorem vowHealDaiDecodeShortBodyCore
       { initState σ σ₀ (Sat256.ofUInt256 g) A I with
           accountMap := σ'_evm
           substate := A'_evm })
-    (out := o) hwv hvatCodeSolm hcallDai (kissDaiDecode_none_short hshort)
+    (out := o) hwv hvatCodeStele hcallDai (kissDaiDecode_none_short hshort)
   exact hrev.reEquivExecutionRevert hcode hdispatch hdecode hbody
 
 theorem vowHealDaiSuccessInsufficientSurplusBodyCore
@@ -1432,7 +1432,7 @@ theorem vowHealDaiSuccessInsufficientSurplusBodyCore
     (hcode : I.code = vowBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some healTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (healTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (healTransition.params.map Param.name)
         (transitionSignature healTransition).paramTypes I.calldata = some (healLocals I))
     (rd4719 : RD vowBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨4719⟩
@@ -1451,7 +1451,7 @@ theorem vowHealDaiSuccessInsufficientSurplusBodyCore
           o) false)
     (hosz : o.size < UInt256.size)
     (ho32 : 32 ≤ o.size)
-    (hvatCodeSolm :
+    (hvatCodeStele :
       0 < (UInt256.ofNat
         (((initState σ σ₀ (Sat256.ofUInt256 g) A I).lookupAccount
           (kissVatAddress σ I)).option 0 (fun acc => acc.code.size))).toNat)
@@ -1505,7 +1505,7 @@ theorem vowHealDaiSuccessInsufficientSurplusBodyCore
       { initState σ σ₀ (Sat256.ofUInt256 g) A I with
           accountMap := σ'_evm
           substate := A'_evm })
-    (out := o) (vatDai := vatDai) hwv hvatCodeSolm hcallDai hdecDai
+    (out := o) (vatDai := vatDai) hwv hvatCodeStele hcallDai hdecDai
     (by simpa [vatDai] using hinsuff)
   exact hrev.reEquivExecutionRevert hcode hdispatch hdecode hbody
 
@@ -1516,7 +1516,7 @@ theorem vowHealSinNoCodeBodyCore
     (hcode : I.code = vowBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some healTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (healTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (healTransition.params.map Param.name)
         (transitionSignature healTransition).paramTypes I.calldata = some (healLocals I))
     (rd4838 : RD vowBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨4838⟩
@@ -1540,7 +1540,7 @@ theorem vowHealSinNoCodeBodyCore
         some [.int (Int.ofNat vatDai.toNat)])
     (hvatDaiEnough : (healRad I).toNat ≤ vatDai.toNat)
     (hvatLoadDai :
-      Solm.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner ⟨1⟩ =
+      Stele.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner ⟨1⟩ =
         solcSlotWordAt ⟨1⟩ σ I)
     (hvatNoCodeSin :
       (UInt256.ofNat
@@ -1562,7 +1562,7 @@ theorem vowHealSinCallFailureBodyCore
     (hcode : I.code = vowBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some healTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (healTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (healTransition.params.map Param.name)
         (transitionSignature healTransition).paramTypes I.calldata = some (healLocals I))
     (rd1277 : RD vowBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1277⟩
@@ -1583,7 +1583,7 @@ theorem vowHealSinCallFailureBodyCore
         some [.int (Int.ofNat vatDai.toNat)])
     (hvatDaiEnough : (healRad I).toNat ≤ vatDai.toNat)
     (hvatLoadDai :
-      Solm.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner ⟨1⟩ =
+      Stele.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner ⟨1⟩ =
         solcSlotWordAt ⟨1⟩ σ I)
     (hvatCodeSin :
       0 < (UInt256.ofNat

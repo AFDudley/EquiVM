@@ -7,11 +7,11 @@ import Benchmarks.Morpho.MetaMorphoV1_1.RuntimeBlocks_009
 # MetaMorphoV1_1 `renounceOwnership()`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 7103; reach lemma `metaMorphoV1_1ReachRenounceOwnershipBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 
@@ -212,7 +212,7 @@ theorem metaMorphoV1_1RenounceOwnershipBody {σ σ₀ A I} {g : UInt256} (v : Me
   have hd : dispatchMsg contract I.calldata = some renounceOwnershipTransition := by
     apply metaMorphoV1_1Dispatch_renounceOwnership <;>
       first | exact hsel | exact selectorMismatch hsel (by decide +kernel)
-  have hdec : decodeCalldataWithMode config.abiDecodeMode
+  have hdec : config.externalABI.decodeCalldata?
       (renounceOwnershipTransition.params.map Param.name)
       (transitionSignature renounceOwnershipTransition).paramTypes I.calldata = some ∅ := by
     exact decodeCalldata_empty_ok hsz

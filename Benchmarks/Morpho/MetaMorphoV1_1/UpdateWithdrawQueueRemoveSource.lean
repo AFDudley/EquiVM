@@ -4,7 +4,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.CursorCallSource
 
 /-! Source storage reads and guards before querying an omitted market's supply shares. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 
@@ -44,8 +44,8 @@ theorem updateWithdrawQueueOmittedRead {frame : Frame} {imms : Store} {evm : Sta
     {cursor : UInt256}
     (h : UpdateWithdrawQueueReady frame imms indexes curr i seen queue cursor)
     (hfit : i < UInt256.size)
-    (hbound : i < (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨21⟩).toNat) :
-    let id := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+    (hbound : i < (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨21⟩).toNat) :
+    let id := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
       (uInt256OfByteArray (KEC (UInt256.toByteArray ⟨21⟩)) + UInt256.ofNat i)
     ABlock config evm frame updateWithdrawQueueRemoval (updateWithdrawQueueIdFrame frame id)
       (updateWithdrawQueueRemoval.drop 1) := by
@@ -67,7 +67,7 @@ theorem updateWithdrawQueueOmittedReadRevert {frame : Frame} {imms : Store} {evm
     {cursor : UInt256}
     (h : UpdateWithdrawQueueReady frame imms indexes curr i seen queue cursor)
     (hfit : i < UInt256.size)
-    (hbound : ¬ i < (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨21⟩).toNat) :
+    (hbound : ¬ i < (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨21⟩).toNat) :
     ExecBlock config frame evm updateWithdrawQueueRemoval .reverted := by
   apply ExecBlock.consRevert
   apply ExecStmt.letDeclRevert

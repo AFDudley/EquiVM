@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.DomainCacheRoutines
 
 /-! Memory cursor facts for both branches of the EIP-712 domain cache. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1

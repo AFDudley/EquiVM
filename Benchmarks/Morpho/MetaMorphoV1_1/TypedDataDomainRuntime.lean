@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.DomainCursorMemory
 
 /-! Compose the cached domain separator and typed-data envelope hash. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1

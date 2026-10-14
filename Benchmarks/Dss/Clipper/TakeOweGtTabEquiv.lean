@@ -2,7 +2,7 @@ import Benchmarks.Dss.Clipper.TakeFromFluxDataEmptyEquiv
 import Benchmarks.Dss.Clipper.TakeTabZeroContinuationEquiv
 import Benchmarks.Dss.Clipper.TakeVatFluxSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 namespace Benchmarks.Dss.Clipper
@@ -20,7 +20,7 @@ theorem clipperTakeOweGtTabEquiv
     (hpatch : patchRuntime clipperBytecode (patches v) = some code)
     (hcode : I.code = code) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some takeTransition)
-    (hdec : decodeCalldataWithMode config.abiDecodeMode
+    (hdec : config.externalABI.decodeCalldata?
       (List.map Param.name takeTransition.params)
       (transitionSignature takeTransition).paramTypes I.calldata =
         some (clipperTakeStore I))
@@ -91,7 +91,7 @@ theorem clipperTakeOweGtTabEquiv
             (solcMappingSlot ⟨12⟩ (clipperTakeIdWord I) + ⟨2⟩)))).toNat)
     (hstatus :
       let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-      let evmLock := Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner
+      let evmLock := Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner
         ⟨13⟩ ⟨1⟩
       ExecStmt config (Frame.mk contract (clipperTakeLocalsTic evmLock I) (immStore v))
         evmLock
@@ -103,7 +103,7 @@ theorem clipperTakeOweGtTabEquiv
       σ σ₀ g A I (immStore v) := by
   let σLockEvm := sstoreAccountMap I.codeOwner σ ⟨13⟩ ⟨1⟩
   let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  let evmLock := Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner ⟨13⟩ ⟨1⟩
+  let evmLock := Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner ⟨13⟩ ⟨1⟩
   let tab := solcSlotWord σPost I
     (solcMappingSlot ⟨12⟩ (clipperTakeIdWord I) + ⟨1⟩)
   let lot := solcSlotWord σPost I
@@ -135,7 +135,7 @@ theorem clipperTakeOweGtTabEquiv
       (congrArg (fun env => env.codeOwner) hevmPriceEnv)
   have hpackedWord : packed = clipperTakeSalesUsrEVMWord evmLock I := by
     have hslot := congrArg (fun m => solcSlotWord m I (clipperTakeSalesPackedSlot I)) hAccountsLock
-    simp [-Std.ExtTreeMap.get?_eq_getElem?, packed, clipperTakeSalesUsrEVMWord, Solm.EVM.storageLoad,
+    simp [-Std.ExtTreeMap.get?_eq_getElem?, packed, clipperTakeSalesUsrEVMWord, Stele.EVM.storageLoad,
       State.lookupAccount, Account.lookupStorage, solcSlotWord, evmLock, evm0,
       initState, storageStore_executionEnv, hslot]
   have hbaseSize :
@@ -252,7 +252,7 @@ theorem clipperTakeOweGtTabEquiv
       (solcAddrMask_result_canonical (clipperTakeWhoWord I))
   have hwhoAddress : AccountAddress.ofNat (clipperTakeWhoWord I).toNat =
       AccountAddress.ofNat who.toNat := by
-    apply Solm.Value.address.inj
+    apply Stele.Value.address.inj
     simpa [who, u256_land_comm] using
       solcAddressValue_masked (clipperTakeWhoWord I)
   have hfluxDogAbsent : fluxLocals.get? "dog" = none := by
@@ -350,7 +350,7 @@ theorem clipperTakeOweGtTabEquiv
       clipperTakeLocalsTic, store_get_ne _ _ (by decide),
       clipperTakeLocalsUsr, store_get_self]
     exact congrArg (fun w : UInt256 =>
-      some (Solm.Value.address (AccountAddress.ofNat w.toNat))) hpackedWord.symm
+      some (Stele.Value.address (AccountAddress.ofNat w.toNat))) hpackedWord.symm
   have hfluxData : fluxLocals.get? "data" = some (clipperTakeDataValue I) := by
     simp only [fluxLocals]
     rw [clipperTakeLocalsFluxBuyerRet, store_get_ne _ _ (by decide),

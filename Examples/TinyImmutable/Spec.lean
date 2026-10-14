@@ -1,22 +1,22 @@
-import Solm.Semantics
-import Solm.SolidityLayout
-import Solm.MetaSolidityLayout
+import Stele.Semantics
+import Stele.SolidityLayout
+import Stele.MetaSolidityLayout
 import Examples.TinyImmutable.Immutables
 
 /-!
-# TinyImmutable — a compact immutable-aware Solm specification
+# TinyImmutable — a compact immutable-aware Stele specification
 
 The contract has no storage. Its persistent constructor data are two Solidity immutables:
 `owner : address` and `scale : uint256`. The constructor always assigns `owner`, but assigns
 `scale` only when `useScale` is true; the false path leaves `scale` at Solidity's default `0`,
-which is also the value Solm immutables start from.
+which is also the value Stele immutables start from.
 
 The public getters return those immutable values. `quote` requires `msg.sender == owner` and returns
-`amount * scale` from an `unchecked` Solidity block, so the Solm spec reduces the product modulo
+`amount * scale` from an `unchecked` Solidity block, so the Stele spec reduces the product modulo
 `2^256`, matching EVM `MUL`.
 -/
 
-open Solm ABI
+open Stele ABI
 open TinyImmutable.Immutables
 
 namespace TinyImmutable

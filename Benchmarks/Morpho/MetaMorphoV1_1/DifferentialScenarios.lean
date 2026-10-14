@@ -6,7 +6,7 @@ Every step compares the unmodified vault runtime with the complete specification
 continues from the EVM post-state only after a successful agreement.
 -/
 
-open Solm Solm.Interp Solm.DiffTest Ethereum Ethereum.EVM
+open Stele Stele.Interp Stele.DiffTest Ethereum Ethereum.EVM
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.Scenarios
 

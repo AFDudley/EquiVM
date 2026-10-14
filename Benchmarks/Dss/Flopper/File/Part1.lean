@@ -2,7 +2,7 @@ import Reasoning.PackedStorage
 import Benchmarks.Dss.Flopper.Cage
 import Reasoning.ABIComposite
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -34,7 +34,7 @@ abbrev fileLocals (I : ExecutionEnv) : Store :=
 
 
 theorem flopperDecode_file_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (fileTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (fileTransition.params.map Param.name)
       (transitionSignature fileTransition).paramTypes I.calldata = some (fileLocals I) := by
   simpa [config, fileTransition, bytes32, bytes32Width, uint256, uint256Int,
     fileLocals, fileWhat, fileData, abiBytes32, abiBytes32Width, abiUInt256] using
@@ -43,7 +43,7 @@ theorem flopperDecode_file_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size
 
 theorem flopperDecode_file_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 68) :
-    decodeCalldataWithMode config.abiDecodeMode (fileTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (fileTransition.params.map Param.name)
       (transitionSignature fileTransition).paramTypes I.calldata = none := by
   simpa [config, fileTransition, bytes32, bytes32Width, uint256, uint256Int, abiBytes32,
     abiBytes32Width, abiUInt256] using
@@ -179,17 +179,17 @@ theorem evalExpr_fileWhatEq_false {evm : EVM.State} {I : ExecutionEnv} {locals :
 
 
 def fileBegPostState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨4⟩ (fileData I)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨4⟩ (fileData I)
 
 def filePadPostState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨5⟩ (fileData I)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨5⟩ (fileData I)
 
 def fileTtlStoredWord (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
-  setUint48Offset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨6⟩)
+  setUint48Offset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨6⟩)
     (fileData I)
 
 def fileTtlPostState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨6⟩ (fileTtlStoredWord evm I)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨6⟩ (fileTtlStoredWord evm I)
 
 def fileTtlStoredWordMap (I : ExecutionEnv) (σ : AccountMap) : UInt256 :=
   setUint48Offset0Word (solcSlotWord σ I ⟨6⟩) (fileData I)
@@ -198,11 +198,11 @@ def fileTtlPostAccountMap (I : ExecutionEnv) (σ : AccountMap) : AccountMap :=
   sstoreAccountMap I.codeOwner σ ⟨6⟩ (fileTtlStoredWordMap I σ)
 
 def fileTauStoredWord (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
-  setUint48Offset6Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨6⟩)
+  setUint48Offset6Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨6⟩)
     (fileData I)
 
 def fileTauPostState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨6⟩ (fileTauStoredWord evm I)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨6⟩ (fileTauStoredWord evm I)
 
 def fileTauStoredWordMap (I : ExecutionEnv) (σ : AccountMap) : UInt256 :=
   setUint48Offset6Word (solcSlotWord σ I ⟨6⟩) (fileData I)
@@ -289,7 +289,7 @@ theorem flopperFileBegSourceBodySplit {σ σ₀ A I} {g : UInt256}
       (by simp [locals])
       (by simp [evm0, initState])
       (by
-        simpa [evm0, relyAuthWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+        simpa [evm0, relyAuthWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
           State.lookupAccount] using hauth)
   have hcond :
       evalExpr? config { contract := contract, locals := locals } evm0
@@ -344,7 +344,7 @@ theorem flopperFilePadSourceBodySplit {σ σ₀ A I} {g : UInt256}
       (by simp [locals])
       (by simp [evm0, initState])
       (by
-        simpa [evm0, relyAuthWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+        simpa [evm0, relyAuthWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
           State.lookupAccount] using hauth)
   have hbegCond :
       evalExpr? config { contract := contract, locals := locals } evm0
@@ -407,7 +407,7 @@ theorem flopperFileTtlSourceBodySplit {σ σ₀ A I} {g : UInt256}
       (by simp [locals])
       (by simp [evm0, initState])
       (by
-        simpa [evm0, relyAuthWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+        simpa [evm0, relyAuthWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
           State.lookupAccount] using hauth)
   have hbegCond :
       evalExpr? config { contract := contract, locals := locals } evm0
@@ -479,7 +479,7 @@ theorem flopperFileTauSourceBodySplit {σ σ₀ A I} {g : UInt256}
       (by simp [locals])
       (by simp [evm0, initState])
       (by
-        simpa [evm0, relyAuthWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+        simpa [evm0, relyAuthWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
           State.lookupAccount] using hauth)
   have hbegCond :
       evalExpr? config { contract := contract, locals := locals } evm0
@@ -549,13 +549,13 @@ theorem flopperFileSourceBodyAuthReverts {σ σ₀ A I} {g : UInt256}
       (by simp [locals])
       (by simp [evm0, initState])
       (by
-        simpa [evm0, relyAuthWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+        simpa [evm0, relyAuthWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
           State.lookupAccount] using hauth)
   refine ExecFuncBody.execBlockRevert ?_
   simpa [fileTransition, nonpayable, auth] using
     nonpayableSecondRequireReverts
       (cfg := config)
-      (solm := { contract := contract, locals := locals })
+      (stele := { contract := contract, locals := locals })
       (evm := evm0)
       (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
       (rest := [.ite
@@ -592,7 +592,7 @@ theorem flopperFileSourceBodyUnrecognized {σ σ₀ A I} {g : UInt256}
       (by simp [locals])
       (by simp [evm0, initState])
       (by
-        simpa [evm0, relyAuthWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+        simpa [evm0, relyAuthWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
           State.lookupAccount] using hauth)
   have hbegCond :
       evalExpr? config { contract := contract, locals := locals } evm0

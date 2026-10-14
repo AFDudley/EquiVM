@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.WordArrayStorageAlgebra
 
 /-! Concrete slot bounds and equality of source and runtime queue replacement. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 

@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.MaxWithdrawFunction
 
 /-! The public maxRedeem wrapper and its final conversion of assets to shares. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory

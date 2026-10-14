@@ -8,11 +8,11 @@ import Benchmarks.Morpho.MetaMorphoV1_1.RuntimeBlocks_038
 # MetaMorphoV1_1 `withdrawQueue(uint256)`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 7603; reach lemma `metaMorphoV1_1ReachWithdrawQueueBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 
@@ -26,14 +26,14 @@ theorem withdrawQueueBodyReturns (v : MetaMorphoV1_1Immutables)
     (hhi : evm.executionEnv.calldata.size < 2 ^ 255 + 4)
     (hbase : locals.get? "withdrawQueue" = none)
     (hget : locals.get? "arg0" = some (.int (Int.ofNat i.toNat)))
-    (hbound : i.toNat < (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨21⟩).toNat) :
+    (hbound : i.toNat < (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨21⟩).toNat) :
     ExecTransitionBody config contract evm locals withdrawQueueTransition.body
       (.returned
         { contract := contract
           locals := locals.insert "__calldata" (.bytes evm.executionEnv.calldata)
           immutables := immStore v }
         evm (some [.fixedBytes ⟨31, by decide⟩ (EVM.Word.toBytesBE
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
             (uInt256OfByteArray (KEC (UInt256.toByteArray ⟨21⟩)) + i)))])) (immStore v) := by
   apply ExecFuncBody.execBlockRet
   apply (nonpayableCalldataPrefix "__calldata" (2 ^ 255 + 4) hwv hhi).run
@@ -48,7 +48,7 @@ theorem withdrawQueueBodyRevertsBounds (v : MetaMorphoV1_1Immutables)
     (hhi : evm.executionEnv.calldata.size < 2 ^ 255 + 4)
     (hbase : locals.get? "withdrawQueue" = none)
     (hget : locals.get? "arg0" = some (.int (Int.ofNat i.toNat)))
-    (hbound : ¬ i.toNat < (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨21⟩).toNat) :
+    (hbound : ¬ i.toNat < (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨21⟩).toNat) :
     ExecTransitionBody config contract evm locals withdrawQueueTransition.body
       .reverted (immStore v) := by
   apply ExecFuncBody.execBlockRevert
@@ -56,7 +56,7 @@ theorem withdrawQueueBodyRevertsBounds (v : MetaMorphoV1_1Immutables)
   apply ExecBlock.consRevert
   apply ExecStmt.returnRevert
   have hread := evalStorage_arrayIndex_revert (cfg := config)
-    (solm :=
+    (stele :=
       { contract := contract,
         locals := locals.insert "__calldata" (.bytes evm.executionEnv.calldata),
         immutables := immStore v }) (evm := evm) "withdrawQueue" "arg0" i.toNat

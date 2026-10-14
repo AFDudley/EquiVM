@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.WithdrawLoopSyntax
 
 /-! Source totals, rounded-down share conversion, and arguments to the liquidity helper. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
 

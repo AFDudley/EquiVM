@@ -5,7 +5,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.ArrayRoutines
 
 /-! Store the new length and clear exactly the obsolete queue suffix. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables metaMorphoV1_1Blocks
 

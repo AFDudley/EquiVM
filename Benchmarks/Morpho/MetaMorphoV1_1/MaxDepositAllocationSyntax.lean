@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.SupplySharesAllocationSyntax
 
 /-! Cursor propagation through the source call graph used by `maxDeposit`. -/
 
-open Solm ABI
+open Stele ABI
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
 
@@ -16,7 +16,7 @@ def returnValueExpr : List Expr → Expr
   | [value] => value
   | values => .tupleLit values
 
-def returnValueType : List ABIType → ABIType
+def returnValueType : List StorageType → StorageType
   | [ty] => ty
   | types => .tuple types
 

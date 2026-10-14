@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.RuntimeBlocks_067
 
 /-! Arithmetic helpers used by the market-balance and share-conversion routines. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 

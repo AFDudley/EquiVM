@@ -1,7 +1,7 @@
 import Reasoning.Reach
 import Benchmarks.Dss.Spot.PokeTrace
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Spot
 

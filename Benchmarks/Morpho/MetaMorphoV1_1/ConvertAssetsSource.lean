@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.DecimalScale
 
 /-! Source execution of asset conversion from already computed totals. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1

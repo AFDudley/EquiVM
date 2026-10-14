@@ -4,7 +4,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.AccessControl
 
 /-! Source guards, interest accrual, and the packed fee-recipient assignment. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
 
@@ -22,7 +22,7 @@ def setFeeRecipientResumeFrame (evm : State) (imms : Store) (recipient : Account
     locals := (setFeeRecipientFrame evm imms recipient).locals.insert "__c1" (uint256Value ptr) }
 
 def feeRecipientFee (evm : State) : UInt256 :=
-  UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨18⟩)
+  UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨18⟩)
     (UInt256.ofNat (2 ^ 96 - 1))
 
 def setFeeRecipientDifferent : Expr :=

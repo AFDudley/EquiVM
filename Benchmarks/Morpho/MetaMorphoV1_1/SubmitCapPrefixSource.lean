@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.SubmitCapSyntax
 
 /-! Source authorization, asset validation, and the modular last-update call. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1

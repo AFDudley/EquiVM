@@ -3,7 +3,7 @@ import Reasoning.ExternalCall
 
 /-! The opaque STATICCALL result is shared by the EVM trace and the source call. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 

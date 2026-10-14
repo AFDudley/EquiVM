@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.PendingTimelockStorage
 
 /-! Replacing a low byte field while retaining the high bytes of its storage slot. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 
@@ -42,8 +42,8 @@ theorem storageLocStore_uint_lowBytes (evm : State) (slot data : UInt256)
       { slot := slot, offset := 0, size := size, hbound := by have := size.isLt; omega,
         type := .int (.uint width) }
       (.int (Int.ofNat data.toNat)) =
-      some (Solm.EVM.storageStore evm evm.executionEnv.codeOwner slot
-        (setLowBytesWord (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
+      some (Stele.EVM.storageStore evm evm.executionEnv.codeOwner slot
+        (setLowBytesWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
           data size.val)) := by
   unfold storageLocStore storageLocWriteWord
   simp only [valueToWord, wordOfInt_ofNat_toNat, bind, Option.bind]
@@ -53,7 +53,7 @@ theorem storageLocStore_uint_lowBytes (evm : State) (slot data : UInt256)
   change fromBytes'
     ((EVM.Word.toBytesLEWithSizeProof data).1.take size.val ++
       (EVM.Word.toBytesLEWithSizeProof
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).1.drop size.val) = _
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).1.drop size.val) = _
   rw [fromBytes'_append, fromBytes'_take_wordLE, fromBytes'_drop_wordLE,
     setLowBytesWord_toNat _ _ _ (by have := size.isLt; omega)]
   simp only [List.length_take, (EVM.Word.toBytesLEWithSizeProof data).2,

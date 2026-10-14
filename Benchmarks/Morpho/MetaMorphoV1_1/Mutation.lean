@@ -3,7 +3,7 @@ import Reasoning.PackedStorage
 
 /-! Storage updates and static-call handling shared by administrative functions. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 
@@ -18,8 +18,8 @@ theorem assignStorage_curator (evm : EVM.State) (locals imms : Store) (w : UInt2
     assignStorageRef? config { contract := contract, locals := locals, immutables := imms }
       evm .storage ⟨"curator", []⟩ (.address (AccountAddress.ofNat w.toNat)) =
       .ok ({ contract := contract, locals := locals, immutables := imms },
-        Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨10⟩
-          (setAddressOffset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨10⟩) w)) :=
+        Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨10⟩
+          (setAddressOffset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨10⟩) w)) :=
   assignStorageRef_storage_scalar_value (er := ⟨"curator", []⟩) (ty := .elem .address)
     hbase (by simp [evalStorageRef, evalStorageRefSteps, bind, pure, EvalResult.bind])
     rfl rfl rfl (Or.inl ⟨_, rfl⟩) (storageLocStore_address_offset0 evm ⟨10⟩ w hcanon)
@@ -29,8 +29,8 @@ theorem assignStorage_owner (evm : EVM.State) (locals imms : Store) (w : UInt256
     assignStorageRef? config { contract := contract, locals := locals, immutables := imms }
       evm .storage ⟨"_owner", []⟩ (.address (AccountAddress.ofNat w.toNat)) =
       .ok ({ contract := contract, locals := locals, immutables := imms },
-        Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨8⟩
-          (setAddressOffset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩) w)) :=
+        Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨8⟩
+          (setAddressOffset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩) w)) :=
   assignStorageRef_storage_scalar_value (er := ⟨"_owner", []⟩) (ty := .elem .address)
     hbase (by simp [evalStorageRef, evalStorageRefSteps, bind, pure, EvalResult.bind])
     rfl rfl rfl (Or.inl ⟨_, rfl⟩) (storageLocStore_address_offset0 evm ⟨8⟩ w hcanon)
@@ -40,8 +40,8 @@ theorem assignStorage_pendingOwner (evm : EVM.State) (locals imms : Store) (w : 
     assignStorageRef? config { contract := contract, locals := locals, immutables := imms }
       evm .storage ⟨"_pendingOwner", []⟩ (.address (AccountAddress.ofNat w.toNat)) =
       .ok ({ contract := contract, locals := locals, immutables := imms },
-        Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨9⟩
-          (setAddressOffset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨9⟩) w)) :=
+        Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨9⟩
+          (setAddressOffset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨9⟩) w)) :=
   assignStorageRef_storage_scalar_value (er := ⟨"_pendingOwner", []⟩) (ty := .elem .address)
     hbase (by simp [evalStorageRef, evalStorageRefSteps, bind, pure, EvalResult.bind])
     rfl rfl rfl (Or.inl ⟨_, rfl⟩) (storageLocStore_address_offset0 evm ⟨9⟩ w hcanon)
@@ -51,23 +51,23 @@ theorem assignStorage_skimRecipient (evm : EVM.State) (locals imms : Store) (w :
     assignStorageRef? config { contract := contract, locals := locals, immutables := imms }
       evm .storage ⟨"skimRecipient", []⟩ (.address (AccountAddress.ofNat w.toNat)) =
       .ok ({ contract := contract, locals := locals, immutables := imms },
-        Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨19⟩
-          (setAddressOffset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨19⟩) w)) :=
+        Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨19⟩
+          (setAddressOffset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨19⟩) w)) :=
   assignStorageRef_storage_scalar_value (er := ⟨"skimRecipient", []⟩) (ty := .elem .address)
     hbase (by simp [evalStorageRef, evalStorageRefSteps, bind, pure, EvalResult.bind])
     rfl rfl rfl (Or.inl ⟨_, rfl⟩) (storageLocStore_address_offset0 evm ⟨19⟩ w hcanon)
 
 -- LIBRARY CANDIDATE: delete a low address through the Solidity storage backend.
 theorem deleteStorage_address_offset0 {cfg : Config} {layout : StorageLayout}
-    {solm : Frame} {evm : EVM.State} {ref : StorageRef} {er : EvaledStorageRef}
+    {stele : Frame} {evm : EVM.State} {ref : StorageRef} {er : EvaledStorageRef}
     {slot : UInt256}
     (hcfg : cfg.storageBackend = solidityStorageBackend layout)
-    (hresolve : resolveStorageRef? cfg solm evm ref = .ok (er, .elem .address))
+    (hresolve : resolveStorageRef? cfg stele evm ref = .ok (er, .elem .address))
     (hloc : layout er = some (.leaf (addressOffset0Loc slot))) :
-    deleteStorage? cfg solm evm ref =
-      .ok (Solm.EVM.storageStore evm evm.executionEnv.codeOwner slot
+    deleteStorage? cfg stele evm ref =
+      .ok (Stele.EVM.storageStore evm evm.executionEnv.codeOwner slot
         (setAddressOffset0Word
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot) ⟨0⟩)) := by
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot) ⟨0⟩)) := by
   simp only [deleteStorage?, usesTransientStorage_of_resolveStorageRef hresolve,
     Bool.false_eq_true, ↓reduceIte, hresolve, EvalResult.bind, bind]
   rw [hcfg]
@@ -77,8 +77,8 @@ theorem deleteStorage_pendingOwner (evm : EVM.State) (locals imms : Store)
     (hbase : locals.get? "_pendingOwner" = none) :
     deleteStorage? config { contract := contract, locals := locals, immutables := imms }
       evm ⟨"_pendingOwner", []⟩ =
-      .ok (Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨9⟩
-        (setAddressOffset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨9⟩) ⟨0⟩)) := by
+      .ok (Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨9⟩
+        (setAddressOffset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨9⟩) ⟨0⟩)) := by
   exact deleteStorage_address_offset0 (er := ⟨"_pendingOwner", []⟩) rfl
     (resolveStorageRef?_ok hbase
       (by simp [evalStorageRef, evalStorageRefSteps, bind, pure, EvalResult.bind]) rfl) rfl

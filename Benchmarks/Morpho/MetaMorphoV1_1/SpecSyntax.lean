@@ -1,4 +1,4 @@
-import Solm.Notation
+import Stele.Notation
 
 /-!
 # MetaMorphoV1_1 source specification
@@ -8,14 +8,14 @@ inlined by effect. Storage names distinguish the two ERC20 strings, the vault st
 and EIP712's immutable short strings. Hash and short-string immutables are
 represented as uint256 words and cast to bytes32 at their uses, matching the
 generated immutable valuation. In abi.encodePacked, the outer T(e) is a
-Solm encoding annotation; nested casts perform the actual address/word conversion. External ABI tuples are converted to named structs.
+Stele encoding annotation; nested casts perform the actual address/word conversion. External ABI tuples are converted to named structs.
 PendingAddress explicitly includes its 32 padding bits because solc clears the whole
 slot on deletion; ordinary updates preserve those bits.
 
 This file is the hand-maintained specification; regenerate only the surrounding scaffold.
 -/
 
-open Solm Solm.Notation
+open Stele Stele.Notation
 
 set_option maxRecDepth 12000
 

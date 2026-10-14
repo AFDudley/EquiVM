@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.ShareViewSource
 
 /-! The public share views call the allocated conversion and return its value component. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory

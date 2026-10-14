@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.RuntimeBlocks_065
 
 /-! The checked uint184 conversion shared by both cap-submission branches. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables metaMorphoV1_1Blocks
 

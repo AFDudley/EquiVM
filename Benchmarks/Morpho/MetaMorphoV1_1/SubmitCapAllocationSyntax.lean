@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.SetCapAllocationSyntax
 
 /-! Cursor propagation through cap submission's last-update reader and cap setter. -/
 
-open Solm ABI
+open Stele ABI
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
 

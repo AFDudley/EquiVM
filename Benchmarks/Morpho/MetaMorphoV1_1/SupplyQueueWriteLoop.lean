@@ -4,7 +4,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.Common
 
 /-! Runtime copying of the replacement queue from calldata into storage. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables metaMorphoV1_1Blocks
 

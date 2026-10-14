@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.StringStorageSource
 
 /-! Source string assignments preserve the compiler's clear, data, then header write order. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 
@@ -12,14 +12,14 @@ def storageStringWriteState (evm : State) (slot : UInt256) (bytes : ByteArray) :
   if bytes.size < 32 then
     let clean := if checkBytesPacked slot evm then evm
       else clearSolidityBytesDataWordsFrom evm slot 0 (solidityBytesDataWordCount oldLen)
-    Solm.EVM.storageStore clean clean.executionEnv.codeOwner slot (solidityShortBytesWord bytes)
+    Stele.EVM.storageStore clean clean.executionEnv.codeOwner slot (solidityShortBytesWord bytes)
   else
     let words := solidityBytesDataWordCount bytes.size
     let clean := if checkBytesPacked slot evm then evm
       else clearSolidityBytesDataWordsFrom evm slot words
         (solidityBytesDataWordCount oldLen - words)
     let data := writeSolidityBytesDataWordsFrom clean slot bytes 0 words
-    Solm.EVM.storageStore data data.executionEnv.codeOwner slot (solidityBytesHeaderWord bytes.size)
+    Stele.EVM.storageStore data data.executionEnv.codeOwner slot (solidityBytesHeaderWord bytes.size)
 
 theorem storageStringWriteAt (field : Ident) (slot : UInt256) (evm : State) (bytes : ByteArray)
     (hslot : stringStorageLayout ⟨field, []⟩ = some (.anchor slot))

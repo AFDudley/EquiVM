@@ -3,7 +3,7 @@ import Benchmarks.EAS.Attester.Memory
 
 /-! Recover arbitrary word windows from a contiguous sequence of decoded ABI words. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
 

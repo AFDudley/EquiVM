@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.StringClearStart
 
 /-! Old metadata data words are cleared exactly when the source storage backend clears them. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables metaMorphoV1_1Blocks
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1

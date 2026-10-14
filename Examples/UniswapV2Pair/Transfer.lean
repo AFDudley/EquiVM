@@ -1,9 +1,9 @@
 import Examples.UniswapV2Pair.ExternalWrappers
 import Examples.UniswapV2Pair.TransferRoutines
 import Examples.UniswapV2Pair.Dispatch
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 1000000
@@ -47,7 +47,7 @@ theorem transferToSlot_eq_mapSlot_masked (I : ExecutionEnv) :
   rw [keyValueToWord_address_ofNat_mask]
 
 def transferFromBalanceWord (evm : EVM.State) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (transferSenderSlot evm)
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (transferSenderSlot evm)
 
 abbrev transferFromBalanceValue (evm : EVM.State) : Value :=
   .int (Int.ofNat (transferFromBalanceWord evm).toNat)
@@ -59,18 +59,18 @@ def transferDebitWord (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
   UInt256.ofNat ((transferFromBalanceWord evm).toNat - (transferValueWord I).toNat)
 
 def transferAfterDebitState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (transferSenderSlot evm)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (transferSenderSlot evm)
     (transferDebitWord evm I)
 
 theorem transferAfterDebit_codeOwner (evm : EVM.State) (I : ExecutionEnv) :
     (transferAfterDebitState evm I).executionEnv.codeOwner = evm.executionEnv.codeOwner := by
-  simp only [transferAfterDebitState, Solm.EVM.storageStore, State.lookupAccount]
+  simp only [transferAfterDebitState, Stele.EVM.storageStore, State.lookupAccount]
   cases evm.accountMap.get? evm.executionEnv.codeOwner with
   | none => rfl
   | some acc => simp only [Option.option, State.setAccount, Account.updateStorage]
 
 def transferToBalanceWord (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
-  Solm.EVM.storageLoad (transferAfterDebitState evm I) evm.executionEnv.codeOwner
+  Stele.EVM.storageLoad (transferAfterDebitState evm I) evm.executionEnv.codeOwner
     (transferToSlot I)
 
 abbrev transferToBalanceValue (evm : EVM.State) (I : ExecutionEnv) : Value :=
@@ -89,7 +89,7 @@ abbrev transferNewToValue (evm : EVM.State) (I : ExecutionEnv) : Value :=
   .int (Int.ofNat (transferNewToNat evm I))
 
 def transferPostState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore (transferAfterDebitState evm I) evm.executionEnv.codeOwner
+  Stele.EVM.storageStore (transferAfterDebitState evm I) evm.executionEnv.codeOwner
     (transferToSlot I) (transferNewToWord evm I)
 
 theorem transferNewToWord_toNat (evm : EVM.State) (I : ExecutionEnv)
@@ -100,9 +100,9 @@ theorem transferNewToWord_toNat (evm : EVM.State) (I : ExecutionEnv)
 
 theorem uniswapDecode_transfer_ok {I : ExecutionEnv}
     (hsz68 : 68 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (transferTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (transferTransition.params.map Param.name)
       (transitionSignature transferTransition).paramTypes I.calldata = some (transferStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["to", "value"] [legacyAddr, uint256] I.calldata = _
+  show config.externalABI.decodeCalldata? ["to", "value"] [legacyAddr, uint256] I.calldata = _
   simpa [addr, uint256, abiUInt256, transferStore, transferToValue, transferValueValue,
     transferToWord, transferValueWord, calldataWord]
     using decodeCalldata_legacyAddress_uint256_ok
@@ -110,9 +110,9 @@ theorem uniswapDecode_transfer_ok {I : ExecutionEnv}
 
 theorem uniswapDecode_transfer_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 68) :
-    decodeCalldataWithMode config.abiDecodeMode (transferTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (transferTransition.params.map Param.name)
       (transitionSignature transferTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["to", "value"] [legacyAddr, uint256] I.calldata = none
+  show config.externalABI.decodeCalldata? ["to", "value"] [legacyAddr, uint256] I.calldata = none
   simpa [uint256, abiUInt256]
     using decodeCalldata_legacyAddress_uint256_none_short
       (cd := I.calldata) (x := "to") (y := "value") hsz4 hshort
@@ -120,9 +120,9 @@ theorem uniswapDecode_transfer_none_short {I : ExecutionEnv}
 theorem uniswapDecode_transfer_ok_noncanon {I : ExecutionEnv}
     (hsz68 : 68 ≤ I.calldata.size)
     (_hnc : ¬ (transferToWord I).toNat < EVM.addressModulus) :
-    decodeCalldataWithMode config.abiDecodeMode (transferTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (transferTransition.params.map Param.name)
       (transitionSignature transferTransition).paramTypes I.calldata = some (transferStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["to", "value"] [legacyAddr, uint256] I.calldata = _
+  show config.externalABI.decodeCalldata? ["to", "value"] [legacyAddr, uint256] I.calldata = _
   simpa [addr, uint256, abiUInt256, transferStore, transferToValue, transferValueValue,
     transferToWord, transferValueWord, calldataWord]
     using decodeCalldata_legacyAddress_uint256_ok
@@ -516,7 +516,7 @@ theorem uniswapTransferX_afterDebit {σ σ₀ A I} {g : Sat256} {sel : UInt256}
         transferFromBalanceWord (initState σ σ₀ g A I) := by
     simp [-Std.ExtTreeMap.get?_eq_getElem?, uniswapCodeOwnerStorageWord,
       transferFromBalanceWord, transferSenderSlot,
-      balanceOfSlot, initState, Solm.EVM.storageLoad, State.lookupAccount,
+      balanceOfSlot, initState, Stele.EVM.storageLoad, State.lookupAccount,
       Account.lookupStorage, keyValueToWord_address, uniswapSourceWord]
   have hbalance :
       (transferValueWord I).toNat ≤
@@ -562,7 +562,7 @@ theorem uniswapTransferX_insufficient {σ σ₀ A I} {g : Sat256} {sel : UInt256
         transferFromBalanceWord (initState σ σ₀ g A I) := by
     simp [-Std.ExtTreeMap.get?_eq_getElem?, uniswapCodeOwnerStorageWord,
       transferFromBalanceWord, transferSenderSlot,
-      balanceOfSlot, initState, Solm.EVM.storageLoad, State.lookupAccount,
+      balanceOfSlot, initState, Stele.EVM.storageLoad, State.lookupAccount,
       Account.lookupStorage, keyValueToWord_address, uniswapSourceWord]
   have hltWord :
       (uniswapCodeOwnerStorageWord I σ (mapSlot (uniswapSourceWord I) ⟨1⟩)).toNat <
@@ -645,7 +645,7 @@ theorem uniswapTransferX_afterCreditCalc {σ σ₀ A I} {g : Sat256}
     have htoSlot := transferToSlot_eq_mapSlot_masked I
     simp [-Std.ExtTreeMap.get?_eq_getElem?, σDebit, uniswapCodeOwnerStorageWord,
       transferToBalanceWord, transferAfterDebitState,
-      transferSenderSlot, balanceOfSlot, initState, Solm.EVM.storageLoad,
+      transferSenderSlot, balanceOfSlot, initState, Stele.EVM.storageLoad,
       State.lookupAccount, Account.lookupStorage, storageStore_accountMap, keyValueToWord_address,
       uniswapSourceWord, htoSlot]
   have hfitWord :
@@ -698,7 +698,7 @@ theorem uniswapTransferX_overflow {σ σ₀ A I} {g : Sat256}
     have htoSlot := transferToSlot_eq_mapSlot_masked I
     simp [-Std.ExtTreeMap.get?_eq_getElem?, σDebit, uniswapCodeOwnerStorageWord,
       transferToBalanceWord, transferAfterDebitState,
-      transferSenderSlot, balanceOfSlot, initState, Solm.EVM.storageLoad,
+      transferSenderSlot, balanceOfSlot, initState, Stele.EVM.storageLoad,
       State.lookupAccount, Account.lookupStorage, storageStore_accountMap, keyValueToWord_address,
       uniswapSourceWord, htoSlot]
   have hoverWord :
@@ -843,7 +843,7 @@ theorem uniswapTransferBodyCoreOk
         UInt256.size)
     (hdispatch : dispatchMsg contract I.calldata = some transferTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (transferTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (transferTransition.params.map Param.name)
         (transitionSignature transferTransition).paramTypes I.calldata = some (transferStore I))
     (hreach : ∃ k C, RD uniswapV2PairBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1234⟩ [sel]
@@ -894,7 +894,7 @@ theorem uniswapTransferBodyCoreRevert_insufficient
         (transferValueWord I).toNat)
     (hdispatch : dispatchMsg contract I.calldata = some transferTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (transferTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (transferTransition.params.map Param.name)
         (transitionSignature transferTransition).paramTypes I.calldata = some (transferStore I))
     (hreach : ∃ k C, RD uniswapV2PairBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1234⟩ [sel]
@@ -926,7 +926,7 @@ theorem uniswapTransferBodyCoreRevert_overflow
       transferNewToNat (initState σ σ₀ (Sat256.ofUInt256 g) A I) I)
     (hdispatch : dispatchMsg contract I.calldata = some transferTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (transferTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (transferTransition.params.map Param.name)
         (transitionSignature transferTransition).paramTypes I.calldata = some (transferStore I))
     (hreach : ∃ k C, RD uniswapV2PairBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1234⟩ [sel]

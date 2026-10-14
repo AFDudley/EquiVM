@@ -1,8 +1,8 @@
 import Examples.UniswapV2Pair.ExternalWrappers
 import Examples.UniswapV2Pair.Dispatch
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -37,7 +37,7 @@ def approveStorageSlot (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
   allowanceSlot (.address evm.executionEnv.source) (approveSpenderKey I)
 
 def approvePostState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (approveStorageSlot evm I)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (approveStorageSlot evm I)
     (approveValueWord I)
 
 abbrev approveEvaledRef (evm : EVM.State) (I : ExecutionEnv) : EvaledStorageRef :=
@@ -106,9 +106,9 @@ theorem approveAssign (evm : EVM.State) (I : ExecutionEnv) :
 
 theorem uniswapDecode_approve_ok {I : ExecutionEnv}
     (hsz68 : 68 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (approveTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (approveTransition.params.map Param.name)
       (transitionSignature approveTransition).paramTypes I.calldata = some (approveStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["spender", "value"] [legacyAddr, uint256] I.calldata = _
+  show config.externalABI.decodeCalldata? ["spender", "value"] [legacyAddr, uint256] I.calldata = _
   simpa [addr, uint256, abiUInt256, approveStore, approveSpenderValue, approveValueValue,
     approveSpenderWord, approveValueWord, calldataWord]
     using decodeCalldata_legacyAddress_uint256_ok
@@ -116,9 +116,9 @@ theorem uniswapDecode_approve_ok {I : ExecutionEnv}
 
 theorem uniswapDecode_approve_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 68) :
-    decodeCalldataWithMode config.abiDecodeMode (approveTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (approveTransition.params.map Param.name)
       (transitionSignature approveTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["spender", "value"] [legacyAddr, uint256] I.calldata = none
+  show config.externalABI.decodeCalldata? ["spender", "value"] [legacyAddr, uint256] I.calldata = none
   simpa [uint256, abiUInt256]
     using decodeCalldata_legacyAddress_uint256_none_short
       (cd := I.calldata) (x := "spender") (y := "value") hsz4 hshort
@@ -126,15 +126,15 @@ theorem uniswapDecode_approve_none_short {I : ExecutionEnv}
 theorem uniswapDecode_approve_ok_noncanon {I : ExecutionEnv}
     (hsz68 : 68 ≤ I.calldata.size)
     (_hnc : ¬ (approveSpenderWord I).toNat < EVM.addressModulus) :
-    decodeCalldataWithMode config.abiDecodeMode (approveTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (approveTransition.params.map Param.name)
       (transitionSignature approveTransition).paramTypes I.calldata = some (approveStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["spender", "value"] [legacyAddr, uint256] I.calldata = _
+  show config.externalABI.decodeCalldata? ["spender", "value"] [legacyAddr, uint256] I.calldata = _
   simpa [addr, uint256, abiUInt256, approveStore, approveSpenderValue, approveValueValue,
     approveSpenderWord, approveValueWord, calldataWord]
     using decodeCalldata_legacyAddress_uint256_ok
       (cd := I.calldata) (x := "spender") (y := "value") hsz68
 
-/-- The Solm `approve(address,uint256)` body writes `allowance[msg.sender][spender]` and returns
+/-- The Stele `approve(address,uint256)` body writes `allowance[msg.sender][spender]` and returns
     `true`. -/
 theorem uniswapApproveBodyReturns (evm : EVM.State) (I : ExecutionEnv)
     (h : evm.executionEnv.weiValue = ⟨0⟩) :
@@ -147,7 +147,7 @@ theorem uniswapApproveBodyReturns (evm : EVM.State) (I : ExecutionEnv)
     (approveAssign evm I)) ?_
   exact ExecBlock.consReturn (ExecStmt.return (by simp [evalExprs?, evalExpr?, EvalResult.bind, bind, pure]))
 
-/-- In a static call, the Solm `approve(address,uint256)` body halts at the allowance
+/-- In a static call, the Stele `approve(address,uint256)` body halts at the allowance
     assignment. -/
 theorem uniswapApproveBodyStatic (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩) (hperm : evm.executionEnv.perm = false) :
@@ -387,7 +387,7 @@ theorem uniswapApproveBodyCoreOk
     (hsz68 : 68 ≤ I.calldata.size)
     (hdispatch : dispatchMsg contract I.calldata = some approveTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (approveTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (approveTransition.params.map Param.name)
         (transitionSignature approveTransition).paramTypes I.calldata = some (approveStore I))
     (hreach : ∃ k C, RD uniswapV2PairBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨753⟩ [sel]

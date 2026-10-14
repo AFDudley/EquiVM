@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.ScalarTupleABI
 
 /-! Exact success and failure conditions for the market-parameter return tuple. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
 

@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Cure.LoadBase
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -14,11 +14,11 @@ theorem cureLoadSourceBodyStillLiveRevert {σ σ₀ A I} {g : UInt256}
       loadTransition.body .reverted := by
   let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
   have hliveLoad :
-      Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner ⟨1⟩ ≠ ⟨0⟩ := by
+      Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner ⟨1⟩ ≠ ⟨0⟩ := by
     simpa [evm0, solcSlotWordAt] using hlive
   have hguard := evalExpr_loadLiveEqZero_false evm0 I hliveLoad
   have hblock := nonpayableSecondRequireReverts
-    (cfg := config) (solm := { contract := contract, locals := loadLocals I })
+    (cfg := config) (stele := { contract := contract, locals := loadLocals I })
     (evm := evm0)
     (guard := .binary .eq (.storage liveRef) (.intLit 0))
     (rest :=
@@ -48,10 +48,10 @@ theorem cureLoadSourceBodyPosZeroRevert {σ σ₀ A I} {g : UInt256}
       loadTransition.body .reverted := by
   let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
   have hliveLoad :
-      Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner ⟨1⟩ = ⟨0⟩ := by
+      Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner ⟨1⟩ = ⟨0⟩ := by
     simpa [evm0, solcSlotWordAt] using hlive
   have hposLoad :
-      Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (loadPosSlotFor I) = ⟨0⟩ := by
+      Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (loadPosSlotFor I) = ⟨0⟩ := by
     simpa [evm0, solcSlotWordAt] using hpos
   have hguardLive := evalExpr_loadLiveEqZero_true evm0 I hliveLoad
   have hguardPos := evalExpr_loadPosGtZero_false evm0 I hposLoad
@@ -89,17 +89,17 @@ theorem cureLoadSourceBodyNoCodeRevert {σ σ₀ A I} {g : UInt256}
       loadTransition.body .reverted := by
   let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
   have hliveLoad :
-      Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner ⟨1⟩ = ⟨0⟩ := by
+      Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner ⟨1⟩ = ⟨0⟩ := by
     simpa [evm0, solcSlotWordAt] using hlive
   have hposLoad :
-      Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (loadPosSlotFor I) ≠ ⟨0⟩ := by
+      Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (loadPosSlotFor I) ≠ ⟨0⟩ := by
     simpa [evm0, solcSlotWordAt] using hpos
   have hguardLive := evalExpr_loadLiveEqZero_true evm0 I hliveLoad
   have hguardPos := evalExpr_loadPosGtZero_true evm0 I hposLoad
   have holdAmt := evalExpr_loadAmtStorage evm0 I
   let oldAmtVal : Value :=
     .int (Int.ofNat
-      (Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (loadAmtSlotFor I)).toNat)
+      (Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (loadAmtSlotFor I)).toNat)
   let localsOld : Store := (loadLocals I).insert "oldAmt_" oldAmtVal
   have hguardCall :
       evalExpr? config { contract := contract, locals := localsOld } evm0
@@ -181,17 +181,17 @@ theorem cureLoadSourceBodyCallFailureRevert {σ σ₀ A I} {g : UInt256}
       loadTransition.body .reverted := by
   let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
   have hliveLoad :
-      Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner ⟨1⟩ = ⟨0⟩ := by
+      Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner ⟨1⟩ = ⟨0⟩ := by
     simpa [evm0, solcSlotWordAt] using hlive
   have hposLoad :
-      Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (loadPosSlotFor I) ≠ ⟨0⟩ := by
+      Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (loadPosSlotFor I) ≠ ⟨0⟩ := by
     simpa [evm0, solcSlotWordAt] using hpos
   have hguardLive := evalExpr_loadLiveEqZero_true evm0 I hliveLoad
   have hguardPos := evalExpr_loadPosGtZero_true evm0 I hposLoad
   have holdAmt := evalExpr_loadAmtStorage evm0 I
   let oldAmtVal : Value :=
     .int (Int.ofNat
-      (Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (loadAmtSlotFor I)).toNat)
+      (Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (loadAmtSlotFor I)).toNat)
   let localsOld : Store := (loadLocals I).insert "oldAmt_" oldAmtVal
   have hsrc : localsOld.get? "src" = some (.address (loadSrc I)) := by
     change ((loadLocals I).insert "oldAmt_" oldAmtVal).get? "src" =
@@ -277,17 +277,17 @@ theorem cureLoadSourceBodyReturnDecodeRevert {σ σ₀ A I} {g : UInt256}
       loadTransition.body .reverted := by
   let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
   have hliveLoad :
-      Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner ⟨1⟩ = ⟨0⟩ := by
+      Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner ⟨1⟩ = ⟨0⟩ := by
     simpa [evm0, solcSlotWordAt] using hlive
   have hposLoad :
-      Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (loadPosSlotFor I) ≠ ⟨0⟩ := by
+      Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (loadPosSlotFor I) ≠ ⟨0⟩ := by
     simpa [evm0, solcSlotWordAt] using hpos
   have hguardLive := evalExpr_loadLiveEqZero_true evm0 I hliveLoad
   have hguardPos := evalExpr_loadPosGtZero_true evm0 I hposLoad
   have holdAmt := evalExpr_loadAmtStorage evm0 I
   let oldAmtVal : Value :=
     .int (Int.ofNat
-      (Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (loadAmtSlotFor I)).toNat)
+      (Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (loadAmtSlotFor I)).toNat)
   let localsOld : Store := (loadLocals I).insert "oldAmt_" oldAmtVal
   have hsrc : localsOld.get? "src" = some (.address (loadSrc I)) := by
     change ((loadLocals I).insert "oldAmt_" oldAmtVal).get? "src" =
@@ -372,11 +372,11 @@ theorem cureLoadSourceBodySubRevertSplit {σ σ₀ A I} {g : UInt256}
     (hdec :
       config.externalABI.decode? "cure" out =
         some [.int (Int.ofNat newAmt.toNat)]) :
-    ((Solm.EVM.storageLoad
-        (Solm.EVM.storageStore evmCall evmCall.executionEnv.codeOwner (loadAmtSlotFor I)
+    ((Stele.EVM.storageLoad
+        (Stele.EVM.storageStore evmCall evmCall.executionEnv.codeOwner (loadAmtSlotFor I)
           newAmt)
         evmCall.executionEnv.codeOwner ⟨9⟩).toNat <
-        (Solm.EVM.storageLoad
+        (Stele.EVM.storageLoad
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           I.codeOwner (loadAmtSlotFor I)).toNat →
     ExecTransitionBody config contract
@@ -388,20 +388,20 @@ theorem cureLoadSourceBodySubRevertSplit {σ σ₀ A I} {g : UInt256}
         loadTransition.body .staticViolation) := by
   let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
   have hliveLoad :
-      Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner ⟨1⟩ = ⟨0⟩ := by
+      Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner ⟨1⟩ = ⟨0⟩ := by
     simpa [evm0, solcSlotWordAt] using hlive
   have hposLoad :
-      Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (loadPosSlotFor I) ≠ ⟨0⟩ := by
+      Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (loadPosSlotFor I) ≠ ⟨0⟩ := by
     simpa [evm0, solcSlotWordAt] using hpos
   have hguardLive := evalExpr_loadLiveEqZero_true evm0 I hliveLoad
   have hguardPos := evalExpr_loadPosGtZero_true evm0 I hposLoad
   have holdAmt := evalExpr_loadAmtStorage evm0 I
   let oldAmt :=
-    Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (loadAmtSlotFor I)
+    Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (loadAmtSlotFor I)
   let oldAmtVal : Value := .int (Int.ofNat oldAmt.toNat)
   let localsOld : Store := (loadLocals I).insert "oldAmt_" oldAmtVal
   let localsNew : Store := localsOld.insert "newAmt_" (.int (Int.ofNat newAmt.toNat))
-  let evmAmt := Solm.EVM.storageStore evmCall evmCall.executionEnv.codeOwner
+  let evmAmt := Stele.EVM.storageStore evmCall evmCall.executionEnv.codeOwner
     (loadAmtSlotFor I) newAmt
   have hsrc : localsOld.get? "src" = some (.address (loadSrc I)) := by
     change ((loadLocals I).insert "oldAmt_" oldAmtVal).get? "src" =
@@ -486,7 +486,7 @@ theorem cureLoadSourceBodySubRevertSplit {σ σ₀ A I} {g : UInt256}
     have hsay :
         evalExpr? config { contract := contract, locals := localsNew } evmAmt (.storage sayRef) =
           .ok (.int (Int.ofNat
-            (Solm.EVM.storageLoad evmAmt evmAmt.executionEnv.codeOwner ⟨9⟩).toNat)) := by
+            (Stele.EVM.storageLoad evmAmt evmAmt.executionEnv.codeOwner ⟨9⟩).toNat)) := by
       have hbase : localsNew.get? "say" = none := by
         change (((loadLocals I).insert "oldAmt_" oldAmtVal).insert "newAmt_"
           (.int (Int.ofNat newAmt.toNat))).get? "say" = none
@@ -500,17 +500,17 @@ theorem cureLoadSourceBodySubRevertSplit {σ σ₀ A I} {g : UInt256}
           [.storage sayRef, .var "oldAmt_"] =
             .ok
               [.int (Int.ofNat
-                (Solm.EVM.storageLoad evmAmt evmAmt.executionEnv.codeOwner ⟨9⟩).toNat),
+                (Stele.EVM.storageLoad evmAmt evmAmt.executionEnv.codeOwner ⟨9⟩).toNat),
                .int (Int.ofNat oldAmt.toNat)] := by
       simp [evalExprs?, hsay, holdVar, EvalResult.bind, bind, pure]
     have hbindSub :
         bindParams? subFunction.params
             [.int (Int.ofNat
-              (Solm.EVM.storageLoad evmAmt evmAmt.executionEnv.codeOwner ⟨9⟩).toNat),
+              (Stele.EVM.storageLoad evmAmt evmAmt.executionEnv.codeOwner ⟨9⟩).toNat),
              .int (Int.ofNat oldAmt.toNat)] =
           some
             (uintBinaryLocals
-              (Solm.EVM.storageLoad evmAmt evmAmt.executionEnv.codeOwner ⟨9⟩)
+              (Stele.EVM.storageLoad evmAmt evmAmt.executionEnv.codeOwner ⟨9⟩)
               oldAmt) := by
       simp [subFunction, uint256, bindParams?, uintBinaryLocals]
     have hsubStmt :
@@ -518,11 +518,11 @@ theorem cureLoadSourceBodySubRevertSplit {σ σ₀ A I} {g : UInt256}
           (.internalCall "_sub" [.storage sayRef, .var "oldAmt_"] "withoutOld") .reverted := by
       have hownerAmt : evmAmt.executionEnv.codeOwner = evmCall.executionEnv.codeOwner := by
         dsimp [evmAmt]
-        simp only [Solm.EVM.storageStore, State.lookupAccount]
+        simp only [Stele.EVM.storageStore, State.lookupAccount]
         cases evmCall.accountMap.get? evmCall.executionEnv.codeOwner <;>
           simp only [Option.option, State.setAccount]
       have hbody := execSubFunctionRevert (evm := evmAmt)
-        (x := Solm.EVM.storageLoad evmAmt evmAmt.executionEnv.codeOwner ⟨9⟩)
+        (x := Stele.EVM.storageLoad evmAmt evmAmt.executionEnv.codeOwner ⟨9⟩)
         (y := oldAmt)
         (by simpa [evmAmt, oldAmt, evm0, hownerAmt] using hunder)
       exact internalCallFunctionRevert
@@ -531,12 +531,12 @@ theorem cureLoadSourceBodySubRevertSplit {σ σ₀ A I} {g : UInt256}
         (args := [.storage sayRef, .var "oldAmt_"])
         (argVals :=
           [.int (Int.ofNat
-            (Solm.EVM.storageLoad evmAmt evmAmt.executionEnv.codeOwner ⟨9⟩).toNat),
+            (Stele.EVM.storageLoad evmAmt evmAmt.executionEnv.codeOwner ⟨9⟩).toNat),
            .int (Int.ofNat oldAmt.toNat)])
         (callee := subFunction)
         (locals :=
           uintBinaryLocals
-            (Solm.EVM.storageLoad evmAmt evmAmt.executionEnv.codeOwner ⟨9⟩)
+            (Stele.EVM.storageLoad evmAmt evmAmt.executionEnv.codeOwner ⟨9⟩)
             oldAmt)
         hargsSub (by rfl) hbindSub hbody
     exact ExecFuncBody.execBlockRevert (hprefix
@@ -561,11 +561,11 @@ theorem cureLoadSourceBodySubRevert {σ σ₀ A I} {g : UInt256}
       config.externalABI.decode? "cure" out =
         some [.int (Int.ofNat newAmt.toNat)])
     (hunder :
-      (Solm.EVM.storageLoad
-        (Solm.EVM.storageStore evmCall evmCall.executionEnv.codeOwner (loadAmtSlotFor I)
+      (Stele.EVM.storageLoad
+        (Stele.EVM.storageStore evmCall evmCall.executionEnv.codeOwner (loadAmtSlotFor I)
           newAmt)
         evmCall.executionEnv.codeOwner ⟨9⟩).toNat <
-        (Solm.EVM.storageLoad
+        (Stele.EVM.storageLoad
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           I.codeOwner (loadAmtSlotFor I)).toNat) :
     ExecTransitionBody config contract
@@ -588,21 +588,21 @@ theorem cureLoadSourceBodyAddRevert {σ σ₀ A I} {g : UInt256}
       config.externalABI.decode? "cure" out =
         some [.int (Int.ofNat newAmt.toNat)])
     (hsubOk :
-      (Solm.EVM.storageLoad
+      (Stele.EVM.storageLoad
         (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         I.codeOwner (loadAmtSlotFor I)).toNat ≤
-        (Solm.EVM.storageLoad
-          (Solm.EVM.storageStore evmCall evmCall.executionEnv.codeOwner
+        (Stele.EVM.storageLoad
+          (Stele.EVM.storageStore evmCall evmCall.executionEnv.codeOwner
             (loadAmtSlotFor I) newAmt)
           evmCall.executionEnv.codeOwner ⟨9⟩).toNat)
     (hover :
       UInt256.size ≤
         (UInt256.sub
-          (Solm.EVM.storageLoad
-            (Solm.EVM.storageStore evmCall evmCall.executionEnv.codeOwner
+          (Stele.EVM.storageLoad
+            (Stele.EVM.storageStore evmCall evmCall.executionEnv.codeOwner
               (loadAmtSlotFor I) newAmt)
             evmCall.executionEnv.codeOwner ⟨9⟩)
-          (Solm.EVM.storageLoad
+          (Stele.EVM.storageLoad
             (initState σ σ₀ (Sat256.ofUInt256 g) A I)
             I.codeOwner (loadAmtSlotFor I))).toNat + newAmt.toNat) :
     ExecTransitionBody config contract
@@ -610,22 +610,22 @@ theorem cureLoadSourceBodyAddRevert {σ σ₀ A I} {g : UInt256}
       loadTransition.body .reverted := by
   let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
   have hliveLoad :
-      Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner ⟨1⟩ = ⟨0⟩ := by
+      Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner ⟨1⟩ = ⟨0⟩ := by
     simpa [evm0, solcSlotWordAt] using hlive
   have hposLoad :
-      Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (loadPosSlotFor I) ≠ ⟨0⟩ := by
+      Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (loadPosSlotFor I) ≠ ⟨0⟩ := by
     simpa [evm0, solcSlotWordAt] using hpos
   have hguardLive := evalExpr_loadLiveEqZero_true evm0 I hliveLoad
   have hguardPos := evalExpr_loadPosGtZero_true evm0 I hposLoad
   have holdAmt := evalExpr_loadAmtStorage evm0 I
   let oldAmt :=
-    Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (loadAmtSlotFor I)
+    Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (loadAmtSlotFor I)
   let oldAmtVal : Value := .int (Int.ofNat oldAmt.toNat)
   let localsOld : Store := (loadLocals I).insert "oldAmt_" oldAmtVal
   let localsNew : Store := localsOld.insert "newAmt_" (.int (Int.ofNat newAmt.toNat))
-  let evmAmt := Solm.EVM.storageStore evmCall evmCall.executionEnv.codeOwner
+  let evmAmt := Stele.EVM.storageStore evmCall evmCall.executionEnv.codeOwner
     (loadAmtSlotFor I) newAmt
-  let sayAfter := Solm.EVM.storageLoad evmAmt evmAmt.executionEnv.codeOwner ⟨9⟩
+  let sayAfter := Stele.EVM.storageLoad evmAmt evmAmt.executionEnv.codeOwner ⟨9⟩
   let withoutOld := UInt256.sub sayAfter oldAmt
   let localsWithout : Store :=
     localsNew.insert "withoutOld" (.int (Int.ofNat withoutOld.toNat))
@@ -722,7 +722,7 @@ theorem cureLoadSourceBodyAddRevert {σ σ₀ A I} {g : UInt256}
         (.ok { contract := contract, locals := localsWithout } evmAmt) := by
     have hownerAmt : evmAmt.executionEnv.codeOwner = evmCall.executionEnv.codeOwner := by
       dsimp [evmAmt]
-      simp only [Solm.EVM.storageStore, State.lookupAccount]
+      simp only [Stele.EVM.storageStore, State.lookupAccount]
       cases evmCall.accountMap.get? evmCall.executionEnv.codeOwner <;>
         simp only [Option.option, State.setAccount]
     have hle : oldAmt.toNat ≤ sayAfter.toNat := by
@@ -738,7 +738,7 @@ theorem cureLoadSourceBodyAddRevert {σ σ₀ A I} {g : UInt256}
         (argVals := [.int (Int.ofNat sayAfter.toNat), .int (Int.ofNat oldAmt.toNat)])
         (callee := subFunction)
         (locals := uintBinaryLocals sayAfter oldAmt)
-        (calleeSolm := { contract := contract, locals := uintBinaryLocalsZ sayAfter oldAmt withoutOld })
+        (calleeStele := { contract := contract, locals := uintBinaryLocalsZ sayAfter oldAmt withoutOld })
         (value := some [.int (Int.ofNat withoutOld.toNat)])
         hargsSub (by rfl) hbindSub hbody)
   have hwithoutVar :
@@ -775,7 +775,7 @@ theorem cureLoadSourceBodyAddRevert {σ σ₀ A I} {g : UInt256}
     simp [addFunction, uint256, bindParams?, uintBinaryLocals]
   have hownerAmtLocal : evmAmt.executionEnv.codeOwner = evmCall.executionEnv.codeOwner := by
     dsimp [evmAmt]
-    simp only [Solm.EVM.storageStore, State.lookupAccount]
+    simp only [Stele.EVM.storageStore, State.lookupAccount]
     cases evmCall.accountMap.get? evmCall.executionEnv.codeOwner <;>
       simp only [Option.option, State.setAccount]
   have howner0Local : evm0.executionEnv.codeOwner = I.codeOwner := by
@@ -867,46 +867,46 @@ theorem cureLoadSourceBodyOkLoadedNonzero {σ σ₀ A I} {g : UInt256}
       config.externalABI.decode? "cure" out =
         some [.int (Int.ofNat newAmt.toNat)])
     (hsubOk :
-      (Solm.EVM.storageLoad
+      (Stele.EVM.storageLoad
         (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         I.codeOwner (loadAmtSlotFor I)).toNat ≤
-        (Solm.EVM.storageLoad
-          (Solm.EVM.storageStore evmCall evmCall.executionEnv.codeOwner
+        (Stele.EVM.storageLoad
+          (Stele.EVM.storageStore evmCall evmCall.executionEnv.codeOwner
             (loadAmtSlotFor I) newAmt)
           evmCall.executionEnv.codeOwner ⟨9⟩).toNat)
     (haddOk :
       (UInt256.sub
-        (Solm.EVM.storageLoad
-          (Solm.EVM.storageStore evmCall evmCall.executionEnv.codeOwner
+        (Stele.EVM.storageLoad
+          (Stele.EVM.storageStore evmCall evmCall.executionEnv.codeOwner
             (loadAmtSlotFor I) newAmt)
           evmCall.executionEnv.codeOwner ⟨9⟩)
-        (Solm.EVM.storageLoad
+        (Stele.EVM.storageLoad
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           I.codeOwner (loadAmtSlotFor I))).toNat + newAmt.toNat < UInt256.size) :
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-    let oldAmt := Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (loadAmtSlotFor I)
+    let oldAmt := Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (loadAmtSlotFor I)
     let oldAmtVal : Value := .int (Int.ofNat oldAmt.toNat)
     let localsOld : Store := (loadLocals I).insert "oldAmt_" oldAmtVal
     let localsNew : Store := localsOld.insert "newAmt_" (.int (Int.ofNat newAmt.toNat))
-    let evmAmt := Solm.EVM.storageStore evmCall evmCall.executionEnv.codeOwner
+    let evmAmt := Stele.EVM.storageStore evmCall evmCall.executionEnv.codeOwner
       (loadAmtSlotFor I) newAmt
-    let sayAfter := Solm.EVM.storageLoad evmAmt evmAmt.executionEnv.codeOwner ⟨9⟩
+    let sayAfter := Stele.EVM.storageLoad evmAmt evmAmt.executionEnv.codeOwner ⟨9⟩
     let withoutOld := UInt256.sub sayAfter oldAmt
     let localsWithout : Store :=
       localsNew.insert "withoutOld" (.int (Int.ofNat withoutOld.toNat))
     let sayNew := withoutOld + newAmt
     let localsSay : Store := localsWithout.insert "sayNew" (.int (Int.ofNat sayNew.toNat))
-    let evmSay := Solm.EVM.storageStore evmAmt evmAmt.executionEnv.codeOwner ⟨9⟩ sayNew
-    Solm.EVM.storageLoad evmSay evmSay.executionEnv.codeOwner (loadLoadedSlotFor I) ≠ ⟨0⟩ →
+    let evmSay := Stele.EVM.storageStore evmAmt evmAmt.executionEnv.codeOwner ⟨9⟩ sayNew
+    Stele.EVM.storageLoad evmSay evmSay.executionEnv.codeOwner (loadLoadedSlotFor I) ≠ ⟨0⟩ →
     ExecTransitionBody config contract evm0 (loadLocals I) loadTransition.body
       (.returned { contract := contract, locals := localsSay } evmSay none) := by
   intro evm0 oldAmt oldAmtVal localsOld localsNew evmAmt sayAfter withoutOld localsWithout
     sayNew localsSay evmSay hloaded
   have hliveLoad :
-      Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner ⟨1⟩ = ⟨0⟩ := by
+      Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner ⟨1⟩ = ⟨0⟩ := by
     simpa [evm0, solcSlotWordAt] using hlive
   have hposLoad :
-      Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (loadPosSlotFor I) ≠ ⟨0⟩ := by
+      Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (loadPosSlotFor I) ≠ ⟨0⟩ := by
     simpa [evm0, solcSlotWordAt] using hpos
   have hguardLive := evalExpr_loadLiveEqZero_true evm0 I hliveLoad
   have hguardPos := evalExpr_loadPosGtZero_true evm0 I hposLoad
@@ -1004,7 +1004,7 @@ theorem cureLoadSourceBodyOkLoadedNonzero {σ σ₀ A I} {g : UInt256}
         (.ok { contract := contract, locals := localsWithout } evmAmt) := by
     have hownerAmt : evmAmt.executionEnv.codeOwner = evmCall.executionEnv.codeOwner := by
       dsimp [evmAmt]
-      simp only [Solm.EVM.storageStore, State.lookupAccount]
+      simp only [Stele.EVM.storageStore, State.lookupAccount]
       cases evmCall.accountMap.get? evmCall.executionEnv.codeOwner <;>
         simp only [Option.option, State.setAccount]
     have hle : oldAmt.toNat ≤ sayAfter.toNat := by
@@ -1020,7 +1020,7 @@ theorem cureLoadSourceBodyOkLoadedNonzero {σ σ₀ A I} {g : UInt256}
         (argVals := [.int (Int.ofNat sayAfter.toNat), .int (Int.ofNat oldAmt.toNat)])
         (callee := subFunction)
         (locals := uintBinaryLocals sayAfter oldAmt)
-        (calleeSolm := { contract := contract, locals := uintBinaryLocalsZ sayAfter oldAmt withoutOld })
+        (calleeStele := { contract := contract, locals := uintBinaryLocalsZ sayAfter oldAmt withoutOld })
         (value := some [.int (Int.ofNat withoutOld.toNat)])
         hargsSub (by rfl) hbindSub hbody)
   have hwithoutVar :
@@ -1056,7 +1056,7 @@ theorem cureLoadSourceBodyOkLoadedNonzero {σ σ₀ A I} {g : UInt256}
     simp [addFunction, uint256, bindParams?, uintBinaryLocals]
   have hownerAmtLocal : evmAmt.executionEnv.codeOwner = evmCall.executionEnv.codeOwner := by
     dsimp [evmAmt]
-    simp only [Solm.EVM.storageStore, State.lookupAccount]
+    simp only [Stele.EVM.storageStore, State.lookupAccount]
     cases evmCall.accountMap.get? evmCall.executionEnv.codeOwner <;>
       simp only [Option.option, State.setAccount]
   have howner0Local : evm0.executionEnv.codeOwner = I.codeOwner := by
@@ -1077,7 +1077,7 @@ theorem cureLoadSourceBodyOkLoadedNonzero {σ σ₀ A I} {g : UInt256}
         (argVals := [.int (Int.ofNat withoutOld.toNat), .int (Int.ofNat newAmt.toNat)])
         (callee := addFunction)
         (locals := uintBinaryLocals withoutOld newAmt)
-        (calleeSolm := { contract := contract, locals := uintBinaryLocalsZ withoutOld newAmt sayNew })
+        (calleeStele := { contract := contract, locals := uintBinaryLocalsZ withoutOld newAmt sayNew })
         (value := some [.int (Int.ofNat sayNew.toNat)])
         hargsAdd (by rfl) hbindAdd hbody)
   have hsayNewVar :
@@ -1199,51 +1199,51 @@ theorem cureLoadSourceBodyOkLoadedZero {σ σ₀ A I} {g : UInt256}
       config.externalABI.decode? "cure" out =
         some [.int (Int.ofNat newAmt.toNat)])
     (hsubOk :
-      (Solm.EVM.storageLoad
+      (Stele.EVM.storageLoad
         (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         I.codeOwner (loadAmtSlotFor I)).toNat ≤
-        (Solm.EVM.storageLoad
-          (Solm.EVM.storageStore evmCall evmCall.executionEnv.codeOwner
+        (Stele.EVM.storageLoad
+          (Stele.EVM.storageStore evmCall evmCall.executionEnv.codeOwner
             (loadAmtSlotFor I) newAmt)
           evmCall.executionEnv.codeOwner ⟨9⟩).toNat)
     (haddOk :
       (UInt256.sub
-        (Solm.EVM.storageLoad
-          (Solm.EVM.storageStore evmCall evmCall.executionEnv.codeOwner
+        (Stele.EVM.storageLoad
+          (Stele.EVM.storageStore evmCall evmCall.executionEnv.codeOwner
             (loadAmtSlotFor I) newAmt)
           evmCall.executionEnv.codeOwner ⟨9⟩)
-        (Solm.EVM.storageLoad
+        (Stele.EVM.storageLoad
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           I.codeOwner (loadAmtSlotFor I))).toNat + newAmt.toNat < UInt256.size) :
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-    let oldAmt := Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (loadAmtSlotFor I)
+    let oldAmt := Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (loadAmtSlotFor I)
     let oldAmtVal : Value := .int (Int.ofNat oldAmt.toNat)
     let localsOld : Store := (loadLocals I).insert "oldAmt_" oldAmtVal
     let localsNew : Store := localsOld.insert "newAmt_" (.int (Int.ofNat newAmt.toNat))
-    let evmAmt := Solm.EVM.storageStore evmCall evmCall.executionEnv.codeOwner
+    let evmAmt := Stele.EVM.storageStore evmCall evmCall.executionEnv.codeOwner
       (loadAmtSlotFor I) newAmt
-    let sayAfter := Solm.EVM.storageLoad evmAmt evmAmt.executionEnv.codeOwner ⟨9⟩
+    let sayAfter := Stele.EVM.storageLoad evmAmt evmAmt.executionEnv.codeOwner ⟨9⟩
     let withoutOld := UInt256.sub sayAfter oldAmt
     let localsWithout : Store :=
       localsNew.insert "withoutOld" (.int (Int.ofNat withoutOld.toNat))
     let sayNew := withoutOld + newAmt
     let localsSay : Store := localsWithout.insert "sayNew" (.int (Int.ofNat sayNew.toNat))
-    let evmSay := Solm.EVM.storageStore evmAmt evmAmt.executionEnv.codeOwner ⟨9⟩ sayNew
-    let evmLoaded := Solm.EVM.storageStore evmSay evmSay.executionEnv.codeOwner
+    let evmSay := Stele.EVM.storageStore evmAmt evmAmt.executionEnv.codeOwner ⟨9⟩ sayNew
+    let evmLoaded := Stele.EVM.storageStore evmSay evmSay.executionEnv.codeOwner
       (loadLoadedSlotFor I) ⟨1⟩
-    let count := Solm.EVM.storageLoad evmLoaded evmLoaded.executionEnv.codeOwner ⟨8⟩
-    let evmCount := Solm.EVM.storageStore evmLoaded evmLoaded.executionEnv.codeOwner
+    let count := Stele.EVM.storageLoad evmLoaded evmLoaded.executionEnv.codeOwner ⟨8⟩
+    let evmCount := Stele.EVM.storageStore evmLoaded evmLoaded.executionEnv.codeOwner
       ⟨8⟩ (count + ⟨1⟩)
-    Solm.EVM.storageLoad evmSay evmSay.executionEnv.codeOwner (loadLoadedSlotFor I) = ⟨0⟩ →
+    Stele.EVM.storageLoad evmSay evmSay.executionEnv.codeOwner (loadLoadedSlotFor I) = ⟨0⟩ →
     ExecTransitionBody config contract evm0 (loadLocals I) loadTransition.body
       (.returned { contract := contract, locals := localsSay } evmCount none) := by
   intro evm0 oldAmt oldAmtVal localsOld localsNew evmAmt sayAfter withoutOld localsWithout
     sayNew localsSay evmSay evmLoaded count evmCount hloaded
   have hliveLoad :
-      Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner ⟨1⟩ = ⟨0⟩ := by
+      Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner ⟨1⟩ = ⟨0⟩ := by
     simpa [evm0, solcSlotWordAt] using hlive
   have hposLoad :
-      Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (loadPosSlotFor I) ≠ ⟨0⟩ := by
+      Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (loadPosSlotFor I) ≠ ⟨0⟩ := by
     simpa [evm0, solcSlotWordAt] using hpos
   have hguardLive := evalExpr_loadLiveEqZero_true evm0 I hliveLoad
   have hguardPos := evalExpr_loadPosGtZero_true evm0 I hposLoad
@@ -1341,7 +1341,7 @@ theorem cureLoadSourceBodyOkLoadedZero {σ σ₀ A I} {g : UInt256}
         (.ok { contract := contract, locals := localsWithout } evmAmt) := by
     have hownerAmt : evmAmt.executionEnv.codeOwner = evmCall.executionEnv.codeOwner := by
       dsimp [evmAmt]
-      simp only [Solm.EVM.storageStore, State.lookupAccount]
+      simp only [Stele.EVM.storageStore, State.lookupAccount]
       cases evmCall.accountMap.get? evmCall.executionEnv.codeOwner <;>
         simp only [Option.option, State.setAccount]
     have hle : oldAmt.toNat ≤ sayAfter.toNat := by
@@ -1357,7 +1357,7 @@ theorem cureLoadSourceBodyOkLoadedZero {σ σ₀ A I} {g : UInt256}
         (argVals := [.int (Int.ofNat sayAfter.toNat), .int (Int.ofNat oldAmt.toNat)])
         (callee := subFunction)
         (locals := uintBinaryLocals sayAfter oldAmt)
-        (calleeSolm := { contract := contract, locals := uintBinaryLocalsZ sayAfter oldAmt withoutOld })
+        (calleeStele := { contract := contract, locals := uintBinaryLocalsZ sayAfter oldAmt withoutOld })
         (value := some [.int (Int.ofNat withoutOld.toNat)])
         hargsSub (by rfl) hbindSub hbody)
   have hwithoutVar :
@@ -1393,7 +1393,7 @@ theorem cureLoadSourceBodyOkLoadedZero {σ σ₀ A I} {g : UInt256}
     simp [addFunction, uint256, bindParams?, uintBinaryLocals]
   have hownerAmtLocal : evmAmt.executionEnv.codeOwner = evmCall.executionEnv.codeOwner := by
     dsimp [evmAmt]
-    simp only [Solm.EVM.storageStore, State.lookupAccount]
+    simp only [Stele.EVM.storageStore, State.lookupAccount]
     cases evmCall.accountMap.get? evmCall.executionEnv.codeOwner <;>
       simp only [Option.option, State.setAccount]
   have howner0Local : evm0.executionEnv.codeOwner = I.codeOwner := by
@@ -1414,7 +1414,7 @@ theorem cureLoadSourceBodyOkLoadedZero {σ σ₀ A I} {g : UInt256}
         (argVals := [.int (Int.ofNat withoutOld.toNat), .int (Int.ofNat newAmt.toNat)])
         (callee := addFunction)
         (locals := uintBinaryLocals withoutOld newAmt)
-        (calleeSolm := { contract := contract, locals := uintBinaryLocalsZ withoutOld newAmt sayNew })
+        (calleeStele := { contract := contract, locals := uintBinaryLocalsZ withoutOld newAmt sayNew })
         (value := some [.int (Int.ofNat sayNew.toNat)])
         hargsAdd (by rfl) hbindAdd hbody)
   have hsayNewVar :

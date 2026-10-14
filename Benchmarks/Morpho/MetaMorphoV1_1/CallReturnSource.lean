@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.CallReturnMemory
 
 /-! Source semantics of the optional reservation for raw return bytes. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
 

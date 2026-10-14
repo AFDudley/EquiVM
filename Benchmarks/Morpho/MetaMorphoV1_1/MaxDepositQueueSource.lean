@@ -4,7 +4,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.MappingStructs
 
 /-! Source queue reads, capacity selection, and loop control for maxDeposit. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
 
@@ -28,10 +28,10 @@ def maxDepositCapFrame (frame : Frame) (id cap : UInt256) : Frame :=
 theorem maxDepositQueueRead {frame : Frame} {evm : State} {i : UInt256}
     (hcontract : frame.contract = contract) (hbase : frame.locals.get? "supplyQueue" = none)
     (hi : frame.locals.get? "i" = some (uint256Value i))
-    (hbound : i.toNat < (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨20⟩).toNat) :
+    (hbound : i.toNat < (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨20⟩).toNat) :
     evalExpr? config frame evm (.storage ⟨"supplyQueue", [.aindex (.var "i")]⟩) =
       .ok (wordBytes32Value
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (maxDepositQueueSlot i))) := by
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (maxDepositQueueSlot i))) := by
   have hb : arrayIndexInBounds? config evm frame.contract.storage "supplyQueue" []
       (.int (Int.ofNat i.toNat)) = .ok () := by
     rw [hcontract, supplyQueueBounds, if_pos hbound]
@@ -55,7 +55,7 @@ theorem configCapRead {frame : Frame} {evm : State} {id : UInt256} {key : Expr}
     (hid : evalExpr? config frame evm key = .ok (wordBytes32Value id)) :
     evalExpr? config frame evm (.storage ⟨"config", [.mindex key, .field "cap"]⟩) =
       .ok (uint256Value (UInt256.land
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (solcMappingSlot ⟨13⟩ id))
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (solcMappingSlot ⟨13⟩ id))
         (UInt256.ofNat (2 ^ 184 - 1)))) := by
   apply evalExpr_storage_scalar_value
     (er := ⟨"config", [.mindex (.fixedBytes abiBytes32Width (EVM.Word.toBytesBE id)),
@@ -79,7 +79,7 @@ theorem maxDepositCapRead {frame : Frame} {evm : State} {id : UInt256}
     (hid : frame.locals.get? "id" = some (wordBytes32Value id)) :
     evalExpr? config frame evm (.storage ⟨"config", [.mindex (.var "id"), .field "cap"]⟩) =
       .ok (uint256Value (UInt256.land
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (solcMappingSlot ⟨13⟩ id))
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (solcMappingSlot ⟨13⟩ id))
         (UInt256.ofNat (2 ^ 184 - 1)))) :=
   configCapRead hcontract hbase (by simp only [evalExpr?, hid, EvalResult.ofOption])
 
@@ -120,7 +120,7 @@ theorem maxDepositCapConditionSource {frame : Frame} {evm : State} {cap : UInt25
 theorem maxDepositConditionSource {frame : Frame} {evm : State} {i len : UInt256}
     (hcontract : frame.contract = contract) (hbase : frame.locals.get? "supplyQueue" = none)
     (hi : frame.locals.get? "i" = some (uint256Value i))
-    (hlen : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨20⟩ = len) :
+    (hlen : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨20⟩ = len) :
     evalExpr? config frame evm maxDepositCondition =
       .ok (.bool (decide (i.toNat < len.toNat))) := by
   rcases frame with ⟨c, locals, imms⟩

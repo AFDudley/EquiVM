@@ -8,7 +8,7 @@ decodes two address arguments, hashes the nested slot (`keccak(guy ‖ keccak(ow
 and ABI-encodes the `uint256`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 1000000
@@ -72,9 +72,9 @@ theorem weth9SelectorDispatchAllowance {I : ExecutionEnv} (hsel : selIs I (weth9
   native_decide
 
 theorem weth9Decode_allowance_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (allowanceTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (allowanceTransition.params.map Param.name)
       (transitionSignature allowanceTransition).paramTypes I.calldata = some (allowanceStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["owner", "guy"] [addr, addr] I.calldata = _
+  show config.externalABI.decodeCalldata? ["owner", "guy"] [addr, addr] I.calldata = _
   simpa [allowanceStore, allowanceOwnerValue, allowanceGuyValue, allowanceOwnerWord,
     allowanceGuyWord, calldataWord]
     using decodeCalldata_legacyAddress_legacyAddress_ok
@@ -82,30 +82,30 @@ theorem weth9Decode_allowance_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.s
 
 theorem weth9Decode_allowance_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 68) :
-    decodeCalldataWithMode config.abiDecodeMode (allowanceTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (allowanceTransition.params.map Param.name)
       (transitionSignature allowanceTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["owner", "guy"] [addr, addr] I.calldata = none
+  show config.externalABI.decodeCalldata? ["owner", "guy"] [addr, addr] I.calldata = none
   simpa using decodeCalldata_legacyAddress_legacyAddress_none_short
     (cd := I.calldata) (x := "owner") (y := "guy") hsz4 hshort
 
-/-- The Solm `allowance(address,address)` body returns `allowance[owner][guy]`. -/
+/-- The Stele `allowance(address,address)` body returns `allowance[owner][guy]`. -/
 theorem weth9AllowanceBodyReturns (evm : EVM.State) (I : ExecutionEnv)
     (h : evm.executionEnv.weiValue = ⟨0⟩) :
     ExecTransitionBody config contract evm (allowanceStore I) allowanceTransition.body
       (.returned { contract := contract, locals := allowanceStore I } evm
         (some [(.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
             (allowanceStorageSlot I)).toNat))])) := by
   exact ExecFuncBody.execBlockRet <|
     (ABlock.start.requireStep (evalCallvalueEq_true h)).returns (by
       rw [evalExpr_storage_scalar_value
-        (solm := { contract := contract, locals := allowanceStore I })
+        (stele := { contract := contract, locals := allowanceStore I })
         (slot := allowanceRef (.var "owner") (.var "guy"))
         (er := allowanceEvaledRef I)
         (t := .int uint256Int)
         (loc := wordLoc (allowanceStorageSlot I))
         (value := .int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
             (allowanceStorageSlot I)).toNat))
         (hbase := by simp [allowanceStore, allowanceRef])
         (her := by
@@ -205,7 +205,7 @@ theorem weth9AllowanceBodyCoreOk {σ σ₀ A I} {g : UInt256}
           (.returned { contract := contract, locals := allowanceStore I }
             (initState σ σ₀ (Sat256.ofUInt256 g) A I)
             (some [(.int (Int.ofNat (allowanceWord σ I).toNat))])) := by
-      simpa [allowanceWord, allowanceStorageSlot, initState, Solm.EVM.storageLoad,
+      simpa [allowanceWord, allowanceStorageSlot, initState, Stele.EVM.storageLoad,
         State.lookupAccount] using
         weth9AllowanceBodyReturns (initState σ σ₀ (Sat256.ofUInt256 g) A I) I
           (by simp only [initState]; exact hwv)
@@ -241,7 +241,7 @@ theorem weth9AllowanceBodyCoreOk {σ σ₀ A I} {g : UInt256}
         |>.solcPush1Dup1Revert0 (by native_decide) (by native_decide) (by native_decide) (by simp)
     exact weth9ReEquivDecodeFailed hcode hrev hdisp (weth9Decode_allowance_none_short hsz4 hsz)
 
-/-- `allowance(address,address)` body refines its Solm transition (both callvalue branches). -/
+/-- `allowance(address,address)` body refines its Stele transition (both callvalue branches). -/
 theorem weth9AllowanceBodyCore {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = weth9Bytecode) (hsize : I.calldata.size < UInt256.size)
     (hsel : selIs I (weth9SelBytes 10)) :

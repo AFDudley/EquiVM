@@ -1,0 +1,146 @@
+{
+  "contract": "/home/lefteris/EquiVM3/Tests/Pipeline/VyperRegistry/contracts/Registry.vy",
+  "compiler": "vyper",
+  "evmVersion": "cancun",
+  "externalCalls": [],
+  "selectors": [
+    {
+      "signature": "entries(uint256)",
+      "name": "entries",
+      "params": [],
+      "getter": true
+    },
+    {
+      "signature": "ids(uint256)",
+      "name": "ids",
+      "params": [],
+      "getter": true
+    },
+    {
+      "signature": "nextId()",
+      "name": "nextId",
+      "params": [],
+      "getter": true
+    },
+    {
+      "signature": "totalWeight()",
+      "name": "totalWeight",
+      "params": [],
+      "getter": true
+    },
+    {
+      "signature": "owner()",
+      "name": "owner",
+      "params": [],
+      "getter": true
+    },
+    {
+      "signature": "register(address)",
+      "name": "register",
+      "params": [
+        {
+          "name": "account",
+          "type": "address",
+          "vyperType": "address"
+        }
+      ],
+      "bounded": []
+    },
+    {
+      "signature": "register(address,uint256)",
+      "name": "register",
+      "params": [
+        {
+          "name": "account",
+          "type": "address",
+          "vyperType": "address"
+        },
+        {
+          "name": "weight",
+          "type": "uint256",
+          "vyperType": "uint256"
+        }
+      ],
+      "bounded": []
+    },
+    {
+      "signature": "deactivate(uint256)",
+      "name": "deactivate",
+      "params": [
+        {
+          "name": "id",
+          "type": "uint256",
+          "vyperType": "uint256"
+        }
+      ],
+      "bounded": []
+    },
+    {
+      "signature": "pop_last()",
+      "name": "pop_last",
+      "params": [],
+      "bounded": []
+    },
+    {
+      "signature": "active_weight()",
+      "name": "active_weight",
+      "params": [],
+      "bounded": []
+    },
+    {
+      "signature": "count()",
+      "name": "count",
+      "params": [],
+      "bounded": []
+    },
+    {
+      "signature": "transfer_ownership(address)",
+      "name": "transfer_ownership",
+      "params": [
+        {
+          "name": "new_owner",
+          "type": "address",
+          "vyperType": "address"
+        }
+      ],
+      "bounded": []
+    }
+  ],
+  "storage": [
+    {
+      "name": "ownable_owner",
+      "slot": 0,
+      "transient": false,
+      "vyperType": "address"
+    },
+    {
+      "name": "entries",
+      "slot": 1,
+      "transient": false,
+      "vyperType": "HashMap[uint256, Entry]"
+    },
+    {
+      "name": "ids",
+      "slot": 2,
+      "transient": false,
+      "vyperType": "DynArray[uint256, 16]"
+    },
+    {
+      "name": "nextId",
+      "slot": 19,
+      "transient": false,
+      "vyperType": "uint256"
+    },
+    {
+      "name": "totalWeight",
+      "slot": 20,
+      "transient": false,
+      "vyperType": "uint256"
+    }
+  ],
+  "nonreentrantLock": null,
+  "holes": [],
+  "notes": [
+    "for \u2026 in ids: Vyper iterates over the array as read at loop entry \u2014 line 63"
+  ]
+}

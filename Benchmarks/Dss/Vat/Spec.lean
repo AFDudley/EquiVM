@@ -1,12 +1,12 @@
-import Solm.SolidityStorage
+import Stele.SolidityStorage
 import Reasoning.EVMWord
-import Solm.Semantics
-import Solm.SolidityLayout
+import Stele.Semantics
+import Stele.SolidityLayout
 
 /-!
 # MakerDAO/Sky DSS Vat benchmark spec
 
-Solm benchmark scaffold for upstream `dss/src/vat.sol`.
+Stele benchmark scaffold for upstream `dss/src/vat.sol`.
 
 The storage layout and public ABI surface follow solc `0.6.12`. Events are omitted. The transition
 bodies model the source-level storage effects and Maker's explicit checked arithmetic helpers. The
@@ -14,7 +14,7 @@ proof work for this benchmark should isolate the reusable signed/unsigned arithm
 storage-mapping layout lemmas, and eager boolean-helper evaluation lemmas.
 -/
 
-open Solm ABI Ethereum
+open Stele ABI Ethereum
 
 namespace Benchmarks.Dss.Vat
 
@@ -671,8 +671,7 @@ def contract : ContractDecl :=
 
 def config : Config :=
   { storageBackend := solidityStorageBackend storageLayout
-    externalABI := defaultExternalCallABI
-    abiDecodeMode := DecodeMode.legacySolc05
+    externalABI := (defaultExternalCallABI).withMode DecodeMode.legacySolc05
     selfDeployment := genSolidityConstructorDeployment contract.ctor.params }
 
 end Benchmarks.Dss.Vat

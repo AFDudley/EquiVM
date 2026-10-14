@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.UpdateWithdrawQueueReady
 
 /-! Exact withdrawal-queue replacement in the source and runtime storage orders. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 

@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.ExtSloadsValueRoutines
 
 /-! Access the first returned slot before the last-update nonzero check. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables metaMorphoV1_1Blocks
 

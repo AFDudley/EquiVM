@@ -4,7 +4,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.DiffTarget
 Run with `lake env lean --run Benchmarks/Morpho/MetaMorphoV1_1/PackedStorageRegression.lean`.
 -/
 
-open Solm Solm.Interp Solm.DiffTest Ethereum Ethereum.EVM
+open Stele Stele.Interp Stele.DiffTest Ethereum Ethereum.EVM
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.PackedStorageRegression
 

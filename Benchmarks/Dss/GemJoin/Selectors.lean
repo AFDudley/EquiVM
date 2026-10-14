@@ -6,7 +6,7 @@ import Benchmarks.Dss.GemJoin.Common
 These are the ABI selector facts accepted by the benchmark prompt.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM
+open Stele ABI Ethereum Ethereum.EVM
 
 namespace Benchmarks.Dss.GemJoin
 

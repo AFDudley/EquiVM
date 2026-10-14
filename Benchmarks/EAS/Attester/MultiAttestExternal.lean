@@ -1,7 +1,7 @@
 import Benchmarks.EAS.Attester.MultiAttestSourceReturn
 import Benchmarks.EAS.Attester.MultiAttestStartTrace
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
 open Benchmarks.EAS.Attester.Immutables attesterRuntimeBlocks
 
 namespace Benchmarks.EAS.Attester

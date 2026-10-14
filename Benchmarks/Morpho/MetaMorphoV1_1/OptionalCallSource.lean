@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.OptionalReturnSource
 
 /-! Compose the allocated Address call with SafeERC20's optional-return check. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
 

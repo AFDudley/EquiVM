@@ -4,7 +4,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.SetCapSyntax
 
 /-! Source composition of the checked cast and the immediate cap setter. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 

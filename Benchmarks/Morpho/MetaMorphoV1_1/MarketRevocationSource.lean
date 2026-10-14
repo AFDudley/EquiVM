@@ -4,7 +4,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.RevocationSource
 
 /-! Source bodies for cap and market-removal revocations. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 
@@ -19,9 +19,9 @@ def marketRevocationSlot (cap : Bool) (id : UInt256) : UInt256 :=
 def marketRevocationWord (cap : Bool) (old : UInt256) : UInt256 :=
   if cap then ⟨0⟩ else UInt256.land (UInt256.ofNat (2 ^ 192 - 1)) old
 def marketRevocationState (cap : Bool) (evm : EVM.State) (id : UInt256) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (marketRevocationSlot cap id)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (marketRevocationSlot cap id)
     (marketRevocationWord cap
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (marketRevocationSlot cap id)))
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (marketRevocationSlot cap id)))
 
 def marketRevocationBody (cap : Bool) : List Stmt :=
   [.require (.binary .eq (.env .callvalue) (.intLit 0)),

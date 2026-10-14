@@ -2,7 +2,7 @@ import Reasoning.ABIViews
 
 /-! Source decoding and payload representation for one dynamic string parameter. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 

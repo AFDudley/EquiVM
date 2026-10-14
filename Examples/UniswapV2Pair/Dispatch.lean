@@ -1,7 +1,7 @@
 import Examples.UniswapV2Pair.Common
 import Mathlib.Tactic.IntervalCases
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -206,7 +206,7 @@ def uniswapSelBytes : ℕ → ByteArray
   | 25 => ⟨#[0xdd, 0x62, 0xed, 0x3e]⟩
   | _ => ⟨#[0xff, 0xf6, 0xca, 0xe9]⟩
 
-/-! ## Solm dispatch routing
+/-! ## Stele dispatch routing
 
 The generic `Reasoning.Dispatch` facts reduce `dispatchMsg` to the ordered transition list.  These
 contract-local lemmas only attach Uniswap's selector byte facts to that generic machinery.
@@ -1139,7 +1139,7 @@ theorem uniswapNonPayable {σ σ₀ A I} {g : UInt256}
         have htmem : t ∈ contract.transitions := by
           rw [dispatchMsg_eq_dispatchList contract I.calldata (by rfl)] at ht
           exact dispatchList_some_mem ht
-        by_cases hdec : decodeCalldataWithMode config.abiDecodeMode (t.params.map Param.name)
+        by_cases hdec : config.externalABI.decodeCalldata? (t.params.map Param.name)
             (transitionSignature t).paramTypes I.calldata = none
         · exact reEquiv_decodingFailed ht hdec hrev
         · obtain ⟨callargs, hca⟩ := Option.ne_none_iff_exists'.mp hdec

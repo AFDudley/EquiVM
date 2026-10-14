@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.AccessControl
 
 /-! Source execution of signature recovery, including high-s and failed-call branches. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 

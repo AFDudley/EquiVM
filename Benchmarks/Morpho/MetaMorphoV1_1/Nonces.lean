@@ -7,11 +7,11 @@ import Benchmarks.Morpho.MetaMorphoV1_1.RuntimeBlocks_029
 # MetaMorphoV1_1 `nonces(address)`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 5539; reach lemma `metaMorphoV1_1ReachNoncesBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 
@@ -30,7 +30,7 @@ theorem noncesHelperReturns (evm : EVM.State) (imms : Store) (w : UInt256)
         { contract := contract
           locals := (∅ : Store).insert "owner" (.address (AccountAddress.ofNat w.toNat))
           immutables := imms } evm
-        (some [.int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+        (some [.int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
           (solcMappingSlot ⟨7⟩ w)).toNat)])) := by
   exact ExecFuncBody.execBlockRet (ABlock.start.returns
     (evalStorage_nonces evm _ imms w (by simp) (store_get_self _ _ _) hcanon))
@@ -45,20 +45,20 @@ theorem noncesBodyReturns (v : MetaMorphoV1_1Immutables)
       (.returned
         { contract := contract
           locals := (locals.insert "__calldata" (.bytes evm.executionEnv.calldata)).insert "__c0"
-            (.int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+            (.int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
               (solcMappingSlot ⟨7⟩ w)).toNat))
           immutables := immStore v }
-        evm (some [.int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+        evm (some [.int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
           (solcMappingSlot ⟨7⟩ w)).toNat)])) (immStore v) := by
   apply ExecFuncBody.execBlockRet
   apply (nonpayableCalldataPrefix "__calldata" (2 ^ 255 + 4) hwv hhi).run
   refine ExecBlock.consNormal (ExecStmt.internalCallReturn
     (argVals := [.address (AccountAddress.ofNat w.toNat)])
-    (calleeSolm :=
+    (calleeStele :=
       { contract := contract
         locals := (∅ : Store).insert "owner" (.address (AccountAddress.ofNat w.toNat))
         immutables := immStore v })
-    (value := some [.int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+    (value := some [.int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
       (solcMappingSlot ⟨7⟩ w)).toNat)])
     ?_ (by rfl) (by rfl) (noncesHelperReturns evm (immStore v) w hcanon)) ?_
   · simp only [evalExprs?, evalExpr?,

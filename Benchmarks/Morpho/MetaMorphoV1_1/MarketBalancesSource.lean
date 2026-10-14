@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.AccessControl
 
 /-! Elapsed time, the accrual condition, and the balance reader's final return. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
 
@@ -58,7 +58,7 @@ theorem allocatedMarketBalances_tail :
   rw [hb]
   rfl
 
--- GENERALIZES Reasoning.SolmArithmetic.evalExpr_ne_int_true/false to arbitrary frames.
+-- GENERALIZES Reasoning.SteleArithmetic.evalExpr_ne_int_true/false to arbitrary frames.
 theorem wordNeSource {cfg : Config} {frame : Frame} {evm : State}
     {lhs rhs : Expr} {a b : UInt256}
     (ha : evalExpr? cfg frame evm lhs = .ok (uint256Value a))

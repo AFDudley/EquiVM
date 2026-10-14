@@ -1,6 +1,6 @@
-# Agent prompt — proving EVM↔Solm correctness for a contract
+# Agent prompt — proving EVM↔Stele correctness for a contract
 
-You are proving that a concrete EVM bytecode artifact refines its Solm
+You are proving that a concrete EVM bytecode artifact refines its Stele
 specification. You goal is to complete the proof of the top-level theorem 
 in `Correct.lean` with no `sorry` and no added axioms, except for the 
 accepted trusted base below.
@@ -17,11 +17,14 @@ You are given a working directory, which is named after the contract
   arbitrary provenance — do not assume a specific compiler or
   version. Always check.
 
-- The Solm specification of the contract, including its storage
+  For Vyper, the source is `.vy` plus its imported `.vy`/`.vyi` closure. Read the
+  compiler kind in `<Name>.build.json` before choosing any compiler-specific lemma.
+
+- The Stele specification of the contract, including its storage
   layout. (file `Spec.lean`)
 
 - A correctness file stating the top-level theorem with a `sorry`
-  placeholder. (file `Correct.lean`)
+  placeholder and a proof scaffold. (file `Correct.lean`)
 
 The top-level theorem is the contract refinement
 
@@ -42,11 +45,6 @@ and the correctness of the runtime code:
 runtimeRefinement <config> <runtimeBytecode> <contract>
 ```
 
-It has no `I.perm = true` precondition, so it also covers calls entered
-with STATICCALL: at a path's first SSTORE / LOG / value-carrying CALL
-both sides halt with a static-mode violation (see
-`Misc/Template/Function.lean`).
-
 For a contract with immutables, the deployed runtime depends on the values the constructor sets,
 and the theorem is assembled with `contractRefinement.of_runtime` instead (Section 7).
 
@@ -62,53 +60,75 @@ user, and do not continue until it is resolved.
 You should only work in the `<Name>/` directory. Do not make changes
 outside of it.
 
+Keep in mind: Solidity's return routine for dynamic arrays may overflow. If this
+operation is present in the contract, the refinement relation will require the
+well-formedness condition to rule out overflowing states: 224 + 64 *
+(solcSlotWordAt X sigma I).toNat < UInt256.size, where X is the dynamic array's
+base slot.
+
+Keep in mind: the runtime relation can also carry a gas bound
+(`runtimeRefinementWithWF <wf> <gasBound> …`, `noGasBound` when there is none). Use one only
+when it lets you abstract a low-level implementation detail (e.g. gas-dependent freePtr arithmetic
+that cannot overflow below the bound), and choose the loosest bound that does. The bound is not
+free: for calls within the bound, every path on which the abstracted detail does not hold
+(e.g. the freePtr arithmetic would overflow) must be shown to end in the `outOfGas` refinement
+case. Only bounds above 2^24 are acceptable.
+
 ## 1. Overall Workflow
 
 ### Phase 0: Evaluate the spec and bytecode
 
-Run the differential suite first:
 
-```
-lake exe solm-difftest --only <Name> --count 50
-```
+Do not rerun the differential test suite. This is a HARD RULE.
 
-(`Tests/DiffTest/README.md`; the target comes from `scripts/scaffold.py difftest`). It runs
-the bytecode and the Solm spec on generated calls and compares them with the refinement
-relation. Every `DISAGREE` or `spec stuck` must be understood and, when it is a spec error,
-fixed before any proof work; an inconclusive case (out of gas, out of fuel, allocation cap)
-imposes nothing. The `successful/cases` line shows which transitions the cases reach on a
-successful path; a transition at `0/N` has only been tested on its revert paths, so raise the
-count or add the words its guards need to `DiffTarget.lean`. The suite complements the audit
-below, it does not replace it: it cannot see paths the generator never reaches.
-
-Do a thorough read of the Solm spec and the bytecode. Check that the
-Solm spec matches the bytecode's storage reads/writes, arithmetic, and
+Do a thorough read of the Stele spec and the bytecode. Check that the
+Stele spec matches the bytecode's storage reads/writes, arithmetic, and
 control flow. If you find a mismatch, report it immediately. After
-this pass, you should be confident that the Solm spec is a faithful
+this pass, you should be confident that the Stele spec is a faithful
 model of the bytecode, and that it is possible to prove the
 refinement.
 
+Check `config.externalABI` against the bytecode's ABI handling. Its
+`decodeCalldata?` receives the full calldata, including the four-byte
+selector; selector matching is handled separately by dispatch. Its
+`decodeValue?` handles explicit `abi.decode` expressions. The named
+external-call return decoder is `decode?`, which may follow a different
+callee ABI. The default calldata and value decoders are modern; use
+`externalABI.withMode` or override the individual decoders when the
+compiler requires different behavior.
+
+For Vyper, use `.withMode DecodeMode.vyper` for ordinary entry calldata. Where the source
+declares `DynArray[T, N]`, `Bytes[N]`, or `String[N]` input, use source-derived
+`ABI.VyperABIFunction` entries and `.withVyperABI` to reject values beyond the bound.
+Include each selector created by default arguments and prove the omitted arguments take their
+source defaults. Check constructor decoding and explicit `abi_decode` independently; the entry
+adapter does not cover them. Check Vyper storage with `vyperStorage!` or
+`vyperBoundedStorage!`, including the compiler's layout for mappings, strings, and arrays.
+The generated full proof skeleton is solc-specific; a Vyper proof must assemble dispatch,
+constructor, and immutable lemmas from its actual blocks. `Examples/VyperERC20` and
+`Examples/VyperImmutable` are starting points, not claims that every Vyper shape is supported.
+
 Things to watch for:
 
-- The Solm spec, in general, must model storage reads/writes in the
+- The Stele spec, in general, must model storage reads/writes in the
   order the bytecode performs them. This is not a hard rule, for all
   data types. But for mapping, array, string and byte types this is
   important as otherwise you will have to introduce a slot noncollision
   axiom to prove the refinement, which is not allowed.
 
-  If you find that you need such an axiom, evaluate whether the Solm can 
+  If you find that you need such an axiom, evaluate whether the Stele can
   be written 
   differently to exactly model the bytecode's storage reads/writes. 
-  If it can, rewrite the Solm spec to do so.
+  If it can, rewrite the Stele spec to do so.
   
   Only add such axiom if the compiler has done an optimization that cannot 
-  be reflected in the Solm spec and the proof cannot be completed without it.
+  be reflected in the Stele spec and the proof cannot be completed without it.
 
-- The Solm spec must use helper functions where possible and not
+- The Stele spec must use helper functions where possible and not
   inline the same logic in multiple places. This is important for
   modularity and reusability of proofs.
 
-- The storage layout in the Solm spec must match the storage layout in
+- The storage layout in the Stele spec must match the storage layout in
   the bytecode. If there is a mismatch, report it immediately.
 
 ### Phase 1: Scaffold the proof
@@ -118,6 +138,8 @@ includes the dispatch skeleton, the per-function `…BodyCore` lemmas,
 and the revert paths. The top-level theorem should type-check and
 route correctly before the leaves are done. Reuse the available
 machinery drivers for dispatching (e.g., `solcDispatchReachBody`).
+For Vyper, establish the dispatcher shape from its own bytecode before using a solc-specific
+driver. Prove all selector variants, including default-argument overloads.
 
 1. Add the dispatch handler to the main theorem first. Wire the full
    dispatcher (`by_cases` on `callvalue`/`size`/each selector, routing
@@ -157,19 +179,22 @@ internal and external calls.
 The proof of each function follows, roughly, four phases:
 
 
-1. ABI decode. Prove decode succeeds for valid calldata and fails on
+1. ABI decode. State the facts using `config.externalABI.decodeCalldata?`.
+   Prove decode succeeds for valid calldata and fails on
    each malformed branch (short / huge / non-canonical address
    lemmas). Use the `decodeCalldata_*` library lemmas
    (`decodeCalldata_address_ok`, `decodeCalldata_uint256_ok`,
    `…_none_short`, `…_none_huge`, `…_none_noncanon`). One `simpa …
    using <lib lemma>` per branch (see `BalanceOf.lean`).
+   For Vyper bound-bearing inputs, also prove the at-bound success and over-bound failure
+   branches through `.withVyperABI`; use the schema's selector and parameter list.
 
 2. Add selector theorems for the public selectors in `Selectors.lean`.
    Keep any canonical-signature normalization lemma private or inline; expose only the selector
    theorem unless another proof genuinely reuses the signature equality.
 
-3. Solm source body. Prove the `ExecTransitionBody` result (return
-   value / storage update / revert) using `Reasoning.SolmBody`
+3. Stele source body. Prove the `ExecTransitionBody` result (return
+   value / storage update / revert) using `Reasoning.SteleBody`
    (`ExecStmt`/`ExecBlock` combinators, `evalExpr_*`, `requireStep`,
    `returns`). For mutating functions, split success and revert
    branches early.
@@ -225,7 +250,7 @@ If the user explicitly authorizes a contract-specific assumption that cannot be 
 EVMLean, the concrete artifact, or kernel evaluation, create `Trusted.lean` to isolate it. Record
 the assumption and its justification there, and import it only in modules that use it.
 
-Do not introduce new axioms about EVM semantics, Solm semantics, or
+Do not introduce new axioms about EVM semantics, Stele semantics, or
 mapping-slot noncollision. If you think you need one, stop, report the
 situation, and ask for guidance.
 
@@ -240,8 +265,8 @@ The proof of a contract `<Name>` goes in a directory `<Name>/`:
 
 | File | Role |
 |---|---|
-| `<Name>.sol` | the Solidity source + the exact compiler invocation used. |
-| `Spec.lean` | the Solm `ContractDecl`, storage layout, `Config`. |
+| `<Name>.sol` or `<Name>.vy` | the pinned source closure + the exact compiler invocation used. |
+| `Spec.lean` | the Stele `ContractDecl`, storage layout, `Config`. |
 | `Bytecode.lean` | runtime bytecode + verified jump destinations. |
 | `Selectors.lean` | selector table, `selIs`/`selWord`, and ABI selector theorems. |
 | `Trusted.lean` (when required) | explicitly authorized contract-specific assumptions. |
@@ -251,8 +276,8 @@ The proof of a contract `<Name>` goes in a directory `<Name>/`:
 | `Constructor.lean` | the equivalence proof of the contract's constructor. |
 | `RuntimeBlocks_NNN.lean` | provided: proved `RD` summaries of the runtime blocks (sharded). Never edit. |
 | `CreationBlocks_NNN.lean` | provided: proved `RD` summaries of the initcode blocks (sharded). Never edit. |
-| `Immutables.lean` (with immutables) | the solc `immutableReferences` table and the immutables valuation. |
-| `ImmutableCode.lean` (with immutables) | the `Layout` of the runtime template's immutable sites. |
+| `Immutables.lean` (with immutables) | the solc patch-site table or Vyper code-suffix layout and the immutables valuation. |
+| `ImmutableCode.lean` (with immutables) | the `Layout` of solc patch sites or Vyper's appended runtime words. |
 | `Correct.lean` | thin top-level: dispatcher driver + per-function routing + revert paths + constructor packaging + the final `theorem <name>Correct`. |
 
 
@@ -281,7 +306,7 @@ The proof of a contract `<Name>` goes in a directory `<Name>/`:
 ## 4. Reasoning library and reuse
 
 `Reasoning/` is a library of abstractions, lemmas, and tactics for
-proving EVM bytecode correct against its Solm spec. Useful reads:
+proving EVM bytecode correct against its Stele spec. Useful reads:
 
 - `Reasoning/STRUCTURE.md` — the library map: where every kind of fact
   lives, import layering, and the gotchas (native_decide for decode,
@@ -390,7 +415,7 @@ Note that not all examples are derived with the same compiler,
 version, and optimization settings. Always check the source and
 bytecode for your contract.
 
-The examples may lag behind recent Solm changes (they are migrated in
+The examples may lag behind recent Stele changes (they are migrated in
 batches). If an example does not compile, use it as a *reading*
 reference for trace/dispatch/proof patterns only — do not build it and
 do not copy its conventions blindly. In particular, examples written
@@ -425,7 +450,7 @@ Function calls should be proven modularly. In particular:
   `RD.solcStaticcall`, their `…DepthLimit`/`…InsufficientBalance`
   siblings, …), which produce the Θ witness, then continue with the
   summary that resumes after the call. That witness is what you carry
-  over to the Solm side: calldata/target
+  over to the Stele side: calldata/target
   lemmas prove the bytecode memory slice matches the source ABI call;
   then callCoincides or direct callViaEVM.callMade turns that into the
   source-side call relation, with account-map transport handled by
@@ -461,7 +486,7 @@ Function calls should be proven modularly. In particular:
   `Reveal` function and shows how to prove loops by induction: state
   the invariant over the loop counter, prove a single reusable
   body-step lemma, and close the loop by induction on the remaining
-  iterations, on both the Solm side and the bytecode trace.
+  iterations, on both the Stele side and the bytecode trace.
 ---
 
 ## 7. Immutables
@@ -477,18 +502,18 @@ theorem <name>ContractCorrect : contractRefinement config <initcode> contract :=
   .of_runtime <name>ConstructorCorrect <name>RuntimeCorrect
 ```
 
-(`contractRefinementWF <wf> …` with a storage precondition), with
+(`contractRefinementWF <wf> <gasBound> …` with a storage precondition or gas bound), with
 `runtimeCodeOf := immutableLayout.deployed <template>` from `Reasoning/Immutables.lean`: the
-template with every immutable site patched with `wordsOf imms`, each immutable's word under Solm's
+template with every immutable site patched with `wordsOf imms`, each immutable's word under Stele's
 `valueToWord`. Never define a contract-specific `runtimeCodeOf`, word map, or patch function.
 
 **Layout.**
-- `Immutables.lean`: `immutableReferences : List (Ident × List Nat)`, each immutable's Solm name
+- `Immutables.lean`: `immutableReferences : List (Ident × List Nat)`, each immutable's Stele name
   and its offsets copied verbatim from solc's `evm.deployedBytecode.immutableReferences`, listed
   in the order the constructor writes them; and a valuation `structure <Name>Immutables` with
   EVM-level fields (`EVM.Address`, `EVM.Word`, …), used by the runtime proofs.
 - `ImmutableCode.lean`: `immutableLayout : Layout`, derived from the table (width 32, key = the
-  Solm name).
+  Stele name).
 - `Common.lean`: `immStore v : Store`; `@[simp] wordsOf_immStore_<x>` for each immutable (via
   `wordsOf_of_get`); `deployedRuntime v := immutableLayout.deployed <template> (immStore v)`;
   `evalImmutable_<x>`; `immutableLayout_keys` (every site key is a declared immutable, by
@@ -526,7 +551,7 @@ template with every immutable site patched with `wordsOf imms`, each immutable's
 1. Deployment shape: `config.selfDeployment <initcode> args = some d → ∃ <typed args>,
    args = [...] ∧ <range facts> ∧ d = <initcode> ++ <encoded args>`.
 2. The final immutables of each source path, built from `initialImmutables contract` by `insert`
-   (an immutable a path does not assign keeps its zero value), with `get?` lemmas. The Solm body
+   (an immutable a path does not assign keeps its zero value), with `get?` lemmas. The Stele body
    assigns them with `ExecStmt.setImmutable` (value, declared type, `elemValueFits`).
 3. The EVM trace, chained from the creation summaries, ends in `RDret … (deployedRuntime {…})`:
    the template `CODECOPY` puts the template
@@ -538,8 +563,8 @@ template with every immutable site patched with `wordsOf imms`, each immutable's
    immutable's word (`deployed_eq_deployedRuntime`, by `Layout.runtime_congr` and
    `immutableLayout_keys`); per path, `wordsOf_of_get (<…>_get_<x> …) rfl` gives each word.
 5. Close each success case with
-   `.execution hΞ hsolm (ctorResultEquiv.success rfl rfl rfl (<deployed lemma>).symm) (<…>_fit …)`,
-   and each revert with `.execution hΞ hsolm (ctorResultEquiv.revert rfl rfl) trivial`.
+   `.execution hΞ hstele (ctorResultEquiv.success rfl rfl rfl (<deployed lemma>).symm) (<…>_fit …)`,
+   and each revert with `.execution hΞ hstele (ctorResultEquiv.revert rfl rfl) trivial`.
 
 ---
 
@@ -671,7 +696,7 @@ re-check it against the disassembly first.
   they are resolved.
 
 - Edit `Spec.lean` only if you are certain it is wrong, and report the
-  change immediately. Do not change the given bytecode or Solidity
+  change immediately. Do not change the given bytecode or Solidity/Vyper
   source.
 
 - Never edit `Bytecode.lean`. If you suspect it is wrong, report it

@@ -3,7 +3,7 @@ import Reasoning.ABIViews
 
 /-! Shared memory and ABI facts for an external call with one bytes32 argument. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
 

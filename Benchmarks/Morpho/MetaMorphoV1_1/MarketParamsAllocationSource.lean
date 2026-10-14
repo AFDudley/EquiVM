@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.AllocationSource
 
 /-! Source execution of the market-parameter reader with its compiled reservations. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory

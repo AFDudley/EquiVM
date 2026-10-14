@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.StringEncoderMemory
 
 /-! Dynamic string ABI encoding by two header stores, MCOPY, and a trailing zero store. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 

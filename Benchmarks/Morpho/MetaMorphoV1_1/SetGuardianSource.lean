@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.PackedDeletion
 
 /-! The guardian setter stores its value, emits its event, and clears the pending record. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 
@@ -14,13 +14,13 @@ def setGuardianFrame (imms : Store) (value : AccountAddress) : Frame :=
     immutables := imms }
 
 def setGuardianValueState (evm : EVM.State) (value : AccountAddress) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨12⟩
-    (setAddressOffset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨12⟩
+    (setAddressOffset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩)
       (UInt256.ofNat value.val))
 
 def setGuardianState (evm : EVM.State) (value : AccountAddress) : EVM.State :=
   let changed := setGuardianValueState evm value
-  Solm.EVM.storageStore changed changed.executionEnv.codeOwner ⟨15⟩ ⟨0⟩
+  Stele.EVM.storageStore changed changed.executionEnv.codeOwner ⟨15⟩ ⟨0⟩
 
 def setGuardianFinalFrame (evm : EVM.State) (imms : Store) (value : AccountAddress) : Frame :=
   { contract := contract

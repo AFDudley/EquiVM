@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.AccessControl
 
 /-! The nonzero-address branch of the shared ERC20 update helper. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 
@@ -101,7 +101,7 @@ theorem balanceUpdateTailReturns (imms : Store) (evm : State)
   have hc : evalExpr? config (balanceUpdateReadFrame imms sender recipient value balance) evm
       (.binary .eq (.var "to") (.cast (.intLit 0) (.elem .address))) = .ok (.bool false) := by
     have h := evalExpr_addressEq (cfg := config)
-      (solm := balanceUpdateReadFrame imms sender recipient value balance) (evm := evm)
+      (stele := balanceUpdateReadFrame imms sender recipient value balance) (evm := evm)
       (a := recipient) (b := ⟨0, by decide⟩)
       (lhs := .var "to") (rhs := .cast (.intLit 0) (.elem .address))
       (by simp [evalExpr?, balanceUpdateReadFrame, balanceUpdateFrame,
@@ -109,7 +109,7 @@ theorem balanceUpdateTailReturns (imms : Store) (evm : State)
       (evalAddressLiteral _ _ _ ⟨0, by decide⟩)
     simpa only [decide_eq_false hto] using h
   refine ExecBlock.consNormal
-    (solm' := balanceUpdateReadFrame imms sender recipient value balance)
+    (stele' := balanceUpdateReadFrame imms sender recipient value balance)
     (evm' := balanceStore evm recipient (balanceWord evm recipient + value))
     (ExecStmt.iteFalse hc ?_) ?_
   · apply ExecBlock.consNormal (ExecStmt.assign (value := uint256Value
@@ -139,7 +139,7 @@ theorem balanceUpdateMoveBody (imms : Store) (evm : State)
   apply ExecFuncBody.execBlockOK
   rw [balanceUpdateFunction_body]
   refine ExecBlock.consNormal
-    (solm' := balanceUpdateReadFrame imms sender recipient value (balanceWord evm sender))
+    (stele' := balanceUpdateReadFrame imms sender recipient value (balanceWord evm sender))
     (evm' := balanceDebitState evm sender value)
     (ExecStmt.iteFalse (by rw [balanceUpdateFromCondition, decide_eq_false hfrom]) ?_) ?_
   · apply (balanceUpdateRead imms evm sender recipient value).run

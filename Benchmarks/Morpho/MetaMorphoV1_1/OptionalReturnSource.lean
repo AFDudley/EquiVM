@@ -3,7 +3,7 @@ import Reasoning.ABIComposite
 
 /-! SafeERC20 accepts an empty result or the canonical ABI Boolean true. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
 

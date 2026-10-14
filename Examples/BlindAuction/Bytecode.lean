@@ -1,9 +1,9 @@
 import Examples.BlindAuction.Spec
-import Solm.Semantics
+import Stele.Semantics
 import Ethereum.Semantics
 import Reasoning.JumpDest
 
-open Solm Ethereum Ethereum.EVM
+open Stele Ethereum Ethereum.EVM
 
 /-! ## `BlindAuction`'s deployed runtime bytecode — **optimizer ON**
 

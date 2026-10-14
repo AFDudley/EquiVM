@@ -1,6 +1,6 @@
 import Benchmarks.Dss.End.Dispatch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 0
@@ -30,7 +30,7 @@ theorem endBagSlotFor_eq (I : ExecutionEnv) :
   rw [keyValueToWord_address_ofNat_mask]
 
 theorem endDecode_bag_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (bagTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (bagTransition.params.map Param.name)
       (transitionSignature bagTransition).paramTypes I.calldata =
         some ((∅ : Store).insert "arg0" (.address (endBagArg I))) := by
   simpa [config, bagTransition, endBagArg] using
@@ -38,7 +38,7 @@ theorem endDecode_bag_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
 
 theorem endDecode_bag_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (bagTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (bagTransition.params.map Param.name)
       (transitionSignature bagTransition).paramTypes I.calldata = none := by
   simpa [config, bagTransition] using
     (decodeCalldata_legacyAddress_none_short (cd := I.calldata) (x := "arg0") hsz4 hshort)
@@ -88,7 +88,7 @@ theorem endBagBodyCoreOk
     (hsz36 : 36 ≤ I.calldata.size) (hsize : I.calldata.size < UInt256.size)
     (hdispatch : dispatchMsg contract I.calldata = some bagTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (bagTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (bagTransition.params.map Param.name)
         (transitionSignature bagTransition).paramTypes I.calldata =
           some ((∅ : Store).insert "arg0" (.address (endBagArg I))))
     (hreach : ∃ k C, RD endBytecode I (Sat256.ofUInt256 g)
@@ -106,7 +106,7 @@ theorem endBagBodyCoreOk
         (.returned { contract := contract, locals := locals }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.int (Int.ofNat (solcSlotWordAt (endBagSlotFor I) σ I).toNat))])) := by
-    simpa [bagTransition, endBagSlotFor, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [bagTransition, endBagSlotFor, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount, locals, key] using
       endUint256GetterBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) locals

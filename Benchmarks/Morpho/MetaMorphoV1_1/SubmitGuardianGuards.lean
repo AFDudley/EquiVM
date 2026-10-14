@@ -4,7 +4,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.RuntimeBlocks_010
 
 /-! Reject unchanged guardians and existing pending updates before selecting the update path. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables metaMorphoV1_1Blocks
 
@@ -13,7 +13,7 @@ namespace Benchmarks.Morpho.MetaMorphoV1_1
 attribute [local irreducible] metaMorphoV1_1Bytecode
 
 def guardianWord (evm : EVM.State) : UInt256 :=
-  UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩) solcAddrMask
+  UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩) solcAddrMask
 
 theorem guardianWord_eq_iff (evm : EVM.State) (value : AccountAddress) :
     guardianWord evm = UInt256.ofNat value.val ↔ guardianAddress evm = value := by

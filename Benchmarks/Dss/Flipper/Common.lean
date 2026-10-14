@@ -8,9 +8,9 @@ import Reasoning.Solc
 import Reasoning.Memory
 import Reasoning.Storage
 import Reasoning.Dispatch
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 import Mathlib.Tactic.IntervalCases
-import Solm.Refine
+import Stele.Refine
 
 /-!
 # MakerDAO/Sky DSS Flipper shared proof foundation
@@ -18,7 +18,7 @@ import Solm.Refine
 Contract-wide selector notation and constants for the optimized Flipper runtime.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -113,7 +113,7 @@ theorem uint48ReturnEncodingMasked (w : UInt256) :
 theorem flipperStorageLocLoad_uint48_offset0 (evm : EVM.State) (slot : UInt256) :
     storageLocLoad evm (uint48Loc slot ⟨0, by decide⟩ (by decide)) =
       .int (Int.ofNat (UInt256.land
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot) uint48Mask).toNat) := by
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot) uint48Mask).toNat) := by
   have h := storageLocLoad_uint_offset0 (evm := evm) (slot := slot)
     (size := (⟨6, by decide⟩ : Fin 33)) (width := (⟨48, by decide⟩ : ABI.BitWidth))
     (hbound := by decide)
@@ -126,7 +126,7 @@ theorem flipperStorageLocLoad_uint48_offset0 (evm : EVM.State) (slot : UInt256) 
 theorem flipperStorageLocLoad_uint48_offset6 (evm : EVM.State) (slot : UInt256) :
     storageLocLoad evm (uint48Loc slot ⟨6, by decide⟩ (by decide)) =
       .int (Int.ofNat (UInt256.land
-        (UInt256.div (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
+        (UInt256.div (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
           uint48Divisor) uint48Mask).toNat) := by
   have h := storageLocLoad_uint_offset (evm := evm) (slot := slot)
     (offset := ⟨6, by decide⟩) (size := (⟨6, by decide⟩ : Fin 33))
@@ -187,8 +187,8 @@ theorem flipperStorageLocStore_uint48_offset0 (evm : EVM.State) (slot val : UInt
     (hval : val.toNat < 2 ^ 48) :
     storageLocStore evm (uint48Loc slot ⟨0, by decide⟩ (by decide))
       (.int (Int.ofNat val.toNat)) =
-      some (Solm.EVM.storageStore evm evm.executionEnv.codeOwner slot
-        (setUint48Offset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot) val)) := by
+      some (Stele.EVM.storageStore evm evm.executionEnv.codeOwner slot
+        (setUint48Offset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot) val)) := by
   unfold storageLocStore storageLocWriteWord uint48Loc
   simp only [valueToWord, wordOfInt_ofNat_toNat, bind, Option.bind, pure]
   congr 2
@@ -196,14 +196,14 @@ theorem flipperStorageLocStore_uint48_offset0 (evm : EVM.State) (slot val : UInt
   show fromBytes'
       (List.take (0 : Fin 32).val _ ++ List.take (6 : Fin 33).val _
         ++ List.drop ((0 : Fin 32).val + (6 : Fin 33).val) _) =
-      (setUint48Offset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
+      (setUint48Offset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
         val).toNat
   rw [show (0 : Fin 32).val = 0 from rfl, show (6 : Fin 33).val = 6 from rfl,
     List.take_zero, List.nil_append]
   rw [fromBytes'_append, fromBytes'_take_wordLE, fromBytes'_drop_wordLE]
   have hwordToNat :=
     setUint48Offset0Word_toNat
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot) val hval
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot) val hval
   rw [hwordToNat]
   rw [List.length_take, (EVM.Word.toBytesLEWithSizeProof val).2]
   norm_num [Nat.pow_add]
@@ -327,8 +327,8 @@ theorem flipperStorageLocStore_uint48_offset6 (evm : EVM.State) (slot val : UInt
     (hval : val.toNat < 2 ^ 48) :
     storageLocStore evm (uint48Loc slot ⟨6, by decide⟩ (by decide))
       (.int (Int.ofNat val.toNat)) =
-      some (Solm.EVM.storageStore evm evm.executionEnv.codeOwner slot
-        (setUint48Offset6Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
+      some (Stele.EVM.storageStore evm evm.executionEnv.codeOwner slot
+        (setUint48Offset6Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
           val)) := by
   unfold storageLocStore storageLocWriteWord uint48Loc
   simp only [valueToWord, wordOfInt_ofNat_toNat, bind, Option.bind, pure]
@@ -337,20 +337,20 @@ theorem flipperStorageLocStore_uint48_offset6 (evm : EVM.State) (slot val : UInt
   show fromBytes'
       (List.take (6 : Fin 32).val _ ++ List.take (6 : Fin 33).val _
         ++ List.drop ((6 : Fin 32).val + (6 : Fin 33).val) _) =
-      (setUint48Offset6Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
+      (setUint48Offset6Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
         val).toNat
   rw [show (6 : Fin 32).val = 6 from rfl, show (6 : Fin 33).val = 6 from rfl]
   rw [fromBytes'_append, fromBytes'_append, fromBytes'_take_wordLE, fromBytes'_take_wordLE,
     fromBytes'_drop_wordLE]
   have hwordToNat :=
     setUint48Offset6Word_toNat
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot) val hval
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot) val hval
   rw [hwordToNat]
   rw [show 256 ^ 6 = (2 : Nat) ^ 48 by norm_num [Nat.pow_add]]
   rw [Nat.mod_eq_of_lt hval]
   rw [List.length_append]
   rw [List.length_take, (EVM.Word.toBytesLEWithSizeProof
-    (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).2]
+    (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).2]
   rw [List.length_take, (EVM.Word.toBytesLEWithSizeProof val).2]
   norm_num [Nat.pow_add]
   ring_nf
@@ -402,7 +402,7 @@ theorem flipperAuthGuardEval_true {σ σ₀ A I} {g : Sat256} {locals : Store}
   have her := flipperCallerWardsEvaledRef_ok (σ := σ)
     (σ₀ := σ₀) (A := A) (I := I) (g := g) (locals := locals) hbase
   have hload :
-      Solm.EVM.storageLoad (initState σ σ₀ g A I) I.codeOwner
+      Stele.EVM.storageLoad (initState σ σ₀ g A I) I.codeOwner
         (flipperCallerWardsSlot I) = ⟨1⟩ := by
     simpa [solcSlotWordAt] using hauth
   rw [evalExpr?]
@@ -430,7 +430,7 @@ theorem flipperAuthGuardEval_false {σ σ₀ A I} {g : Sat256} {locals : Store}
       (.binary .eq (.storage (wardsRef sender)) (.intLit 1)) = .ok (.bool false) := by
   have her := flipperCallerWardsEvaledRef_ok (σ := σ)
     (σ₀ := σ₀) (A := A) (I := I) (g := g) (locals := locals) hbase
-  let w := Solm.EVM.storageLoad (initState σ σ₀ g A I) I.codeOwner
+  let w := Stele.EVM.storageLoad (initState σ σ₀ g A I) I.codeOwner
     (flipperCallerWardsSlot I)
   have hload : w ≠ ⟨1⟩ := by
     intro hw
@@ -465,7 +465,7 @@ theorem flipperAddressGetterBodyReturns (evm : EVM.State) (locals : Store)
     ExecTransitionBody config contract evm locals (nonpayable ++ [ .return [(.storage ref)] ])
       (.returned { contract := contract, locals := locals } evm
         (some [(.address (AccountAddress.ofNat
-          (UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
+          (UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
             solcAddrMask).toNat))])) := by
   simpa [nonpayable] using
     nonpayableReturnExprBodyReturns (cfg := config) (contract := contract) h (by
@@ -482,7 +482,7 @@ theorem flipperUint256GetterBodyReturns (evm : EVM.State) (locals : Store)
     ExecTransitionBody config contract evm locals (nonpayable ++ [ .return [(.storage ref)] ])
       (.returned { contract := contract, locals := locals } evm
         (some [(.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot).toNat))])) := by
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot).toNat))])) := by
   simpa [nonpayable] using
     nonpayableReturnExprBodyReturns (cfg := config) (contract := contract) h (by
       rw [evalExpr_storage_scalar (hbackend := rfl) (hbase := hbase) (her := her) (hty := hty) (hloc := hloc)]
@@ -498,7 +498,7 @@ theorem flipperBytes32GetterBodyReturns (evm : EVM.State) (locals : Store)
     ExecTransitionBody config contract evm locals (nonpayable ++ [ .return [(.storage ref)] ])
       (.returned { contract := contract, locals := locals } evm
         (some [(.fixedBytes bytes32Width
-          (EVM.Word.toBytesBE (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)))])) := by
+          (EVM.Word.toBytesBE (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)))])) := by
   simpa [nonpayable] using
     nonpayableReturnExprBodyReturns (cfg := config) (contract := contract) h (by
       rw [evalExpr_storage_scalar (hbackend := rfl) (hbase := hbase) (her := her) (hty := hty) (hloc := hloc)]
@@ -515,7 +515,7 @@ theorem flipperUint48Offset0GetterBodyReturns (evm : EVM.State) (locals : Store)
     ExecTransitionBody config contract evm locals (nonpayable ++ [ .return [(.storage ref)] ])
       (.returned { contract := contract, locals := locals } evm
         (some [(.int (Int.ofNat
-          (UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
+          (UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
             uint48Mask).toNat))])) := by
   simpa [nonpayable] using
     nonpayableReturnExprBodyReturns (cfg := config) (contract := contract) h (by
@@ -534,7 +534,7 @@ theorem flipperUint48Offset6GetterBodyReturns (evm : EVM.State) (locals : Store)
       (.returned { contract := contract, locals := locals } evm
         (some [(.int (Int.ofNat
           (UInt256.land (UInt256.div
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot) uint48Divisor)
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot) uint48Divisor)
             uint48Mask).toNat))])) := by
   simpa [nonpayable] using
     nonpayableReturnExprBodyReturns (cfg := config) (contract := contract) h (by
@@ -547,7 +547,7 @@ theorem flipperAddressGetterBodyCore
     (hcode : I.code = flipperBytecode)
     (hdispatch : dispatchMsg contract I.calldata = some transition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (transition.params.map Param.name)
+      config.externalABI.decodeCalldata? (transition.params.map Param.name)
         (transitionSignature transition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD flipperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) entry [sel]
@@ -590,7 +590,7 @@ theorem flipperBytes32GetterBodyCore
     (hcode : I.code = flipperBytecode)
     (hdispatch : dispatchMsg contract I.calldata = some transition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (transition.params.map Param.name)
+      config.externalABI.decodeCalldata? (transition.params.map Param.name)
         (transitionSignature transition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD flipperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) entry [sel]
@@ -632,7 +632,7 @@ theorem flipperUint256GetterBodyCore
     (hcode : I.code = flipperBytecode)
     (hdispatch : dispatchMsg contract I.calldata = some transition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (transition.params.map Param.name)
+      config.externalABI.decodeCalldata? (transition.params.map Param.name)
         (transitionSignature transition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD flipperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) entry [sel]
@@ -937,7 +937,7 @@ theorem flipperUint48Offset0GetterBodyCore
     (hcode : I.code = flipperBytecode)
     (hdispatch : dispatchMsg contract I.calldata = some transition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (transition.params.map Param.name)
+      config.externalABI.decodeCalldata? (transition.params.map Param.name)
         (transitionSignature transition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD flipperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) entry [sel]
@@ -978,7 +978,7 @@ theorem flipperUint48Offset6GetterBodyCore
     (hcode : I.code = flipperBytecode)
     (hdispatch : dispatchMsg contract I.calldata = some transition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (transition.params.map Param.name)
+      config.externalABI.decodeCalldata? (transition.params.map Param.name)
         (transitionSignature transition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD flipperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) entry [sel]

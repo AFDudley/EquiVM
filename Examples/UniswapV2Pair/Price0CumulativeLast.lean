@@ -1,7 +1,7 @@
 import Examples.UniswapV2Pair.Dispatch
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -12,14 +12,14 @@ namespace UniswapV2Pair
 def price0CumulativeLastWord (σ : AccountMap) (I : ExecutionEnv) : UInt256 :=
   solcSlotWordAt ⟨9⟩ σ I
 
-/-- The Solm `price0CumulativeLast()` body returns the uint256 stored in slot 9. -/
+/-- The Stele `price0CumulativeLast()` body returns the uint256 stored in slot 9. -/
 theorem uniswapPrice0CumulativeLastBodyReturns (evm : EVM.State) (locals : Store)
     (h : evm.executionEnv.weiValue = ⟨0⟩)
     (hlocals : locals.get? "price0CumulativeLast" = none) :
     ExecTransitionBody config contract evm locals price0CumulativeLastTransition.body
       (.returned { contract := contract, locals := locals } evm
         (some [(.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨9⟩).toNat))])) := by
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨9⟩).toNat))])) := by
   simpa [price0CumulativeLastTransition] using
     uniswapUint256GetterBodyReturns (slot := ⟨9⟩) (ref := price0CumulativeLastRef)
       (er := ({ base := "price0CumulativeLast", steps := [] } : EvaledStorageRef)) evm locals h
@@ -41,9 +41,9 @@ theorem uniswapX_price0CumulativeLast {σ σ₀ A I} {g : Sat256} {sel : UInt256
     (by jump_dest) (by jump_dest)
 
 theorem uniswapDecode_price0CumulativeLast {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (price0CumulativeLastTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (price0CumulativeLastTransition.params.map Param.name)
       (transitionSignature price0CumulativeLastTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 /-- `price0CumulativeLast()` body core, parameterized by dispatcher/decode facts. -/
@@ -52,7 +52,7 @@ theorem uniswapPrice0CumulativeLastBodyCore
     (hcode : I.code = uniswapV2PairBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some price0CumulativeLastTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (price0CumulativeLastTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (price0CumulativeLastTransition.params.map Param.name)
         (transitionSignature price0CumulativeLastTransition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD uniswapV2PairBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1025⟩ [sel]
@@ -65,7 +65,7 @@ theorem uniswapPrice0CumulativeLastBodyCore
         (.returned { contract := contract, locals := ∅ }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.int (Int.ofNat (price0CumulativeLastWord σ I).toNat))])) := by
-    simpa [price0CumulativeLastWord, solcSlotWordAt, solcSlotWord, initState, Solm.EVM.storageLoad,
+    simpa [price0CumulativeLastWord, solcSlotWordAt, solcSlotWord, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       uniswapPrice0CumulativeLastBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅

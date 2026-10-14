@@ -1,11 +1,11 @@
 import Examples.Pow.Spec
-import Solm.Semantics
+import Stele.Semantics
 import Ethereum.Semantics
 import Reasoning.JumpDest
 
 /-! # Pow — deployed runtime bytecode, selector, and jump destinations. -/
 
-open Solm Ethereum Ethereum.EVM
+open Stele Ethereum Ethereum.EVM
 
 def powBytecode : ByteArray :=
   ⟨#[96, 128, 96, 64, 82, 52, 128, 21, 97, 0, 15, 87, 95, 95, 253, 91, 80, 96, 4, 54, 16, 97, 0, 41,
@@ -31,10 +31,10 @@ set_option maxHeartbeats 0 in
 set_option maxRecDepth 1000000 in
 /-- `keccak("pow2(uint256)")[0:4] = 0x442b7ffb`. -/
 theorem powSelectorBytes :
-    (KEC (String.toByteArray (Solm.transitionSigStr Pow.powTransition))).extract 0 4
+    (KEC (String.toByteArray (Stele.transitionSigStr Pow.powTransition))).extract 0 4
       = ⟨#[0x44, 0x2b, 0x7f, 0xfb]⟩ := by
-  have hsig : Solm.transitionSigStr Pow.powTransition = "pow2(uint256)" := by
-    simp [Solm.transitionSigStr, ABI.printSignature, transitionSignature,
+  have hsig : Stele.transitionSigStr Pow.powTransition = "pow2(uint256)" := by
+    simp [Stele.transitionSigStr, ABI.printSignature, transitionSignature,
       Pow.powTransition, Pow.uint256, ABI.abiToSigStr, ABI.elemToSigStr,
       ABI.intTypeToSigStr, show Nat.repr 256 = "256" by decide +kernel]
     decide +kernel

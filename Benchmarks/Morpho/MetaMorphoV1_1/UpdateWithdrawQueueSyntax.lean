@@ -1,10 +1,10 @@
 import Benchmarks.Morpho.MetaMorphoV1_1.Spec
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 import Reasoning.ABI
 
 /-! The queue update's two loops and its explicit allocation steps. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 

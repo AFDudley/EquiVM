@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.BalanceMutation
 
 /-! Consume a nonce with wrapping increment, including static execution. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 
@@ -12,10 +12,10 @@ def nonceSlot (owner : AccountAddress) : UInt256 :=
   solcMappingSlot ⟨7⟩ (UInt256.ofNat owner.toNat)
 
 def nonceWord (evm : State) (owner : AccountAddress) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (nonceSlot owner)
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (nonceSlot owner)
 
 def consumeNonceState (evm : State) (owner : AccountAddress) : State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (nonceSlot owner) (nonceWord evm owner + ⟨1⟩)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (nonceSlot owner) (nonceWord evm owner + ⟨1⟩)
 
 def useNonceFrame (imms : Store) (owner : AccountAddress) : Frame :=
   ⟨contract, (∅ : Store).insert "owner" (.address owner), imms⟩
@@ -55,7 +55,7 @@ theorem nonceWriteSource (evm : State) (locals imms : Store) (owner : AccountAdd
     assignStorageRef? config ⟨contract, locals, imms⟩ evm .storage
       ⟨"_nonces", [.mindex (.var "owner")]⟩ (uint256Value value) =
       .ok (⟨contract, locals, imms⟩,
-        Solm.EVM.storageStore evm evm.executionEnv.codeOwner (nonceSlot owner) value) := by
+        Stele.EVM.storageStore evm evm.executionEnv.codeOwner (nonceSlot owner) value) := by
   apply assignStorageRef_storage_scalar_value
     (er := ⟨"_nonces", [.mindex (.address owner)]⟩)
     (ty := .elem (.int (.uint ⟨256, by decide⟩))) hbase

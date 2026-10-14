@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.SetCapEventSource
 
 /-! Preservation of the cap setter's locals across its enabled-market branch. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 

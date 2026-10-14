@@ -2,17 +2,17 @@ import Benchmarks.Morpho.MetaMorphoV1_1.MarketRemovalStorage
 
 /-! Pending-cap timestamp reads and the explicit uint184 value cast. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 
 def acceptCapValue (evm : State) (id : UInt256) : UInt256 :=
-  UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (solcMappingSlot ⟨16⟩ id))
+  UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (solcMappingSlot ⟨16⟩ id))
     (UInt256.ofNat (2 ^ 184 - 1))
 
 theorem acceptCapValue_toNat (evm : State) (id : UInt256) :
     (acceptCapValue evm id).toNat =
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (solcMappingSlot ⟨16⟩ id)).toNat % 2 ^ 184 := by
   rw [acceptCapValue, uland_toNat,
     UInt256.toNat_ofNat_of_lt (by decide : 2 ^ 184 - 1 < UInt256.size)]
@@ -65,7 +65,7 @@ theorem pendingCapValueCastRead {frame : Frame} {evm : State} {id : UInt256} {in
   have hv : evalExpr? config frame evm
       (.storage ⟨"pendingCap", [.mindex index, .field "value"]⟩) =
       .ok (uint256Value (UInt256.land
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (solcMappingSlot ⟨16⟩ id))
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (solcMappingSlot ⟨16⟩ id))
         (UInt256.ofNat (2 ^ 192 - 1)))) := by
     apply evalExpr_storage_scalar_value
       (er := ⟨"pendingCap", [.mindex (.fixedBytes abiBytes32Width (EVM.Word.toBytesBE id)),
@@ -98,7 +98,7 @@ theorem pendingCapPresent {evm : State} {id : UInt256}
   | none =>
       apply False.elim
       apply hn
-      simp only [marketRemovalPendingAt, Solm.EVM.storageLoad, State.lookupAccount, ha,
+      simp only [marketRemovalPendingAt, Stele.EVM.storageLoad, State.lookupAccount, ha,
         Option.option]
       decide
 

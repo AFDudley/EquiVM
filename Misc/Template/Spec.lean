@@ -1,6 +1,6 @@
 import Benchmarks.Xxx.SpecSyntax
-import Solm.Semantics
-import Solm.SolidityLayout
+import Stele.Semantics
+import Stele.SolidityLayout
 
 /-!
 # Xxx spec assembly (TEMPLATE) — derived, not authored
@@ -13,11 +13,11 @@ storage layout, the external-call ABI, and the `Config`.  Nothing here restates 
 `Benchmarks/Dss/Pot/Spec.lean` — and `SpecSyntax.lean` proves `rfl`-equality against it.)
 -/
 
-open Solm ABI
+open Stele ABI
 
 namespace Benchmarks.Xxx
 
-/-! ## The contract AST in Sol⁻ -/
+/-! ## The contract AST in Stele -/
 
 def contract : ContractDecl := Syntax.contractSyntax
 
@@ -54,7 +54,8 @@ def storageLayout : StorageLayout := solidityStorageLayout storageLayoutRaw
 /-! ## Config -/
 
 -- TODO for contracts with external calls: a real `ExternalCallABI` with the callee selectors
--- (cf. `Benchmarks/EAS/Attester/Spec.lean`); `abiDecodeMode` per compiler version.
+-- (cf. `Benchmarks/EAS/Attester/Spec.lean`); use `externalABI.withMode` for the
+-- compiler's standard calldata and explicit-value decoders.
 def config : Config :=
   { storage := storageLayout
     externalABI := defaultExternalCallABI

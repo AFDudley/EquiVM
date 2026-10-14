@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.ExtSloadsCall
 
 /-! Couple the recovery STATICCALL to the identical source precompile invocation. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1

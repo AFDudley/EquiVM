@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Flopper.Dispatch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Flopper
 
@@ -10,9 +10,9 @@ def begWord (σ : AccountMap) (I : ExecutionEnv) : UInt256 :=
   solcSlotWordAt ⟨4⟩ σ I
 
 theorem flopperDecode_beg {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (begTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (begTransition.params.map Param.name)
       (transitionSignature begTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 theorem flopperReachBegBody {σ σ₀ A I} {g : Sat256}
@@ -58,7 +58,7 @@ theorem flopperBegBodyCore
     (hcode : I.code = flopperBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some begTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (begTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (begTransition.params.map Param.name)
         (transitionSignature begTransition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD flopperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨636⟩ [sel]
@@ -70,7 +70,7 @@ theorem flopperBegBodyCore
         (.returned { contract := contract, locals := ∅ }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.int (Int.ofNat (begWord σ I).toNat))])) := by
-    simpa [begTransition, begWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [begTransition, begWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       flopperUint256GetterBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅

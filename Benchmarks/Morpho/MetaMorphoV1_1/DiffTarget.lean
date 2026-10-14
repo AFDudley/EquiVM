@@ -1,11 +1,11 @@
-import Solm.DiffTest.Harness
+import Stele.DiffTest.Harness
 import Benchmarks.Morpho.MetaMorphoV1_1.Spec
 import Benchmarks.Morpho.MetaMorphoV1_1.Bytecode
 import Benchmarks.Morpho.MetaMorphoV1_1.ImmutableCode
 import Benchmarks.Morpho.MetaMorphoV1_1.Fixtures
 import Benchmarks.Morpho.MorphoBlue.ImmutableCode
 
-open Solm Solm.DiffTest
+open Stele Stele.DiffTest
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 
@@ -28,7 +28,7 @@ def deployedImmutables : Store :=
 def blueRuntime : ByteArray :=
   MorphoBlue.immutableLayout.deployed MorphoBlue.morphoBytecode
     ((∅ : Store).insert "DOMAIN_SEPARATOR"
-      (Solm.fixedBytesFromNat ⟨31, by decide⟩ 106934477169923273382738179085036086255493957540965079108323740421095391485229))
+      (Stele.fixedBytesFromNat ⟨31, by decide⟩ 106934477169923273382738179085036086255493957540965079108323740421095391485229))
 
 /-- IDs checked against mainnet CreateMarket logs; full parameters are pinned in provenance. -/
 def marketWords : List Nat :=

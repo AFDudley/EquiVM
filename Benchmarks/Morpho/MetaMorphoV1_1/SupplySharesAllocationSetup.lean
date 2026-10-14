@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.ExtSloadsCall
 
 /-! Connect the fixed supply-share allocations to the actual external call. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 

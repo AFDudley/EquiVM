@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.Uint184Cast
 
 /-! Selecting a cap branch and entering the shared setter on a decrease. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables metaMorphoV1_1Blocks
 
@@ -24,7 +24,7 @@ theorem marketRemovalCapPresent (evm : State) (id : UInt256)
   | none =>
       apply False.elim
       apply hcap
-      simp only [marketRemovalCap, marketRemovalConfigWord, Solm.EVM.storageLoad,
+      simp only [marketRemovalCap, marketRemovalConfigWord, Stele.EVM.storageLoad,
         State.lookupAccount, ha, Option.option]
       decide
 

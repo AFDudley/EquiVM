@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.Eip712ABI
 
 /-! Final header stores and the empty extensions tail of the domain return buffer. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Reasoning.Theory
 

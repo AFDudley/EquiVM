@@ -3,7 +3,7 @@ import Reasoning.ExternalCall
 
 /-! Share one actual STATICCALL result between the source and bytecode executions. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
 

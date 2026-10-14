@@ -3,14 +3,14 @@ import Benchmarks.Morpho.MetaMorphoV1_1.PendingTimelockMutation
 
 /-! Packed cap, enablement, and timestamp fields used when scheduling market removal. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 
 set_option maxRecDepth 2000
 
 def marketRemovalConfigWord (evm : State) (id : UInt256) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (solcMappingSlot ⟨13⟩ id)
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (solcMappingSlot ⟨13⟩ id)
 
 def marketRemovalRemovableAt (evm : State) (id : UInt256) : UInt256 :=
   UInt256.shiftRight (marketRemovalConfigWord evm id) ⟨192⟩
@@ -23,7 +23,7 @@ def marketRemovalEnabledWord (evm : State) (id : UInt256) : UInt256 :=
 
 def marketRemovalPendingAt (evm : State) (id : UInt256) : UInt256 :=
   UInt256.shiftRight
-    (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (solcMappingSlot ⟨16⟩ id)) ⟨192⟩
+    (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (solcMappingSlot ⟨16⟩ id)) ⟨192⟩
 
 abbrev marketRemovalAllowed (evm : State) (id : UInt256) : Prop :=
   marketRemovalRemovableAt evm id = ⟨0⟩ ∧ marketRemovalCap evm id = ⟨0⟩ ∧
@@ -106,7 +106,7 @@ theorem marketRemovalEnabledRead {frame : Frame} {evm : State} {id : UInt256}
     rw [wordToElemBool, decide_not]
 
 def marketRemovalTimeState (evm : State) (id time : UInt256) : State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (solcMappingSlot ⟨13⟩ id)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (solcMappingSlot ⟨13⟩ id)
     (setPendingTimeHighWord (marketRemovalConfigWord evm id) time)
 
 theorem assignMarketRemovalTime {frame : Frame} {evm : State} {id : UInt256}

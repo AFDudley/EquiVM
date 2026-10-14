@@ -1,8 +1,8 @@
 import Benchmarks.Dss.Clipper.Spec
-import Solm.Notation
+import Stele.Notation
 
 /-!
-# Clipper spec in the Solidity-faithful Solm frontend
+# Clipper spec in the Solidity-faithful Stele frontend
 
 The whole `clip.sol` spec written with `solidity%` and proven definitionally equal to the AST
 spec in `Spec.lean`.  Checked DSMath helpers keep their inlined spec shapes (`(…) as uint256`
@@ -13,7 +13,7 @@ external calls that target `vat` are spliced from the spec (`${checkedExternalCa
 matches `contract.transitions` (selector order).
 -/
 
-open Solm Solm.Notation
+open Stele Stele.Notation
 open Benchmarks.Dss.Clipper.Immutables
 
 namespace Benchmarks.Dss.Clipper.Syntax

@@ -1,6 +1,6 @@
 import Benchmarks.Morpho.MetaMorphoV1_1.DiffTarget
 
-open Solm Solm.DiffTest
+open Stele Stele.DiffTest
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.FixedBlue
 

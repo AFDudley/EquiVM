@@ -2,7 +2,7 @@ import Benchmarks.Dss.Clipper.KickSourcePrefix
 import Benchmarks.Dss.Clipper.GetFeedPriceSuccess
 import Benchmarks.Dss.Clipper.RedoSuccessSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 namespace Benchmarks.Dss.Clipper
@@ -24,18 +24,18 @@ abbrev clipperKickLocalsTop (evmLock : EVM.State) (I : ExecutionEnv)
 
 def clipperKickSourceTopState (evmLock evm : EVM.State)
     (top : UInt256) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner
     (clipperKickSourceSalesBaseSlot evmLock + ⟨4⟩) top
 
 abbrev clipperKickLocalsTip (evmLock evmVals : EVM.State) (I : ExecutionEnv)
     (feedPrice top : UInt256) : Store :=
   (clipperKickLocalsTop evmLock I feedPrice top).insert "_tip"
-    (.int (Int.ofNat (clipperRedoTipSolmWord evmVals).toNat))
+    (.int (Int.ofNat (clipperRedoTipSteleWord evmVals).toNat))
 
 abbrev clipperKickLocalsChip (evmLock evmVals : EVM.State) (I : ExecutionEnv)
     (feedPrice top : UInt256) : Store :=
   (clipperKickLocalsTip evmLock evmVals I feedPrice top).insert "_chip"
-    (.int (Int.ofNat (clipperRedoChipSolmWord evmVals).toNat))
+    (.int (Int.ofNat (clipperRedoChipSteleWord evmVals).toNat))
 
 abbrev clipperKickLocalsCoinZero (evmLock evmVals : EVM.State)
     (I : ExecutionEnv) (feedPrice top : UInt256) : Store :=
@@ -65,7 +65,7 @@ theorem clipperEvalKickRmulArgs (v : ClipperImmutables)
       evm [.var "feedPrice", .storage bufRef] =
       .ok [.int (Int.ofNat feedPrice.toNat),
         .int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩).toNat)] := by
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩).toNat)] := by
   have hfeed : evalExpr? config
       { contract := contract, locals := clipperKickLocalsFeedPrice evmLock I feedPrice, immutables := immStore v }
       evm (.var "feedPrice") = .ok (.int (Int.ofNat feedPrice.toNat)) := by
@@ -78,10 +78,10 @@ theorem clipperEvalKickRmulArgs (v : ClipperImmutables)
 theorem clipperKickRmulCallReturns (v : ClipperImmutables)
     (evmLock evm : EVM.State) (I : ExecutionEnv) (feedPrice : UInt256)
     (hmul : feedPrice.toNat *
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩).toNat < UInt256.size) :
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩).toNat < UInt256.size) :
     let top := UInt256.div
       (UInt256.mul feedPrice
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩)) clipperRayWord
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩)) clipperRayWord
     ExecStmt config
       { contract := contract, locals := clipperKickLocalsFeedPrice evmLock I feedPrice, immutables := immStore v }
       evm (.internalCall "rmul" [.var "feedPrice", .storage bufRef] "top")
@@ -95,26 +95,26 @@ theorem clipperKickRmulCallReturns (v : ClipperImmutables)
       (args := [.var "feedPrice", .storage bufRef])
       (argVals := [.int (Int.ofNat feedPrice.toNat),
         .int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩).toNat)])
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩).toNat)])
       (callee := rmulFunction)
       (locals := clipperUintBinaryLocals feedPrice
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩))
-      (calleeSolm := Frame.mk contract (clipperWmulReturnLocals feedPrice
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩)
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩))
+      (calleeStele := Frame.mk contract (clipperWmulReturnLocals feedPrice
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩)
           (UInt256.mul feedPrice
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩))) (immStore v))
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩))) (immStore v))
       (value := some [.int (Int.ofNat top.toNat)])
       (clipperEvalKickRmulArgs v evmLock evm I feedPrice)
       (clipperLookupRmulFunction)
       (clipperBindParamsRmul feedPrice
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩))
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩))
       (clipperRmulFunctionReturns v evm feedPrice
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩) hmul))
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩) hmul))
 
 theorem clipperKickRmulCallReverts (v : ClipperImmutables)
     (evmLock evm : EVM.State) (I : ExecutionEnv) (feedPrice : UInt256)
     (hover : UInt256.size ≤ feedPrice.toNat *
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩).toNat) :
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩).toNat) :
     ExecStmt config
       { contract := contract, locals := clipperKickLocalsFeedPrice evmLock I feedPrice, immutables := immStore v }
       evm (.internalCall "rmul" [.var "feedPrice", .storage bufRef] "top") .reverted :=
@@ -125,16 +125,16 @@ theorem clipperKickRmulCallReverts (v : ClipperImmutables)
     (args := [.var "feedPrice", .storage bufRef])
     (argVals := [.int (Int.ofNat feedPrice.toNat),
       .int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩).toNat)])
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩).toNat)])
     (callee := rmulFunction)
     (locals := clipperUintBinaryLocals feedPrice
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩))
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩))
     (clipperEvalKickRmulArgs v evmLock evm I feedPrice)
     (clipperLookupRmulFunction)
     (clipperBindParamsRmul feedPrice
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩))
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩))
     (clipperRmulFunctionReverts v evm feedPrice
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩) hover)
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩) hover)
 
 theorem clipperEvalKickTopPositive (v : ClipperImmutables)
     (evmLock evm : EVM.State) (I : ExecutionEnv) (feedPrice top : UInt256)
@@ -197,8 +197,8 @@ theorem clipperKickLocalsTip_get_chip (evmLock evmVals : EVM.State)
 
 theorem clipperEvalKickIncentiveInactive (v : ClipperImmutables)
     (evmLock evmVals evm : EVM.State) (I : ExecutionEnv) (feedPrice top : UInt256)
-    (htip : clipperRedoTipSolmWord evmVals = ⟨0⟩)
-    (hchip : clipperRedoChipSolmWord evmVals = ⟨0⟩) :
+    (htip : clipperRedoTipSteleWord evmVals = ⟨0⟩)
+    (hchip : clipperRedoChipSteleWord evmVals = ⟨0⟩) :
     evalExpr? config
       { contract := contract,
         locals := clipperKickLocalsCoinZero evmLock evmVals I feedPrice top, immutables := immStore v }
@@ -207,7 +207,7 @@ theorem clipperEvalKickIncentiveInactive (v : ClipperImmutables)
       { contract := contract,
         locals := clipperKickLocalsCoinZero evmLock evmVals I feedPrice top, immutables := immStore v }
       evm (.var "_tip") =
-      .ok (.int (Int.ofNat (clipperRedoTipSolmWord evmVals).toNat)) := by
+      .ok (.int (Int.ofNat (clipperRedoTipSteleWord evmVals).toNat)) := by
     simp only [evalExpr?, clipperKickLocalsCoinZero, clipperKickLocalsChip]
     rw [store_get_ne _ _ (by decide), store_get_ne _ _ (by decide),
       clipperKickLocalsTip, store_get_self]
@@ -216,7 +216,7 @@ theorem clipperEvalKickIncentiveInactive (v : ClipperImmutables)
       { contract := contract,
         locals := clipperKickLocalsCoinZero evmLock evmVals I feedPrice top, immutables := immStore v }
       evm (.var "_chip") =
-      .ok (.int (Int.ofNat (clipperRedoChipSolmWord evmVals).toNat)) := by
+      .ok (.int (Int.ofNat (clipperRedoChipSteleWord evmVals).toNat)) := by
     simp only [evalExpr?, clipperKickLocalsCoinZero]
     rw [store_get_ne _ _ (by decide), clipperKickLocalsChip, store_get_self]
     rfl
@@ -227,8 +227,8 @@ theorem clipperEvalKickIncentiveInactive (v : ClipperImmutables)
 
 theorem clipperEvalKickIncentiveActive (v : ClipperImmutables)
     (evmLock evmVals evm : EVM.State) (I : ExecutionEnv) (feedPrice top : UInt256)
-    (hactive : clipperRedoTipSolmWord evmVals ≠ ⟨0⟩ ∨
-      clipperRedoChipSolmWord evmVals ≠ ⟨0⟩) :
+    (hactive : clipperRedoTipSteleWord evmVals ≠ ⟨0⟩ ∨
+      clipperRedoChipSteleWord evmVals ≠ ⟨0⟩) :
     evalExpr? config
       { contract := contract,
         locals := clipperKickLocalsCoinZero evmLock evmVals I feedPrice top, immutables := immStore v }
@@ -237,7 +237,7 @@ theorem clipperEvalKickIncentiveActive (v : ClipperImmutables)
       { contract := contract,
         locals := clipperKickLocalsCoinZero evmLock evmVals I feedPrice top, immutables := immStore v }
       evm (.var "_tip") =
-      .ok (.int (Int.ofNat (clipperRedoTipSolmWord evmVals).toNat)) := by
+      .ok (.int (Int.ofNat (clipperRedoTipSteleWord evmVals).toNat)) := by
     simp only [evalExpr?, clipperKickLocalsCoinZero, clipperKickLocalsChip]
     rw [store_get_ne _ _ (by decide), store_get_ne _ _ (by decide),
       clipperKickLocalsTip, store_get_self]
@@ -246,24 +246,24 @@ theorem clipperEvalKickIncentiveActive (v : ClipperImmutables)
       { contract := contract,
         locals := clipperKickLocalsCoinZero evmLock evmVals I feedPrice top, immutables := immStore v }
       evm (.var "_chip") =
-      .ok (.int (Int.ofNat (clipperRedoChipSolmWord evmVals).toNat)) := by
+      .ok (.int (Int.ofNat (clipperRedoChipSteleWord evmVals).toNat)) := by
     simp only [evalExpr?, clipperKickLocalsCoinZero]
     rw [store_get_ne _ _ (by decide), clipperKickLocalsChip, store_get_self]
     rfl
   rcases hactive with htip | hchip
-  · have hpos : 0 < (clipperRedoTipSolmWord evmVals).toNat :=
+  · have hpos : 0 < (clipperRedoTipSteleWord evmVals).toNat :=
       Nat.pos_of_ne_zero (fun h => htip (uint256_toNat_eq_zero h))
     simp only [clipperKickIncentiveCond, evalExpr?, hTip, hChip,
       EvalResult.bind, bind, pure, evalBinaryOp?]
     simp [hpos]
-  · have hpos : 0 < (clipperRedoChipSolmWord evmVals).toNat :=
+  · have hpos : 0 < (clipperRedoChipSteleWord evmVals).toNat :=
       Nat.pos_of_ne_zero (fun h => hchip (uint256_toNat_eq_zero h))
-    have hposInt : (0 : Int) < Int.ofNat (clipperRedoChipSolmWord evmVals).toNat := by
+    have hposInt : (0 : Int) < Int.ofNat (clipperRedoChipSteleWord evmVals).toNat := by
       simpa using hpos
     simp only [clipperKickIncentiveCond, evalExpr?, hTip, hChip,
       EvalResult.bind, bind, pure, evalBinaryOp?]
     rw [decide_eq_true hposInt]
-    cases decide (Int.ofNat (clipperRedoTipSolmWord evmVals).toNat > 0) <;> rfl
+    cases decide (Int.ofNat (clipperRedoTipSteleWord evmVals).toNat > 0) <;> rfl
 
 theorem clipperKickLocalsCoinZero_get_locked (evmLock evmVals : EVM.State)
     (I : ExecutionEnv) (feedPrice top : UInt256) :
@@ -281,11 +281,11 @@ theorem clipperKickUnlockReturn (v : ClipperImmutables)
     ExecBlock config { contract := contract, locals := locals, immutables := immStore v } evm
       [.assign .storage lockedRef (.intLit 0), .return [.var "id"]]
       (.returned { contract := contract, locals := locals, immutables := immStore v }
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨13⟩ ⟨0⟩)
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨13⟩ ⟨0⟩)
         (some [.int (Int.ofNat (clipperKickSourceIdWord evmLock).toNat)])) := by
   have hunlock := clipperRedoUnlock v evm locals hlocked
   have hret : evalExprs? config { contract := contract, locals := locals, immutables := immStore v }
-      (Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨13⟩ ⟨0⟩)
+      (Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨13⟩ ⟨0⟩)
       [.var "id"] =
       .ok [.int (Int.ofNat (clipperKickSourceIdWord evmLock).toNat)] := by
     simp only [evalExprs?, evalExpr?, hid, EvalResult.ofOption, EvalResult.bind,
@@ -294,14 +294,14 @@ theorem clipperKickUnlockReturn (v : ClipperImmutables)
 
 theorem clipperKickIncentiveInactiveTail (v : ClipperImmutables)
     (evmLock evmTop : EVM.State) (I : ExecutionEnv) (feedPrice top : UInt256)
-    (htip : clipperRedoTipSolmWord evmTop = ⟨0⟩)
-    (hchip : clipperRedoChipSolmWord evmTop = ⟨0⟩) :
+    (htip : clipperRedoTipSteleWord evmTop = ⟨0⟩)
+    (hchip : clipperRedoChipSteleWord evmTop = ⟨0⟩) :
     let locals := clipperKickLocalsCoinZero evmLock evmTop I feedPrice top
     ExecBlock config { contract := contract, locals := locals, immutables := immStore v } evmTop
       [ .ite clipperKickIncentiveCond (clipperKickIncentiveBody) [],
         .assign .storage lockedRef (.intLit 0), .return [.var "id"] ]
       (.returned { contract := contract, locals := locals, immutables := immStore v }
-        (Solm.EVM.storageStore evmTop evmTop.executionEnv.codeOwner ⟨13⟩ ⟨0⟩)
+        (Stele.EVM.storageStore evmTop evmTop.executionEnv.codeOwner ⟨13⟩ ⟨0⟩)
         (some [.int (Int.ofNat (clipperKickSourceIdWord evmLock).toNat)])) := by
   intro locals
   have hite : ExecStmt config { contract := contract, locals := locals, immutables := immStore v } evmTop
@@ -343,7 +343,7 @@ theorem clipperKickAfterInitializationRmulReverts
       (.ok (Frame.mk contract (clipperKickLocalsFeedPrice evmLock I feedPrice) (immStore v))
         evmFeed))
     (hover : UInt256.size ≤ feedPrice.toNat *
-      (Solm.EVM.storageLoad evmFeed evmFeed.executionEnv.codeOwner ⟨5⟩).toNat) :
+      (Stele.EVM.storageLoad evmFeed evmFeed.executionEnv.codeOwner ⟨5⟩).toNat) :
     ExecBlock config
       { contract := contract, locals := clipperKickLocalsActivePos evmLock I, immutables := immStore v }
       evm (clipperKickAfterInitializationBody) .reverted := by
@@ -360,18 +360,18 @@ theorem clipperKickAfterInitializationTopZeroReverts
       (.ok (Frame.mk contract (clipperKickLocalsFeedPrice evmLock I feedPrice) (immStore v))
         evmFeed))
     (hmul : feedPrice.toNat *
-      (Solm.EVM.storageLoad evmFeed evmFeed.executionEnv.codeOwner ⟨5⟩).toNat <
+      (Stele.EVM.storageLoad evmFeed evmFeed.executionEnv.codeOwner ⟨5⟩).toNat <
         UInt256.size)
     (htop : UInt256.div
       (UInt256.mul feedPrice
-        (Solm.EVM.storageLoad evmFeed evmFeed.executionEnv.codeOwner ⟨5⟩))
+        (Stele.EVM.storageLoad evmFeed evmFeed.executionEnv.codeOwner ⟨5⟩))
       clipperRayWord = ⟨0⟩) :
     ExecBlock config
       { contract := contract, locals := clipperKickLocalsActivePos evmLock I, immutables := immStore v }
       evm (clipperKickAfterInitializationBody) .reverted := by
   let top := UInt256.div
     (UInt256.mul feedPrice
-      (Solm.EVM.storageLoad evmFeed evmFeed.executionEnv.codeOwner ⟨5⟩)) clipperRayWord
+      (Stele.EVM.storageLoad evmFeed evmFeed.executionEnv.codeOwner ⟨5⟩)) clipperRayWord
   have hrmul : ExecStmt config
       { contract := contract, locals := clipperKickLocalsFeedPrice evmLock I feedPrice, immutables := immStore v }
       evmFeed (.internalCall "rmul" [.var "feedPrice", .storage bufRef] "top")
@@ -397,11 +397,11 @@ theorem clipperKickAfterInitializationSuccessPrefix
       (.ok (Frame.mk contract (clipperKickLocalsFeedPrice evmLock I feedPrice) (immStore v))
         evmFeed))
     (hmul : feedPrice.toNat *
-      (Solm.EVM.storageLoad evmFeed evmFeed.executionEnv.codeOwner ⟨5⟩).toNat <
+      (Stele.EVM.storageLoad evmFeed evmFeed.executionEnv.codeOwner ⟨5⟩).toNat <
         UInt256.size)
     (htopEq : UInt256.div
       (UInt256.mul feedPrice
-        (Solm.EVM.storageLoad evmFeed evmFeed.executionEnv.codeOwner ⟨5⟩))
+        (Stele.EVM.storageLoad evmFeed evmFeed.executionEnv.codeOwner ⟨5⟩))
       clipperRayWord = top)
     (htop : 0 < top.toNat)
     (hevmTop : evmTop = clipperKickSourceTopState evmLock evmFeed top)
@@ -415,7 +415,7 @@ theorem clipperKickAfterInitializationSuccessPrefix
     ExecBlock config
       { contract := contract, locals := clipperKickLocalsActivePos evmLock I, immutables := immStore v }
       evm (clipperKickAfterInitializationBody) result := by
-  let buf := Solm.EVM.storageLoad evmFeed evmFeed.executionEnv.codeOwner ⟨5⟩
+  let buf := Stele.EVM.storageLoad evmFeed evmFeed.executionEnv.codeOwner ⟨5⟩
   let topFrame : Frame :=
     { contract := contract, locals := clipperKickLocalsTop evmLock I feedPrice top, immutables := immStore v }
   let tipFrame : Frame :=

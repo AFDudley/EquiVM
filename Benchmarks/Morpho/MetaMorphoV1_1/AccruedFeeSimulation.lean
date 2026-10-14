@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.AccruedFeeRoutines
 
 /-! Matching the final fee guard and fee-calculation paths in an arbitrary loop frame. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
@@ -48,7 +48,7 @@ theorem accruedFeeTailReturnSource {frame : Frame} {evm : State}
     {interest fee supply total lost ptr : UInt256} (v : MetaMorphoV1_1Immutables)
     (hl : AccruedFeeLocals v frame interest total lost ptr)
     (hf : evalExpr? config frame evm (.storage ⟨"fee", []⟩) = .ok (uint256Value fee))
-    (hs : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩ = supply)
+    (hs : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩ = supply)
     (hn : interest ≠ ⟨0⟩ ∧ fee ≠ ⟨0⟩)
     (hfit : accruedFeeFits v.DECIMALS_OFFSET interest fee supply total) :
     ExecBlock config frame evm (allocatedAccruedFeeAssetsFunction.body.drop 8)
@@ -88,7 +88,7 @@ theorem accruedFeeTailRevertsSource {frame : Frame} {evm : State}
     {interest fee supply total lost ptr : UInt256} (v : MetaMorphoV1_1Immutables)
     (hl : AccruedFeeLocals v frame interest total lost ptr)
     (hf : evalExpr? config frame evm (.storage ⟨"fee", []⟩) = .ok (uint256Value fee))
-    (hs : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩ = supply)
+    (hs : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩ = supply)
     (hn : interest ≠ ⟨0⟩ ∧ fee ≠ ⟨0⟩)
     (hbad : ¬ accruedFeeFits v.DECIMALS_OFFSET interest fee supply total) :
     ExecBlock config frame evm (allocatedAccruedFeeAssetsFunction.body.drop 8) .reverted := by

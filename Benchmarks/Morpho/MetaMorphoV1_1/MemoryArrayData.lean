@@ -3,7 +3,7 @@ import Reasoning.HeapMemory
 
 /-! Memory contents of the singleton arrays constructed for Morpho's `extSloads` calls. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 

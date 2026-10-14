@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.DomainHashRoutines
 
 /-! Short-circuit cache checks and the shared domain-separator bytecode routine. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables metaMorphoV1_1Blocks
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1

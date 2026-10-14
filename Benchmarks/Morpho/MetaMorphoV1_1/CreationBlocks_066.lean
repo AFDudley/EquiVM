@@ -2,7 +2,7 @@ import Reasoning.Reach
 import Reasoning.Initcode
 import Benchmarks.Morpho.MetaMorphoV1_1.Bytecode
 
-open Solm ABI Ethereum Ethereum.EVM
+open Stele ABI Ethereum Ethereum.EVM
 open Reasoning.Theory Reasoning.Reach
 
 namespace metaMorphoV1_1CreationBlocks

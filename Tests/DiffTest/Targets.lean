@@ -1,4 +1,4 @@
-import Solm.DiffTest.Harness
+import Stele.DiffTest.Harness
 import Examples.ERC20.Spec
 import Examples.ERC20.Bytecode
 import Examples.Ballot.Spec
@@ -67,14 +67,12 @@ import Examples.CtorStore.Spec
 import Examples.CtorStore.Bytecode
 import Examples.CtorTruth.Spec
 import Examples.CtorTruth.Bytecode
-import Benchmarks.Scaffolds.CometRewards.Spec
-import Benchmarks.Scaffolds.CometRewards.Bytecode
 import Benchmarks.Scaffolds.ERC721.Spec
 import Benchmarks.Scaffolds.ERC721.Bytecode
 import Benchmarks.Scaffolds.Klima.Spec
 import Benchmarks.Scaffolds.Klima.Bytecode
-import Benchmarks.Scaffolds.Safe.Spec
-import Benchmarks.Scaffolds.Safe.Bytecode
+import Benchmarks.Safe.Main.Spec
+import Benchmarks.Safe.Main.Bytecode
 import Benchmarks.Scaffolds.TimelockController.Spec
 import Benchmarks.Scaffolds.TimelockController.Bytecode
 import Benchmarks.Scaffolds.VestingWallet.Spec
@@ -89,7 +87,7 @@ under the differential suite; `Main.lean` runs them all.
 
 namespace Tests.DiffTest
 
-open Solm Solm.DiffTest Ethereum
+open Stele Stele.DiffTest Ethereum
 
 def erc20 : Target :=
   { name := "ERC20", contract := ERC20.erc20Contract, config := erc20Config,
@@ -252,13 +250,6 @@ def ctorTruth : Target :=
 
 /-! ## Scaffolds (specifications not yet proved) -/
 
-def cometRewards : Target :=
-  { name := "CometRewards", contract := Benchmarks.CompoundIII.CometRewards.contract,
-    config := Benchmarks.CompoundIII.CometRewards.config,
-    runtime := Benchmarks.CompoundIII.CometRewards.cometRewardsBytecode,
-    initcode := some Benchmarks.CompoundIII.CometRewards.cometRewardsCreationBytecode,
-    callees := standardCallees, words := [10 ^ 6, 10 ^ 15, 10 ^ 18] }
-
 def erc721 : Target :=
   { name := "ERC721", contract := ERC721.erc721Contract, config := erc721Config,
     runtime := erc721Bytecode, initcode := some erc721CreationBytecode,
@@ -272,8 +263,8 @@ def klima : Target :=
 /-- The owner and module linked lists walk random storage, which cycles until the gas or the fuel
     runs out: smaller budgets keep those (inconclusive) cases cheap. -/
 def safe : Target :=
-  { name := "Safe", contract := Benchmarks.Safe.contract, config := Benchmarks.Safe.config,
-    runtime := Benchmarks.Safe.safeBytecode, initcode := some Benchmarks.Safe.safeCreationBytecode,
+  { name := "Safe", contract := Benchmarks.Safe.Main.contract, config := Benchmarks.Safe.Main.config,
+    runtime := Benchmarks.Safe.Main.safeBytecode, initcode := some Benchmarks.Safe.Main.safeCreationBytecode,
     callees := standardCallees, words := [0, 1, 2, 3], gas := 400000, fuel := 5000 }
 
 def timelockController : Target :=
@@ -312,7 +303,7 @@ def benchmarks : List Target :=
   [weth9, auction, pot, cat, cure, dai, daiJoin, dssEnd, exponentialDecrease, flapper, flipper, flopper, gemJoin, jug, linearDecrease, spot, stairstepExponentialDecrease, vat, vow]
 
 def scaffolds : List Target :=
-  [cometRewards, erc721, klima, safe, timelockController, vestingWallet]
+  [erc721, klima, safe, timelockController, vestingWallet]
 
 /-- Every target: the ones above, then the generated ones (`Generated.lean`) not already named. -/
 def allTargets : List Target :=

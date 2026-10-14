@@ -2,7 +2,7 @@ import Benchmarks.Dss.Flipper.DentDecreaseGuard
 import Benchmarks.Dss.Flipper.BidAccess
 import Benchmarks.Dss.Flipper.TendRefund
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxHeartbeats 0
 
@@ -47,16 +47,16 @@ abbrev dentLocalsAfterFluxWithTicFrom (σpre σtic : AccountMap) (I : ExecutionE
 
 abbrev dentFluxArgValsOf (evm : EVM.State) (I : ExecutionEnv) : List Value :=
   [.fixedBytes bytes32Width
-      (EVM.Word.toBytesBE (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩)),
+      (EVM.Word.toBytesBE (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩)),
     .address evm.executionEnv.codeOwner,
     .address (AccountAddress.ofNat
       (UInt256.land
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
           (bidSlotOfWord (dentId I) ⟨3⟩))
         solcAddrMask).toNat),
     .int (Int.ofNat
       (UInt256.sub
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
           (bidSlotOfWord (dentId I) ⟨1⟩))
         (dentLot I)).toNat)]
 
@@ -302,6 +302,7 @@ theorem dentVatFluxCallMem_encode {mem : ByteArray} {σ : AccountMap} {I : Execu
       some ((dentVatFluxCallMem mem σ I).readWithPadding 128 132) := by
   rw [dentVatFluxCallMem_read hmemSize]
   unfold dentFluxArgValsMap config externalABI
+  simp only [ExternalCallABI.withMode_encode?]
   simp only [if_true]
   unfold ABI.encodeCallWithSelector?
   have husr :
@@ -473,7 +474,7 @@ theorem evalExpr_dentIlk_ofLocals {evm : EVM.State} {locals : Store}
     (hilk : locals.get? "ilk" = none) :
     evalExpr? config { contract := contract, locals := locals } evm (.storage ilkRef) =
       .ok (.fixedBytes bytes32Width
-        (EVM.Word.toBytesBE (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩))) := by
+        (EVM.Word.toBytesBE (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩))) := by
   rw [evalExpr_storage_scalar (hbackend := rfl)
     (t := .bytes bytes32Width)
     (loc := bytes32Loc ⟨3⟩)
@@ -493,7 +494,7 @@ theorem evalExpr_bidUsr_of_get_id_evm {evm : EVM.State} {locals : Store}
       (.storage (bidsF (.var "id") "usr")) =
         .ok (.address (AccountAddress.ofNat
           (UInt256.land
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (bidSlotOfWord id ⟨3⟩))
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (bidSlotOfWord id ⟨3⟩))
             solcAddrMask).toNat)) := by
   rw [evalExpr_storage_scalar (hbackend := rfl)
     (t := .address)
@@ -521,7 +522,7 @@ theorem evalExpr_dentLotDelta {evm : EVM.State} {locals : Store}
       (wrap256 (.binary .sub (.storage (bidsF (.var "id") "lot")) (.var "lot"))) =
         .ok (.int (Int.ofNat
           (UInt256.sub
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (bidSlotOfWord id ⟨1⟩))
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (bidSlotOfWord id ⟨1⟩))
             (dentLot evm.executionEnv)).toNat)) := by
   have hbidLot := evalExpr_bidLot_of_get_id_evm (evm := evm)
     (locals := locals) (id := id) hid hbids
@@ -530,12 +531,12 @@ theorem evalExpr_dentLotDelta {evm : EVM.State} {locals : Store}
   rw [wrap256]
   simp only [evalExpr?, hbidLot, hlotVar, EvalResult.bind, bind, pure]
   change (if wordModulus = 0 then EvalResult.revert else
-      .ok (Value.int ((Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      .ok (Value.int ((Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (bidSlotOfWord id ⟨1⟩)).toNat -
           Int.ofNat (dentLot evm.executionEnv).toNat) % wordModulus))) =
     .ok (Value.int (Int.ofNat
       (UInt256.sub
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (bidSlotOfWord id ⟨1⟩))
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (bidSlotOfWord id ⟨1⟩))
         (dentLot evm.executionEnv)).toNat))
   rw [if_neg (by norm_num [wordModulus]), intModWord_sub_toNat]
 
@@ -918,17 +919,17 @@ theorem flipperDentSourceBodySuccessSameCallerSplit {σ σ₀ A I}
     (hfluxOwner : evmFlux.executionEnv.codeOwner = I.codeOwner) :
     let locals := dentLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-    let evmLot := Solm.EVM.storageStore evmFlux evmFlux.executionEnv.codeOwner
+    let evmLot := Stele.EVM.storageStore evmFlux evmFlux.executionEnv.codeOwner
       (bidSlotOfWord (dentId I) ⟨1⟩) (dentLot I)
-    let evmTic := Solm.EVM.storageStore evmLot evmLot.executionEnv.codeOwner
+    let evmTic := Stele.EVM.storageStore evmLot evmLot.executionEnv.codeOwner
       (bidPackedSlotOfWord (dentId I))
       (setUint48Offset20Word
-        (Solm.EVM.storageLoad evmLot evmLot.executionEnv.codeOwner
+        (Stele.EVM.storageLoad evmLot evmLot.executionEnv.codeOwner
           (bidPackedSlotOfWord (dentId I)))
         (tendTicNewWord evmLot.accountMap I))
     (((tendNow48 I).toNat +
           (tendTtlWord
-            (Solm.EVM.storageStore evmFlux evmFlux.executionEnv.codeOwner
+            (Stele.EVM.storageStore evmFlux evmFlux.executionEnv.codeOwner
               (bidSlotOfWord (dentId I) ⟨1⟩) (dentLot I)).accountMap I).toNat <
         2 ^ 48) →
       ExecTransitionBody config contract evm0 locals dentTransition.body
@@ -1140,17 +1141,17 @@ theorem flipperDentSourceBodySuccessSameCaller {σ σ₀ A I}
     (hfitTic :
       (tendNow48 I).toNat +
           (tendTtlWord
-            (Solm.EVM.storageStore evmFlux evmFlux.executionEnv.codeOwner
+            (Stele.EVM.storageStore evmFlux evmFlux.executionEnv.codeOwner
               (bidSlotOfWord (dentId I) ⟨1⟩) (dentLot I)).accountMap I).toNat <
         2 ^ 48) :
     let locals := dentLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-    let evmLot := Solm.EVM.storageStore evmFlux evmFlux.executionEnv.codeOwner
+    let evmLot := Stele.EVM.storageStore evmFlux evmFlux.executionEnv.codeOwner
       (bidSlotOfWord (dentId I) ⟨1⟩) (dentLot I)
-    let evmTic := Solm.EVM.storageStore evmLot evmLot.executionEnv.codeOwner
+    let evmTic := Stele.EVM.storageStore evmLot evmLot.executionEnv.codeOwner
       (bidPackedSlotOfWord (dentId I))
       (setUint48Offset20Word
-        (Solm.EVM.storageLoad evmLot evmLot.executionEnv.codeOwner
+        (Stele.EVM.storageLoad evmLot evmLot.executionEnv.codeOwner
           (bidPackedSlotOfWord (dentId I)))
         (tendTicNewWord evmLot.accountMap I))
     ExecTransitionBody config contract evm0 locals dentTransition.body
@@ -1215,13 +1216,13 @@ theorem flipperDentSourceBodyAdd48OverflowSameCaller {σ σ₀ A I}
       2 ^ 48 ≤
         (tendNow48 I).toNat +
           (tendTtlWord
-            (Solm.EVM.storageStore evmFlux evmFlux.executionEnv.codeOwner
+            (Stele.EVM.storageStore evmFlux evmFlux.executionEnv.codeOwner
               (bidSlotOfWord (dentId I) ⟨1⟩) (dentLot I)).accountMap I).toNat) :
     let locals := dentLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     ExecTransitionBody config contract evm0 locals dentTransition.body .reverted := by
   intro locals evm0
-  let evmLot := Solm.EVM.storageStore evmFlux evmFlux.executionEnv.codeOwner
+  let evmLot := Stele.EVM.storageStore evmFlux evmFlux.executionEnv.codeOwner
     (bidSlotOfWord (dentId I) ⟨1⟩) (dentLot I)
   have hvat :
       evalExpr? config { contract := contract, locals := dentLocalsLotOneBegLot σ I } evm0
@@ -1720,7 +1721,7 @@ theorem flipperDentX_fluxPostCall
       (by rfl)
       ?_ ?_
     · simpa [dentFluxArgValsOf, dentFluxArgValsMap, initState, solcSlotWordAt,
-        solcSlotWord, Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
+        solcSlotWord, Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
         bidUsrWord, bidLotWord, bidSlotOfWord, bidBaseOfWord, solcAddressSlotWord]
         using dentVatFluxCallMem_encode (σ := σ) (I := I) hmemSize
     · simpa [initState] using hΘ

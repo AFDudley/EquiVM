@@ -1,0 +1,129 @@
+{
+  "contract": "/home/lefteris/EquiVM3/Tests/Pipeline/VyperVault/contracts/VyperVault.vy",
+  "compiler": "vyper",
+  "evmVersion": "shanghai",
+  "externalCalls": [],
+  "selectors": [
+    {
+      "signature": "balances(address)",
+      "name": "balances",
+      "params": [],
+      "getter": true
+    },
+    {
+      "signature": "totalDeposits()",
+      "name": "totalDeposits",
+      "params": [],
+      "getter": true
+    },
+    {
+      "signature": "feesCollected()",
+      "name": "feesCollected",
+      "params": [],
+      "getter": true
+    },
+    {
+      "signature": "paused()",
+      "name": "paused",
+      "params": [],
+      "getter": true
+    },
+    {
+      "signature": "deposit()",
+      "name": "deposit",
+      "params": [],
+      "bounded": []
+    },
+    {
+      "signature": "withdraw(uint256)",
+      "name": "withdraw",
+      "params": [
+        {
+          "name": "amount",
+          "type": "uint256",
+          "vyperType": "uint256"
+        }
+      ],
+      "bounded": []
+    },
+    {
+      "signature": "setPaused(bool)",
+      "name": "setPaused",
+      "params": [
+        {
+          "name": "flag",
+          "type": "bool",
+          "vyperType": "bool"
+        }
+      ],
+      "bounded": []
+    },
+    {
+      "signature": "collectFees()",
+      "name": "collectFees",
+      "params": [],
+      "bounded": []
+    },
+    {
+      "signature": "owner()",
+      "name": "owner",
+      "params": [],
+      "bounded": []
+    },
+    {
+      "signature": "available(address)",
+      "name": "available",
+      "params": [
+        {
+          "name": "account",
+          "type": "address",
+          "vyperType": "address"
+        }
+      ],
+      "bounded": []
+    }
+  ],
+  "storage": [
+    {
+      "name": "nonreentrant_lock",
+      "slot": 0,
+      "transient": false,
+      "vyperType": "nonreentrant lock"
+    },
+    {
+      "name": "balances",
+      "slot": 1,
+      "transient": false,
+      "vyperType": "HashMap[address, uint256]"
+    },
+    {
+      "name": "totalDeposits",
+      "slot": 2,
+      "transient": false,
+      "vyperType": "uint256"
+    },
+    {
+      "name": "feesCollected",
+      "slot": 3,
+      "transient": false,
+      "vyperType": "uint256"
+    },
+    {
+      "name": "paused",
+      "slot": 4,
+      "transient": false,
+      "vyperType": "bool"
+    }
+  ],
+  "nonreentrantLock": {
+    "name": "nonreentrant_lock",
+    "transient": false,
+    "locked": 2,
+    "unlocked": 3
+  },
+  "holes": [],
+  "notes": [
+    "constant FEE_BPS = 25 inlined",
+    "send(to, value) forwards no gas beyond the EVM stipend"
+  ]
+}

@@ -4,7 +4,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.WordWindow
 
 /-! The complete allocated market-balance helper, with actual external-call outcomes. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables metaMorphoV1_1Blocks
 

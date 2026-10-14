@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.StringHeader
 
 /-! Source reads of the two storage-backed token metadata strings. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 
@@ -14,7 +14,7 @@ def stringViewField (symbol : Bool) : Ident := if symbol then "_vaultSymbol" els
 def stringViewSlot (symbol : Bool) : UInt256 := if symbol then ⟨25⟩ else ⟨24⟩
 
 def storageStringHeader (evm : State) (slot : UInt256) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot
 
 def storageStringBytes (evm : State) (slot : UInt256) : ByteArray :=
   let header := storageStringHeader evm slot

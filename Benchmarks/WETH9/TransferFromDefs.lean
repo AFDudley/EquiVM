@@ -9,7 +9,7 @@ source⟺EVM storage-slot reconciliations for `balanceOf[src]`, `balanceOf[dst]`
 `allowance[src][msg.sender]`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 1000000
@@ -45,9 +45,9 @@ theorem tfDstMasked_canonical (I : ExecutionEnv) : (tfDstMasked I).toNat < EVM.a
 /-! ## ABI decode -/
 
 theorem tfDecode_ok {I : ExecutionEnv} (hsz100 : 100 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (transferFromTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (transferFromTransition.params.map Param.name)
       (transitionSignature transferFromTransition).paramTypes I.calldata = some (tfStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["src", "dst", "wad"] [addr, addr, uint256]
+  show config.externalABI.decodeCalldata? ["src", "dst", "wad"] [addr, addr, uint256]
     I.calldata = _
   simpa [tfStore, tfSrcVal, tfDstVal, tfWadVal, tfSrcWord, tfDstWord, tfWadWord, calldataWord]
     using decodeCalldata_legacyAddress_legacyAddress_uint256_ok
@@ -55,9 +55,9 @@ theorem tfDecode_ok {I : ExecutionEnv} (hsz100 : 100 ≤ I.calldata.size) :
 
 theorem tfDecode_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 100) :
-    decodeCalldataWithMode config.abiDecodeMode (transferFromTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (transferFromTransition.params.map Param.name)
       (transitionSignature transferFromTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["src", "dst", "wad"] [addr, addr, uint256]
+  show config.externalABI.decodeCalldata? ["src", "dst", "wad"] [addr, addr, uint256]
     I.calldata = none
   simpa using decodeCalldata_legacyAddress_legacyAddress_uint256_none_short
     (cd := I.calldata) (x := "src") (y := "dst") (z := "wad") hsz4 hshort

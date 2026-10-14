@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.CalldataValueDecode
 
 /-! Exact decoding conditions for the seven permit calldata fields. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 

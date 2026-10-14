@@ -10,7 +10,7 @@ composes a genuine `.internalCall "_mul"` (discharged with `internalCallFunction
 followed by division by `ONE = 10^27`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -368,7 +368,7 @@ theorem execRmulFunctionReturn (evm : EVM.State) {x y prod q : UInt256}
       (args := [.var "x", .var "y"])
       (argVals := [.int (Int.ofNat x.toNat), .int (Int.ofNat y.toNat)])
       (callee := mulFunction) (locals := locals)
-      (calleeSolm := { contract := contract, locals := localsZ })
+      (calleeStele := { contract := contract, locals := localsZ })
       (value := some [.int (Int.ofNat prod.toNat)])
       hargs hlookup hbind hcallBody
     simpa [resumeAfterInternalCall, collapseReturns, localsZ, uintBinaryLocalsZ, locals] using h

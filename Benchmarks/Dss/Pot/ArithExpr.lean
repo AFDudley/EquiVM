@@ -1,17 +1,17 @@
-import Reasoning.SolmArithmetic
+import Reasoning.SteleArithmetic
 import Benchmarks.Dss.Pot.Common
 
 /-!
 # MakerDAO/Sky DSS Pot arithmetic locals + expression helpers
 
-Generic Solm-side helpers for reasoning about the source (`ExecFuncBody`) semantics of Pot's internal
+Generic Stele-side helpers for reasoning about the source (`ExecFuncBody`) semantics of Pot's internal
 arithmetic helpers `_add`, `_sub`, `_mul`, `_rmul`.  Ported from the fully-proved sibling
 `Benchmarks/Dss/Jug` (`ArithmeticLocals.lean` + `ArithmeticExpr.lean`); every lemma here is
 contract-independent (it only exercises `evalExpr?`/`Store` on the binary-locals frame and never
 touches Pot's storage layout or external ABI), so all are flagged `LIBRARY CANDIDATE`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 

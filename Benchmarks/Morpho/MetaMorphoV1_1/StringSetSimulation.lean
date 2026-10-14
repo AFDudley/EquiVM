@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.StringSetEntry
 
 /-! Source and runtime simulation of metadata setters after successful string allocation. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
 

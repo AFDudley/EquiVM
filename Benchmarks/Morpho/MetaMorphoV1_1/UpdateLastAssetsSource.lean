@@ -2,14 +2,14 @@ import Benchmarks.Morpho.MetaMorphoV1_1.BodyCommon
 
 /-! The last-total-assets update used by interest accrual. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 
 abbrev updateLastAssetsFunction : FunctionDecl := contract.functions[47]!
 
 def updateLastAssetsState (evm : EVM.State) (value : UInt256) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨22⟩ value
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨22⟩ value
 
 def updateLastAssetsFrame (imms : Store) (value : UInt256) : Frame :=
   ⟨contract, (∅ : Store).insert "updatedTotalAssets" (uint256Value value), imms⟩

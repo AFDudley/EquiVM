@@ -11,7 +11,7 @@ and construction and forwarding of revert data. Every routine is parameterized b
 consumes explicit instruction-decode facts.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 set_option autoImplicit false
 set_option maxRecDepth 2000000

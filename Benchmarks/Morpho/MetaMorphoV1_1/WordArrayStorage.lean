@@ -4,7 +4,7 @@ import Reasoning.StorageLoops
 
 /-! Full-slot array writes and the Solidity backend's descending cleanup. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 
@@ -33,7 +33,7 @@ def storeWordArray (owner : AccountAddress) (σ : AccountMap) (base : UInt256)
       base words (index + 1) n
 
 theorem storageStore_asAccountUpdate (evm : State) (slot word : UInt256) :
-    Solm.EVM.storageStore evm evm.executionEnv.codeOwner slot word =
+    Stele.EVM.storageStore evm evm.executionEnv.codeOwner slot word =
       { evm with
         accountMap := sstoreAccountMap evm.executionEnv.codeOwner evm.accountMap slot word } := by
   rw [← storageStore_eq_accountMap_update, storageStore_accountMap]
@@ -116,14 +116,14 @@ theorem solidityReplaceWordArray {layout : StorageLayout} {er : EvaledStorageRef
   rw [hheader]
   simp only [EvalResult.ofOption]
   have hzero (s : State) : storageLocStore s (uint256Loc header) (.int 0) =
-      some (Solm.EVM.storageStore s s.executionEnv.codeOwner header ⟨0⟩) :=
+      some (Stele.EVM.storageStore s s.executionEnv.codeOwner header ⟨0⟩) :=
     storageLocStore_uint256 s header ⟨0⟩
   rw [hzero]
   dsimp only
   rw [solidityWriteWordArray hloc]
   simp only [wordArrayValues_length]
   have hstore (s : State) : storageLocStore s (uint256Loc header) (.int (n : Int)) =
-      some (Solm.EVM.storageStore s s.executionEnv.codeOwner header (UInt256.ofNat n)) :=
+      some (Stele.EVM.storageStore s s.executionEnv.codeOwner header (UInt256.ofNat n)) :=
     storageLocStore_uint256_ofNat s header n
   rw [hstore]
   dsimp only

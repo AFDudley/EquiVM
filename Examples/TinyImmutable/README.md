@@ -13,7 +13,7 @@ default value `0`.
 
 The runtime surface is deliberately tiny: public getters for both immutables and `quote(amount)`,
 which requires `msg.sender == owner` and returns `amount * scale` from an `unchecked` block. The
-Solm spec models that multiply as reduction modulo `2^256`.
+Stele spec models that multiply as reduction modulo `2^256`.
 
 Artifacts were produced with solc `0.8.35`, optimizer enabled with 800 runs, EVM version Shanghai,
 and `metadata.bytecodeHash: none`. `runtime.hex` is the deployed runtime template with zeroed
@@ -23,12 +23,12 @@ immutable words. The patch table in `Immutables.lean` comes from
 - `owner`: offsets `72`, `245`
 - `scale`: offsets `186`, `361`
 
-The runtime is 432 bytes. `immutableReferences` records each immutable's Solm name and patch
+The runtime is 432 bytes. `immutableReferences` records each immutable's Stele name and patch
 offsets once; `immutableLayout` is derived from it, keyed by those names. The spec declares
-`owner` and `scale` as Solm immutables: the constructor assigns them and the getters and `quote`
+`owner` and `scale` as Stele immutables: the constructor assigns them and the getters and `quote`
 read them. The deployed runtime for an immutables store `imms` is the generic
 `immutableLayout.deployed tinyImmutableBytecode imms` (`Reasoning/Immutables.lean`): the
-template patched with `wordsOf imms`, each immutable's word under Solm's `valueToWord`. That
+template patched with `wordsOf imms`, each immutable's word under Stele's `valueToWord`. That
 function is the contract's `runtimeCodeOf`. The runtime proofs work with a valuation
 `v : TinyImmutables` and its store `immStore v`; `deployedRuntime v` is the code deployed for
 `immStore v`, and `wordsOf_immStore_owner`/`_scale` give its patched words.

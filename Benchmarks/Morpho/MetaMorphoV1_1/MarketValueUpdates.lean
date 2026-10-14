@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.Uint128Add
 
 /-! Source market values and checked updates of their three mutable balance fields. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
 

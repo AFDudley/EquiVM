@@ -1,7 +1,7 @@
 import Reasoning.Storage
 import Examples.UniswapV2Pair.Sync
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -489,7 +489,7 @@ theorem syncPrice0CumulativeIntAt_eq_updateWord_nat_form
     (hStorageEnv : storageEvm.executionEnv = I)
     (hUpdateEnv : updateEvm.executionEnv = I)
     (hslot8 :
-      Solm.EVM.storageLoad updateEvm updateEvm.executionEnv.codeOwner ⟨8⟩ =
+      Stele.EVM.storageLoad updateEvm updateEvm.executionEnv.codeOwner ⟨8⟩ =
         solcSlotWordAt ⟨8⟩ σUpdate I)
     (helapsed : elapsed = uniswapUpdateElapsedWord (solcSlotWordAt ⟨8⟩ σUpdate I) I)
     (hreserve1 :
@@ -503,15 +503,15 @@ theorem syncPrice0CumulativeIntAt_eq_updateWord_nat_form
         (reserve1.toNat * 2 ^ 112 / reserve0.toNat) *
           (UInt256.land reserve32Mask elapsed).toNat) % twoPow256 := by
   have hslot9 :
-      Solm.EVM.storageLoad storageEvm storageEvm.executionEnv.codeOwner ⟨9⟩ =
+      Stele.EVM.storageLoad storageEvm storageEvm.executionEnv.codeOwner ⟨9⟩ =
         solcSlotWordAt ⟨9⟩ σStorage I := by
     have h := congrArg (fun m => solcSlotWordAt ⟨9⟩ m I) hStorageAccounts
-    simp [Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage, solcSlotWordAt,
+    simp [Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage, solcSlotWordAt,
       solcSlotWord,
       hStorageEnv] at h ⊢
     exact h.symm
   have hslot8I :
-      Solm.EVM.storageLoad updateEvm I.codeOwner ⟨8⟩ =
+      Stele.EVM.storageLoad updateEvm I.codeOwner ⟨8⟩ =
         solcSlotWordAt ⟨8⟩ σUpdate I := by
     simpa [hUpdateEnv] using hslot8
   have htime :
@@ -539,7 +539,7 @@ theorem syncPrice1CumulativeIntAt_eq_updateWord_nat_form
     (hStorageEnv : storageEvm.executionEnv = I)
     (hUpdateEnv : updateEvm.executionEnv = I)
     (hslot8 :
-      Solm.EVM.storageLoad updateEvm updateEvm.executionEnv.codeOwner ⟨8⟩ =
+      Stele.EVM.storageLoad updateEvm updateEvm.executionEnv.codeOwner ⟨8⟩ =
         solcSlotWordAt ⟨8⟩ σUpdate I)
     (helapsed : elapsed = uniswapUpdateElapsedWord (solcSlotWordAt ⟨8⟩ σUpdate I) I)
     (hreserve0 :
@@ -553,15 +553,15 @@ theorem syncPrice1CumulativeIntAt_eq_updateWord_nat_form
         (reserve0.toNat * 2 ^ 112 / reserve1.toNat) *
           (UInt256.land elapsed reserve32Mask).toNat) % twoPow256 := by
   have hslot10 :
-      Solm.EVM.storageLoad storageEvm storageEvm.executionEnv.codeOwner ⟨10⟩ =
+      Stele.EVM.storageLoad storageEvm storageEvm.executionEnv.codeOwner ⟨10⟩ =
         solcSlotWordAt ⟨10⟩ σStorage I := by
     have h := congrArg (fun m => solcSlotWordAt ⟨10⟩ m I) hStorageAccounts
-    simp [Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage, solcSlotWordAt,
+    simp [Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage, solcSlotWordAt,
       solcSlotWord,
       hStorageEnv] at h ⊢
     exact h.symm
   have hslot8I :
-      Solm.EVM.storageLoad updateEvm I.codeOwner ⟨8⟩ =
+      Stele.EVM.storageLoad updateEvm I.codeOwner ⟨8⟩ =
         solcSlotWordAt ⟨8⟩ σUpdate I := by
     simpa [hUpdateEnv] using hslot8
   have htime :
@@ -588,7 +588,7 @@ theorem syncUpdatePackedReserveState_accountMap_eq
     (hPost : Eq σ evm.accountMap)
     (henv : evm.executionEnv = I)
     (hslot :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩ =
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩ =
         solcSlotWordAt ⟨8⟩ σ I)
     (hpacked :
       packed =
@@ -604,31 +604,31 @@ theorem syncUpdatePackedReserveState_accountMap_eq
   by_cases haccExists : ∃ acc, evm.accountMap.get? I.codeOwner = some acc
   · obtain ⟨acc, hacc⟩ := haccExists
     have hload0 :
-        Solm.EVM.storageLoad evm I.codeOwner ⟨8⟩ = solcSlotWordAt ⟨8⟩ σ I := by
+        Stele.EVM.storageLoad evm I.codeOwner ⟨8⟩ = solcSlotWordAt ⟨8⟩ σ I := by
       simpa [henv] using hslot
     have hload1 :
-        Solm.EVM.storageLoad
-            (Solm.EVM.storageStore evm I.codeOwner ⟨8⟩ v0)
+        Stele.EVM.storageLoad
+            (Stele.EVM.storageStore evm I.codeOwner ⟨8⟩ v0)
             I.codeOwner ⟨8⟩ =
           v0 := by
       exact storageLoad_storageStore_same_present evm I.codeOwner hacc ⟨8⟩ v0
     obtain ⟨acc0, hacc0⟩ :
         ∃ acc0,
-          (Solm.EVM.storageStore evm I.codeOwner ⟨8⟩ v0).accountMap.get? I.codeOwner =
+          (Stele.EVM.storageStore evm I.codeOwner ⟨8⟩ v0).accountMap.get? I.codeOwner =
             some acc0 := by
       refine ⟨Account.updateStorage acc ⟨8⟩ v0, ?_⟩
-      simp only [Solm.EVM.storageStore, State.lookupAccount]
+      simp only [Stele.EVM.storageStore, State.lookupAccount]
       rw [hacc]
       simp [State.setAccount, Option.option, Std.ExtTreeMap.get?_eq_getElem?]
     have hload2 :
-        Solm.EVM.storageLoad
-            (Solm.EVM.storageStore
-              (Solm.EVM.storageStore evm I.codeOwner ⟨8⟩ v0)
+        Stele.EVM.storageLoad
+            (Stele.EVM.storageStore
+              (Stele.EVM.storageStore evm I.codeOwner ⟨8⟩ v0)
               I.codeOwner ⟨8⟩ v1)
             I.codeOwner ⟨8⟩ =
           v1 := by
       exact storageLoad_storageStore_same_present
-        (Solm.EVM.storageStore evm I.codeOwner ⟨8⟩ v0) I.codeOwner hacc0 ⟨8⟩ v1
+        (Stele.EVM.storageStore evm I.codeOwner ⟨8⟩ v0) I.codeOwner hacc0 ⟨8⟩ v1
     have hbase :
         Eq
           (sstoreAccountMap I.codeOwner σ ⟨8⟩ packed)
@@ -679,27 +679,27 @@ theorem syncUpdatePackedReserveState_accountMap_eq
 abbrev syncUpdateCumulativePackedReserveState
     (evm : EVM.State) (balance0 balance1 : UInt256) : EVM.State :=
   let evmP0 :=
-    Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨9⟩
+    Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨9⟩
       (EVM.wordOfInt (syncPrice0CumulativeIntAt evm evm))
   let evmP1 :=
-    Solm.EVM.storageStore evmP0 evmP0.executionEnv.codeOwner ⟨10⟩
+    Stele.EVM.storageStore evmP0 evmP0.executionEnv.codeOwner ⟨10⟩
       (EVM.wordOfInt (syncPrice1CumulativeIntAt evmP0 evm))
   let evmR0 :=
-    Solm.EVM.storageStore evmP1 evmP1.executionEnv.codeOwner ⟨8⟩
+    Stele.EVM.storageStore evmP1 evmP1.executionEnv.codeOwner ⟨8⟩
       (setUint112Offset0Word
-        (Solm.EVM.storageLoad evmP1 evmP1.executionEnv.codeOwner ⟨8⟩) balance0)
+        (Stele.EVM.storageLoad evmP1 evmP1.executionEnv.codeOwner ⟨8⟩) balance0)
   let evmR1 :=
-    Solm.EVM.storageStore evmR0 evmR0.executionEnv.codeOwner ⟨8⟩
+    Stele.EVM.storageStore evmR0 evmR0.executionEnv.codeOwner ⟨8⟩
       (setUint112Offset14Word
-        (Solm.EVM.storageLoad evmR0 evmR0.executionEnv.codeOwner ⟨8⟩) balance1)
-  Solm.EVM.storageStore evmR1 evmR1.executionEnv.codeOwner ⟨8⟩
+        (Stele.EVM.storageLoad evmR0 evmR0.executionEnv.codeOwner ⟨8⟩) balance1)
+  Stele.EVM.storageStore evmR1 evmR1.executionEnv.codeOwner ⟨8⟩
     (setUint32Offset28Word
-      (Solm.EVM.storageLoad evmR1 evmR1.executionEnv.codeOwner ⟨8⟩)
+      (Stele.EVM.storageLoad evmR1 evmR1.executionEnv.codeOwner ⟨8⟩)
       (uniswapUpdateTimestampWord evm.executionEnv))
 
 abbrev syncPrice0CumulativeIntAtWith
     (storageEvm updateEvm : EVM.State) (reserve0 reserve1 : UInt256) : Int :=
-  (Int.ofNat (Solm.EVM.storageLoad storageEvm storageEvm.executionEnv.codeOwner ⟨9⟩).toNat +
+  (Int.ofNat (Stele.EVM.storageLoad storageEvm storageEvm.executionEnv.codeOwner ⟨9⟩).toNat +
     ((Int.ofNat reserve1.toNat * q112) / Int.ofNat reserve0.toNat) *
         syncTimeElapsedInt updateEvm) % twoPow256
 
@@ -709,7 +709,7 @@ abbrev syncPrice0CumulativeValueAtWith
 
 abbrev syncPrice1CumulativeIntAtWith
     (storageEvm updateEvm : EVM.State) (reserve0 reserve1 : UInt256) : Int :=
-  (Int.ofNat (Solm.EVM.storageLoad storageEvm storageEvm.executionEnv.codeOwner ⟨10⟩).toNat +
+  (Int.ofNat (Stele.EVM.storageLoad storageEvm storageEvm.executionEnv.codeOwner ⟨10⟩).toNat +
     ((Int.ofNat reserve0.toNat * q112) / Int.ofNat reserve1.toNat) *
         syncTimeElapsedInt updateEvm) % twoPow256
 
@@ -720,22 +720,22 @@ abbrev syncPrice1CumulativeValueAtWith
 abbrev syncUpdateCumulativePackedReserveStateWith
     (evm : EVM.State) (balance0 balance1 reserve0 reserve1 : UInt256) : EVM.State :=
   let evmP0 :=
-    Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨9⟩
+    Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨9⟩
       (EVM.wordOfInt (syncPrice0CumulativeIntAtWith evm evm reserve0 reserve1))
   let evmP1 :=
-    Solm.EVM.storageStore evmP0 evmP0.executionEnv.codeOwner ⟨10⟩
+    Stele.EVM.storageStore evmP0 evmP0.executionEnv.codeOwner ⟨10⟩
       (EVM.wordOfInt (syncPrice1CumulativeIntAtWith evmP0 evm reserve0 reserve1))
   let evmR0 :=
-    Solm.EVM.storageStore evmP1 evmP1.executionEnv.codeOwner ⟨8⟩
+    Stele.EVM.storageStore evmP1 evmP1.executionEnv.codeOwner ⟨8⟩
       (setUint112Offset0Word
-        (Solm.EVM.storageLoad evmP1 evmP1.executionEnv.codeOwner ⟨8⟩) balance0)
+        (Stele.EVM.storageLoad evmP1 evmP1.executionEnv.codeOwner ⟨8⟩) balance0)
   let evmR1 :=
-    Solm.EVM.storageStore evmR0 evmR0.executionEnv.codeOwner ⟨8⟩
+    Stele.EVM.storageStore evmR0 evmR0.executionEnv.codeOwner ⟨8⟩
       (setUint112Offset14Word
-        (Solm.EVM.storageLoad evmR0 evmR0.executionEnv.codeOwner ⟨8⟩) balance1)
-  Solm.EVM.storageStore evmR1 evmR1.executionEnv.codeOwner ⟨8⟩
+        (Stele.EVM.storageLoad evmR0 evmR0.executionEnv.codeOwner ⟨8⟩) balance1)
+  Stele.EVM.storageStore evmR1 evmR1.executionEnv.codeOwner ⟨8⟩
     (setUint32Offset28Word
-      (Solm.EVM.storageLoad evmR1 evmR1.executionEnv.codeOwner ⟨8⟩)
+      (Stele.EVM.storageLoad evmR1 evmR1.executionEnv.codeOwner ⟨8⟩)
       (uniswapUpdateTimestampWord evm.executionEnv))
 
 theorem evalExpr_sync_update_price0Cumulative_with
@@ -806,19 +806,19 @@ theorem uniswapUpdateFunctionReturns_conditionTrue_packed
         { contract := contract, locals := syncUpdateTimeElapsedStore evm balance0 balance1 }
         (syncUpdateCumulativePackedReserveState evm balance0 balance1) none) := by
   let evmP0 :=
-    Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨9⟩
+    Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨9⟩
       (EVM.wordOfInt (syncPrice0CumulativeIntAt evm evm))
   let evmP1 :=
-    Solm.EVM.storageStore evmP0 evmP0.executionEnv.codeOwner ⟨10⟩
+    Stele.EVM.storageStore evmP0 evmP0.executionEnv.codeOwner ⟨10⟩
       (EVM.wordOfInt (syncPrice1CumulativeIntAt evmP0 evm))
   let evmR0 :=
-    Solm.EVM.storageStore evmP1 evmP1.executionEnv.codeOwner ⟨8⟩
+    Stele.EVM.storageStore evmP1 evmP1.executionEnv.codeOwner ⟨8⟩
       (setUint112Offset0Word
-        (Solm.EVM.storageLoad evmP1 evmP1.executionEnv.codeOwner ⟨8⟩) balance0)
+        (Stele.EVM.storageLoad evmP1 evmP1.executionEnv.codeOwner ⟨8⟩) balance0)
   let evmR1 :=
-    Solm.EVM.storageStore evmR0 evmR0.executionEnv.codeOwner ⟨8⟩
+    Stele.EVM.storageStore evmR0 evmR0.executionEnv.codeOwner ⟨8⟩
       (setUint112Offset14Word
-        (Solm.EVM.storageLoad evmR0 evmR0.executionEnv.codeOwner ⟨8⟩) balance1)
+        (Stele.EVM.storageLoad evmR0 evmR0.executionEnv.codeOwner ⟨8⟩) balance1)
   have hstoreP0 :
       storageLocStore evm (wordLoc ⟨9⟩) (syncPrice0CumulativeValueAt evm evm) =
         some evmP0 := by
@@ -960,19 +960,19 @@ theorem uniswapUpdateFunctionReturns_conditionTrue_packed_with
         (syncUpdateCumulativePackedReserveStateWith evm balance0 balance1 reserve0 reserve1)
         none) := by
   let evmP0 :=
-    Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨9⟩
+    Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨9⟩
       (EVM.wordOfInt (syncPrice0CumulativeIntAtWith evm evm reserve0 reserve1))
   let evmP1 :=
-    Solm.EVM.storageStore evmP0 evmP0.executionEnv.codeOwner ⟨10⟩
+    Stele.EVM.storageStore evmP0 evmP0.executionEnv.codeOwner ⟨10⟩
       (EVM.wordOfInt (syncPrice1CumulativeIntAtWith evmP0 evm reserve0 reserve1))
   let evmR0 :=
-    Solm.EVM.storageStore evmP1 evmP1.executionEnv.codeOwner ⟨8⟩
+    Stele.EVM.storageStore evmP1 evmP1.executionEnv.codeOwner ⟨8⟩
       (setUint112Offset0Word
-        (Solm.EVM.storageLoad evmP1 evmP1.executionEnv.codeOwner ⟨8⟩) balance0)
+        (Stele.EVM.storageLoad evmP1 evmP1.executionEnv.codeOwner ⟨8⟩) balance0)
   let evmR1 :=
-    Solm.EVM.storageStore evmR0 evmR0.executionEnv.codeOwner ⟨8⟩
+    Stele.EVM.storageStore evmR0 evmR0.executionEnv.codeOwner ⟨8⟩
       (setUint112Offset14Word
-        (Solm.EVM.storageLoad evmR0 evmR0.executionEnv.codeOwner ⟨8⟩) balance1)
+        (Stele.EVM.storageLoad evmR0 evmR0.executionEnv.codeOwner ⟨8⟩) balance1)
   have hstoreP0 :
       storageLocStore evm (wordLoc ⟨9⟩)
           (syncPrice0CumulativeValueAtWith evm evm reserve0 reserve1) =
@@ -1148,7 +1148,7 @@ theorem uniswapSyncUpdateCallReturns_conditionTrue_packed
       (args := [ .var "balance0", .var "balance1", .storage reserve0Ref, .storage reserve1Ref ])
       (argVals := syncUpdateCallArgVals evm balance0 balance1) (callee := updateFunction)
       (locals := syncUpdateCallStore evm balance0 balance1)
-      (calleeSolm :=
+      (calleeStele :=
         { contract := contract, locals := syncUpdateTimeElapsedStore evm balance0 balance1 })
       (value := none)
       (evalExprs_sync_update_call_args evm balance0 balance1)
@@ -1159,7 +1159,7 @@ theorem uniswapSyncUpdateCallReturns_conditionTrue_packed
 theorem uniswapSyncBodyReturns_conditionTrue_packed (evm evm0 evm1 : EVM.State)
     {out0 out1 : ByteArray} {balance0 balance1 : UInt256}
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 : syncToken0GuardTrue evm)
     (hcall0 : typedCallViaEVM config (uniswapLockEnteredState evm)
       (EVM.address (uniswapAddressAtSlot (uniswapLockEnteredState evm) ⟨6⟩))
@@ -1323,10 +1323,10 @@ theorem uniswapUpdatePrice0CumulativeMap_accounts_eq
     (hAccounts : Eq σ evm.accountMap)
     (henv : evm.executionEnv = I)
     (hslot8 :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩ =
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩ =
         solcSlotWordAt ⟨8⟩ σ I) :
     Eq (uniswapUpdatePrice0CumulativeMap σ I)
-      (Solm.EVM.storageStore evm I.codeOwner ⟨9⟩
+      (Stele.EVM.storageStore evm I.codeOwner ⟨9⟩
         (EVM.wordOfInt (syncPrice0CumulativeIntAt evm evm))).accountMap := by
   let reserve0Word : UInt256 := uniswapUpdateReserve0Word σ I
   let reserve1Word : UInt256 := uniswapUpdateReserve1Word σ I
@@ -1381,16 +1381,16 @@ theorem uniswapUpdatePrice1CumulativeMap_accounts_eq
     (hAccounts : Eq σ evm.accountMap)
     (henv : evm.executionEnv = I)
     (hslot8 :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩ =
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩ =
         solcSlotWordAt ⟨8⟩ σ I) :
     let evmP0 :=
-      Solm.EVM.storageStore evm I.codeOwner ⟨9⟩
+      Stele.EVM.storageStore evm I.codeOwner ⟨9⟩
         (EVM.wordOfInt (syncPrice0CumulativeIntAt evm evm))
     Eq (uniswapUpdatePrice1CumulativeMap σ I)
-      (Solm.EVM.storageStore evmP0 I.codeOwner ⟨10⟩
+      (Stele.EVM.storageStore evmP0 I.codeOwner ⟨10⟩
         (EVM.wordOfInt (syncPrice1CumulativeIntAt evmP0 evm))).accountMap := by
   let evmP0 :=
-    Solm.EVM.storageStore evm I.codeOwner ⟨9⟩
+    Stele.EVM.storageStore evm I.codeOwner ⟨9⟩
       (EVM.wordOfInt (syncPrice0CumulativeIntAt evm evm))
   let reserve0Word : UInt256 := uniswapUpdateReserve0Word σ I
   let reserve1Word : UInt256 := uniswapUpdateReserve1Word σ I
@@ -1452,16 +1452,16 @@ theorem syncUpdateCumulativeReturnMap_accounts_eq
     (hAccounts : Eq σ evm.accountMap)
     (henv : evm.executionEnv = I)
     (hslot8 :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩ =
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩ =
         solcSlotWordAt ⟨8⟩ σ I) :
     Eq (uniswapUpdateCumulativeReturnMap σ I balance0 balance1)
       (uniswapLockExitedState
         (syncUpdateCumulativePackedReserveState evm balance0 balance1)).accountMap := by
   let evmP0 :=
-    Solm.EVM.storageStore evm I.codeOwner ⟨9⟩
+    Stele.EVM.storageStore evm I.codeOwner ⟨9⟩
       (EVM.wordOfInt (syncPrice0CumulativeIntAt evm evm))
   let evmP1 :=
-    Solm.EVM.storageStore evmP0 I.codeOwner ⟨10⟩
+    Stele.EVM.storageStore evmP0 I.codeOwner ⟨10⟩
       (EVM.wordOfInt (syncPrice1CumulativeIntAt evmP0 evm))
   let σP1 : AccountMap := uniswapUpdatePrice1CumulativeMap σ I
   let packedCumulative : UInt256 := uniswapUpdateCumulativePackedWord σ I balance0 balance1
@@ -1473,10 +1473,10 @@ theorem syncUpdateCumulativeReturnMap_accounts_eq
   have henvP1 : evmP1.executionEnv = I := by
     simp [evmP1, storageStore_executionEnv, henvP0]
   have hslot8P1 :
-      Solm.EVM.storageLoad evmP1 evmP1.executionEnv.codeOwner ⟨8⟩ =
+      Stele.EVM.storageLoad evmP1 evmP1.executionEnv.codeOwner ⟨8⟩ =
         solcSlotWordAt ⟨8⟩ σP1 I := by
     have h := congrArg (fun m => solcSlotWordAt ⟨8⟩ m I) hP1Accounts
-    simp [Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
+    simp [Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
       solcSlotWordAt, solcSlotWord, henvP1] at h ⊢
     exact h.symm
   have hPackedAccounts :
@@ -1504,27 +1504,27 @@ theorem uniswapUpdatePrice0CumulativeMapWith_accounts_eq
     (hAccounts : Eq σ evm.accountMap)
     (henv : evm.executionEnv = I)
     (hslot8 :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩ =
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩ =
         solcSlotWordAt ⟨8⟩ σ I)
     (hreserve0Lt : reserve0.toNat < 2 ^ 112)
     (hreserve1Lt : reserve1.toNat < 2 ^ 112) :
     Eq (uniswapUpdatePrice0CumulativeMapWith σ I reserve0 reserve1)
-      (Solm.EVM.storageStore evm I.codeOwner ⟨9⟩
+      (Stele.EVM.storageStore evm I.codeOwner ⟨9⟩
         (EVM.wordOfInt
           (syncPrice0CumulativeIntAtWith evm evm reserve0 reserve1))).accountMap := by
   let elapsedWord : UInt256 := uniswapUpdateElapsedFromStorage σ I
   let price0Word : UInt256 :=
     uniswapUpdatePrice0CumulativeWord σ I elapsedWord reserve1 reserve0
   have hslot9 :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨9⟩ =
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨9⟩ =
         solcSlotWordAt ⟨9⟩ σ I := by
     have h := congrArg (fun m => solcSlotWordAt ⟨9⟩ m I) hAccounts
-    simp [Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage, solcSlotWordAt,
+    simp [Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage, solcSlotWordAt,
       solcSlotWord,
       henv] at h ⊢
     exact h.symm
   have hslot8I :
-      Solm.EVM.storageLoad evm I.codeOwner ⟨8⟩ =
+      Stele.EVM.storageLoad evm I.codeOwner ⟨8⟩ =
         solcSlotWordAt ⟨8⟩ σ I := by
     simpa [henv] using hslot8
   have htime :
@@ -1576,19 +1576,19 @@ theorem uniswapUpdatePrice1CumulativeMapWith_accounts_eq
     (hAccounts : Eq σ evm.accountMap)
     (henv : evm.executionEnv = I)
     (hslot8 :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩ =
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩ =
         solcSlotWordAt ⟨8⟩ σ I)
     (hreserve0Lt : reserve0.toNat < 2 ^ 112)
     (hreserve1Lt : reserve1.toNat < 2 ^ 112) :
     let evmP0 :=
-      Solm.EVM.storageStore evm I.codeOwner ⟨9⟩
+      Stele.EVM.storageStore evm I.codeOwner ⟨9⟩
         (EVM.wordOfInt (syncPrice0CumulativeIntAtWith evm evm reserve0 reserve1))
     Eq (uniswapUpdatePrice1CumulativeMapWith σ I reserve0 reserve1)
-      (Solm.EVM.storageStore evmP0 I.codeOwner ⟨10⟩
+      (Stele.EVM.storageStore evmP0 I.codeOwner ⟨10⟩
         (EVM.wordOfInt
           (syncPrice1CumulativeIntAtWith evmP0 evm reserve0 reserve1))).accountMap := by
   let evmP0 :=
-    Solm.EVM.storageStore evm I.codeOwner ⟨9⟩
+    Stele.EVM.storageStore evm I.codeOwner ⟨9⟩
       (EVM.wordOfInt (syncPrice0CumulativeIntAtWith evm evm reserve0 reserve1))
   let elapsedWord : UInt256 := uniswapUpdateElapsedFromStorage σ I
   let σP0 : AccountMap := uniswapUpdatePrice0CumulativeMapWith σ I reserve0 reserve1
@@ -1601,15 +1601,15 @@ theorem uniswapUpdatePrice1CumulativeMapWith_accounts_eq
   have henvP0 : evmP0.executionEnv = I := by
     simp [evmP0, storageStore_executionEnv, henv]
   have hslot10 :
-      Solm.EVM.storageLoad evmP0 evmP0.executionEnv.codeOwner ⟨10⟩ =
+      Stele.EVM.storageLoad evmP0 evmP0.executionEnv.codeOwner ⟨10⟩ =
         solcSlotWordAt ⟨10⟩ σP0 I := by
     have h := congrArg (fun m => solcSlotWordAt ⟨10⟩ m I) hP0Accounts
-    simp [Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage, solcSlotWordAt,
+    simp [Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage, solcSlotWordAt,
       solcSlotWord,
       henvP0] at h ⊢
     exact h.symm
   have hslot8I :
-      Solm.EVM.storageLoad evm I.codeOwner ⟨8⟩ =
+      Stele.EVM.storageLoad evm I.codeOwner ⟨8⟩ =
         solcSlotWordAt ⟨8⟩ σ I := by
     simpa [henv] using hslot8
   have htime :
@@ -1662,7 +1662,7 @@ theorem syncUpdateCumulativePackedMapWith_accounts_eq
     (hAccounts : Eq σ evm.accountMap)
     (henv : evm.executionEnv = I)
     (hslot8 :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩ =
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩ =
         solcSlotWordAt ⟨8⟩ σ I)
     (hreserve0Lt : reserve0.toNat < 2 ^ 112)
     (hreserve1Lt : reserve1.toNat < 2 ^ 112) :
@@ -1671,10 +1671,10 @@ theorem syncUpdateCumulativePackedMapWith_accounts_eq
       (syncUpdateCumulativePackedReserveStateWith
         evm balance0 balance1 reserve0 reserve1).accountMap := by
   let evmP0 :=
-    Solm.EVM.storageStore evm I.codeOwner ⟨9⟩
+    Stele.EVM.storageStore evm I.codeOwner ⟨9⟩
       (EVM.wordOfInt (syncPrice0CumulativeIntAtWith evm evm reserve0 reserve1))
   let evmP1 :=
-    Solm.EVM.storageStore evmP0 I.codeOwner ⟨10⟩
+    Stele.EVM.storageStore evmP0 I.codeOwner ⟨10⟩
       (EVM.wordOfInt (syncPrice1CumulativeIntAtWith evmP0 evm reserve0 reserve1))
   let σP1 : AccountMap := uniswapUpdatePrice1CumulativeMapWith σ I reserve0 reserve1
   let packedCumulative : UInt256 :=
@@ -1688,10 +1688,10 @@ theorem syncUpdateCumulativePackedMapWith_accounts_eq
   have henvP1 : evmP1.executionEnv = I := by
     simp [evmP1, storageStore_executionEnv, henvP0]
   have hslot8P1 :
-      Solm.EVM.storageLoad evmP1 evmP1.executionEnv.codeOwner ⟨8⟩ =
+      Stele.EVM.storageLoad evmP1 evmP1.executionEnv.codeOwner ⟨8⟩ =
         solcSlotWordAt ⟨8⟩ σP1 I := by
     have h := congrArg (fun m => solcSlotWordAt ⟨8⟩ m I) hP1Accounts
-    simp [Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
+    simp [Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
       solcSlotWordAt, solcSlotWord, henvP1] at h ⊢
     exact h.symm
   have hPackedAccounts :
@@ -1718,7 +1718,7 @@ theorem syncUpdateCumulativeReturnMapWith_accounts_eq
     (hAccounts : Eq σ evm.accountMap)
     (henv : evm.executionEnv = I)
     (hslot8 :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩ =
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩ =
         solcSlotWordAt ⟨8⟩ σ I)
     (hreserve0Lt : reserve0.toNat < 2 ^ 112)
     (hreserve1Lt : reserve1.toNat < 2 ^ 112) :
@@ -1757,7 +1757,7 @@ theorem uniswapSyncBodyCumulativeSuccess
     (hPostAccounts1 : σ'' = evm1S.accountMap)
     (henv1I : evm1S.executionEnv = I)
     (hslotWordSource :
-      Solm.EVM.storageLoad evm1S evm1S.executionEnv.codeOwner ⟨8⟩ =
+      Stele.EVM.storageLoad evm1S evm1S.executionEnv.codeOwner ⟨8⟩ =
         solcSlotWordAt ⟨8⟩ σ'' I)
     (rd7060 :
       RD uniswapV2PairBytecode I (Sat256.ofUInt256 g)

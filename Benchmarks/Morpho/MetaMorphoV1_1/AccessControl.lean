@@ -4,7 +4,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.RuntimeBlocks_063
 
 /-! Source and bytecode proofs for the shared owner authorization check. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 
@@ -13,21 +13,21 @@ namespace Benchmarks.Morpho.MetaMorphoV1_1
 attribute [local irreducible] metaMorphoV1_1Bytecode
 
 -- LIBRARY CANDIDATE: equality of address expressions reduces to equality of their values.
-theorem evalExpr_addressEq {cfg : Config} {solm : Frame} {evm : EVM.State}
+theorem evalExpr_addressEq {cfg : Config} {stele : Frame} {evm : EVM.State}
     {lhs rhs : Expr} {a b : AccountAddress}
-    (ha : evalExpr? cfg solm evm lhs = .ok (.address a))
-    (hb : evalExpr? cfg solm evm rhs = .ok (.address b)) :
-    evalExpr? cfg solm evm (.binary .eq lhs rhs) = .ok (.bool (decide (a = b))) := by
+    (ha : evalExpr? cfg stele evm lhs = .ok (.address a))
+    (hb : evalExpr? cfg stele evm rhs = .ok (.address b)) :
+    evalExpr? cfg stele evm (.binary .eq lhs rhs) = .ok (.bool (decide (a = b))) := by
   rw [evalExpr_binary_nonshort (by decide) (by decide)]
   simp only [ha, hb, bind, EvalResult.bind]
   simp [evalBinaryOp?, BEq.beq]
 
 -- LIBRARY CANDIDATE: inequality of address expressions reduces to inequality of their values.
-theorem evalExpr_addressNe {cfg : Config} {solm : Frame} {evm : EVM.State}
+theorem evalExpr_addressNe {cfg : Config} {stele : Frame} {evm : EVM.State}
     {lhs rhs : Expr} {a b : AccountAddress}
-    (ha : evalExpr? cfg solm evm lhs = .ok (.address a))
-    (hb : evalExpr? cfg solm evm rhs = .ok (.address b)) :
-    evalExpr? cfg solm evm (.binary .ne lhs rhs) = .ok (.bool (decide (a ≠ b))) := by
+    (ha : evalExpr? cfg stele evm lhs = .ok (.address a))
+    (hb : evalExpr? cfg stele evm rhs = .ok (.address b)) :
+    evalExpr? cfg stele evm (.binary .ne lhs rhs) = .ok (.bool (decide (a ≠ b))) := by
   rw [evalExpr_binary_nonshort (by decide) (by decide)]
   simp only [ha, hb, bind, EvalResult.bind]
   simp [evalBinaryOp?, BEq.beq]
@@ -59,7 +59,7 @@ theorem canonicalAddress_eq_masked (w old : UInt256) (hcanon : w.toNat < EVM.add
 
 def ownerAddress (evm : EVM.State) : AccountAddress :=
   AccountAddress.ofNat (UInt256.land
-    (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩) solcAddrMask).toNat
+    (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩) solcAddrMask).toNat
 
 abbrev checkOwnerFunction : FunctionDecl := contract.functions[0]!
 

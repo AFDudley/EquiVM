@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.Mutation
 
 /-! Balance storage operations and wrapping arithmetic for ERC20 updates. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 
@@ -13,10 +13,10 @@ def balanceSlot (owner : AccountAddress) : UInt256 :=
   solcMappingSlot ⟨0⟩ (UInt256.ofNat owner.toNat)
 
 def balanceWord (evm : State) (owner : AccountAddress) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (balanceSlot owner)
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (balanceSlot owner)
 
 def balanceStore (evm : State) (owner : AccountAddress) (value : UInt256) : State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (balanceSlot owner) value
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (balanceSlot owner) value
 
 def balanceDebitState (evm : State) (owner : AccountAddress) (value : UInt256) : State :=
   balanceStore evm owner (UInt256.sub (balanceWord evm owner) value)

@@ -1,13 +1,13 @@
 import Benchmarks.Dss.Clipper.ConstructorSource
 import Benchmarks.Dss.Clipper.ConstructorTrace
-import Solm.Refine
+import Stele.Refine
 import Reasoning.Immutables
 
 /-!
 # MakerDAO/Sky DSS Clipper constructor correctness
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 open Reasoning.Immutables (wordsOf wordsOf_of_get Layout.deployed)
 
@@ -39,10 +39,10 @@ private theorem clipperCtorStateEquiv
       h0.storageStore_codeOwner ⟨14⟩ (show (⟨0⟩ : UInt256) = ⟨0⟩ by rfl)
   have hSpotter :
       setAddressOffset0Word
-          (Solm.EVM.storageLoad evm1e evm1e.executionEnv.codeOwner ⟨3⟩)
+          (Stele.EVM.storageLoad evm1e evm1e.executionEnv.codeOwner ⟨3⟩)
           (EVM.word spotter.val) =
         setAddressOffset0Word
-          (Solm.EVM.storageLoad evm1s evm1s.executionEnv.codeOwner ⟨3⟩)
+          (Stele.EVM.storageLoad evm1s evm1s.executionEnv.codeOwner ⟨3⟩)
           (EVM.word spotter.val) :=
     congrArg (fun old => setAddressOffset0Word old (EVM.word spotter.val))
       (h1.storageLoad_codeOwner ⟨3⟩)
@@ -51,10 +51,10 @@ private theorem clipperCtorStateEquiv
       h1.storageStore_codeOwner ⟨3⟩ hSpotter
   have hDog :
       setAddressOffset0Word
-          (Solm.EVM.storageLoad evm2e evm2e.executionEnv.codeOwner ⟨1⟩)
+          (Stele.EVM.storageLoad evm2e evm2e.executionEnv.codeOwner ⟨1⟩)
           (EVM.word dog.val) =
         setAddressOffset0Word
-          (Solm.EVM.storageLoad evm2s evm2s.executionEnv.codeOwner ⟨1⟩)
+          (Stele.EVM.storageLoad evm2s evm2s.executionEnv.codeOwner ⟨1⟩)
           (EVM.word dog.val) :=
     congrArg (fun old => setAddressOffset0Word old (EVM.word dog.val))
       (h2.storageLoad_codeOwner ⟨1⟩)
@@ -173,14 +173,14 @@ theorem clipperConstructorCorrect :
           clipperCtorAfterWardsState, clipperCtorAfterBufState,
           clipperCtorAfterDogState, clipperCtorAfterSpotterState,
           clipperCtorAfterStoppedState, initState, storageStore_accountMap,
-          storageStore_executionEnv, Solm.EVM.storageLoad, State.lookupAccount,
+          storageStore_executionEnv, Stele.EVM.storageLoad, State.lookupAccount,
           Account.lookupStorage, solcSlotWord, clipperCtorCallerWardsSlot_eq] using
           hstate.accountMap
       refine .execution
         (by simpa [Sat256.ofUInt256, σFinal] using hsuccess)
         (by
           simpa [evm0, evm1, evm2, evm3, evm4, evm5] using
-            clipperSolmCtorExecSuccess
+            clipperSteleCtorExecSuccess
               (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
               vat spotter dog ilk hilk hwv)
         ?_ ?_
@@ -198,7 +198,7 @@ theorem clipperConstructorCorrect :
         (by simpa [Sat256.ofUInt256] using hOOG)
     · exact .execution
         (by simpa [Sat256.ofUInt256] using hrev)
-        (clipperSolmCtorExecReverts_nonpayable
+        (clipperSteleCtorExecReverts_nonpayable
           (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
           vat spotter dog ilk hwv)
         (ctorResultEquiv.revert rfl rfl) trivial

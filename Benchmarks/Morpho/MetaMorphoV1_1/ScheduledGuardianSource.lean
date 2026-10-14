@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.SubmitGuardianSyntax
 
 /-! Source execution of the deferred guardian update, including overflow and static failure. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 

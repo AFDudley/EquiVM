@@ -5,23 +5,23 @@ import Benchmarks.WETH9.StringReturnSymbol2
 
 `symbol()` is the slot-1 twin of `name()`: a public non-payable getter returning the dynamic string
 stored at slot 1.  The EVM return encoder is proved in `StringReturnSymbol.lean`/
-`StringReturnSymbol2.lean` (empty/short/long); this module connects those `RDret`s to the Solm
+`StringReturnSymbol2.lean` (empty/short/long); this module connects those `RDret`s to the Stele
 `.return [.storage symbolRef]` body via `returnEquiv`, a direct mirror of `Name.lean` for slot 1.
 Shared header/word/slot-parametric encode machinery lives in `StringEncode.lean`. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 4000000
 
 namespace Benchmarks.WETH9
 
-/-! ## Solm-side `symbol()` storage read -/
+/-! ## Stele-side `symbol()` storage read -/
 
 /-- The evaled `symbol` storage reference. -/
 def symbolEvaledRef : EvaledStorageRef := { base := "symbol", steps := [] }
 
-/-- The Solm `symbol()` body's `.storage symbolRef` evaluates through the WETH9 total-decode string
+/-- The Stele `symbol()` body's `.storage symbolRef` evaluates through the WETH9 total-decode string
     hook `weth9ReadBytesValue?`. -/
 theorem weth9SymbolStorageRead {σ σ₀ A I} {g : Sat256} :
     evalExpr? config { contract := contract, locals := ∅ } (initState σ σ₀ g A I)
@@ -42,7 +42,7 @@ theorem weth9SymbolBaseSlotLen {σ σ₀ A I} {g : Sat256} :
   simp only [symbolEvaledRef, List.nil_append, storageLayoutRaw,
     storageLoad_initState_solcSlotWord, weth9DecodeBytesLengthHeader_stringLen]
 
-/-- The `.bytes` value the Solm `symbol()` body returns: the decoded compact string. -/
+/-- The `.bytes` value the Stele `symbol()` body returns: the decoded compact string. -/
 theorem weth9SymbolReadValue {σ σ₀ A I} {g : Sat256} :
     weth9ReadBytesValue? storageLayoutRaw symbolEvaledRef (initState σ σ₀ g A I) =
       .ok (.bytes (if (weth9StringLen (solcSlotWord σ I ⟨1⟩)).toNat < 32
@@ -56,7 +56,7 @@ theorem weth9SymbolReadValue {σ σ₀ A I} {g : Sat256} :
   simp only [storageLoad_initState_solcSlotWord]
   split <;> rfl
 
-/-- The full Solm `symbol()` body `evalExpr?` result. -/
+/-- The full Stele `symbol()` body `evalExpr?` result. -/
 theorem weth9SymbolEval {σ σ₀ A I} {g : Sat256} :
     evalExpr? config { contract := contract, locals := ∅ } (initState σ σ₀ g A I)
       (.storage symbolRef)
@@ -223,20 +223,20 @@ theorem weth9SelectorDispatchSymbol {I : ExecutionEnv} (hsel : selIs I (weth9Sel
 
 /-- `symbol()` has no parameters: its ABI decode yields the empty store. -/
 theorem weth9Decode_symbol_ok {I : ExecutionEnv} (hsz4 : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (symbolTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (symbolTransition.params.map Param.name)
       (transitionSignature symbolTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some (∅ : Store)
+  change decodeCalldataWithMode .modern [] [] I.calldata = some (∅ : Store)
   exact decodeCalldataWithMode_empty_ok hsz4
 
 theorem weth9SymbolBodyCore {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = weth9Bytecode) (hsize : I.calldata.size < UInt256.size)
-    (hsel : selIs I (weth9SelBytes 7)) :
+    (hsel : selIs I (weth9SelBytes 7)) (hwf : weth9StorageWF σ I) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   have hsz4 : 4 ≤ I.calldata.size :=
     calldata_size_ge_of_selIs I (weth9SelBytes 7) (by native_decide) hsel
   by_cases hwv : I.weiValue = ⟨0⟩
-  · -- string return: the Solm `.return [.storage symbolRef]` body ABI-encodes to the EVM encoder's
-    -- output (`StringReturnSymbol2.lean`); `weth9SymbolReturnSizeBound` handles the ≥2^64-byte regime.
+  · -- string return: the Stele `.return [.storage symbolRef]` body ABI-encodes to the EVM encoder's
+    -- output (`StringReturnSymbol2.lean`); `weth9StorageWF` excludes the ≥2^64-byte regime.
     have hbody := nonpayableReturnExprBodyReturns (cfg := config) (contract := contract)
       (evm := initState σ σ₀ (Sat256.ofUInt256 g) A I) (locals := ∅)
       (by simp only [initState]; exact hwv) weth9SymbolEval
@@ -267,12 +267,12 @@ theorem weth9SymbolBodyCore {σ σ₀ A I} {g : UInt256}
           have := weth9SymLongLen_ge32 hge31; omega
         exact weth9ReEquivExecGen hcode
           (weth9SymbolStringLongReturns (g := Sat256.ofUInt256 g) hcode hwv hsz4 hsize hsel hge31
-            (weth9SymbolReturnSizeBound σ I))
+            (weth9StorageWF_symbolReturnSizeBound hwf hsel hwv))
           (weth9SelectorDispatchSymbol hsel) (weth9Decode_symbol_ok hsz4)
           (by rw [symbolTransition]; exact hbody) rfl
           (returnEquiv_of_encode (by
             rw [if_neg hge32]
-            exact weth9SymbolEncode_long hge31 (weth9SymbolReturnSizeBound σ I)))
+            exact weth9SymbolEncode_long hge31 (weth9StorageWF_symbolReturnSizeBound hwf hsel hwv)))
   · -- non-payable revert: EVM reverts at symbol's callvalue guard (entry 623, gt 635).
     obtain ⟨_, _, h623⟩ := weth9ReachSymbol (σ := σ)
       (σ₀ := σ₀) (A := A) (I := I) (g := Sat256.ofUInt256 g) hcode hsz4 hsize hsel

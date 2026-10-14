@@ -4,7 +4,7 @@ import Benchmarks.EAS.Attester.WordSequenceMemory
 
 /-! The four input words and the canonical address returned by signature recovery. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 

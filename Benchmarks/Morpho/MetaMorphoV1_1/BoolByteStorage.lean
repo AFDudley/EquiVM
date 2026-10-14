@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.Mutation
 
 /-! Setting a packed boolean at any byte offset. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 
@@ -55,23 +55,23 @@ theorem setBoolByteTrueWord_toNat (old : UInt256) (offset : Fin 32) :
 -- GENERALIZES Reasoning.PackedStorage.storageLocStore_bool_true_offset20 to every byte offset.
 theorem storageLocStore_bool_true_at (evm : State) (slot : UInt256) (offset : Fin 32) :
     storageLocStore evm (packedBoolLocAt slot offset) (.bool true) =
-      some (Solm.EVM.storageStore evm evm.executionEnv.codeOwner slot
-        (setBoolByteTrueWord (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot) offset)) := by
+      some (Stele.EVM.storageStore evm evm.executionEnv.codeOwner slot
+        (setBoolByteTrueWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot) offset)) := by
   unfold storageLocStore storageLocWriteWord packedBoolLocAt
   simp only [valueToWord, bind, Option.bind]
   congr 2
   apply u256_inj
   change fromBytes'
     ((EVM.Word.toBytesLEWithSizeProof
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).1.take offset.val ++
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).1.take offset.val ++
       (EVM.Word.toBytesLEWithSizeProof true.toUInt256).1.take 1 ++
       (EVM.Word.toBytesLEWithSizeProof
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).1.drop (offset.val + 1)) = _
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).1.drop (offset.val + 1)) = _
   rw [fromBytes'_append, fromBytes'_append, fromBytes'_take_wordLE,
     fromBytes'_take_wordLE, fromBytes'_drop_wordLE, setBoolByteTrueWord_toNat]
   simp only [List.length_append, List.length_take,
     (EVM.Word.toBytesLEWithSizeProof
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).2,
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).2,
     (EVM.Word.toBytesLEWithSizeProof true.toUInt256).2,
     Nat.min_eq_left (by have := offset.isLt; omega : offset.val ≤ 32)]
   change _ % 256 ^ offset.val + 2 ^ (8 * offset.val) * 1 +

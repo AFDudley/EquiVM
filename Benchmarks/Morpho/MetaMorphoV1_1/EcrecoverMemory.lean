@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.StructReturnMemory
 
 /-! Fixed recovery buffers: four input words and a zeroed output word in scratch memory. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 

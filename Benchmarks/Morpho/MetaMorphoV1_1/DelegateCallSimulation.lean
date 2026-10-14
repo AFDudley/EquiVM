@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.DelegateCallReach
 
 /-! The source and runtime delegate calls use the same invocation of Θ. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 

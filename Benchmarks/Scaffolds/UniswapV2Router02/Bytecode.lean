@@ -12,7 +12,7 @@ The runtime is solc's immutable template; a deployment patches it with the immut
 (`Benchmarks.UniswapV2Router02.Immutables.deployedRuntime`).
 -/
 
-open Solm Ethereum Ethereum.EVM
+open Stele Ethereum Ethereum.EVM
 
 namespace Benchmarks.UniswapV2Router02
 

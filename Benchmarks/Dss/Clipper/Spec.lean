@@ -1,16 +1,16 @@
-import Solm.SolidityStorage
-import Solm.Semantics
-import Solm.SolidityLayout
+import Stele.SolidityStorage
+import Stele.Semantics
+import Stele.SolidityLayout
 import Benchmarks.Dss.Clipper.Immutables
 
 /-!
 # MakerDAO/Sky DSS Clipper benchmark spec
 
-Faithful Solm benchmark spec for upstream `dss/src/clip.sol`.
+Faithful Stele benchmark spec for upstream `dss/src/clip.sol`.
 Events are omitted, matching the existing event-bearing DSS benchmarks.
 -/
 
-open Solm ABI Ethereum
+open Stele ABI Ethereum
 open Benchmarks.Dss.Clipper.Immutables
 
 namespace Benchmarks.Dss.Clipper
@@ -685,8 +685,7 @@ def contract : ContractDecl :=
 
 def config : Config :=
   { storageBackend := solidityStorageBackend storageLayout
-    externalABI := externalABI
-    abiDecodeMode := DecodeMode.legacySolc05
+    externalABI := (externalABI).withMode DecodeMode.legacySolc05
     selfDeployment := genSolidityConstructorDeployment contract.ctor.params }
 
 end Benchmarks.Dss.Clipper

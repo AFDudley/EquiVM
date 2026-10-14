@@ -1,8 +1,8 @@
-import Benchmarks.WETH9.TransferFromSolm
+import Benchmarks.WETH9.TransferFromStele
 
 /-! # WETH9 `transferFrom(address,address,uint256)` refinement -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 1000000
@@ -175,7 +175,7 @@ theorem weth9TFConnect {σ σ₀ A I} {g : UInt256} {evmPost : EVM.State} {cs}
     runtimeRefinementFor config contract σ σ₀ g A I := by
   refine weth9ReEquivExecGen (t := transferFromTransition) hcode hX
     (weth9SelectorDispatchTransferFrom hsel) ?_ hbody ?_ ?_
-  · show decodeCalldataWithMode config.abiDecodeMode (transferFromTransition.params.map Param.name)
+  · show config.externalABI.decodeCalldata? (transferFromTransition.params.map Param.name)
       (transitionSignature transferFromTransition).paramTypes I.calldata = some (tfStore I)
     exact tfDecode_ok hsz100
   · exact hbodyMap.symm
@@ -253,10 +253,10 @@ theorem weth9TransferFromBodyCore {σ σ₀ A I} {g : UInt256}
           rcases hXSplit with ⟨_hperm, hX⟩ | ⟨hperm, hstatic⟩
           swap
           · exact weth9ReEquivExecStatic hcode hstatic hdisp (tfDecode_ok hsz100)
-              ((weth9TFSolmSkipSenderSplit (g := Sat256.ofUInt256 g)
+              ((weth9TFSteleSkipSenderSplit (g := Sat256.ofUInt256 g)
                 hwv hsrcAddr hbal).2 hperm)
           obtain ⟨evmPost, cs, hbody, hmap⟩ :=
-            weth9TFSolmSkipSender (σ := σ) (σ₀ := σ₀)
+            weth9TFSteleSkipSender (σ := σ) (σ₀ := σ₀)
               (A := A) (I := I) (g := Sat256.ofUInt256 g) hwv hsrcAddr hbal
           exact weth9TFConnect hcode hsel hsz100 hX hbody hmap
         · -- src ≠ caller: load the allowance
@@ -275,10 +275,10 @@ theorem weth9TransferFromBodyCore {σ σ₀ A I} {g : UInt256}
             rcases hXSplit with ⟨_hperm, hX⟩ | ⟨hperm, hstatic⟩
             swap
             · exact weth9ReEquivExecStatic hcode hstatic hdisp (tfDecode_ok hsz100)
-                ((weth9TFSolmSkipMaxSplit (g := Sat256.ofUInt256 g)
+                ((weth9TFSteleSkipMaxSplit (g := Sat256.ofUInt256 g)
                   hwv hsrcAddr hmax hbal).2 hperm)
             obtain ⟨evmPost, cs, hbody, hmap⟩ :=
-              weth9TFSolmSkipMax (σ := σ) (σ₀ := σ₀)
+              weth9TFSteleSkipMax (σ := σ) (σ₀ := σ₀)
                 (A := A) (I := I) (g := Sat256.ofUInt256 g) hwv hsrcAddr hmax
                 hbal
             exact weth9TFConnect hcode hsel hsz100 hX hbody hmap
@@ -291,7 +291,7 @@ theorem weth9TransferFromBodyCore {σ σ₀ A I} {g : UInt256}
                 ⟨hperm, _, _, h1282⟩ | ⟨hperm, hstatic⟩
               swap
               · exact weth9ReEquivExecStatic hcode hstatic hdisp (tfDecode_ok hsz100)
-                  ((weth9TFSolmSpendSplit (g := Sat256.ofUInt256 g)
+                  ((weth9TFSteleSpendSplit (g := Sat256.ofUInt256 g)
                     hwv hsrcAddr hmax hallow hbal).2 hperm)
               have hspendbase : (solcNestedMappingCallerHashMem ⟨4⟩ (tfSrcMasked I) I
                   (wtfAllowHashMem I (tfSrcMasked I))).size = 96 :=
@@ -303,7 +303,7 @@ theorem weth9TransferFromBodyCore {σ σ₀ A I} {g : UInt256}
                     (wtfAllowHashMem_size I (tfSrcMasked I)) (wtfAllowHashMem_read64 I (tfSrcMasked I))))
                 (by simp only [List.length_cons, List.length_nil]; omega)
               obtain ⟨evmPost, cs, hbody, hmap⟩ :=
-                weth9TFSolmSpend (σ := σ) (σ₀ := σ₀)
+                weth9TFSteleSpend (σ := σ) (σ₀ := σ₀)
                   (A := A) (I := I) (g := Sat256.ofUInt256 g) hwv hsrcAddr
                   hmax hallow
                   hbal
@@ -315,7 +315,7 @@ theorem weth9TransferFromBodyCore {σ σ₀ A I} {g : UInt256}
                 (by change (tfAllowWord I σ).toNat < (tfWadWord I).toNat; omega)
                 (by simp only [List.length_cons, List.length_nil]; omega)
               exact weth9ReEquivExecRev hcode hrev hdisp (tfDecode_ok hsz100)
-                (weth9TFSolmRevAllow (σ := σ) (σ₀ := σ₀)
+                (weth9TFSteleRevAllow (σ := σ) (σ₀ := σ₀)
                   (A := A) (I := I) (g := Sat256.ofUInt256 g) hwv
                   hsrcAddr hmax hbal
                   (by omega))
@@ -324,7 +324,7 @@ theorem weth9TransferFromBodyCore {σ σ₀ A I} {g : UInt256}
           (by change (tfBalSrcWord I σ).toNat < (tfWadWord I).toNat; omega)
           (by simp only [List.length_cons, List.length_nil]; omega)
         exact weth9ReEquivExecRev hcode hrev hdisp (tfDecode_ok hsz100)
-          (weth9TFSolmRevBal (σ := σ) (σ₀ := σ₀)
+          (weth9TFSteleRevBal (σ := σ) (σ₀ := σ₀)
             (A := A) (I := I) (g := Sat256.ofUInt256 g) hwv
             (by omega))
     · -- calldata < 100: decode failure

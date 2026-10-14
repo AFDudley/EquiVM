@@ -2,16 +2,16 @@ import Benchmarks.Morpho.MetaMorphoV1_1.MappingStorage
 
 /-! Nested address mapping reads and their two keccak memory regions. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 
 -- GENERALIZES evalStorageRef_addressIndex to a pair of address mapping indices.
-theorem evalStorageRef_twoAddressIndices {cfg : Config} {solm : Frame} {evm : EVM.State}
+theorem evalStorageRef_twoAddressIndices {cfg : Config} {stele : Frame} {evm : EVM.State}
     (base name₁ name₂ : Ident) (a b : AccountAddress)
-    (hget₁ : solm.locals.get? name₁ = some (.address a))
-    (hget₂ : solm.locals.get? name₂ = some (.address b)) :
-    evalStorageRef cfg solm evm ⟨base, [.mindex (.var name₁), .mindex (.var name₂)]⟩ =
+    (hget₁ : stele.locals.get? name₁ = some (.address a))
+    (hget₂ : stele.locals.get? name₂ = some (.address b)) :
+    evalStorageRef cfg stele evm ⟨base, [.mindex (.var name₁), .mindex (.var name₂)]⟩ =
       .ok ⟨base, [.mindex (.address a), .mindex (.address b)]⟩ := by
   simp only [evalStorageRef, evalStorageRefSteps, evalStorageRefStep, evalExpr?, hget₁, hget₂,
     valueToKey?, EvalResult.ofOption, EvalResult.bind, bind, pure]
@@ -23,7 +23,7 @@ theorem evalStorage_allowance (evm : EVM.State) (locals imms : Store) (owner spe
     (hcanon₁ : owner.toNat < EVM.addressModulus) (hcanon₂ : spender.toNat < EVM.addressModulus) :
     evalExpr? config { contract := contract, locals := locals, immutables := imms } evm
       (.storage ⟨"_allowances", [.mindex (.var "owner"), .mindex (.var "spender")]⟩) =
-      .ok (.int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      .ok (.int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (solcMappingSlot (solcMappingSlot ⟨1⟩ owner) spender)).toNat)) := by
   apply evalExpr_storage_scalar_value
     (er := ⟨"_allowances", [.mindex (.address (AccountAddress.ofNat owner.toNat)),

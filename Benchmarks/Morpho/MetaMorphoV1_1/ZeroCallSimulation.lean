@@ -2,7 +2,7 @@ import Reasoning.ExternalCall
 
 /-! Couple a zero-value CALL to the source, including static mode and the depth limit. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
 

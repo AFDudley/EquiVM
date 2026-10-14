@@ -1,11 +1,11 @@
-import Solm.Semantics
-import Solm.SolidityLayout
-import Solm.SolidityStorage
-import Solm.MetaSolidityLayout
+import Stele.Semantics
+import Stele.SolidityLayout
+import Stele.SolidityStorage
+import Stele.MetaSolidityLayout
 
-/-! # Truth — Solm specification for `truth()` (pure data; independent of the proof library). -/
+/-! # Truth — Stele specification for `truth()` (pure data; independent of the proof library). -/
 
-open Solm ABI
+open Stele ABI
 
 /-- The single transition: `truth()` requires zero callvalue and returns `true`.
     (The `require(callvalue == 0)` mirrors the compiler-inserted non-payable guard.) -/
@@ -17,7 +17,7 @@ def truthTransition : TransitionDecl :=
       [ .require (.binary .eq (.env .callvalue) (.intLit 0))
       , .return [(.boolLit true)] ] }
 
-/-- Solm specification of the `Truth` contract: no storage, no constructor body,
+/-- Stele specification of the `Truth` contract: no storage, no constructor body,
     a single transition. -/
 def truthContract : ContractDecl :=
   { name := "Truth"

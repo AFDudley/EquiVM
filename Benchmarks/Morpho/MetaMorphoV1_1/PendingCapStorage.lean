@@ -2,19 +2,19 @@ import Benchmarks.Morpho.MetaMorphoV1_1.MarketRemovalStorage
 
 /-! The two packed pending-cap writes, including the captured scheduling timestamp. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 
 def pendingCapValueState (evm : State) (id cap : UInt256) : State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (solcMappingSlot ⟨16⟩ id)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (solcMappingSlot ⟨16⟩ id)
     (setPendingUint192Word
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (solcMappingSlot ⟨16⟩ id)) cap)
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (solcMappingSlot ⟨16⟩ id)) cap)
 
 def pendingCapTimeState (evm : State) (id time : UInt256) : State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (solcMappingSlot ⟨16⟩ id)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (solcMappingSlot ⟨16⟩ id)
     (setPendingTimeHighWord
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (solcMappingSlot ⟨16⟩ id)) time)
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (solcMappingSlot ⟨16⟩ id)) time)
 
 def pendingCapScheduledState (evm : State) (id cap : UInt256) : State :=
   pendingCapTimeState (pendingCapValueState evm id cap) id (pendingTimelockTime evm)

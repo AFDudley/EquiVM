@@ -5,7 +5,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.ApprovalCalls
 
 /-! Source paths for the recipient guard, balance lookup, transfer, and Skim event. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 
@@ -18,7 +18,7 @@ def skimLocals (token : AccountAddress) : Store :=
 
 def skimRecipientAddress (evm : State) : AccountAddress :=
   AccountAddress.ofNat (UInt256.land
-    (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨19⟩) solcAddrMask).toNat
+    (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨19⟩) solcAddrMask).toNat
 
 def skimFrame (evm : State) (imms : Store) (token : AccountAddress) : Frame :=
   ⟨contract, ((skimLocals token).insert "__calldata" (.bytes evm.executionEnv.calldata)).insert

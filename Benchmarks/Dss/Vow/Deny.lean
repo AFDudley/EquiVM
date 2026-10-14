@@ -1,7 +1,7 @@
 import Reasoning.SolcRoutines
 import Benchmarks.Dss.Vow.Common
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 0
@@ -50,7 +50,7 @@ theorem vowAuthGuardEval_true {σ σ₀ A I} {g : Sat256} {locals : Store}
       (.binary .eq (.storage (wardsRef sender)) (.intLit 1)) = .ok (.bool true) := by
   have her := vowCallerWardsEvaledRef_ok (σ := σ)
     (σ₀ := σ₀) (A := A) (I := I) (g := g) (locals := locals) hbase
-  have hload : Solm.EVM.storageLoad (initState σ σ₀ g A I) I.codeOwner
+  have hload : Stele.EVM.storageLoad (initState σ σ₀ g A I) I.codeOwner
       (vowCallerWardsSlot I) = ⟨1⟩ := by
     simpa [solcSlotWordAt] using hauth
   rw [evalExpr?]
@@ -78,7 +78,7 @@ theorem vowAuthGuardEval_false {σ σ₀ A I} {g : Sat256} {locals : Store}
       (.binary .eq (.storage (wardsRef sender)) (.intLit 1)) = .ok (.bool false) := by
   have her := vowCallerWardsEvaledRef_ok (σ := σ)
     (σ₀ := σ₀) (A := A) (I := I) (g := g) (locals := locals) hbase
-  let w := Solm.EVM.storageLoad (initState σ σ₀ g A I) I.codeOwner
+  let w := Stele.EVM.storageLoad (initState σ σ₀ g A I) I.codeOwner
       (vowCallerWardsSlot I)
   have hload : w ≠ ⟨1⟩ := by
     intro hw
@@ -150,7 +150,7 @@ theorem vowDispatch_deny {I : ExecutionEnv}
     exact hsel
 
 theorem vowDecode_deny_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (denyTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (denyTransition.params.map Param.name)
       (transitionSignature denyTransition).paramTypes I.calldata =
         some ((∅ : Store).insert "usr" (.address (denyUsr I))) := by
   simpa [config, denyTransition, denyUsr] using
@@ -158,7 +158,7 @@ theorem vowDecode_deny_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
 
 theorem vowDecode_deny_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (denyTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (denyTransition.params.map Param.name)
       (transitionSignature denyTransition).paramTypes I.calldata = none := by
   simpa [config, denyTransition] using
     (decodeCalldata_legacyAddress_none_short (cd := I.calldata) (x := "usr") hsz4 hshort)
@@ -199,7 +199,7 @@ theorem vowDenyBodyCore
     (hsize : I.calldata.size < UInt256.size)
     (hdispatch : dispatchMsg contract I.calldata = some denyTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (denyTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (denyTransition.params.map Param.name)
         (transitionSignature denyTransition).paramTypes I.calldata =
           some ((∅ : Store).insert "usr" (.address (denyUsr I))))
     (hreach : ∃ k C, RD vowBytecode I (Sat256.ofUInt256 g)
@@ -227,15 +227,15 @@ theorem vowDenyBodyCore
     (by native_decide) (by native_decide) (by native_decide) (by native_decide)
     (by native_decide) (by native_decide) (by native_decide) (by jump_dest) (by simp)
   by_cases hauthEvm : solcSlotWordAt callerSlot σ I = ⟨1⟩
-  · have hauthSolm : solcSlotWordAt callerSlot σ I = ⟨1⟩ := by
+  · have hauthStele : solcSlotWordAt callerSlot σ I = ⟨1⟩ := by
       rw [← hcallerWord]
       exact hauthEvm
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-    let evm1 := Solm.EVM.storageStore evm0 I.codeOwner (denySlotFor I) ⟨0⟩
+    let evm1 := Stele.EVM.storageStore evm0 I.codeOwner (denySlotFor I) ⟨0⟩
     have hguard := vowAuthGuardEval_true
       (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
       (g := Sat256.ofUInt256 g) (locals := locals)
-      (by simp [locals]) hauthSolm
+      (by simp [locals]) hauthStele
     have hassign :
         assignStorageRef? config { contract := contract, locals := locals } evm0
           .storage (wardsRef (.var "usr")) (.int 0) =
@@ -263,7 +263,7 @@ theorem vowDenyBodyCore
         ExecTransitionBody config contract evm0 locals denyTransition.body
           (.returned { contract := contract, locals := locals } evm1 none) := by
       have hblock := nonpayableRequireAssignStorageBlock
-        (cfg := config) (solm := { contract := contract, locals := locals })
+        (cfg := config) (stele := { contract := contract, locals := locals })
         (evm := evm0) (evm' := evm1)
         (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
         (rhs := .intLit 0) (ref := wardsRef (.var "usr")) (value := .int 0)
@@ -302,7 +302,7 @@ theorem vowDenyBodyCore
         (by
           simpa [ExecTransitionBody, denyTransition, nonpayable, auth, evm0] using
             ExecFuncBody.execBlockStatic (nonpayableRequireAssignStorageBlockStatic
-              (cfg := config) (solm := { contract := contract, locals := locals })
+              (cfg := config) (stele := { contract := contract, locals := locals })
               (evm := evm0)
               (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
               (rhs := .intLit 0) (ref := wardsRef (.var "usr")) (value := .int 0)
@@ -325,17 +325,17 @@ theorem vowDenyBodyCore
       exact returnEquiv.fallthrough rfl (by rfl) (by native_decide)
     exact hret.reEquivExecutionGen hcode hdispatch hdecode hbody
       haccounts henc
-  · have hauthSolm : solcSlotWordAt callerSlot σ I ≠ ⟨1⟩ := by
-      intro hsolm
-      exact hauthEvm (by rw [hcallerWord, hsolm])
+  · have hauthStele : solcSlotWordAt callerSlot σ I ≠ ⟨1⟩ := by
+      intro hstele
+      exact hauthEvm (by rw [hcallerWord, hstele])
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     have hbody : ExecTransitionBody config contract evm0 locals denyTransition.body .reverted := by
       have hguard := vowAuthGuardEval_false
         (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
         (g := Sat256.ofUInt256 g) (locals := locals)
-        (by simp [locals]) hauthSolm
+        (by simp [locals]) hauthStele
       have hblock := nonpayableSecondRequireReverts
-        (cfg := config) (solm := { contract := contract, locals := locals })
+        (cfg := config) (stele := { contract := contract, locals := locals })
         (evm := evm0)
         (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
         (rest := [.assign .storage (wardsRef (.var "usr")) (.intLit 0)])

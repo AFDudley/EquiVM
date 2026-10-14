@@ -11,7 +11,7 @@ patched MetaMorpho runtime. The unrestricted runtime-refinement statement permit
 inputs. Its self-DELEGATECALL succeeds, and the runtime returns `[bytes("")]`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.MulticallWrappedCalldataRegression

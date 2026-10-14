@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.ECDSAErrorSource
 
 /-! Compose recovery and error handling at the source internal-call boundary. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 

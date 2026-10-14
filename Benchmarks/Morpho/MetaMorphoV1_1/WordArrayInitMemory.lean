@@ -4,7 +4,7 @@ import Benchmarks.EAS.Attester.WordArrayMemory
 
 /-! Sparse memory after creating a zero-filled one-word array. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 

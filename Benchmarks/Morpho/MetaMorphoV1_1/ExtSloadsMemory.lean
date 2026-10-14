@@ -3,7 +3,7 @@ import Reasoning.HeapMemory
 
 /-! The selector, offset, length, and singleton payload in the `extSloads` call buffer. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 

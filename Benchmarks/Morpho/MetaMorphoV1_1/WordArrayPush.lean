@@ -3,33 +3,33 @@ import Benchmarks.Morpho.MetaMorphoV1_1.StringStorageSource
 
 /-! A dynamic bytes32 array grows by writing its length and then its new element. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 
 -- LIBRARY CANDIDATE: pushing a full-slot word through an arbitrary Solidity locator.
 theorem solidityPushWordArray {layout : StorageLayout} {er : EvaledStorageRef}
     {header data : UInt256} (evm : State) (len word : UInt256)
-    (hlen : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner header = len)
+    (hlen : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner header = len)
     (hanchor : layout er = some (.anchor header))
     (hloc : layout { er with steps := er.steps ++ [.aindex (.int (Int.ofNat len.toNat))] } =
       some (.leaf (bytes32Loc data))) :
     solidityPushStorage? layout er (.dynamicArray (.elem (.bytes abiBytes32Width)))
       (some (wordBytes32Value word)) evm =
-      .ok (Solm.EVM.storageStore
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner header (len + ⟨1⟩))
+      .ok (Stele.EVM.storageStore
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner header (len + ⟨1⟩))
         evm.executionEnv.codeOwner data word) := by
   have hl : solidityDynamicLength? layout evm er = .ok len.toNat := by
     simpa only [hlen] using storageDynamicArrayLength
       (cfg :=
         { storageBackend := solidityStorageBackend layout,
-          externalABI := ⟨fun _ _ ↦ none, fun _ _ ↦ none⟩,
+          externalABI := { encode? := fun _ _ ↦ none, decode? := fun _ _ ↦ none },
           selfDeployment := fun _ _ ↦ none })
       (elem := .elem (.bytes abiBytes32Width)) (evm := evm) rfl hanchor
   simp only [solidityPushStorage?, hl, bind, EvalResult.bind, solidityLengthLoc?,
     solidityAnchor?_of_anchor hanchor, Option.map_some, EvalResult.ofOption]
   have hs : storageLocStore evm (solidityAnchorWordLoc header) (.int (↑len.toNat + 1)) =
-      some (Solm.EVM.storageStore evm evm.executionEnv.codeOwner header (len + ⟨1⟩)) :=
+      some (Stele.EVM.storageStore evm evm.executionEnv.codeOwner header (len + ⟨1⟩)) :=
     storageLocStore_uint256_succ evm header len
   rw [hs]
   have he : layout { er with steps := er.steps ++ [.aindex (.int (len.toNat : Int))] } =

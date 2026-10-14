@@ -5,7 +5,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.LastUpdateValueRuntime
 
 /-! Complete simulation of cap submission's allocated last-update reader. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
 

@@ -5,7 +5,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.RuntimeBlocks_067
 
 /-! Queue indexing, packed capacity reads, and loop-control blocks for maxDeposit. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables metaMorphoV1_1Blocks
 

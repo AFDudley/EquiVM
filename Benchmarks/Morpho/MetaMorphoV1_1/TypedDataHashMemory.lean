@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.WordPrefixMemory
 
 /-! The two-byte EIP-712 envelope written immediately before its two words. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 

@@ -1,6 +1,6 @@
 import Benchmarks.Auction.Storage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 100000
 
@@ -12,7 +12,7 @@ theorem minBidIncrementPercentageBodyReturns (evm : EVM.State) (locals : Store)
     ExecTransitionBody auctionConfig auctionContract evm locals minBidIncGetter.body
       (.returned { contract := auctionContract, locals := locals } evm
         (some [.int (Int.ofNat
-          (UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨205⟩)
+          (UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨205⟩)
             ⟨255⟩).toNat)])) := by
   exact ExecFuncBody.execBlockRet <|
     (ABlock.start.requireStep (evalCallvalueEq_true hwv)).returns (by
@@ -58,7 +58,7 @@ theorem minBidIncrementPercentageBodyCore {σ σ₀ A I} {g : UInt256}
   by_cases hwv : I.weiValue = ⟨0⟩
   · have hsz := calldata_size_ge_of_selIs I (entryBytes 14) (entryBytes_size 14) hsel
     have hd := dispatchEntry 14 hsel
-    have hdec : decodeCalldataWithMode auctionConfig.abiDecodeMode
+    have hdec : auctionConfig.externalABI.decodeCalldata?
         (minBidIncGetter.params.map Param.name)
         (transitionSignature minBidIncGetter).paramTypes I.calldata = some ∅ :=
       decodeCalldata_empty_ok hsz
@@ -67,7 +67,7 @@ theorem minBidIncrementPercentageBodyCore {σ σ₀ A I} {g : UInt256}
         (.returned { contract := auctionContract, locals := ∅ }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [.int (Int.ofNat (UInt256.land (solcSlotWord σ I ⟨205⟩) ⟨255⟩).toNat)])) := by
-      simpa [solcSlotWord, initState, Solm.EVM.storageLoad, State.lookupAccount] using
+      simpa [solcSlotWord, initState, Stele.EVM.storageLoad, State.lookupAccount] using
         minBidIncrementPercentageBodyReturns
           (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅ hwv (by simp)
     exact (minBidIncrementPercentageX hreach hwv).reEquivExecution

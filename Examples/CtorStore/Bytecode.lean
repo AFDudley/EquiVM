@@ -3,7 +3,7 @@ import Ethereum.Semantics
 import Reasoning.Initcode
 import Reasoning.JumpDest
 
-open Solm Ethereum Ethereum.EVM Reasoning.Theory
+open Stele Ethereum Ethereum.EVM Reasoning.Theory
 
 /-! ## Creation and runtime bytecode
 

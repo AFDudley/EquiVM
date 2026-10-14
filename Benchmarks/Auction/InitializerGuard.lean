@@ -1,7 +1,7 @@
 import Benchmarks.Auction.InitializerFlags
 import Benchmarks.Auction.DynamicMemory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option synthInstance.maxSize 4096
 set_option maxRecDepth 100000

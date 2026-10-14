@@ -1,7 +1,7 @@
 import Reasoning.ABIViews
 import Benchmarks.Dss.Jug.Dispatch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -35,7 +35,7 @@ abbrev ilksRhoSlotFor (I : ExecutionEnv) : UInt256 :=
 
 
 theorem jugDecode_ilks_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (ilksTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (ilksTransition.params.map Param.name)
       (transitionSignature ilksTransition).paramTypes I.calldata =
         some ((∅ : Store).insert "arg0" (ilksArgValue I)) := by
   simpa [config, ilksTransition, ilksArgValue, ilksArgBytes, bytes32, bytes32Width] using
@@ -43,7 +43,7 @@ theorem jugDecode_ilks_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
 
 theorem jugDecode_ilks_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (ilksTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (ilksTransition.params.map Param.name)
       (transitionSignature ilksTransition).paramTypes I.calldata = none := by
   simpa [config, ilksTransition, bytes32, bytes32Width] using
     (decodeCalldataWithMode_legacyBytes32_none_short (cd := I.calldata) (x := "arg0")
@@ -388,7 +388,7 @@ theorem jugIlksBodyReturns {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size)
         .ok (.int (Int.ofNat
           (solcSlotWordAt (ilksDutySlotFor I) evm.accountMap evm.executionEnv).toNat)) := by
     exact evalExpr_storage_scalar_value (hbackend := rfl)
-      (cfg := config) (solm := frame) (evm := evm)
+      (cfg := config) (stele := frame) (evm := evm)
       (slot := ilksF (.var "arg0") "duty") (er := ilksDutyEvaledRef I)
       (t := .int uint256Int) (loc := wordLoc (ilksDutySlotFor I))
       (value := .int (Int.ofNat
@@ -410,7 +410,7 @@ theorem jugIlksBodyReturns {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size)
         .ok (.int (Int.ofNat
           (solcSlotWordAt (ilksRhoSlotFor I) evm.accountMap evm.executionEnv).toNat)) := by
     exact evalExpr_storage_scalar_value (hbackend := rfl)
-      (cfg := config) (solm := frame) (evm := evm)
+      (cfg := config) (stele := frame) (evm := evm)
       (slot := ilksF (.var "arg0") "rho") (er := ilksRhoEvaledRef I)
       (t := .int uint256Int) (loc := wordLoc (ilksRhoSlotFor I))
       (value := .int (Int.ofNat
@@ -474,7 +474,7 @@ theorem jugIlksBodyCoreOk
     (hsz36 : 36 ≤ I.calldata.size) (hsize : I.calldata.size < UInt256.size)
     (hdispatch : dispatchMsg contract I.calldata = some ilksTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (ilksTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (ilksTransition.params.map Param.name)
         (transitionSignature ilksTransition).paramTypes I.calldata =
           some ((∅ : Store).insert "arg0" (ilksArgValue I)))
     (hreach : ∃ k C, RD jugBytecode I (Sat256.ofUInt256 g)

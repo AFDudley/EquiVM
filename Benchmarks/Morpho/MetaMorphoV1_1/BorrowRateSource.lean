@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.BorrowRateABI
 
 /-! Source execution of the rate-model call and its return-buffer reservation. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
 

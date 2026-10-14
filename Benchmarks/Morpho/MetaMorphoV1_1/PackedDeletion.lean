@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.Mutation
 
 /-! Clearing all fields of the packed pending-update records clears their entire slot. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 
@@ -13,8 +13,8 @@ def clearFieldWord (old : UInt256) (offset size : Nat) : UInt256 :=
 theorem storageLocStore_zero_field (evm : EVM.State) (loc : StorageLoc)
     (hbit : loc.bitOffset = none) :
     storageLocStore evm loc (.int 0) =
-      some (Solm.EVM.storageStore evm evm.executionEnv.codeOwner loc.slot
-        (clearFieldWord (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner loc.slot)
+      some (Stele.EVM.storageStore evm evm.executionEnv.codeOwner loc.slot
+        (clearFieldWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner loc.slot)
           loc.offset.val loc.size.val)) := by
   unfold storageLocStore
   simp only [valueToWord, wordOfInt_zero, bind, Option.bind, storageLocWriteWord, hbit]
@@ -22,7 +22,7 @@ theorem storageLocStore_zero_field (evm : EVM.State) (loc : StorageLoc)
   apply u256_inj
   change fromBytes' _ = (clearFieldWord _ _ _).toNat
   have hlenOld := (EVM.Word.toBytesLEWithSizeProof
-    (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner loc.slot)).2
+    (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner loc.slot)).2
   have hlenZero := (EVM.Word.toBytesLEWithSizeProof (⟨0⟩ : UInt256)).2
   have hoff := loc.offset.isLt
   have hsize := loc.size.isLt
@@ -39,27 +39,27 @@ theorem storageLocStore_zero_field (evm : EVM.State) (loc : StorageLoc)
   symm
   apply UInt256.toNat_ofNat_of_lt
   have hbound := loc.hbound
-  have hw := (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner loc.slot).val.isLt
+  have hw := (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner loc.slot).val.isLt
   have hdiv : 256 ^ loc.offset.val ∣ 256 ^ (loc.offset.val + loc.size.val) := by
     exact ⟨256 ^ loc.size.val, by rw [Nat.pow_add]⟩
   have hmod := Nat.mod_le
-    ((Solm.EVM.storageLoad evm evm.executionEnv.codeOwner loc.slot).toNat %
+    ((Stele.EVM.storageLoad evm evm.executionEnv.codeOwner loc.slot).toNat %
       256 ^ (loc.offset.val + loc.size.val)) (256 ^ loc.offset.val)
   rw [Nat.mod_mod_of_dvd _ hdiv] at hmod
   have hdecomp := Nat.mod_add_div
-    (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner loc.slot).toNat
+    (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner loc.slot).toNat
       (256 ^ (loc.offset.val + loc.size.val))
   change _ < UInt256.size
-  change (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner loc.slot).toNat <
+  change (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner loc.slot).toNat <
     UInt256.size at hw
   nlinarith
 
 theorem storageStore_overwrite (evm : EVM.State) (addr : AccountAddress)
     (slot first last : UInt256) :
-    Solm.EVM.storageStore (Solm.EVM.storageStore evm addr slot first) addr slot last =
-      Solm.EVM.storageStore evm addr slot last := by
+    Stele.EVM.storageStore (Stele.EVM.storageStore evm addr slot first) addr slot last =
+      Stele.EVM.storageStore evm addr slot last := by
   rw [← storageStore_eq_accountMap_update
-    (Solm.EVM.storageStore evm addr slot first) addr slot last,
+    (Stele.EVM.storageStore evm addr slot first) addr slot last,
     ← storageStore_eq_accountMap_update evm addr slot first,
     ← storageStore_eq_accountMap_update evm addr slot last]
   simp only [storageStore_accountMap]
@@ -91,17 +91,17 @@ theorem clearFieldWord_all (old : UInt256) : clearFieldWord old 0 32 = ⟨0⟩ :
   rfl
 
 def clearFieldState (evm : EVM.State) (slot : UInt256) (offset size : Nat) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner slot
-    (clearFieldWord (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot) offset size)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner slot
+    (clearFieldWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot) offset size)
 
 theorem clearFieldState_load (evm : EVM.State) (slot : UInt256) (offset size : Nat) :
-    Solm.EVM.storageLoad (clearFieldState evm slot offset size) evm.executionEnv.codeOwner
-      slot = clearFieldWord (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
+    Stele.EVM.storageLoad (clearFieldState evm slot offset size) evm.executionEnv.codeOwner
+      slot = clearFieldWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
         offset size := by
   cases hacc : evm.accountMap.get? evm.executionEnv.codeOwner with
   | none =>
     rw [clearFieldState, storageStore_absent _ _ hacc]
-    simp [Solm.EVM.storageLoad, State.lookupAccount,
+    simp [Stele.EVM.storageLoad, State.lookupAccount,
       -Std.ExtTreeMap.get?_eq_getElem?, hacc, Option.option, clearFieldWord]
     rfl
   | some acc => exact storageLoad_storageStore_same_present _ _ hacc _ _
@@ -116,7 +116,7 @@ theorem clearFieldState_append (evm : EVM.State) (slot : UInt256) (offset size :
 
 theorem clearFieldState_all (evm : EVM.State) (slot : UInt256) :
     clearFieldState evm slot 0 32 =
-      Solm.EVM.storageStore evm evm.executionEnv.codeOwner slot ⟨0⟩ := by
+      Stele.EVM.storageStore evm evm.executionEnv.codeOwner slot ⟨0⟩ := by
   rw [clearFieldState, clearFieldWord_all]
 
 theorem clearStorage_field {layout : StorageLayout} {evm : EVM.State}
@@ -133,9 +133,9 @@ theorem deleteStorage_pendingTimelock (evm : EVM.State) (locals imms : Store)
     (hbase : locals.get? "pendingTimelock" = none) :
     deleteStorage? config { contract := contract, locals := locals, immutables := imms }
       evm ⟨"pendingTimelock", []⟩ =
-      .ok (Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨17⟩ ⟨0⟩) := by
+      .ok (Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨17⟩ ⟨0⟩) := by
   have hr := resolveStorageRef?_ok (cfg := config) (evm := evm)
-    (solm := { contract := contract, locals := locals, immutables := imms })
+    (stele := { contract := contract, locals := locals, immutables := imms })
     (slot := ⟨"pendingTimelock", []⟩) (er := ⟨"pendingTimelock", []⟩) hbase
     (by simp [evalStorageRef, evalStorageRefSteps, bind, pure, EvalResult.bind])
     (show storageTypeAt? contract.storage ⟨"pendingTimelock", []⟩ = some
@@ -160,9 +160,9 @@ theorem deleteStorage_pendingGuardian (evm : EVM.State) (locals imms : Store)
     (hbase : locals.get? "pendingGuardian" = none) :
     deleteStorage? config { contract := contract, locals := locals, immutables := imms }
       evm ⟨"pendingGuardian", []⟩ =
-      .ok (Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨15⟩ ⟨0⟩) := by
+      .ok (Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨15⟩ ⟨0⟩) := by
   have hr := resolveStorageRef?_ok (cfg := config) (evm := evm)
-    (solm := { contract := contract, locals := locals, immutables := imms })
+    (stele := { contract := contract, locals := locals, immutables := imms })
     (slot := ⟨"pendingGuardian", []⟩) (er := ⟨"pendingGuardian", []⟩) hbase
     (by simp [evalStorageRef, evalStorageRefSteps, bind, pure, EvalResult.bind])
     (show storageTypeAt? contract.storage ⟨"pendingGuardian", []⟩ = some

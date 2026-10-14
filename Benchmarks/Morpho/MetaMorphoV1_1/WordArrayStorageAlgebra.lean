@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.WordArrayStorage
 
 /-! Store-order identities for complete array replacement. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 

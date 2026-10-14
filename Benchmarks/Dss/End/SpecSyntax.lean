@@ -1,8 +1,8 @@
 import Benchmarks.Dss.End.Spec
-import Solm.Notation
+import Stele.Notation
 
 /-!
-# End spec in the Solidity-faithful Solm frontend
+# End spec in the Solidity-faithful Stele frontend
 
 The whole `end.sol` spec written with `solidity%` and proven definitionally equal to the AST
 spec in `Spec.lean`.  Checked external calls are the `require(x.code.length > 0)` +
@@ -11,7 +11,7 @@ the spec's `< 2^255` / `<= 2^255` comparisons against `#int256Limit`; `file` key
 `bytes32` ASCII literals.  Transition order matches `contract.transitions` (selector order).
 -/
 
-open Solm Solm.Notation Benchmarks.Dss.End
+open Stele Stele.Notation Benchmarks.Dss.End
 
 namespace Benchmarks.Dss.End.Syntax
 

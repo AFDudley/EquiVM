@@ -3,7 +3,7 @@ import Benchmarks.EAS.Attester.MultiArrayABI
 import Benchmarks.EAS.Attester.MultiAttestLoopTrace
 import Benchmarks.EAS.Attester.PairArrayTrace
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.EAS.Attester.Immutables attesterRuntimeBlocks
 
 namespace Benchmarks.EAS.Attester

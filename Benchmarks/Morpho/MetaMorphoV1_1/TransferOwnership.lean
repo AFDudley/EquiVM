@@ -8,11 +8,11 @@ import Benchmarks.Morpho.MetaMorphoV1_1.RuntimeBlocks_009
 # MetaMorphoV1_1 `transferOwnership(address)`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 921; reach lemma `metaMorphoV1_1ReachTransferOwnershipBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MetaMorphoV1_1.Immutables
 
@@ -21,8 +21,8 @@ namespace Benchmarks.Morpho.MetaMorphoV1_1
 attribute [local irreducible] metaMorphoV1_1Bytecode
 
 def transferOwnershipState (evm : EVM.State) (w : UInt256) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨9⟩
-    (setAddressOffset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨9⟩) w)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨9⟩
+    (setAddressOffset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨9⟩) w)
 
 def transferOwnershipFrame (evm : EVM.State) (locals imms : Store) (w : UInt256) : Frame :=
   { adminFrame evm locals imms with

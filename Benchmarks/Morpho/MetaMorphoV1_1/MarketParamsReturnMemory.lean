@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.StructReturnMemory
 
 /-! Return-buffer reads and memory facts for the five decoded market-parameter words. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
 

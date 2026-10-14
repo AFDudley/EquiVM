@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.SetCapStorage
 
 /-! The zero-cap and already-enabled source paths do not call balance readers. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1
 

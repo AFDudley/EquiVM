@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.Uint128AllocationSource
 
 /-! Continuations for a uint128 cast that returns its value and updated memory cursor. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
 

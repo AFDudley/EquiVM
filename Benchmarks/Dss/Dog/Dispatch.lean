@@ -3,10 +3,10 @@ import Benchmarks.Dss.Dog.Selectors
 /-!
 # MakerDAO/Sky DSS Dog dispatcher facts
 
-Solm dispatch routing facts and the shared runtime revert paths.
+Stele dispatch routing facts and the shared runtime revert paths.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Dog.Immutables
 
 set_option maxRecDepth 2000000
@@ -1820,7 +1820,7 @@ theorem dogNonPayable {v : DogImmutables} {code : ByteArray}
         have htmem : t ∈ contract.transitions := by
           rw [dispatchMsg_eq_dispatchList contract I.calldata (by rfl)] at ht
           exact dispatchList_some_mem ht
-        by_cases hdec : decodeCalldataWithMode config.abiDecodeMode
+        by_cases hdec : config.externalABI.decodeCalldata?
             (t.params.map Param.name) (transitionSignature t).paramTypes I.calldata = none
         · exact reEquiv_decodingFailed ht hdec hrev
         · obtain ⟨callargs, hca⟩ := Option.ne_none_iff_exists'.mp hdec

@@ -4,7 +4,7 @@ import Benchmarks.Morpho.MetaMorphoV1_1.CallReturnMemory
 
 /-! The length-prefixed transfer request and its free-memory cursor update. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
 

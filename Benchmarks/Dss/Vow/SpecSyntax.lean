@@ -1,8 +1,8 @@
 import Benchmarks.Dss.Vow.Spec
-import Solm.Notation
+import Stele.Notation
 
 /-!
-# Vow spec in the Solidity-faithful Solm frontend
+# Vow spec in the Solidity-faithful Stele frontend
 
 The whole `vow.sol` spec written with `solidity%` and proven definitionally equal to the AST
 spec in `Spec.lean`.  Checked-math helpers live as the internal `add`/`sub`/`min` functions and
@@ -11,7 +11,7 @@ guards on storage receivers use `${…}` escapes.  Transition order matches `con
 (selector order).
 -/
 
-open Solm Solm.Notation Benchmarks.Dss.Vow
+open Stele Stele.Notation Benchmarks.Dss.Vow
 
 namespace Benchmarks.Dss.Vow.Syntax
 

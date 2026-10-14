@@ -2,7 +2,7 @@ import Reasoning.ABIComposite
 import Reasoning.EVMWord
 import Benchmarks.Dss.Clipper.Fallback
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 namespace Benchmarks.Dss.Clipper
@@ -69,7 +69,7 @@ theorem clipperDecode_take_ok {I : ExecutionEnv}
     (hpayload :
       (((I.calldata.toList.drop 4).drop ((clipperTakeDataOffsetWord I).toNat + 32)).take
         (clipperTakeDataLenWord I).toNat).length = (clipperTakeDataLenWord I).toNat) :
-    decodeCalldataWithMode config.abiDecodeMode (takeTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (takeTransition.params.map Param.name)
       (transitionSignature takeTransition).paramTypes I.calldata =
         some (clipperTakeStore I) := by
   change decodeCalldataWithMode DecodeMode.legacySolc05 ["id", "amt", "max", "who", "data"]
@@ -81,7 +81,7 @@ theorem clipperDecode_take_ok {I : ExecutionEnv}
 
 theorem clipperDecode_take_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 164) :
-    decodeCalldataWithMode config.abiDecodeMode (takeTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (takeTransition.params.map Param.name)
       (transitionSignature takeTransition).paramTypes I.calldata = none := by
   change decodeCalldataWithMode DecodeMode.legacySolc05 ["id", "amt", "max", "who", "data"]
     [uint256, uint256, uint256, addr, bytesDyn] I.calldata = none
@@ -94,7 +94,7 @@ theorem clipperDecode_take_none_offset_huge {I : ExecutionEnv}
     (hsmall : I.calldata.size < 2 ^ 255)
     (hsz164 : 164 ≤ I.calldata.size)
     (hoff : solcMaxLen DecodeMode.legacySolc05 < (clipperTakeDataOffsetWord I).toNat) :
-    decodeCalldataWithMode config.abiDecodeMode (takeTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (takeTransition.params.map Param.name)
       (transitionSignature takeTransition).paramTypes I.calldata = none := by
   change decodeCalldataWithMode DecodeMode.legacySolc05 ["id", "amt", "max", "who", "data"]
     [uint256, uint256, uint256, addr, bytesDyn] I.calldata = none
@@ -108,7 +108,7 @@ theorem clipperDecode_take_none_length_short {I : ExecutionEnv}
     (hsz164 : 164 ≤ I.calldata.size)
     (hoffMax : ¬ solcMaxLen DecodeMode.legacySolc05 < (clipperTakeDataOffsetWord I).toNat)
     (hshort : I.calldata.size < 4 + (clipperTakeDataOffsetWord I).toNat + 32) :
-    decodeCalldataWithMode config.abiDecodeMode (takeTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (takeTransition.params.map Param.name)
       (transitionSignature takeTransition).paramTypes I.calldata = none := by
   change decodeCalldataWithMode DecodeMode.legacySolc05 ["id", "amt", "max", "who", "data"]
     [uint256, uint256, uint256, addr, bytesDyn] I.calldata = none
@@ -123,7 +123,7 @@ theorem clipperDecode_take_none_length_huge {I : ExecutionEnv}
     (hoffMax : ¬ solcMaxLen DecodeMode.legacySolc05 < (clipperTakeDataOffsetWord I).toNat)
     (hlenWord : 4 + (clipperTakeDataOffsetWord I).toNat + 32 ≤ I.calldata.size)
     (hlenHuge : solcMaxLen DecodeMode.legacySolc05 < (clipperTakeDataLenWord I).toNat) :
-    decodeCalldataWithMode config.abiDecodeMode (takeTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (takeTransition.params.map Param.name)
       (transitionSignature takeTransition).paramTypes I.calldata = none := by
   change decodeCalldataWithMode DecodeMode.legacySolc05 ["id", "amt", "max", "who", "data"]
     [uint256, uint256, uint256, addr, bytesDyn] I.calldata = none
@@ -141,7 +141,7 @@ theorem clipperDecode_take_none_payload_short {I : ExecutionEnv}
     (hpayloadShort :
       (((I.calldata.toList.drop 4).drop ((clipperTakeDataOffsetWord I).toNat + 32)).take
         (clipperTakeDataLenWord I).toNat).length ≠ (clipperTakeDataLenWord I).toNat) :
-    decodeCalldataWithMode config.abiDecodeMode (takeTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (takeTransition.params.map Param.name)
       (transitionSignature takeTransition).paramTypes I.calldata = none := by
   change decodeCalldataWithMode DecodeMode.legacySolc05 ["id", "amt", "max", "who", "data"]
     [uint256, uint256, uint256, addr, bytesDyn] I.calldata = none
