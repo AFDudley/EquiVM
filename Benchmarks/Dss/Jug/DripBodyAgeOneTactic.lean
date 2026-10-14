@@ -1010,7 +1010,7 @@ by_cases hageOne : age = ⟨1⟩
                   (by
                     simpa [evmVatS, evm, initState, solcSlotWordAt,
                       hrateSteleEq] using hfoldCallStele))
-            have hbody :
+            have hbody (hpt : I.perm = true) :
                 ExecTransitionBody config contract evm locals
                   dripTransition.body
                   (.returned
@@ -1018,16 +1018,16 @@ by_cases hageOne : age = ⟨1⟩
                     evmRhoS
                     (some [.int (Int.ofNat rate.toNat)])) := by
               simpa [evm, evmVatS, evmFoldS, finalLocals, evmRhoS,
-                locals, initState, solcSlotWordAt, hrateSteleEq] using hboth.1
+                locals, initState, solcSlotWordAt, hrateSteleEq] using (hboth.1 hpt)
             obtain ⟨_, _, rd1669⟩ :=
               RD.jugDripVatFoldCallSucceeded
                 (targetWord := dripVatTargetWord σ' I) rd1651
             rcases RD.jugDripVatFoldStoreRhoReturnsSplit
                 (targetWord := dripVatTargetWord σ' I)
                 hsz36 hfoldCallMemSize hfoldCallMemRead64 rd1669 with
-              ⟨_, hret⟩ | ⟨hpf, hstatic⟩
+              ⟨hpt, hret⟩ | ⟨hpf, hstatic⟩
             · exact hret.reEquivExecutionGen hcode hdispatch
-                (jugDecode_drip_ok hsz36) hbody
+                (jugDecode_drip_ok hsz36) (hbody hpt)
                 (by
                   simp [evmRhoS, evmFoldS, evmVatS, evm, σ''_stele,
                     A''_stele, σ'_stele, initState, storageStore_accountMap])

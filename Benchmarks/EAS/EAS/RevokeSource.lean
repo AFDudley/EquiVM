@@ -67,8 +67,8 @@ theorem revokeWriteTime_source {L imms : Store} {evm : EVM.State} {word time : U
     (ha : L.get? "attestation" = some (.storageRef (attestationER word) attestationType))
     (ht : L.get? "__c1" = some (.int (Int.ofNat time.toNat))) :
     ExecStmt config {contract := contract,locals := L,immutables := imms} evm revokeWriteTime
-      (.ok {contract := contract,locals := L,immutables := imms} ((revokeTimeField word time).apply evm)) :=
-  ExecStmt.assign (evalLocalValue ht) (attestationAlias_writeTime ha)
+      (if evm.executionEnv.perm then .ok {contract := contract,locals := L,immutables := imms} ((revokeTimeField word time).apply evm) else .staticViolation) :=
+  execStmt_assign_storage (evalLocalValue ht) (attestationAlias_writeTime ha)
 
 theorem revokeWriteTime_static {L imms : Store} {evm : EVM.State} {word time : UInt256}
     (ha : L.get? "attestation" = some (.storageRef (attestationER word) attestationType))

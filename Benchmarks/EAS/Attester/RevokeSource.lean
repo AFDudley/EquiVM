@@ -97,7 +97,7 @@ theorem revokeSourceFailure {imms : Store} {eas : EVM.Address} {schema uid : UIn
   apply ExecFuncBody.execBlockRevert
   apply revokeSourcePrefix hvalue hget
   refine ExecBlock.consNormal (ExecStmt.requireTrue hguard) ?_
-  exact ExecBlock.consRevert (ExecStmt.externalCallFailure (sendVal := 0) revokeSourceReceiver
+  exact ExecBlock.consRevert (ExecStmt.externalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (sendVal := 0) revokeSourceReceiver
     (by simp only [evalExpr?, pure]) revokeSourceArgs
     (by simpa only [address_of_val] using hcall))
 
@@ -113,7 +113,7 @@ theorem revokeSourceSuccess {imms : Store} {eas : EVM.Address} {schema uid : UIn
   apply ExecFuncBody.execBlockOK
   apply revokeSourcePrefix hvalue hget
   refine ExecBlock.consNormal (ExecStmt.requireTrue hguard) ?_
-  exact ExecBlock.consNormal (ExecStmt.externalCallSuccess (sendVal := 0) (value := [])
+  exact ExecBlock.consNormal (ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (sendVal := 0) (value := [])
     revokeSourceReceiver
     (by simp only [evalExpr?, pure]) revokeSourceArgs
     (by simpa only [address_of_val] using hcall) (by rfl)) ExecBlock.nil

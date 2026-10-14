@@ -99,7 +99,7 @@ theorem swapBodyX {σ : AccountMap} {ee : ExecutionEnv} {g : Sat256}
     have hz4 : memLoad (UInt256.ofNat 96) m4 = ⟨0⟩ := by
       rw [MemoryPrefix.memLoad hpre (UInt256.ofNat 96) (by decide) (by decide) hm2size]
       exact wordArrayAllocMem_fresh_zero _ (by simp [slot0StructWords])
-    have hinit := swapInitSource v a evm hwv hself' hn hu' hlimit'
+    have hinit := swapInitSource (hperm := (congrArg ExecutionEnv.perm hs.env).trans hperm) v a evm hwv hself' hn hu' hlimit'
     rcases swapLoopFinishX (v := v) a (swapCacheInitial a evm) (swapStateInitial a evm)
         evm (swapReadyFrame v a evm) (storeSlot0Unlocked evm false) r4 hs4 rfl rfl hperm
         (swapReadyFrame_zero v a evm)

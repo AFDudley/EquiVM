@@ -50,7 +50,8 @@ theorem uniswapUpdateCallReturnsConditionTrue
     (hbound1 : Int.ofNat balance1.toNat ≤ maxUint112)
     (helapsed : 0 < syncTimeElapsedInt evm)
     (hreserve0Ne : Int.ofNat reserve0.toNat ≠ 0)
-    (hreserve1Ne : Int.ofNat reserve1.toNat ≠ 0) :
+    (hreserve1Ne : Int.ofNat reserve1.toNat ≠ 0)
+    (hperm : evm.executionEnv.perm = true) :
     ExecStmt config { contract := contract, locals := locals } evm
       (.internalCall "_update"
         args
@@ -60,7 +61,7 @@ theorem uniswapUpdateCallReturnsConditionTrue
           retVar none)
         (syncUpdateCumulativePackedReserveStateWith evm balance0 balance1 reserve0 reserve1)) := by
   have hbody :=
-    uniswapUpdateFunctionReturns_conditionTrue_packed_with evm balance0 balance1 reserve0
+    uniswapUpdateFunctionReturns_conditionTrue_packed_with (hperm := by assumption) evm balance0 balance1 reserve0
       reserve1 hbound0 hbound1 helapsed hreserve0Ne hreserve1Ne
   exact internalCallFunctionReturn
     (cfg := config)
@@ -89,7 +90,8 @@ theorem uniswapUpdateCallReturnsConditionFalse
       .ok (syncUpdateCallArgValsWith balance0 balance1 reserve0 reserve1))
     (hbound0 : Int.ofNat balance0.toNat ≤ maxUint112)
     (hbound1 : Int.ofNat balance1.toNat ≤ maxUint112)
-    (hskip : syncTimeElapsedInt evm = 0 ∨ reserve0 = ⟨0⟩ ∨ reserve1 = ⟨0⟩) :
+    (hskip : syncTimeElapsedInt evm = 0 ∨ reserve0 = ⟨0⟩ ∨ reserve1 = ⟨0⟩)
+    (hperm : evm.executionEnv.perm = true) :
     ExecStmt config { contract := contract, locals := locals } evm
       (.internalCall "_update"
         args
@@ -99,7 +101,7 @@ theorem uniswapUpdateCallReturnsConditionFalse
           retVar none)
         (syncUpdatePackedReserveState evm balance0 balance1)) := by
   have hbody :=
-    uniswapUpdateFunctionReturns_conditionFalse_packed_with evm balance0 balance1 reserve0
+    uniswapUpdateFunctionReturns_conditionFalse_packed_with (hperm := by assumption) evm balance0 balance1 reserve0
       reserve1
       hbound0 hbound1
       (evalExpr_sync_update_condition_false_with evm balance0 balance1 reserve0

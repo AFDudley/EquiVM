@@ -58,7 +58,7 @@ theorem swapIterationStartSource {frame : Frame} {evm : EVM.State}
       (.assign .localVar ⟨"step", [.field "sqrtPriceStartX96"]⟩
         (.field (.var "state") "sqrtPriceX96"))
       (.ok (swapIterationFrame frame {d with priceStart := s.price}) evm) := by
-  exact ExecStmt.assign
+  exact ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
     (evalExpr_structField (name := "sqrtPriceX96") (evalExpr_var_get hs) rfl)
     (assignLocalField_frame hd rfl rfl)
 

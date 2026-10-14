@@ -203,7 +203,8 @@ theorem uniswapMintFunctionBodyReverts_totalSupplyOverflow
 theorem uniswapMintFunctionBodyReverts_balanceOverflow
     (evm : EVM.State) (recipient : AccountAddress) (value : UInt256)
     (hfitSupply : mintFunctionTotalSupplyNewNat evm value < UInt256.size)
-    (hover : UInt256.size ≤ mintFunctionToBalanceNewNat evm recipient value) :
+    (hover : UInt256.size ≤ mintFunctionToBalanceNewNat evm recipient value)
+    (hperm : evm.executionEnv.perm = true) :
     ExecFuncBody config { contract := contract, locals := mintFunctionCallStore recipient value }
       evm mintFunction.body .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
@@ -216,6 +217,7 @@ theorem uniswapMintFunctionBodyReverts_balanceOverflow
     .reverted
   refine ExecBlock.consNormal
     (ExecStmt.assign
+      (hperm := Or.inr hperm)
       (evalExpr_mintFunction_totalSupply_add evm recipient value hfitSupply)
       (mintFunctionAssignTotalSupply evm recipient value)) ?_
   exact ExecBlock.consRevert
@@ -250,7 +252,8 @@ theorem uniswapMintFunctionCallRevert_balanceOverflow
       .ok [mintFunctionToValue recipient, mintFunctionValueValue value])
     (hfitSupply : mintFunctionTotalSupplyNewNat evm value < UInt256.size)
     (hover : UInt256.size ≤ mintFunctionToBalanceNewNat evm recipient value)
-    (himm : caller.immutables = ∅ := by first | rfl | assumption) :
+    (himm : caller.immutables = ∅ := by first | rfl | assumption)
+    (hperm : evm.executionEnv.perm = true) :
     ExecStmt config caller evm (.internalCall "_mint" args retVar) .reverted := by
   exact internalCallFunctionRevert
     (cfg := config) (caller := caller) (evm := evm)
@@ -261,7 +264,7 @@ theorem uniswapMintFunctionCallRevert_balanceOverflow
     (bindParams_mintFunction_call recipient value)
     (by
       simpa [hcontract, himm] using
-        (uniswapMintFunctionBodyReverts_balanceOverflow evm recipient value hfitSupply hover))
+        (uniswapMintFunctionBodyReverts_balanceOverflow (hperm := by assumption) evm recipient value hfitSupply hover))
 
 set_option maxHeartbeats 1000000 in
 theorem RD.solcErrorStringRevertTail_feeToStaticcall_size164

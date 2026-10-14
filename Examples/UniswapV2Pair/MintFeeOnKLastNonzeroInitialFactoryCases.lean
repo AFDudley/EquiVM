@@ -906,7 +906,7 @@ theorem uniswapMintInitialFeeOnReturnFromAfterFeeWitnessCase
                 balance0 balance1)))
           (some [uniswapUint256Value liquidity])) := by
     exact ExecFuncBody.execBlockRet
-      (uniswapMintAfterMintFeeInitialFeeOnReturn_of_call evmS evm0S evm1S evmAfter I
+      (uniswapMintAfterMintFeeInitialFeeOnReturn_of_call (hpermAfter := by simpa only [henvAfterI] using hperm) (hperm := hperm) evmS evm0S evm1S evmAfter I
         nextFrame.locals rootLiquidity (AccountAddress.ofNat (mintToWord I).toNat)
         (by simp only [evmS, initState]; exact hwv) hunlockedStele hguard0 hguard1
         hcall0 hdec0 hcall1 hdec1 hle0Source hle1Source
@@ -1374,7 +1374,7 @@ theorem uniswapMintFeeOnKLastNonzeroInitialZeroFromFactoryCase
     ⟨hrootGeMin, hliquidityZero, hfitSupplyMinSource, hfitBalanceMinSource,
       htotalFitMin, hbalanceFitMin⟩
   exact
-    uniswapMintInitialAfterMintFeeLiquidityZeroRevertCase nextFrame.locals root hcode
+    uniswapMintInitialAfterMintFeeLiquidityZeroRevertCase (hpermAfter := by simpa [typedCallViaEVM_executionEnv_eq hfeeCall, typedCallViaEVM_executionEnv_eq hcall1, typedCallViaEVM_executionEnv_eq hcall0, uniswapLockEnteredState, uniswapUnlockedState, initState] using hperm) nextFrame.locals root hcode
       hdispatch hsz36 hwv hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1 hdec1
       hle0Source hle1Source (by simpa [evmL, evmS] using hfee) hbase htotalSource
       (by simpa [caller, afterTotalSupplyLocals, nextFrame, evmL, evmS, htotalSource]
@@ -1517,7 +1517,8 @@ theorem uniswapMintFeeOnKLastNonzeroInitialProductOverflowFromFactoryCase
           outFee)
     (hcase :
       mintFeeOnKLastNonzeroInitialProductOverflowFromFactoryCaseData feeToWord reserve0
-        reserve1 amount0 amount1 σFee evmFeeS I) :
+        reserve1 amount0 amount1 σFee evmFeeS I)
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   let evmS := initState σ σ₀ (Sat256.ofUInt256 g) A I
   let evmL := uniswapLockEnteredState evmS
@@ -1534,7 +1535,7 @@ theorem uniswapMintFeeOnKLastNonzeroInitialProductOverflowFromFactoryCase
   have htotalSource : mintFunctionTotalSupplyWord evmFeeS = ⟨0⟩ := by
     rw [htotalEq, htotalZero]
   exact
-    uniswapMintInitialProductOverflowFromAfterFeeCase nextFrame.locals hcode hdispatch
+    uniswapMintInitialProductOverflowFromAfterFeeCase (hperm := hperm) nextFrame.locals hcode hdispatch
       hsz36 hwv hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1 hdec1 hle0Source
       hle1Source (by simpa [evmL, evmS] using hfee)
       (by simpa [nextFrame, evmL, evmS] using
@@ -1683,7 +1684,8 @@ theorem uniswapMintFeeOnKLastNonzeroInitialRootUnderflowFromFactoryCase
         reserve1 amount0 amount1 balance0 balance1 σFee evmFeeS
         (uniswapLockEnteredState
           (initState σ σ₀ (Sat256.ofUInt256 g) A I))
-        I memFee) :
+        I memFee)
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   let evmS := initState σ σ₀ (Sat256.ofUInt256 g) A I
   let evmL := uniswapLockEnteredState evmS
@@ -1741,7 +1743,7 @@ theorem uniswapMintFeeOnKLastNonzeroInitialRootUnderflowFromFactoryCase
     hfinish root (by simpa [caller, afterTotalSupplyLocals, nextFrame, evmL, evmS] using hsqrt)
       hrootNonneg hrootSize
   exact
-    uniswapMintInitialAfterMintFeeRootUnderflowRevertCase nextFrame.locals root hcode
+    uniswapMintInitialAfterMintFeeRootUnderflowRevertCase (hperm := hperm) nextFrame.locals root hcode
       hdispatch hsz36 hwv hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1 hdec1
       hle0Source hle1Source (by simpa [evmL, evmS] using hfee) hbase htotalSource
       (by simpa [caller, afterTotalSupplyLocals, nextFrame, evmL, evmS, htotalSource]
@@ -1908,14 +1910,14 @@ theorem uniswapMintFeeOnKLastNonzeroInitialFromFactoryCases
         hfeeTo htoWord hmemFee hzero
   rcases hrest with hproduct | hrootUnderflow
   · exact
-      uniswapMintFeeOnKLastNonzeroInitialProductOverflowFromFactoryCase feeTo hcode
+      uniswapMintFeeOnKLastNonzeroInitialProductOverflowFromFactoryCase (hperm := hperm) feeTo hcode
         hdispatch hsz36 hwv hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1 hdec1
         hle0Source hle1Source hfeeGuard hfeeCall hfeeDec hreserve0Eq hreserve1Eq
         hruntimeReserve0 hruntimeReserve1 hamount0Eq hamount1Eq hkLastEq htotalEq
         rd7781 ho32 hoSize ho132 ho1Size houtFeeSize hzFeeTrue houtFee32 hfeeToWord
         hfeeTo htoWord hmemFee hproduct
   · exact
-      uniswapMintFeeOnKLastNonzeroInitialRootUnderflowFromFactoryCase feeTo hcode
+      uniswapMintFeeOnKLastNonzeroInitialRootUnderflowFromFactoryCase (hperm := hperm) feeTo hcode
         hdispatch hsz36 hwv hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1 hdec1
         hle0Source hle1Source hfeeGuard hfeeCall hfeeDec hreserve0Eq hreserve1Eq
         hruntimeReserve0 hruntimeReserve1 hamount0Eq hamount1Eq hkLastEq htotalEq

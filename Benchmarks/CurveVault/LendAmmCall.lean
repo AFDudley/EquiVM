@@ -62,16 +62,16 @@ theorem vaultLendRateCall {I : ExecutionEnv} {g : Sat256} {s0 evm : State}
   rcases hbridge with ⟨evm', σ', out, aw', k'', C'', h32, _, hcall, hs', rdNext⟩ |
     ⟨evm', out, hcall, hrev⟩ | ⟨evm', out, hcall, hshort, hrev⟩
   · refine Or.inl ⟨evm', σ', out, aw', k'', C'', ?_, hs', rdNext⟩
-    apply ExecStmt.externalCallSuccess (sendVal := 0) (argVals := [])
+    apply ExecStmt.externalCallSuccess (hperm := Or.inl rfl) (sendVal := 0) (argVals := [])
       (value := [.int (Int.ofNat (retWord out).toNat)]) hreceiver
       (by simp [evalExpr?, pure]) (by simp [evalExprs?, pure])
       (by simpa only [address_of_val] using hcall)
     change (ABI.decodeReturnValueWithMode? .vyper (.elem (.int (.uint ⟨256, by decide⟩))) out).map (fun v => [v]) = _
     rw [decodeReturn_vyper_uint256_ok out h32]; rfl
-  · exact Or.inr ⟨ExecStmt.externalCallFailure (sendVal := 0) (argVals := []) hreceiver
+  · exact Or.inr ⟨ExecStmt.externalCallFailure (hperm := Or.inl rfl) (sendVal := 0) (argVals := []) hreceiver
       (by simp [evalExpr?, pure]) (by simp [evalExprs?, pure])
       (by simpa only [address_of_val] using hcall), hrev⟩
-  · refine Or.inr ⟨ExecStmt.externalCallReturnDecodeRevert (sendVal := 0) (argVals := []) hreceiver
+  · refine Or.inr ⟨ExecStmt.externalCallReturnDecodeRevert (hperm := Or.inl rfl) (sendVal := 0) (argVals := []) hreceiver
       (by simp [evalExpr?, pure]) (by simp [evalExprs?, pure])
       (by simpa only [address_of_val] using hcall) ?_, hrev⟩
     change (ABI.decodeReturnValueWithMode? .vyper (.elem (.int (.uint ⟨256, by decide⟩))) out).map (fun v => [v]) = _

@@ -70,7 +70,7 @@ theorem vaultInitializeDecimalsCall {I : ExecutionEnv} {g : Sat256} {s0 evm : St
       dsimp only [vaultBlocks.vault_block_283_fallthrough_stack] at rd294
       rw [hword] at rd294
       refine Or.inl ⟨evm', σ', out, _, _, _, hcanon, memoryActive_le hawBound (by decide +kernel), ?_, hs', rd294⟩
-      apply ExecStmt.externalCallSuccess (sendVal := 0) (argVals := [])
+      apply ExecStmt.externalCallSuccess (hperm := Or.inl rfl) (sendVal := 0) (argVals := [])
         (value := [.int (Int.ofNat (retWord out).toNat)]) hreceiver
         (by simp [evalExpr?, pure]) (by simp [evalExprs?, pure])
         (by simpa only [accountAddress_ofUInt256_eq_ofNat_toNat, address_of_val] using hcall)
@@ -80,15 +80,15 @@ theorem vaultInitializeDecimalsCall {I : ExecutionEnv} {g : Sat256} {s0 evm : St
         (by rw [hword]; exact fun hz => hcanon ((u256_shiftRight_zero_iff _ 8 (by omega)).mp hz)) (by native_decide) rd283
       have hrev := vaultBlocks.vault_block_8284
         (by simp only [vaultBlocks.vault_block_283_taken_stack, List.length_cons]; omega) rdFail
-      refine Or.inr ⟨ExecStmt.externalCallReturnDecodeRevert (sendVal := 0) (argVals := []) hreceiver
+      refine Or.inr ⟨ExecStmt.externalCallReturnDecodeRevert (hperm := Or.inl rfl) (sendVal := 0) (argVals := []) hreceiver
         (by simp [evalExpr?, pure]) (by simp [evalExprs?, pure])
         (by simpa only [accountAddress_ofUInt256_eq_ofNat_toNat, address_of_val] using hcall) ?_, hrev⟩
       change (ABI.decodeReturnValueWithMode? .vyper (.elem (.int (.uint ⟨8, by decide⟩))) out).map (fun v => [v]) = _
       rw [decodeReturn_vyper_uint_eq _ out (by decide +kernel) h32, if_neg (show ¬ (retWord out).toNat < 2 ^ (8 : Nat) from hcanon)]; rfl
-  · exact Or.inr ⟨ExecStmt.externalCallFailure (sendVal := 0) (argVals := []) hreceiver
+  · exact Or.inr ⟨ExecStmt.externalCallFailure (hperm := Or.inl rfl) (sendVal := 0) (argVals := []) hreceiver
       (by simp [evalExpr?, pure]) (by simp [evalExprs?, pure])
       (by simpa only [accountAddress_ofUInt256_eq_ofNat_toNat, address_of_val] using hcall), hrev⟩
-  · refine Or.inr ⟨ExecStmt.externalCallReturnDecodeRevert (sendVal := 0) (argVals := []) hreceiver
+  · refine Or.inr ⟨ExecStmt.externalCallReturnDecodeRevert (hperm := Or.inl rfl) (sendVal := 0) (argVals := []) hreceiver
       (by simp [evalExpr?, pure]) (by simp [evalExprs?, pure])
       (by simpa only [accountAddress_ofUInt256_eq_ofNat_toNat, address_of_val] using hcall) ?_, hrev⟩
     change (ABI.decodeReturnValueWithMode? .vyper (.elem (.int (.uint ⟨8, by decide⟩))) out).map (fun v => [v]) = _

@@ -113,7 +113,7 @@ theorem bidExtensionRoutine {I g s0 s bidder snap noun ret R mem aw rdata σ k C
       refine Or.inl ⟨evm', _, locals1, ⟨1⟩, _, _, _, _, ?_, hv1, hs', rd1792⟩
       apply ExecBlock.consNormal (ExecStmt.letDecl he)
       refine ExecBlock.consNormal (ExecStmt.iteTrue hvar ?_) ExecBlock.nil
-      exact ExecBlock.consNormal (ExecStmt.assign ha
+      exact ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by rw [hs.env]; exact hperm)) ha
         (auctionFieldWrite evm evm' locals1 "endTime" (.elem (.int uint256Int))
           (auctionUint256Loc ⟨210⟩) _ (hv1.storage _ (by decide)) (by native_decide) rfl
           (by exact Or.inl ⟨_, rfl⟩) (storageLocStore_uint256 evm ⟨210⟩ finish))) ExecBlock.nil

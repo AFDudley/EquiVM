@@ -20,7 +20,7 @@ theorem vaultAdminFunctionReturns {evm evm' : EVM.State} {locals : Store}
     ExecFuncBody config {contract := contract, locals := locals} evm vaultAdminFunction.body
       (.returned {contract := contract, locals := locals.insert "__c0" value} evm' (some [value])) := by
   exact ExecFuncBody.execBlockRet <|
-    ExecBlock.consNormal (ExecStmt.externalCallSuccess (sendVal := 0) (argVals := []) (vaultFactoryEval evm locals hbase)
+    ExecBlock.consNormal (ExecStmt.externalCallSuccess (hperm := Or.inl rfl) (sendVal := 0) (argVals := []) (vaultFactoryEval evm locals hbase)
       (by simp [evalExpr?, pure]) (by simp [evalExprs?, pure])
       (by simpa only [address_of_val] using hcall) hdec) <|
       ExecBlock.consReturn (ExecStmt.return (evalExprs?_singleton (by
@@ -33,7 +33,7 @@ theorem vaultAdminFunctionCallFailed {evm evm' : EVM.State} {locals : Store}
       "admin" 0 [] (false, evm', out) false) :
     ExecFuncBody config {contract := contract, locals := locals} evm vaultAdminFunction.body .reverted :=
   ExecFuncBody.execBlockRevert <| ExecBlock.consRevert <|
-    ExecStmt.externalCallFailure (sendVal := 0) (argVals := []) (vaultFactoryEval evm locals hbase)
+    ExecStmt.externalCallFailure (hperm := Or.inl rfl) (sendVal := 0) (argVals := []) (vaultFactoryEval evm locals hbase)
       (by simp [evalExpr?, pure]) (by simp [evalExprs?, pure])
       (by simpa only [address_of_val] using hcall)
 
@@ -45,7 +45,7 @@ theorem vaultAdminFunctionDecodeFailed {evm evm' : EVM.State} {locals : Store}
     (hdec : config.externalABI.decode? "admin" out = none) :
     ExecFuncBody config {contract := contract, locals := locals} evm vaultAdminFunction.body .reverted :=
   ExecFuncBody.execBlockRevert <| ExecBlock.consRevert <|
-    ExecStmt.externalCallReturnDecodeRevert (sendVal := 0) (argVals := []) (vaultFactoryEval evm locals hbase)
+    ExecStmt.externalCallReturnDecodeRevert (hperm := Or.inl rfl) (sendVal := 0) (argVals := []) (vaultFactoryEval evm locals hbase)
       (by simp [evalExpr?, pure]) (by simp [evalExprs?, pure])
       (by simpa only [address_of_val] using hcall) hdec
 

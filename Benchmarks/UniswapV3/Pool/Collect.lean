@@ -59,7 +59,7 @@ theorem uniswapV3PoolCollectBody {σ σ₀ A I} {g : UInt256} (v : UniswapV3Pool
           let amount0 := minWord req0 (positionOwedWord key false locked.accountMap locked.executionEnv)
           let amount1 := minWord req1 (positionOwedWord key true locked.accountMap locked.executionEnv)
           let locals := (collectAmountsFrame v recipient lower upper req0 req1 key amount0 amount1).locals
-          have hprefix := collectAmountsPrefix v evm recipient lower upper req0 req1 hwv hunlocked
+          have hprefix := collectAmountsPrefix (hperm := by assumption) v evm recipient lower upper req0 req1 hwv hunlocked
           have hvalues := collectAmounts_values v recipient lower upper req0 req1 key amount0 amount1
           have hfit0 : amount0.toNat < 2 ^ 128 := minWord_lt _ _
             (positionOwedWord_lt key false locked.accountMap locked.executionEnv)

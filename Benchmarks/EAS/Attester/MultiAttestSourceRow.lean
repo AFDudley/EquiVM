@@ -91,7 +91,7 @@ theorem attestSourceRow {C : ContractDecl} {imms : Store} {evm : State}
       (.assign .localVar ⟨"allocationEnd", []⟩
         (.binary .add (.var "allocationEnd") (.binary .mul (.intLit 480) (.var "inputLength"))))
       (.ok ⟨C, la, imms⟩ evm) := by
-    refine ExecStmt.assign (value := .int (Int.ofNat (allocation + 480 * inputs.length))) ?_ ?_
+    refine ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (value := .int (Int.ofNat (allocation + 480 * inputs.length))) ?_ ?_
     · simp only [evalExpr?, ha1, hn1, EvalResult.ofOption, bind, pure, EvalResult.bind,
         evalBinaryOp?, Int.ofNat_eq_natCast, Nat.cast_add, Nat.cast_mul, Nat.cast_ofNat]
     · exact assignLocalValue ha1
@@ -133,7 +133,7 @@ theorem attestSourceRow {C : ContractDecl} {imms : Store} {evm : State}
   · exact ExecBlock.consNormal h0 (ExecBlock.consNormal h1 (ExecBlock.consNormal h2
       (ExecBlock.consNormal halloc (ExecBlock.consNormal h3 (ExecBlock.consNormal hinner
           (ExecBlock.consNormal
-        (ExecStmt.assign hvalue (assignLocalArrayIndex hq3 hi3 hindex)) ExecBlock.nil))))))
+        (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hvalue (assignLocalArrayIndex hq3 hi3 hindex)) ExecBlock.nil))))))
   · simpa only [Std.HashMap.get?_eq_getElem?, Std.HashMap.getElem?_insert,
       show ("multiRequests" == "allocationEnd") = false from rfl,
       Bool.false_eq_true, if_false] using ha3

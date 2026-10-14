@@ -302,7 +302,7 @@ theorem flapPrefixToDaiSuccess
           (perm := false))
         (.ok { contract := contract, locals := locals1 } evmSin) := by
     simpa [locals, locals1, flapLocalsVatSin0, collapseReturns] using
-      ExecStmt.externalCallSuccess hvat (by simp [evalExpr?, pure]) hargsSin hcallSin hdecSin
+      ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hvat (by simp [evalExpr?, pure]) hargsSin hcallSin hdecSin
   have hvatSin0Var :
       evalExpr? config { contract := contract, locals := locals1 } evmSin (.var "vatSin0") =
         .ok (.int (Int.ofNat vatSin0.toNat)) := by
@@ -404,7 +404,7 @@ theorem flapPrefixToDaiSuccess
           (perm := false))
         (.ok { contract := contract, locals := locals4 } evmDai) := by
     simpa [locals3, locals4, flapLocalsVatSin0Surplus0NeedDai, collapseReturns] using
-      ExecStmt.externalCallSuccess hvatDai (by simp [evalExpr?, pure])
+      ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hvatDai (by simp [evalExpr?, pure])
         hargsDai hcallDai hdecDai
   simp only [flapPrefixToDaiStmts, nonpayable, checkedExternalCallStmts, List.cons_append,
     List.nil_append]
@@ -459,7 +459,7 @@ theorem flapSourceSurplus0AddOverflow
           (perm := false))
         (.ok { contract := contract, locals := locals1 } evmSin) := by
     simpa [locals, locals1, flapLocalsVatSin0, collapseReturns] using
-      ExecStmt.externalCallSuccess hvat (by simp [evalExpr?, pure]) hargsSin hcallSin hdecSin
+      ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hvat (by simp [evalExpr?, pure]) hargsSin hcallSin hdecSin
   have hvatSin0Var :
       evalExpr? config { contract := contract, locals := locals1 } evmSin (.var "vatSin0") =
         .ok (.int (Int.ofNat vatSin0.toNat)) := by
@@ -551,7 +551,7 @@ theorem flapSourceSurplusNeedAddOverflow
           (perm := false))
         (.ok { contract := contract, locals := locals1 } evmSin) := by
     simpa [locals, locals1, flapLocalsVatSin0, collapseReturns] using
-      ExecStmt.externalCallSuccess hvat (by simp [evalExpr?, pure]) hargsSin hcallSin hdecSin
+      ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hvat (by simp [evalExpr?, pure]) hargsSin hcallSin hdecSin
   have hvatSin0Var :
       evalExpr? config { contract := contract, locals := locals1 } evmSin (.var "vatSin0") =
         .ok (.int (Int.ofNat vatSin0.toNat)) := by
@@ -823,7 +823,7 @@ theorem flapKickThenCallFailure
         (.externalCall (.storage flapperRef) "kick" (.intLit 0)
           [.storage bumpRef, .intLit 0] "id")
         .reverted := by
-    exact ExecStmt.externalCallFailure hflapper (by simp [evalExpr?, pure]) hargs hcallKick
+    exact ExecStmt.externalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hflapper (by simp [evalExpr?, pure]) hargs hcallKick
   simp only [flapKickAndReturnStmts, checkedExternalCallStmts, List.cons_append,
     List.nil_append]
   refine ExecBlock.consNormal (ExecStmt.requireTrue hguard) ?_
@@ -889,7 +889,7 @@ theorem flapKickThenDecodeRevert
         (.externalCall (.storage flapperRef) "kick" (.intLit 0)
           [.storage bumpRef, .intLit 0] "id")
         .reverted := by
-    exact ExecStmt.externalCallReturnDecodeRevert hflapper (by simp [evalExpr?, pure])
+    exact ExecStmt.externalCallReturnDecodeRevert (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hflapper (by simp [evalExpr?, pure])
       hargs hcallKick hdecKick
   simp only [flapKickAndReturnStmts, checkedExternalCallStmts, List.cons_append,
     List.nil_append]
@@ -962,7 +962,7 @@ theorem flapKickThenSuccess
           [.storage bumpRef, .intLit 0] "id")
         (.ok { contract := contract, locals := locals8 } evmKick) := by
     simpa [locals8, flapLocalsDone, collapseReturns] using
-      ExecStmt.externalCallSuccess hflapper (by simp [evalExpr?, pure])
+      ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hflapper (by simp [evalExpr?, pure])
         hargs hcallKick hdecKick
   have hid :
       evalExpr? config { contract := contract, locals := locals8 } evmKick (.var "id") =
@@ -1075,7 +1075,7 @@ theorem flapPostDaiToKickSuccess
           (perm := false))
         (.ok { contract := contract, locals := locals5 } evmSin) := by
     simpa [locals4, locals5, flapLocalsVatSin0Surplus0NeedDaiSin1, collapseReturns] using
-      ExecStmt.externalCallSuccess hvatSin1 (by simp [evalExpr?, pure])
+      ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hvatSin1 (by simp [evalExpr?, pure])
         hargsSin1 hcallSin1 hdecSin1
   have hvatSin1Var :
       evalExpr? config { contract := contract, locals := locals5 } evmSin (.var "vatSin1") =

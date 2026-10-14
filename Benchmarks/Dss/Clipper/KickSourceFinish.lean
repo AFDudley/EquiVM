@@ -138,7 +138,8 @@ theorem clipperKickIncentiveSucceeds (v : ClipperImmutables)
         locals := clipperKickLocalsCoin evmLock evmTop I feedPrice top, immutables := immStore v }
       evmTop (checkedExternalCallStmts vatExpr "suck" (.intLit 0)
         [.storage vowRef, .var "kpr", .var "coin"] "_suckRet")
-      (.ok (Frame.mk contract (clipperKickLocalsSuckRet evmLock evmTop I feedPrice top) (immStore v)) evmAfter)) :
+      (.ok (Frame.mk contract (clipperKickLocalsSuckRet evmLock evmTop I feedPrice top) (immStore v)) evmAfter))
+    (hperm : evmAfter.executionEnv.perm = true) :
     ExecBlock config
       { contract := contract,
         locals := clipperKickLocalsCoinZero evmLock evmTop I feedPrice top, immutables := immStore v }
@@ -165,7 +166,7 @@ theorem clipperKickIncentiveSucceeds (v : ClipperImmutables)
   have hite := ExecStmt.iteTrue (elseB := [])
     (clipperEvalKickIncentiveActive v evmLock evmTop evmTop I feedPrice top hactive)
     hbody
-  have htail := clipperKickUnlockReturn v evmLock evmTop evmAfter I feedPrice top
+  have htail := clipperKickUnlockReturn (hperm := by assumption) v evmLock evmTop evmAfter I feedPrice top
     (clipperKickLocalsSuckRet evmLock evmTop I feedPrice top)
     (clipperKickLocalsSuckRet_get_locked evmLock evmTop I feedPrice top)
     (clipperKickLocalsSuckRet_get_id evmLock evmTop I feedPrice top)

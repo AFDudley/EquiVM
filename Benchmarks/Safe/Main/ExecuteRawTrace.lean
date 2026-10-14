@@ -5,7 +5,7 @@ import Benchmarks.Safe.Main.Blocks.Runtime_032
 import Reasoning.WordArithmetic
 
 open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
-open safeRuntimeBlocks
+open Benchmarks.Safe.Main.RuntimeBlocks
 
 namespace Benchmarks.Safe.Main
 
@@ -24,6 +24,7 @@ theorem safeExecuteRawTrace {I g s0 σ k C aw mem rdata}
       evm.executionEnv.perm = false ∧ value ≠ ⟨0⟩) ∨
     ∃ evm' σ' z out aw' k' C',
       executeViaEVM evm (AccountAddress.ofUInt256 target) value payload operation z evm' out ∧
+      (operation = ⟨1⟩ ∨ value = ⟨0⟩ ∨ evm.executionEnv.perm = true) ∧
       evm'.executionEnv = I ∧ evm'.accountMap = σ' ∧ evm'.σ₀ = s0.σ₀ ∧
       RD safeBytecode I g s0 ret ((if z then ⟨1⟩ else ⟨0⟩) :: R)
         mem aw' out σ' k' C' ∧ out.size < UInt256.size ∧
@@ -42,6 +43,7 @@ theorem safeExecuteRawTrace {I g s0 σ k C aw mem rdata}
     have h₆ := safeRuntime_block_7467 (by simp; omega) hret h₅
     exact Or.inr ⟨evm', σ', z, out, aw', _, _,
       Or.inl ⟨hd, by simpa only [addressOfAddress, hdata] using hc⟩,
+      Or.inl hd,
       he, ha, hw, h₆, hs, by simpa only [hdata] using hb⟩
   · have h₂ := safeRuntime_block_7429_taken (by simp; omega)
       (u256_sub_ne_zero_of_ne hd) (by jump_dest) h₁
@@ -54,6 +56,7 @@ theorem safeExecuteRawTrace {I g s0 σ k C aw mem rdata}
       have h₆ := safeRuntime_block_7467 (by simp; omega) hret h₅
       exact Or.inr ⟨evm', σ', z, out, aw', _, _,
         Or.inr ⟨hd, by simpa only [addressOfAddress, hdata] using hc⟩,
+        Or.inr (by simpa only [hee, or_comm] using hp),
         he, ha, hw, h₆, hs, by simpa only [hdata] using hb⟩
     · have hperm : I.perm = false := Bool.eq_false_iff.mpr (fun htrue ↦ hp (Or.inl htrue))
       have hv : value ≠ ⟨0⟩ := fun hz ↦ hp (Or.inr hz)

@@ -56,7 +56,7 @@ theorem unlockAfterCallback {f : Frame} {evm : EVM.State} {data old : ByteArray}
     ExecFuncBody config f evm (unlockTransition.body.drop 9) (unlockAfterCallbackResult f evm data) := by
   let f1 : Frame := {f with locals := f.locals.insert "result" (.bytes data)}
   have hassign : ExecStmt config f evm unlockTransition.body[9]! (.ok f1 evm) :=
-    ExecStmt.assign (evalLocalValue hc) (assignLocalValue hr)
+    ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalLocalValue hc) (assignLocalValue hr)
   have hcount := deltaCountReadCall (f := f1) (evm := evm) hf "__c3"
   let f2 : Frame := {f1 with locals := f1.locals.insert "__c3" (.int (Int.ofNat (transientWord evm deltaCountSlot).toNat))}
   have hcond : evalExpr? config f2 evm (.binary .ne (.var "__c3") (.intLit 0)) =
@@ -105,18 +105,18 @@ theorem unlockCallbackBody {f : Frame} {evm evm' : EVM.State} {data old out : By
   | false =>
     rw [if_neg (by simp)]
     exact .execBlockRevert (ExecBlock.consRevert
-      (ExecStmt.externalCallFailure (evalLocalValue hc) heth hargs hcall'))
+      (ExecStmt.externalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalLocalValue hc) heth hargs hcall'))
   | true =>
     by_cases hb : BytesReturnBounds out
     · rw [if_pos ⟨rfl, hb⟩]
-      have hstmt := ExecStmt.externalCallSuccess (retVar := "__c2") (evalLocalValue hc) heth hargs hcall'
+      have hstmt := ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (retVar := "__c2") (evalLocalValue hc) heth hargs hcall'
         (unlockCallbackDecode_ok hb)
       have hbody := unlockAfterCallback (f := {f with locals := f.locals.insert "__c2" (.bytes (bytesReturnPayload out))})
         hf hp (store_get_self _ _ _)
         ((store_get_ne _ _ (by decide : ("__c2" == "result") = false)).trans hr)
       exact execFuncBody_prepend (execBlock_singleton hstmt) hbody
     · rw [if_neg (fun h => hb h.2)]
-      exact .execBlockRevert (ExecBlock.consRevert (ExecStmt.externalCallReturnDecodeRevert
+      exact .execBlockRevert (ExecBlock.consRevert (ExecStmt.externalCallReturnDecodeRevert (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
         (evalLocalValue hc) heth hargs hcall' (unlockCallbackDecode_none hb)))
 
 end Benchmarks.UniswapV4PoolManager

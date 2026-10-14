@@ -15,9 +15,11 @@ theorem accrueIndicesAssign (v : CometWithExtendedAssetListImmutables)
     ExecStmt config frame evm
       (.assign .storage ⟨totalsIndexName borrow, []⟩
         (.tupleGet (.var "__c1") (if borrow then 1 else 0)))
-      (.ok frame (storeTotalsIndex evm borrow (accruedIndex v w0 w1 elapsed borrow))) := by
+      (if evm.executionEnv.perm then
+        .ok frame (storeTotalsIndex evm borrow (accruedIndex v w0 w1 elapsed borrow))
+       else .staticViolation) := by
   dsimp only
-  apply ExecStmt.assign (value := .int (accruedIndex v
+  apply execStmt_assign_storage (value := .int (accruedIndex v
     (Stele.EVM.storageLoad initial initial.executionEnv.codeOwner ⟨0⟩)
     (Stele.EVM.storageLoad initial initial.executionEnv.codeOwner ⟨1⟩) elapsed borrow).toNat)
   · cases borrow <;>
@@ -49,8 +51,10 @@ theorem accrueThen_source (v : CometWithExtendedAssetListImmutables)
     apply internalBlockResult.prepend hcall
     by_cases hperm : evm.executionEnv.perm = true
     · simp only [accrueThenOutcome, if_pos hv, hperm, if_true]
-      apply internalBlockResult.prepend hb
-      apply internalBlockResult.prepend hs
+      apply internalBlockResult.prepend (by simpa only [hperm, if_true] using hb)
+      have hpB : evmB.executionEnv.perm = true := by
+        simpa only [evmB, storeTotalsIndex, storageStore_executionEnv] using hperm
+      apply internalBlockResult.prepend (by simpa only [hpB, if_true] using hs)
       have het : evalExpr? config f1 evmI (.var "timeElapsed") = .ok (.int elapsed.toNat) := by
         simp only [evalExpr?, f1, accrueIndicesFrame, accrueTimeFrame,
           Std.HashMap.get?_eq_getElem?, Std.HashMap.getElem?_insert, EvalResult.ofOption]
@@ -59,7 +63,9 @@ theorem accrueThen_source (v : CometWithExtendedAssetListImmutables)
         simp only [evalExpr?, f1, accrueIndicesFrame, accrueTimeFrame,
           Std.HashMap.get?_eq_getElem?, Std.HashMap.getElem?_insert, EvalResult.ofOption]
         rfl
-      have hr := accrueRewards_source v f1 evmI elapsed time rfl rfl het hen
+      have hr := accrueRewards_source (hperm := by
+        simpa only [evmI, accrueIndicesState, storeTotalsIndex, storageStore_executionEnv]
+          using hperm) v f1 evmI elapsed time rfl rfl het hen
         (by intro b; cases b <;>
           simp [f1, accrueIndicesFrame, accrueTimeFrame, totalsPrincipalName])
         (by intro b; cases b <;>

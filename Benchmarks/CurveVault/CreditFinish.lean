@@ -71,7 +71,7 @@ theorem vaultCreditFinish (isDeposit : Bool) {I : ExecutionEnv} {g : Sat256} {s0
   refine Or.inl ⟨evm2, σ2, (locals.insert "__c2" .unit).insert "__c3" .unit, ?_, hs2, hret⟩
   apply ExecBlock.consNormal hmint
   apply execBlock_append hsave
-  apply vaultCreditReturnSource isDeposit hs2
+  apply vaultCreditReturnSource (hperm := by assumption) isDeposit hs2
   · rw [store_get_ne2 _ _ _ (by decide +kernel) (by decide +kernel), hr]
   · rw [store_get_ne2 _ _ _ (by cases isDeposit <;> decide +kernel)
       (by cases isDeposit <;> decide +kernel), ha]

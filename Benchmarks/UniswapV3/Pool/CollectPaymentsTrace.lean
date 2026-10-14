@@ -182,11 +182,11 @@ theorem collectPaymentX {σ : AccountMap} {ee : ExecutionEnv} {g : Sat256}
     obtain ⟨_, _, rdReady⟩ := hready
     rcases collectTransferX (v := v) second recipient rdReady hs hperm hfit hm hmem hzero hb hov with
       ⟨rdRev, hcall⟩ | ⟨evm', σ', out, mem', aw', next, k', C', hs', hcall, rdDone, hm', hmem', hz', hn⟩
-    · exact Or.inl ⟨rdRev, collectTokenReverts v locals evm key second recipient _ hvalues.recipient
+    · exact Or.inl ⟨rdRev, collectTokenReverts (hperm := (congrArg ExecutionEnv.perm hs.env).trans hperm) v locals evm key second recipient _ hvalues.recipient
         hget hvalues.position hpos hcall⟩
     · exact Or.inr ⟨evm', σ', locals.insert (poolTransferCallName second) .unit,
         out, mem', aw', next, k', C', hs',
-        collectTokenReturns v locals evm evm' key second recipient _ _ hvalues.recipient
+        collectTokenReturns (hperm := (congrArg ExecutionEnv.perm hs.env).trans hperm) v locals evm evm' key second recipient _ _ hvalues.recipient
           hget hvalues.position hpos hcall,
         collectPaid_values hvalues second, rdDone, hm', hmem', hz', hn⟩
 

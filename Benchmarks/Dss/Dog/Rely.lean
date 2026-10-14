@@ -340,7 +340,7 @@ theorem dogRelyBodyCoreOk
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let evm1 := Stele.EVM.storageStore evm0 I.codeOwner (relySlotFor I) ⟨1⟩
     have hbodySplit :
-        (ExecTransitionBody config contract evm0 locals relyTransition.body
+        (I.perm = true → ExecTransitionBody config contract evm0 locals relyTransition.body
           (.returned { contract := contract, locals := locals, immutables := immStore v } evm1 none) (immStore v)) ∧
         (I.perm = false → ExecTransitionBody config contract
           evm0 locals relyTransition.body .staticViolation (immStore v)) := by
@@ -371,7 +371,8 @@ theorem dogRelyBodyCoreOk
               relyEvaledRef, relySlotFor])
           (hstore := hstore)
       constructor
-      · have hblock := nonpayableRequireAssignStorageBlock
+      · intro hperm
+        have hblock := nonpayableRequireAssignStorageBlock (hperm := hperm)
           (cfg := config) (stele := { contract := contract, locals := locals, immutables := immStore v })
           (evm := evm0) (evm' := evm1)
           (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
@@ -428,7 +429,7 @@ theorem dogRelyBodyCoreOk
             native_decide)
       (dogPatchedDJumpPrefix1405 ⟨313⟩ hpatch (by native_decide))
       hmemAuth hread64 hcanonKey (by simp) with
-        ⟨_hperm, _, _, hretPc⟩ | ⟨hperm, hstatic⟩
+        ⟨hperm, _, _, hretPc⟩ | ⟨hperm, hstatic⟩
     swap
     · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode (hbodySplit.2 hperm)
     have hretPc' := hretPc.jumpdest
@@ -453,7 +454,7 @@ theorem dogRelyBodyCoreOk
     have henc : returnEquiv ByteArray.empty none relyTransition.returnType := by
       rw [show relyTransition.returnType = [] by rfl]
       exact returnEquiv.fallthrough rfl (by rfl) (by native_decide)
-    exact hret.reEquivExecutionGen hcode hdispatch hdecode hbodySplit.1
+    exact hret.reEquivExecutionGen hcode hdispatch hdecode (hbodySplit.1 hperm)
       haccounts henc
   · have hauthStele : solcSlotWordAt callerSlot σ I ≠ ⟨1⟩ := by
       intro hstele

@@ -58,7 +58,7 @@ theorem applyDeltaBodyExec {f : Frame} {evm : EVM.State} {target currency : Acco
     refine ⟨fun h => ?_⟩
     refine ExecBlock.consNormal (ExecStmt.letDecl (by simp only [evalExpr?]; rfl)) ?_
     refine ExecBlock.consNormal (ExecStmt.letDecl (by simp only [evalExpr?]; rfl)) ?_
-    exact ExecBlock.consNormal hcall (ExecBlock.consNormal (ExecStmt.assign hread (assignLocalValue hprev3)) h)
+    exact ExecBlock.consNormal hcall (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inl rfl) hread (assignLocalValue hprev3)) h)
   have hd4 : f4.locals.get? "delta" = some (.int delta) :=
     (store_get_ne _ _ (by decide : ("previous" == "delta") = false)).trans
       ((store_get_ne _ _ (by decide : ("hashSlot" == "delta") = false)).trans
@@ -83,12 +83,12 @@ theorem applyDeltaBodyExec {f : Frame} {evm : EVM.State} {target currency : Acco
     by_cases hp : evm.executionEnv.perm = false
     · rw [if_pos hp]
       apply ExecFuncBody.execBlockStatic
-      exact hprefix.run (ExecBlock.consNormal (ExecStmt.assign hadd (assignLocalValue hn4))
+      exact hprefix.run (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inl rfl) hadd (assignLocalValue hn4))
         (ExecBlock.consStatic (ExecStmt.assignTransientStatic hcast hwrite hp)))
     · rw [if_neg hp]
       apply ExecFuncBody.execBlockRet
-      refine hprefix.run (ExecBlock.consNormal (ExecStmt.assign hadd (assignLocalValue hn4))
-        (ExecBlock.consNormal (ExecStmt.assign hcast hwrite) (ExecBlock.consReturn (ExecStmt.return ?_))))
+      refine hprefix.run (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inl rfl) hadd (assignLocalValue hn4))
+        (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (Bool.eq_true_of_not_eq_false hp)) hcast hwrite) (ExecBlock.consReturn (ExecStmt.return ?_))))
       have hp5 : f5.locals.get? "previous" = some (.int previous) :=
         (store_get_ne _ _ (by decide : ("next" == "previous") = false)).trans (store_get_self _ _ _)
       simp only [evalExprs?, evalLocalValue hp5, evalLocalValue hn5, bind, EvalResult.bind, pure]

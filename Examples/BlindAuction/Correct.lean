@@ -1403,7 +1403,8 @@ theorem blindAuctionSteleCtorExecReverts_biddingOverflow
     (hltBid : biddingTime < Int.ofNat (EVM.twoPow 256))
     (hwv : I.weiValue = ⟨0⟩)
     (hoverBid : UInt256.size ≤
-      (UInt256.ofNat I.header.timestamp).toNat + (EVM.word biddingTime.toNat).toNat) :
+      (UInt256.ofNat I.header.timestamp).toNat + (EVM.word biddingTime.toNat).toNat)
+    (hperm : I.perm = true) :
     steleCtorExec blindAuctionConfig blindAuctionContract
       [.int biddingTime, .int revealTime, .address beneficiaryAddress]
       σ σ₀ g A I .reverted := by
@@ -1425,7 +1426,9 @@ theorem blindAuctionSteleCtorExecReverts_biddingOverflow
         (evm := evm0)
         (by simpa [evm0, initState] using hwv))) ?_
     refine ExecBlock.consNormal (stele' := frame) (evm' := evm1) ?_ ?_
-    · exact ExecStmt.assign (value := .address beneficiaryAddress)
+    · exact ExecStmt.assign
+        (hperm := Or.inr (by simpa [evm0, initState] using hperm))
+        (value := .address beneficiaryAddress)
         (by
           show evalExpr? blindAuctionConfig frame evm0 (.var "beneficiaryAddress") =
             .ok (.address beneficiaryAddress)
@@ -1463,7 +1466,8 @@ theorem blindAuctionSteleCtorExecReverts_revealOverflow
     (hoverReveal : UInt256.size ≤
       (blindAuctionCtorRevealBaseWord
         (initState σ σ₀ (Sat256.ofUInt256 g) A I)
-        biddingTime beneficiaryAddress).toNat + (EVM.word revealTime.toNat).toNat) :
+        biddingTime beneficiaryAddress).toNat + (EVM.word revealTime.toNat).toNat)
+    (hperm : I.perm = true) :
     steleCtorExec blindAuctionConfig blindAuctionContract
       [.int biddingTime, .int revealTime, .address beneficiaryAddress]
       σ σ₀ g A I .reverted := by
@@ -1487,7 +1491,9 @@ theorem blindAuctionSteleCtorExecReverts_revealOverflow
         (evm := evm0)
         (by simpa [evm0, initState] using hwv))) ?_
     refine ExecBlock.consNormal (stele' := frame) (evm' := evm1) ?_ ?_
-    · exact ExecStmt.assign (value := .address beneficiaryAddress)
+    · exact ExecStmt.assign
+        (hperm := Or.inr (by simpa [evm0, initState] using hperm))
+        (value := .address beneficiaryAddress)
         (by
           show evalExpr? blindAuctionConfig frame evm0 (.var "beneficiaryAddress") =
             .ok (.address beneficiaryAddress)
@@ -1500,7 +1506,9 @@ theorem blindAuctionSteleCtorExecReverts_revealOverflow
             (initState σ σ₀ (Sat256.ofUInt256 g) A I)
             biddingTime revealTime beneficiaryAddress)
     · refine ExecBlock.consNormal (stele' := frame) (evm' := evm2) ?_ ?_
-      · exact ExecStmt.assign (value := .int (Int.ofNat biddingEndWord.toNat))
+      · exact ExecStmt.assign
+          (hperm := Or.inr (by simpa [evm1, evm0, blindAuctionCtorAfterBeneficiaryState, initState] using hperm))
+          (value := .int (Int.ofNat biddingEndWord.toNat))
           (by
             unfold biddingEndWord evm1 evm0 frame
             simpa [blindAuctionCtorBiddingEndSteleWord, blindAuctionCtorAfterBeneficiaryState,
@@ -1551,7 +1559,8 @@ theorem blindAuctionSteleCtorExecSuccess
     (hnoReveal : ¬ UInt256.size ≤
       (blindAuctionCtorRevealBaseWord
         (initState σ σ₀ (Sat256.ofUInt256 g) A I)
-        biddingTime beneficiaryAddress).toNat + (EVM.word revealTime.toNat).toNat) :
+        biddingTime beneficiaryAddress).toNat + (EVM.word revealTime.toNat).toNat)
+    (hperm : I.perm = true) :
     steleCtorExec blindAuctionConfig blindAuctionContract
       [.int biddingTime, .int revealTime, .address beneficiaryAddress]
       σ σ₀ g A I
@@ -1584,7 +1593,9 @@ theorem blindAuctionSteleCtorExecSuccess
         (evm := evm0)
         (by simpa [evm0, initState] using hwv))) ?_
     refine ExecBlock.consNormal (stele' := frame) (evm' := evm1) ?_ ?_
-    · exact ExecStmt.assign (value := .address beneficiaryAddress)
+    · exact ExecStmt.assign
+        (hperm := Or.inr (by simpa [evm0, initState] using hperm))
+        (value := .address beneficiaryAddress)
         (by
           show evalExpr? blindAuctionConfig frame evm0 (.var "beneficiaryAddress") =
             .ok (.address beneficiaryAddress)
@@ -1597,7 +1608,9 @@ theorem blindAuctionSteleCtorExecSuccess
             (initState σ σ₀ (Sat256.ofUInt256 g) A I)
             biddingTime revealTime beneficiaryAddress)
     · refine ExecBlock.consNormal (stele' := frame) (evm' := evm2) ?_ ?_
-      · exact ExecStmt.assign (value := .int (Int.ofNat biddingEndWord.toNat))
+      · exact ExecStmt.assign
+          (hperm := Or.inr (by simpa [evm1, evm0, blindAuctionCtorAfterBeneficiaryState, initState] using hperm))
+          (value := .int (Int.ofNat biddingEndWord.toNat))
           (by
             unfold biddingEndWord evm1 evm0 frame
             simpa [blindAuctionCtorBiddingEndSteleWord, blindAuctionCtorAfterBeneficiaryState,
@@ -1623,7 +1636,9 @@ theorem blindAuctionSteleCtorExecSuccess
                   simpa [blindAuctionCtorAfterBeneficiaryState, storageStore_executionEnv,
                     initState] using hnoBid))
       · refine ExecBlock.consNormal ?_ ExecBlock.nil
-        exact ExecStmt.assign (value := .int (Int.ofNat revealEndWord.toNat))
+        exact ExecStmt.assign
+          (hperm := Or.inr (by simpa [evm2, evm0, blindAuctionCtorAfterBiddingEndState, blindAuctionCtorAfterBeneficiaryState, initState] using hperm))
+          (value := .int (Int.ofNat revealEndWord.toNat))
           (by
             unfold revealEndWord evm2 evm0 frame blindAuctionCtorRevealEndSteleWord
             simpa [blindAuctionCtorRevealBaseWord, storageStore_executionEnv]
@@ -1742,7 +1757,7 @@ theorem blindAuctionConstructorCorrect :
       rcases hrd.xiResult hcodeCtor with hOOG | ⟨g', o, hrev⟩
       · exact typedConstructorRefinementFor.outOfGas (by simpa [Sat256.ofUInt256] using hOOG)
       · refine typedConstructorRefinementFor.execution (by simpa [Sat256.ofUInt256] using hrev)
-          (blindAuctionSteleCtorExecReverts_biddingOverflow
+          (blindAuctionSteleCtorExecReverts_biddingOverflow (hperm := by assumption)
             (σ := σ) (σ₀ := σ₀) (g := g) (A := A) (I := I)
             biddingTime revealTime beneficiaryAddress h0Bid hltBid hwv (by
               simpa [bidWord] using hoverBid)) ?_
@@ -1762,7 +1777,7 @@ theorem blindAuctionConstructorCorrect :
         rcases hrd.xiResult hcodeCtor with hOOG | ⟨g', o, hrev⟩
         · exact typedConstructorRefinementFor.outOfGas (by simpa [Sat256.ofUInt256] using hOOG)
         · refine typedConstructorRefinementFor.execution (by simpa [Sat256.ofUInt256] using hrev)
-            (blindAuctionSteleCtorExecReverts_revealOverflow
+            (blindAuctionSteleCtorExecReverts_revealOverflow (hperm := by assumption)
               (σ := σ) (σ₀ := σ₀) (g := g) (A := A) (I := I)
               biddingTime revealTime beneficiaryAddress h0Bid hltBid h0Reveal hltReveal hwv
               (by simpa [bidWord] using hoverBid)
@@ -1814,7 +1829,7 @@ theorem blindAuctionConstructorCorrect :
               bidWord] using hacc
           rw [hσFinal] at hsuccess
           refine typedConstructorRefinementFor.execution hsuccess
-            (blindAuctionSteleCtorExecSuccess
+            (blindAuctionSteleCtorExecSuccess (hperm := by assumption)
               (σ := σ) (σ₀ := σ₀) (g := g) (A := A) (I := I)
               biddingTime revealTime beneficiaryAddress h0Bid hltBid h0Reveal hltReveal hwv
               (by simpa [bidWord] using hoverBid)

@@ -10,16 +10,18 @@ set_option maxRecDepth 2000
 
 theorem withdrawBaseTransferEvent_source {v src recipient amount supplied}
     (frame : Frame) (evm : EVM.State) (hf : WithdrawBaseArgs frame v src recipient amount supplied)
-    (hsupplied : supplied.toNat < 2^104) :
+    (hsupplied : supplied.toNat < 2^104)
+    (hperm : evm.executionEnv.perm = true) :
     ∃ final, ExecStmt config frame evm withdrawBaseTransferEvent (.ok final evm) := by
-  exact ⟨_, principalTransferEvent_source frame evm false src supplied
+  exact ⟨_, principalTransferEvent_source (hperm := by assumption) frame evm false src supplied
     "src" "withdrawAmount" "__c8" (by decide) hf.contract hf.src hf.supplied hf.index hsupplied⟩
 
 theorem withdrawBaseTransfer_source {v recipient amount evm result}
     (ht : WithdrawBaseTransfer v recipient amount evm result) (frame : Frame)
     (src : AccountAddress) (supplied : UInt256)
     (hf : WithdrawBaseArgs frame v src recipient amount supplied)
-    (hsupplied : supplied.toNat < 2^104) :
+    (hsupplied : supplied.toNat < 2^104)
+    (hperm : evm.executionEnv.perm = true) :
     internalBlockResult config frame evm withdrawBaseTransferTail result := by
   have hcall {r} (hc : TransferOutTrace v.baseToken recipient amount evm r) :=
     transferOut_call hc frame (.immutable "baseToken") (.var "to") (.var "amount") "__c7"
@@ -29,11 +31,13 @@ theorem withdrawBaseTransfer_source {v recipient amount evm result}
   cases ht with
   | failed ht => exact ExecBlock.consRevert (hcall ht)
   | @done evm' ht =>
+    have hp : evm'.executionEnv.perm = true :=
+      (congrArg ExecutionEnv.perm (ht.executionEnv_eq _ rfl)).trans hperm
     let ready := { frame with locals := frame.locals.insert "__c7" .unit }
     have hf' := hf.insert "__c7" .unit (by decide)
-    obtain ⟨final, hevent⟩ := withdrawBaseTransferEvent_source ready evm' hf' hsupplied
+    obtain ⟨final, hevent⟩ := withdrawBaseTransferEvent_source (hperm := hp) ready evm' hf' hsupplied
     refine ⟨final, ExecBlock.consNormal (hcall ht)
-      (ExecBlock.consNormal (ExecStmt.emit
+      (ExecBlock.consNormal (ExecStmt.emit (hperm := hp)
         (vals := [.address src, .address recipient, .int amount.toNat]) ?_)
           (ExecBlock.consNormal hevent .nil))⟩
     simp only [evalExprs?, evalExpr?, hf'.src, hf'.recipient, hf'.amount,

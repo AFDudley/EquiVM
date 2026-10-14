@@ -47,23 +47,23 @@ theorem payableProbeSource {locals imms : Store} {evm evm' : EVM.State} {target 
       change (ABI.decodeReturnValue? abiBool out).map (fun v => [v]) = _
       rw [decodeReturnBool_valid hv.2.2 hout]
       rfl
-    apply ExecBlock.consNormal (ExecStmt.externalCallSuccess hre (by simp only [evalExpr?, pure]) rfl hcall hd)
+    apply ExecBlock.consNormal (ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hre (by simp only [evalExpr?, pure]) rfl hcall hd)
     apply allocateBlock_ok (n := 32) (by simp only [evalExpr?, pure]; rfl) hh'
     simpa only [Nat.min_eq_right hv.2.2.1] using hv.2.1
   · rw [if_neg hv]
     cases success with
-    | false => exact ExecBlock.consRevert (ExecStmt.externalCallFailure hre (by simp only [evalExpr?, pure]) rfl hcall)
+    | false => exact ExecBlock.consRevert (ExecStmt.externalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hre (by simp only [evalExpr?, pure]) rfl hcall)
     | true =>
       by_cases hd : BoolReturnValid out
       · have hdecode : config.externalABI.decode? "isPayable" out = some [.bool (decide (calldataWord out 0 ≠ ⟨0⟩))] := by
           change (ABI.decodeReturnValue? abiBool out).map (fun v => [v]) = _
           rw [decodeReturnBool_valid hd hout]
           rfl
-        apply ExecBlock.consNormal (ExecStmt.externalCallSuccess hre (by simp only [evalExpr?, pure]) rfl hcall hdecode)
+        apply ExecBlock.consNormal (ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hre (by simp only [evalExpr?, pure]) rfl hcall hdecode)
         apply allocateBlock_revert (n := 32) (by simp only [evalExpr?, pure]; rfl) hh'
         intro hg
         exact hv ⟨rfl,by simpa only [Nat.min_eq_right hd.1] using hg,hd⟩
-      · apply ExecBlock.consRevert (ExecStmt.externalCallReturnDecodeRevert hre (by simp only [evalExpr?, pure]) rfl hcall ?_)
+      · apply ExecBlock.consRevert (ExecStmt.externalCallReturnDecodeRevert (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hre (by simp only [evalExpr?, pure]) rfl hcall ?_)
         change (ABI.decodeReturnValue? abiBool out).map (fun v => [v]) = none
         rw [decodeReturnBool_invalid hd hout]
         rfl

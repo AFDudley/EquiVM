@@ -43,17 +43,17 @@ theorem currencyBalanceBody {f : Frame} {evm evm' : EVM.State} {currency : Accou
   | false =>
     rw [if_neg (by simp)]
     exact .execBlockRevert (ExecBlock.consNormal hzero (ExecBlock.consRevert (ExecStmt.iteFalse hguard
-      (ExecBlock.consNormal hlet (ExecBlock.consRevert (ExecStmt.externalCallFailure hrecv heth hargs hcall'))))))
+      (ExecBlock.consNormal hlet (ExecBlock.consRevert (ExecStmt.externalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hrecv heth hargs hcall'))))))
   | true =>
     by_cases hlo : 32 ≤ out.size
     · rw [if_pos ⟨rfl, hlo⟩]
-      have hbalance := ExecStmt.externalCallSuccess (retVar := "__c2") hrecv heth hargs hcall' (balanceOfDecode_ok hlo ho)
+      have hbalance := ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (retVar := "__c2") hrecv heth hargs hcall' (balanceOfDecode_ok hlo ho)
       exact .execBlockRet (ExecBlock.consNormal hzero (ExecBlock.consReturn (ExecStmt.iteFalse hguard
         (ExecBlock.consNormal hlet (ExecBlock.consNormal hbalance
           (ABlock.start.returns (evalLocalValue (store_get_self _ _ _))))))))
     · rw [if_neg (fun h => hlo h.2)]
       exact .execBlockRevert (ExecBlock.consNormal hzero (ExecBlock.consRevert (ExecStmt.iteFalse hguard
-        (ExecBlock.consNormal hlet (ExecBlock.consRevert (ExecStmt.externalCallReturnDecodeRevert
+        (ExecBlock.consNormal hlet (ExecBlock.consRevert (ExecStmt.externalCallReturnDecodeRevert (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
           hrecv heth hargs hcall' (balanceOfDecode_short (Nat.lt_of_not_ge hlo))))))))
 
 theorem currencyBalanceCall {f : Frame} {evm evm' : EVM.State} {e : Expr} {currency : AccountAddress} {z : Bool} {out : ByteArray}

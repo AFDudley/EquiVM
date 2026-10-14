@@ -46,7 +46,7 @@ theorem nonceReadSource {evm : EVM.State} {L imms : Store} {a : AccountAddress} 
     ExecBlock config {contract := contract,locals := L,immutables := imms} evm (nonceReadBlock key)
       (.ok {contract := contract,locals := nonceLocals L (nonceWord evm a),immutables := imms} evm) := by
   refine ExecBlock.consNormal (ExecStmt.letDecl (value := .int 0) (by simp only [evalExpr?,pure])) ?_
-  refine ExecBlock.consNormal (ExecStmt.assign (nonceExpr_read (by simpa (disch := decide) only [store_get_ne] using hn) he) ?_) ExecBlock.nil
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inl rfl) (nonceExpr_read (by simpa (disch := decide) only [store_get_ne] using hn) he) ?_) ExecBlock.nil
   simp only [assignStorageRef?,updateLocalPath?,store_get_self,EvalResult.bind,bind,pure,nonceLocals]
 
 theorem nonceWrite_eval {evm : EVM.State} {L imms : Store} {word : UInt256}
@@ -60,10 +60,11 @@ theorem nonceWrite_eval {evm : EVM.State} {L imms : Store} {word : UInt256}
 
 theorem nonceWriteSource {evm : EVM.State} {L imms : Store} {a : AccountAddress} {key : Expr}
     (hn : L.get? "_nonces" = none) (hw : L.get? "nonce" = some (.int (Int.ofNat (nonceWord evm a).toNat)))
-    (he : evalExpr? config {contract := contract,locals := L,immutables := imms} evm key = .ok (.address a)) :
+    (he : evalExpr? config {contract := contract,locals := L,immutables := imms} evm key = .ok (.address a))
+    (hperm : evm.executionEnv.perm = true) :
     ExecStmt config {contract := contract,locals := L,immutables := imms} evm (nonceWrite key)
       (.ok {contract := contract,locals := L,immutables := imms} (nonceStore evm a)) :=
-  ExecStmt.assign (nonceWrite_eval hw) (nonceExpr_write hn he)
+  ExecStmt.assign (hperm := Or.inr hperm) (nonceWrite_eval hw) (nonceExpr_write hn he)
 
 theorem nonceWriteStatic {evm : EVM.State} {L imms : Store} {a : AccountAddress} {key : Expr}
     (hn : L.get? "_nonces" = none) (hw : L.get? "nonce" = some (.int (Int.ofNat (nonceWord evm a).toNat)))

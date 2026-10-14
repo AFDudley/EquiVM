@@ -402,7 +402,7 @@ theorem catBiteSourceIlksFailRevert {σ σ₀ A I} {g : UInt256}
       (evalCallvalueEq_true (by simp [evm0, initState]; exact hwv))) ?_
     refine ExecBlock.consNormal (ExecStmt.requireTrue
       (biteVatGuard_true (biteLocals_get_vat I) (by simpa [evm0] using hvatCode0))) ?_
-    exact ExecBlock.consRevert (ExecStmt.externalCallFailure
+    exact ExecBlock.consRevert (ExecStmt.externalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
       (biteVatRead (biteLocals_get_vat I)) (by simp [evalExpr?, pure])
       (evalExprs_biteIlksArgs I (biteLocals_get_ilk I)) hIlksFailCall)
   simpa [ExecTransitionBody, hL0] using ExecFuncBody.execBlockRevert hblock
@@ -435,7 +435,7 @@ theorem catBiteSourceIlksDecodeRevert {σ σ₀ A I} {g : UInt256}
       (evalCallvalueEq_true (by simp [evm0, initState]; exact hwv))) ?_
     refine ExecBlock.consNormal (ExecStmt.requireTrue
       (biteVatGuard_true (biteLocals_get_vat I) (by simpa [evm0] using hvatCode0))) ?_
-    exact ExecBlock.consRevert (ExecStmt.externalCallReturnDecodeRevert
+    exact ExecBlock.consRevert (ExecStmt.externalCallReturnDecodeRevert (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
       (biteVatRead (biteLocals_get_vat I)) (by simp [evalExpr?, pure])
       (evalExprs_biteIlksArgs I (biteLocals_get_ilk I)) hIlksCall hIlksDec)
   simpa [ExecTransitionBody, hL0] using ExecFuncBody.execBlockRevert hblock
@@ -485,7 +485,7 @@ private theorem biteUrnsRevert_afterIlks
         (.externalCall (.storage vatRef) "ilks" (.intLit 0) [.var "ilk"] "vatIlk" (perm := false))
         (.ok { contract := contract, locals := Lilk } evmIlk) := by
     simpa [hLilk, biteIlkTuple, collapseReturns] using
-      ExecStmt.externalCallSuccess
+      ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
         (cfg := config) (stele := { contract := contract, locals := L0 }) (evm := evm0)
         (evm' := evmIlk)
         (receiver := .storage vatRef) (name := "ilks") (sendVal := 0)
@@ -548,7 +548,7 @@ theorem catBiteSourceUrnsFailRevert
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) (biteLocals I)
       biteTransition.body .reverted :=
   biteUrnsRevert_afterIlks hwv hvatCode0 hIlksCall hIlksDec hvatCodeIlk
-    (ExecStmt.externalCallFailure (biteVatRead (bsDust_get_vat I _ _ _ _ _))
+    (ExecStmt.externalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (biteVatRead (bsDust_get_vat I _ _ _ _ _))
       (by simp [evalExpr?, pure])
       (evalExprs_biteUrnsArgs I (bsDust_get_ilk I _ _ _ _ _) (bsDust_get_urn I _ _ _ _ _))
       hUrnsFailCall)
@@ -564,7 +564,7 @@ theorem catBiteSourceUrnsDecodeRevert
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) (biteLocals I)
       biteTransition.body .reverted :=
   biteUrnsRevert_afterIlks hwv hvatCode0 hIlksCall hIlksDec hvatCodeIlk
-    (ExecStmt.externalCallReturnDecodeRevert (biteVatRead (bsDust_get_vat I _ _ _ _ _))
+    (ExecStmt.externalCallReturnDecodeRevert (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (biteVatRead (bsDust_get_vat I _ _ _ _ _))
       (by simp [evalExpr?, pure])
       (evalExprs_biteUrnsArgs I (bsDust_get_ilk I _ _ _ _ _) (bsDust_get_urn I _ _ _ _ _))
       hUrnsCall hUrnsDec)

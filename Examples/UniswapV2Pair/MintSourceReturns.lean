@@ -361,7 +361,8 @@ theorem uniswapMintFeeCallFromMint_feeOff_kLastNonzero
       "feeTo" 0 [] (true, evmFee, out) false)
     (hdec : config.externalABI.decode? "feeTo" out = some [.address feeTo])
     (hfeeTo : feeTo = AccountAddress.ofNat 0)
-    (hkLast : (mintFeeKLastWord evmFee).toNat ≠ 0) :
+    (hkLast : (mintFeeKLastWord evmFee).toNat ≠ 0)
+    (hperm : callEvm.executionEnv.perm = true) :
     ExecStmt config
       { contract := contract, locals := mintAmountStore reserveEvm I balance0 balance1 }
       callEvm
@@ -391,7 +392,7 @@ theorem uniswapMintFeeCallFromMint_feeOff_kLastNonzero
     (by simpa [reserve0, reserve1] using bindParams_mintFeeFunction_call reserve0 reserve1)
     (by
       simpa [reserve0, reserve1] using
-        uniswapMintFeeFunctionBody_feeOff_kLastNonzero callEvm evmFee reserve0 reserve1
+        uniswapMintFeeFunctionBody_feeOff_kLastNonzero (hperm := by assumption) callEvm evmFee reserve0 reserve1
           feeTo hguard hcall hdec hfeeTo hkLast)
 
 theorem uniswapMintFeeCallFromMint_feeOn_kLastNonzero_noMint
@@ -566,7 +567,8 @@ theorem uniswapMintFeeCallFromMint_feeOn_kLastNonzero_positiveWithLiquidity
         UInt256.size)
     (hfitBalance :
       mintFunctionToBalanceNewNat evmFee feeTo (mintFeeLiquidityWord evmFee rootK rootKLast) <
-        UInt256.size) :
+        UInt256.size)
+    (hperm : callEvm.executionEnv.perm = true) :
     ExecStmt config
       { contract := contract, locals := mintAmountStore reserveEvm I balance0 balance1 }
       callEvm
@@ -598,7 +600,7 @@ theorem uniswapMintFeeCallFromMint_feeOn_kLastNonzero_positiveWithLiquidity
     (by simpa [reserve0, reserve1] using bindParams_mintFeeFunction_call reserve0 reserve1)
     (by
       simpa [reserve0, reserve1] using
-        uniswapMintFeeFunctionBody_feeOn_kLastNonzero_positiveWithLiquidity callEvm evmFee
+        uniswapMintFeeFunctionBody_feeOn_kLastNonzero_positiveWithLiquidity (hperm := by assumption) callEvm evmFee
           reserve0 reserve1 feeTo rootK rootKLast hguard hcall hdec hfeeTo hkLast hprefix
           hroot hrootKNonneg hrootKSize hrootKLastNonneg hnumFit hrootFiveFit hdenFit
           hdenom hliq hliqFit hfitSupply hfitBalance)

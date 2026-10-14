@@ -58,11 +58,13 @@ theorem vaultSet_max_supplyBodyCore {σ σ₀ A I} {g : UInt256}
     (by simp [locals]) hv hfactory hperm (by simp) rd861 with
     ⟨evm', σ', locals', hcallee, hs', hret⟩ | ⟨hcallee, hrev⟩
   swap
-  · have hsource := vaultMutatingBodyReverts (fn := vaultSetMaxFunction)
+  · have hsource := vaultMutatingBodyReverts (hperm := by assumption) (fn := vaultSetMaxFunction)
       hvalue (by rw [hload]; exact hlocked) hargEval rfl rfl hcallee
       (rest := [vaultLockAssignStmt ⟨0⟩])
     exact hrev.reEquivExecutionRevert hcode hd hdec hsource
-  have hsource := vaultMutatingBodyVoidReturns (fn := vaultSetMaxFunction)
+  have hsource := vaultMutatingBodyVoidReturns
+    (hpermAfter := (congrArg ExecutionEnv.perm hs'.env).trans hperm)
+    (hperm := hperm) (fn := vaultSetMaxFunction)
     hvalue (by rw [hload]; exact hlocked) hargEval rfl rfl hcallee
   have hsFinal : SourceState evm I (tstoreAccountMap I.codeOwner σ' ⟨0⟩ ⟨0⟩) (vaultSetLock evm' ⟨0⟩) := by
     unfold vaultSetLock

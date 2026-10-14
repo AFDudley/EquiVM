@@ -52,7 +52,7 @@ theorem absorbCollateralMath_source (frame : Frame) (evm : State)
       by_cases hv3 : delta.toNat + (absorbCollateralContribution seized price out).toNat < UInt256.size
       · rw [if_pos (show AbsorbCollateralMathValid delta seized price out from ⟨hv1, hv2, hv3⟩)]
         exact ExecBlock.consNormal hprice (ExecBlock.consNormal hfactor
-          (ExecBlock.consNormal (ExecStmt.assign (checkedAddSourceOk hed hc7 hv3)
+          (ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (checkedAddSourceOk hed hc7 hv3)
             (assignLocalFrame hd2)) .nil))
       · rw [if_neg (fun h : AbsorbCollateralMathValid delta seized price out ↦ hv3 h.2.2)]
         exact ExecBlock.consNormal hprice (ExecBlock.consNormal hfactor

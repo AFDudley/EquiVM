@@ -69,7 +69,8 @@ theorem cageSourceVatSinSuccessTailRevertFromBlock
     (htail :
       ExecBlock config
         { contract := contract, locals := cageLocalsAfterVatSin flapperDai vatDai vatSin }
-        evmSin (cageMinStmts ++ cageVatHealStmts) .reverted) :
+        evmSin (cageMinStmts ++ cageVatHealStmts) .reverted)
+    (hperm : I.perm = true) :
     ExecTransitionBody config contract
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
       cageTransition.body .reverted := by
@@ -88,7 +89,7 @@ theorem cageSourceVatSinSuccessTailRevertFromBlock
             .assign .storage AshRef (.intLit 0) ])
         (.ok { contract := contract, locals := locals } evmAsh) := by
     simpa [locals, evm0, evmLive, evmSin0, evmAsh] using
-      vowCageSourceClearPrefix (σ := σ)
+      vowCageSourceClearPrefix (hperm := hperm) (σ := σ)
         (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hauth hlive
   have hfirst :
       ExecBlock config { contract := contract, locals := locals } evmAsh
@@ -205,7 +206,8 @@ theorem cageSourceVatSinSuccessTailOkFromBlock
       ExecBlock config
         { contract := contract, locals := cageLocalsAfterVatSin flapperDai vatDai vatSin }
         evmSin (cageMinStmts ++ cageVatHealStmts)
-        (.ok { contract := contract, locals := cageLocalsAfterHealRet flapperDai vatDai vatSin healRad } evmHeal)) :
+        (.ok { contract := contract, locals := cageLocalsAfterHealRet flapperDai vatDai vatSin healRad } evmHeal))
+    (hperm : I.perm = true) :
     ExecTransitionBody config contract
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
       cageTransition.body
@@ -228,7 +230,7 @@ theorem cageSourceVatSinSuccessTailOkFromBlock
             .assign .storage AshRef (.intLit 0) ])
         (.ok { contract := contract, locals := locals } evmAsh) := by
     simpa [locals, evm0, evmLive, evmSin0, evmAsh] using
-      vowCageSourceClearPrefix (σ := σ)
+      vowCageSourceClearPrefix (hperm := hperm) (σ := σ)
         (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hauth hlive
   have hfirst :
       ExecBlock config { contract := contract, locals := locals } evmAsh
@@ -350,7 +352,8 @@ theorem cageSourceMinHealLeftNoCode
     (hvatNoCode :
       (UInt256.ofNat
         ((evmSin.lookupAccount (cageVatAddressOf evmSin)).option 0
-          (fun acc => acc.code.size))).toNat = 0) :
+          (fun acc => acc.code.size))).toNat = 0)
+    (hperm : I.perm = true) :
     ExecTransitionBody config contract
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
       cageTransition.body .reverted := by
@@ -369,7 +372,7 @@ theorem cageSourceMinHealLeftNoCode
         evmSin (cageMinStmts ++ cageVatHealStmts) .reverted :=
     cageMinHealLeftNoCode (evm := evmSin) (flapperDai := flapperDai)
       (vatDai := vatDai) (vatSin := vatSin) hle hvatNoCode
-  exact cageSourceVatSinSuccessTailRevertFromBlock
+  exact cageSourceVatSinSuccessTailRevertFromBlock (hperm := hperm)
     (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) (flapperDai := flapperDai)
     (vatDai := vatDai) (vatSin := vatSin) (evmDai := evmDai) (evmFlap := evmFlap)
     (evmFlop := evmFlop) (evmDai2 := evmDai2) (evmSin := evmSin)
@@ -445,7 +448,8 @@ theorem cageSourceMinHealRightNoCode
     (hvatNoCode :
       (UInt256.ofNat
         ((evmSin.lookupAccount (cageVatAddressOf evmSin)).option 0
-          (fun acc => acc.code.size))).toNat = 0) :
+          (fun acc => acc.code.size))).toNat = 0)
+    (hperm : I.perm = true) :
     ExecTransitionBody config contract
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
       cageTransition.body .reverted := by
@@ -464,7 +468,7 @@ theorem cageSourceMinHealRightNoCode
         evmSin (cageMinStmts ++ cageVatHealStmts) .reverted :=
     cageMinHealRightNoCode (evm := evmSin) (flapperDai := flapperDai)
       (vatDai := vatDai) (vatSin := vatSin) hlt hvatNoCode
-  exact cageSourceVatSinSuccessTailRevertFromBlock
+  exact cageSourceVatSinSuccessTailRevertFromBlock (hperm := hperm)
     (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) (flapperDai := flapperDai)
     (vatDai := vatDai) (vatSin := vatSin) (evmDai := evmDai) (evmFlap := evmFlap)
     (evmFlop := evmFlop) (evmDai2 := evmDai2) (evmSin := evmSin)
@@ -543,7 +547,8 @@ theorem cageSourceMinHealLeftCallFailure
           (fun acc => acc.code.size))).toNat)
     (hcallHeal :
       typedCallViaEVM config evmSin (EVM.address (cageVatAddressOf evmSin))
-        "heal" 0 [.int (Int.ofNat vatDai.toNat)] (false, evmHeal, outHeal) true) :
+        "heal" 0 [.int (Int.ofNat vatDai.toNat)] (false, evmHeal, outHeal) true)
+    (hperm : I.perm = true) :
     ExecTransitionBody config contract
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
       cageTransition.body .reverted := by
@@ -563,7 +568,7 @@ theorem cageSourceMinHealLeftCallFailure
     cageMinHealLeftCallFailure (evm := evmSin) (evmHeal := evmHeal)
       (outHeal := outHeal) (flapperDai := flapperDai) (vatDai := vatDai)
       (vatSin := vatSin) hle hvatCodeHeal hcallHeal
-  exact cageSourceVatSinSuccessTailRevertFromBlock
+  exact cageSourceVatSinSuccessTailRevertFromBlock (hperm := hperm)
     (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) (flapperDai := flapperDai)
     (vatDai := vatDai) (vatSin := vatSin) (evmDai := evmDai) (evmFlap := evmFlap)
     (evmFlop := evmFlop) (evmDai2 := evmDai2) (evmSin := evmSin)
@@ -641,7 +646,8 @@ theorem cageSourceMinHealRightCallFailure
           (fun acc => acc.code.size))).toNat)
     (hcallHeal :
       typedCallViaEVM config evmSin (EVM.address (cageVatAddressOf evmSin))
-        "heal" 0 [.int (Int.ofNat vatSin.toNat)] (false, evmHeal, outHeal) true) :
+        "heal" 0 [.int (Int.ofNat vatSin.toNat)] (false, evmHeal, outHeal) true)
+    (hperm : I.perm = true) :
     ExecTransitionBody config contract
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
       cageTransition.body .reverted := by
@@ -661,7 +667,7 @@ theorem cageSourceMinHealRightCallFailure
     cageMinHealRightCallFailure (evm := evmSin) (evmHeal := evmHeal)
       (outHeal := outHeal) (flapperDai := flapperDai) (vatDai := vatDai)
       (vatSin := vatSin) hlt hvatCodeHeal hcallHeal
-  exact cageSourceVatSinSuccessTailRevertFromBlock
+  exact cageSourceVatSinSuccessTailRevertFromBlock (hperm := hperm)
     (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) (flapperDai := flapperDai)
     (vatDai := vatDai) (vatSin := vatSin) (evmDai := evmDai) (evmFlap := evmFlap)
     (evmFlop := evmFlop) (evmDai2 := evmDai2) (evmSin := evmSin)
@@ -739,7 +745,8 @@ theorem cageSourceMinHealLeftSuccess
           (fun acc => acc.code.size))).toNat)
     (hcallHeal :
       typedCallViaEVM config evmSin (EVM.address (cageVatAddressOf evmSin))
-        "heal" 0 [.int (Int.ofNat vatDai.toNat)] (true, evmHeal, outHeal) true) :
+        "heal" 0 [.int (Int.ofNat vatDai.toNat)] (true, evmHeal, outHeal) true)
+    (hperm : I.perm = true) :
     ExecTransitionBody config contract
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
       cageTransition.body
@@ -764,7 +771,7 @@ theorem cageSourceMinHealLeftSuccess
     cageMinHealLeftSuccess (evm := evmSin) (evmHeal := evmHeal) (outHeal := outHeal)
       (flapperDai := flapperDai) (vatDai := vatDai) (vatSin := vatSin)
       hle hvatCodeHeal hcallHeal
-  exact cageSourceVatSinSuccessTailOkFromBlock
+  exact cageSourceVatSinSuccessTailOkFromBlock (hperm := hperm)
     (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) (flapperDai := flapperDai)
     (vatDai := vatDai) (vatSin := vatSin) (healRad := vatDai) (evmDai := evmDai)
     (evmFlap := evmFlap) (evmFlop := evmFlop) (evmDai2 := evmDai2)
@@ -843,7 +850,8 @@ theorem cageSourceMinHealRightSuccess
           (fun acc => acc.code.size))).toNat)
     (hcallHeal :
       typedCallViaEVM config evmSin (EVM.address (cageVatAddressOf evmSin))
-        "heal" 0 [.int (Int.ofNat vatSin.toNat)] (true, evmHeal, outHeal) true) :
+        "heal" 0 [.int (Int.ofNat vatSin.toNat)] (true, evmHeal, outHeal) true)
+    (hperm : I.perm = true) :
     ExecTransitionBody config contract
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
       cageTransition.body
@@ -868,7 +876,7 @@ theorem cageSourceMinHealRightSuccess
     cageMinHealRightSuccess (evm := evmSin) (evmHeal := evmHeal) (outHeal := outHeal)
       (flapperDai := flapperDai) (vatDai := vatDai) (vatSin := vatSin)
       hlt hvatCodeHeal hcallHeal
-  exact cageSourceVatSinSuccessTailOkFromBlock
+  exact cageSourceVatSinSuccessTailOkFromBlock (hperm := hperm)
     (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) (flapperDai := flapperDai)
     (vatDai := vatDai) (vatSin := vatSin) (healRad := vatSin) (evmDai := evmDai)
     (evmFlap := evmFlap) (evmFlop := evmFlop) (evmDai2 := evmDai2)
@@ -961,13 +969,14 @@ theorem vowCageMinHealLeftNoCodeBodyCore
     (hvatNoCode :
       (UInt256.ofNat
         ((evmSin.lookupAccount (cageVatAddressOf evmSin)).option 0
-          (fun acc => acc.code.size))).toNat = 0) :
+          (fun acc => acc.code.size))).toNat = 0)
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   obtain ⟨_, _, rd3238⟩ := RD.vowCageMinReturnLeft rd3234 hle (by simp; omega)
   have hrev : RDrev vowBytecode (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) :=
     RD.vowCageHealNoCode rd3238 hmem hread64 hcodeSize (by simp; omega)
-  have hbody := cageSourceMinHealLeftNoCode
+  have hbody := cageSourceMinHealLeftNoCode (hperm := hperm)
     (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
     (flapperDai := flapperDai) (vatDai := vatDai) (vatSin := vatSin)
     (evmDai := evmDai) (evmFlap := evmFlap) (evmFlop := evmFlop)
@@ -1062,13 +1071,14 @@ theorem vowCageMinHealRightNoCodeBodyCore
     (hvatNoCode :
       (UInt256.ofNat
         ((evmSin.lookupAccount (cageVatAddressOf evmSin)).option 0
-          (fun acc => acc.code.size))).toNat = 0) :
+          (fun acc => acc.code.size))).toNat = 0)
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   obtain ⟨_, _, rd3238⟩ := RD.vowCageMinReturnRight rd3234 hlt (by simp; omega)
   have hrev : RDrev vowBytecode (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) :=
     RD.vowCageHealNoCode rd3238 hmem hread64 hcodeSize (by simp; omega)
-  have hbody := cageSourceMinHealRightNoCode
+  have hbody := cageSourceMinHealRightNoCode (hperm := hperm)
     (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
     (flapperDai := flapperDai) (vatDai := vatDai) (vatSin := vatSin)
     (evmDai := evmDai) (evmFlap := evmFlap) (evmFlop := evmFlop)
@@ -1161,12 +1171,13 @@ theorem vowCageMinHealLeftCallFailureBodyCore
           (fun acc => acc.code.size))).toNat)
     (hcallHeal :
       typedCallViaEVM config evmSin (EVM.address (cageVatAddressOf evmSin))
-        "heal" 0 [.int (Int.ofNat vatDai.toNat)] (false, evmHeal, outHeal) true) :
+        "heal" 0 [.int (Int.ofNat vatDai.toNat)] (false, evmHeal, outHeal) true)
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   have hrev : RDrev vowBytecode (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) :=
     RD.vowCageHealCallFailure rd3296 houtHealSize (by simp; omega)
-  have hbody := cageSourceMinHealLeftCallFailure
+  have hbody := cageSourceMinHealLeftCallFailure (hperm := hperm)
     (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
     (flapperDai := flapperDai) (vatDai := vatDai) (vatSin := vatSin)
     (evmDai := evmDai) (evmFlap := evmFlap) (evmFlop := evmFlop)
@@ -1260,12 +1271,13 @@ theorem vowCageMinHealRightCallFailureBodyCore
           (fun acc => acc.code.size))).toNat)
     (hcallHeal :
       typedCallViaEVM config evmSin (EVM.address (cageVatAddressOf evmSin))
-        "heal" 0 [.int (Int.ofNat vatSin.toNat)] (false, evmHeal, outHeal) true) :
+        "heal" 0 [.int (Int.ofNat vatSin.toNat)] (false, evmHeal, outHeal) true)
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   have hrev : RDrev vowBytecode (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) :=
     RD.vowCageHealCallFailure rd3296 houtHealSize (by simp; omega)
-  have hbody := cageSourceMinHealRightCallFailure
+  have hbody := cageSourceMinHealRightCallFailure (hperm := hperm)
     (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
     (flapperDai := flapperDai) (vatDai := vatDai) (vatSin := vatSin)
     (evmDai := evmDai) (evmFlap := evmFlap) (evmFlop := evmFlop)
@@ -1358,12 +1370,13 @@ theorem vowCageMinHealLeftSuccessBodyCore
     (hcallHeal :
       typedCallViaEVM config evmSin (EVM.address (cageVatAddressOf evmSin))
         "heal" 0 [.int (Int.ofNat vatDai.toNat)] (true, evmHeal, outHeal) true)
-    (hAccountsFinal : Eq acc evmHeal.accountMap) :
+    (hAccountsFinal : Eq acc evmHeal.accountMap)
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   have hret : RDret vowBytecode (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) acc ByteArray.empty :=
     RD.vowCageHealCallSuccess rd3296
-  have hbody := cageSourceMinHealLeftSuccess
+  have hbody := cageSourceMinHealLeftSuccess (hperm := hperm)
     (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
     (flapperDai := flapperDai) (vatDai := vatDai) (vatSin := vatSin)
     (evmDai := evmDai) (evmFlap := evmFlap) (evmFlop := evmFlop)
@@ -1460,12 +1473,13 @@ theorem vowCageMinHealRightSuccessBodyCore
     (hcallHeal :
       typedCallViaEVM config evmSin (EVM.address (cageVatAddressOf evmSin))
         "heal" 0 [.int (Int.ofNat vatSin.toNat)] (true, evmHeal, outHeal) true)
-    (hAccountsFinal : Eq acc evmHeal.accountMap) :
+    (hAccountsFinal : Eq acc evmHeal.accountMap)
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   have hret : RDret vowBytecode (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) acc ByteArray.empty :=
     RD.vowCageHealCallSuccess rd3296
-  have hbody := cageSourceMinHealRightSuccess
+  have hbody := cageSourceMinHealRightSuccess (hperm := hperm)
     (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
     (flapperDai := flapperDai) (vatDai := vatDai) (vatSin := vatSin)
     (evmDai := evmDai) (evmFlap := evmFlap) (evmFlop := evmFlop)

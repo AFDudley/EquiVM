@@ -300,6 +300,7 @@ theorem winningProposalLoopPostStep (evm : EVM.State) (locals : Store) (p : UInt
         (locals.insert "p" (.int (Int.ofNat (p + ⟨1⟩).toNat)))) evm) := by
   apply ExecBlock.consNormal
   · apply ExecStmt.assign
+      (hperm := by first | assumption | exact Or.inr ‹_› | exact Or.inl rfl)
     · have hadd : Int.ofNat p.toNat + 1 = Int.ofNat (p + ⟨1⟩).toNat := by
         rw [add1_toNat hsize]
         norm_num
@@ -356,11 +357,13 @@ theorem winningProposalLoopBodyTake (evm : EVM.State) (locals : Store)
       (winningProposalEvalVoteGt_true evm locals p winningVoteCount hbase hp hcount hbound hgt)
     apply ExecBlock.consNormal
     · apply ExecStmt.assign
+        (hperm := by first | assumption | exact Or.inr ‹_› | exact Or.inl rfl)
       · exact winningProposalEvalVoteCount evm locals p hbase hp hbound
       · exact winningProposalAssignLocal evm locals "winningVoteCount" winningVoteCount
           (winningProposalVoteCountCurrent evm p) hcount
     · apply ExecBlock.consNormal
       · apply ExecStmt.assign
+          (hperm := by first | assumption | exact Or.inr ‹_› | exact Or.inl rfl)
         · have hp' :
               (locals.insert "winningVoteCount"
                 (.int (Int.ofNat (winningProposalVoteCountCurrent evm p).toNat))).get? "p" =

@@ -17,11 +17,12 @@ theorem recordTailSource {L imms : Store} {evm : EVM.State} {ats : List Attestat
     (huids : L.get? "res" = some (attestationsResultValue uids used))
     (hattester : L.get? "attester" = some (.address attester))
     (hschema : L.get? "schema" = some (wordBytes32Value schema))
-    (hia : i < ats.length) (hiv : i < values.length) (hiu : i < uids.length) (hb : i+1 < UInt256.size) :
+    (hia : i < ats.length) (hiv : i < values.length) (hiu : i < uids.length) (hb : i+1 < UInt256.size)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config {contract := contract,locals := L,immutables := imms} evm recordTailBody
       (.ok {contract := contract,locals := recordTailLocals L ats values uids used a r.value uid i,immutables := imms} evm) := by
   apply execBlock_append (recordArraysSource ha hr hu hi hats hvalues huids hia hiv hiu)
-  apply recordEventSource (r := r) (attester := attester) (uid := uid) (schema := schema) (i := i)
+  apply recordEventSource (hperm := by assumption) (r := r) (attester := attester) (uid := uid) (schema := schema) (i := i)
   · simpa only [recordArraysLocals,store_get_ne _ _ (by decide : ("res" == "request") = false),
       store_get_ne _ _ (by decide : ("values" == "request") = false),
       store_get_ne _ _ (by decide : ("attestations" == "request") = false)] using hr

@@ -103,4 +103,16 @@ theorem transferOut_call {asset recipient : AccountAddress} {amount : UInt256}
       (by simp only [evalExprs?, ha, ht', ham, pure, bind, EvalResult.bind])
       (by rw [hf]; exact transferOutCallable_lookup) rfl (by simpa only [hf] using hb)
 
+theorem TransferOutTrace.executionEnv_eq {asset recipient amount evm result}
+    (ht : TransferOutTrace asset recipient amount evm result) :
+    ∀ evm', result = some evm' → evm'.executionEnv = evm.executionEnv := by
+  cases ht with
+  | codeMissing _ => intro evm' he; cases he
+  | callResult _ hc _ =>
+    intro evm' he
+    split at he
+    · cases he
+      exact callViaEVM_executionEnv_eq hc
+    · cases he
+
 end Benchmarks.CompoundIII.Comet

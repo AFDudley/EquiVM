@@ -16,7 +16,7 @@ theorem advanceFreePtrSource {evm : EVM.State} {locals : Store} {ptr delta : UIn
         { contract := auctionContract
           locals := locals.insert "_freePtr" (.int (Int.ofNat (ptr + delta).toNat)) } evm) := by
   have hn : (ptr + delta).toNat = ptr.toNat + delta.toNat := addWord_toNat ptr delta hb
-  apply ExecStmt.assign
+  apply ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
   · simp only [evalExpr?, hp, EvalResult.ofOption, EvalResult.bind, bind, he, evalBinaryOp?]
     congr 2
   · simp only [assignStorageRef?, hp, updateLocalPath?, pure, bind, EvalResult.bind]

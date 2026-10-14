@@ -146,7 +146,8 @@ theorem uniswapAssignUnlockedOne (evm : EVM.State) (locals : Store)
 theorem uniswapLockEnterPrefix (evm : EVM.State) (locals : Store)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hbase : locals.get? "unlocked" = none)
-    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩) :
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config { contract := contract, locals := locals } evm lockEnter
       (.ok { contract := contract, locals := locals } (uniswapLockEnteredState evm)) := by
   change ExecBlock config { contract := contract, locals := locals } evm
@@ -154,7 +155,7 @@ theorem uniswapLockEnterPrefix (evm : EVM.State) (locals : Store)
       .require (.binary .eq (.storage unlockedRef) (.intLit 1)),
       .assign .storage unlockedRef (.intLit 0) ]
     (.ok { contract := contract, locals := locals } (uniswapLockEnteredState evm))
-  exact nonpayableRequireAssignStorageBlock hwv
+  exact nonpayableRequireAssignStorageBlock (hperm := hperm) hwv
     (evalExpr_uniswap_unlocked_eq_one_true evm locals hbase hunlocked)
     (by simp [evalExpr?, pure])
     (uniswapAssignUnlockedZero evm locals hbase)
@@ -202,13 +203,14 @@ theorem uniswapLockEnterStatic (evm : EVM.State) (locals : Store)
     (uniswapAssignUnlockedZero evm locals hbase) hperm)
 
 theorem uniswapLockExitSuffix (evm : EVM.State) (locals : Store)
-    (hbase : locals.get? "unlocked" = none) :
+    (hbase : locals.get? "unlocked" = none)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config { contract := contract, locals := locals } evm lockExit
       (.ok { contract := contract, locals := locals } (uniswapLockExitedState evm)) := by
   change ExecBlock config { contract := contract, locals := locals } evm
     [ .assign .storage unlockedRef (.intLit 1) ]
     (.ok { contract := contract, locals := locals } (uniswapLockExitedState evm))
-  exact assignStorageBlock (by simp [evalExpr?, pure])
+  exact assignStorageBlock (hperm := hperm) (by simp [evalExpr?, pure])
     (uniswapAssignUnlockedOne evm locals hbase)
 
 /-! ## Packed reserve-slot helpers -/
@@ -778,7 +780,8 @@ theorem uniswapLowLevelCallRequireSuccess {cfg : Config} {C : ContractDecl}
     (heth : evalExpr? cfg { contract := C, locals := locals } evm eth = .ok (.int sendVal))
     (hdata : evalExpr? cfg { contract := C, locals := locals } evm cdata = .ok (.bytes calldata))
     (hcall : callViaEVM evm (EVM.address target) sendVal calldata (true, evm', out))
-    (hne : (dataVar == okVar) = false) :
+    (hne : (dataVar == okVar) = false)
+    (hperm : EVM.wordOfInt sendVal = ⟨0⟩ ∨ evm.executionEnv.perm = true) :
     ExecBlock cfg { contract := C, locals := locals } evm
       [ .lowLevelCall receiver eth cdata okVar dataVar,
         .require (.var okVar) ]
@@ -786,7 +789,7 @@ theorem uniswapLowLevelCallRequireSuccess {cfg : Config} {C : ContractDecl}
         { contract := C, locals := uniswapLowLevelCallRequireStore locals okVar dataVar true out }
         evm') := by
   simpa [uniswapLowLevelCallRequireStore] using
-    lowLevelCallSuccessThenRequireTrue
+    lowLevelCallSuccessThenRequireTrue (hperm := hperm)
       (cfg := cfg) (C := C) (evm := evm) (evm' := evm') (locals := locals)
       (receiver := receiver) (eth := eth) (cdata := cdata) (requireCond := .var okVar)
       (okVar := okVar) (dataVar := dataVar)
@@ -802,13 +805,14 @@ theorem uniswapLowLevelCallRequireFailure {cfg : Config} {C : ContractDecl}
     (heth : evalExpr? cfg { contract := C, locals := locals } evm eth = .ok (.int sendVal))
     (hdata : evalExpr? cfg { contract := C, locals := locals } evm cdata = .ok (.bytes calldata))
     (hcall : callViaEVM evm (EVM.address target) sendVal calldata (false, evm', out))
-    (hne : (dataVar == okVar) = false) :
+    (hne : (dataVar == okVar) = false)
+    (hperm : EVM.wordOfInt sendVal = ⟨0⟩ ∨ evm.executionEnv.perm = true) :
     ExecBlock cfg { contract := C, locals := locals } evm
       [ .lowLevelCall receiver eth cdata okVar dataVar,
         .require (.var okVar) ]
       .reverted := by
   simpa [uniswapLowLevelCallRequireStore] using
-    lowLevelCallFailureThenRequireFalse
+    lowLevelCallFailureThenRequireFalse (hperm := hperm)
       (cfg := cfg) (C := C) (evm := evm) (evm' := evm') (locals := locals)
       (receiver := receiver) (eth := eth) (cdata := cdata) (requireCond := .var okVar)
       (okVar := okVar) (dataVar := dataVar)
@@ -828,7 +832,7 @@ theorem uniswapExternalBalanceOfThisSuccess (evm evm' : EVM.State) (locals : Sto
     ExecBlock config { contract := contract, locals := locals } evm
       [ .externalCall (.storage ref) "balanceOf" (.intLit 0) [this] retVar (perm := false) ]
       (.ok { contract := contract, locals := locals.insert retVar value } evm') := by
-  exact externalCallSuccess
+  exact externalCallSuccess (hperm := Or.inl rfl)
     (receiver := .storage ref) (name := "balanceOf") (sendVal := 0) (args := [this])
     (target := uniswapAddressAtSlot evm slot)
     (evalExpr_uniswap_storage_address evm locals hbase her hty hloc)
@@ -846,7 +850,7 @@ theorem uniswapExternalBalanceOfThisFailure (evm evm' : EVM.State) (locals : Sto
       "balanceOf" 0 [.address evm.executionEnv.codeOwner] (false, evm', out) false) :
     ExecBlock config { contract := contract, locals := locals } evm
       [ .externalCall (.storage ref) "balanceOf" (.intLit 0) [this] retVar (perm := false) ] .reverted := by
-  exact externalCallFailure
+  exact externalCallFailure (hperm := Or.inl rfl)
     (receiver := .storage ref) (name := "balanceOf") (sendVal := 0) (args := [this])
     (target := uniswapAddressAtSlot evm slot)
     (evalExpr_uniswap_storage_address evm locals hbase her hty hloc)
@@ -865,7 +869,7 @@ theorem uniswapExternalBalanceOfThisDecodeRevert (evm evm' : EVM.State) (locals 
     (hdec : config.externalABI.decode? "balanceOf" out = none) :
     ExecBlock config { contract := contract, locals := locals } evm
       [ .externalCall (.storage ref) "balanceOf" (.intLit 0) [this] retVar (perm := false) ] .reverted := by
-  exact externalCallDecodeRevert
+  exact externalCallDecodeRevert (hperm := Or.inl rfl)
     (receiver := .storage ref) (name := "balanceOf") (sendVal := 0) (args := [this])
     (target := uniswapAddressAtSlot evm slot)
     (evalExpr_uniswap_storage_address evm locals hbase her hty hloc)
@@ -903,7 +907,7 @@ theorem uniswapCheckedExternalBalanceOfThisSuccess (evm evm' : EVM.State) (local
       (balanceOfThisStmts (.storage ref) retVar)
       (.ok { contract := contract, locals := locals.insert retVar value } evm') := by
   simpa [balanceOfThisStmts] using
-    checkedExternalCallSuccess
+    checkedExternalCallSuccess (hperm := Or.inl rfl)
       (receiver := .storage ref) (name := "balanceOf") (sendVal := 0) (args := [this])
       (target := uniswapAddressAtSlot evm slot)
       hguard
@@ -926,7 +930,7 @@ theorem uniswapCheckedExternalBalanceOfThisFailure (evm evm' : EVM.State) (local
     ExecBlock config { contract := contract, locals := locals } evm
       (balanceOfThisStmts (.storage ref) retVar) .reverted := by
   simpa [balanceOfThisStmts] using
-    checkedExternalCallFailure
+    checkedExternalCallFailure (hperm := Or.inl rfl)
       (receiver := .storage ref) (name := "balanceOf") (sendVal := 0) (args := [this])
       (target := uniswapAddressAtSlot evm slot)
       hguard
@@ -951,7 +955,7 @@ theorem uniswapCheckedExternalBalanceOfThisDecodeRevert
     ExecBlock config { contract := contract, locals := locals } evm
       (balanceOfThisStmts (.storage ref) retVar) .reverted := by
   simpa [balanceOfThisStmts] using
-    checkedExternalCallDecodeRevert
+    checkedExternalCallDecodeRevert (hperm := Or.inl rfl)
       (receiver := .storage ref) (name := "balanceOf") (sendVal := 0) (args := [this])
       (target := uniswapAddressAtSlot evm slot)
       hguard

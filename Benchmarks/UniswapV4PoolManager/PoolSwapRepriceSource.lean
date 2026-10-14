@@ -36,7 +36,7 @@ theorem poolSwapRepriceSource {f : Frame} {evm : State} {s : PoolSwapStepWords} 
       exact ExecBlock.consRevert hcall
     | some tick =>
       rw [ht] at hcall
-      exact ExecBlock.consNormal hcall (execBlock_singleton (ExecStmt.assign
+      exact ExecBlock.consNormal hcall (execBlock_singleton (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
         (evalLocalValue (store_get_self _ _ _)) (assignLocalField
           ((store_get_ne _ _ (by decide : ("__c23" == "result") = false)).trans hr) rfl rfl)))
 

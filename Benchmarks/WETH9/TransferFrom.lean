@@ -256,7 +256,7 @@ theorem weth9TransferFromBodyCore {σ σ₀ A I} {g : UInt256}
               ((weth9TFSteleSkipSenderSplit (g := Sat256.ofUInt256 g)
                 hwv hsrcAddr hbal).2 hperm)
           obtain ⟨evmPost, cs, hbody, hmap⟩ :=
-            weth9TFSteleSkipSender (σ := σ) (σ₀ := σ₀)
+            weth9TFSteleSkipSender (hperm := by assumption) (σ := σ) (σ₀ := σ₀)
               (A := A) (I := I) (g := Sat256.ofUInt256 g) hwv hsrcAddr hbal
           exact weth9TFConnect hcode hsel hsz100 hX hbody hmap
         · -- src ≠ caller: load the allowance
@@ -278,7 +278,7 @@ theorem weth9TransferFromBodyCore {σ σ₀ A I} {g : UInt256}
                 ((weth9TFSteleSkipMaxSplit (g := Sat256.ofUInt256 g)
                   hwv hsrcAddr hmax hbal).2 hperm)
             obtain ⟨evmPost, cs, hbody, hmap⟩ :=
-              weth9TFSteleSkipMax (σ := σ) (σ₀ := σ₀)
+              weth9TFSteleSkipMax (hperm := by assumption) (σ := σ) (σ₀ := σ₀)
                 (A := A) (I := I) (g := Sat256.ofUInt256 g) hwv hsrcAddr hmax
                 hbal
             exact weth9TFConnect hcode hsel hsz100 hX hbody hmap
@@ -303,7 +303,7 @@ theorem weth9TransferFromBodyCore {σ σ₀ A I} {g : UInt256}
                     (wtfAllowHashMem_size I (tfSrcMasked I)) (wtfAllowHashMem_read64 I (tfSrcMasked I))))
                 (by simp only [List.length_cons, List.length_nil]; omega)
               obtain ⟨evmPost, cs, hbody, hmap⟩ :=
-                weth9TFSteleSpend (σ := σ) (σ₀ := σ₀)
+                weth9TFSteleSpend (hperm := by assumption) (σ := σ) (σ₀ := σ₀)
                   (A := A) (I := I) (g := Sat256.ofUInt256 g) hwv hsrcAddr
                   hmax hallow
                   hbal

@@ -1720,7 +1720,7 @@ theorem daiPermitBodyReverts_ecrecoverFailed (evm evm' : EVM.State) (I : Executi
       |>.letStep (evalExpr_permitDigest evm I))
       |>.requireStep (evalExpr_permitDigestStore_holder_ne_zero_true evm I hnz)).run <|
         ExecBlock.consNormal
-          (ExecStmt.lowLevelCallFailure
+          (ExecStmt.lowLevelCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
             (evalExpr_ecrecoverPrecompile evm (permitDigestStore evm I))
             (evalExpr_zeroInt evm (permitDigestStore evm I))
             (evalExpr_ecrecoverCalldata evm hsz260)
@@ -1747,7 +1747,7 @@ theorem daiPermitBodyReverts_recoveredDecode (evm evm' : EVM.State) (I : Executi
       |>.letStep (evalExpr_permitDigest evm I))
       |>.requireStep (evalExpr_permitDigestStore_holder_ne_zero_true evm I hnz)).run <|
         ExecBlock.consNormal
-          (ExecStmt.lowLevelCallSuccess
+          (ExecStmt.lowLevelCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
             (evalExpr_ecrecoverPrecompile evm (permitDigestStore evm I))
             (evalExpr_zeroInt evm (permitDigestStore evm I))
             (evalExpr_ecrecoverCalldata evm hsz260)
@@ -1781,7 +1781,7 @@ theorem daiPermitBodyReverts_badRecovered (evm evm' : EVM.State) (I : ExecutionE
       |>.letStep (evalExpr_permitDigest evm I))
       |>.requireStep (evalExpr_permitDigestStore_holder_ne_zero_true evm I hnz)).run <|
         ExecBlock.consNormal
-          (ExecStmt.lowLevelCallSuccess
+          (ExecStmt.lowLevelCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
             (evalExpr_ecrecoverPrecompile evm (permitDigestStore evm I))
             (evalExpr_zeroInt evm (permitDigestStore evm I))
             (evalExpr_ecrecoverCalldata evm hsz260)
@@ -1822,7 +1822,7 @@ theorem daiPermitBodyReverts_expired (evm evm' : EVM.State) (I : ExecutionEnv)
       |>.letStep (evalExpr_permitDigest evm I))
       |>.requireStep (evalExpr_permitDigestStore_holder_ne_zero_true evm I hnz)).run <|
         ExecBlock.consNormal
-          (ExecStmt.lowLevelCallSuccess
+          (ExecStmt.lowLevelCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
             (evalExpr_ecrecoverPrecompile evm (permitDigestStore evm I))
             (evalExpr_zeroInt evm (permitDigestStore evm I))
             (evalExpr_ecrecoverCalldata evm hsz260)
@@ -1872,7 +1872,7 @@ theorem daiPermitBodyPrefix (evm evm' : EVM.State) (I : ExecutionEnv)
       |>.letStep (evalExpr_permitDigest evm I))
       |>.requireStep (evalExpr_permitDigestStore_holder_ne_zero_true evm I hnz)).run <|
         ExecBlock.consNormal
-          (ExecStmt.lowLevelCallSuccess
+          (ExecStmt.lowLevelCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
             (evalExpr_ecrecoverPrecompile evm (permitDigestStore evm I))
             (evalExpr_zeroInt evm (permitDigestStore evm I))
             (evalExpr_ecrecoverCalldata evm hsz260)
@@ -1939,12 +1939,13 @@ theorem daiPermitBodyReverts_nonceMismatch (evm evm' : EVM.State) (I : Execution
         (UInt256.ofNat evm'.executionEnv.header.timestamp).toNat ≤ (permitExpiryWord I).toNat)
     (hnonce :
       permitNonceWord I ≠
-        Stele.EVM.storageLoad evm' evm'.executionEnv.codeOwner (permitNonceStorageSlot I)) :
+        Stele.EVM.storageLoad evm' evm'.executionEnv.codeOwner (permitNonceStorageSlot I))
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (permitStore I) permitTransition.body .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
   apply daiPermitBodyPrefix evm evm' I out recovered hsz260 hwv hnz hcall hdec heq hexpiryOk
   refine ExecBlock.consNormal
-    (ExecStmt.assign
+    (ExecStmt.assign (hperm := Or.inr (by simpa only [permitPostNonceState, storageStore_executionEnv, callViaEVM_executionEnv_eq hcall] using hperm))
       (evalExpr_permitSavedNonceStore_increment evm evm' I out recovered _)
       (permitAssignSavedNonce evm evm' I out recovered _ rfl)) ?_
   exact ExecBlock.consRevert (ExecStmt.requireFalse (by
@@ -1970,7 +1971,8 @@ theorem daiPermitBodyReturns_success (evm evm' : EVM.State) (I : ExecutionEnv)
         (UInt256.ofNat evm'.executionEnv.header.timestamp).toNat ≤ (permitExpiryWord I).toNat)
     (hnonce :
       permitNonceWord I =
-        Stele.EVM.storageLoad evm' evm'.executionEnv.codeOwner (permitNonceStorageSlot I)) :
+        Stele.EVM.storageLoad evm' evm'.executionEnv.codeOwner (permitNonceStorageSlot I))
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (permitStore I) permitTransition.body
       (.returned { contract := contract, locals := permitWadStore evm I out recovered }
         (permitPostState evm' I) none) := by
@@ -1978,7 +1980,7 @@ theorem daiPermitBodyReturns_success (evm evm' : EVM.State) (I : ExecutionEnv)
   apply daiPermitBodyPrefix evm evm' I out recovered hsz260 hwv hnz hcall hdec heq hexpiryOk
   rw [← hnonce]
   refine ExecBlock.consNormal
-    (ExecStmt.assign
+    (ExecStmt.assign (hperm := Or.inr (by simpa only [permitPostNonceState, storageStore_executionEnv, callViaEVM_executionEnv_eq hcall] using hperm))
       (evalExpr_permitSavedNonceStore_increment evm evm' I out recovered _)
       (permitAssignSavedNonce evm evm' I out recovered _ hnonce)) ?_
   refine ExecBlock.consNormal (ExecStmt.requireTrue (by
@@ -1988,7 +1990,7 @@ theorem daiPermitBodyReturns_success (evm evm' : EVM.State) (I : ExecutionEnv)
     (ExecStmt.letDecl (evalExpr_permitSavedNonceStore_wad evm
       (permitPostNonceState evm' I) I out recovered (permitNonceWord I)))
     (ExecBlock.consNormal
-      (ExecStmt.assign
+      (ExecStmt.assign (hperm := Or.inr (by simpa only [permitPostNonceState, storageStore_executionEnv, callViaEVM_executionEnv_eq hcall] using hperm))
         (evalExpr_permitWadStore_wad evm (permitPostNonceState evm' I) I out recovered)
         (permitAssignAllowance evm evm' I out recovered)) ExecBlock.nil)
 
@@ -6161,7 +6163,7 @@ theorem daiPermitBodyCore {σ σ₀ A I} {g : UInt256}
                           { contract := contract,
                             locals := permitWadStore evmStele I o recovered }
                           (permitPostState evmPostStele I) none) := by
-                    exact daiPermitBodyReturns_success evmStele evmPostStele I o recovered
+                    exact daiPermitBodyReturns_success (hperm := by assumption) evmStele evmPostStele I o recovered
                       hsz260 (by simpa [evmStele, initState] using hwv) hz
                       hcallSucceeded hdecRet heqRecovered hexpiryOk hnonceStele
                   have hAccountsAfterNonce :
@@ -6200,7 +6202,7 @@ theorem daiPermitBodyCore {σ σ₀ A I} {g : UInt256}
                   have hbody :
                       ExecTransitionBody config contract evmStele (permitStore I)
                         permitTransition.body .reverted := by
-                    exact daiPermitBodyReverts_nonceMismatch evmStele evmPostStele I
+                    exact daiPermitBodyReverts_nonceMismatch (hperm := by assumption) evmStele evmPostStele I
                       o recovered hsz260 (by simpa [evmStele, initState] using hwv)
                       hz hcallSucceeded hdecRet heqRecovered hexpiryOk hnonceSteleNe
                   exact

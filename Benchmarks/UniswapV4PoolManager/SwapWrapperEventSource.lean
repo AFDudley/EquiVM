@@ -18,19 +18,27 @@ theorem swapWrapperEmitSource {f : Frame} {evm : State} {id fee delta : UInt256}
     (h1 : f.locals.get? "__c3" = some (.int (balanceDeltaAmount1 delta)))
     (he : f.locals.get? "swapFee" = some (.int (Int.ofNat fee.toNat)))
     (hr : f.locals.get? "result" = some (poolSwapResultValue r)) :
-    ExecStmt config f evm swapWrapperFunction.body[9]! (.ok f evm) := by
+    ExecStmt config f evm swapWrapperFunction.body[9]!
+      (if evm.executionEnv.perm = false then .staticViolation else .ok f evm) := by
   have hresult := evalLocalValue (cfg := config) (evm := evm) hr
   have hp := evalStructField hresult (field := "sqrtPriceX96") rfl
   have hl := evalStructField hresult (field := "liquidity") rfl
   have ht := evalStructField hresult (field := "tick") rfl
-  apply ExecStmt.emit (vals := [wordBytes32Value id, .address evm.executionEnv.source,
-    .int (balanceDeltaAmount0 delta), .int (balanceDeltaAmount1 delta), .int (Int.ofNat r.price.toNat),
-    .int (Int.ofNat r.liquidity.toNat), .int (EVM.signed r.tick), .int (Int.ofNat fee.toNat)])
-  change evalExprs? config f evm [.var "id", .env .caller, .var "__c2", .var "__c3",
-    .field (.var "result") "sqrtPriceX96", .field (.var "result") "liquidity",
-    .field (.var "result") "tick", .var "swapFee"] = _
-  simp only [evalExprs?, evalLocalValue hi, evalLocalValue h0, evalLocalValue h1,
-    evalLocalValue he, hp, hl, ht, evalExpr?, envValue, bind, EvalResult.bind, pure]
+  have hargs : evalExprs? config f evm
+      [.var "id", .env .caller, .var "__c2", .var "__c3",
+        .field (.var "result") "sqrtPriceX96", .field (.var "result") "liquidity",
+        .field (.var "result") "tick", .var "swapFee"] =
+      .ok [wordBytes32Value id, .address evm.executionEnv.source,
+        .int (balanceDeltaAmount0 delta), .int (balanceDeltaAmount1 delta),
+        .int (Int.ofNat r.price.toNat), .int (Int.ofNat r.liquidity.toNat),
+        .int (EVM.signed r.tick), .int (Int.ofNat fee.toNat)] := by
+    simp only [evalExprs?, evalLocalValue hi, evalLocalValue h0, evalLocalValue h1,
+      evalLocalValue he, hp, hl, ht, evalExpr?, envValue, bind, EvalResult.bind, pure]
+  by_cases hperm : evm.executionEnv.perm = false
+  · rw [if_pos hperm]
+    exact ExecStmt.emitStatic hargs hperm
+  · rw [if_neg hperm]
+    exact ExecStmt.emit (hperm := Bool.eq_true_of_not_eq_false hperm) hargs
 
 theorem swapWrapperEventSource {f : Frame} {evm : State} {id fee delta : UInt256}
     {r : PoolSwapResultWords} (hf : f.contract = contract)
@@ -55,11 +63,10 @@ theorem swapWrapperEventSource {f : Frame} {evm : State} {id fee delta : UInt256
     (store_get_self _ _ _) ((hget "swapFee" (by decide) (by decide)).trans he)
     ((hget "result" (by decide) (by decide)).trans hr)
   by_cases hp : evm.executionEnv.perm = false
-  · rw [if_pos hp]
-    cases hemit with
-    | emit hargs => exact .execBlockStatic (ExecBlock.consNormal h0 (ExecBlock.consNormal h1
-        (ExecBlock.consStatic (ExecStmt.emitStatic hargs hp))))
-  · rw [if_neg hp]
+  · rw [if_pos hp] at hemit ⊢
+    exact .execBlockStatic (ExecBlock.consNormal h0 (ExecBlock.consNormal h1
+      (ExecBlock.consStatic hemit)))
+  · rw [if_neg hp] at hemit ⊢
     exact .execBlockRet (ExecBlock.consNormal h0 (ExecBlock.consNormal h1
       (ExecBlock.consNormal hemit (ABlock.start.returns
         (evalLocalValue ((hget "delta" (by decide) (by decide)).trans hd))))))

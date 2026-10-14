@@ -385,8 +385,8 @@ theorem potFileDsrSourceBodySplit {σ σ₀ A I} {g : UInt256}
     let locals := fileDsrLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let evm1 := Stele.EVM.storageStore evm0 I.codeOwner ⟨3⟩ (fileDsrData I)
-    ExecTransitionBody config contract evm0 locals fileDsrTransition.body
-      (.returned { contract := contract, locals := locals } evm1 none) ∧
+    (I.perm = true → ExecTransitionBody config contract evm0 locals fileDsrTransition.body
+      (.returned { contract := contract, locals := locals } evm1 none)) ∧
     (I.perm = false →
       ExecTransitionBody config contract evm0 locals fileDsrTransition.body .staticViolation) := by
   intro locals evm0 evm1
@@ -441,8 +441,9 @@ theorem potFileDsrSourceBodySplit {σ σ₀ A I} {g : UInt256}
     exact execBlock_singleton (ExecStmt.iteTrue hcond
       (execBlock_singleton h))
   refine ⟨?_, fun hpf => ?_⟩
-  · simpa [ExecTransitionBody, locals, evm0, evm1] using
-      ExecFuncBody.execBlockOK (hbody _ (ExecStmt.assign hdata hassign))
+  · intro hperm
+    simpa [ExecTransitionBody, locals, evm0, evm1] using
+      ExecFuncBody.execBlockOK (hbody _ (ExecStmt.assign (hperm := Or.inr hperm) hdata hassign))
   · simpa [ExecTransitionBody, locals, evm0] using ExecFuncBody.execBlockStatic
       (hbody _ (ExecStmt.assignStatic hdata hassign (by simp [evm0, initState]; exact hpf)))
 
@@ -451,13 +452,14 @@ theorem potFileDsrSourceBody {σ σ₀ A I} {g : UInt256}
     (hauth : relyAuthWord σ I = ⟨1⟩)
     (hlive : solcSlotWordAt ⟨8⟩ σ I = ⟨1⟩)
     (htime : solcSlotWordAt ⟨7⟩ σ I = UInt256.ofNat I.header.timestamp)
-    (hwhat : fileDsrWhat I = fileDsrBytes) :
+    (hwhat : fileDsrWhat I = fileDsrBytes)
+    (hperm : I.perm = true) :
     let locals := fileDsrLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let evm1 := Stele.EVM.storageStore evm0 I.codeOwner ⟨3⟩ (fileDsrData I)
     ExecTransitionBody config contract evm0 locals fileDsrTransition.body
       (.returned { contract := contract, locals := locals } evm1 none) :=
-  (potFileDsrSourceBodySplit (σ₀ := σ₀) (A := A) (g := g) hwv hauth hlive htime hwhat).1
+  (potFileDsrSourceBodySplit (σ₀ := σ₀) (A := A) (g := g) hwv hauth hlive htime hwhat).1 hperm
 
 theorem potFileDsrSourceBodyStatic {σ σ₀ A I} {g : UInt256}
     (hwv : I.weiValue = ⟨0⟩)
@@ -1158,7 +1160,7 @@ theorem potFileDsrBodyCoreOk
       ExecTransitionBody config contract evm0 locals fileDsrTransition.body
         (.returned { contract := contract, locals := locals } evm1 none) := by
     simpa [evm0, evm1, locals, data] using
-      (potFileDsrSourceBody (σ := σ)
+      (potFileDsrSourceBody (hperm := by assumption) (σ := σ)
         (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hauthStele hliveStele htimeStele hwhat)
   obtain ⟨_, _, hdecoded⟩ := potFileDsrX_decoded (g := Sat256.ofUInt256 g) hsz68 hsize hreach
   obtain ⟨_, _, hauthd⟩ := potFileDsrX_authorized (I := I) hauth hdecoded

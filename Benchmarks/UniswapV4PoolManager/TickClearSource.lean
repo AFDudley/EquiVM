@@ -57,7 +57,7 @@ theorem tickClearBody {f : Frame} {evm : EVM.State} {id : UInt256} {tick : Int}
   · rw [if_pos hp]
     exact .execBlockStatic (ExecBlock.consStatic (ExecStmt.deleteStatic hc hp))
   · rw [if_neg hp]
-    exact .execBlockOK (execBlock_singleton (ExecStmt.delete hc))
+    exact .execBlockOK (execBlock_singleton (ExecStmt.delete (hperm := Bool.eq_true_of_not_eq_false hp) hc))
 
 theorem tickClearCall {f : Frame} {evm : EVM.State} {es et : Expr} {id : UInt256} {tick : Int}
     (hf : f.contract = contract) (hs : evalExpr? config f evm es = .ok (poolRefValue id))

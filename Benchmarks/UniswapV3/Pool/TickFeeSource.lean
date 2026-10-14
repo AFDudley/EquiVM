@@ -99,13 +99,13 @@ theorem tickFeeReturns (imms : Store) (evm : EVM.State) (a : TickFeeArgs) :
   rw [← List.take_append_drop 10 tickFeeFunction.body]
   apply execBlock_append_ok (tickFeeReadySource imms evm a)
   refine ExecBlock.consNormal (stele' := tickFeeFirstFrame imms a evm) (evm' := evm)
-    (ExecStmt.assign (value := .int
+    (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (value := .int
       (Int.ofNat (tickFeeInside a evm.accountMap evm.executionEnv false).toNat)) ?_ ?_) ?_
   · exact evalTickFeeInside (tickFeeReadyFrame imms a evm).locals imms evm a false
       (by tick_fee_get) (by tick_fee_get) (by tick_fee_get)
   · exact assignLocalVarBase_frame (old := .int 0) (by tick_fee_get)
   · refine ExecBlock.consNormal (stele' := tickFeeFinalFrame imms a evm) (evm' := evm)
-      (ExecStmt.assign (value := .int
+      (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (value := .int
         (Int.ofNat (tickFeeInside a evm.accountMap evm.executionEnv true).toNat)) ?_ ?_) ?_
     · exact evalTickFeeInside (tickFeeFirstFrame imms a evm).locals imms evm a true
         (by tick_fee_get) (by tick_fee_get) (by tick_fee_get)

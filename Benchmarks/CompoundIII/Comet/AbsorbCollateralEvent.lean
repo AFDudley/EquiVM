@@ -18,9 +18,10 @@ theorem absorbCollateralEvent_source (frame : Frame) (evm : State)
     (hb : frame.locals.get? "account" = some (.address account))
     (hc : frame.locals.get? "asset" = some (.address asset))
     (hn : frame.locals.get? "seizeAmount" = some (.int seized.toNat))
-    (hv : frame.locals.get? "value" = some (.int value.toNat)) :
+    (hv : frame.locals.get? "value" = some (.int value.toNat))
+    (hperm : evm.executionEnv.perm = true) :
     ExecStmt config frame evm absorbCollateralEvent (.ok frame evm) := by
-  apply ExecStmt.emit (vals := [.address absorber, .address account, .address asset,
+  apply ExecStmt.emit (hperm := hperm) (vals := [.address absorber, .address account, .address asset,
     .int seized.toNat, .int value.toNat])
   simp only [evalExprs?, evalExpr?, ha, hb, hc, hn, hv, EvalResult.ofOption, pure,
     bind, EvalResult.bind]

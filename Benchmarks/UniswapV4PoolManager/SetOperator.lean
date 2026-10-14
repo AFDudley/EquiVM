@@ -39,7 +39,8 @@ theorem setOperatorBodyReturns (evm : EVM.State) (locals imms : Store) (operator
     (hcanon : operator.toNat < EVM.addressModulus)
     (hop : locals.get? "operator" = some (.address (AccountAddress.ofNat operator.toNat)))
     (hap : locals.get? "approved" = some (wordToElem .bool approved))
-    (hbase : locals.get? "isOperator" = none) :
+    (hbase : locals.get? "isOperator" = none)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm locals setOperatorTransition.body
       (.returned (calldataFrame contract locals imms evm) (setOperatorPost evm operator approved)
         (some [.bool true])) imms := by
@@ -47,9 +48,9 @@ theorem setOperatorBodyReturns (evm : EVM.State) (locals imms : Store) (operator
   have ho := (store_get_ne locals (.bytes evm.executionEnv.calldata) (by decide : ("__calldata" == "operator") = false)).trans hop
   apply ExecFuncBody.execBlockRet
   apply nonpayableCalldataBlock hwv hhi
-  refine ExecBlock.consNormal (ExecStmt.assign (evalLocalValue ha)
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) (evalLocalValue ha)
     (setOperatorAssign evm locals imms operator approved hcanon hop hbase)) ?_
-  refine ExecBlock.consNormal (ExecStmt.emit
+  refine ExecBlock.consNormal (ExecStmt.emit (hperm := by simpa only [setOperatorPost, storageStore_executionEnv] using hperm)
     (vals := [.address evm.executionEnv.source, .address (AccountAddress.ofNat operator.toNat),
       wordToElem .bool approved]) ?_) ?_
   · simp only [evalExprs?, evalExpr?, calldataFrame, ha, ho, EvalResult.ofOption,
@@ -207,7 +208,7 @@ theorem poolManagerSetOperatorBodyCore {σ σ₀ A I} {g : UInt256} (v : PoolMan
                   _ _ hwv hhi hcanon hop (store_get_self _ _ _) hbase hperm)
             | true =>
               have hret := setOperatorTrace v (by simp) hcanon hperm rdReturn
-              have hbody := setOperatorBodyReturns (initState σ σ₀ (Sat256.ofUInt256 g) A I) args
+              have hbody := setOperatorBodyReturns (hperm := by assumption) (initState σ σ₀ (Sat256.ofUInt256 g) A I) args
                 (immStore v) _ _ hwv hhi hcanon hop (store_get_self _ _ _) hbase
               exact hret.reEquivExecutionGen hcode hd hdec hbody
                 (storageStore_accountMap (initState σ σ₀ (Sat256.ofUInt256 g) A I) I.codeOwner

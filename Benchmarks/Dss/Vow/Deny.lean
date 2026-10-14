@@ -259,10 +259,10 @@ theorem vowDenyBodyCore
           simp [config, storageLayout, solidityStorageBackend, storageLayoutRaw,
             denyEvaledRef, denySlotFor])
         (hstore := hstore)
-    have hbody :
+    have hbody (hperm : I.perm = true) :
         ExecTransitionBody config contract evm0 locals denyTransition.body
           (.returned { contract := contract, locals := locals } evm1 none) := by
-      have hblock := nonpayableRequireAssignStorageBlock
+      have hblock := nonpayableRequireAssignStorageBlock (hperm := hperm)
         (cfg := config) (stele := { contract := contract, locals := locals })
         (evm := evm0) (evm' := evm1)
         (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
@@ -323,7 +323,7 @@ theorem vowDenyBodyCore
     have henc : returnEquiv ByteArray.empty none denyTransition.returnType := by
       rw [show denyTransition.returnType = [] by rfl]
       exact returnEquiv.fallthrough rfl (by rfl) (by native_decide)
-    exact hret.reEquivExecutionGen hcode hdispatch hdecode hbody
+    exact hret.reEquivExecutionGen hcode hdispatch hdecode (hbody hperm)
       haccounts henc
   · have hauthStele : solcSlotWordAt callerSlot σ I ≠ ⟨1⟩ := by
       intro hstele

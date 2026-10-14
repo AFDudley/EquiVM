@@ -1488,7 +1488,7 @@ theorem flapperDealBodyReverts_moveCallFailure
         (checkedExternalCallStmts (.storage vatRef) "move" (.intLit 0)
           [thisAddr, .storage (bidsF (.var "id") "guy"), .var "lot"] "_moveRet")
         .reverted := by
-    exact checkedExternalCallFailure hguard hvat hargs hcall
+    exact checkedExternalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hguard hvat hargs hcall
   have hmoveTail :
       ExecBlock config { contract := contract, locals := dealLotLocals evm I } evm
         (checkedExternalCallStmts (.storage vatRef) "move" (.intLit 0)
@@ -1567,7 +1567,7 @@ theorem flapperDealBodyReverts_burnNoCode
           [thisAddr, .storage (bidsF (.var "id") "guy"), .var "lot"] "_moveRet")
         (.ok { contract := contract, locals := dealMoveLocals evm I } evmMove) := by
     simpa [checkedExternalCallStmts, dealMoveLocals] using
-      checkedExternalCallSuccess hmoveGuard hvat hmoveArgs hmoveCall
+      checkedExternalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hmoveGuard hvat hmoveArgs hmoveCall
         (dealMoveDecode_ok outMove)
   have hgem :=
     evalExpr_deal_gem_storage_of_locals evmMove (dealMoveLocals evm I)
@@ -1679,7 +1679,7 @@ theorem flapperDealBodyReverts_burnCallFailure
           [thisAddr, .storage (bidsF (.var "id") "guy"), .var "lot"] "_moveRet")
         (.ok { contract := contract, locals := dealMoveLocals evm I } evmMove) := by
     simpa [checkedExternalCallStmts, dealMoveLocals] using
-      checkedExternalCallSuccess hmoveGuard hvat hmoveArgs hmoveCall
+      checkedExternalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hmoveGuard hvat hmoveArgs hmoveCall
         (dealMoveDecode_ok outMove)
   have hgem :=
     evalExpr_deal_gem_storage_of_locals evmMove (dealMoveLocals evm I)
@@ -1705,7 +1705,7 @@ theorem flapperDealBodyReverts_burnCallFailure
         (checkedExternalCallStmts (.storage gemRef) "burn" (.intLit 0)
           [thisAddr, .storage (bidsF (.var "id") "bid")] "_burnRet")
         .reverted := by
-    exact checkedExternalCallFailure hburnGuard hgem hburnArgs hburnCall
+    exact checkedExternalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hburnGuard hgem hburnArgs hburnCall
   have hmoveTail :
       ExecBlock config { contract := contract, locals := dealLotLocals evm I } evm
         (checkedExternalCallStmts (.storage vatRef) "move" (.intLit 0)
@@ -1791,7 +1791,7 @@ theorem flapperDealBodyBurnSuccessPrefix
           [thisAddr, .storage (bidsF (.var "id") "guy"), .var "lot"] "_moveRet")
         (.ok { contract := contract, locals := dealMoveLocals evm I } evmMove) := by
     simpa [checkedExternalCallStmts, dealMoveLocals] using
-      checkedExternalCallSuccess hmoveGuard hvat hmoveArgs hmoveCall
+      checkedExternalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hmoveGuard hvat hmoveArgs hmoveCall
         (dealMoveDecode_ok outMove)
   have hgem :=
     evalExpr_deal_gem_storage_of_locals evmMove (dealMoveLocals evm I)
@@ -1818,7 +1818,7 @@ theorem flapperDealBodyBurnSuccessPrefix
           [thisAddr, .storage (bidsF (.var "id") "bid")] "_burnRet")
         (.ok { contract := contract, locals := dealBurnLocals evm I } evmBurn) := by
     simpa [checkedExternalCallStmts, dealBurnLocals] using
-      checkedExternalCallSuccess hburnGuard hgem hburnArgs hburnCall
+      checkedExternalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hburnGuard hgem hburnArgs hburnCall
         (dealBurnDecode_ok outBurn)
   exact execBlock_append hmoveChecked hburnChecked
 
@@ -1851,7 +1851,7 @@ theorem flapperDealBodyReverts_fillSubUnderflowSplit
         [.address evmMove.executionEnv.codeOwner,
           .int (Int.ofNat (dealBidWord evmMove I).toNat)]
         (true, evmBurn, outBurn) true) :
-    (((dealFillWord (auctionDeletePostState (dealIdWord I) evmBurn)).toNat <
+    (evm.executionEnv.perm = true → ((dealFillWord (auctionDeletePostState (dealIdWord I) evmBurn)).toNat <
         (dealLotWord evm I).toNat) →
       ExecTransitionBody config contract evm (dealLocals I) dealTransition.body .reverted) ∧
       (evm.executionEnv.perm = false →
@@ -1892,7 +1892,7 @@ theorem flapperDealBodyReverts_fillSubUnderflowSplit
         htail)
   have hdelete := deleteStorage_dealBurn_bid evm evmBurn I
   constructor
-  · intro hfillLt
+  · intro hperm hfillLt
     have hlookupSub : lookupCallable? contract "sub" = some subFunction.toCallable := by
       rfl
     have hbindSub :
@@ -1917,7 +1917,7 @@ theorem flapperDealBodyReverts_fillSubUnderflowSplit
         hlookupSub hbindSub
         (dealSubFunctionRevert evmDelete hfillLt)
     exact ExecFuncBody.execBlockRevert
-      (hprefixBody (ExecBlock.consNormal (ExecStmt.delete hdelete)
+      (hprefixBody (ExecBlock.consNormal (ExecStmt.delete (hperm := by rw [typedCallViaEVM_executionEnv_eq hburnCall, typedCallViaEVM_executionEnv_eq hmoveCall]; exact hperm) hdelete)
         (ExecBlock.consRevert hsubStmt)))
   · intro hperm
     have hp : evmBurn.executionEnv.perm = false := by
@@ -1958,10 +1958,11 @@ theorem flapperDealBodyReverts_fillSubUnderflow
         (true, evmBurn, outBurn) true)
     (hfillLt :
       (dealFillWord (auctionDeletePostState (dealIdWord I) evmBurn)).toNat <
-        (dealLotWord evm I).toNat) :
+        (dealLotWord evm I).toNat)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (dealLocals I) dealTransition.body .reverted :=
   (flapperDealBodyReverts_fillSubUnderflowSplit evm evmMove evmBurn I outMove outBurn
-    hwv hlive htic hfinished hmoveCodeSize hmoveCall hburnCodeSize hburnCall).1 hfillLt
+    hwv hlive htic hfinished hmoveCodeSize hmoveCall hburnCodeSize hburnCall).1 hperm hfillLt
 
 theorem flapperDealBodyReturns_success
     (evm evmMove evmBurn : EVM.State) (I : ExecutionEnv)
@@ -1994,7 +1995,8 @@ theorem flapperDealBodyReturns_success
         (true, evmBurn, outBurn) true)
     (hfillLe :
       (dealLotWord evm I).toNat ≤
-        (dealFillWord (auctionDeletePostState (dealIdWord I) evmBurn)).toNat) :
+        (dealFillWord (auctionDeletePostState (dealIdWord I) evmBurn)).toNat)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (dealLocals I) dealTransition.body
       (.returned
         { contract := contract,
@@ -2005,6 +2007,9 @@ theorem flapperDealBodyReturns_success
             (dealFillWord (auctionDeletePostState (dealIdWord I) evmBurn))
             (dealLotWord evm I)))
         none) := by
+  have hpBurn : evmBurn.executionEnv.perm = true := by
+    rw [typedCallViaEVM_executionEnv_eq hburnCall, typedCallViaEVM_executionEnv_eq hmoveCall]
+    exact hperm
   let evmDelete := auctionDeletePostState (dealIdWord I) evmBurn
   let diff := UInt256.sub (dealFillWord evmDelete) (dealLotWord evm I)
   let evmFinal :=
@@ -2046,7 +2051,7 @@ theorem flapperDealBodyReturns_success
         (.ok { contract := contract, locals := dealFillNewLocals evm evmDelete I }
           evmFinal) := by
     simpa [evmFinal, diff] using
-      (ExecStmt.assign (evalExpr_deal_fillNew_var evm evmDelete evmDelete I)
+      (ExecStmt.assign (hperm := Or.inr (by simpa only [evmDelete, auctionDeletePostState, auctionDeleteAfterTic, auctionDeleteAfterGuy, auctionDeleteAfterLot, auctionDeleteAfterBid, storageStore_executionEnv] using hpBurn)) (evalExpr_deal_fillNew_var evm evmDelete evmDelete I)
         (assign_deal_fillNew evm evmDelete I))
   have hdeleteSubAssign :
       ExecBlock config { contract := contract, locals := dealBurnLocals evm I } evmBurn
@@ -2056,7 +2061,7 @@ theorem flapperDealBodyReturns_success
         (.ok { contract := contract, locals := dealFillNewLocals evm evmDelete I }
           evmFinal) := by
     exact ExecBlock.consNormal
-      (ExecStmt.delete (deleteStorage_dealBurn_bid evm evmBurn I)) <|
+      (ExecStmt.delete (hperm := hpBurn) (deleteStorage_dealBurn_bid evm evmBurn I)) <|
       ExecBlock.consNormal hsubStmt <|
       ExecBlock.consNormal hassignStmt ExecBlock.nil
   have htail :
@@ -4597,7 +4602,7 @@ theorem flapperDealBodyCoreMoveCallSuccess
                 none) := by
           simpa [evmStele, evmMoveStele, evmBurnStele, evmDeleteStele, solcSlotWordAt,
             initState, Stele.EVM.storageLoad, State.lookupAccount] using
-            flapperDealBodyReturns_success evmStele evmMoveStele evmBurnStele I outMove outBurn
+            flapperDealBodyReturns_success (hperm := by assumption) evmStele evmMoveStele evmBurnStele I outMove outBurn
               (by simp only [evmStele, initState]; exact hwv)
               hliveSteleWord hticStele hfinishedStele
               (by simpa [evmStele, initState] using hmoveCodeSizeStele)
@@ -4643,7 +4648,7 @@ theorem flapperDealBodyCoreMoveCallSuccess
               dealTransition.body .reverted := by
           simpa [evmStele, evmMoveStele, evmBurnStele, evmDeleteStele, solcSlotWordAt,
             initState, Stele.EVM.storageLoad, State.lookupAccount] using
-            flapperDealBodyReverts_fillSubUnderflow evmStele evmMoveStele evmBurnStele I
+            flapperDealBodyReverts_fillSubUnderflow (hperm := by assumption) evmStele evmMoveStele evmBurnStele I
               outMove outBurn
               (by simp only [evmStele, initState]; exact hwv)
               hliveSteleWord hticStele hfinishedStele

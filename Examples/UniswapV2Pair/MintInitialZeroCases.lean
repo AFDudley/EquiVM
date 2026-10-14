@@ -128,7 +128,8 @@ theorem uniswapMintInitialAfterMintFeeLiquidityZeroRevertCase
           (⟨1000⟩ : UInt256).toNat < UInt256.size)
     (hperm : I.perm = true)
     (hmem : mem.size = 164)
-    (hmem64 : mem.readWithPadding 64 32 = UInt256.toByteArray ⟨128⟩) :
+    (hmem64 : mem.readWithPadding 64 32 = UInt256.toByteArray ⟨128⟩)
+    (hpermAfter : evmAfter.executionEnv.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   let evmS := initState σ σ₀ (Sat256.ofUInt256 g) A I
   let afterTotalSupplyLocals :=
@@ -143,7 +144,7 @@ theorem uniswapMintInitialAfterMintFeeLiquidityZeroRevertCase
   let evmMinimum := mintFunctionPostState evmAfter (AccountAddress.ofNat 0)
     (⟨1000⟩ : UInt256)
   have hprefix :=
-    uniswapMintAfterMintFeeTotalSupplyPrefix_of_call evmS evm0S evm1S evmAfter I
+    uniswapMintAfterMintFeeTotalSupplyPrefix_of_call (hperm := by assumption) evmS evm0S evm1S evmAfter I
       nextLocals (by simp only [evmS, initState]; exact hwv) hunlockedStele hguard0
       hguard1 hcall0 hdec0 hcall1 hdec1 henough0 henough1 hfee hbase
   have htotal :
@@ -166,7 +167,7 @@ theorem uniswapMintInitialAfterMintFeeLiquidityZeroRevertCase
         (.ok afterMinimum evmMinimum) := by
     simpa [caller, afterRoot, afterLiquidity, afterMinimum, evmMinimum,
       afterTotalSupplyLocals] using
-      uniswapMintInitialLiquidityBranchStmtPrefix evmAfter rootLiquidity liquidity htotal
+      uniswapMintInitialLiquidityBranchStmtPrefix (hperm := by assumption) evmAfter rootLiquidity liquidity htotal
         (by simpa [afterTotalSupplyLocals] using hsqrt) hrootGeMin hfitSub
         hliquiditySource hfitSupplyMinSource hfitBalanceMinSource
   have hbranch :

@@ -8,10 +8,11 @@ set_option maxRecDepth 10000
 
 theorem mintLockPrefix (v : UniswapV3PoolImmutables) (a : MintArgs) (evm : EVM.State)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : slot0FieldWord 30 1 evm.accountMap evm.executionEnv ≠ ⟨0⟩) :
+    (hunlocked : slot0FieldWord 30 1 evm.accountMap evm.executionEnv ≠ ⟨0⟩)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config (mintFrame v a) evm (mintTransition.body.take 5)
       (.ok (mintInitFrame v a) (storeSlot0Unlocked evm false)) :=
-  poolLockPrefixSource (mintLocals a) (immStore v) evm (by mint_prefix_get) hwv hunlocked
+  poolLockPrefixSource (hperm := by assumption) (mintLocals a) (immStore v) evm (by mint_prefix_get) hwv hunlocked
 
 theorem mintRevertsLocked (v : UniswapV3PoolImmutables) (a : MintArgs) (evm : EVM.State)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
@@ -40,23 +41,25 @@ theorem evalMintAmountPositive (v : UniswapV3PoolImmutables) (a : MintArgs) (evm
 theorem mintAmountPrefix (v : UniswapV3PoolImmutables) (a : MintArgs) (evm : EVM.State)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hunlocked : slot0FieldWord 30 1 evm.accountMap evm.executionEnv ≠ ⟨0⟩)
-    (hpos : 0 < a.amount.toNat) :
+    (hpos : 0 < a.amount.toNat)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config (mintFrame v a) evm (mintTransition.body.take 6)
       (.ok (mintInitFrame v a) (storeSlot0Unlocked evm false)) := by
   change ExecBlock config _ _ (mintTransition.body.take 5 ++
     [.require (.binary .gt (.var "amount") (.intLit 0))]) _
-  apply execBlock_append_ok (mintLockPrefix v a evm hwv hunlocked)
+  apply execBlock_append_ok (mintLockPrefix (hperm := by assumption) v a evm hwv hunlocked)
   refine ExecBlock.consNormal (ExecStmt.requireTrue ?_) ExecBlock.nil
   simpa only [hpos, decide_true] using evalMintAmountPositive v a (storeSlot0Unlocked evm false)
 
 theorem mintRevertsZero (v : UniswapV3PoolImmutables) (a : MintArgs) (evm : EVM.State)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hunlocked : slot0FieldWord 30 1 evm.accountMap evm.executionEnv ≠ ⟨0⟩)
-    (hz : a.amount = ⟨0⟩) :
+    (hz : a.amount = ⟨0⟩)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (mintLocals a) mintTransition.body .reverted (immStore v) := by
   apply ExecFuncBody.execBlockRevert
   rw [← List.take_append_drop 5 mintTransition.body]
-  apply execBlock_append_ok (mintLockPrefix v a evm hwv hunlocked)
+  apply execBlock_append_ok (mintLockPrefix (hperm := by assumption) v a evm hwv hunlocked)
   apply ExecBlock.consRevert (ExecStmt.requireFalse ?_)
   simpa only [hz, show (⟨0⟩ : UInt256).toNat = 0 from rfl, Nat.lt_irrefl, decide_false] using
     evalMintAmountPositive v a (storeSlot0Unlocked evm false)

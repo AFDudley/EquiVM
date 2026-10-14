@@ -49,7 +49,7 @@ theorem userBasicBitUpdate_source (frame : Frame) (evm : EVM.State)
   · simp only [Bool.false_eq_true, if_false, internalBlockResult]
     exact ExecBlock.consStatic (ExecStmt.assignStatic hx hw hp)
   · simp only [if_true, internalBlockResult]
-    exact ⟨frame, ExecBlock.consNormal (ExecStmt.assign hx hw) .nil⟩
+    exact ⟨frame, ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hx hw) .nil⟩
 
 theorem assetMembershipWrite_source (frame : Frame) (evm : EVM.State)
     (account : AccountAddress) (offset : UInt256) (add : Bool)

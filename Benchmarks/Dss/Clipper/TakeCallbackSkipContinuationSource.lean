@@ -50,7 +50,7 @@ theorem clipperTakeVatMoveCallFailureBlockAtDogLoaded (v : ClipperImmutables)
       (ExecStmt.requireTrue
         (clipperEvalTakeVatCodeGuard_true v evmVat dogFrame.locals hcode))
       (ExecBlock.consRevert
-        (ExecStmt.externalCallFailure
+        (ExecStmt.externalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
           (clipperEvalVat v evmVat dogFrame.locals)
           (by simp [evalExpr?, pure]) (by simpa [dogFrame] using hargs) hcall))
 
@@ -85,7 +85,7 @@ theorem clipperTakeVatMoveCallSuccessBlockAtDogLoaded (v : ClipperImmutables)
       (ExecStmt.requireTrue
         (clipperEvalTakeVatCodeGuard_true v evmVat dogFrame.locals hcode))
       (ExecBlock.consNormal
-        (ExecStmt.externalCallSuccess
+        (ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
           (clipperEvalVat v evmVat dogFrame.locals)
           (by simp [evalExpr?, pure]) (by simpa [dogFrame] using hargs) hcall
           (clipperTakeDecodeMoveVoid outMove))

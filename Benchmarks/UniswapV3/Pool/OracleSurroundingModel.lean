@@ -83,7 +83,7 @@ theorem oracleSurroundingReadPrefix (imms : Store) (evm : EVM.State) (time targe
       oracleSurroundingFunction.body[2]!
       (.ok (oracleSurroundingReadFrame imms evm time target tick index liquidity cardinality)
         evm) := by
-    apply ExecStmt.assign he
+    apply ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) he
     exact assignLocalVarBase_frame (old := oracleZeroObservation.value)
       (by simp [oracleSurroundingZeroFrame, Std.HashMap.getElem_insert])
   exact execBlock_append_ok hz (ExecBlock.consNormal hs ExecBlock.nil)

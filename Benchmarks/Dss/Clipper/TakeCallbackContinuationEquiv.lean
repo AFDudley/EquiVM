@@ -83,7 +83,8 @@ theorem clipperTakeOweGtTabCallbackTailRevertEquivFromPostWords
         { contract := contract, locals := clipperTakeLocalsTic evmLock I, immutables := immStore v }
         evmLock
         (.internalCall "status" [.var "tic", .storage (salesF (.var "id") "top")] "st")
-        (.ok (Frame.mk contract (clipperTakeLocalsSt evmLock I false price) (immStore v)) evmPrice)) :
+        (.ok (Frame.mk contract (clipperTakeLocalsSt evmLock I false price) (immStore v)) evmPrice))
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract
       σ σ₀ g A I (immStore v) := by
   let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
@@ -115,7 +116,7 @@ theorem clipperTakeOweGtTabCallbackTailRevertEquivFromPostWords
     exact clipperTakeOweGtTabCallbackTailSource v evmLock evmPrice
       evmVat evmCb I price slice hsrcMul hsrcGt hsliceLot hvatCode hcallVat
       (by simpa [evm0, evmLock, slice] using hcallback) htail
-  have hbody := clipperTakeSourceRevertsOfAfterSlice
+  have hbody := clipperTakeSourceRevertsOfAfterSlice (hperm := by assumption)
     (σ := σ) (σ₀ := σ₀)
     (A := A) (I := I) (g := g) (evmPrice := evmPrice)
     v price hwv hlockedStele hstoppedSteleLt husrStele hmax hstatus

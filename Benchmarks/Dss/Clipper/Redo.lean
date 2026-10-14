@@ -893,7 +893,8 @@ theorem clipperRedoInactiveSourceReverts {σ σ₀ A I} {g : UInt256}
     (hstopped :
       (solcSlotWord (sstoreAccountMap I.codeOwner σ ⟨13⟩ ⟨1⟩) I ⟨14⟩).toNat < 2)
     (husr :
-      clipperRedoSalesUsrWord (sstoreAccountMap I.codeOwner σ ⟨13⟩ ⟨1⟩) I = ⟨0⟩) :
+      clipperRedoSalesUsrWord (sstoreAccountMap I.codeOwner σ ⟨13⟩ ⟨1⟩) I = ⟨0⟩)
+    (hperm : I.perm = true) :
     let locals := clipperRedoStore I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     ExecTransitionBody config contract evm0 locals redoTransition.body .reverted (immStore v) := by
@@ -970,7 +971,7 @@ theorem clipperRedoInactiveSourceReverts {σ σ₀ A I} {g : UInt256}
         refine ExecBlock.consNormal (ExecStmt.requireTrue ?_) ?_
         · exact evalCallvalueEq_true (by simp [evm0, initState]; exact hwv)
         refine ExecBlock.consNormal (ExecStmt.requireTrue hlockedEval) ?_
-        refine ExecBlock.consNormal (ExecStmt.assign hlockRhs hlockAssign) ?_
+        refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hlockRhs hlockAssign) ?_
         refine ExecBlock.consNormal (ExecStmt.requireTrue hstoppedEval) ?_
         refine ExecBlock.consNormal hletUsr ?_
         refine ExecBlock.consNormal hletTic ?_
@@ -988,7 +989,8 @@ theorem clipperRedoStatusAgeForPriceSourceReverts {σ σ₀ A I} {g : UInt256}
       clipperRedoSalesUsrWord (sstoreAccountMap I.codeOwner σ ⟨13⟩ ⟨1⟩) I ≠ ⟨0⟩)
     (hlt :
       (UInt256.ofNat I.header.timestamp).toNat <
-        (clipperRedoSalesTicWord (sstoreAccountMap I.codeOwner σ ⟨13⟩ ⟨1⟩) I).toNat) :
+        (clipperRedoSalesTicWord (sstoreAccountMap I.codeOwner σ ⟨13⟩ ⟨1⟩) I).toNat)
+    (hperm : I.perm = true) :
     let locals := clipperRedoStore I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     ExecTransitionBody config contract evm0 locals redoTransition.body .reverted (immStore v) := by
@@ -1075,7 +1077,7 @@ theorem clipperRedoStatusAgeForPriceSourceReverts {σ σ₀ A I} {g : UInt256}
         refine ExecBlock.consNormal (ExecStmt.requireTrue ?_) ?_
         · exact evalCallvalueEq_true (by simp [evm0, initState]; exact hwv)
         refine ExecBlock.consNormal (ExecStmt.requireTrue hlockedEval) ?_
-        refine ExecBlock.consNormal (ExecStmt.assign hlockRhs hlockAssign) ?_
+        refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hlockRhs hlockAssign) ?_
         refine ExecBlock.consNormal (ExecStmt.requireTrue hstoppedEval) ?_
         refine ExecBlock.consNormal hletUsr ?_
         refine ExecBlock.consNormal hletTic ?_
@@ -1090,7 +1092,7 @@ theorem clipperRedoStoppedSourceRevertsSplit {σ σ₀ A I} {g : UInt256}
     (hlocked : solcSlotWord σ I ⟨13⟩ = ⟨0⟩) :
     let locals := clipperRedoStore I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-    (2 ≤ (solcSlotWord (sstoreAccountMap I.codeOwner σ ⟨13⟩ ⟨1⟩) I ⟨14⟩).toNat →
+    (I.perm = true → 2 ≤ (solcSlotWord (sstoreAccountMap I.codeOwner σ ⟨13⟩ ⟨1⟩) I ⟨14⟩).toNat →
     ExecTransitionBody config contract evm0 locals redoTransition.body .reverted (immStore v)) ∧
     (I.perm = false →
       ExecTransitionBody config contract evm0 locals
@@ -1122,7 +1124,7 @@ theorem clipperRedoStoppedSourceRevertsSplit {σ σ₀ A I} {g : UInt256}
     refine ExecBlock.consNormal (ExecStmt.requireTrue hlockedEval) ?_
     exact hrest
   constructor
-  · intro hstopped
+  · intro hperm hstopped
     have hstoppedEval :
         evalExpr? config { contract := contract, locals := locals, immutables := immStore v } evmLock
           (.binary .lt (.storage stoppedRef) (.intLit 2)) = .ok (.bool false) := by
@@ -1137,7 +1139,7 @@ theorem clipperRedoStoppedSourceRevertsSplit {σ σ₀ A I} {g : UInt256}
       apply hprefix
       simpa [redoTransition, nonpayable, lockPrefix, isStopped] using
         (by
-          refine ExecBlock.consNormal (ExecStmt.assign hlockRhs hlockAssign) ?_
+          refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hlockRhs hlockAssign) ?_
           exact ExecBlock.consRevert (ExecStmt.requireFalse hstoppedEval))
     simpa [ExecTransitionBody, locals, evm0] using ExecFuncBody.execBlockRevert hblock
   · intro hperm
@@ -1149,11 +1151,12 @@ theorem clipperRedoStoppedSourceReverts {σ σ₀ A I} {g : UInt256}
     (v : ClipperImmutables) (hwv : I.weiValue = ⟨0⟩)
     (hlocked : solcSlotWord σ I ⟨13⟩ = ⟨0⟩)
     (hstopped :
-      2 ≤ (solcSlotWord (sstoreAccountMap I.codeOwner σ ⟨13⟩ ⟨1⟩) I ⟨14⟩).toNat) :
+      2 ≤ (solcSlotWord (sstoreAccountMap I.codeOwner σ ⟨13⟩ ⟨1⟩) I ⟨14⟩).toNat)
+    (hperm : I.perm = true) :
     let locals := clipperRedoStore I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     ExecTransitionBody config contract evm0 locals redoTransition.body .reverted (immStore v) :=
-  (clipperRedoStoppedSourceRevertsSplit v hwv hlocked).1 hstopped
+  (clipperRedoStoppedSourceRevertsSplit v hwv hlocked).1 hperm hstopped
 
 theorem clipperRedoLockRevertTailWf (v : ClipperImmutables) {code : ByteArray}
     (hpatch : patchRuntime clipperBytecode (patches v) = some code) :

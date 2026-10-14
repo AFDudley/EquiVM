@@ -823,8 +823,8 @@ theorem scratch_revealLoopBody_hashMatch_noPlace_fromPacked_pair {I} {g : Sat256
     exact packedUint256BoolBytes32Hash_eq_of_u256_eq_one
       (blinded := blinded) (value := value) (secret := secret) (fake := fake) hflag
   have hhashEval := scratch_evalExpr_revealPackedHash_of_secretStoreOf evm L i value secret fake
-  have hsrc :=
-    scratch_revealLoopBody_ok_noPlace_of_get evm L values fakes secrets curLen refund i value
+  have hsrc := fun hp : evm.executionEnv.perm = true =>
+    scratch_revealLoopBody_ok_noPlace_of_get (hperm := hp) evm L values fakes secrets curLen refund i value
       secret blinded deposit fake fakeRaw
       (KEC (ByteArray.mk (packedUint256BoolBytes32Bytes value fake secret).toArray)).toList
       hbids hvalues hfakes hsecrets hi hrefund hlen hboundBids hboundValues hboundFakes
@@ -887,7 +887,7 @@ theorem scratch_revealLoopBody_hashMatch_noPlace_fromPacked_pair {I} {g : Sat256
           with ⟨hp, k4, C4, rdNext⟩ | ⟨hpf, hst⟩
         swap
         · exact Or.inr ⟨hpf, hsrcStatic (hpermEvm.trans hpf), hst⟩
-        exact Or.inl ⟨hp, hsrc, ⟨k4, C4, by
+        exact Or.inl ⟨hp, hsrc (hpermEvm.trans hp), ⟨k4, C4, by
           simpa [base, newFree, packedLen, mem4, mem5, aw1, aw2, aw3, aw4, aw5]
             using rdNext⟩⟩
   | true =>
@@ -904,7 +904,7 @@ theorem scratch_revealLoopBody_hashMatch_noPlace_fromPacked_pair {I} {g : Sat256
         with ⟨hp, k4, C4, rdNext⟩ | ⟨hpf, hst⟩
       swap
       · exact Or.inr ⟨hpf, hsrcStatic (hpermEvm.trans hpf), hst⟩
-      exact Or.inl ⟨hp, hsrc, ⟨k4, C4, by
+      exact Or.inl ⟨hp, hsrc (hpermEvm.trans hp), ⟨k4, C4, by
         simpa [base, newFree, packedLen, mem4, mem5, aw1, aw2, aw3, aw4, aw5]
           using rdNext⟩⟩
 
@@ -1954,8 +1954,8 @@ theorem scratch_revealLoopBody_hashMatch_placeBidFalse_fromPacked_pair {I} {g : 
       (blinded := blinded) (value := value) (secret := secret) (fake := false) hflag
   have hhashEval :=
     scratch_evalExpr_revealPackedHash_of_secretStoreOf evm L i value secret false
-  have hsrc :=
-    scratch_revealLoopBody_ok_placeBid_false_of_get evm L values fakes secrets curLen refund i
+  have hsrc := fun hp : evm.executionEnv.perm = true =>
+    scratch_revealLoopBody_ok_placeBid_false_of_get (hperm := hp) evm L values fakes secrets curLen refund i
       value secret blinded deposit high fakeRaw
       (KEC (ByteArray.mk (packedUint256BoolBytes32Bytes value false secret).toArray)).toList
       hbids hvalues hfakes hsecrets hi hrefund hlen hboundBids hboundValues hboundFakes
@@ -2013,7 +2013,7 @@ theorem scratch_revealLoopBody_hashMatch_placeBidFalse_fromPacked_pair {I} {g : 
     with ⟨hp, k4, C4, rdNext⟩ | ⟨hpf, hst⟩
   swap
   · exact Or.inr ⟨hpf, hsrcStatic (hpermEvm.trans hpf), hst⟩
-  exact Or.inl ⟨hp, hsrc, ⟨k4, C4, by
+  exact Or.inl ⟨hp, hsrc (hpermEvm.trans hp), ⟨k4, C4, by
     simpa [base, newFree, packedLen, mem4, mem5, aw1, aw2, aw3, aw4, aw5] using rdNext⟩⟩
 
 theorem scratch_revealLoopBody_hashMatch_placeBidTrueZero_fromPacked_pair {I}
@@ -2152,8 +2152,8 @@ theorem scratch_revealLoopBody_hashMatch_placeBidTrueZero_fromPacked_pair {I}
       (blinded := blinded) (value := value) (secret := secret) (fake := false) hflag
   have hhashEval :=
     scratch_evalExpr_revealPackedHash_of_secretStoreOf evm L i value secret false
-  have hsrc :=
-    scratch_revealLoopBody_ok_placeBid_true_zero_of_get evm L values fakes secrets curLen refund i
+  have hsrc := fun hp : evm.executionEnv.perm = true =>
+    scratch_revealLoopBody_ok_placeBid_true_zero_of_get (hperm := hp) evm L values fakes secrets curLen refund i
       value secret blinded deposit high old fakeRaw
       (KEC (ByteArray.mk (packedUint256BoolBytes32Bytes value false secret).toArray)).toList
       hbids hvalues hfakes hsecrets hi hrefund hlen hboundBids hboundValues hboundFakes
@@ -2219,7 +2219,7 @@ theorem scratch_revealLoopBody_hashMatch_placeBidTrueZero_fromPacked_pair {I}
     with ⟨hp, k4, C4, rdNext⟩ | ⟨hpf, hst⟩
   swap
   · exact Or.inr ⟨hpf, hsrcStatic (hpermEvm.trans hpf), hst⟩
-  exact Or.inl ⟨hp, hsrc, ⟨k4, C4, by
+  exact Or.inl ⟨hp, hsrc (hpermEvm.trans hp), ⟨k4, C4, by
     simpa [base, newFree, packedLen, mem4, mem5, aw1, aw2, aw3, aw4, aw5] using rdNext⟩⟩
 
 theorem scratch_revealLoopBody_hashMatch_placeBidTrueNonzero_fromPacked_pair {I}
@@ -2380,8 +2380,8 @@ theorem scratch_revealLoopBody_hashMatch_placeBidTrueNonzero_fromPacked_pair {I}
       (blinded := blinded) (value := value) (secret := secret) (fake := false) hflag
   have hhashEval :=
     scratch_evalExpr_revealPackedHash_of_secretStoreOf evm L i value secret false
-  have hsrc :=
-    scratch_revealLoopBody_ok_placeBid_true_nonzero_of_get evm L values fakes secrets curLen
+  have hsrc := fun hp : evm.executionEnv.perm = true =>
+    scratch_revealLoopBody_ok_placeBid_true_nonzero_of_get (hperm := hp) evm L values fakes secrets curLen
       refund i value secret blinded deposit high old pending oldAddr fakeRaw
       (KEC (ByteArray.mk (packedUint256BoolBytes32Bytes value false secret).toArray)).toList
       hbids hvalues hfakes hsecrets hi hrefund hlen hboundBids hboundValues hboundFakes
@@ -2447,7 +2447,7 @@ theorem scratch_revealLoopBody_hashMatch_placeBidTrueNonzero_fromPacked_pair {I}
     with ⟨hp, k4, C4, rdNext⟩ | ⟨hpf, hst⟩
   swap
   · exact Or.inr ⟨hpf, hsrcStatic (hpermEvm.trans hpf), hst⟩
-  exact Or.inl ⟨hp, hsrc, ⟨k4, C4, by
+  exact Or.inl ⟨hp, hsrc (hpermEvm.trans hp), ⟨k4, C4, by
     simpa [base, newFree, packedLen, mem4, mem5, aw1, aw2, aw3, aw4, aw5,
       key, awPB1, awPB2, awPB3] using rdNext⟩⟩
 

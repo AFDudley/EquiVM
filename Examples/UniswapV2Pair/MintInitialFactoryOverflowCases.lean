@@ -141,7 +141,7 @@ theorem uniswapMintInitialMinimumMintBalanceOverflowFromAfterFeeCase
       (caller := caller) (evm := evmAfter) rfl hargs rd3701 htotalRuntimeZero
       (by simpa [mintAmountProductNat] using hfit)
   by_cases hrootLt : root < minimumLiquidity
-  · exact uniswapMintInitialAfterMintFeeRootUnderflowRevertCase nextLocals root
+  · exact uniswapMintInitialAfterMintFeeRootUnderflowRevertCase (hperm := hperm) nextLocals root
       hcode hdispatch hsz36 hwv hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1
       hdec1 hle0Source hle1Source hfee hbase htotalSource
       (by simpa [caller, afterTotalSupplyLocals] using hsqrt) rd2531 hrootSize hrootLt
@@ -177,7 +177,7 @@ theorem uniswapMintInitialMinimumMintBalanceOverflowFromAfterFeeCase
             (⟨1000⟩ : UInt256) := by
       rw [hsourceBalanceEq]
       exact hruntimeOverflow
-    exact uniswapMintInitialAfterMintFeeMinimumMintBalanceOverflowRevertCase
+    exact uniswapMintInitialAfterMintFeeMinimumMintBalanceOverflowRevertCase (hpermAfter := by simpa only [henvAfterI] using hperm)
       (liquidity := liquidity) nextLocals root hcode hdispatch hsz36 hwv
       hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1 hdec1 hle0Source hle1Source
       hfee hbase htotalSource (by simpa [caller, afterTotalSupplyLocals] using hsqrt)
@@ -398,7 +398,7 @@ theorem uniswapMintInitialFeeOffKLastZeroMinimumMintBalanceOverflowFromFactoryCa
       (caller := caller) (evm := evmFeeS) rfl hargs rd3701 htotalZero
       (by simpa [mintAmountProductNat] using hfit)
   by_cases hrootLt : root < minimumLiquidity
-  · exact uniswapMintInitialAfterMintFeeRootUnderflowRevertCase nextFrame.locals root
+  · exact uniswapMintInitialAfterMintFeeRootUnderflowRevertCase (hperm := hperm) nextFrame.locals root
       hcode hdispatch hsz36 hwv hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1
       hdec1 hle0Source hle1Source
       (by
@@ -442,7 +442,7 @@ theorem uniswapMintInitialFeeOffKLastZeroMinimumMintBalanceOverflowFromFactoryCa
             (⟨1000⟩ : UInt256) := by
       rw [hsourceBalanceEq]
       exact hbalanceOverflow
-    exact uniswapMintInitialAfterMintFeeMinimumMintBalanceOverflowRevertCase
+    exact uniswapMintInitialAfterMintFeeMinimumMintBalanceOverflowRevertCase (hpermAfter := by simpa only [henvFeeI] using hperm)
       (liquidity := liquidity) nextFrame.locals root hcode hdispatch hsz36 hwv
       hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1 hdec1 hle0Source hle1Source
       (by
@@ -841,7 +841,7 @@ theorem uniswapMintInitialFeeOffKLastNonzeroMinimumMintBalanceOverflowFromFactor
         evm1S (.internalCall "_mintFee" [.var "_reserve0", .var "_reserve1"] "feeOn")
         (.ok { contract := contract, locals := nextFrame.locals } evmAfterFee) := by
     simpa [nextFrame, evmL, evmS, evmAfterFee, resumeAfterInternalCall] using
-      uniswapMintFeeCallFromMint_feeOff_kLastNonzero evmL evm1S evmFeeS I balance0
+      uniswapMintFeeCallFromMint_feeOff_kLastNonzero (hperm := by simpa [typedCallViaEVM_executionEnv_eq hcall1, typedCallViaEVM_executionEnv_eq hcall0, uniswapLockEnteredState, uniswapUnlockedState, initState] using hperm) evmL evm1S evmFeeS I balance0
         balance1 feeTo (by simpa [evmL, evmS] using hfeeGuard) hfeeCall hfeeDec
         hfeeToAddr hkLastSource
   have hbase : nextFrame.locals.get? "totalSupply" = none := by

@@ -104,12 +104,13 @@ theorem uniswapBurnBeforeFeePrefix
       { contract := contract, locals := burnBalance0Store (uniswapLockEnteredState evm) I balance0 }
       evm0 (balanceOfThisStmts (.var "_token1") "balance1")
       (.ok { contract := contract, locals :=
-        burnBalanceStore (uniswapLockEnteredState evm) I balance0 balance1 } evm1)) :
+        burnBalanceStore (uniswapLockEnteredState evm) I balance0 balance1 } evm1))
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config { contract := contract, locals := burnStore I } evm burnBeforeFeePrefix
       (.ok { contract := contract, locals :=
         burnLiquidityStore (uniswapLockEnteredState evm) evm1 I balance0 balance1 } evm1) := by
   exact execBlock_append
-    (execBlock_append (execBlock_append (uniswapBurnCachePrefix evm I hwv hunlocked) hfirst) hsecond)
+    (execBlock_append (execBlock_append (uniswapBurnCachePrefix (hperm := by assumption) evm I hwv hunlocked) hfirst) hsecond)
     (uniswapBurnLiquidityLoaded (uniswapLockEnteredState evm) evm1 I balance0 balance1)
 
 theorem uniswapBurnBodyReverts_mintFeeBlock

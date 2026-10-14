@@ -29,7 +29,7 @@ globs = ["Proofs.+"]
 
 [[lean_lib]]
 name = "Benchmarks"
-globs = ["Benchmarks.+"]
+globs = ["Benchmarks.*"]
 
 [[lean_lib]]
 name = "Tests"

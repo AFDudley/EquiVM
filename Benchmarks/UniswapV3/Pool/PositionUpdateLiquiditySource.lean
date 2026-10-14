@@ -15,7 +15,7 @@ theorem positionUpdateLiquidityChoiceSource (imms : Store) (evm : EVM.State)
     apply ExecStmt.iteTrue (by simpa only [hz, decide_true] using hc.1)
     refine ExecBlock.consNormal (ExecStmt.requireTrue
       (by simpa only [hv, decide_true] using hc.2)) ?_
-    exact ExecBlock.consNormal (ExecStmt.assign
+    exact ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
       (evalPositionSnapshotLiquidity (positionUpdateZeroFrame imms a evm).locals imms evm evm a
         (by position_update_get))
       (assignLocalVarBase_frame (old := .int 0) (by position_update_get))) ExecBlock.nil
@@ -23,7 +23,7 @@ theorem positionUpdateLiquidityChoiceSource (imms : Store) (evm : EVM.State)
     simp only [positionUpdateLiquidityFrame, positionUpdateLiquidityNext, if_neg hz]
     apply ExecStmt.iteFalse (by simpa only [hz, decide_false] using hc.1)
     refine ExecBlock.consNormal (positionUpdateLiquidityCall imms evm a hv) ?_
-    exact ExecBlock.consNormal (ExecStmt.assign
+    exact ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
       (evalExpr_var_get Std.HashMap.getElem?_insert_self)
       (assignLocalVarBase_frame (old := .int 0) (by position_update_get))) ExecBlock.nil
 

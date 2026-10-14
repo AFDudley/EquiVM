@@ -1960,6 +1960,7 @@ theorem execFrobLoadedPrefixThroughDebtSplit {evm : EVM.State}
     let localsDtab := localsIlk.insert "dtab" (.int dtab)
     let tab := UInt256.mul ilkRate urnArtNew
     let localsTab := localsDtab.insert "tab" (.int (Int.ofNat tab.toNat))
+    (evm.executionEnv.perm = true →
     ExecBlock config { contract := contract, locals := frobStore I } evm
       (pre ++
         checkedAddSignedInto "urnInkNew" (.var "urnInk") (.var "dink") ++
@@ -1973,7 +1974,7 @@ theorem execFrobLoadedPrefixThroughDebtSplit {evm : EVM.State}
         { contract := contract,
           locals := localsTab.insert "debtNew" (.int (Int.ofNat debtNew.toNat)) }
         (Stele.EVM.storageStore evm evm.executionEnv.codeOwner foldDebtSlot
-          debtNew)) ∧
+          debtNew))) ∧
     (evm.executionEnv.perm = false →
       ExecBlock config { contract := contract, locals := frobStore I } evm
         (pre ++
@@ -2043,7 +2044,7 @@ theorem execFrobLoadedPrefixThroughDebtSplit {evm : EVM.State}
       hrest
     simpa [localsLoaded, urnInkNew, urnArtNew, ilkArtNew, localsIlk, localsDtab,
       tab, localsTab, List.append_assoc] using hfull
-  exact ⟨hpre _ hdebtBlock.1, fun hpf => hpre _ (hdebtBlock.2 hpf)⟩
+  exact ⟨fun hperm ↦ hpre _ (hdebtBlock.1 hperm), fun hpf => hpre _ (hdebtBlock.2 hpf)⟩
 
 theorem execFrobLoadedPrefixThroughDebtOk {evm : EVM.State}
     {I : ExecutionEnv} {pre : List Stmt}
@@ -2087,7 +2088,8 @@ theorem execFrobLoadedPrefixThroughDebtOk {evm : EVM.State}
     (hDebtNeg :
       UInt256.slt dtabWord ⟨0⟩ = ⟨0⟩ ∨ UInt256.gt debtNew debtOld = ⟨0⟩)
     (hDebtPos :
-      UInt256.sgt dtabWord ⟨0⟩ = ⟨0⟩ ∨ UInt256.lt debtNew debtOld = ⟨0⟩) :
+      UInt256.sgt dtabWord ⟨0⟩ = ⟨0⟩ ∨ UInt256.lt debtNew debtOld = ⟨0⟩)
+    (hperm : evm.executionEnv.perm = true) :
     let localsLoaded :=
       frobStoreIlkDust I urnInk urnArt ilkArt ilkRate ilkSpot ilkLine ilkDust
     let urnInkNew := frobDinkWord I + urnInk
@@ -2116,7 +2118,7 @@ theorem execFrobLoadedPrefixThroughDebtOk {evm : EVM.State}
           debtNew)) :=
   (execFrobLoadedPrefixThroughDebtSplit urnInk urnArt ilkArt ilkRate ilkSpot ilkLine ilkDust
     dtab debtOld debtNew dtabWord hprefix hInkNeg hInkPos hArtNeg hArtPos hIlkNeg hIlkPos
-    hdtab hRateMax hDtabMul hTabMul hdebtLoad hdtabMod hnew hDebtNeg hDebtPos).1
+    hdtab hRateMax hDtabMul hTabMul hdebtLoad hdtabMod hnew hDebtNeg hDebtPos).1 hperm
 
 theorem execFrobLoadedPrefixDebtAddRevertGuardNeg {evm : EVM.State}
     {I : ExecutionEnv} {pre : List Stmt}
@@ -2407,7 +2409,8 @@ theorem execFrobLoadedPrefixThroughSafetyOk {evm : EVM.State}
     (hSafetyReq :
       (frobDartInt I ≤ 0 ∧ 0 ≤ frobDinkInt I) ∨
         (UInt256.mul ilkRate (frobDartWord I + urnArt)).toNat ≤
-          (UInt256.mul (frobDinkWord I + urnInk) ilkSpot).toNat) :
+          (UInt256.mul (frobDinkWord I + urnInk) ilkSpot).toNat)
+    (hperm : evm.executionEnv.perm = true) :
     let localsLoaded :=
       frobStoreIlkDust I urnInk urnArt ilkArt ilkRate ilkSpot ilkLine ilkDust
     let urnInkNew := frobDinkWord I + urnInk
@@ -2458,7 +2461,7 @@ theorem execFrobLoadedPrefixThroughSafetyOk {evm : EVM.State}
   intro localsLoaded urnInkNew urnArtNew ilkArtNew localsIlk localsDtab tab
     localsTab localsDebt evmDebt ceilingDebt inkSpot
   have hsourceDebt :=
-    execFrobLoadedPrefixThroughDebtOk
+    execFrobLoadedPrefixThroughDebtOk (hperm := hperm)
       (evm := evm) (I := I) (pre := pre)
       urnInk urnArt ilkArt ilkRate ilkSpot ilkLine ilkDust dtab debtOld debtNew
       dtabWord hprefix hInkNeg hInkPos hArtNeg hArtPos hIlkNeg hIlkPos hdtab
@@ -2782,7 +2785,8 @@ theorem execFrobLoadedPrefixCeilingMulRevertOverflow {evm : EVM.State}
     (hDebtPos :
       UInt256.sgt dtabWord ⟨0⟩ = ⟨0⟩ ∨ UInt256.lt debtNew debtOld = ⟨0⟩)
     (hover :
-      UInt256.size ≤ (frobDartWord I + ilkArt).toNat * ilkRate.toNat) :
+      UInt256.size ≤ (frobDartWord I + ilkArt).toNat * ilkRate.toNat)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config { contract := contract, locals := frobStore I } evm
       (pre ++
         checkedAddSignedInto "urnInkNew" (.var "urnInk") (.var "dink") ++
@@ -2810,7 +2814,7 @@ theorem execFrobLoadedPrefixCeilingMulRevertOverflow {evm : EVM.State}
   let evmDebt :=
     Stele.EVM.storageStore evm evm.executionEnv.codeOwner foldDebtSlot debtNew
   have hsourceDebt :=
-    execFrobLoadedPrefixThroughDebtOk
+    execFrobLoadedPrefixThroughDebtOk (hperm := hperm)
       (evm := evm) (I := I) (pre := pre)
       urnInk urnArt ilkArt ilkRate ilkSpot ilkLine ilkDust dtab debtOld debtNew
       dtabWord hprefix hInkNeg hInkPos hArtNeg hArtPos hIlkNeg hIlkPos hdtab
@@ -2913,7 +2917,8 @@ theorem execFrobLoadedPrefixInkSpotMulRevertOverflow {evm : EVM.State}
           (UInt256.mul (frobDartWord I + ilkArt) ilkRate) ilkRate)
           (frobDartWord I + ilkArt) ≠ ⟨0⟩)
     (hover :
-      UInt256.size ≤ (frobDinkWord I + urnInk).toNat * ilkSpot.toNat) :
+      UInt256.size ≤ (frobDinkWord I + urnInk).toNat * ilkSpot.toNat)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config { contract := contract, locals := frobStore I } evm
       (pre ++
         checkedAddSignedInto "urnInkNew" (.var "urnInk") (.var "dink") ++
@@ -2943,7 +2948,7 @@ theorem execFrobLoadedPrefixInkSpotMulRevertOverflow {evm : EVM.State}
     Stele.EVM.storageStore evm evm.executionEnv.codeOwner foldDebtSlot debtNew
   let ceilingDebt := UInt256.mul ilkArtNew ilkRate
   have hsourceDebt :=
-    execFrobLoadedPrefixThroughDebtOk
+    execFrobLoadedPrefixThroughDebtOk (hperm := hperm)
       (evm := evm) (I := I) (pre := pre)
       urnInk urnArt ilkArt ilkRate ilkSpot ilkLine ilkDust dtab debtOld debtNew
       dtabWord hprefix hInkNeg hInkPos hArtNeg hArtPos hIlkNeg hIlkPos hdtab
@@ -3121,7 +3126,8 @@ theorem execFrobLoadedPrefixCeilingRequireRevert {evm : EVM.State}
       0 < frobDartInt I ∧
         ¬ ((UInt256.mul (frobDartWord I + ilkArt) ilkRate).toNat ≤
               ilkLine.toNat ∧
-            debtNew.toNat ≤ Line.toNat)) :
+            debtNew.toNat ≤ Line.toNat))
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config { contract := contract, locals := frobStore I } evm
       (pre ++
         checkedAddSignedInto "urnInkNew" (.var "urnInk") (.var "dink") ++
@@ -3158,7 +3164,7 @@ theorem execFrobLoadedPrefixCeilingRequireRevert {evm : EVM.State}
   let ceilingDebt := UInt256.mul ilkArtNew ilkRate
   let inkSpot := UInt256.mul urnInkNew ilkSpot
   have hsourceDebt :=
-    execFrobLoadedPrefixThroughDebtOk
+    execFrobLoadedPrefixThroughDebtOk (hperm := hperm)
       (evm := evm) (I := I) (pre := pre)
       urnInk urnArt ilkArt ilkRate ilkSpot ilkLine ilkDust dtab debtOld debtNew
       dtabWord hprefix hInkNeg hInkPos hArtNeg hArtPos hIlkNeg hIlkPos hdtab
@@ -3432,7 +3438,8 @@ theorem execFrobLoadedPrefixSafetyRequireRevert {evm : EVM.State}
     (hSafetyBad :
       ¬ (frobDartInt I ≤ 0 ∧ 0 ≤ frobDinkInt I) ∧
         (UInt256.mul (frobDinkWord I + urnInk) ilkSpot).toNat <
-          (UInt256.mul ilkRate (frobDartWord I + urnArt)).toNat) :
+          (UInt256.mul ilkRate (frobDartWord I + urnArt)).toNat)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config { contract := contract, locals := frobStore I } evm
       (pre ++
         checkedAddSignedInto "urnInkNew" (.var "urnInk") (.var "dink") ++
@@ -3475,7 +3482,7 @@ theorem execFrobLoadedPrefixSafetyRequireRevert {evm : EVM.State}
   let ceilingDebt := UInt256.mul ilkArtNew ilkRate
   let inkSpot := UInt256.mul urnInkNew ilkSpot
   have hsourceDebt :=
-    execFrobLoadedPrefixThroughDebtOk
+    execFrobLoadedPrefixThroughDebtOk (hperm := hperm)
       (evm := evm) (I := I) (pre := pre)
       urnInk urnArt ilkArt ilkRate ilkSpot ilkLine ilkDust dtab debtOld debtNew
       dtabWord hprefix hInkNeg hInkPos hArtNeg hArtPos hIlkNeg hIlkPos hdtab
@@ -4945,7 +4952,7 @@ theorem vatFrobBodyCoreLiveFinalArithmeticOverflowReverts
                 (.binary .le (.var "tab") (.var "inkSpot"))) ])
         (.ok { contract := contract, locals := localsSafe } evmDebt) := by
     have hraw :=
-      execFrobLoadedPrefixThroughSafetyOk
+      execFrobLoadedPrefixThroughSafetyOk (hperm := hperm)
         (evm := evm0) (I := I)
         urnInk urnArt ilkArt ilkRate ilkSpot ilkLine ilkDust
         dtab debtOld debtNew dtabWord Line hsourcePrefix
@@ -5216,7 +5223,7 @@ theorem vatFrobBodyCoreLiveFinalArithmeticOverflowReverts
               [ .assign .storage (gemRef (.var "i") (.var "v")) (.var "gemNew") ])
             (.ok { contract := contract, locals := localsGem } evmGem) := by
         simpa [localsGem, evmGem] using
-          execFrobGemUpdateOk (evm := evmDebt) (I := I) localsSafe
+          execFrobGemUpdateOk (hperm := by simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm) (evm := evmDebt) (I := I) localsSafe
             gemOld gemNew hsz196 hsafeI hsafeV hsafeDink hsafeBaseGem hloadGem
             (by simp [gemNew, gemOld, frobGemNew])
             (frobDinkSubGuardNegCond hGemPosS)
@@ -5865,7 +5872,7 @@ theorem vatFrobBodyCoreLiveDebtCeilingSafetyReverts
               have hCeilingReq :=
                 frobCeilingSourceCond_of_evm (I := I) hCeilingOkSource
               have hsrcPrefixRevert :=
-                execFrobLoadedPrefixSafetyRequireRevert
+                execFrobLoadedPrefixSafetyRequireRevert (hperm := hperm)
                   (evm := evm0) (I := I)
                   urnInk urnArt ilkArt ilkRate ilkSpot ilkLine ilkDust
                   dtab debtOld debtNew dtabWord Line hsourcePrefix
@@ -5896,7 +5903,7 @@ theorem vatFrobBodyCoreLiveDebtCeilingSafetyReverts
                 simpa [urnInkNew, urnInk, ilkSpot, solcSlotWordAt] using hsrc)
             have hInkOverflow := uintCheckedMulFail_to_overflow hInkMulSourceFail
             have hsrcPrefixRevert :=
-              execFrobLoadedPrefixInkSpotMulRevertOverflow
+              execFrobLoadedPrefixInkSpotMulRevertOverflow (hperm := hperm)
                 (evm := evm0) (I := I)
                 urnInk urnArt ilkArt ilkRate ilkSpot ilkLine ilkDust
                 dtab debtOld debtNew dtabWord hsourcePrefix
@@ -5970,7 +5977,7 @@ theorem vatFrobBodyCoreLiveDebtCeilingSafetyReverts
             have hCeilingBad :=
               frobCeilingSourceFalseCond_of_evm (I := I) hCeilingOkSourceZero
             have hsrcPrefixRevert :=
-              execFrobLoadedPrefixCeilingRequireRevert
+              execFrobLoadedPrefixCeilingRequireRevert (hperm := hperm)
                 (evm := evm0) (I := I)
                 urnInk urnArt ilkArt ilkRate ilkSpot ilkLine ilkDust
                 dtab debtOld debtNew dtabWord Line hsourcePrefix
@@ -5995,7 +6002,7 @@ theorem vatFrobBodyCoreLiveDebtCeilingSafetyReverts
                 simpa [urnInkNew, urnInk, ilkSpot, solcSlotWordAt] using hsrc)
             have hInkOverflow := uintCheckedMulFail_to_overflow hInkMulSourceFail
             have hsrcPrefixRevert :=
-              execFrobLoadedPrefixInkSpotMulRevertOverflow
+              execFrobLoadedPrefixInkSpotMulRevertOverflow (hperm := hperm)
                 (evm := evm0) (I := I)
                 urnInk urnArt ilkArt ilkRate ilkSpot ilkLine ilkDust
                 dtab debtOld debtNew dtabWord hsourcePrefix
@@ -6021,7 +6028,7 @@ theorem vatFrobBodyCoreLiveDebtCeilingSafetyReverts
               using hsrc)
         have hCeilingOverflow := uintCheckedMulFail_to_overflow hCeilingMulSourceFail
         have hsrcPrefixRevert :=
-          execFrobLoadedPrefixCeilingMulRevertOverflow
+          execFrobLoadedPrefixCeilingMulRevertOverflow (hperm := hperm)
             (evm := evm0) (I := I)
             urnInk urnArt ilkArt ilkRate ilkSpot ilkLine ilkDust
             dtab debtOld debtNew dtabWord hsourcePrefix
@@ -6427,7 +6434,7 @@ theorem vatFrobBodyCoreLiveWishAuthDustReverts
                 (.binary .le (.var "tab") (.var "inkSpot"))) ])
         (.ok { contract := contract, locals := localsSafe } evmDebt) := by
     have hraw :=
-      execFrobLoadedPrefixThroughSafetyOk
+      execFrobLoadedPrefixThroughSafetyOk (hperm := hperm)
         (evm := evm0) (I := I)
         urnInk urnArt ilkArt ilkRate ilkSpot ilkLine ilkDust
         dtab debtOld debtNew dtabWord Line hsourcePrefix

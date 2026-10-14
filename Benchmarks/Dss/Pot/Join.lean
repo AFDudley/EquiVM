@@ -1397,12 +1397,13 @@ theorem potJoinSteleDriverPie {σ σ₀ A I} {g : Sat256} {result : ExecResult}
           .require (.binary .gt (.extCodeSize (.storage vatRef)) (.intLit 0)),
           .externalCall (.storage vatRef) "move" (.intLit 0) [sender, .env .this, .var "rad"]
             "_moveRet" ]
-        result) :
+        result)
+    (hperm : I.perm = true) :
     ExecBlock config
       { contract := contract,
         locals := (∅ : Store).insert "wad" (.int (Int.ofNat (joinWadWord I).toNat)) }
       (initState σ σ₀ g A I) joinTransition.body result :=
-  potJoinStelePrefixPie hwv hrho hpieFit (ExecBlock.consNormal (ExecStmt.assign
+  potJoinStelePrefixPie hwv hrho hpieFit (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [storageStore_executionEnv, initState] using hperm))
     (value := .int (Int.ofNat ((Stele.EVM.storageLoad (initState σ σ₀ g A I)
       I.codeOwner (pieSlot (.address I.source))) + joinWadWord I).toNat))
     (evalExpr_varUInt256 (by simp))
@@ -1453,7 +1454,8 @@ theorem potJoinSteleMulSeg {σ σ₀ A I} {g : Sat256} {result : ExecResult}
           .require (.binary .gt (.extCodeSize (.storage vatRef)) (.intLit 0)),
           .externalCall (.storage vatRef) "move" (.intLit 0) [sender, .env .this, .var "rad"]
             "_moveRet" ]
-        result) :
+        result)
+    (hperm : I.perm = true) :
     ExecBlock config
       { contract := contract,
         locals := (((∅ : Store).insert "wad" (.int (Int.ofNat (joinWadWord I).toNat))).insert
@@ -1495,7 +1497,7 @@ theorem potJoinSteleMulSeg {σ σ₀ A I} {g : Sat256} {result : ExecResult}
         I.codeOwner (pieSlot (.address I.source)) PIEV) I.codeOwner ⟨2⟩)
       (evalExpr_varUInt256 (by simp)) (joinReadPieScalar he1co (by simp))
       (by rw [hPieValNat]; omega))) ?_
-  refine ExecBlock.consNormal (ExecStmt.assign
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [storageStore_executionEnv, initState] using hperm))
     (value := .int (Int.ofNat ((Stele.EVM.storageLoad (Stele.EVM.storageStore
       (initState σ σ₀ g A I) I.codeOwner (pieSlot (.address I.source)) PIEV)
       I.codeOwner ⟨2⟩) + joinWadWord I).toNat))
@@ -1623,7 +1625,7 @@ theorem joinTailSuccess {evm2 evm' : EVM.State} {I : ExecutionEnv} {c wad : UInt
       EvalResult.ofOption, store_get_self, hco, hsrc]
   refine ExecBlock.consNormal (ExecStmt.requireTrue
     (evalExpr_joinExtCodeGuard_true hvat hextcode)) ?_
-  exact ExecBlock.consNormal (ExecStmt.externalCallSuccess (sendVal := 0) (out := o) hvat
+  exact ExecBlock.consNormal (ExecStmt.externalCallSuccess (hperm := Or.inl rfl) (sendVal := 0) (out := o) hvat
     (by simp only [evalExpr?]; rfl) hcallArgs hcall (by rfl)) ExecBlock.nil
 
 set_option maxHeartbeats 1000000 in
@@ -1662,7 +1664,7 @@ theorem joinTailFail {evm2 evm' : EVM.State} {I : ExecutionEnv} {c wad : UInt256
       EvalResult.ofOption, store_get_self, hco, hsrc]
   refine ExecBlock.consNormal (ExecStmt.requireTrue
     (evalExpr_joinExtCodeGuard_true hvat hextcode)) ?_
-  exact ExecBlock.consRevert (ExecStmt.externalCallFailure (sendVal := 0) (out := o) hvat
+  exact ExecBlock.consRevert (ExecStmt.externalCallFailure (hperm := Or.inl rfl) (sendVal := 0) (out := o) hvat
     (by simp only [evalExpr?]; rfl) hcallArgs hcall)
 
 set_option maxHeartbeats 1000000 in
@@ -1873,12 +1875,13 @@ theorem potJoinSteleRevertPie2 {σ σ₀ A I} {g : Sat256}
           (pieSlot (.address I.source))
           ((Stele.EVM.storageLoad (initState σ σ₀ g A I) I.codeOwner
             (pieSlot (.address I.source))) + joinWadWord I)) I.codeOwner ⟨2⟩).toNat
-        + (joinWadWord I).toNat) :
+        + (joinWadWord I).toNat)
+    (hperm : I.perm = true) :
     ExecTransitionBody config contract (initState σ σ₀ g A I)
       ((∅ : Store).insert "wad" (.int (Int.ofNat (joinWadWord I).toNat)))
       joinTransition.body .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
-  refine potJoinSteleDriverPie hwv hrho hpieFit ?_
+  refine potJoinSteleDriverPie (hperm := by assumption) hwv hrho hpieFit ?_
   have he1co : (Stele.EVM.storageStore (initState σ σ₀ g A I) I.codeOwner
       (pieSlot (.address I.source))
       ((Stele.EVM.storageLoad (initState σ σ₀ g A I) I.codeOwner
@@ -2004,7 +2007,7 @@ theorem potJoinBody {σ σ₀ A I} {g : UInt256}
             (joinPieSlot I) (joinPie0 σ I + joinWadWord I)) I ⟨2⟩).toNat + (joinWadWord I).toNat
         · exact (potJoinX_PieOverflowReverts hPieOvf rd800).reEquivExecutionRevert hcode hdispatch
             (potDecode_join_ok hsz36)
-            (potJoinSteleRevertPie2 hwv (hrho.trans hrhoB.symm) (by rw [hpieB]; exact not_le.mp hpieOvf)
+            (potJoinSteleRevertPie2 (hperm := by assumption) hwv (hrho.trans hrhoB.symm) (by rw [hpieB]; exact not_le.mp hpieOvf)
               (by rw [hPie1B]; exact hPieOvf))
         · obtain ⟨_, _, rd816⟩ := potJoinX_PieStore _hperm hPieOvf rd800
           by_cases hMulOvf : UInt256.size ≤ (joinChi (sstoreAccountMap I.codeOwner
@@ -2014,9 +2017,9 @@ theorem potJoinBody {σ σ₀ A I} {g : UInt256}
               * (joinWadWord I).toNat
           · exact (potJoinX_mulOverflowReverts hMulOvf rd816).reEquivExecutionRevert hcode hdispatch
               (potDecode_join_ok hsz36)
-              (ExecFuncBody.execBlockRevert (potJoinSteleDriverPie hwv (hrho.trans hrhoB.symm)
+              (ExecFuncBody.execBlockRevert (potJoinSteleDriverPie (hperm := by assumption) hwv (hrho.trans hrhoB.symm)
                 (by rw [hpieB]; exact not_le.mp hpieOvf)
-                (potJoinSteleMulSeg (by rw [hPie1B]; exact not_le.mp hPieOvf)
+                (potJoinSteleMulSeg (hperm := by assumption) (by rw [hPie1B]; exact not_le.mp hPieOvf)
                   (ExecBlock.consRevert (joinMulStmtRevert joinSteleEvm2_codeOwner
                     (joinChiReadB)
                     (by rw [store_get_ne _ _ (by decide), store_get_ne _ _ (by decide),
@@ -2035,9 +2038,9 @@ theorem potJoinBody {σ σ₀ A I} {g : UInt256}
             · -- extcodesize(vat) = 0 ⇒ both revert at the `extcodesize` guard
               refine (potJoinX_ecsZero hEcs rd927).reEquivExecutionRevert hcode hdispatch
                 (potDecode_join_ok hsz36)
-                (ExecFuncBody.execBlockRevert (potJoinSteleDriverPie hwv (hrho.trans hrhoB.symm)
+                (ExecFuncBody.execBlockRevert (potJoinSteleDriverPie (hperm := by assumption) hwv (hrho.trans hrhoB.symm)
                   (by rw [hpieB]; exact not_le.mp hpieOvf)
-                  (potJoinSteleMulSeg (by rw [hPie1B]; exact not_le.mp hPieOvf)
+                  (potJoinSteleMulSeg (hperm := by assumption) (by rw [hPie1B]; exact not_le.mp hPieOvf)
                     (joinTailEcs joinSteleEvm2_codeOwner rfl
                       (by rw [store_get_ne _ _ (by decide), store_get_ne _ _ (by decide),
                         store_get_self])
@@ -2049,9 +2052,9 @@ theorem potJoinBody {σ σ₀ A I} {g : UInt256}
               · -- call-depth limit ⇒ both revert (call never made)
                 refine (potJoinX_depthLimitReverts hdepth hEcs rd927).reEquivExecutionRevert hcode
                   hdispatch (potDecode_join_ok hsz36)
-                  (ExecFuncBody.execBlockRevert (potJoinSteleDriverPie hwv (hrho.trans hrhoB.symm)
+                  (ExecFuncBody.execBlockRevert (potJoinSteleDriverPie (hperm := by assumption) hwv (hrho.trans hrhoB.symm)
                     (by rw [hpieB]; exact not_le.mp hpieOvf)
-                    (potJoinSteleMulSeg (by rw [hPie1B]; exact not_le.mp hPieOvf)
+                    (potJoinSteleMulSeg (hperm := by assumption) (by rw [hPie1B]; exact not_le.mp hPieOvf)
                       (joinTailFail joinSteleEvm2_codeOwner joinSteleEvm2_source rfl
                         (by rw [store_get_ne _ _ (by decide), store_get_ne _ _ (by decide),
                           store_get_self])
@@ -2080,9 +2083,9 @@ theorem potJoinBody {σ σ₀ A I} {g : UInt256}
                   simp only [Bool.false_eq_true, if_false] at rd943
                   refine (potJoinX_failTailGen hosz rd943).reEquivExecutionRevert hcode hdispatch
                     (potDecode_join_ok hsz36)
-                    (ExecFuncBody.execBlockRevert (potJoinSteleDriverPie hwv (hrho.trans hrhoB.symm)
+                    (ExecFuncBody.execBlockRevert (potJoinSteleDriverPie (hperm := by assumption) hwv (hrho.trans hrhoB.symm)
                       (by rw [hpieB]; exact not_le.mp hpieOvf)
-                      (potJoinSteleMulSeg (by rw [hPie1B]; exact not_le.mp hPieOvf)
+                      (potJoinSteleMulSeg (hperm := by assumption) (by rw [hPie1B]; exact not_le.mp hPieOvf)
                         (joinTailFail joinSteleEvm2_codeOwner joinSteleEvm2_source rfl
                           (by rw [store_get_ne _ _ (by decide), store_get_ne _ _ (by decide),
                             store_get_self])
@@ -2095,9 +2098,9 @@ theorem potJoinBody {σ σ₀ A I} {g : UInt256}
                   simp only [if_true] at rd943
                   refine (potJoinX_successTailGen rd943).reEquivExecutionGen hcode
                     hdispatch (potDecode_join_ok hsz36)
-                    (ExecFuncBody.execBlockOK (potJoinSteleDriverPie hwv (hrho.trans hrhoB.symm)
+                    (ExecFuncBody.execBlockOK (potJoinSteleDriverPie (hperm := by assumption) hwv (hrho.trans hrhoB.symm)
                       (by rw [hpieB]; exact not_le.mp hpieOvf)
-                      (potJoinSteleMulSeg (by rw [hPie1B]; exact not_le.mp hPieOvf)
+                      (potJoinSteleMulSeg (hperm := by assumption) (by rw [hPie1B]; exact not_le.mp hPieOvf)
                         (joinTailSuccess joinSteleEvm2_codeOwner joinSteleEvm2_source rfl
                           (by rw [store_get_ne _ _ (by decide), store_get_ne _ _ (by decide),
                             store_get_self])

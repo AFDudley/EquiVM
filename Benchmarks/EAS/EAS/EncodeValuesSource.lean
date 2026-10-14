@@ -65,8 +65,8 @@ theorem encodeValuesIteration_exec {cfg : Config} {base locals imms : Store} {ev
       simp only [valuesEncoding, List.take_succ_eq_append_getElem hi, ← List.cons_append, wordBytes_append,
         wordBytes, ByteArray.append_empty, ByteArray.append_assoc]
     simpa only [hs, byteArray_toList_eq, ByteArray.data_append, Array.toList_append, toByteArray_eq_toBytesBE] using hp
-  apply ExecBlock.consNormal (ExecStmt.assign he (assignLocalBase_ok h.encoded))
-  refine ExecBlock.consNormal (ExecStmt.assign (value := .int (Int.ofNat (i+1))) ?_
+  apply ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) he (assignLocalBase_ok h.encoded))
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (value := .int (Int.ofNat (i+1))) ?_
     (assignLocalBase_ok (frame := {contract := contract, locals := locals.insert "valuesBody" (.bytes (valuesEncoding words (i+1))), immutables := imms})
       (by simpa (disch := decide) only [store_get_ne] using h.index))) ExecBlock.nil
   simp (disch := decide) only [evalExpr?, store_get_ne, h.index,

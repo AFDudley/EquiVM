@@ -78,7 +78,7 @@ theorem vaultBurnRoutine {I : ExecutionEnv} {g : Sat256} {s0 evm : State}
   have hs1 : SourceState s0 I σ1 evm1 := hs.storageWrite _ _
   have hdebit : ExecStmt config {contract := contract, locals := locals} evm
       vaultBurnFunction.body[0]! (.ok {contract := contract, locals := locals} evm1) := by
-    apply ExecStmt.assign (evalExpr_checkedSub256_ok hread (hvEval evm) rfl hsub)
+    apply ExecStmt.assign (hperm := Or.inr (by simpa only [hs.env] using hperm)) (evalExpr_checkedSub256_ok hread (hvEval evm) rfl hsub)
     simpa only [hs.env] using vaultBalanceAssign evm locals "_from" _ (UInt256.sub old value) hbase ht
   let supply := codeOwnerStorageWord I σ1 (UInt256.ofNat 14)
   have hreadSupply : evalExpr? config {contract := contract, locals := locals} evm1
@@ -115,11 +115,11 @@ theorem vaultBurnRoutine {I : ExecutionEnv} {g : Sat256} {s0 evm : State}
   apply ExecBlock.consNormal hdebit
   have hwrite : ExecStmt config {contract := contract, locals := locals} evm1
       vaultBurnFunction.body[1]! (.ok {contract := contract, locals := locals} evm2) := by
-    apply ExecStmt.assign (evalExpr_checkedSub256_ok hreadSupply (hvEval evm1) rfl hsubSupply)
+    apply ExecStmt.assign (hperm := Or.inr (by simpa only [hs1.env] using hperm)) (evalExpr_checkedSub256_ok hreadSupply (hvEval evm1) rfl hsubSupply)
     simpa only [hs1.env] using vaultAssignScalarUint256 evm1 locals "totalSupply" (UInt256.ofNat 14)
       (UInt256.sub supply value) hsupply rfl rfl (by decide +kernel)
   apply ExecBlock.consNormal hwrite
-  refine ExecBlock.consNormal (ExecStmt.emit (vals := [.address (AccountAddress.ofNat sender.toNat),
+  refine ExecBlock.consNormal (ExecStmt.emit (hperm := by simpa only [hs2.env] using hperm) (vals := [.address (AccountAddress.ofNat sender.toNat),
     .address 0, .int (Int.ofNat value.toNat)]) ?_) ExecBlock.nil
   change evalExprs? config {contract := contract, locals := locals} evm2
     [.var "_from", .cast (.intLit 0) (.elem .address), .var "_value"] = _

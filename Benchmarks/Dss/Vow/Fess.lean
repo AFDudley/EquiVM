@@ -965,7 +965,7 @@ theorem vowFessBodyCore
             (assign_sinCapitalStorage evm1 (locals := locals2) SinNew
               (by simp [locals2, fessLocalsSinNewSinCapitalNew, fessLocalsSinNew,
                 fessLocals]))
-        have hbody :
+        have hbody (hperm : I.perm = true) :
             ExecTransitionBody config contract evm0 locals fessTransition.body
               (.returned { contract := contract, locals := locals2 } evm2 none) := by
           have hguard := vowAuthGuardEval_true
@@ -990,10 +990,10 @@ theorem vowFessBodyCore
             refine ExecBlock.consNormal (ExecStmt.requireTrue hguard) ?_
             refine ExecBlock.consNormal (ExecStmt.letDecl hfirstAdd) ?_
             refine ExecBlock.consNormal (ExecStmt.requireTrue hfirstRequire) ?_
-            refine ExecBlock.consNormal (ExecStmt.assign hsinNewVar hassignSin) ?_
+            refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hsinNewVar hassignSin) ?_
             refine ExecBlock.consNormal (ExecStmt.letDecl hsecondAdd) ?_
             refine ExecBlock.consNormal (ExecStmt.requireTrue hsecondRequire) ?_
-            exact ExecBlock.consNormal (ExecStmt.assign hSinNewVar hassignSinCapital)
+            exact ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [evm1, storageStore_executionEnv] using hperm)) hSinNewVar hassignSinCapital)
               ExecBlock.nil
           simpa [ExecTransitionBody, fessTransition, nonpayable, auth, checkedAddUintInto,
             evm0, locals] using ExecFuncBody.execBlockOK hblock
@@ -1008,7 +1008,7 @@ theorem vowFessBodyCore
                 I ⟨5⟩).toNat + (fessTab I).toNat < UInt256.size := by
           simpa [σ1_evm, sinNew, solcSlotWordAt, tab, slot, eraSlot, hslot] using hfitSinEvm
         rcases RD.vowFessSuccessSplit hreach hsz36 hsize hauthSolc
-            hfitEraRD hfitSinRD with ⟨_, hret⟩ | ⟨hpf, hstatic⟩
+            hfitEraRD hfitSinRD with ⟨hperm, hret⟩ | ⟨hpf, hstatic⟩
         swap
         · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode (hbodyStatic hpf)
         have haccounts :
@@ -1023,7 +1023,7 @@ theorem vowFessBodyCore
               (initState σ σ₀ (Sat256.ofUInt256 g) A I)
               (sstoreAccountMap I.codeOwner σ1_evm ⟨5⟩ SinNew) ByteArray.empty := by
           simpa [σ1_evm, sinNew, SinNew, tab, eraSlot, slot, hslot, solcSlotWordAt] using hret
-        exact hret'.reEquivExecutionGen hcode hdispatch hdecode hbody
+        exact hret'.reEquivExecutionGen hcode hdispatch hdecode (hbody hperm)
           haccounts henc
       · have hoverSinEvm :
             UInt256.size ≤ (solcSlotWordAt ⟨5⟩ σ1_evm I).toNat + tab.toNat := by
@@ -1059,7 +1059,7 @@ theorem vowFessBodyCore
           exact evalExpr_add256_tab_revert (x := .storage SinRef)
             (old := solcSlotWordAt ⟨5⟩ σ1_evm I) (tab := tab)
             hsinCapitalRead htab1 hoverSinEvm
-        have hbody : ExecTransitionBody config contract evm0 locals fessTransition.body .reverted := by
+        have hbody (hperm : I.perm = true) : ExecTransitionBody config contract evm0 locals fessTransition.body .reverted := by
           have hguard := vowAuthGuardEval_true
             (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
             (g := Sat256.ofUInt256 g) (locals := locals)
@@ -1082,7 +1082,7 @@ theorem vowFessBodyCore
             refine ExecBlock.consNormal (ExecStmt.requireTrue hguard) ?_
             refine ExecBlock.consNormal (ExecStmt.letDecl hfirstAdd) ?_
             refine ExecBlock.consNormal (ExecStmt.requireTrue hfirstRequire) ?_
-            refine ExecBlock.consNormal (ExecStmt.assign hsinNewVar hassignSin) ?_
+            refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hsinNewVar hassignSin) ?_
             exact ExecBlock.consRevert (ExecStmt.letDeclRevert hsecondAddRev)
           simpa [ExecTransitionBody, fessTransition, nonpayable, auth, checkedAddUintInto,
             evm0, locals] using ExecFuncBody.execBlockRevert hblock
@@ -1099,10 +1099,10 @@ theorem vowFessBodyCore
           simpa [σ1_evm, sinNew, solcSlotWordAt, tab, slot, eraSlot, hslot] using hoverSinEvm
         rcases RD.vowFessSecondAddOverflowSplit hreach hsz36 hsize hauthSolc
           hfitEraRD hoverSinRD with
-          ⟨_, hrev⟩ | ⟨hpf, hstatic⟩
+          ⟨hperm, hrev⟩ | ⟨hpf, hstatic⟩
         swap
         · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode (hbodyStatic hpf)
-        exact hrev.reEquivExecutionRevert hcode hdispatch hdecode hbody
+        exact hrev.reEquivExecutionRevert hcode hdispatch hdecode (hbody hperm)
     · have hoverEraEvm :
           UInt256.size ≤ (solcSlotWordAt slot σ I).toNat + tab.toNat := by
         omega

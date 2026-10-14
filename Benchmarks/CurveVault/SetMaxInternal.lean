@@ -49,7 +49,7 @@ theorem vaultSetMaxRoutine {I : ExecutionEnv} {g : Sat256} {s0 evm : State}
   have hs2 : SourceState s0 I σ2 evm2 := hs1.storageWrite _ _
   have hwrite : ExecStmt config {contract := contract, locals := locals1} evm1 vaultSetMaxFunction.body[2]!
       (.ok {contract := contract, locals := locals1} evm2) := by
-    apply ExecStmt.assign (evalExpr_varUInt256 hv1)
+    apply ExecStmt.assign (hperm := Or.inr ((congrArg ExecutionEnv.perm hs1.env).trans hperm)) (evalExpr_varUInt256 hv1)
     simpa only [hs1.env] using vaultAssignScalarUint256 evm1 locals1 "maxSupply" ⟨5⟩ value hmax1 rfl rfl (by decide +kernel)
   have hret := vaultBlocks.vault_block_966 (by omega) hperm rd966
   refine Or.inl ⟨evm2, σ2, locals1, ?_, hs2, hret⟩
@@ -57,6 +57,6 @@ theorem vaultSetMaxRoutine {I : ExecutionEnv} {g : Sat256} {s0 evm : State}
   apply ExecBlock.consNormal hcall
   apply ExecBlock.consNormal (ExecStmt.requireTrue hguard)
   apply ExecBlock.consNormal hwrite
-  exact ExecBlock.consNormal (ExecStmt.emit (evalExprs?_singleton (evalExpr_varUInt256 hv1))) ExecBlock.nil
+  exact ExecBlock.consNormal (ExecStmt.emit (hperm := (congrArg ExecutionEnv.perm hs2.env).trans hperm) (evalExprs?_singleton (evalExpr_varUInt256 hv1))) ExecBlock.nil
 
 end Benchmarks.CurveVault

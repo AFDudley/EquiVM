@@ -21,16 +21,18 @@ theorem evalBurnUnlocked (v : UniswapV3PoolImmutables) (a : BurnArgs) (evm : EVM
 theorem burnAssignLock (v : UniswapV3PoolImmutables) (a : BurnArgs) (evm : EVM.State) :
     ExecStmt config (burnInitFrame v a) evm
       (.assign .storage ⟨"slot0", [.field "unlocked"]⟩ (.boolLit false))
-      (.ok (burnInitFrame v a) (storeSlot0Unlocked evm false)) := by
+      (if evm.executionEnv.perm then .ok (burnInitFrame v a)
+        (storeSlot0Unlocked evm false) else .staticViolation) := by
   exact poolAmountsAssignLock (burnLocals a) (immStore v) evm
     (by change (burnInitFrame v a).locals.get? "slot0" = none; burn_prefix_get)
 
 theorem burnLockPrefix (v : UniswapV3PoolImmutables) (a : BurnArgs) (evm : EVM.State)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : slot0FieldWord 30 1 evm.accountMap evm.executionEnv ≠ ⟨0⟩) :
+    (hunlocked : slot0FieldWord 30 1 evm.accountMap evm.executionEnv ≠ ⟨0⟩)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config (burnFrame v a) evm (burnTransition.body.take 5)
       (.ok (burnInitFrame v a) (storeSlot0Unlocked evm false)) := by
-  exact poolLockPrefixSource (burnLocals a) (immStore v) evm
+  exact poolLockPrefixSource (hperm := by assumption) (burnLocals a) (immStore v) evm
     (by change (burnInitFrame v a).locals.get? "slot0" = none; burn_prefix_get) hwv hunlocked
 
 theorem burnRevertsLocked (v : UniswapV3PoolImmutables) (a : BurnArgs) (evm : EVM.State)

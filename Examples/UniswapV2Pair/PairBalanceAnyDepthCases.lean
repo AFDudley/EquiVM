@@ -57,7 +57,7 @@ theorem uniswapPairBalanceCallRuntimeAnyDepthCases
         apply callViaEVM.callNotMade rfl rfl
         rintro ⟨_, hne⟩
         exact hne (by rw [he]; exact hd)
-      exact Or.inl ⟨checkedExternalCallFailure (retVar := retVar) hguard' hreceiver hargs hcall,
+      exact Or.inl ⟨checkedExternalCallFailure (hperm := Or.inl rfl) (retVar := retVar) hguard' hreceiver hargs hcall,
         RD.uniswapPairBalanceDepthReverts rd hcode hd hov⟩
 
 end UniswapV2Pair

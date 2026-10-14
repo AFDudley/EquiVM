@@ -373,8 +373,8 @@ theorem vowFlogSourceSuccessSplit
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let evm1 := Stele.EVM.storageStore evm0 I.codeOwner ⟨5⟩ SinNew
   let evm2 := Stele.EVM.storageStore evm1 evm1.executionEnv.codeOwner (flogEraSlot I) ⟨0⟩
-  ExecTransitionBody config contract evm0 locals flogTransition.body
-      (.returned { contract := contract, locals := locals2 } evm2 none) ∧
+  (I.perm = true → ExecTransitionBody config contract evm0 locals flogTransition.body
+      (.returned { contract := contract, locals := locals2 } evm2 none)) ∧
     (I.perm = false →
       ExecTransitionBody config contract evm0 locals flogTransition.body .staticViolation) := by
   intro era wait doneAt SinVal sinVal SinNew locals locals2 evm0 evm1 evm2
@@ -472,10 +472,11 @@ theorem vowFlogSourceSuccessSplit
     refine ExecBlock.consNormal (ExecStmt.requireTrue hreadyEval) ?_
     exact ExecBlock.consNormal hcallSub hrest
   refine ⟨?_, fun hpf => ?_⟩
-  · simpa [ExecTransitionBody, flogTransition, nonpayable, evm0, locals] using
+  · intro hperm
+    simpa [ExecTransitionBody, flogTransition, nonpayable, evm0, locals] using
       ExecFuncBody.execBlockOK (hpre _
-        (ExecBlock.consNormal (ExecStmt.assign hSinNewVar hassignSinCapital)
-          (ExecBlock.consNormal (ExecStmt.assign hzero hassignSin) ExecBlock.nil)))
+        (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hSinNewVar hassignSinCapital)
+          (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [evm1, storageStore_executionEnv, evm0, initState] using hperm)) hzero hassignSin) ExecBlock.nil)))
   · simpa [ExecTransitionBody, flogTransition, nonpayable, evm0, locals] using
       ExecFuncBody.execBlockStatic (hpre _
         (ExecBlock.consStatic (ExecStmt.assignStatic hSinNewVar hassignSinCapital
@@ -1188,13 +1189,13 @@ theorem vowFlogBodyCore
         let evm2 := Stele.EVM.storageStore evm1 evm1.executionEnv.codeOwner (flogEraSlot I) ⟨0⟩
         have hboth := vowFlogSourceSuccessSplit (σ := σ)
           (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hfitWait hready hsub
-        have hbody :
+        have hbody (hperm : I.perm = true) :
             ExecTransitionBody config contract evm0 locals flogTransition.body
               (.returned { contract := contract, locals := locals2 } evm2 none) := by
           simpa [era, wait, doneAt, SinVal, sinVal, SinNew, locals, locals2, evm0, evm1,
-            evm2] using hboth.1
+            evm2] using (hboth.1 hperm)
         rcases RD.vowFlogSuccessSplit hreach hsz36 hsize hfitWait hready hsub with
-          ⟨_, hret⟩ | ⟨hpf, hstatic⟩
+          ⟨hperm, hret⟩ | ⟨hpf, hstatic⟩
         swap
         · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode (hboth.2 hpf)
         have haccounts1 : σ1_evm = evm1.accountMap := by
@@ -1210,7 +1211,7 @@ theorem vowFlogBodyCore
               (initState σ σ₀ (Sat256.ofUInt256 g) A I)
               σ2_evm ByteArray.empty := by
           simpa [σ2_evm, σ1_evm, SinNew, SinVal, sinVal] using hret
-        exact hret'.reEquivExecutionGen hcode hdispatch hdecode hbody
+        exact hret'.reEquivExecutionGen hcode hdispatch hdecode (hbody hperm)
           haccounts henc
       · have hlt : (solcSlotWordAt ⟨5⟩ σ I).toNat <
             (solcSlotWordAt (flogEraSlot I) σ I).toNat := by

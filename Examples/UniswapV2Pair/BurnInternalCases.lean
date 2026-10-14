@@ -160,7 +160,7 @@ theorem uniswapInternalBurnCallRuntimeCasesWithMemory
       refine Or.inr ⟨uniswapInternalMintLogMem value
           (uniswapInternalMintBalanceHashMem holderWord
             (uniswapInternalMintBalanceHashMem holderWord mem)), kRet, CRet,
-        uniswapBurnFunctionCallSuccess hcontract hargs hbalance hsupply,
+        uniswapBurnFunctionCallSuccess (hperm := by simpa only [henv] using hperm) hcontract hargs hbalance hsupply,
         burnRuntimePostMap_eq_postState hAccounts henv hholder hbalance hsupply,
         ?_, ?_, ?_, ?_⟩
       · simpa only [burnRuntimePostMap, hsupplyEq] using rdRet
@@ -168,7 +168,7 @@ theorem uniswapInternalBurnCallRuntimeCasesWithMemory
           (by omega)).trans hmem
       · exact uniswapInternalMintSuccessMem_read64_of_ge160 holderWord value (by omega) hread64
       · exact uniswapInternalMintSuccessMem_read96 holderWord value (by omega)
-    · exact Or.inl ⟨uniswapBurnFunctionCallRevert_totalSupplyUnderflow hcontract hargs
+    · exact Or.inl ⟨uniswapBurnFunctionCallRevert_totalSupplyUnderflow (hperm := by simpa only [henv] using hperm) hcontract hargs
         hbalance (by omega),
         RD.uniswapSafeMathSubUnderflow_aw6_size164_shared rdSub1 (by omega)
           (hhash2Size.trans hmem) hhash2Read (by simp only [List.length_cons]; omega)⟩

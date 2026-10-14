@@ -4,7 +4,7 @@ import Benchmarks.Safe.Main.Decoders
 import Benchmarks.Safe.Main.Blocks.Runtime_036
 
 open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
-open safeRuntimeBlocks
+open Benchmarks.Safe.Main.RuntimeBlocks
 
 namespace Benchmarks.Safe.Main
 
@@ -49,13 +49,14 @@ theorem safeAssignFallbackHandler (evm : EVM.State) (handler : UInt256)
 
 theorem safeInternalSetFallbackHandlerSource (evm : EVM.State) (handler : UInt256)
     (hcanon : handler.toNat < EVM.addressModulus)
-    (hne : AccountAddress.ofNat handler.toNat ≠ evm.executionEnv.codeOwner) :
+    (hne : AccountAddress.ofNat handler.toNat ≠ evm.executionEnv.codeOwner)
+    (hperm : evm.executionEnv.perm = true) :
     ExecFuncBody config (fallbackHandlerFrame handler) evm internalSetFallbackHandlerFunction.body
       (.returned (fallbackHandlerFrame handler)
         (Stele.EVM.storageStore evm evm.executionEnv.codeOwner fallbackHandlerSlot handler) none)
           := by
   exact .execBlockOK (.consNormal (.requireTrue (by simpa [hne] using safeHandlerGuard evm handler))
-    (.consNormal (.assign (safeEvalHandler evm handler)
+    (.consNormal (.assign (hperm := Or.inr hperm) (safeEvalHandler evm handler)
       (safeAssignFallbackHandler evm handler hcanon)) .nil))
 
 theorem safeInternalSetFallbackHandlerStatic (evm : EVM.State) (handler : UInt256)

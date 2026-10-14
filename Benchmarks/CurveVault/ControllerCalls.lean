@@ -32,7 +32,7 @@ theorem vaultControllerCallSuccess {evm evm' : EVM.State} {locals : Store} {valu
       (vaultControllerCall controllerLocal resultLocal callName)
       (.ok {contract := contract, locals := vaultControllerCallLocals locals evm controllerLocal resultLocal value} evm') := by
   apply ExecBlock.consNormal (ExecStmt.letDecl (vaultControllerRead evm locals hbase))
-  apply ExecBlock.consNormal (ExecStmt.externalCallSuccess (target := AccountAddress.ofUInt256 (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩))
+  apply ExecBlock.consNormal (ExecStmt.externalCallSuccess (hperm := Or.inl rfl) (target := AccountAddress.ofUInt256 (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩))
     (sendVal := 0) (argVals := []) (value := [value])
     (by simp [evalExpr?, EvalResult.ofOption])
     (by simp [evalExpr?, pure]) (by simp [evalExprs?, pure])
@@ -48,7 +48,7 @@ theorem vaultControllerCallFailure {evm evm' : EVM.State} {locals : Store}
     ExecBlock config {contract := contract, locals := locals} evm
       (vaultControllerCall controllerLocal resultLocal callName) .reverted := by
   apply ExecBlock.consNormal (ExecStmt.letDecl (vaultControllerRead evm locals hbase))
-  exact ExecBlock.consRevert (ExecStmt.externalCallFailure (target := AccountAddress.ofUInt256 (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩))
+  exact ExecBlock.consRevert (ExecStmt.externalCallFailure (hperm := Or.inl rfl) (target := AccountAddress.ofUInt256 (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩))
     (sendVal := 0) (argVals := [])
     (by simp [evalExpr?, EvalResult.ofOption])
     (by simp [evalExpr?, pure]) (by simp [evalExprs?, pure])
@@ -64,7 +64,7 @@ theorem vaultControllerCallDecodeFailure {evm evm' : EVM.State} {locals : Store}
     ExecBlock config {contract := contract, locals := locals} evm
       (vaultControllerCall controllerLocal resultLocal callName) .reverted := by
   apply ExecBlock.consNormal (ExecStmt.letDecl (vaultControllerRead evm locals hbase))
-  exact ExecBlock.consRevert (ExecStmt.externalCallReturnDecodeRevert (target := AccountAddress.ofUInt256 (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩))
+  exact ExecBlock.consRevert (ExecStmt.externalCallReturnDecodeRevert (hperm := Or.inl rfl) (target := AccountAddress.ofUInt256 (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩))
     (sendVal := 0) (argVals := [])
     (by simp [evalExpr?, EvalResult.ofOption])
     (by simp [evalExpr?, pure]) (by simp [evalExprs?, pure])

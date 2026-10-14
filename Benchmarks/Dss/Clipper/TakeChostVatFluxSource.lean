@@ -104,12 +104,12 @@ theorem clipperTakePostOweSubBlockOfEvals (v : ClipperImmutables)
       ExecStmt config lotNewFrame evmRead
         (.assign .localVar (varRef "tab") (.var "tabNew"))
         (.ok tabFrame evmRead) := by
-    exact ExecStmt.assign htabNewVar (by simpa [lotNewFrame, tabFrame] using hassignTabOk)
+    exact ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) htabNewVar (by simpa [lotNewFrame, tabFrame] using hassignTabOk)
   have hassignLot :
       ExecStmt config tabFrame evmRead
         (.assign .localVar (varRef "lot") (.var "lotNew"))
         (.ok lotFrame evmRead) := by
-    exact ExecStmt.assign hlotNewVar (by simpa [tabFrame, lotFrame] using hassignLotOk)
+    exact ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hlotNewVar (by simpa [tabFrame, lotFrame] using hassignLotOk)
   simpa [wrappingSubInto, startFrame, lotFrame] using
     (ExecBlock.consNormal hletTabNew
       (ExecBlock.consNormal hletLotNew
@@ -166,7 +166,7 @@ theorem clipperTakeVatFluxBuyerCallFailureBlockOfLocals (v : ClipperImmutables)
   simpa [checkedExternalCallStmts] using
     (ExecBlock.consNormal (ExecStmt.requireTrue hguard)
       (ExecBlock.consRevert
-        (ExecStmt.externalCallFailure
+        (ExecStmt.externalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
           (clipperEvalVat v evmRead (clipperTakeLocalsPostLotAssigned locals tabNew lotNew))
           (by simp [evalExpr?, pure]) hargs hcallVat)))
 
@@ -201,7 +201,7 @@ theorem clipperTakeVatFluxBuyerCallSuccessBlockOfLocals (v : ClipperImmutables)
   simpa [checkedExternalCallStmts, clipperTakeLocalsPostFluxBuyerRet, collapseReturns] using
     (ExecBlock.consNormal (ExecStmt.requireTrue hguard)
       (ExecBlock.consNormal
-        (ExecStmt.externalCallSuccess
+        (ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
           (clipperEvalVat v evmRead (clipperTakeLocalsPostLotAssigned locals tabNew lotNew))
           (by simp [evalExpr?, pure]) hargs hcallVat
           (clipperTakeDecodeFluxVoid outVat))

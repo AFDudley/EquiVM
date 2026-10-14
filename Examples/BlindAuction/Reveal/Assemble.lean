@@ -960,7 +960,9 @@ theorem scratch_revealLoopBody_revert_placeBid_pendingOverflow_of_get (evm : EVM
         .assign .storage (aliasF "bidToCheck" "blindedBid") (.cast (.intLit 0) bytes32St) ]
       .reverted
     refine ExecBlock.consNormal (ExecStmt.iteFalse hguard ExecBlock.nil) ?_
-    refine ExecBlock.consNormal (ExecStmt.assign hadd hassignRefund) ?_
+    refine ExecBlock.consNormal (ExecStmt.assign
+      (hperm := Or.inl rfl)
+      hadd hassignRefund) ?_
     exact ExecBlock.consRevert hplaceIte
   exact
     scratch_revealLoopBody_prefix_exec_of_get evm locals values fakes secrets len refund i value

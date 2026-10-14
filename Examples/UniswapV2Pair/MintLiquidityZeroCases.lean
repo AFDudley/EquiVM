@@ -62,7 +62,8 @@ theorem uniswapMintAfterMintFeeProportionalLiquidityZeroReverts_of_call
             (uniswapReserve0Word (uniswapLockEnteredState evm)))
           (mintProportionalLiquidityWord amount1 (mintFunctionTotalSupplyWord evmAfter)
             (uniswapReserve1Word (uniswapLockEnteredState evm))) =
-        ⟨0⟩) :
+        ⟨0⟩)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config { contract := contract, locals := mintStore I } evm
       mintTransition.body .reverted := by
   let totalSupply := mintFunctionTotalSupplyWord evmAfter
@@ -71,7 +72,7 @@ theorem uniswapMintAfterMintFeeProportionalLiquidityZeroReverts_of_call
   let afterTotalSupplyLocals :=
     nextLocals.insert "_totalSupply" (uniswapUint256Value totalSupply)
   have hprefix :=
-    uniswapMintAfterMintFeeTotalSupplyPrefix_of_call evm evm0 evm1 evmAfter I nextLocals
+    uniswapMintAfterMintFeeTotalSupplyPrefix_of_call (hperm := by assumption) evm evm0 evm1 evmAfter I nextLocals
       hwv hunlocked hguard0 hguard1 hcall0 hdec0 hcall1 hdec1 henough0 henough1 hfee
       htotalBase
   have htotal' :
@@ -250,7 +251,8 @@ theorem uniswapMintProportionalLiquidityZeroAfterMintFeeCase
           (mintProportionalLiquidityWord amount1 totalSupply reserve1) =
         ⟨0⟩)
     (hmem : mem.size = 164)
-    (hmem64 : mem.readWithPadding 64 32 = UInt256.toByteArray ⟨128⟩) :
+    (hmem64 : mem.readWithPadding 64 32 = UInt256.toByteArray ⟨128⟩)
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   let evmS := initState σ σ₀ (Sat256.ofUInt256 g) A I
   have hreserve0EqS : uniswapReserve0Word (uniswapLockEnteredState evmS) = reserve0 := by
@@ -260,7 +262,7 @@ theorem uniswapMintProportionalLiquidityZeroAfterMintFeeCase
   have hbody :
       ExecTransitionBody config contract evmS (mintStore I) mintTransition.body .reverted := by
     exact ExecFuncBody.execBlockRevert
-      (uniswapMintAfterMintFeeProportionalLiquidityZeroReverts_of_call
+      (uniswapMintAfterMintFeeProportionalLiquidityZeroReverts_of_call (hperm := by assumption)
         evmS evm0S evm1S evmFeeS I nextLocals
         (by simp only [evmS, initState]; exact hwv) hunlockedStele hguard0 hguard1
         hcall0 hdec0 hcall1 hdec1 hle0Source hle1Source
@@ -424,7 +426,8 @@ theorem uniswapMintProportionalFeeOffKLastZeroLiquidityZeroFromFactoryCase
       reserve0 ≠ ⟨0⟩ ∧ reserve1 ≠ ⟨0⟩ ∧
       minFunctionResultWord ((amount0.mul totalSupply).div reserve0)
           ((amount1.mul totalSupply).div reserve1) =
-        ⟨0⟩) :
+        ⟨0⟩)
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   rcases hzero with
     ⟨hfeeToZero, hkLastZero, htotalNonzero, hmulFit0, hmulFit1, hreserve0Nonzero,
@@ -500,7 +503,7 @@ theorem uniswapMintProportionalFeeOffKLastZeroLiquidityZeroFromFactoryCase
     simpa [evmL, evmS] using hamount0Eq
   have hamount1Eq' : mintAmount1Word evmL balance1 = amount1 := by
     simpa [evmL, evmS] using hamount1Eq
-  exact uniswapMintProportionalLiquidityZeroAfterMintFeeCase nextFrame.locals hcode
+  exact uniswapMintProportionalLiquidityZeroAfterMintFeeCase (hperm := by assumption) nextFrame.locals hcode
     hdispatch hsz36 hwv hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1 hdec1
     hle0Source hle1Source
     (by
@@ -650,7 +653,8 @@ theorem uniswapMintProportionalFeeOffKLastZeroLiquidityZeroCase
           (mintProportionalLiquidityWord amount1 totalSupply reserve1) =
         ⟨0⟩)
     (hmem : mem.size = 164)
-    (hmem64 : mem.readWithPadding 64 32 = UInt256.toByteArray ⟨128⟩) :
+    (hmem64 : mem.readWithPadding 64 32 = UInt256.toByteArray ⟨128⟩)
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   let evmS := initState σ σ₀ (Sat256.ofUInt256 g) A I
   let evmL := uniswapLockEnteredState evmS
@@ -673,7 +677,7 @@ theorem uniswapMintProportionalFeeOffKLastZeroLiquidityZeroCase
   have hbody :
       ExecTransitionBody config contract evmS (mintStore I) mintTransition.body .reverted := by
     exact ExecFuncBody.execBlockRevert
-      (uniswapMintAfterMintFeeProportionalLiquidityZeroReverts_of_call
+      (uniswapMintAfterMintFeeProportionalLiquidityZeroReverts_of_call (hperm := by assumption)
         evmS evm0S evm1S evmFeeS I nextFrame.locals
         (by simp only [evmS, initState]; exact hwv) hunlockedStele hguard0 hguard1
         hcall0 hdec0 hcall1 hdec1 hle0Source hle1Source
@@ -840,7 +844,8 @@ theorem uniswapMintProportionalFeeOnKLastZeroLiquidityZeroCase
           (mintProportionalLiquidityWord amount1 totalSupply reserve1) =
         ⟨0⟩)
     (hmem : mem.size = 164)
-    (hmem64 : mem.readWithPadding 64 32 = UInt256.toByteArray ⟨128⟩) :
+    (hmem64 : mem.readWithPadding 64 32 = UInt256.toByteArray ⟨128⟩)
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   let evmS := initState σ σ₀ (Sat256.ofUInt256 g) A I
   let evmL := uniswapLockEnteredState evmS
@@ -856,7 +861,7 @@ theorem uniswapMintProportionalFeeOnKLastZeroLiquidityZeroCase
     simpa [evmL, evmS] using hreserve0Eq
   have hreserve1Eq' : uniswapReserve1Word evmL = reserve1 := by
     simpa [evmL, evmS] using hreserve1Eq
-  exact uniswapMintProportionalLiquidityZeroAfterMintFeeCase nextFrame.locals hcode hdispatch
+  exact uniswapMintProportionalLiquidityZeroAfterMintFeeCase (hperm := by assumption) nextFrame.locals hcode hdispatch
     hsz36 hwv hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1 hdec1 hle0Source hle1Source
     (by
       simpa [nextFrame, evmL, resumeAfterInternalCall] using
@@ -1006,7 +1011,8 @@ theorem uniswapMintProportionalFeeOffKLastNonzeroLiquidityZeroCase
           (mintProportionalLiquidityWord amount1 totalSupply reserve1) =
         ⟨0⟩)
     (hmem : mem.size = 164)
-    (hmem64 : mem.readWithPadding 64 32 = UInt256.toByteArray ⟨128⟩) :
+    (hmem64 : mem.readWithPadding 64 32 = UInt256.toByteArray ⟨128⟩)
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   let evmS := initState σ σ₀ (Sat256.ofUInt256 g) A I
   let evmL := uniswapLockEnteredState evmS
@@ -1022,11 +1028,11 @@ theorem uniswapMintProportionalFeeOffKLastNonzeroLiquidityZeroCase
     simpa [evmL, evmS] using hreserve0Eq
   have hreserve1Eq' : uniswapReserve1Word evmL = reserve1 := by
     simpa [evmL, evmS] using hreserve1Eq
-  exact uniswapMintProportionalLiquidityZeroAfterMintFeeCase nextFrame.locals hcode hdispatch
+  exact uniswapMintProportionalLiquidityZeroAfterMintFeeCase (hperm := by assumption) nextFrame.locals hcode hdispatch
     hsz36 hwv hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1 hdec1 hle0Source hle1Source
     (by
       simpa [nextFrame, evmL, resumeAfterInternalCall] using
-        uniswapMintFeeCallFromMint_feeOff_kLastNonzero evmL evm1S evmFeeS I balance0
+        uniswapMintFeeCallFromMint_feeOff_kLastNonzero (hperm := by simpa [typedCallViaEVM_executionEnv_eq hcall1, typedCallViaEVM_executionEnv_eq hcall0, uniswapLockEnteredState, uniswapUnlockedState, initState] using hperm) evmL evm1S evmFeeS I balance0
           balance1 feeTo (by simpa [evmL] using hfeeGuard) hfeeCall hfeeDec hfeeToAddr
           hkLastSource)
     rd3701

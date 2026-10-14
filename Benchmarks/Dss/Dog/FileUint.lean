@@ -169,7 +169,7 @@ theorem fileUintHoleSourceBodySplit {v : DogImmutables} {σ σ₀ A I} {g : UInt
     let locals := fileUintLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let evm1 := Stele.EVM.storageStore evm0 I.codeOwner ⟨4⟩ (fileUintData I)
-    (ExecTransitionBody config contract evm0 locals fileUintTransition.body
+    (I.perm = true → ExecTransitionBody config contract evm0 locals fileUintTransition.body
       (.returned { contract := contract, locals := locals, immutables := immStore v } evm1 none) (immStore v)) ∧
       (I.perm = false → ExecTransitionBody config contract
         evm0 locals fileUintTransition.body .staticViolation (immStore v)) := by
@@ -207,8 +207,9 @@ theorem fileUintHoleSourceBodySplit {v : DogImmutables} {σ σ₀ A I} {g : UInt
     refine ExecBlock.consNormal (ExecStmt.requireTrue hguard) ?_
     exact execBlock_singleton (ExecStmt.iteTrue hcond hwrite)
   constructor
-  · exact ExecFuncBody.execBlockOK
-      (hprefix (ExecBlock.consNormal (ExecStmt.assign hdata hassign) ExecBlock.nil))
+  · intro hperm
+    exact ExecFuncBody.execBlockOK
+      (hprefix (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hdata hassign) ExecBlock.nil))
   · intro hperm
     exact ExecFuncBody.execBlockStatic
       (hprefix (ExecBlock.consStatic (ExecStmt.assignStatic hdata hassign
@@ -891,7 +892,7 @@ theorem dogFileUintBodyCoreOk
     · let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
       let evm1 := Stele.EVM.storageStore evm0 I.codeOwner ⟨4⟩ data
       have hbodySplit :
-          (ExecTransitionBody config contract evm0 locals fileUintTransition.body
+          (I.perm = true → ExecTransitionBody config contract evm0 locals fileUintTransition.body
             (.returned { contract := contract, locals := locals, immutables := immStore v } evm1 none) (immStore v)) ∧
           (I.perm = false → ExecTransitionBody config contract
             evm0 locals fileUintTransition.body .staticViolation (immStore v)) := by
@@ -900,14 +901,14 @@ theorem dogFileUintBodyCoreOk
             (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
             hwv hauthStele hwhat)
       rcases RD.dogFileUintSuccessSplit hpatch hreach hsz68 hsize hauthSolc hwhat with
-        ⟨_hperm, hret⟩ | ⟨hperm, hstatic⟩
+        ⟨hperm, hret⟩ | ⟨hperm, hstatic⟩
       swap
       · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode (hbodySplit.2 hperm)
       have haccounts :
           Eq (sstoreAccountMap I.codeOwner σ ⟨4⟩ data)
             evm1.accountMap := by
         simp [evm1, evm0, initState, storageStore_accountMap, data]
-      exact hret.reEquivExecutionGen hcode hdispatch hdecode hbodySplit.1
+      exact hret.reEquivExecutionGen hcode hdispatch hdecode (hbodySplit.1 hperm)
         haccounts henc
     · let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
       have hbody :

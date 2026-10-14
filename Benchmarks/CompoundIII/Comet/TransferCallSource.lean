@@ -55,7 +55,7 @@ theorem transferCall_source {asset : AccountAddress} {payload : ByteArray}
       have hn := intOfNat_toNat_ne_zero_of_u256_ne_zero _ hne
       simp only [Int.ofNat_eq_natCast] at hn ⊢
       omega
-    have hcall := lowLevelCallSource (eth := .intLit 0) (frame := frame) ha
+    have hcall := lowLevelCallSource (hperm := Or.inl rfl) (eth := .intLit 0) (frame := frame) ha
       (by simp only [evalExpr?, pure]) (success := "ok") (data := "data") hd hc
     let callFrame : Frame := { frame with locals :=
       (frame.locals.insert "ok" (.bool true)).insert "data" (.bytes out) }

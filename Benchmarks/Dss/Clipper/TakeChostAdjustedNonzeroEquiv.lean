@@ -250,7 +250,7 @@ theorem clipperTakeChostAdjustEquiv
         (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         (clipperTakeStore I) takeTransition.body .reverted (immStore v) := by
     intro hnoCode
-    apply clipperTakeSourceRevertsOfAfterSlice
+    apply clipperTakeSourceRevertsOfAfterSlice (hperm := hperm)
       (σ := σ) (σ₀ := σ₀) (A := A)
       (I := I) (g := g) (evmPrice := evmPrice) v price hwv hlocked hstopped husr
       hmax hstatus
@@ -279,7 +279,7 @@ theorem clipperTakeChostAdjustEquiv
         (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         (clipperTakeStore I) takeTransition.body .reverted (immStore v) := by
     intro evmVat outVat hvatCode hcallVat
-    apply clipperTakeSourceRevertsOfAfterSlice
+    apply clipperTakeSourceRevertsOfAfterSlice (hperm := hperm)
       (σ := σ) (σ₀ := σ₀) (A := A)
       (I := I) (g := g) (evmPrice := evmPrice) v price hwv hlocked hstopped husr
       hmax hstatus
@@ -320,7 +320,7 @@ theorem clipperTakeChostAdjustEquiv
         (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         (clipperTakeStore I) takeTransition.body .reverted (immStore v) := by
     intro htail
-    apply clipperTakeSourceRevertsOfAfterSlice
+    apply clipperTakeSourceRevertsOfAfterSlice (hperm := hperm)
       (σ := σ) (σ₀ := σ₀) (A := A)
       (I := I) (g := g) (evmPrice := evmPrice) v price hwv hlocked hstopped husr
       hmax hstatus
@@ -334,7 +334,7 @@ theorem clipperTakeChostAdjustEquiv
         (clipperTakeStore I) takeTransition.body
         (.returned finalFrame finalEvm none) (immStore v) := by
     intro finalFrame finalEvm htail
-    apply clipperTakeSourceOkOfAfterSlice
+    apply clipperTakeSourceOkOfAfterSlice (hperm := hperm)
       (σ := σ) (σ₀ := σ₀) (A := A)
       (I := I) (g := g) (evmPrice := evmPrice) v price hwv hlocked hstopped husr
       hmax hstatus

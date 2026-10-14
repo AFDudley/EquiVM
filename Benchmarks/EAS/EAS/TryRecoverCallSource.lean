@@ -25,7 +25,7 @@ theorem tryRecoverLowSource {L imms : Store} {evm evm' : EVM.State} {hash v r s 
   have hinvoke : ExecStmt config {contract := contract,locals := tryRecoverInputLocals L hash v r s,immutables := imms} evm
       tryRecoverInvoke
       (.ok {contract := contract,locals := tryRecoverCallLocals L hash v r s success out,immutables := imms} evm') := by
-    apply lowLevelCallSource_perm (target := AccountAddress.ofUInt256 (⟨1⟩ : UInt256)) _ _ _ hc
+    apply lowLevelCallSource_perm (hperm := Or.inl rfl) (target := AccountAddress.ofUInt256 (⟨1⟩ : UInt256)) _ _ _ hc
     · simp (disch := decide) only [evalExpr?,tryRecoverInputLocals,store_get_ne,store_get_self,EvalResult.ofOption]
       rfl
     · simp only [evalExpr?,pure]

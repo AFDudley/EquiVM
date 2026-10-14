@@ -247,8 +247,8 @@ theorem stairstepFileSourceBodyTauSplit {σ σ₀ A I} {g : UInt256}
     let locals := fileLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let evm1 := fileTauPostState evm0 I
-    ExecTransitionBody config contract evm0 locals fileTransition.body
-      (.returned { contract := contract, locals := locals } evm1 none) ∧
+    (I.perm = true → ExecTransitionBody config contract evm0 locals fileTransition.body
+      (.returned { contract := contract, locals := locals } evm1 none)) ∧
     (I.perm = false →
       ExecTransitionBody config contract evm0 locals fileTransition.body .staticViolation) := by
   intro locals evm0 evm1
@@ -284,21 +284,23 @@ theorem stairstepFileSourceBodyTauSplit {σ σ₀ A I} {g : UInt256}
     refine ExecBlock.consNormal (ExecStmt.requireTrue hguard) ?_
     exact execBlock_singleton (ExecStmt.iteTrue hcond (execBlock_singleton h))
   refine ⟨?_, fun hpf ↦ ?_⟩
-  · simpa [ExecTransitionBody, locals, evm0, evm1] using
-      ExecFuncBody.execBlockOK (hbody _ (ExecStmt.assign hdata hassign))
+  · intro hperm
+    simpa [ExecTransitionBody, locals, evm0, evm1] using
+      ExecFuncBody.execBlockOK (hbody _ (ExecStmt.assign (hperm := Or.inr hperm) hdata hassign))
   · simpa [ExecTransitionBody, locals, evm0] using ExecFuncBody.execBlockStatic
       (hbody _ (ExecStmt.assignStatic hdata hassign (by simp [evm0, initState]; exact hpf)))
 
 theorem stairstepFileSourceBodyTauOk {σ σ₀ A I} {g : UInt256}
     (hwv : I.weiValue = ⟨0⟩)
     (hauth : relyAuthWord σ I = ⟨1⟩)
-    (hwhat : fileWhat I = fileTauBytes) :
+    (hwhat : fileWhat I = fileTauBytes)
+    (hperm : I.perm = true) :
     let locals := fileLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let evm1 := fileTauPostState evm0 I
     ExecTransitionBody config contract evm0 locals fileTransition.body
       (.returned { contract := contract, locals := locals } evm1 none) :=
-  (stairstepFileSourceBodyTauSplit (σ₀ := σ₀) (A := A) (g := g) hwv hauth hwhat).1
+  (stairstepFileSourceBodyTauSplit (σ₀ := σ₀) (A := A) (g := g) hwv hauth hwhat).1 hperm
 
 theorem stairstepFileSourceBodyAuthReverts {σ σ₀ A I} {g : UInt256}
     (hwv : I.weiValue = ⟨0⟩)
@@ -795,7 +797,7 @@ theorem stairstepFileBody {σ σ₀ A I} {g : UInt256}
               (.returned { contract := contract, locals := fileLocals I }
                 (fileTauPostState evmStele I) none) := by
           simpa [evmStele] using
-            stairstepFileSourceBodyTauOk
+            stairstepFileSourceBodyTauOk (hperm := by assumption)
               (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
               hwv hauth htau
         exact (stairstepFileX_tau_ok hperm htauWord rd428)

@@ -428,7 +428,8 @@ theorem scratch_blindAuctionPlaceBidBodyReturns_true_zero
     (hhigh : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨6⟩ = high)
     (hold : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩ = old)
     (hlt : high.toNat < value.toNat)
-    (hzero : UInt256.land old solcAddrMask = ⟨0⟩) :
+    (hzero : UInt256.land old solcAddrMask = ⟨0⟩)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody blindAuctionConfig blindAuctionContract evm
       (scratch_placeBidStore bidder value) placeBidFn.body
       (.returned { contract := blindAuctionContract, locals := scratch_placeBidStore bidder value }
@@ -467,6 +468,7 @@ theorem scratch_blindAuctionPlaceBidBodyReturns_true_zero
     (stele' := { contract := blindAuctionContract, locals := scratch_placeBidStore bidder value })
     (evm' := scratch_placeBidAfterHigh evm value) ?_ ?_
   · exact ExecStmt.assign
+      (hperm := Or.inr (by simpa [scratch_placeBidAfterHigh, scratch_placeBidAfterPending] using hperm))
       (evalExpr_reveal_var_int evm (scratch_placeBidStore bidder value) "value"
         (Int.ofNat value.toNat) (scratch_placeBidStore_value bidder value))
       (scratch_assign_placeBid_highestBid evm bidder value)
@@ -474,6 +476,7 @@ theorem scratch_blindAuctionPlaceBidBodyReturns_true_zero
     (stele' := { contract := blindAuctionContract, locals := scratch_placeBidStore bidder value })
     (evm' := scratch_placeBidAfterBidder (scratch_placeBidAfterHigh evm value) bidder) ?_ ?_
   · exact ExecStmt.assign
+      (hperm := Or.inr (by simpa [scratch_placeBidAfterHigh, scratch_placeBidAfterPending] using hperm))
       (evalExpr_reveal_var_value (scratch_placeBidAfterHigh evm value)
         (scratch_placeBidStore bidder value) "bidder" (.address bidder)
         (scratch_placeBidStore_bidder bidder value))
@@ -490,7 +493,8 @@ theorem scratch_blindAuctionPlaceBidBodyReturns_true_nonzero
         (pendingReturnsSlot (.address oldAddr)) = pending)
     (hlt : high.toNat < value.toNat)
     (hnonzero : UInt256.land old solcAddrMask ≠ ⟨0⟩)
-    (hsum : pending.toNat + high.toNat < UInt256.size) :
+    (hsum : pending.toNat + high.toNat < UInt256.size)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody blindAuctionConfig blindAuctionContract evm
       (scratch_placeBidStore bidder value) placeBidFn.body
       (.returned { contract := blindAuctionContract, locals := scratch_placeBidStore bidder value }
@@ -540,6 +544,7 @@ theorem scratch_blindAuctionPlaceBidBodyReturns_true_nonzero
         (evm := scratch_placeBidAfterPending evm oldAddr
           (UInt256.ofNat (pending.toNat + high.toNat))))
     exact ExecStmt.assign
+      (hperm := Or.inr (by simpa [scratch_placeBidAfterHigh, scratch_placeBidAfterPending] using hperm))
       (scratch_eval_placeBid_pending_add evm bidder oldAddr value old high pending hhigh hold
         holdAddr hpending hsum)
       (scratch_assign_placeBid_pendingReturns evm bidder oldAddr value old pending high hold
@@ -550,6 +555,7 @@ theorem scratch_blindAuctionPlaceBidBodyReturns_true_nonzero
       (scratch_placeBidAfterPending evm oldAddr
         (UInt256.ofNat (pending.toNat + high.toNat))) value) ?_ ?_
   · exact ExecStmt.assign
+      (hperm := Or.inr (by simpa [scratch_placeBidAfterHigh, scratch_placeBidAfterPending] using hperm))
       (evalExpr_reveal_var_int (scratch_placeBidAfterPending evm oldAddr
           (UInt256.ofNat (pending.toNat + high.toNat)))
         (scratch_placeBidStore bidder value) "value" (Int.ofNat value.toNat)
@@ -564,6 +570,7 @@ theorem scratch_blindAuctionPlaceBidBodyReturns_true_nonzero
         (scratch_placeBidAfterPending evm oldAddr
           (UInt256.ofNat (pending.toNat + high.toNat))) value) bidder) ?_ ?_
   · exact ExecStmt.assign
+      (hperm := Or.inr (by simpa [scratch_placeBidAfterHigh, scratch_placeBidAfterPending] using hperm))
       (evalExpr_reveal_var_value
         (scratch_placeBidAfterHigh
           (scratch_placeBidAfterPending evm oldAddr

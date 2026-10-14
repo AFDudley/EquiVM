@@ -130,4 +130,22 @@ inductive CollateralCheckTrace (v : CometWithExtendedAssetListImmutables) (borro
         (signedPresentMagnitude evm (collateralBasicWord evm account) true) evm result) :
       CollateralCheckTrace v borrow account evm result
 
+theorem CollateralDebtTrace.executionEnv_eq {v borrow account basic magnitude evm result}
+    (ht : CollateralDebtTrace v borrow account basic magnitude evm result) :
+    ∀ evm' b, result = some (evm', b) → evm'.executionEnv = evm.executionEnv := by
+  cases ht with
+  | priceFailed _ _ _ => intro evm' b he; cases he
+  | mathFailed _ _ _ _ => intro evm' b he; cases he
+  | loop hc _ _ _ ht =>
+    intro evm' b he
+    exact (ht.executionEnv_eq evm' b he).trans (callViaEVM_executionEnv_eq hc)
+
+theorem CollateralCheckTrace.executionEnv_eq {v borrow account evm result}
+    (ht : CollateralCheckTrace v borrow account evm result) :
+    ∀ evm' b, result = some (evm', b) → evm'.executionEnv = evm.executionEnv := by
+  cases ht with
+  | solvent _ => intro evm' b he; cases he; rfl
+  | minimum _ _ => intro evm' b he; cases he
+  | debt _ _ ht => exact ht.executionEnv_eq
+
 end Benchmarks.CompoundIII.Comet

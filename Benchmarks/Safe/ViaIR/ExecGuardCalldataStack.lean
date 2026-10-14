@@ -1,0 +1,40 @@
+import Benchmarks.Safe.ViaIR.ExecGuardCallPrepare
+import Benchmarks.Safe.ViaIR.ExecTransactionHashTrace
+
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
+
+namespace Benchmarks.Safe.ViaIR
+
+theorem execTransactionPayloadSize {cd : ByteArray} {dataLen sigLen : Nat}
+    (hb : ExecTransactionCalldataBounds cd dataLen sigLen) :
+    (execTransactionCalldataInput cd dataLen sigLen).tx.payload.size = dataLen := by
+  change (cd.extract (execTransactionDataStart cd)
+    (execTransactionDataStart cd + dataLen)).size = dataLen
+  rw [ByteArray.size_extract]; have := hb.dataEnd; omega
+
+theorem execTransactionSignaturesSize {cd : ByteArray} {dataLen sigLen : Nat}
+    (hb : ExecTransactionCalldataBounds cd dataLen sigLen) :
+    (execTransactionCalldataInput cd dataLen sigLen).signatures.size = sigLen := by
+  change (cd.extract (execTransactionSignaturesStart cd)
+    (execTransactionSignaturesStart cd + sigLen)).size = sigLen
+  rw [ByteArray.size_extract]; have := hb.sigEnd; omega
+
+theorem execGuardSaved_calldata {cd : ByteArray} {dataLen sigLen : Nat}
+    (hb : ExecTransactionCalldataBounds cd dataLen sigLen) (ptr guard hash : UInt256)
+    (R : List UInt256) :
+    execGuardSaved (execTransactionCalldataInput cd dataLen sigLen)
+      (execTransactionDataStart cd) ptr guard hash R =
+      [ptr, calldataWord cd 4, UInt256.ofNat (execTransactionDataStart cd),
+        calldataWord cd 260, UInt256.land guard solcAddrMask, calldataWord cd 228,
+        hash, UInt256.ofNat dataLen] ++ R := by
+  let p := execTransactionCalldataInput cd dataLen sigLen
+  have ht : UInt256.ofNat p.tx.target.val = calldataWord cd 4 :=
+    ((canonicalAddress_eq_address_iff _ _ hb.target).mp rfl).symm
+  have hk : UInt256.ofNat p.tx.gasToken.val = calldataWord cd 228 :=
+    ((canonicalAddress_eq_address_iff _ _ hb.gasToken).mp rfl).symm
+  have hr : UInt256.ofNat p.tx.refundReceiver.val = calldataWord cd 260 :=
+    ((canonicalAddress_eq_address_iff _ _ hb.refundReceiver).mp rfl).symm
+  change execGuardSaved p _ _ _ _ _ = _
+  rw [execGuardSaved, ht, hk, hr, execTransactionPayloadSize hb]
+
+end Benchmarks.Safe.ViaIR

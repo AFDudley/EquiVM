@@ -39,7 +39,7 @@ theorem setProtocolFeeTail {f : Frame} {evm : EVM.State} {id fee : UInt256}
     · rw [if_neg hp] at hset ⊢
       apply ExecFuncBody.execBlockOK
       refine ExecBlock.consNormal hset (ExecBlock.consNormal
-        (ExecStmt.emit (vals := [wordBytes32Value id, .int (Int.ofNat fee.toNat)]) ?_) ExecBlock.nil)
+        (ExecStmt.emit (hperm := by simpa only [storageStore_executionEnv] using Bool.eq_true_of_not_eq_false hp) (vals := [wordBytes32Value id, .int (Int.ofNat fee.toNat)]) ?_) ExecBlock.nil)
       have hi' := evalLocalValue (cfg := config) (f := {f with locals := f.locals.insert "__c3" .unit})
         (evm := poolSetProtocolPost evm id fee)
         ((store_get_ne _ _ (by decide : ("__c3" == "id") = false)).trans hi)

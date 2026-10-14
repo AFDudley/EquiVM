@@ -293,7 +293,8 @@ theorem bindParams_mintFunction_call (recipient : AccountAddress) (value : UInt2
 theorem uniswapMintFunctionBody
     (evm : EVM.State) (recipient : AccountAddress) (value : UInt256)
     (hfitSupply : mintFunctionTotalSupplyNewNat evm value < UInt256.size)
-    (hfitBalance : mintFunctionToBalanceNewNat evm recipient value < UInt256.size) :
+    (hfitBalance : mintFunctionToBalanceNewNat evm recipient value < UInt256.size)
+    (hperm : evm.executionEnv.perm = true) :
     ExecFuncBody config { contract := contract, locals := mintFunctionCallStore recipient value }
       evm
       mintFunction.body
@@ -309,10 +310,12 @@ theorem uniswapMintFunctionBody
       (mintFunctionPostState evm recipient value))
   refine ExecBlock.consNormal
     (ExecStmt.assign
+      (hperm := Or.inr hperm)
       (evalExpr_mintFunction_totalSupply_add evm recipient value hfitSupply)
       (mintFunctionAssignTotalSupply evm recipient value)) ?_
   exact ExecBlock.consNormal
     (ExecStmt.assign
+      (hperm := Or.inr (by simpa [mintFunctionAfterTotalSupplyState] using hperm))
       (evalExpr_mintFunction_to_balance_add evm recipient value hfitBalance)
       (mintFunctionAssignToBalance evm recipient value))
     ExecBlock.nil
@@ -324,7 +327,8 @@ theorem uniswapMintFunctionCallSuccess {caller : Frame} {evm : EVM.State}
       .ok [mintFunctionToValue recipient, mintFunctionValueValue value])
     (hfitSupply : mintFunctionTotalSupplyNewNat evm value < UInt256.size)
     (hfitBalance : mintFunctionToBalanceNewNat evm recipient value < UInt256.size)
-    (himm : caller.immutables = ∅ := by first | rfl | assumption) :
+    (himm : caller.immutables = ∅ := by first | rfl | assumption)
+    (hperm : evm.executionEnv.perm = true) :
     ExecStmt config caller evm (.internalCall "_mint" args retVar)
       (.ok (resumeAfterInternalCall caller retVar none)
         (mintFunctionPostState evm recipient value)) := by
@@ -341,6 +345,6 @@ theorem uniswapMintFunctionCallSuccess {caller : Frame} {evm : EVM.State}
     (bindParams_mintFunction_call recipient value)
     (by
       simpa [hcontract, himm] using
-        (uniswapMintFunctionBody evm recipient value hfitSupply hfitBalance))
+        (uniswapMintFunctionBody (hperm := by assumption) evm recipient value hfitSupply hfitBalance))
 
 end UniswapV2Pair

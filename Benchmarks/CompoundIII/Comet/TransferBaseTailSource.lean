@@ -12,7 +12,8 @@ theorem transferBaseTail_source {v src balance evm result}
     (ht : TransferBaseTailTrace v src balance evm result) (frame : Frame) (dst : AccountAddress)
     (withdrawn supplied : UInt256) (hf : TransferBaseTailArgs frame v src dst balance withdrawn supplied)
     (hW : withdrawn.toNat < 2^104) (hS : supplied.toNat < 2^104)
-    (hbound : -(2^255 : Int) < signedWord balance) :
+    (hbound : -(2^255 : Int) < signedWord balance)
+    (hperm : evm.executionEnv.perm = true) :
     internalBlockResult config frame evm transferBaseTail result := by
   have he : evalExpr? config frame evm (.var "srcBalance") = .ok (.int (signedWord balance)) := by
     simp only [evalExpr?, hf.balance, EvalResult.ofOption]
@@ -30,7 +31,7 @@ theorem transferBaseTail_source {v src balance evm result}
       EvalResult.ofOption]; rfl
   cases ht with
   | nonnegative hn =>
-      obtain ⟨final, hev⟩ := transferBaseEvents_source frame evm src dst withdrawn supplied
+      obtain ⟨final, hev⟩ := transferBaseEvents_source (hperm := by assumption) frame evm src dst withdrawn supplied
         hf.contract hf.src hf.dst hf.withdrawn hf.supplied hf.index hW hS
       exact ⟨final, ExecBlock.consNormal
         (ExecStmt.iteFalse (hg.trans (by rw [decide_eq_false (by omega)])) .nil) hev⟩
@@ -54,7 +55,8 @@ theorem transferBaseTail_source {v src balance evm result}
           (ExecBlock.consNormal (hcall hc)
             (ExecBlock.consNormal (ExecStmt.requireTrue (hbool true _)) .nil))
       have hf' := hf.insert "__c11" (.bool true) (by decide)
-      obtain ⟨final, hev⟩ := transferBaseEvents_source _ evm' src dst withdrawn supplied
+      obtain ⟨final, hev⟩ := transferBaseEvents_source
+        (hperm := (congrArg ExecutionEnv.perm (hc.executionEnv_eq _ _ rfl)).trans hperm) _ evm' src dst withdrawn supplied
         hf'.contract hf'.src hf'.dst hf'.withdrawn hf'.supplied hf'.index hW hS
       exact ⟨final, ExecBlock.consNormal
         (ExecStmt.iteTrue (hg.trans (by rw [decide_eq_true hn])) hb) hev⟩

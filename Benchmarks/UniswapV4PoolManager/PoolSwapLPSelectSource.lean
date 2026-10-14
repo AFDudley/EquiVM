@@ -56,7 +56,7 @@ theorem poolSwapLPSelectSource {f : Frame} {evm : State} {packed : UInt256} {p :
     rw [if_pos hv, poolSwapLPSelectFrame, he]
     apply ExecStmt.iteFalse (by simpa only [he] using hg)
     have hcall := slot0GetLPFeeCall hf (evalLocalValue (evm := evm) hs) "storedFee"
-    exact ExecBlock.consNormal hcall (execBlock_singleton (ExecStmt.assign (evalLocalValue (store_get_self _ _ _))
+    exact ExecBlock.consNormal hcall (execBlock_singleton (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalLocalValue (store_get_self _ _ _))
       (assignLocalValue ((store_get_ne _ _ (by decide : ("storedFee" == "lpFee") = false)).trans hlp))))
   · have hcall := lpFeeOverrideValidateCall hf hc
       (evalStructField (evm := evm) (field := "lpFeeOverride") (evalLocalValue hp) rfl) "overrideFee"
@@ -64,7 +64,7 @@ theorem poolSwapLPSelectSource {f : Frame} {evm : State} {packed : UInt256} {p :
     · rw [if_pos hv] at hcall
       rw [if_pos (show poolSwapLPFeeValid p.lpFeeOverride from fun _ => hv), poolSwapLPSelectFrame, he]
       apply ExecStmt.iteTrue (by simpa only [he] using hg)
-      exact ExecBlock.consNormal hcall (execBlock_singleton (ExecStmt.assign (evalLocalValue (store_get_self _ _ _))
+      exact ExecBlock.consNormal hcall (execBlock_singleton (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalLocalValue (store_get_self _ _ _))
         (assignLocalValue ((store_get_ne _ _ (by decide : ("overrideFee" == "lpFee") = false)).trans hlp))))
     · rw [if_neg hv] at hcall
       rw [if_neg (show ¬poolSwapLPFeeValid p.lpFeeOverride from fun hh => hv (hh he))]

@@ -814,7 +814,8 @@ theorem simpleAuctionSteleCtorExecReverts_overflow
     (hlt : biddingTime < Int.ofNat (EVM.twoPow 256))
     (hwv : I.weiValue = ⟨0⟩)
     (hover : UInt256.size ≤
-      (UInt256.ofNat I.header.timestamp).toNat + (EVM.word biddingTime.toNat).toNat) :
+      (UInt256.ofNat I.header.timestamp).toNat + (EVM.word biddingTime.toNat).toNat)
+    (hperm : I.perm = true) :
     steleCtorExec simpleAuctionConfig simpleAuctionContract
       [.int biddingTime, .address beneficiaryAddress]
       σ σ₀ g A I .reverted := by
@@ -848,7 +849,9 @@ theorem simpleAuctionSteleCtorExecReverts_overflow
       (evm := evm0)
       (by simpa [initState] using hwv))) ?_
     refine ExecBlock.consNormal (stele' := frame) (evm' := evm1) ?_ ?_
-    · exact ExecStmt.assign (value := .address beneficiaryAddress)
+    · exact ExecStmt.assign
+        (hperm := Or.inr (by simpa [evm0, initState] using hperm))
+        (value := .address beneficiaryAddress)
         (by
           show evalExpr? simpleAuctionConfig frame evm0 (.var "beneficiaryAddress") =
             .ok (.address beneficiaryAddress)
@@ -905,7 +908,8 @@ theorem simpleAuctionSteleCtorExecSuccess
     (hlt : biddingTime < Int.ofNat (EVM.twoPow 256))
     (hwv : I.weiValue = ⟨0⟩)
     (hno : ¬ UInt256.size ≤
-      (UInt256.ofNat I.header.timestamp).toNat + (EVM.word biddingTime.toNat).toNat) :
+      (UInt256.ofNat I.header.timestamp).toNat + (EVM.word biddingTime.toNat).toNat)
+    (hperm : I.perm = true) :
     steleCtorExec simpleAuctionConfig simpleAuctionContract
       [.int biddingTime, .address beneficiaryAddress]
       σ σ₀ g A I
@@ -939,7 +943,9 @@ theorem simpleAuctionSteleCtorExecSuccess
         (evm := evm0)
         (by simpa [evm0, initState] using hwv))) ?_
     refine ExecBlock.consNormal (stele' := frame) (evm' := evm1) ?_ ?_
-    · exact ExecStmt.assign (value := .address beneficiaryAddress)
+    · exact ExecStmt.assign
+        (hperm := Or.inr (by simpa [evm0, initState] using hperm))
+        (value := .address beneficiaryAddress)
         (by
           show evalExpr? simpleAuctionConfig frame evm0 (.var "beneficiaryAddress") =
             .ok (.address beneficiaryAddress)
@@ -952,7 +958,9 @@ theorem simpleAuctionSteleCtorExecSuccess
             (initState σ σ₀ (Sat256.ofUInt256 g) A I)
             biddingTime beneficiaryAddress)
     · refine ExecBlock.consNormal ?_ ExecBlock.nil
-      exact ExecStmt.assign (value := .int (Int.ofNat auctionEndWord.toNat))
+      exact ExecStmt.assign
+        (hperm := Or.inr (by simpa [evm1, evm0, simpleAuctionCtorAfterBeneficiaryState, initState] using hperm))
+        (value := .int (Int.ofNat auctionEndWord.toNat))
         (by
           unfold auctionEndWord evm1 evm0 frame
           simpa [simpleAuctionCtorAfterBeneficiaryState, storageStore_executionEnv, initState]
@@ -1046,7 +1054,7 @@ theorem simpleAuctionConstructorEquiv_overflow
   rcases hrd.xiResult hcodeCtor with hOOG | ⟨g', o, hrev⟩
   · exact typedConstructorRefinementFor.outOfGas (by simpa [Sat256.ofUInt256] using hOOG)
   · refine typedConstructorRefinementFor.execution (by simpa [Sat256.ofUInt256] using hrev)
-      (simpleAuctionSteleCtorExecReverts_overflow
+      (simpleAuctionSteleCtorExecReverts_overflow (hperm := by assumption)
         (σ := σ) (σ₀ := σ₀) (g := g) (A := A) (I := I)
         biddingTime beneficiaryAddress h0 hlt hwv hover) ?_
     exact ctorResultEquiv.revert rfl rfl
@@ -1106,7 +1114,7 @@ theorem simpleAuctionConstructorEquiv_success
       simpa [beneficiaryStoreWordEvm, auctionEndWordEvm] using hacc
     rw [hσ'] at hsuccess
     refine typedConstructorRefinementFor.execution hsuccess
-      (simpleAuctionSteleCtorExecSuccess
+      (simpleAuctionSteleCtorExecSuccess (hperm := by assumption)
         (σ := σ) (σ₀ := σ₀) (g := g) (A := A) (I := I)
         biddingTime beneficiaryAddress h0 hlt hwv hno) ?_
     refine ctorResultEquiv.success rfl rfl ?_ rfl

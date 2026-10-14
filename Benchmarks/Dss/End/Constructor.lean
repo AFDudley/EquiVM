@@ -133,7 +133,8 @@ theorem assign_endCtorLive (evm : EVM.State) {locals : Store}
 theorem endCtorBodySuccess
     {σ : AccountMap} {σ₀ : AccountMap} {A : Substate} {I : ExecutionEnv}
     {g : UInt256}
-    (hwv : I.weiValue = ⟨0⟩) :
+    (hwv : I.weiValue = ⟨0⟩)
+    (hperm : I.perm = true) :
     let evm0 := initState σ σ₀
       (Sat256.ofUInt256 g) A I
     let evm1 := endCtorAfterWardsState evm0
@@ -156,14 +157,15 @@ theorem endCtorBodySuccess
   simp only [constructorDecl, nonpayable, List.cons_append, List.nil_append]
   refine ExecBlock.consNormal (ExecStmt.requireTrue ?_) ?_
   · exact evalCallvalueEq_true (by simp [evm0, initState]; exact hwv)
-  refine ExecBlock.consNormal (ExecStmt.assign (by simp [evalExpr?, pure]) hassignWards) ?_
-  exact ExecBlock.consNormal (ExecStmt.assign (by simp [evalExpr?, pure]) hassignLive)
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) (by simp [evalExpr?, pure]) hassignWards) ?_
+  exact ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa [evm1, endCtorAfterWardsState, evm0, initState] using hperm)) (by simp [evalExpr?, pure]) hassignLive)
     ExecBlock.nil
 
 theorem endSteleCtorExecSuccess
     {σ : AccountMap} {σ₀ : AccountMap} {A : Substate} {I : ExecutionEnv}
     {g : UInt256}
-    (hwv : I.weiValue = ⟨0⟩) :
+    (hwv : I.weiValue = ⟨0⟩)
+    (hperm : I.perm = true) :
     steleCtorExec config contract []
       σ σ₀ g A I
       (.returned { contract := contract, locals := ∅ }
@@ -181,7 +183,7 @@ theorem endSteleCtorExecSuccess
   · rfl
   · simpa [ExecTransitionBody, contract, constructorDecl] using
       ExecFuncBody.execBlockOK
-        (endCtorBodySuccess
+        (endCtorBodySuccess (hperm := hperm)
           (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv)
 
 theorem endSteleCtorExecReverts_nonpayable
@@ -362,7 +364,7 @@ theorem endConstructorCorrect :
       refine typedConstructorRefinementFor.execution hsuccess
         (by
           simpa [evm0s, evm1s, evm2s] using
-            endSteleCtorExecSuccess
+            endSteleCtorExecSuccess (hperm := hperm)
               (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
               (g := g) hwv)
         ?_

@@ -102,7 +102,7 @@ theorem clipperTakePostDogTabZeroFluxRemoveSourceRevertsOfBody
           [ilkExpr, thisAddr, .var "usr", .var "lot"] "_fluxUsrRet")
         (.ok fluxRetFrame evmFlux) := by
     simpa [checkedExternalCallStmts, digsRetFrame, fluxRetFrame, collapseReturns] using
-      (checkedExternalCallSuccess hguard
+      (checkedExternalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hguard
         (clipperEvalVat v evmDog digsRetFrame.locals) hargs hcallFlux
         (clipperTakeDecodeFluxVoid outFlux))
   have hremove :
@@ -164,7 +164,8 @@ theorem clipperTakePostDogTabZeroFluxRemoveSourceOkOfBody
     (hremoveBody :
       ExecFuncBody config
         { contract := contract, locals := clipperYankRemoveStore I, immutables := immStore v } evmFlux
-        removeFunction.body (.returned calleeStele evmRemove none)) :
+        removeFunction.body (.returned calleeStele evmRemove none))
+    (hperm : evmRemove.executionEnv.perm = true) :
     let frameRemoveRet : Frame :=
       { contract := contract,
         locals :=
@@ -208,7 +209,7 @@ theorem clipperTakePostDogTabZeroFluxRemoveSourceOkOfBody
           [ilkExpr, thisAddr, .var "usr", .var "lot"] "_fluxUsrRet")
         (.ok fluxRetFrame evmFlux) := by
     simpa [checkedExternalCallStmts, digsRetFrame, fluxRetFrame, collapseReturns] using
-      (checkedExternalCallSuccess hguard
+      (checkedExternalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hguard
         (clipperEvalVat v evmDog digsRetFrame.locals) hargs hcallFlux
         (clipperTakeDecodeFluxVoid outFlux))
   have hremove :
@@ -267,7 +268,7 @@ theorem clipperTakePostDogTabZeroFluxRemoveSourceOkOfBody
         (.assign .storage lockedRef (.intLit 0))
         (.ok frameRemoveRet
           (Stele.EVM.storageStore evmRemove evmRemove.executionEnv.codeOwner ⟨13⟩ ⟨0⟩)) := by
-    exact ExecStmt.assign hzero hassign
+    exact ExecStmt.assign (hperm := Or.inr hperm) hzero hassign
   exact ExecBlock.consNormal hlotIte (ExecBlock.consNormal hunlock ExecBlock.nil)
 
 end Benchmarks.Dss.Clipper

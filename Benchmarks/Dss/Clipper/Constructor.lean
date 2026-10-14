@@ -180,7 +180,7 @@ theorem clipperConstructorCorrect :
         (by simpa [Sat256.ofUInt256, σFinal] using hsuccess)
         (by
           simpa [evm0, evm1, evm2, evm3, evm4, evm5] using
-            clipperSteleCtorExecSuccess
+            clipperSteleCtorExecSuccess (hperm := hperm)
               (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
               vat spotter dog ilk hilk hwv)
         ?_ ?_
@@ -198,7 +198,7 @@ theorem clipperConstructorCorrect :
         (by simpa [Sat256.ofUInt256] using hOOG)
     · exact .execution
         (by simpa [Sat256.ofUInt256] using hrev)
-        (clipperSteleCtorExecReverts_nonpayable
+        (clipperSteleCtorExecReverts_nonpayable (hperm := hperm)
           (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
           vat spotter dog ilk hwv)
         (ctorResultEquiv.revert rfl rfl) trivial

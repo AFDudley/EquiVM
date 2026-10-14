@@ -907,7 +907,7 @@ theorem catBiteBodyImpl {σ σ₀ A I} {g : UInt256}
                                                     exact hread64F))
                                               (by native_decide) (by native_decide) (by native_decide) hpmem_kick
                                               (by native_decide) hread64F (by simp)
-                                          exact catBiteRevertKickNoCode hcode hdispatch hdecode
+                                          exact catBiteRevertKickNoCode (hperm := hperm) hcode hdispatch hdecode
                                             hwv hsz36 hdepth
                                             hurn hilkslen hurnslen hlive hvatCode hUrnsVatCode hGrabCode hFessCode hKickCode
                                             hIlksCall hUrnsCall hGrabCall hFessCall rd2516k
@@ -973,7 +973,7 @@ theorem catBiteBodyImpl {σ σ₀ A I} {g : UInt256}
                                           by_cases hzk : zk = true
                                           swap
                                           · have hzkf : zk = false := by simpa using hzk
-                                            exact catBiteRevertKickFail hcode hdispatch hdecode
+                                            exact catBiteRevertKickFail (hperm := hperm) hcode hdispatch hdecode
                                               hwv hsz36 hdepth hurn
                                               hilkslen hurnslen hlive hvatCode hUrnsVatCode hGrabCode hFessCode hKickCode hIlksCall
                                               hUrnsCall hGrabCall hFessCall hKickCall (by simpa [hzkf] using rd2532) hoszk
@@ -987,7 +987,7 @@ theorem catBiteBodyImpl {σ σ₀ A I} {g : UInt256}
                                           · -- kick return decode short (returndatasize < 32): all heavy work (free-ptr
                                             -- MLOAD facts + Stele mapping) is inside `catBiteRevertKickDecodeW` (own budget);
                                             -- the walk supplies rd2532/reads by cheap metavar assignment.
-                                            exact catBiteRevertKickDecodeW hcode hdispatch hdecode
+                                            exact catBiteRevertKickDecodeW (hperm := hperm) hcode hdispatch hdecode
                                               hwv hsz36 hdepth
                                               hurn hilkslen hurnslen hlive hvatCode hUrnsVatCode hGrabCode hFessCode hKickCode
                                               hIlksCall hUrnsCall hGrabCall hFessCall hKickCall rd2532 hpmem_kick hread64F
@@ -1152,7 +1152,7 @@ theorem catBiteBodyImpl {σ σ₀ A I} {g : UInt256}
                                             rw [solcAddrMask_clean_left
                                               (by rw [u256_land_comm]; exact solcAddrMask_result_canonical _),
                                               u256_land_comm]
-                                          refine catBiteSuccessBranch
+                                          refine catBiteSuccessBranch (hperm := hperm)
                                             (evmIlk := eIlk) (evmUrn := eUrn) (evmGrab := eGrab)
                                             (evmFess := eFess) (evmKick := eKick)
                                             (ilksOut := o') (urnsOut := ou) (grabOut := og)

@@ -284,7 +284,7 @@ theorem vowFileAddressFlapperHopeNoCodeAfterNopeSuccessBodyCore
         (target := fileAddressVatTargetWord evmSetStele.accountMap I)
         (addr := fileAddressVatAddressOf evmSetStele) haddr hcodeSizeHopeStele
   obtain ⟨_, _, rd4350⟩ := RD.vowFileAddressNopeSuccessStoreFlapperWithTarget rd4300 hperm
-  exact vowFileAddressFlapperHopeNoCodeBodyCore (sel := sel) hcode hwv hdispatch hdecode
+  exact vowFileAddressFlapperHopeNoCodeBodyCore (hperm := by assumption) (sel := sel) hcode hwv hdispatch hdecode
     rd4350 hmemNope hread64Nope hcodeSizeHope hcallNope
     (by simpa [callerSlot] using hauthStele) hwhat hvatCodeNope hvatNoCodeHope
 
@@ -343,7 +343,8 @@ theorem vowFileAddressFlapperHopeCallFailureAfterNopeSuccessBodyCore
         (fileAddressSetFlapperAccountMap σNope I (fileAddressDataKey I))
         (fileAddressVatTargetWord
           (fileAddressSetFlapperAccountMap σNope I (fileAddressDataKey I)) I) ≠ ⟨0⟩)
-    (hdepthLt : I.depth.val < 1024) :
+    (hdepthLt : I.depth.val < 1024)
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   let callerSlot := vowCallerWardsSlot I
   have hauthStele : solcSlotWordAt callerSlot σ I = ⟨1⟩ := hauthEvm
@@ -459,7 +460,7 @@ theorem vowFileAddressFlapperHopeCallFailureAfterNopeSuccessBodyCore
         (fileAddressSetFlapperAccountMap σNope I (fileAddressDataKey I)) I,
       fileAddressData_value_masked, fileAddressDataKey_clean, accountAddress_ofUInt256_eq_ofNat_toNat,
       eVM_address_id] using hcallHopeRaw
-  exact vowFileAddressFlapperHopeCallFailureBodyCore (sel := sel) hcode hwv hdispatch hdecode
+  exact vowFileAddressFlapperHopeCallFailureBodyCore (hperm := by assumption) (sel := sel) hcode hwv hdispatch hdecode
     rd4423 hcallNope hcallHope hrdataSize (by simpa [callerSlot] using hauthStele)
     hwhat hvatCodeNope hvatCodeHope
 
@@ -511,7 +512,8 @@ theorem vowFileAddressFlapperHopeSuccessAfterNopeSuccessBodyCore
         (fileAddressSetFlapperAccountMap σNope I (fileAddressDataKey I))
         (fileAddressVatTargetWord
           (fileAddressSetFlapperAccountMap σNope I (fileAddressDataKey I)) I) ≠ ⟨0⟩)
-    (hdepthLt : I.depth.val < 1024) :
+    (hdepthLt : I.depth.val < 1024)
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   let callerSlot := vowCallerWardsSlot I
   have hauthStele : solcSlotWordAt callerSlot σ I = ⟨1⟩ := hauthEvm
@@ -628,7 +630,7 @@ theorem vowFileAddressFlapperHopeSuccessAfterNopeSuccessBodyCore
       fileAddressData_value_masked, fileAddressDataKey_clean, accountAddress_ofUInt256_eq_ofNat_toNat,
       eVM_address_id] using hcallHopeRaw
   have hAccountsFinal : Eq σHope evmHopeStele.accountMap := rfl
-  exact vowFileAddressFlapperHopeSuccessBodyCore (sel := sel) hcode hwv hdispatch hdecode
+  exact vowFileAddressFlapperHopeSuccessBodyCore (hperm := by assumption) (sel := sel) hcode hwv hdispatch hdecode
     rd4423 hcallNope hcallHope (by simpa [callerSlot] using hauthStele)
     hwhat hvatCodeNope hvatCodeHope hAccountsFinal
 
@@ -812,7 +814,7 @@ theorem vowFileAddressFlapperAuthorizedBodyCore
                     accountMap := σHope, substate := AHope },
                 outHope) true := by
           simpa using hcallHopeEvm
-        exact vowFileAddressFlapperHopeCallFailureAfterNopeSuccessBodyCore (sel := sel)
+        exact vowFileAddressFlapperHopeCallFailureAfterNopeSuccessBodyCore (hperm := by assumption) (sel := sel)
           hcode hwv hdispatch hdecode rd4300True hcallNopeTrue rd4423False
           hcallHopeFalse houtHopeSize hauthEvm hwhat hcodeSizeNope
           hcodeSizeHope hdepthLt
@@ -840,7 +842,7 @@ theorem vowFileAddressFlapperAuthorizedBodyCore
                     accountMap := σHope, substate := AHope },
                 outHope) true := by
           simpa using hcallHopeEvm
-        exact vowFileAddressFlapperHopeSuccessAfterNopeSuccessBodyCore (sel := sel)
+        exact vowFileAddressFlapperHopeSuccessAfterNopeSuccessBodyCore (hperm := by assumption) (sel := sel)
           hcode hwv hdispatch hdecode hcallNopeTrue rd4423True hcallHopeTrue
           hauthEvm hwhat hcodeSizeNope hcodeSizeHope hdepthLt
   · have hdepthEq : I.depth = 1024 := by

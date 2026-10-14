@@ -60,7 +60,7 @@ theorem revokeIterationRun {L : Store} {evm : EVM.State} {ee : ExecutionEnv} {g 
           (hn' : name ∉ ["__c1$allocation","__c1","copied$allocation","copied","$EAS.freeMemory"]) :
           Lp.get? name = L.get? name :=
         (revokeStoreCopyLocals_get _ _ _ _ _ _ hn').trans (revokeReadLocals_get _ _ _ _ hn)
-      have hup := revokeUpdateSource (evm := evm') (imms := immStore v) (L := Lp)
+      have hup := revokeUpdateSource (hperm := (congrArg ExecutionEnv.perm hs'.env).trans hperm) (evm := evm') (imms := immStore v) (L := Lp)
         (heapResultLocals_result _ _ _ _ _ _ (by decide))
         ((revokeStoreCopyLocals_get _ _ _ _ _ _ (by decide)).trans (revokeReadLocals_alias L rs[i] heap.toNat))
         ((revokeStoreCopyLocals_get _ _ _ _ _ _ (by decide)).trans (revokeReadLocals_request L rs[i] heap.toNat))

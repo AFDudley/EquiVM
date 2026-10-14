@@ -840,7 +840,7 @@ theorem flipperDentSourceBodyFluxCallFailureSameCaller {σ σ₀ A I}
           "_fluxRet")
         .reverted := by
     simpa [checkedExternalCallStmts] using
-      checkedExternalCallFailure (cfg := config) (C := contract) (evm := evm0)
+      checkedExternalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (cfg := config) (C := contract) (evm := evm0)
         (evm' := evmFlux) (locals := dentLocalsLotOneBegLot σ I)
         (receiver := .storage vatRef) (retVar := "_fluxRet") (name := "flux")
         (target := flipperVatAddress evm0.accountMap evm0.executionEnv) (sendVal := 0)
@@ -927,7 +927,8 @@ theorem flipperDentSourceBodySuccessSameCallerSplit {σ σ₀ A I}
         (Stele.EVM.storageLoad evmLot evmLot.executionEnv.codeOwner
           (bidPackedSlotOfWord (dentId I)))
         (tendTicNewWord evmLot.accountMap I))
-    (((tendNow48 I).toNat +
+    (I.perm = true →
+     ((tendNow48 I).toNat +
           (tendTtlWord
             (Stele.EVM.storageStore evmFlux evmFlux.executionEnv.codeOwner
               (bidSlotOfWord (dentId I) ⟨1⟩) (dentLot I)).accountMap I).toNat <
@@ -975,7 +976,7 @@ theorem flipperDentSourceBodySuccessSameCallerSplit {σ σ₀ A I}
           "_fluxRet")
         (.ok { contract := contract, locals := dentLocalsAfterFlux σ I } evmFlux) := by
     simpa [checkedExternalCallStmts, dentLocalsAfterFlux] using
-      checkedExternalCallSuccess (cfg := config) (C := contract) (evm := evm0)
+      checkedExternalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (cfg := config) (C := contract) (evm := evm0)
         (evm' := evmFlux) (locals := dentLocalsLotOneBegLot σ I)
         (receiver := .storage vatRef) (retVar := "_fluxRet") (name := "flux")
         (target := flipperVatAddress evm0.accountMap evm0.executionEnv) (sendVal := 0)
@@ -1030,7 +1031,10 @@ theorem flipperDentSourceBodySuccessSameCallerSplit {σ σ₀ A I}
           hdec hcaller htail)
     exact hblock
   constructor
-  · intro hfitTic
+  · intro hperm hfitTic
+    have hpFlux : evmFlux.executionEnv.perm = true := by
+      rw [typedCallViaEVM_executionEnv_eq hcallFlux]
+      exact hperm
     have hletTic :
         evalExpr? config { contract := contract, locals := dentLocalsAfterFlux σ I } evmLot
           (wrap48 (.binary .add now48 (.storage ttlRef))) =
@@ -1075,11 +1079,12 @@ theorem flipperDentSourceBodySuccessSameCallerSplit {σ σ₀ A I}
           (.ok
             { contract := contract, locals := dentLocalsAfterFluxWithTicFrom σ evmLot.accountMap I }
             evmTic) := by
-      refine ExecBlock.consNormal (ExecStmt.assign hlotVar hassignLot) ?_
+      refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hpFlux) hlotVar hassignLot) ?_
       simp only [checkedAdd48Into]
       refine ExecBlock.consNormal (ExecStmt.letDecl hletTic) ?_
       refine ExecBlock.consNormal (ExecStmt.requireTrue hgeTic) ?_
-      exact ExecBlock.consNormal (ExecStmt.assign hticVar hassignTic) ExecBlock.nil
+      exact ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by
+        simpa only [evmLot, storageStore_executionEnv] using hpFlux)) hticVar hassignTic) ExecBlock.nil
     exact ExecFuncBody.execBlockOK (hprefix hpost)
   · intro hperm
     have hp : evmFlux.executionEnv.perm = false := by
@@ -1143,7 +1148,8 @@ theorem flipperDentSourceBodySuccessSameCaller {σ σ₀ A I}
           (tendTtlWord
             (Stele.EVM.storageStore evmFlux evmFlux.executionEnv.codeOwner
               (bidSlotOfWord (dentId I) ⟨1⟩) (dentLot I)).accountMap I).toNat <
-        2 ^ 48) :
+        2 ^ 48)
+    (hperm : I.perm = true) :
     let locals := dentLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let evmLot := Stele.EVM.storageStore evmFlux evmFlux.executionEnv.codeOwner
@@ -1160,7 +1166,7 @@ theorem flipperDentSourceBodySuccessSameCaller {σ σ₀ A I}
         evmTic none) :=
   (flipperDentSourceBodySuccessSameCallerSplit
     hwv hguy hticGuard hendGuard hbidGuard htabGuard hlotGuard
-    hfitLot hfitBeg hdec hcaller hvatCode hcallFlux hfluxTs hfluxOwner).1 hfitTic
+    hfitLot hfitBeg hdec hcaller hvatCode hcallFlux hfluxTs hfluxOwner).1 hperm hfitTic
 
 theorem flipperDentSourceBodyAdd48OverflowSameCaller {σ σ₀ A I}
     {g : UInt256} {evmFlux : EVM.State} {outFlux : ByteArray}
@@ -1217,11 +1223,15 @@ theorem flipperDentSourceBodyAdd48OverflowSameCaller {σ σ₀ A I}
         (tendNow48 I).toNat +
           (tendTtlWord
             (Stele.EVM.storageStore evmFlux evmFlux.executionEnv.codeOwner
-              (bidSlotOfWord (dentId I) ⟨1⟩) (dentLot I)).accountMap I).toNat) :
+              (bidSlotOfWord (dentId I) ⟨1⟩) (dentLot I)).accountMap I).toNat)
+    (hperm : I.perm = true) :
     let locals := dentLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     ExecTransitionBody config contract evm0 locals dentTransition.body .reverted := by
   intro locals evm0
+  have hpFlux : evmFlux.executionEnv.perm = true := by
+    rw [typedCallViaEVM_executionEnv_eq hcallFlux]
+    exact hperm
   let evmLot := Stele.EVM.storageStore evmFlux evmFlux.executionEnv.codeOwner
     (bidSlotOfWord (dentId I) ⟨1⟩) (dentLot I)
   have hvat :
@@ -1259,7 +1269,7 @@ theorem flipperDentSourceBodyAdd48OverflowSameCaller {σ σ₀ A I}
           "_fluxRet")
         (.ok { contract := contract, locals := dentLocalsAfterFlux σ I } evmFlux) := by
     simpa [checkedExternalCallStmts, dentLocalsAfterFlux] using
-      checkedExternalCallSuccess (cfg := config) (C := contract) (evm := evm0)
+      checkedExternalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (cfg := config) (C := contract) (evm := evm0)
         (evm' := evmFlux) (locals := dentLocalsLotOneBegLot σ I)
         (receiver := .storage vatRef) (retVar := "_fluxRet") (name := "flux")
         (target := flipperVatAddress evm0.accountMap evm0.executionEnv) (sendVal := 0)
@@ -1306,7 +1316,7 @@ theorem flipperDentSourceBodyAdd48OverflowSameCaller {σ σ₀ A I}
           checkedAdd48Into "tic_" now48 (.storage ttlRef) ++
           [ .assign .storage (bidsF (.var "id") "tic") (.var "tic_") ])
         .reverted := by
-    refine ExecBlock.consNormal (ExecStmt.assign hlotVar hassignLot) ?_
+    refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hpFlux) hlotVar hassignLot) ?_
     simp only [checkedAdd48Into, List.cons_append, List.nil_append]
     refine ExecBlock.consNormal (ExecStmt.letDecl hletTic) ?_
     exact ExecBlock.consRevert (ExecStmt.requireFalse hgeTicFalse)

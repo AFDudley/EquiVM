@@ -61,7 +61,7 @@ theorem safeTransferCall (imms : Store) (evm evm' : EVM.State)
       (.lowLevelCall (.var "token") (.intLit 0)
         (.abiEncodeCall "transfer" [.var "to", .var "value"]) "success" "data" true)
       (.ok (safeTransferCallFrame imms token recipient value ok out) evm') := by
-  apply lowLevelCallWithPermSource (target := token) (calldata := safeTransferCalldata recipient value)
+  apply lowLevelCallWithPermSource (hperm := Or.inl rfl) (target := token) (calldata := safeTransferCalldata recipient value)
     (value := 0) _ (by simp only [evalExpr?, pure]) _ hcall
   · exact evalExpr_var_get (by simp [safeTransferFrame, safeTransferLocals])
   · have hr : evalExpr? config (safeTransferFrame imms token recipient value) evm (.var "to") =

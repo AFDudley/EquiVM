@@ -673,9 +673,13 @@ theorem catBiteSuccessLeaf {σ σ₀ A I} {g : UInt256}
         [biteUrnVal I, .address (biteVowAddrV evmLit), bw (biteTabV I evmUrn iRate art),
           bw (biteDinkV I evmUrn iRate art ink), .int 0] (true, evmKick, kickOut) true)
     (hKickDec : config.externalABI.decode? "kick" kickOut = some [bw id])
-    (hAccountsFinal : acc = evmKick.accountMap) :
+    (hAccountsFinal : acc = evmKick.accountMap)
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  have hbody := catBiteSourceSuccess (σ := σ) hsz36 hwv hvatCode0 hIlksCall hIlksDec
+  have hbody := catBiteSourceSuccess (hperm := by
+    rw [typedCallViaEVM_executionEnv_eq hFessCall, typedCallViaEVM_executionEnv_eq hGrabCall,
+      typedCallViaEVM_executionEnv_eq hUrnsCall, typedCallViaEVM_executionEnv_eq hIlksCall]
+    exact hperm) (σ := σ) hsz36 hwv hvatCode0 hIlksCall hIlksDec
     hvatCodeIlk hUrnsCall hUrnsDec hlive hfitInkSpot hfitArtRate hfitDunkRoomWad hfitInkDart
     hfitDartRate hfitTabBase hfitLitterNew hspotPos hratePos hartPos hmilkChopPos hunsafe hlitLtBox
     hroomGeDust hdartPos hdinkPos hdartLim hdinkLim hvatCodeMid hGrabCall hGrabDec hvowCode hFessCall

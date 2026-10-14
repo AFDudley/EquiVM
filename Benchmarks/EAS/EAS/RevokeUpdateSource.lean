@@ -17,7 +17,8 @@ theorem revokeUpdateSource {L imms : Store} {evm : EVM.State} {ats : List Attest
     (hats : L.get? "attestations" = some (.array (ats.map AttestationRecord.value)))
     (hvalues : L.get? "values" = some (.array (values.map (fun w => Value.int (Int.ofNat w.toNat)))))
     (hrevoker : L.get? "revoker" = some (.address revoker))
-    (hia : i < ats.length) (hiv : i < values.length) (hb : i+1 < UInt256.size) :
+    (hia : i < ats.length) (hiv : i < values.length) (hb : i+1 < UInt256.size)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config {contract := contract,locals := L,immutables := imms} evm revokeUpdateBody
       (.ok {contract := contract,locals := revokeUpdateLocals L ats values a r.value i,immutables := imms} evm) := by
   let L1 := L.insert "attestations" (.array ((ats.set i a).map AttestationRecord.value))
@@ -37,8 +38,8 @@ theorem revokeUpdateSource {L imms : Store} {evm : EVM.State} {ats : List Attest
   have he : evalExpr? config {contract := contract,locals := L1,immutables := imms} evm
       (.field (.var "request") "value") = .ok (.int (Int.ofNat r.value.toNat)) :=
     revokeRequestField_eval (cfg := config) (frame := {contract := contract,locals := L1,immutables := imms}) (evm := evm) (r := r) hr1 "value" _ rfl
-  refine ExecBlock.consNormal (ExecStmt.assign (evalLocalValue hc) hs1)
-    (ExecBlock.consNormal (ExecStmt.assign he hs2) ?_)
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalLocalValue hc) hs1)
+    (ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) he hs2) ?_)
   have ha2 : L2.get? "attestation" = some (.storageRef (attestationER r.uid) attestationType) :=
     (store_get_ne _ _ (by decide)).trans ((store_get_ne _ _ (by decide)).trans ha)
   have hr2 : L2.get? "request" = some r.struct :=
@@ -56,7 +57,7 @@ theorem revokeUpdateSource {L imms : Store} {evm : EVM.State} {ats : List Attest
       (by simp only [attestationScalarWrites,List.mem_cons]; tauto)
   have huid : evalExpr? config {contract := contract,locals := L2,immutables := imms} evm
       (.field (.var "request") "uid") = .ok (wordBytes32Value r.uid) := revokeRequestField_eval (cfg := config) (frame := {contract := contract,locals := L2,immutables := imms}) (evm := evm) (r := r) hr2 "uid" _ rfl
-  refine ExecBlock.consNormal (ExecStmt.emit (vals := [.address (storedAttestationRecord evm r.uid).recipient,
+  refine ExecBlock.consNormal (ExecStmt.emit (hperm := hperm) (vals := [.address (storedAttestationRecord evm r.uid).recipient,
       .address revoker,wordBytes32Value r.uid,wordBytes32Value (storedAttestationRecord evm r.uid).schema]) ?_)
       (ExecBlock.consNormal (execLocalCastIncrement hi2 hb) ExecBlock.nil)
   simp only [evalExprs?,hrecipient,hschema,huid,evalExpr?,hv2,EvalResult.ofOption,EvalResult.bind,bind,pure]

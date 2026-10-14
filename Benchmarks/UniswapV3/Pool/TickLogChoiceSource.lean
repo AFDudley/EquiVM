@@ -98,7 +98,7 @@ theorem tickLogFinalSource {frame : Frame} {evm : EVM.State} (tick : Int)
       (.returned out evm (some [.int tick])) := by
   let out : Frame := {frame with locals := frame.locals.insert "tick" (.int tick)}
   refine ⟨out, ExecBlock.consNormal (stele' := out) (evm' := evm)
-    (ExecStmt.assign (evalExpr_var_get (cfg := config) (evm := evm) hc)
+    (ExecStmt.assign (hperm := Or.inl rfl) (evalExpr_var_get (cfg := config) (evm := evm) hc)
       (assignLocalVarBase_frame ht)) ?_⟩
   apply ExecBlock.consReturn
   apply ExecStmt.return
@@ -127,7 +127,7 @@ theorem tickLogChoiceSource {frame : Frame} {evm : EVM.State} (log price : UInt2
     rw [tickLogChoice_eq, if_pos he]
     refine ExecBlock.consNormal (stele' := chosen) (evm' := evm) (ExecStmt.iteTrue ?_ ?_) hr
     · simpa only [he, decide_true] using heq
-    · exact ExecBlock.consNormal (ExecStmt.assign (evalExpr_var_get (cfg := config) hl)
+    · exact ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inl rfl) (evalExpr_var_get (cfg := config) hl)
         (assignLocalVarBase_frame hcond)) ExecBlock.nil
   · have hv' : (tickLogHigh log).natAbs ≤ 887272 := hv.resolve_left he
     let mid := tickLogCalleeFrame frame log
@@ -155,7 +155,7 @@ theorem tickLogChoiceSource {frame : Frame} {evm : EVM.State} (log price : UInt2
       (ExecStmt.iteFalse ?_ ?_) hr⟩
     · simpa only [he, decide_false] using heq
     · refine ExecBlock.consNormal (tickLogCalleeSource log hc hh hv') ?_
-      exact ExecBlock.consNormal (ExecStmt.assign evalChoice (assignLocalVarBase_frame
+      exact ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inl rfl) evalChoice (assignLocalVarBase_frame
         ((hkeep "__cond1" (by decide)).trans hcond))) ExecBlock.nil
 
 theorem tickLogChoiceSourceReverts {frame : Frame} {evm : EVM.State} (log : UInt256)

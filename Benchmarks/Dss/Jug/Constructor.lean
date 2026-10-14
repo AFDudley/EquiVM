@@ -61,7 +61,7 @@ theorem jugConstructorCorrect :
       refine typedConstructorRefinementFor.execution hsuccess
         (by
           simpa [evm0s, evm1s, evm2s] using
-            jugSteleCtorExecSuccess (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
+            jugSteleCtorExecSuccess (hperm := hperm) (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
               (g := g) vat hwv)
         ?_
       exact ctorResultEquiv.success rfl rfl hMapVat.symm rfl

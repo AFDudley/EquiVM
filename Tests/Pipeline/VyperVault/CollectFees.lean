@@ -179,7 +179,7 @@ theorem vyperVaultCollectFeesBody {σ σ₀ A I} {g : UInt256} (imms : Store) (h
     rw [decide_eq_false hown] at hcaller
     exact ExecFuncBody.execBlockRevert (ExecBlock.consNormal (ExecStmt.requireTrue hcv)
       (ExecBlock.consNormal (ExecStmt.requireTrue hne)
-        (ExecBlock.consNormal (ExecStmt.assign hlit2 hassignL)
+        (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [storageStore_executionEnv, initState] using hperm)) hlit2 hassignL)
           (ExecBlock.consRevert (ExecStmt.internalCallRevert (callee := collectFeesCallee) (hargs _)
             collectFeesCallee_lookup rfl
             (ExecFuncBody.execBlockRevert (ExecBlock.consRevert (ExecStmt.requireFalse hcaller))))))))
@@ -231,7 +231,7 @@ theorem vyperVaultCollectFeesBody {σ σ₀ A I} {g : UInt256} (imms : Store) (h
   have hcallStmt : ExecStmt config (frame imms (cfLocals σ I a)) (evmF σ σ₀ (Sat256.ofUInt256 g) A I)
       (.lowLevelCall (.var "__a0") (.var "amount") (.newBytes (.intLit 0)) "__ok1" "__data1" true)
       (.ok { frame imms (cfLocals σ I a) with locals := cfLocals' σ I a z out } evm') :=
-    lowLevelCallSource
+    lowLevelCallSource (hperm := Or.inr (by simpa only [hs.env] using hperm))
       (by
         rw [evalVar imms _ _ "__a0" _ (store_get_self _ _ _)]
         show EvalResult.ok (Value.address a) = EvalResult.ok (Value.address (AccountAddress.ofUInt256 (UInt256.ofNat a.val)))
@@ -246,12 +246,12 @@ theorem vyperVaultCollectFeesBody {σ σ₀ A I} {g : UInt256} (imms : Store) (h
     rw [collectFeesBody_eq]
     exact ExecFuncBody.execBlockRevert (ExecBlock.consNormal (ExecStmt.requireTrue hcv)
       (ExecBlock.consNormal (ExecStmt.requireTrue hne)
-        (ExecBlock.consNormal (ExecStmt.assign hlit2 hassignL)
+        (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [storageStore_executionEnv, initState] using hperm)) hlit2 hassignL)
           (ExecBlock.consRevert (ExecStmt.internalCallRevert (callee := collectFeesCallee) (hargs _)
             collectFeesCallee_lookup rfl
             (ExecFuncBody.execBlockRevert (ExecBlock.consNormal (ExecStmt.requireTrue hcaller)
               (ExecBlock.consNormal (ExecStmt.letDecl hfcRead)
-                (ExecBlock.consNormal (ExecStmt.assign hlit0 hassignF)
+                (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [storageStore_executionEnv, initState] using hperm)) hlit0 hassignF)
                   (ExecBlock.consNormal (ExecStmt.letDecl ha0)
                     (ExecBlock.consNormal hcallStmt
                       (ExecBlock.consRevert (ExecStmt.requireFalse
@@ -287,17 +287,17 @@ theorem vyperVaultCollectFeesBody {σ σ₀ A I} {g : UInt256} (imms : Store) (h
       rw [collectFeesBody_eq]
       exact ExecFuncBody.execBlockRet (ExecBlock.consNormal (ExecStmt.requireTrue hcv)
         (ExecBlock.consNormal (ExecStmt.requireTrue hne)
-          (ExecBlock.consNormal (ExecStmt.assign hlit2 hassignL)
+          (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [storageStore_executionEnv, initState] using hperm)) hlit2 hassignL)
             (ExecBlock.consNormal (ExecStmt.internalCallReturn (callee := collectFeesCallee) (hargs _)
               collectFeesCallee_lookup rfl
               (ExecFuncBody.execBlockRet (ExecBlock.consNormal (ExecStmt.requireTrue hcaller)
                 (ExecBlock.consNormal (ExecStmt.letDecl hfcRead)
-                  (ExecBlock.consNormal (ExecStmt.assign hlit0 hassignF)
+                  (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [storageStore_executionEnv, initState] using hperm)) hlit0 hassignF)
                     (ExecBlock.consNormal (ExecStmt.letDecl ha0)
                       (ExecBlock.consNormal hcallStmt
                         (ExecBlock.consNormal (ExecStmt.requireTrue hok)
                           (ExecBlock.consReturn (ExecStmt.return (evalExprs?_singleton hret)))))))))))
-              (ExecBlock.consNormal (ExecStmt.assign hlit3 hassign3)
+              (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [hs'.env] using hperm)) hlit3 hassign3)
                 (ExecBlock.consReturn (ExecStmt.return (evalExprs?_singleton
                   (evalVar imms _ _ "__r" _ (store_get_self _ _ _))))))))))
     exact rd8.reEquivExecutionGen hcode' hd hdec hbody ((hs'.storageWrite ⟨0⟩ (UInt256.ofNat 3)).accounts)

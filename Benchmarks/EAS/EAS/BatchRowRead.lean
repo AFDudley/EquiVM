@@ -39,7 +39,7 @@ theorem batchRowReadSource {L imms : Store} {evm : EVM.State} {requests : List V
     rw [batchRowLast,evalExpr?,evalLocalValue hi1,he] <;> try decide
     simp only [bind,EvalResult.bind,hs,evalBinaryOp_eq_int_ok,hv]
   apply ExecBlock.consNormal (ExecStmt.letDecl (value := .bool false) (by simp only [evalExpr?,pure]))
-  apply ExecBlock.consNormal (ExecStmt.assign hlast (assignLocalValue (store_get_self L "last" (.bool false))))
+  apply ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hlast (assignLocalValue (store_get_self L "last" (.bool false))))
   apply ExecBlock.consNormal (ExecStmt.letDecl ?_) ExecBlock.nil
   apply evalArrayIndex
     (evalLocalValue (by simpa (disch := first | decide | exact beq_eq_false_iff_ne.mpr hneq | exact beq_eq_false_iff_ne.mpr (Ne.symm hneq)) only [store_get_ne] using hd1))

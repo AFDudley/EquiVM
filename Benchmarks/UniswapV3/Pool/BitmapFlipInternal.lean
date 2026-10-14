@@ -48,7 +48,7 @@ theorem bitmapFlipInternalX {σ : AccountMap} {ee : ExecutionEnv} {g : Sat256}
     exact bitmapFlipRevertsZero (immStore v) evm tick
   · exact Or.inl ⟨hrevert (bitmapFlipRevertsRemainder (immStore v) evm tick spacing hn hrem),
       Or.inl hr⟩
-  · rcases hb with ⟨hr, hp⟩ | ⟨_, k', C', r'⟩
+  · rcases hb with ⟨hr, hp⟩ | ⟨hp, k', C', r'⟩
     · refine Or.inr (Or.inl ⟨?_, hr⟩)
       apply ExecStmt.internalCallStatic he hl (bitmapFlipBind tick spacing)
       rw [hc]
@@ -57,7 +57,7 @@ theorem bitmapFlipInternalX {σ : AccountMap} {ee : ExecutionEnv} {g : Sat256}
       · exact internalCallFunctionReturn (callee := bitmapFlipFunction)
           (calleeStele := bitmapFlipReadyFrame (immStore v) tick spacing) (value := none)
           he hl (bitmapFlipBind tick spacing)
-          (by rw [hc]; exact bitmapFlipReturns (immStore v) evm tick spacing hn hrem)
+          (by rw [hc]; exact bitmapFlipReturns (hperm := by simpa only [hs.env] using hp) (immStore v) evm tick spacing hn hrem)
       · change RD (deployedRuntime v) ee g s0 ret R (bitmapFlipMemory mem tick spacing)
           (tickUpdateMemoryWords aw) rdata _ k' C' at r'
         rw [tickUpdateMemoryWords_eq hm.active] at r'

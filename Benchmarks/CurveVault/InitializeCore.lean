@@ -82,7 +82,7 @@ theorem vaultInitializeAfterGuard {I : ExecutionEnv} {g : Sat256} {s0 evm : Stat
     rw [memLoad_toByteArray, ulit_toNat' _ (by change ptr.toNat + 32 < 2 ^ 256; omega)]
   let locals3 := locals2.insert "borrowed_symbol" (vaultBorrowedSymbol size.toNat word.toByteArray)
   rw [← hword] at s4
-  obtain ⟨s5, hs4⟩ := vaultInitializeStringSource (locals := locals3) hs3 (by exact store_get_self _ _ _)
+  obtain ⟨s5, hs4⟩ := vaultInitializeStringSource (hperm := by assumption) (locals := locals3) hs3 (by exact store_get_self _ _ _)
     (by
       intro name hn
       simp only [List.mem_cons, List.not_mem_nil, or_false] at hn

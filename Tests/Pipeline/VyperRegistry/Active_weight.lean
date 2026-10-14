@@ -206,7 +206,7 @@ theorem awIter {σ σ₀ A I} {g : UInt256} (hle16 : (solcSlotWordAt (UInt256.of
       ExecBlock config (frame L2) (initState σ σ₀ (Sat256.ofUInt256 g) A I) awPost
         (.ok (frame (L2.insert "__i0" (uint256Value (UInt256.ofNat (i + 1))))) (initState σ σ₀ (Sat256.ofUInt256 g) A I)) :=
     fun L2 h2 => ExecBlock.consNormal
-      (ExecStmt.assign (evalAddOne L2 _ i (lt_size_of_lt_sign (by omega)) h2) (assignLocalVarBase_ok h2)) ExecBlock.nil
+      (ExecStmt.assign (hperm := by first | assumption | exact Or.inr ‹_› | exact Or.inl rfl) (evalAddOne L2 _ i (lt_size_of_lt_sign (by omega)) h2) (assignLocalVarBase_ok h2)) ExecBlock.nil
   by_cases hact : solcSlotWordAt (entrySlot idw + UInt256.ofNat 2) σ I = ⟨0⟩
   · -- inactive: skip to pc 372
     obtain ⟨_, _, rd1⟩ := registryBlocks.registry_block_296_taken (by simp)
@@ -273,7 +273,7 @@ theorem awIter {σ σ₀ A I} {g : UInt256} (hle16 : (solcSlotWordAt (UInt256.of
   refine Or.inl ⟨total + wt, _, L2.insert "__i0" (uint256Value (UInt256.ofNat (i + 1))), _, _, _, hM4inv, ?_, rd3, hcT, L2,
     ExecBlock.consNormal (ExecStmt.letDecl hidRead)
       (ExecBlock.consNormal (ExecStmt.iteTrue hactT (ExecBlock.consNormal
-        (ExecStmt.assign hadd (assignLocalVarBase_ok (old := uint256Value total)
+        (ExecStmt.assign (hperm := by first | assumption | exact Or.inr ‹_› | exact Or.inl rfl) hadd (assignLocalVarBase_ok (old := uint256Value total)
           (by show L1.get? "total" = _; rw [hL1def, store_get_ne _ _ (by decide)]; exact hLt)))
         ExecBlock.nil)) ExecBlock.nil),
     hpost L2 hL2i⟩

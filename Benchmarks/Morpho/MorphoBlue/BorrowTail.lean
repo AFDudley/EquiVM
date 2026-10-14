@@ -46,7 +46,7 @@ theorem morphoBorrowTail {v : MorphoImmutables} {ee : ExecutionEnv} {g : Sat256}
       ExecStmt.requireTrue (by simpa only [decide_eq_true hgood] using hg)
     have hab : StateBlock config { contract := contract, locals := locals, immutables := imms } evm
         (borrowTransition.body.drop 22) { contract := contract, locals := locals, immutables := imms } evm
-        (borrowTransition.body.drop 25) := (ab1.step hguard).step (hl.emit imms evm "Borrow")
+        (borrowTransition.body.drop 25) := (ab1.step hguard).step (hl.emit imms evm "Borrow" ((congrArg ExecutionEnv.perm hs.env).trans hp))
     have had := had1.trans had2
     have hm3 := hm2.event (UInt256.ofNat ee.source.val) assets shares
     have hpe := hm2.eventPrefix (UInt256.ofNat ee.source.val) assets shares

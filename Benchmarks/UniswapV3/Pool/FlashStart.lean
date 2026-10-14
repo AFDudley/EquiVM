@@ -37,14 +37,14 @@ theorem flashStartX {σ : AccountMap} {ee : ExecutionEnv} {g : Sat256}
       rcases noDelegateCallX (v := v) rdDelegate
           (by rw [uniswapV3PoolPatchedValidJumps v]; jump_dest) (by omega) with
         ⟨rdBad, hdelegate⟩ | ⟨hself, kLiq, CLiq, rdLiq⟩
-      · exact Or.inl ⟨rdBad, flashRevertsDelegate v evm a hwv hunlockedSource
+      · exact Or.inl ⟨rdBad, flashRevertsDelegate (hperm := (congrArg ExecutionEnv.perm hs.env).trans hp) v evm a hwv hunlockedSource
           (by rw [hs.env]; exact hdelegate)⟩
       · have hselfSource : evm.executionEnv.codeOwner = v.original := by rw [hs.env]; exact hself
         rcases flashReadLiquidityX (v := v) rdLiq hov with
           ⟨rdBad, hliq⟩ | ⟨hliq, kReady, CReady, rdReady⟩
-        · exact Or.inl ⟨rdBad, flashRevertsLiquidity v evm a hwv hunlockedSource hselfSource
+        · exact Or.inl ⟨rdBad, flashRevertsLiquidity (hperm := (congrArg ExecutionEnv.perm hs.env).trans hp) v evm a hwv hunlockedSource hselfSource
             (by rw [hsLocked.env, hliq]; omega)⟩
-        · have hsource := flashReadyPrefix v evm a hwv hunlockedSource hselfSource
+        · have hsource := flashReadyPrefix (hperm := (congrArg ExecutionEnv.perm hs.env).trans hp) v evm a hwv hunlockedSource hselfSource
             (by rw [hsLocked.env]; exact hliq)
           dsimp only at hsource
           rw [hsLocked.env] at hsource

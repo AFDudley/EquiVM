@@ -30,7 +30,8 @@ theorem setProtocolFeeControllerBodyReturns (evm : EVM.State) (locals imms : Sto
     (hc : controller.toNat < EVM.addressModulus)
     (hnew : locals.get? "controller" = some (.address (AccountAddress.ofNat controller.toNat)))
     (hbase : locals.get? "protocolFeeController" = none)
-    (howner : locals.get? "owner" = none) (hauth : ownerAuthorized evm) :
+    (howner : locals.get? "owner" = none) (hauth : ownerAuthorized evm)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm locals setProtocolFeeControllerTransition.body
       (.returned (calldataFrame contract locals imms evm) (setProtocolFeeControllerPost evm controller) none) imms := by
   have hn := (store_get_ne locals (.bytes evm.executionEnv.calldata) (by decide : ("__calldata" == "controller") = false)).trans hnew
@@ -39,9 +40,9 @@ theorem setProtocolFeeControllerBodyReturns (evm : EVM.State) (locals imms : Sto
   refine ExecBlock.consNormal (ExecStmt.requireTrue ?_) ?_
   · exact (ownerGuard_eval rfl ((store_get_ne locals _ (by decide : ("__calldata" == "owner") = false)).trans howner)).trans
       (by rw [decide_eq_true hauth])
-  refine ExecBlock.consNormal (ExecStmt.assign (evalLocalValue hn)
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) (evalLocalValue hn)
     (setProtocolFeeControllerAssign evm locals imms controller hc hbase)) ?_
-  refine ExecBlock.consNormal (ExecStmt.emit
+  refine ExecBlock.consNormal (ExecStmt.emit (hperm := by simpa only [setProtocolFeeControllerPost, storageStore_executionEnv] using hperm)
     (vals := [.address (AccountAddress.ofNat controller.toNat)]) ?_) ExecBlock.nil
   simp only [evalExprs?, evalExpr?, calldataFrame, hn, EvalResult.ofOption,
     bind, EvalResult.bind, pure, setProtocolFeeControllerPost]
@@ -138,7 +139,7 @@ theorem poolManagerSetProtocolFeeControllerBodyCore {σ σ₀ A I} {g : UInt256}
                   _ hwv hhi hcanon (store_get_self _ _ _) hpfc hbase hauth hperm)
             | true =>
               have hret := poolManagerBlocks.poolManager_block_9899 (by simp) hperm rdStore
-              have hbody := setProtocolFeeControllerBodyReturns (initState σ σ₀ (Sat256.ofUInt256 g) A I) args
+              have hbody := setProtocolFeeControllerBodyReturns (hperm := by assumption) (initState σ σ₀ (Sat256.ofUInt256 g) A I) args
                 (immStore v) _ hwv hhi hcanon (store_get_self _ _ _) hpfc hbase hauth
               exact hret.reEquivExecutionGen hcode hd hdec hbody
                 (storageStore_accountMap (initState σ σ₀ (Sat256.ofUInt256 g) A I) I.codeOwner ⟨2⟩

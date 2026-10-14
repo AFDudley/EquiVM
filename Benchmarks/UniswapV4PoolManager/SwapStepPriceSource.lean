@@ -35,7 +35,7 @@ theorem swapStepPriceSource {f : Frame} {evm : EVM.State} {price liquidity amoun
   by_cases hfit : nextPriceFits price liquidity amount input zeroForOne
   · rw [if_pos hfit] at hc ⊢
     exact ExecBlock.consNormal hc (ExecBlock.consNormal
-      (ExecStmt.assign wordLocal_eval (assignLocalValue ((store_get_ne _ _
+      (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) wordLocal_eval (assignLocalValue ((store_get_ne _ _
         (by cases input <;> decide : (swapStepPriceRet input == "sqrtPriceNextX96") = false)).trans hn))) ExecBlock.nil)
   · rw [if_neg hfit] at hc ⊢
     exact ExecBlock.consRevert hc

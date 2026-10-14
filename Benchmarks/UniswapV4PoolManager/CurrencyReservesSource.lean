@@ -57,7 +57,7 @@ theorem resetCurrencyBody {f : Frame} {evm : EVM.State} (hf : f.contract = contr
   · rw [if_pos hp]
     exact .execBlockStatic (ExecBlock.consStatic (ExecStmt.assignTransientStatic he hw hp))
   · rw [if_neg hp]
-    exact .execBlockOK (ExecBlock.consNormal (ExecStmt.assign he hw) ExecBlock.nil)
+    exact .execBlockOK (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (Bool.eq_true_of_not_eq_false hp)) he hw) ExecBlock.nil)
 
 theorem resetCurrencyCall {f : Frame} {evm : EVM.State} (hf : f.contract = contract) (retVar : Ident) :
     ExecStmt config f evm (.internalCall "CurrencyReserves_resetCurrency" [] retVar)
@@ -87,8 +87,8 @@ theorem syncReservesBody {f : Frame} {evm : EVM.State} {currency : AccountAddres
       simp only [syncReservesCurrencyPost, transientStore_executionEnv]
     rw [hI] at hw2
     apply ExecFuncBody.execBlockOK
-    exact ExecBlock.consNormal (ExecStmt.assign he hw)
-      (ExecBlock.consNormal (ExecStmt.assign (evalLocalValue hv) hw2) ExecBlock.nil)
+    exact ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (Bool.eq_true_of_not_eq_false hp)) he hw)
+      (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [transientStore_executionEnv] using Bool.eq_true_of_not_eq_false hp)) (evalLocalValue hv) hw2) ExecBlock.nil)
 
 theorem syncReservesCall {f : Frame} {evm : EVM.State} {ec ev : Expr} {currency : AccountAddress} {value : UInt256}
     (hf : f.contract = contract) (hc : evalExpr? config f evm ec = .ok (.address currency))

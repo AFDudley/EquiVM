@@ -37,7 +37,7 @@ theorem vaultInitializeSymbolCall {I : ExecutionEnv} {g : Sat256} {s0 evm : Stat
   | false =>
     have rd393 := vaultBlocks.vault_block_389_fallthrough
       (by simp only [List.length_cons]; omega) rfl rd389
-    exact Or.inr ⟨ExecStmt.externalCallFailure (sendVal := 0) (argVals := []) hreceiver
+    exact Or.inr ⟨ExecStmt.externalCallFailure (hperm := Or.inl rfl) (sendVal := 0) (argVals := []) hreceiver
       (by simp [evalExpr?, pure]) (by simp [evalExprs?, pure])
       (by simpa only [accountAddress_ofUInt256_eq_ofNat_toNat, address_of_val] using hcall),
       vaultBlocks.vault_block_393 (by simp only [vaultBlocks.vault_block_389_fallthrough_stack, List.length_cons]; omega) rd393⟩
@@ -54,7 +54,7 @@ theorem vaultInitializeSymbolCall {I : ExecutionEnv} {g : Sat256} {s0 evm : Stat
         (by simp only [vaultBlocks.vault_block_389_taken_stack, List.length_cons]; omega)
         (by rw [hmin]; rw [ugt_one (by rw [hlen]; change _ < 320; omega)]; decide +kernel)
         (by native_decide) rd400
-      refine Or.inr ⟨ExecStmt.externalCallReturnDecodeRevert (sendVal := 0) (argVals := []) hreceiver
+      refine Or.inr ⟨ExecStmt.externalCallReturnDecodeRevert (hperm := Or.inl rfl) (sendVal := 0) (argVals := []) hreceiver
         (by simp [evalExpr?, pure]) (by simp [evalExprs?, pure])
         (by simpa only [accountAddress_ofUInt256_eq_ofNat_toNat, address_of_val] using hcall) ?_,
         vaultBlocks.vault_block_8284
@@ -75,7 +75,7 @@ theorem vaultInitializeSymbolCall {I : ExecutionEnv} {g : Sat256} {s0 evm : Stat
     rcases vaultInitializeSymbolDecode hmem h32 haw' hstack rd425 with
       ⟨size, ptr, aw'', k'', C'', hn, hp, hfull, hdecode, hm, rd476⟩ | ⟨hdecode, hrev⟩
     · refine Or.inl ⟨evm', σ', size, ptr, _, out, aw'', k'', C'', ?_, hs', hn, hp, hfull, ?_, hm, rd476⟩
-      · apply ExecStmt.externalCallSuccess (sendVal := 0) (argVals := [])
+      · apply ExecStmt.externalCallSuccess (hperm := Or.inl rfl) (sendVal := 0) (argVals := [])
           (value := [vaultBorrowedSymbol size.toNat
             ((vaultSymbolCallMemory mem out).readWithPadding (ptr.toNat + 32) 32)]) hreceiver
           (by simp [evalExpr?, pure]) (by simp [evalExprs?, pure])
@@ -83,7 +83,7 @@ theorem vaultInitializeSymbolCall {I : ExecutionEnv} {g : Sat256} {s0 evm : Stat
         exact hdecode
       · rw [vaultSymbolCallMemory_size mem out hmem]
         omega
-    · exact Or.inr ⟨ExecStmt.externalCallReturnDecodeRevert (sendVal := 0) (argVals := []) hreceiver
+    · exact Or.inr ⟨ExecStmt.externalCallReturnDecodeRevert (hperm := Or.inl rfl) (sendVal := 0) (argVals := []) hreceiver
         (by simp [evalExpr?, pure]) (by simp [evalExprs?, pure])
         (by simpa only [accountAddress_ofUInt256_eq_ofNat_toNat, address_of_val] using hcall) hdecode, hrev⟩
 

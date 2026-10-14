@@ -1859,7 +1859,7 @@ theorem gemJoinExitBodySuccessSplit (evm evmSlip evmTransfer : EVM.State) (I : E
         "transfer" 0 [joinUsrValue I, joinWadValue I]
         (true, evmTransfer, outTransfer) true)
     (hdecTransfer : config.externalABI.decode? "transfer" outTransfer = some [.bool true]) :
-    (ExecTransitionBody config contract evm (exitStore I) exitTransition.body
+    (evmTransfer.executionEnv.perm = true → ExecTransitionBody config contract evm (exitStore I) exitTransition.body
       (.returned { contract := contract, locals := exitLocalsAfterTransferOk I }
         evmTransfer none)) ∧
       (evmTransfer.executionEnv.perm = false →
@@ -1888,7 +1888,7 @@ theorem gemJoinExitBodySuccessSplit (evm evmSlip evmTransfer : EVM.State) (I : E
           [.storage ilkRef, sender, asInt256 (.unary .neg (asInt256 (.var "wad")))] "slipRet")
         (.ok { contract := contract, locals := exitLocalsAfterSlip I } evmSlip) := by
     simpa [exitLocalsAfterSlip, collapseReturns] using
-      ExecStmt.externalCallSuccess hvat (by simp [evalExpr?, pure]) hslipArgs hcallSlip
+      ExecStmt.externalCallSuccess (hperm := Or.inl rfl) hvat (by simp [evalExpr?, pure]) hslipArgs hcallSlip
         (gemJoinDecode_slipReturn outSlip)
   have hgem :
       evalExpr? config { contract := contract, locals := exitLocalsAfterSlip I } evmSlip
@@ -1910,7 +1910,7 @@ theorem gemJoinExitBodySuccessSplit (evm evmSlip evmTransfer : EVM.State) (I : E
           [.var "usr", .var "wad"] "transferOk")
         (.ok { contract := contract, locals := exitLocalsAfterTransferOk I } evmTransfer) := by
     simpa [exitLocalsAfterTransferOk, collapseReturns] using
-      ExecStmt.externalCallSuccess hgem (by simp [evalExpr?, pure]) htransferArgs
+      ExecStmt.externalCallSuccess (hperm := Or.inl rfl) hgem (by simp [evalExpr?, pure]) htransferArgs
         hcallTransfer hdecTransfer
   have hprefix {result : ExecResult}
       (hlog : ExecBlock config
@@ -1929,9 +1929,10 @@ theorem gemJoinExitBodySuccessSplit (evm evmSlip evmTransfer : EVM.State) (I : E
     exact ExecBlock.consNormal
       (ExecStmt.requireTrue (evalExpr_exit_transferOk_true evmTransfer I)) hlog
   constructor
-  · exact ExecFuncBody.execBlockOK
+  · intro hperm
+    exact ExecFuncBody.execBlockOK
       (hprefix (ExecBlock.consNormal
-        (ExecStmt.emit (evalExprs_gemJoinExitEvent evmTransfer I)) ExecBlock.nil))
+        (ExecStmt.emit (hperm := hperm) (evalExprs_gemJoinExitEvent evmTransfer I)) ExecBlock.nil))
   · intro hperm
     exact ExecFuncBody.execBlockStatic
       (hprefix (ExecBlock.consStatic
@@ -2004,7 +2005,7 @@ theorem gemJoinExitBodyRevertsSlipCallFailure
         (.externalCall (.storage vatRef) "slip" (.intLit 0)
           [.storage ilkRef, sender, asInt256 (.unary .neg (asInt256 (.var "wad")))] "slipRet")
         .reverted := by
-    exact ExecStmt.externalCallFailure hvat (by simp [evalExpr?, pure]) hslipArgs hcallSlip
+    exact ExecStmt.externalCallFailure (hperm := Or.inl rfl) hvat (by simp [evalExpr?, pure]) hslipArgs hcallSlip
   refine ExecFuncBody.execBlockRevert ?_
   simp only [exitTransition, nonpayable, checkedExternalCallStmts, List.cons_append,
     List.nil_append]
@@ -2056,7 +2057,7 @@ theorem gemJoinExitBodyRevertsGemNoCode
           [.storage ilkRef, sender, asInt256 (.unary .neg (asInt256 (.var "wad")))] "slipRet")
         (.ok { contract := contract, locals := exitLocalsAfterSlip I } evmSlip) := by
     simpa [exitLocalsAfterSlip, collapseReturns] using
-      ExecStmt.externalCallSuccess hvat (by simp [evalExpr?, pure]) hslipArgs hcallSlip
+      ExecStmt.externalCallSuccess (hperm := Or.inl rfl) hvat (by simp [evalExpr?, pure]) hslipArgs hcallSlip
         (gemJoinDecode_slipReturn outSlip)
   have hgemGuard :
       evalExpr? config { contract := contract, locals := exitLocalsAfterSlip I } evmSlip
@@ -2121,7 +2122,7 @@ theorem gemJoinExitBodyRevertsTransferCallFailure
           [.storage ilkRef, sender, asInt256 (.unary .neg (asInt256 (.var "wad")))] "slipRet")
         (.ok { contract := contract, locals := exitLocalsAfterSlip I } evmSlip) := by
     simpa [exitLocalsAfterSlip, collapseReturns] using
-      ExecStmt.externalCallSuccess hvat (by simp [evalExpr?, pure]) hslipArgs hcallSlip
+      ExecStmt.externalCallSuccess (hperm := Or.inl rfl) hvat (by simp [evalExpr?, pure]) hslipArgs hcallSlip
         (gemJoinDecode_slipReturn outSlip)
   have hgem :
       evalExpr? config { contract := contract, locals := exitLocalsAfterSlip I } evmSlip
@@ -2142,7 +2143,7 @@ theorem gemJoinExitBodyRevertsTransferCallFailure
         (.externalCall (.storage gemRef) "transfer" (.intLit 0)
           [.var "usr", .var "wad"] "transferOk")
         .reverted := by
-    exact ExecStmt.externalCallFailure hgem (by simp [evalExpr?, pure]) htransferArgs
+    exact ExecStmt.externalCallFailure (hperm := Or.inl rfl) hgem (by simp [evalExpr?, pure]) htransferArgs
       hcallTransfer
   refine ExecFuncBody.execBlockRevert ?_
   simp only [exitTransition, nonpayable, checkedExternalCallStmts, List.cons_append,
@@ -2203,7 +2204,7 @@ theorem gemJoinExitBodyRevertsTransferDecode
           [.storage ilkRef, sender, asInt256 (.unary .neg (asInt256 (.var "wad")))] "slipRet")
         (.ok { contract := contract, locals := exitLocalsAfterSlip I } evmSlip) := by
     simpa [exitLocalsAfterSlip, collapseReturns] using
-      ExecStmt.externalCallSuccess hvat (by simp [evalExpr?, pure]) hslipArgs hcallSlip
+      ExecStmt.externalCallSuccess (hperm := Or.inl rfl) hvat (by simp [evalExpr?, pure]) hslipArgs hcallSlip
         (gemJoinDecode_slipReturn outSlip)
   have hgem :
       evalExpr? config { contract := contract, locals := exitLocalsAfterSlip I } evmSlip
@@ -2224,7 +2225,7 @@ theorem gemJoinExitBodyRevertsTransferDecode
         (.externalCall (.storage gemRef) "transfer" (.intLit 0)
           [.var "usr", .var "wad"] "transferOk")
         .reverted := by
-    exact ExecStmt.externalCallReturnDecodeRevert hgem (by simp [evalExpr?, pure])
+    exact ExecStmt.externalCallReturnDecodeRevert (hperm := Or.inl rfl) hgem (by simp [evalExpr?, pure])
       htransferArgs hcallTransfer hdecTransfer
   refine ExecFuncBody.execBlockRevert ?_
   simp only [exitTransition, nonpayable, checkedExternalCallStmts, List.cons_append,
@@ -2285,7 +2286,7 @@ theorem gemJoinExitBodyRevertsTransferFalse
           [.storage ilkRef, sender, asInt256 (.unary .neg (asInt256 (.var "wad")))] "slipRet")
         (.ok { contract := contract, locals := exitLocalsAfterSlip I } evmSlip) := by
     simpa [exitLocalsAfterSlip, collapseReturns] using
-      ExecStmt.externalCallSuccess hvat (by simp [evalExpr?, pure]) hslipArgs hcallSlip
+      ExecStmt.externalCallSuccess (hperm := Or.inl rfl) hvat (by simp [evalExpr?, pure]) hslipArgs hcallSlip
         (gemJoinDecode_slipReturn outSlip)
   have hgem :
       evalExpr? config { contract := contract, locals := exitLocalsAfterSlip I } evmSlip
@@ -2307,7 +2308,7 @@ theorem gemJoinExitBodyRevertsTransferFalse
           [.var "usr", .var "wad"] "transferOk")
         (.ok { contract := contract, locals := exitLocalsAfterTransferFalse I } evmTransfer) := by
     simpa [exitLocalsAfterTransferFalse, collapseReturns] using
-      ExecStmt.externalCallSuccess hgem (by simp [evalExpr?, pure]) htransferArgs
+      ExecStmt.externalCallSuccess (hperm := Or.inl rfl) hgem (by simp [evalExpr?, pure]) htransferArgs
         hcallTransfer hdecTransfer
   refine ExecFuncBody.execBlockRevert ?_
   simp only [exitTransition, nonpayable, checkedExternalCallStmts, List.cons_append,
@@ -3533,7 +3534,7 @@ theorem gemJoinExitBodyCoreTransferReturnTrueSmall
   have hdecTransfer : config.externalABI.decode? "transfer" outTransfer = some [.bool true] :=
     gemJoinDecode_transferReturn_true hlo hword
   have hbodySplit :
-      (ExecTransitionBody config contract evmStele (exitStore I) exitTransition.body
+      (I.perm = true → ExecTransitionBody config contract evmStele (exitStore I) exitTransition.body
         (.returned { contract := contract, locals := exitLocalsAfterTransferOk I }
           evmSteleTransfer none)) ∧
       (I.perm = false → ExecTransitionBody config contract evmStele
@@ -3547,10 +3548,10 @@ theorem gemJoinExitBodyCoreTransferReturnTrueSmall
   have henc : returnEquiv ByteArray.empty none exitTransition.returnType := by
     rw [show exitTransition.returnType = [] by rfl]
     exact returnEquiv.fallthrough rfl (by rfl) (by native_decide)
-  rcases hretSplit with ⟨_hperm, hretFinal⟩ | ⟨hperm, hstatic⟩
+  rcases hretSplit with ⟨hperm, hretFinal⟩ | ⟨hperm, hstatic⟩
   swap
   · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode (hbodySplit.2 hperm)
-  exact hretFinal.reEquivExecutionGen hcode hdispatch hdecode hbodySplit.1
+  exact hretFinal.reEquivExecutionGen hcode hdispatch hdecode (hbodySplit.1 hperm)
     haccounts henc
 
 

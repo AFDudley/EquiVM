@@ -293,7 +293,7 @@ theorem flipperDentBodyFrom4733SameCaller
                     locals := dentLocalsAfterFluxWithTicFrom σ evmLotStele.accountMap I }
                   evmTicStele none) := by
             simpa [evm0Stele, evmLotStele, evmTicStele] using
-              (flipperDentSourceBodySuccessSameCaller
+              (flipperDentSourceBodySuccessSameCaller (hperm := by assumption)
                 (σ := σ) (σ₀ := σ₀)
                 (A := A) (I := I) (g := g) (evmFlux := evmFluxStele)
                 (outFlux := outFlux)
@@ -355,7 +355,7 @@ theorem flipperDentBodyFrom4733SameCaller
               ExecTransitionBody config contract evm0Stele (dentLocals I) dentTransition.body
                 .reverted := by
             simpa [evm0Stele, evmLotStele] using
-              (flipperDentSourceBodyAdd48OverflowSameCaller
+              (flipperDentSourceBodyAdd48OverflowSameCaller (hperm := by assumption)
                 (σ := σ) (σ₀ := σ₀)
                 (A := A) (I := I) (g := g) (evmFlux := evmFluxStele)
                 (outFlux := outFlux)

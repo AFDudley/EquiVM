@@ -23,7 +23,7 @@ theorem checkedCastReadySource {cfg : Config} (frame : Frame) (evm : EVM.State)
       (.ok (checkedCastFrame frame output ty y) evm) := by
   refine ExecBlock.consNormal (stele' := checkedCastZeroFrame frame output)
     (ExecStmt.letDecl (value := .int 0) (by simp only [evalExpr?, pure])) ?_
-  refine ExecBlock.consNormal (ExecStmt.assign (value := .int (normalizeInt ty y)) ?_
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (value := .int (normalizeInt ty y)) ?_
     (assignLocalVarBase_frame Std.HashMap.getElem?_insert_self)) ExecBlock.nil
   have hy' : (checkedCastZeroFrame frame output).locals.get? input = some (.int y) := by
     simpa [checkedCastZeroFrame, Std.HashMap.getElem?_insert, hne] using hy

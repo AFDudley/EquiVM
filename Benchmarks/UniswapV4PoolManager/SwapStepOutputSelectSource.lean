@@ -45,11 +45,11 @@ theorem swapStepOutputSelectSource {f : Frame} {evm : EVM.State}
   by_cases hreach : swapStepReachesTarget remaining desired
   · simp only [swapStepOutputSelectFits, swapStepOutputSelectFrame, if_pos hreach, if_true]
     exact ExecStmt.iteTrue (by simpa only [decide_eq_true hreach] using hg)
-      (execBlock_singleton (ExecStmt.assign (evalLocalValue ht) (assignLocalValue hn)))
+      (execBlock_singleton (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalLocalValue ht) (assignLocalValue hn)))
   · simp only [swapStepOutputSelectFits, swapStepOutputSelectFrame, if_neg hreach]
     let f1 := wordLocal f "amountOut" remaining
     have h1 : ExecStmt config f evm (.assign .localVar {base := "amountOut"} swapStepOutputRemainingExpr)
-        (.ok f1 evm) := ExecStmt.assign he (assignLocalValue ho)
+        (.ok f1 evm) := ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) he (assignLocalValue ho)
     have hprice := swapStepPriceSource (f := f1) (evm := evm) (ea := .var "amountOut") false zeroForOne hf hp
       ((store_get_ne _ _ (by decide : ("amountOut" == "sqrtPriceCurrentX96") = false)).trans hs)
       ((store_get_ne _ _ (by decide : ("amountOut" == "liquidity") = false)).trans hl)

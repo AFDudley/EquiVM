@@ -2314,7 +2314,7 @@ theorem clipperUpchostBodyVatIlksCallFailure (v : ClipperImmutables) (evm evmVat
   refine ExecBlock.consNormal (ExecStmt.requireTrue ?_) ?_
   · exact clipperEvalVatCodeGuard_true v evm ∅ hvatCode
   exact ExecBlock.consRevert
-    (ExecStmt.externalCallFailure (clipperEvalVat v evm ∅) (by simp [evalExpr?, pure])
+    (ExecStmt.externalCallFailure (hperm := Or.inl rfl) (clipperEvalVat v evm ∅) (by simp [evalExpr?, pure])
       (clipperEvalIlkArg v evm ∅) hcall)
 
 theorem clipperUpchostBodyVatIlksDecodeRevert (v : ClipperImmutables) (evm evmVat : EVM.State)
@@ -2336,7 +2336,7 @@ theorem clipperUpchostBodyVatIlksDecodeRevert (v : ClipperImmutables) (evm evmVa
   refine ExecBlock.consNormal (ExecStmt.requireTrue ?_) ?_
   · exact clipperEvalVatCodeGuard_true v evm ∅ hvatCode
   exact ExecBlock.consRevert
-    (ExecStmt.externalCallReturnDecodeRevert (clipperEvalVat v evm ∅)
+    (ExecStmt.externalCallReturnDecodeRevert (hperm := Or.inl rfl) (clipperEvalVat v evm ∅)
       (by simp [evalExpr?, pure]) (clipperEvalIlkArg v evm ∅) hcall hdec)
 
 theorem clipperEvalVatIlkDust (v : ClipperImmutables) (evm : EVM.State)
@@ -2391,7 +2391,7 @@ theorem clipperUpchostBodyDogChopNoCode (v : ClipperImmutables) (evm evmVat : EV
     (stele' := { contract := contract, locals := clipperUpchostVatIlkLocals out, immutables := immStore v })
     (evm' := evmVat) ?_ ?_
   · simpa [clipperUpchostVatIlkLocals] using
-      (ExecStmt.externalCallSuccess (clipperEvalVat v evm ∅) (by simp [evalExpr?, pure])
+      (ExecStmt.externalCallSuccess (hperm := Or.inl rfl) (clipperEvalVat v evm ∅) (by simp [evalExpr?, pure])
         (clipperEvalIlkArg v evm ∅) hcall hdec)
   refine ExecBlock.consNormal
     (stele' := { contract := contract, locals := clipperUpchostDustLocals out, immutables := immStore v })
@@ -2442,7 +2442,7 @@ theorem clipperUpchostBodyDogChopCallFailure (v : ClipperImmutables)
     (stele' := { contract := contract, locals := clipperUpchostVatIlkLocals out, immutables := immStore v })
     (evm' := evmVat) ?_ ?_
   · simpa [clipperUpchostVatIlkLocals] using
-      (ExecStmt.externalCallSuccess (clipperEvalVat v evm ∅) (by simp [evalExpr?, pure])
+      (ExecStmt.externalCallSuccess (hperm := Or.inl rfl) (clipperEvalVat v evm ∅) (by simp [evalExpr?, pure])
         (clipperEvalIlkArg v evm ∅) hcallVat hdecVat)
   refine ExecBlock.consNormal
     (stele' := { contract := contract, locals := clipperUpchostDustLocals out, immutables := immStore v })
@@ -2461,7 +2461,7 @@ theorem clipperUpchostBodyDogChopCallFailure (v : ClipperImmutables)
   · exact clipperEvalDogCodeGuard_true v evmVat (clipperUpchostDustLocals out)
       (clipperUpchostDustLocals_get_dog out) hdogCode
   exact ExecBlock.consRevert
-    (ExecStmt.externalCallFailure
+    (ExecStmt.externalCallFailure (hperm := Or.inl rfl)
       (clipperEvalDogTarget v evmVat (clipperUpchostDustLocals out)
         (clipperUpchostDustLocals_get_dog out))
       (by simp [evalExpr?, pure])
@@ -2501,7 +2501,7 @@ theorem clipperUpchostBodyDogChopDecodeRevert (v : ClipperImmutables)
     (stele' := { contract := contract, locals := clipperUpchostVatIlkLocals out, immutables := immStore v })
     (evm' := evmVat) ?_ ?_
   · simpa [clipperUpchostVatIlkLocals] using
-      (ExecStmt.externalCallSuccess (clipperEvalVat v evm ∅) (by simp [evalExpr?, pure])
+      (ExecStmt.externalCallSuccess (hperm := Or.inl rfl) (clipperEvalVat v evm ∅) (by simp [evalExpr?, pure])
         (clipperEvalIlkArg v evm ∅) hcallVat hdecVat)
   refine ExecBlock.consNormal
     (stele' := { contract := contract, locals := clipperUpchostDustLocals out, immutables := immStore v })
@@ -2520,7 +2520,7 @@ theorem clipperUpchostBodyDogChopDecodeRevert (v : ClipperImmutables)
   · exact clipperEvalDogCodeGuard_true v evmVat (clipperUpchostDustLocals out)
       (clipperUpchostDustLocals_get_dog out) hdogCode
   exact ExecBlock.consRevert
-    (ExecStmt.externalCallReturnDecodeRevert
+    (ExecStmt.externalCallReturnDecodeRevert (hperm := Or.inl rfl)
       (clipperEvalDogTarget v evmVat (clipperUpchostDustLocals out)
         (clipperUpchostDustLocals_get_dog out))
       (by simp [evalExpr?, pure])
@@ -2628,10 +2628,10 @@ theorem clipperUpchostBodyDogChopSuccessSplit (v : ClipperImmutables)
     (hloDog : 32 ≤ outDog.size)
     (hmul : (clipperVatIlksDustWord out).toNat * (clipperDogChopWord outDog).toNat <
       UInt256.size) :
-    ExecTransitionBody config contract evm ∅ upchostTransition.body
+    (evmDog.executionEnv.perm = true → ExecTransitionBody config contract evm ∅ upchostTransition.body
       (.returned { contract := contract, locals := clipperUpchostChostLocals out outDog, immutables := immStore v }
         (Stele.EVM.storageStore evmDog evmDog.executionEnv.codeOwner ⟨9⟩
-          (clipperUpchostChostWord out outDog)) none) (immStore v) ∧
+          (clipperUpchostChostWord out outDog)) none) (immStore v)) ∧
     (evmDog.executionEnv.perm = false →
       ExecTransitionBody config contract evm ∅ upchostTransition.body
         .staticViolation (immStore v)) := by
@@ -2651,7 +2651,7 @@ theorem clipperUpchostBodyDogChopSuccessSplit (v : ClipperImmutables)
       (stele' := { contract := contract, locals := clipperUpchostVatIlkLocals out, immutables := immStore v })
       (evm' := evmVat) ?_ ?_
     · simpa [clipperUpchostVatIlkLocals] using
-        (ExecStmt.externalCallSuccess (clipperEvalVat v evm ∅) (by simp [evalExpr?, pure])
+        (ExecStmt.externalCallSuccess (hperm := Or.inl rfl) (clipperEvalVat v evm ∅) (by simp [evalExpr?, pure])
           (clipperEvalIlkArg v evm ∅) hcallVat hdecVat)
     refine ExecBlock.consNormal
       (stele' := { contract := contract, locals := clipperUpchostDustLocals out, immutables := immStore v })
@@ -2673,7 +2673,7 @@ theorem clipperUpchostBodyDogChopSuccessSplit (v : ClipperImmutables)
       (stele' := { contract := contract, locals := clipperUpchostChopLocals out outDog, immutables := immStore v })
       (evm' := evmDog) ?_ ?_
     · simpa [clipperUpchostChopLocals] using
-        (ExecStmt.externalCallSuccess
+        (ExecStmt.externalCallSuccess (hperm := Or.inl rfl)
           (clipperEvalDogTarget v evmVat (clipperUpchostDustLocals out)
             (clipperUpchostDustLocals_get_dog out))
           (by simp [evalExpr?, pure])
@@ -2714,8 +2714,9 @@ theorem clipperUpchostBodyDogChopSuccessSplit (v : ClipperImmutables)
   have hvalue := clipperEvalUpchostChostNew v evmDog out outDog
   have hassign := clipperUpchostAssignChost v evmDog out outDog
   constructor
-  · exact ExecFuncBody.execBlockOK
-      (hprefix (ExecBlock.consNormal (ExecStmt.assign hvalue hassign) ExecBlock.nil))
+  · intro hperm
+    exact ExecFuncBody.execBlockOK
+      (hprefix (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hvalue hassign) ExecBlock.nil))
   · intro hperm
     exact ExecFuncBody.execBlockStatic
       (hprefix (ExecBlock.consStatic (ExecStmt.assignStatic hvalue hassign hperm)))
@@ -2756,7 +2757,7 @@ theorem clipperUpchostBodyDogChopWmulRevert (v : ClipperImmutables)
     (stele' := { contract := contract, locals := clipperUpchostVatIlkLocals out, immutables := immStore v })
     (evm' := evmVat) ?_ ?_
   · simpa [clipperUpchostVatIlkLocals] using
-      (ExecStmt.externalCallSuccess (clipperEvalVat v evm ∅) (by simp [evalExpr?, pure])
+      (ExecStmt.externalCallSuccess (hperm := Or.inl rfl) (clipperEvalVat v evm ∅) (by simp [evalExpr?, pure])
         (clipperEvalIlkArg v evm ∅) hcallVat hdecVat)
   refine ExecBlock.consNormal
     (stele' := { contract := contract, locals := clipperUpchostDustLocals out, immutables := immStore v })
@@ -2778,7 +2779,7 @@ theorem clipperUpchostBodyDogChopWmulRevert (v : ClipperImmutables)
     (stele' := { contract := contract, locals := clipperUpchostChopLocals out outDog, immutables := immStore v })
     (evm' := evmDog) ?_ ?_
   · simpa [clipperUpchostChopLocals] using
-      (ExecStmt.externalCallSuccess
+      (ExecStmt.externalCallSuccess (hperm := Or.inl rfl)
         (clipperEvalDogTarget v evmVat (clipperUpchostDustLocals out)
           (clipperUpchostDustLocals_get_dog out))
         (by simp [evalExpr?, pure])
@@ -3240,12 +3241,12 @@ theorem clipperUpchostDogChopSuccessBodyCore (v : ClipperImmutables) {code : Byt
       config.externalABI.decode? "chop" outDog = some (clipperDogChopValues outDog) :=
     clipperDogChopDecode_ok hloDog
   have hbodySplit :
-      ExecTransitionBody config contract
+      (evmDogStele.executionEnv.perm = true → ExecTransitionBody config contract
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
         upchostTransition.body
         (.returned { contract := contract, locals := clipperUpchostChostLocals out outDog, immutables := immStore v }
           (Stele.EVM.storageStore evmDogStele evmDogStele.executionEnv.codeOwner ⟨9⟩
-            (clipperUpchostChostWord out outDog)) none) (immStore v) ∧
+            (clipperUpchostChostWord out outDog)) none) (immStore v)) ∧
       (evmDogStele.executionEnv.perm = false →
         ExecTransitionBody config contract
           (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
@@ -3254,11 +3255,11 @@ theorem clipperUpchostDogChopSuccessBodyCore (v : ClipperImmutables) {code : Byt
       (initState σ σ₀ (Sat256.ofUInt256 g) A I)
       evmVatStele evmDogStele out outDog (by simp only [initState]; exact hwv)
       hvatCodeStele hcallVatStele hdecVat hdogCodeStele hcallDogStele hdecDog hloDog hmul
-  rcases hretSplit with ⟨_, hret⟩ | ⟨hperm, hstatic⟩
+  rcases hretSplit with ⟨hperm, hret⟩ | ⟨hperm, hstatic⟩
   swap
   · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode
       (hbodySplit.2 (by simpa [evmDogStele, evmVatStele, initState] using hperm))
-  exact hret.reEquivExecutionGen hcode hdispatch hdecode hbodySplit.1
+  exact hret.reEquivExecutionGen hcode hdispatch hdecode (hbodySplit.1 (by simpa only [evmDogStele, evmVatStele, initState] using hperm))
     (by
       simpa [evmDogStele, evmVatStele, initState, storageStore_accountMap] using
         congrArg

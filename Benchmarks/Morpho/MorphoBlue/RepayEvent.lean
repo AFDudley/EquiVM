@@ -9,10 +9,11 @@ namespace Benchmarks.Morpho.MorphoBlue
 set_option maxRecDepth 1000
 
 theorem repayEmit (p : MarketParamsWords) (assets shares account : UInt256) (data : ByteArray)
-    (locals imms : Store) (evm : EVM.State) (hl : SupplyLocals p assets shares account data locals) :
+    (locals imms : Store) (evm : EVM.State) (hl : SupplyLocals p assets shares account data locals)
+    (hperm : evm.executionEnv.perm = true) :
     ExecStmt config { contract := contract, locals := locals, immutables := imms } evm
       repayTransition.body[19]! (.ok { contract := contract, locals := locals, immutables := imms } evm) := by
-  apply ExecStmt.emit
+  apply ExecStmt.emit (hperm := hperm)
   change evalExprs? config _ _ [.var "id", .env .caller, .var "onBehalf", .var "assets", .var "shares"] = _
   simp only [evalExprs?, hl.evalId imms evm, hl.evalAccount imms evm, hl.evalAssets imms evm,
     hl.evalShares imms evm, evalExpr?, envValue, EvalResult.bind, bind, pure]

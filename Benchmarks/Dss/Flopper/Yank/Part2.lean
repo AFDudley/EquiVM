@@ -518,7 +518,7 @@ theorem flopperYankBodyCoreSuckCallSuccess
         (solcAddressSlotWord ⟨2⟩ σ I) ≠ ⟨0⟩ :=
     hcodeSize
   have hbodySplit :
-      (ExecTransitionBody config contract evmStele (yankLocals I)
+      (I.perm = true → ExecTransitionBody config contract evmStele (yankLocals I)
         yankTransition.body
         (.returned { contract := contract, locals := yankSuckLocals I }
           (yankDeletePostState evmCallStele I) none)) ∧
@@ -536,7 +536,7 @@ theorem flopperYankBodyCoreSuckCallSuccess
     flopperYankX_suckCallSuccessDeleteSplit
       (g := Sat256.ofUInt256 g) (σ := σ) (sel := sel)
       (by decide : (⟨1⟩ : UInt256) ≠ ⟨0⟩) rd1164 with
-      ⟨_hperm, hret⟩ | ⟨hperm, hstatic⟩
+      ⟨hperm, hret⟩ | ⟨hperm, hstatic⟩
   swap
   · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode (hbodySplit.2 hperm)
   have hFinalAccounts :
@@ -545,7 +545,7 @@ theorem flopperYankBodyCoreSuckCallSuccess
     simpa [evmCallStele] using
       yankRuntimeDeleteAccountMap_eq_postState evmCallStele I
         (by simp [evmCallStele, evmStele, initState])
-  exact hret.reEquivExecutionGen hcode hdispatch hdecode hbodySplit.1
+  exact hret.reEquivExecutionGen hcode hdispatch hdecode (hbodySplit.1 hperm)
     (by simpa [yankRuntimeDeleteAccountMap] using hFinalAccounts)
     (by
       simpa [yankTransition] using

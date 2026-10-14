@@ -57,7 +57,7 @@ theorem createAssetListCall_exec {factory : AccountAddress} {assets : List Const
     ExecStmt config frame evm
       (.lowLevelCall (.var "factory") (.intLit 0) (.var "payload") "ok" "result")
       (.ok (createAssetListCallFrame frame z out) evm') := by
-  exact lowLevelCallSourceWithPerm (target := factory) (value := 0)
+  exact lowLevelCallSourceWithPerm (hperm := Or.inl rfl) (target := factory) (value := 0)
     (calldata := createAssetListPayload assets assets.length)
     (by simp only [evalExpr?, h.factory, EvalResult.ofOption])
     (by simp only [evalExpr?, pure])

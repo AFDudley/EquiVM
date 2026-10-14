@@ -29,7 +29,8 @@ theorem ctorArgLocals_owner (a : AccountAddress) :
     (ctorArgLocals a).get? "owner" = none := by simp [ctorArgLocals]
 
 theorem ctorBodyReturns (evm : EVM.State) (initialOwner : AccountAddress)
-    (hwv : evm.executionEnv.weiValue = ⟨0⟩) :
+    (hwv : evm.executionEnv.weiValue = ⟨0⟩)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (ctorArgLocals initialOwner) contract.ctor.body
       (.returned
         { contract := contract
@@ -51,8 +52,8 @@ theorem ctorBodyReturns (evm : EVM.State) (initialOwner : AccountAddress)
       (addressScalarWrite (evm := evm) (accountWord initialOwner) rfl (accountWord_canonical _)
         ((store_get_ne _ _ (by decide : ("_owner" == "owner") = false)).trans (ctorArgLocals_owner _))
         (by decide +kernel) rfl)
-  refine ExecBlock.consNormal (ExecStmt.assign (evalLocalValue (store_get_self _ _ _)) hassign) ?_
-  refine ExecBlock.consNormal (ExecStmt.emit
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) (evalLocalValue (store_get_self _ _ _)) hassign) ?_
+  refine ExecBlock.consNormal (ExecStmt.emit (hperm := by simpa only [ctorPost, storageStore_executionEnv] using hperm)
     (vals := [.address (AccountAddress.ofNat 0), .address initialOwner]) ?_) ?_
   · simp only [evalExprs?, evalExpr?, store_get_self, EvalResult.ofOption, bind, EvalResult.bind, pure,
       castValue?]
@@ -238,7 +239,8 @@ theorem ctorTrace {σ σ₀ A I} {g : Sat256} (a : AccountAddress)
   exact (congrArg₂ (fun acc bytes => RDret (ctorCode a) g (initState σ σ₀ g A I) acc bytes) hacc hout).mp hret
 
 theorem ctorSteleExecSuccess {σ σ₀ A I} {g : UInt256} (a : AccountAddress)
-    (hwv : I.weiValue = ⟨0⟩) :
+    (hwv : I.weiValue = ⟨0⟩)
+    (hperm : I.perm = true) :
     steleCtorExec config contract [.address a] σ σ₀ g A I
       (.returned
         { contract := contract
@@ -246,7 +248,7 @@ theorem ctorSteleExecSuccess {σ σ₀ A I} {g : UInt256} (a : AccountAddress)
           immutables := ctorFinalImms I.codeOwner }
         (ctorPost (initState σ σ₀ (Sat256.ofUInt256 g) A I) a) none) := by
   exact steleCtorExec.intro rfl rfl rfl
-    (ctorBodyReturns (initState σ σ₀ (Sat256.ofUInt256 g) A I) a hwv)
+    (ctorBodyReturns (hperm := by assumption) (initState σ σ₀ (Sat256.ofUInt256 g) A I) a hwv)
 
 theorem ctorSteleExecReverts {σ σ₀ A I} {g : UInt256} (a : AccountAddress)
     (hwv : I.weiValue ≠ ⟨0⟩) :
@@ -277,7 +279,7 @@ theorem poolManagerConstructorCorrect :
     rcases RDretXiResultAccountMap hcodeCtor hrd with hoog | ⟨g', A', hsuccess⟩
     · exact .outOfGas (by simpa [Sat256.ofUInt256] using hoog)
     · exact .execution (by simpa [Sat256.ofUInt256] using hsuccess)
-        (ctorSteleExecSuccess a hwv)
+        (ctorSteleExecSuccess (hperm := by assumption) a hwv)
         (ctorResultEquiv.success rfl rfl rfl (ctorFinalImms_deployed I.codeOwner).symm)
         (ctorFinalImms_fit I.codeOwner)
   · have hrd := ctorTraceReverts (σ := σ) (σ₀ := σ₀) (A := A) (g := Sat256.ofUInt256 g)

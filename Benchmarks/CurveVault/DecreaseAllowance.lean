@@ -65,7 +65,7 @@ theorem vaultDecreaseAllowanceBodyCore {σ σ₀ A I} {g : UInt256}
     (by simp [vaultAdjustLocals, vaultAdjustDeltaName]) (store_get_self _ _ _)
     (by simp only [vaultAdjustLocals, vaultAdjustDeltaName, Std.HashMap.get?_eq_getElem?, Std.HashMap.getElem?_insert]; rfl)
     hms hcanon hperm (by simp [vaultBlocks.vault_block_6197_fallthrough_stack]) rdStart
-  have hsource := vaultMutatingBodyReturns (fn := vaultAdjustFunction false) (locals := locals)
+  have hsource := vaultMutatingBodyReturns (hpermAfter := (congrArg ExecutionEnv.perm hs'.env).trans hperm) (hperm := by assumption) (fn := vaultAdjustFunction false) (locals := locals)
     (args := [.var "_spender", .var "_sub_value"])
     (argVals := [.address (AccountAddress.ofNat spender.toNat), .int (Int.ofNat delta.toNat)])
     hvalue (by rw [hload]; exact hlocked)

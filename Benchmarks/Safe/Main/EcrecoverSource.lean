@@ -104,10 +104,10 @@ theorem safeEcrecoverSource {evm evm' : EVM.State} {p : EcrecoverInput} {z : Boo
     simpa only [addressOfAddress] using hc
   cases z
   · apply ExecFuncBody.execBlockRevert
-    exact .consNormal (.lowLevelCallFailure ht hv (evalEcrecoverPayload evm p) hc')
+    exact .consNormal (.lowLevelCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) ht hv (evalEcrecoverPayload evm p) hc')
       (.consRevert (.requireFalse hs))
   · apply ExecFuncBody.execBlockRet
-    exact .consNormal (.lowLevelCallSuccess ht hv (evalEcrecoverPayload evm p) hc')
+    exact .consNormal (.lowLevelCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) ht hv (evalEcrecoverPayload evm p) hc')
       (.consNormal (.requireTrue hs) (.consReturn (.return (evalExprs?_singleton
         (evalEcrecoverReturn evm' p true out (callEcrecoverOutput hc))))))
 

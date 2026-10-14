@@ -598,7 +598,8 @@ theorem clearCurrentBodyReturnsZero {evm evm' : EVM.State}
       deleteStorage? stringStoreLiteConfig
         { contract := stringStoreLiteContract,
           locals := (∅ : Store).insert "copy" (.bytes ByteArray.empty) }
-        evm currentRef = .ok evm') :
+        evm currentRef = .ok evm')
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody stringStoreLiteConfig stringStoreLiteContract evm ∅ clearCurrentTransition.body
       (.returned
         { contract := stringStoreLiteContract,
@@ -614,7 +615,9 @@ theorem clearCurrentBodyReturnsZero {evm evm' : EVM.State}
   exact ExecFuncBody.execBlockRet <|
     ExecBlock.consNormal (ExecStmt.requireTrue (evalCallvalueEq_true hwv)) <|
       ExecBlock.consNormal (ExecStmt.letDecl hread) <|
-        ExecBlock.consNormal (ExecStmt.delete (by simpa [stele1] using hdel)) <|
+        ExecBlock.consNormal (ExecStmt.delete
+          (hperm := by first | assumption | exact Or.inr ‹_› | exact Or.inl rfl)
+          (by simpa [stele1] using hdel)) <|
           ExecBlock.consReturn (ExecStmt.return (evalExprs?_singleton hret))
 
 theorem clearCurrentBodyReturnsBytes {evm evm' : EVM.State} {copy : ByteArray}
@@ -626,7 +629,8 @@ theorem clearCurrentBodyReturnsBytes {evm evm' : EVM.State} {copy : ByteArray}
       deleteStorage? stringStoreLiteConfig
         { contract := stringStoreLiteContract,
           locals := (∅ : Store).insert "copy" (.bytes copy) }
-        evm currentRef = .ok evm') :
+        evm currentRef = .ok evm')
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody stringStoreLiteConfig stringStoreLiteContract evm ∅ clearCurrentTransition.body
       (.returned
         { contract := stringStoreLiteContract,
@@ -642,7 +646,9 @@ theorem clearCurrentBodyReturnsBytes {evm evm' : EVM.State} {copy : ByteArray}
   exact ExecFuncBody.execBlockRet <|
     ExecBlock.consNormal (ExecStmt.requireTrue (evalCallvalueEq_true hwv)) <|
       ExecBlock.consNormal (ExecStmt.letDecl hread) <|
-        ExecBlock.consNormal (ExecStmt.delete (by simpa [stele1] using hdel)) <|
+        ExecBlock.consNormal (ExecStmt.delete
+          (hperm := by first | assumption | exact Or.inr ‹_› | exact Or.inl rfl)
+          (by simpa [stele1] using hdel)) <|
           ExecBlock.consReturn (ExecStmt.return (evalExprs?_singleton hret))
 
 theorem setBodyReturns {evm evmCurrent : EVM.State} {value : ByteArray}
@@ -654,7 +660,8 @@ theorem setBodyReturns {evm evmCurrent : EVM.State} {value : ByteArray}
         evm .storage currentRef (.bytes value) =
           .ok ({ contract := stringStoreLiteContract
                  locals := ((∅ : Store).insert "value" (.bytes value)).insert "copy" (.bytes value) },
-              evmCurrent)) :
+              evmCurrent))
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody stringStoreLiteConfig stringStoreLiteContract evm
       ((∅ : Store).insert "value" (.bytes value)) setTransition.body
       (.returned
@@ -676,7 +683,9 @@ theorem setBodyReturns {evm evmCurrent : EVM.State} {value : ByteArray}
   exact ExecFuncBody.execBlockRet <|
     ExecBlock.consNormal (ExecStmt.requireTrue (evalCallvalueEq_true hwv)) <|
       ExecBlock.consNormal (ExecStmt.letDecl hvalue) <|
-        ExecBlock.consNormal (ExecStmt.assign hcopy (by simpa [stele1, locals1, locals0] using hassignCurrent)) <|
+        ExecBlock.consNormal (ExecStmt.assign
+          (hperm := by first | assumption | exact Or.inr ‹_› | exact Or.inl rfl)
+          hcopy (by simpa [stele1, locals1, locals0] using hassignCurrent)) <|
           ExecBlock.consReturn (ExecStmt.return (evalExprs?_singleton hret))
 
 theorem assignCurrentOfWrite {evm evmCurrent : EVM.State} {value : ByteArray}
@@ -707,14 +716,15 @@ theorem assignCurrentOfWrite {evm evmCurrent : EVM.State} {value : ByteArray}
 theorem setBodyReturnsOfWrite {evm evmCurrent : EVM.State} {value : ByteArray}
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hwrite : stringWrite? stringStoreLiteConfig evm { base := "current", steps := [] }
-      .string (.bytes value) = .ok evmCurrent) :
+      .string (.bytes value) = .ok evmCurrent)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody stringStoreLiteConfig stringStoreLiteContract evm
       ((∅ : Store).insert "value" (.bytes value)) setTransition.body
       (.returned
         { contract := stringStoreLiteContract
           locals := ((∅ : Store).insert "value" (.bytes value)).insert "copy" (.bytes value) }
         evmCurrent (some [(.int value.size)])) := by
-  exact setBodyReturns (evm := evm) (evmCurrent := evmCurrent) (value := value)
+  exact setBodyReturns (hperm := by assumption) (evm := evm) (evmCurrent := evmCurrent) (value := value)
     hwv (assignCurrentOfWrite hwrite)
 
 theorem setRuntimeOfWriteAccountMapEq
@@ -734,11 +744,12 @@ theorem setRuntimeOfWriteAccountMapEq
       (initState σ σ₀ (Sat256.ofUInt256 g) A I)
       { base := "current", steps := [] } .string (.bytes value) = .ok evmCurrent)
     (hAccounts : acc = evmCurrent.accountMap)
-    (henc : returnEquiv o (some [.int value.size]) setTransition.returnType) :
+    (henc : returnEquiv o (some [.int value.size]) setTransition.returnType)
+    (hperm : I.perm = true) :
     runtimeRefinementFor stringStoreLiteConfig stringStoreLiteContract
       σ σ₀ g A I := by
   let evmStele0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  have hbody := setBodyReturnsOfWrite
+  have hbody := setBodyReturnsOfWrite (hperm := by assumption)
     (evm := evmStele0) (evmCurrent := evmCurrent) (value := value)
     (by simp [evmStele0, initState]; exact hwv)
     (by simpa [evmStele0] using hwrite)
@@ -763,11 +774,12 @@ theorem setRuntimeOfWriteEVMStateEq
       { base := "current", steps := [] } .string (.bytes value) = .ok evmCurrent)
     (hAccounts : acc = evmEvm.accountMap)
     (hPostAccounts : evmEvm.accountMap = evmCurrent.accountMap)
-    (henc : returnEquiv o (some [.int value.size]) setTransition.returnType) :
+    (henc : returnEquiv o (some [.int value.size]) setTransition.returnType)
+    (hperm : I.perm = true) :
     runtimeRefinementFor stringStoreLiteConfig stringStoreLiteContract
       σ σ₀ g A I := by
   let evmStele0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  have hbody := setBodyReturnsOfWrite
+  have hbody := setBodyReturnsOfWrite (hperm := by assumption)
     (evm := evmStele0) (evmCurrent := evmCurrent) (value := value)
     (by simp [evmStele0, initState]; exact hwv)
     (by simpa [evmStele0] using hwrite)
@@ -5683,6 +5695,12 @@ theorem stringStoreLiteClearCurrentShortZeroRuntime {σ σ₀ A I}
           locals := (∅ : Store).insert "copy" (.bytes ByteArray.empty) }
         evmStele0 currentRef = .ok evmStele1 := by
     simpa [evmStele0, evmStele1, initState] using deleteCurrentShortZero (evm := evmStele0) hload
+  by_cases hperm : I.perm = true
+  swap
+  · have hpf : I.perm = false := by simpa using hperm
+    exact (permSplit_false hpf hsplit).reEquivStaticHalt hcode hd hdec
+      (clearCurrentBodyStatic (evm := evmStele0) (by simp [evmStele0, initState]; exact hwv)
+        hread hdel (by simp [evmStele0, initState]; exact hpf))
   have hbody :
       ExecTransitionBody stringStoreLiteConfig stringStoreLiteContract evmStele0 ∅
         clearCurrentTransition.body
@@ -5690,14 +5708,8 @@ theorem stringStoreLiteClearCurrentShortZeroRuntime {σ σ₀ A I}
           { contract := stringStoreLiteContract,
             locals := (∅ : Store).insert "copy" (.bytes ByteArray.empty) }
           evmStele1 (some [(.int 0)])) := by
-    exact clearCurrentBodyReturnsZero (evm := evmStele0) (evm' := evmStele1)
+    exact clearCurrentBodyReturnsZero (hperm := by assumption) (evm := evmStele0) (evm' := evmStele1)
       (by simp [evmStele0, initState]; exact hwv) hread hdel
-  by_cases hperm : I.perm = true
-  swap
-  · have hpf : I.perm = false := by simpa using hperm
-    exact (permSplit_false hpf hsplit).reEquivStaticHalt hcode hd hdec
-      (clearCurrentBodyStatic (evm := evmStele0) (by simp [evmStele0, initState]; exact hwv)
-        hread hdel (by simp [evmStele0, initState]; exact hpf))
   exact (permSplit_true hperm hsplit).reEquivExecutionGen
     (cfg := stringStoreLiteConfig) hcode hd hdec hbody
     (by
@@ -5758,7 +5770,13 @@ theorem stringStoreLiteClearCurrentShortDecodedZeroRuntime {σ σ₀ A I}
       deleteCurrentShortPacked (evm := evmStele0)
         (header := currentLengthHeaderWord σ I) (len := ⟨0⟩) (copy := copy)
         hloadBytes hpacked hflag hzero.symm hvalidLen
-  have hbodyBytes := clearCurrentBodyReturnsBytes (evm := evmStele0) (evm' := evmStele1)
+  by_cases hperm : I.perm = true
+  swap
+  · have hpf : I.perm = false := by simpa using hperm
+    exact (permSplit_false hpf hsplit).reEquivStaticHalt hcode hd hdec
+      (clearCurrentBodyStatic (evm := evmStele0) (by simp [evmStele0, initState]; exact hwv)
+        hread hdel (by simp [evmStele0, initState]; exact hpf))
+  have hbodyBytes := clearCurrentBodyReturnsBytes (hperm := by assumption) (evm := evmStele0) (evm' := evmStele1)
     (copy := copy) (by simp [evmStele0, initState]; exact hwv) hread hdel
   have hbody :
       ExecTransitionBody stringStoreLiteConfig stringStoreLiteContract evmStele0 ∅
@@ -5768,12 +5786,6 @@ theorem stringStoreLiteClearCurrentShortDecodedZeroRuntime {σ σ₀ A I}
             locals := (∅ : Store).insert "copy" (.bytes copy) }
           evmStele1 (some [(.int 0)])) := by
     simpa [hcopySize] using hbodyBytes
-  by_cases hperm : I.perm = true
-  swap
-  · have hpf : I.perm = false := by simpa using hperm
-    exact (permSplit_false hpf hsplit).reEquivStaticHalt hcode hd hdec
-      (clearCurrentBodyStatic (evm := evmStele0) (by simp [evmStele0, initState]; exact hwv)
-        hread hdel (by simp [evmStele0, initState]; exact hpf))
   exact (permSplit_true hperm hsplit).reEquivExecutionGen
     (cfg := stringStoreLiteConfig) hcode hd hdec hbody
     (by
@@ -5830,7 +5842,13 @@ theorem stringStoreLiteClearCurrentShortNonzeroRuntime {σ σ₀ A I}
       deleteCurrentShortPacked (evm := evmStele0)
         (header := currentLengthHeaderWord σ I) (len := len) (copy := copy)
         hloadBytes hpacked hflag hlen hvalid
-  have hbodyBytes := clearCurrentBodyReturnsBytes (evm := evmStele0) (evm' := evmStele1)
+  by_cases hperm : I.perm = true
+  swap
+  · have hpf : I.perm = false := by simpa using hperm
+    exact (permSplit_false hpf hsplit).reEquivStaticHalt hcode hd hdec
+      (clearCurrentBodyStatic (evm := evmStele0) (by simp [evmStele0, initState]; exact hwv)
+        hread hdel (by simp [evmStele0, initState]; exact hpf))
+  have hbodyBytes := clearCurrentBodyReturnsBytes (hperm := by assumption) (evm := evmStele0) (evm' := evmStele1)
     (copy := copy) (by simp [evmStele0, initState]; exact hwv) hread hdel
   have hbody :
       ExecTransitionBody stringStoreLiteConfig stringStoreLiteContract evmStele0 ∅
@@ -5840,12 +5858,6 @@ theorem stringStoreLiteClearCurrentShortNonzeroRuntime {σ σ₀ A I}
             locals := (∅ : Store).insert "copy" (.bytes copy) }
           evmStele1 (some [(.int len.toNat)])) := by
     simpa [hcopySize] using hbodyBytes
-  by_cases hperm : I.perm = true
-  swap
-  · have hpf : I.perm = false := by simpa using hperm
-    exact (permSplit_false hpf hsplit).reEquivStaticHalt hcode hd hdec
-      (clearCurrentBodyStatic (evm := evmStele0) (by simp [evmStele0, initState]; exact hwv)
-        hread hdel (by simp [evmStele0, initState]; exact hpf))
   exact (permSplit_true hperm hsplit).reEquivExecutionGen
     (cfg := stringStoreLiteConfig) hcode hd hdec hbody
     (by
@@ -5903,7 +5915,7 @@ theorem stringStoreLiteSetShortEmptyRuntime {σ σ₀ A I}
   swap
   · have hpf : I.perm = false := by simpa using hperm
     exact setRuntimeStaticOfWrite hcode hwv hpf (permSplit_false hpf hsplit) hd hdec hwrite
-  exact setRuntimeOfWriteAccountMapEq hcode hwv (permSplit_true hperm hsplit) hd hdec hwrite
+  exact setRuntimeOfWriteAccountMapEq (hperm := by assumption) hcode hwv (permSplit_true hperm hsplit) hd hdec hwrite
     (by
       simp [evmStele1, evmStele0, initState, storageStore_accountMap])
     (returnEquiv_of_encode (uint256ReturnEncoding (⟨0⟩ : UInt256)))
@@ -6003,7 +6015,7 @@ theorem stringStoreLiteSetEmptyShortValidRuntime {σ σ₀ A I}
   swap
   · have hpf : I.perm = false := by simpa using hperm
     exact setRuntimeStaticOfWrite hcode hwv hpf (permSplit_false hpf hsplit) hd hdec hwrite
-  exact setRuntimeOfWriteAccountMapEq hcode hwv (permSplit_true hperm hsplit) hd hdec hwrite
+  exact setRuntimeOfWriteAccountMapEq (hperm := by assumption) hcode hwv (permSplit_true hperm hsplit) hd hdec hwrite
     (by
       simp [evmStele1, evmStele0, initState, storageStore_accountMap])
     (returnEquiv_of_encode (uint256ReturnEncoding (⟨0⟩ : UInt256)))

@@ -43,7 +43,7 @@ theorem fullMath128Body {f : Frame} {evm : EVM.State} {a b : UInt256}
       have h6 : ExecStmt config f1 evm fullMathFunction.body[6]!
           (.returned f2 evm (some [.int (Int.ofNat (UInt256.div (fullMathLow a b) fullMathQ128).toNat)])) :=
         ExecStmt.iteTrue (by simpa only [decide_eq_true hz] using hzero)
-          (ExecBlock.consNormal (ExecStmt.assign (evalWordDiv (evalLocalValue hp0) (evalLocalValue hd1)
+          (ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalWordDiv (evalLocalValue hp0) (evalLocalValue hd1)
             fullMathQ128_ne) (assignLocalValue hr)) (ABlock.start.returns wordLocal_eval))
       exact ⟨f2, execFuncBody_prepend hpre (ExecFuncBody.execBlockRet
         (ExecBlock.consNormal h5 (ExecBlock.consReturn h6)))⟩

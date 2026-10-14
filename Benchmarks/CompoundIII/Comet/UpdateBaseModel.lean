@@ -68,4 +68,12 @@ def updateBaseRewardEntry (v : CometWithExtendedAssetListImmutables) (addr : Acc
     locals := (frame.locals.insert "principal" (.int (signed104 basic.principal))).insert "basic"
       (userBasicValue { basic with principal := newPrincipal }) }
 
+theorem updateBaseOutcome_result_perm {v evm account basic principal updated}
+    (hu : updateBaseOutcome v evm account basic principal = .ok updated) :
+    updated.executionEnv.perm = true := by
+  unfold updateBaseOutcome at hu
+  split_ifs at hu with hv hp
+  cases hu
+  simpa only [storeUserBasic, storePackedWord, storageStore_executionEnv] using hp
+
 end Benchmarks.CompoundIII.Comet

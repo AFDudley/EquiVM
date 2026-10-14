@@ -92,7 +92,7 @@ theorem vaultSetMaxAdminCall {I : ExecutionEnv} {g : Sat256} {s0 evm : State}
         dsimp only [σ0]
         rw [codeOwnerStorageWord_tstore]
         exact hfactory
-      · apply ExecStmt.externalCallSuccess (sendVal := 0) (argVals := [])
+      · apply ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (sendVal := 0) (argVals := [])
           (value := [.address (AccountAddress.ofNat (retWord out).toNat)]) hreceiver
           (by simp [evalExpr?, pure]) (by simp [evalExprs?, pure])
           (by simpa only [address_of_val] using hcall)
@@ -102,15 +102,15 @@ theorem vaultSetMaxAdminCall {I : ExecutionEnv} {g : Sat256} {s0 evm : State}
         (by rw [hword]; exact fun hz => hcanon (u256_lt_addressModulus_of_shiftRight160_zero _ hz)) (by native_decide) rd921
       have hrev := vaultBlocks.vault_block_8284
         (by simp only [vaultBlocks.vault_block_921_taken_stack, List.length_cons]; omega) rdFail
-      refine Or.inr ⟨ExecStmt.externalCallReturnDecodeRevert (sendVal := 0) (argVals := []) hreceiver
+      refine Or.inr ⟨ExecStmt.externalCallReturnDecodeRevert (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (sendVal := 0) (argVals := []) hreceiver
         (by simp [evalExpr?, pure]) (by simp [evalExprs?, pure])
         (by simpa only [address_of_val] using hcall) ?_, hrev⟩
       change (ABI.decodeReturnValueWithMode? .vyper (.elem .address) out).map (fun v => [v]) = _
       rw [decodeReturn_vyper_address_noncanon out h32 hcanon]; rfl
-  · exact Or.inr ⟨ExecStmt.externalCallFailure (sendVal := 0) (argVals := []) hreceiver
+  · exact Or.inr ⟨ExecStmt.externalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (sendVal := 0) (argVals := []) hreceiver
       (by simp [evalExpr?, pure]) (by simp [evalExprs?, pure])
       (by simpa only [address_of_val] using hcall), hrev⟩
-  · refine Or.inr ⟨ExecStmt.externalCallReturnDecodeRevert (sendVal := 0) (argVals := []) hreceiver
+  · refine Or.inr ⟨ExecStmt.externalCallReturnDecodeRevert (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (sendVal := 0) (argVals := []) hreceiver
       (by simp [evalExpr?, pure]) (by simp [evalExprs?, pure])
       (by simpa only [address_of_val] using hcall) ?_, hrev⟩
     change (ABI.decodeReturnValueWithMode? .vyper (.elem .address) out).map (fun v => [v]) = _

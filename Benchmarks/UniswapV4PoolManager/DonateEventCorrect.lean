@@ -10,9 +10,10 @@ set_option maxRecDepth 5000
 theorem donateEmitSource {f : Frame} {evm : State} {id amount0 amount1 : UInt256}
     (hi : f.locals.get? "poolId" = some (wordBytes32Value id))
     (h0 : f.locals.get? "amount0" = some (.int (Int.ofNat amount0.toNat)))
-    (h1 : f.locals.get? "amount1" = some (.int (Int.ofNat amount1.toNat))) :
+    (h1 : f.locals.get? "amount1" = some (.int (Int.ofNat amount1.toNat)))
+    (hperm : evm.executionEnv.perm = true) :
     ExecStmt config f evm donateTransition.body[18]! (.ok f evm) := by
-  apply ExecStmt.emit (vals := [wordBytes32Value id, .address evm.executionEnv.source,
+  apply ExecStmt.emit (hperm := hperm) (vals := [wordBytes32Value id, .address evm.executionEnv.source,
     .int (Int.ofNat amount0.toNat), .int (Int.ofNat amount1.toNat)])
   change evalExprs? config f evm [.var "poolId", .env .caller, .var "amount0", .var "amount1"] = _
   simp only [evalExprs?, evalLocalValue hi, evalLocalValue h0, evalLocalValue h1,
@@ -24,8 +25,11 @@ theorem donateEmitStaticSource {f : Frame} {evm : State} {id amount0 amount1 : U
     (h1 : f.locals.get? "amount1" = some (.int (Int.ofNat amount1.toNat)))
     (hperm : evm.executionEnv.perm = false) :
     ExecStmt config f evm donateTransition.body[18]! .staticViolation := by
-  cases donateEmitSource (evm := evm) hi h0 h1 with
-  | emit he => exact ExecStmt.emitStatic he hperm
+  apply ExecStmt.emitStatic (vals := [wordBytes32Value id, .address evm.executionEnv.source,
+    .int (Int.ofNat amount0.toNat), .int (Int.ofNat amount1.toNat)]) ?_ hperm
+  change evalExprs? config f evm [.var "poolId", .env .caller, .var "amount0", .var "amount1"] = _
+  simp only [evalExprs?, evalLocalValue hi, evalLocalValue h0, evalLocalValue h1,
+    evalExpr?, envValue, bind, EvalResult.bind, pure]
 
 theorem donateEventCorrect {I : ExecutionEnv} {g : Sat256} {s0 evm : State}
     {f : Frame} {mem rdata : ByteArray} {aw free keyPtr src amount0 amount1 len delta id junk : UInt256}
@@ -66,6 +70,6 @@ theorem donateEventCorrect {I : ExecutionEnv} {g : Sat256} {s0 evm : State}
         (hkey.donateEvent free amount0 amount1 hkb) hc hkb (by omega) hfit hsrc hgas
         (by omega) hfree1 rd1 with hog | ⟨result, hs, ht⟩
     · exact .inl hog
-    · exact .inr ⟨result, ExecBlock.consNormal (donateEmitSource hi h0 h1) hs, ht⟩
+    · exact .inr ⟨result, ExecBlock.consNormal (donateEmitSource (hperm := by simpa only [hI] using hperm) hi h0 h1) hs, ht⟩
 
 end Benchmarks.UniswapV4PoolManager

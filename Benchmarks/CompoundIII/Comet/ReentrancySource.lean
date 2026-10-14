@@ -17,7 +17,7 @@ theorem reentrancyWrite_source (frame : Frame) (evm : EVM.State) (enter : Bool)
   · simp only [reentrancyWriteOutcome, hp, Bool.false_eq_true, if_false, internalBlockResult]
     exact ExecBlock.consStatic (ExecStmt.assignStatic he hw hp)
   · simp only [reentrancyWriteOutcome, hp, if_true, internalBlockResult]
-    exact ⟨frame, ExecBlock.consNormal (ExecStmt.assign he hw) .nil⟩
+    exact ⟨frame, ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) he hw) .nil⟩
 
 theorem reentrancy_source (imms : Store) (evm : EVM.State) (enter : Bool) :
     internalSourceResult config { contract := contract, locals := ∅, immutables := imms }

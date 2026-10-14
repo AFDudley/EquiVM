@@ -14,7 +14,7 @@ theorem oraclePriceSourceOk {frame : Frame} {evm evm' : EVM.State} {target : Exp
       (.ok { frame with locals := frame.locals.insert retVar (.int (Int.ofNat (calldataWord out 0).toNat)) } evm') := by
   have htarget : EVM.address oracle.val = oracle := by apply Fin.ext; exact Nat.mod_eq_of_lt oracle.isLt
   rw [← htarget] at hcall
-  exact ExecStmt.externalCallSuccess (value := [.int (Int.ofNat (calldataWord out 0).toNat)])
+  exact ExecStmt.externalCallSuccess (hperm := Or.inl rfl) (value := [.int (Int.ofNat (calldataWord out 0).toNat)])
     ht (by simp only [evalExpr?, pure]) rfl hcall (decodeOraclePrice_word hlen (by omega))
 
 theorem oraclePriceSourceReverts {frame : Frame} {evm evm' : EVM.State} {target : Expr}
@@ -26,8 +26,8 @@ theorem oraclePriceSourceReverts {frame : Frame} {evm evm' : EVM.State} {target 
   have htarget : EVM.address oracle.val = oracle := by apply Fin.ext; exact Nat.mod_eq_of_lt oracle.isLt
   rw [← htarget] at hcall
   cases z
-  · exact ExecStmt.externalCallFailure ht (by simp only [evalExpr?, pure]) rfl hcall
-  · exact ExecStmt.externalCallReturnDecodeRevert ht (by simp only [evalExpr?, pure]) rfl hcall
+  · exact ExecStmt.externalCallFailure (hperm := Or.inl rfl) ht (by simp only [evalExpr?, pure]) rfl hcall
+  · exact ExecStmt.externalCallReturnDecodeRevert (hperm := Or.inl rfl) ht (by simp only [evalExpr?, pure]) rfl hcall
       (decodeOraclePrice_short (by simp only [true_and] at hbad; omega))
 
 end Benchmarks.Morpho.MorphoBlue

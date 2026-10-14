@@ -38,6 +38,6 @@ theorem timeArrayFinish {evm evm' : EVM.State} {locals imms : Store} {stmt : Stm
       immutables := imms}) (x := i) (y := 1) (a := .var "i") (b := .intLit 1)
     (by simp only [evalExpr?, hiRead, EvalResult.ofOption]) (by simp only [evalExpr?]; rfl)
   rw [Nat.mod_eq_of_lt (by omega : i + 1 < UInt256.size)] at he
-  exact ExecBlock.consNormal (ExecStmt.assign he (assignLocalBase_ok hiRead)) ExecBlock.nil
+  exact ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) he (assignLocalBase_ok hiRead)) ExecBlock.nil
 
 end Benchmarks.EAS.EAS

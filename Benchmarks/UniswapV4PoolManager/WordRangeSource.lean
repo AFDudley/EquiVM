@@ -98,7 +98,7 @@ theorem wordRangeSource (evm : EVM.State) (imms : Store) (start : UInt256) (n : 
         .ok (wordBytes32Value (wordRangeValue evm start 0)) := by
       rw [wordRangeValue_zero]
       exact evalCastValue (evalLocalValue (store_get_self _ _ _)) (castUint256ToBytes32 _)
-    have hassign := ExecStmt.assign hfirst
+    have hassign := ExecStmt.assign (hperm := Or.inl rfl) hfirst
       (assignLocalArrayAt hres (show evalExpr? config f evm (.intLit 0) = .ok (.int (Int.ofNat 0)) by
         simp only [evalExpr?, pure]; rfl)
         (by simp only [res, List.length_replicate]; omega))

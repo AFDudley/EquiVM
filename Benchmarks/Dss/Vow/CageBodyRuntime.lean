@@ -259,7 +259,7 @@ theorem vowCageFirstDaiCallDepthLimitBody
           (by
             simpa [evmAsh, evmSin, evmLive, evm0, initState, storageStore_executionEnv]
               using hdepth))
-  exact vowCageFirstDaiCallFailureBodyCore (acc := σClearedEvm)
+  exact vowCageFirstDaiCallFailureBodyCore (hperm := hperm) (acc := σClearedEvm)
     (evmDai := { evmAsh with substate := A_dai }) (outDai := ByteArray.empty)
     hcode hwv hauthStele hliveStele hdispatch hdecode
     (by simpa [σClearedEvm] using rd2754)
@@ -268,7 +268,7 @@ theorem vowCageFirstDaiCallDepthLimitBody
 set_option maxHeartbeats 0 in
 theorem vowCageBodyToFlapperCage
     {σ σ₀ A I} {g : UInt256}
-    (cont :
+    (cont : I.perm = true →
       ∀ {σ_dai : AccountMap}
         {evmDai : EVM.State} {outDai memDai : ByteArray} {k2795 C2795 : ℕ}
         {flapperDai : UInt256},
@@ -471,7 +471,7 @@ theorem vowCageBodyToFlapperCage
           simpa [evmDaiStele, hVatTarget, hflapperArg, hFlapperCleared] using
             hcallDaiSteleRaw
         cases zDai
-        · exact vowCageFirstDaiCallFailureBodyCore (acc := σ_dai)
+        · exact vowCageFirstDaiCallFailureBodyCore (hperm := hperm) (acc := σ_dai)
             (evmDai := evmDaiStele) (outDai := outDai)
             hcode hwv hauthStele hliveStele hdispatch hdecode
             (by simpa using rd2754) houtDaiSize (by simp) hvatCode
@@ -543,13 +543,13 @@ theorem vowCageBodyToFlapperCage
             have henvDai : evmDaiStele.executionEnv = I := by
               simp [evmDaiStele, evmAsh, evmSin, evmLive, evm0, initState,
                 storageStore_executionEnv]
-            exact cont (evmDai := evmDaiStele) (outDai := outDai)
+            exact cont hperm (evmDai := evmDaiStele) (outDai := outDai)
               (memDai := memDai) (flapperDai := flapperDai)
                 (by simpa [memDai, baseDai, flapperDai, σClearedEvm] using rd2795)
                 hmemDai hread64Dai hvatCode hcallDaiSteleTrue hdecDai hauthStele hliveStele hdepthLt hσ0Dai henvDai
                 (by simpa [evmDaiEvmOut, evmDaiStele] using hAccountsDai)
           · have hshortDai : outDai.size < 32 := Nat.lt_of_not_ge ho32Dai
-            exact vowCageFirstDaiDecodeShortBodyCore (acc := σ_dai)
+            exact vowCageFirstDaiDecodeShortBodyCore (hperm := hperm) (acc := σ_dai)
               (evmDai := evmDaiStele) (base := baseDai) (outDai := outDai)
               hcode hwv hauthStele hliveStele hdispatch hdecode rd2754True
               hbaseDai hbaseDaiRead64 houtDaiSize hshortDai (by simp)
@@ -566,7 +566,7 @@ theorem vowCageBodyToFlapperCage
 set_option maxHeartbeats 0 in
 theorem vowCageBodyToFlopperCage
     {σ σ₀ A I} {g : UInt256}
-    (cont :
+    (cont : I.perm = true →
       ∀ {σ_flap : AccountMap}
         {evmDai evmFlap : EVM.State} {outDai outFlap memFlap : ByteArray}
         {k2881 C2881 : ℕ} {flapperDai : UInt256},
@@ -620,7 +620,7 @@ theorem vowCageBodyToFlopperCage
         (transitionSignature cageTransition).paramTypes I.calldata = some ∅ :=
     vowDecode_cage hsz
   refine vowCageBodyToFlapperCage
-      (fun {σ_dai} {evmDai} {outDai} {memDai} {k2795} {C2795}
+      (fun hperm {σ_dai} {evmDai} {outDai} {memDai} {k2795} {C2795}
           {flapperDai} rd2795 hmemDai hread64Dai hvatCode hcallDai hdecDai
           hauthStele hliveStele hdepthLt hσ0Dai henvDai hAccountsDai => ?_)
       hcode hsize hwv hsel
@@ -675,7 +675,7 @@ theorem vowCageBodyToFlopperCage
           ((evmDai.lookupAccount (flapFlapperAddressOf evmDai)).option 0
             (fun acc => acc.code.size))).toNat = 0 :=
       flapFlapperCode_zero_of_codeSize_zero evmDai I hownerDai hcodeSizeFlapperStele
-    exact vowCageFlapperCageNoCodeBodyCore (acc := σ_dai)
+    exact vowCageFlapperCageNoCodeBodyCore (hperm := hperm) (acc := σ_dai)
       (evmDai := evmDai) (target := solcAddressSlotWord ⟨2⟩ σClearedEvm I)
       (ret := ⟨412⟩) (R := [vowSelWord I])
       hcode hwv hauthStele hliveStele hdispatch hdecode
@@ -763,7 +763,7 @@ theorem vowCageBodyToFlopperCage
         (zFlap, evmFlapStele, outFlap) true := by
     simpa [evmFlapStele] using hcallFlapSteleBase
   cases zFlap
-  · exact vowCageFlapperCageCallFailureBodyCore (acc := σ_flap)
+  · exact vowCageFlapperCageCallFailureBodyCore (hperm := hperm) (acc := σ_flap)
       (evmDai := evmDai) (evmFlap := evmFlapStele)
       (target := solcAddressSlotWord ⟨2⟩ σClearedEvm I) (ret := ⟨412⟩)
       (R := [vowSelWord I])
@@ -794,7 +794,7 @@ theorem vowCageBodyToFlopperCage
       simpa [evmFlapStele] using hσ0Dai
     have henvFlap : evmFlapStele.executionEnv = I := by
       simpa [evmFlapStele] using henvDai
-    exact cont (evmDai := evmDai) (evmFlap := evmFlapStele) (outDai := outDai)
+    exact cont hperm (evmDai := evmDai) (evmFlap := evmFlapStele) (outDai := outDai)
       (outFlap := outFlap) (memFlap := memFlap) (flapperDai := flapperDai)
       (by simpa [memFlap] using rd2881) hmemFlap hread64Flap hvatCode hcallDai
       hdecDai hauthStele hliveStele hflapperCode hcallFlapSteleTrue hdepthLt hσ0Flap henvFlap (by simpa [evmFlapEvmOut, evmFlapStele] using hAccountsFlap)
@@ -802,7 +802,7 @@ theorem vowCageBodyToFlopperCage
 set_option maxHeartbeats 0 in
 theorem vowCageBodyToSecondDai
     {σ σ₀ A I} {g : UInt256}
-    (cont :
+    (cont : I.perm = true →
       ∀ {σ_flap σ_flop : AccountMap}
         {evmDai evmFlap evmFlop : EVM.State}
         {outDai outFlap outFlop memFlop : ByteArray} {k2983 C2983 : ℕ}
@@ -861,7 +861,7 @@ theorem vowCageBodyToSecondDai
         (transitionSignature cageTransition).paramTypes I.calldata = some ∅ :=
     vowDecode_cage hsz
   refine vowCageBodyToFlopperCage
-      (fun {σ_flap} {evmDai} {evmFlap} {outDai} {outFlap}
+      (fun hperm {σ_flap} {evmDai} {evmFlap} {outDai} {outFlap}
           {memFlap} {k2881} {C2881} {flapperDai} rd2881 hmemFlap hread64Flap
           hvatCode hcallDai hdecDai hauthStele hliveStele hflapperCode hcallFlap
           hdepthLt hσ0Flap henvFlap
@@ -881,7 +881,7 @@ theorem vowCageBodyToSecondDai
           ((evmFlap.lookupAccount (flopFlopperAddressOf evmFlap)).option 0
             (fun acc => acc.code.size))).toNat = 0 :=
       cageFlopperCode_zero_of_codeSize_zero evmFlap I hownerFlap hcodeSizeFlopperStele
-    exact vowCageFlopperCageNoCodeBodyCore (acc := σ_flap)
+    exact vowCageFlopperCageNoCodeBodyCore (hperm := hperm) (acc := σ_flap)
       (evmDai := evmDai) (evmFlap := evmFlap) (flapperDai := flapperDai)
       (ret := ⟨412⟩) (R := [vowSelWord I])
       hcode hwv hauthStele hliveStele hdispatch hdecode
@@ -955,7 +955,7 @@ theorem vowCageBodyToSecondDai
         "cage" 0 [] (zFlop, evmFlopStele, outFlop) true := by
     simpa [evmFlopStele] using hcallFlopSteleBase
   cases zFlop
-  · exact vowCageFlopperCageCallFailureBodyCore (acc := σ_flop)
+  · exact vowCageFlopperCageCallFailureBodyCore (hperm := hperm) (acc := σ_flop)
       (evmDai := evmDai) (evmFlap := evmFlap) (evmFlop := evmFlopStele)
       (target := solcAddressSlotWord ⟨3⟩ σ_flap I) (ret := ⟨412⟩)
       (R := [vowSelWord I])
@@ -985,7 +985,7 @@ theorem vowCageBodyToSecondDai
       simpa [evmFlopStele] using hσ0Flap
     have henvFlop : evmFlopStele.executionEnv = I := by
       simpa [evmFlopStele] using henvFlap
-    exact cont (σ_flap := σ_flap) (evmDai := evmDai) (evmFlap := evmFlap)
+    exact cont hperm (σ_flap := σ_flap) (evmDai := evmDai) (evmFlap := evmFlap)
       (evmFlop := evmFlopStele) (outDai := outDai) (outFlap := outFlap)
       (outFlop := outFlop) (memFlop := memFlop) (flapperDai := flapperDai)
       (by simpa [memFlop] using rd2983) hmemFlop hread64Flop hvatCode hcallDai
@@ -996,7 +996,7 @@ theorem vowCageBodyToSecondDai
 set_option maxHeartbeats 0 in
 theorem vowCageBodyToVatSin
     {σ σ₀ A I} {g : UInt256}
-    (cont :
+    (cont : I.perm = true →
       ∀ {σ_dai2 : AccountMap}
         {evmDai evmFlap evmFlop evmDai2 : EVM.State}
         {outDai outFlap outFlop outDai2 memDai2 : ByteArray} {k3115 C3115 : ℕ}
@@ -1063,7 +1063,7 @@ theorem vowCageBodyToVatSin
         (transitionSignature cageTransition).paramTypes I.calldata = some ∅ :=
     vowDecode_cage hsz
   refine vowCageBodyToSecondDai
-      (fun {σ_flap} {σ_flop} {evmDai} {evmFlap} {evmFlop}
+      (fun hperm {σ_flap} {σ_flop} {evmDai} {evmFlap} {evmFlop}
           {outDai} {outFlap} {outFlop} {memFlop} {k2983} {C2983}
           {flapperDai} rd2983 hmemFlop hread64Flop hvatCode hcallDai hdecDai
           hauthStele hliveStele hflapperCode hcallFlap hflopperCode hcallFlop
@@ -1084,7 +1084,7 @@ theorem vowCageBodyToVatSin
           ((evmFlop.lookupAccount (cageVatAddressOf evmFlop)).option 0
             (fun acc => acc.code.size))).toNat = 0 :=
       cageVatCode_zero_of_codeSize_zero evmFlop I hownerFlop hcodeSizeVatStele
-    exact vowCageSecondDaiNoCodeBodyCore (acc := σ_flop)
+    exact vowCageSecondDaiNoCodeBodyCore (hperm := hperm) (acc := σ_flop)
       (evmDai := evmDai) (evmFlap := evmFlap) (evmFlop := evmFlop)
       (flapperDai := flapperDai) (d1 := flopCageSelectorWord)
       (d2 := solcAddressSlotWord ⟨3⟩ σ_flap I) (R := [⟨412⟩, vowSelWord I])
@@ -1166,7 +1166,7 @@ theorem vowCageBodyToVatSin
     simpa [evmDai2Stele, evmDai2EvmOut, hVatTargetAddrFlop, ← henvFlop]
       using hcallDai2SteleBase
   cases zDai2
-  · exact vowCageSecondDaiCallFailureBodyCore (acc := σ_dai2)
+  · exact vowCageSecondDaiCallFailureBodyCore (hperm := hperm) (acc := σ_dai2)
       (evmDai := evmDai) (evmFlap := evmFlap) (evmFlop := evmFlop)
       (evmDai2 := evmDai2Stele) (target := kissDaiTargetWord σ_flop I)
       (R := [⟨412⟩, vowSelWord I])
@@ -1245,7 +1245,7 @@ theorem vowCageBodyToVatSin
         simpa [evmDai2Stele] using hσ0Flop
       have henvDai2 : evmDai2Stele.executionEnv = I := by
         simpa [evmDai2Stele] using henvFlop
-      exact cont (σ_dai2 := σ_dai2) (evmDai := evmDai) (evmFlap := evmFlap)
+      exact cont hperm (σ_dai2 := σ_dai2) (evmDai := evmDai) (evmFlap := evmFlap)
         (evmFlop := evmFlop)
         (evmDai2 := evmDai2Stele) (outDai := outDai) (outFlap := outFlap)
         (outFlop := outFlop) (outDai2 := outDai2) (memDai2 := memDai2)
@@ -1256,7 +1256,7 @@ theorem vowCageBodyToVatSin
         hcallFlop hvatCode2 hcallDai2SteleTrue hdecDai2 hdepthLt hσ0Dai2 henvDai2
         (by simpa [evmDai2EvmOut, evmDai2Stele] using hAccountsDai2)
     · have hshortDai2 : outDai2.size < 32 := Nat.lt_of_not_ge ho32Dai2
-      exact vowCageSecondDaiDecodeShortBodyCore (acc := σ_dai2)
+      exact vowCageSecondDaiDecodeShortBodyCore (hperm := hperm) (acc := σ_dai2)
         (evmDai := evmDai) (evmFlap := evmFlap) (evmFlop := evmFlop)
         (evmDai2 := evmDai2Stele) (base := baseDai2) (outDai := outDai)
         (outFlap := outFlap) (outFlop := outFlop) (outDai2 := outDai2)

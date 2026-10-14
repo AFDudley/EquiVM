@@ -41,6 +41,17 @@ def supplyCollateralOutcome (evm : EVM.State) (dst asset : AccountAddress)
   | .reverted => .reverted
   | .staticViolation => .staticViolation
 
+set_option maxRecDepth 2000 in
+theorem supplyCollateralPrefixOutcome_result_perm {evm evm' dst asset amount out}
+    (he : supplyCollateralPrefixOutcome evm dst asset amount out = .ok evm') :
+    evm'.executionEnv.perm = true := by
+  unfold supplyCollateralPrefixOutcome at he
+  split_ifs at he with ht hc hb hp
+  have hstate := InternalOutcome.ok.inj he
+  rw [← hstate]
+  simpa only [supplyCollateralState, storeTotalsCollateral, storePackedWord,
+    storageStore_executionEnv] using hp
+
 def supplyCollateralTotalExpr : Expr :=
   .inRange (.uint ⟨128, by decide⟩)
     (.binary .add (.field (.var "totals") "totalSupplyAsset") (.var "amount"))

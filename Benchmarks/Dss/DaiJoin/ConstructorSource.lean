@@ -212,7 +212,8 @@ theorem daiJoinCtorCallerWardsSlot_eq (I : ExecutionEnv) :
 theorem daiJoinCtorBodySuccess
     {σ : AccountMap} {σ₀ : AccountMap} {A : Substate} {I : ExecutionEnv}
     {g : UInt256} (vat dai : AccountAddress)
-    (hwv : I.weiValue = ⟨0⟩) :
+    (hwv : I.weiValue = ⟨0⟩)
+    (hperm : I.perm = true) :
     let locals := daiJoinCtorLocals vat dai
     let evm0 := initState σ σ₀
       (Sat256.ofUInt256 g) A I
@@ -250,17 +251,18 @@ theorem daiJoinCtorBodySuccess
   simp only [constructorDecl, nonpayable, List.cons_append, List.nil_append]
   refine ExecBlock.consNormal (ExecStmt.requireTrue ?_) ?_
   · exact evalCallvalueEq_true (by simp [evm0, initState]; exact hwv)
-  refine ExecBlock.consNormal (ExecStmt.assign (by simp [evalExpr?, pure]) hassignWards) ?_
-  refine ExecBlock.consNormal (ExecStmt.assign (by rw [evalExpr?]; rfl) hassignLive) ?_
-  refine ExecBlock.consNormal (ExecStmt.assign ?_ hassignVat) ?_
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) (by simp [evalExpr?, pure]) hassignWards) ?_
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa [evm1, daiJoinCtorAfterWardsState, evm0, initState] using hperm)) (by rw [evalExpr?]; rfl) hassignLive) ?_
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa [evm2, daiJoinCtorAfterLiveState, evm1, daiJoinCtorAfterWardsState, evm0, initState] using hperm)) ?_ hassignVat) ?_
   · simpa [locals] using evalExpr_daiJoinCtorLocalVat (evm := evm2) vat dai
-  refine ExecBlock.consNormal (ExecStmt.assign ?_ hassignDai) ExecBlock.nil
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa [evm3, daiJoinCtorAfterVatState, evm2, daiJoinCtorAfterLiveState, evm1, daiJoinCtorAfterWardsState, evm0, initState] using hperm)) ?_ hassignDai) ExecBlock.nil
   · simpa [locals] using evalExpr_daiJoinCtorLocalDai (evm := evm3) vat dai
 
 theorem daiJoinSteleCtorExecSuccess
     {σ : AccountMap} {σ₀ : AccountMap} {A : Substate} {I : ExecutionEnv}
     {g : UInt256} (vat dai : AccountAddress)
-    (hwv : I.weiValue = ⟨0⟩) :
+    (hwv : I.weiValue = ⟨0⟩)
+    (hperm : I.perm = true) :
     steleCtorExec config contract [.address vat, .address dai] σ σ₀ g A I
       (.returned { contract := contract, locals := daiJoinCtorLocals vat dai }
         (daiJoinCtorAfterDaiState
@@ -280,7 +282,7 @@ theorem daiJoinSteleCtorExecSuccess
   · rfl
   · simpa [ExecTransitionBody, contract, constructorDecl] using
       ExecFuncBody.execBlockOK
-        (daiJoinCtorBodySuccess
+        (daiJoinCtorBodySuccess (hperm := by assumption)
           (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) vat dai hwv)
 
 theorem daiJoinSteleCtorExecReverts_nonpayable

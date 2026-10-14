@@ -80,14 +80,15 @@ theorem refundCallPrefix_exec {cfg : Config} {locals imms : Store} {evm evm' : E
     {value : UInt256} {success : Bool} {out : ByteArray}
     (hv : locals.get? "remainingValue" = some (.int (Int.ofNat value.toNat)))
     (hb : value.toNat ≤ (refundBalance evm).toNat)
-    (hc : callViaEVM evm evm.executionEnv.source (Int.ofNat value.toNat) ByteArray.empty (success,evm',out)) :
+    (hc : callViaEVM evm evm.executionEnv.source (Int.ofNat value.toNat) ByteArray.empty (success,evm',out))
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock cfg {contract := contract, locals := locals, immutables := imms} evm refundCallPrefix
       (.ok {contract := contract, locals := refundPostLocals locals success out, immutables := imms} evm') := by
   apply ExecBlock.consNormal (ExecStmt.requireTrue (by
     simpa only [decide_eq_true hb] using refundBalance_eval (cfg := cfg)
       (frame := {contract := contract, locals := locals, immutables := imms}) (evm := evm) hv))
   apply ExecBlock.consNormal (ExecStmt.letDecl (value := .bytes ByteArray.empty) (by simp only [evalExpr?, pure]; rfl))
-  apply ExecBlock.consNormal (lowLevelCallSource (by simp only [evalExpr?, envValue, pure]) ?_
+  apply ExecBlock.consNormal (lowLevelCallSource (hperm := Or.inr hperm) (by simp only [evalExpr?, envValue, pure]) ?_
     (by simp only [evalExpr?, store_get_self, EvalResult.ofOption]) hc) ExecBlock.nil
   simp only [evalExpr?, store_get_ne _ _ (by decide : ("empty" == "remainingValue") = false), hv, EvalResult.ofOption]
 
@@ -96,12 +97,13 @@ theorem refundSource_call {cfg : Config} {locals imms : Store} {evm evm' : EVM.S
     (hv : locals.get? "remainingValue" = some (.int (Int.ofNat value.toNat)))
     (hh : locals.get? "$EAS.freeMemory" = some (.int (Int.ofNat heap))) (hn : value ≠ ⟨0⟩)
     (hb : value.toNat ≤ (refundBalance evm).toNat)
-    (hc : callViaEVM evm evm.executionEnv.source (Int.ofNat value.toNat) ByteArray.empty (success,evm',out)) :
+    (hc : callViaEVM evm evm.executionEnv.source (Int.ofNat value.toNat) ByteArray.empty (success,evm',out))
+    (hperm : evm.executionEnv.perm = true) :
     if refundResultValid heap success out then
       ExecFuncBody cfg {contract := contract, locals := locals, immutables := imms} evm refundFunction.body
         (.returned {contract := contract, locals := refundAllocationLocals (refundPostLocals locals success out) heap out.size, immutables := imms} evm' (some [.tuple [], .int (Int.ofNat (refundNext heap out.size))]))
     else ExecFuncBody cfg {contract := contract, locals := locals, immutables := imms} evm refundFunction.body .reverted := by
-  have hp := refundCallPrefix_exec (cfg := cfg) (imms := imms) hv hb hc
+  have hp := refundCallPrefix_exec (hperm := by assumption) (cfg := cfg) (imms := imms) hv hb hc
   have hf := refundPostLocals_facts locals success out
   have hh' := hf.2.2.trans hh
   have hr := refundResultSource (cfg := cfg) (imms := imms) (evm := evm') hf.2.1 hf.1 hh'
@@ -155,12 +157,13 @@ theorem refundCall {cfg : Config} {locals imms : Store} {evm evm' : EVM.State}
     (he : evalExprs? cfg {contract := contract, locals := locals, immutables := imms} evm args =
       .ok [.int (Int.ofNat value.toNat), .int (Int.ofNat heap)])
     (hn : value ≠ ⟨0⟩) (hb : value.toNat ≤ (refundBalance evm).toNat)
-    (hc : callViaEVM evm evm.executionEnv.source (Int.ofNat value.toNat) ByteArray.empty (success,evm',out)) :
+    (hc : callViaEVM evm evm.executionEnv.source (Int.ofNat value.toNat) ByteArray.empty (success,evm',out))
+    (hperm : evm.executionEnv.perm = true) :
     if refundResultValid heap success out then
       ExecStmt cfg {contract := contract, locals := locals, immutables := imms} evm (.internalCall "_refund" args retVar)
         (.ok {contract := contract, locals := locals.insert retVar (.tuple [.tuple [], .int (Int.ofNat (refundNext heap out.size))]), immutables := imms} evm')
     else ExecStmt cfg {contract := contract, locals := locals, immutables := imms} evm (.internalCall "_refund" args retVar) .reverted := by
-  have hs := refundSource_call (cfg := cfg) (imms := imms) (locals := refundArgs value heap)
+  have hs := refundSource_call (hperm := by assumption) (cfg := cfg) (imms := imms) (locals := refundArgs value heap)
     (store_get_self _ _ _) (refundArgs_heap value heap) hn hb hc
   by_cases hg : refundResultValid heap success out
   · rw [if_pos hg] at hs ⊢

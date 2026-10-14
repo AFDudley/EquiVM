@@ -881,7 +881,8 @@ theorem cAssignS (evm : EVM.State) (I : ExecutionEnv) :
 
 theorem cGBodyReturns (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hbound : 2 * (cArgWord I).toNat + 1 < UInt256.size) :
+    (hbound : 2 * (cArgWord I).toNat + 1 < UInt256.size)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody cConfig Reuse.cContract evm (cArgStore I) Reuse.gTransition.body
       (.returned { contract := Reuse.cContract, locals := cGStoreAfterF I }
         (Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨0⟩ (cFResultWord I)) none) := by
@@ -900,7 +901,9 @@ theorem cGBodyReturns (evm : EVM.State) (I : ExecutionEnv)
         (value := cFResultValue I)
         (cEvalArgs_v evm I) cLookupF (cBindFArg I) (cFBodyReturns evm I hwv hbound)
   refine ExecBlock.consNormal hcall ?_
-  exact ExecBlock.consNormal (ExecStmt.assign (cEvalR evm I) (cAssignS evm I)) ExecBlock.nil
+  exact ExecBlock.consNormal (ExecStmt.assign
+    (hperm := by first | assumption | exact Or.inr ‹_› | exact Or.inl rfl)
+    (cEvalR evm I) (cAssignS evm I)) ExecBlock.nil
 
 /-- Static mode: `g` halts at its storage write. -/
 theorem cGBodyStatic (evm : EVM.State) (I : ExecutionEnv)
@@ -1036,7 +1039,7 @@ theorem cReEquiv_callvalueZero {σ σ₀ A I} {g : UInt256}
           · have hdec := cDecode_g_ok (I := I) hsz36 hbig
             by_cases hbound : 2 * (cArgWord I).toNat + 1 < UInt256.size
             · by_cases hperm : I.perm = true
-              · have hbody := cGBodyReturns
+              · have hbody := cGBodyReturns (hperm := hperm)
                   (initState σ σ₀ (Sat256.ofUInt256 g) A I) I
                   (by simp only [initState]; exact hwv) hbound
                 exact (permSplit_true hperm (cX_g_success (g := Sat256.ofUInt256 g) hcode hwv

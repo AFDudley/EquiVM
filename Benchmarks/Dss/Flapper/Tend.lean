@@ -2000,7 +2000,8 @@ theorem flapperTendPaySuccessTailSplit
         [.address evm.executionEnv.source, .address evm.executionEnv.codeOwner,
           .int (Int.ofNat (UInt256.sub (tendBidWord I) (tendBidStoredWord evm I)).toNat)]
         (true, evmPay, outPay) true) :
-    (((tendNow48Word evmPay).toNat + (tendTtlWord (tendAfterBidStore evmPay I)).toNat <
+    (evm.executionEnv.perm = true →
+     ((tendNow48Word evmPay).toNat + (tendTtlWord (tendAfterBidStore evmPay I)).toNat <
         2 ^ 48) →
       ExecBlock config { contract := contract, locals := baseLocals } evm
       ((checkedExternalCallStmts (.storage gemRef) "move" (.intLit 0)
@@ -2046,7 +2047,7 @@ theorem flapperTendPaySuccessTailSplit
           "_payRet")
         (.ok { contract := contract, locals := tendPayRetLocals baseLocals } evmPay) := by
     simpa [checkedExternalCallStmts, tendPayRetLocals] using
-      checkedExternalCallSuccess hguard hgemEval hargs hcall (tendMoveDecode_ok outPay)
+      checkedExternalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hguard hgemEval hargs hcall (tendMoveDecode_ok outPay)
   have hpayId : (tendPayRetLocals baseLocals).get? "id" = some (tendIdValue I) := by
     rw [tendPayRetLocals_get_of_ne (by decide)]
     exact hid
@@ -2066,7 +2067,10 @@ theorem flapperTendPaySuccessTailSplit
     evalExpr_tend_var_of_get evmPay hpayBid
   have hassign := assign_tendBidStorage_of_locals evmPay I hpayId hpayBids
   constructor
-  · intro haddFit
+  · intro hperm haddFit
+    have hpPay : evmPay.executionEnv.perm = true := by
+      rw [typedCallViaEVM_executionEnv_eq hcall]
+      exact hperm
     have hbidAssign :
         ExecBlock config { contract := contract, locals := tendPayRetLocals baseLocals }
             evmPay
@@ -2074,7 +2078,7 @@ theorem flapperTendPaySuccessTailSplit
           (.ok { contract := contract, locals := tendPayRetLocals baseLocals }
             (tendAfterBidStore evmPay I)) := by
       exact ExecBlock.consNormal
-        (ExecStmt.assign hbidExpr hassign)
+        (ExecStmt.assign (hperm := Or.inr hpPay) hbidExpr hassign)
         ExecBlock.nil
     have hpayBidTail :
         ExecBlock config { contract := contract, locals := baseLocals } evm
@@ -2109,7 +2113,8 @@ theorem flapperTendPaySuccessTailSplit
               (evalExpr_tend_tic_guard_true_of_locals evmPay I
                 (baseLocals := baseLocals) haddFit)) <|
           ExecBlock.consNormal
-            (ExecStmt.assign hticExpr
+            (ExecStmt.assign (hperm := Or.inr (by
+              simpa only [tendAfterBidStore_executionEnv] using hpPay)) hticExpr
               (assign_tendTicStorage_value_of_locals evmPay I
                 (tendTicLocals_get_id evmPay I hid)
                 (tendTicLocals_get_bids evmPay I hbids) haddFit))
@@ -2145,7 +2150,8 @@ theorem flapperTendPaySuccessTail
         (true, evmPay, outPay) true)
     (haddFit :
       (tendNow48Word evmPay).toNat + (tendTtlWord (tendAfterBidStore evmPay I)).toNat <
-        2 ^ 48) :
+        2 ^ 48)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config { contract := contract, locals := baseLocals } evm
       ((checkedExternalCallStmts (.storage gemRef) "move" (.intLit 0)
           [sender, thisAddr,
@@ -2157,7 +2163,7 @@ theorem flapperTendPaySuccessTail
       (.ok { contract := contract, locals := tendTicLocals baseLocals evmPay I }
         (tendPostState evmPay I)) :=
   (flapperTendPaySuccessTailSplit evm evmPay I baseLocals outPay
-    hid hbid hbids hgem httl hcodeSize hcall).1 haddFit
+    hid hbid hbids hgem httl hcodeSize hcall).1 hperm haddFit
 
 set_option maxHeartbeats 1000000 in
 theorem flapperTendBodyReturns_success_callerEq
@@ -2185,7 +2191,8 @@ theorem flapperTendBodyReturns_success_callerEq
         (true, evmPay, outPay) true)
     (haddFit :
       (tendNow48Word evmPay).toNat + (tendTtlWord (tendAfterBidStore evmPay I)).toNat <
-        2 ^ 48) :
+        2 ^ 48)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (tendLocals I) tendTransition.body
       (.returned { contract := contract, locals := tendTicLocals (tendBegBidLocals evm I) evmPay I }
         (tendPostState evmPay I) none) := by
@@ -2211,7 +2218,7 @@ theorem flapperTendBodyReturns_success_callerEq
         (.ok { contract := contract, locals := tendBegBidLocals evm I } evm) := by
     exact ExecBlock.consNormal (ExecStmt.iteFalse hcallerCond ExecBlock.nil) ExecBlock.nil
   have hpayTail :=
-    flapperTendPaySuccessTail evm evmPay I (tendBegBidLocals evm I) outPay
+    flapperTendPaySuccessTail (hperm := by assumption) evm evmPay I (tendBegBidLocals evm I) outPay
       (tendBegBidLocals_get_id evm I) (tendBegBidLocals_get_bid evm I)
       (tendBegBidLocals_get_bids evm I) (tendBegBidLocals_get_gem evm I)
       (tendBegBidLocals_get_ttl evm I) hpayCodeSize hpayCall haddFit
@@ -2273,7 +2280,8 @@ theorem flapperTendRefundSuccessPrefixSplit
           .address (AccountAddress.ofNat (tendGuyWord evm I).toNat),
           .int (Int.ofNat (tendBidStoredWord evm I).toNat)]
         (true, evmRefund, outRefund) true) :
-    (ExecBlock config { contract := contract, locals := tendBegBidLocals evm I } evm
+    (evm.executionEnv.perm = true →
+      ExecBlock config { contract := contract, locals := tendBegBidLocals evm I } evm
       [.ite (.binary .ne sender (.storage (bidsF (.var "id") "guy")))
         (checkedExternalCallStmts (.storage gemRef) "move" (.intLit 0)
             [sender, .storage (bidsF (.var "id") "guy"),
@@ -2318,7 +2326,7 @@ theorem flapperTendRefundSuccessPrefixSplit
             .storage (bidsF (.var "id") "bid")] "_refundRet")
         (.ok { contract := contract, locals := tendRefundRetLocals evm I } evmRefund) := by
     simpa [checkedExternalCallStmts, tendRefundRetLocals] using
-      checkedExternalCallSuccess hguard hgemEval hargs hrefundCall (tendMoveDecode_ok outRefund)
+      checkedExternalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hguard hgemEval hargs hrefundCall (tendMoveDecode_ok outRefund)
   have hsender :
       evalExpr? config { contract := contract, locals := tendRefundRetLocals evm I }
           evmRefund sender =
@@ -2327,8 +2335,12 @@ theorem flapperTendRefundSuccessPrefixSplit
   have hassign := assign_tendGuyStorage_of_locals evmRefund I
     (tendRefundRetLocals_get_id evm I) (tendRefundRetLocals_get_bids evm I)
   constructor
-  · have hbranch := execBlock_append hrefundChecked
-      (ExecBlock.consNormal (ExecStmt.assign hsender hassign) ExecBlock.nil)
+  · intro hperm
+    have hpRefund : evmRefund.executionEnv.perm = true := by
+      rw [typedCallViaEVM_executionEnv_eq hrefundCall]
+      exact hperm
+    have hbranch := execBlock_append hrefundChecked
+      (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hpRefund) hsender hassign) ExecBlock.nil)
     exact ExecBlock.consNormal (ExecStmt.iteTrue hcallerCond hbranch) ExecBlock.nil
   · intro hperm
     have hp : evmRefund.executionEnv.perm = false := by
@@ -2352,7 +2364,8 @@ theorem flapperTendRefundSuccessPrefix
         [.address evm.executionEnv.source,
           .address (AccountAddress.ofNat (tendGuyWord evm I).toNat),
           .int (Int.ofNat (tendBidStoredWord evm I).toNat)]
-        (true, evmRefund, outRefund) true) :
+        (true, evmRefund, outRefund) true)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config { contract := contract, locals := tendBegBidLocals evm I } evm
       [.ite (.binary .ne sender (.storage (bidsF (.var "id") "guy")))
         (checkedExternalCallStmts (.storage gemRef) "move" (.intLit 0)
@@ -2363,7 +2376,7 @@ theorem flapperTendRefundSuccessPrefix
       (.ok { contract := contract, locals := tendRefundRetLocals evm I }
         (tendAfterGuyStore evmRefund I)) :=
   (flapperTendRefundSuccessPrefixSplit evm evmRefund I outRefund
-    hcaller hrefundCodeSize hrefundCall).1
+    hcaller hrefundCodeSize hrefundCall).1 hperm
 
 set_option maxHeartbeats 1000000 in
 theorem flapperTendBodyReturns_success_callerNe
@@ -2406,7 +2419,8 @@ theorem flapperTendBodyReturns_success_callerNe
         (true, evmPay, outPay) true)
     (haddFit :
       (tendNow48Word evmPay).toNat + (tendTtlWord (tendAfterBidStore evmPay I)).toNat <
-        2 ^ 48) :
+        2 ^ 48)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (tendLocals I) tendTransition.body
       (.returned { contract := contract, locals := tendTicLocals (tendRefundRetLocals evm I) evmPay I }
         (tendPostState evmPay I) none) := by
@@ -2421,7 +2435,7 @@ theorem flapperTendBodyReturns_success_callerNe
     | inl hgt => exact evalExpr_tend_tic_guard_true_gt evm I hgt
     | inr hzero => exact evalExpr_tend_tic_guard_true_zero evm I hzero
   have hrefundPrefix :=
-    flapperTendRefundSuccessPrefix evm evmRefund I outRefund hcaller hrefundCodeSize
+    flapperTendRefundSuccessPrefix (hperm := by assumption) evm evmRefund I outRefund hcaller hrefundCodeSize
       hrefundCall
   have hpayTail :
       ExecBlock config { contract := contract, locals := tendRefundRetLocals evm I } evmGuy
@@ -2435,7 +2449,9 @@ theorem flapperTendBodyReturns_success_callerNe
         (.ok { contract := contract, locals := tendTicLocals (tendRefundRetLocals evm I) evmPay I }
           (tendPostState evmPay I)) := by
     simpa [evmGuy] using
-      flapperTendPaySuccessTail evmGuy evmPay I (tendRefundRetLocals evm I) outPay
+      flapperTendPaySuccessTail (hperm := by
+        simpa only [evmGuy, tendAfterGuyStore_executionEnv,
+          typedCallViaEVM_executionEnv_eq hrefundCall] using hperm) evmGuy evmPay I (tendRefundRetLocals evm I) outPay
         (tendRefundRetLocals_get_id evm I) (tendRefundRetLocals_get_bid evm I)
         (tendRefundRetLocals_get_bids evm I) (tendRefundRetLocals_get_gem evm I)
         (tendRefundRetLocals_get_ttl evm I) hpayCodeSize hpayCall haddFit
@@ -2606,7 +2622,7 @@ theorem flapperTendRefundCallFailureTail
             .storage (bidsF (.var "id") "bid")] "_refundRet")
         .reverted := by
     simpa [checkedExternalCallStmts] using
-      checkedExternalCallFailure hguard hgemEval hargs hrefundCall
+      checkedExternalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hguard hgemEval hargs hrefundCall
   have hthen :
       ExecBlock config { contract := contract, locals := tendBegBidLocals evm I } evm
         (checkedExternalCallStmts (.storage gemRef) "move" (.intLit 0)
@@ -2727,7 +2743,7 @@ theorem flapperTendPayCallFailureTail
           "_payRet")
         .reverted := by
     simpa [checkedExternalCallStmts] using
-      checkedExternalCallFailure hguard hgemEval hargs hpayCall
+      checkedExternalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hguard hgemEval hargs hpayCall
   have hpayBidTail :
       ExecBlock config { contract := contract, locals := baseLocals } evm
         (checkedExternalCallStmts (.storage gemRef) "move" (.intLit 0)
@@ -2760,7 +2776,8 @@ theorem flapperTendPayAddOverflowTail
     (haddOverflow :
       2 ^ 48 ≤
         (tendNow48Word evmPay).toNat +
-          (tendTtlWord (tendAfterBidStore evmPay I)).toNat) :
+          (tendTtlWord (tendAfterBidStore evmPay I)).toNat)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config { contract := contract, locals := baseLocals } evm
       ((checkedExternalCallStmts (.storage gemRef) "move" (.intLit 0)
           [sender, thisAddr,
@@ -2770,6 +2787,9 @@ theorem flapperTendPayAddOverflowTail
         (checkedAdd48Into "tic_" now48 (.storage ttlRef) ++
           [.assign .storage (bidsF (.var "id") "tic") (.var "tic_")]))
       .reverted := by
+  have hpPay : evmPay.executionEnv.perm = true := by
+    rw [typedCallViaEVM_executionEnv_eq hpayCall]
+    exact hperm
   have hgemEval := evalExpr_tend_gem_storage_of_locals evm baseLocals hgem
   have hcodeLookup :
       0 < (UInt256.ofNat
@@ -2795,7 +2815,7 @@ theorem flapperTendPayAddOverflowTail
           "_payRet")
         (.ok { contract := contract, locals := tendPayRetLocals baseLocals } evmPay) := by
     simpa [checkedExternalCallStmts, tendPayRetLocals] using
-      checkedExternalCallSuccess hguard hgemEval hargs hpayCall (tendMoveDecode_ok outPay)
+      checkedExternalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hguard hgemEval hargs hpayCall (tendMoveDecode_ok outPay)
   have hpayId : (tendPayRetLocals baseLocals).get? "id" = some (tendIdValue I) := by
     rw [tendPayRetLocals_get_of_ne (by decide)]
     exact hid
@@ -2820,7 +2840,7 @@ theorem flapperTendPayAddOverflowTail
         (.ok { contract := contract, locals := tendPayRetLocals baseLocals }
           (tendAfterBidStore evmPay I)) := by
     exact ExecBlock.consNormal
-      (ExecStmt.assign hbidExpr (assign_tendBidStorage_of_locals evmPay I hpayId hpayBids))
+      (ExecStmt.assign (hperm := Or.inr hpPay) hbidExpr (assign_tendBidStorage_of_locals evmPay I hpayId hpayBids))
       ExecBlock.nil
   have hpayBidTail :
       ExecBlock config { contract := contract, locals := baseLocals } evm
@@ -7881,7 +7901,7 @@ theorem flapperTendBodyCoreIncreaseSufficient_finishFromGuard
                     { contract := contract,
                       locals := tendTicLocals (tendBegBidLocals evmStele I) evmPayStele I }
                     (tendPostState evmPayStele I) none) := by
-              exact flapperTendBodyReturns_success_callerEq evmStele evmPayStele I outPay
+              exact flapperTendBodyReturns_success_callerEq (hperm := by assumption) evmStele evmPayStele I outPay
                 (by simpa [evmStele, initState] using hwv) hliveStele hguyStele hticOkStele
                 hendGtStele hlotStele hbidGtStele hbidOneFit hbegBidFitStele hsuffStele
                 hcallerStele
@@ -7908,7 +7928,7 @@ theorem flapperTendBodyCoreIncreaseSufficient_finishFromGuard
                     (tendTtlWord (tendAfterBidStore evmPayStele I)).toNat := by
               simpa [tendNow48Word, tendTimestampWord, hpayEnv, httl] using haddOverflow
             have hpayTail :=
-              flapperTendPayAddOverflowTail evmStele evmPayStele I
+              flapperTendPayAddOverflowTail (hperm := by assumption) evmStele evmPayStele I
                 (tendBegBidLocals evmStele I) outPay
                 (tendBegBidLocals_get_id evmStele I) (tendBegBidLocals_get_bid evmStele I)
                 (tendBegBidLocals_get_bids evmStele I) (tendBegBidLocals_get_gem evmStele I)
@@ -8187,7 +8207,7 @@ theorem flapperTendBodyCoreIncreaseSufficient_finishFromGuard
               tendRuntimeAfterGuyMap_accountMap_eq
                 (σ := σRefund) (evmStele := evmRefundStele) (I := I) rfl hrefundEnv
           have hprefix :=
-            flapperTendRefundSuccessPrefix evmStele evmRefundStele I outRefund
+            flapperTendRefundSuccessPrefix (hperm := by assumption) evmStele evmRefundStele I outRefund
               hcallerNeStele
               (by simpa [evmStele, tendGemWord, initState] using hrefundCodeSize)
               hrefundCallTrue
@@ -8345,7 +8365,7 @@ theorem flapperTendBodyCoreIncreaseSufficient_finishFromGuard
                           locals := tendTicLocals (tendRefundRetLocals evmStele I)
                             evmPayStele I }
                         (tendPostState evmPayStele I) none) := by
-                  exact flapperTendBodyReturns_success_callerNe
+                  exact flapperTendBodyReturns_success_callerNe (hperm := by assumption)
                     evmStele evmRefundStele evmPayStele I outRefund outPay
                     (by simpa [evmStele, initState] using hwv) hliveStele hguyStele
                     hticOkStele hendGtStele hlotStele hbidGtStele hbidOneFit
@@ -8375,7 +8395,8 @@ theorem flapperTendBodyCoreIncreaseSufficient_finishFromGuard
                         (tendTtlWord (tendAfterBidStore evmPayStele I)).toNat := by
                   simpa [tendNow48Word, tendTimestampWord, hpayEnv, httl] using haddOverflow
                 have hpayTail :=
-                  flapperTendPayAddOverflowTail evmGuyStele evmPayStele I
+                  flapperTendPayAddOverflowTail (hperm := by simpa only [hguyEnv] using hperm)
+                    evmGuyStele evmPayStele I
                     (tendRefundRetLocals evmStele I) outPay
                     (tendRefundRetLocals_get_id evmStele I)
                     (tendRefundRetLocals_get_bid evmStele I)

@@ -3,7 +3,7 @@ import Benchmarks.Safe.Main.PaymentNativeReturn
 import Benchmarks.Safe.Main.RawValueCall
 
 open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
-open safeRuntimeBlocks
+open Benchmarks.Safe.Main.RuntimeBlocks
 
 namespace Benchmarks.Safe.Main
 
@@ -50,7 +50,7 @@ theorem safePaymentNativeTrace (p : PaymentInput) (evm : EVM.State)
   rw [hbz, callOutputMem_zero] at h₂
   obtain ⟨aw₃, k₃, C₃, h₃⟩ := safePaymentReturnBuffer h₂ hf
     (by change ptr + out.size + 64 < 2 ^ 256; omega) (by simp; omega)
-  have hbody := safePaymentNativeSource hsum (by simpa only [hee] using hprod) htoken hc'
+  have hbody := safePaymentNativeSource (hperm := by simpa only [hee, or_comm] using hperm) hsum (by simpa only [hee] using hprod) htoken hc'
   have hfinish := safePaymentNativeFinish z h₃ (by omega) hret
   cases z
   · exact .inl ⟨hfinish, hbody⟩

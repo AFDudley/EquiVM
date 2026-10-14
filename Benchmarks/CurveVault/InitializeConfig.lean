@@ -35,7 +35,8 @@ theorem vaultInitializeConfigSource {I : ExecutionEnv} {s0 evm : State} {σ : Ac
     (hp : locals.get? "borrowed_precision" = some (.int (Int.ofNat precision.toNat)))
     (hbase : ∀ name ∈ ["_collateral_token", "_factory", "_amm", "_controller", "precision"], locals.get? name = none)
     (hacanon : amm.toNat < EVM.addressModulus) (hccanon : controller.toNat < EVM.addressModulus)
-    (hlcanon : collateral.toNat < EVM.addressModulus) :
+    (hlcanon : collateral.toNat < EVM.addressModulus)
+    (hperm : I.perm = true) :
     ExecBlock config {contract := contract, locals := locals} evm (initializeTransition.body.drop 5 |>.take 5)
       (.ok {contract := contract, locals := locals} (vaultInitializeConfigState I evm amm controller collateral precision)) ∧
     SourceState s0 I (vaultInitializeConfigAccounts I σ amm controller collateral precision)
@@ -58,26 +59,26 @@ theorem vaultInitializeConfigSource {I : ExecutionEnv} {s0 evm : State} {σ : Ac
     simpa only [keyValueToWord_address] using keyValueToWord_address_of_canonical w hcanon
   have sl : ExecStmt config {contract := contract, locals := locals} evm initializeTransition.body[5]!
       (.ok {contract := contract, locals := locals} evm1) :=
-    ExecStmt.assign (by simp only [evalExpr?, hl, EvalResult.ofOption]; rfl)
+    ExecStmt.assign (hperm := Or.inr (by simpa only [hs.env] using hperm)) (by simp only [evalExpr?, hl, EvalResult.ofOption]; rfl)
       (by simpa only [hs.env, hw collateral hlcanon] using (vaultAssignScalarAddress evm locals
         "_collateral_token" ⟨1⟩ (AccountAddress.ofNat collateral.toNat) (hbase _ (by decide +kernel)) rfl rfl))
   have sf : ExecStmt config {contract := contract, locals := locals} evm1 initializeTransition.body[6]!
       (.ok {contract := contract, locals := locals} evm2) :=
-    ExecStmt.assign (by simpa only [he1] using evalExpr_caller (cfg := config) (stele := {contract := contract, locals := locals}) evm1)
+    ExecStmt.assign (hperm := Or.inr (by simpa only [he1] using hperm)) (by simpa only [he1] using evalExpr_caller (cfg := config) (stele := {contract := contract, locals := locals}) evm1)
       (by simpa only [he1] using (vaultAssignScalarAddress evm1 locals
         "_factory" ⟨4⟩ I.source (hbase _ (by decide +kernel)) rfl rfl))
   have sa : ExecStmt config {contract := contract, locals := locals} evm2 initializeTransition.body[7]!
       (.ok {contract := contract, locals := locals} evm3) :=
-    ExecStmt.assign (by simp only [evalExpr?, ha, EvalResult.ofOption]; rfl)
+    ExecStmt.assign (hperm := Or.inr (by simpa only [he2] using hperm)) (by simp only [evalExpr?, ha, EvalResult.ofOption]; rfl)
       (by simpa only [he2, hw amm hacanon] using (vaultAssignScalarAddress evm2 locals
         "_amm" ⟨2⟩ (AccountAddress.ofNat amm.toNat) (hbase _ (by decide +kernel)) rfl rfl))
   have sc : ExecStmt config {contract := contract, locals := locals} evm3 initializeTransition.body[8]!
       (.ok {contract := contract, locals := locals} evm4) :=
-    ExecStmt.assign (evalExpr_castAddressUint256_word hccanon (by simp only [evalExpr?, hc, EvalResult.ofOption]))
+    ExecStmt.assign (hperm := Or.inr (by simpa only [he3] using hperm)) (evalExpr_castAddressUint256_word hccanon (by simp only [evalExpr?, hc, EvalResult.ofOption]))
       (by simpa only [he3] using vaultAssignController evm3 locals controller (hbase _ (by decide +kernel)) hccanon)
   have sp : ExecStmt config {contract := contract, locals := locals} evm4 initializeTransition.body[9]!
       (.ok {contract := contract, locals := locals} (vaultInitializeConfigState I evm amm controller collateral precision)) :=
-    ExecStmt.assign (by simp only [evalExpr?, hp, EvalResult.ofOption]; rfl)
+    ExecStmt.assign (hperm := Or.inr (by simpa only [he4] using hperm)) (by simp only [evalExpr?, hp, EvalResult.ofOption]; rfl)
       (by simpa only [he4] using (vaultAssignScalarUint256 evm4 locals "precision" ⟨15⟩ precision
         (hbase _ (by decide +kernel)) rfl rfl (by decide +kernel)))
   exact ExecBlock.consNormal sl (ExecBlock.consNormal sf (ExecBlock.consNormal sa
@@ -121,7 +122,7 @@ theorem vaultInitializeConfigWrites {I : ExecutionEnv} {g : Sat256} {s0 evm : St
   have hml0 := (hm0 160 (by omega)).trans hml
   have hmp0 : memLoad (UInt256.ofNat 192) mem0 = precision :=
     memLoad_write_back _ _ 192 (by decide +kernel) (hgap _ _ (by omega))
-  obtain ⟨hsource, hs'⟩ := vaultInitializeConfigSource hs ha hc hl hp hbase hacanon hccanon hlcanon
+  obtain ⟨hsource, hs'⟩ := vaultInitializeConfigSource (hperm := hperm) hs ha hc hl hp hbase hacanon hccanon hlcanon
   obtain ⟨gasArg, k', C', rd388⟩ := vaultBlocks.vault_block_327 hstack hperm h
   change RD vaultBytecode I g s0 (UInt256.ofNat 388)
     (gasArg :: memLoad (UInt256.ofNat 128) mem0 :: ⟨316⟩ :: ⟨4⟩ :: ⟨288⟩ :: ⟨96⟩ :: memLoad (UInt256.ofNat 128) mem0 :: R)

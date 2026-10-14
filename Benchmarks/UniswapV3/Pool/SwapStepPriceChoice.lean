@@ -34,7 +34,7 @@ theorem swapStepTargetAssign (imms : Store) (evm : EVM.State) (a : SwapStepArgs)
       (.assign .localVar ⟨"sqrtRatioNextX96", []⟩ (.var "sqrtRatioTargetX96"))
       (.ok (swapStepPriceFrame imms a input) evm) := by
   simp only [swapStepPriceFrame, swapStepPrice, hr, if_true]
-  exact ExecStmt.assign (evalExpr_var_get (swapStepInitialGet imms a input).2.1)
+  exact ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalExpr_var_get (swapStepInitialGet imms a input).2.1)
     (assignLocalVarBase_frame (swapStepInitialGet imms a input).2.2.2.2.2)
 
 theorem swapStepNextAssign (imms : Store) (evm : EVM.State) (a : SwapStepArgs)
@@ -49,7 +49,7 @@ theorem swapStepNextAssign (imms : Store) (evm : EVM.State) (a : SwapStepArgs)
       Bool.false_eq_true, if_false, if_true,
       Std.HashMap.get?_eq_getElem?, Std.HashMap.getElem?_insert] using h
   simp only [swapStepPriceFrame, swapStepPrice, hr, Bool.false_eq_true, if_false, hi]
-  exact ExecStmt.assign (evalExpr_var_get Std.HashMap.getElem?_insert_self)
+  exact ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalExpr_var_get Std.HashMap.getElem?_insert_self)
     (assignLocalVarBase_frame hg)
 
 theorem swapStepPriceChoiceSource (imms : Store) (evm : EVM.State) (a : SwapStepArgs)

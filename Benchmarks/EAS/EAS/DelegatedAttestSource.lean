@@ -112,7 +112,7 @@ theorem delegatedAttestDataSource {L imms : Store} {evm : EVM.State} {r : Delega
     simp only [evalExpr?,pure,bind,EvalResult.bind,show ¬ (1 : Int) < 0 by decide,if_false,hd]
     rfl
   apply ExecBlock.consNormal (ExecStmt.letDecl he)
-  apply ExecBlock.consNormal (ExecStmt.assign (value := r.data.tuple) ?_ ?_) ExecBlock.nil
+  apply ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (value := r.data.tuple) ?_ ?_) ExecBlock.nil
   · apply evalRecordField (record := r.struct) ?_ rfl
     simp only [evalExpr?,store_get_ne _ _ (by decide : ("data" == "delegatedRequest") = false),hr,EvalResult.ofOption]
   · exact assignLocalArrayExpr (cfg := config) (evm := evm)

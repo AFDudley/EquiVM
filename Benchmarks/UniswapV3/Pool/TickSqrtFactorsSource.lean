@@ -65,7 +65,7 @@ theorem tickSqrtStepSource {frame : Frame} {evm : EVM.State}
           (.int (Int.ofNat (tickSqrtStep absTick ratio factor).toNat))}
     refine ⟨out, ?_, ?_, ?_⟩
     · refine ExecStmt.iteTrue ?_ (ExecBlock.consNormal
-        (ExecStmt.assign (value := .int (Int.ofNat (tickSqrtStep absTick ratio factor).toNat))
+        (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (value := .int (Int.ofNat (tickSqrtStep absTick ratio factor).toNat))
           ?_ ?_) ExecBlock.nil)
       · simpa only [hz, ne_eq, not_false_eq_true, decide_true] using he
       · simpa only [tickSqrtStep, if_neg hz] using evalTickSqrtMul ratio factor.2 hr hf.2

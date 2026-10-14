@@ -5891,7 +5891,7 @@ theorem dogBarkVatGrabCallFailureBlock {v : DogImmutables} {evm evm' : EVM.State
       (milkClip := milkClip) (dink := dink) (dart := dart)
       hilk hurn hmilkClip hvow hdink hdart hdinkBound hdartBound
   simpa [checkedExternalCallStmts] using
-    (checkedExternalCallFailure
+    (checkedExternalCallFailure (hperm := Or.inl rfl)
       (cfg := config) (C := contract) (evm := evm) (evm' := evm')
       (locals := locals) (receiver := vatExpr) (retVar := "_grabRet")
       (name := "grab") (target := AccountAddress.ofNat v.vat.toNat) (sendVal := 0)
@@ -5949,7 +5949,7 @@ theorem dogBarkVatGrabCallSuccessBlock {v : DogImmutables} {evm evm' : EVM.State
   have hdec : config.externalABI.decode? "grab" outGrab = some ([] : List Value) := by
     simp [config, externalABI, decodeVoid?]
   simpa [checkedExternalCallStmts, barkLocalsGrabRet] using
-    (checkedExternalCallSuccess
+    (checkedExternalCallSuccess (hperm := Or.inl rfl)
       (cfg := config) (C := contract) (evm := evm) (evm' := evm')
       (locals := locals) (receiver := vatExpr) (retVar := "_grabRet")
       (name := "grab") (target := AccountAddress.ofNat v.vat.toNat) (sendVal := 0)
@@ -6139,7 +6139,7 @@ theorem dogBarkVowFessCallFailureBlock {v : DogImmutables} {evm evm' : EVM.State
   have hargs :=
     evalExprs_barkVowFessArgs (v := v) (evm := evm) (locals := locals) hdue
   simpa [checkedExternalCallStmts] using
-    (checkedExternalCallFailure
+    (checkedExternalCallFailure (hperm := Or.inl rfl)
       (cfg := config) (C := contract) (evm := evm) (evm' := evm')
       (locals := locals) (receiver := vowAddr) (retVar := "_fessRet")
       (name := "fess")
@@ -6171,7 +6171,7 @@ theorem dogBarkVowFessCallSuccessBlock {v : DogImmutables} {evm evm' : EVM.State
   have hdec : config.externalABI.decode? "fess" outFess = some ([] : List Value) := by
     simp [config, externalABI, decodeVoid?]
   simpa [checkedExternalCallStmts, barkLocalsFessRet] using
-    (checkedExternalCallSuccess
+    (checkedExternalCallSuccess (hperm := Or.inl rfl)
       (cfg := config) (C := contract) (evm := evm) (evm' := evm')
       (locals := locals) (receiver := vowAddr) (retVar := "_fessRet")
       (name := "fess")
@@ -6452,7 +6452,7 @@ theorem dogBarkVatUrnsCallFailureSourceBody {v : DogImmutables}
         (.externalCall vatExpr "urns" (.intLit 0) [.var "ilk", .var "urn"]
           "vatUrn" (perm := false))
         .reverted :=
-    ExecStmt.externalCallFailure hvat (by simp [evalExpr?, pure]) hargs hcall'
+    ExecStmt.externalCallFailure (hperm := Or.inl rfl) hvat (by simp [evalExpr?, pure]) hargs hcall'
   have hcallvalue :
       evalExpr? config { contract := contract, locals := locals, immutables := immStore v } evm0
         (.binary .eq (.env .callvalue) (.intLit 0)) = .ok (.bool true) :=
@@ -6541,7 +6541,7 @@ theorem dogBarkVatUrnsDecodeRevertSourceBody {v : DogImmutables}
         (.externalCall vatExpr "urns" (.intLit 0) [.var "ilk", .var "urn"]
           "vatUrn" (perm := false))
         .reverted :=
-    ExecStmt.externalCallReturnDecodeRevert hvat (by simp [evalExpr?, pure]) hargs
+    ExecStmt.externalCallReturnDecodeRevert (hperm := Or.inl rfl) hvat (by simp [evalExpr?, pure]) hargs
       hcall' hdec
   have hcallvalue :
       evalExpr? config { contract := contract, locals := locals, immutables := immStore v } evm0
@@ -6641,7 +6641,7 @@ theorem dogBarkVatUrnsSuccessIlksPrefix {v : DogImmutables}
           (.intLit 0) = .ok (.int 0) := by
       simp [evalExpr?, pure]
     simpa [locals, barkLocalsVatUrn, barkVatUrnValue, collapseReturns] using
-      (ExecStmt.externalCallSuccess (retVar := "vatUrn") hvat heth hargs hcall' hdec)
+      (ExecStmt.externalCallSuccess (hperm := Or.inl rfl) (retVar := "vatUrn") hvat heth hargs hcall' hdec)
   have hinkExpr :
       evalExpr? config { contract := contract, locals := barkLocalsVatUrn I out, immutables := immStore v }
         evmCall (.tupleGet (.var "vatUrn") 0) =
@@ -6910,7 +6910,7 @@ theorem dogBarkVatIlksCallFailureSourceBody {v : DogImmutables}
         (.externalCall vatExpr "ilks" (.intLit 0) [.var "ilk"] "vatIlk"
           (perm := false))
         .reverted :=
-    ExecStmt.externalCallFailure hvat heth hargs hcallIlks
+    ExecStmt.externalCallFailure (hperm := Or.inl rfl) hvat heth hargs hcallIlks
   have hsecond :
       ExecBlock config
         { contract := contract, locals := barkLocalsMilkDirt evmUrns I out, immutables := immStore v } evmUrns
@@ -7011,7 +7011,7 @@ theorem dogBarkVatIlksDecodeRevertSourceBody {v : DogImmutables}
         (.externalCall vatExpr "ilks" (.intLit 0) [.var "ilk"] "vatIlk"
           (perm := false))
         .reverted :=
-    ExecStmt.externalCallReturnDecodeRevert hvat heth hargs hcallIlks hdecIlks
+    ExecStmt.externalCallReturnDecodeRevert (hperm := Or.inl rfl) hvat heth hargs hcallIlks hdecIlks
   have hsecond :
       ExecBlock config
         { contract := contract, locals := barkLocalsMilkDirt evmUrns I out, immutables := immStore v } evmUrns
@@ -7117,7 +7117,7 @@ theorem dogBarkVatIlksSuccessDustPrefix {v : DogImmutables}
         (.ok { contract := contract, locals := barkLocalsVatIlk evmUrns I out outIlks, immutables := immStore v }
           evmIlks) := by
     simpa [barkLocalsVatIlk, barkVatIlkValue, collapseReturns] using
-      (ExecStmt.externalCallSuccess (retVar := "vatIlk") hvat heth hargs hcallIlks hdecIlks)
+      (ExecStmt.externalCallSuccess (hperm := Or.inl rfl) (retVar := "vatIlk") hvat heth hargs hcallIlks hdecIlks)
   have hrateExpr :
       evalExpr? config
         { contract := contract, locals := barkLocalsVatIlk evmUrns I out outIlks, immutables := immStore v }
@@ -7261,7 +7261,7 @@ theorem dogBarkVatIlksInkSpotOverflowSourceBody {v : DogImmutables}
         (.ok { contract := contract, locals := barkLocalsVatIlk evmUrns I out outIlks, immutables := immStore v }
           evmIlks) := by
     simpa [barkLocalsVatIlk, barkVatIlkValue, collapseReturns] using
-      (ExecStmt.externalCallSuccess (retVar := "vatIlk") hvat heth hargs hcallIlks hdecIlks)
+      (ExecStmt.externalCallSuccess (hperm := Or.inl rfl) (retVar := "vatIlk") hvat heth hargs hcallIlks hdecIlks)
   have hrateExpr :
       evalExpr? config
         { contract := contract, locals := barkLocalsVatIlk evmUrns I out outIlks, immutables := immStore v }
@@ -9805,7 +9805,7 @@ theorem dogBarkDirtAssignOkSourceSplit {v : DogImmutables} (evm : EVM.State)
     {locals : Store} {dirtNew : UInt256}
     (hDirt : locals.get? "Dirt" = none)
     (hDirtNew : locals.get? "DirtNew" = some (.int (Int.ofNat dirtNew.toNat))) :
-    (ExecBlock config { contract := contract, locals := locals, immutables := immStore v } evm
+    (evm.executionEnv.perm = true → ExecBlock config { contract := contract, locals := locals, immutables := immStore v } evm
       [ .assign .storage DirtRef (.var "DirtNew") ]
       (.ok { contract := contract, locals := locals, immutables := immStore v }
         (Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨5⟩ dirtNew))) ∧
@@ -9824,7 +9824,8 @@ theorem dogBarkDirtAssignOkSourceSplit {v : DogImmutables} (evm : EVM.State)
         .ok ({ contract := contract, locals := locals, immutables := immStore v }, evm') := by
     simpa [evm'] using assign_barkDirtStorage (v := v) evm dirtNew hDirt
   constructor
-  · exact ExecBlock.consNormal (ExecStmt.assign hval hassign) ExecBlock.nil
+  · intro hperm
+    exact ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hval hassign) ExecBlock.nil
   · intro hperm
     exact ExecBlock.consStatic (ExecStmt.assignStatic hval hassign hperm)
 
@@ -9889,7 +9890,8 @@ theorem dogBarkIlkDirtAssignOkSource {v : DogImmutables} (evm : EVM.State)
     (hilks : locals.get? "ilks" = none)
     (hilk : locals.get? "ilk" = some (barkIlkValue I))
     (hIlkDirtNew :
-      locals.get? "ilkDirtNew" = some (.int (Int.ofNat ilkDirtNew.toNat))) :
+      locals.get? "ilkDirtNew" = some (.int (Int.ofNat ilkDirtNew.toNat)))
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config { contract := contract, locals := locals, immutables := immStore v } evm
       [ .assign .storage (ilksF (.var "ilk") "dirt") (.var "ilkDirtNew") ]
       (.ok { contract := contract, locals := locals, immutables := immStore v }
@@ -9908,7 +9910,7 @@ theorem dogBarkIlkDirtAssignOkSource {v : DogImmutables} (evm : EVM.State)
         .ok ({ contract := contract, locals := locals, immutables := immStore v }, evm') := by
     simpa [evm'] using
       assign_barkIlkDirtStorage (v := v) evm (I := I) hsz100 ilkDirtNew hilks hilk
-  exact ExecBlock.consNormal (ExecStmt.assign hval hassign) ExecBlock.nil
+  exact ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hval hassign) ExecBlock.nil
 
 theorem evalExprs_barkKickArgs {v : DogImmutables} {evm : EVM.State}
     {locals : Store} {tab dink : UInt256} {urn kpr : AccountAddress}
@@ -9996,7 +9998,7 @@ theorem dogBarkKickCallFailureBlock {v : DogImmutables} {evm evm' : EVM.State}
       (tab := tab) (dink := dink) (urn := urn) (kpr := kpr)
       htab hdink hurn hkpr
   simpa [checkedExternalCallStmts] using
-    (checkedExternalCallFailure
+    (checkedExternalCallFailure (hperm := Or.inl rfl)
       (cfg := config) (C := contract) (evm := evm) (evm' := evm')
       (locals := locals) (receiver := .var "milkClip") (retVar := "id")
       (name := "kick") (target := AccountAddress.ofNat milkClip.toNat)
@@ -10047,7 +10049,7 @@ theorem dogBarkKickDecodeRevertBlock {v : DogImmutables} {evm evm' : EVM.State}
         (.externalCall (.var "milkClip") "kick" (.intLit 0)
           [.var "tab", .var "dink", .var "urn", .var "kpr"] "id")
         .reverted := by
-    exact ExecStmt.externalCallReturnDecodeRevert hreceiver (by simp [evalExpr?, pure])
+    exact ExecStmt.externalCallReturnDecodeRevert (hperm := Or.inl rfl) hreceiver (by simp [evalExpr?, pure])
       hargs hcall hdec
   simp only [checkedExternalCallStmts, List.cons_append, List.nil_append]
   exact ExecBlock.consNormal (ExecStmt.requireTrue hguard)
@@ -10092,7 +10094,7 @@ theorem dogBarkKickCallSuccessBlock {v : DogImmutables} {evm evm' : EVM.State}
       (tab := tab) (dink := dink) (urn := urn) (kpr := kpr)
       htab hdink hurn hkpr
   simpa [checkedExternalCallStmts, barkLocalsId, collapseReturns] using
-    (checkedExternalCallSuccess
+    (checkedExternalCallSuccess (hperm := Or.inl rfl)
       (cfg := config) (C := contract) (evm := evm) (evm' := evm')
       (locals := locals) (receiver := .var "milkClip") (retVar := "id")
       (name := "kick") (target := AccountAddress.ofNat milkClip.toNat)
@@ -10380,7 +10382,7 @@ theorem dogBarkDustyLeftoverIteOk {v : DogImmutables}
           evmIlks) := by
     exact ExecBlock.consNormal
       (ExecStmt.iteTrue hinnerCond
-        (ExecBlock.consNormal (ExecStmt.assign hartDue hassign) ExecBlock.nil))
+        (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inl rfl) hartDue hassign) ExecBlock.nil))
       ExecBlock.nil
   have hthen :
       ExecBlock config { contract := contract, locals := locals0, immutables := immStore v } evmIlks
@@ -26501,7 +26503,10 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                                             hcode hdispatch hdecode hbodyStatic
                                                         obtain ⟨_, _, rd4226⟩ :=
                                                           permSplit_true _hperm hstoreSplit
-                                                        have hdirtAssignOk := hsourceSplit.1
+                                                        have hdirtAssignOk := hsourceSplit.1 (by
+                                                          simpa [evmFessStele, evmGrabStele,
+                                                            evmIlksPostStele, evmPostStele,
+                                                            evmStele, initState] using _hperm)
                                                         have _hprefixDirtStore :=
                                                           execBlock_append _hprefixDirtNew
                                                             hdirtAssignOk
@@ -26760,7 +26765,7 @@ theorem dogBarkBodyCore {v : DogImmutables} {code : ByteArray}
                                                                 simp only [List.length_nil]
                                                                 omega)
                                                           have hilkDirtAssignOk :=
-                                                            dogBarkIlkDirtAssignOkSource
+                                                            dogBarkIlkDirtAssignOkSource (hperm := by simpa [evmDirtStele, storageStore_executionEnv, evmFessStele, evmGrabStele, evmIlksPostStele, evmPostStele, evmStele, initState] using _hperm)
                                                               (v := v) evmDirtStele hsz100
                                                               hilksIlkDirtNew hilkIlkDirtNew
                                                               hIlkDirtNewGet

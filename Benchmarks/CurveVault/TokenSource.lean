@@ -52,7 +52,9 @@ theorem vaultTokenSourceCallStmt (evm evm' : State) (locals : Store)
     (by simpa only [hpos, decide_true] using evalExpr_uint256_var_positive evm "amount" amount ha)
   apply ExecBlock.consNormal (ExecStmt.letDecl (vaultTokenPayloadEval evm locals sender recipient amount hf ht ha))
   apply ExecBlock.consNormal ?_ hrest
-  refine lowLevelCallSource ?_ (by rw [evalExpr?]; rfl) ?_ hcall
+  refine lowLevelCallSource (cfg := config)
+    (frame := {contract := contract, locals := locals.insert "payload" (.bytes (vaultTokenPayload sender recipient amount))})
+    (hperm := Or.inl rfl) ?_ (by rw [evalExpr?]; rfl) ?_ hcall
   · have hg : (locals.insert "payload" (.bytes (vaultTokenPayload sender recipient amount))).get? "token" =
         some (.address (AccountAddress.ofUInt256 token)) := by
       simp only [Std.HashMap.get?_eq_getElem?, Std.HashMap.getElem?_insert]

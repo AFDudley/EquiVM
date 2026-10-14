@@ -119,7 +119,7 @@ theorem attestSourceFailure {imms : Store} {eas : EVM.Address} {schema input : U
       .reverted imms := by
   apply ExecFuncBody.execBlockRevert
   apply attestSourcePrefix hvalue hget
-  exact ExecBlock.consRevert (ExecStmt.externalCallFailure (sendVal := 0) attestSourceReceiver
+  exact ExecBlock.consRevert (ExecStmt.externalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (sendVal := 0) attestSourceReceiver
     (by simp only [evalExpr?, pure]) attestSourceArgs
     (by simpa only [address_of_val] using hcall))
 
@@ -132,7 +132,7 @@ theorem attestSourceDecodeFailure {imms : Store} {eas : EVM.Address} {schema inp
       .reverted imms := by
   apply ExecFuncBody.execBlockRevert
   apply attestSourcePrefix hvalue hget
-  exact ExecBlock.consRevert (ExecStmt.externalCallReturnDecodeRevert (sendVal := 0)
+  exact ExecBlock.consRevert (ExecStmt.externalCallReturnDecodeRevert (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (sendVal := 0)
     attestSourceReceiver (by simp only [evalExpr?, pure]) attestSourceArgs
     (by simpa only [address_of_val] using hcall) hdec)
 
@@ -151,7 +151,7 @@ theorem attestSourceSuccess {imms : Store} {eas : EVM.Address} {schema input uid
         (some [wordBytes32Value uid])) imms := by
   apply ExecFuncBody.execBlockRet
   apply attestSourcePrefix hvalue hget
-  refine ExecBlock.consNormal (ExecStmt.externalCallSuccess (sendVal := 0)
+  refine ExecBlock.consNormal (ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (sendVal := 0)
     attestSourceReceiver (by simp only [evalExpr?, pure]) attestSourceArgs
     (by simpa only [address_of_val] using hcall) hdec) ?_
   refine ExecBlock.consReturn (ExecStmt.return ?_)

@@ -654,7 +654,7 @@ theorem clipperTakeAssignOweToTab (v : ClipperImmutables)
       .ok (oweTabFrame, evmRead) := by
     simp [assignStorageRef?, updateLocalPath?, varRef, oweFrame, oweTabFrame,
       clipperTakeLocalsOweTab, clipperTakeLocalsOwe, pure, bind, EvalResult.bind]
-  simpa [oweFrame, oweTabFrame] using ExecStmt.assign hrhs hassign
+  simpa [oweFrame, oweTabFrame] using ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hrhs hassign
 
 theorem clipperEvalTakeVarOweAtOweTab (v : ClipperImmutables)
     (evmLoc evmRead evmEval : EVM.State) (I : ExecutionEnv)
@@ -741,7 +741,7 @@ theorem clipperTakeAssignSliceFromOweTab (v : ClipperImmutables)
       .ok (sliceFrame, evmRead) := by
     simp [assignStorageRef?, updateLocalPath?, varRef, oweTabFrame, sliceFrame,
       clipperTakeLocalsOweTabSlice, pure, bind, EvalResult.bind]
-  simpa [oweTabFrame, sliceFrame] using ExecStmt.assign hrhs hassign
+  simpa [oweTabFrame, sliceFrame] using ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hrhs hassign
 
 theorem clipperEvalTakeVarTabAtOweTabSlice (v : ClipperImmutables)
     (evmLoc evmRead evmEval : EVM.State) (I : ExecutionEnv)
@@ -1052,7 +1052,7 @@ theorem clipperTakeAssignTabFromTabNew (v : ClipperImmutables)
         (.int (Int.ofNat tabNew.toNat)) = .ok (tabFrame, evmRead) := by
     simp [assignStorageRef?, updateLocalPath?, varRef, lotNewFrame, tabFrame,
       clipperTakeLocalsTabAssigned, pure, bind, EvalResult.bind]
-  simpa [lotNewFrame, tabFrame] using ExecStmt.assign hrhs hassign
+  simpa [lotNewFrame, tabFrame] using ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hrhs hassign
 
 theorem clipperTakeAssignLotFromLotNew (v : ClipperImmutables)
     (evmLoc evmRead : EVM.State) (I : ExecutionEnv)
@@ -1088,7 +1088,7 @@ theorem clipperTakeAssignLotFromLotNew (v : ClipperImmutables)
         (.int (Int.ofNat lotNew.toNat)) = .ok (lotFrame, evmRead) := by
     simp [assignStorageRef?, updateLocalPath?, varRef, tabFrame, lotFrame,
       clipperTakeLocalsLotAssigned, pure, bind, EvalResult.bind]
-  simpa [tabFrame, lotFrame] using ExecStmt.assign hrhs hassign
+  simpa [tabFrame, lotFrame] using ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hrhs hassign
 
 theorem clipperEvalTakeCheckedOwe0Require_true (v : ClipperImmutables)
     (evmLoc evmRead : EVM.State) (I : ExecutionEnv) (price slice : UInt256)

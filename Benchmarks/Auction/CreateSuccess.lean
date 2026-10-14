@@ -46,7 +46,7 @@ theorem createSuccessRoutine {I g s0 noun ret R mem aw ptr rdata σ k C evm loca
     have hp : (ptr + ⟨192⟩).toNat = ptr.toNat + 192 :=
       addWord_toNat ptr ⟨192⟩ (by change ptr.toNat + 192 < 2 ^ 256; omega)
     obtain ⟨_, _, rdret⟩ := createEvent rd3274 hh.cursor (by omega) hperm hret (by omega)
-    exact Or.inl ⟨_, _, _, _, _, _, _, createSuccessSource hs ha hd hn hno,
+    exact Or.inl ⟨_, _, _, _, _, _, _, createSuccessSource (hperm := by rw [hs.env]; exact hperm) hs ha hd hn hno,
       (SourceState.createdAuction hs) _ _ _, rdret⟩
   · exact Or.inr ⟨createSuccessSourceOverflow hs hd (by omega),
       checkedAddOverflow rd5704 (by omega) (by evm_ov)⟩

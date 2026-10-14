@@ -807,7 +807,7 @@ theorem flopperTickBodyCoreAddOverflow
   have hbody :
       ExecTransitionBody config contract evmStele (tickLocals I) tickTransition.body
         .reverted := by
-    exact flopperTickBodyReverts_addOverflow evmStele I
+    exact flopperTickBodyReverts_addOverflow (hperm := hperm) evmStele I
       (by simpa [evmStele, initState] using hwv) hendLtStele hticStele hmulFitStele
       haddOverflowStele
   exact (flopperTickX_addOverflow (g := Sat256.ofUInt256 g) hperm hendLt htic
@@ -858,7 +858,7 @@ theorem flopperTickBodyCoreSuccess
       ExecTransitionBody config contract evmStele (tickLocals I) tickTransition.body
         (.returned { contract := contract, locals := tickEndLocals evmStele I }
           (tickPostState evmStele I) none) := by
-    exact flopperTickBodyReturns_success evmStele I
+    exact flopperTickBodyReturns_success (hperm := hperm) evmStele I
       (by simpa [evmStele, initState] using hwv) hendLtStele hticStele hmulFitStele
       haddFitStele
   have hret := flopperTickX_success (g := Sat256.ofUInt256 g) hperm hendLt htic

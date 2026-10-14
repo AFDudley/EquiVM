@@ -510,7 +510,7 @@ theorem flopperDentBodyCoreAddOverflowMoveCallerNeTicZeroKissSuccess
   have hbody :
       ExecTransitionBody config contract evmStele (dentLocals I) dentTransition.body
         .reverted := by
-    exact flopperDentBodyReverts_addOverflow_moveCallerNe_ticZero_kissSuccess
+    exact flopperDentBodyReverts_addOverflow_moveCallerNe_ticZero_kissSuccess (hperm := hperm)
       evmStele evmCallStele evmAshStele evmKissStele I outMove outAsh outKiss
       (by simpa [evmStele, initState] using hwv) hliveStele hguyStele hticOkStele
       hendGtStele hbidStele hlotLtStele hbegFitStele hlotOneFitStele hsuffStele
@@ -793,7 +793,7 @@ theorem flopperDentBodyCoreSuccessMoveCallerNeTicZeroKissSuccess
               (dentAfterGuyStore evmKissStele I) I outAsh }
           (dentPostState (dentAfterGuyStore evmKissStele I) I)
           none) := by
-    exact flopperDentBodyReturns_success_moveCallerNe_ticZero_kissSuccess
+    exact flopperDentBodyReturns_success_moveCallerNe_ticZero_kissSuccess (hperm := hperm)
       evmStele evmCallStele evmAshStele evmKissStele I outMove outAsh outKiss
       (by simpa [evmStele, initState] using hwv) hliveStele hguyStele hticOkStele
       hendGtStele hbidStele hlotLtStele hbegFitStele hlotOneFitStele hsuffStele
@@ -980,7 +980,7 @@ theorem flopperDentBodyCoreAddOverflowMoveCallerNeTicNonzero
   have hbody :
       ExecTransitionBody config contract evmStele (dentLocals I) dentTransition.body
         .reverted := by
-    exact flopperDentBodyReverts_addOverflow_moveCallerNe_ticNonzero
+    exact flopperDentBodyReverts_addOverflow_moveCallerNe_ticNonzero (hperm := hperm)
       evmStele evmCallStele I out
       (by simpa [evmStele, initState] using hwv) hliveStele hguyStele hticOkStele
       hendGtStele hbidStele hlotLtStele hbegFitStele hlotOneFitStele hsuffStele
@@ -1164,7 +1164,7 @@ theorem flopperDentBodyCoreSuccessMoveCallerNeTicNonzero
             locals := dentMoveTicLocals evmStele (dentAfterGuyStore evmCallStele I) I }
           (dentPostState (dentAfterGuyStore evmCallStele I) I)
           none) := by
-    exact flopperDentBodyReturns_success_moveCallerNe_ticNonzero
+    exact flopperDentBodyReturns_success_moveCallerNe_ticNonzero (hperm := hperm)
       evmStele evmCallStele I out
       (by simpa [evmStele, initState] using hwv) hliveStele hguyStele hticOkStele
       hendGtStele hbidStele hlotLtStele hbegFitStele hlotOneFitStele hsuffStele

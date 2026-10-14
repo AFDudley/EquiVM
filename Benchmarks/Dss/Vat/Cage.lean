@@ -154,12 +154,12 @@ theorem vatCageBodyCore : VatBodyTheoremAnyPerm 1 := by
       refine ExecBlock.consNormal (ExecStmt.requireTrue ?_) ?_
       · exact evalCallvalueEq_true (by simp [evm0, initState]; exact hwv)
       exact ExecBlock.consNormal (ExecStmt.requireTrue hguard) hrest
-    have hbody :
+    have hbody (hperm : I.perm = true) :
         ExecTransitionBody config contract evm0 ∅ cageTransition.body
           (.returned { contract := contract, locals := ∅ } evm1 none) := by
       simpa [ExecTransitionBody, cageTransition, nonpayable, auth, evm0, evm1] using
         ExecFuncBody.execBlockOK (hpre _ (ExecBlock.consNormal
-          (ExecStmt.assign (by simp [evalExpr?, pure]) hassign) ExecBlock.nil))
+          (ExecStmt.assign (hperm := Or.inr hperm) (by simp [evalExpr?, pure]) hassign) ExecBlock.nil))
     have hauthSolc : solcSlotWord σ I (solcMappingSlot ⟨0⟩ (hopeSourceWord I)) = ⟨1⟩ := by
       simpa [callerSlot, vatCallerWardsSlot, solcSlotWordAt] using hauthEvm
     obtain ⟨_, _, hafterAuth⟩ := RD.vatAuthCheckOk
@@ -199,7 +199,7 @@ theorem vatCageBodyCore : VatBodyTheoremAnyPerm 1 := by
     have henc : returnEquiv ByteArray.empty none cageTransition.returnType := by
       rw [show cageTransition.returnType = [] by rfl]
       exact returnEquiv.fallthrough rfl (by rfl) (by native_decide)
-    exact hret.reEquivExecutionGen hcode hdispatch hdecode hbody
+    exact hret.reEquivExecutionGen hcode hdispatch hdecode (hbody hperm)
       haccounts henc
   ·
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I

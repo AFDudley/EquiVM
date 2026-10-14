@@ -1253,7 +1253,8 @@ theorem simpleAuctionBidBodyReturnsNoPending (evm : EVM.State) (I : ExecutionEnv
     (hbid :
       (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩).toNat <
         evm.executionEnv.weiValue.toNat)
-    (hzero : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩ = ⟨0⟩) :
+    (hzero : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩ = ⟨0⟩)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody simpleAuctionConfig simpleAuctionContract evm ∅ bidTransition.body
       (.returned { contract := simpleAuctionContract, locals := ∅ }
         (bidPostStateNoPending evm I) none) := by
@@ -1264,11 +1265,14 @@ theorem simpleAuctionBidBodyReturnsNoPending (evm : EVM.State) (I : ExecutionEnv
   refine ExecBlock.consNormal
     (ExecStmt.iteFalse (evalExpr_bid_highestBid_ne_false evm hzero) ExecBlock.nil) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_bid_sender evm) (bidAssignHighestBidder evm I hEnv)) ?_
+    (ExecStmt.assign
+      (hperm := Or.inr hperm)
+      (evalExpr_bid_sender evm) (bidAssignHighestBidder evm I hEnv)) ?_
   have hAfterEnv : (bidAfterHighestBidderState evm I).executionEnv = I := by
     simp [bidAfterHighestBidderState, storageStore_executionEnv, hEnv]
   refine ExecBlock.consNormal
     (ExecStmt.assign
+      (hperm := Or.inr (by simpa [bidAfterHighestBidderState] using hperm))
       (evalExpr_bid_callvalue_I (bidAfterHighestBidderState evm I) I hAfterEnv)
       (bidAssignHighestBid evm I hEnv)) ?_
   exact ExecBlock.nil
@@ -1326,7 +1330,8 @@ theorem simpleAuctionBidBodyReturnsWithPending (evm : EVM.State) (I : ExecutionE
         evm.executionEnv.weiValue.toNat)
     (hnz : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩ ≠ ⟨0⟩)
     (hfit :
-      (bidPendingReturnsWordState evm).toNat + (bidHighestBidWordState evm).toNat < UInt256.size) :
+      (bidPendingReturnsWordState evm).toNat + (bidHighestBidWordState evm).toNat < UInt256.size)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody simpleAuctionConfig simpleAuctionContract evm ∅ bidTransition.body
       (.returned { contract := simpleAuctionContract, locals := ∅ }
         (bidPostStateWithPending evm I) none) := by
@@ -1337,17 +1342,22 @@ theorem simpleAuctionBidBodyReturnsWithPending (evm : EVM.State) (I : ExecutionE
   refine ExecBlock.consNormal
     (ExecStmt.iteTrue (evalExpr_bid_highestBid_ne_true evm hnz)
       (ExecBlock.consNormal
-        (ExecStmt.assign (evalExpr_bid_pending_add_ok evm hfit) (bidAssignPending evm))
+        (ExecStmt.assign
+          (hperm := Or.inr hperm)
+          (evalExpr_bid_pending_add_ok evm hfit) (bidAssignPending evm))
         ExecBlock.nil)) ?_
   have hPendingEnv : (bidAfterPendingState evm).executionEnv = I := by
     simp [bidAfterPendingState, storageStore_executionEnv, hEnv]
   refine ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_bid_sender (bidAfterPendingState evm))
+    (ExecStmt.assign
+      (hperm := Or.inr (by simpa [bidAfterPendingState] using hperm))
+      (evalExpr_bid_sender (bidAfterPendingState evm))
       (bidAssignHighestBidder (bidAfterPendingState evm) I hPendingEnv)) ?_
   have hAfterEnv : (bidAfterHighestBidderState (bidAfterPendingState evm) I).executionEnv = I := by
     simp [bidAfterHighestBidderState, storageStore_executionEnv, hPendingEnv]
   refine ExecBlock.consNormal
     (ExecStmt.assign
+      (hperm := Or.inr (by simpa [bidAfterHighestBidderState, bidAfterPendingState] using hperm))
       (evalExpr_bid_callvalue_I (bidAfterHighestBidderState (bidAfterPendingState evm) I) I
         hAfterEnv)
       (bidAssignHighestBid (bidAfterPendingState evm) I hPendingEnv)) ?_
@@ -1455,7 +1465,7 @@ theorem simpleAuctionBidBody {σ σ₀ A I} {g : UInt256}
               bidTransition.body
               (.returned { contract := simpleAuctionContract, locals := ∅ }
                 (bidPostStateNoPending evmS I) none) :=
-          simpleAuctionBidBodyReturnsNoPending evmS I (by simp [evmS, initState])
+          simpleAuctionBidBodyReturnsNoPending (hperm := hperm) evmS I (by simp [evmS, initState])
             (by
               simpa [evmS, initState, bidAuctionEndWord, bidTimestampWord,
                 Stele.EVM.storageLoad, State.lookupAccount] using htimeS')
@@ -1519,7 +1529,7 @@ theorem simpleAuctionBidBody {σ σ₀ A I} {g : UInt256}
                 bidTransition.body
                 (.returned { contract := simpleAuctionContract, locals := ∅ }
                   (bidPostStateWithPending evmS I) none) :=
-            simpleAuctionBidBodyReturnsWithPending evmS I (by simp [evmS, initState])
+            simpleAuctionBidBodyReturnsWithPending (hperm := hperm) evmS I (by simp [evmS, initState])
               (by
                 simpa [evmS, initState, bidAuctionEndWord, bidTimestampWord,
                   Stele.EVM.storageLoad, State.lookupAccount] using htimeS')

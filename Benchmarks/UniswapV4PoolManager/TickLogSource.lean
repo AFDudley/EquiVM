@@ -36,7 +36,7 @@ theorem tickLogBody {f : Frame} {evm : EVM.State} {r log2 : UInt256} {bit : Nat}
     (evalWordMul (evalLocalValue (cfg := config) (evm := evm) hr) (evalLocalValue hr))
     (by simp only [evalExpr?, pure]; rfl)
   have hs : ExecStmt config f evm tickLogFunction.body[0]! (.ok f1 evm) :=
-    ExecStmt.assign hsquare (assignLocalValue hr)
+    ExecStmt.assign (hperm := Or.inl rfl) hsquare (assignLocalValue hr)
   have hr1 : f1.locals.get? "r" = some (.int (Int.ofNat (tickLogSquare r).toNat)) := store_get_self _ _ _
   have hflag := evalWordShr (cfg := config) (evm := evm) (b := .intLit 128) (n := 128) (by decide)
     (evalLocalValue hr1) (by simp only [evalExpr?, pure]; rfl)
@@ -53,7 +53,7 @@ theorem tickLogBody {f : Frame} {evm : EVM.State} {r log2 : UInt256} {bit : Nat}
   rw [normalizeInt_sint256_word_of_lt _ (by have hh := tickLogFlag_lt_two r; change _ < 2^255; omega)] at hcast
   have hlog := evalSignedWordOr (evalLocalValue hl2) (evalSignedShlOfNat hbit hcast (evalLocalValue hb2))
   have hlogstmt : ExecStmt config f2 evm tickLogFunction.body[2]! (.ok f3 evm) :=
-    ExecStmt.assign hlog (assignLocalValue hl2)
+    ExecStmt.assign (hperm := Or.inl rfl) hlog (assignLocalValue hl2)
   have hr3 : f3.locals.get? "r" = some (.int (Int.ofNat (tickLogSquare r).toNat)) :=
     (store_get_ne2 _ _ _ (by decide : ("f" == "r") = false)
       (by decide : ("log2" == "r") = false)).trans hr1
@@ -85,7 +85,7 @@ theorem tickLogBody {f : Frame} {evm : EVM.State} {r log2 : UInt256} {bit : Nat}
     refine ⟨f4, .execBlockRet (ExecBlock.consNormal hs (ExecBlock.consNormal hf
       (ExecBlock.consNormal hlogstmt (ExecBlock.consNormal
         (ExecStmt.iteTrue (evalLocalValue hn3)
-          (execBlock_singleton (ExecStmt.assign hnorm (assignLocalValue hr3))))
+          (execBlock_singleton (ExecStmt.assign (hperm := Or.inl rfl) hnorm (assignLocalValue hr3))))
         (ExecBlock.consReturn (ExecStmt.return ?_))))))⟩
     change evalExprs? config f4 evm [.var "r", .var "log2"] = _
     simp only [evalExprs?, evalLocalValue hr4, evalLocalValue hl4, bind, EvalResult.bind, pure]

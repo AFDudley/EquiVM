@@ -45,7 +45,7 @@ theorem uidComputeSource {cfg : Config} {L imms : Store} {evm : EVM.State} {word
   have hUnpack := unpackHeapResult (cfg := cfg) (frame := {contract := contract,locals := first,immutables := imms}) (evm := evm)
     (tmp := "__c3$allocation") (result := "__c3") (cursor := "$EAS.freeMemory") hret hheap (by decide) (by decide)
   apply execBlock_append (s2 := [.assign .localVar {base := "uid"} (.var "__c3")]) hUnpack
-  apply ExecBlock.consNormal (ExecStmt.assign ?_ (assignLocalBase_ok (old := old) ?_)) ExecBlock.nil
+  apply ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) ?_ (assignLocalBase_ok (old := old) ?_)) ExecBlock.nil
   · simp only [evalExpr?,unpackHeapLocals,store_get_ne _ _ (by decide : ("$EAS.freeMemory" == "__c3") = false),
       store_get_self,EvalResult.ofOption]
   · simpa only [unpackHeapLocals,first,store_get_ne _ _ (by decide : ("$EAS.freeMemory" == "uid") = false),

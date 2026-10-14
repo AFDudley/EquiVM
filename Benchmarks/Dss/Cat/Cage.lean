@@ -104,8 +104,8 @@ theorem catCageBodyCore
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let evm1 := Stele.EVM.storageStore evm0 I.codeOwner ⟨2⟩ ⟨0⟩
     have hbodySplit :
-        ExecTransitionBody config contract evm0 locals cageTransition.body
-          (.returned { contract := contract, locals := locals } evm1 none) ∧
+        (I.perm = true → ExecTransitionBody config contract evm0 locals cageTransition.body
+          (.returned { contract := contract, locals := locals } evm1 none)) ∧
         (I.perm = false →
           ExecTransitionBody config contract evm0 locals cageTransition.body
             .staticViolation) := by
@@ -133,7 +133,8 @@ theorem catCageBodyCore
             simp [config, storageLayout, solidityStorageBackend, storageLayoutRaw])
           (hstore := hstore)
       constructor
-      · have hblock := nonpayableRequireAssignStorageBlock
+      · intro hperm
+        have hblock := nonpayableRequireAssignStorageBlock (hperm := hperm)
           (cfg := config) (stele := { contract := contract, locals := locals })
           (evm := evm0) (evm' := evm1)
           (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
@@ -170,7 +171,7 @@ theorem catCageBodyCore
         unfold catStoreLiveZeroWf
         repeat' first | apply And.intro | native_decide)
       (by jump_dest) (by simp)
-    rcases hstoreSplit with ⟨_, _, _, hretPc⟩ | ⟨hperm, hstatic⟩
+    rcases hstoreSplit with ⟨hperm, _, _, hretPc⟩ | ⟨hperm, hstatic⟩
     swap
     · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode (hbodySplit.2 hperm)
     have hretPc' := hretPc.jumpdest (by native_decide) (by evm_ov)
@@ -185,7 +186,7 @@ theorem catCageBodyCore
     have henc : returnEquiv ByteArray.empty none cageTransition.returnType := by
       rw [show cageTransition.returnType = [] by rfl]
       exact returnEquiv.fallthrough rfl (by rfl) (by native_decide)
-    exact hret.reEquivExecutionGen hcode hdispatch hdecode hbodySplit.1
+    exact hret.reEquivExecutionGen hcode hdispatch hdecode (hbodySplit.1 hperm)
       haccounts henc
   · have hauthStele : solcSlotWordAt callerSlot σ I ≠ ⟨1⟩ := by
       exact hauthEvm

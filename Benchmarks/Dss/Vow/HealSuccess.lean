@@ -718,7 +718,7 @@ theorem vowHealSourceSinDecodeRevert
           (perm := false))
         (.ok { contract := contract, locals := locals1 } evmDai) := by
     simpa [locals, locals1, healLocalsVatDai, collapseReturns] using
-      ExecStmt.externalCallSuccess hvat (by simp [evalExpr?, pure]) hargsDai hcallDai hdecDai
+      ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hvat (by simp [evalExpr?, pure]) hargsDai hcallDai hdecDai
   have hradDai :
       evalExpr? config { contract := contract, locals := locals1 } evmDai
         (.var "rad") = .ok (.int (Int.ofNat (healRad I).toNat)) := by
@@ -756,7 +756,7 @@ theorem vowHealSourceSinDecodeRevert
         (.externalCall (.storage vatRef) "sin" (.intLit 0) [thisAddr] "vatSin"
           (perm := false))
         .reverted := by
-    exact ExecStmt.externalCallReturnDecodeRevert hvatSin (by simp [evalExpr?, pure])
+    exact ExecStmt.externalCallReturnDecodeRevert (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hvatSin (by simp [evalExpr?, pure])
       hargsSin hcallSin hdecSin
   have hblock :
       ExecBlock config { contract := contract, locals := locals } evm0 healTransition.body
@@ -828,7 +828,7 @@ theorem vowHealSourceFreeSinUnderflow
           (perm := false))
         (.ok { contract := contract, locals := locals1 } evmDai) := by
     simpa [locals, locals1, healLocalsVatDai, collapseReturns] using
-      ExecStmt.externalCallSuccess hvat (by simp [evalExpr?, pure]) hargsDai hcallDai hdecDai
+      ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hvat (by simp [evalExpr?, pure]) hargsDai hcallDai hdecDai
   have hradDai :
       evalExpr? config { contract := contract, locals := locals1 } evmDai
         (.var "rad") = .ok (.int (Int.ofNat (healRad I).toNat)) := by
@@ -867,7 +867,7 @@ theorem vowHealSourceFreeSinUnderflow
           (perm := false))
         (.ok { contract := contract, locals := locals2 } evmSin) := by
     simpa [locals1, locals2, healLocalsVatDaiVatSin, collapseReturns] using
-      ExecStmt.externalCallSuccess hvatSin (by simp [evalExpr?, pure]) hargsSin
+      ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hvatSin (by simp [evalExpr?, pure]) hargsSin
         hcallSin hdecSin
   have hvatSinVar :
       evalExpr? config { contract := contract, locals := locals2 } evmSin (.var "vatSin") =
@@ -980,7 +980,7 @@ theorem vowHealSourceHealDebtUnderflow
           (perm := false))
         (.ok { contract := contract, locals := locals1 } evmDai) := by
     simpa [locals, locals1, healLocalsVatDai, collapseReturns] using
-      ExecStmt.externalCallSuccess hvat (by simp [evalExpr?, pure]) hargsDai hcallDai hdecDai
+      ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hvat (by simp [evalExpr?, pure]) hargsDai hcallDai hdecDai
   have hradDai :
       evalExpr? config { contract := contract, locals := locals1 } evmDai
         (.var "rad") = .ok (.int (Int.ofNat (healRad I).toNat)) := by
@@ -1019,7 +1019,7 @@ theorem vowHealSourceHealDebtUnderflow
           (perm := false))
         (.ok { contract := contract, locals := locals2 } evmSin) := by
     simpa [locals1, locals2, healLocalsVatDaiVatSin, collapseReturns] using
-      ExecStmt.externalCallSuccess hvatSin (by simp [evalExpr?, pure]) hargsSin
+      ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hvatSin (by simp [evalExpr?, pure]) hargsSin
         hcallSin hdecSin
   have hvatSinVar :
       evalExpr? config { contract := contract, locals := locals2 } evmSin (.var "vatSin") =
@@ -1177,7 +1177,7 @@ theorem vowHealSourceInsufficientDebt
           (perm := false))
         (.ok { contract := contract, locals := locals1 } evmDai) := by
     simpa [locals, locals1, healLocalsVatDai, collapseReturns] using
-      ExecStmt.externalCallSuccess hvat (by simp [evalExpr?, pure]) hargsDai hcallDai hdecDai
+      ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hvat (by simp [evalExpr?, pure]) hargsDai hcallDai hdecDai
   have hradDai :
       evalExpr? config { contract := contract, locals := locals1 } evmDai
         (.var "rad") = .ok (.int (Int.ofNat (healRad I).toNat)) := by
@@ -1216,7 +1216,7 @@ theorem vowHealSourceInsufficientDebt
           (perm := false))
         (.ok { contract := contract, locals := locals2 } evmSin) := by
     simpa [locals1, locals2, healLocalsVatDaiVatSin, collapseReturns] using
-      ExecStmt.externalCallSuccess hvatSin (by simp [evalExpr?, pure]) hargsSin
+      ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hvatSin (by simp [evalExpr?, pure]) hargsSin
         hcallSin hdecSin
   have hvatSinVar :
       evalExpr? config { contract := contract, locals := locals2 } evmSin (.var "vatSin") =

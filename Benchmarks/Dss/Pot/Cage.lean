@@ -152,7 +152,8 @@ theorem potCageBodyReturns (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hsrc : evm.executionEnv.source = I.source)
     (hauth :
-      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (relyAuthStorageSlot I) = ⟨1⟩) :
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (relyAuthStorageSlot I) = ⟨1⟩)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm ∅ cageTransition.body
       (.returned { contract := contract, locals := (∅ : Store) } (cagePostState evm) none) := by
   refine ExecFuncBody.execBlockOK ?_
@@ -166,9 +167,9 @@ theorem potCageBodyReturns (evm : EVM.State) (I : ExecutionEnv)
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue (evalExpr_cage_auth_true evm I hsrc hauth)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (by simp [evalExpr?, pure]) (cageLiveAssign evm I)) ?_
+    (ExecStmt.assign (hperm := Or.inr hperm) (by simp [evalExpr?, pure]) (cageLiveAssign evm I)) ?_
   exact ExecBlock.consNormal
-    (ExecStmt.assign (by simp [evalExpr?, pure]) (cageDsrAssign _ I)) ExecBlock.nil
+    (ExecStmt.assign (hperm := Or.inr (by simpa only [storageStore_executionEnv] using hperm)) (by simp [evalExpr?, pure]) (cageDsrAssign _ I)) ExecBlock.nil
 
 theorem potCageBodyStatic (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
@@ -454,7 +455,7 @@ theorem potCageBodyCoreOk
         (.returned { contract := contract, locals := (∅ : Store) } (cagePostState evmStele) none) := by
     simpa [evmStele, relyAuthWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
-      potCageBodyReturns evmStele I
+      potCageBodyReturns (hperm := hperm) evmStele I
         (by simp only [evmStele, initState]; exact hwv)
         (by simp [evmStele, initState])
         hauthWord

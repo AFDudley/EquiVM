@@ -4,7 +4,7 @@ import Benchmarks.Safe.Main.SafeMulTrace
 import Benchmarks.Safe.Main.MemoryPreserves
 
 open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
-open safeRuntimeBlocks
+open Benchmarks.Safe.Main.RuntimeBlocks
 
 namespace Benchmarks.Safe.Main
 

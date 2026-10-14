@@ -328,7 +328,7 @@ theorem clipperGetFeedPriceParCallFailure
       (checkedExternalCallStmts (.storage spotterRef) "par" (.intLit 0) [] "par")
       .reverted := by
   simpa [checkedExternalCallStmts] using
-    checkedExternalCallFailure
+    checkedExternalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
       (cfg := config) (C := contract) (evm := evm) (evm' := evmPar)
       (locals := clipperGetFeedPriceValBlnLocals outIlks outPeek)
       (receiver := .storage spotterRef) (retVar := "par") (name := "par")
@@ -358,7 +358,7 @@ theorem clipperGetFeedPriceParDecodeRevert
       (checkedExternalCallStmts (.storage spotterRef) "par" (.intLit 0) [] "par")
       .reverted := by
   simpa [checkedExternalCallStmts] using
-    checkedExternalCallDecodeRevert
+    checkedExternalCallDecodeRevert (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
       (cfg := config) (C := contract) (evm := evm) (evm' := evmPar)
       (locals := clipperGetFeedPriceValBlnLocals outIlks outPeek)
       (receiver := .storage spotterRef) (retVar := "par") (name := "par")
@@ -392,7 +392,7 @@ theorem clipperGetFeedPriceParSuccess
         (Frame.mk contract (clipperGetFeedPriceParLocals outIlks outPeek outPar) (immStore v))
         evmPar) := by
   simpa [checkedExternalCallStmts, clipperGetFeedPriceParLocals] using
-    checkedExternalCallSuccess
+    checkedExternalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
       (cfg := config) (C := contract) (evm := evm) (evm' := evmPar)
       (locals := clipperGetFeedPriceValBlnLocals outIlks outPeek)
       (receiver := .storage spotterRef) (retVar := "par") (name := "par")
@@ -630,7 +630,7 @@ theorem clipperGetFeedPricePrefixToHas
   have hcallBlock :
       ExecBlock config emptyFrame evm callStmts (.ok spotterFrame evmIlks) := by
     simpa [emptyFrame, spotterFrame, callStmts, clipperGetFeedPriceSpotterIlkLocals] using
-      checkedExternalCallSuccess
+      checkedExternalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
         (cfg := config) (C := contract) (evm := evm) (evm' := evmIlks)
         (locals := ∅) (receiver := .storage spotterRef) (retVar := "spotterIlk")
         (name := "spotterIlks") (target := clipperGetFeedPriceSpotterAddress evm)
@@ -659,7 +659,7 @@ theorem clipperGetFeedPricePrefixToHas
   have hpeekBlock :
       ExecBlock config pipFrame evmIlks peekStmts (.ok peekFrame evmPeek) := by
     simpa [pipFrame, peekFrame, peekStmts, clipperGetFeedPricePeekLocals] using
-      checkedExternalCallVarSuccess
+      checkedExternalCallVarSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
         (cfg := config) (C := contract) (evm := evmIlks) (evm' := evmPeek)
         (locals := clipperGetFeedPricePipLocals outIlks) (receiver := "pip")
         (retVar := "peekRet") (name := "peek")

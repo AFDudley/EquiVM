@@ -29,7 +29,7 @@ theorem swapStepInputPartialSource {f : Frame} {evm : EVM.State} {price liquidit
         .ok (swapStepInputPartialFrame f price liquidity remaining available zeroForOne) evm else .reverted) := by
   let f1 := wordLocal f "amountIn" available
   have h1 : ExecStmt config f evm (.assign .localVar {base := "amountIn"} (.var "amountRemainingLessFee"))
-      (.ok f1 evm) := ExecStmt.assign (evalLocalValue ha) (assignLocalValue hi)
+      (.ok f1 evm) := ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalLocalValue ha) (assignLocalValue hi)
   have hprice := swapStepPriceSource (f := f1) (evm := evm) true zeroForOne hf hp
     ((store_get_ne _ _ (by decide : ("amountIn" == "sqrtPriceCurrentX96") = false)).trans hs)
     ((store_get_ne _ _ (by decide : ("amountIn" == "liquidity") = false)).trans hl)
@@ -49,7 +49,7 @@ theorem swapStepInputPartialSource {f : Frame} {evm : EVM.State} {price liquidit
         ((store_get_ne _ _ (by decide : ("amountIn" == "feeAmount") = false)).trans hfee)
     have h2 : ExecStmt config f2 evm (.assign .localVar {base := "feeAmount"} swapStepRemainingFeeExpr)
         (.ok (wordLocal f2 "feeAmount" (swapStepRemainingFeeWord remaining available)) evm) :=
-      ExecStmt.assign (swapStepRemainingFeeSource hr2 hi2) (assignLocalValue hf2)
+      ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (swapStepRemainingFeeSource hr2 hi2) (assignLocalValue hf2)
     exact ExecBlock.consNormal h1 (execBlock_append hprice (execBlock_singleton h2))
   · rw [if_neg hfit] at hprice ⊢
     exact ExecBlock.consNormal h1 (execBlock_reverted_append hprice)

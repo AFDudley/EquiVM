@@ -76,7 +76,7 @@ theorem resolveManyIncrementSource {cfg : Config} {locals imms : Store} {evm : E
     (a := .var "i") (b := .intLit 1) (x := i) (y := 1)
     (by simp only [evalExpr?, hi, EvalResult.ofOption]) (by simp only [evalExpr?]; rfl)
   rw [Nat.mod_eq_of_lt hb] at he
-  exact ExecStmt.assign he (assignLocalBase_ok hi)
+  exact ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) he (assignLocalBase_ok hi)
 
 structure ResolveManyZeroLocals (locals : Store) (words : List UInt256) (heap i : Nat) : Prop where
   values : locals.get? "values" = some (.array (words.map fun w => .int (Int.ofNat w.toNat)))

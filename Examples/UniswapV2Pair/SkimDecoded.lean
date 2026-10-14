@@ -67,7 +67,7 @@ theorem uniswapSkimBodyDecoded
         exact uniswapSkimRuntimeFirstBalanceOfMissingCodeReverts
           rd5257 htoken0NoCode
           (by simp only [List.length_cons, List.length_nil]; omega)
-      exact uniswapSkimBodyRevert_firstNoCode
+      exact uniswapSkimBodyRevert_firstNoCode (hperm := hperm)
         (fun w : UInt256 => UInt256.land solcAddrMask w) hcode hwv
         hunlocked htoken0NoCode hdispatch
         hdecode hRuntime
@@ -127,7 +127,7 @@ theorem uniswapSkimBodyDecoded
                   [.address (uniswapLockEnteredState evmS).executionEnv.codeOwner]
                   (false, evm0S, o) false := by
                 simpa [evmS, hz] using hcallAll
-              exact uniswapSkimBodyReverts_firstCallFailure evmS evm0S I
+              exact uniswapSkimBodyReverts_firstCallFailure (hperm := hperm) evmS evm0S I
                 (by simp only [evmS, initState]; exact hwv)
                 hunlockedStele hguard0 hcall0)
         · by_cases hshort : o.size < 32
@@ -145,7 +145,7 @@ theorem uniswapSkimBodyDecoded
             have hbody :
                 ExecTransitionBody config contract evmS (skimStore I) skimTransition.body
                   .reverted := by
-              exact uniswapSkimBodyReverts_firstCallDecode evmS evm0S I
+              exact uniswapSkimBodyReverts_firstCallDecode (hperm := hperm) evmS evm0S I
                 (by simp only [evmS, initState]; exact hwv)
                 hunlockedStele hguard0 hcall0 hdec0
             exact (hrevShort hzTrue hshort).reEquivExecutionRevert hcode hdispatch
@@ -231,7 +231,7 @@ theorem uniswapSkimBodyDecoded
               have hbody :
                   ExecTransitionBody config contract evmS (skimStore I) skimTransition.body
                     .reverted := by
-                exact uniswapSkimBodyReverts_firstExcessUnderflow evmS evm0S I
+                exact uniswapSkimBodyReverts_firstExcessUnderflow (hperm := hperm) evmS evm0S I
                   (by simp only [evmS, initState]; exact hwv)
                   hunlockedStele hguard0 hcall0 hdec0 hltSource
               exact rdRev.reEquivExecutionRevert hcode hdispatch
@@ -395,7 +395,7 @@ theorem uniswapSkimBodyDecoded
                 have hbody :
                     ExecTransitionBody config contract evmS (skimStore I) skimTransition.body
                       .reverted := by
-                  exact uniswapSkimBodyReverts_firstSafeTransferFailure
+                  exact uniswapSkimBodyReverts_firstSafeTransferFailure (hperm := hperm)
                     evmS evm0S evm1S I
                     (by simp only [evmS, initState]; exact hwv)
                     hunlockedStele hguard0 hcall0 hdec0 henoughSource hdata0
@@ -533,7 +533,7 @@ theorem uniswapSkimBodyDecoded
                     have hbody :
                         ExecTransitionBody config contract evmS (skimStore I)
                           skimTransition.body .reverted := by
-                      exact uniswapSkimBodyReverts_secondNoCode
+                      exact uniswapSkimBodyReverts_secondNoCode (hperm := hperm)
                         evmS evm0S evm1S I
                         (by simp only [evmS, initState]; exact hwv)
                         hunlockedStele hguard0 hcall0 hdec0 henoughSource hsafe0 hguard1
@@ -600,7 +600,7 @@ theorem uniswapSkimBodyDecoded
                       have hbody :
                           ExecTransitionBody config contract evmS (skimStore I)
                             skimTransition.body .reverted := by
-                        exact uniswapSkimBodyReverts_secondCallFailure
+                        exact uniswapSkimBodyReverts_secondCallFailure (hperm := hperm)
                           evmS evm0S evm1S evm2S I
                           (by simp only [evmS, initState]; exact hwv)
                           hunlockedStele hguard0 hcall0 hdec0 henoughSource hsafe0
@@ -638,7 +638,7 @@ theorem uniswapSkimBodyDecoded
                         have hbody :
                             ExecTransitionBody config contract evmS (skimStore I)
                               skimTransition.body .reverted := by
-                          exact uniswapSkimBodyReverts_secondCallDecode
+                          exact uniswapSkimBodyReverts_secondCallDecode (hperm := hperm)
                             evmS evm0S evm1S evm2S I
                             (by simp only [evmS, initState]; exact hwv)
                             hunlockedStele hguard0 hcall0 hdec0 henoughSource hsafe0
@@ -723,7 +723,7 @@ theorem uniswapSkimBodyDecoded
                           have hbody :
                               ExecTransitionBody config contract evmS (skimStore I)
                                 skimTransition.body .reverted := by
-                            exact uniswapSkimBodyReverts_secondExcessUnderflow
+                            exact uniswapSkimBodyReverts_secondExcessUnderflow (hperm := hperm)
                               evmS evm0S evm1S evm2S I
                               (by simp only [evmS, initState]; exact hwv)
                               hunlockedStele hguard0 hcall0 hdec0 henoughSource hsafe0
@@ -883,7 +883,7 @@ theorem uniswapSkimBodyDecoded
                                         skimSecondSafeTransferStore evmS evm0S evm2S I
                                           balance0 balance1 }
                                     (uniswapLockExitedState evm3S) none) := by
-                              exact uniswapSkimBodyReturns
+                              exact uniswapSkimBodyReturns (hperm := hperm) (hpermEnd := by simpa only [henv3] using hperm)
                                 evmS evm0S evm1S evm2S evm3S I
                                 (by simp only [evmS, initState]; exact hwv)
                                 hunlockedStele hguard0 hcall0 hdec0 henoughSource hsafe0
@@ -908,7 +908,7 @@ theorem uniswapSkimBodyDecoded
                             have hbody :
                                 ExecTransitionBody config contract evmS (skimStore I)
                                   skimTransition.body .reverted := by
-                              exact uniswapSkimBodyReverts_secondSafeTransferFailure
+                              exact uniswapSkimBodyReverts_secondSafeTransferFailure (hperm := hperm)
                                 evmS evm0S evm1S evm2S evm3S I
                                 (by simp only [evmS, initState]; exact hwv)
                                 hunlockedStele hguard0 hcall0 hdec0 henoughSource hsafe0
@@ -1022,7 +1022,7 @@ theorem uniswapSkimBodyDecoded
                                   have hbody :
                                       ExecTransitionBody config contract evmS (skimStore I)
                                         skimTransition.body .reverted := by
-                                    exact uniswapSkimBodyReverts_secondSafeTransferDecode
+                                    exact uniswapSkimBodyReverts_secondSafeTransferDecode (hperm := hperm)
                                       evmS evm0S evm1S evm2S evm3S I
                                       (by simp only [evmS, initState]; exact hwv)
                                       hunlockedStele hguard0 hcall0 hdec0 henoughSource hsafe0
@@ -1051,7 +1051,7 @@ theorem uniswapSkimBodyDecoded
                                     have hbody :
                                         ExecTransitionBody config contract evmS (skimStore I)
                                           skimTransition.body .reverted := by
-                                      exact uniswapSkimBodyReverts_secondSafeTransferDecodeFalse
+                                      exact uniswapSkimBodyReverts_secondSafeTransferDecodeFalse (hperm := hperm)
                                         evmS evm0S evm1S evm2S evm3S I
                                         (by simp only [evmS, initState]; exact hwv)
                                         hunlockedStele hguard0 hcall0 hdec0 henoughSource hsafe0
@@ -1126,7 +1126,7 @@ theorem uniswapSkimBodyDecoded
                                 have hbody :
                                     ExecTransitionBody config contract evmS (skimStore I)
                                       skimTransition.body .reverted := by
-                                  exact uniswapSkimBodyReverts_secondSafeTransferDecode
+                                  exact uniswapSkimBodyReverts_secondSafeTransferDecode (hperm := hperm)
                                     evmS evm0S evm1S evm2S evm3S I
                                     (by simp only [evmS, initState]; exact hwv)
                                     hunlockedStele hguard0 hcall0 hdec0 henoughSource hsafe0
@@ -1151,7 +1151,7 @@ theorem uniswapSkimBodyDecoded
                       have hbody :
                           ExecTransitionBody config contract evmS (skimStore I)
                             skimTransition.body .reverted := by
-                        exact uniswapSkimBodyReverts_firstSafeTransferDecode
+                        exact uniswapSkimBodyReverts_firstSafeTransferDecode (hperm := hperm)
                           evmS evm0S evm1S I
                           (by simp only [evmS, initState]; exact hwv)
                           hunlockedStele hguard0 hcall0 hdec0 henoughSource hdata0
@@ -1176,7 +1176,7 @@ theorem uniswapSkimBodyDecoded
                         have hbody :
                             ExecTransitionBody config contract evmS (skimStore I)
                               skimTransition.body .reverted := by
-                          exact uniswapSkimBodyReverts_firstSafeTransferDecodeFalse
+                          exact uniswapSkimBodyReverts_firstSafeTransferDecodeFalse (hperm := hperm)
                             evmS evm0S evm1S I
                             (by simp only [evmS, initState]; exact hwv)
                             hunlockedStele hguard0 hcall0 hdec0 henoughSource hdata0
@@ -1256,7 +1256,7 @@ theorem uniswapSkimBodyDecoded
                           have hbody :
                               ExecTransitionBody config contract evmS (skimStore I)
                                 skimTransition.body .reverted := by
-                            exact uniswapSkimBodyReverts_secondNoCode
+                            exact uniswapSkimBodyReverts_secondNoCode (hperm := hperm)
                               evmS evm0S evm1S I
                               (by simp only [evmS, initState]; exact hwv)
                               hunlockedStele hguard0 hcall0 hdec0 henoughSource hsafe0 hguard1
@@ -1334,7 +1334,7 @@ theorem uniswapSkimBodyDecoded
                             have hbody :
                                 ExecTransitionBody config contract evmS (skimStore I)
                                   skimTransition.body .reverted := by
-                              exact uniswapSkimBodyReverts_secondCallFailure
+                              exact uniswapSkimBodyReverts_secondCallFailure (hperm := hperm)
                                 evmS evm0S evm1S evm2S I
                                 (by simp only [evmS, initState]; exact hwv)
                                 hunlockedStele hguard0 hcall0 hdec0 henoughSource hsafe0
@@ -1373,7 +1373,7 @@ theorem uniswapSkimBodyDecoded
                               have hbody :
                                   ExecTransitionBody config contract evmS (skimStore I)
                                     skimTransition.body .reverted := by
-                                exact uniswapSkimBodyReverts_secondCallDecode
+                                exact uniswapSkimBodyReverts_secondCallDecode (hperm := hperm)
                                   evmS evm0S evm1S evm2S I
                                   (by simp only [evmS, initState]; exact hwv)
                                   hunlockedStele hguard0 hcall0 hdec0 henoughSource hsafe0
@@ -1438,7 +1438,7 @@ theorem uniswapSkimBodyDecoded
                                 have hbody :
                                     ExecTransitionBody config contract evmS (skimStore I)
                                       skimTransition.body .reverted := by
-                                  exact uniswapSkimBodyReverts_secondExcessUnderflow
+                                  exact uniswapSkimBodyReverts_secondExcessUnderflow (hperm := hperm)
                                     evmS evm0S evm1S evm2S I
                                     (by simp only [evmS, initState]; exact hwv)
                                     hunlockedStele hguard0 hcall0 hdec0 henoughSource hsafe0
@@ -1629,7 +1629,7 @@ theorem uniswapSkimBodyDecoded
                                               skimSecondSafeTransferStore evmS evm0S evm2S I
                                                 balance0 balance1 }
                                           (uniswapLockExitedState evm3S) none) := by
-                                    exact uniswapSkimBodyReturns
+                                    exact uniswapSkimBodyReturns (hperm := hperm) (hpermEnd := by simpa only [henv3] using hperm)
                                       evmS evm0S evm1S evm2S evm3S I
                                       (by simp only [evmS, initState]; exact hwv)
                                       hunlockedStele hguard0 hcall0 hdec0 henoughSource hsafe0
@@ -1654,7 +1654,7 @@ theorem uniswapSkimBodyDecoded
                                   have hbody :
                                       ExecTransitionBody config contract evmS (skimStore I)
                                         skimTransition.body .reverted := by
-                                    exact uniswapSkimBodyReverts_secondSafeTransferFailure
+                                    exact uniswapSkimBodyReverts_secondSafeTransferFailure (hperm := hperm)
                                       evmS evm0S evm1S evm2S evm3S I
                                       (by simp only [evmS, initState]; exact hwv)
                                       hunlockedStele hguard0 hcall0 hdec0 henoughSource hsafe0
@@ -1768,7 +1768,7 @@ theorem uniswapSkimBodyDecoded
                                         have hbody :
                                             ExecTransitionBody config contract evmS (skimStore I)
                                               skimTransition.body .reverted := by
-                                          exact uniswapSkimBodyReverts_secondSafeTransferDecode
+                                          exact uniswapSkimBodyReverts_secondSafeTransferDecode (hperm := hperm)
                                             evmS evm0S evm1S evm2S evm3S I
                                             (by simp only [evmS, initState]; exact hwv)
                                             hunlockedStele hguard0 hcall0 hdec0 henoughSource hsafe0
@@ -1798,7 +1798,7 @@ theorem uniswapSkimBodyDecoded
                                           have hbody :
                                               ExecTransitionBody config contract evmS (skimStore I)
                                                 skimTransition.body .reverted := by
-                                            exact uniswapSkimBodyReverts_secondSafeTransferDecodeFalse
+                                            exact uniswapSkimBodyReverts_secondSafeTransferDecodeFalse (hperm := hperm)
                                               evmS evm0S evm1S evm2S evm3S I
                                               (by simp only [evmS, initState]; exact hwv)
                                               hunlockedStele hguard0 hcall0 hdec0 henoughSource hsafe0
@@ -1878,7 +1878,7 @@ theorem uniswapSkimBodyDecoded
                     have hbody :
                         ExecTransitionBody config contract evmS (skimStore I)
                           skimTransition.body .reverted := by
-                      exact uniswapSkimBodyReverts_firstSafeTransferDecode
+                      exact uniswapSkimBodyReverts_firstSafeTransferDecode (hperm := hperm)
                         evmS evm0S evm1S I
                         (by simp only [evmS, initState]; exact hwv)
                         hunlockedStele hguard0 hcall0 hdec0 henoughSource hdata0
@@ -1917,7 +1917,7 @@ theorem uniswapSkimBodyDecoded
             rd5272 hdepth1024
             (by simp only [List.length_cons, List.length_nil]; omega)
             (by simp only [List.length_cons, List.length_nil]; omega)
-        exact uniswapSkimBodyCoreRevert_firstCallDepth
+        exact uniswapSkimBodyCoreRevert_firstCallDepth (hperm := hperm)
           (fun w : UInt256 => UInt256.land solcAddrMask w) hcode hwv hdepth1024
           hunlocked htoken0NoCode hdispatch
           hdecode hRuntime

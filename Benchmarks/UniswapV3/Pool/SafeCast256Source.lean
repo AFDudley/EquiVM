@@ -62,7 +62,7 @@ theorem safeCast256Assign (imms : Store) (evm : EVM.State) (y : UInt256)
       omega
     · change (y.toNat : Int) < (2 ^ 255 : Nat)
       exact_mod_cast hy
-  apply ExecStmt.assign (value := .int (Int.ofNat y.toNat))
+  apply ExecStmt.assign (hperm := Or.inl rfl) (value := .int (Int.ofNat y.toNat))
   · have he : evalExpr? config (safeCast256ZeroFrame imms y) evm (.var "y") =
         .ok (.int (Int.ofNat y.toNat)) := evalExpr_var_get (by safe_cast_256_get)
     simp only [evalExpr?, he, castValue?, EvalResult.ofOption, bind, EvalResult.bind, hn]

@@ -257,7 +257,7 @@ theorem registryDeactivateBody {σ σ₀ A I} {g : UInt256} (hwf : storageWF σ 
     exact ExecFuncBody.execBlockRevert (ExecBlock.consNormal (ExecStmt.requireTrue hcv)
       (ExecBlock.consNormal hcheck (ExecBlock.consNormal (ExecStmt.letDecl hentry)
         (ExecBlock.consNormal (ExecStmt.requireTrue hactTrue)
-          (ExecBlock.consNormal (ExecStmt.assign (by rw [evalExpr?]; rfl) hassignA)
+          (ExecBlock.consNormal (ExecStmt.assign (hperm := by first | assumption | exact Or.inr ‹_› | exact Or.inl rfl) (by rw [evalExpr?]; rfl) hassignA)
             (ExecBlock.consRevert (ExecStmt.assignExprRevert
               (evalExpr_uint256_sub_underflow htw (hweight _) (by omega)))))))))
   obtain ⟨_, _, rd6⟩ := registryBlocks.registry_block_1319_fallthrough (by simp) hperm
@@ -298,8 +298,8 @@ theorem registryDeactivateBody {σ σ₀ A I} {g : UInt256} (hwf : storageWF σ 
     exact ExecFuncBody.execBlockOK (ExecBlock.consNormal (ExecStmt.requireTrue hcv)
       (ExecBlock.consNormal hcheck (ExecBlock.consNormal (ExecStmt.letDecl hentry)
         (ExecBlock.consNormal (ExecStmt.requireTrue hactTrue)
-          (ExecBlock.consNormal (ExecStmt.assign (by rw [evalExpr?]; rfl) hassignA)
-            (ExecBlock.consNormal (ExecStmt.assign hsub hassignT) ExecBlock.nil))))))
+          (ExecBlock.consNormal (ExecStmt.assign (hperm := by first | assumption | exact Or.inr ‹_› | exact Or.inl rfl) (by rw [evalExpr?]; rfl) hassignA)
+            (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [storageStore_executionEnv, initState] using hperm)) hsub hassignT) ExecBlock.nil))))))
   exact rd7.reEquivExecutionGen hcode hd hdec hbody
     (by rw [storageStore_accountMap, storageStore_accountMap]; rfl)
     (returnEquiv.fallthrough rfl rfl (by native_decide))

@@ -44,6 +44,7 @@ theorem clipperTakeRemoveEquiv
       ExecFuncBody config
           { contract := contract, locals := clipperYankRemoveStore I, immutables := immStore v }
           evmCont removeFunction.body (.returned callee evmRemove none) →
+        evmRemove.executionEnv.perm = true →
         ∃ finalFrame : Frame,
           ExecTransitionBody config contract
             (initState σ σ₀ (Sat256.ofUInt256 g) A I)
@@ -110,8 +111,11 @@ theorem clipperTakeRemoveEquiv
         { contract := contract, locals := clipperYankRemoveStore I, immutables := immStore v }
         evmCont removeFunction.body (.returned calleeFrame evmRemove none) := by
       simpa [sourceLastIndex, evmRemove, calleeFrame] using
-        clipperYankRemoveIdEqMoveSource v evmCont I hacc hlenStele hidEqStele
-    obtain ⟨finalFrame, hbody⟩ := hsourceReturned hremove
+        clipperYankRemoveIdEqMoveSource (hperm := (congrArg ExecutionEnv.perm hevmEnv).trans hperm) v evmCont I hacc hlenStele hidEqStele
+    obtain ⟨finalFrame, hbody⟩ := hsourceReturned hremove (by
+      simpa (config := { zetaDelta := true }) only [clipperYankDeleteSaleState,
+        clipperYankRemovePopState, storageStore_executionEnv] using
+        (congrArg ExecutionEnv.perm hevmEnv).trans hperm)
     have hAccountsFinal :=
       clipperYankSuccessAccountMap_state_accounts_eq
         (σ := σCont) (τ := evmCont.accountMap) evmCont I lastIndex
@@ -182,7 +186,7 @@ theorem clipperTakeRemoveEquiv
         evmMovePos.executionEnv.codeOwner ⟨11⟩ = ⟨0⟩ := by
       rw [← hstorageMove]
       simpa [lastIndex, move, idx] using hlenAfter
-    have hremoveRaw := clipperYankRemoveIdNeMovePopEmptySourceReverts
+    have hremoveRaw := clipperYankRemoveIdNeMovePopEmptySourceReverts (hperm := (congrArg ExecutionEnv.perm hevmEnv).trans hperm)
       v evmCont I hlenStele hidNeStele hidxBoundStele
     dsimp only at hremoveRaw
     have hremove := hremoveRaw (by
@@ -271,7 +275,7 @@ theorem clipperTakeRemoveEquiv
           (UInt256.sub
             (Stele.EVM.storageLoad evmCont evmCont.executionEnv.codeOwner ⟨11⟩) ⟨1⟩)
           move idx, immutables := immStore v }
-    have hremoveRaw := clipperYankRemoveIdNeMoveSource
+    have hremoveRaw := clipperYankRemoveIdNeMoveSource (hperm := (congrArg ExecutionEnv.perm hevmEnv).trans hperm)
       v evmCont I hacc hlenStele hidNeStele hidxBoundStele
     dsimp only at hremoveRaw
     have hremove : ExecFuncBody config
@@ -281,7 +285,10 @@ theorem clipperTakeRemoveEquiv
         simpa only [hmoveStele, hidxStele, evmIndex, evmMovePos] using hlenAfterStele)
       simpa only [calleeFrame, evmRemove, popLastIndex, hmoveStele, hidxStele,
         evmIndex, evmMovePos] using hremoveSource
-    obtain ⟨finalFrame, hbody⟩ := hsourceReturned hremove
+    obtain ⟨finalFrame, hbody⟩ := hsourceReturned hremove (by
+      simpa (config := { zetaDelta := true }) only [clipperYankDeleteSaleState,
+        clipperYankRemovePopState, storageStore_executionEnv] using
+        (congrArg ExecutionEnv.perm hevmEnv).trans hperm)
     let lastIndexAfter := solcSlotWord σMove I ⟨11⟩ + UInt256.lnot ⟨0⟩
     have hlastIndexAfterEq : lastIndexAfter = popLastIndex := by
       rw [show lastIndexAfter = solcSlotWord σMove I ⟨11⟩ +

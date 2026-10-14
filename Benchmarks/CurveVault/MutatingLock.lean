@@ -71,10 +71,11 @@ theorem vaultLockAssign (evm : State) (locals : Store) (value : UInt256) :
     rfl rfl rfl (Or.inl ⟨_, rfl⟩)
   exact transientLocStore_uint256 _ _ _
 
-theorem vaultLockSet (evm : State) (locals : Store) (value : UInt256) :
+theorem vaultLockSet (evm : State) (locals : Store) (value : UInt256)
+    (hperm : evm.executionEnv.perm = true) :
     ExecStmt config {contract := contract, locals := locals} evm (vaultLockAssignStmt value)
       (.ok {contract := contract, locals := locals} (vaultSetLock evm value)) :=
-  ExecStmt.assign (by simp [evalExpr?, pure]) (vaultLockAssign evm locals value)
+  ExecStmt.assign (hperm := Or.inr hperm) (by simp [evalExpr?, pure]) (vaultLockAssign evm locals value)
 
 theorem vaultMutatingBodyStatic (evm : State) (locals : Store) (rest : List Stmt)
     (hvalue : evm.executionEnv.weiValue = ⟨0⟩)
@@ -97,7 +98,9 @@ theorem vaultMutatingBodyReturns {evm calleeEvm : State} {locals calleeLocals : 
     (hlookup : lookupCallable? contract fn.name = some fn.toCallable)
     (hbind : bindParams? fn.params argVals = some calleeLocals)
     (hbody : ExecFuncBody config {contract := contract, locals := calleeLocals} (vaultSetLock evm ⟨1⟩) fn.body
-      (.returned calleeStele calleeEvm (some [value]))) :
+      (.returned calleeStele calleeEvm (some [value])))
+    (hperm : evm.executionEnv.perm = true)
+    (hpermAfter : calleeEvm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm locals
       [.require (.binary .eq (.env .callvalue) (.intLit 0)), .require vaultLockExpr,
         vaultLockAssignStmt ⟨1⟩, .internalCall fn.name args "__r", vaultLockAssignStmt ⟨0⟩, .return [.var "__r"]]
@@ -108,9 +111,9 @@ theorem vaultMutatingBodyReturns {evm calleeEvm : State} {locals calleeLocals : 
   refine ExecFuncBody.execBlockRet <|
     ExecBlock.consNormal (ExecStmt.requireTrue (evalCallvalueEq_true hvalue)) <|
       ExecBlock.consNormal (ExecStmt.requireTrue (vaultLockEval_pass evm locals hlock)) <|
-        ExecBlock.consNormal (vaultLockSet evm locals ⟨1⟩) <|
+        ExecBlock.consNormal (vaultLockSet (hperm := hperm) evm locals ⟨1⟩) <|
           ExecBlock.consNormal hcall <|
-            ExecBlock.consNormal (vaultLockSet calleeEvm (locals.insert "__r" value) ⟨0⟩) <|
+            ExecBlock.consNormal (vaultLockSet (hperm := hpermAfter) calleeEvm (locals.insert "__r" value) ⟨0⟩) <|
               ExecBlock.consReturn (ExecStmt.return (evalExprs?_singleton ?_))
   simp [evalExpr?, EvalResult.ofOption]
 
@@ -122,7 +125,9 @@ theorem vaultMutatingBodyVoidReturns {evm calleeEvm : State} {locals calleeLocal
     (hlookup : lookupCallable? contract fn.name = some fn.toCallable)
     (hbind : bindParams? fn.params argVals = some calleeLocals)
     (hbody : ExecFuncBody config {contract := contract, locals := calleeLocals} (vaultSetLock evm ⟨1⟩) fn.body
-      (.returned calleeStele calleeEvm none)) :
+      (.returned calleeStele calleeEvm none))
+    (hperm : evm.executionEnv.perm = true)
+    (hpermAfter : calleeEvm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm locals
       [.require (.binary .eq (.env .callvalue) (.intLit 0)), .require vaultLockExpr,
         vaultLockAssignStmt ⟨1⟩, .internalCall fn.name args "__r", vaultLockAssignStmt ⟨0⟩]
@@ -133,9 +138,9 @@ theorem vaultMutatingBodyVoidReturns {evm calleeEvm : State} {locals calleeLocal
   exact ExecFuncBody.execBlockOK <|
     ExecBlock.consNormal (ExecStmt.requireTrue (evalCallvalueEq_true hvalue)) <|
       ExecBlock.consNormal (ExecStmt.requireTrue (vaultLockEval_pass evm locals hlock)) <|
-        ExecBlock.consNormal (vaultLockSet evm locals ⟨1⟩) <|
+        ExecBlock.consNormal (vaultLockSet (hperm := hperm) evm locals ⟨1⟩) <|
           ExecBlock.consNormal hcall <|
-            ExecBlock.consNormal (vaultLockSet calleeEvm (locals.insert "__r" .unit) ⟨0⟩) ExecBlock.nil
+            ExecBlock.consNormal (vaultLockSet (hperm := hpermAfter) calleeEvm (locals.insert "__r" .unit) ⟨0⟩) ExecBlock.nil
 
 theorem vaultMutatingBodyReverts {evm : State} {locals calleeLocals : Store}
     {fn : FunctionDecl} {args : List Expr} {argVals : List Value}
@@ -145,7 +150,8 @@ theorem vaultMutatingBodyReverts {evm : State} {locals calleeLocals : Store}
     (hlookup : lookupCallable? contract fn.name = some fn.toCallable)
     (hbind : bindParams? fn.params argVals = some calleeLocals)
     (hbody : ExecFuncBody config {contract := contract, locals := calleeLocals} (vaultSetLock evm ⟨1⟩) fn.body .reverted)
-    (rest : List Stmt := [vaultLockAssignStmt ⟨0⟩, .return [.var "__r"]]) :
+    (rest : List Stmt := [vaultLockAssignStmt ⟨0⟩, .return [.var "__r"]])
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm locals
       (.require (.binary .eq (.env .callvalue) (.intLit 0)) :: .require vaultLockExpr ::
         vaultLockAssignStmt ⟨1⟩ :: .internalCall fn.name args "__r" :: rest)
@@ -153,7 +159,7 @@ theorem vaultMutatingBodyReverts {evm : State} {locals calleeLocals : Store}
   ExecFuncBody.execBlockRevert <|
     ExecBlock.consNormal (ExecStmt.requireTrue (evalCallvalueEq_true hvalue)) <|
       ExecBlock.consNormal (ExecStmt.requireTrue (vaultLockEval_pass evm locals hlock)) <|
-        ExecBlock.consNormal (vaultLockSet evm locals ⟨1⟩) <|
+        ExecBlock.consNormal (vaultLockSet (hperm := hperm) evm locals ⟨1⟩) <|
           ExecBlock.consRevert (internalCallFunctionRevert hargs hlookup hbind hbody)
 
 end Benchmarks.CurveVault

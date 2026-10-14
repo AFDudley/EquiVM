@@ -156,7 +156,7 @@ theorem wrapperSetHookBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hfit : i
     rw [setHookBody_eq]
     exact ExecFuncBody.execBlockOK (ExecBlock.consNormal (ExecStmt.requireTrue hcv)
       (ExecBlock.consNormal (ExecStmt.requireTrue hhookT)
-        (ExecBlock.consNormal (ExecStmt.assign htarget hassign) ExecBlock.nil)))
+        (ExecBlock.consNormal (ExecStmt.assign (hperm := by first | assumption | exact Or.inr ‹_› | exact Or.inl rfl) htarget hassign) ExecBlock.nil)))
   exact rd4.reEquivExecutionGen hcode' hd hdec hbody (by rw [storageStore_accountMap]; rfl)
     (returnEquiv.fallthrough rfl rfl (by native_decide))
 

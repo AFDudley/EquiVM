@@ -53,7 +53,8 @@ theorem morphoAccrueAssetsRefineWithMemory (p : MarketParamsWords) (locals imms 
         (by simp only [accrueMathTail, List.append, List.length_append, List.length_cons, List.length_nil]; omega) hc hborr rd1
       have hm2 := hm1.hash p.id (UInt256.ofNat 3)
       by_cases hp : ee.perm = true
-      · obtain ⟨k3, C3, rd3⟩ := morphoAccrueBorrowStore (v := v)
+      · have hpe : evm.executionEnv.perm = true := (congrArg ExecutionEnv.perm hs.env).trans hp
+        obtain ⟨k3, C3, rd3⟩ := morphoAccrueBorrowStore (v := v)
           (by simp only [accrueMathTail, List.append, List.length_append, List.length_cons, List.length_nil]; omega) hp (accrueAssetSumClean hborr) rd2
         let e1 := storeMarketField evm p.id ⟨2, by decide⟩ (marketFieldWord evm.accountMap evm.executionEnv p.id 2 + interest)
         have hs1 : SourceState s0 ee (accrueBorrowAssetsAccounts σ ee p.id interest) e1 := by
@@ -61,7 +62,7 @@ theorem morphoAccrueAssetsRefineWithMemory (p : MarketParamsWords) (locals imms 
             storeMarketField_bridge hs p.id ⟨2, by decide⟩ (marketFieldWord σ ee p.id 2 + interest)
         have ab2 : StateBlock config { contract := contract, locals := locals, immutables := imms } evm
             (accrueIrmBody.drop 5) { contract := contract, locals := l1, immutables := imms } e1 (accrueIrmBody.drop 7) :=
-          ab1.step hass
+          ab1.step (by simpa only [hpe, if_true] using hass)
         have hei1 : evalExpr? config { contract := contract, locals := l1, immutables := imms } e1 (.var "interest") =
             .ok (.int (Int.ofNat interest.toNat)) := by
           simp only [evalExpr?, l1, store_get_ne (k := "__c3") (a := "interest") _ _ (by decide), hi, EvalResult.ofOption]
@@ -89,9 +90,10 @@ theorem morphoAccrueAssetsRefineWithMemory (p : MarketParamsWords) (locals imms 
           have hs2 : SourceState s0 ee (accrueSupplyAssetsAccounts (accrueBorrowAssetsAccounts σ ee p.id interest) ee p.id interest) e2 := by
             simpa only [e2, hs1.env, ← hs1.accounts] using storeMarketField_bridge hs1 p.id ⟨0, by decide⟩
               (marketFieldWord (accrueBorrowAssetsAccounts σ ee p.id interest) ee p.id 0 + interest)
+          have hpe1 : e1.executionEnv.perm = true := (congrArg ExecutionEnv.perm hs1.env).trans hp
           have ab4 : StateBlock config { contract := contract, locals := locals, immutables := imms } evm
               (accrueIrmBody.drop 5) { contract := contract, locals := l2, immutables := imms } e2 (accrueIrmBody.drop 9) :=
-            ab3.step hass2
+            ab3.step (by simpa only [hpe1, if_true] using hass2)
           let l3 := l2.insert "feeShares" (.int 0)
           have hz : ExecStmt config { contract := contract, locals := l2, immutables := imms } e2 accrueIrmBody[9]!
               (.ok { contract := contract, locals := l3, immutables := imms } e2) := ExecStmt.letDecl (by simp only [evalExpr?, pure])

@@ -50,6 +50,6 @@ theorem recordScalarRun {L : Store} {evm : EVM.State} {ee : ExecutionEnv} {g : S
       easRecordWriteStatic v site (by omega) hp rd⟩
   | true =>
     obtain ⟨aw',k',C',hr⟩ := easRecordScalarWrites v site hstack hp hview hlen hdata hb rd
-    exact Or.inl ⟨aw',k',C',recordScalarSource ha hu hd,attestationWriteHead_sourceState hs _ _,hr⟩
+    exact Or.inl ⟨aw',k',C',recordScalarSource (hperm := by simpa only [hs.env] using hp) ha hu hd,attestationWriteHead_sourceState hs _ _,hr⟩
 
 end Benchmarks.EAS.EAS

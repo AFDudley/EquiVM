@@ -94,7 +94,7 @@ theorem calldataReadOptionalByte {data : ByteArray} {off j word : Nat} {f : Fram
     refine ⟨{f with locals := f.locals.insert "word" (.int (Int.ofNat (word + byte)))},
       byte, hbfit, ExecStmt.iteTrue ?_ ?_, h.setWord (word + byte)⟩
     · simpa only [hb, decide_true] using hecond
-    · exact ExecBlock.consNormal (ExecStmt.assign
+    · exact ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
         (naturalAddSource (evalLocalValue h.word_eq)
           (evalByteIndexUint256 (evalLocalValue h.data_eq) heindex hbl))
         (assignLocalValue h.word_eq)) ExecBlock.nil
@@ -112,8 +112,8 @@ theorem calldataReadStep {data : ByteArray} {off j word : Nat} {f : Frame}
   obtain ⟨f2, byte, hb, hs, h2⟩ := calldataReadOptionalByte evm h1
   refine ⟨{f2 with locals := f2.locals.insert "j" (.int (Int.ofNat (j + 1)))},
     word * 256 + byte, by omega, ?_, h2.setIndex _⟩
-  refine ExecBlock.consNormal (ExecStmt.assign ?_ (assignLocalValue h.word_eq))
-    (ExecBlock.consNormal hs (ExecBlock.consNormal (ExecStmt.assign
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) ?_ (assignLocalValue h.word_eq))
+    (ExecBlock.consNormal hs (ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
       (naturalAddSource (evalLocalValue h2.index_eq) (by simp only [evalExpr?, pure]; rfl))
       (assignLocalValue h2.index_eq)) ExecBlock.nil))
   simp only [evalExpr?, h.word_eq, EvalResult.ofOption, bind, EvalResult.bind, pure, evalBinaryOp?]

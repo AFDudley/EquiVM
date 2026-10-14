@@ -69,7 +69,8 @@ theorem pausablePauseBodyReturns (evm : EVM.State)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hzero :
       UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩) ⟨255⟩ =
-        ⟨0⟩) :
+        ⟨0⟩)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm ∅ pauseTransition.body
       (.returned { contract := contract, locals := ∅ } (pausePostState evm) none) := by
   refine ExecFuncBody.execBlockOK ?_
@@ -78,7 +79,9 @@ theorem pausablePauseBodyReturns (evm : EVM.State)
     simpa [pausedWord, pausedRawWord, Stele.EVM.storageLoad] using hzero
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue (pausableEvalWhenNotPausedTrue evm ∅ hzeroPaused (by simp))) ?_
-  exact ExecBlock.consNormal (ExecStmt.assign (evalExpr_pause_true evm) (pauseAssign evm))
+  exact ExecBlock.consNormal (ExecStmt.assign
+    (hperm := by first | assumption | exact Or.inr ‹_› | exact Or.inl rfl)
+    (evalExpr_pause_true evm) (pauseAssign evm))
     ExecBlock.nil
 
 /-- Static mode: the body halts at the `_paused` write. -/
@@ -233,7 +236,7 @@ theorem pausablePauseBody {σ σ₀ A I}
       simpa [pausedWord, pausedRawWord, initState, Stele.EVM.storageLoad, State.lookupAccount]
         using hzero
     by_cases hperm : I.perm = true
-    · have hbody := pausablePauseBodyReturns
+    · have hbody := pausablePauseBodyReturns (hperm := hperm)
         (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         (by simp only [initState]; exact hwv) hzeroS
       exact (permSplit_true hperm (pausableX_pause_success (g := Sat256.ofUInt256 g) hreach hzero))

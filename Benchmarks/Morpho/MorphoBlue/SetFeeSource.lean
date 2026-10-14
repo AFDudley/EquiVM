@@ -107,21 +107,22 @@ theorem morphoSetFeeAssign (p : MarketParamsWords) (fee : UInt256) (locals imms 
     (hl : MarketLocals p locals) (hg : locals.get? "newFee" = some (.int (Int.ofNat fee.toNat)))
     (hfit : fee.toNat ≤ maxMarketFee) :
     ExecStmt config { contract := contract, locals := locals, immutables := imms } evm setFeeTransition.body[9]!
-      (.ok { contract := contract, locals := locals, immutables := imms } (storeMarketField evm p.id ⟨5, by decide⟩ fee)) := by
+      (if evm.executionEnv.perm then .ok { contract := contract, locals := locals, immutables := imms } (storeMarketField evm p.id ⟨5, by decide⟩ fee) else .staticViolation) := by
   have hc : fee.toNat < 2 ^ 128 := by unfold maxMarketFee at hfit; omega
   have he : evalExpr? config { contract := contract, locals := locals, immutables := imms } evm (.var "newFee") =
       .ok (.int (Int.ofNat fee.toNat)) := by simp only [evalExpr?, hg, EvalResult.ofOption]
-  apply ExecStmt.assign
+  apply execStmt_assign_storage
   · simpa only [halfWord_low_clean fee hc] using evalCastUint128 he
   · exact assignMarketField evm locals imms (.var "id") p.id ⟨5, by decide⟩ fee hc hl.market (hl.evalId imms evm)
 
 theorem morphoSetFeeFinishSource (p : MarketParamsWords) (fee : UInt256) (locals imms : Store) (evm : EVM.State)
     (hl : MarketLocals p locals) (hg : locals.get? "newFee" = some (.int (Int.ofNat fee.toNat)))
-    (hfit : fee.toNat ≤ maxMarketFee) :
+    (hfit : fee.toNat ≤ maxMarketFee)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config { contract := contract, locals := locals, immutables := imms } evm (setFeeTransition.body.drop 9)
       (.ok { contract := contract, locals := locals, immutables := imms } (storeMarketField evm p.id ⟨5, by decide⟩ fee)) := by
-  apply ExecBlock.consNormal (morphoSetFeeAssign p fee locals imms evm hl hg hfit)
-  apply ExecBlock.consNormal (ExecStmt.emit (vals := [.fixedBytes ⟨31, by decide⟩ (EVM.Word.toBytesBE p.id),
+  apply ExecBlock.consNormal (by simpa only [hperm, if_true] using morphoSetFeeAssign p fee locals imms evm hl hg hfit)
+  apply ExecBlock.consNormal (ExecStmt.emit (hperm := by simpa only [storeMarketField_executionEnv] using hperm) (vals := [.fixedBytes ⟨31, by decide⟩ (EVM.Word.toBytesBE p.id),
     .int (Int.ofNat fee.toNat)]) ?_)
   · exact ExecBlock.nil
   · simp only [evalExprs?, hl.evalId, evalExpr?, hg, EvalResult.ofOption, pure, bind, EvalResult.bind]

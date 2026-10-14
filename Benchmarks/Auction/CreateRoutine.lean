@@ -48,15 +48,15 @@ theorem createRoutine {I g s0 ret R mem aw ptr rdata σ k C evm locals}
       ⟨evm', σ', locals', mem', aw', _, _, hsrc, hs', hrd⟩ | ⟨hsrc, hrd⟩
     · refine Or.inl ⟨evm', σ', locals', mem', aw', out, _, _, ?_, hs', hrd⟩
       exact ExecFuncBody.execBlockOK (ExecBlock.consNormal
-        (ExecStmt.checkedCallSuccess hr hv hargs ht hdecode hsrc) ExecBlock.nil)
+        (ExecStmt.checkedCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hr hv hargs ht hdecode hsrc) ExecBlock.nil)
     · exact Or.inr ⟨ExecFuncBody.execBlockRevert (ExecBlock.consRevert
-        (ExecStmt.checkedCallSuccess hr hv hargs ht hdecode hsrc)), hrd⟩
+        (ExecStmt.checkedCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hr hv hargs ht hdecode hsrc)), hrd⟩
   · subst z
     have hdecode : auctionConfig.externalABI.decode? "mint" out = none := by
       change (ABI.decodeReturnValue? uint256 out).map (fun value ↦ [value]) = _
       simp only [uint256, uint256Int, decodeReturnUint_short hl, Option.map_none]
     exact Or.inr ⟨ExecFuncBody.execBlockRevert (ExecBlock.consRevert
-      (ExecStmt.checkedCallReturnDecodeRevert hr hv hargs ht hdecode)), hrev⟩
+      (ExecStmt.checkedCallReturnDecodeRevert (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hr hv hargs ht hdecode)), hrev⟩
   · subst z
     have hin : ptr.toNat ≤ (mintCallMem mem out ptr).size := by
       rw [mintCallMem_size hm out (by change out.size < 2 ^ 256; omega)]
@@ -67,8 +67,8 @@ theorem createRoutine {I g s0 ret R mem aw ptr rdata σ k C evm locals}
       ⟨evm', σ', locals', mem', aw', _, _, hsrc, hs', hrd⟩ | ⟨hsrc, hrd⟩
     · refine Or.inl ⟨evm', σ', locals', mem', aw', out, _, _, ?_, hs', hrd⟩
       exact ExecFuncBody.execBlockOK (ExecBlock.consNormal
-        (ExecStmt.checkedCallFail hr hv hargs ht hsrc) ExecBlock.nil)
+        (ExecStmt.checkedCallFail (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hr hv hargs ht hsrc) ExecBlock.nil)
     · exact Or.inr ⟨ExecFuncBody.execBlockRevert (ExecBlock.consRevert
-        (ExecStmt.checkedCallFail hr hv hargs ht hsrc)), hrd⟩
+        (ExecStmt.checkedCallFail (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hr hv hargs ht hsrc)), hrd⟩
 
 end Auction

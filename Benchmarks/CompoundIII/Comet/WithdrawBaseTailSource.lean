@@ -14,7 +14,8 @@ theorem withdrawBaseTail_source {v src recipient amount balance evm result}
     (hf : WithdrawBaseArgs frame v src recipient amount supplied)
     (hsupplied : supplied.toNat < 2^104)
     (hbalance : frame.locals.get? "srcBalance" = some (.int (signedWord balance)))
-    (hbound : -(2^255 : Int) < signedWord balance) :
+    (hbound : -(2^255 : Int) < signedWord balance)
+    (hperm : evm.executionEnv.perm = true) :
     internalBlockResult config frame evm withdrawBaseTail result := by
   have he : evalExpr? config frame evm (.var "srcBalance") = .ok (.int (signedWord balance)) := by
     simp only [evalExpr?, hbalance, EvalResult.ofOption]
@@ -32,7 +33,7 @@ theorem withdrawBaseTail_source {v src recipient amount balance evm result}
       EvalResult.ofOption]; rfl
   cases ht with
   | nonnegative hn tail =>
-    exact (withdrawBaseTransfer_source tail frame src supplied hf hsupplied).prepend
+    exact (withdrawBaseTransfer_source (hperm := by assumption) tail frame src supplied hf hsupplied).prepend
       (ExecStmt.iteFalse (hg.trans (by rw [decide_eq_false (by omega)])) .nil)
   | tooSmall hn hm =>
     exact ExecBlock.consRevert (ExecStmt.iteTrue (hg.trans (by rw [decide_eq_true hn]))
@@ -53,7 +54,8 @@ theorem withdrawBaseTail_source {v src recipient amount balance evm result}
       ExecBlock.consNormal (ExecStmt.requireTrue ((hmin hn).trans (by rw [decide_eq_true hm])))
         (ExecBlock.consNormal (hcall hc)
           (ExecBlock.consNormal (ExecStmt.requireTrue (hbool true _)) .nil))
-    exact (withdrawBaseTransfer_source tail _ src supplied
+    exact (withdrawBaseTransfer_source
+      (hperm := (congrArg ExecutionEnv.perm (hc.executionEnv_eq _ _ rfl)).trans hperm) tail _ src supplied
       (hf.insert "__c6" (.bool true) (by decide)) hsupplied).prepend
         (ExecStmt.iteTrue (hg.trans (by rw [decide_eq_true hn])) hb)
 

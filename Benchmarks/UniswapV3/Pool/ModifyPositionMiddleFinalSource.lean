@@ -42,7 +42,8 @@ theorem evalModifyPositionMiddleDeltaExprs (v : UniswapV3PoolImmutables)
   simp only [modifyPositionMiddleDeltaExprs, evalExprs?, hl, hd, bind, EvalResult.bind, pure]
 
 theorem modifyPositionMiddleLiquidityStoreSource (v : UniswapV3PoolImmutables)
-    (a : ModifyPositionArgs) (evm evm' : EVM.State) :
+    (a : ModifyPositionArgs) (evm evm' : EVM.State)
+    (hperm : evm'.executionEnv.perm = true) :
     ExecStmt config (modifyPositionMiddleFinalFrame v a evm) evm'
       (.assign .storage ⟨"liquidity", []⟩ (.var "__c12"))
       (.ok (modifyPositionMiddleFinalFrame v a evm)
@@ -53,7 +54,7 @@ theorem modifyPositionMiddleLiquidityStoreSource (v : UniswapV3PoolImmutables)
   have hs := assignPoolLiquidity (modifyPositionMiddleFinalFrame v a evm).locals (immStore v) evm'
     (modifyPositionMiddleNewLiquidity v a evm) (by modify_position_middle_final_get)
   rw [← hf] at hs
-  exact ExecStmt.assign (evalExpr_var_get (by modify_position_middle_final_get)) hs
+  exact ExecStmt.assign (hperm := Or.inr hperm) (evalExpr_var_get (by modify_position_middle_final_get)) hs
 
 theorem modifyPositionMiddleReturnSource (v : UniswapV3PoolImmutables)
     (a : ModifyPositionArgs) (evm evm' : EVM.State) :

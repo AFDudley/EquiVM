@@ -224,14 +224,15 @@ theorem uniswapMintAfterMintFeeProportionalProduct0OverflowReverts_of_call
     (hamount0 : nextLocals.get? "amount0" = some (uniswapUint256Value amount0))
     (htotalNonzero : mintFunctionTotalSupplyWord evmAfter ≠ ⟨0⟩)
     (hover :
-      UInt256.size ≤ amount0.toNat * (mintFunctionTotalSupplyWord evmAfter).toNat) :
+      UInt256.size ≤ amount0.toNat * (mintFunctionTotalSupplyWord evmAfter).toNat)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config { contract := contract, locals := mintStore I } evm
       mintTransition.body .reverted := by
   let totalSupply := mintFunctionTotalSupplyWord evmAfter
   let afterTotalSupplyLocals :=
     nextLocals.insert "_totalSupply" (uniswapUint256Value totalSupply)
   have hprefix :=
-    uniswapMintAfterMintFeeTotalSupplyPrefix_of_call evm evm0 evm1 evmAfter I nextLocals
+    uniswapMintAfterMintFeeTotalSupplyPrefix_of_call (hperm := hperm) evm evm0 evm1 evmAfter I nextLocals
       hwv hunlocked hguard0 hguard1 hcall0 hdec0 hcall1 hdec1 henough0 henough1 hfee
       htotalBase
   have htotal' :
@@ -304,14 +305,15 @@ theorem uniswapMintAfterMintFeeProportionalProduct1OverflowReverts_of_call
       mintAmountProductNat amount0 (mintFunctionTotalSupplyWord evmAfter) < UInt256.size)
     (hreserve0Nonzero : reserve0 ≠ ⟨0⟩)
     (hover :
-      UInt256.size ≤ amount1.toNat * (mintFunctionTotalSupplyWord evmAfter).toNat) :
+      UInt256.size ≤ amount1.toNat * (mintFunctionTotalSupplyWord evmAfter).toNat)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config { contract := contract, locals := mintStore I } evm
       mintTransition.body .reverted := by
   let totalSupply := mintFunctionTotalSupplyWord evmAfter
   let afterTotalSupplyLocals :=
     nextLocals.insert "_totalSupply" (uniswapUint256Value totalSupply)
   have hprefix :=
-    uniswapMintAfterMintFeeTotalSupplyPrefix_of_call evm evm0 evm1 evmAfter I nextLocals
+    uniswapMintAfterMintFeeTotalSupplyPrefix_of_call (hperm := hperm) evm evm0 evm1 evmAfter I nextLocals
       hwv hunlocked hguard0 hguard1 hcall0 hdec0 hcall1 hdec1 henough0 henough1 hfee
       htotalBase
   have htotal' :
@@ -442,13 +444,14 @@ theorem uniswapMintProportionalProduct0OverflowAfterMintFeeCase
     (hclean0 : UInt256.land reserve0 reserve112Mask = reserve0)
     (hover : UInt256.size ≤ amount0.toNat * totalSupply.toNat)
     (hmem : mem.size = 164)
-    (hmem64 : mem.readWithPadding 64 32 = UInt256.toByteArray ⟨128⟩) :
+    (hmem64 : mem.readWithPadding 64 32 = UInt256.toByteArray ⟨128⟩)
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   let evmS := initState σ σ₀ (Sat256.ofUInt256 g) A I
   have hbody :
       ExecTransitionBody config contract evmS (mintStore I) mintTransition.body .reverted := by
     exact ExecFuncBody.execBlockRevert
-      (uniswapMintAfterMintFeeProportionalProduct0OverflowReverts_of_call
+      (uniswapMintAfterMintFeeProportionalProduct0OverflowReverts_of_call (hperm := hperm)
         evmS evm0S evm1S evmFeeS I nextLocals
         (by simp only [evmS, initState]; exact hwv) hunlockedStele hguard0 hguard1
         hcall0 hdec0 hcall1 hdec1 hle0Source hle1Source
@@ -559,13 +562,14 @@ theorem uniswapMintProportionalProduct1OverflowAfterMintFeeCase
     (hreserve0Nonzero : reserve0 ≠ ⟨0⟩)
     (hover : UInt256.size ≤ amount1.toNat * totalSupply.toNat)
     (hmem : mem.size = 164)
-    (hmem64 : mem.readWithPadding 64 32 = UInt256.toByteArray ⟨128⟩) :
+    (hmem64 : mem.readWithPadding 64 32 = UInt256.toByteArray ⟨128⟩)
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   let evmS := initState σ σ₀ (Sat256.ofUInt256 g) A I
   have hbody :
       ExecTransitionBody config contract evmS (mintStore I) mintTransition.body .reverted := by
     exact ExecFuncBody.execBlockRevert
-      (uniswapMintAfterMintFeeProportionalProduct1OverflowReverts_of_call
+      (uniswapMintAfterMintFeeProportionalProduct1OverflowReverts_of_call (hperm := hperm)
         evmS evm0S evm1S evmFeeS I nextLocals
         (by simp only [evmS, initState]; exact hwv) hunlockedStele hguard0 hguard1
         hcall0 hdec0 hcall1 hdec1 hle0Source hle1Source
@@ -721,7 +725,8 @@ theorem uniswapMintProportionalFeeOffKLastZeroProductOverflowFromFactoryCase
     (hover :
       UInt256.size ≤ amount0.toNat * totalSupply.toNat ∨
         amount0.toNat * totalSupply.toNat < UInt256.size ∧
-          reserve0 ≠ ⟨0⟩ ∧ UInt256.size ≤ amount1.toNat * totalSupply.toNat) :
+          reserve0 ≠ ⟨0⟩ ∧ UInt256.size ≤ amount1.toNat * totalSupply.toNat)
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   let evmS := initState σ σ₀ (Sat256.ofUInt256 g) A I
   let evmL := uniswapLockEnteredState evmS
@@ -775,7 +780,7 @@ theorem uniswapMintProportionalFeeOffKLastZeroProductOverflowFromFactoryCase
       dsimp [reserve0Word]
       exact reserve112Word_lt _)
   rcases hover with hover0 | hover1
-  · exact uniswapMintProportionalProduct0OverflowAfterMintFeeCase nextFrame.locals
+  · exact uniswapMintProportionalProduct0OverflowAfterMintFeeCase (hperm := hperm) nextFrame.locals
       hcode hdispatch hsz36 hwv hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1 hdec1
       hle0Source hle1Source hfee (by
         simpa [memFee, hruntimeReserve0, hruntimeReserve1] using rd3701)
@@ -794,7 +799,7 @@ theorem uniswapMintProportionalFeeOffKLastZeroProductOverflowFromFactoryCase
         rw [← hruntimeReserve1]
         dsimp [reserve1Word]
         exact reserve112Word_lt _)
-    exact uniswapMintProportionalProduct1OverflowAfterMintFeeCase nextFrame.locals
+    exact uniswapMintProportionalProduct1OverflowAfterMintFeeCase (hperm := hperm) nextFrame.locals
       hcode hdispatch hsz36 hwv hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1 hdec1
       hle0Source hle1Source hfee (by
         simpa [memFee, hruntimeReserve0, hruntimeReserve1] using rd3701)
@@ -935,7 +940,8 @@ theorem uniswapMintProportionalFeeOnKLastZeroProductOverflowFromFactoryCase
     (hover :
       UInt256.size ≤ amount0.toNat * totalSupply.toNat ∨
         amount0.toNat * totalSupply.toNat < UInt256.size ∧
-          reserve0 ≠ ⟨0⟩ ∧ UInt256.size ≤ amount1.toNat * totalSupply.toNat) :
+          reserve0 ≠ ⟨0⟩ ∧ UInt256.size ≤ amount1.toNat * totalSupply.toNat)
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   let evmS := initState σ σ₀ (Sat256.ofUInt256 g) A I
   let evmL := uniswapLockEnteredState evmS
@@ -989,7 +995,7 @@ theorem uniswapMintProportionalFeeOnKLastZeroProductOverflowFromFactoryCase
       dsimp [reserve0Word]
       exact reserve112Word_lt _)
   rcases hover with hover0 | hover1
-  · exact uniswapMintProportionalProduct0OverflowAfterMintFeeCase nextFrame.locals
+  · exact uniswapMintProportionalProduct0OverflowAfterMintFeeCase (hperm := hperm) nextFrame.locals
       hcode hdispatch hsz36 hwv hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1 hdec1
       hle0Source hle1Source hfee (by
         simpa [memFee, hruntimeReserve0, hruntimeReserve1] using rd3701)
@@ -1008,7 +1014,7 @@ theorem uniswapMintProportionalFeeOnKLastZeroProductOverflowFromFactoryCase
         rw [← hruntimeReserve1]
         dsimp [reserve1Word]
         exact reserve112Word_lt _)
-    exact uniswapMintProportionalProduct1OverflowAfterMintFeeCase nextFrame.locals
+    exact uniswapMintProportionalProduct1OverflowAfterMintFeeCase (hperm := hperm) nextFrame.locals
       hcode hdispatch hsz36 hwv hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1 hdec1
       hle0Source hle1Source hfee (by
         simpa [memFee, hruntimeReserve0, hruntimeReserve1] using rd3701)
@@ -1206,7 +1212,7 @@ theorem uniswapMintProportionalFeeOffKLastNonzeroProductOverflowFromFactoryCase
         evm1S (.internalCall "_mintFee" [.var "_reserve0", .var "_reserve1"] "feeOn")
         (.ok { contract := contract, locals := nextFrame.locals } evmAfterFee) := by
     simpa [nextFrame, evmL, evmS, evmAfterFee, resumeAfterInternalCall] using
-      uniswapMintFeeCallFromMint_feeOff_kLastNonzero evmL evm1S evmFeeS I balance0
+      uniswapMintFeeCallFromMint_feeOff_kLastNonzero (hperm := by simpa [typedCallViaEVM_executionEnv_eq hcall1, typedCallViaEVM_executionEnv_eq hcall0, uniswapLockEnteredState, uniswapUnlockedState, initState] using hperm) evmL evm1S evmFeeS I balance0
         balance1 feeTo (by simpa [evmL, evmS] using hfeeGuard) hfeeCall hfeeDec
         hfeeToAddr hkLastSource
   have hbase : nextFrame.locals.get? "totalSupply" = none := by
@@ -1221,7 +1227,7 @@ theorem uniswapMintProportionalFeeOffKLastNonzeroProductOverflowFromFactoryCase
       dsimp [reserve0Word]
       exact reserve112Word_lt _)
   rcases hover with hover0 | hover1
-  · exact uniswapMintProportionalProduct0OverflowAfterMintFeeCase
+  · exact uniswapMintProportionalProduct0OverflowAfterMintFeeCase (hperm := hperm)
       (σFee := σCleared) (evmFeeS := evmAfterFee) nextFrame.locals
       hcode hdispatch hsz36 hwv hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1 hdec1
       hle0Source hle1Source hfee (by
@@ -1241,7 +1247,7 @@ theorem uniswapMintProportionalFeeOffKLastNonzeroProductOverflowFromFactoryCase
         rw [← hruntimeReserve1]
         dsimp [reserve1Word]
         exact reserve112Word_lt _)
-    exact uniswapMintProportionalProduct1OverflowAfterMintFeeCase
+    exact uniswapMintProportionalProduct1OverflowAfterMintFeeCase (hperm := hperm)
       (σFee := σCleared) (evmFeeS := evmAfterFee) nextFrame.locals
       hcode hdispatch hsz36 hwv hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1 hdec1
       hle0Source hle1Source hfee (by
@@ -1393,7 +1399,7 @@ theorem uniswapMintProportionalProductOverflowFromFactoryCases
     runtimeRefinementFor config contract σ σ₀ g A I := by
   rcases hcase with hfeeOff | hrest
   · rcases hfeeOff with ⟨hfeeToZero, hkLastZero, htotalNonzero, hover⟩
-    exact uniswapMintProportionalFeeOffKLastZeroProductOverflowFromFactoryCase feeTo
+    exact uniswapMintProportionalFeeOffKLastZeroProductOverflowFromFactoryCase (hperm := hperm) feeTo
       hcode hdispatch hsz36 hwv hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1 hdec1
       hle0Source hle1Source hfeeGuard hfeeCall hfeeDec hfeeToEq rd7781 ho32 hoSize
       ho132 ho1Size houtFeeSize hzFeeTrue houtFee32 hkLastEq htotalEq htotalSlot
@@ -1401,7 +1407,7 @@ theorem uniswapMintProportionalProductOverflowFromFactoryCases
       (by simpa [hfeeToWord] using hfeeToZero) hkLastZero htotalNonzero hover
   · rcases hrest with hfeeOn | hfeeOffCleared
     · rcases hfeeOn with ⟨hfeeToNonzero, hkLastZero, htotalNonzero, hover⟩
-      exact uniswapMintProportionalFeeOnKLastZeroProductOverflowFromFactoryCase feeTo
+      exact uniswapMintProportionalFeeOnKLastZeroProductOverflowFromFactoryCase (hperm := hperm) feeTo
         hcode hdispatch hsz36 hwv hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1
         hdec1 hle0Source hle1Source hfeeGuard hfeeCall hfeeDec hfeeToEq rd7781 ho32
         hoSize ho132 ho1Size houtFeeSize hzFeeTrue houtFee32 hkLastEq htotalEq

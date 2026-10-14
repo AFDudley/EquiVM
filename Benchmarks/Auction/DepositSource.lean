@@ -49,14 +49,15 @@ theorem depositSourceSuccess {s0 I σ evm evm' locals recipient amount ptr out}
     (hs : SourceState s0 I σ evm) (hv : PaymentValues locals recipient amount ptr)
     (hyes : extCodeSizeWord σ (wethWord σ I) ≠ ⟨0⟩)
     (hc : callViaEVM evm (AccountAddress.ofUInt256 (wethWord σ I))
-      (Int.ofNat amount.toNat) depositSelector (true, evm', out)) :
+      (Int.ofNat amount.toNat) depositSelector (true, evm', out))
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock auctionConfig { contract := auctionContract, locals := locals } evm
       (checkedExternalCallStmts (.storage wethRef) "deposit" (.var "amount") [] "_dep")
       (.ok { contract := auctionContract, locals := locals.insert "_dep" (collapseReturns []) }
         evm') := by
   refine ExecBlock.consNormal (ExecStmt.requireTrue ?_) ?_
   · rw [wethCodeGuardSource hs hv.weth, decide_eq_true hyes]
-  · refine ExecBlock.consNormal (ExecStmt.externalCallSuccess (wethSourceRead hs hv.weth)
+  · refine ExecBlock.consNormal (ExecStmt.externalCallSuccess (hperm := Or.inr hperm) (wethSourceRead hs hv.weth)
       ?_ ?_ (depositTypedCall hc) rfl) ExecBlock.nil
     · simp only [evalExpr?, hv.amount, EvalResult.ofOption]
     · simp [evalExprs?, pure]
@@ -65,12 +66,13 @@ theorem depositSourceFailure {s0 I σ evm evm' locals recipient amount ptr out}
     (hs : SourceState s0 I σ evm) (hv : PaymentValues locals recipient amount ptr)
     (hyes : extCodeSizeWord σ (wethWord σ I) ≠ ⟨0⟩)
     (hc : callViaEVM evm (AccountAddress.ofUInt256 (wethWord σ I))
-      (Int.ofNat amount.toNat) depositSelector (false, evm', out)) :
+      (Int.ofNat amount.toNat) depositSelector (false, evm', out))
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock auctionConfig { contract := auctionContract, locals := locals } evm
       paymentFallbackStmts .reverted := by
   refine ExecBlock.consNormal (ExecStmt.requireTrue ?_) ?_
   · rw [wethCodeGuardSource hs hv.weth, decide_eq_true hyes]
-  · exact ExecBlock.consRevert (ExecStmt.externalCallFailure (wethSourceRead hs hv.weth)
+  · exact ExecBlock.consRevert (ExecStmt.externalCallFailure (hperm := Or.inr hperm) (wethSourceRead hs hv.weth)
       (by simp only [evalExpr?, hv.amount, EvalResult.ofOption])
       (by simp [evalExprs?, pure]) (depositTypedCall hc))
 

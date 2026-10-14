@@ -41,7 +41,7 @@ theorem swapStepInputSelectSource {f : Frame} {evm : EVM.State}
     let f1 := wordLocal f "sqrtPriceNextX96" target
     have hn1 : ExecStmt config f evm
         (.assign .localVar {base := "sqrtPriceNextX96"} (.var "sqrtPriceTargetX96")) (.ok f1 evm) :=
-      ExecStmt.assign (evalLocalValue ht) (assignLocalValue hn)
+      ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalLocalValue ht) (assignLocalValue hn)
     have hcalc := swapStepTargetFeeSource (f := f1) (evm := evm) hf
       ((store_get_ne _ _ (by decide : ("sqrtPriceNextX96" == "amountIn") = false)).trans hi)
       ((store_get_ne _ _ (by decide : ("sqrtPriceNextX96" == "_feePips") = false)).trans hfPips)

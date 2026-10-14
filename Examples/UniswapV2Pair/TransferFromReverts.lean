@@ -378,7 +378,7 @@ theorem uniswapTransferFromBodyCoreRevert_overflow_maxAllowance
   have hbody :
       ExecTransitionBody config contract evmS (transferFromStore I) transferFromTransition.body
         .reverted := by
-    exact uniswapTransferFromBodyReverts_overflow_maxAllowance evmS I
+    exact uniswapTransferFromBodyReverts_overflow_maxAllowance (hperm := by assumption) evmS I
       (by simp only [evmS, initState]; exact hwv) hmaxS hbalanceS hoverS
   exact (uniswapTransferFromX_overflowMaxAllowance (g := Sat256.ofUInt256 g)
       hsz100 hsize hperm hcanonFrom hcanonTo hmax hbalance hover hreach)
@@ -556,7 +556,7 @@ theorem uniswapTransferFromBodyCoreRevert_balance_finiteAllowance
   have hbody :
       ExecTransitionBody config contract evmS (transferFromStore I) transferFromTransition.body
         .reverted := by
-    exact uniswapTransferFromBodyReverts_balance_finiteAllowance evmS I
+    exact uniswapTransferFromBodyReverts_balance_finiteAllowance (hperm := by assumption) evmS I
       (by simp only [evmS, initState]; exact hwv) hnotMaxS hallowanceS hltS
   exact (uniswapTransferFromX_balanceFiniteAllowance (g := Sat256.ofUInt256 g)
       hsz100 hsize hperm hcanonFrom hcanonTo hnotMax hallowance hlt hreach)
@@ -753,7 +753,7 @@ theorem uniswapTransferFromBodyCoreRevert_overflow_finiteAllowance
   have hbody :
       ExecTransitionBody config contract evmS (transferFromStore I) transferFromTransition.body
         .reverted := by
-    exact uniswapTransferFromBodyReverts_overflow_finiteAllowance evmS I
+    exact uniswapTransferFromBodyReverts_overflow_finiteAllowance (hperm := by assumption) evmS I
       (by simp only [evmS, initState]; exact hwv) hnotMaxS hallowanceS hbalanceS hoverS
   exact (uniswapTransferFromX_overflowFiniteAllowance (g := Sat256.ofUInt256 g)
       hsz100 hsize hperm hcanonFrom hcanonTo hnotMax hallowance hbalance hover hreach)

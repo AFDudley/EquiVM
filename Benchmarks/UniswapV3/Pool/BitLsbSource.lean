@@ -48,7 +48,7 @@ theorem bitLsbReturns (imms : Store) (evm : EVM.State) (x : UInt256) (hx : 0 < x
   refine ExecBlock.consNormal (ExecStmt.requireTrue
     (by simpa only [hx, decide_true] using evalBitMsbGuard imms evm x)) ?_
   refine ExecBlock.consNormal (stele' := bitLsbReadyFrame imms x)
-    (ExecStmt.assign (value := .int 255) (by simp only [evalExpr?, pure])
+    (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (value := .int 255) (by simp only [evalExpr?, pure])
       (assignLocalVarBase_frame (old := .int 0) Std.HashMap.getElem?_insert_self)) ?_
   change ExecBlock _ _ _ (((tickLogMsbBits.take 7).map (fun b ↦ bitLsbStepStmt b true)) ++
     [bitLsbStepStmt 1 false, .return [.var "r"]]) _

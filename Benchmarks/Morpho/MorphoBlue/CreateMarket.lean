@@ -77,7 +77,7 @@ theorem morphoCreateMarketBody {σ σ₀ A I} {g : UInt256} (v : MorphoImmutable
                 (SourceState.init (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := .ofUInt256 g)) p
               by_cases hi0 : p.irm = ⟨0⟩
               · have hx := morphoCreateMarketNoIrmReturns (v := v) p hc hp hi0 rd4
-                have hb := morphoCreateMarketSourceNoIrm p hc
+                have hb := morphoCreateMarketSourceNoIrm (hperm := by assumption) p hc
                   (initState σ σ₀ (.ofUInt256 g) A I) (immStore v) hcv hbound hi hl hn hi0
                 exact reEquivSelectorExecutionGen hcode hx hd hdec hb hs.accounts
                   (.fallthrough rfl rfl (by native_decide))
@@ -85,7 +85,7 @@ theorem morphoCreateMarketBody {σ σ₀ A I} {g : UInt256} (v : MorphoImmutable
                   morphoCreateMarketReachCall (v := v) p hc hp hi0 rd4
                 obtain ⟨evm', z, out, hcall, hs', hout, hx⟩ :=
                   morphoCreateMarketCall (v := v) p hc hs hp (by decide) hcd rd5
-                have hb := morphoCreateMarketSourceCall p hc
+                have hb := morphoCreateMarketSourceCall (hperm := by assumption) p hc
                   (initState σ σ₀ (.ofUInt256 g) A I) (immStore v) hcv hbound hi hl hn hi0
                   evm' z out (by simpa only [hs.env, ← hs.accounts] using hcall) hout
                 by_cases hgood : z = true ∧ 32 ≤ out.size

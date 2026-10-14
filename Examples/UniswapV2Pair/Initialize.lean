@@ -286,7 +286,8 @@ theorem uniswapInitializeBodyReturns (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hfactory :
       UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩) solcAddrMask =
-        uniswapSourceWord evm.executionEnv) :
+        uniswapSourceWord evm.executionEnv)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (initializeStore I) initializeTransition.body
       (.returned { contract := contract, locals := initializeStore I }
         (initializePostState evm I) none) := by
@@ -295,10 +296,14 @@ theorem uniswapInitializeBodyReturns (evm : EVM.State) (I : ExecutionEnv)
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue (evalExpr_initialize_factory_eq_sender_true evm I hfactory)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_initialize_token0 evm I)
+    (ExecStmt.assign
+      (hperm := Or.inr hperm)
+      (evalExpr_initialize_token0 evm I)
       (initializeAssignToken0 evm I)) ?_
   exact ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_initialize_token1 (initializeToken0State evm I) I)
+    (ExecStmt.assign
+      (hperm := Or.inr (by simpa [initializeToken0State] using hperm))
+      (evalExpr_initialize_token1 (initializeToken0State evm I) I)
       (initializeAssignToken1 evm I)) ExecBlock.nil
 
 theorem uniswapInitializeBodyReverts_forbidden (evm : EVM.State) (I : ExecutionEnv)
@@ -626,7 +631,7 @@ theorem uniswapInitializeBodyCoreOk
       ExecTransitionBody config contract evmS (initializeStore I) initializeTransition.body
         (.returned { contract := contract, locals := initializeStore I }
           (initializePostState evmS I) none) := by
-    exact uniswapInitializeBodyReturns evmS I
+    exact uniswapInitializeBodyReturns (hperm := by assumption) evmS I
       (by simp only [evmS, initState]; exact hwv) hfactoryS
   have hAccountsPost :
       initializePostMap σ I = (initializePostState evmS I).accountMap := by

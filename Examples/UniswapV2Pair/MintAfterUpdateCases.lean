@@ -45,7 +45,7 @@ theorem uniswapMintAfterUpdateRuntimeReturns
   cases fee with
   | false =>
     refine ⟨uniswapLockExitedState evm, _,
-      uniswapMintAfterUpdateFeeOffReturn evm liquidity hfee hliq hunlocked, ?_,
+      uniswapMintAfterUpdateFeeOffReturn (hperm := by simpa only [henv] using hperm) evm liquidity hfee hliq hunlocked, ?_,
       uniswapMintRuntimeAfterUpdateFeeOffReturns rd3926 hflag hmem hmem64 hperm⟩
     · simpa only [uniswapLockExitedState, uniswapUnlockedState, storageStore_accountMap,
         henv] using congrArg
@@ -74,7 +74,7 @@ theorem uniswapMintAfterUpdateRuntimeReturns
       simpa only [mintKLastUpdatedState, storageStore_accountMap, henv, hkLastValue]
         using hKLastAccounts
     refine ⟨uniswapLockExitedState (mintKLastUpdatedState evm), _,
-      uniswapMintAfterUpdateFeeOnReturn evm liquidity hfee hliq hreserve0 hreserve1
+      uniswapMintAfterUpdateFeeOnReturn (hperm := by simpa only [henv] using hperm) evm liquidity hfee hliq hreserve0 hreserve1
         hkLast hunlocked (mintFeeReserveProductNat_source_lt evm), ?_,
       uniswapMintRuntimeAfterUpdateFeeOnReturns rd3926
         (by rw [hflag]; native_decide) (mintFeeReserveProductNat_masked_lt _) hmem hmem64 hperm⟩

@@ -71,14 +71,15 @@ theorem oracleInitializeAssign (imms : Store) (evm : EVM.State) (time : UInt256)
   rfl
 
 theorem oracleInitializeReturns (imms : Store) (evm : EVM.State) (time : UInt256)
-    (ht : time.toNat < 2 ^ 32) :
+    (ht : time.toNat < 2 ^ 32)
+    (hperm : evm.executionEnv.perm = true) :
     ExecFuncBody config (oracleInitializeFrame imms time) evm oracleInitializeFunction.body
       (.returned (oracleInitializeReadyFrame imms time) (oracleInitializeState evm time)
         (some [.int 1, .int 1])) := by
   apply ExecFuncBody.execBlockRet
   rw [← List.take_append_drop 2 oracleInitializeFunction.body]
   apply execBlock_append_ok (oracleInitializeReadySource imms evm time)
-  exact ExecBlock.consNormal (ExecStmt.assign (evalOracleInitializeValue imms evm time)
+  exact ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) (evalOracleInitializeValue imms evm time)
     (oracleInitializeAssign imms evm time ht))
     (ExecBlock.consReturn (ExecStmt.return (by
       simp only [evalExprs?, evalExpr?, bind, EvalResult.bind, pure])))

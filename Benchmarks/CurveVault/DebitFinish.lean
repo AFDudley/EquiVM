@@ -45,7 +45,7 @@ theorem vaultDebitFinish (isWithdraw : Bool) {I : ExecutionEnv} {g : Sat256} {s0
   have hret := vaultMutationReturn (vaultDebitFlow isWithdraw) (le_trans (by omega) hframe.size)
     hvalue hperm (by omega) rdReturn
   refine Or.inl ⟨evm1, σ1, locals.insert "__c4" .unit, execBlock_append hsave ?_, hs1, hret⟩
-  apply vaultDebitReturnSource isWithdraw hs1
+  apply vaultDebitReturnSource (hperm := by assumption) isWithdraw hs1
   · rw [store_get_ne _ _ (by decide +kernel), hr]
   · rw [store_get_ne _ _ (by decide +kernel), ho]
   · rw [store_get_ne _ _ (by cases isWithdraw <;> decide +kernel), ha]

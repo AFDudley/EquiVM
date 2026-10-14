@@ -63,7 +63,7 @@ theorem revokeInnerRun {cfg : Config} {C : ContractDecl} {imms : Store} {evm : S
         simp only [evalExpr?, evalExprList?, hv, bind, EvalResult.bind, pure, value]
       have hbody : ExecBlock cfg ⟨C, locals, imms⟩ evm revokeInnerBody
           (.ok ⟨C, afterData, imms⟩ evm) :=
-        ExecBlock.consNormal (ExecStmt.assign hvalue (assignLocalArrayIndex hd hi hjd))
+        ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hvalue (assignLocalArrayIndex hd hi hjd))
             ExecBlock.nil
       have hiData : afterData.get? "j" = some (.int (Int.ofNat j)) := by
         simpa [afterData, Std.HashMap.getElem?_insert] using hi

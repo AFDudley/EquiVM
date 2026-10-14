@@ -187,7 +187,7 @@ theorem endRelyBodyReturnsSplit (evm : EVM.State) (I : ExecutionEnv)
     (hauth :
       Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (endRelyAuthStorageSlot I) =
         ⟨1⟩) :
-    (ExecTransitionBody config contract evm (endRelyStore I) relyTransition.body
+    (evm.executionEnv.perm = true → ExecTransitionBody config contract evm (endRelyStore I) relyTransition.body
       (.returned { contract := contract, locals := endRelyStore I }
         (endRelyPostState evm I) none)) ∧
       (evm.executionEnv.perm = false →
@@ -205,8 +205,9 @@ theorem endRelyBodyReturnsSplit (evm : EVM.State) (I : ExecutionEnv)
     refine ExecBlock.consNormal (ExecStmt.requireTrue (evalCallvalueEq_true hwv)) ?_
     exact ExecBlock.consNormal (ExecStmt.requireTrue hguard) htail
   constructor
-  · exact ExecFuncBody.execBlockOK
-      (hprefix (ExecBlock.consNormal (ExecStmt.assign hval hassign) ExecBlock.nil))
+  · intro hperm
+    exact ExecFuncBody.execBlockOK
+      (hprefix (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hval hassign) ExecBlock.nil))
   · intro hperm
     exact ExecFuncBody.execBlockStatic
       (hprefix (ExecBlock.consStatic (ExecStmt.assignStatic hval hassign hperm)))
@@ -719,7 +720,7 @@ theorem endRelyBodyCoreOk
   let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
   have hauthWord : endRelyAuthWord σ I = ⟨1⟩ := hauth
   have hbodySplit :
-      (ExecTransitionBody config contract evmStele (endRelyStore I)
+      (I.perm = true → ExecTransitionBody config contract evmStele (endRelyStore I)
         relyTransition.body
         (.returned { contract := contract, locals := endRelyStore I }
           (endRelyPostState evmStele I) none)) ∧
@@ -732,10 +733,10 @@ theorem endRelyBodyCoreOk
         (by simp [evmStele, initState])
         hauthWord
   rcases endX_rely_okSplit (g := Sat256.ofUInt256 g) hsz36 hsize hauth hreach with
-    ⟨_hperm, hret⟩ | ⟨hperm, hstatic⟩
+    ⟨hperm, hret⟩ | ⟨hperm, hstatic⟩
   swap
   · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode (hbodySplit.2 hperm)
-  exact hret.reEquivExecutionGen hcode hdispatch hdecode hbodySplit.1
+  exact hret.reEquivExecutionGen hcode hdispatch hdecode (hbodySplit.1 hperm)
       (by simp [endRelyPostState, evmStele, initState, storageStore_accountMap])
       (by
         simpa [relyTransition] using

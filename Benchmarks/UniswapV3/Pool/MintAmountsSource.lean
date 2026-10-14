@@ -64,14 +64,14 @@ theorem mintAmountsSource (v : UniswapV3PoolImmutables) (a : MintArgs)
   have h0i : evalExpr? config (mintIntsFrame v a a0 a1) evm (.var "amount0Int") =
       .ok (.int a0) := evalExpr_var_get (by mint_amounts_get)
   refine ExecBlock.consNormal (stele := mintIntsFrame v a a0 a1)
-    (ExecStmt.assign (value := .int (Int.ofNat (EVM.wordOfInt a0).toNat))
+    (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (value := .int (Int.ofNat (EVM.wordOfInt a0).toNat))
     (by simp only [evalExpr?, h0i, castValue?, bind, EvalResult.bind,
           EvalResult.ofOption, normalizeUInt256_int])
     (assignLocalVarBase_frame (old := .int 0) (by mint_amounts_get))) ?_
   have h1i : evalExpr? config (mintAmount0Frame v a a0 a1) evm (.var "amount1Int") =
       .ok (.int a1) := evalExpr_var_get (by mint_amounts_get)
   exact ExecBlock.consNormal (stele := mintAmount0Frame v a a0 a1)
-    (ExecStmt.assign (value := .int (Int.ofNat (EVM.wordOfInt a1).toNat))
+    (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (value := .int (Int.ofNat (EVM.wordOfInt a1).toNat))
     (by simp only [evalExpr?, h1i, castValue?, bind, EvalResult.bind,
           EvalResult.ofOption, normalizeUInt256_int])
     (assignLocalVarBase_frame (old := .int 0) (by mint_amounts_get))) ExecBlock.nil

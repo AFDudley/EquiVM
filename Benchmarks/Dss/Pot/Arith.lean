@@ -405,7 +405,7 @@ theorem execRmulFunctionReturn (evm : EVM.State) {x y prod q : UInt256}
         (.returned { contract := contract, locals := localsQ } evm
           (some [.int (Int.ofNat q.toNat)])) := by
     refine ExecBlock.consNormal hMulCall ?_
-    refine ExecBlock.consNormal (ExecStmt.assign hDivRay hAssign) ?_
+    refine ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hDivRay hAssign) ?_
     exact ExecBlock.consReturn (ExecStmt.return (evalExprs?_singleton hzQ))
   simpa [rmulFunction, locals, localsZ, localsQ] using ExecFuncBody.execBlockRet hblock
 

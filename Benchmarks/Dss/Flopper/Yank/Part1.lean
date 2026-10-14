@@ -918,7 +918,7 @@ theorem flopperYankBodyReverts_suckCallFailure
           [.storage vowRef, .storage (bidsF (.var "id") "guy"),
             .storage (bidsF (.var "id") "bid")] "_suckRet")
         .reverted := by
-    exact checkedExternalCallFailure hguard hvat hargs hcall
+    exact checkedExternalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hguard hvat hargs hcall
   have htail :
       ExecBlock config { contract := contract, locals := yankLocals I } evm
         (checkedExternalCallStmts (.storage vatRef) "suck" (.intLit 0)
@@ -960,7 +960,7 @@ theorem flopperYankBodyReturns_suckCallSuccessSplit
           (solcSlotWordAt (auctionBidSlot (yankIdWord I)) evm.accountMap
             evm.executionEnv).toNat)]
         (true, evm', out) true) :
-    (ExecTransitionBody config contract evm (yankLocals I) yankTransition.body
+    (evm.executionEnv.perm = true → ExecTransitionBody config contract evm (yankLocals I) yankTransition.body
       (.returned { contract := contract, locals := yankSuckLocals I }
         (yankDeletePostState evm' I) none)) ∧
       (evm.executionEnv.perm = false →
@@ -995,7 +995,7 @@ theorem flopperYankBodyReturns_suckCallSuccessSplit
             .storage (bidsF (.var "id") "bid")] "_suckRet")
         (.ok { contract := contract, locals := yankSuckLocals I } evm') := by
     simpa [checkedExternalCallStmts, yankSuckLocals] using
-      checkedExternalCallSuccess hguard hvat hargs hcall hdec
+      checkedExternalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hguard hvat hargs hcall hdec
   have hdelete := deleteStorage_yankSuck_bid evm' I
   have hprefix {result : ExecResult}
       (hdelete : ExecBlock config { contract := contract, locals := yankSuckLocals I } evm'
@@ -1019,8 +1019,9 @@ theorem flopperYankBodyReturns_suckCallSuccessSplit
           (ExecStmt.requireTrue (evalExpr_yank_guy_ne_zero_true evm I hguy)) <|
         htail)
   constructor
-  · exact ExecFuncBody.execBlockOK
-      (hprefix (ExecBlock.consNormal (ExecStmt.delete hdelete) ExecBlock.nil))
+  · intro hperm
+    exact ExecFuncBody.execBlockOK
+      (hprefix (ExecBlock.consNormal (ExecStmt.delete (hperm := by simpa only [typedCallViaEVM_executionEnv_eq hcall] using hperm) hdelete) ExecBlock.nil))
   · intro hperm
     have hp : evm'.executionEnv.perm = false := by
       rw [typedCallViaEVM_executionEnv_eq hcall]

@@ -156,7 +156,7 @@ theorem wrapTail {σ σ₀ A I} {g : UInt256} (imms : Store) (hwf : storageWF σ
       (by apply D_J_contains_append_left; jump_dest) rd1
     have rd3 := wrapperBlocks.wrapper_block_1760 (by simp [wrapperBlocks.wrapper_block_758_taken_stack]) rd2
     exact RDrev.reEquivExecutionRevert hcode' rd3 hd hdec (ExecFuncBody.execBlockRevert (hprefix _
-      (ExecBlock.consNormal (ExecStmt.assign hadd1 hassign1)
+      (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [hs2.env] using hperm)) hadd1 hassign1)
         (ExecBlock.consRevert (ExecStmt.assignExprRevert (evalExpr_uint256_add_overflow hts3 (hmv _) (by omega)))))))
   obtain ⟨_, _, rd2⟩ := wrapperBlocks.wrapper_block_758_fallthrough (by simp) hperm
     (by
@@ -198,10 +198,10 @@ theorem wrapTail {σ σ₀ A I} {g : UInt256} (imms : Store) (hwf : storageWF σ
       rw [evalExprs?, evalExpr_caller, hs4.env, evalExprs?, hmv, evalExprs?]; rfl
     have hbody : ExecTransitionBody config contract (initState σ σ₀ (Sat256.ofUInt256 g) A I) (wStore I) wrapTransition.body
         (.returned (frame imms L) evm4 (some [uint256Value minted])) (restrictImmutables contract imms) :=
-      ExecFuncBody.execBlockRet (hprefix _ (ExecBlock.consNormal (ExecStmt.assign hadd1 hassign1)
-        (ExecBlock.consNormal (ExecStmt.assign hadd2 hassign2)
+      ExecFuncBody.execBlockRet (hprefix _ (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [hs2.env] using hperm)) hadd1 hassign1)
+        (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [hs3.env] using hperm)) hadd2 hassign2)
           (ExecBlock.consNormal (ExecStmt.iteFalse (by rw [hne, hk0]; decide) ExecBlock.nil)
-            (ExecBlock.consNormal (ExecStmt.emit hemit)
+            (ExecBlock.consNormal (ExecStmt.emit (hperm := by simpa only [hs4.env] using hperm) hemit)
               (ExecBlock.consReturn (ExecStmt.return (evalExprs?_singleton (hmv _)))))))))
     exact rd4.reEquivExecutionGen hcode' hd hdec hbody hs4.accounts (returnEquiv_of_encode (uint256ReturnEncoding _))
   -- the hook is set: `require(hook.code.length > 0)`
@@ -222,8 +222,8 @@ theorem wrapTail {σ σ₀ A I} {g : UInt256} (imms : Store) (hwf : storageWF σ
       (by apply D_J_contains_append_left; jump_dest) rd3
     have rd5 := wrapperBlocks.wrapper_block_1760 (by simp [wrapperBlocks.wrapper_block_795_taken_stack]) rd4
     exact RDrev.reEquivExecutionRevert hcode' rd5 hd hdec (ExecFuncBody.execBlockRevert (hprefix _
-      (ExecBlock.consNormal (ExecStmt.assign hadd1 hassign1)
-        (ExecBlock.consNormal (ExecStmt.assign hadd2 hassign2)
+      (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [hs2.env] using hperm)) hadd1 hassign1)
+        (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [hs3.env] using hperm)) hadd2 hassign2)
           (ExecBlock.consRevert (ExecStmt.iteTrue hneT (ExecBlock.consRevert (ExecStmt.requireFalse
             (by rw [hgtcs, hcode0]; rfl)))))))))
   obtain ⟨_, _, rd4⟩ := wrapperBlocks.wrapper_block_795_fallthrough (by simp)
@@ -262,10 +262,10 @@ theorem wrapTail {σ σ₀ A I} {g : UInt256} (imms : Store) (hwf : storageWF σ
     have rd8 := wrapperBlocks.wrapper_block_833_fallthrough (by simp) (by decide) rd7
     have rd9 := wrapperBlocks.wrapper_block_837 (by simp [wrapperBlocks.wrapper_block_833_fallthrough_stack]) rd8
     exact RDrev.reEquivExecutionRevert hcode' rd9 hd hdec (ExecFuncBody.execBlockRevert (hprefix _
-      (ExecBlock.consNormal (ExecStmt.assign hadd1 hassign1)
-        (ExecBlock.consNormal (ExecStmt.assign hadd2 hassign2)
+      (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [hs2.env] using hperm)) hadd1 hassign1)
+        (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [hs3.env] using hperm)) hadd2 hassign2)
           (ExecBlock.consRevert (ExecStmt.iteTrue hneT (ExecBlock.consNormal (ExecStmt.requireTrue hgtcsT)
-            (ExecBlock.consRevert (ExecStmt.externalCallFailure hhookRead heth5 hargs5 hcall)))))))))
+            (ExecBlock.consRevert (ExecStmt.externalCallFailure (hperm := Or.inl rfl) hhookRead heth5 hargs5 hcall)))))))))
   | true =>
   have rd8 := wrapperBlocks.wrapper_block_833_taken (by simp) (by decide)
     (by apply D_J_contains_append_left; jump_dest) rd7
@@ -283,7 +283,7 @@ theorem wrapTail {σ σ₀ A I} {g : UInt256} (imms : Store) (hwf : storageWF σ
   have hcallS : ExecStmt config (frame imms L) evm4
       (.externalCall (.storage hookRef) "onWrap" (.intLit 0) [.env .caller, .var "minted"] "__c4" true)
       (.ok (frame imms L6) evm5) :=
-    @ExecStmt.externalCallSuccess config (frame imms L) evm4 (.storage hookRef) (AccountAddress.ofNat hk.toNat) (.intLit 0) 0
+    @ExecStmt.externalCallSuccess (hperm := Or.inl rfl) config 0 (frame imms L) evm4 (.storage hookRef) (AccountAddress.ofNat hk.toNat) (.intLit 0)
       [.env .caller, .var "minted"] [.address I.source, uint256Value minted] "onWrap" evm5 out true [] "__c4"
       hhookRead heth5 hargs5 hcall (decode_onWrap out)
   have hmv6 : evalExpr? config (frame imms L6) evm5 (.var "minted") = .ok (uint256Value minted) :=
@@ -292,11 +292,11 @@ theorem wrapTail {σ σ₀ A I} {g : UInt256} (imms : Store) (hwf : storageWF σ
     rw [evalExprs?, evalExpr_caller, hs5.env, evalExprs?, hmv6, evalExprs?]; rfl
   have hbody : ExecTransitionBody config contract (initState σ σ₀ (Sat256.ofUInt256 g) A I) (wStore I) wrapTransition.body
       (.returned (frame imms L6) evm5 (some [uint256Value minted])) (restrictImmutables contract imms) :=
-    ExecFuncBody.execBlockRet (hprefix _ (ExecBlock.consNormal (ExecStmt.assign hadd1 hassign1)
-      (ExecBlock.consNormal (ExecStmt.assign hadd2 hassign2)
+    ExecFuncBody.execBlockRet (hprefix _ (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [hs2.env] using hperm)) hadd1 hassign1)
+      (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [hs3.env] using hperm)) hadd2 hassign2)
         (ExecBlock.consNormal (ExecStmt.iteTrue hneT (ExecBlock.consNormal (ExecStmt.requireTrue hgtcsT)
           (ExecBlock.consNormal hcallS ExecBlock.nil)))
-          (ExecBlock.consNormal (ExecStmt.emit hemit6)
+          (ExecBlock.consNormal (ExecStmt.emit (hperm := by simpa only [hs5.env] using hperm) hemit6)
             (ExecBlock.consReturn (ExecStmt.return (evalExprs?_singleton hmv6))))))))
   exact rd10.reEquivExecutionGen hcode' hd hdec hbody hs5.accounts (returnEquiv_of_encode (uint256ReturnEncoding _))
 
@@ -391,7 +391,7 @@ theorem wrapperWrapBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hfit : immu
     exact ExecFuncBody.execBlockRevert (ExecBlock.consNormal (ExecStmt.requireTrue hcv)
       (ExecBlock.consNormal (ExecStmt.requireTrue hgtT)
         (ExecBlock.consNormal (ExecStmt.letDecl (evalImmutable_TOKEN hget _ _))
-          (ExecBlock.consRevert (ExecStmt.externalCallFailure hrecv1 heth1 hargs1 hcall1)))))
+          (ExecBlock.consRevert (ExecStmt.externalCallFailure (hperm := Or.inl rfl) hrecv1 heth1 hargs1 hcall1)))))
   | true =>
   have rd6 := wrapperBlocks.wrapper_block_398_taken (by simp) (by decide)
     (by apply D_J_contains_append_left; jump_dest) rd5
@@ -407,7 +407,7 @@ theorem wrapperWrapBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hfit : immu
     exact ExecFuncBody.execBlockRevert (ExecBlock.consNormal (ExecStmt.requireTrue hcv)
       (ExecBlock.consNormal (ExecStmt.requireTrue hgtT)
         (ExecBlock.consNormal (ExecStmt.letDecl (evalImmutable_TOKEN hget _ _))
-          (ExecBlock.consRevert (ExecStmt.externalCallReturnDecodeRevert hrecv1 heth1 hargs1 hcall1
+          (ExecBlock.consRevert (ExecStmt.externalCallReturnDecodeRevert (hperm := Or.inl rfl) hrecv1 heth1 hargs1 hcall1
             (by rw [decode_transferFrom, decodeReturn_bool_short out1 hshort1]; rfl))))))
   have h32 : 32 ≤ out1.size := by omega
   have rd7 := wrapperBlocks.wrapper_block_409_fallthrough (by simp) (rdsCheck_ok 96 128 out1.size rfl h128 h32 hout1) rd6
@@ -431,7 +431,7 @@ theorem wrapperWrapBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hfit : immu
     exact ExecFuncBody.execBlockRevert (ExecBlock.consNormal (ExecStmt.requireTrue hcv)
       (ExecBlock.consNormal (ExecStmt.requireTrue hgtT)
         (ExecBlock.consNormal (ExecStmt.letDecl (evalImmutable_TOKEN hget _ _))
-          (ExecBlock.consRevert (ExecStmt.externalCallReturnDecodeRevert hrecv1 heth1 hargs1 hcall1
+          (ExecBlock.consRevert (ExecStmt.externalCallReturnDecodeRevert (hperm := Or.inl rfl) hrecv1 heth1 hargs1 hcall1
             (by
               rw [decode_transferFrom, decodeReturn_bool_noncanon out1 h32 (by omega)
                 (by rw [hbw]; intro h; apply hbool; rw [h]; decide) (by rw [hbw]; intro h; apply hbool; rw [h]; decide)]
@@ -457,8 +457,8 @@ theorem wrapperWrapBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hfit : immu
     have hcall1S : ExecStmt config (frame imms L1) (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         (.externalCall (.var "__a0") "transferFrom" (.intLit 0) [.env .caller, .env .this, .var "amount"] "ok" true)
         (.ok (frame imms (L1.insert "ok" (.bool false))) evm1) :=
-      @ExecStmt.externalCallSuccess config (frame imms L1) (initState σ σ₀ (Sat256.ofUInt256 g) A I) (.var "__a0") a
-        (.intLit 0) 0 [.env .caller, .env .this, .var "amount"] [.address I.source, .address I.codeOwner, uint256Value (argWord I)]
+      @ExecStmt.externalCallSuccess (hperm := Or.inl rfl) config 0 (frame imms L1) (initState σ σ₀ (Sat256.ofUInt256 g) A I) (.var "__a0") a
+        (.intLit 0) [.env .caller, .env .this, .var "amount"] [.address I.source, .address I.codeOwner, uint256Value (argWord I)]
         "transferFrom" evm1 out1 true [.bool false] "ok" hrecv1 heth1 hargs1 hcall1 hdec1
     refine RDrev.reEquivExecutionRevert hcode' rd10 hd hdec ?_
     rw [wrapBody_eq]
@@ -487,8 +487,8 @@ theorem wrapperWrapBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hfit : immu
   have hcall1S : ExecStmt config (frame imms L1) (initState σ σ₀ (Sat256.ofUInt256 g) A I)
       (.externalCall (.var "__a0") "transferFrom" (.intLit 0) [.env .caller, .env .this, .var "amount"] "ok" true)
       (.ok (frame imms L2) evm1) :=
-    @ExecStmt.externalCallSuccess config (frame imms L1) (initState σ σ₀ (Sat256.ofUInt256 g) A I) (.var "__a0") a
-      (.intLit 0) 0 [.env .caller, .env .this, .var "amount"] [.address I.source, .address I.codeOwner, uint256Value (argWord I)]
+    @ExecStmt.externalCallSuccess (hperm := Or.inl rfl) config 0 (frame imms L1) (initState σ σ₀ (Sat256.ofUInt256 g) A I) (.var "__a0") a
+      (.intLit 0) [.env .caller, .env .this, .var "amount"] [.address I.source, .address I.codeOwner, uint256Value (argWord I)]
       "transferFrom" evm1 out1 true [.bool true] "ok" hrecv1 heth1 hargs1 hcall1 hdec1
   have hokT : evalExpr? config (frame imms L2) evm1 (.var "ok") = .ok (.bool true) :=
     evalVar imms _ _ "ok" _ (by rw [hL2]; exact store_get_self _ _ _)
@@ -542,7 +542,7 @@ theorem wrapperWrapBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hfit : immu
     have rd13 := wrapperBlocks.wrapper_block_613_fallthrough (by simp) (by decide) rd12
     have rd14 := wrapperBlocks.wrapper_block_617 (by simp [wrapperBlocks.wrapper_block_613_fallthrough_stack]) rd13
     exact RDrev.reEquivExecutionRevert hcode' rd14 hd hdec (ExecFuncBody.execBlockRevert (hpre _
-      (ExecBlock.consRevert (ExecStmt.externalCallFailure hrecv2 heth2 hargs2 hcall2))))
+      (ExecBlock.consRevert (ExecStmt.externalCallFailure (hperm := Or.inl rfl) hrecv2 heth2 hargs2 hcall2))))
   | true =>
   have rd13 := wrapperBlocks.wrapper_block_613_taken (by simp) (by decide)
     (by apply D_J_contains_append_left; jump_dest) rd12
@@ -554,7 +554,7 @@ theorem wrapperWrapBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hfit : immu
       (by apply D_J_contains_append_left; jump_dest) rd13
     have rd15 := wrapperBlocks.wrapper_block_1760 (by simp) rd14
     exact RDrev.reEquivExecutionRevert hcode' rd15 hd hdec (ExecFuncBody.execBlockRevert (hpre _
-      (ExecBlock.consRevert (ExecStmt.externalCallReturnDecodeRevert hrecv2 heth2 hargs2 hcall2
+      (ExecBlock.consRevert (ExecStmt.externalCallReturnDecodeRevert (hperm := Or.inl rfl) hrecv2 heth2 hargs2 hcall2
         (by rw [decode_balanceOf, decodeReturn_uint256_short out2 hshort2]; rfl)))))
   have h32' : 32 ≤ out2.size := by omega
   have rd14 := wrapperBlocks.wrapper_block_624_fallthrough (by simp)
@@ -582,7 +582,7 @@ theorem wrapperWrapBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hfit : immu
   set L5 : Store := L4.insert "held" (uint256Value hw) with hL5
   have hcall2S : ExecStmt config (frame imms L4) evm1
       (.externalCall (.var "__a2") "balanceOf" (.intLit 0) [.env .this] "held" false) (.ok (frame imms L5) evm2) :=
-    @ExecStmt.externalCallSuccess config (frame imms L4) evm1 (.var "__a2") a (.intLit 0) 0 [.env .this]
+    @ExecStmt.externalCallSuccess (hperm := Or.inl rfl) config 0 (frame imms L4) evm1 (.var "__a2") a (.intLit 0) [.env .this]
       [.address I.codeOwner] "balanceOf" evm2 out2 false [uint256Value hw] "held" hrecv2 heth2 hargs2 hcall2 hdec2
   have hamt5 : ∀ evm, evalExpr? config (frame imms L5) evm (.var "amount") = .ok (uint256Value (argWord I)) := fun evm =>
     evalVar imms _ _ "amount" _ (by
@@ -715,7 +715,7 @@ theorem wrapperWrapBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hfit : immu
           (.binary .div (.inRange (.uint ⟨256, by decide⟩) (.binary .mul (.var "amount") (.storage tsRef)))
             (.inRange (.uint ⟨256, by decide⟩) (.binary .sub (.var "held") (.var "amount"))))] [])
       (.ok (frame imms (L5.insert "minted" (uint256Value minted))) evm2) :=
-    ExecStmt.iteTrue handT (ExecBlock.consNormal (ExecStmt.assign hdiv hassignL) ExecBlock.nil)
+    ExecStmt.iteTrue handT (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inl rfl) hdiv hassignL) ExecBlock.nil)
   exact htail minted (minted.toByteArray.write 0 W7 96 32) hW8 hW8r rd21 (L5.insert "minted" (uint256Value minted))
     (store_get_self _ _ _)
     (by rw [store_get_ne _ _ (by decide)]; exact hL5sh)

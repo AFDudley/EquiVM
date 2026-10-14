@@ -16,7 +16,7 @@ theorem execLocalCastIncrement {cfg : Config} {frame : Frame} {evm : EVM.State} 
   have he := evalCastUint256Add (cfg := cfg) (evm := evm) (frame := frame)
     (a := .var name) (b := .intLit 1) (x := i) (y := 1) (evalLocalValue hi) (by simp only [evalExpr?]; rfl)
   rw [Nat.mod_eq_of_lt hb] at he
-  exact ExecStmt.assign he (assignLocalValue hi)
+  exact ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) he (assignLocalValue hi)
 
 -- LIBRARY CANDIDATE: an array loop guard evaluated through local bindings.
 theorem evalLocalArrayGuard {cfg : Config} {frame : Frame} {evm : EVM.State} {index array : Ident}
@@ -40,7 +40,7 @@ theorem execLocalWordArrayCopy {cfg : Config} {frame : Frame} {evm : EVM.State}
       (.ok {frame with locals := frame.locals.insert dst (.array ((words.set i values[j]).map wordBytes32Value))} evm) := by
   have he : evalExpr? cfg frame evm (.index (.var src) (.var si)) = .ok (wordBytes32Value values[j]) :=
     evalArrayIndex (evalLocalValue hs) (evalLocalValue hj) (by simpa only [List.length_map] using hjb) (List.getElem_map ..) rfl
-  apply ExecStmt.assign he
+  apply ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) he
   simpa only [List.map_set] using assignLocalArrayIndex hd hi (by simpa only [List.length_map] using hib)
 
 end Benchmarks.EAS.EAS

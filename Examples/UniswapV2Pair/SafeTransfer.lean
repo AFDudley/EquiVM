@@ -190,7 +190,7 @@ theorem safeTransferFunctionBodyReverts_callFailure
     [ .lowLevelCall (.var "token") (.intLit 0)
         (transferCalldataExpr (.var "to") (.var "value")) "_success" "_data",
       .require safeTransferReturnOkExpr ] .reverted
-  exact lowLevelCallFailureThenRequireFalse
+  exact lowLevelCallFailureThenRequireFalse (hperm := Or.inl rfl)
     (C := contract) (locals := safeTransferCalleeStore token recipient value)
     (receiver := .var "token") (eth := .intLit 0)
     (cdata := transferCalldataExpr (.var "to") (.var "value"))
@@ -223,6 +223,7 @@ theorem safeTransferFunctionBodyReverts_decode
     (stele' := { contract := contract, locals := safeTransferCallStore token recipient value true out })
     (evm' := evm') ?_ ?_
   · exact ExecStmt.lowLevelCallSuccess
+      (hperm := by first | assumption | exact Or.inr ‹_› | exact Or.inl rfl)
       (evalExpr_safeTransfer_receiver evm token recipient value)
       (evalExpr_safeTransfer_value evm token recipient value)
       (evalExpr_safeTransfer_calldata evm token recipient value hdata)
@@ -251,6 +252,7 @@ theorem safeTransferFunctionBodyReverts_decodeFalse
     (stele' := { contract := contract, locals := safeTransferCallStore token recipient value true out })
     (evm' := evm') ?_ ?_
   · exact ExecStmt.lowLevelCallSuccess
+      (hperm := by first | assumption | exact Or.inr ‹_› | exact Or.inl rfl)
       (evalExpr_safeTransfer_receiver evm token recipient value)
       (evalExpr_safeTransfer_value evm token recipient value)
       (evalExpr_safeTransfer_calldata evm token recipient value hdata)
@@ -282,6 +284,7 @@ theorem safeTransferFunctionBodyReturns_empty
     (stele' := { contract := contract, locals := safeTransferCallStore token recipient value true out })
     (evm' := evm') ?_ ?_
   · exact ExecStmt.lowLevelCallSuccess
+      (hperm := by first | assumption | exact Or.inr ‹_› | exact Or.inl rfl)
       (evalExpr_safeTransfer_receiver evm token recipient value)
       (evalExpr_safeTransfer_value evm token recipient value)
       (evalExpr_safeTransfer_calldata evm token recipient value hdata)
@@ -315,6 +318,7 @@ theorem safeTransferFunctionBodyReturns_decodeTrue
     (stele' := { contract := contract, locals := safeTransferCallStore token recipient value true out })
     (evm' := evm') ?_ ?_
   · exact ExecStmt.lowLevelCallSuccess
+      (hperm := by first | assumption | exact Or.inr ‹_› | exact Or.inl rfl)
       (evalExpr_safeTransfer_receiver evm token recipient value)
       (evalExpr_safeTransfer_value evm token recipient value)
       (evalExpr_safeTransfer_calldata evm token recipient value hdata)

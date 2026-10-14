@@ -508,8 +508,8 @@ theorem fileUintBoxSourceBodySplit {σ σ₀ A I} {g : UInt256}
     let locals := fileUintLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let evm1 := Stele.EVM.storageStore evm0 I.codeOwner ⟨5⟩ (fileUintData I)
-    ExecTransitionBody config contract evm0 locals fileUintTransition.body
-      (.returned { contract := contract, locals := locals } evm1 none) ∧
+    (I.perm = true → ExecTransitionBody config contract evm0 locals fileUintTransition.body
+      (.returned { contract := contract, locals := locals } evm1 none)) ∧
     (I.perm = false →
       ExecTransitionBody config contract evm0 locals fileUintTransition.body .staticViolation) := by
   intro locals evm0 evm1
@@ -545,22 +545,23 @@ theorem fileUintBoxSourceBodySplit {σ σ₀ A I} {g : UInt256}
     · exact evalCallvalueEq_true (by simp [evm0, initState]; exact hwv)
     refine ExecBlock.consNormal (ExecStmt.requireTrue hguard) ?_
     exact execBlock_singleton (ExecStmt.iteTrue hcond (execBlock_singleton h))
-  refine ⟨?_, fun hperm ↦ ?_⟩
-  · exact ExecFuncBody.execBlockOK (hbody _ (ExecStmt.assign hdata hassign))
+  refine ⟨fun hperm ↦ ?_, fun hperm ↦ ?_⟩
+  · exact ExecFuncBody.execBlockOK (hbody _ (ExecStmt.assign (hperm := Or.inr hperm) hdata hassign))
   · exact ExecFuncBody.execBlockStatic
       (hbody _ (ExecStmt.assignStatic hdata hassign (by simp [evm0, initState]; exact hperm)))
 
 theorem fileUintBoxSourceBody {σ σ₀ A I} {g : UInt256}
     (hwv : I.weiValue = ⟨0⟩)
     (hauth : solcSlotWordAt (catCallerWardsSlot I) σ I = ⟨1⟩)
-    (hwhat : fileUintWhat I = fileUintBoxBytes) :
+    (hwhat : fileUintWhat I = fileUintBoxBytes)
+    (hperm : I.perm = true) :
     let locals := fileUintLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let evm1 := Stele.EVM.storageStore evm0 I.codeOwner ⟨5⟩ (fileUintData I)
     ExecTransitionBody config contract evm0 locals fileUintTransition.body
       (.returned { contract := contract, locals := locals } evm1 none) :=
   (fileUintBoxSourceBodySplit (σ₀ := σ₀) (A := A) (g := g)
-    hwv hauth hwhat).1
+    hwv hauth hwhat).1 hperm
 
 theorem fileUintUnrecognizedSourceBody {σ σ₀ A I} {g : UInt256}
     (hwv : I.weiValue = ⟨0⟩)
@@ -627,14 +628,14 @@ theorem catFileUintBodyCore
     by_cases hbox : fileUintWhat I = fileUintBoxBytes
     · let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
       let evm1 := Stele.EVM.storageStore evm0 I.codeOwner ⟨5⟩ data
-      have hbody :
+      have hbody (hperm : I.perm = true) :
           ExecTransitionBody config contract evm0 locals fileUintTransition.body
             (.returned { contract := contract, locals := locals } evm1 none) := by
         simpa [evm0, evm1, locals, data] using
-          (fileUintBoxSourceBody (σ := σ)
+          (fileUintBoxSourceBody (hperm := hperm) (σ := σ)
             (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hauthStele hbox)
       have hstoreSplit := RD.catFileUintBoxSuccessSplit hreach hsz68 hsize hauthSolc hbox
-      rcases hstoreSplit with ⟨_, hret⟩ | ⟨hperm, hstatic⟩
+      rcases hstoreSplit with ⟨hperm, hret⟩ | ⟨hperm, hstatic⟩
       swap
       · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode
           ((fileUintBoxSourceBodySplit (σ₀ := σ₀) (A := A) (g := g)
@@ -642,7 +643,7 @@ theorem catFileUintBodyCore
       have haccounts :
           sstoreAccountMap I.codeOwner σ ⟨5⟩ data = evm1.accountMap := by
         simp [evm1, evm0, initState, storageStore_accountMap, data]
-      exact hret.reEquivExecutionGen hcode hdispatch hdecode hbody
+      exact hret.reEquivExecutionGen hcode hdispatch hdecode (hbody hperm)
         haccounts henc
     · let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
       have hbody :

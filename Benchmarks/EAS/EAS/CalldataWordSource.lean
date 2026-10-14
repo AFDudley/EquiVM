@@ -122,7 +122,7 @@ theorem calldataWordSource {L imms : Store} {evm : EVM.State} {offset : UInt256}
         L3.get? "count"=some (.int (Int.ofNat (min n 32))) := by
       by_cases hn : 32<n
       · refine ⟨L2.insert "count" (.int 32),ExecStmt.iteTrue (by simpa only [decide_eq_true hn] using hlimit)
-          (ExecBlock.consNormal (ExecStmt.assign (by simp only [evalExpr?,pure]) (assignLocalValue hc2)) ExecBlock.nil),?_,?_,?_,?_⟩
+          (ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (by simp only [evalExpr?,pure]) (assignLocalValue hc2)) ExecBlock.nil),?_,?_,?_,?_⟩
         all_goals simp (disch := decide) only [L2,store_get_ne,store_get_self,Nat.min_eq_right (by omega : 32≤n)]
         all_goals first | exact ho1 | exact hh1 | exact hi1 | rfl
       · refine ⟨L2,ExecStmt.iteFalse (by simpa only [decide_eq_false hn] using hlimit) ExecBlock.nil,?_,?_,?_,?_⟩

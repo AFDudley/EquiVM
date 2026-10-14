@@ -113,7 +113,7 @@ theorem uniswapMintInitialAfterMintFeeCases
     runtimeRefinementFor config contract σ σ₀ g A I := by
   let evmS := initState σ σ₀ (Sat256.ofUInt256 g) A I
   let locals := nextLocals.insert "_totalSupply" (uniswapUint256Value (⟨0⟩ : UInt256))
-  have hprefix := uniswapMintAfterMintFeeTotalSupplyPrefix_of_call
+  have hprefix := uniswapMintAfterMintFeeTotalSupplyPrefix_of_call (hperm := by assumption)
     evmS evm0S evm1S evmFeeS I nextLocals hwv hunlockedStele hguard0 hguard1
     hcall0 hdec0 hcall1 hdec1 hle0Source hle1Source hfee htotalBase
   have hruntime := uniswapMintInitialRuntimeCases (locals := locals) evmFeeS recipient fee

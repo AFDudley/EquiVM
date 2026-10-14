@@ -350,8 +350,8 @@ theorem jugFileDutySourceBodySplit {σ σ₀ A I} {g : UInt256}
     let locals := fileDutyLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let evm1 := Stele.EVM.storageStore evm0 I.codeOwner (fileDutyDutySlotFor I) (fileDutyData I)
-    ExecTransitionBody config contract evm0 locals fileDutyTransition.body
-      (.returned { contract := contract, locals := locals } evm1 none) ∧
+    (I.perm = true → ExecTransitionBody config contract evm0 locals fileDutyTransition.body
+      (.returned { contract := contract, locals := locals } evm1 none)) ∧
     (I.perm = false →
       ExecTransitionBody config contract evm0 locals fileDutyTransition.body .staticViolation) := by
   intro locals evm0 evm1
@@ -398,9 +398,9 @@ theorem jugFileDutySourceBodySplit {σ σ₀ A I} {g : UInt256}
     refine ExecBlock.consNormal (ExecStmt.requireTrue htimeGuard) ?_
     exact execBlock_singleton (ExecStmt.iteTrue hcond
       (execBlock_singleton h))
-  refine ⟨?_, fun hpf => ?_⟩
+  refine ⟨fun hperm => ?_, fun hpf => ?_⟩
   · simpa [ExecTransitionBody, locals, evm0, evm1] using
-      ExecFuncBody.execBlockOK (hbody _ (ExecStmt.assign hdata hassign))
+      ExecFuncBody.execBlockOK (hbody _ (ExecStmt.assign (hperm := Or.inr hperm) hdata hassign))
   · simpa [ExecTransitionBody, locals, evm0] using ExecFuncBody.execBlockStatic
       (hbody _ (ExecStmt.assignStatic hdata hassign (by simp [evm0, initState]; exact hpf)))
 
@@ -409,13 +409,14 @@ theorem jugFileDutySourceBody {σ σ₀ A I} {g : UInt256}
     (hsz36 : 36 ≤ I.calldata.size)
     (hauth : relyAuthWord σ I = ⟨1⟩)
     (htime : solcSlotWordAt (fileDutyRhoSlotFor I) σ I = UInt256.ofNat I.header.timestamp)
-    (hwhat : fileDutyWhatBytes I = fileDutyBytes) :
+    (hwhat : fileDutyWhatBytes I = fileDutyBytes)
+    (hperm : I.perm = true) :
     let locals := fileDutyLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let evm1 := Stele.EVM.storageStore evm0 I.codeOwner (fileDutyDutySlotFor I) (fileDutyData I)
     ExecTransitionBody config contract evm0 locals fileDutyTransition.body
       (.returned { contract := contract, locals := locals } evm1 none) :=
-  (jugFileDutySourceBodySplit (σ₀ := σ₀) (A := A) (g := g) hwv hsz36 hauth htime hwhat).1
+  (jugFileDutySourceBodySplit (σ₀ := σ₀) (A := A) (g := g) hwv hsz36 hauth htime hwhat).1 hperm
 
 theorem jugFileDutySourceBodyStatic {σ σ₀ A I} {g : UInt256}
     (hwv : I.weiValue = ⟨0⟩)
@@ -1023,7 +1024,7 @@ theorem jugFileDutyBodyCoreOk
       ExecTransitionBody config contract evm0 locals fileDutyTransition.body
         (.returned { contract := contract, locals := locals } evm1 none) := by
     simpa [evm0, evm1, locals, dutySlot, data] using
-      (jugFileDutySourceBody (σ := σ)
+      (jugFileDutySourceBody (hperm := hperm) (σ := σ)
         (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv (by omega) hauthStele
         htimeStele hwhat)
   obtain ⟨_, _, hdecoded⟩ := jugFileDutyX_decoded (g := Sat256.ofUInt256 g)

@@ -41,7 +41,7 @@ theorem fullMathReduce {f : Frame} {evm : EVM.State} {a b d : UInt256}
   have hd1 : f1.locals.get? "denominator" = some (.int (Int.ofNat d.toNat)) := by
     simp only [f1, wordLocal_get, beq_iff_eq, String.reduceEq, ↓reduceIte, hd]
   have h8 : ExecStmt config f1 evm fullMathFunction.body[8]! (.ok f2 evm) :=
-    ExecStmt.assign (evalWordMulMod (a := a) (b := b) (c := d)
+    ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalWordMulMod (a := a) (b := b) (c := d)
       (evalLocalValue (by simp only [f1, wordLocal_get, beq_iff_eq, String.reduceEq, ↓reduceIte, ha]))
       (evalLocalValue (by simp only [f1, wordLocal_get, beq_iff_eq, String.reduceEq, ↓reduceIte, hb]))
       (evalLocalValue hd1) hdnz) (assignLocalValue (store_get_self _ _ _))
@@ -50,13 +50,13 @@ theorem fullMathReduce {f : Frame} {evm : EVM.State} {a b d : UInt256}
   have hp12 : f2.locals.get? "prod1" = some (.int (Int.ofNat (fullMathHigh a b).toNat)) := by
     simp only [f2, f1, wordLocal_get, beq_iff_eq, String.reduceEq, ↓reduceIte, hp1]
   have h9 : ExecStmt config f2 evm fullMathFunction.body[9]! (.ok f3 evm) :=
-    ExecStmt.assign (evalWordSub (evalLocalValue hp12)
+    ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalWordSub (evalLocalValue hp12)
       (evalBoolWord (evalWordGt (wordLocal_eval (w := fullMathRemainder a b d))
         (evalLocalValue hp02)))) (assignLocalValue hp12)
   have hp03 : f3.locals.get? "prod0" = some (.int (Int.ofNat (fullMathLow a b).toNat)) := by
     simp only [f3, wordLocal_get, beq_iff_eq, String.reduceEq, ↓reduceIte, hp02]
   have h10 : ExecStmt config f3 evm fullMathFunction.body[10]! (.ok f4 evm) :=
-    ExecStmt.assign (evalWordSub (evalLocalValue hp03)
+    ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalWordSub (evalLocalValue hp03)
       (evalLocalValue (show f3.locals.get? "remainder" = some (.int (Int.ofNat (fullMathRemainder a b d).toNat)) by
         simp only [f3, f2, wordLocal_get, beq_iff_eq, String.reduceEq, ↓reduceIte]))) (assignLocalValue hp03)
   have hd4 : f4.locals.get? "denominator" = some (.int (Int.ofNat d.toNat)) := by
@@ -70,13 +70,13 @@ theorem fullMathReduce {f : Frame} {evm : EVM.State} {a b d : UInt256}
   have he12 := evalWordDiv (evalLocalValue (cfg := config) (f := f5) (evm := evm) hd5)
     (wordLocal_eval (w := fullMathTwos d)) htwos
   have h12 : ExecStmt config f5 evm fullMathFunction.body[12]! (.ok f6 evm) :=
-    ExecStmt.assign he12 (assignLocalValue hd5)
+    ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) he12 (assignLocalValue hd5)
   have hp06 : f6.locals.get? "prod0" = some (.int (Int.ofNat (fullMathReducedLow a b d).toNat)) := by
     simp only [f6, f5, f4, wordLocal_get, beq_iff_eq, String.reduceEq, ↓reduceIte]
   have ht6 : f6.locals.get? "twos" = some (.int (Int.ofNat (fullMathTwos d).toNat)) := by
     simp only [f6, f5, wordLocal_get, beq_iff_eq, String.reduceEq, ↓reduceIte]
   have h13 : ExecStmt config f6 evm fullMathFunction.body[13]! (.ok f7 evm) :=
-    ExecStmt.assign (evalWordDiv (evalLocalValue hp06) (evalLocalValue ht6) htwos)
+    ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalWordDiv (evalLocalValue hp06) (evalLocalValue ht6) htwos)
       (assignLocalValue hp06)
   have ht7 : f7.locals.get? "twos" = some (.int (Int.ofNat (fullMathTwos d).toNat)) := by
     simp only [f7, wordLocal_get, beq_iff_eq, String.reduceEq, ↓reduceIte, ht6]
@@ -86,14 +86,14 @@ theorem fullMathReduce {f : Frame} {evm : EVM.State} {a b d : UInt256}
       (evalLocalValue ht7)) (evalLocalValue ht7) htwos)
     (show evalExpr? config f7 evm (.intLit 1) = .ok (.int (Int.ofNat (⟨1⟩ : UInt256).toNat)) by simp only [evalExpr?, pure]; rfl)
   have h14 : ExecStmt config f7 evm fullMathFunction.body[14]! (.ok f8 evm) :=
-    ExecStmt.assign he14 (assignLocalValue ht7)
+    ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) he14 (assignLocalValue ht7)
   have hp08 : f8.locals.get? "prod0" =
       some (.int (Int.ofNat (UInt256.div (fullMathReducedLow a b d) (fullMathTwos d)).toNat)) := by
     simp only [f8, f7, wordLocal_get, beq_iff_eq, String.reduceEq, ↓reduceIte]
   have hp18 : f8.locals.get? "prod1" = some (.int (Int.ofNat (fullMathReducedHigh a b d).toNat)) := by
     simp only [f8, f7, f6, f5, f4, f3, wordLocal_get, beq_iff_eq, String.reduceEq, ↓reduceIte]
   have h15 : ExecStmt config f8 evm fullMathFunction.body[15]! (.ok (fullMathReduceFrame f a b d) evm) :=
-    ExecStmt.assign (evalWordOr (evalLocalValue hp08)
+    ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalWordOr (evalLocalValue hp08)
       (evalWordMul (evalLocalValue hp18) (wordLocal_eval (w := fullMathTwosInverse d)))) (assignLocalValue hp08)
   exact ExecBlock.consNormal h7 (ExecBlock.consNormal h8 (ExecBlock.consNormal h9
     (ExecBlock.consNormal h10 (ExecBlock.consNormal h11 (ExecBlock.consNormal h12

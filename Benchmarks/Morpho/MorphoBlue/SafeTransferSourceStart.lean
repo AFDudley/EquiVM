@@ -48,7 +48,7 @@ theorem safeTransferSource_allocate {frame : Frame} {evm : EVM.State} {n : Nat}
         safeTransferCallStmt isFrom] ++ safeTransferTail) := by
   rw [safeTransferFunctionFor_body]
   exact ⟨fun hh ↦ .consNormal
-    (.assign (safeTransferMemoryAdd_eval hm _) (assignLocalWord hm)) hh⟩
+    (.assign (hperm := Or.inl rfl) (safeTransferMemoryAdd_eval hm _) (assignLocalWord hm)) hh⟩
 
 theorem safeTransferSource_inputRevert {frame : Frame} {evm : EVM.State} {n : Nat}
     (isFrom : Bool) (hm : frame.locals.get? "__memory" = some (.int (Int.ofNat n)))
@@ -112,7 +112,7 @@ theorem safeTransferSource_call {frame : Frame} {evm evm' : EVM.State} {n : Nat}
   have hv : evalExpr? config (safeTransferPrepared frame isFrom n) evm (.intLit 0) =
       .ok (.int 0) := by simp only [evalExpr?, pure]
   cases z
-  · exact ExecStmt.lowLevelCallFailure ht' hv hd hc'
-  · exact ExecStmt.lowLevelCallSuccess ht' hv hd hc'
+  · exact ExecStmt.lowLevelCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) ht' hv hd hc'
+  · exact ExecStmt.lowLevelCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) ht' hv hd hc'
 
 end Benchmarks.Morpho.MorphoBlue

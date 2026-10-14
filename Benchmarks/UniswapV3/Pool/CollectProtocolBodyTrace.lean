@@ -48,7 +48,7 @@ theorem collectProtocolPaymentsBodyX {σ : AccountMap} {ee : ExecutionEnv} {g : 
     · exact Or.inl ⟨rdRev, collectProtocolSourceRevert1 v evm0 evm evm1 recipient req0 req1
         _ _ hprefix hpay0 hpay1⟩
     · exact Or.inr ⟨evm2, locals2, final0, final1,
-        collectProtocolSourceReturn v evm0 evm evm1 evm2 recipient req0 req1 final0 final1
+        collectProtocolSourceReturn (hperm := (congrArg ExecutionEnv.perm hs2.env).trans hperm) v evm0 evm evm1 evm2 recipient req0 req1 final0 final1
           locals locals1 locals2 hprefix hpay0 hpay1 hvalues2,
         hfit02, hfit12, collectProtocolFinishX (v := v) rd2 hs2 hperm hfit02 hfit12 hm2
           (by omega) (by evm_ov)⟩

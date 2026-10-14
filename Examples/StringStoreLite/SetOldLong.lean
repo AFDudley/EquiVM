@@ -4386,7 +4386,7 @@ theorem stringStoreLiteSetShortNonemptyLongValidRuntime
   swap
   · have hpf : I.perm = false := by simpa using hperm
     exact setRuntimeStaticOfWrite hcode hwv hpf (permSplit_false hpf hsplit) hd hdec hwrite
-  exact setRuntimeOfWriteAccountMapEq hcode hwv (permSplit_true hperm hsplit) hd hdec hwrite
+  exact setRuntimeOfWriteAccountMapEq (hperm := by assumption) hcode hwv (permSplit_true hperm hsplit) hd hdec hwrite
     (by
       simp [evmStele1, evmStele0, clearSolidityBytesDataWordsFrom_accountMap,
         clearSolidityBytesDataWordsFrom_executionEnv, storageStore_accountMap, initState, hcountNat,
@@ -4509,7 +4509,7 @@ theorem stringStoreLiteSetEmptyLongValidRuntime {σ σ₀ A I}
   swap
   · have hpf : I.perm = false := by simpa using hperm
     exact setRuntimeStaticOfWrite hcode hwv hpf (permSplit_false hpf hsplit) hd hdec hwrite
-  exact setRuntimeOfWriteAccountMapEq hcode hwv (permSplit_true hperm hsplit) hd hdec hwrite
+  exact setRuntimeOfWriteAccountMapEq (hperm := by assumption) hcode hwv (permSplit_true hperm hsplit) hd hdec hwrite
     (by
       simp [evmStele1, evmStele0, clearSolidityBytesDataWordsFrom_accountMap,
         clearSolidityBytesDataWordsFrom_executionEnv, storageStore_accountMap, initState, hcountNat,

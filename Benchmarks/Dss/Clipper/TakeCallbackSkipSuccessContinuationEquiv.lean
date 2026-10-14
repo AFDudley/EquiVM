@@ -154,7 +154,7 @@ theorem clipperTakeOweGtTabCallbackSkipSuccessContinuationEquiv
       evmVat evmVat I price slice hsrcMul hsrcGt hsrcSliceLot hvatCode hcallVat
       (by simpa [evm0, evmLock, slice, owe0, slice', tabNew, lotNew, cbFrame] using
         hcallback) htail
-    exact clipperTakeSourceRevertsOfAfterSlice
+    exact clipperTakeSourceRevertsOfAfterSlice (hperm := by assumption)
       (σ := σ) (σ₀ := σ₀)
       (A := A) (I := I) (g := g) (evmPrice := evmPrice)
       v price hwv hlockedStele hstoppedSteleLt husrStele hmax hstatus
@@ -172,7 +172,7 @@ theorem clipperTakeOweGtTabCallbackSkipSuccessContinuationEquiv
       evmVat evmVat I price slice hsrcMul hsrcGt hsrcSliceLot hvatCode hcallVat
       (by simpa [evm0, evmLock, slice, owe0, slice', tabNew, lotNew, cbFrame] using
         hcallback) htail
-    exact clipperTakeSourceOkOfAfterSlice
+    exact clipperTakeSourceOkOfAfterSlice (hperm := by assumption)
       (σ := σ) (σ₀ := σ₀)
       (A := A) (I := I) (g := g) (evmPrice := evmPrice)
       v price hwv hlockedStele hstoppedSteleLt husrStele hmax hstatus
@@ -235,7 +235,7 @@ theorem clipperTakeOweGtTabCallbackSkipSuccessContinuationEquiv
           clipperTakeAfterMoveStmts) .reverted) :
       runtimeRefinementFor config contract
         σ σ₀ g A I (immStore v) := by
-    exact clipperTakeOweGtTabCallbackTailRevertEquivFromPostWords v
+    exact clipperTakeOweGtTabCallbackTailRevertEquivFromPostWords (hperm := by assumption) v
       hcode hwv hdispatch hdec hlockedStele hstoppedSteleLt husrStele
       htab hlot hrev hmax hmul hgt hvatCode hcallVat
       (by simpa [evm0, evmLock, slice, owe0, slice', tabNew, lotNew, cbFrame] using hcallback)
@@ -704,9 +704,9 @@ theorem clipperTakeOweGtTabCallbackSkipSuccessContinuationEquiv
             { contract := contract, locals := clipperYankRemoveStore I, immutables := immStore v }
             evmFlux removeFunction.body (.returned calleeFrame evmRemove none) := by
           simpa [sourceLastIndex, evmRemove, calleeFrame] using
-            clipperYankRemoveIdEqMoveSource v evmFlux I haccFlux hlenStele hidEqStele
+            clipperYankRemoveIdEqMoveSource (hperm := (congrArg ExecutionEnv.perm hevmFluxEnv).trans hperm) v evmFlux I haccFlux hlenStele hidEqStele
         have hpostDog :=
-          clipperTakePostDogTabZeroFluxRemoveSourceOkOfBody v
+          clipperTakePostDogTabZeroFluxRemoveSourceOkOfBody (hperm := by simpa (config := { zetaDelta := true }) only [clipperYankDeleteSaleState, clipperYankRemovePopState, storageStore_executionEnv] using (congrArg ExecutionEnv.perm hevmFluxEnv).trans hperm) v
             evmLock evmPrice evmVat evmDog evmFlux evmRemove I price slice owe0
             owe0 slice' tabNew lotNew
             (by simpa [lotNew, htab, hlot] using hlotNew)
@@ -783,7 +783,7 @@ theorem clipperTakeOweGtTabCallbackSkipSuccessContinuationEquiv
             evmMovePos.executionEnv.codeOwner ⟨11⟩ = ⟨0⟩ := by
           rw [← hstorageMove]
           simpa [lastIndex, move, idx] using hlenAfter
-        have hremoveRaw := clipperYankRemoveIdNeMovePopEmptySourceReverts
+        have hremoveRaw := clipperYankRemoveIdNeMovePopEmptySourceReverts (hperm := (congrArg ExecutionEnv.perm hevmFluxEnv).trans hperm)
           v evmFlux I hlenStele hidNeStele hidxBoundStele
         dsimp only at hremoveRaw
         have hremove := hremoveRaw (by
@@ -872,7 +872,7 @@ theorem clipperTakeOweGtTabCallbackSkipSuccessContinuationEquiv
               (UInt256.sub
                 (Stele.EVM.storageLoad evmFlux evmFlux.executionEnv.codeOwner ⟨11⟩) ⟨1⟩)
               move idx, immutables := immStore v }
-        have hremoveRaw := clipperYankRemoveIdNeMoveSource
+        have hremoveRaw := clipperYankRemoveIdNeMoveSource (hperm := (congrArg ExecutionEnv.perm hevmFluxEnv).trans hperm)
           v evmFlux I haccFlux hlenStele hidNeStele hidxBoundStele
         dsimp only at hremoveRaw
         have hremove : ExecFuncBody config
@@ -883,7 +883,7 @@ theorem clipperTakeOweGtTabCallbackSkipSuccessContinuationEquiv
           simpa only [calleeFrame, evmRemove, popLastIndex, hmoveStele, hidxStele,
             evmIndex, evmMovePos] using hremoveSource
         have hpostDog :=
-          clipperTakePostDogTabZeroFluxRemoveSourceOkOfBody v
+          clipperTakePostDogTabZeroFluxRemoveSourceOkOfBody (hperm := by simpa (config := { zetaDelta := true }) only [clipperYankDeleteSaleState, clipperYankRemovePopState, storageStore_executionEnv] using (congrArg ExecutionEnv.perm hevmFluxEnv).trans hperm) v
             evmLock evmPrice evmVat evmDog evmFlux evmRemove I price slice owe0
             owe0 slice' tabNew lotNew
             (by simpa [lotNew, htab, hlot] using hlotNew)

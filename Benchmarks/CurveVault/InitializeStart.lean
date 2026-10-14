@@ -32,7 +32,7 @@ theorem vaultInitializeBorrowedDecimals {I : ExecutionEnv} {g : Sat256} {s0 evm 
     simpa only [keyValueToWord_address] using keyValueToWord_address_of_canonical token hcanon
   have hassign : ExecStmt config {contract := contract, locals := locals} evm initializeTransition.body[2]!
       (.ok {contract := contract, locals := locals} evm0) :=
-    ExecStmt.assign (by simp only [evalExpr?, ht, EvalResult.ofOption]; rfl)
+    ExecStmt.assign (hperm := Or.inr (by simpa only [hs.env] using hperm)) (by simp only [evalExpr?, ht, EvalResult.ofOption]; rfl)
       (by simpa only [hs.env, hword] using
         vaultAssignScalarAddress evm locals "_borrowed_token" ⟨0⟩ (AccountAddress.ofNat token.toNat) hbase rfl rfl)
   obtain ⟨gasArg, k0, C0, rd247⟩ := vaultBlocks.vault_block_221 hstack hperm h

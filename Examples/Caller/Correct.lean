@@ -53,13 +53,18 @@ theorem callerBodySuccess (evm : EVM.State) (locals : Stele.Store) {tval : EVM.A
     (hdec : callerConfig.externalABI.decode? "pow2" out = some [value])
     (hassign : assignStorageRef? callerConfig
         { contract := callerContract, locals := locals.insert "tmp" value } evm'
-        .storage { base := "stored", steps := [] } value = .ok (stele'', evm'')) :
+        .storage { base := "stored", steps := [] } value = .ok (stele'', evm''))
+    (hperm : evm'.executionEnv.perm = true) :
     ExecTransitionBody callerConfig callerContract evm locals runTransition.body
       (.returned stele'' evm'' none) := by
   refine ExecFuncBody.execBlockOK
     (ExecBlock.consNormal (ExecStmt.requireTrue (evalCallvalueEq_true hwv))
-      (ExecBlock.consNormal (ExecStmt.externalCallSuccess ?_ ?_ ?_ hcall hdec)
-        (ExecBlock.consNormal (ExecStmt.assign ?_ hassign) ExecBlock.nil)))
+      (ExecBlock.consNormal (ExecStmt.externalCallSuccess
+        (hperm := by first | assumption | exact Or.inr ‹_› | exact Or.inl rfl)
+        ?_ ?_ ?_ hcall hdec)
+        (ExecBlock.consNormal (ExecStmt.assign
+          (hperm := by first | assumption | exact Or.inr ‹_› | exact Or.inl rfl)
+          ?_ hassign) ExecBlock.nil)))
   · show evalExpr? callerConfig _ evm (.var "t") = .ok (.address tval)
     simp only [evalExpr?, EvalResult.ofOption, ht]
   · show evalExpr? callerConfig _ evm (.intLit 0) = .ok (.int 0)
@@ -87,7 +92,9 @@ theorem callerBodyStatic (evm : EVM.State) (locals : Stele.Store) {tval : EVM.Ad
       .staticViolation := by
   refine ExecFuncBody.execBlockStatic
     (ExecBlock.consNormal (ExecStmt.requireTrue (evalCallvalueEq_true hwv))
-      (ExecBlock.consNormal (ExecStmt.externalCallSuccess ?_ ?_ ?_ hcall hdec)
+      (ExecBlock.consNormal (ExecStmt.externalCallSuccess
+        (hperm := by first | assumption | exact Or.inr ‹_› | exact Or.inl rfl)
+        ?_ ?_ ?_ hcall hdec)
         (ExecBlock.consStatic (ExecStmt.assignStatic ?_ hassign hperm))))
   · show evalExpr? callerConfig _ evm (.var "t") = .ok (.address tval)
     simp only [evalExpr?, EvalResult.ofOption, ht]
@@ -111,7 +118,9 @@ theorem callerBodyExtFail (evm : EVM.State) (locals : Stele.Store) {tval : EVM.A
     ExecTransitionBody callerConfig callerContract evm locals runTransition.body .reverted := by
   refine ExecFuncBody.execBlockRevert
     (ExecBlock.consNormal (ExecStmt.requireTrue (evalCallvalueEq_true hwv))
-      (ExecBlock.consRevert (ExecStmt.externalCallFailure ?_ ?_ ?_ hcall)))
+      (ExecBlock.consRevert (ExecStmt.externalCallFailure
+        (hperm := by first | assumption | exact Or.inr ‹_› | exact Or.inl rfl)
+        ?_ ?_ ?_ hcall)))
   · show evalExpr? callerConfig _ evm (.var "t") = .ok (.address tval)
     simp only [evalExpr?, EvalResult.ofOption, ht]
   · show evalExpr? callerConfig _ evm (.intLit 0) = .ok (.int 0)
@@ -133,7 +142,9 @@ theorem callerBodyDecodeRevert (evm : EVM.State) (locals : Stele.Store) {tval : 
     ExecTransitionBody callerConfig callerContract evm locals runTransition.body .reverted := by
   refine ExecFuncBody.execBlockRevert
     (ExecBlock.consNormal (ExecStmt.requireTrue (evalCallvalueEq_true hwv))
-      (ExecBlock.consRevert (ExecStmt.externalCallReturnDecodeRevert ?_ ?_ ?_ hcall hdec)))
+      (ExecBlock.consRevert (ExecStmt.externalCallReturnDecodeRevert
+        (hperm := by first | assumption | exact Or.inr ‹_› | exact Or.inl rfl)
+        ?_ ?_ ?_ hcall hdec)))
   · show evalExpr? callerConfig _ evm (.var "t") = .ok (.address tval)
     simp only [evalExpr?, EvalResult.ofOption, ht]
   · show evalExpr? callerConfig _ evm (.intLit 0) = .ok (.int 0)
@@ -1136,7 +1147,7 @@ theorem callerExec_canonical {σ σ₀ A I} {g : Sat256}
         by_cases hperm : I.perm = true
         · have hbody := callerBodySuccess (initState σ σ₀ g A I)
             (callerDecStore I) (by exact hwv) (callerStore_t I) (callerStore_n I)
-            hcoin hdecv hassign
+            hcoin hdecv hassign (by simp only [hevmP, initState]; exact hperm)
           exact RDret.reEquivExecutionGen hcode (permSplit_true hperm hrd) hd hdec hbody
             (by rw [storageStore_accountMap]; simp [evmP, initState])
             (returnEquiv.fallthrough rfl rfl (by native_decide))

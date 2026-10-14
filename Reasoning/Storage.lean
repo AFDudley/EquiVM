@@ -2198,6 +2198,19 @@ theorem storageStore_executionEnv_eq (evm : EVM.State) (a : AccountAddress) (s v
     (Stele.EVM.storageStore evm a s v).executionEnv = evm.executionEnv := by
   exact Reasoning.Theory.storageStore_executionEnv evm a s v
 
+/-- A successful scalar storage update preserves the execution environment. -/
+theorem storageLocStore_executionEnv_eq {evm evm' : EVM.State}
+    {loc : StorageLoc} {value : Value}
+    (hstore : storageLocStore evm loc value = some evm') :
+    evm'.executionEnv = evm.executionEnv := by
+  unfold storageLocStore at hstore
+  cases hvalue : valueToWord value with
+  | none => simp [hvalue] at hstore
+  | some word =>
+      simp only [hvalue, bind, Option.bind, Option.some.injEq] at hstore
+      subst evm'
+      exact storageStore_executionEnv_eq _ _ _ _
+
 theorem storageLoad_storageStore_self_nonzero (evm : EVM.State) (a : AccountAddress)
     (slot val : UInt256) {acc : Account} (hacc : evm.lookupAccount a = some acc)
     (_hval : (val == default) = false) :

@@ -755,7 +755,7 @@ theorem flopperKickBodyCoreAddOverflow
   have hbody :
       ExecTransitionBody config contract evmStele (kickLocals I) kickTransition.body
         .reverted := by
-    exact flopperKickBodyReverts_addOverflow evmStele I
+    exact flopperKickBodyReverts_addOverflow (hperm := hperm) evmStele I
       (by simpa [evmStele, initState] using hwv)
       (by simp [evmStele, initState])
       hauthStele
@@ -810,7 +810,7 @@ theorem flopperKickBodyCoreSuccess
         (.returned { contract := contract, locals := kickEndLocals evmStele I }
           (kickPostState evmStele I)
           (some [.int (Int.ofNat (kickIdWord evmStele).toNat)])) := by
-    exact flopperKickBodyReturns_success evmStele I
+    exact flopperKickBodyReturns_success (hperm := hperm) evmStele I
       (by simpa [evmStele, initState] using hwv)
       (by simp [evmStele, initState])
       hauthStele

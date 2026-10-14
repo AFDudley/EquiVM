@@ -58,6 +58,6 @@ theorem oracleObserveIncrement (imms : Store) (evm : EVM.State) (locals : Store)
   have he := evalExpr_uint_increment (cfg := config) (evm := evm)
     (frame := {contract := contract, locals := locals, immutables := imms})
     ⟨256, by decide⟩ i (evalExpr_var_get hi) hb
-  exact ExecBlock.consNormal (ExecStmt.assign he (assignLocalVarBase_frame hi)) ExecBlock.nil
+  exact ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) he (assignLocalVarBase_frame hi)) ExecBlock.nil
 
 end Benchmarks.UniswapV3.Pool

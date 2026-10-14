@@ -374,7 +374,8 @@ theorem vatCtorCallerWardsSlot_eq (I : ExecutionEnv) :
 theorem vatCtorBodySuccess
     {σ : AccountMap} {σ₀ : AccountMap} {A : Substate} {I : ExecutionEnv}
     {g : UInt256}
-    (hwv : I.weiValue = ⟨0⟩) :
+    (hwv : I.weiValue = ⟨0⟩)
+    (hperm : I.perm = true) :
     let locals := vatCtorLocals
     let evm0 := initState σ σ₀
       (Sat256.ofUInt256 g) A I
@@ -398,14 +399,15 @@ theorem vatCtorBodySuccess
   simp only [constructorDecl, nonpayable, List.cons_append, List.nil_append]
   refine ExecBlock.consNormal (ExecStmt.requireTrue ?_) ?_
   · exact evalCallvalueEq_true (by simp [evm0, initState]; exact hwv)
-  refine ExecBlock.consNormal (ExecStmt.assign (by simp [evalExpr?, pure]) hassignWards) ?_
-  exact ExecBlock.consNormal (ExecStmt.assign (by simp [evalExpr?, pure]) hassignLive)
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) (by simp [evalExpr?, pure]) hassignWards) ?_
+  exact ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [evm1, vatCtorAfterWardsState, storageStore_executionEnv, evm0, initState] using hperm)) (by simp [evalExpr?, pure]) hassignLive)
     ExecBlock.nil
 
 theorem vatSteleCtorExecSuccess
     {σ : AccountMap} {σ₀ : AccountMap} {A : Substate} {I : ExecutionEnv}
     {g : UInt256}
-    (hwv : I.weiValue = ⟨0⟩) :
+    (hwv : I.weiValue = ⟨0⟩)
+    (hperm : I.perm = true) :
     steleCtorExec config contract [] σ σ₀ g A I
       (.returned { contract := contract, locals := vatCtorLocals }
         (vatCtorAfterLiveState
@@ -421,7 +423,7 @@ theorem vatSteleCtorExecSuccess
   · rfl
   · simpa [ExecTransitionBody, contract, constructorDecl] using
       ExecFuncBody.execBlockOK
-        (vatCtorBodySuccess
+        (vatCtorBodySuccess (hperm := hperm)
           (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv)
 
 theorem vatSteleCtorExecReverts_nonpayable
@@ -490,7 +492,7 @@ theorem vatConstructorBodyCore :
           refine typedConstructorRefinementFor.execution hsuccess
             (by
               simpa [evm0s, evm1s, evm2s] using
-                vatSteleCtorExecSuccess
+                vatSteleCtorExecSuccess (hperm := hperm)
                   (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
                   (g := g) hwv)
             ?_

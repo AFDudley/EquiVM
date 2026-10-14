@@ -816,7 +816,7 @@ theorem flapperCageBodyReverts_moveNoCodeSplit (evm : EVM.State) (I : ExecutionE
     (hsrc : evm.executionEnv.source = I.source)
     (hauth :
       Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (relyAuthStorageSlot I) = ⟨1⟩) :
-    ((Reasoning.Theory.extCodeSizeWord (cageLivePostState evm).accountMap
+    (evm.executionEnv.perm = true → (Reasoning.Theory.extCodeSizeWord (cageLivePostState evm).accountMap
         (solcAddressSlotWord ⟨2⟩ (cageLivePostState evm).accountMap
           (cageLivePostState evm).executionEnv) = ⟨0⟩) →
       ExecTransitionBody config contract evm (cageLocals I) cageTransition.body .reverted) ∧
@@ -838,7 +838,7 @@ theorem flapperCageBodyReverts_moveNoCodeSplit (evm : EVM.State) (I : ExecutionE
     refine ExecBlock.consNormal (ExecStmt.requireTrue (evalCallvalueEq_true hwv)) ?_
     exact ExecBlock.consNormal (ExecStmt.requireTrue hguardAuth) hwrite
   constructor
-  · intro hnoCode
+  · intro hperm hnoCode
     have hvat :
         evalExpr? config { contract := contract, locals := cageLocals I }
             (cageLivePostState evm) (.storage vatRef) =
@@ -877,7 +877,7 @@ theorem flapperCageBodyReverts_moveNoCodeSplit (evm : EVM.State) (I : ExecutionE
           .reverted := by
       exact checkedExternalCallNoCode hguard
     exact ExecFuncBody.execBlockRevert
-      (hprefix (ExecBlock.consNormal (ExecStmt.assign hvalue hassign) hchecked))
+      (hprefix (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hvalue hassign) hchecked))
   · intro hperm
     exact ExecFuncBody.execBlockStatic
       (hprefix (ExecBlock.consStatic (ExecStmt.assignStatic hvalue hassign hperm)))
@@ -890,9 +890,10 @@ theorem flapperCageBodyReverts_moveNoCode (evm : EVM.State) (I : ExecutionEnv)
     (hnoCode :
       Reasoning.Theory.extCodeSizeWord (cageLivePostState evm).accountMap
         (solcAddressSlotWord ⟨2⟩ (cageLivePostState evm).accountMap
-          (cageLivePostState evm).executionEnv) = ⟨0⟩) :
+          (cageLivePostState evm).executionEnv) = ⟨0⟩)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (cageLocals I) cageTransition.body .reverted :=
-  (flapperCageBodyReverts_moveNoCodeSplit evm I hwv hsrc hauth).1 hnoCode
+  (flapperCageBodyReverts_moveNoCodeSplit evm I hwv hsrc hauth).1 hperm hnoCode
 
 theorem flapperCageBodyReverts_moveCallFailure
     (evm evm' : EVM.State) (I : ExecutionEnv) (out : ByteArray)
@@ -912,7 +913,8 @@ theorem flapperCageBodyReverts_moveCallFailure
         "move" 0
         [.address (cageLivePostState evm).executionEnv.codeOwner,
           .address (cageLivePostState evm).executionEnv.source, cageRadValue I]
-        (false, evm', out) true) :
+        (false, evm', out) true)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (cageLocals I) cageTransition.body .reverted := by
   have hvat :
       evalExpr? config { contract := contract, locals := cageLocals I }
@@ -951,7 +953,7 @@ theorem flapperCageBodyReverts_moveCallFailure
         (checkedExternalCallStmts (.storage vatRef) "move" (.intLit 0)
           [thisAddr, sender, .var "rad"] "_moveRet")
         .reverted := by
-    exact checkedExternalCallFailure hguard hvat hargs hcall
+    exact checkedExternalCallFailure (hperm := Or.inl rfl) hguard hvat hargs hcall
   refine ExecFuncBody.execBlockRevert ?_
   simpa [cageTransition, nonpayable, auth, checkedExternalCallStmts,
     List.cons_append, List.nil_append] using
@@ -961,7 +963,7 @@ theorem flapperCageBodyReverts_moveCallFailure
           (evalExpr_auth_true_of_wards_none evm I (cageLocals I)
             (cageLocals_get_wards I) hsrc hauth)) <|
       ExecBlock.consNormal
-        (ExecStmt.assign (by simp [evalExpr?, pure]) (cageAssignLive evm I)) <|
+        (ExecStmt.assign (hperm := Or.inr hperm) (by simp [evalExpr?, pure]) (cageAssignLive evm I)) <|
       hchecked)
 
 theorem flapperCageBodyReturns_moveCallSuccess
@@ -982,7 +984,8 @@ theorem flapperCageBodyReturns_moveCallSuccess
         "move" 0
         [.address (cageLivePostState evm).executionEnv.codeOwner,
           .address (cageLivePostState evm).executionEnv.source, cageRadValue I]
-        (true, evm', out) true) :
+        (true, evm', out) true)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (cageLocals I) cageTransition.body
       (.returned { contract := contract, locals := cageMoveLocals I } evm' none) := by
   have hvat :
@@ -1025,7 +1028,7 @@ theorem flapperCageBodyReturns_moveCallSuccess
           [thisAddr, sender, .var "rad"] "_moveRet")
         (.ok { contract := contract, locals := cageMoveLocals I } evm') := by
     simpa [checkedExternalCallStmts, cageMoveLocals] using
-      checkedExternalCallSuccess hguard hvat hargs hcall hdec
+      checkedExternalCallSuccess (hperm := Or.inl rfl) hguard hvat hargs hcall hdec
   refine ExecFuncBody.execBlockOK ?_
   simpa [cageTransition, nonpayable, auth, checkedExternalCallStmts,
     List.cons_append, List.nil_append] using
@@ -1035,7 +1038,7 @@ theorem flapperCageBodyReturns_moveCallSuccess
           (evalExpr_auth_true_of_wards_none evm I (cageLocals I)
             (cageLocals_get_wards I) hsrc hauth)) <|
       ExecBlock.consNormal
-        (ExecStmt.assign (by simp [evalExpr?, pure]) (cageAssignLive evm I)) <|
+        (ExecStmt.assign (hperm := Or.inr hperm) (by simp [evalExpr?, pure]) (cageAssignLive evm I)) <|
       hchecked)
 
 theorem flapperCageBodyCoreUnauthorized
@@ -1104,7 +1107,7 @@ theorem flapperCageBodyCoreMoveNoCode
         cageTransition.body .reverted := by
     simpa [evmStele, relyAuthWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
-      flapperCageBodyReverts_moveNoCode evmStele I
+      flapperCageBodyReverts_moveNoCode (hperm := hperm) evmStele I
         (by simp only [evmStele, initState]; exact hwv)
         (by simp [evmStele, initState])
         (by
@@ -1198,7 +1201,7 @@ theorem flapperCageBodyCoreMoveCallDepthLimit
         cageTransition.body .reverted := by
     simpa [evmStele, evmLiveStele, relyAuthWord, solcSlotWordAt, initState,
       Stele.EVM.storageLoad, State.lookupAccount] using
-      flapperCageBodyReverts_moveCallFailure evmStele
+      flapperCageBodyReverts_moveCallFailure (hperm := hperm) evmStele
         { evmLiveStele with substate := A_move } I ByteArray.empty
         (by simp only [evmStele, initState]; exact hwv)
         (by simp [evmStele, initState])
@@ -1294,7 +1297,7 @@ theorem flapperCageBodyCoreMoveCallFailure
         cageTransition.body .reverted := by
     simpa [evmStele, evmLiveStele, evmCallStele, relyAuthWord, solcSlotWordAt,
       initState, Stele.EVM.storageLoad, State.lookupAccount] using
-      flapperCageBodyReverts_moveCallFailure evmStele evmCallStele I out
+      flapperCageBodyReverts_moveCallFailure (hperm := hperm) evmStele evmCallStele I out
         (by simp only [evmStele, initState]; exact hwv)
         (by simp [evmStele, initState])
         (by
@@ -1381,7 +1384,7 @@ theorem flapperCageBodyCoreMoveCallSuccess
         (.returned { contract := contract, locals := cageMoveLocals I } evmCallStele none) := by
     simpa [evmStele, evmLiveStele, evmCallStele, relyAuthWord, solcSlotWordAt,
       initState, Stele.EVM.storageLoad, State.lookupAccount] using
-      flapperCageBodyReturns_moveCallSuccess evmStele evmCallStele I out
+      flapperCageBodyReturns_moveCallSuccess (hperm := hperm) evmStele evmCallStele I out
         (by simp only [evmStele, initState]; exact hwv)
         (by simp [evmStele, initState])
         (by

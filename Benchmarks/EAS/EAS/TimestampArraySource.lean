@@ -15,10 +15,11 @@ theorem timestampArrayIteration_ok {evm : EVM.State} {locals imms : Store}
     {words : List UInt256} {time word : UInt256} {heap i : Nat}
     (h : TimeArrayInv locals words time heap i) (hi : i < words.length)
     (hw : lookupNth? words i = some word) (hlen : words.length < UInt256.size)
-    (hz : timestampWord evm word = ⟨0⟩) :
+    (hz : timestampWord evm word = ⟨0⟩)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config {contract := contract, locals := locals, immutables := imms} evm timestampArrayIteration
       (.ok {contract := contract, locals := timeArrayNext locals heap i, immutables := imms} (timestampStore evm word time)) := by
-  exact timeArrayFinish h hi hlen (timestampCall_ok (timeArrayArgs_eval h hi hw) hz)
+  exact timeArrayFinish h hi hlen (timestampCall_ok (hperm := hperm) (timeArrayArgs_eval h hi hw) hz)
 
 theorem timestampArrayIteration_revert {evm : EVM.State} {locals imms : Store}
     {words : List UInt256} {time word : UInt256} {heap i : Nat}

@@ -45,7 +45,8 @@ theorem recordTailRun {L : Store} {evm : EVM.State} {ee : ExecutionEnv} {g : Sat
     (hm : RecordTailMemoryView mem site t3 t4 uidPtr ptrs values uids r.value heap)
     (hlen : ats.length = ptrs.length) (hi : i < ptrs.length) (hb : heap < UInt256.size)
     (rd : RD (deployedRuntime v) ee g s0 (refUIDReadyPC site)
-      (refUIDReadyStack site dummy word src t1 (UInt256.ofNat i) t3 t4 R) mem aw rdata σ k C) :
+      (refUIDReadyStack site dummy word src t1 (UInt256.ofNat i) t3 t4 R) mem aw rdata σ k C)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config {contract := contract,locals := L,immutables := immStore v} evm recordTailBody
       (.ok {contract := contract,locals := recordTailLocals L ats values uids used a r.value word i,immutables := immStore v} evm) ∧
     WordArrayMemoryView (recordTailMemory mem site src t3 t4 r.value uidPtr word i) uidPtr (uids.set i word) heap ∧
@@ -59,7 +60,7 @@ theorem recordTailRun {L : Store} {evm : EVM.State} {ee : ExecutionEnv} {g : Sat
       (recordTailMemory mem site src t3 t4 r.value uidPtr word i) aw' rdata σ k' C' := by
   have hiv : i < values.length := by rw [hm.lengthValues]; exact hi
   have hiu : i < uids.length := by rw [hm.lengthUIDs]; exact hi
-  have hs := recordTailSource (imms := immStore v) (evm := evm) hf.attestation hf.request hf.uid hf.index hf.attestations hf.values hf.result
+  have hs := recordTailSource (hperm := hperm) (imms := immStore v) (evm := evm) hf.attestation hf.request hf.uid hf.index hf.attestations hf.values hf.result
     hf.attester hf.schema (by omega) hiv hiu (by have := hm.records.span; omega)
   obtain ⟨hu,ha,hv,hh⟩ := recordTailMemory_views site hm.records hm.valueArray hm.uidArray hm.uidRecords hm.recordValues
     hi hiv hiu hb hm.heapRead

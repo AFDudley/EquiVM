@@ -38,7 +38,8 @@ theorem safeThresholdChangeChanged (evm : EVM.State) (locals : Store) (value : U
     (he : evalExpr? config { contract := contract, locals := locals } evm (.var "_threshold") =
       .ok (.int (Int.ofNat value.toNat)))
     (ht : storedThreshold evm ≠ value)
-    (hle : value.toNat ≤ (ownerCount evm).toNat) (hnz : value ≠ ⟨0⟩) :
+    (hle : value.toNat ≤ (ownerCount evm).toNat) (hnz : value ≠ ⟨0⟩)
+    (hperm : evm.executionEnv.perm = true) :
     ExecStmt config { contract := contract, locals := locals } evm thresholdChangeStmt
       (.ok (resumeAfterInternalCall { contract := contract, locals := locals }
         "_thresholdChanged" none)
@@ -47,7 +48,7 @@ theorem safeThresholdChangeChanged (evm : EVM.State) (locals : Store) (value : U
     (caller := { contract := contract, locals := locals })
     (name := "changeThresholdBody") (retVar := "_thresholdChanged")
     (callee := changeThresholdBodyFunction) (evalExprs?_singleton he) rfl rfl
-    (safeThresholdSource evm value hle hnz)
+    (safeThresholdSource (hperm := by assumption) evm value hle hnz)
   exact .iteTrue (by simpa [ht] using safeThresholdChangeGuard evm locals value hb he)
     (.consNormal hcall .nil)
 

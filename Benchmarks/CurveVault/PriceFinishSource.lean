@@ -31,7 +31,7 @@ theorem vaultPriceRoundSource {evm : State} {locals : Store} {isFloor : Bool} {x
   cases isFloor with
   | true =>
     refine ExecBlock.consNormal (ExecStmt.iteTrue hevalF ?_) ExecBlock.nil
-    exact ExecBlock.consNormal (ExecStmt.assign (evalExpr_div_uint256_ok hevalX hevalY hy0 rfl)
+    exact ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inl rfl) (evalExpr_div_uint256_ok hevalX hevalY hy0 rfl)
       (assignLocalVarBase_ok (old := .int 0) (by simp [initial]))) ExecBlock.nil
   | false =>
     have hcallee := vaultCeilDivSource (evm := evm) (uintBinaryLocals_get_x x y) (uintBinaryLocals_get_y x y) hy0
@@ -41,7 +41,7 @@ theorem vaultPriceRoundSource {evm : State} {locals : Store} {isFloor : Bool} {x
       (by simp [evalExprs?, hevalX, hevalY, bind, pure, EvalResult.bind]) rfl rfl hcallee
     refine ExecBlock.consNormal (ExecStmt.iteFalse hevalF ?_) ExecBlock.nil
     apply ExecBlock.consNormal hcall
-    refine ExecBlock.consNormal (ExecStmt.assign (value := .int (Int.ofNat (vaultCeilDivWord x y).toNat)) ?_ ?_) ExecBlock.nil
+    refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inl rfl) (value := .int (Int.ofNat (vaultCeilDivWord x y).toNat)) ?_ ?_) ExecBlock.nil
     · simp [resumeAfterInternalCall, collapseReturns, evalExpr?, EvalResult.ofOption, vaultConversionResult]
     · apply assignLocalVarBase_ok
       simp only [resumeAfterInternalCall, collapseReturns, initial, Std.HashMap.get?_eq_getElem?, Std.HashMap.getElem?_insert]

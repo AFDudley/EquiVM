@@ -45,7 +45,7 @@ theorem clipperYankBody (v : ClipperImmutables) {code : ByteArray}
               ExecTransitionBody config contract evmStele locals
                 yankTransition.body .reverted (immStore v) := by
             simpa [evmStele, locals] using
-              (clipperYankInactiveSourceReverts
+              (clipperYankInactiveSourceReverts (hperm := by assumption)
                 (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) v hwv
                 hauthEvm hlockedEvm (by simpa [σLocked] using husrEvm))
           have hrev := clipperYankX_usrZero (v := v) hpatch
@@ -67,7 +67,7 @@ theorem clipperYankBody (v : ClipperImmutables) {code : ByteArray}
                 ExecTransitionBody config contract evmStele locals
                   yankTransition.body .reverted (immStore v) := by
               simpa [evmStele, locals, σLocked] using
-                (clipperYankDogDigsNoCodeSourceReverts
+                (clipperYankDogDigsNoCodeSourceReverts (hperm := by assumption)
                   (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
                   v hwv hauthEvm hlockedEvm (by simpa [σLocked] using husrEvm)
                   (by simpa [σLocked] using hcodeSizeDog))
@@ -199,7 +199,7 @@ theorem clipperYankBody (v : ClipperImmutables) {code : ByteArray}
                     ExecTransitionBody config contract evmStele locals
                       yankTransition.body .reverted (immStore v) := by
                   simpa [evmStele, locals, σLocked] using
-                    (clipperYankDogDigsCallFailureSourceReverts
+                    (clipperYankDogDigsCallFailureSourceReverts (hperm := by assumption)
                       (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
                       (evmDog := evmDogStele) (outDog := outDog)
                       v hwv hauthEvm hlockedEvm
@@ -328,7 +328,7 @@ theorem clipperYankBody (v : ClipperImmutables) {code : ByteArray}
                       ExecTransitionBody config contract evmStele locals
                         yankTransition.body .reverted (immStore v) := by
                     simpa [evmStele, locals, σLocked] using
-                      (clipperYankVatFluxNoCodeSourceReverts
+                      (clipperYankVatFluxNoCodeSourceReverts (hperm := by assumption)
                         (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
                         (evmDog := evmDogStele) (outDog := outDog)
                         v hwv hauthEvm hlockedEvm
@@ -430,7 +430,7 @@ theorem clipperYankBody (v : ClipperImmutables) {code : ByteArray}
                         ExecTransitionBody config contract evmStele locals
                           yankTransition.body .reverted (immStore v) := by
                       simpa [evmStele, locals, σLocked] using
-                        (clipperYankVatFluxCallFailureSourceReverts
+                        (clipperYankVatFluxCallFailureSourceReverts (hperm := by assumption)
                           (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
                           (evmDog := evmDogStele) (evmVat := evmVatStele)
                           (outDog := outDog) (outVat := outVat)
@@ -508,7 +508,7 @@ theorem clipperYankBody (v : ClipperImmutables) {code : ByteArray}
                           ExecTransitionBody config contract evmStele locals
                             yankTransition.body .reverted (immStore v) := by
                         simpa [evmStele, locals, σLocked] using
-                          (clipperYankRemoveEmptyAfterVatSourceReverts
+                          (clipperYankRemoveEmptyAfterVatSourceReverts (hperm := by assumption)
                             (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
                             (evmDog := evmDogStele) (evmVat := evmVatStele)
                             (outDog := outDog) (outVat := outVat)
@@ -669,7 +669,7 @@ theorem clipperYankBody (v : ClipperImmutables) {code : ByteArray}
                           rw [← hlastIndexEq, hloadMoveStele, ← hmoveEq]
                           exact hidEq
                         have hafter :=
-                          clipperYankAfterVatRemoveIdEqMoveSourceOk v evmVatStele I
+                          clipperYankAfterVatRemoveIdEqMoveSourceOk (hperm := by assumption) v evmVatStele I
                             haccVatStele hactiveLenStele hidEqStele
                         let evmStele := initState σ σ₀
                           (Sat256.ofUInt256 g) A I
@@ -694,7 +694,7 @@ theorem clipperYankBody (v : ClipperImmutables) {code : ByteArray}
                                     I).executionEnv.codeOwner ⟨13⟩ ⟨0⟩)
                                 none) (immStore v) := by
                           simpa [evmStele, locals, σLocked] using
-                            (clipperYankAfterVatSourceOk
+                            (clipperYankAfterVatSourceOk (hperm := by assumption)
                               (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
                               (evmDog := evmDogStele) (evmVat := evmVatStele)
                               (outDog := outDog) (outVat := outVat)
@@ -848,7 +848,7 @@ theorem clipperYankBody (v : ClipperImmutables) {code : ByteArray}
                                   evmVatStele removeFunction.body .reverted := by
                               simpa [evmIndexStele, evmMovePosStele, ← hlastIndexEq,
                                 hloadMoveStele, ← hmoveEq, hloadIdxStele, ← hidxEq] using
-                                (clipperYankRemoveIdNeMovePopEmptySourceReverts
+                                (clipperYankRemoveIdNeMovePopEmptySourceReverts (hperm := by assumption)
                                   v evmVatStele I hactiveLenStele hidNeStele hidxBoundStele
                                   (by
                                     simpa [evmIndexStele, evmMovePosStele, ← hlastIndexEq,
@@ -883,7 +883,7 @@ theorem clipperYankBody (v : ClipperImmutables) {code : ByteArray}
                                 ExecTransitionBody config contract evmStele locals
                                   yankTransition.body .reverted (immStore v) := by
                               simpa [evmStele, locals, σLocked] using
-                                (clipperYankAfterVatSourceReverts
+                                (clipperYankAfterVatSourceReverts (hperm := by assumption)
                                   (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
                                   (evmDog := evmDogStele) (evmVat := evmVatStele)
                                   (outDog := outDog) (outVat := outVat)
@@ -949,7 +949,7 @@ theorem clipperYankBody (v : ClipperImmutables) {code : ByteArray}
                                         I).executionEnv.codeOwner ⟨13⟩ ⟨0⟩)) := by
                               simpa [evmIndexStele, evmMovePosStele, ← hlastIndexEq,
                                 hloadMoveStele, ← hmoveEq, hloadIdxStele, ← hidxEq] using
-                                (clipperYankAfterVatRemoveIdNeMoveSourceOk
+                                (clipperYankAfterVatRemoveIdNeMoveSourceOk (hperm := by assumption)
                                   v evmVatStele I haccVatStele hactiveLenStele hidNeStele
                                   hidxBoundStele
                                   (by
@@ -980,7 +980,7 @@ theorem clipperYankBody (v : ClipperImmutables) {code : ByteArray}
                                         I).executionEnv.codeOwner ⟨13⟩ ⟨0⟩)
                                     none) (immStore v) := by
                               simpa [evmStele, locals, σLocked] using
-                                (clipperYankAfterVatSourceOk
+                                (clipperYankAfterVatSourceOk (hperm := by assumption)
                                   (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
                                   (evmDog := evmDogStele) (evmVat := evmVatStele)
                                   (outDog := outDog) (outVat := outVat)
@@ -1074,7 +1074,7 @@ theorem clipperYankBody (v : ClipperImmutables) {code : ByteArray}
                               ExecTransitionBody config contract evmStele locals
                                 yankTransition.body .reverted (immStore v) := by
                             simpa [evmStele, locals, σLocked] using
-                              (clipperYankAfterVatSourceReverts
+                              (clipperYankAfterVatSourceReverts (hperm := by assumption)
                                 (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
                                 (evmDog := evmDogStele) (evmVat := evmVatStele)
                                 (outDog := outDog) (outVat := outVat)
@@ -1152,7 +1152,7 @@ theorem clipperYankBody (v : ClipperImmutables) {code : ByteArray}
                   ExecTransitionBody config contract evmStele locals
                     yankTransition.body .reverted (immStore v) := by
                 simpa [evmStele, locals, σLocked] using
-                  (clipperYankDogDigsCallFailureSourceReverts
+                  (clipperYankDogDigsCallFailureSourceReverts (hperm := by assumption)
                     (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
                     (evmDog := evmDogStele) (outDog := ByteArray.empty)
                     v hwv hauthEvm hlockedEvm

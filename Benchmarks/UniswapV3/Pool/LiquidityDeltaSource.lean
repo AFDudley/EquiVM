@@ -59,7 +59,7 @@ theorem liquidityDeltaSubSource (imms : Store) (evm : EVM.State) (x y : Int) :
     ExecStmt config (liquidityDeltaZeroFrame imms x y) evm
       (.assign .localVar ⟨"z", []⟩ liquidityDeltaSubExpr)
       (.ok (liquidityDeltaReadyFrame imms x y) evm) := by
-  apply ExecStmt.assign (value := .int (liquidityDeltaResult x y))
+  apply ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (value := .int (liquidityDeltaResult x y))
   · have hx := evalExpr_var_get (cfg := config) (evm := evm)
       (liquidityDeltaZeroGet imms x y).1
     have hy := evalExpr_var_get (cfg := config) (evm := evm)
@@ -72,7 +72,7 @@ theorem liquidityDeltaAddSource (imms : Store) (evm : EVM.State) (x y : Int) :
     ExecStmt config (liquidityDeltaZeroFrame imms x y) evm
       (.assign .localVar ⟨"z", []⟩ liquidityDeltaAddExpr)
       (.ok (liquidityDeltaReadyFrame imms x y) evm) := by
-  apply ExecStmt.assign (value := .int (liquidityDeltaResult x y))
+  apply ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (value := .int (liquidityDeltaResult x y))
   · have hx := evalExpr_var_get (cfg := config) (evm := evm)
       (liquidityDeltaZeroGet imms x y).1
     have hy := evalExpr_var_get (cfg := config) (evm := evm)

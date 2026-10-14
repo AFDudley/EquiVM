@@ -10,7 +10,7 @@ namespace Auction
 theorem setReservePriceBodySplit (evm : EVM.State) (value : UInt256)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (ho : solcSourceWord evm.executionEnv = ownerWord evm.accountMap evm.executionEnv) :
-    (ExecTransitionBody auctionConfig auctionContract evm
+    (evm.executionEnv.perm = true → ExecTransitionBody auctionConfig auctionContract evm
       ((∅ : Store).insert "_reservePrice" (.int (Int.ofNat value.toNat)))
       setReservePriceTransition.body
       (.returned
@@ -25,7 +25,8 @@ theorem setReservePriceBodySplit (evm : EVM.State) (value : UInt256)
 
 theorem setReservePriceBody (evm : EVM.State) (value : UInt256)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (ho : solcSourceWord evm.executionEnv = ownerWord evm.accountMap evm.executionEnv) :
+    (ho : solcSourceWord evm.executionEnv = ownerWord evm.accountMap evm.executionEnv)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody auctionConfig auctionContract evm
       ((∅ : Store).insert "_reservePrice" (.int (Int.ofNat value.toNat)))
       setReservePriceTransition.body
@@ -33,7 +34,7 @@ theorem setReservePriceBody (evm : EVM.State) (value : UInt256)
         { contract := auctionContract
           locals := (∅ : Store).insert "_reservePrice" (.int (Int.ofNat value.toNat)) }
         (Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨204⟩ value) none) :=
-  (setReservePriceBodySplit evm value hwv ho).1
+  (setReservePriceBodySplit evm value hwv ho).1 hperm
 
 theorem setReservePriceBodyCore {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = auctionBytecode) (hsize : I.calldata.size < UInt256.size)
@@ -62,13 +63,13 @@ theorem setReservePriceBodyCore {σ σ₀ A I} {g : UInt256}
         · obtain ⟨_, _, rd2520⟩ := ownerAllowed 5 rd2478 ho (by evm_ov)
           rcases setterStoreEventSplit 1 rd2520
             (by jump_dest) (by evm_ov) with
-            ⟨_hperm, _, _, rd413⟩ | ⟨hperm, hstatic⟩
+            ⟨hperm, _, _, rd413⟩ | ⟨hperm, hstatic⟩
           swap
           · exact hstatic.reEquivStaticHalt hcode hd hdec
               ((setReservePriceBodySplit
                 (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                 (calldataWord I.calldata 4) hwv ho).2 hperm)
-          have hbody := setReservePriceBody
+          have hbody := setReservePriceBody (hperm := hperm)
             (initState σ σ₀ (Sat256.ofUInt256 g) A I)
             (calldataWord I.calldata 4) hwv ho
           exact (auctionStop rd413 (by evm_ov)).reEquivExecutionGen

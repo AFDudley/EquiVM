@@ -327,6 +327,7 @@ theorem clipperTakeNonzeroStoreContinuationEquiv
     let evmLot := Stele.EVM.storageStore evmTab evmTab.executionEnv.codeOwner
       (clipperTakeSalesLotSlot I) lotNew
     have hpost := clipperTakeGenericPostDogNonzeroStore
+      (hperm := (congrArg ExecutionEnv.perm hevmDogEnv).trans hperm)
       (v := v) (evm := evmDog) htab' hlot' hid' hlocked' hsales' htabNe hlotNe
     have hafter : ExecBlock config
         (Frame.mk contract (clipperTakeGenericMoveRet locals) (immStore v)) evmMove
