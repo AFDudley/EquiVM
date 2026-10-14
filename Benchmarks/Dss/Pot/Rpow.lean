@@ -183,7 +183,7 @@ theorem execRpowLoopPrefixOk {evm : EVM.State} {locals : Store}
     refine ExecBlock.consNormal (ExecStmt.requireTrue hmulXXReq) ?_
     refine ExecBlock.consNormal (ExecStmt.letDecl haddXX) ?_
     refine ExecBlock.consNormal (ExecStmt.requireTrue haddXXReq) ?_
-    exact ExecBlock.consNormal (ExecStmt.assign hdivX hassignX) ExecBlock.nil
+    exact ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inl rfl) hdivX hassignX) ExecBlock.nil
   exact ⟨localsX, by
     simpa [rpowLoopPrefix, checkedMulUintInto, checkedAddUintInto, xx, xxRound, x',
       localsXX, localsRound, localsX] using hblock, hstoreX⟩
@@ -472,7 +472,7 @@ theorem execRpowLoopBodyOkOdd {evm : EVM.State} {locals : Store}
     refine ExecBlock.consNormal (ExecStmt.requireTrue hmulZXReq) ?_
     refine ExecBlock.consNormal (ExecStmt.letDecl haddZX) ?_
     refine ExecBlock.consNormal (ExecStmt.requireTrue haddZXReq) ?_
-    exact ExecBlock.consNormal (ExecStmt.assign hdivZ hassignZ) ExecBlock.nil
+    exact ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inl rfl) hdivZ hassignZ) ExecBlock.nil
   have hblock :
       ExecBlock config { contract := contract, locals := locals } evm
         [ .letDecl "xx" (some uint256) (mul256 (.var "x") (.var "x")),
@@ -496,9 +496,9 @@ theorem execRpowLoopBodyOkOdd {evm : EVM.State} {locals : Store}
     refine ExecBlock.consNormal (ExecStmt.requireTrue hmulXXReq) ?_
     refine ExecBlock.consNormal (ExecStmt.letDecl haddXX) ?_
     refine ExecBlock.consNormal (ExecStmt.requireTrue haddXXReq) ?_
-    refine ExecBlock.consNormal (ExecStmt.assign hdivX hassignX) ?_
+    refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inl rfl) hdivX hassignX) ?_
     refine ExecBlock.consNormal (ExecStmt.iteTrue hoddCond hthen) ?_
-    exact ExecBlock.consNormal (ExecStmt.assign hdivN hassignN) ExecBlock.nil
+    exact ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inl rfl) hdivN hassignN) ExecBlock.nil
   exact ⟨localsN, by
     simpa [rpowLoopBody, checkedMulUintInto, checkedAddUintInto, xx, xxRound, x', zx,
       zxRound, z', n', localsXX, localsRound, localsX, localsZX, localsZXRound, localsZ,

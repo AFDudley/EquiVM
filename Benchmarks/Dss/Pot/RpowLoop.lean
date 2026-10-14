@@ -432,9 +432,9 @@ theorem execRpowLoopBodyOkEven {evm : EVM.State} {locals : Store}
     refine ExecBlock.consNormal (ExecStmt.requireTrue hmulReq) ?_
     refine ExecBlock.consNormal (ExecStmt.letDecl hadd) ?_
     refine ExecBlock.consNormal (ExecStmt.requireTrue haddReq) ?_
-    refine ExecBlock.consNormal (ExecStmt.assign hdivX hassignX) ?_
+    refine ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hdivX hassignX) ?_
     refine ExecBlock.consNormal (ExecStmt.iteFalse hoddCond ExecBlock.nil) ?_
-    exact ExecBlock.consNormal (ExecStmt.assign hdivN hassignN) ExecBlock.nil
+    exact ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hdivN hassignN) ExecBlock.nil
   exact ⟨localsN, by
     simpa [rpowLoopBody, checkedMulUintInto, checkedAddUintInto, xx, xxRound, x', n',
       localsXX, localsRound, localsX, localsN] using hblock, hstoreN⟩
