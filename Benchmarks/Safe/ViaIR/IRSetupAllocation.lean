@@ -161,11 +161,12 @@ theorem safeIRSetupAllocationExecution :
       | _ => false) = true := by native_decide
 
 theorem safeIRSetupAllocationSourceReturns (evm : State)
-    (he : moduleLink evm ⟨1⟩ = ⟨0⟩) :
+    (he : moduleLink evm ⟨1⟩ = ⟨0⟩)
+    (hperm : evm.executionEnv.perm = true) :
     let p : SetupModulesInput := ⟨⟨0⟩, ByteArray.zeroes safeIRSetupAllocationLength⟩
     ExecFuncBody config p.frame evm setupModulesFunction.body
       (.returned p.frame (p.state evm) none) := by
-  exact safeSetupModulesZero _ evm he rfl
+  exact safeSetupModulesZero (hperm := by assumption) _ evm he rfl
 
 theorem safeIRSetupAllocationSourceCannotRevert (evm : State)
     (he : moduleLink evm ⟨1⟩ = ⟨0⟩) :
@@ -195,7 +196,7 @@ theorem safeIRSetupAllocationSourceCannotRevert (evm : State)
       | consRevert h => cases h <;> simp_all [SetupModulesInput.frame]
       | consNormal h ht =>
         cases h with
-        | assign hv' hs' =>
+        | assign _ hv' hs' =>
           have heq := hv.symm.trans hv'
           cases heq
           have heq := hs.symm.trans hs'
@@ -224,10 +225,11 @@ theorem safeIRSetupAllocationFirstRejected :
 
 /-- The approved local guard rejects the allocation-boundary input in the source semantics. -/
 theorem safeIRSetupAllocationGuardReverts (evm : State)
-    (hv : evm.executionEnv.weiValue = ⟨0⟩) :
+    (hv : evm.executionEnv.weiValue = ⟨0⟩)
+    (hperm : evm.executionEnv.perm = true) :
     let p := setupCalldataInput safeIRSetupAllocationCalldata 1 safeIRSetupAllocationLength
     ExecBlock config p.frame evm setupTransition.body .reverted := by
-  apply safeSetupAllocationRevert _ evm hv
+  apply safeSetupAllocationRevert (hperm := hperm) _ evm hv
   have hp := safeIRSetupAllocationNoCalls.2.2.2
   rw [SetupInput.allocationLimit, hp]
   simp only [ne_self_iff_false, false_and, ite_false]
@@ -270,11 +272,12 @@ theorem safeIRSetupTokenAllocationExecution :
 /-- The conditional guard rejects the additional token-encoder allocation boundary. -/
 theorem safeIRSetupTokenAllocationGuardReverts (evm : State) (payload : ByteArray)
     (hlen : payload.size = 2 ^ 64 - 256)
-    (hv : evm.executionEnv.weiValue = ⟨0⟩) :
+    (hv : evm.executionEnv.weiValue = ⟨0⟩)
+    (hperm : evm.executionEnv.perm = true) :
     let p : SetupInput :=
       ⟨[⟨8192⟩], ⟨1⟩, ⟨0⟩, payload, ⟨0⟩, ⟨8193⟩, ⟨1⟩, ⟨0⟩⟩
     ExecBlock config p.frame evm setupTransition.body .reverted := by
-  apply safeSetupAllocationRevert _ evm hv
+  apply safeSetupAllocationRevert (hperm := hperm) _ evm hv
   rw [safeSetupAllocationLimit_token _ (by change (⟨1⟩ : UInt256) ≠ ⟨0⟩; decide)
     (by change AccountAddress.ofNat 8193 ≠ EVM.address 0; decide)]
   simp only [List.length_cons, List.length_nil, hlen]
