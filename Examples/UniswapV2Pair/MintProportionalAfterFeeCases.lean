@@ -96,7 +96,8 @@ theorem uniswapMintProportionalArithmeticAfterMintFeeCases
     (hclean0 : UInt256.land reserve0 reserve112Mask = reserve0)
     (hclean1 : UInt256.land reserve1 reserve112Mask = reserve1)
     (hmem : mem.size = 164)
-    (hmem64 : mem.readWithPadding 64 32 = UInt256.toByteArray ⟨128⟩) :
+    (hmem64 : mem.readWithPadding 64 32 = UInt256.toByteArray ⟨128⟩)
+    (hperm : I.perm = true) :
     (mintAmountProductNat amount0 totalSupply < UInt256.size ∧
       reserve0 ≠ ⟨0⟩ ∧ mintAmountProductNat amount1 totalSupply < UInt256.size ∧
       reserve1 ≠ ⟨0⟩) ∨
@@ -112,7 +113,7 @@ theorem uniswapMintProportionalArithmeticAfterMintFeeCases
       (by rw [store_get_ne _ _ (by decide), hreserve0])
       (by rw [store_get_ne _ _ (by decide), hreserve1]) with hfits | ⟨hbranch, hfail⟩
   · exact Or.inl hfits
-  · have hprefix := uniswapMintAfterMintFeeTotalSupplyPrefix_of_call
+  · have hprefix := uniswapMintAfterMintFeeTotalSupplyPrefix_of_call (hperm := by assumption)
       evmS evm0S evm1S evmFeeS I nextLocals hwv hunlockedStele hguard0 hguard1
       hcall0 hdec0 hcall1 hdec1 hle0Source hle1Source hfee htotalBase
     have htail : ExecBlock config { contract := contract, locals := locals } evmFeeS

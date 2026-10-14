@@ -119,7 +119,7 @@ theorem uniswapMintAfterMintFeeCases
       hfeeOnGet hbalance0 hbalance1 hreserve0Base hreserve1Base hkLast hunlocked hperm
   · let evmS := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let locals := nextLocals.insert "_totalSupply" (uniswapUint256Value totalSupply)
-    have hprefix := uniswapMintAfterMintFeeTotalSupplyPrefix_of_call
+    have hprefix := uniswapMintAfterMintFeeTotalSupplyPrefix_of_call (hperm := by assumption)
       evmS evm0S evm1S evmFeeS I nextLocals hwv hunlockedStele hguard0 hguard1
       hcall0 hdec0 hcall1 hdec1 hle0Source hle1Source hfee htotalBase
     have hruntime := uniswapMintProportionalRuntimeCases (locals := locals) evmFeeS recipient fee

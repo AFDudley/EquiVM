@@ -938,7 +938,7 @@ theorem uniswapMintFeeOnKLastNonzeroNoMintCase
     exact_mod_cast hnat
   have hbody :=
     ExecFuncBody.execBlockRet
-      (uniswapMintProportionalFeeOnReturn_kLastNonzeroNoMint evmS evm0S evm1S evmFeeS I
+      (uniswapMintProportionalFeeOnReturn_kLastNonzeroNoMint (hperm := by assumption) evmS evm0S evm1S evmFeeS I
         feeTo rootK rootKLast (by simpa [evmS, initState] using hwv) hunlockedStele
         hguard0 hguard1 hcall0 hdec0 hcall1 hdec1 hle0Source hle1Source hfeeGuard
         hfeeCall hfeeDec hfeeToAddr hkLastSource hprefix hrootNoMint htotalSourceNonzero
@@ -1249,7 +1249,7 @@ theorem uniswapMintFeeOnKLastNonzeroPositiveNoLiquidityCase
     exact_mod_cast hnat
   have hbody :=
     ExecFuncBody.execBlockRet
-      (uniswapMintProportionalFeeOnReturn_kLastNonzeroPositiveNoLiquidity
+      (uniswapMintProportionalFeeOnReturn_kLastNonzeroPositiveNoLiquidity (hperm := by assumption)
         evmS evm0S evm1S evmFeeS I feeTo rootK rootKLast
         (by simpa [evmS, initState] using hwv) hunlockedStele hguard0 hguard1 hcall0
         hdec0 hcall1 hdec1 hle0Source hle1Source hfeeGuard hfeeCall hfeeDec
@@ -1615,7 +1615,7 @@ theorem uniswapMintFeeOnKLastNonzeroPositiveWithLiquidityCase
     exact_mod_cast hnat
   have hbody :=
     ExecFuncBody.execBlockRet
-      (uniswapMintProportionalFeeOnReturn_kLastNonzeroPositiveWithLiquidity
+      (uniswapMintProportionalFeeOnReturn_kLastNonzeroPositiveWithLiquidity (hperm := by assumption)
         evmS evm0S evm1S evmFeeS I feeTo rootK rootKLast
         (by simpa [evmS, initState] using hwv) hunlockedStele hguard0 hguard1 hcall0
         hdec0 hcall1 hdec1 hle0Source hle1Source hfeeGuard hfeeCall hfeeDec

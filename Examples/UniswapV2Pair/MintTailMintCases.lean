@@ -85,7 +85,7 @@ theorem uniswapMintTailMintCases
           (by rw [hmem]; omega) hmem64)
         (by jump_dest) (by simp only [List.length_cons, List.length_nil]; omega)
       exact Or.inr ⟨_, _,
-        uniswapMintLiquidityMintPrefix evm recipient liquidity hto hliq hz
+        uniswapMintLiquidityMintPrefix (hperm := by simpa only [henv] using hperm) evm recipient liquidity hto hliq hz
           hfitSupply hfitBalance,
         mintFunctionPostState_accountMap_eq_of_runtimeMintRecipient
           hAccounts henv hrecipient (by rw [hmem]; omega) hfitSupply hfitBalance,
@@ -94,7 +94,7 @@ theorem uniswapMintTailMintCases
           (by rw [hmem]; omega)).trans hmem,
         uniswapInternalMintSuccessMem_read64_of_ge160 toWord liquidity
           (by rw [hmem]; omega) hmem64⟩
-    · exact Or.inl ⟨uniswapMintAfterLiquidityMintBalanceOverflowReverts evm recipient
+    · exact Or.inl ⟨uniswapMintAfterLiquidityMintBalanceOverflowReverts (hperm := by simpa only [henv] using hperm) evm recipient
         liquidity hto hliq hz hfitSupply (Nat.le_of_not_lt hfitBalance),
         uniswapInternalMintRuntimeBalanceOverflowReverts rd8128 hperm htotalFit
           (by rw [← hbalanceEq]; exact Nat.le_of_not_lt hfitBalance) hmem hmem64
