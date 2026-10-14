@@ -52,7 +52,7 @@ theorem uniswapMintBody
         have hbody :
             ExecTransitionBody config contract evmS (mintStore I) mintTransition.body
               .reverted := by
-          exact uniswapMintBodyReverts_firstNoCode evmS I
+          exact uniswapMintBodyReverts_firstNoCode (hperm := by assumption) evmS I
             (by simp only [evmS, initState]; exact hwv)
             hunlockedStele hguard0
         exact (uniswapMintRuntimeFirstBalanceOfMissingCodeReverts
@@ -82,7 +82,7 @@ theorem uniswapMintBody
                     (false, evm0S, o) false := by
                   simpa [evmS, hz, initState, uniswapLockEnteredState,
                     uniswapUnlockedState, storageStore_executionEnv] using hcallAll
-                exact uniswapMintBodyReverts_firstCallFailure evmS evm0S I
+                exact uniswapMintBodyReverts_firstCallFailure (hperm := by assumption) evmS evm0S I
                   (by simp only [evmS, initState]; exact hwv)
                   hunlockedStele hguard0 hcall0)
           · by_cases hshort : o.size < 32
@@ -102,7 +102,7 @@ theorem uniswapMintBody
               have hbody :
                   ExecTransitionBody config contract evmS (mintStore I) mintTransition.body
                     .reverted := by
-                exact uniswapMintBodyReverts_firstCallDecode evmS evm0S I
+                exact uniswapMintBodyReverts_firstCallDecode (hperm := by assumption) evmS evm0S I
                   (by simp only [evmS, initState]; exact hwv)
                   hunlockedStele hguard0 hcall0 hdec0
               exact (hrevShort hzTrue hshort).reEquivExecutionRevert hcode hdispatch
@@ -139,7 +139,7 @@ theorem uniswapMintBody
                       (reserveEvm := uniswapLockEnteredState evmS)
                       (balance0 := uniswapUint256Value balance0)
                       hPostAccounts0 henv0I htoken1NoCode
-                  exact uniswapMintBodyReverts_secondNoCode evmS evm0S I
+                  exact uniswapMintBodyReverts_secondNoCode (hperm := by assumption) evmS evm0S I
                     (by simp only [evmS, initState]; exact hwv)
                     hunlockedStele hguard0 hcall0 hdec0 hguard1
                 exact (uniswapMintRuntimeSecondBalanceOfMissingCodeFromExtcodesize
@@ -172,7 +172,7 @@ theorem uniswapMintBody
                   have hbody :
                       ExecTransitionBody config contract evmS (mintStore I) mintTransition.body
                         .reverted := by
-                    exact uniswapMintBodyReverts_secondCallFailure evmS evm0S evm1S I
+                    exact uniswapMintBodyReverts_secondCallFailure (hperm := by assumption) evmS evm0S evm1S I
                       (by simp only [evmS, initState]; exact hwv)
                       hunlockedStele hguard0 hcall0 hdec0 hguard1 hcall1
                   exact (hrev1 hz1).reEquivExecutionRevert hcode hdispatch
@@ -191,7 +191,7 @@ theorem uniswapMintBody
                     have hbody :
                         ExecTransitionBody config contract evmS (mintStore I) mintTransition.body
                           .reverted := by
-                      exact uniswapMintBodyReverts_secondCallDecode evmS evm0S evm1S I
+                      exact uniswapMintBodyReverts_secondCallDecode (hperm := by assumption) evmS evm0S evm1S I
                         (by simp only [evmS, initState]; exact hwv)
                         hunlockedStele hguard0 hcall0 hdec0 hguard1 hcall1 hdec1
                     exact (hrevShort1 hz1True hshort1).reEquivExecutionRevert hcode hdispatch
@@ -233,7 +233,7 @@ theorem uniswapMintBody
                       have hbody :
                           ExecTransitionBody config contract evmS (mintStore I) mintTransition.body
                             .reverted := by
-                        exact uniswapMintBodyReverts_amount0Underflow evmS evm0S evm1S I
+                        exact uniswapMintBodyReverts_amount0Underflow (hperm := by assumption) evmS evm0S evm1S I
                           (by simp only [evmS, initState]; exact hwv)
                           hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1 hdec1 hlt0Source
                       exact (uniswapMintRuntimeAmount0SubUnderflowFromBalances
@@ -259,7 +259,7 @@ theorem uniswapMintBody
                         have hbody :
                             ExecTransitionBody config contract evmS (mintStore I) mintTransition.body
                               .reverted := by
-                          exact uniswapMintBodyReverts_amount1Underflow evmS evm0S evm1S I
+                          exact uniswapMintBodyReverts_amount1Underflow (hperm := by assumption) evmS evm0S evm1S I
                             (by simp only [evmS, initState]; exact hwv)
                             hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1 hdec1
                             hle0Source hlt1Source
@@ -309,7 +309,7 @@ theorem uniswapMintBody
                           have hbody :
                               ExecTransitionBody config contract evmS (mintStore I)
                                 mintTransition.body .reverted := by
-                            exact uniswapMintBodyReverts_mintFeeNoCode evmS evm0S evm1S I
+                            exact uniswapMintBodyReverts_mintFeeNoCode (hperm := by assumption) evmS evm0S evm1S I
                               (by simp only [evmS, initState]; exact hwv)
                               hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1 hdec1
                               hle0Source hle1Source hfeeGuard
@@ -355,7 +355,7 @@ theorem uniswapMintBody
                             have hbody :
                                 ExecTransitionBody config contract evmS (mintStore I)
                                   mintTransition.body .reverted := by
-                              exact uniswapMintBodyReverts_mintFeeCallFailure
+                              exact uniswapMintBodyReverts_mintFeeCallFailure (hperm := by assumption)
                                 evmS evm0S evm1S evmFeeS I
                                 (by simp only [evmS, initState]; exact hwv)
                                 hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1 hdec1
@@ -373,7 +373,7 @@ theorem uniswapMintBody
                               have hbody :
                                   ExecTransitionBody config contract evmS (mintStore I)
                                     mintTransition.body .reverted := by
-                                exact uniswapMintBodyReverts_mintFeeDecode
+                                exact uniswapMintBodyReverts_mintFeeDecode (hperm := by assumption)
                                   evmS evm0S evm1S evmFeeS I
                                   (by simp only [evmS, initState]; exact hwv)
                                   hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1 hdec1
@@ -476,7 +476,7 @@ theorem uniswapMintBody
           have hbody :
               ExecTransitionBody config contract evmS (mintStore I) mintTransition.body
                 .reverted := by
-            exact uniswapMintBodyReverts_firstCallFailure evmS
+            exact uniswapMintBodyReverts_firstCallFailure (hperm := by assumption) evmS
               { evmL with substate := (evmL.addAccessedAccount target).substate } I
               (by simp only [evmS, initState]; exact hwv)
               hunlockedStele hguard0 hcall0

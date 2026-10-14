@@ -69,7 +69,7 @@ theorem uniswapBurnAfterUpdateRuntimeReturns {g : Sat256} {s0 : State} {I : Exec
   have hreadLog := (pairDynamicMem_read_below ptr amount0 amount1 64 hin hlo hgap (by omega)).trans hread
   have rdRet := RD.uniswapBurnReturnPair rd1201 (by rw [hsLog]; omega) hlo hgLog hfit haw hcover hreadLog (by omega)
   refine ⟨uniswapLockExitedState (uniswapKLastIfFeeState evm fee), _,
-    uniswapBurnAfterUpdateSourceReturns evm fee amount0 amount1 hfee ha0 ha1 hr0 hr1 hk hu, ?_, rdRet⟩
+    uniswapBurnAfterUpdateSourceReturns (hperm := by simpa only [henv] using hperm) evm fee amount0 amount1 hfee ha0 ha1 hr0 hr1 hk hu, ?_, rdRet⟩
   · simpa only [uniswapLockExitedState, uniswapUnlockedState, storageStore_accountMap, heK] using
       congrArg (fun m => sstoreAccountMap I.codeOwner m ⟨12⟩ ⟨1⟩) hAccountsK
 

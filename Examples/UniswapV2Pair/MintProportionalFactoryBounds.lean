@@ -240,7 +240,11 @@ theorem uniswapMintProportionalFeeOnKLastZeroUpdateBoundsFromFactoryCases
   by_cases hbound0 : balance0.toNat ≤ reserve112Mask.toNat
   · by_cases hbound1 : balance1.toNat ≤ reserve112Mask.toNat
     · exact Or.inl ⟨hbound0, hbound1⟩
-    · exact Or.inr (uniswapMintProportionalUpdateSecondBoundFromAfterFeeCase nextFrame.locals
+    · exact Or.inr (uniswapMintProportionalUpdateSecondBoundFromAfterFeeCase (hpermAfter := by
+        simpa only [typedCallViaEVM_executionEnv_eq hfeeCall,
+          typedCallViaEVM_executionEnv_eq hcall1, typedCallViaEVM_executionEnv_eq hcall0,
+          uniswapLockEnteredState, uniswapUnlockedState, storageStore_executionEnv, initState]
+          using hperm) nextFrame.locals
         (AccountAddress.ofNat (mintToWord I).toNat)
         hcode hdispatch hsz36 hwv hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1 hdec1
         hle0Source hle1Source hfee hbase htoGet hamount0Get hamount1Get
@@ -251,7 +255,11 @@ theorem uniswapMintProportionalFeeOnKLastZeroUpdateBoundsFromFactoryCases
         (by simpa only [htotalSlot] using htotalFit)
         (by simpa only [htotalSlot] using hbalanceFit)
         hbound0 (Nat.lt_of_not_ge hbound1) hmem hmem64)
-  · exact Or.inr (uniswapMintProportionalUpdateFirstBoundFromAfterFeeCase nextFrame.locals
+  · exact Or.inr (uniswapMintProportionalUpdateFirstBoundFromAfterFeeCase (hpermAfter := by
+        simpa only [typedCallViaEVM_executionEnv_eq hfeeCall,
+          typedCallViaEVM_executionEnv_eq hcall1, typedCallViaEVM_executionEnv_eq hcall0,
+          uniswapLockEnteredState, uniswapUnlockedState, storageStore_executionEnv, initState]
+          using hperm) nextFrame.locals
       (AccountAddress.ofNat (mintToWord I).toNat)
       hcode hdispatch hsz36 hwv hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1 hdec1
       hle0Source hle1Source hfee hbase htoGet hamount0Get hamount1Get
