@@ -198,8 +198,8 @@ theorem registryTransfer_ownershipBody {σ σ₀ A I} {g : UInt256} (hwf : stora
         (ExecBlock.consNormal hcheck
           (ExecBlock.consNormal (ExecStmt.requireTrue hne0')
             (ExecBlock.consNormal (ExecStmt.letDecl hprev)
-              (ExecBlock.consNormal (ExecStmt.assign hnew hassign)
-                (ExecBlock.consNormal (ExecStmt.emit hemit) ExecBlock.nil))))))
+              (ExecBlock.consNormal (ExecStmt.assign (hperm := by first | assumption | exact Or.inr ‹_› | exact Or.inl rfl) hnew hassign)
+                (ExecBlock.consNormal (ExecStmt.emit (hperm := by simpa only [storageStore_executionEnv, initState] using hperm) hemit) ExecBlock.nil))))))
     exact rd7.reEquivExecutionGen hcode hd hdec hbody (by rw [storageStore_accountMap]; rfl)
       (returnEquiv.fallthrough rfl rfl (by native_decide))
   · have hpf : I.perm = false := by simpa using hperm

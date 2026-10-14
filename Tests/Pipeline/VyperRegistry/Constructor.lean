@@ -94,8 +94,8 @@ theorem registryConstructorCorrect :
         (ExecStmt.requireTrue (evalCallvalueEq_true (by simpa [initState] using hwv)))
         (ExecBlock.consNormal (ExecStmt.internalCallReturn (callee := initCallee) rfl initCallee_lookup rfl
           (ExecFuncBody.execBlockOK (ExecBlock.consNormal
-            (ExecStmt.assign (evalExpr_caller _) (hassignOwner _ rfl (by simp))) ExecBlock.nil)))
-          (ExecBlock.consNormal (ExecStmt.assign (evalExpr_intLit_word _ 1 (by decide)) (hassignNext _ rfl (by show ((∅ : Store).insert "__c0" .unit).get? "nextId" = none; simp)))
+            (ExecStmt.assign (hperm := by first | assumption | exact Or.inr ‹_› | exact Or.inl rfl) (evalExpr_caller _) (hassignOwner _ rfl (by simp))) ExecBlock.nil)))
+          (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [hs1.env] using hperm)) (evalExpr_intLit_word _ 1 (by decide)) (hassignNext _ rfl (by show ((∅ : Store).insert "__c0" .unit).get? "nextId" = none; simp)))
             ExecBlock.nil)))
     rcases rd4 with hoog | ⟨s, hX, hacc⟩
     · exact typedConstructorRefinementFor.outOfGas
