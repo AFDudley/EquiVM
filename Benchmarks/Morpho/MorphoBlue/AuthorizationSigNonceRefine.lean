@@ -63,8 +63,8 @@ theorem morphoAuthorizationNonceRefine {v : MorphoImmutables} {ee : ExecutionEnv
   have hass : ExecStmt config
       (authorizationUsedFrame { contract := contract, locals := locals, immutables := imms } n)
       evm setAuthorizationWithSigTransition.body[12]!
-      (.ok (authorizationUsedFrame { contract := contract, locals := locals, immutables := imms } n) evm1) :=
-    ExecStmt.assign (morphoAuthorizationNonceSourceExpr _ evm n hfit)
+      (if evm.executionEnv.perm then .ok (authorizationUsedFrame { contract := contract, locals := locals, immutables := imms } n) evm1 else .staticViolation) :=
+    execStmt_assign_storage (morphoAuthorizationNonceSourceExpr _ evm n hfit)
       (hl1.assignNonce imms evm hc _)
   by_cases hperm : ee.perm = true
   swap
@@ -74,7 +74,7 @@ theorem morphoAuthorizationNonceRefine {v : MorphoImmutables} {ee : ExecutionEnv
       (morphoAuthorizationNonceStoreStatic (v := v)
         (R := [n, a.nonce, UInt256.ofNat 6120] ++ authorizationHashTail R)
         (by simp [authorizationHashTail]; omega) hpf rd2)
-  have pref2 := (StateBlock.ofABlock pref1).step hass
+  have pref2 := (StateBlock.ofABlock pref1).step (by simpa only [hs.env, hperm, if_true] using hass)
   have haEval : evalExpr? config
       (authorizationUsedFrame { contract := contract, locals := locals, immutables := imms } n)
       evm1 (.tupleGet (.var "authorization") 3) = .ok (.int (Int.ofNat a.nonce.toNat)) :=

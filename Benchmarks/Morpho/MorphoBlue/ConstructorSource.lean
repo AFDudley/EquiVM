@@ -86,7 +86,8 @@ theorem morphoConstructorOwner_eval (a : AccountAddress) (evm : EVM.State) :
     apply Bool.eq_iff_iff.mpr; simp only [beq_iff_eq, Value.address.injEq, decide_eq_true_eq], decide_not]
 
 theorem morphoConstructorSource (a : AccountAddress) (evm : EVM.State)
-    (hcv : evm.executionEnv.weiValue = ⟨0⟩) (hne : a ≠ AccountAddress.ofNat 0) :
+    (hcv : evm.executionEnv.weiValue = ⟨0⟩) (hne : a ≠ AccountAddress.ofNat 0)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (morphoConstructorArgs a) contract.ctor.body
       (.returned (morphoConstructorFinal a evm.executionEnv) (morphoConstructorState evm a) none)
       (initialImmutables contract) := by
@@ -102,8 +103,9 @@ theorem morphoConstructorSource (a : AccountAddress) (evm : EVM.State)
     exact ha
   have hv : AccountAddress.ofNat (UInt256.ofNat a.val).toNat = a := by
     exact address_word_roundtrip a
-  apply ExecBlock.consNormal (ExecStmt.assign (value := .address a) ?_ ?_)
-  · apply ExecBlock.consNormal (ExecStmt.emit (vals := [.address a]) ?_)
+  apply ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm)
+    (evm' := morphoConstructorState evm a) (value := .address a) ?_ ?_)
+  · apply ExecBlock.consNormal (ExecStmt.emit (hperm := by simpa only [morphoConstructorState, storageStore_executionEnv] using hperm) (vals := [.address a]) ?_)
     · exact ExecBlock.nil
     · simp only [evalExprs?, evalExpr?, morphoConstructorFinal, morphoConstructorFrame,
         morphoConstructorArgs, store_get_self, EvalResult.ofOption, pure, bind, EvalResult.bind]

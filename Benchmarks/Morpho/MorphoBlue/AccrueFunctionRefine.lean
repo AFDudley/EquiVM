@@ -80,7 +80,7 @@ theorem morphoAccrueFunctionRefineWithMemory (p : MarketParamsWords) (imms : Sto
       · obtain ⟨aw2, k2, C2, rd2⟩ := morphoAccrueNoIrmBranch (v := v) p hc (by omega) hi hp1 rd1
         by_cases hperm : ee.perm = true
         · obtain ⟨aw3, k3, C3, rd3⟩ := morphoAccrueStoreTimestamp (v := v) p.id (by omega) hperm hvalid rd2
-          refine .ok (morphoAccrueSourceNoIrm p hc evm imms ht' hn' hi) (Or.inl rfl)
+          refine .ok (morphoAccrueSourceNoIrm (hperm := (congrArg ExecutionEnv.perm hs.env).trans hperm) p hc evm imms ht' hn' hi) (Or.inl rfl)
             (accrueTimestamp_bridge hs p.id)
             ((hm1.hash p.id (UInt256.ofNat 3)).weaken (Nat.sub_le spare 224)) ?_ rd3
           simpa only [accrueMemoryCost, hi, true_or, ↓reduceIte, Nat.add_zero] using
@@ -100,8 +100,12 @@ theorem morphoAccrueFunctionRefineWithMemory (p : MarketParamsWords) (imms : Sto
         cases hir with
         | reverted he hr => exact .reverted (morphoAccrueSourceFromIrmRevert p hc imms evm ht' hn' hi he) hr
         | static he hr => exact .static (morphoAccrueSourceFromIrmStatic p hc imms evm ht' hn' hi he) hr
-        | @ok locals' evm' σ' mem' fp' aw' out' k' C' he hl hs' hm' ha hr =>
-          refine .ok (morphoAccrueSourceFromIrmOk p hc imms evm _ _ ht' hn' hi he hl) (Or.inl rfl) hs' hm' ?_ hr
+        | @ok locals' evm' σ' mem' fp' aw' out' k' C' hp he hl hs' hm' ha hr =>
+          have hp' : evm'.executionEnv.perm = true := by
+            simpa only [storeMarketLastUpdate_executionEnv] using
+              (congrArg ExecutionEnv.perm hs'.env).trans hp
+          refine .ok (morphoAccrueSourceFromIrmOk (hperm := hp')
+            p hc imms evm _ _ ht' hn' hi he hl) (Or.inl rfl) hs' hm' ?_ hr
           simpa only [accrueMemoryCost, hs.env, ← hs.accounts,
             if_neg (not_or_intro hi hz), hs'.env, ← hs'.accounts] using ha
   · exact .reverted (morphoAccrueSourceUnderflow p evm imms (by

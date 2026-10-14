@@ -77,10 +77,10 @@ theorem morphoWithdrawCollateralUpdateRefine {v : MorphoImmutables} {ee : Execut
     simpa only [hs.env, ← hs.accounts] using hf
   have hass : ExecStmt config { contract := contract, locals := l1, immutables := imms }
       evm withdrawCollateralTransition.body[13]!
-      (.ok { contract := contract, locals := l1, immutables := imms }
+      (if evm.executionEnv.perm then .ok { contract := contract, locals := l1, immutables := imms }
         (storePositionPacked evm p.id account true
-          ((UInt256.sub (positionFieldWord evm.accountMap evm.executionEnv p.id account 2) assets)))) :=
-    ExecStmt.assign (evalCheckedUint128SubOk (hl1.evalCollateral imms evm ha) he5 hb' hf')
+          ((UInt256.sub (positionFieldWord evm.accountMap evm.executionEnv p.id account 2) assets))) else .staticViolation) :=
+    execStmt_assign_storage (evalCheckedUint128SubOk (hl1.evalCollateral imms evm ha) he5 hb' hf')
       (assignPositionPacked evm l1 imms _ _ p.id account true _ (by rw [usub_toNat hf']; omega)
         ha hl1.position (hl1.evalId imms evm) (hl1.evalAccount imms evm))
   obtain ⟨k4, C4, rd4⟩ := morphoCheckedSub128Ok (v := v) (by simp only [withdrawCollateralGuardTail, withdrawCollateralUpdateTail, withdrawCollateralHealthTail, List.length_append, List.length_cons, List.length_nil, List.append]; omega)
@@ -96,7 +96,7 @@ theorem morphoWithdrawCollateralUpdateRefine {v : MorphoImmutables} {ee : Execut
   have hm1 := hm.narrow (by decide : 64 ≤ 416)
   have had := (hm.narrowAdvance.trans (heapAdvance_hash _ _ p.id (UInt256.ofNat 2))).trans
     (heapAdvance_hash _ _ account (solcMappingSlot ⟨2⟩ p.id))
-  exact .ok (ab1.step hass) (by simpa only [hs.env, ← hs.accounts] using hs') hperm
+  exact .ok (ab1.step (by simpa only [hs.env, hperm, if_true] using hass)) (by simpa only [hs.env, ← hs.accounts] using hs') hperm
     ((hm1.hash p.id (UInt256.ofNat 2)).hash account (solcMappingSlot ⟨2⟩ p.id))
     (by simpa only [Nat.add_zero] using had) rd5
 

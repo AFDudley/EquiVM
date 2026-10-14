@@ -56,7 +56,7 @@ theorem morphoAuthorizationSourceSignatory {a cd locals}
     exact ExecStmt.iteFalse (by simpa only [hs, ne_eq, not_true_eq_false, decide_false] using he) .nil
   · simp only [authorizationSignatoryLocals, hs, show (32 : Nat) ≠ 0 by decide, ↓reduceIte]
     apply ExecStmt.iteTrue (by simpa only [hs] using he)
-    apply ExecBlock.consNormal (ExecStmt.assign ?_ (assignLocalWord (store_get_self _ _ _))) .nil
+    apply ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) ?_ (assignLocalWord (store_get_self _ _ _))) .nil
     rw [evalExpr?]
     have he' : evalExpr? config {
         contract := contract, locals := locals.insert "signatory" (.address (AccountAddress.ofNat 0)), immutables := imms }

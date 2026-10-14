@@ -63,6 +63,8 @@ theorem morphoSupplyMarketRefine {v : MorphoImmutables} {ee : ExecutionEnv} {g :
         (halfWord_bound _ _) hc (Nat.le_of_not_gt hf) rd2)
   have hass := morphoAccrueAssetsAssign p l1 imms evm ⟨1, by decide⟩ "__c5" shares hl1.toMarketLocals hs1
     (by simpa only [hs.env, ← hs.accounts] using hf)
+  simp only [show evm.executionEnv.perm = true from
+    (congrArg ExecutionEnv.perm hs.env).trans hperm, if_true] at hass
   obtain ⟨k3, C3, rd3⟩ := morphoCheckedAdd128Ok (v := v) (by change R.length + 13 + 6 ≤ 1024; omega)
     (by rw [morphoPatchedValidJumps v]; jump_dest) (halfWord_bound _ _) hc hf rd2
   obtain ⟨k4, C4, rd4⟩ := morphoStoreUint128High (v := v) (by change R.length + 11 + 7 ≤ 1024; omega)

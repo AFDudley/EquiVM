@@ -127,7 +127,7 @@ theorem morphoSetFeeBody {σ σ₀ A I} {g : UInt256} (v : MorphoImmutables)
                   apply ExecFuncBody.execBlockOK
                   apply pref.run
                   apply ExecBlock.consNormal hcall
-                  exact morphoSetFeeFinishSource p fee frame.locals (immStore v) evm' hl' hg' hg.2.2.2
+                  exact morphoSetFeeFinishSource (hperm := by simpa only [hs'.env] using hp) p fee frame.locals (immStore v) evm' hl' hg' hg.2.2.2
                 exact reEquivSelectorExecutionGen hcode hx hd hdec hstele hsfinal.accounts
                   (.fallthrough rfl rfl (by native_decide))
               · have hp' : I.perm = false := Bool.eq_false_iff.mpr hp

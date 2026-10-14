@@ -53,7 +53,7 @@ theorem morphoAccrueFinishRefineWithMemory (p : MarketParamsWords) (locals imms 
     have hz : evalExpr? config { contract := contract, locals := locals, immutables := imms } evm
         (.binary .ne (.storage ⟨"market", [.mindex (.var "id"), .field "fee"]⟩) (.intLit 0)) = .ok (.bool false) := by
       simpa only [hs.env, ← hs.accounts, hf, ne_eq, not_true_eq_false, decide_false] using he
-    have hem := morphoAccrueEmit p locals imms evm rate interest ⟨0⟩ hl.toMarketLocals
+    have hem := morphoAccrueEmit (hperm := (congrArg ExecutionEnv.perm hs.env).trans hp) p locals imms evm rate interest ⟨0⟩ hl.toMarketLocals
       (hl.evalRate imms evm) (hl.evalInterest imms evm) (hl.evalShares imms evm)
     obtain ⟨aw1, k1, C1, rd1⟩ := morphoAccrueLogReturn (v := v) (by omega) hp hvalid h
     have had := (hm.eventAdvance rate interest ⟨0⟩).trans
@@ -70,7 +70,7 @@ theorem morphoAccrueFinishRefineWithMemory (p : MarketParamsWords) (locals imms 
     rcases morphoAccrueFeeRefineWithFee (v := v) p locals imms hstack hp hs hm hb hl h with hr | hok
     · exact Or.inl ⟨ExecBlock.consRevert (ExecStmt.iteTrue hn hr.1), hr.2⟩
     · obtain ⟨shares, locals', evm', σ', aw1, k1, C1, hstele, hl', hs', hm', hnfee, rd1⟩ := hok
-      have hem := morphoAccrueEmit p locals' imms evm' rate interest shares hl'.toMarketLocals
+      have hem := morphoAccrueEmit (hperm := (congrArg ExecutionEnv.perm hs'.env).trans hp) p locals' imms evm' rate interest shares hl'.toMarketLocals
         (hl'.evalRate imms evm') (hl'.evalInterest imms evm') (hl'.evalShares imms evm')
       obtain ⟨aw2, k2, C2, rd2⟩ := morphoAccrueFeeLogReturn (v := v) (by omega) hp hvalid rd1
       have hnf : marketFieldWord σ' ee p.id 5 ≠ ⟨0⟩ := by

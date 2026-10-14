@@ -51,6 +51,8 @@ theorem morphoLiquidateBadHighRefine {v : MorphoImmutables} {ee : ExecutionEnv} 
       (UInt256.sub (marketFieldWord σ ee p.id 3) badShares)
   have hass := morphoMarketSubtractAssign p locals imms evm ⟨3, by decide⟩ "__c20" badShares hl.toMarketLocals hecast
     (by simpa only [hs.env, ← hs.accounts] using hf)
+  simp only [show evm.executionEnv.perm = true from
+    (congrArg ExecutionEnv.perm hs.env).trans hperm, if_true] at hass
   obtain ⟨k2, C2, rd2⟩ := morphoCheckedSub128Ok (v := v) (ret := UInt256.ofNat 2278)
     (R := [marketFieldSlot p.id 3, UInt256.ofNat 3169] ++ liquidateBadTail p.id assets seized shares badAssets badShares srcOff len R) (by change R.length + 13 + 6 ≤ 1024; omega)
     (by rw [morphoPatchedValidJumps v]; jump_dest) hb hbs hf rd1
@@ -62,7 +64,7 @@ theorem morphoLiquidateBadHighRefine {v : MorphoImmutables} {ee : ExecutionEnv} 
   have hclear : ExecStmt config { contract := contract, locals := locals, immutables := imms } e1
       liquidateBadBody[11]! (.ok { contract := contract, locals := locals, immutables := imms }
         (storePositionPacked e1 p.id account false (UInt256.ofNat 0))) :=
-    ExecStmt.assign hezero (assignPositionPacked e1 locals imms _ _ p.id account false (UInt256.ofNat 0)
+    ExecStmt.assign (hperm := Or.inr ((congrArg ExecutionEnv.perm hs1.env).trans hperm)) hezero (assignPositionPacked e1 locals imms _ _ p.id account false (UInt256.ofNat 0)
       (by decide) ha hl.position (hl.evalId imms e1) (hl.evalBorrower imms e1))
   have he : ExecBlock config { contract := contract, locals := locals, immutables := imms } evm
       (liquidateBadBody.drop 10) (.ok { contract := contract, locals := locals, immutables := imms }

@@ -11,10 +11,11 @@ def supplyCallbackTail (assets shares srcOff len : UInt256) (R : List UInt256) :
   [srcOff, len, UInt256.ofNat 0, UInt256.ofNat 128, UInt256.ofNat 32, shares, assets, solcAddrMask] ++ R
 
 theorem supplyEmit (p : MarketParamsWords) (assets shares account : UInt256) (data : ByteArray)
-    (locals imms : Store) (evm : EVM.State) (hl : SupplyLocals p assets shares account data locals) :
+    (locals imms : Store) (evm : EVM.State) (hl : SupplyLocals p assets shares account data locals)
+    (hperm : evm.executionEnv.perm = true) :
     ExecStmt config { contract := contract, locals := locals, immutables := imms } evm
       supplyTransition.body[17]! (.ok { contract := contract, locals := locals, immutables := imms } evm) := by
-  apply ExecStmt.emit
+  apply ExecStmt.emit (hperm := hperm)
   change evalExprs? config _ _ [.var "id", .env .caller, .var "onBehalf", .var "assets", .var "shares"] = _
   simp only [evalExprs?, hl.evalId imms evm, hl.evalAccount imms evm, hl.evalAssets imms evm,
     hl.evalShares imms evm, evalExpr?, envValue, EvalResult.bind, bind, pure]

@@ -64,6 +64,8 @@ theorem morphoLiquidateMarketRefine {v : MorphoImmutables} {ee : ExecutionEnv} {
       (morphoCheckedSub128Reverts (v := v) (by change R.length + 11 + 6 ≤ 1024; omega) hb hc (Nat.lt_of_not_ge hf) rd2)
   have hass := morphoMarketSubtractAssign p l1 imms evm ⟨3, by decide⟩ "__c13" shares hl1.toMarketLocals he6
     (by simpa only [hs.env, ← hs.accounts] using hf)
+  simp only [show evm.executionEnv.perm = true from
+    (congrArg ExecutionEnv.perm hs.env).trans hperm, if_true] at hass
   obtain ⟨k3, C3, rd3⟩ := morphoCheckedSub128Ok (v := v) (by change R.length + 11 + 6 ≤ 1024; omega)
     (by rw [morphoPatchedValidJumps v]; jump_dest) hb hc hf rd2
   obtain ⟨k4, C4, rd4⟩ := morphoStoreUint128High (v := v) (by change R.length + 9 + 7 ≤ 1024; omega)

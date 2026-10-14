@@ -48,7 +48,7 @@ theorem morphoLiquidateBadMathRefine {v : MorphoImmutables} {ee : ExecutionEnv} 
     hl.insert _ _ (by decide) (by decide) (by decide)
   have he1 : ExecStmt config { contract := contract, locals := locals, immutables := imms } evm
       liquidateBadBody[0]! (.ok { contract := contract, locals := l1, immutables := imms } evm) :=
-    ExecStmt.assign (safeTransferMemoryAdd_eval hget 192) (assignLocalWord hget)
+    ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (safeTransferMemoryAdd_eval hget 192) (assignLocalWord hget)
   let bds := positionFieldWord σ ee p.id account 1
   have hebds : evalExpr? config { contract := contract, locals := l1, immutables := imms } evm
       (.storage ⟨"position", [.mindex (.var "id"), .mindex (.var "borrower"), .field "borrowShares"]⟩) =
@@ -58,7 +58,7 @@ theorem morphoLiquidateBadMathRefine {v : MorphoImmutables} {ee : ExecutionEnv} 
   have hl2 : LiquidateEventLocals p account seized shares data assets (UInt256.ofNat 0) bds l2 := hl1.setBadShares bds
   have he2 : ExecStmt config { contract := contract, locals := l1, immutables := imms } evm
       liquidateBadBody[1]! (.ok { contract := contract, locals := l2, immutables := imms } evm) :=
-    ExecStmt.assign hebds (assignLocalWord hl1.badShares_eq)
+    ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hebds (assignLocalWord hl1.badShares_eq)
   have ab2 : ABlock config evm { contract := contract, locals := locals, immutables := imms } liquidateBadBody
       { contract := contract, locals := l2, immutables := imms } (liquidateBadBody.drop 2) :=
     advancePureBlock (advancePureBlock ABlock.start he1) he2
@@ -96,7 +96,7 @@ theorem morphoLiquidateBadMathRefine {v : MorphoImmutables} {ee : ExecutionEnv} 
   have hl5 : LiquidateEventLocals p account seized shares data assets bda bds l5 := hl4.setBadAssets bda
   have he5 : ExecStmt config { contract := contract, locals := l4, immutables := imms } evm
       liquidateBadBody[4]! (.ok { contract := contract, locals := l5, immutables := imms } evm) :=
-    ExecStmt.assign (by simp only [evalExpr?, l4, store_get_self, EvalResult.ofOption]) (assignLocalWord hl4.badAssets_eq)
+    ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (by simp only [evalExpr?, l4, store_get_self, EvalResult.ofOption]) (assignLocalWord hl4.badAssets_eq)
   have ab5 := advancePureBlock ab4 he5
   have hbda : bda.toNat < 2 ^ 128 :=
     lt_of_le_of_lt (minWord_le_left _ _) (halfWord_bound _ _)

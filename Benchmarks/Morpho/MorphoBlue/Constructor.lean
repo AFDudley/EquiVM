@@ -48,7 +48,7 @@ theorem morphoConstructorCorrect :
       · exact .outOfGas (Xi_error_of_X (g := g) (by rw [← hcode] at hoog; exact hoog))
       · have hxi := Xi_success_of_X (g := g) (by rw [← hcode] at hX; exact hX)
         rw [hacc] at hxi
-        exact .execution hxi (morphoConstructorExec a (morphoConstructorSource a _ hcv hzero))
+        exact .execution hxi (morphoConstructorExec a (morphoConstructorSource (hperm := by assumption) a _ hcv hzero))
           (.success rfl rfl ha rfl) (morphoConstructorFinal_fit a I)
   · exact rejects (.inl hcv) (morphoConstructorValueReverts hcode hcv)
 

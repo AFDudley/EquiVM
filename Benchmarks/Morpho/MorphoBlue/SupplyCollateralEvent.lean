@@ -33,10 +33,11 @@ theorem supplyCollateralEventMem_facts (p : MarketParamsWords) (account assets :
 
 -- The event has no state effect in Stele; its arguments are still evaluated.
 theorem supplyCollateralEmit (p : MarketParamsWords) (assets account : UInt256) (data : ByteArray)
-    (locals imms : Store) (evm : EVM.State) (hl : SupplyCollateralLocals p assets account data locals) :
+    (locals imms : Store) (evm : EVM.State) (hl : SupplyCollateralLocals p assets account data locals)
+    (hperm : evm.executionEnv.perm = true) :
     ExecStmt config { contract := contract, locals := locals, immutables := imms } evm
       supplyCollateralTransition.body[9]! (.ok { contract := contract, locals := locals, immutables := imms } evm) := by
-  apply ExecStmt.emit
+  apply ExecStmt.emit (hperm := hperm)
   change evalExprs? config _ _ [.var "id", .env .caller, .var "onBehalf", .var "assets"] = _
   simp only [evalExprs?, hl.evalId imms evm, hl.evalAccount imms evm, hl.evalAssets imms evm,
     evalExpr?, envValue, EvalResult.bind, bind, pure]

@@ -24,11 +24,11 @@ theorem morphoSupplyCollateralAssign (p : MarketParamsWords) (assets account : U
     (hf : (positionFieldWord evm.accountMap evm.executionEnv p.id account 2).toNat + assets.toNat < 2 ^ 128) :
     ExecStmt config { contract := contract, locals := locals, immutables := imms } evm
       supplyCollateralTransition.body[8]!
-      (.ok { contract := contract, locals := locals, immutables := imms }
-        (storePositionPacked evm p.id account true (positionFieldWord evm.accountMap evm.executionEnv p.id account 2 + assets))) := by
+      (if evm.executionEnv.perm then .ok { contract := contract, locals := locals, immutables := imms }
+        (storePositionPacked evm p.id account true (positionFieldWord evm.accountMap evm.executionEnv p.id account 2 + assets)) else .staticViolation) := by
   have he : evalExpr? config { contract := contract, locals := locals, immutables := imms } evm (.var "__c1") =
       .ok (.int (Int.ofNat assets.toNat)) := by simp only [evalExpr?, hi, EvalResult.ofOption]
-  apply ExecStmt.assign (evalCheckedUint128AddOk (hl.evalCollateral imms evm ha) he hf)
+  apply execStmt_assign_storage (evalCheckedUint128AddOk (hl.evalCollateral imms evm ha) he hf)
   apply assignPositionPacked evm locals imms (.var "id") (.var "onBehalf") p.id account true _ _ ha hl.position
     (hl.evalId imms evm) (hl.evalAccount imms evm)
   rw [uadd_toNat, Nat.mod_eq_of_lt (show
@@ -113,7 +113,7 @@ theorem morphoSupplyCollateralUpdateRefine {v : MorphoImmutables} {ee : Executio
       change _ < 2 ^ 256; omega)]; exact hf
   obtain ⟨k5, C5, rd5⟩ := morphoStoreUint128High (v := v) (by change R.length + 8 + 7 ≤ 1024; omega) hp
     (by rw [morphoPatchedValidJumps v]; jump_dest) hsum rd4
-  apply SupplyCollateralUpdateRefines.ok (ab1.step hass) _ hp rd5
+  apply SupplyCollateralUpdateRefines.ok (ab1.step (by simpa only [hs.env, hp, if_true] using hass)) _ hp rd5
   simpa only [hs.env, ← hs.accounts] using
     storePositionPacked_bridge hs p.id account true (positionFieldWord σ ee p.id account 2 + assets)
 
