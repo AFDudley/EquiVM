@@ -524,7 +524,7 @@ theorem fileAddressFlapperSourceStoreSplit
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let localsNope := fileAddressLocalsNope I
     let evmSet := fileAddressSetFlapperEVM evmNope I
-    (∀ r, ExecBlock config { contract := contract, locals := localsNope } evmSet
+    (I.perm = true → ∀ r, ExecBlock config { contract := contract, locals := localsNope } evmSet
         [ .require (.binary .gt (.extCodeSize (.storage vatRef)) (.intLit 0)),
           .externalCall (.storage vatRef) "hope" (.intLit 0) [.var "data"] "_hopeRet" ] r →
       ExecBlock config { contract := contract, locals := locals } evm0
@@ -565,7 +565,7 @@ theorem fileAddressFlapperSourceStoreSplit
         (.ok { contract := contract, locals := localsNope } evmNope) := by
     simpa [locals, localsNope, fileAddressLocalsNope, collapseReturns, config, vowExternalABI,
       decodeVoid?] using
-        ExecStmt.externalCallSuccess hvatNope (by simp [evalExpr?, pure]) hargsNope
+        ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hvatNope (by simp [evalExpr?, pure]) hargsNope
           hcallNope (vowExternalABI_decode_nope outNope)
   have hdataNope :
       evalExpr? config { contract := contract, locals := localsNope } evmNope (.var "data") =
@@ -596,7 +596,7 @@ theorem fileAddressFlapperSourceStoreSplit
     simp only [checkedExternalCallStmts, List.cons_append, List.nil_append]
     refine ExecBlock.consNormal (ExecStmt.requireTrue hguardNope) ?_
     exact ExecBlock.consNormal hcallNopeStmt h
-  refine ⟨fun r h => hpre r (ExecBlock.consNormal (ExecStmt.assign hdataNope hassign) h),
+  refine ⟨fun hperm r h => hpre r (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by rw [typedCallViaEVM_executionEnv_eq hcallNope]; exact hperm)) hdataNope hassign) h),
     fun hpf => ?_⟩
   have hpermNope : evmNope.executionEnv.perm = false := by
     rw [typedCallViaEVM_executionEnv_eq hcallNope]
@@ -631,7 +631,8 @@ theorem fileAddressFlapperSourceSuccess
     (hcallHope :
       typedCallViaEVM config (fileAddressSetFlapperEVM evmNope I)
         (EVM.address (fileAddressVatAddressOf (fileAddressSetFlapperEVM evmNope I)))
-        "hope" 0 [.address (fileAddressData I)] (true, evmHope, outHope) true) :
+        "hope" 0 [.address (fileAddressData I)] (true, evmHope, outHope) true)
+    (hperm : I.perm = true) :
     let locals := fileAddressLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     ExecTransitionBody config contract evm0 locals fileAddressTransition.body
@@ -661,10 +662,10 @@ theorem fileAddressFlapperSourceSuccess
         (.ok { contract := contract, locals := fileAddressLocalsNopeHope I } evmHope) := by
     simpa [localsNope, fileAddressLocalsNopeHope, collapseReturns, config, vowExternalABI,
       decodeVoid?] using
-        ExecStmt.externalCallSuccess hvatHope (by simp [evalExpr?, pure]) hargsHope hcallHope
+        ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hvatHope (by simp [evalExpr?, pure]) hargsHope hcallHope
           (vowExternalABI_decode_hope outHope)
   simpa [ExecTransitionBody, evm0, locals] using ExecFuncBody.execBlockOK
-    ((fileAddressFlapperSourceStoreSplit (g := g) hwv hauth hwhat hvatCodeNope hcallNope).1 _
+    ((fileAddressFlapperSourceStoreSplit (g := g) hwv hauth hwhat hvatCodeNope hcallNope).1 hperm _
       (ExecBlock.consNormal (ExecStmt.requireTrue hguardHope)
         (ExecBlock.consNormal hcallHopeStmt ExecBlock.nil)))
 
@@ -678,8 +679,8 @@ theorem fileAddressFlopperSourceBodySplit {σ σ₀ A I} {g : UInt256}
     let evm1 := Stele.EVM.storageStore evm0 I.codeOwner ⟨3⟩
       (setAddressOffset0Word (Stele.EVM.storageLoad evm0 I.codeOwner ⟨3⟩)
         (fileAddressDataKey I))
-    ExecTransitionBody config contract evm0 locals fileAddressTransition.body
-      (.returned { contract := contract, locals := locals } evm1 none) ∧
+    (I.perm = true → ExecTransitionBody config contract evm0 locals fileAddressTransition.body
+      (.returned { contract := contract, locals := locals } evm1 none)) ∧
     (I.perm = false →
       ExecTransitionBody config contract evm0 locals fileAddressTransition.body
         .staticViolation) := by
@@ -725,9 +726,9 @@ theorem fileAddressFlopperSourceBodySplit {σ σ₀ A I} {g : UInt256}
     exact execBlock_singleton (ExecStmt.iteFalse hflapper
       (execBlock_singleton (ExecStmt.iteTrue hflopper
         (execBlock_singleton h))))
-  refine ⟨?_, fun hpf => ?_⟩
+  refine ⟨fun hperm => ?_, fun hpf => ?_⟩
   · simpa [ExecTransitionBody, evm0, evm1, locals] using
-      ExecFuncBody.execBlockOK (hbody _ (ExecStmt.assign hdata hassign))
+      ExecFuncBody.execBlockOK (hbody _ (ExecStmt.assign (hperm := Or.inr hperm) hdata hassign))
   · simpa [ExecTransitionBody, evm0, locals] using ExecFuncBody.execBlockStatic
       (hbody _ (ExecStmt.assignStatic hdata hassign (by simp [evm0, initState]; exact hpf)))
 
@@ -735,7 +736,8 @@ theorem fileAddressFlopperSourceBody {σ σ₀ A I} {g : UInt256}
     (hwv : I.weiValue = ⟨0⟩)
     (hauth : solcSlotWordAt (vowCallerWardsSlot I) σ I = ⟨1⟩)
     (hnotFlapper : fileAddressWhat I ≠ fileAddressFlapperBytes)
-    (hwhat : fileAddressWhat I = fileAddressFlopperBytes) :
+    (hwhat : fileAddressWhat I = fileAddressFlopperBytes)
+    (hperm : I.perm = true) :
     let locals := fileAddressLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let evm1 := Stele.EVM.storageStore evm0 I.codeOwner ⟨3⟩
@@ -743,7 +745,7 @@ theorem fileAddressFlopperSourceBody {σ σ₀ A I} {g : UInt256}
         (fileAddressDataKey I))
     ExecTransitionBody config contract evm0 locals fileAddressTransition.body
       (.returned { contract := contract, locals := locals } evm1 none) :=
-  (fileAddressFlopperSourceBodySplit (σ₀ := σ₀) (A := A) (g := g) hwv hauth hnotFlapper hwhat).1
+  (fileAddressFlopperSourceBodySplit (σ₀ := σ₀) (A := A) (g := g) hwv hauth hnotFlapper hwhat).1 hperm
 
 theorem fileAddressUnrecognizedSourceBody {σ σ₀ A I} {g : UInt256}
     (hwv : I.weiValue = ⟨0⟩)
@@ -1490,16 +1492,16 @@ theorem vowFileAddressFlopperAuthorizedBodyCore
   have hstoredStele :
       stored = setAddressOffset0Word (solcSlotWord σ I ⟨3⟩) dataKey := by
     rfl
-  have hbody :
+  have hbody (hperm : I.perm = true) :
       ExecTransitionBody config contract evm0 locals fileAddressTransition.body
         (.returned { contract := contract, locals := locals } evm1 none) := by
     simpa [evm0, evm1, locals, dataKey, stored, hstoredStele, solcSlotWord, initState,
       Stele.EVM.storageLoad] using
-        (fileAddressFlopperSourceBody
+        (fileAddressFlopperSourceBody (hperm := hperm)
           (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
           hwv hauthStele hnotFlapper hwhat)
   rcases RD.vowFileAddressFlopperSuccessSplit hreach hsz68 hsize hauthSolc hnotFlapper hwhat with
-    ⟨_, hret⟩ | ⟨hpf, hstatic⟩
+    ⟨hperm, hret⟩ | ⟨hpf, hstatic⟩
   swap
   · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode
       ((fileAddressFlopperSourceBodySplit (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
@@ -1515,7 +1517,7 @@ theorem vowFileAddressFlopperAuthorizedBodyCore
         (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         (sstoreAccountMap I.codeOwner σ ⟨3⟩ stored) ByteArray.empty := by
     simpa [stored, dataKey] using hret
-  exact hret'.reEquivExecutionGen hcode hdispatch hdecode hbody
+  exact hret'.reEquivExecutionGen hcode hdispatch hdecode (hbody hperm)
     haccounts henc
 
 theorem vowFileAddressUnrecognizedAuthorizedBodyCore

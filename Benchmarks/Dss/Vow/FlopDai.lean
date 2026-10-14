@@ -81,7 +81,7 @@ theorem vowFlopSourceDai1CallFailure
           (perm := false))
         (.ok { contract := contract, locals := locals1 } evmSin) := by
     simpa [locals, locals1, flopLocalsVatSin, collapseReturns] using
-      ExecStmt.externalCallSuccess hvat (by simp [evalExpr?, pure]) hargsSin hcallSin hdecSin
+      ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hvat (by simp [evalExpr?, pure]) hargsSin hcallSin hdecSin
   have hvatSinVar :
       evalExpr? config { contract := contract, locals := locals1 } evmSin (.var "vatSin") =
         .ok (.int (Int.ofNat vatSin.toNat)) := by
@@ -198,7 +198,7 @@ theorem vowFlopSourceDai1CallFailure
       ExecStmt config { contract := contract, locals := locals3 } evmSin
         (.externalCall (.storage vatRef) "dai" (.intLit 0) [thisAddr] "vatDai"
           (perm := false)) .reverted := by
-    exact ExecStmt.externalCallFailure hvatDai (by simp [evalExpr?, pure])
+    exact ExecStmt.externalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hvatDai (by simp [evalExpr?, pure])
       hargsDai hcallDai
   have hblock :
       ExecBlock config { contract := contract, locals := locals } evm0 flopTransition.body
@@ -275,7 +275,7 @@ theorem vowFlopSourceDai1NoCode
           (perm := false))
         (.ok { contract := contract, locals := locals1 } evmSin) := by
     simpa [locals, locals1, flopLocalsVatSin, collapseReturns] using
-      ExecStmt.externalCallSuccess hvat (by simp [evalExpr?, pure]) hargsSin hcallSin hdecSin
+      ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hvat (by simp [evalExpr?, pure]) hargsSin hcallSin hdecSin
   have hvatSinVar :
       evalExpr? config { contract := contract, locals := locals1 } evmSin (.var "vatSin") =
         .ok (.int (Int.ofNat vatSin.toNat)) := by
@@ -460,7 +460,7 @@ theorem vowFlopSourceDai1DecodeRevert
           (perm := false))
         (.ok { contract := contract, locals := locals1 } evmSin) := by
     simpa [locals, locals1, flopLocalsVatSin, collapseReturns] using
-      ExecStmt.externalCallSuccess hvat (by simp [evalExpr?, pure]) hargsSin hcallSin hdecSin
+      ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hvat (by simp [evalExpr?, pure]) hargsSin hcallSin hdecSin
   have hvatSinVar :
       evalExpr? config { contract := contract, locals := locals1 } evmSin (.var "vatSin") =
         .ok (.int (Int.ofNat vatSin.toNat)) := by
@@ -577,7 +577,7 @@ theorem vowFlopSourceDai1DecodeRevert
       ExecStmt config { contract := contract, locals := locals3 } evmSin
         (.externalCall (.storage vatRef) "dai" (.intLit 0) [thisAddr] "vatDai"
           (perm := false)) .reverted := by
-    exact ExecStmt.externalCallReturnDecodeRevert hvatDai (by simp [evalExpr?, pure])
+    exact ExecStmt.externalCallReturnDecodeRevert (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hvatDai (by simp [evalExpr?, pure])
       hargsDai hcallDai hdecDai
   have hblock :
       ExecBlock config { contract := contract, locals := locals } evm0 flopTransition.body
@@ -662,7 +662,7 @@ theorem vowFlopSourceDai1SurplusNotZero
           (perm := false))
         (.ok { contract := contract, locals := locals1 } evmSin) := by
     simpa [locals, locals1, flopLocalsVatSin, collapseReturns] using
-      ExecStmt.externalCallSuccess hvat (by simp [evalExpr?, pure]) hargsSin hcallSin hdecSin
+      ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hvat (by simp [evalExpr?, pure]) hargsSin hcallSin hdecSin
   have hvatSinVar :
       evalExpr? config { contract := contract, locals := locals1 } evmSin (.var "vatSin") =
         .ok (.int (Int.ofNat vatSin.toNat)) := by
@@ -781,7 +781,7 @@ theorem vowFlopSourceDai1SurplusNotZero
           (perm := false))
         (.ok { contract := contract, locals := locals4 } evmDai) := by
     simpa [locals3, locals4, flopLocalsVatSinFreeSinDebtDai, collapseReturns] using
-      ExecStmt.externalCallSuccess hvatDai (by simp [evalExpr?, pure])
+      ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hvatDai (by simp [evalExpr?, pure])
         hargsDai hcallDai hdecDai
   have hvatDaiVar :
       evalExpr? config { contract := contract, locals := locals4 } evmDai (.var "vatDai") =

@@ -388,7 +388,7 @@ theorem vowFlopSourceVatSin0CallFailure
         (.externalCall (.storage vatRef) "sin" (.intLit 0) [thisAddr] "vatSin"
           (perm := false))
         .reverted := by
-    exact ExecStmt.externalCallFailure hvat (by simp [evalExpr?, pure]) hargs hcallSin
+    exact ExecStmt.externalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hvat (by simp [evalExpr?, pure]) hargs hcallSin
   have hblock :
       ExecBlock config { contract := contract, locals := locals } evm0 flopTransition.body
         .reverted := by
@@ -900,7 +900,7 @@ theorem vowFlopSourceVatSin0DecodeRevert
         (.externalCall (.storage vatRef) "sin" (.intLit 0) [thisAddr] "vatSin"
           (perm := false))
         .reverted := by
-    exact ExecStmt.externalCallReturnDecodeRevert hvat (by simp [evalExpr?, pure])
+    exact ExecStmt.externalCallReturnDecodeRevert (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hvat (by simp [evalExpr?, pure])
       hargs hcallSin hdecSin
   have hblock :
       ExecBlock config { contract := contract, locals := locals } evm0 flopTransition.body
@@ -954,7 +954,7 @@ theorem vowFlopSourceFreeSinUnderflow
           (perm := false))
         (.ok { contract := contract, locals := locals1 } evmSin) := by
     simpa [locals, locals1, flopLocalsVatSin, collapseReturns] using
-      ExecStmt.externalCallSuccess hvat (by simp [evalExpr?, pure]) hargsSin hcallSin hdecSin
+      ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hvat (by simp [evalExpr?, pure]) hargsSin hcallSin hdecSin
   have hvatSinVar :
       evalExpr? config { contract := contract, locals := locals1 } evmSin (.var "vatSin") =
         .ok (.int (Int.ofNat vatSin.toNat)) := by
@@ -1046,7 +1046,7 @@ theorem vowFlopSourceDebtUnderflow
           (perm := false))
         (.ok { contract := contract, locals := locals1 } evmSin) := by
     simpa [locals, locals1, flopLocalsVatSin, collapseReturns] using
-      ExecStmt.externalCallSuccess hvat (by simp [evalExpr?, pure]) hargsSin hcallSin hdecSin
+      ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hvat (by simp [evalExpr?, pure]) hargsSin hcallSin hdecSin
   have hvatSinVar :
       evalExpr? config { contract := contract, locals := locals1 } evmSin (.var "vatSin") =
         .ok (.int (Int.ofNat vatSin.toNat)) := by
@@ -1184,7 +1184,7 @@ theorem vowFlopSourceInsufficientDebt
           (perm := false))
         (.ok { contract := contract, locals := locals1 } evmSin) := by
     simpa [locals, locals1, flopLocalsVatSin, collapseReturns] using
-      ExecStmt.externalCallSuccess hvat (by simp [evalExpr?, pure]) hargsSin hcallSin hdecSin
+      ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hvat (by simp [evalExpr?, pure]) hargsSin hcallSin hdecSin
   have hvatSinVar :
       evalExpr? config { contract := contract, locals := locals1 } evmSin (.var "vatSin") =
         .ok (.int (Int.ofNat vatSin.toNat)) := by

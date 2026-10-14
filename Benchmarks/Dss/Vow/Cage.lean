@@ -326,14 +326,14 @@ theorem vowCageSourceClearPrefixSplit {σ σ₀ A I} {g : UInt256}
     let evmLive := Stele.EVM.storageStore evm0 I.codeOwner ⟨12⟩ ⟨0⟩
     let evmSin := Stele.EVM.storageStore evmLive I.codeOwner ⟨5⟩ ⟨0⟩
     let evmAsh := Stele.EVM.storageStore evmSin I.codeOwner ⟨6⟩ ⟨0⟩
-    ExecBlock config { contract := contract, locals := locals } evm0
+    (I.perm = true → ExecBlock config { contract := contract, locals := locals } evm0
       (.require (.binary .eq (.env .callvalue) (.intLit 0)) ::
         .require (.binary .eq (.storage (wardsRef sender)) (.intLit 1)) ::
         .require (.binary .eq (.storage liveRef) (.intLit 1)) ::
         [ .assign .storage liveRef (.intLit 0),
           .assign .storage SinRef (.intLit 0),
           .assign .storage AshRef (.intLit 0) ])
-      (.ok { contract := contract, locals := locals } evmAsh) ∧
+      (.ok { contract := contract, locals := locals } evmAsh)) ∧
     (I.perm = false →
       ExecTransitionBody config contract evm0 locals cageTransition.body .staticViolation) := by
   intro locals evm0 evmLive evmSin evmAsh
@@ -379,18 +379,19 @@ theorem vowCageSourceClearPrefixSplit {σ σ₀ A I} {g : UInt256}
       evalExpr? config { contract := contract, locals := locals } evm0 (.intLit 0) =
         .ok (.int 0) := by
     simp [evalExpr?, pure]
-  refine ⟨hpre _ _ ?_, fun hpf => ExecFuncBody.execBlockStatic (hpre _ _
+  refine ⟨fun hperm => hpre _ _ ?_, fun hpf => ExecFuncBody.execBlockStatic (hpre _ _
     (ExecBlock.consStatic (ExecStmt.assignStatic hzero hassignLive
       (by simp [evm0, initState]; exact hpf))))⟩
-  refine ExecBlock.consNormal (ExecStmt.assign hzero hassignLive) ?_
-  refine ExecBlock.consNormal (ExecStmt.assign (by simp [evalExpr?, pure]) hassignSin) ?_
-  exact ExecBlock.consNormal (ExecStmt.assign (by simp [evalExpr?, pure]) hassignAsh)
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hzero hassignLive) ?_
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [evmLive, storageStore_executionEnv] using hperm)) (by simp [evalExpr?, pure]) hassignSin) ?_
+  exact ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [evmSin, evmLive, storageStore_executionEnv] using hperm)) (by simp [evalExpr?, pure]) hassignAsh)
     ExecBlock.nil
 
 theorem vowCageSourceClearPrefix {σ σ₀ A I} {g : UInt256}
     (hwv : I.weiValue = ⟨0⟩)
     (hauth : solcSlotWordAt (vowCallerWardsSlot I) σ I = ⟨1⟩)
-    (hlive : solcSlotWordAt ⟨12⟩ σ I = ⟨1⟩) :
+    (hlive : solcSlotWordAt ⟨12⟩ σ I = ⟨1⟩)
+    (hperm : I.perm = true) :
     let locals : Store := ∅
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let evmLive := Stele.EVM.storageStore evm0 I.codeOwner ⟨12⟩ ⟨0⟩
@@ -404,7 +405,7 @@ theorem vowCageSourceClearPrefix {σ σ₀ A I} {g : UInt256}
           .assign .storage SinRef (.intLit 0),
           .assign .storage AshRef (.intLit 0) ])
       (.ok { contract := contract, locals := locals } evmAsh) :=
-  (vowCageSourceClearPrefixSplit (σ₀ := σ₀) (A := A) (g := g) hwv hauth hlive).1
+  (vowCageSourceClearPrefixSplit (σ₀ := σ₀) (A := A) (g := g) hwv hauth hlive).1 hperm
 
 
 @[reducible] def vowCageClearStoresWf (code : ByteArray) (pc : UInt256) : Prop :=

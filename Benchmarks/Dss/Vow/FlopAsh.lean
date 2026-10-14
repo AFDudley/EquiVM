@@ -364,10 +364,10 @@ theorem flopAshAddAssignSplit
     let locals4 := flopLocalsVatSinFreeSinDebtDai vatSin freeSin flopDebt vatDai
     let locals5 := flopLocalsVatSinFreeSinDebtDaiAshNew vatSin freeSin flopDebt vatDai AshNew
     let evmAsh := Stele.EVM.storageStore evmDai evmDai.executionEnv.codeOwner ⟨6⟩ AshNew
-    ExecBlock config { contract := contract, locals := locals4 } evmDai
+    (evmDai.executionEnv.perm = true → ExecBlock config { contract := contract, locals := locals4 } evmDai
       [ .internalCall "add" [.storage AshRef, .storage sumpRef] "AshNew",
         .assign .storage AshRef (.var "AshNew") ]
-      (.ok { contract := contract, locals := locals5 } evmAsh) ∧
+      (.ok { contract := contract, locals := locals5 } evmAsh)) ∧
     (evmDai.executionEnv.perm = false → ∀ rest,
       ExecBlock config { contract := contract, locals := locals4 } evmDai
         (.internalCall "add" [.storage AshRef, .storage sumpRef] "AshNew" ::
@@ -431,8 +431,8 @@ theorem flopAshAddAssignSplit
         (by simp [locals5, flopLocalsVatSinFreeSinDebtDaiAshNew,
           flopLocalsVatSinFreeSinDebtDai, flopLocalsVatSinFreeSinDebt,
           flopLocalsVatSinFreeSin, flopLocalsVatSin])
-  exact ⟨ExecBlock.consNormal haddStmt
-      (ExecBlock.consNormal (ExecStmt.assign hAshNewVar hassignAsh) ExecBlock.nil),
+  exact ⟨fun hperm ↦ ExecBlock.consNormal haddStmt
+      (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hAshNewVar hassignAsh) ExecBlock.nil),
     fun hpf _ => ExecBlock.consNormal haddStmt
       (ExecBlock.consStatic (ExecStmt.assignStatic hAshNewVar hassignAsh hpf))⟩
 
@@ -444,7 +444,8 @@ theorem flopAshAddAssignSuccess
     (hSumpLoadDai :
       Stele.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner ⟨9⟩ = SumpValDai)
     (hAshNew : AshNew = AshValDai + SumpValDai)
-    (hfit : AshValDai.toNat + SumpValDai.toNat < UInt256.size) :
+    (hfit : AshValDai.toNat + SumpValDai.toNat < UInt256.size)
+    (hperm : evmDai.executionEnv.perm = true) :
     let locals4 := flopLocalsVatSinFreeSinDebtDai vatSin freeSin flopDebt vatDai
     let locals5 := flopLocalsVatSinFreeSinDebtDaiAshNew vatSin freeSin flopDebt vatDai AshNew
     let evmAsh := Stele.EVM.storageStore evmDai evmDai.executionEnv.codeOwner ⟨6⟩ AshNew
@@ -453,7 +454,7 @@ theorem flopAshAddAssignSuccess
         .assign .storage AshRef (.var "AshNew") ]
       (.ok { contract := contract, locals := locals5 } evmAsh) :=
   (flopAshAddAssignSplit (vatSin := vatSin) (freeSin := freeSin) (flopDebt := flopDebt)
-    (vatDai := vatDai) hAshLoadDai hSumpLoadDai hAshNew hfit).1
+    (vatDai := vatDai) hAshLoadDai hSumpLoadDai hAshNew hfit).1 hperm
 
 theorem flopAshAssignThenKickSuccess
     {evmDai evmKick : EVM.State}
@@ -494,7 +495,8 @@ theorem flopAshAssignThenKickSuccess
         (true, evmKick, outKick) true)
     (hdecKick :
       config.externalABI.decode? "kick" outKick =
-        some [.int (Int.ofNat id.toNat)]) :
+        some [.int (Int.ofNat id.toNat)])
+    (hperm : evmDai.executionEnv.perm = true) :
     let locals4 := flopLocalsVatSinFreeSinDebtDai vatSin freeSin flopDebt vatDai
     let locals6 := flopLocalsVatSinFreeSinDebtDaiAshNewId vatSin freeSin flopDebt vatDai AshNew id
     ExecBlock config { contract := contract, locals := locals4 } evmDai
@@ -526,7 +528,7 @@ theorem flopAshAssignThenKickSuccess
       ExecBlock config { contract := contract, locals := locals4 } evmDai
         flopAshAssignStmts (.ok { contract := contract, locals := locals5 } evmAsh) := by
     simpa [flopAshAssignStmts, locals4, locals5, evmAsh] using
-      flopAshAddAssignSuccess (evmDai := evmDai) (vatSin := vatSin)
+      flopAshAddAssignSuccess (hperm := hperm) (evmDai := evmDai) (vatSin := vatSin)
         (freeSin := freeSin) (flopDebt := flopDebt) (vatDai := vatDai)
         (AshValDai := AshValDai) (SumpValDai := SumpValDai) (AshNew := AshNew)
         hAshLoadDai hSumpLoadDai hAshNew hfit
@@ -576,7 +578,7 @@ theorem flopAshAssignThenKickSuccess
           [thisAddr, .storage dumpRef, .storage sumpRef] "id")
         (.ok { contract := contract, locals := locals6 } evmKick) := by
     simpa [locals6, flopLocalsVatSinFreeSinDebtDaiAshNewId, collapseReturns] using
-      ExecStmt.externalCallSuccess hflopper (by simp [evalExpr?, pure])
+      ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hflopper (by simp [evalExpr?, pure])
         hargsKick hcallKick' hdecKick
   have hid :
       evalExpr? config { contract := contract, locals := locals6 } evmKick (.var "id") =
@@ -673,7 +675,7 @@ theorem vowFlopSourceAshAddOverflow
           (perm := false))
         (.ok { contract := contract, locals := locals1 } evmSin) := by
     simpa [locals, locals1, flopLocalsVatSin, collapseReturns] using
-      ExecStmt.externalCallSuccess hvat (by simp [evalExpr?, pure]) hargsSin hcallSin hdecSin
+      ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hvat (by simp [evalExpr?, pure]) hargsSin hcallSin hdecSin
   have hvatSinVar :
       evalExpr? config { contract := contract, locals := locals1 } evmSin (.var "vatSin") =
         .ok (.int (Int.ofNat vatSin.toNat)) := by
@@ -792,7 +794,7 @@ theorem vowFlopSourceAshAddOverflow
           (perm := false))
         (.ok { contract := contract, locals := locals4 } evmDai) := by
     simpa [locals3, locals4, flopLocalsVatSinFreeSinDebtDai, collapseReturns] using
-      ExecStmt.externalCallSuccess hvatDai (by simp [evalExpr?, pure])
+      ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hvatDai (by simp [evalExpr?, pure])
         hargsDai hcallDai hdecDai
   have hvatDaiVar :
       evalExpr? config { contract := contract, locals := locals4 } evmDai (.var "vatDai") =

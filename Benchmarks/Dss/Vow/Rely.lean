@@ -351,12 +351,12 @@ theorem vowRelyBodyCore
         refine ExecBlock.consNormal (ExecStmt.requireTrue hguardAuth) ?_
         refine ExecBlock.consNormal (ExecStmt.requireTrue hguardLive) ?_
         exact hrest
-      have hbody :
+      have hbody (hperm : I.perm = true) :
           ExecTransitionBody config contract evm0 locals relyTransition.body
             (.returned { contract := contract, locals := locals } evm1 none) := by
         simpa [ExecTransitionBody, relyTransition, nonpayable, auth, evm0, evm1] using
           ExecFuncBody.execBlockOK (hpre _ (ExecBlock.consNormal
-            (ExecStmt.assign (by simp [evalExpr?, pure]) hassign) ExecBlock.nil))
+            (ExecStmt.assign (hperm := Or.inr hperm) (by simp [evalExpr?, pure]) hassign) ExecBlock.nil))
       have hliveSolc : solcSlotWord σ I ⟨12⟩ = ⟨1⟩ := by
         simpa [solcSlotWordAt] using hliveEvm
       obtain ⟨_, _, hstorePc⟩ := RD.vowLiveGuardOk
@@ -402,7 +402,7 @@ theorem vowRelyBodyCore
       have henc : returnEquiv ByteArray.empty none relyTransition.returnType := by
         rw [show relyTransition.returnType = [] by rfl]
         exact returnEquiv.fallthrough rfl (by rfl) (by native_decide)
-      exact hret.reEquivExecutionGen hcode hdispatch hdecode hbody
+      exact hret.reEquivExecutionGen hcode hdispatch hdecode (hbody hperm)
         haccounts henc
     · have hliveStele : solcSlotWordAt ⟨12⟩ σ I ≠ ⟨1⟩ := by
         intro hstele

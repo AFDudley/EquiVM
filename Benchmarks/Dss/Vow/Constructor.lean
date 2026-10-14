@@ -1432,7 +1432,8 @@ abbrev vowCtorAfterLiveState (evm : EVM.State) : EVM.State :=
 theorem vowCtorBodyPrefixToHope
     {σ : AccountMap} {σ₀ : AccountMap} {A : Substate} {I : ExecutionEnv}
     {g : UInt256} (vat flapper flopper : AccountAddress)
-    (hwv : I.weiValue = ⟨0⟩) :
+    (hwv : I.weiValue = ⟨0⟩)
+    (hperm : I.perm = true) :
     let locals := vowCtorLocals vat flapper flopper
     let evm0 := initState σ σ₀
       (Sat256.ofUInt256 g) A I
@@ -1474,12 +1475,12 @@ theorem vowCtorBodyPrefixToHope
       assign_vowCtorFlopperStorage evm3 locals flopper (by simp [locals, vowCtorLocals])
   refine ExecBlock.consNormal (ExecStmt.requireTrue ?_) ?_
   · exact evalCallvalueEq_true (by simp [evm0, initState]; exact hwv)
-  refine ExecBlock.consNormal (ExecStmt.assign (by simp [evalExpr?, pure]) hassignWards) ?_
-  refine ExecBlock.consNormal (ExecStmt.assign ?_ hassignVat) ?_
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) (by simp [evalExpr?, pure]) hassignWards) ?_
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [evm1, vowCtorAfterWardsState, storageStore_executionEnv, evm0, initState] using hperm)) ?_ hassignVat) ?_
   · simpa [locals] using evalExpr_vowCtorLocalVat (evm := evm1) vat flapper flopper
-  refine ExecBlock.consNormal (ExecStmt.assign ?_ hassignFlapper) ?_
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [evm1, evm2, vowCtorAfterWardsState, vowCtorAfterVatState, storageStore_executionEnv, evm0, initState] using hperm)) ?_ hassignFlapper) ?_
   · simpa [locals] using evalExpr_vowCtorLocalFlapper (evm := evm2) vat flapper flopper
-  refine ExecBlock.consNormal (ExecStmt.assign ?_ hassignFlopper) ExecBlock.nil
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [evm1, evm2, evm3, vowCtorAfterWardsState, vowCtorAfterVatState, vowCtorAfterFlapperState, storageStore_executionEnv, evm0, initState] using hperm)) ?_ hassignFlopper) ExecBlock.nil
   · simpa [locals] using evalExpr_vowCtorLocalFlopper (evm := evm3) vat flapper flopper
 
 theorem vowCtorSteleExecReverts_nonpayable
@@ -1512,7 +1513,8 @@ theorem vowCtorSteleExecReverts_noCode
       let evm2 := vowCtorAfterVatState evm1 vat
       let evm3 := vowCtorAfterFlapperState evm2 flapper
       let evm4 := vowCtorAfterFlopperState evm3 flopper
-      (UInt256.ofNat ((evm4.lookupAccount vat).option 0 (fun acc => acc.code.size))).toNat = 0) :
+      (UInt256.ofNat ((evm4.lookupAccount vat).option 0 (fun acc => acc.code.size))).toNat = 0)
+    (hperm : I.perm = true) :
     steleCtorExec config contract [.address vat, .address flapper, .address flopper]
       σ σ₀ g A I .reverted := by
   let locals := vowCtorLocals vat flapper flopper
@@ -1526,7 +1528,7 @@ theorem vowCtorSteleExecReverts_noCode
   · rfl
   · rfl
   · refine ExecFuncBody.execBlockRevert ?_
-    have hprefix := vowCtorBodyPrefixToHope
+    have hprefix := vowCtorBodyPrefixToHope (hperm := by assumption)
       (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
       vat flapper flopper hwv
     have hvat :
@@ -1574,7 +1576,8 @@ theorem vowCtorSteleExecReverts_callFailure
       let evm3 := vowCtorAfterFlapperState evm2 flapper
       let evm4 := vowCtorAfterFlopperState evm3 flopper
       typedCallViaEVM config evm4 (EVM.address vat) "hope" 0
-        [.address flapper] (false, evmHope, out) true) :
+        [.address flapper] (false, evmHope, out) true)
+    (hperm : I.perm = true) :
     steleCtorExec config contract [.address vat, .address flapper, .address flopper]
       σ σ₀ g A I .reverted := by
   let locals := vowCtorLocals vat flapper flopper
@@ -1588,7 +1591,7 @@ theorem vowCtorSteleExecReverts_callFailure
   · rfl
   · rfl
   · refine ExecFuncBody.execBlockRevert ?_
-    have hprefix := vowCtorBodyPrefixToHope
+    have hprefix := vowCtorBodyPrefixToHope (hperm := by assumption)
       (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
       vat flapper flopper hwv
     have hvat :
@@ -1618,7 +1621,7 @@ theorem vowCtorSteleExecReverts_callFailure
       simp only [checkedExternalCallStmts, List.cons_append, List.nil_append]
       refine ExecBlock.consNormal (ExecStmt.requireTrue hguard) ?_
       exact ExecBlock.consRevert
-        (ExecStmt.externalCallFailure (sendVal := 0) hvat (by simp [evalExpr?, pure]) hargs
+        (ExecStmt.externalCallFailure (hperm := Or.inl rfl) (sendVal := 0) hvat (by simp [evalExpr?, pure]) hargs
           (by simpa [evm0, evm1, evm2, evm3, evm4] using hcall))
     simpa [ExecTransitionBody, contract, constructorDecl, nonpayable, checkedExternalCallStmts,
       locals, evm0, evm1, evm2, evm3, evm4, List.cons_append, List.nil_append] using
@@ -1645,7 +1648,8 @@ theorem vowCtorSteleExecSuccess
       let evm3 := vowCtorAfterFlapperState evm2 flapper
       let evm4 := vowCtorAfterFlopperState evm3 flopper
       typedCallViaEVM config evm4 (EVM.address vat) "hope" 0
-        [.address flapper] (true, evmHope, out) true) :
+        [.address flapper] (true, evmHope, out) true)
+    (hperm : I.perm = true) :
     steleCtorExec config contract [.address vat, .address flapper, .address flopper]
       σ σ₀ g A I
       (.returned { contract := contract, locals := vowCtorLocalsHope vat flapper flopper }
@@ -1663,7 +1667,7 @@ theorem vowCtorSteleExecSuccess
   · rfl
   · rfl
   · refine ?_
-    have hprefix := vowCtorBodyPrefixToHope
+    have hprefix := vowCtorBodyPrefixToHope (hperm := by assumption)
       (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
       vat flapper flopper hwv
     have hvat :
@@ -1690,7 +1694,7 @@ theorem vowCtorSteleExecSuccess
           (.ok { contract := contract, locals := localsHope } evmHope) := by
       simpa [locals, localsHope, vowCtorLocalsHope, collapseReturns, config, vowExternalABI,
         decodeVoid?] using
-          ExecStmt.externalCallSuccess (sendVal := 0) hvat (by simp [evalExpr?, pure]) hargs
+          ExecStmt.externalCallSuccess (hperm := Or.inl rfl) (sendVal := 0) hvat (by simp [evalExpr?, pure]) hargs
             (by simpa [evm0, evm1, evm2, evm3, evm4] using hcall)
             (vowExternalABI_decode_hope_ctor out)
     have hassignLive :
@@ -1709,7 +1713,7 @@ theorem vowCtorSteleExecSuccess
       simp only [checkedExternalCallStmts, List.cons_append, List.nil_append]
       refine ExecBlock.consNormal (ExecStmt.requireTrue hguard) ?_
       refine ExecBlock.consNormal hcallStmt ?_
-      exact ExecBlock.consNormal (ExecStmt.assign (by simp [evalExpr?, pure]) hassignLive)
+      exact ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [typedCallViaEVM_executionEnv_eq hcall, vowCtorAfterWardsState, vowCtorAfterVatState, vowCtorAfterFlapperState, vowCtorAfterFlopperState, storageStore_executionEnv, initState] using hperm)) (by simp [evalExpr?, pure]) hassignLive)
         ExecBlock.nil
     have hblock :
         ExecBlock config { contract := contract, locals := locals } evm0 constructorDecl.body

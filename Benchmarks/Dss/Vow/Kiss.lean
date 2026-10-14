@@ -1056,7 +1056,7 @@ theorem vowKissSourceDaiCallFailure
         (.externalCall (.storage vatRef) "dai" (.intLit 0) [thisAddr] "vatDai"
           (perm := false))
         .reverted := by
-    exact ExecStmt.externalCallFailure hvat (by simp [evalExpr?, pure]) hargs hcallDai
+    exact ExecStmt.externalCallFailure (hperm := Or.inl rfl) hvat (by simp [evalExpr?, pure]) hargs hcallDai
   have hblock :
       ExecBlock config { contract := contract, locals := locals } evm0 kissTransition.body
         .reverted := by
@@ -1120,7 +1120,7 @@ theorem vowKissSourceDaiDecodeRevert
         (.externalCall (.storage vatRef) "dai" (.intLit 0) [thisAddr] "vatDai"
           (perm := false))
         .reverted := by
-    exact ExecStmt.externalCallReturnDecodeRevert hvat (by simp [evalExpr?, pure])
+    exact ExecStmt.externalCallReturnDecodeRevert (hperm := Or.inl rfl) hvat (by simp [evalExpr?, pure])
       hargs hcallDai hdecDai
   have hblock :
       ExecBlock config { contract := contract, locals := locals } evm0 kissTransition.body
@@ -1189,7 +1189,7 @@ theorem vowKissSourceInsufficientSurplus
         (.externalCall (.storage vatRef) "dai" (.intLit 0) [thisAddr] "vatDai" (perm := false))
         (.ok { contract := contract, locals := kissLocalsVatDai I vatDai } evmDai) := by
     simpa [locals, kissLocalsVatDai, collapseReturns] using
-      ExecStmt.externalCallSuccess hvat (by simp [evalExpr?, pure]) hargs hcallDai hdecDai
+      ExecStmt.externalCallSuccess (hperm := Or.inl rfl) hvat (by simp [evalExpr?, pure]) hargs hcallDai hdecDai
   have hradDai :
       evalExpr? config { contract := contract, locals := kissLocalsVatDai I vatDai } evmDai
         (.var "rad") = .ok (.int (Int.ofNat (kissRad I).toNat)) := by
@@ -1251,7 +1251,7 @@ theorem vowKissSourceStoreAshSplit
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let locals2 := kissLocalsVatDaiAshNew I vatDai AshNew
     let evmAsh := Stele.EVM.storageStore evmDai evmDai.executionEnv.codeOwner ⟨6⟩ AshNew
-    (∀ r, ExecBlock config { contract := contract, locals := locals2 } evmAsh
+    (I.perm = true → ∀ r, ExecBlock config { contract := contract, locals := locals2 } evmAsh
         [ .require (.binary .gt (.extCodeSize (.storage vatRef)) (.intLit 0)),
           .externalCall (.storage vatRef) "heal" (.intLit 0) [.var "rad"] "_healRet" ] r →
       ExecBlock config { contract := contract, locals := locals } evm0 kissTransition.body r) ∧
@@ -1294,7 +1294,7 @@ theorem vowKissSourceStoreAshSplit
         (.externalCall (.storage vatRef) "dai" (.intLit 0) [thisAddr] "vatDai" (perm := false))
         (.ok { contract := contract, locals := locals1 } evmDai) := by
     simpa [locals, locals1, kissLocalsVatDai, collapseReturns] using
-      ExecStmt.externalCallSuccess hvat (by simp [evalExpr?, pure]) hargs hcallDai hdecDai
+      ExecStmt.externalCallSuccess (hperm := Or.inl rfl) hvat (by simp [evalExpr?, pure]) hargs hcallDai hdecDai
   have hradDai :
       evalExpr? config { contract := contract, locals := locals1 } evmDai
         (.var "rad") = .ok (.int (Int.ofNat (kissRad I).toNat)) := by
@@ -1350,8 +1350,8 @@ theorem vowKissSourceStoreAshSplit
     refine ExecBlock.consNormal hcallDaiStmt ?_
     refine ExecBlock.consNormal (ExecStmt.requireTrue hreqSurplus) ?_
     exact ExecBlock.consNormal hsubStmt hrest
-  refine ⟨fun r hrest =>
-    hpre r (ExecBlock.consNormal (ExecStmt.assign hAshNewVar hassignAsh) hrest), fun hpf => ?_⟩
+  refine ⟨fun hperm r hrest =>
+    hpre r (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [typedCallViaEVM_executionEnv_eq hcallDai, initState] using hperm)) hAshNewVar hassignAsh) hrest), fun hpf => ?_⟩
   have hpermDai : evmDai.executionEnv.perm = false := by
     rw [typedCallViaEVM_executionEnv_eq hcallDai]
     simpa [evm0, initState] using hpf
@@ -1391,7 +1391,8 @@ theorem vowKissSourceSuccess
         (Stele.EVM.storageStore evmDai evmDai.executionEnv.codeOwner ⟨6⟩ AshNew)
         (EVM.address (kissVatAddress σ I)) "heal" 0
         [.int (Int.ofNat (kissRad I).toNat)] (true, evmHeal, outHeal) true)
-    (hdecHeal : config.externalABI.decode? "heal" outHeal = some []) :
+    (hdecHeal : config.externalABI.decode? "heal" outHeal = some [])
+    (hperm : I.perm = true) :
     let locals := kissLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     ExecTransitionBody config contract evm0 locals kissTransition.body
@@ -1434,11 +1435,11 @@ theorem vowKissSourceSuccess
         (.externalCall (.storage vatRef) "heal" (.intLit 0) [.var "rad"] "_healRet")
         (.ok { contract := contract, locals := kissLocalsDone I vatDai AshNew } evmHeal) := by
     simpa [kissLocalsDone, locals2, collapseReturns] using
-      ExecStmt.externalCallSuccess hvatHeal (by simp [evalExpr?, pure]) hargsHeal hcallHeal
+      ExecStmt.externalCallSuccess (hperm := Or.inl rfl) hvatHeal (by simp [evalExpr?, pure]) hargsHeal hcallHeal
         hdecHeal
   simpa [ExecTransitionBody, evm0, locals] using ExecFuncBody.execBlockOK
     ((vowKissSourceStoreAshSplit (g := g) hwv hashEnough hvatCode hcallDai hdecDai
-      hvatDaiEnough hAshLoadDai hAshNew).1 _
+      hvatDaiEnough hAshLoadDai hAshNew).1 hperm _
       (ExecBlock.consNormal (ExecStmt.requireTrue hguardHeal)
         (ExecBlock.consNormal hcallHealStmt ExecBlock.nil)))
 

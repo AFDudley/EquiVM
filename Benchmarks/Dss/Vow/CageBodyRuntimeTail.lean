@@ -79,12 +79,13 @@ theorem vowCageVatSinNoCodeAt3115BodyCore
     (hvatNoCode :
       (UInt256.ofNat
         ((evmDai2.lookupAccount (cageVatAddressOf evmDai2)).option 0
-          (fun acc => acc.code.size))).toNat = 0) :
+          (fun acc => acc.code.size))).toNat = 0)
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   have hrev : RDrev vowBytecode (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) :=
     RD.vowCageVatSinNoCode rd3115 hmem hread64 hcodeSize hov
-  have hbody := cageSourceVatSinNoCode
+  have hbody := cageSourceVatSinNoCode (hperm := hperm)
     (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
     (flapperDai := flapperDai) (vatDai := vatDai) (evmDai := evmDai)
     (evmFlap := evmFlap) (evmFlop := evmFlop) (evmDai2 := evmDai2)
@@ -97,7 +98,7 @@ theorem vowCageVatSinNoCodeAt3115BodyCore
 set_option maxHeartbeats 0 in
 theorem vowCageBodyToMinHeal
     {σ σ₀ A I} {g : UInt256}
-    (cont :
+    (cont : I.perm = true →
       ∀ {σ_sin : AccountMap}
         {evmDai evmFlap evmFlop evmDai2 evmSin : EVM.State}
         {outDai outFlap outFlop outDai2 outSin memSin : ByteArray} {k3234 C3234 : ℕ}
@@ -172,7 +173,7 @@ theorem vowCageBodyToMinHeal
         (transitionSignature cageTransition).paramTypes I.calldata = some ∅ :=
     vowDecode_cage hsz
   refine vowCageBodyToVatSin
-      (fun {σ_dai2} {evmDai} {evmFlap} {evmFlop} {evmDai2}
+      (fun hperm {σ_dai2} {evmDai} {evmFlap} {evmFlop} {evmDai2}
           {outDai} {outFlap} {outFlop} {outDai2} {memDai2} {k3115} {C3115}
           {flapperDai} {vatDai} rd3115 hmemDai2 hread64Dai2 hvatCode hcallDai
           hdecDai hauthStele hliveStele hflapperCode hcallFlap hflopperCode hcallFlop
@@ -192,7 +193,7 @@ theorem vowCageBodyToMinHeal
           ((evmDai2.lookupAccount (cageVatAddressOf evmDai2)).option 0
             (fun acc => acc.code.size))).toNat = 0 :=
       cageVatCode_zero_of_codeSize_zero evmDai2 I hownerDai2 hcodeSizeVatSinStele
-    exact vowCageVatSinNoCodeAt3115BodyCore (acc := σ_dai2)
+    exact vowCageVatSinNoCodeAt3115BodyCore (hperm := hperm) (acc := σ_dai2)
       (evmDai := evmDai) (evmFlap := evmFlap) (evmFlop := evmFlop)
       (evmDai2 := evmDai2) (outDai := outDai) (outFlap := outFlap)
       (outFlop := outFlop) (outDai2 := outDai2) (R := [⟨412⟩, vowSelWord I])
@@ -274,7 +275,7 @@ theorem vowCageBodyToMinHeal
     simpa [evmSinStele, evmSinEvmOut, hVatTargetAddrDai2, ← henvDai2]
       using hcallSinSteleBase
   cases zSin
-  · exact vowCageVatSinCallFailureBodyCore (acc := σ_sin)
+  · exact vowCageVatSinCallFailureBodyCore (hperm := hperm) (acc := σ_sin)
       (evmDai := evmDai) (evmFlap := evmFlap) (evmFlop := evmFlop)
       (evmDai2 := evmDai2) (evmSin := evmSinStele) (R := [⟨412⟩, vowSelWord I])
       hcode hwv hauthStele hliveStele hdispatch hdecode
@@ -353,7 +354,7 @@ theorem vowCageBodyToMinHeal
         simpa [evmSinStele] using hσ0Dai2
       have henvSin : evmSinStele.executionEnv = I := by
         simpa [evmSinStele] using henvDai2
-      exact cont (σ_sin := σ_sin) (evmDai := evmDai) (evmFlap := evmFlap)
+      exact cont hperm (σ_sin := σ_sin) (evmDai := evmDai) (evmFlap := evmFlap)
         (evmFlop := evmFlop) (evmDai2 := evmDai2) (evmSin := evmSinStele)
         (outDai := outDai) (outFlap := outFlap) (outFlop := outFlop)
         (outDai2 := outDai2) (outSin := outSin) (memSin := memSin)
@@ -364,7 +365,7 @@ theorem vowCageBodyToMinHeal
         hdecDai2 hvatCodeSin hcallSinSteleTrue hdecSin hdepthLt hσ0Sin henvSin
         (by simpa [evmSinEvmOut, evmSinStele] using hAccountsSin)
     · have hshortSin : outSin.size < 32 := Nat.lt_of_not_ge ho32Sin
-      exact vowCageVatSinDecodeShortBodyCore (acc := σ_sin)
+      exact vowCageVatSinDecodeShortBodyCore (hperm := hperm) (acc := σ_sin)
         (evmDai := evmDai) (evmFlap := evmFlap) (evmFlop := evmFlop)
         (evmDai2 := evmDai2) (evmSin := evmSinStele) (base := baseSin)
         (outDai := outDai) (outFlap := outFlap) (outFlop := outFlop)
@@ -389,7 +390,7 @@ theorem vowCageBody {σ σ₀ A I} {g : UInt256}
         (transitionSignature cageTransition).paramTypes I.calldata = some ∅ :=
     vowDecode_cage hsz
   refine vowCageBodyToMinHeal
-      (fun {σ_sin} {evmDai} {evmFlap} {evmFlop} {evmDai2} {evmSin}
+      (fun hperm {σ_sin} {evmDai} {evmFlap} {evmFlop} {evmDai2} {evmSin}
           {outDai} {outFlap} {outFlop} {outDai2} {outSin} {memSin}
           {k3234} {C3234} {flapperDai} {vatDai} {vatSin} rd3234 hmemSin
           hread64Sin hvatCode hcallDai hdecDai hauthStele hliveStele hflapperCode
@@ -411,7 +412,7 @@ theorem vowCageBody {σ σ₀ A I} {g : UInt256}
             ((evmSin.lookupAccount (cageVatAddressOf evmSin)).option 0
               (fun acc => acc.code.size))).toNat = 0 :=
         cageVatCode_zero_of_codeSize_zero evmSin I hownerSin hcodeSizeHealStele
-      exact vowCageMinHealLeftNoCodeBodyCore (acc := σ_sin)
+      exact vowCageMinHealLeftNoCodeBodyCore (hperm := hperm) (acc := σ_sin)
         (evmDai := evmDai) (evmFlap := evmFlap) (evmFlop := evmFlop)
         (evmDai2 := evmDai2) (evmSin := evmSin) (outDai := outDai)
         (outFlap := outFlap) (outFlop := outFlop) (outDai2 := outDai2)
@@ -484,7 +485,7 @@ theorem vowCageBody {σ σ₀ A I} {g : UInt256}
       simpa [evmHealStele, evmHealEvmOut, hVatTargetAddrSin,
         ← henvSin] using hcallHealSteleBase
     cases zHeal
-    · exact vowCageMinHealLeftCallFailureBodyCore (acc := σ_heal)
+    · exact vowCageMinHealLeftCallFailureBodyCore (hperm := hperm) (acc := σ_heal)
         (evmDai := evmDai) (evmFlap := evmFlap) (evmFlop := evmFlop)
         (evmDai2 := evmDai2) (evmSin := evmSin) (evmHeal := evmHealStele)
         (outDai := outDai) (outFlap := outFlap) (outFlop := outFlop)
@@ -499,7 +500,7 @@ theorem vowCageBody {σ σ₀ A I} {g : UInt256}
             "heal" 0 [.int (Int.ofNat vatDai.toNat)]
             (true, evmHealStele, outHeal) true := by
         simpa using hcallHealStele
-      exact vowCageMinHealLeftSuccessBodyCore (acc := σ_heal)
+      exact vowCageMinHealLeftSuccessBodyCore (hperm := hperm) (acc := σ_heal)
         (evmDai := evmDai) (evmFlap := evmFlap) (evmFlop := evmFlop)
         (evmDai2 := evmDai2) (evmSin := evmSin) (evmHeal := evmHealStele)
         (outDai := outDai) (outFlap := outFlap) (outFlop := outFlop)
@@ -524,7 +525,7 @@ theorem vowCageBody {σ σ₀ A I} {g : UInt256}
             ((evmSin.lookupAccount (cageVatAddressOf evmSin)).option 0
               (fun acc => acc.code.size))).toNat = 0 :=
         cageVatCode_zero_of_codeSize_zero evmSin I hownerSin hcodeSizeHealStele
-      exact vowCageMinHealRightNoCodeBodyCore (acc := σ_sin)
+      exact vowCageMinHealRightNoCodeBodyCore (hperm := hperm) (acc := σ_sin)
         (evmDai := evmDai) (evmFlap := evmFlap) (evmFlop := evmFlop)
         (evmDai2 := evmDai2) (evmSin := evmSin) (outDai := outDai)
         (outFlap := outFlap) (outFlop := outFlop) (outDai2 := outDai2)
@@ -597,7 +598,7 @@ theorem vowCageBody {σ σ₀ A I} {g : UInt256}
       simpa [evmHealStele, evmHealEvmOut, hVatTargetAddrSin,
         ← henvSin] using hcallHealSteleBase
     cases zHeal
-    · exact vowCageMinHealRightCallFailureBodyCore (acc := σ_heal)
+    · exact vowCageMinHealRightCallFailureBodyCore (hperm := hperm) (acc := σ_heal)
         (evmDai := evmDai) (evmFlap := evmFlap) (evmFlop := evmFlop)
         (evmDai2 := evmDai2) (evmSin := evmSin) (evmHeal := evmHealStele)
         (outDai := outDai) (outFlap := outFlap) (outFlop := outFlop)
@@ -612,7 +613,7 @@ theorem vowCageBody {σ σ₀ A I} {g : UInt256}
             "heal" 0 [.int (Int.ofNat vatSin.toNat)]
             (true, evmHealStele, outHeal) true := by
         simpa using hcallHealStele
-      exact vowCageMinHealRightSuccessBodyCore (acc := σ_heal)
+      exact vowCageMinHealRightSuccessBodyCore (hperm := hperm) (acc := σ_heal)
         (evmDai := evmDai) (evmFlap := evmFlap) (evmFlop := evmFlop)
         (evmDai2 := evmDai2) (evmSin := evmSin) (evmHeal := evmHealStele)
         (outDai := outDai) (outFlap := outFlap) (outFlop := outFlop)

@@ -375,7 +375,7 @@ theorem vowConstructorCorrect :
             extCodeSizeWord_zero_lookup_code_zero (σ := evm4s.accountMap)
               (target := targetWord) (addr := vat) haddr hcodeSizeStele
         refine typedConstructorRefinementFor.execution (by simpa [Sat256.ofUInt256] using hRev)
-          (vowCtorSteleExecReverts_noCode
+          (vowCtorSteleExecReverts_noCode (hperm := by assumption)
             (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
             vat flapper flopper hwv (by simpa [evm0s, evm1s, evm2s, evm3s, evm4s] using hvatNoCode))
           ?_
@@ -492,7 +492,7 @@ theorem vowConstructorCorrect :
           rcases hrev.xiResult hcodeTail with hOOG | ⟨g', outRev, hRev⟩
           · exact typedConstructorRefinementFor.outOfGas (by simpa [Sat256.ofUInt256] using hOOG)
           · refine typedConstructorRefinementFor.execution (by simpa [Sat256.ofUInt256] using hRev)
-              (vowCtorSteleExecReverts_callFailure
+              (vowCtorSteleExecReverts_callFailure (hperm := by assumption)
                 (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
                 (evmHope := evmHopeStele) (out := out)
                 vat flapper flopper hwv
@@ -516,7 +516,7 @@ theorem vowConstructorCorrect :
                 vowCtorAfterFlapperState, vowCtorAfterVatState, vowCtorAfterWardsState, initState]
                 using hbase
             refine typedConstructorRefinementFor.execution (by simpa [Sat256.ofUInt256] using hSuccess)
-              (vowCtorSteleExecSuccess
+              (vowCtorSteleExecSuccess (hperm := by assumption)
                 (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
                 (evmHope := evmHopeStele) (out := out) vat flapper flopper hwv
                 (by simpa [evm0s, evm1s, evm2s, evm3s, evm4s] using hvatCode)
@@ -555,7 +555,7 @@ theorem vowConstructorCorrect :
                     vowCtorAfterFlopperState, vowCtorAfterFlapperState, vowCtorAfterVatState,
                     vowCtorAfterWardsState, initState] using hdepthEq))
           refine typedConstructorRefinementFor.execution (by simpa [Sat256.ofUInt256] using hRev)
-            (vowCtorSteleExecReverts_callFailure
+            (vowCtorSteleExecReverts_callFailure (hperm := by assumption)
               (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
               (evmHope := { evm4s with substate := A_hope }) (out := ByteArray.empty)
               vat flapper flopper hwv

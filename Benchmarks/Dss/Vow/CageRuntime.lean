@@ -118,7 +118,7 @@ theorem cageFirstVatDaiCallFailure
         (.externalCall (.storage vatRef) "dai" (.intLit 0) [.storage flapperRef]
           "flapperDai" (perm := false))
         .reverted := by
-    exact ExecStmt.externalCallFailure hvat (by simp [evalExpr?, pure]) hargs hcallDai
+    exact ExecStmt.externalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hvat (by simp [evalExpr?, pure]) hargs hcallDai
   simp only [cageFirstVatDaiStmts, checkedExternalCallStmts]
   exact ExecBlock.consNormal (ExecStmt.requireTrue hguard)
     (ExecBlock.consRevert hcallStmt)
@@ -159,7 +159,7 @@ theorem cageFirstVatDaiReturnDecodeFailure
         (.externalCall (.storage vatRef) "dai" (.intLit 0) [.storage flapperRef]
           "flapperDai" (perm := false))
         .reverted := by
-    exact ExecStmt.externalCallReturnDecodeRevert hvat (by simp [evalExpr?, pure])
+    exact ExecStmt.externalCallReturnDecodeRevert (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hvat (by simp [evalExpr?, pure])
       hargs hcallDai hdecDai
   simp only [cageFirstVatDaiStmts, checkedExternalCallStmts]
   exact ExecBlock.consNormal (ExecStmt.requireTrue hguard)
@@ -207,7 +207,7 @@ theorem cageFirstVatDaiSuccess
         (.ok { contract := contract, locals := cageLocalsFlapperDai flapperDai }
           evmDai) := by
     simpa [cageLocalsFlapperDai, collapseReturns] using
-      ExecStmt.externalCallSuccess hvat (by simp [evalExpr?, pure]) hargs
+      ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hvat (by simp [evalExpr?, pure]) hargs
         hcallDai hdecDai
   simp only [cageFirstVatDaiStmts, checkedExternalCallStmts]
   exact ExecBlock.consNormal (ExecStmt.requireTrue hguard)
@@ -276,7 +276,7 @@ theorem cageFlapperCageCallFailure
         (.externalCall (.storage flapperRef) "cage" (.intLit 0)
           [.var "flapperDai"] "_flapCageRet")
         .reverted := by
-    exact ExecStmt.externalCallFailure hflapper (by simp [evalExpr?, pure])
+    exact ExecStmt.externalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hflapper (by simp [evalExpr?, pure])
       hargs hcallFlap
   simp only [cageFlapperCageStmts, checkedExternalCallStmts]
   exact ExecBlock.consNormal (ExecStmt.requireTrue hguard)
@@ -325,7 +325,7 @@ theorem cageFlapperCageSuccess
         (.ok { contract := contract, locals := cageLocalsAfterFlapCage flapperDai }
           evmFlap) := by
     simpa [locals, cageLocalsAfterFlapCage, cageDecodeVoid_ok, collapseReturns] using
-      ExecStmt.externalCallSuccess hflapper (by simp [evalExpr?, pure]) hargs
+      ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hflapper (by simp [evalExpr?, pure]) hargs
         hcallFlap (cageDecodeVoid_ok outFlap)
   simp only [cageFlapperCageStmts, checkedExternalCallStmts]
   exact ExecBlock.consNormal (ExecStmt.requireTrue hguard)
@@ -476,7 +476,8 @@ theorem cageSourceFirstDaiNoCode {σ σ₀ A I} {g : UInt256}
       let evmAsh := Stele.EVM.storageStore evmSin I.codeOwner ⟨6⟩ ⟨0⟩
       (UInt256.ofNat
         ((evmAsh.lookupAccount (cageVatAddressOf evmAsh)).option 0
-          (fun acc => acc.code.size))).toNat = 0) :
+          (fun acc => acc.code.size))).toNat = 0)
+    (hperm : I.perm = true) :
     ExecTransitionBody config contract
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
       cageTransition.body .reverted := by
@@ -495,7 +496,7 @@ theorem cageSourceFirstDaiNoCode {σ σ₀ A I} {g : UInt256}
             .assign .storage AshRef (.intLit 0) ])
         (.ok { contract := contract, locals := locals } evmAsh) := by
     simpa [locals, evm0, evmLive, evmSin, evmAsh] using
-      vowCageSourceClearPrefix (σ := σ)
+      vowCageSourceClearPrefix (hperm := hperm) (σ := σ)
         (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hauth hlive
   have hfirst :
       ExecBlock config { contract := contract, locals := locals } evmAsh
@@ -542,7 +543,8 @@ theorem cageSourceFirstDaiCallFailure
       let evmAsh := Stele.EVM.storageStore evmSin I.codeOwner ⟨6⟩ ⟨0⟩
       typedCallViaEVM config evmAsh (EVM.address (cageVatAddressOf evmAsh))
         "dai" 0 [.address (flapFlapperAddressOf evmAsh)] (false, evmDai, outDai)
-        false) :
+        false)
+    (hperm : I.perm = true) :
     ExecTransitionBody config contract
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
       cageTransition.body .reverted := by
@@ -561,7 +563,7 @@ theorem cageSourceFirstDaiCallFailure
             .assign .storage AshRef (.intLit 0) ])
         (.ok { contract := contract, locals := locals } evmAsh) := by
     simpa [locals, evm0, evmLive, evmSin, evmAsh] using
-      vowCageSourceClearPrefix (σ := σ)
+      vowCageSourceClearPrefix (hperm := hperm) (σ := σ)
         (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hauth hlive
   have hfirst :
       ExecBlock config { contract := contract, locals := locals } evmAsh
@@ -611,7 +613,8 @@ theorem cageSourceFirstDaiReturnDecodeFailure
       typedCallViaEVM config evmAsh (EVM.address (cageVatAddressOf evmAsh))
         "dai" 0 [.address (flapFlapperAddressOf evmAsh)] (true, evmDai, outDai)
         false)
-    (hdecDai : config.externalABI.decode? "dai" outDai = none) :
+    (hdecDai : config.externalABI.decode? "dai" outDai = none)
+    (hperm : I.perm = true) :
     ExecTransitionBody config contract
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
       cageTransition.body .reverted := by
@@ -630,7 +633,7 @@ theorem cageSourceFirstDaiReturnDecodeFailure
             .assign .storage AshRef (.intLit 0) ])
         (.ok { contract := contract, locals := locals } evmAsh) := by
     simpa [locals, evm0, evmLive, evmSin, evmAsh] using
-      vowCageSourceClearPrefix (σ := σ)
+      vowCageSourceClearPrefix (hperm := hperm) (σ := σ)
         (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hauth hlive
   have hfirst :
       ExecBlock config { contract := contract, locals := locals } evmAsh
@@ -688,7 +691,8 @@ theorem cageSourceFlapperCageNoCode
     (hflapperNoCode :
       (UInt256.ofNat
         ((evmDai.lookupAccount (flapFlapperAddressOf evmDai)).option 0
-          (fun acc => acc.code.size))).toNat = 0) :
+          (fun acc => acc.code.size))).toNat = 0)
+    (hperm : I.perm = true) :
     ExecTransitionBody config contract
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
       cageTransition.body .reverted := by
@@ -707,7 +711,7 @@ theorem cageSourceFlapperCageNoCode
             .assign .storage AshRef (.intLit 0) ])
         (.ok { contract := contract, locals := locals } evmAsh) := by
     simpa [locals, evm0, evmLive, evmSin, evmAsh] using
-      vowCageSourceClearPrefix (σ := σ)
+      vowCageSourceClearPrefix (hperm := hperm) (σ := σ)
         (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hauth hlive
   have hfirst :
       ExecBlock config { contract := contract, locals := locals } evmAsh
@@ -769,7 +773,8 @@ theorem cageSourceFlapperCageCallFailure
     (hcallFlap :
       typedCallViaEVM config evmDai (EVM.address (flapFlapperAddressOf evmDai))
         "cage" 0 [.int (Int.ofNat flapperDai.toNat)] (false, evmFlap, outFlap)
-        true) :
+        true)
+    (hperm : I.perm = true) :
     ExecTransitionBody config contract
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
       cageTransition.body .reverted := by
@@ -788,7 +793,7 @@ theorem cageSourceFlapperCageCallFailure
             .assign .storage AshRef (.intLit 0) ])
         (.ok { contract := contract, locals := locals } evmAsh) := by
     simpa [locals, evm0, evmLive, evmSin, evmAsh] using
-      vowCageSourceClearPrefix (σ := σ)
+      vowCageSourceClearPrefix (hperm := hperm) (σ := σ)
         (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hauth hlive
   have hfirst :
       ExecBlock config { contract := contract, locals := locals } evmAsh
@@ -855,7 +860,8 @@ theorem cageSourceFlopperCageNoCode
     (hflopperNoCode :
       (UInt256.ofNat
         ((evmFlap.lookupAccount (flopFlopperAddressOf evmFlap)).option 0
-          (fun acc => acc.code.size))).toNat = 0) :
+          (fun acc => acc.code.size))).toNat = 0)
+    (hperm : I.perm = true) :
     ExecTransitionBody config contract
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
       cageTransition.body .reverted := by
@@ -874,7 +880,7 @@ theorem cageSourceFlopperCageNoCode
             .assign .storage AshRef (.intLit 0) ])
         (.ok { contract := contract, locals := locals } evmAsh) := by
     simpa [locals, evm0, evmLive, evmSin, evmAsh] using
-      vowCageSourceClearPrefix (σ := σ)
+      vowCageSourceClearPrefix (hperm := hperm) (σ := σ)
         (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hauth hlive
   have hfirst :
       ExecBlock config { contract := contract, locals := locals } evmAsh
@@ -956,7 +962,8 @@ theorem cageSourceFlopperCageCallFailure
           (fun acc => acc.code.size))).toNat)
     (hcallFlop :
       typedCallViaEVM config evmFlap (EVM.address (flopFlopperAddressOf evmFlap))
-        "cage" 0 [] (false, evmFlop, outFlop) true) :
+        "cage" 0 [] (false, evmFlop, outFlop) true)
+    (hperm : I.perm = true) :
     ExecTransitionBody config contract
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
       cageTransition.body .reverted := by
@@ -975,7 +982,7 @@ theorem cageSourceFlopperCageCallFailure
             .assign .storage AshRef (.intLit 0) ])
         (.ok { contract := contract, locals := locals } evmAsh) := by
     simpa [locals, evm0, evmLive, evmSin, evmAsh] using
-      vowCageSourceClearPrefix (σ := σ)
+      vowCageSourceClearPrefix (hperm := hperm) (σ := σ)
         (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hauth hlive
   have hfirst :
       ExecBlock config { contract := contract, locals := locals } evmAsh
@@ -1163,7 +1170,7 @@ theorem vowCageFirstDaiNoCodeBodyCore {σ σ₀ A I} {g : UInt256}
         (addr := cageVatAddressOf evmAsh) haddr hcodeSizeStele
     simpa [evmAsh, evmSin, evmLive, evm0, initState, State.lookupAccount,
       storageStore_accountMap, σClearedStele, vowCageClearedAccountMap] using hzero
-  have hbody := cageSourceFirstDaiNoCode
+  have hbody := cageSourceFirstDaiNoCode (hperm := hperm)
     (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
     hwv hauthEvm hliveEvm
     (by simpa [evm0, evmLive, evmSin, evmAsh] using hvatNoCode)
@@ -1203,12 +1210,13 @@ theorem vowCageFirstDaiCallFailureBodyCore
       let evmAsh := Stele.EVM.storageStore evmSin I.codeOwner ⟨6⟩ ⟨0⟩
       typedCallViaEVM config evmAsh (EVM.address (cageVatAddressOf evmAsh))
         "dai" 0 [.address (flapFlapperAddressOf evmAsh)] (false, evmDai, outDai)
-        false) :
+        false)
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   have hrev : RDrev vowBytecode (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) :=
     RD.vowCageFirstDaiCallFailure rd2754 hrdataSize (by simpa using hov)
-  have hbody := cageSourceFirstDaiCallFailure
+  have hbody := cageSourceFirstDaiCallFailure (hperm := hperm)
     (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
     (evmDai := evmDai) (outDai := outDai) hwv hauth hlive hvatCode hcallDai
   exact hrev.reEquivExecutionRevert hcode hdispatch hdecode hbody
@@ -1251,7 +1259,8 @@ theorem vowCageFirstDaiDecodeShortBodyCore
       let evmAsh := Stele.EVM.storageStore evmSin I.codeOwner ⟨6⟩ ⟨0⟩
       typedCallViaEVM config evmAsh (EVM.address (cageVatAddressOf evmAsh))
         "dai" 0 [.address (flapFlapperAddressOf evmAsh)] (true, evmDai, outDai)
-        false) :
+        false)
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   have hmin :
       (min (⟨32⟩ : UInt256) (UInt256.ofNat outDai.size)).toNat = outDai.size :=
@@ -1281,7 +1290,7 @@ theorem vowCageFirstDaiDecodeShortBodyCore
       (by simp; omega)
   have hdecDai : config.externalABI.decode? "dai" outDai = none :=
     kissDaiDecode_none_short hshort
-  have hbody := cageSourceFirstDaiReturnDecodeFailure
+  have hbody := cageSourceFirstDaiReturnDecodeFailure (hperm := hperm)
     (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
     (evmDai := evmDai) (outDai := outDai) hwv hauth hlive hvatCode hcallDai
     hdecDai
@@ -1329,12 +1338,13 @@ theorem vowCageFlapperCageNoCodeBodyCore
     (hflapperNoCode :
       (UInt256.ofNat
         ((evmDai.lookupAccount (flapFlapperAddressOf evmDai)).option 0
-          (fun acc => acc.code.size))).toNat = 0) :
+          (fun acc => acc.code.size))).toNat = 0)
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   have hrev : RDrev vowBytecode (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) :=
     RD.vowCageFlapperCageNoCode rd2795 hmem hread64 hcodeSize (by simp; omega)
-  have hbody := cageSourceFlapperCageNoCode
+  have hbody := cageSourceFlapperCageNoCode (hperm := hperm)
     (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
     (flapperDai := flapperDai) (evmDai := evmDai) (outDai := outDai)
     hwv hauth hlive hvatCode hcallDai hdecDai hflapperNoCode
@@ -1384,12 +1394,13 @@ theorem vowCageFlapperCageCallFailureBodyCore
     (hcallFlap :
       typedCallViaEVM config evmDai (EVM.address (flapFlapperAddressOf evmDai))
         "cage" 0 [.int (Int.ofNat flapperDai.toNat)] (false, evmFlap, outFlap)
-        true) :
+        true)
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   have hrev : RDrev vowBytecode (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) :=
     RD.vowCageFlapperCageCallFailure rd2860 hrdataSize (by simp; omega)
-  have hbody := cageSourceFlapperCageCallFailure
+  have hbody := cageSourceFlapperCageCallFailure (hperm := hperm)
     (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
     (flapperDai := flapperDai) (evmDai := evmDai) (evmFlap := evmFlap)
     (outDai := outDai) (outFlap := outFlap) hwv hauth hlive hvatCode hcallDai
@@ -1447,12 +1458,13 @@ theorem vowCageFlopperCageNoCodeBodyCore
     (hflopperNoCode :
       (UInt256.ofNat
         ((evmFlap.lookupAccount (flopFlopperAddressOf evmFlap)).option 0
-          (fun acc => acc.code.size))).toNat = 0) :
+          (fun acc => acc.code.size))).toNat = 0)
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   have hrev : RDrev vowBytecode (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) :=
     RD.vowCageFlopperCageNoCode rd2881 hmem hread64 hcodeSize hov
-  have hbody := cageSourceFlopperCageNoCode
+  have hbody := cageSourceFlopperCageNoCode (hperm := hperm)
     (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
     (flapperDai := flapperDai) (evmDai := evmDai) (evmFlap := evmFlap)
     (outDai := outDai) (outFlap := outFlap) hwv hauth hlive hvatCode hcallDai
@@ -1511,12 +1523,13 @@ theorem vowCageFlopperCageCallFailureBodyCore
           (fun acc => acc.code.size))).toNat)
     (hcallFlop :
       typedCallViaEVM config evmFlap (EVM.address (flopFlopperAddressOf evmFlap))
-        "cage" 0 [] (false, evmFlop, outFlop) true) :
+        "cage" 0 [] (false, evmFlop, outFlop) true)
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   have hrev : RDrev vowBytecode (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) :=
     RD.vowCageFlopperCageCallFailure rd2964 hrdataSize (by simp; omega)
-  have hbody := cageSourceFlopperCageCallFailure
+  have hbody := cageSourceFlopperCageCallFailure (hperm := hperm)
     (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
     (flapperDai := flapperDai) (evmDai := evmDai) (evmFlap := evmFlap)
     (evmFlop := evmFlop) (outDai := outDai) (outFlap := outFlap)

@@ -459,7 +459,7 @@ theorem vowFlapSourceVatSin0CallFailure
         (.externalCall (.storage vatRef) "sin" (.intLit 0) [thisAddr] "vatSin0"
           (perm := false))
         .reverted := by
-    exact ExecStmt.externalCallFailure hvat (by simp [evalExpr?, pure]) hargs hcallSin
+    exact ExecStmt.externalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hvat (by simp [evalExpr?, pure]) hargs hcallSin
   have hblock :
       ExecBlock config { contract := contract, locals := locals } evm0 flapTransition.body
         .reverted := by
@@ -504,7 +504,7 @@ theorem vowFlapSourceVatSin0DecodeRevert
         (.externalCall (.storage vatRef) "sin" (.intLit 0) [thisAddr] "vatSin0"
           (perm := false))
         .reverted := by
-    exact ExecStmt.externalCallReturnDecodeRevert hvat (by simp [evalExpr?, pure])
+    exact ExecStmt.externalCallReturnDecodeRevert (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hvat (by simp [evalExpr?, pure])
       hargs hcallSin hdecSin
   have hblock :
       ExecBlock config { contract := contract, locals := locals } evm0 flapTransition.body
