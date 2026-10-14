@@ -67,10 +67,10 @@ theorem metaMorphoV1_1SetFeeBody {σ σ₀ A I} {g : UInt256} (v : MetaMorphoV1_
                 have hpre := setFeePrefix evm (immStore v) value hwv hhi howner hgood
                 obtain ⟨aw3, k3, C3, h3⟩ := setFeeReachAccrual v (by simp) hbad h2
                 rcases accrueInterestSimulation v (by simp) hsize solcFreePtrMem_mload64
-                    (by decide) (by rw [solcFreePtrMem_size]) SourceState.init
+                    (by decide) (by decide) (by rw [solcFreePtrMem_size]) SourceState.init
                     (by rw [metaMorphoV1_1PatchedValidJumps v]; jump_dest) h3 with
                   ⟨hbad, hrev⟩ | ⟨hstatic, hhalt⟩ |
-                    ⟨evm', frame', ptr, mem', out, hperm, hs', hbody, aw4, k4, C4, h4⟩
+                    ⟨evm', frame', ptr, mem', out, hperm, hs', hbody, _, _, _, _, _, _, aw4, k4, C4, h4⟩
                 · exact hrev.reEquivExecutionRevert hcode hd hdec
                     (setFeeAccrualReverts evm (immStore v) value hpre hbad)
                 · exact hhalt.reEquivStaticHalt hcode hd hdec

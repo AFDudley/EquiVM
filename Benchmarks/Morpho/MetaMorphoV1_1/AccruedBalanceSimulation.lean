@@ -28,6 +28,7 @@ structure BalanceSnapshot (market before : ByteArray) (limit : Nat) where
   upper : cursor.toNat < 2 ^ 64
   size : cursor.toNat ≤ memory.size
   preserves : MemoryPrefix before memory limit
+  cursorLower : limit ≤ cursor.toNat
 
 def BalanceSnapshot.rebase {market before middle : ByteArray} {limit sourceLimit : Nat}
     (result : BalanceSnapshot market middle sourceLimit)
@@ -38,7 +39,8 @@ def BalanceSnapshot.rebase {market before middle : ByteArray} {limit sourceLimit
     cursor := result.cursor
     marketLocal := result.marketLocal, cursorLocal := result.cursorLocal, free := result.free
     lower := result.lower, upper := result.upper, size := result.size
-    preserves := hprefix.trans (result.preserves.mono hle) }
+    preserves := hprefix.trans (result.preserves.mono hle)
+    cursorLower := le_trans hle result.cursorLower }
 
 theorem narrowSumBound {a b : UInt256} (h : a.toNat + b.toNat < 2 ^ 128) :
     (a + b).toNat < 2 ^ 128 := by
@@ -140,7 +142,8 @@ theorem accruedBalanceSimulation {I : ExecutionEnv} {g : Sat256} {s0 : State}
         lower := by rw [hn2]; omega
         upper := hptr2hi
         size := by rw [hn2, hmsize]; omega
-        preserves := hprefix }
+        preserves := hprefix
+        cursorLower := by rw [hn2]; omega }
     exact .inr ⟨result, hsource.run (marketFeeSkipSource hmarketA hz), aw3, k3, C3, h3⟩
   · rw [if_neg hz] at h2
     rcases marketFeeSimulation (mem := memA) (market := market) (frame := frameA)
@@ -208,7 +211,8 @@ theorem accruedBalanceSimulation {I : ExecutionEnv} {g : Sat256} {s0 : State}
             castStoreMemory_size _ _ _ _ (by rw [hn2]; omega)
               (by rw [hadd 32 (by decide), hn2]; omega)]; omega
         preserves := hprefix.trans ((castStoreMemory_prefix _ _ _ _
-          (by rw [hadd 32 (by decide), hn2]; omega)).mono (by rw [hadd 32 (by decide)]; omega)) }
+          (by rw [hadd 32 (by decide), hn2]; omega)).mono (by rw [hadd 32 (by decide)]; omega))
+        cursorLower := by rw [hptr3, hn2]; omega }
     refine .inr ⟨result, hsource.run ?_, aw4, k4, C4, h4⟩
     rw [marketFeeStatements]
     exact ExecBlock.consNormal (ExecStmt.iteTrue

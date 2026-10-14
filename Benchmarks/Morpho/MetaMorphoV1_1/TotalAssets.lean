@@ -43,7 +43,7 @@ theorem metaMorphoV1_1TotalAssetsBody {σ σ₀ A I} {g : UInt256} (v : MetaMorp
           (by decide) (by rw [solcFreePtrMem_size]) SourceState.init
           (by rw [metaMorphoV1_1PatchedValidJumps v]; jump_dest) h1 with
         ⟨hbad, hrev⟩ | ⟨evm', frame', lost, total, shares, ptr, mem', out, hs', hstore,
-          hfree, hlo, hmem, hbody, aw2, k2, C2, h2⟩
+          hfree, hlo, hmem, _, _, _, _, hbody, aw2, k2, C2, h2⟩
       · exact hrev.reEquivExecutionRevert hcode hd hdec
           (totalAssetsBodyReverts v ∅ hwv hhi hbad)
       · exact (totalAssetsEncodeReturn v (by simp) h2).reEquivExecutionGen hcode hd hdec

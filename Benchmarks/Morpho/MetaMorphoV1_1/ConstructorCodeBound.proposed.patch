@@ -1,0 +1,29 @@
+--- a/Benchmarks/Morpho/MetaMorphoV1_1/Constructor.lean
++++ b/Benchmarks/Morpho/MetaMorphoV1_1/Constructor.lean
+@@ -1,4 +1,5 @@
+ import Benchmarks.Morpho.MetaMorphoV1_1.Common
++import Stele.RefineWithCodeBound
+ 
+ /-!
+ # MetaMorphoV1_1 constructor correctness
+@@ -14,7 +15,7 @@
+ namespace Benchmarks.Morpho.MetaMorphoV1_1
+ 
+ theorem metaMorphoV1_1ConstructorCorrect :
+-    typedConstructorRefinement config metaMorphoV1_1CreationBytecode contract (immutableLayout.deployed metaMorphoV1_1Bytecode) := by
++    typedConstructorRefinementWithCodeBound config metaMorphoV1_1CreationBytecode contract (immutableLayout.deployed metaMorphoV1_1Bytecode) := by
+   sorry
+ 
+ end Benchmarks.Morpho.MetaMorphoV1_1
+--- a/Benchmarks/Morpho/MetaMorphoV1_1/Correct.lean
++++ b/Benchmarks/Morpho/MetaMorphoV1_1/Correct.lean
+@@ -352,7 +352,8 @@
+   exact metaMorphoV1_1Correct v
+ 
+ theorem metaMorphoV1_1ContractCorrect :
+-    contractRefinement config metaMorphoV1_1CreationBytecode contract :=
++    contractRefinementWFWithCodeBound trivialStorageWF noGasBound
++      config metaMorphoV1_1CreationBytecode contract :=
+   .of_runtime metaMorphoV1_1ConstructorCorrect metaMorphoV1_1RuntimeCorrect
+ 
+ end Benchmarks.Morpho.MetaMorphoV1_1

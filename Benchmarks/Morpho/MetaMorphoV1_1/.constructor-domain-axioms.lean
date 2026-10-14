@@ -1,0 +1,5 @@
+import Benchmarks.Morpho.MetaMorphoV1_1.ConstructorDomainInit
+
+#print axioms Benchmarks.Morpho.MetaMorphoV1_1.constructorDecimalsInit
+#print axioms Benchmarks.Morpho.MetaMorphoV1_1.constructorAssetInit
+#print axioms Benchmarks.Morpho.MetaMorphoV1_1.constructorDomainInit

@@ -91,7 +91,7 @@ theorem previewWithdrawConversionSimulation {I : ExecutionEnv} {g : Sat256} {s0 
       hcalldata hfree hlo hmem hs
       (by rw [metaMorphoV1_1PatchedValidJumps v]; jump_dest) rd with
     ⟨hbad, hrev⟩ | ⟨evm', frame', lost, total, shares, ptr', mem', out,
-      hs', hstore, hfree', hlo', hmem', hbody, aw2, k2, C2, h2⟩
+      hs', hstore, hfree', hlo', hmem', _, _, _, _, hbody, aw2, k2, C2, h2⟩
   · exact .inl ⟨allocatedConvertAccrualReverts v hbad, hrev⟩
   · have hl := allocatedConvertTotalsLocals (immStore v) (calldataWord I.calldata 4)
       ptr lost total shares ptr'

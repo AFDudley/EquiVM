@@ -137,7 +137,8 @@ theorem marketBalancesSimulation {I : ExecutionEnv} {g : Sat256} {s0 evm : State
         lower := by rw [hcur]; omega
         upper := by rw [hcur]; exact hfit
         size := hmem1
-        preserves := hprefix }
+        preserves := hprefix
+        cursorLower := by rw [hcur]; omega }
     exact .inr ⟨market, evm1, result, market, hs1,
       typedCallViaEVM_static_accountStorageStateEq hcall,
       allocatedMarketBalancesBodyNoAccrual hcall hdecode halloc hleSource haccrue,

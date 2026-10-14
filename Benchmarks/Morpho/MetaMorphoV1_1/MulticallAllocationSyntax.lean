@@ -1,4 +1,5 @@
 import Benchmarks.Morpho.MetaMorphoV1_1.SafeTransferAllocationSyntax
+import Benchmarks.Morpho.MetaMorphoV1_1.MulticallCalldataSyntax
 
 /-! Explicit result-array, calldata-copy, and return-buffer allocation for multicall. -/
 
@@ -26,6 +27,8 @@ def allocatedMulticallLoop : Stmt :=
       (.inRange (.uint ⟨256, by decide⟩)
         (.binary .add (.var "i") (.intLit 1)))]
     [.letDecl "__solcDelegateData" none (.index (.var "data") (.var "i")),
+     .require (.binary .ne (.var "__solcDelegateData")
+       (.structLit ABI.Solc08Calldata.decodeFailureTag [])),
      .require (.binary .lt multicallDataLength (.intLit (Int.ofNat (2 ^ 64)))),
      .internalCall allocateFunction.name
        [.var cursorName, .binary .add (.intLit 32) multicallDataLength] cursorName,

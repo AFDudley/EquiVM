@@ -56,7 +56,7 @@ theorem maxWithdrawFunctionSimulation {I : ExecutionEnv} {g : Sat256} {s0 evm : 
       (by simp only [List.length_cons]; omega) hcalldata hfree hlo hmem hs
       (by rw [metaMorphoV1_1PatchedValidJumps v]; jump_dest) h1 with
     ⟨hbad, hrev⟩ | ⟨evm1, final1, lost, total, shares, ptr1, mem1, out1,
-      hs1, hstore1, hfree1, hlo1, hmem1, hsource1, aw2, k2, C2, h2⟩
+      hs1, hstore1, hfree1, hlo1, hmem1, _, _, _, _, hsource1, aw2, k2, C2, h2⟩
   · exact .inl ⟨maxWithdrawAccrualReverts v hbad, hrev⟩
   rcases maxWithdrawConversionSimulation v (by simp only [List.length_cons]; omega)
       (maxWithdrawAccruedLocals v owner ptr lost total shares ptr1

@@ -59,6 +59,11 @@ theorem setCapSupplyAssetsSimulation {I : ExecutionEnv} {g : Sat256} {s0 evm : S
         (immWords := wordsOf (immStore v))
         (by change R.length + 8 + 5 ≤ 1024; omega)
         (by rw [metaMorphoV1_1PatchedValidJumpsRuntime v]; jump_dest) hshares) rd
-  simpa only [haddr] using h
+  simp only [haddr] at h
+  rcases h with hbad | ⟨evm', frame', value, cursor, mem', out, hs', hstore,
+    hbody, hfree', hlo', hhi', hmem', _, _, hrd⟩
+  · exact .inl hbad
+  · exact .inr ⟨evm', frame', value, cursor, mem', out, hs', hstore,
+      hbody, hfree', hlo', hhi', hmem', hrd⟩
 
 end Benchmarks.Morpho.MetaMorphoV1_1

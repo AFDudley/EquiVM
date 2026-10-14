@@ -1,5 +1,6 @@
 import Benchmarks.Morpho.MetaMorphoV1_1.MarketParamsDecodeRoutines
 import Benchmarks.Morpho.MetaMorphoV1_1.MarketParamsAllocationSource
+import Benchmarks.Morpho.MetaMorphoV1_1.MarketParamsPrefixMemory
 
 /-! Complete source/bytecode simulation of the market-parameter reader. -/
 
@@ -41,6 +42,8 @@ theorem marketParamsAllocationSimulation {I : ExecutionEnv} {g : Sat256} {s0 evm
       96 ≤ dst.toNat ∧ dst.toNat + 160 ≤ cursor.toNat ∧
       (∀ i, i < 5 → memLoad (dst + UInt256.ofNat (32 * i)) mem' =
         calldataWord out (32 * i)) ∧
+      ptr.toNat ≤ cursor.toNat ∧ MemoryPrefix mem mem' ptr.toNat ∧
+      (mem.size = 96 → 128 ≤ ptr.toNat → memLoad ⟨96⟩ mem' = ⟨0⟩) ∧
       RD (deployedRuntime v) I g s0 ret (dst :: R) mem' aw' out evm'.accountMap k' C' := by
   by_cases hfit : allocationFits ptr ⟨160⟩
   · have hfirst : (nextCursor ptr ⟨160⟩).toNat = ptr.toNat + 160 :=
@@ -93,11 +96,25 @@ theorem marketParamsAllocationSimulation {I : ExecutionEnv} {g : Sat256} {s0 evm
             ⟨hbad, hrev⟩ | ⟨hc, aw4, k4, C4, h4⟩
           · exact .inl ⟨allocatedMarketParamsBodyDecodeReverts v evm evm' id ptr out hfit hcall
               (by rw [marketParamsDecode hhi, if_neg hbad]), hrev⟩
-          · refine .inr ⟨evm', _, out, _, _, marketParamsFinalCursor ptr, aw4, k4, C4,
+          · have hrest : MemoryPrefix (marketParamsInitialMem mem ptr)
+                (marketParamsCopyMem (marketParamsReservedMem
+                  (marketParamsOutputMem
+                    (marketParamsCallMem (marketParamsInitialMem mem ptr)
+                      (nextCursor ptr ⟨160⟩).toNat id) (nextCursor ptr ⟨160⟩) out)
+                  (nextCursor ptr ⟨160⟩))
+                  (nextCursor (nextCursor ptr ⟨160⟩) ⟨160⟩).toNat out) ptr.toNat := by
+              apply ((marketParamsCallMem_prefix _ (nextCursor ptr ⟨160⟩).toNat id).mono
+                (by rw [hfirst]; omega)).trans
+              apply ((marketParamsOutputMem_prefix hinput hlong hout).mono
+                (by rw [hfirst]; omega)).trans
+              apply (marketParamsReservedMem_prefix _ _ _).trans
+              exact (marketParamsCopyMem_prefix _ _ _).mono (by rw [hdst, hfirst]; omega)
+            refine .inr ⟨evm', _, out, _, _, marketParamsFinalCursor ptr, aw4, k4, C4,
               allocatedMarketParamsBodyReturns hfit hcall
                 (by rw [marketParamsDecode hhi, if_pos hc]) hpost, hs',
               typedCallViaEVM_static_accountStorageStateEq hcall, hc,
-              ?_, ?_, ?_, ?_, ?_, ?_, ?_, h4⟩
+              ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_,
+              (marketParamsInitialMem_prefix mem ptr).trans hrest, ?_, h4⟩
             · rw [marketParamsCopyMem_free
                 (by rw [marketParamsReservedMem_size]; omega)
                 (by rw [hdst, hfirst]; omega), marketParamsReservedMem_free,
@@ -118,6 +135,11 @@ theorem marketParamsAllocationSimulation {I : ExecutionEnv} {g : Sat256} {s0 evm
               rw [he]
               exact marketParamsCopyMem_field _ _ out i hi
                 (by rw [hdst]; change _ < 2 ^ 256; omega)
+            · rw [hcursor, hfirst]; omega
+            · intro hm hp
+              exact (hrest.load_preserved (by decide) hp
+                (by rw [marketParamsInitialMem_size]; omega) (by decide)).trans
+                  (marketParamsInitialMem_zero ptr hm hp)
   · exact .inl ⟨allocatedMarketParamsBodyPrefixReverts v evm id ptr hfit,
       marketParamsPrefixRevert v (by simp only [List.length_cons]; omega) hfree hfit rd⟩
 

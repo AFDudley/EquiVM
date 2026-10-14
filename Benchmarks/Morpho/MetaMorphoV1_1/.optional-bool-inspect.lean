@@ -1,0 +1,6 @@
+import Benchmarks.Morpho.MetaMorphoV1_1.OptionalBoolSource
+open Stele Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
+#eval allocatedOptionalReturnBoolFunction.body
+#eval optionalBoolExpr
+#eval allocatedForceApproveFunction.params
+#eval allocatedForceApproveFunction.body

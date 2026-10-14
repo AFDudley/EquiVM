@@ -37,6 +37,7 @@ theorem supplyAssetsSimulation {I : ExecutionEnv} {g : Sat256} {s0 evm : State}
         (.returned frame' evm' (some [uint256Value value, uint256Value cursor])) ∧
       memLoad ⟨64⟩ mem' = cursor ∧ 96 ≤ cursor.toNat ∧ cursor.toNat < 2 ^ 64 ∧
       cursor.toNat ≤ mem'.size ∧
+      MemoryPrefix mem mem' ptr.toNat ∧ ptr.toNat ≤ cursor.toNat ∧
       ∃ aw' k' C', RD (deployedRuntime v) I g s0 ret
         ([value, a, b, c, morpho] ++ R) mem' aw' out evm'.accountMap k' C' := by
   have hhash : keccakWord params (UInt256.ofNat 160) mem = p.id := by

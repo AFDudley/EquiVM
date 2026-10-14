@@ -1,0 +1,4 @@
+import Benchmarks.Morpho.MetaMorphoV1_1.Correct
+
+#print axioms Benchmarks.Morpho.MetaMorphoV1_1.metaMorphoV1_1ConstructorCorrect
+#print axioms Benchmarks.Morpho.MetaMorphoV1_1.metaMorphoV1_1ContractCorrect

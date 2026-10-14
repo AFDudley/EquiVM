@@ -43,4 +43,33 @@ theorem minimumWord_comm (x y : UInt256) : minimumWord x y = minimumWord y x := 
   apply u256_inj
   rw [minimumWord_toNat, minimumWord_toNat, Nat.min_comm]
 
+-- LIBRARY CANDIDATE: the compiler can test equality using either subtraction or xor.
+theorem wordSubZero_iff_xorZero (x y : UInt256) :
+    UInt256.sub x y = ⟨0⟩ ↔ UInt256.xor x y = ⟨0⟩ := by
+  rw [u256_sub_eq_zero_iff_eq]
+  constructor
+  · intro he
+    subst y
+    apply u256_inj
+    change (x.toNat ^^^ x.toNat) % UInt256.size = 0
+    rw [Nat.xor_self]
+    rfl
+  · intro hz
+    by_contra hn
+    exact u256_xor_ne_zero_of_ne hn hz
+
+-- LIBRARY CANDIDATE: the alternate operand order used in supply's branchless minimum.
+theorem branchlessMinimum_left (x y : UInt256) :
+    UInt256.xor y (UInt256.mul (UInt256.xor y x) (UInt256.lt x y)) = minimumWord x y := by
+  have hc (a b : UInt256) : UInt256.xor a b = UInt256.xor b a := by
+    apply u256_inj
+    change (a.toNat ^^^ b.toNat) % UInt256.size = (b.toNat ^^^ a.toNat) % UInt256.size
+    rw [Nat.xor_comm]
+  rw [hc, branchlessMinimum]
+
+theorem branchlessMinimum_sub_zero (x y : UInt256) :
+    UInt256.sub y (UInt256.mul (UInt256.xor y x) (UInt256.lt x y)) = ⟨0⟩ ↔
+      minimumWord x y = ⟨0⟩ := by
+  rw [wordSubZero_iff_xorZero, branchlessMinimum_left]
+
 end Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory

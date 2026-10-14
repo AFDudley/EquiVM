@@ -15,7 +15,8 @@ attribute [local irreducible] metaMorphoV1_1Bytecode
 set_option autoImplicit false
 set_option maxRecDepth 2000
 
-theorem safeTransferSimulation {I : ExecutionEnv} {g : Sat256} {s0 evm : State}
+-- LIBRARY CANDIDATE: safe transfers preserve the caller heap while advancing its cursor.
+theorem safeTransferHeapSimulation {I : ExecutionEnv} {g : Sat256} {s0 evm : State}
     {mem rdata : ByteArray} {aw : UInt256} {σ : AccountMap} {k C : Nat}
     {ptr ret : UInt256} {R : List UInt256}
     (v : MetaMorphoV1_1Immutables) (imms : Store) (token recipient : AccountAddress)
@@ -34,6 +35,8 @@ theorem safeTransferSimulation {I : ExecutionEnv} {g : Sat256} {s0 evm : State}
           allocatedSafeTransferFunction.body
           (.returned (safeTransferResultFrame imms token recipient amount ptr cursor) evm'
             (some [uint256Value cursor])) ∧
+        cursor.toNat < 2 ^ 64 ∧ ptr.toNat ≤ cursor.toNat ∧
+        MemoryPrefix mem mem' ptr.toNat ∧ memLoad ⟨64⟩ mem' = cursor ∧
         RD (deployedRuntime v) I g s0 ret R mem' aw' out evm'.accountMap k' C' := by
   have h32 := uadd_word_ofNat_toNat ptr 32 (by change _ < 2 ^ 256; omega)
   have h36 := uadd_word_ofNat_toNat ptr 36 (by change _ < 2 ^ 256; omega)
@@ -81,14 +84,43 @@ theorem safeTransferSimulation {I : ExecutionEnv} {g : Sat256} {s0 evm : State}
       (by change (D_J (immutableLayout.runtime metaMorphoV1_1Bytecode
             (wordsOf (immStore v))) 0).contains _ = true
           rw [metaMorphoV1_1PatchedValidJumpsRuntime v]; jump_dest) h3 with
-      ⟨hsource, hrev⟩ | ⟨evm', out, aw3, k3, C3, hs', _, hsource, _, _, h4⟩
+      ⟨hsource, hrev⟩ | ⟨evm', out, aw3, k3, C3, hs', hout, hsource, hpref, hfree', h4⟩
     · exact .inl ⟨safeTransferBodyRevertsCall evm imms token recipient amount ptr hfit hsource,
         hrev⟩
     · have h5 := metaMorphoV1_1_block_14753 (immWords := wordsOf (immStore v))
         (by omega) hret h4
+      have hc := callReturnCursor_bound (nextCursor ptr ⟨100⟩) out hfit.1 hout
       exact .inr ⟨evm', _, _, out, aw3, _, _, hs',
-        safeTransferBodyReturns imms token recipient amount ptr _ hfit hsource, h5⟩
+        safeTransferBodyReturns imms token recipient amount ptr _ hfit hsource,
+        hc.1, le_trans hfit.2 hc.2,
+        (safeTransferCallMemory_prefix mem ptr recipient amount).trans (hpref.mono hfit.2), hfree', h5⟩
   · exact .inl ⟨safeTransferBodyRevertsAllocation evm imms token recipient amount ptr hfit,
       allocateRoundedRevert v (by simp only [List.length_cons]; omega) hfit h1⟩
+
+theorem safeTransferSimulation {I : ExecutionEnv} {g : Sat256} {s0 evm : State}
+    {mem rdata : ByteArray} {aw : UInt256} {σ : AccountMap} {k C : Nat}
+    {ptr ret : UInt256} {R : List UInt256}
+    (v : MetaMorphoV1_1Immutables) (imms : Store) (token recipient : AccountAddress)
+    (amount : UInt256) (hstack : R.length + 14 ≤ 1024) (hs : SourceState s0 I σ evm)
+    (hptr : ptr.toNat < 2 ^ 64) (hlo : 128 ≤ ptr.toNat) (hsize : 128 ≤ mem.size)
+    (hfree : memLoad ⟨64⟩ mem = ptr) (hzero : memLoad ⟨96⟩ mem = ⟨0⟩)
+    (hret : (D_J (deployedRuntime v) 0).contains ret = true)
+    (rd : RD (deployedRuntime v) I g s0 ⟨15818⟩
+      (UInt256.ofNat token.toNat :: UInt256.ofNat recipient.toNat :: amount :: ret :: R)
+      mem aw rdata σ k C) :
+    (ExecFuncBody config (safeTransferFrame imms token recipient amount ptr) evm
+        allocatedSafeTransferFunction.body .reverted ∧ RDrev (deployedRuntime v) g s0) ∨
+      ∃ (evm' : State) (cursor : UInt256) (mem' out : ByteArray) (aw' : UInt256) (k' C' : Nat),
+        SourceState s0 I evm'.accountMap evm' ∧
+        ExecFuncBody config (safeTransferFrame imms token recipient amount ptr) evm
+          allocatedSafeTransferFunction.body
+          (.returned (safeTransferResultFrame imms token recipient amount ptr cursor) evm'
+            (some [uint256Value cursor])) ∧
+        RD (deployedRuntime v) I g s0 ret R mem' aw' out evm'.accountMap k' C' := by
+  rcases safeTransferHeapSimulation v imms token recipient amount hstack hs hptr hlo hsize
+      hfree hzero hret rd with
+    hbad | ⟨evm', cursor, mem', out, aw', k', C', hs', hsource, _, _, _, _, hdone⟩
+  · exact .inl hbad
+  · exact .inr ⟨evm', cursor, mem', out, aw', k', C', hs', hsource, hdone⟩
 
 end Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory

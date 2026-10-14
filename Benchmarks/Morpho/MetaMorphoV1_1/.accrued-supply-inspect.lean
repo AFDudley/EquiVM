@@ -1,0 +1,3 @@
+import Benchmarks.Morpho.MetaMorphoV1_1.Spec
+open Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory
+#eval repr allocatedAccruedSupplyBalanceFunction.body

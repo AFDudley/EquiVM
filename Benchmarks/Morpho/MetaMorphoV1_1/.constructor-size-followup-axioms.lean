@@ -1,0 +1,4 @@
+import Benchmarks.Morpho.MetaMorphoV1_1.ConstructorSizeWitness
+#print axioms Benchmarks.Morpho.MetaMorphoV1_1.ConstructorSizeWitness.deployment_doesNotImplyCodeBound
+#print axioms Benchmarks.Morpho.MetaMorphoV1_1.ConstructorSizeWitness.copiedLength_wraps
+#print axioms Benchmarks.Morpho.MetaMorphoV1_1.ConstructorSizeWitness.copiedArgumentWindow

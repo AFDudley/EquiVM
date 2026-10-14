@@ -1,0 +1,8 @@
+import Benchmarks.Morpho.MetaMorphoV1_1.ConstructorInputSource
+import Benchmarks.Morpho.MetaMorphoV1_1.ConstructorHeadDecode
+
+#print axioms Benchmarks.Morpho.MetaMorphoV1_1.constructorDeployment_bounded_shape
+#print axioms Benchmarks.Morpho.MetaMorphoV1_1.constructorNonpayable
+#print axioms Benchmarks.Morpho.MetaMorphoV1_1.constructorInitialAllocationFailure
+#print axioms Benchmarks.Morpho.MetaMorphoV1_1.constructorReachArgumentMemory
+#print axioms Benchmarks.Morpho.MetaMorphoV1_1.constructorDecodeHead

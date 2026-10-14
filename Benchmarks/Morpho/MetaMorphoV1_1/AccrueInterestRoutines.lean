@@ -36,6 +36,10 @@ def accrueInterestStoreMemory (mem : ByteArray) (lost total : UInt256) : ByteArr
 def accrueInterestBranchPC (shares : UInt256) : UInt256 :=
   if shares = ⟨0⟩ then ⟨14369⟩ else ⟨14382⟩
 
+def accrueInterestFinishMemory (mem : ByteArray) (total shares : UInt256) : ByteArray :=
+  writeWord (writeWord mem (memLoad ⟨64⟩ mem).toNat total)
+    (memLoad ⟨64⟩ mem + UInt256.ofNat 32).toNat shares
+
 theorem accrueInterestReachCalculation {I : ExecutionEnv} {g : Sat256} {s0 : State}
     {mem : ByteArray} {aw : UInt256} {rdata : ByteArray} {σ : AccountMap} {k C : Nat}
     {ret : UInt256} {R : List UInt256}
@@ -111,10 +115,11 @@ theorem accrueInterestFinish {I : ExecutionEnv} {g : Sat256} {s0 : State}
     (hret : (D_J (deployedRuntime v) 0).contains ret = true)
     (rd : RD (deployedRuntime v) I g s0 ⟨14369⟩
       (accrueInterestEventStack total shares ret R) mem aw rdata σ k C) :
-    ∃ mem' aw' k' C', RD (deployedRuntime v) I g s0 ret R mem' aw' rdata σ k' C' := by
+    ∃ aw' k' C', RD (deployedRuntime v) I g s0 ret R
+      (accrueInterestFinishMemory mem total shares) aw' rdata σ k' C' := by
   obtain ⟨aw1, k1, C1, h1⟩ := metaMorphoV1_1_block_14369_packed
     (immWords := wordsOf (immStore v)) hstack hperm hret rd
-  exact ⟨_, aw1, k1, C1, h1⟩
+  exact ⟨aw1, k1, C1, h1⟩
 
 theorem accrueInterestMintFinish {I : ExecutionEnv} {g : Sat256} {s0 : State}
     {mem : ByteArray} {aw : UInt256} {rdata : ByteArray} {σ : AccountMap} {k C : Nat}
@@ -123,7 +128,8 @@ theorem accrueInterestMintFinish {I : ExecutionEnv} {g : Sat256} {s0 : State}
     (hret : (D_J (deployedRuntime v) 0).contains ret = true)
     (rd : RD (deployedRuntime v) I g s0 ⟨14397⟩
       (accrueInterestEventStack total shares ret R) mem aw rdata σ k C) :
-    ∃ mem' aw' k' C', RD (deployedRuntime v) I g s0 ret R mem' aw' rdata σ k' C' := by
+    ∃ aw' k' C', RD (deployedRuntime v) I g s0 ret R
+      (accrueInterestFinishMemory mem total shares) aw' rdata σ k' C' := by
   obtain ⟨aw1, k1, C1, h1⟩ := metaMorphoV1_1_block_14397_packed
     (immWords := wordsOf (immStore v))
     (by simp only [accrueInterestEventStack, List.length_cons]; omega)

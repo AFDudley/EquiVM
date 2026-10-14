@@ -50,6 +50,7 @@ theorem supplyAssetsAfterHashSimulation {I : ExecutionEnv} {g : Sat256} {s0 evm 
         (.returned frame' evm' (some [uint256Value value, uint256Value cursor])) ∧
       memLoad ⟨64⟩ mem' = cursor ∧ 96 ≤ cursor.toNat ∧ cursor.toNat < 2 ^ 64 ∧
       cursor.toNat ≤ mem'.size ∧
+      MemoryPrefix mem mem' ptr.toNat ∧ ptr.toNat ≤ cursor.toNat ∧
       ∃ aw' k' C', RD (deployedRuntime v) I g s0 ret
         (value :: R) mem' aw' out evm'.accountMap k' C' := by
   let frame0 := supplyAssetsFrame (immStore v) (AccountAddress.ofNat morpho.toNat)
@@ -115,7 +116,9 @@ theorem supplyAssetsAfterHashSimulation {I : ExecutionEnv} {g : Sat256} {s0 evm 
       supplyAssetsReturnFrame frame3 shares result.supplyAssets result.supplyShares,
       _, result.cursor, result.memory, out2, hs2,
       accountStorageStateEq_trans hstore1 hstore2, ExecFuncBody.execBlockRet (hid.run ?_),
-      result.free, result.lower, result.upper, result.size, aw5, k6, C6, h6⟩
+      result.free, result.lower, result.upper, result.size,
+      hprefix1.trans (result.preserves.mono hmono1), le_trans hmono1 result.cursorLower,
+      aw5, k6, C6, h6⟩
     rw [allocatedSupplyAssetsFunction_body]
     apply cursorCallPrefix (by decide) hcall1
     apply cursorCallPrefix (by decide) hcall2

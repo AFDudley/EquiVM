@@ -1,4 +1,4 @@
-import Benchmarks.Morpho.MetaMorphoV1_1.AccrueInterestRoutines
+import Benchmarks.Morpho.MetaMorphoV1_1.AccrueInterestMemory
 
 /-! Complete interest-accrual simulation, including calls, stores, minting, and failures. -/
 
@@ -36,7 +36,8 @@ theorem accrueInterestSimulation {I : ExecutionEnv} {g : Sat256} {s0 evm : State
     {k C : Nat} {ptr ret : UInt256} {R : List UInt256}
     (v : MetaMorphoV1_1Immutables) (hstack : R.length + 40 ≤ 1024)
     (hcalldata : I.calldata.size < UInt256.size)
-    (hfree : memLoad ⟨64⟩ mem = ptr) (hlo : 96 ≤ ptr.toNat) (hmem : 96 ≤ mem.size)
+    (hfree : memLoad ⟨64⟩ mem = ptr) (hptr : ptr.toNat < 2 ^ 64)
+    (hlo : 128 ≤ ptr.toNat) (hmem : 96 ≤ mem.size)
     (hs : SourceState s0 I σ evm) (hret : (D_J (deployedRuntime v) 0).contains ret = true)
     (rd : RD (deployedRuntime v) I g s0 ⟨14262⟩ (ret :: R) mem aw rdata σ k C) :
     (ExecFuncBody config (accrueInterestFrame (immStore v) ptr) evm
@@ -47,14 +48,17 @@ theorem accrueInterestSimulation {I : ExecutionEnv} {g : Sat256} {s0 evm : State
       I.perm = true ∧ SourceState s0 I evm'.accountMap evm' ∧
       ExecFuncBody config (accrueInterestFrame (immStore v) ptr) evm
         allocatedAccrueInterestFunction.body (.returned frame' evm' [uint256Value ptr']) ∧
+      ptr'.toNat < 2 ^ 64 ∧ ptr.toNat ≤ ptr'.toNat ∧ memLoad ⟨64⟩ mem' = ptr' ∧
+      MemoryPrefix mem mem' ptr.toNat ∧ 128 ≤ mem'.size ∧
+      (mem.size = 96 → memLoad ⟨96⟩ mem' = ⟨0⟩) ∧
       ∃ aw' k' C', RD (deployedRuntime v) I g s0 ret R mem' aw' out evm'.accountMap k' C' := by
   obtain ⟨aw1, k1, C1, h1⟩ := accrueInterestReachCalculation v (by omega) rd
   rcases accruedAssetsSimulation v
       (by simp only [accrueInterestCalcTail, List.length_cons]; omega)
-      hcalldata hfree hlo hmem hs
+      hcalldata hfree (by omega) hmem hs
       (by rw [metaMorphoV1_1PatchedValidJumps]; jump_dest) h1 with
     ⟨hbad, hrev⟩ | ⟨evm', frame', lost, total, shares, ptr', mem', out,
-      hs', _, _, _, _, hbody, aw2, k2, C2, h2⟩
+      hs', _, hfree', hlo', hmem', hprefix', hmono', hhi', hzero', hbody, aw2, k2, C2, h2⟩
   · exact .inl ⟨accrueInterestCalculationReverts v hbad, hrev⟩
   · obtain ⟨aw3, k3, C3, h3⟩ := accrueInterestReachLastStore v (by omega) h2
     rw [← hs'.env] at h3
@@ -65,14 +69,29 @@ theorem accrueInterestSimulation {I : ExecutionEnv} {g : Sat256} {s0 evm : State
       have hs4 : SourceState s0 I changed.accountMap changed :=
         accrueInterestStoredSourceState hs' lost total
       have hl := accrueInterestStoredLocals (immStore v) ptr lost total shares ptr'
+      have hupper := hhi' hptr
+      have hfree4 := accrueInterestStoreMemory_free lost total hfree' hmem' hlo'
+      have hpre4 := accrueInterestStoreMemory_prefix lost total hfree' hmem' hlo'
+      have hsize4 : 128 ≤ (accrueInterestStoreMemory mem' lost total).size := by
+        rw [accrueInterestStoreMemory_size lost total hfree' hmem' hlo']
+        omega
+      have hz4 : mem.size = 96 →
+          memLoad ⟨96⟩ (accrueInterestStoreMemory mem' lost total) = ⟨0⟩ := by
+        intro hm
+        obtain ⟨hm', hz'⟩ := hzero' hm hlo
+        exact accrueInterestStoreMemory_zero lost total hfree' (by omega) hm' hz'
       rw [hs'.env] at h4
       by_cases hzero : shares = ⟨0⟩
       · rw [accrueInterestBranchPC, if_pos hzero] at h4
-        obtain ⟨mem5, aw5, k5, C5, h5⟩ := accrueInterestFinish v (by omega) hperm hret h4
-        exact .inr (.inr ⟨changed, _, ptr', mem5, out, hperm, hs4,
+        obtain ⟨aw5, k5, C5, h5⟩ := accrueInterestFinish v (by omega) hperm hret h4
+        have hpre5 := accrueInterestFinishMemory_prefix total shares hfree4 hupper
+        exact .inr (.inr ⟨changed, _, ptr', _, out, hperm, hs4,
           ExecFuncBody.execBlockRet (accrueInterestValuesPrefix v hbody
             (accrueInterestStoresPrefix _ _ _ _ _ _ _ (accrueInterestZeroSource hl hzero))),
-          aw5, k5, C5, h5⟩)
+          hupper, hmono', accrueInterestFinishMemory_free total shares hfree4 (by omega) hlo' hupper,
+          hprefix'.trans ((hpre4.trans hpre5).mono hmono'), le_trans hsize4 hpre5.size,
+          fun hm ↦ (hpre5.load_preserved (off := 96) (by decide) (by omega)
+            hsize4 (by decide)).trans (hz4 hm), aw5, k5, C5, h5⟩)
       · rw [accrueInterestBranchPC, if_neg hzero, ← hs4.env] at h4
         obtain ⟨aw5, k5, C5, h5⟩ := accrueInterestReachMint v (by omega) h4
         by_cases hgood : mintAllowed changed (accrueFeeRecipient changed) shares
@@ -81,13 +100,21 @@ theorem accrueInterestSimulation {I : ExecutionEnv} {g : Sat256} {s0 evm : State
             (by simp only [accrueInterestEventStack, List.length_cons]; omega) hgood hp4
             (by rw [metaMorphoV1_1PatchedValidJumps]; jump_dest) h5
           rw [hs4.env] at h6
-          obtain ⟨mem7, aw7, k7, C7, h7⟩ := accrueInterestMintFinish v
+          obtain ⟨aw7, k7, C7, h7⟩ := accrueInterestMintFinish v
             (by omega) hperm hret h6
-          exact .inr (.inr ⟨_, _, ptr', mem7, out, hperm,
+          have hf6 := mintReturnMemory_free (accrueFeeRecipient changed) shares hfree4 (by omega) hlo'
+          have hp6 := mintReturnMemory_prefix (accrueFeeRecipient changed) shares hfree4 (by omega)
+          have hp7 := accrueInterestFinishMemory_prefix total shares hf6 hupper
+          have hm6 := le_trans hsize4 hp6.size
+          exact .inr (.inr ⟨_, _, ptr', _, out, hperm,
             mintBalanceSourceState hs4 (accrueFeeRecipient changed) shares,
             ExecFuncBody.execBlockRet (accrueInterestValuesPrefix v hbody
               (accrueInterestStoresPrefix _ _ _ _ _ _ _
-                (accrueInterestMintSource hl hzero hgood))), aw7, k7, C7, h7⟩)
+                (accrueInterestMintSource hl hzero hgood))),
+            hupper, hmono', accrueInterestFinishMemory_free total shares hf6 (by omega) hlo' hupper,
+            hprefix'.trans ((hpre4.trans (hp6.trans hp7)).mono hmono'), le_trans hm6 hp7.size,
+            fun hm ↦ ((hp6.trans hp7).load_preserved (off := 96) (by decide) (by omega)
+              hsize4 (by decide)).trans (hz4 hm), aw7, k7, C7, h7⟩)
         · exact .inl ⟨ExecFuncBody.execBlockRevert (accrueInterestValuesPrefix v hbody
             (accrueInterestStoresPrefix _ _ _ _ _ _ _
               (accrueInterestMintReverts hl hzero hgood))),

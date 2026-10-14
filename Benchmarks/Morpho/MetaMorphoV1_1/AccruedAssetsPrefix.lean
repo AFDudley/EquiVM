@@ -102,6 +102,10 @@ theorem accruedAssetsPrefixSimulation {I : ExecutionEnv} {g : Sat256} {s0 evm : 
       accountStorageStateEq evm.accountMap evm'.accountMap ∧
       AccruedAssetsTailLocals v frame' total ptr' ∧
       memLoad ⟨64⟩ mem' = ptr' ∧ 96 ≤ ptr'.toNat ∧ 96 ≤ mem'.size ∧
+      MemoryPrefix mem mem' ptr.toNat ∧ ptr.toNat ≤ ptr'.toNat ∧
+      (ptr.toNat < 2 ^ 64 → ptr'.toNat < 2 ^ 64) ∧
+      (mem.size = 96 → 128 ≤ ptr.toNat →
+        (mem'.size = 96 ∨ 128 ≤ mem'.size) ∧ memLoad ⟨96⟩ mem' = ⟨0⟩) ∧
       (∀ result, ExecBlock config frame' evm'
           (allocatedAccruedFeeAssetsFunction.body.drop 5) result →
         ExecBlock config (allocatedAccruedAssetsFrame (immStore v) ptr) evm
@@ -117,14 +121,15 @@ theorem accruedAssetsPrefixSimulation {I : ExecutionEnv} {g : Sat256} {s0 evm : 
       (by simp only [List.length_cons]; omega) (accruedAssetsInitialLocals v ptr)
       hcalldata hfree hlo hmem hs rfl (by simp) h1 with
     ⟨hbad, hrev⟩ | ⟨evm', frame', total, ptr', mem', out, hs', hstore, hlocals, hpreserve,
-      hfree', hlo', hmem', hloop, hdone⟩
+      hfree', hlo', hmem', hprefix', hmono', hhi', hzero', hloop, hdone⟩
   · refine .inl ⟨ExecFuncBody.execBlockRevert ?_, hrev⟩
     apply (accruedAssetsZerosSource (immStore v) ptr evm).run
     rw [allocatedAccruedFeeAssetsFunction_loop]
     exact ExecBlock.consRevert
       (ExecStmt.for (accruedAssetsInitSource (immStore v) ptr evm) hbad)
   · refine .inr ⟨evm', frame', total, ptr', mem', out, hs', hstore,
-      accruedAssetsTailLocals hlocals hpreserve, hfree', hlo', hmem', ?_, hdone⟩
+      accruedAssetsTailLocals hlocals hpreserve, hfree', hlo', hmem', hprefix', hmono', hhi', hzero',
+      ?_, hdone⟩
     intro result htail
     apply (accruedAssetsZerosSource (immStore v) ptr evm).run
     rw [allocatedAccruedFeeAssetsFunction_loop]

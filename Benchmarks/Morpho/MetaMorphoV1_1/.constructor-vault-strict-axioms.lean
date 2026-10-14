@@ -1,0 +1,6 @@
+import Benchmarks.Morpho.MetaMorphoV1_1.ConstructorStrictDecimalsInit
+
+#print axioms Benchmarks.Morpho.MetaMorphoV1_1.constructorVaultNameInit
+#print axioms Benchmarks.Morpho.MetaMorphoV1_1.constructorVaultNameEvent
+#print axioms Benchmarks.Morpho.MetaMorphoV1_1.constructorVaultSymbolInit
+#print axioms Benchmarks.Morpho.MetaMorphoV1_1.constructorStrictDecimalsInit

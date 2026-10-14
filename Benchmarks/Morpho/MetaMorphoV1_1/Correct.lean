@@ -352,7 +352,9 @@ theorem metaMorphoV1_1RuntimeCorrect (imms : Store) (hfit : immutablesFit contra
   exact metaMorphoV1_1Correct v
 
 theorem metaMorphoV1_1ContractCorrect :
-    contractRefinement config metaMorphoV1_1CreationBytecode contract :=
-  .of_runtime metaMorphoV1_1ConstructorCorrect metaMorphoV1_1RuntimeCorrect
+    contractRefinementWFWithCodeBound trivialStorageWF noGasBound
+      config metaMorphoV1_1CreationBytecode contract :=
+  .of_runtime metaMorphoV1_1ConstructorCorrect fun imms hfit =>
+    runtimeRefinementWithWF_trivial_iff.mpr (metaMorphoV1_1RuntimeCorrect imms hfit)
 
 end Benchmarks.Morpho.MetaMorphoV1_1

@@ -1,0 +1,7 @@
+import Benchmarks.Morpho.MetaMorphoV1_1.ConstructorStorageInit
+import Benchmarks.Morpho.MetaMorphoV1_1.ConstructorCallReturn
+
+#print axioms Benchmarks.Morpho.MetaMorphoV1_1.constructorDecodeSymbol
+#print axioms Benchmarks.Morpho.MetaMorphoV1_1.constructorLiteralAllocations
+#print axioms Benchmarks.Morpho.MetaMorphoV1_1.constructorStorageInit
+#print axioms Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory.constructorCallReturnBuffer

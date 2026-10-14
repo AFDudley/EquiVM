@@ -1,5 +1,47 @@
 # MetaMorphoV1_1 proving handoff
 
+## Completed proof — 2026-10-14
+
+The constructor and all 76 runtime proofs are complete. There are no remaining
+`sorry` or `admit` declarations, including hidden Lean scratch files. The older
+progress notes below are historical; their outstanding-work lists are superseded.
+
+The user-approved patch is applied: `metaMorphoV1_1ConstructorCorrect` proves
+`typedConstructorRefinementWithCodeBound`, and `metaMorphoV1_1ContractCorrect`
+proves `contractRefinementWFWithCodeBound trivialStorageWF noGasBound`. The added
+constructor premise is `I.code.size < UInt256.size`. Runtime refinement retains
+its existing unrestricted storage and gas conditions.
+
+The final constructor work covers the approval probe, malformed return data,
+empty returns and code-size checks, allocation failures, and the fallback
+`approve(0)` followed by reuse of the original maximum-approval request.
+`ConstructorForceApprove.lean` packages that source/EVM segment.
+`ConstructorApproveSource.lean` and `ConstructorApproveInit.lean` connect it to
+the final constructor statements, including `DECIMALS_OFFSET`.
+
+The deployment tail copies 19708 bytes from creation offset 3894, then patches
+all 32 immutable sites. `ConstructorRuntimeMemory.lean`, `ConstructorRuntimeParts.lean`,
+and `ConstructorRuntime.lean` prove the three deployment blocks and exact returned
+bytes. `SparseCopyMemory.lean` covers free pointers beyond currently written
+memory; `RuntimeWriteWindow.lean` relocates the patches into the runtime window.
+`ConstructorFinalImmutables.lean`, `ConstructorImmutableMemory.lean`, and
+`ConstructorDeployedCode.lean` connect every memory word to the source immutable
+store and prove its declared types fit. `ConstructorSuccess.lean` packages success.
+
+Final verification:
+- `lake build Benchmarks.Morpho.MetaMorphoV1_1.Correct` passed, 4632 jobs;
+  see `.constructor-complete-build.log`.
+- `.constructor-complete-axioms.lean` checks both completed constructor and contract
+  theorems. Each depends only on `propext`, `Classical.choice`, `Quot.sound`, and
+  concrete native evaluation axioms (8899 constructor / 31658 contract).
+  See `.constructor-complete-axioms.log`; no custom axioms or `sorryAx` occur.
+- Scoped searches found no Lean `sorry`, `admit`, or `axiom` declarations;
+  `git diff --check` passed. Every authored proof file stays below 2000 lines;
+  the pre-existing generated `Bytecode.lean` is the only larger Lean file.
+- No differential tests or semantic audit were rerun. No generated block,
+  bytecode artifact, pinned source, or unrelated working-directory file was edited.
+- Changes are unstaged and uncommitted. No further proof work is pending.
+
 ## Compiler settings and provenance
 
 The proof target is the **local solc 0.8.37 rebuild**, as authorized when the storage-array
@@ -218,789 +260,8 @@ be generated with `python3 scripts/bytecode_report.py Benchmarks/Morpho/MetaMorp
 --full-creation --output /tmp/metamorpho-full-report.md`. Executable init code ends at PC 3893;
 the embedded runtime starts at byte 3894, followed by the two constructor event-topic constants.
 
-## Proof valuation issue found on 2026-10-08
-
-The randomized differential suite was rerun with `--only MetaMorphoV1_1 --count 50` and exited
-successfully: both targets again reported 4025 agreements, with zero disagreements or stuck
-cases. Those targets use fitting immutable stores.
-
-The generated `MetaMorphoV1_1Immutables` structure represents `_underlyingDecimals` and
-`DECIMALS_OFFSET`, both declared uint8, as unrestricted `EVM.Word` fields. Consequently,
-`metaMorphoV1_1Correct` and `metaMorphoV1_1DECIMALS_OFFSETBody` quantify over invalid valuations.
-At `DECIMALS_OFFSET = 256`, the runtime masks the value with 255 and returns zero, but the
-source returns 256, which cannot be ABI-encoded at the declared uint8 return type.
-
-`ImmutableTypeRegression.lean` preserves the executable reproduction and two kernel-checked
-facts about the mask and failed return encoding. Both theorem axiom audits contain only
-standard Lean axioms. Its module build and executable run pass, with this output:
-
-```text
-DECIMALS_OFFSET=255: agree (success)
-EVM return word: 255
-DECIMALS_OFFSET=256: DISAGREE: the returned values do not ABI-encode at the declared return types
-EVM return word: 0
-```
-
-The approved correction adds proof fields for `_underlyingDecimals.toNat < 256` and
-`DECIMALS_OFFSET.toNat < 256` to the valuation structure, deriving these bounds from
-`immutablesFit` in `restrictImmutables_of_fit`. This preserves the final
-`metaMorphoV1_1ContractCorrect` statement and the scope of all fitting immutable stores; it
-does not require any specification, bytecode, generated block-summary, or Solidity changes.
-The user approved this valuation change on 2026-10-08. The bridge is now proved from
-`immutablesFit`; its axiom audit contains only `propext` and `Quot.sound`.
-
-Completed functions: `DECIMALS_OFFSET`, `MORPHO`, `asset`, `lostAssets`, `lastTotalAssets`,
-`timelock`, `curator`, `guardian`, `skimRecipient`, `owner`, `pendingOwner`, `totalSupply`,
-`fee`, `feeRecipient`, `supplyQueueLength`, `withdrawQueueLength`, `decimals`,
-`pendingTimelock`, `pendingGuardian`, `balanceOf`, `nonces`, `isAllocator`, `pendingCap`,
-`config`, `allowance`, `supplyQueue`, `withdrawQueue`, `setCurator`, `setSkimRecipient`,
-`transferOwnership`, `acceptOwnership`, and `renounceOwnership`.
-
-Every completed function covers successful execution, nonzero callvalue rejection, and
-oversized calldata rejection. The queue getters cover bounds failures; the setters cover
-authorization, unchanged-value rejection, and static-call halts. The ownership functions cover
-authorization and static-call halts, preserving the unused portions of packed storage slots.
-`decimals` also covers uint8 sum overflow. All thirty-two individual axiom audits contain only
-standard Lean axioms and permitted concrete evaluation axioms; none contains `sorryAx`.
-The full `Correct` target passed at the thirty-two-function checkpoint (3619 jobs).
-There are **45 remaining placeholders** in other functions and the constructor. This is an
-intermediate checkpoint, not a completed correctness proof.
-
-Logs include `/tmp/metamorpho-32-functions-build.log`,
-`/tmp/metamorpho-transfer-ownership-build.log`, and `/tmp/metamorpho-accept-ownership-build.log`.
-
-The next dependency chain is `_maxDeposit` and the market/share arithmetic helpers used by
-`maxDeposit` and `maxMint`; these functions are not constant limit getters in this specification.
-
-The following dependencies now have completed proofs (the ABI-function count is unchanged):
-
-- `Arithmetic`, `CheckedArithmetic`, `MarketArithmetic`, and `MulDiv`: source arithmetic and
-  shared EVM checked addition, multiplication, division, and zero-floor subtraction routines.
-- `SharesToAssetsUp` and `SharesToAssetsUpRoutines`: rounded-up share-to-asset conversion,
-  including all arithmetic failure branches, on both the source and EVM sides.
-- `PackedSource`, `MorphoSlots`, and `MemoryArraySource`: source packed encoding, casts, nested
-  storage-slot hashes, and the singleton array used by `MorphoLib_supplyShares`.
-- `MemoryRoutines`, `MemoryArrayData`, `MemoryArrayRoutines`, and `PackedHashMemory`: allocation,
-  first-element access, singleton memory contents, and two-word hash buffers. The memory proofs
-  establish the length, contents, free cursor, and preservation of earlier allocated words.
-- `MorphoSlotRoutines.supplySharesReachEncoding`: EVM execution from pc 14078 through the nested
-  hashes and singleton construction to pc 14169. It assumes the explicit allocation bound
-  `ptr.toNat + 256 < 2^64`; callers must discharge it. Its audit contains 152 allowed axioms,
-  including concrete evaluation facts, and no `sorryAx` or unexpected axioms.
-- `SupplySharesSource`: the source supply-share reader, parameterized by the actual typed
-  `extSloads` call. It covers a nonempty decoded array, call failure, decoding failure, and an
-  empty decoded array.
-- `ExtSloadsABI`, `ExtSloadsMemory`, `ExtSloadsEncode`, and `ExtSloadsSetup`: the exact 100-byte
-  singleton request, preservation of its input array, the encoding loop, and the input stack
-  at STATICCALL pc 14210.
-- `ExtSloadsCall.extSloadsStaticcall`: couples the actual EVM call witness to the source call,
-  including the depth-limit branch, and reaches pc 14211. Its audit contains only the three
-  standard axioms and three permitted concrete evaluation axioms.
-
-Recent successful dependency build logs include `/tmp/metamorpho-slot-routines-build.log`,
-`/tmp/metamorpho-memory-array-routines-build.log`, `/tmp/metamorpho-slots-hash-memory-build.log`,
-`/tmp/metamorpho-extsloads-setup-build.log`, and `/tmp/metamorpho-extsloads-call-build.log`.
-
-## New unresolved return-buffer allocation mismatch
-
-Do not continue ordinary function proofs until this issue is resolved, as required by
-`Misc/prompt.md`. The previous approval concerned the uint8 immutable bounds; it did not
-authorize changing the source semantics outside this benchmark or restricting the gas domain.
-
-`ExtSloadsAllocationRegression.lean` contains a symbolic buffer of exactly `2^64` bytes:
-the ABI offset is 32, the array length is one, and all remaining bytes are zero. It proves:
-
-- `oversizedReturn_sourceAccepts`: the current external ABI decoder accepts a one-element array.
-- `oversizedReturn_allocatorRejects`: with free cursor 512, the compiled allocation guard fails.
-- `oversizedReturn_evmReverts`: from a successful-call state at pc 14211 with that buffer, the
-  supplied block summaries reach the allocation panic at pc 2690 and prove `RDrev`.
-- `oversizedReturn_withinGasDerivedBound`: the buffer is within the existing proved bound for
-  opaque EVM return data.
-- `oversizedReturn_memoryGasFits`: its EVM memory expansion costs less than `2^120` gas, a budget
-  allowed by the current 256-bit gas domain.
-
-These are checked local boundary facts, **not** an end-to-end counterexample to `Correct`.
-In particular, no complete transaction or callee `Theta` reachability witness is asserted.
-The source-acceptance proof uses only standard Lean axioms. The conditional bytecode-revert
-proof uses 74 allowed axioms, including concrete bytecode facts, with no unexpected axioms.
-
-The source frame does not track a compiler memory cursor. `ABI.decodeReturnValues?` checks
-the signed total-size bound and the individual uint64 offset/length bounds, but not the
-compiler's cumulative allocation bound. The source also does not reserve the copied return
-buffer. Thus decoder well-formedness alone cannot discharge the allocator guard. The earlier
-explicit `ptr + 256 < 2^64` obligation also requires a cumulative memory invariant at callers.
-
-The recommended repair is to retain the unconditional theorem and explicitly model allocation
-failure: add a memory cursor and allocation operation to Stele, propagate the cursor across
-internal calls, and annotate the benchmark's compiler allocation sites, including the raw
-return-buffer copy and decoded array. Likely library changes would involve
-`Stele/Semantics/Types.lean`, `Stele/Syntax/Basic.lean`, `Stele/Semantics/Exec.lean`, the interpreter
-and syntax support, and the affected `Reasoning` combinators. This exceeds the current
-benchmark-only edit scope and needs a scope decision before implementation. A smaller gas
-domain is an alternative change to the theorem's claim, not an implicit assumption we may add.
-
-Regression build log: `/tmp/metamorpho-extsloads-allocation-regression-build.log`.
-
-## Resumption on 2026-10-09: external-call reachability established
-
-The saved `ExtSloadsOversizedCallee.lean` trace typechecks. It executes a concrete 21-byte
-callee from its initial state and returns `oversizedReturn` using `2^120` gas. The buffer
-remains symbolic: no test attempts to allocate `2^64` bytes.
-
-This resumption extended that file with the following checked facts:
-
-- `oversizedCalleeTheta` proves a successful `Theta` invocation of the callee installed at
-  address `0x6000`, called from `0x6001`, with zero value and static permissions.
-- `oversizedCalleeTypedCall` supplies the same witness to `typedCallViaEVM` for the actual
-  `extSloads` singleton request, for every requested slot.
-- `oversizedCalleeCallAccepted` combines that call with the existing ABI-decoder proof: the
-  decoder accepts a one-element array from an output of size exactly `2^64`.
-- `acceptedCallDoesNotBoundReturnSize` refutes the proposed general implication from
-  successful typed calls and accepted array decoding to `out.size < 2^64`.
-
-These results close the callee-reachability gap in the earlier boundary evidence. They do
-**not** assert an end-to-end vault transaction counterexample or refute `Correct`: the vault's
-post-call state in `oversizedReturn_evmReverts` is still a hypothesis. In addition, Stele's
-external-call relation existentially quantifies the callee gas, so a boundary discrepancy
-alone is insufficient to refute the existential top-level refinement. Replacing the actual
-successful call with a different failing call would not satisfy the requested same-call proof
-discipline.
-
-The focused `ExtSloadsOversizedCallee` module build passes. No differential suite or previous
-audit was rerun. No specification, theorem signature, bytecode, generated summary, or shared
-library was changed, and no placeholder or assumption was added. The 45 existing placeholders
-remain.
-
-The allocation-model repair remains unresolved. A benchmark-local alternative to shared
-Stele changes is explicit cursor passing through internal helper arguments and results, with
-raw return-buffer reservation and decoded-value allocation checks at the compiled sites.
-That requires updating the affected source helpers and their proofs, not merely adding a
-fixed output-size check. The user has been asked to choose between that local rewrite and an
-explicit scope expansion for shared Stele memory accounting. Keep the directory restriction
-in force unless the user changes it.
-
-## Local allocation repair: checked helpers and complete supply-share routine
-
-The benchmark-local cursor-passing repair is now underway within the existing directory
-restriction. No shared Stele or Reasoning source has been edited. The earlier scope question
-does not prevent this local work; there is no authorization to expand the edit scope.
-
-`Spec.lean` now appends three internal helpers, preserving every original function index:
-`__solcAllocateMemory`, `__solcExtSloads`, and `__solcMorphoSupplyShares`. Their syntax is in
-`AllocationSyntax.lean`, `ExtSloadsAllocationSyntax.lean`, and
-`SupplySharesAllocationSyntax.lean`. The original source readers and their upstream callers
-have **not yet** been redirected or given cursor arguments/results. Thus this is a modular
-repair in progress, not a completed repair of the top-level specification.
-
-Checked new results:
-
-- `AllocationSource.lean` / `AllocationRoutines.lean`: exact source and bytecode allocator
-  success/failure, including rounding and wraparound, without an assumed allocation bound.
-- `ExtSloadsSimulation.extSloadsPostCallSimulation`: all post-call paths from pc 14211
-  through raw-buffer reservation, dynamic-array decoding/allocation/copy, to pc 14256 or
-  `RDrev`. It uses the same actual call witness and derives the return-size bound from it.
-  The component files cover malformed headers, missing payload, and both allocation failures.
-- `ExtSloadsAllocationRepair.oversizedReturn_repairedSourceReverts`: the registered helper
-  reverts for the actual successful oversized callee witness at cursor 512. This remains a
-  helper-level regression, not a top-level transaction counterexample.
-- `MorphoSlotAllocation.lean`: the supply-share prefix covers failure at either 96-byte hash
-  allocation or the 64-byte singleton-array allocation; success reserves 256 bytes total.
-- `SupplySharesAllocationSource.lean`: complete source execution of the registered
-  cursor-aware reader, including allocation failure, external-helper failure, empty array,
-  and successful `(value, cursor)` return.
-- `SupplySharesAllocationRoutines.supplySharesAllocationSimulation`: complete internal
-  routine simulation from pc 14078 through the actual STATICCALL and back to an arbitrary
-  valid caller continuation, or paired source/EVM revert. Success returns the matching
-  cursor at memory slot 64, with its lower/upper bound and memory-size invariant. The only
-  cursor input restriction is the ordinary lower bound 96; allocation fits are case splits,
-  not assumptions. `SourceState` is carried across the same call.
-
-Focused builds for the new supply-share routine pass (log
-`/tmp/metamorpho-supply-shares-simulation-build.log`). The existing `Correct` scaffold also
-built after the first two helpers were registered; registering the third helper has been
-validated by focused builds, but a new full `Correct` build is not yet run. The 45 original
-placeholders remain, and no new placeholder or axiom has been introduced. No differential
-suite or previous audit was rerun.
-
-Next: thread cursor results through the actual source call graph and account for other
-compiled allocations in those callers. Do not reset the cursor at each internal call, use a
-fixed return-size restriction, or replace the actual successful call by a different failed
-call. `SupplySharesAllocationSetup.lean` links its fixed prefix to calldata construction;
-`ExtSloadsValueRoutines.lean` proves the empty/nonempty array continuation. Caller proofs
-that retain allocated memory will additionally need prefix-preservation facts; the present
-routine theorem exposes the cursor invariant but does not yet return `MemoryPrefix`.
-
-## Cursor propagation and complete market-parameter reader
-
-The preceding registration/root-status paragraph is superseded. `Spec.lean` now appends six
-helpers, adding `__solcMarketParams`, `__solcExpectedMarketBalances`, and `__solcMaxDeposit`.
-`MaxDepositAllocationSyntax.lean` threads the cursor through the three reader calls and the
-`_maxDeposit` loop. The actual `maxDeposit` transition (index 19) initializes the cursor to
-128 and returns the result component. Its original three prefix statements, including both
-the nonpayable check and calldata-length check, are preserved. All original function indices
-are preserved. Other roots, including `maxMint`, still use their original call chains; the
-whole-contract allocation repair is incomplete. `Common.lean` only needs the new transition
-definition in the selector-signature simplification. The full existing `Correct` scaffold
-built after this integration (log `/tmp/metamorpho-max-deposit-cursor-build.log`).
-
-The compiler's `_marketParams` reader now has a complete, checked internal simulation:
-`MarketParamsAllocationRoutines.marketParamsAllocationSimulation`. It begins at pc 16116,
-shares the actual STATICCALL witness with the source, and returns to any valid continuation
-or produces paired source/EVM reverts. It covers the initial 160-byte zero-struct reservation,
-failed calls, short returns, both subsequent 160-byte reservations, and rejection of each
-noncanonical address. Success supplies the exact five field words, source struct value,
-`SourceState`, and the bounded cursor at memory slot 64. Allocation fits and valid decoding
-are conclusions of the case split, not assumptions on callees.
-
-Components: `MarketParamsAllocationSource.lean` (complete source execution),
-`StructAllocationRoutines.lean` (the fixed allocator), `MarketParamsCallMemory.lean` and
-`MarketParamsAllocationSetup.lean` (initial memory and call setup), `MarketParamsCall.lean`
-(same-call correspondence), `MarketParamsABI.lean` (exact ABI success/failure conditions),
-`MarketParamsReturnAllocation.lean` (post-call allocations and size guard),
-`MarketParamsReturnMemory.lean` (buffer and field-memory facts), and
-`MarketParamsDecodeRoutines.lean` (address checks and field stores). Focused build passes:
-`/tmp/metamorpho-market-params-simulation-build.log`.
-
-Next dependency is `__solcExpectedMarketBalances`: its syntax reserves 384 bytes after the
-`market` call (192-byte return buffer plus 192-byte decoded struct), and 32 bytes after the
-conditional `borrowRateView` call. Its source execution, EVM simulation, interest arithmetic,
-and the eventual maxDeposit loop remain to prove. Existing `MarketArithmetic.lean` covers
-only zero-floor subtraction, not interest accrual. Both completed reader simulations will
-need additional `MemoryPrefix` output for callers retaining previously allocated objects.
-
-The 45 original placeholders remain. No new placeholder or assumption was introduced. No
-differential suite or previous audit was rerun, and no file outside this benchmark was edited.
-
-## Market-call prefix and six-field decoder
-
-`MarketReadSimulation.marketReadSimulation` now covers the balance reader from pc 16911
-through the actual `market` STATICCALL, both 192-byte reservations, six `uint128` field
-checks, and pc 16966. Every failed call, short/malformed return, or allocation failure has
-a matching source/EVM revert. Success carries the actual source call, `SourceState`, exact
-field words, cursor at memory slot 64, and `MemoryPrefix` below the incoming cursor. The
-remaining elapsed-time and interest-accrual computation is **not** included in this theorem.
-
-Source components: `MarketParamsHashSource.lean` proves the five-word market identifier
-hash and its internal call; `MarketBalancesAllocationSource.lean` proves source execution
-through the market call and the 384-byte reservation. `MarketABI.lean` characterizes all six
-uint128 checks. Runtime components: `MarketCallMemory.lean`, `MarketCall.lean`,
-`MarketReturnAllocation.lean`, `MarketReturnMemory.lean`, and `MarketDecodeRoutines.lean`.
-`StructAllocationRoutines.lean` now includes the 192-byte allocator and a general aligned
-reservation-splitting fact.
-
-Reusable local helpers were factored into `ScalarTupleABI.lean`, `SingleWordCallMemory.lean`,
-`StaticCallSimulation.lean`, and `StructReturnMemory.lean`. Both reader families use them;
-the existing market-parameter simulation still builds after these refactorings. Focused
-combined build passed in `/tmp/metamorpho-market-read-simulation-build.log`. `git diff --check`
-passed. No differential suite or prior audit was rerun; the 45 original placeholders remain.
-
-Next: checked timestamp subtraction at pc 12234, then the short-circuit tests at 16991,
-17001, 17007 (helpers 17600 and 17578). No-accrual returns through 17012. Accrual enters
-17069, encodes `borrowRateView` through 12112/17114/17198, calls at 17225, reserves 32 bytes
-on return through 17524, then computes Taylor terms, interest, and optional fees. Read exact
-generated summaries before composing these paths. The older supply-share and market-parameter
-whole-routine interfaces still need memory-prefix outputs for callers retaining allocations.
-
-## Elapsed time, allocating casts, and the complete rate call
-
-`MarketBalancesSource.lean` and `MarketBalancesRoutines.lean` now cover checked timestamp
-subtraction, the three short-circuit accrual tests, time-underflow rejection, and the
-no-accrual return. The full source no-accrual/time-underflow paths are proved; their final
-composition with the existing market-read simulation remains. `CheckedArithmetic.lean`
-now includes the shared checked subtraction routine at pc 12234.
-
-Important compiler allocation discovered and reported: `UtilsLib_toUint128` at pc 19367
-unconditionally reserves 64 bytes for its error string, even on successful casts. The
-authorized cursor repair now appends a seventh helper, `allocatedToUint128Function`, and
-`allocatedMarketBalancesFunction` routes its three possible casts through it. The new
-helper is appended last, preserving earlier helper indices. `Uint128AllocationSource.lean`
-and `Uint128AllocationRoutines.lean` prove the source calls and all bytecode outcomes:
-allocation failure, value overflow, and success with the advanced cursor, sufficient memory,
-and preserved earlier allocations. This is not a new input bound or assumption.
-
-`BorrowRateSimulation.borrowRateSimulation` is now checked from pc 17069 through pc 17239.
-It constructs the exact 356-byte request, shares the actual `borrowRateView` STATICCALL
-result with the source (including the depth-limit branch), rejects failed calls and short
-returns, and handles the 32-byte allocation. Success supplies the decoded rate, SourceState,
-cursor, memory prefix, and a source continuation through the call/reservation. Components:
-`BorrowRateABI`, `BorrowRateCall`, `BorrowRateSetup`, `BorrowRateReturn`, `BorrowRateSource`,
-`BorrowRateReadMemory`, and `BorrowRateEncodeMemory`. `MarketParamsEncode.lean` proves the
-shared five-field encoder at pc 12112. `WordCallMemory.lean` and `wordWindowPrefix_load` are
-reusable local memory helpers. Focused builds passed for these components; the simulation
-build log is `/tmp/metamorpho-borrow-rate-simulation-build.log`.
-
-Next is the Taylor expansion and interest arithmetic. Source function 79 computes
-first=x*n, second=mulDivDown(first,first,2e18), third=mulDivDown(second,first,3e18), and
-checked `(first+second)+third`. Bytecode: checked multiply 12002 returns first at 17278;
-17278 squares first, returning 17300; 17300 divides by 2e18 and multiplies second*first,
-returning 17320; 17320 divides by 3e18 and calls checked add 12077 with return 17327;
-17327 calls checked add again, with caller-supplied return (17332 in this path). 17332
-then swaps into checked multiplication for interest, returning 17338; that divides by
-1e18 and enters the allocating cast at 19367. Read exact summaries for stack details.
-`WadMultiply.lean` and the added mulDivDown call wrappers already prove source multiplication.
-
-The 45 original placeholders still remain. No original audit or differential suite was
-rerun, no assumption was added, and edits remain within this benchmark. `git diff --check`
-passed at this milestone. Overall cursor repair still affects only maxDeposit; other roots
-need repair before their proofs can be completed.
-
-## Taylor and interest arithmetic
-
-`TaylorWords.lean`, `TaylorSource.lean`, and `TaylorRoutines.lean` now prove the full
-Taylor helper, including every checked-multiplication failure. `taylorSumsFit` derives
-both final-addition bounds from the already checked square, so the proof adds no input
-assumption. The focused Taylor build passed in `/tmp/metamorpho-taylor-routines-build.log`.
-`MarketInterestSource.lean` and `MarketInterestRoutines.lean` pair the two source calls
-with pc 17239 through the first cast at pc 19367, including Taylor and interest-product
-overflow. `Uint128Add.lean` proves the checked narrow source addition and the compiler
-routine at pc 16879, for success and panic. Their combined focused build is recorded in
-`/tmp/metamorpho-market-interest-routines-build.log`.
-
-Next compose the two 64-byte allocating casts and the borrow/supply asset updates,
-then the optional fee branch. The cast return pc 17353 is shared by the borrow-assets
-and fee-shares additions. The second interest cast returns to pc 17378. These routines
-must retain the market's memory loads through the allocations and stores.
-
-## Asset updates and fee branch
-
-`MarketAssetsSource.lean` proves the two allocating casts and checked borrow/supply asset
-updates, on success and every failure. `MarketAssetsRoutines.lean` pairs these with bytecode
-pc 19367 through pc 17387 (before the final supply store). `MarketAssetsMemory.lean` proves
-the memory effects after that store: both changed fields, preservation of disjoint fields,
-free cursor, size, and the prefix below the market struct. Supporting reusable local files:
-`CursorCastSource`, `CastFieldSource`, `CastAddFieldRoutines`, `CastStoreMemory`, and
-`MarketValueUpdates`. Focused builds passed; see `/tmp/metamorpho-market-assets-routines-build.log`
-and `/tmp/metamorpho-market-assets-memory-build.log`.
-
-`SharesDownSource.lean` proves function 81 for canonical uint128 market totals (including
-product overflow). These internal bounds come from decoded/updated market fields.
-`MarketFeeSource.lean` proves the entire fee body, including subtraction underflow,
-share-product overflow, allocation/cast failure, and checked share-total overflow.
-`MarketFeeArithmetic.lean` covers pc 17400 to 19367; `MarketFeeRoutines.lean` pairs the complete
-fee source body with pc 17400 to 17012, using the same value and cursor. Success memory is
-`castStoreMemory` at the shares field. Build logs:
-`/tmp/metamorpho-market-fee-arithmetic-build.log`, `/tmp/metamorpho-market-fee-routines-build.log`.
-
-`MarketBalanceFinal.lean` now checks the pc 17387 supply store and fee/no-fee branch, plus
-a generic four-word uint128 return routine at pc 17012 with arbitrary returndata (the rate
-call has replaced the original market returndata). It also proves source returns for updated
-market values. Composition of asset updates, fee selection, optional fees, and final return
-is next; then prepend interest and the already proved rate/market external-call simulations.
-The 45 original placeholders remain. No old audit or differential suite was rerun.
-
-## Complete market-balance helper
-
-`MarketBalancesSimulation.marketBalancesSimulation` is now checked and built. It starts
-at pc 16911 with the Morpho address, market-parameter pointer, and return address, and
-pairs the full source helper with either EVM revert or the final four-word return. It covers
-the actual `market` call, decoding and allocation, timestamp underflow, skipped accrual,
-the actual rate-model call, Taylor/interest arithmetic, both asset casts/updates, optional
-fees, and the final return. Success includes SourceState, all four returned values, the
-current cursor and its bounds, sufficient memory, and preservation below the entry cursor.
-Build passed: `/tmp/metamorpho-market-balances-simulation-build.log`.
-
-Composition modules: `AccruedBalanceSimulation` (pc 19367 through assets/fees/return),
-`InterestBalanceSimulation` (pc 17239 through return), and `MarketAccrualSimulation`
-(pc 17069, actual rate call through return). `BalanceSnapshot` in
-`AccruedBalanceSimulation.lean` packages final memory/frame, three updated totals, cursor,
-and prefix; its `rebase` method composes prefixes. Borrow shares stay the original word96.
-`WordWindow.lean` proves that aligned field loads determine the complete byte window and
-therefore arbitrary 32-byte loads. This bridges the six field loads from the market decoder
-to the call encoder's existing window interface.
-
-Next: integrate the complete reader into `_maxDeposit`'s loop. Input memory to the balance
-helper needs the 160-byte market-parameter window and `MarketParamsLoads`; the existing
-market-parameter simulation returns `marketParamsReadMemory`, whose field/window properties
-can supply these. The existing supply-share and market-parameter readers do not yet expose
-memory-prefix results, but maxDeposit mostly retains scalar stack values between calls;
-check whether the new caller actually needs these before extending them.
-
-Elaboration lesson: explicitly `dsimp only` frame-update definitions when proving
-`frameA.contract = contract`. Definitional unification otherwise unfolds the entire contract
-and times out. Keep `wordWindowRead_of_fields (count := 6)` explicit: solving `32 * ?count = 192`
-by definitional unification also times out. No heartbeat increases were retained.
-
-## Completed public maxDeposit
-
-`metaMorphoV1_1MaxDepositBody` is proved without placeholders. Focused build passed:
-`/tmp/metamorpho-max-deposit-build.log`. There are now 44 original placeholders left.
-The theorem includes entry guards, all address-decoding failures, the complete allocated
-internal function and queue loop, actual external calls, arithmetic failures, and the final
-scalar return. `MaxDepositEntry` and `MaxDepositBodySource` supply the public boundary;
-the final connection uses `RDret.reEquivExecutionGen` with the actual final account map.
-
-New composition modules: `MarketParamsDecoded`, `CursorCallSource`, `AllocatedReaderCalls`,
-`MaxDepositReadersSource`, `MaxDepositReadersSimulation`, `MaxDepositArithmeticSource`,
-`MaxDepositArithmeticSimulation`, `MaxDepositLoopSyntax`, `MaxDepositQueueSource`,
-`MaxDepositQueueRoutines`, `MaxDepositInvariant`, `MaxDepositIteration`, `MaxDepositLoop`,
-and `MaxDepositFunction`. The three reader simulations now expose storage preservation;
-the parameter reader additionally exposes its struct's lower bound and end-before-cursor
-bound. These facts are derived, not assumptions. The loop induction uses remaining queue
-length; static-call storage preservation keeps the cached length equal to storage slot 20.
-
-Next is `maxMint`, whose bytecode first calls the already proved maxDeposit helper and then
-the accrued-fee/assets calculation and conversion. Extend the previously authorized cursor
-model through expectedSupplyAssets (function 51), accruedFeeAndAssets (29), convertToShares
-(22), and public transition 59. The other public roots still use the original helpers.
-ExpectedSupplyAssets retains market parameters in memory across the supply-share read, so
-the supply-share simulation will need to expose memory-prefix preservation as well as its
-cursor and storage facts. Its current success witness uses concrete call/buffer/array memory.
-
-Public maxMint entry PCs: 2173 nonpayable, 2179 length, 2191 address decoder call, 2198 calls
-13894 with stack `[2215, 2234, 1578, 32] ++ R`. PC 2215 calls accruedFeeAndAssets at 12247;
-2223 reads totalSupply slot 2 and calls checked add at 12077; 2234 enters conversion at 14489.
-No differential suite or prior audit was rerun.
-
-## maxMint readers and accrued-assets loop
-
-The authorized cursor model now extends through public transition 59 (`maxMint`).
-`MaxMintAllocationSyntax` appends expectedSupplyAssets (original function 51),
-accruedFeeAndAssets (29), and convertToShares (22), bringing the helper list to ten.
-`Common.maxMintSelectorOf` unfolds the new transition; no original theorem signatures changed.
-The extension was reported when made. Other public roots remain as before.
-
-`SupplyAssetsSimulation.supplyAssetsSimulation` is complete and built. Entry 12483 retains
-three caller words plus the Morpho word, performs supply-share reading, market balance
-calculation, then conversion to assets rounding down, and returns to an arbitrary valid PC.
-It exposes the actual final state, storage preservation, cursor, and memory bounds.
-The supply-share allocation simulation now additionally exposes preservation below the
-entry cursor and cursor monotonicity. `SupplySharesMemoryPrefix` and `HeapWordWindow`
-justify retaining the market-parameter memory window across that read.
-`SharesToAssetsDown` and `SharesToAssetsDownRoutines` cover the source and PC 18378 routine.
-The combined build also rechecked public maxDeposit successfully:
-`/tmp/metamorpho-supply-assets-simulation-build.log`.
-
-`AccruedAssetsIteration` and `AccruedAssetsLoop` are complete and built. The induction runs
-from PC 12288 to 12296, preserves storage and the later fee-calculation locals, and covers
-every actual external-call, allocation, and checked-add revert. `AccruedAssetsPrefix`
-connects function entry 12247 and the initial five source statements to that loop. Success
-exposes a source continuation from body.drop 5 and `AccruedAssetsTailLocals`.
-
-`AccruedAssetsTotals` proves the source loss adjustment, checked total-assets addition,
-and interest subtraction. `AccruedAssetsTotalsRoutines` covers the same bytecode through
-PC 12353, with all failure cases. `AccruedFeeGuard` proves the short-circuit condition:
-no fee returns to the caller with stack `[newLost, newTotal, feeShares] ++ R`; a fee reaches
-12369 with `[interest, ret, newLost, newTotal, feeShares] ++ R`.
-These modules have passed focused builds (logs `/tmp/metamorpho-accrued-*-build.log`).
-The most recent edits only wrap long lines in these files and SupplyAssetsSimulation.
-
-Next dependency is OpenZeppelin full-precision mulDiv. The source function 66 uses an
-unbounded integer product followed by division and a uint256 range check. The specialized
-denominator 1e18 EVM routine starts at 16398; generic mulDiv starts at 16544. Both compute
-the high product word as `sub (sub (mulMod x y (not 0)) (mul x y)) (lt mm (mul x y))`.
-Generic 16573 rejects denominator <= high word; 16581 computes the power-of-two factor and
-six Newton inverse refinements; 16654 combines the corrected numerator and inverse.
-Do not dump the entire 16581 expression; use a named Newton-step abstraction.
-The specialized routine uses division by 2^18, a high-word shift by 238, and constant
-inverse 78156646155174841979727994598816262306175212592076161876661508869554232690281.
-Those dependencies and the full maxMint proof are now complete; see the next section.
-
-## Completed public maxMint
-
-`metaMorphoV1_1MaxMintBody` is proved without placeholders and its focused build passed:
-`/tmp/metamorpho-max-mint-build.log`. There are now 43 original placeholders left, including
-the constructor. No differential suite or previous audit was rerun. No new assumptions or
-specification changes were needed after the previously recorded cursor-model extension.
-
-The full-precision arithmetic chain is complete in `FullMulProduct`, `FullMulTwos`,
-`FullMulInverse`, `FullMulRemainder`, and `FullMulNumerator`. It proves the high product word,
-lowest power-of-two factor, remainder subtraction, combined numerator, and six Newton
-inverse refinements. `FullMulDivRoutines` covers generic entry 16544, and `FullMulDivWad`
-covers the specialized 1e18 denominator at 16398, including all revert cases.
-`FullMulDivSource` connects source function 66. `MathMulDivDownSource` and
-`MathMulDivDownRoutines` cover the round-zero wrapper, source function 60 and runtime 17811.
-
-`DecimalScale` and `DecimalScaleRoutines` prove the exact exponentiation cutoff at 77 and
-the compiler routine at 14402. `ConvertSharesSource` and `ConvertSharesRoutines` prove
-source function 24 and runtime entry 14489, including every checked addition and division
-failure. These helpers currently cover round zero; round one remains for later callers.
-
-`AccruedFeeSource`, `AccruedFeeRoutines`, and `AccruedFeeSimulation` complete fee charging
-after the guard at 12353. `AccruedAssetsSimulation.accruedAssetsSimulation` is the complete
-allocated helper from 12247 to an arbitrary valid return PC. Its success witness includes
-the actual final account map, storage preservation, memory cursor and bounds, source
-ExecFuncBody returning `[tuple [shares, total, lost], cursor]`, and runtime stack
-`[lost, total, shares] ++ R`. It requires stack bound R.length + 35.
-
-`AllocatedConvertSource` and `AllocatedConvertSimulation` compose that helper with
-totalSupply and checked share conversion. The latter enters 2215 with
-`[assets, 2234, ret] ++ R` and returns the converted word to ret, with stack bound
-R.length + 38. `MaxMintEntry` and `MaxMintBodySource` provide the public boundary.
-Public maxMint now reuses maxDeposit's complete simulation and scalar return encoder.
-
-All new modules passed focused builds. Small line-wrapping edits after the public build
-touch FullMulDivWad, FullMulDivSource, AccruedFeeSimulation, and AllocatedConvertSimulation;
-these were included in the successful `/tmp/metamorpho-total-assets-cursor-dependencies-build.log`
-rebuild, which also rechecked maxMint after the totalAssets cursor extension.
-No generated block summaries were edited.
-
-## Completed public totalAssets
-
-The totalAssets extension has now been made and reported. `TotalAssetsAllocationSyntax`
-replaces transition 0: it keeps the three entry guards, calls the allocated accrued-assets
-helper with initial cursor 128, and extracts total assets from the returned nested tuple.
-The helper list is still ten entries. `Spec.contract` now changes transitions 0, 19, and 59;
-`Common.totalAssetsSelectorOf` unfolds the new transition. Original signatures/docstrings
-are preserved. The dependency rebuild above passed.
-
-`TotalAssetsSource` and `TotalAssetsRoutines` both pass LSP checks and focused builds.
-`metaMorphoV1_1TotalAssetsBody` passed its focused build:
-`/tmp/metamorpho-total-assets-build.log`. Its normal path
-is 11049 -> 11055 -> 11066 -> accrued-assets entry 12247 (return PC 11075, tail `[32]`),
-then the 11075 scalar encoder. There are now 42 original placeholders.
-A final line-wrap in TotalAssetsSource happened after that build; include it in the next rebuild.
-
-After totalAssets, convertToShares (60) and previewDeposit (73) share entry 1029, which
-jumps to 11760; guards are at 11760 and 11766, then 11778 enters accrued-assets at 12247
-with stack `[3533, 11793, 1578, 32] ++ R`. Return 3533 reads totalSupply and enters checked
-add 12077, returning to 11793. That block loads calldata word 4 and enters already-proved
-conversion 14489. These two public roots still need the same authorized cursor extension.
-Their source can call allocatedConvertToShares with `[assets, 0, 128]` and extract result 0.
-
-## Share views completed and asset views in progress
-
-`convertToShares` and `previewDeposit` now have complete public proofs;
-`/tmp/metamorpho-public-share-views-build.log` passed. There are 40 original placeholders.
-The share-view cursor extension sets transitions 60 and 73 to `allocatedShareViewBody`,
-which calls `allocatedConvertToSharesFunction` with `[assets, 0, 128]` and returns
-its first component. `ShareViewEntry`, `ShareViewConversionSimulation`, and
-`ShareViewSource` contain the shared entry, fee/conversion trace and source wrappers.
-The simulation starts at 12247 with `[3533, 11793, ret] ++ R`, uses the already
-proved accrued-assets helper, then 3533 -> checked add -> 11793 -> 14489.
-It accepts arbitrary real accounts/external outcomes through `SourceState`.
-
-Next: asset conversions. The same authorized cursor repair has now been extended
-to internal function 41 `_convertToAssets` and public transitions 2/24
-(`convertToAssets`, `previewRedeem`), reported immediately to the user.
-`AssetViewsAllocationSyntax` appends an eleventh helper, `allocatedConvertToAssetsFunction`,
-and changes those two bodies to call it with `[shares, 0, 128]`. Function27
-`_convertToAssetsWithTotals` is the arithmetic helper. Shared runtime entry7734
-jumps11122, guards11122/11128, then11140 ->12247 with `[3533,11155,1578,32]`.
-3533 adds storage2 and fee shares;11155 loads calldata4 and jumps15343.
-Latest extension awaits dependency rebuild and proofs.
-
-## Asset views completed
-
-`convertToAssets` and `previewRedeem` now have complete public proofs; 38 original
-placeholders remain. `/tmp/metamorpho-public-asset-views-build.log` passed 3776jobs,
-including shared-prefix regressions MaxMint/ConvertToShares/PreviewDeposit.
-New modules: ConvertAssetsSource (function27, rounding0), ConvertAssetsRoutines
-(entry15343 -> checked total+1 ->15355 -> decimal14402 ->12515 -> checkedAdd ->15337
--> MathMulDiv17811 ->11757), AllocatedAssetsSource, AssetViewEntry,
-AssetViewConversionSimulation, AssetViewSource. All LSP clean and built.
-`allocatedAccrualTotalsPrefixSource` in AllocatedConvertSource now factors the common
-fee-accrual/cursor/totalSupply prefix for both conversion families.
-The source cursor extension for asset views passed the full focused dependency build
-`/tmp/metamorpho-asset-views-cursor-dependencies-build.log` (3770jobs).
-Next: Math_mulDiv rounding1 for previewMint/previewWithdraw. Their public cursor
-roots have not yet been extended. Their existing allocated helpers already accept
-rounding parameters, but all present source/runtime conversion proofs use rounding0.
-
-## Upward rounding and preview wrappers
-
-`MathMulDivUp`, `MathMulDivUpSource`, `MathMulDivUpRoutines` are complete and built.
-`mathMulDivUpFits := fullMulDivFits ∧ (nonzero natural remainder -> checked q+1 fits)`.
-`mathMulDivUpWord` branches on remainder=0; naturalMulModSource uses unbounded
-source multiplication and nonzero modulus. Runtime17811 -> fullMulDiv ->17827
-->19213/19222 ->17837 ->17870 ->17881 ->17846, then17854 for exact result or
-17856 checked increment ->17868; overflow9453. Stack boundR+17.
-Source theorem `mathMulDivUpPrefix` differs from runtime `mathMulDivUpReachRemainder`.
-
-ConvertShares/AssetsSource frames, OffsetValues, ArgsSource/Revert now accept optional
-rounding UInt256 default0. UpSource modules reuse their argument proofs with mode1.
-ConvertSharesUpRoutines starts14419 (upward checkedadd continuation14465/14478);
-ConvertAssetsUpRoutines starts15275 (numerator+1,15287scale,15337reorder). All LSP clean
-and built. `allocatedConvertFrame`/`allocatedAssetsFrame` have optional rounding;
-PrefixSource/AccrualReverts infer an implicit rounding from the caller frame.
-Allocated*Locals accepts optional mode default0; totals/argument lemmas generalized.
-New AllocatedConvertUpSource/AllocatedAssetsUpSource prove only the upward tail.
-
-Authorized cursor repair extended/reported to public previewMint53 and previewWithdraw4
-via UpwardViewsAllocationSyntax; no new internal functions. Roots call existing
-allocated helper with `[shares or assets, 1, 128]`, project result0. Full focused
-dependency build `/tmp/metamorpho-upward-views-cursor-dependencies-build.log` passed
-3786jobs, including all previous six public proofs. Width fixes and helper rebuild
-`/tmp/metamorpho-upward-view-helpers-build.log` passed3736jobs afterwards.
-PreviewMintEntry starts3500 ->3506 ->3518 ->12247 `[3533,3544,1578,32]`;
-PreviewWithdrawEntry starts10805 ->10811 ->10823 ->12247 `[3533,10838,1578,32]`.
-Shared shape of simulation preserved: R+37, source allocated frame mode1, actual
-external accounts and cursor; 3544->15275 and10838->14419. Simulations and public source
-wrappers LSP-clean. Public PreviewMint/PreviewWithdraw proofs written and validation
-in progress at this handoff update.
-
-## Preview build complete; withdrawal limits in progress
-
-Both public preview proofs passed `/tmp/metamorpho-public-upward-views-build.log`
-(3766 jobs). There are 36 original placeholders. `TokenBalanceCall` proves the exact
-single-address balanceOf ABI request, scalar decoder, and STATICCALL at19570 with
-actual source/external states. It was LSP clean before the withdrawal cursor extension.
-
-The authorized cursor repair now also covers internal functions83 `_withdrawable`,
-59 `_simulateWithdrawMorpho`, and23 `_maxWithdraw`, plus public roots63/66
-maxWithdraw/maxRedeem. `WithdrawViewsAllocationSyntax` appends these three helpers
-after the previous eleven, and reserves32 after balanceOf. The change was immediately
-reported. Its dependency rebuild is pending. The successful runtime path19571 ->19578
-->19604 ->19618 ->11329 ->19631 ->19640 ->19584 reserves32 then returns the minimum
-of supplyAssets, checked(totalSupplyAssets-totalBorrowAssets), and token balance.
-
-## Withdrawal helper and loop completed
-
-The cursor extension passed `/tmp/metamorpho-withdraw-views-cursor-dependencies-build.log`
-(3801 jobs), including all eight conversion/preview publics plus MaxMint and TotalAssets.
-There are still36 original public/constructor placeholders; no new placeholders were added.
-The helper list now has14 appended functions. Publics63/66 are transformed but still unproved.
-
-New completed, LSP-clean helpers:
-- `Minimum`: branchlessMinimum, minimumWord_toNat/comm, using Nat xor cancellation.
-- `MinimumSource`: source/internal-call proof for originalfunction86 UtilsLib_min.
-- `TokenBalanceReturn`: failure19571->2921, short/success32-byte allocation through
-  19604/19618/11329/19631, then19640 reads the scalar. Generic tailR, boundsR+7/R+10/R+3.
-- `TokenBalanceMemory`: returned word, cursor, protected memory; size includes max96
-  because the free-pointer write can extend small memory. No assumptions added to the model.
-- `TokenBalanceSource`: generic source call, decode/allocation failure, and prefix;
-  requires the actual immutable MORPHO address and actual typedCallViaEVM result.
-- `WithdrawableRoutines`: checkedsubtract19481->19496, call setup->19570,
-  tokenBalanceReturnSize from existing callViaEVM bound, minimum return19584.
-- `WithdrawableSource` and `WithdrawableSimulation`: complete allocated function83,
-  runtime19481, R+13, actual external state, cursor and MemoryPrefix. All failure branches.
-  `/tmp/metamorpho-withdrawable-simulation-build.log` passed.
-- `WithdrawLoopSyntax`: explicit reader/arithmetic/iteration syntax for allocated function59.
-  Reuses accruedAssetsCondition/Post. Originalfunction59 body kernel equality proved.
-- `WithdrawLoopReaders`: parameters then supplyShares then balances, runtime16116 to16053,
-  R+27 with generic tail, protects parameters through both later calls and returns loanToken load.
-  `/tmp/metamorpho-withdraw-loop-readers-build.log` passed.
-- `WithdrawLoopArithmeticSource/Simulation`: 3 tuple extracts, assetsDown conversion,
-  allocated withdrawable call, runtime16053 ->18378 ->16063 ->19481 ->16069, R+14.
-  Source continuation starts at arithmetic.drop7. Focused build passed.
-- `WithdrawLoopState`: locals invariant (i/assets/cursor/no withdrawQueue local), generic
-  insert/reader/converted/post/remaining preservation; zeroFloorSub then assignment and break.
-- `WithdrawLoopRoutines`: queue15998->11491->16012->16116;16069 subtract/test;
-  exit15984->12234. The exit does not yet execute the final checked subtraction.
-- `WithdrawLoopIteration`: complete iteration, R+32, outcome break or ok, actual storage
-  preservation, cursor lower/upper/size. Updated cursor result build passed.
-- `WithdrawLoop`: remaining-length induction, early break, static storage preservation;
-  ends12234 `[original, remaining, 12410, total, supply] ++ R`.
-  `/tmp/metamorpho-withdraw-loop-build.log` passed.
-- `SimulateWithdrawFunction`: full allocated function59 at15935, source init i0/for/return,
-  ends12234 as above. LSP clean; focused build passed
-  `/tmp/metamorpho-simulate-withdraw-function-build.log`.
-  Three line-width fixes after this build affect WithdrawLoopArithmeticSimulation,
-  WithdrawLoopState, and SimulateWithdrawFunction; include them in the next checkpoint build.
-
-Important runtime naming correction: loop15976 stack is
-`[MORPHO, i, original, remaining, total, supply, len] ++ R`.
-The original amount is x2 and current remainder is x3. The early-break stack at16091
-swaps the first two entries;15984 ignores those heads. No source-model mismatch.
-
-Next: originalfunction23 `_maxWithdraw`, allocated helper. Source indices after cursor expansion:
-0..3 initialize assets/newTotalSupply/newTotalAssets/feeShares;
-4..6 allocated accrued call;7 assign feeShares;8 assign newTotalAssets;9 totalSupply_body;
-10 checked assign newTotalSupply;11 balanceOf_body(owner);12 asset conversion mode0;
-13 assign assets;14..16 allocated simulate-withdraw call;17 checked assets-minus-remainder;
-18 return nested triple plus cursor. Need kernel syntax lemmas for these indices.
-No internal balanceOf_body proof exists yet; originalfunction58, source can use
-MappingStorage.evalStorage_balanceOf with canonical owner. Runtime15882 ->12247
-returns15894 `[lost,total,feeShares,owner,15935] ++ R`, then checkedAdd to15909.
-15909 hashes owner (slot0), reads balance and enters15343 conversion, then15935 loop.
-Final checked subtraction12234 returns12410, which reorders `[assets,total,supply,ret] ++ R`
-to `[total,supply,assets] ++ R` at ret. RootmaxWithdraw return1970 extracts the scalar;
-rootmaxRedeem return1572 enters share conversion14489.
-
-## Public withdrawal limits completed
-
-`MaxWithdraw` and `MaxRedeem` are now proved, reducing the original placeholders to34.
-Both are LSP-clean. Their joint focused build passed in
-`/tmp/metamorpho-public-withdraw-views-build.log`.
-The separate MaxWithdraw build passed3773jobs. All helper builds below passed.
-
-New modules: BalanceInternalSource (originalfunction58 balanceOf_body), MaxWithdrawBalance
-(slot0 owner hash and memory preservation), MaxWithdrawSource (zero locals and accrued call),
-MaxWithdrawConversionSource/State/ConversionSimulation (checked supply addition, balance,
-assets conversion), MaxWithdrawTailSource (simulation call and checked final subtraction),
-MaxWithdrawFunction (whole allocatedfunction23), WithdrawViewEntry (shared Bool-selected
-maxWithdraw/maxRedeem guards and address decode), MaxWithdrawBodySource,
-MaxRedeemBodySource, MaxRedeemReturn. No spec/model changes in this context.
-
-`maxWithdrawFunctionSimulation` starts15882 `[ownerWord,ret]++R`, boundR+38, and returns
-actual source/external state, storage preservation, cursor≥96 and memory≥96,
-source tuple[assets,supply,total]+cursor, and runtime ret `[total,supply,assets]++R.
-It includes every accrual, checked-add, conversion, liquidity-loop, and subtraction failure.
-`maxWithdrawConversionSimulation` starts15894, boundR+20, and ends15935; memory becomes
-twoWordHashMem ownerWord0mem, whose size and cursor are preserved for96≤mem.size.
-
-Generalized session-created `withdrawLoopSimulation` and `simulateWithdrawFunctionSimulation`
-to require only96≤mem.size (plus cursor≥96/free), removing cursor<2^64 and cursor≤mem.size
-inputs and outputs. This is necessary for empty queues with initial cursor128/memory96.
-Actual iterations still provide stronger bounds from successful allocations. No model change.
-The prior AccruedAssetsSimulation API is unchanged (a temporary strengthening was undone).
-
-`WithdrawViewEntry` Boolean false selects1940/ret1970/stack[1970,32]; true selects1534/
-ret1572/stack[1572,1578,32]. Shared11163->1567->15882, boundR+8. Canonical address conversion
-uses `keyValueToWord_address` before `keyValueToWord_address_of_canonical`; they are not
-definitionally the same as UInt256.ofNat(address.toNat), and attempting exact caused slow whnf.
-maxWithdraw1970 encodes the third stack word. MaxRedeem1572 reorders then14489 share conversion,
-1578 scalar encode. Source three tuple extracts need `dsimp only[maxRedeemPublicTail,List.append]`
-and separate `apply consNormal` / `exact h` to avoid expensive elaboration at the third let.
-
-Other completed builds: max-withdraw-balance, max-withdraw-source (3740jobs),
-max-withdraw-conversion-source, max-withdraw-tail-source, max-withdraw-state,
-max-withdraw-conversion-simulation, max-withdraw-function, withdraw-public-helpers,
-max-redeem-source, max-redeem-return, all logs `/tmp/metamorpho-<name>-build.log`.
-Line-width check and git diff --check passed; one101-column MaxWithdrawBodySource line was
-wrapped before the current joint public build. Earlier three loop width fixes are built.
-
-## Public approval completed
-
-`Approve` is proved, reducing original placeholders to 33. LSP clean and focused build passed
-(`/tmp/metamorpho-public-approve-build.log`). No model changes or assumptions added.
-New modules: ApprovalSource (original functions 72 and 36), ApprovalCalls, ApproveBodySource,
-ApprovalStatic, ApprovalRoutines, ApproveEntry. All helper builds passed. One formatting-only
-line wrap in ApprovalSource followed the public build; include it in the next dependency build.
-
-ApprovalSource covers the bool event overload, both zero-address guards, nested allowance
-storage writes, and static failure. ApprovalCalls proves both call wrappers and `_msgSender`.
-Runtime 16692 checks owner; 16709 checks spender; 16725 writes nested mapping slot 1, emits,
-and returns. Static proof stops at SSTORE 16782. Public entry 10846 checks nonpayability/length,
-11163 decodes the address, 10874 loads value/caller; 4161 encodes true.
-`approvalStoreReturn` has arbitrary memory/stack tail; no allocation invariants needed.
-`approvalScratchMem` is two nested twoWordHashMem writes; `approvalReturnMem` adds event data.
-Canonical address masks require an explicitly typed UInt256 mask equality, not inferred
-`EVM.word` notation. Hash normalization similarly uses typed keccakWord equalities.
-
-Next active work: Transfer, first the shared `_update` source/runtime helper (function 73).
-Source `_update`: from-zero checked supply add; otherwise balance read, sufficient-balance
-guard, wrapping debit. Then to-zero wrapping supply debit, otherwise wrapping balance credit
-read from the already updated storage. Preserve this order without collision assumptions.
-
-## Public transfer completed
-
-`Transfer` is proved, leaving 32 original placeholders. Focused builds passed both before and
-after formatting (`/tmp/metamorpho-public-transfer-build.log`,
-`/tmp/metamorpho-transfer-format-build.log`, 3539 jobs). No model changes or assumptions.
-New helper modules: BalanceMutation, BalanceUpdateSource, TransferInternalSource, TransferGuards,
-TransferBodySource, TransferRoutines, TransferStatic, TransferEntry. All are built/LSP clean.
-BalanceUpdateSource proves the nonzero-address path of function 73 `_update`; mint and burn
-branches are still to be proved when needed. TransferInternalSource proves function 42
-`_transfer`, including zero-address guards, insufficient balance, and static violation.
-BalanceMutation keeps the recipient balance read after the sender write; no slot-noncollision
-or sender/recipient inequality assumptions. Wrapping casts use signedAddWrap/signedSubWrap.
-
-Runtime transfer: 12728 sender guard -> 12745 recipient guard -> 12761 balance check -> 12780
-stores/emits/returns. Zero-address reverts 12898/12879; insufficient balance reverts 12854.
-First SSTORE 12829 is separately proved for static execution. Store bound is R+10.
-Public entry 4123 -> 4129 -> 4141 -> 11163 -> 4151 -> 12728, return 4161 reused from ApproveEntry.
-
-Current work: TransferFrom. AllowanceInternalSource (function 74), SpendAllowanceSource
-(function 43), and SpendAllowanceCalls are written, LSP clean; first two focused builds passed,
-Calls build running in `/tmp/metamorpho-spend-allowance-calls-build.log`.
-Source allowance helpers distinguish unlimited (`UInt256.lnot 0`) from finite. Finite path
-checks sufficiency before owner/spender address guards and then writes without an event.
-SpendAllowanceCalls exposes Allowed, State, call success/revert/static and environment equality.
-Runtime allowance work still pending: 12530 hashes/reads, unlimited -> 12579 return, finite ->
-12585 balance guard -> 12593 owner guard -> 12599 spender guard -> 12614 SSTORE -> 12579 return.
-12614 stores allowed-value and pushes four zeros ahead of the return PC; bound R+7.
-Public TransferFrom: 10441/10447 nonpay/96-byte check; 10459 -> 11163 -> 10469 -> 11185 ->10477.
-10477 calls 12530 with [from,caller,value,10492,from,to,value,4161]; 10492 ->12728 Transfer routine.
+Earlier detailed progress through transfer is preserved in
+[HANDOFF_HISTORY_2026_10_14.md](HANDOFF_HISTORY_2026_10_14.md).
 
 ## Delegated transfer completed
 
@@ -1814,3 +1075,853 @@ contain no sorry/admit/axiom declarations. All files are below 2000 lines.
 Next selected original function: Multicall. Stay with it until complete, working through
 its dependencies first. No differential-suite or initial-audit rerun; main thread only;
 no commits or staging. Public Permit build is complete; no build remains running.
+
+### Multicall completed
+
+The public `metaMorphoV1_1MulticallBody` now passes LSP and its focused build (3717 jobs),
+recorded in `.multicall-final-build.log`. Its statement is unchanged. Six original
+placeholders remain: Deposit, Mint, Withdraw, Redeem, Reallocate, Constructor.
+
+Two source repairs were reported when discovered. `MulticallCalldataSyntax` selects the
+new solc08 calldata-reference plan for the bytes[] signature, preserving signed/wrapping
+relative-offset checks and deferring invalid elements until the iteration that accesses
+them. `MulticallAllocationSyntax` checks the deferred decode-failure marker before copying
+an element. `Spec.config.externalABI.decodeCalldata?` routes this signature through the
+plan and leaves other signatures on the prior decoder. No Solidity, bytecode, generated
+block, shared library, or public theorem statement changed.
+
+CalldataReference/Bytes, BytesArrayCalldata/Head/Decode/Element, BytesTailBounds,
+MulticallABI/Input/Entry and MulticallCalldataRuntime prove decoding and per-element
+copying. DelegateCallSource/Runtime and MulticallDelegateSimulation compose the generic
+self-DELEGATECALL semantics, allocation failures, call-depth failure, and result checks.
+ByteMemoryPrefix and BytesBuffer preserve unpadded raw return buffers; MulticallMemory,
+MulticallStepMemory and MulticallStoreRuntime track the result pointer table. Source
+frames and statements are in MulticallReady/ElementSource/CallSource; MulticallIteration
+and MulticallLoop prove all iterations. MulticallInitialMemory/InitLoop/AllocationRuntime
+and MulticallPrefixSource cover allocation and initialization, including its failure path.
+
+BytesArrayReturnABI, BytesArraySources, StringEncoderBytePrefix, BytesArrayEncodeStep/Read/
+Runtime and MulticallReturnMemory/Runtime encode the full bytes[] return. The output-size
+bound is derived from allocated array and element bounds. MulticallSimulation composes
+these modules with source execution. Its build passed 3691 jobs. No added assumptions,
+sorries, admits, or axiom declarations in these helpers.
+
+The public multicall axiom check is `.multicall-axioms.log`: all 1255 entries are
+`propext`, `Classical.choice`, `Quot.sound`, or existing/concrete `native_decide`
+evaluation axioms. No `sorryAx` or unexpected axiom occurs. The full Correct checkpoint
+passed 4342 jobs in `.multicall-correct-checkpoint.log`; its six remaining original
+placeholders are expected until subsequent work completes.
+
+Next selected original function: Deposit. Stay with it until complete; reuse its shared
+accrue-interest, conversion, safe-transfer and mint proofs, and prove the mutating supply
+loop. No differential-suite or initial-audit rerun, subagents, commits, or staging.
+
+
+## Deposit progress: complete mutating supply helper (2026-10-14)
+
+Deposit remains the selected original function. Its public theorem is still a placeholder;
+no new placeholders or axioms were introduced. The original remaining leaves are Deposit,
+Mint, Withdraw, Redeem, Reallocate, and Constructor.
+
+The ERC4626 transfer/mint/event composition is proved in `ERC4626DepositSimulation.lean`.
+The allocated mutating supply helper is now proved in `SupplyMorphoSimulation.lean` (LSP
+clean; focused build log `.deposit-supply-loop-build.log`). It composes market parameter
+reads, the code guard and Morpho accrual CALL, the market/position reads, rounded-up asset
+conversion, branchless capacity/minimum arithmetic, optional supply CALL with catch, and
+all loop paths. The loop uses `UInt256.size - i.toNat`, rereads queue length after calls,
+and does not assume that accrual or supply preserves storage. The new source allocation
+propagation in `DepositAllocationSyntax.lean` / `SupplyMorphoAllocationSyntax.lean` is
+already wired into `Spec.lean`; this correction was reported when made.
+
+Key layers are `SupplyMorphoReadersSimulation`, `SupplyMorphoArithmeticSimulation`,
+`SupplyMorphoAttempt`, `SupplyMorphoTail`, `SupplyMorphoIteration`, and `SupplyMorphoLoop`.
+`SupplyLoopLocals` tracks contract, immutables, target, index, assets, cursor, and absent
+storage-shadowing locals. The successful helper theorem returns free-pointer equality,
+64-bit cursor bound, cursor monotonicity, and heap-prefix preservation, with runtime
+control transferred to an arbitrary valid return PC. It requires 25 stack slots beyond R,
+96 <= input cursor, 96 <= input memory size, and bounded calldata; no callee assumptions.
+
+Runtime CALL support is split into `MorphoAccrueCall`, `SupplyMarketSimulation`, and
+`MorphoSupplySimulation`, with encoder/decoder and allocation modules. The shared
+`MarketReturnAllocation` and `MarketReadSimulation` proofs were refactored through
+`MarketReadDecode`; public interfaces are retained. `Minimum.lean` now proves that the
+compiler's subtraction-based zero test agrees with its xor-selected minimum.
+
+Build checkpoint: `lake build Benchmarks.Morpho.MetaMorphoV1_1.SupplyMorphoIteration
+Benchmarks.Morpho.MetaMorphoV1_1.Correct` succeeded (4375 jobs), log
+`.deposit-iteration-checkpoint.log`. Existing six sorry warnings remain. Earlier focused
+builds `.deposit-market-build.log`, `.deposit-supply-call-build.log`,
+`.deposit-source-readers-build.log`, `.deposit-readers-build.log`, and
+`.deposit-supply-attempt-build.log` succeeded. `git diff --check` was clean. No final
+capstone axiom audit has run yet; do not rerun differential tests or the initial audit.
+
+Next: connect the supply return at PC 14745 to checked lastTotalAssets + assets, the
+existing `updateLastAssetsReturn` (PC 16830), and return via 14753. Then compose allocated
+ERC4626 + supply + update into `allocatedDepositFunction`, followed by the public deposit
+entry (7351), interest accrual, conversion, and final ABI return. Runtime 14745 reads slot22
+at the actual post-supply state and jumps to checked addition12077 with stack
+[lastTotalAssets, assets,13745,14753,ret]++R. Block13745 transfers to16830;
+updateLastAssetsReturn returns14753 with [ret]++R;14753 jumpsret. Preserve the original
+statement and finish Deposit before switching to another original function.
+
+## Deposit completed (2026-10-14)
+
+`metaMorphoV1_1DepositBody` is now proved with its original statement. Its proof covers
+entry guards, two-argument ABI decoding, accrual reverts and static failure, checked share
+conversion, token transfer, share minting/event, the full mutating Morpho supply loop,
+post-supply lastTotalAssets addition/update, and ABI return. `DepositFinishSource` and
+`DepositFinishSimulation` use the actual post-supply storage state. `DepositInternalSource`
+and `DepositInternalSimulation` compose the complete internal helper. `DepositPublicSource`,
+`DepositPublicSimulation`, `DepositEntry`, and generic `UintAddressCalldata` finish the entry.
+
+Build `lake build Benchmarks.Morpho.MetaMorphoV1_1.Deposit
+Benchmarks.Morpho.MetaMorphoV1_1.Correct` succeeded (4393 jobs), log
+`.deposit-final-build.log`. Focused internal/helper builds also succeeded. The public
+deposit axiom check is `.deposit-axioms.lean` / `.deposit-axioms.log`. No new placeholders,
+assumptions, or axiom declarations. `git diff --check` passes.
+
+Five original leaves remain: Mint, Withdraw, Redeem, Reallocate, Constructor. Next
+selected original function is Mint; reuse the completed internal deposit proof and
+rounded-up assets conversion. Its transition still uses the original unallocated calls,
+so inspect its cursor propagation before wiring its source proof. Keep all changes inside
+this contract directory. Do not rerun differential tests or the initial audit.
+
+## Mint completed (2026-10-14)
+
+`metaMorphoV1_1MintBody` is proved with its original statement. `MintPublicSource`,
+`MintPublicSimulation`, and `MintEntry` reuse the completed deposit internals and
+`ConvertAssetsUpRoutines`. Allocation tracking was corrected and reported: the new
+`allocatedMintTransition` in `DepositAllocationSyntax` routes accrual and deposit through
+the cursor-aware helpers; `Spec.lean` and its selector normalization are wired accordingly.
+
+Mint is LSP-clean and its Lake target built successfully in `.mint-final-build.log`.
+The public axiom check `.mint-axioms.log` contains only the accepted base (4797 entries,
+no `sorryAx` or unexpected axioms). Deposit's check has 4581 accepted entries. The focused
+allocation rebuild passed 3843 jobs in `.mint-allocation-build.log`; the full Correct
+checkpoint is in `.mint-final-build.log`. The new Mint helper files have no placeholders.
+
+Next selected original function: Withdraw. Stay with it until complete. Four original
+placeholders remain: Withdraw, Redeem, Reallocate, Constructor. Withdraw's public entry is
+3446, ABI decoder11559, accrue14262/return3475, upward shares14419/return3491,
+internal withdrawal15525. Existing `WithdrawLoop*` proofs cover the read-only simulation,
+not the mutating `_withdrawMorpho`. The latter calls `_accruedSupplyBalance`, which first
+CALLs Morpho.accrueInterest, then reads market and shares, converts down, and returns a
+market struct; it must handle arbitrary CALL state changes. Reuse `MorphoAccrueCall`,
+`SupplyMarketSimulation`, `SupplySharesAllocationSimulation`, `WithdrawableSimulation`,
+and the completed supply loop pattern. ERC4626 withdrawal needs allowance, burn, and the
+already-proved `safeTransferSimulation` before its event. No Withdraw edits yet.
+
+
+## Withdraw internal stages completed (2026-10-14)
+
+The allocation correction was reported and implemented in `WithdrawAllocationSyntax`:
+`allocatedAccruedSupplyBalanceFunction`, `allocatedWithdrawMorphoFunction`,
+`allocatedERC4626WithdrawFunction`, `allocatedWithdrawFunction`, and public transition54.
+Spec appends the helper functions and routes the transition; old function indices stay fixed.
+Accrued supply balance includes the actual Morpho accrueInterest CALL state, then market
+and shares reads. All CALL effects are threaded; there is no storage-invariance assumption.
+
+Completed helper groups: `AccruedSupply*` (3682-job focused build), `MorphoWithdraw*`
+(3624 jobs), `WithdrawMorpho*` (3738 jobs). The latter proves the complete mutating market
+loop, rereading withdrawal queue length and each market against the actual latest state,
+catching failed Morpho withdrawals, checking allocation/return decoding, and exhausting
+remaining assets or reverting. Memory prefixes and cursor bounds are preserved.
+
+`BurnSupplySource`, `BurnInternalSource`, `WithdrawBurnRoutines`, `ERC4626WithdrawSource`,
+`WithdrawAllowanceMemory`, `WithdrawVaultState`, and `WithdrawAllowanceSimulation` prove
+allowance and burn with the supply storage read after the balance debit. The strengthened
+`safeTransferHeapSimulation` preserves memory/cursor facts; the original safeTransferSimulation
+signature remains as a wrapper. `ERC4626WithdrawSimulation` connects allowance, burn,
+safe transfer, and the Withdraw event; its focused build passed 3803 jobs.
+`WithdrawInternalSource` and `WithdrawInternalSimulation` connect the accounting update,
+market loop, and ERC4626 helper; `.withdraw-internal-build.log` passed 3861 jobs.
+
+Public helpers `WithdrawPublicSource` and `WithdrawPublicSimulation` are LSP-clean and
+built (`.withdraw-public-source-build.log`, `.withdraw-public-simulation-build.log`).
+`UintTwoAddressesCalldata` and `UintTwoAddressesDecoder` prove the full three-word ABI
+case, including both noncanonical addresses. `WithdrawEntry` builds (3516 jobs).
+`Withdraw.lean` now contains the candidate complete original Body proof and is currently
+being built in `.withdraw-body-build.log`. Do not switch original functions until it is
+validated. Then run the Correct checkpoint and public axiom check before Redeem.
+No differential suite or initial audit reruns. No edits outside this directory.
+
+
+## Withdraw public proof completed (2026-10-14)
+
+`metaMorphoV1_1WithdrawBody` is LSP-clean and built successfully in the ongoing
+`.withdraw-final-build.log` Correct checkpoint. Its unchanged statement is proved for all
+valid and malformed calldata branches, reverts/static failure, accrual, conversion, the
+internal helper, and the return encoding. `.withdraw-axioms.log` has only propext,
+Classical.choice, Quot.sound, and native_decide evaluation axioms; no sorryAx.
+The top-level checkpoint was still rebuilding dependent leaves when this note was added.
+
+Redeem is now selected. The missing cursor propagation was reported. Public source,
+simulation, entry, and candidate Body files have been prepared using the completed
+withdrawal internals and existing downward conversion. Before validation, wire
+`allocatedRedeemTransition` (same transformation as allocatedWithdrawTransition, source56)
+into Spec and Common selector normalization. Wait for the current Correct build before
+mutating Spec to avoid racing its snapshot. No source functions need to be appended.
+
+
+Withdraw Correct checkpoint completed successfully (4436 jobs) in `.withdraw-final-build.log`.
+The public axiom footprint has 5384 accepted entries, with no unexpected axiom.
+Redeem allocation is now wired via `RedeemAllocationSyntax`, transition56 in Spec, and
+its Common selector lemma. The candidate public source/simulation build is running in
+`.redeem-public-build.log`. Entry/allocation modules passed 3517 jobs beforehand.
+
+
+## Redeem completed (2026-10-14)
+
+`metaMorphoV1_1RedeemBody` is proved with its original statement. Its allocation-aware
+transition and source/bytecode public composition reuse `withdrawInternalSimulation`,
+`convertAssetsReturn`, and `UintTwoAddressesDecoder`. The focused build passed 3899 jobs
+in `.redeem-body-build.log`; the public axiom check is `.redeem-axioms.log`.
+The first public helper build hit concurrent missing .olean artifacts; the subsequent
+complete target build restored consistent dependencies and passed. Avoid simultaneous
+LSP import rebuilds and shell Lake builds immediately after editing Spec/Common.
+
+Next selected original function is Reallocate (transition34, entry in Reallocate.lean).
+Only Reallocate and Constructor remain. Keep both original theorem statements unchanged.
+Current source inspection is `.reallocate-inspect.lean`; no reallocate implementation
+changes yet. HANDOFF history was split to preserve the 2000-line limit; earlier progress
+is in HANDOFF_HISTORY_2026_10_14.md. No differential/audit reruns or outside edits.
+
+## Reallocate implementation checkpoint (2026-10-14)
+
+Reallocate remains the selected original leaf. Constructor is the only other original
+unfinished leaf. The source now uses deferred per-row calldata decoding and explicit
+allocation cursors. Malformed rows are checked immediately after indexing, before tuple
+projection; this correction was reported when found. The allocation rewrite reserves
+64+160 bytes per row, calls the allocation-aware accrued-balance helper, and reserves
+64 bytes for each strict external-call result. `.reallocate-guard-spec-build.log` built
+Spec and ReallocateSyntax successfully. No generated summaries, bytecode, Solidity,
+outside files, differential suite, or audit were changed/run.
+
+Completed and built modules:
+- ReallocateCalldataSyntax, ReallocateCalldata, ReallocateABI: deferred ABI array plan,
+  raw decoder and values/get facts; MulticallCalldataSyntax dispatches the reallocate plan.
+- ReallocateWithdrawEncode/Return/Simulation and ReallocateSupplyEncode/Return/Simulation:
+  strict same-call correspondence, call failure, short return, and return allocation.
+- CalldataAddressRoutine, CalldataWordWindow, ReallocateRowABI/Fields/Memory/Enabled/Allocation:
+  row decoding, address canonicality, memory, ID/config guard, and 224-byte reservation.
+- ReallocateSyntax: literal row/branch/loop fragments and transition-body identity.
+- ReallocateRowSource, ReallocateReserveSource, ReallocateRowHeap, ReallocateRowPrefix:
+  source declarations, sentinel revert, reserve, memory facts, and 5985-to-6152 simulation.
+- ReallocateLocals, ReallocateBalancesSource, ReallocateAccruedSimulation:
+  loop-local invariant and source/runtime accrued-balance composition to PC6162.
+- ReallocateArithmeticSource, ReallocateAmountRuntime: clamped withdrawal amount and
+  full-withdrawal asset/share selection.
+- StrictPairCallSource, ReallocateCallSource: strict calls plus 64-byte source reservations.
+- ReallocateEventStatic/Runtime, ReallocateWithdrawFinishSource/Runtime: event and checked total.
+- ReallocateWithdrawBranch: complete branch from PC6182 to PC6380, including revert,
+  static violation, and successful source/memory/invariant preservation. Explicit build
+  `.reallocate-withdraw-branch-build.log` passed 3706 jobs.
+- ReallocateSupplyAmountSource: first three source statements and zero/nonzero continue
+  choice. Explicit build `.reallocate-supply-amount-source-build.log` completed.
+
+Current next work: supply cap/source/runtime and finish, then whole supply branch,
+row/iteration/loop, ABI entry/role/public Reallocate. Do not switch to Constructor yet.
+No fresh full Correct or public axiom checkpoint since the earlier Redeem checkpoint.
+
+Runtime stack map (the dispatcher leaves a saved selector word, required by DUP10):
+- Loop5954: [totalW,offset,i,len,totalS,saved]++R.
+- Row5985: [remaining,totalW,base,offset,i,len,totalS,saved]++R;
+  base=offset+192*i, remaining=size-base-36.
+- Prefix6152: [allocation+32,allocation,totalW,id,offset,i,len,totalS,saved]++R.
+- Accrued6162: [marketPtr,shares,assets,allocation+32,allocation,totalW,id,offset,i,len,totalS,saved]++R.
+- Amount6182/6450: [target,assets,shares,allocation,allocation+32,amount,totalW,id,offset,i,len,totalS,saved]++R.
+- Supply6479: [assets,allocation,totalS,suppliedAmount,id,offset,totalW,len,i,saved]++R.
+- Supply6526: [allocation,totalS,suppliedAmount,id,offset,totalW,len,i,saved]++R.
+  Generic reallocateSupplySimulation calls its second stack variable `id`, but this
+  invocation supplies totalS there and the actual ID as its fourth variable `x`.
+- Supply6716: [outShares,outAssets,id,totalS,suppliedAmount,6686,1,offset,totalW,len,i,saved]++R.
+- Loop increment6380: [i,1,offset,totalW,len,totalS,saved]++R.
+
+Build/proof lessons: explicit evm/evm' arguments avoid huge unresolved source-call
+metavariables; pass immWords explicitly to generated/runtime static lemmas. Parenthesize
+multiline locals := insert terms. `rfl` against unresolved if/match branches may time out;
+use by_cases plus simp only instead. Avoid concurrent LSP dependency and Lake builds.
+
+
+## Reallocate public composition checkpoint (2026-10-14)
+
+The supply branch and loop are now complete. Completed focused builds:
+- ReallocateSupplyAmountRuntime, ReallocateSupplyCapSource/Runtime: amount/continue,
+  checked supply-cap comparison, and its revert paths.
+- ReallocateSupplyFinishSource/Runtime, ReallocateSupplyBranch: strict supply call,
+  result allocation, event, checked total, static violation, and preserved heap/locals.
+- ReallocateRowContinuation, ReallocateIteration: complete row from PC5985 to6380.
+- ReallocateLoopData, ReallocateLoop: calldata row bounds and induction over remaining
+  rows, preserving the actual post-call state and handling both normal and continue bodies.
+  `.reallocate-loop-build.log` succeeded.
+- ReallocateCalldataChecks: deferred decoder agrees with all outer compiler checks;
+  accepted calldata supplies the loop invariant. `.reallocate-calldata-checks-build.log` succeeded.
+- ReallocateEntry, ReallocateRole: nonpayable/outer decode and allocator-curator-owner
+  authorization, PC5836→5916→5949. `.reallocate-entry-role-build.log` succeeded (3683 jobs).
+- ReallocatePublicSource, ReallocateFinishRuntime: source initialization and final
+  totalWithdrawn==totalSupplied check, PC6789→STOP6796/revert6797.
+  `.reallocate-public-deps-build.log` succeeded (3679 jobs).
+
+ReallocateSimulation composes the public source/runtime including static violations,
+reverts, and successful empty return. LSP passed. The original public theorem in
+Reallocate.lean has now been replaced with its intended proof, with original statement.
+The focused `.reallocate-body-build.log` is running at this checkpoint; check its final
+status before treating Reallocate as complete. Then check the public theorem's axioms.
+Only after that switch to the original Constructor leaf, the last original placeholder.
+
+Elaboration lesson: do not use `rfl` for `x = 0 + x` when x unfolds calldata decoding.
+Use `(Nat.zero_add _).symm`; otherwise elaboration needlessly expands the whole decoder.
+Also normalize SourceState.env in both the role result and its free-pointer proof before
+applying the loop theorem. Explicit loop parameters make this composition cheap.
+No full Correct/axiom checkpoint since Redeem yet. No differential/audit reruns.
+
+
+Reallocate is complete: `.reallocate-body-build.log` passed 3844 jobs and the public
+axiom check `.reallocate-axioms.log` contains only the accepted trusted base, no sorryAx.
+All runtime leaves are complete. Constructor is now the only selected unfinished leaf.
+
+
+## Constructor input-domain decision (2026-10-14)
+
+The constructor is the only original unfinished leaf. Its unchanged target is
+`typedConstructorRefinement`, which does not bound initcode length. The unchanged
+`config.selfDeployment` uses `genSolidityConstructorDeployment` and accepts strings
+of arbitrary mathematical length. The compiler is solc 0.8.37, viaIR, optimizer 200,
+Cancun. Creation bytecode length23666, embedded runtime offset3894. Initial allocation
+cursor480; PC12 computes CODESIZE-23666 and calls allocator2608 before copying args.
+
+A symbolic, Lean-checked `ConstructorSizeWitness.lean` establishes an input collision:
+- arguments n = owner1, morpho2, initialTimelock0, asset3, n zero name bytes, empty symbol;
+- for paddedSize n=n, deployment accepts this encoding, of length256+n;
+- at n=UInt256.size, the name length word wraps to0 and the symbol offset wraps to224;
+- the first256 argument bytes equal the empty-name encoding, and CODESIZE words agree;
+- the source name differs, and its storage-header encoding is1 versus0 for the empty name.
+`admittedInput_wraps` bundles admission, actual oversize, equal copied prefix, equal
+CODESIZE word, and differing source input. This is a certified encoding collision,
+NOT a complete negation of the refinement or a full Xi execution counterexample.
+No massive array is materialized; this is a symbolic proof, not differential testing.
+
+The existing library has `Stele/RefineWithCodeBound.lean`, used by Comet after that task's
+user explicitly approved a deployment-domain change. That approval DOES NOT authorize
+changing this task. `ConstructorCodeBound.proposed.patch` is a concrete UNAPPLIED proposal:
+import the library, use typedConstructorRefinementWithCodeBound for Constructor, and
+contractRefinementWFWithCodeBound trivialStorageWF noGasBound for the capstone. It adds
+only the deployment premise I.code.size<UInt256.size, leaving config/deployment/runtime
+unchanged. It needs explicit approval because this user's goal forbids extra assumptions.
+A pending asynchronous question requests that decision. Do not apply the patch or continue
+dependent constructor work without resolution. No source/config/theorem change was made.
+
+The focused build of Correct and ConstructorSizeWitness is running in
+`.constructor-size-review-build.log` at this checkpoint. Then run the prepared
+`.constructor-size-axioms.lean` and `.runtime-axioms.lean` and check accepted axiom names.
+This is the FIRST goal turn encountering this input-domain decision. Keep the goal active;
+do not mark complete/paused/blocked now. If the same impasse recurs in three consecutive
+goal turns without resolution, follow the goal tool's blocked threshold.
+
+Proof lesson: large numeric literals as the right operand of symbolic Nat.add can trigger
+kernel deep recursion during word conversion. The generic `wordOfNat_eq_of_mod` avoids
+reducing its arguments while converting residue equality to UInt256 equality.
+
+
+Validation completed for the constructor-domain review:
+- `.constructor-size-review-build.log`: Correct and ConstructorSizeWitness built successfully,
+  4494 jobs. The sole original sorry remains Constructor.lean:18.
+- `.runtime-axioms.log`: metaMorphoV1_1RuntimeCorrect has22763 accepted axiom dependencies,
+  standard Lean axioms/native_decide certificates only, no sorryAx or custom assumptions.
+- `.constructor-size-axioms.log`: admittedInput_wraps has4 accepted dependencies;
+  sourceStorageHeader_differs has1. No sorryAx/custom assumptions.
+- The proposed code-bound patch remains unapplied. Constructor.lean and Correct.lean are
+  unchanged from their earlier theorem statements; Spec was not changed for this issue.
+- No build or tool process remains running. The asynchronous domain-choice question has
+  no reply yet. This remains the first goal turn on the boundary decision.
+
+
+## Constructor-domain continuation: second goal turn (2026-10-14)
+
+The previous goal turn was progress: it completed Reallocate/all runtime proofs and
+produced the checked constructor encoding collision. This second turn revalidated the
+current original theorem, encoder, untouched Constructor/Correct files, and remaining
+single sorry. No approval for the pending domain-choice question has arrived; the automatic
+goal continuation is not approval to add a premise.
+
+The witness was strengthened without changing the model or target:
+- `deployment_doesNotImplyCodeBound` proves the proposed bound cannot be deduced from
+  successful deployment encoding, so it would genuinely narrow the theorem's domain.
+- `copiedLength_wraps` proves the actual constructor CODESIZE-23666 expression is256.
+- `copiedArgumentWindow` proves the requested256-byte argument window is exactly the
+  ordinary empty-name encoding.
+These facts narrow the investigation but still do not constitute a complete Xi execution
+counterexample. `.constructor-size-followup-build.log` passed3512 jobs. The corresponding
+`.constructor-size-followup-axioms.log` shows only standard/native_decide dependencies.
+No original theorem, config, generated block, bytecode, or external file changed.
+
+The same input-domain decision remains unresolved for two consecutive goal turns.
+No build/tool process remains running. Leave the goal active this turn. On a third
+consecutive occurrence, if no authorization or other resolution arrives and meaningful
+progress still requires that decision, use update_goal(status="blocked") per the goal rules.
+Do not repeat the permission request or treat elapsed time as approval.
+
+
+## Constructor-domain continuation: third goal turn (2026-10-14)
+
+The prior turn was progress: it strengthened and checked the boundary witness. This third
+turn revalidated the actual source and terminal build/axiom results. The original constructor
+and capstone statements and deployment encoder remain unchanged; the sole sorry is still
+Constructor.lean:18. The proposed bound remains unapplied and no approval or alternative
+resolution has arrived. There is no running job to wait for and no remaining runtime work.
+
+The same constructor-domain impasse has now persisted for three consecutive goal turns.
+Proceeding with the proposed domain restriction would violate the explicit no-extra-assumptions
+requirement without user authorization. The goal is being marked blocked, not complete.
+Resume after the user resolves the domain decision; a later resumed run starts a fresh blocked
+audit. The witness remains an encoding/copy-window collision, not a full Xi counterexample.
+
+
+## Constructor code bound approved and applied (2026-10-14)
+
+The user explicitly instructed "Apply the proposed patch" and resumed the goal. This
+authorizes the specific deployment premise `I.code.size < UInt256.size` and supersedes
+the pending-decision/blocked instructions above. `ConstructorCodeBound.proposed.patch`
+has now been applied to Constructor.lean and Correct.lean: the constructor uses
+`typedConstructorRefinementWithCodeBound`, and the capstone uses
+`contractRefinementWFWithCodeBound trivialStorageWF noGasBound`. The other original
+constraints remain in force. Continue the constructor proof without asking for this
+authorization again. The constructor's original sorry still needs to be discharged.
+
+The applied patch required the standard runtime adapter in Correct.lean:
+`fun imms hfit => runtimeRefinementWithWF_trivial_iff.mpr
+  (metaMorphoV1_1RuntimeCorrect imms hfit)`.
+`.constructor-code-bound-build.log` passed 4493 jobs. The adapter adds no runtime
+condition. `.constructor-entry-build.log` subsequently passed 4500 jobs before the
+constructor source allocation change below.
+
+Constructor progress after approval:
+- `ConstructorEncoding.lean`: typed six-field ConstructorArgs; canonical encoding,
+  length/alignment, exact deployment inversion, bounded shape, and exact
+  CODESIZE-23666. ConstructorSizeWitness now reuses its creation-size fact.
+- `ConstructorAllocation.lean`: creation allocator2608/2639 and panic1854, both
+  branches, using the same checked source allocator as runtime (the lor/land operands
+  are reversed in creation code).
+- `ConstructorEntry.lean`: generic arbitrary-argument revert packaging, completed
+  nonpayable branch, entry0->12->2608, initial allocation success->29/revert.
+- `ConstructorAllocationSyntax.lean`: constructor-only source correction, attached
+  as contract.ctor in Spec.lean. Preserve first nonpayable guard, then reserve encoded
+  args from480, name(32+padded), symbol(32+padded), and literals32,32,32,64, before
+  the original first storage write. This addresses actual compiler allocation
+  failures; it does not add an assumption. Remaining constructor allocations/call
+  cursor threading still need source modeling as their proofs are developed.
+- `ConstructorInputSource.lean`: source padded/encoded length, typed parameter frame,
+  source initial-allocation failure and combined refinement for that branch.
+  `.constructor-model-build.log` passed3525 jobs; `.constructor-input-source-build.log`
+  passed3526 jobs. No new sorry/axiom in these helper modules.
+- Constructor.lean now extracts typed deployment, handles nonpayable and initial
+  allocation failure; its sole original sorry remains on nonpayable-zero / allocation
+  success. Next: copy/decode arguments fromPC29, then string allocations, literal
+  allocations and initialization/body calls. All runtime selectors remain proved.
+
+Proof lesson: use `Reasoning.Theory.encodeABIValue_uint256` instead of expanding its
+encoding inside the six-field constructor encoding proof; the expanded proof triggered
+kernel deep recursion. For source maps constructed with ofList, use
+`Std.HashMap.getElem?_ofList_of_mem` with distinct-key and membership proofs.
+
+Further constructor progress in the same approved-patch turn:
+- `ConstructorArgumentMemory.lean`: aligned argument-size rounding, equivalence of
+  initial allocator success to480+encoded.length<2^64, exact copied memory (96-byte
+  allocator memory ++384 zeroes ++encoded args), arbitrary payload extraction,
+  free-pointer preservation, and constructor entry throughPC44.
+- `ConstructorArgumentWords.lean`: generic encoded-word/list read lemmas; all six
+  constructor head words and both string length-word reads; head MLOADs in copied
+  memory. These are proved for symbolic strings, without size assumptions.
+- `ConstructorHeadDecode.lean`: shared canonical-address decoder2643->2662->return,
+  and PC44->52->65->84->107->2690. The last PC is the first string decoder invocation.
+  Stack at2690 is [672,end,118,480,end,owner,time,morpho,asset], where
+  end=480+encoded.length. Memory is constructorArgumentMemory a.
+- Constructor.lean now wires all of these; the one remaining sorry is after this
+  head decode in the allocation-success branch. Nonpayable and initial allocation
+  failure are fully closed. Continue with string decoder2690/2702/2663/2678/2713/
+  allocator2608/2727/2742; first return118, then second return150. Source first
+  string allocation is the second statement of constructorInputAllocation.
+
+Full verification after the source-prefix change: `.constructor-current-build.log`
+passed4503 jobs (Correct + ConstructorSizeWitness). After the copy proof was wired,
+`.constructor-copy-build.log` passed4503 jobs. All runtime proofs rebuilt successfully.
+Final head-decode assembly verification and initial constructor axiom check are being
+run at this checkpoint; record their terminal results below.
+
+Proof lesson: avoid a final `simpa` over generated CODECOPY memory and a theorem that
+rewrites a whole encoded buffer. It spent one million heartbeats expanding terms.
+First `change` the RD memory and stack to the intended explicit form, then `rw` the
+small equalities at that hypothesis. ConstructorReachArgumentMemory now builds in
+about3s with default heartbeats. Also wrap `addressWord_val_clean` in an explicit
+UInt256.ofNat-typed equality before rewriting (its statement uses EVM.word).
+
+Terminal checks: `.constructor-head-assembly-build.log` passed4505 jobs.
+`.constructor-initial-axioms.log` checks bounded deployment, nonpayable,
+initial-allocation failure, copied argument memory, and head decoding. Their
+dependency counts are4,40,175,186,217, all standard Lean axioms or concrete
+native_decide evaluation axioms; no sorryAx or additional trusted dependency.
+
+## Constructor strings, literals, and initial storage (approved-patch continuation)
+
+The constructor now reaches PC434, after both initial empty ERC20 metadata assignments.
+Its original single sorry remains at that successful continuation. Both invalid-header
+branches and all preceding allocation failures are closed; the 76 runtime proofs remain
+complete. Do not treat the old blocked/code-bound notes as current: the bound is approved.
+
+New completed modules after the head decoder:
+- ConstructorStringDecode: generic creation string decoder2690 through the allocation
+  at2608, payload copy/terminator, and arbitrary return PC. Both allocation outcomes.
+- ConstructorStringMemory: encoded name/symbol payload reads, BytesBuffer witnesses,
+  cursor/fits arithmetic and preservation through copying.
+- ConstructorDecodedBuffers: argumentEnd=480+encoded.length; nameEnd=argumentEnd+32+
+  paddedSize name.size; stringsEnd=nameEnd+32+paddedSize symbol.size. Defines the name
+  and symbol memories, buffers, free cursor and earlier-window preservation.
+- ConstructorPrefixSource: nested cursor frames, initial allocation prefix, generic
+  source string/literal allocation calls, and source revert packaging.
+- ConstructorStringsRuntime/Source: decode both strings, reach150 with
+  [nameEnd,argumentEnd,owner,time,morpho,asset], and close either string allocation failure.
+- ConstructorLiteralMemory/Runtime/Source: allocate32,32,32,64; store three empty strings;
+  reach229. Success iff stringsEnd+160<2^64. Every partial-allocation failure is matched
+  to the source. constructorReadyFrame retains all successive cursor inserts.
+- ConstructorLiteralBuffers: all three empty buffers and the version buffer "1" at
+  stringsEnd+96; constructorVersionMemory writes length1 and ASCII49<<248.
+- ConstructorStorageHeader: version229->260, both old header loads/checks, and panic1824
+  for an invalid storage-string header. Slots3/4 are selected by Bool symbol.
+- ConstructorStorageSource: unshadowed/resolve/write/revert source facts for both initial
+  metadata fields; currently also retains the narrower initial-name revert wrapper.
+- ConstructorStorageLoop: generic forward clearing loops2560/2348, writes2574/2362,
+  and exits296/392. The account-map recursion is clearDataWordsForwardFrom.
+- ConstructorStorageClear: short-header skip and long-header hash/count/clear prefix.
+  emptyStringClearedAccounts is generic in the storage slot. Scratch memory writes0
+  with slot3/4; hashing uses the proved wordAt0Mem round-trip, no slot-disjointness premise.
+- ConstructorStorageWrite: empty packed-header writes317/413 and exact agreement with
+  storageStringWriteState; generic storageStringWriteEmpty_accounts.
+- ConstructorStorageMemory: scratch writes preserve every allocated byte window and
+  free pointer. Symbol buffer check338->356.
+- ConstructorStorageInit: combines229->434, both invalid-header/source reverts, source
+  continuation from body.drop8 to body.drop10, and post-storage SourceState. On success,
+  preserves constructorVersionMemory's bytes from96 upward and returns free=stringsEnd+160.
+
+Main success after ConstructorStorageInit:
+- evm5=constructorMetadataState(initState...), i.e. write empty slot3 then empty slot4.
+- source frame=constructorReadyFrame a; rest=contract.ctor.body.drop10.
+- RD434 stack=constructorMetadataTail a a.stringsEnd true:
+  [stringsEnd,stringsEnd+96,owner,morpho,argumentEnd,nameEnd,asset,time,32,64].
+- mem5 has a ByteMemoryPrefix from constructorVersionMemory (constructorStringsMemory a)
+  a.stringsEnd for every limit; free MLOAD64=ofNat(stringsEnd+160).
+- No first-header validity assumption is added: validation branches are proved.
+
+Build checkpoints before the next source correction:
+.constructor-strings-assembly-build.log passed4512 jobs;
+.constructor-literal-assembly-build.log passed4515 jobs;
+.constructor-literal-buffers-build.log passed3640 jobs;
+.constructor-storage-header-build.log passed3643 jobs;
+.constructor-storage-base-build.log passed3655 jobs;
+.constructor-storage-write-build.log passed3669 jobs;
+.constructor-storage-memory-build.log passed3670 jobs;
+.constructor-storage-init-build.log passed3681 jobs.
+.constructor-storage-assembly-check.log passed (the expected original sorry warning).
+
+Next source correction was reported immediately to the user and applied:
+- Creation3545 allocates a 36-byte length+selector request (rounded64) before STATICCALL3594.
+- The shared raw-return routine3498 checks nonempty return length<2^64 and allocates
+  32+paddedSize(return length); empty returns use the shared zero buffer at96.
+- ConstructorDecimalsSyntax adds allocatedTryGetAssetDecimalsFunction, based on original
+  function44. It reserves36, performs the original raw staticcall, aliases encodedDecimals
+  to returndata for reserveCallReturn, then uses allocationBody to preserve the old
+  boolean/uint8 result and return the cursor alongside it.
+- Spec appends this helper, preserving all existing function indices. ConstructorAllocationSyntax
+  uses cursorCall to bind decimalResult and the returned cursor after the first two stores.
+- Main source rest atdrop10 is now constructorDecimalsCall (three statements) followed by
+  original constructor body.drop4. Earlier drop8/drop4 source proof statements are unchanged.
+- ConstructorLiteralSource requires an explicit `change` to literalAllocation ++ body.drop8
+  before execBlock_append: the new constructor list association otherwise makes elaboration
+  infer the wrong prefix. Both affected proofs were adapted and a leaf check launched.
+- Full Correct rebuild is .constructor-initial-storage-build.log; first attempt hit only that
+  list-shape elaboration error while other modules continued. Verify terminal result and rebuild
+  once the corrected leaf is checked. No runtime semantic audit or differential test was rerun.
+
+New external-call preparation, not yet wired in Main:
+- ConstructorCallReturn: shared creation routine3498, empty3540, length2663/2678,
+  allocation2608, copy3529. Uses callReturnFits/Pointer/Memory and both failure branches.
+  .constructor-call-return-check.log passed; lake build still required.
+- SelectorCallMemory: BytesBuffer and ByteMemoryPrefix for allocatedWordCallMemory with
+  no ABI arguments. .selector-call-memory-check.log passed; lake build still required.
+- ConstructorDecimalsRequest: selector/encode fact,434->3545, and request allocation through
+  STATICCALL entry3594 or allocator revert. Draft needs leaf checking after dependencies build.
+
+Proof lessons: source evalExpr? is not reducible by rfl for bytesLit; use
+`simp only [evalExpr?, pure]`. Generic constructorMetadataTail length needs explicit simp
+unfolding. For slot hashing rewrite uInt256OfByteArray_eq before applying wordAt0Mem_keccak_word;
+definitional equality otherwise unfolds the hash and times out. An existential junk stack word
+must be explicit before a tactic continuation. uint256_sub_zero_right is the subtraction lemma.
+
+
+## Constructor decimals and domain progress (2026-10-14)
+
+The user's approved code-size patch remains applied: Constructor uses
+`typedConstructorRefinementWithCodeBound`; Correct uses the matching WF capstone.
+Do not ask again. All 76 runtime proofs remain complete. The constructor is the
+only unfinished leaf. No new assumptions, axioms, sorries, or admits were added.
+No differential suite or semantic audit rerun was performed.
+
+The storage checkpoint did finish: `.constructor-initial-storage-build.log`
+passed4530 jobs. New helper axiom checks for constructorDecodeSymbol,
+constructorLiteralAllocations, constructorStorageInit, and constructorCallReturnBuffer
+were clean (standard Lean axioms and concrete native_decide evaluation axioms only).
+
+Completed and built the first external decimals query:
+- ConstructorDecimalsRequest: request selector/ABI encoding,434->3545,
+  36-byte checked request reservation (rounded64), entry STATICCALL3594.
+- ConstructorDecimalsCall:3594->3595 via typedStaticcallSimulation, including the
+  call-depth case, typed decimals call bridge, SourceState, and return-size bound.
+- ConstructorCallReturn:3498 empty/shared96 or checked return allocation/copy.
+- ConstructorDecimalsResult:3602 returns(word,valid), with failure/short/noncanonical
+  uint8 branches yielding(word0,false).
+- ConstructorDecimalsRuntime combines these routines and both allocation failures.
+- ConstructorDecimalsSource/Function prove the added allocated decimals helper's
+  body and statement success/reverts; constructorDecimalsValue is tuple(bool,uint256).
+- ConstructorZeroMemory: preserves the shared empty buffer at96.
+- ConstructorDecimalsInit combines RD434->443, or a matching source/EVM revert;
+  source continuation body.drop10->drop13. Cursor is
+  callReturnCursor(nextCursor(ofNat(stringsEnd+160))36)out.
+
+Full `.constructor-decimals-assembly-build.log` passed4539 jobs. It included the
+following further source correction, reported immediately when identified:
+creation479 reserves192 bytes for the EIP-712 preimage, so allocatedConstructor
+now inserts reserveBytes192 before the original _buildDomainSeparator call.
+The allocation is at body index20. Existing function indices remain unchanged.
+
+Source body indices now:
+0 guard;1..7 input/literal allocations;8 empty ERC20 name;9 empty ERC20 symbol;
+10..12 allocated optional decimals call;13 underlyingDecimals;14 asset;
+15 name;16 version;17 hashedName;18 hashedVersion;19 cachedChainId;
+20 domain reserve192;21 buildDomain call;22 cachedDomainSeparator;23 cachedThis;
+24 owner nonzero;25 transferOwnership;26 morpho nonzero;27 optional timelock guard;
+28 setTimelock;29 vaultName;30 SetName;31 vaultSymbol;32 SetSymbol;33 MORPHO;
+34 strict decimals query;35 DECIMALS_OFFSET;36 forceApprove.
+
+Completed constructor domain modules:
+- ConstructorUnderlying: optional decimals or18, immutable stores160/128,
+  RD443->450->2802 and source body13/14.
+- ConstructorShortLiteral: generic creation short-string routine2802 or3174,
+  empty/version words. ConstructorDomainLiterals combines it through479.
+- ConstructorDomainLiteralMemory and ConstructorAssetInit preserve and encode the
+  literals, connect source body13->15, and combine RD443->479.
+- ConstructorDomainSource: five constant immutable assignments/name/version hashes.
+- ConstructorDomainMemory: generic memLoad_writeWord_disjoint, BytesBuffer.keccak,
+  constant-store memory, literal hashes, free-pointer preservation, domain words.
+- ConstructorDomainEncode: block479 normalized to the five-word preimage, RD2608.
+- ConstructorDomainAllocation: checked192 allocation or revert; RD588, buffer/hash/free facts.
+- ConstructorDomainHashSource: source _buildDomainSeparator for a partial immutable store.
+- ConstructorDomainReserveSource: constants+allocation source continuation/failure,
+  cache helper call+two immutable assignments.
+- ConstructorDomainInputs: carry empty/version buffers and free pointer through asset writes.
+- ConstructorDomainCache: RD588->616 or zero-owner revert, with exact cached-domain/self memory.
+- ConstructorOwnerSource: source owner guard and cache continuation/revert.
+- ConstructorDomainInit: combine all domain paths with source body15->25.
+
+Build checkpoints: domain-prefix passed3714 jobs; domain-cache passed3696;
+ConstructorOwnerSource built in the first domain-init build (the remaining init
+elaboration timeout was subsequently fixed and its direct lake-env check passed).
+Main has now been wired through ConstructorDomainInit, leaving its original sorry
+at RD616. Full Correct build launched as `.constructor-domain-assembly-build.log`;
+check its terminal result before recording success. New helper axiom checks are pending.
+
+At Main's remaining successful branch:
+- evm6/hs6 are unchanged since the optional decimals call, accountMap=evm6.accountMap.
+- howner: owner nonzero.
+- hcursor8: constructorDecimalsCursor.toNat+192 <2^64.
+- hdomainSource: source continuation from constructorDomainReadyFrame a ok out I,
+  body.drop25, back to constructorAssetReadyFrame a ok out, body.drop15.
+- hdomain: RD616, constructorOwnershipTail a =
+  [morpho,owner,argumentEnd,nameEnd,asset,initialTimelock,32,64].
+- memory=constructorDomainReadyMemory mem6 a ok out I, where mem6 is the decimals
+  request/return memory. This includes immutable writes at128/160/352/384/288/320/224,
+  allocated domain preimage, and cached domain192/self256.
+- hassetSource, hdecimalSource, hstoreSource, hsource compose earlier source prefixes.
+- hp5/hp6 still prove preservation of the original literal memory up to stringsEnd+160
+  before immutable writes; constructorDomainInputs supplies the literals when needed.
+
+Next bytecode block616 clears pending owner at9, sets owner at8, emits ownership,
+then rejects zero morpho (2142) or reaches711. Existing Ownership.lean provides
+ownershipState/ownershipAccounts, ownershipBody/Call. Reuse these; no new storage
+noncollision assumptions. Bytecode711 tests initialTimelock;716 sets timelock17,
+emits SetTimelock, and begins vaultName24 storage. Later vault metadata stores,
+strict decimals, DECIMALS_OFFSET, forceApprove, and deployment remain.
+
+Proof-engineering lessons:
+- Keep ConstructorArgs.encoded locally irreducible in wrapper routines. Without it,
+  defeq unfolded word bytes hundreds of thousands of times; with it AssetInit built2.6s
+  at default heartbeats. No heartbeat raise remained.
+- Give ptr/mem/ret/data explicitly to constructorShortLiteral; pre-prove load equations.
+- UInt256.ofNat0/1 do not rewrite as word literals automatically. Supply closed equalities.
+- Normalize generated constant MSTORE offsets to Nat before rewriting named hash facts.
+- For complex Frame projections, use simp-only normalization to pre-prove exact typed
+  hypotheses. Passing a defeq-equivalent lookup fact directly can unfold the entire
+  callable table and time out. DomainReserveSource uses hl' and hcall' for this reason.
+- Tuple eval uses evalExprList?; list returns use evalExprs?.
+- All new source and runtime modules above are proof-complete; only the original
+  Constructor.lean continuation still uses sorry.
+
+
+## Constructor checkpoint through timelock setup (2026-10-14)
+
+The domain assembly above completed successfully:4556 jobs. Targeted helper axiom
+checks passed: constructorDecimalsInit785, constructorAssetInit350,
+constructorDomainInit550 dependencies; all standard Lean or concrete native_decide
+axioms, no sorryAx or custom assumptions.
+
+Further modules are complete and built:
+- ConstructorOwnershipRuntime:616->711, clears pending owner9, sets owner8, emits
+  OwnershipTransferred, rejects zero morpho at2142. Exact ownershipAccounts.
+- ConstructorOwnershipSource: reuses Ownership.ownershipCall; source continuation
+  body25->27 and SourceState.constructorOwnership.
+- ConstructorDomainContext: original-argument getter preservation through cursor
+  locals; owner/morpho getters, frame contract, cached-memory free pointer.
+- ConstructorOwnershipInit: combines the source/EVM paths and SourceState.
+- ConstructorTimelockGuard:711->716 or source-matched invalid-timelock revert.
+  Zero bypasses bounds; nonzero checks <=1209600 at2091 and >=86400 at2102.
+- ConstructorTimelockSource/Init: source conditional body27->28; the checkTime local
+  is inserted only on the nonzero branch. No state change.
+- ConstructorVaultBuffers: generic BytesBuffer.wordSequence_before, preservation
+  through immutable/preimage/cache stores, and both decoded metadata buffers.
+- ConstructorSetTimelockRuntime:716->780, sets timelock14, emits SetTimelock using a
+  scratch word at the free pointer, clears pendingTimelock17, reads the name length.
+  The source already has this exact store order. No spec change was needed.
+- ConstructorSetTimelockSource/Init: shared setter call, source body28->29,
+  SourceState.constructorSetTimelock, and both preserved BytesBuffers.
+
+Main is now at the original sole sorry, RD780. Full
+`.constructor-timelock-assembly-build.log` passed4567 jobs, including Correct.
+The constructor is still unfinished; do not mark the goal complete. Targeted
+ownership/timelock helper axiom checks were launched in
+`.constructor-timelock-axioms.lean` / `.constructor-timelock-axioms.log`.
+
+Current Main success context:
+- hs9 relates ownershipState evm6 (ofNat a.owner.val) to ownershipAccounts I ...;
+  hownershipSource consumes source body25/26 and resumes body27.
+- htime : initialTimelock=0 or86400<=initialTimelock<=1209600.
+- htimeSource consumes the optional range check, body27->28.
+- hsetTimeSource consumes the setter, body28->29.
+- hs11 relates setTimelockState (ownershipState evm6 ownerWord) a.initialTimelock
+  to constructorSetTimelockAccounts I (ownershipAccounts I evm6.accountMap ownerWord)
+  a.initialTimelock.
+- source frame=constructorTimelockReadyFrame a ok out I; nextbody.drop29 is vaultName.
+- hname11/hsymbol11 are BytesBuffer proofs in constructorTimelockMemory mem6 a ok out I.
+- htimeSet is RD780 with constructorVaultNameTail a:
+  [name.size,argumentEnd,nameEnd,asset,morpho,32,64].
+- constructorTimelockMemory writes the event word a.initialTimelock at
+  constructorDecimalsCursor.toNat+192 in constructorDomainReadyMemory.
+- hcursor8 bounds that free pointer by2^64; hlo6 places the prior cursor above
+  stringsEnd+160. Source/EVM free pointer is unchanged by this event write.
+- Next: validate and write vaultName slot24, emit SetName, then vaultSymbol slot25,
+  emit SetSymbol; MORPHO, strict decimals, DECIMALS_OFFSET, forceApprove, deployment.
+
+Useful upcoming reuse: stringViewSlot false/true is24/25, so StringWriteState's
+storageStringWriteState_accounts already covers these fields. StringStorageWrite
+has generic assignStorageString/assignStorageStringReverts. StringWriteRoutines,
+StringClearLoop, StringLongStore, StringStorePrefix etc prove runtime-specific
+traces but contain reusable memory/arithmetic/account characterizations.
+StringBuffer requires a padded size bound, while BytesBuffer only requires actual
+bytes. To reuse StringBuffer word/mask lemmas, derive the padded bound from
+constructorTimelockMemory size (it is >=priorCursor+224, past both strings).
+Never infer zero initial storage; clearing old long strings and invalid header
+branches are still required.
+
+Routine proof notes: use typed local mask equalities before simp when the general
+lemma is stated with EVM.word but the goal uses UInt256.ofNat. Likewise give
+ult_zero/ult_one a typed word equality before rw when a numeral determines a
+metavariable. The local SourceState.constructorOwnership and constructorSetTimelock
+lemmas require explicit namespace application, rather than hs.constructorOwnership.
+All new modules compile at default heartbeats; no temporary diagnostic settings remain.
+
+## Constructor checkpoint through strict decimals (2026-10-14)
+
+The approved code-size-bound patch remains applied in Constructor/Correct. Do not
+ask for it again. The original sole constructor sorry is now at PC1053, source
+body.drop36, immediately before DECIMALS_OFFSET and forceApprove. Runtime remains
+complete. Correct itself rebuilt successfully after the new source allocation
+accounting; a combined build also included the new approval ABI helper, which is
+being checked separately. Do not claim the constructor or goal is complete.
+
+Vault metadata is now fully proved, including arbitrary initial storage:
+- ConstructorVaultHeader/ClearLoop/ClearDispatch/ClearStart/Clear validate old
+  storage headers and clear obsolete long-string words.
+- ConstructorVaultTopicMemory/DataLoop/ShortPrefix/LongTail/Store/Write cover
+  short/long data, exact account updates, event-topic loading, and scratch memory.
+- ConstructorVaultSource/AssignInit/StringBuffers/NameInit couple the name store
+  to the source and preserve both decoded string buffers.
+- ConstructorStringEncoder/VaultEncode/VaultEventSource/NameEvent/SymbolInit
+  encode and emit the name, store the symbol, and encode its event through PC1010.
+- ConstructorMorphoRequest emits SetSymbol, writes MORPHO at416, encodes the strict
+  selector, and shares the actual STATICCALL1039 with the source.
+- ConstructorMorphoSource/Context assign MORPHO and retain arguments/cursor.
+- ConstructorStrictDecimalsABI/Allocation/Source/Memory/Init cover call failure,
+  capped32 return allocation, short returns, noncanonical uint8, source reverts,
+  memory preservation, and continuation at1053.
+
+Reported and corrected source-model omission: strict decimals must reserve32 on
+a successful canonical return. ForceApprove allocates100 for its original request
+and another100 only for fallback approve(0); the final fallback approval reuses
+the original request. Every low-level call reserves nonempty raw returndata before
+inspecting success. ForceApproveAllocationSyntax appends allocatedOptionalReturnBoolFunction
+and allocatedForceApproveFunction to Spec.functions (existing indices unchanged).
+The original helpers are functions75 and46 respectively. ConstructorAllocationSyntax
+now inserts reserve32 at35, leaving earlier source indices unchanged. Body36 is
+DECIMALS_OFFSET; body37..39 is cursorCall to allocatedForceApproveFunction.
+The original Solidity, bytecode, and generated block summaries were not changed.
+
+Builds through name and symbol previously passed4585/4590 jobs. New strict helper
+build passed3788 and strict Init passed3790. Main compiles through1053. The full
+post-spec-change build compiled every runtime proof and Correct (4601 jobs in the
+combined invocation); inspect `.constructor-strict-assembly-build.log` for the
+latest combined result, including the approval ABI helper.
+
+Targeted new-helper axiom checks in `.constructor-vault-strict-axioms.log` passed:
+VaultNameInit2351, VaultNameEvent227, VaultSymbolInit2528, StrictDecimalsInit587.
+Only standard Lean and concrete native_decide axioms; no sorryAx or new assumptions.
+Earlier ownership/timelock checks also passed (337/161/80 dependencies).
+No differential tests or runtime semantic/axiom audit reruns were performed.
+
+Main success context at the remaining sorry:
+- evm15/out15 come from the strict STATICCALL; hs15 is SourceState.
+- hlong15:32<=out15.size; hout15:out15.size<2^138; hdecimals15:word0<256.
+- halloc15: allocationFits (constructorStrictDecimalsPtr a out)32.
+- constructorStrictDecimalsPtr a out = ofNat(optional-decimals cursor.toNat+192).
+- hstrictSource consumes sourcebody32..35 and resumes body36 in
+  constructorFinalDecimalsFrame a ok out I out15.
+- hstrict is RD1053 [255,word0,asset,morpho,32,64], memory
+  constructorFinalDecimalsMemory mem14 a out out15, accounts evm15.accountMap.
+- That memory writes MORPHO416 and the selector at the old free pointer, copies
+  min(32,out15.size), then writes free64 = nextCursor oldFree32.
+- hs14 related the state after name24 and symbol25 storage updates; hm14>=96.
+- hp12 preserves all byte prefixes from timelock memory to name-store memory;
+  hp13 preserves below oldFree through the name event; hp14 preserves below
+  oldFree through the symbol store/event encoding. Compose these when recovering
+  immutable memory slots128..384. MorphoMemory_prefix preserves below416;
+  MorphoMemory_morpho gives416; StrictDecimalsMemory_prefix preserves belowoldFree.
+- Source failure composition now additionally uses hsymbolSource and the name
+  event prefix, followed by hnameSource, hsetTimeSource, htimeSource,
+  hownershipSource, hdomainSource, hassetSource, hdecimalSource, hstoreSource, hsource.
+
+Next helpers already written: ConstructorDecimalsOffset (proved and built) models
+the uint8 offset as ofNat(18-word0.toNat), with source assignment prefix36->37 and
+the exact masked EVM formula. ConstructorApproveABI encodes approve(address,uint256)
+and its BytesBuffer; its latest build is pending in the log above.
+
+Next bytecode:1053 writes offset448 and the approval payload at free+32, then calls
+allocator2608 for100, ret1119.1119 reaches CALL1126.1127 invokes the existing
+constructorCallReturnBuffer at3498, ret1134. Success/optional-bool/code checks lead
+to1153 (deployment) or1420 (fallback).1420 allocates another100,1469 calls3692 for
+approve(0),1475 calls3692 again using the original request,1480 reaches1153.
+Deployment1153/1251/1343 copies19708 runtime bytes from creation offset3894 and
+patches all immutable sites. Read generated summaries before implementing traces.
+
+Proof notes: use explicit `words := [...]` with allocatedWordCallMemory_read;
+rw cannot infer the sequence from literal length68. Use `simp` for fixed-list stack
+bounds containing variables (`decide` refuses free variables even with +kernel).
+ofNat_add_words rewrites sums of words to ofNat(sum), so use its reverse for the
+other direction. UInt256.mul requires u256_mul_toNat, not the `*` lemma umul_toNat.
+Normalize Int.ofNat with Int.ofNat_eq_natCast before omega. No heartbeat raises
+were needed for these helpers.

@@ -52,6 +52,10 @@ theorem accruedAssetsSimulation {I : ExecutionEnv} {g : Sat256} {s0 evm : State}
       SourceState s0 I evm'.accountMap evm' ∧
       accountStorageStateEq evm.accountMap evm'.accountMap ∧
       memLoad ⟨64⟩ mem' = ptr' ∧ 96 ≤ ptr'.toNat ∧ 96 ≤ mem'.size ∧
+      MemoryPrefix mem mem' ptr.toNat ∧ ptr.toNat ≤ ptr'.toNat ∧
+      (ptr.toNat < 2 ^ 64 → ptr'.toNat < 2 ^ 64) ∧
+      (mem.size = 96 → 128 ≤ ptr.toNat →
+        (mem'.size = 96 ∨ 128 ≤ mem'.size) ∧ memLoad ⟨96⟩ mem' = ⟨0⟩) ∧
       ExecFuncBody config (allocatedAccruedAssetsFrame (immStore v) ptr) evm
         allocatedAccruedFeeAssetsFunction.body
         (.returned frame' evm'
@@ -61,7 +65,7 @@ theorem accruedAssetsSimulation {I : ExecutionEnv} {g : Sat256} {s0 evm : State}
         ([lost, total, shares] ++ R) mem' aw' out evm'.accountMap k' C' := by
   rcases accruedAssetsPrefixSimulation v hstack hcalldata hfree hlo hmem hs rd with
     hbad | ⟨evm', frame', real, ptr', mem', out, hs', hstore, hl,
-      hfree', hlo', hmem', hprefix, aw1, k1, C1, h1⟩
+      hfree', hlo', hmem', hpres', hmono', hhi', hzero', hprefix, aw1, k1, C1, h1⟩
   · exact .inl hbad
   · obtain ⟨ha, hb, ha'⟩ := accruedAssetsTailStorage hl hs'
     by_cases ht : accruedTotalsFit (codeOwnerStorageWord I evm'.accountMap ⟨22⟩)
@@ -73,7 +77,7 @@ theorem accruedAssetsSimulation {I : ExecutionEnv} {g : Sat256} {s0 evm : State}
         ⟨hbad, hrev⟩ | ⟨frame'', shares, hdone, hret'⟩
       · exact .inl ⟨ExecFuncBody.execBlockRevert (hprefix _ (hsrc.run hbad)), hrev⟩
       · exact .inr ⟨evm', frame'', _, _, shares, ptr', mem', out,
-          hs', hstore, hfree', hlo', hmem',
+          hs', hstore, hfree', hlo', hmem', hpres', hmono', hhi', hzero',
           ExecFuncBody.execBlockRet (hprefix _ (hsrc.run hdone)), hret'⟩
     · exact .inl
         ⟨ExecFuncBody.execBlockRevert (hprefix _

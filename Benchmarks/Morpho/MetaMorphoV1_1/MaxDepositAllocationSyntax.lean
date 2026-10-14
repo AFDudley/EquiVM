@@ -45,7 +45,8 @@ def allocationStatement (calls : Ident → Option Ident) (reserves : Ident → N
         (allocationBody calls reserves body)]
   | .checkedCall target name value args result yes err no perm =>
       [.checkedCall target name value args result
-        (allocationBody calls reserves yes) err (allocationBody calls reserves no) perm]
+        ((if reserves name = 0 then [] else [reserveBytes (reserves name)]) ++
+          allocationBody calls reserves yes) err (allocationBody calls reserves no) perm]
   | stmt => [stmt]
   termination_by stmt => sizeOf stmt
 

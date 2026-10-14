@@ -1,0 +1,6 @@
+import Benchmarks.Morpho.MetaMorphoV1_1.ConstructorOwnershipInit
+import Benchmarks.Morpho.MetaMorphoV1_1.ConstructorSetTimelockInit
+
+#print axioms Benchmarks.Morpho.MetaMorphoV1_1.constructorOwnershipInit
+#print axioms Benchmarks.Morpho.MetaMorphoV1_1.constructorTimelockInit
+#print axioms Benchmarks.Morpho.MetaMorphoV1_1.constructorSetTimelockInit

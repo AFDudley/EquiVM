@@ -33,6 +33,9 @@ theorem accruedAssetsIterationSimulation {I : ExecutionEnv} {g : Sat256} {s0 evm
       accountStorageStateEq evm.accountMap evm'.accountMap ∧
       AccruedAssetsLocals v frame' i total' ptr' ∧ AccruedAssetsPreserves frame frame' ∧
       memLoad ⟨64⟩ mem' = ptr' ∧ 96 ≤ ptr'.toNat ∧ 96 ≤ mem'.size ∧
+      MemoryPrefix mem mem' ptr.toNat ∧ ptr.toNat ≤ ptr'.toNat ∧ ptr'.toNat < 2 ^ 64 ∧
+      ptr'.toNat ≤ mem'.size ∧
+      (mem.size = 96 → 128 ≤ ptr.toNat → memLoad ⟨96⟩ mem' = ⟨0⟩) ∧
       ExecBlock config frame evm accruedAssetsIteration (.ok frame' evm') ∧
       ∃ aw' k' C', RD (deployedRuntime v) I g s0 ⟨12521⟩
         ([total', ⟨1⟩, UInt256.ofNat v.MORPHO.toNat, len, i] ++ R)
@@ -60,7 +63,8 @@ theorem accruedAssetsIterationSimulation {I : ExecutionEnv} {g : Sat256} {s0 evm
       ((accruedAssetsQueueMemory_free hmem).trans hfree) hlo
       (by rw [metaMorphoV1_1PatchedValidJumps v]; jump_dest) hs h1 with
     ⟨hbad, hrev⟩ | ⟨evm1, final1, params, mem1, src, ptr1, aw2, k2, C2,
-      hsource1, hs1, hstore1, hparams, hfree1, hlo1, hhi1, hmem1, hsrc, hspan, hfields, h2⟩
+      hsource1, hs1, hstore1, hparams, hfree1, hlo1, hhi1, hmem1, hsrc, hspan, hfields,
+      hmono1, hprefix1, hzero1, h2⟩
   · exact .inl ⟨ExecBlock.consRevert (marketParamsReaderRevert hargs1 hbad), hrev⟩
   have hcall1 := marketParamsReaderCall (ret := slotsAndCursorName) hargs1 hsource1
   let frame1 := cursorResultFrame frame "__c0" (marketParamsValue params) ptr1
@@ -89,7 +93,7 @@ theorem accruedAssetsIterationSimulation {I : ExecutionEnv} {g : Sat256} {s0 evm
       (marketParamsLoads_of_fields hparams hfields) hs1
       (by rw [metaMorphoV1_1PatchedValidJumps v]; jump_dest) h2 with
     ⟨hbad, hrev⟩ | ⟨evm2, final2, assets, ptr2, mem2, out2, hs2, hstore2, hsource2,
-      hfree2, hlo2, hhi2, hmem2, aw3, k3, C3, h3⟩
+      hfree2, hlo2, hhi2, hmem2, hprefix2, hmono2, aw3, k3, C3, h3⟩
   · simp only [Fin.toNat, haddr] at hbad
     refine .inl ⟨?_, hrev⟩
     apply cursorCallPrefix (by decide) hcall1
@@ -113,10 +117,20 @@ theorem accruedAssetsIterationSimulation {I : ExecutionEnv} {g : Sat256} {s0 evm
       (by rw [metaMorphoV1_1PatchedValidJumps v]; jump_dest) h4
     refine .inr ⟨evm2, accruedAssetsTotalFrame frame2 total assets, total + assets, ptr2,
       mem2, out2, hs2, accountStorageStateEq_trans hstore1 hstore2, hl2.sum assets,
-      ?_, hfree2, hlo2, by omega, ?_, aw4, k5, C5, h5⟩
+      ?_, hfree2, hlo2, by omega, ?_, le_trans hmono1 hmono2, hhi2, hmem2, ?_,
+      ?_, aw4, k5, C5, h5⟩
     · exact (accruedAssetsReaderPreserves frame "__c0" _ ptr1 (.inl rfl)).trans
         ((accruedAssetsReaderPreserves frame1 "__c1" _ ptr2 (.inr rfl)).trans
           (accruedAssetsSumPreserves frame2 total assets))
+    · exact (memoryPrefix_sparse_writeWord mem 0 ptr.toNat _ (.inr (by decide))).trans
+        (hprefix1.trans (hprefix2.mono hmono1))
+    · intro hm hp
+      have hz := hzero1 (by
+        change (writeWord mem 0 ⟨21⟩).size = 96
+        rw [writeWord_sparse_size, hm]
+        decide) hp
+      exact (hprefix2.load_preserved (off := 96) (by decide) (by omega) (by omega)
+        (by decide)).trans hz
     · apply cursorCallPrefix (by decide) hcall1
       apply cursorCallPrefix (by decide) hcall2
       exact ExecBlock.consNormal (accruedAssetsSumSource hl2.total ha2 hfit) ExecBlock.nil

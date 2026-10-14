@@ -96,7 +96,7 @@ theorem maxDepositReadersSimulation {I : ExecutionEnv} {g : Sat256} {s0 evm : St
   rcases marketParamsAllocationSimulation v (by simp only [List.append, List.length_cons]; omega)
       hfree1 hlo1 (by rw [metaMorphoV1_1PatchedValidJumps v]; jump_dest) hs1 h3 with
     ⟨hbad, hrev⟩ | ⟨evm2, final2, params, mem2, dst, ptr2, aw4, k4, C4,
-      hsource2, hs2, hstore2, hc, hfree2, hlo2, hhi2, hmem2, hdst, hspan, hfields, h4⟩
+      hsource2, hs2, hstore2, hc, hfree2, hlo2, hhi2, hmem2, hdst, hspan, hfields, _, _, _, h4⟩
   · refine .inl ⟨fun tail ↦ ?_, hrev⟩
     apply cursorCallPrefix (by decide) hcall1
     exact ExecBlock.consRevert (marketParamsReaderRevert hargs1 hbad)

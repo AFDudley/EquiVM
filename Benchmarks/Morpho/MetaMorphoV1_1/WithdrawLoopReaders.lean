@@ -63,7 +63,7 @@ theorem withdrawLoopReadersSimulation {I : ExecutionEnv} {g : Sat256} {s0 evm : 
   rcases marketParamsAllocationSimulation v (by simp only [List.append, List.length_cons]; omega)
       hfree hlo (by rw [metaMorphoV1_1PatchedValidJumps v]; jump_dest) hs rd with
     ⟨hbad, hrev⟩ | ⟨evm1, final1, params, mem1, src, ptr1, aw1, k1, C1,
-      hsource1, hs1, hstore1, hparams, hfree1, hlo1, hhi1, hmem1, hsrc, hspan, hfields, h1⟩
+      hsource1, hs1, hstore1, hparams, hfree1, hlo1, hhi1, hmem1, hsrc, hspan, hfields, _, _, _, h1⟩
   · exact .inl ⟨fun _ ↦ ExecBlock.consRevert (marketParamsReaderRevert hargs1 hbad), hrev⟩
   have hcall1 := marketParamsReaderCall (ret := slotsAndCursorName) hargs1 hsource1
   let frame1 := withdrawLoopParamsFrame frame params ptr1

@@ -1,4 +1,4 @@
-import Benchmarks.Morpho.MetaMorphoV1_1.MarketDecodeRoutines
+import Benchmarks.Morpho.MetaMorphoV1_1.MarketReadDecode
 import Benchmarks.Morpho.MetaMorphoV1_1.MarketBalancesAllocationSource
 
 /-! Source/bytecode correspondence through the market reader and its decoder. -/
@@ -55,45 +55,15 @@ theorem marketReadSimulation {I : ExecutionEnv} {g : Sat256} {s0 evm : State}
             (by rw [marketDecode hhi, if_pos hc]) (fun hf ↦ hbad ⟨hc.1, hf⟩)
         · exact allocatedMarketBalancesBodyDecodeReverts hcall
             (by rw [marketDecode hhi, if_neg hc])
-      · have hbound : ptr.toNat + 384 < 2 ^ 64 :=
-          (allocationFits_aligned ptr ⟨384⟩ (by decide +kernel)).mp hfit
-        have hdst : (nextCursor ptr ⟨192⟩).toNat = ptr.toNat + 192 :=
-          uadd_word_ofNat_toNat ptr 192 (by change _ < 2 ^ 256; omega)
-        have hcursor : (nextCursor ptr ⟨384⟩).toNat = ptr.toNat + 384 :=
-          uadd_word_ofNat_toNat ptr 384 (lt_trans hbound (by decide))
-        have hinput : ptr.toNat ≤ (marketCallMem mem ptr.toNat p.id).size := by
-          rw [marketCallMem_size]; omega
-        have hcopied := marketOutputMem_size hinput hlong hout
-        have hspan : ptr.toNat + 192 ≤
-            (marketOutputMem (marketCallMem mem ptr.toNat p.id) ptr out).size := by
-          rw [hcopied]; omega
-        have hptrBound : ptr.toNat + 192 < UInt256.size := by change _ < 2 ^ 256; omega
-        have hread (off : Nat) (hoff : off + 32 ≤ 192) := marketReservedMem_load hlo
-          hspan hptrBound hoff (marketOutputMem_load hinput hlong hout hptrBound hoff)
-        rcases marketDecodeFields v (by simp only [List.length_cons]; omega) hlong
-            (by rw [marketReservedMem_size]; omega) (by rw [hdst])
-            (by rw [hdst]; change _ < 2 ^ 256; omega) hread
-            (by rw [metaMorphoV1_1PatchedValidJumps v]; jump_dest) h3 with
-          ⟨hbad, hrev⟩ | ⟨hc, aw4, k4, C4, h4⟩
+      · rcases marketReadDecode v (by simp only [List.length_cons]; omega) hlo hlong hout
+            hfit (by rw [metaMorphoV1_1PatchedValidJumps v]; jump_dest) h3 with
+          ⟨hbad, hrev⟩ | ⟨hc, aw4, k4, C4, hfree', hsize', hfields, hprefix, h4⟩
         · exact .inl ⟨allocatedMarketBalancesBodyDecodeReverts hcall
             (by rw [marketDecode hhi, if_neg hbad]), hrev⟩
         · obtain ⟨aw5, k5, C5, h5⟩ := metaMorphoV1_1_block_17648_packed
             (immWords := wordsOf (immStore v)) (by omega)
             (by rw [metaMorphoV1_1PatchedValidJumpsRuntime v]; jump_dest) h4
-          refine .inr ⟨evm', out, aw5, k5, C5, hcall, hs', hc, hhi, hfit, ?_, ?_, ?_,
-            marketReadMemory_prefix mem ptr p.id out hfit hlong hout, h5⟩
-          · rw [marketReadMemory, marketCopyMem_free
-              (by rw [marketReservedMem_size]; omega) (by rw [hdst]; omega),
-              marketReservedMem_free, nextCursor_192_twice]
-          · rw [hcursor, marketReadMemory, marketCopyMem_size, hdst]; omega
-          · intro i hi
-            have he : nextCursor ptr ⟨192⟩ + UInt256.ofNat (32 * i) =
-                UInt256.ofNat ((nextCursor ptr ⟨192⟩).toNat + 32 * i) := by
-              apply u256_inj
-              rw [uadd_word_ofNat_toNat _ _ (by rw [hdst]; change _ < 2 ^ 256; omega),
-                UInt256.toNat_ofNat_of_lt (by rw [hdst]; change _ < 2 ^ 256; omega)]
-            rw [he]
-            exact marketCopyMem_field _ _ out i hi
-              (by rw [hdst]; change _ < 2 ^ 256; omega)
+          exact .inr ⟨evm', out, aw5, k5, C5, hcall, hs', hc, hhi, hfit,
+            hfree', hsize', hfields, hprefix, h5⟩
 
 end Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory

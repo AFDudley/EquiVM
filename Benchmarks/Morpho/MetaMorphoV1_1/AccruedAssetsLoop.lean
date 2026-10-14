@@ -30,6 +30,10 @@ theorem accruedAssetsLoopSimulation {I : ExecutionEnv} {g : Sat256} {s0 evm : St
       accountStorageStateEq evm.accountMap evm'.accountMap ∧
       AccruedAssetsLocals v frame' len total' ptr' ∧ AccruedAssetsPreserves frame frame' ∧
       memLoad ⟨64⟩ mem' = ptr' ∧ 96 ≤ ptr'.toNat ∧ 96 ≤ mem'.size ∧
+      MemoryPrefix mem mem' ptr.toNat ∧ ptr.toNat ≤ ptr'.toNat ∧
+      (ptr.toNat < 2 ^ 64 → ptr'.toNat < 2 ^ 64) ∧
+      (mem.size = 96 → 128 ≤ ptr.toNat →
+        (mem'.size = 96 ∨ 128 ≤ mem'.size) ∧ memLoad ⟨96⟩ mem' = ⟨0⟩) ∧
       ExecForLoop config frame evm accruedAssetsCondition accruedAssetsPost accruedAssetsIteration
         (.ok frame' evm') ∧
       ∃ aw' k' C', RD (deployedRuntime v) I g s0 ⟨12296⟩
@@ -48,6 +52,9 @@ theorem accruedAssetsLoopSimulation {I : ExecutionEnv} {g : Sat256} {s0 evm : St
       rw [hs.accounts] at h1
       exact .inr ⟨evm, frame, total, ptr, mem, rdata, ⟨hs.world, hs.env, rfl⟩,
         accountStorageStateEq_refl _, hlocals, .refl _, hfree, hlo, hmem,
+        .refl _ _, le_refl _, id, fun hm _ ↦ ⟨.inl hm, by
+          simp only [memLoad, show (⟨96⟩ : UInt256).toNat = 96 from rfl, hm,
+            ge_iff_le, le_refl, ite_true]⟩,
         ExecForLoop.falseDone hcond, aw1, k1, C1, h1⟩
   | succ n ih =>
       have hlt : i.toNat < len.toNat := by omega
@@ -65,7 +72,8 @@ theorem accruedAssetsLoopSimulation {I : ExecutionEnv} {g : Sat256} {s0 evm : St
       rcases accruedAssetsIterationSimulation v hstack hlocals hcalldata hfree hlo hmem hs
           (by rw [hlen]; exact hlt) h1 with
         ⟨hbad, hrev⟩ | ⟨evm2, frame2, total2, ptr2, mem2, out2, hs2, hstore2, hlocals2,
-          hpreserve2, hfree2, hlo2, hmem2, hbody, aw2, k2, C2, h2⟩
+          hpreserve2, hfree2, hlo2, hmem2, hprefix2, hmono2, hhi2, hsize2, hzero2,
+          hbody, aw2, k2, C2, h2⟩
       · exact .inl ⟨ExecForLoop.bodyRevert hcond hbad, hrev⟩
       have hlen2 : codeOwnerStorageWord I evm2.accountMap ⟨21⟩ = len := by
         rw [hs.accounts] at hlen
@@ -81,11 +89,16 @@ theorem accruedAssetsLoopSimulation {I : ExecutionEnv} {g : Sat256} {s0 evm : St
         omega
       rcases ih hlocals2.post hfree2 hlo2 hmem2 hs2 hlen2 hdiff2 h3 with
         ⟨hbad, hrev⟩ | ⟨evm3, frame3, total3, ptr3, mem3, out3, hs3, hstore3, hlocals3,
-          hpreserve3, hfree3, hlo3, hmem3, hloop, hdone⟩
+          hpreserve3, hfree3, hlo3, hmem3, hprefix3, hmono3, hhi3, _, hloop, hdone⟩
       · exact .inl ⟨ExecForLoop.iterate hcond hbody hpost hbad, hrev⟩
-      · exact .inr ⟨evm3, frame3, total3, ptr3, mem3, out3, hs3,
+      · refine .inr ⟨evm3, frame3, total3, ptr3, mem3, out3, hs3,
           accountStorageStateEq_trans hstore2 hstore3, hlocals3,
           hpreserve2.trans ((accruedAssetsPostPreserves frame2 i).trans hpreserve3),
-          hfree3, hlo3, hmem3, ExecForLoop.iterate hcond hbody hpost hloop, hdone⟩
+          hfree3, hlo3, hmem3, hprefix2.trans (hprefix3.mono hmono2), le_trans hmono2 hmono3,
+          fun _ ↦ hhi3 hhi2, ?_, ExecForLoop.iterate hcond hbody hpost hloop, hdone⟩
+        intro hm hp
+        exact ⟨.inr (le_trans (by omega : 128 ≤ mem2.size) hprefix3.size),
+          (hprefix3.load_preserved (off := 96) (by decide) (by omega) (by omega) (by decide)).trans
+            (hzero2 hm hp)⟩
 
 end Benchmarks.Morpho.MetaMorphoV1_1.SourceMemory

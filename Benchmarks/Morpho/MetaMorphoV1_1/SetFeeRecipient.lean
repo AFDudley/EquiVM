@@ -74,10 +74,10 @@ theorem metaMorphoV1_1SetFeeRecipientBody {σ σ₀ A I} {g : UInt256} (v : Meta
                   (haddr.not.mpr heq) (fun hb ↦ hbad ⟨hzero.mp hb.1, hb.2⟩)
                 obtain ⟨aw2, k2, C2, h2⟩ := setFeeRecipientReachAccrual v (by simp) hbad h1
                 rcases accrueInterestSimulation v (by simp) hsize solcFreePtrMem_mload64
-                    (by decide) (by rw [solcFreePtrMem_size]) SourceState.init
+                    (by decide) (by decide) (by rw [solcFreePtrMem_size]) SourceState.init
                     (by rw [metaMorphoV1_1PatchedValidJumps v]; jump_dest) h2 with
                   ⟨hbad, hrev⟩ | ⟨hstatic, hhalt⟩ |
-                    ⟨evm', frame', ptr, mem', out, hperm, hs', hbody, aw3, k3, C3, h3⟩
+                    ⟨evm', frame', ptr, mem', out, hperm, hs', hbody, _, _, _, _, _, _, aw3, k3, C3, h3⟩
                 · exact hrev.reEquivExecutionRevert hcode hd hdec
                     (setFeeRecipientAccrualReverts _ _ _ hpre hbad)
                 · exact hhalt.reEquivStaticHalt hcode hd hdec

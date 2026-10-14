@@ -15,6 +15,12 @@ import Benchmarks.Morpho.MetaMorphoV1_1.SetCapAllocationSyntax
 import Benchmarks.Morpho.MetaMorphoV1_1.SubmitCapAllocationSyntax
 import Benchmarks.Morpho.MetaMorphoV1_1.UpdateWithdrawQueueAllocationSyntax
 import Benchmarks.Morpho.MetaMorphoV1_1.MulticallAllocationSyntax
+import Benchmarks.Morpho.MetaMorphoV1_1.MulticallCalldataSyntax
+import Benchmarks.Morpho.MetaMorphoV1_1.DepositAllocationSyntax
+import Benchmarks.Morpho.MetaMorphoV1_1.WithdrawAllocationSyntax
+import Benchmarks.Morpho.MetaMorphoV1_1.RedeemAllocationSyntax
+import Benchmarks.Morpho.MetaMorphoV1_1.ReallocateAllocationSyntax
+import Benchmarks.Morpho.MetaMorphoV1_1.ConstructorAllocationSyntax
 import Stele.Semantics
 import Stele.SolidityLayout
 import Stele.MetaSolidityLayout
@@ -36,6 +42,7 @@ namespace Benchmarks.Morpho.MetaMorphoV1_1
 
 def contract : ContractDecl :=
   { Syntax.contractSyntax with
+    ctor := SourceMemory.allocatedConstructor
     functions := Syntax.contractSyntax.functions ++
       [SourceMemory.allocateFunction, SourceMemory.extSloadsFunction,
        SourceMemory.allocatedSupplySharesFunction, SourceMemory.allocatedMarketParamsFunction,
@@ -47,8 +54,13 @@ def contract : ContractDecl :=
        SourceMemory.allocatedAccrueInterestFunction, SourceMemory.allocatedAddressCallFunction,
        SourceMemory.allocatedOptionalReturnFunction, SourceMemory.allocatedSafeTransferFunction,
        SourceMemory.allocatedSetCapFunction, SourceMemory.allocatedLastUpdateFunction,
-       SourceMemory.allocatedDelegateCallFunction]
-    transitions := ((((((((((((((((((((((Syntax.contractSyntax.transitions.set 19
+       SourceMemory.allocatedDelegateCallFunction, SourceMemory.allocatedSafeTransferFromFunction,
+       SourceMemory.allocatedERC4626DepositFunction, SourceMemory.allocatedSupplyMorphoFunction,
+       SourceMemory.allocatedDepositFunction, SourceMemory.allocatedAccruedSupplyBalanceFunction,
+       SourceMemory.allocatedWithdrawMorphoFunction, SourceMemory.allocatedERC4626WithdrawFunction,
+       SourceMemory.allocatedWithdrawFunction, SourceMemory.allocatedTryGetAssetDecimalsFunction,
+       SourceMemory.allocatedOptionalReturnBoolFunction, SourceMemory.allocatedForceApproveFunction]
+    transitions := (((((((((((((((((((((((((((Syntax.contractSyntax.transitions.set 19
       SourceMemory.allocatedMaxDepositTransition).set 59 SourceMemory.allocatedMaxMintTransition).set 0
       SourceMemory.allocatedTotalAssetsTransition).set 60
       SourceMemory.allocatedConvertToSharesTransition).set 73
@@ -66,7 +78,9 @@ def contract : ContractDecl :=
       SourceMemory.allocatedSetNameTransition).set 55 SourceMemory.allocatedSetSymbolTransition).set
       30 SourceMemory.allocatedAcceptCapTransition).set 18 SourceMemory.allocatedSubmitCapTransition).set
       20 SourceMemory.allocatedUpdateWithdrawQueueTransition).set 50
-      SourceMemory.allocatedMulticallTransition }
+      SourceMemory.allocatedMulticallTransition).set 29 SourceMemory.allocatedDepositTransition).set
+      43 SourceMemory.allocatedMintTransition).set 54 SourceMemory.allocatedWithdrawTransition).set
+      56 SourceMemory.allocatedRedeemTransition).set 34 SourceMemory.allocatedReallocateTransition }
 
 /-! ## Transition handles, in `contract.transitions` order -/
 
@@ -198,6 +212,7 @@ private def externalSignature (name : String) : Option (Nat × List ABIType × L
   | _ => none
 
 def externalABI : ExternalCallABI where
+  decodeCalldata? := decodeContractCalldata
   encode? := fun name args => do
     let (selector, params, _) ← externalSignature name
     let selectorData := ByteArray.mk ((EVM.Word.ofNat selector).toBytesBE.drop 28).toArray
