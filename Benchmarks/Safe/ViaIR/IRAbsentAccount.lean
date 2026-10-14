@@ -53,10 +53,10 @@ theorem safeIRAbsentOwnerSourceReverts :
     ExecTransitionBody config contract safeIRAbsentOwnerState (addOwnerArgs ⟨8192⟩ ⟨1⟩)
       addownerwiththresholdTransition.body .reverted := by
   apply ExecFuncBody.execBlockRevert
-  apply safeAddOwnerPrefix safeIRAbsentOwnerState ⟨8192⟩ ⟨1⟩
+  apply safeAddOwnerPrefix (hperm := rfl) safeIRAbsentOwnerState ⟨8192⟩ ⟨1⟩
     (by decide) rfl rfl
     ⟨by decide, by decide, Or.inl (by decide)⟩ (by rfl)
-  apply safeAddOwnerTailRevert
+  apply safeAddOwnerTailRevert (hperm := rfl)
   · decide
   · apply safeAddOwnerThresholdRevert
     · decide
@@ -122,7 +122,7 @@ private theorem assignResult {cfg f s origin ref expr f' s'}
     (r) (h' : ExecStmt cfg f s (.assign origin ref expr) r) :
     r = .ok f' s' ∨ r = .reverted ∨ r = .staticViolation := by
   cases h with
-  | assign heval hstore => cases h' <;> simp_all
+  | assign _ heval hstore => cases h' <;> simp_all
 
 private theorem emitResult {cfg f s name args r}
     (h : ExecStmt cfg f s (.emit name args) r) :
@@ -218,18 +218,18 @@ private theorem absentAddOwnerBlock {r}
   have hb : f.locals["owners"]? = none := safeAddOwnerLocal _ _ _ (by decide)
   have hfirst : ExecStmt config f s
       (.assign .storage (ownersRef (.var "owner")) (.storage (ownersRef sentinelAddr)))
-      (.ok f s) := .assign
+      (.ok f s) := .assign (Or.inr rfl)
     (safeEvalOwnerLink s _ sentinelAddr ⟨1⟩ hb (by decide) (safeEvalOwnerSentinel s _))
     (safeAssignOwnerLink s _ _ ⟨8192⟩ (ownerLink s ⟨1⟩) hb (by decide)
       (solcAddrMask_result_canonical _) (safeAddOwnerEval s ⟨8192⟩ ⟨1⟩))
   have hsecond : ExecStmt config f s
       (.assign .storage (ownersRef sentinelAddr) (.var "owner")) (.ok f s) :=
-    .assign (safeAddOwnerEval s ⟨8192⟩ ⟨1⟩)
+    .assign (Or.inr rfl) (safeAddOwnerEval s ⟨8192⟩ ⟨1⟩)
       (safeAssignOwnerLink s _ sentinelAddr ⟨1⟩ ⟨8192⟩ hb (by decide) (by decide)
         (safeEvalOwnerSentinel s _))
   have hcount : ExecStmt config f s
       (.assign .storage ownerCountRef (inc256 (.storage ownerCountRef))) (.ok f s) :=
-    safeAddOwnerIncrement s ⟨8192⟩ ⟨1⟩ (by decide)
+    safeAddOwnerIncrement (hperm := rfl) s ⟨8192⟩ ⟨1⟩ (by decide)
   have hafter := consTail (consTail (consTail htail hr (assignResult hfirst)) hr
     (assignResult hsecond)) hr (assignResult hcount)
   have hlast := singletonResult (consTail hafter hr (fun _ hs ↦ emitResult hs))
@@ -274,10 +274,13 @@ theorem safeIRAbsentOwnerNotRefines :
       | receive hrecv _ _ _ _ =>
         change none = some _ at hrecv
         cases hrecv
-    | revert hevm _ | invalidHalt hevm _ | staticHalt hevm _ =>
+    | revert hevm _ | noMatch hevm _ | decodingFailed hevm _ =>
       rw [hxi, hevm] at hex
       cases hex
-  | noDispatch _ hevm | decodingFailed _ _ _ hevm | outOfGas hevm =>
+    | invalidHalt hevm _ | staticHalt hevm _ =>
+      rw [hxi, hevm] at hex
+      cases hex
+  | outOfGas hevm =>
     rw [hevm] at hex
     cases hex
 
