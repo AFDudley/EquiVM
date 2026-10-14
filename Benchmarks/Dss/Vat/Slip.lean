@@ -1375,10 +1375,10 @@ theorem vatSlipSourceOkSplit
         (eitherExpr (.binary .le (.var "wad") (.intLit 0))
           (.binary .ge (.var "gemNew") (.storage (gemRef (.var "ilk") (.var "usr"))))) =
         .ok (.bool true) →
-    ExecTransitionBody config contract evm0 (slipStore I) slipTransition.body
+    (I.perm = true → ExecTransitionBody config contract evm0 (slipStore I) slipTransition.body
       (.returned { contract := contract, locals := slipStoreGemNew I gemNew }
         (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (slipStorageSlot I) gemNew)
-        none) ∧
+        none)) ∧
     (I.perm = false →
       ExecTransitionBody config contract evm0 (slipStore I) slipTransition.body
         .staticViolation) := by
@@ -1448,10 +1448,10 @@ theorem vatSlipSourceOkSplit
     refine ExecBlock.consNormal (ExecStmt.requireTrue hguardNeg) ?_
     refine ExecBlock.consNormal (ExecStmt.requireTrue hguardPos) ?_
     exact hrest
-  refine ⟨?_, fun hpf => ?_⟩
+  refine ⟨fun hperm => ?_, fun hpf => ?_⟩
   · simpa [ExecTransitionBody, slipTransition, evm0, evm1, nonpayable, auth] using
       ExecFuncBody.execBlockOK (hpre _
-        (ExecBlock.consNormal (ExecStmt.assign hgemNewVar hassign) ExecBlock.nil))
+        (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hgemNewVar hassign) ExecBlock.nil))
   · simpa [ExecTransitionBody, slipTransition, evm0, nonpayable, auth] using
       ExecFuncBody.execBlockStatic (hpre _ (ExecBlock.consStatic
         (ExecStmt.assignStatic hgemNewVar hassign (by simp [evm0, initState]; exact hpf))))
@@ -1687,7 +1687,7 @@ theorem vatSlipBodyCore : VatBodyTheoremAnyPerm 23 := by
               (σ := σ) (σ₀ := σ₀)
               (A := A) (I := I) (g := Sat256.ofUInt256 g)
               hdecoded hauthSolc hnegSolc hposSolc with
-            ⟨_, _, _, hretPc⟩ | ⟨hpf, hstatic⟩
+            ⟨hperm, _, _, hretPc⟩ | ⟨hpf, hstatic⟩
           swap
           · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode (hboth.2 hpf)
           have hretPc' := hretPc.jumpdest (by native_decide) (by evm_ov)
@@ -1706,7 +1706,7 @@ theorem vatSlipBodyCore : VatBodyTheoremAnyPerm 23 := by
           have henc : returnEquiv ByteArray.empty none slipTransition.returnType := by
             rw [show slipTransition.returnType = [] by rfl]
             exact returnEquiv.fallthrough rfl (by rfl) (by native_decide)
-          exact hret.reEquivExecutionGen hcode hdispatch hdecode hbody
+          exact hret.reEquivExecutionGen hcode hdispatch hdecode (hbody hperm)
             haccounts henc
         · have hposFailSolc :
               ¬ (UInt256.sgt (slipWadWord I) ⟨0⟩ = ⟨0⟩ ∨

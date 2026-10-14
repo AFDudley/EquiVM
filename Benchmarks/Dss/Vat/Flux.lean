@@ -1448,7 +1448,7 @@ theorem vatFluxSourceStoreSrcSplit
     evalExpr? config { contract := contract, locals := fluxStore I } evm0
         (wishExpr (.var "src") sender) = .ok (.bool true) →
     (fluxWadWord I).toNat ≤ srcOld.toNat →
-    (∀ r, ExecBlock config { contract := contract, locals := fluxStoreSrcGemNew I srcGemNew } evm1
+    (I.perm = true → ∀ r, ExecBlock config { contract := contract, locals := fluxStoreSrcGemNew I srcGemNew } evm1
         [ .letDecl "dstGemNew" (some uint256)
             (add256 (.storage (gemRef (.var "ilk") (.var "dst"))) (.var "wad")),
           .require (.binary .ge (.var "dstGemNew")
@@ -1537,13 +1537,14 @@ theorem vatFluxSourceStoreSrcSplit
     refine ExecBlock.consNormal (ExecStmt.letDecl hsub) ?_
     refine ExecBlock.consNormal (ExecStmt.requireTrue hreqSub) ?_
     exact hrest
-  refine ⟨fun r h => hpre r (ExecBlock.consNormal (ExecStmt.assign hsrcGemNewEval hassignSrc) h),
+  refine ⟨fun hperm r h => hpre r (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hsrcGemNewEval hassignSrc) h),
     fun hpf => ExecFuncBody.execBlockStatic (hpre _ (ExecBlock.consStatic
       (ExecStmt.assignStatic hsrcGemNewEval hassignSrc (by simp [evm0, initState]; exact hpf))))⟩
 
 theorem vatFluxSourceOk
     {σ σ₀ A I} {g : UInt256}
-    (hwv : I.weiValue = ⟨0⟩) (hsz132 : 132 ≤ I.calldata.size) :
+    (hwv : I.weiValue = ⟨0⟩) (hsz132 : 132 ≤ I.calldata.size)
+    (hperm : I.perm = true) :
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let srcOld := solcSlotWordAt (fluxSrcGemSlot I) σ I
     let srcGemNew := UInt256.sub srcOld (fluxWadWord I)
@@ -1617,10 +1618,10 @@ theorem vatFluxSourceOk
         (fluxDstGemSlot I) dstGemNew)
       (I := I) (srcGemNew := srcGemNew) (dstGemNew := dstGemNew) hsz132 rfl
   simpa [ExecTransitionBody, evm0, evm1] using ExecFuncBody.execBlockOK
-    ((vatFluxSourceStoreSrcSplit (g := g) hwv hsz132 hwish hsrcEnough).1 _
+    ((vatFluxSourceStoreSrcSplit (g := g) hwv hsz132 hwish hsrcEnough).1 hperm _
       (ExecBlock.consNormal (ExecStmt.letDecl hadd)
         (ExecBlock.consNormal (ExecStmt.requireTrue hreqAdd)
-          (ExecBlock.consNormal (ExecStmt.assign hdstGemNewEval hassignDst) ExecBlock.nil))))
+          (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [storageStore_executionEnv] using hperm)) hdstGemNewEval hassignDst) ExecBlock.nil))))
 
 theorem vatFluxSourceRevertWish
     {σ σ₀ A I} {g : UInt256}
@@ -1725,7 +1726,8 @@ theorem vatFluxSourceRevertSrcUnderflow
 set_option maxHeartbeats 1000000 in
 theorem vatFluxSourceRevertDstOverflow
     {σ σ₀ A I} {g : UInt256}
-    (hwv : I.weiValue = ⟨0⟩) (hsz132 : 132 ≤ I.calldata.size) :
+    (hwv : I.weiValue = ⟨0⟩) (hsz132 : 132 ≤ I.calldata.size)
+    (hperm : I.perm = true) :
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let srcOld := solcSlotWordAt (fluxSrcGemSlot I) σ I
     let srcGemNew := UInt256.sub srcOld (fluxWadWord I)
@@ -1837,7 +1839,7 @@ theorem vatFluxSourceRevertDstOverflow
     refine ExecBlock.consNormal (ExecStmt.requireTrue hwish) ?_
     refine ExecBlock.consNormal (ExecStmt.letDecl hsub) ?_
     refine ExecBlock.consNormal (ExecStmt.requireTrue hreqSub) ?_
-    refine ExecBlock.consNormal (ExecStmt.assign hsrcGemNewEval hassignSrc) ?_
+    refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hsrcGemNewEval hassignSrc) ?_
     exact ExecBlock.consRevert (ExecStmt.letDeclRevert hadd)
   simpa [ExecTransitionBody, fluxTransition, evm0, nonpayable, checkedSubUintInto,
     checkedAddUintInto, List.append_assoc] using ExecFuncBody.execBlockRevert hblock
@@ -2155,7 +2157,7 @@ theorem vatFluxAuthorizedPath
       have hbody :
           ExecTransitionBody config contract evm0 (fluxStore I) fluxTransition.body
             .reverted := by
-        exact vatFluxSourceRevertDstOverflow
+        exact vatFluxSourceRevertDstOverflow (hperm := hperm)
           (σ := σ) (σ₀ := σ₀)
           (A := A) (I := I) (g := g) hwv hsz132
           (by simpa [evm0] using hwishStele)
@@ -2231,7 +2233,7 @@ theorem vatFluxAuthorizedPath
                 (fluxWadWord I).toNat < UInt256.size := by
           simpa [dstOld] using hdstFit
         exact htmp
-      have hbody := vatFluxSourceOk
+      have hbody := vatFluxSourceOk (hperm := hperm)
         (σ := σ) (σ₀ := σ₀)
         (A := A) (I := I) (g := g) hwv hsz132
         (by simpa [evm0] using hwishStele)

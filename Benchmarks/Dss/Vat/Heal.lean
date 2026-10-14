@@ -993,7 +993,7 @@ theorem vatHealAllSuccess
           (healPostState (initState σ σ₀ (Sat256.ofUInt256 g) A I)
             I sinNew daiNew viceNew debtNew) none) := by
     simpa [evm0Stele] using
-      vatHealSourceSuccessNamed
+      vatHealSourceSuccessNamed (hperm := by assumption)
         (evm := evm0Stele) (I := I)
         (by simpa [evm0Stele, initState] using hwv)
         (by simp [evm0Stele, initState])
@@ -1206,7 +1206,7 @@ theorem vatHealBodyCoreOk
           ExecTransitionBody config contract
             (initState σ σ₀ (Sat256.ofUInt256 g) A I)
             (healLocals I) healTransition.body .reverted := by
-        exact vatHealSourceDaiUnderflow
+        exact vatHealSourceDaiUnderflow (hperm := by assumption)
           (evm := initState σ σ₀ (Sat256.ofUInt256 g) A I) (I := I)
           (by simpa [initState] using hwv)
           (by simp [initState])
@@ -1305,7 +1305,7 @@ theorem vatHealBodyCoreOk
             ExecTransitionBody config contract
               (initState σ σ₀ (Sat256.ofUInt256 g) A I)
               (healLocals I) healTransition.body .reverted := by
-          exact vatHealSourceViceUnderflow
+          exact vatHealSourceViceUnderflow (hperm := by assumption)
             (evm := initState σ σ₀ (Sat256.ofUInt256 g) A I) (I := I)
             (by simpa [initState] using hwv)
             (by simp [initState])
@@ -1457,7 +1457,7 @@ theorem vatHealBodyCoreOk
               ExecTransitionBody config contract
                 (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                 (healLocals I) healTransition.body .reverted := by
-            exact vatHealSourceDebtUnderflow
+            exact vatHealSourceDebtUnderflow (hperm := by assumption)
               (evm := initState σ σ₀ (Sat256.ofUInt256 g) A I) (I := I)
               (by simpa [initState] using hwv)
               (by simp [initState])

@@ -185,7 +185,8 @@ theorem execFrobGemDaiUpdatesOk {evm : EVM.State} {I : ExecutionEnv}
     (hGemNeg : frobDinkInt I ≤ 0 ∨ gemNew.toNat ≤ gemOld.toNat)
     (hGemPos : 0 ≤ frobDinkInt I ∨ gemOld.toNat ≤ gemNew.toNat)
     (hDaiNeg : 0 ≤ dtab ∨ daiNew.toNat ≤ daiOld.toNat)
-    (hDaiPos : dtab ≤ 0 ∨ daiOld.toNat ≤ daiNew.toNat) :
+    (hDaiPos : dtab ≤ 0 ∨ daiOld.toNat ≤ daiNew.toNat)
+    (hperm : evm.executionEnv.perm = true) :
     let evmGem := Stele.EVM.storageStore evm evm.executionEnv.codeOwner
       (frobGemVSourceSlot I) gemNew
     let evmDai := Stele.EVM.storageStore evmGem evmGem.executionEnv.codeOwner
@@ -207,7 +208,7 @@ theorem execFrobGemDaiUpdatesOk {evm : EVM.State} {I : ExecutionEnv}
           [ .assign .storage (gemRef (.var "i") (.var "v")) (.var "gemNew") ])
         (.ok { contract := contract, locals := localsGem } evmGem) := by
     simpa [localsGem, evmGem] using
-      execFrobGemUpdateOk (evm := evm) (I := I) locals gemOld gemNew hsz196
+      execFrobGemUpdateOk (hperm := by simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm) (evm := evm) (I := I) locals gemOld gemNew hsz196
         hi hv hdink hbaseGem hloadGem hgemNew hGemNeg hGemPos
   have hwGem : localsGem.get? "w" = some (frobWValue I) := by
     change (locals.insert "gemNew" (.int (Int.ofNat gemNew.toNat))).get? "w" =
@@ -229,7 +230,7 @@ theorem execFrobGemDaiUpdatesOk {evm : EVM.State} {I : ExecutionEnv}
           [ .assign .storage (daiRef (.var "w")) (.var "daiNew") ])
         (.ok { contract := contract, locals := localsDai } evmDai) := by
     simpa [localsGem, localsDai, evmGem, evmDai] using
-      execFrobDaiUpdateOk (evm := evmGem) (I := I) localsGem daiOld daiNew
+      execFrobDaiUpdateOk (hperm := by simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm) (evm := evmGem) (I := I) localsGem daiOld daiNew
         dtabWord dtab hwGem hdtabGem hbaseDaiGem (by simpa [evmGem] using hloadDai)
         hdtabMod hdaiNew hDaiNeg hDaiPos
   have h := execBlock_append hgemBlock hdaiBlock
@@ -257,7 +258,8 @@ theorem execFrobFinalStorageAssignmentsOk {evmDai : EVM.State} {I : ExecutionEnv
     (hilkLine :
       localsDai.get? "ilkLine" = some (.int (Int.ofNat ilkLine.toNat)))
     (hilkDust :
-      localsDai.get? "ilkDust" = some (.int (Int.ofNat ilkDust.toNat))) :
+      localsDai.get? "ilkDust" = some (.int (Int.ofNat ilkDust.toNat)))
+    (hperm : evmDai.executionEnv.perm = true) :
     let evmInk := Stele.EVM.storageStore evmDai evmDai.executionEnv.codeOwner
       (frobUrnInkSourceSlot I) urnInkNew
     let evmArt := Stele.EVM.storageStore evmInk evmInk.executionEnv.codeOwner
@@ -331,13 +333,20 @@ theorem execFrobFinalStorageAssignmentsOk {evmDai : EVM.State} {I : ExecutionEnv
       .ok ({ contract := contract, locals := localsDai }, evmDust) := by
     simpa [evmDust] using
       assignStorageRef_frob_ilk_dust evmLine I localsDai ilkDust hsz196 hi hbaseIlks
-  refine ExecBlock.consNormal (ExecStmt.assign (evalVarAfterDai hurnInkNew) hassignInk) ?_
-  refine ExecBlock.consNormal (ExecStmt.assign (evalVarAfterDai hurnArtNew) hassignArt) ?_
-  refine ExecBlock.consNormal (ExecStmt.assign (evalVarAfterDai hilkArtNew) hassignIlkArt) ?_
-  refine ExecBlock.consNormal (ExecStmt.assign (evalVarAfterDai hilkRate) hassignRate) ?_
-  refine ExecBlock.consNormal (ExecStmt.assign (evalVarAfterDai hilkSpot) hassignSpot) ?_
-  refine ExecBlock.consNormal (ExecStmt.assign (evalVarAfterDai hilkLine) hassignLine) ?_
-  exact ExecBlock.consNormal (ExecStmt.assign (evalVarAfterDai hilkDust) hassignDust)
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by
+    simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm)) (evalVarAfterDai hurnInkNew) hassignInk) ?_
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by
+    simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm)) (evalVarAfterDai hurnArtNew) hassignArt) ?_
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by
+    simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm)) (evalVarAfterDai hilkArtNew) hassignIlkArt) ?_
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by
+    simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm)) (evalVarAfterDai hilkRate) hassignRate) ?_
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by
+    simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm)) (evalVarAfterDai hilkSpot) hassignSpot) ?_
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by
+    simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm)) (evalVarAfterDai hilkLine) hassignLine) ?_
+  exact ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by
+    simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm)) (evalVarAfterDai hilkDust) hassignDust)
     ExecBlock.nil
 
 set_option maxHeartbeats 0 in
@@ -1081,7 +1090,8 @@ theorem vatFrobSourceBodySuccessFromDustBlock
       let dtabWord := UInt256.mul (frobDartWord I) ilkRate;
       UInt256.sgt dtabWord ⟨0⟩ = ⟨0⟩ ∨
         UInt256.lt (frobDaiNew σ I)
-          (solcSlotWord (frobAfterGem σ I) I (frobDaiWSlot I)) = ⟨0⟩) :
+          (solcSlotWord (frobAfterGem σ I) I (frobDaiWSlot I)) = ⟨0⟩)
+    (hperm : I.perm = true) :
     let urnInk := solcSlotWordAt (frobUrnInkSlot I) σ I
     let urnArt := solcSlotWordAt (frobUrnArtSlot I) σ I
     let ilkArt := solcSlotWordAt (frobIlkArtSlot I) σ I
@@ -1282,7 +1292,7 @@ theorem vatFrobSourceBodySuccessFromDustBlock
       ⟨hsafeIlkRate, hsafeIlkSpot, hsafeIlkLine, hsafeIlkDust⟩
     rcases hbase with
       ⟨hsafeBaseGem, hsafeBaseDai, hsafeBaseUrns, hsafeBaseIlks⟩
-    exact execFrobFinalStoreTailOk (evm := evmDebt) (I := I) localsSafe
+    exact execFrobFinalStoreTailOk (hperm := by simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm) (evm := evmDebt) (I := I) localsSafe
       gemOld gemNew daiOld daiNew dtabWord dtab urnInkNew urnArtNew ilkArtNew
       ilkRate ilkSpot ilkLine ilkDust hsz196
       hsafeI hsafeU hsafeV hsafeW hsafeDink hsafeDtab hsafeUrnInkNew
@@ -1451,7 +1461,8 @@ theorem vatFrobLiveSuccessFinish
       let dtabWord := UInt256.mul (frobDartWord I) ilkRate;
       UInt256.sgt dtabWord ⟨0⟩ = ⟨0⟩ ∨
         UInt256.lt (frobDaiNew σ I)
-          (solcSlotWord (frobAfterGem σ I) I (frobDaiWSlot I)) = ⟨0⟩) :
+          (solcSlotWord (frobAfterGem σ I) I (frobDaiWSlot I)) = ⟨0⟩)
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   let urnInk := solcSlotWordAt (frobUrnInkSlot I) σ I
   let urnArt := solcSlotWordAt (frobUrnArtSlot I) σ I
@@ -1525,7 +1536,7 @@ theorem vatFrobLiveSuccessFinish
   have hbody :
       ExecTransitionBody config contract evm0 (frobStore I) frobTransition.body
         (.returned { contract := contract, locals := finalLocals } evmDust none) := by
-    exact vatFrobSourceBodySuccessFromDustBlock
+    exact vatFrobSourceBodySuccessFromDustBlock (hperm := hperm)
       (σ := σ) (σ₀ := σ₀)
       (A := A) (I := I) (g := g) hsz196
       hsourceDust hdtabRange hGemPosS hGemNegS hDaiNegS hDaiPosS
@@ -2623,7 +2634,7 @@ theorem vatFrobBodyCoreLiveSuccessGuards
                   localsTab.insert "debtNew" (.int (Int.ofNat debtNew.toNat)) }
               (Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner
                 foldDebtSlot debtNew)) := by
-        exact execFrobDebtAddStoreOk
+        exact execFrobDebtAddStoreOk (hperm := by simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm)
           (evm := evm0) (locals := localsTab)
           debtOld debtNew dtabWord dtab
           (by
@@ -4927,7 +4938,7 @@ theorem vatFrobBodyCoreLiveSuccessGuards
           UInt256.lt daiNew daiOld = ⟨0⟩ := by
       simpa [dtabWord, daiNew, daiOld, hDtabEq, hDaiNewEq, hDaiOldEq] using
         hDaiPos
-    exact vatFrobLiveSuccessFinish hcode hsel hdecode hsz196 hret
+    exact vatFrobLiveSuccessFinish (hperm := hperm) hcode hsel hdecode hsz196 hret
       hsourceDust hdtabRange hGemPosS hGemNegS hDaiNegS hDaiPosS
 
 end Benchmarks.Dss.Vat

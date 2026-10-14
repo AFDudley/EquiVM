@@ -41,14 +41,15 @@ theorem nopeAssign (evm : EVM.State) (I : ExecutionEnv)
 
 theorem vatNopeBodyReturns (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hsrc : evm.executionEnv.source = I.source) :
+    (hsrc : evm.executionEnv.source = I.source)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (hopeStore I) nopeTransition.body
       (.returned { contract := contract, locals := hopeStore I } (nopePostState evm I) none) := by
   refine ExecFuncBody.execBlockOK ?_
   simpa [nopeTransition, nonpayable] using
     ExecBlock.consNormal (ExecStmt.requireTrue (evalCallvalueEq_true hwv)) <|
       ExecBlock.consNormal
-        (ExecStmt.assign (by simp [evalExpr?, pure]) (nopeAssign evm I hsrc)) <|
+        (ExecStmt.assign (hperm := Or.inr hperm) (by simp [evalExpr?, pure]) (nopeAssign evm I hsrc)) <|
         ExecBlock.nil
 
 theorem vatNopeBodyStatic (evm : EVM.State) (I : ExecutionEnv)
@@ -277,7 +278,7 @@ theorem vatNopeBodyCoreOk
         (.returned { contract := contract, locals := hopeStore I }
           (nopePostState evmStele I) none) := by
     simpa [evmStele] using
-      vatNopeBodyReturns evmStele I
+      vatNopeBodyReturns (hperm := hperm) evmStele I
         (by simp only [evmStele, initState]; exact hwv)
         (by simp [evmStele, initState])
   obtain ⟨_, _, rd6131⟩ := vatNopeX_decoded (g := Sat256.ofUInt256 g)

@@ -167,8 +167,8 @@ theorem vatFileLineSourceBodySplit {σ σ₀ A I} {g : UInt256}
     let locals := fileLineLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let evm1 := Stele.EVM.storageStore evm0 I.codeOwner ⟨9⟩ (fileLineData I)
-    ExecTransitionBody config contract evm0 locals fileLineTransition.body
-      (.returned { contract := contract, locals := locals } evm1 none) ∧
+    (I.perm = true → ExecTransitionBody config contract evm0 locals fileLineTransition.body
+      (.returned { contract := contract, locals := locals } evm1 none)) ∧
     (I.perm = false →
       ExecTransitionBody config contract evm0 locals fileLineTransition.body .staticViolation) := by
   intro locals evm0 evm1
@@ -205,9 +205,9 @@ theorem vatFileLineSourceBodySplit {σ σ₀ A I} {g : UInt256}
     refine ExecBlock.consNormal (ExecStmt.requireTrue hguardLive) ?_
     exact execBlock_singleton (ExecStmt.iteTrue hcond
       (execBlock_singleton h))
-  refine ⟨?_, fun hpf => ?_⟩
+  refine ⟨fun hperm => ?_, fun hpf => ?_⟩
   · simpa [ExecTransitionBody, fileLineTransition, nonpayable, auth, requireLive, locals, evm0,
-      evm1] using ExecFuncBody.execBlockOK (hbody _ (ExecStmt.assign hdata hassign))
+      evm1] using ExecFuncBody.execBlockOK (hbody _ (ExecStmt.assign (hperm := Or.inr hperm) hdata hassign))
   · simpa [ExecTransitionBody, fileLineTransition, nonpayable, auth, requireLive, locals, evm0]
       using ExecFuncBody.execBlockStatic
         (hbody _ (ExecStmt.assignStatic hdata hassign (by simp [evm0, initState]; exact hpf)))
@@ -659,10 +659,10 @@ theorem vatFileLineBodyCoreOk
   let evm1 := Stele.EVM.storageStore evm0 I.codeOwner ⟨9⟩ (fileLineData I)
   have hboth := vatFileLineSourceBodySplit (σ := σ)
     (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hauth hlive hwhat
-  have hbody :
+  have hbody (hperm : I.perm = true) :
       ExecTransitionBody config contract evm0 locals fileLineTransition.body
         (.returned { contract := contract, locals := locals } evm1 none) := by
-    simpa [evm0, evm1, locals] using hboth.1
+    simpa [evm0, evm1, locals] using hboth.1 hperm
   obtain ⟨_, _, hdecoded⟩ := vatFileLineX_decoded (g := Sat256.ofUInt256 g)
     hsz68 hsize hreach
   have hauthSolc :
@@ -699,7 +699,7 @@ theorem vatFileLineBodyCoreOk
       unfold vatFileLineStoreWf
       repeat' first | apply And.intro | native_decide)
     hwhatWord (by jump_dest) (by simp) with
-    ⟨_, _, _, hretPc⟩ | ⟨hpf, hstatic⟩
+    ⟨hperm, _, _, hretPc⟩ | ⟨hpf, hstatic⟩
   swap
   · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode (hboth.2 hpf)
   have hretPc' := hretPc.jumpdest (by native_decide) (by evm_ov)
@@ -714,7 +714,7 @@ theorem vatFileLineBodyCoreOk
   have henc : returnEquiv ByteArray.empty none fileLineTransition.returnType := by
     rw [show fileLineTransition.returnType = [] by rfl]
     exact returnEquiv.fallthrough rfl (by rfl) (by native_decide)
-  exact hret.reEquivExecutionGen hcode hdispatch hdecode hbody
+  exact hret.reEquivExecutionGen hcode hdispatch hdecode (hbody hperm)
     haccounts henc
 
 theorem vatFileLineBodyCoreUnauthorized

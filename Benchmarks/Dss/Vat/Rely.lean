@@ -1006,12 +1006,12 @@ theorem vatRelyBodyCoreOk
         refine ExecBlock.consNormal (ExecStmt.requireTrue hguardAuth) ?_
         refine ExecBlock.consNormal (ExecStmt.requireTrue hguardLive) ?_
         exact hrest
-      have hbody :
+      have hbody (hperm : I.perm = true) :
           ExecTransitionBody config contract evm0 locals relyTransition.body
             (.returned { contract := contract, locals := locals } evm1 none) := by
         simpa [ExecTransitionBody, relyTransition, nonpayable, auth, requireLive, evm0, evm1] using
           ExecFuncBody.execBlockOK (hpre _ (ExecBlock.consNormal
-            (ExecStmt.assign (by simp [evalExpr?, pure]) hassign) ExecBlock.nil))
+            (ExecStmt.assign (hperm := Or.inr hperm) (by simp [evalExpr?, pure]) hassign) ExecBlock.nil))
       have hliveSolc : solcSlotWord σ I ⟨10⟩ = ⟨1⟩ := by
         simpa [solcSlotWordAt] using hliveEvm
       obtain ⟨_, _, hstorePc⟩ := RD.vatLiveGuardOk
@@ -1057,7 +1057,7 @@ theorem vatRelyBodyCoreOk
       have henc : returnEquiv ByteArray.empty none relyTransition.returnType := by
         rw [show relyTransition.returnType = [] by rfl]
         exact returnEquiv.fallthrough rfl (by rfl) (by native_decide)
-      exact hret.reEquivExecutionGen hcode hdispatch hdecode hbody
+      exact hret.reEquivExecutionGen hcode hdispatch hdecode (hbody hperm)
         haccounts henc
     ·
       let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
