@@ -35,8 +35,8 @@ theorem tickFeeWriteSource {f : Frame} {evm : EVM.State} {id : UInt256} {tick : 
   · rw [if_pos hp]
     exact ExecBlock.consStatic (ExecStmt.assignStatic h0 hw0 hp)
   · rw [if_neg hp]
-    exact ExecBlock.consNormal (ExecStmt.assign h0 hw0)
-      (ExecBlock.consNormal (ExecStmt.assign (poolFeeGrowth_read (evm := tickFeeWrite0 evm id tick) hs true)
+    exact ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (Bool.eq_true_of_not_eq_false hp)) h0 hw0)
+      (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [tickFeeWrite0, storageStore_executionEnv] using Bool.eq_true_of_not_eq_false hp)) (poolFeeGrowth_read (evm := tickFeeWrite0 evm id tick) hs true)
         (tickField_write hi .feeGrowthOutside1 (poolFeeGrowthWord (tickFeeWrite0 evm id tick) id true))) ExecBlock.nil)
 
 def tickFeeFrame (f : Frame) (evm : EVM.State) (id : UInt256) (gross : Int) : Frame :=

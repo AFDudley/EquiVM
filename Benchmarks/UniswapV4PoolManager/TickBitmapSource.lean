@@ -45,7 +45,7 @@ theorem tickBitmapTail {f : Frame} {evm : EVM.State} {id : UInt256} {tick spacin
       (ExecBlock.consStatic (ExecStmt.assignStatic hv hw hperm))))
   · rw [if_neg hperm]
     exact .execBlockOK (ExecBlock.consNormal hp (ExecBlock.consNormal hm
-      (execBlock_singleton (ExecStmt.assign hv hw))))
+      (execBlock_singleton (ExecStmt.assign (hperm := Or.inr (Bool.eq_true_of_not_eq_false hperm)) hv hw))))
 
 theorem tickBitmapBody {f : Frame} {evm : EVM.State} {id : UInt256} {tick spacing : Int}
     (hs : f.locals.get? "self" = some (tickBitmapRefValue id))
