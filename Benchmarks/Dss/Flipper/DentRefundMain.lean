@@ -329,7 +329,7 @@ theorem flipperDentBodyFrom4733Refund
               ExecTransitionBody config contract evm0Stele (dentLocals I) dentTransition.body
                 .reverted := by
             simpa [evm0Stele, evmGuyStele] using
-              (flipperDentSourceBodyFluxNoCodeAfterRefund
+              (flipperDentSourceBodyFluxNoCodeAfterRefund (hperm := by assumption)
                 (σ := σ) (σ₀ := σ₀)
                 (A := A) (I := I) (g := g) (evmRefund := evmRefundStele)
                 (outRefund := outRefund)
@@ -458,7 +458,7 @@ theorem flipperDentBodyFrom4733Refund
                 ExecTransitionBody config contract evm0Stele (dentLocals I) dentTransition.body
                   .reverted := by
               simpa [evm0Stele, evmGuyStele] using
-                (flipperDentSourceBodyFluxCallFailureAfterRefund
+                (flipperDentSourceBodyFluxCallFailureAfterRefund (hperm := by assumption)
                   (σ := σ) (σ₀ := σ₀)
                   (A := A) (I := I) (g := g) (evmRefund := evmRefundStele)
                   (evmFlux := evmFluxStele) (outRefund := outRefund) (outFlux := outFlux)
@@ -551,7 +551,7 @@ theorem flipperDentBodyFrom4733Refund
                           dentLocalsAfterRefundWithTicFrom σ evmLotStele.accountMap I }
                       evmTicStele none) := by
                 simpa [evm0Stele, evmGuyStele, evmLotStele, evmTicStele] using
-                  (flipperDentSourceBodySuccessAfterRefund
+                  (flipperDentSourceBodySuccessAfterRefund (hperm := by assumption)
                     (σ := σ) (σ₀ := σ₀)
                     (A := A) (I := I) (g := g) (evmRefund := evmRefundStele)
                     (evmFlux := evmFluxStele) (outRefund := outRefund) (outFlux := outFlux)
@@ -618,7 +618,7 @@ theorem flipperDentBodyFrom4733Refund
                   ExecTransitionBody config contract evm0Stele (dentLocals I)
                     dentTransition.body .reverted := by
                 simpa [evm0Stele, evmGuyStele, evmLotStele] using
-                  (flipperDentSourceBodyAdd48OverflowAfterRefund
+                  (flipperDentSourceBodyAdd48OverflowAfterRefund (hperm := by assumption)
                     (σ := σ) (σ₀ := σ₀)
                     (A := A) (I := I) (g := g) (evmRefund := evmRefundStele)
                     (evmFlux := evmFluxStele) (outRefund := outRefund) (outFlux := outFlux)

@@ -298,7 +298,7 @@ theorem flipperTendBodyFrom3486SameCaller
                     locals := tendLocalsWithTicFrom σ evmBidStele.accountMap I }
                   evmTicStele none) := by
             simpa [evm0Stele, evmBidStele, evmTicStele] using
-              (flipperTendSourceBodySuccessSameCaller
+              (flipperTendSourceBodySuccessSameCaller (hperm := by assumption)
                 (σ := σ) (σ₀ := σ₀)
                 (A := A) (I := I) (g := g) (evmPay := evmPayStele) (outPay := outPay)
                 hwv hguyStele hticGuard hendGuard hlotGuard htabGuard hbidGuard hfitBid
@@ -359,7 +359,7 @@ theorem flipperTendBodyFrom3486SameCaller
               ExecTransitionBody config contract evm0Stele (tendLocals I) tendTransition.body
                 .reverted := by
             simpa [evm0Stele, evmBidStele] using
-              (flipperTendSourceBodyAdd48OverflowSameCaller
+              (flipperTendSourceBodyAdd48OverflowSameCaller (hperm := by assumption)
                 (σ := σ) (σ₀ := σ₀)
                 (A := A) (I := I) (g := g) (evmPay := evmPayStele) (outPay := outPay)
                 hwv hguyStele hticGuard hendGuard hlotGuard htabGuard hbidGuard hfitBid

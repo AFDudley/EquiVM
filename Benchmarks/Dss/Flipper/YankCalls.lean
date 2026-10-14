@@ -700,7 +700,7 @@ theorem flipperYankSourceBodyVatCallFailure {σ σ₀ A I} {g : UInt256}
           [.storage (bidsF (.var "id") "tab")] "_clawRet")
         (.ok { contract := contract, locals := locals1 } evmCat) := by
     simpa [checkedExternalCallStmts, locals1, locals] using
-      checkedExternalCallSuccess (cfg := config) (C := contract) (evm := evm0)
+      checkedExternalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (cfg := config) (C := contract) (evm := evm0)
         (evm' := evmCat) (locals := locals) (receiver := .storage catRef)
         (retVar := "_clawRet") (name := "claw")
         (target := flipperCatAddress evm0.accountMap evm0.executionEnv) (sendVal := 0)
@@ -731,7 +731,7 @@ theorem flipperYankSourceBodyVatCallFailure {σ σ₀ A I} {g : UInt256}
           "_fluxRet")
         .reverted := by
     simpa [checkedExternalCallStmts] using
-      checkedExternalCallFailure (cfg := config) (C := contract) (evm := evmCat)
+      checkedExternalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (cfg := config) (C := contract) (evm := evmCat)
         (evm' := evmVat) (locals := locals1) (receiver := .storage vatRef)
         (retVar := "_fluxRet") (name := "flux")
         (target := flipperVatAddress evmCat.accountMap evmCat.executionEnv) (sendVal := 0)
@@ -868,7 +868,7 @@ theorem flipperYankSourceBlockAfterFluxSuccess {σ σ₀ A I} {g : UInt256}
           [.storage (bidsF (.var "id") "tab")] "_clawRet")
         (.ok { contract := contract, locals := locals1 } evmCat) := by
     simpa [checkedExternalCallStmts, locals1, locals] using
-      checkedExternalCallSuccess (cfg := config) (C := contract) (evm := evm0)
+      checkedExternalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (cfg := config) (C := contract) (evm := evm0)
         (evm' := evmCat) (locals := locals) (receiver := .storage catRef)
         (retVar := "_clawRet") (name := "claw")
         (target := flipperCatAddress evm0.accountMap evm0.executionEnv) (sendVal := 0)
@@ -901,7 +901,7 @@ theorem flipperYankSourceBlockAfterFluxSuccess {σ σ₀ A I} {g : UInt256}
           "_fluxRet")
         (.ok { contract := contract, locals := locals2 } evmVat) := by
     simpa [checkedExternalCallStmts, locals2, locals1] using
-      checkedExternalCallSuccess (cfg := config) (C := contract) (evm := evmCat)
+      checkedExternalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (cfg := config) (C := contract) (evm := evmCat)
         (evm' := evmVat) (locals := locals1) (receiver := .storage vatRef)
         (retVar := "_fluxRet") (name := "flux")
         (target := flipperVatAddress evmCat.accountMap evmCat.executionEnv) (sendVal := 0)
@@ -1091,7 +1091,7 @@ theorem flipperYankSourceBodyMoveCallFailure {σ σ₀ A I} {g : UInt256}
             .storage (bidsF (.var "id") "bid")] "_moveRet")
         .reverted := by
     simpa [checkedExternalCallStmts] using
-      checkedExternalCallFailure (cfg := config) (C := contract) (evm := evmVat)
+      checkedExternalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (cfg := config) (C := contract) (evm := evmVat)
         (evm' := evmMove) (locals := locals2) (receiver := .storage vatRef)
         (retVar := "_moveRet") (name := "move")
         (target := flipperVatAddress evmVat.accountMap evmVat.executionEnv) (sendVal := 0)
@@ -1160,7 +1160,7 @@ theorem flipperYankSourceBodySuccessSplit {σ σ₀ A I} {g : UInt256}
     let locals2 := locals1.insert "_fluxRet" (collapseReturns [])
     let locals3 := locals2.insert "_moveRet" (collapseReturns [])
     let evmDeleted := bidDeletedEVM evmMove (yankId I)
-    (ExecTransitionBody config contract evm0 locals yankTransition.body
+    (I.perm = true → ExecTransitionBody config contract evm0 locals yankTransition.body
       (.returned { contract := contract, locals := locals3 } evmDeleted none)) ∧
       (I.perm = false → ExecTransitionBody config contract evm0 locals
         yankTransition.body .staticViolation) := by
@@ -1191,7 +1191,7 @@ theorem flipperYankSourceBodySuccessSplit {σ σ₀ A I} {g : UInt256}
             .storage (bidsF (.var "id") "bid")] "_moveRet")
         (.ok { contract := contract, locals := locals3 } evmMove) := by
     simpa [checkedExternalCallStmts, locals3, locals2] using
-      checkedExternalCallSuccess (cfg := config) (C := contract) (evm := evmVat)
+      checkedExternalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (cfg := config) (C := contract) (evm := evmVat)
         (evm' := evmMove) (locals := locals2) (receiver := .storage vatRef)
         (retVar := "_moveRet") (name := "move")
         (target := flipperVatAddress evmVat.accountMap evmVat.executionEnv) (sendVal := 0)
@@ -1226,8 +1226,9 @@ theorem flipperYankSourceBodySuccessSplit {σ σ₀ A I} {g : UInt256}
     exact deleteStorage_bidRef_of_get_id
       (yankLocalsAfterCalls_get_id I) (yankLocalsAfterCalls_get_bids I)
   constructor
-  · exact ExecFuncBody.execBlockOK
-      (hprefix (ExecBlock.consNormal (ExecStmt.delete hdelete) ExecBlock.nil))
+  · intro hperm
+    exact ExecFuncBody.execBlockOK
+      (hprefix (ExecBlock.consNormal (ExecStmt.delete (hperm := by simpa only [typedCallViaEVM_executionEnv_eq hcallMove, typedCallViaEVM_executionEnv_eq hcallVat, typedCallViaEVM_executionEnv_eq hcallCat, initState] using hperm) hdelete) ExecBlock.nil))
   · intro hperm
     have hp : evmMove.executionEnv.perm = false := by
       rw [typedCallViaEVM_executionEnv_eq hcallMove,

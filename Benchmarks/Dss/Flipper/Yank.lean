@@ -847,7 +847,7 @@ theorem flipperYankSourceBodyCatCallFailure {σ σ₀ A I} {g : UInt256}
           [.storage (bidsF (.var "id") "tab")] "_clawRet")
         .reverted := by
     simpa [checkedExternalCallStmts] using
-      checkedExternalCallFailure (cfg := config) (C := contract) (evm := evm0)
+      checkedExternalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (cfg := config) (C := contract) (evm := evm0)
         (evm' := evmCat) (locals := locals) (receiver := .storage catRef)
         (retVar := "_clawRet") (name := "claw")
         (target := flipperCatAddress evm0.accountMap evm0.executionEnv) (sendVal := 0)
@@ -960,7 +960,7 @@ theorem flipperYankSourceBodyVatNoCode {σ σ₀ A I} {g : UInt256}
           [.storage (bidsF (.var "id") "tab")] "_clawRet")
         (.ok { contract := contract, locals := locals1 } evmCat) := by
     simpa [checkedExternalCallStmts, locals1, locals] using
-      checkedExternalCallSuccess (cfg := config) (C := contract) (evm := evm0)
+      checkedExternalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (cfg := config) (C := contract) (evm := evm0)
         (evm' := evmCat) (locals := locals) (receiver := .storage catRef)
         (retVar := "_clawRet") (name := "claw")
         (target := flipperCatAddress evm0.accountMap evm0.executionEnv) (sendVal := 0)

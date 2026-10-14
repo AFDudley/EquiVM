@@ -614,7 +614,7 @@ theorem flipperKickSourcePrefixSplit {σ σ₀ A I} {g : UInt256}
         (kickGalKey I))
     let evmTab := Stele.EVM.storageStore evmGal I.codeOwner
       (bidSlotOfWord (kickIdWord σ I) ⟨5⟩) (kickTab I)
-    (((kickNow48 I).toNat + (kickTauWord (kickAfterGuyMap σ I) I).toNat < 2 ^ 48) →
+    (I.perm = true → ((kickNow48 I).toNat + (kickTauWord (kickAfterGuyMap σ I) I).toNat < 2 ^ 48) →
       ExecBlock config { contract := contract, locals := kickLocals I } evm0
       ([ .require (.binary .eq (.env .callvalue) (.intLit 0)),
         .require kickAuthGuard,
@@ -663,7 +663,7 @@ theorem flipperKickSourcePrefixSplit {σ σ₀ A I} {g : UInt256}
     · simpa [kickKicksGuard] using hkicksEval
     exact ExecBlock.consNormal (ExecStmt.letDecl hidEval) hwrite
   constructor
-  · intro hfit
+  · intro hperm hfit
     have hbidVar :
         evalExpr? config { contract := contract, locals := kickLocalsWithId σ I } evmKicks
           (.var "bid") = .ok (.int (Int.ofNat (kickBid I).toNat)) := by
@@ -773,16 +773,16 @@ theorem flipperKickSourcePrefixSplit {σ σ₀ A I} {g : UInt256}
       simpa [evmTab, evmGal, evmUsr, evmEnd, evmGuy, evmLot, evmBid, evmKicks, evm0,
         initState, storageStore_executionEnv] using assign_kickTabStorage evmGal σ I
     apply hprefix
-    refine ExecBlock.consNormal (ExecStmt.assign hidVar hassignKicks) ?_
-    refine ExecBlock.consNormal (ExecStmt.assign hbidVar hassignBid) ?_
-    refine ExecBlock.consNormal (ExecStmt.assign hlotVarId hassignLot) ?_
-    refine ExecBlock.consNormal (ExecStmt.assign hsender hassignGuy) ?_
+    refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hidVar hassignKicks) ?_
+    refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [evmKicks, evm0, initState, storageStore_executionEnv] using hperm)) hbidVar hassignBid) ?_
+    refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [evmKicks, evmBid, evm0, initState, storageStore_executionEnv] using hperm)) hlotVarId hassignLot) ?_
+    refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [evmKicks, evmBid, evmLot, evm0, initState, storageStore_executionEnv] using hperm)) hsender hassignGuy) ?_
     refine ExecBlock.consNormal (ExecStmt.letDecl hletEnd) ?_
     refine ExecBlock.consNormal (ExecStmt.requireTrue hge) ?_
-    refine ExecBlock.consNormal (ExecStmt.assign hendVar hassignEnd) ?_
-    refine ExecBlock.consNormal (ExecStmt.assign husrVar hassignUsr) ?_
-    refine ExecBlock.consNormal (ExecStmt.assign hgalVar hassignGal) ?_
-    exact ExecBlock.consNormal (ExecStmt.assign htabVar hassignTab) ExecBlock.nil
+    refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [evmKicks, evmBid, evmLot, evmGuy, evm0, initState, storageStore_executionEnv] using hperm)) hendVar hassignEnd) ?_
+    refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [evmKicks, evmBid, evmLot, evmGuy, evmEnd, evm0, initState, storageStore_executionEnv] using hperm)) husrVar hassignUsr) ?_
+    refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [evmKicks, evmBid, evmLot, evmGuy, evmEnd, evmUsr, evm0, initState, storageStore_executionEnv] using hperm)) hgalVar hassignGal) ?_
+    exact ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [evmKicks, evmBid, evmLot, evmGuy, evmEnd, evmUsr, evmGal, evm0, initState, storageStore_executionEnv] using hperm)) htabVar hassignTab) ExecBlock.nil
   · intro hperm
     exact hprefix (ExecBlock.consStatic (ExecStmt.assignStatic hidVar hassignKicks
       (by simp only [evm0, initState]; exact hperm)))
@@ -791,7 +791,8 @@ theorem flipperKickSourcePrefix {σ σ₀ A I} {g : UInt256}
     (hwv : I.weiValue = ⟨0⟩)
     (hauth : solcSlotWordAt (flipperCallerWardsSlot I) σ I = ⟨1⟩)
     (hkicksLt : (kickKicksWord σ I).toNat < UInt256.size - 1)
-    (hfit : (kickNow48 I).toNat + (kickTauWord (kickAfterGuyMap σ I) I).toNat < 2 ^ 48) :
+    (hfit : (kickNow48 I).toNat + (kickTauWord (kickAfterGuyMap σ I) I).toNat < 2 ^ 48)
+    (hperm : I.perm = true) :
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let evmKicks := Stele.EVM.storageStore evm0 I.codeOwner ⟨6⟩ (kickIdWord σ I)
     let evmBid := Stele.EVM.storageStore evmKicks I.codeOwner
@@ -825,14 +826,15 @@ theorem flipperKickSourcePrefix {σ σ₀ A I} {g : UInt256}
         .require kickAuthGuard,
         .require kickKicksGuard ] ++ kickStoragePrefixStmts)
       (.ok { contract := contract, locals := kickLocalsWithEnd σ I } evmTab) :=
-  (flipperKickSourcePrefixSplit hwv hauth hkicksLt).1 hfit
+  (flipperKickSourcePrefixSplit hwv hauth hkicksLt).1 hperm hfit
 
 theorem flipperKickSourceBodyAdd48Overflow {σ σ₀ A I} {g : UInt256}
     (hwv : I.weiValue = ⟨0⟩)
     (hauth : solcSlotWordAt (flipperCallerWardsSlot I) σ I = ⟨1⟩)
     (hkicksLt : (kickKicksWord σ I).toNat < UInt256.size - 1)
     (hover :
-      2 ^ 48 ≤ (kickNow48 I).toNat + (kickTauWord (kickAfterGuyMap σ I) I).toNat) :
+      2 ^ 48 ≤ (kickNow48 I).toNat + (kickTauWord (kickAfterGuyMap σ I) I).toNat)
+    (hperm : I.perm = true) :
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     ExecTransitionBody config contract evm0 (kickLocals I) kickTransition.body .reverted := by
   intro evm0
@@ -944,10 +946,10 @@ theorem flipperKickSourceBodyAdd48Overflow {σ σ₀ A I} {g : UInt256}
     refine ExecBlock.consNormal (ExecStmt.requireTrue ?_) ?_
     · simpa [kickKicksGuard] using hkicksEval
     refine ExecBlock.consNormal (ExecStmt.letDecl hidEval) ?_
-    refine ExecBlock.consNormal (ExecStmt.assign hidVar hassignKicks) ?_
-    refine ExecBlock.consNormal (ExecStmt.assign hbidVar hassignBid) ?_
-    refine ExecBlock.consNormal (ExecStmt.assign hlotVarId hassignLot) ?_
-    refine ExecBlock.consNormal (ExecStmt.assign hsender hassignGuy) ?_
+    refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hidVar hassignKicks) ?_
+    refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [evmKicks, evm0, initState, storageStore_executionEnv] using hperm)) hbidVar hassignBid) ?_
+    refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [evmKicks, evmBid, evm0, initState, storageStore_executionEnv] using hperm)) hlotVarId hassignLot) ?_
+    refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [evmKicks, evmBid, evmLot, evm0, initState, storageStore_executionEnv] using hperm)) hsender hassignGuy) ?_
     refine ExecBlock.consNormal (ExecStmt.letDecl hletEnd) ?_
     exact ExecBlock.consRevert (ExecStmt.requireFalse hge)
   have hblock :
@@ -981,7 +983,8 @@ theorem flipperKickSourceBodyVatNoCode {σ σ₀ A I} {g : UInt256}
       (UInt256.ofNat
           (((initState (kickAfterTabMap σ I) σ₀ (Sat256.ofUInt256 g) A I)
             |>.lookupAccount (flipperVatAddress (kickAfterTabMap σ I) I)).option 0
-            (fun acc => acc.code.size))).toNat = 0) :
+            (fun acc => acc.code.size))).toNat = 0)
+    (hperm : I.perm = true) :
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     ExecTransitionBody config contract evm0 (kickLocals I) kickTransition.body .reverted := by
   intro evm0
@@ -1019,7 +1022,7 @@ theorem flipperKickSourceBodyVatNoCode {σ σ₀ A I} {g : UInt256}
           .require kickKicksGuard ] ++ kickStoragePrefixStmts)
         (.ok { contract := contract, locals := kickLocalsWithEnd σ I } evmTab) := by
     simpa [evm0, evmKicks, evmBid, evmLot, evmGuy, evmEnd, evmUsr, evmGal, evmTab] using
-      flipperKickSourcePrefix (σ := σ) (σ₀ := σ₀)
+      flipperKickSourcePrefix (hperm := by assumption) (σ := σ) (σ₀ := σ₀)
         (A := A) (I := I) (g := g) hwv hauth hkicksLt hfit
   have hvat :
       evalExpr? config { contract := contract, locals := kickLocalsWithEnd σ I } evmTab
@@ -1090,7 +1093,8 @@ theorem flipperKickSourceBodyVatCallFailure {σ σ₀ A I} {g : UInt256}
         accountMap := kickAfterTabMap σ I }
       typedCallViaEVM config evmTab
         (EVM.address (flipperVatAddress evmTab.accountMap evmTab.executionEnv)) "flux" 0
-        (kickFluxArgValsOf evmTab) (false, evmVat, outVat) true) :
+        (kickFluxArgValsOf evmTab) (false, evmVat, outVat) true)
+    (hperm : I.perm = true) :
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     ExecTransitionBody config contract evm0 (kickLocals I) kickTransition.body .reverted := by
   intro evm0
@@ -1132,7 +1136,7 @@ theorem flipperKickSourceBodyVatCallFailure {σ σ₀ A I} {g : UInt256}
           .require kickKicksGuard ] ++ kickStoragePrefixStmts)
         (.ok { contract := contract, locals := kickLocalsWithEnd σ I } evmTab) := by
     simpa [evm0, evmKicks, evmBid, evmLot, evmGuy, evmEnd, evmUsr, evmGal, evmTab] using
-      flipperKickSourcePrefix (σ := σ) (σ₀ := σ₀)
+      flipperKickSourcePrefix (hperm := by assumption) (σ := σ) (σ₀ := σ₀)
         (A := A) (I := I) (g := g) hwv hauth hkicksLt hfit
   have hvat :
       evalExpr? config { contract := contract, locals := kickLocalsWithEnd σ I } evmTab
@@ -1164,7 +1168,7 @@ theorem flipperKickSourceBodyVatCallFailure {σ σ₀ A I} {g : UInt256}
           [.storage ilkRef, sender, thisAddr, .var "lot"] "_fluxRet")
         .reverted := by
     simpa [checkedExternalCallStmts] using
-      checkedExternalCallFailure (cfg := config) (C := contract) (evm := evmTab)
+      checkedExternalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (cfg := config) (C := contract) (evm := evmTab)
         (evm' := evmVat) (locals := kickLocalsWithEnd σ I) (receiver := .storage vatRef)
         (retVar := "_fluxRet") (name := "flux")
         (target := flipperVatAddress evmTab.accountMap evmTab.executionEnv) (sendVal := 0)
@@ -1215,7 +1219,8 @@ theorem flipperKickSourceBodySuccess {σ σ₀ A I} {g : UInt256}
         accountMap := kickAfterTabMap σ I }
       typedCallViaEVM config evmTab
         (EVM.address (flipperVatAddress evmTab.accountMap evmTab.executionEnv)) "flux" 0
-        (kickFluxArgValsOf evmTab) (true, evmVat, outVat) true) :
+        (kickFluxArgValsOf evmTab) (true, evmVat, outVat) true)
+    (hperm : I.perm = true) :
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     ExecTransitionBody config contract evm0 (kickLocals I) kickTransition.body
       (.returned { contract := contract, locals := kickLocalsAfterFlux σ I } evmVat
@@ -1259,7 +1264,7 @@ theorem flipperKickSourceBodySuccess {σ σ₀ A I} {g : UInt256}
           .require kickKicksGuard ] ++ kickStoragePrefixStmts)
         (.ok { contract := contract, locals := kickLocalsWithEnd σ I } evmTab) := by
     simpa [evm0, evmKicks, evmBid, evmLot, evmGuy, evmEnd, evmUsr, evmGal, evmTab] using
-      flipperKickSourcePrefix (σ := σ) (σ₀ := σ₀)
+      flipperKickSourcePrefix (hperm := by assumption) (σ := σ) (σ₀ := σ₀)
         (A := A) (I := I) (g := g) hwv hauth hkicksLt hfit
   have hvat :
       evalExpr? config { contract := contract, locals := kickLocalsWithEnd σ I } evmTab
@@ -1293,7 +1298,7 @@ theorem flipperKickSourceBodySuccess {σ σ₀ A I} {g : UInt256}
           [.storage ilkRef, sender, thisAddr, .var "lot"] "_fluxRet")
         (.ok { contract := contract, locals := kickLocalsAfterFlux σ I } evmVat) := by
     simpa [checkedExternalCallStmts, kickLocalsAfterFlux] using
-      checkedExternalCallSuccess (cfg := config) (C := contract) (evm := evmTab)
+      checkedExternalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (cfg := config) (C := contract) (evm := evmTab)
         (evm' := evmVat) (locals := kickLocalsWithEnd σ I) (receiver := .storage vatRef)
         (retVar := "_fluxRet") (name := "flux")
         (target := flipperVatAddress evmTab.accountMap evmTab.executionEnv) (sendVal := 0)
@@ -1502,7 +1507,7 @@ theorem flipperKickBodyCore {σ σ₀ A I} {g : UInt256}
                 ExecTransitionBody config contract
                   (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                   (kickLocals I) kickTransition.body .reverted := by
-              exact flipperKickSourceBodyVatNoCode
+              exact flipperKickSourceBodyVatNoCode (hperm := by assumption)
                 (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
                 hwv hauthStele hkicksLtStele hfitStele hvatNoCode
             exact (test_flipperKickX_vatNoCode hvatZero rd2354)
@@ -1560,7 +1565,7 @@ theorem flipperKickBodyCore {σ σ₀ A I} {g : UInt256}
                     ExecTransitionBody config contract
                       (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                       (kickLocals I) kickTransition.body .reverted := by
-                  exact flipperKickSourceBodyVatCallFailure
+                  exact flipperKickSourceBodyVatCallFailure (hperm := by assumption)
                     (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
                     (evmVat := evmVatStele) (outVat := outVat)
                     hwv hauthStele hkicksLtStele hfitStele hvatCodeStele hcallVatSteleFalse
@@ -1585,7 +1590,7 @@ theorem flipperKickBodyCore {σ σ₀ A I} {g : UInt256}
                       (.returned { contract := contract, locals := kickLocalsAfterFlux σ I }
                         evmVatStele
                         (some [.int (Int.ofNat (kickIdWord σ I).toNat)])) := by
-                  exact flipperKickSourceBodySuccess
+                  exact flipperKickSourceBodySuccess (hperm := by assumption)
                     (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
                     (evmVat := evmVatStele) (outVat := outVat)
                     hwv hauthStele hkicksLtStele hfitStele hvatCodeStele hcallVatSteleTrue
@@ -1632,7 +1637,7 @@ theorem flipperKickBodyCore {σ σ₀ A I} {g : UInt256}
                     (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                     (kickLocals I) kickTransition.body .reverted := by
                 simpa [evmTabStele, targetStele, evmVatStele] using
-                  (flipperKickSourceBodyVatCallFailure
+                  (flipperKickSourceBodyVatCallFailure (hperm := by assumption)
                     (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
                     (evmVat := evmVatStele) (outVat := ByteArray.empty)
                     hwv hauthStele hkicksLtStele hfitStele hvatCodeStele hcallVatSteleFalse)
@@ -1650,7 +1655,7 @@ theorem flipperKickBodyCore {σ σ₀ A I} {g : UInt256}
               ExecTransitionBody config contract
                 (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                 (kickLocals I) kickTransition.body .reverted := by
-            exact flipperKickSourceBodyAdd48Overflow
+            exact flipperKickSourceBodyAdd48Overflow (hperm := by assumption)
               (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
               hwv hauthStele hkicksLtStele hoverStele
           exact (flipperKickX_add48Overflow hoverEvm rd6272)
