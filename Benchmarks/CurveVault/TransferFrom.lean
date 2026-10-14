@@ -107,10 +107,10 @@ theorem vaultTransferFromBodyCore {σ σ₀ A I} {g : UInt256}
     (by simp [vaultBlocks.vault_block_5714_fallthrough_stack]) rd5726 with
     ⟨evm', σ', locals', hcallee, hs', hret⟩ | ⟨hcallee, hrev⟩
   swap
-  · have hsource := vaultMutatingBodyReverts (fn := vaultTransferFromFunction) hvalue
+  · have hsource := vaultMutatingBodyReverts (hperm := by assumption) (fn := vaultTransferFromFunction) hvalue
       (by rw [hload]; exact hlocked) hcallArgs rfl rfl hcallee
     exact hrev.reEquivExecutionRevert hcode hd hdec hsource
-  have hsource := vaultMutatingBodyReturns (fn := vaultTransferFromFunction) hvalue
+  have hsource := vaultMutatingBodyReturns (hpermAfter := (congrArg ExecutionEnv.perm hs'.env).trans hperm) (hperm := by assumption) (fn := vaultTransferFromFunction) hvalue
     (by rw [hload]; exact hlocked) hcallArgs rfl rfl hcallee
   have hsFinal : SourceState evm I (tstoreAccountMap I.codeOwner σ' ⟨0⟩ ⟨0⟩) (vaultSetLock evm' ⟨0⟩) := by
     unfold vaultSetLock

@@ -95,7 +95,7 @@ theorem vaultTransferTail {I : ExecutionEnv} {g : Sat256} {s0 evm : State}
   have hdebit : ExecStmt config {contract := contract, locals := locals} evm
       vaultTransferFunction.body[1]!
       (.ok {contract := contract, locals := locals} evm1) := by
-    apply ExecStmt.assign (evalExpr_checkedSub256_ok hread (hvEval evm) rfl hsub)
+    apply ExecStmt.assign (hperm := Or.inr (by simpa only [hs.env] using hperm)) (evalExpr_checkedSub256_ok hread (hvEval evm) rfl hsub)
     simpa only [hs.env] using vaultBalanceAssign evm locals "_from" _ debit hbase hf
   let oldTo := codeOwnerStorageWord I σ1 slotTo
   have hreadTo : evalExpr? config {contract := contract, locals := locals} evm1
@@ -143,10 +143,10 @@ theorem vaultTransferTail {I : ExecutionEnv} {g : Sat256} {s0 evm : State}
   apply ExecBlock.consNormal hdebit
   have hcredit : ExecStmt config {contract := contract, locals := locals} evm1
       vaultTransferFunction.body[2]! (.ok {contract := contract, locals := locals} evm2) := by
-    apply ExecStmt.assign (evalExpr_add256_ok hreadTo (hvEval evm1) rfl hadd)
+    apply ExecStmt.assign (hperm := Or.inr (by simpa only [hs1.env] using hperm)) (evalExpr_add256_ok hreadTo (hvEval evm1) rfl hadd)
     simpa only [hs1.env] using vaultBalanceAssign evm1 locals "_to" _ (oldTo + value) hbase ht
   apply ExecBlock.consNormal hcredit
-  refine ExecBlock.consNormal (ExecStmt.emit (vals := [.address (AccountAddress.ofNat sender.toNat),
+  refine ExecBlock.consNormal (ExecStmt.emit (hperm := by simpa only [hs2.env] using hperm) (vals := [.address (AccountAddress.ofNat sender.toNat),
     .address (AccountAddress.ofNat recipient.toNat), .int (Int.ofNat value.toNat)]) ?_) ExecBlock.nil
   change evalExprs? config {contract := contract, locals := locals} evm2 [.var "_from", .var "_to", .var "_value"] = _
   simp only [evalExprs?, evalExpr?, hf, ht, hv, EvalResult.ofOption, EvalResult.bind, bind, pure]

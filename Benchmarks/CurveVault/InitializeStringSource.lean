@@ -23,7 +23,8 @@ theorem vaultInitializeStringSource {I : ExecutionEnv} {s0 evm : State} {σ : Ac
     (hs : SourceState s0 I σ evm)
     (hb : locals.get? "borrowed_symbol" = some (vaultBorrowedSymbol size.toNat word.toByteArray))
     (hbase : ∀ name ∈ ["name", "symbol", "maxSupply"], locals.get? name = none)
-    (hsize : size.toNat ≤ 32) :
+    (hsize : size.toNat ≤ 32)
+    (hperm : I.perm = true) :
     ExecBlock config {contract := contract, locals := locals} evm (initializeTransition.body.drop 11)
       (.ok {contract := contract, locals := vaultInitializeStringLocals locals size word}
         (vaultInitializeStringState evm size word)) ∧
@@ -68,17 +69,17 @@ theorem vaultInitializeStringSource {I : ExecutionEnv} {s0 evm : State} {σ : Ac
     ExecStmt.letDecl (vaultEncodeSymbol evm l2 word (by simp [l2]))
   have s4 : ExecStmt config {contract := contract, locals := l3} evm initializeTransition.body[14]!
       (.ok {contract := contract, locals := l3} evm1) :=
-    ExecStmt.assign (vaultStringTupleEval true evm l3 size word hn hw he hsize)
+    ExecStmt.assign (hperm := Or.inr (by simpa only [hs.env] using hperm)) (vaultStringTupleEval true evm l3 size word hn hw he hsize)
       (vaultAssignString true evm l3 (size.toNat + 16) (vaultNameData size word)
         (hnames _ (by decide)) (by change size.toNat + 16 ≤ 64; omega) (vaultNameData_size size word))
   have s5 : ExecStmt config {contract := contract, locals := l3} evm1 initializeTransition.body[15]!
       (.ok {contract := contract, locals := l3} evm2) :=
-    ExecStmt.assign (vaultStringTupleEval false evm1 l3 size word hn hw he hsize)
+    ExecStmt.assign (hperm := Or.inr ((congrArg ExecutionEnv.perm hs1.env).trans hperm)) (vaultStringTupleEval false evm1 l3 size word hn hw he hsize)
       (vaultAssignString false evm1 l3 (size.toNat + 2) (vaultSymbolData size word)
         (hnames _ (by decide)) (by change size.toNat + 2 ≤ 34; omega) (vaultSymbolData_size size word))
   have s6 : ExecStmt config {contract := contract, locals := l3} evm2 initializeTransition.body[16]!
       (.ok {contract := contract, locals := l3} (vaultInitializeStringState evm size word)) :=
-    ExecStmt.assign (by rw [evalExpr?]; rfl)
+    ExecStmt.assign (hperm := Or.inr ((congrArg ExecutionEnv.perm hs2.env).trans hperm)) (by rw [evalExpr?]; rfl)
       (vaultAssignScalarUint256 evm2 l3 "maxSupply" ⟨5⟩ (UInt256.ofNat (UInt256.size - 1))
         (hnames _ (by decide)) rfl rfl (by decide))
   refine ⟨ExecBlock.consNormal s1 (ExecBlock.consNormal s2 (ExecBlock.consNormal s3

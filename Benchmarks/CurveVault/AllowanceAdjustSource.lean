@@ -108,7 +108,7 @@ theorem vaultAdjustPrefixSource (increase : Bool) (evm : State) (locals : Store)
     change ExecBlock _ _ _ _ (.ok {contract := contract, locals := (locals1.insert "allowance_"
       (.int (Int.ofNat (vaultAdjustBound increase).toNat)))} evm)
     refine ExecBlock.consNormal (ExecStmt.iteTrue hcond ?_) ExecBlock.nil
-    exact ExecBlock.consNormal (ExecStmt.assign (by simp [evalExpr?, pure])
+    exact ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (by simp [evalExpr?, pure])
       (assignLocalVarBase_ok (old := .int (Int.ofNat wrapped.toNat)) (store_get_self _ _ _))) ExecBlock.nil
   · have hc' : vaultAdjustOverflow increase old wrapped = false := by simpa using hc
     rw [hc'] at hcond

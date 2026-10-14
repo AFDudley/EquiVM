@@ -78,7 +78,7 @@ theorem vaultMintRoutine {I : ExecutionEnv} {g : Sat256} {s0 evm : State}
   have hs1 : SourceState s0 I σ1 evm1 := hs.storageWrite _ _
   have hcredit : ExecStmt config {contract := contract, locals := locals} evm
       vaultMintFunction.body[0]! (.ok {contract := contract, locals := locals} evm1) := by
-    apply ExecStmt.assign (evalExpr_add256_ok hread (hvEval evm) rfl hadd)
+    apply ExecStmt.assign (hperm := Or.inr (by simpa only [hs.env] using hperm)) (evalExpr_add256_ok hread (hvEval evm) rfl hadd)
     simpa only [hs.env] using vaultBalanceAssign evm locals "_to" _ (old + value) hbase ht
   let supply := codeOwnerStorageWord I σ1 (UInt256.ofNat 14)
   have hreadSupply : evalExpr? config {contract := contract, locals := locals} evm1
@@ -115,11 +115,11 @@ theorem vaultMintRoutine {I : ExecutionEnv} {g : Sat256} {s0 evm : State}
   apply ExecBlock.consNormal hcredit
   have hwrite : ExecStmt config {contract := contract, locals := locals} evm1
       vaultMintFunction.body[1]! (.ok {contract := contract, locals := locals} evm2) := by
-    apply ExecStmt.assign (evalExpr_add256_ok hreadSupply (hvEval evm1) rfl hsum)
+    apply ExecStmt.assign (hperm := Or.inr (by simpa only [hs1.env] using hperm)) (evalExpr_add256_ok hreadSupply (hvEval evm1) rfl hsum)
     simpa only [hs1.env] using vaultAssignScalarUint256 evm1 locals "totalSupply" (UInt256.ofNat 14)
       (supply + value) hsupply rfl rfl (by decide +kernel)
   apply ExecBlock.consNormal hwrite
-  refine ExecBlock.consNormal (ExecStmt.emit (vals := [.address 0,
+  refine ExecBlock.consNormal (ExecStmt.emit (hperm := by simpa only [hs2.env] using hperm) (vals := [.address 0,
     .address (AccountAddress.ofNat recipient.toNat), .int (Int.ofNat value.toNat)]) ?_) ExecBlock.nil
   change evalExprs? config {contract := contract, locals := locals} evm2
     [.cast (.intLit 0) (.elem .address), .var "_to", .var "_value"] = _

@@ -32,7 +32,8 @@ theorem vaultCreditReturnSource (isDeposit : Bool) {s0 evm : State} {I : Executi
     (hs : SourceState s0 I σ evm)
     (hr : locals.get? "_receiver" = some (.address (AccountAddress.ofNat receiver.toNat)))
     (ha : locals.get? (vaultCreditAssetsName isDeposit) = some (.int (Int.ofNat assets.toNat)))
-    (hv : locals.get? (vaultCreditSharesName isDeposit) = some (.int (Int.ofNat shares.toNat))) :
+    (hv : locals.get? (vaultCreditSharesName isDeposit) = some (.int (Int.ofNat shares.toNat)))
+    (hperm : I.perm = true) :
     ExecBlock config {contract := contract, locals := locals} evm (vaultCreditReturnBody isDeposit)
       (.returned {contract := contract, locals := locals} evm
         (some [.int (Int.ofNat (vaultCreditResult isDeposit assets shares).toNat)])) := by
@@ -41,7 +42,7 @@ theorem vaultCreditReturnSource (isDeposit : Bool) {s0 evm : State} {I : Executi
     cases isDeposit
     · exact ha
     · exact hv
-  exact ExecBlock.consNormal (ExecStmt.emit (by
+  exact ExecBlock.consNormal (ExecStmt.emit (hperm := by simpa only [hs.env] using hperm) (by
     simp only [evalExprs?, evalExpr?, envValue, hs.env, hr, ha, hv, EvalResult.ofOption,
       EvalResult.bind, bind, pure]
     rfl)) (ExecBlock.consReturn (ExecStmt.return (by

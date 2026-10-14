@@ -12,7 +12,8 @@ def vaultApproveLocals (owner spender : AccountAddress) (value : UInt256) : Stor
   (((∅ : Store).insert "_value" (.int (Int.ofNat value.toNat))).insert
     "_spender" (.address spender)).insert "_owner" (.address owner)
 
-theorem vaultApproveSource (evm : State) (owner spender : AccountAddress) (value : UInt256) :
+theorem vaultApproveSource (evm : State) (owner spender : AccountAddress) (value : UInt256)
+    (hperm : evm.executionEnv.perm = true) :
     ExecFuncBody config {contract := contract, locals := vaultApproveLocals owner spender value}
       evm vaultApproveFunction.body
       (.returned {contract := contract, locals := vaultApproveLocals owner spender value}
@@ -29,10 +30,10 @@ theorem vaultApproveSource (evm : State) (owner spender : AccountAddress) (value
     simp only [evalExpr?, locals, vaultApproveLocals, Std.HashMap.get?_eq_getElem?, Std.HashMap.getElem?_insert]
     rfl
   apply ExecFuncBody.execBlockOK
-  apply ExecBlock.consNormal (ExecStmt.assign (hv evm)
+  apply ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) (hv evm)
     (vaultAllowanceAssign evm locals (.var "_owner") (.var "_spender") owner spender value
       (by simp [locals, vaultApproveLocals]) (ha evm) (hb evm)))
-  refine ExecBlock.consNormal (ExecStmt.emit (vals := [.address owner, .address spender, .int (Int.ofNat value.toNat)]) ?_) ExecBlock.nil
+  refine ExecBlock.consNormal (ExecStmt.emit (hperm := by simpa only [storageStore_executionEnv] using hperm) (vals := [.address owner, .address spender, .int (Int.ofNat value.toNat)]) ?_) ExecBlock.nil
   change evalExprs? config {contract := contract, locals := locals} _
     [.var "_owner", .var "_spender", .var "_value"] = _
   simp only [evalExprs?, ha, hb, hv, EvalResult.bind, pure, bind]
@@ -109,7 +110,7 @@ theorem vaultApproveRoutine {I : ExecutionEnv} {g : Sat256} {s0 evm : State}
             (wordAt0Mem ⟨12⟩ (wordAt32Mem (memLoad (UInt256.ofNat 64) mem) mem)))))
       (memLoad (UInt256.ofNat 128) mem)) k' C' at rd
   rw [hmem, hmo, hms0, hhash0, hhash1, hmv] at rd
-  refine ⟨_, _, aw', k', C', vaultApproveSource evm _ _ value, ?_, rd⟩
+  refine ⟨_, _, aw', k', C', vaultApproveSource (hperm := by simpa only [hs.env] using hperm) evm _ _ value, ?_, rd⟩
   rw [hs.env]
   exact hs.storageWrite _ _
 

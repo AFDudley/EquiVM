@@ -107,7 +107,7 @@ theorem vaultMutationEntry (flow : VaultFlow) {σ σ₀ A I} {g : UInt256} {t : 
       apply ExecFuncBody.execBlockRevert
       rw [hbody]
       apply execBlock_append hprefix
-      exact ExecBlock.consNormal hlockStmt (ExecBlock.consNormal (vaultLockSet evm locals ⟨1⟩)
+      exact ExecBlock.consNormal hlockStmt (ExecBlock.consNormal (vaultLockSet (hperm := by assumption) evm locals ⟨1⟩)
         (ExecBlock.consRevert hcall))
     exact hrev.reEquivExecutionRevert hcode hd hdec hsource
   have hsource : ExecTransitionBody config contract evm decoded t.body
@@ -117,9 +117,9 @@ theorem vaultMutationEntry (flow : VaultFlow) {σ σ₀ A I} {g : UInt256} {t : 
     rw [hbody]
     apply execBlock_append hprefix
     apply ExecBlock.consNormal hlockStmt
-    apply ExecBlock.consNormal (vaultLockSet evm locals ⟨1⟩)
+    apply ExecBlock.consNormal (vaultLockSet (hperm := by assumption) evm locals ⟨1⟩)
     apply ExecBlock.consNormal hcall
-    apply ExecBlock.consNormal (vaultLockSet _ _ ⟨0⟩)
+    apply ExecBlock.consNormal (vaultLockSet (hperm := (congrArg ExecutionEnv.perm hs1.env).trans hperm) _ _ ⟨0⟩)
     exact ExecBlock.consReturn (ExecStmt.return (by
       simp only [evalExprs?, evalExpr?, store_get_self, collapseReturns, EvalResult.ofOption, EvalResult.bind, pure, bind]))
   have hsFinal : SourceState evm I (tstoreAccountMap I.codeOwner σ1 ⟨0⟩ ⟨0⟩) (vaultSetLock evm1 ⟨0⟩) := by

@@ -117,7 +117,7 @@ theorem vaultApproveBodyCore {σ σ₀ A I} {g : UInt256}
   have hcallee' := vaultApprovePublicReturns (evm := vaultSetLock evm ⟨1⟩) (evm' := evm')
     (spender := AccountAddress.ofNat spender.toNat) (value := value)
     (by simpa only [henvLocked] using hcallee)
-  have hsource := vaultMutatingBodyReturns (fn := vaultApprovePublicFunction) (locals := locals)
+  have hsource := vaultMutatingBodyReturns (hpermAfter := (congrArg ExecutionEnv.perm hs'.env).trans hperm) (hperm := by assumption) (fn := vaultApprovePublicFunction) (locals := locals)
     (args := [.var "_spender", .var "_value"])
     (argVals := [.address (AccountAddress.ofNat spender.toNat), .int (Int.ofNat value.toNat)])
     hvalue (by rw [hload]; exact hlocked)
