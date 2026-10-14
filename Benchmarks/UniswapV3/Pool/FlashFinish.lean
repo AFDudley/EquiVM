@@ -15,17 +15,18 @@ theorem flashFinishSource (locals imms : Store) (evm : EVM.State)
     (ha1 : locals.get? "amount1" = some (.int (Int.ofNat amount1.toNat)))
     (hp0 : locals.get? "paid0" = some (.int (Int.ofNat paid0.toNat)))
     (hp1 : locals.get? "paid1" = some (.int (Int.ofNat paid1.toNat)))
-    (hslot : locals.get? "slot0" = none) :
+    (hslot : locals.get? "slot0" = none)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config {contract := contract, locals := locals, immutables := imms} evm
       (flashTransition.body.drop 25)
       (.ok {contract := contract, locals := locals, immutables := imms} (storeSlot0Unlocked evm true)) := by
-  refine ExecBlock.consNormal (ExecStmt.emit (vals := [.address evm.executionEnv.source,
+  refine ExecBlock.consNormal (ExecStmt.emit (hperm := hperm) (vals := [.address evm.executionEnv.source,
     .address recipient, .int (Int.ofNat amount0.toNat), .int (Int.ofNat amount1.toNat),
     .int (Int.ofNat paid0.toNat), .int (Int.ofNat paid1.toNat)]) ?_) ?_
   · simp only [evalExprs?, evalExpr?, hr, ha0, ha1, hp0, hp1, EvalResult.ofOption,
       envValue, bind, EvalResult.bind, pure]
   refine ExecBlock.consNormal
-    (ExecStmt.assign (by simp only [evalExpr?, pure]) (assignSlot0Unlocked evm locals imms true hslot))
+    (ExecStmt.assign (hperm := Or.inr hperm) (by simp only [evalExpr?, pure]) (assignSlot0Unlocked evm locals imms true hslot))
     ExecBlock.nil
 
 theorem flashFinishX {σ : AccountMap} {ee : ExecutionEnv} {g : Sat256}

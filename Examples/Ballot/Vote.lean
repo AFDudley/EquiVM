@@ -567,7 +567,8 @@ theorem ballotVoteBodyReturns (evm : EVM.State) (I : ExecutionEnv)
     (hfit :
       (voteProposalCountCurrent (voteAfterVoteState evm I) I).toNat +
           (voteSenderWeightCurrent (voteAfterVoteState evm I) I).toNat <
-        UInt256.size) :
+        UInt256.size)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody ballotConfig ballotContract evm (voteStore I) voteTransition.body
       (.returned { contract := ballotContract, locals := voteAliasStore I }
         (voteFinalState evm I) none) := by
@@ -580,12 +581,17 @@ theorem ballotVoteBodyReturns (evm : EVM.State) (I : ExecutionEnv)
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue (evalExpr_vote_sender_not_voted_true evm I hvoted)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (by simp [evalExpr?, pure]) (voteAssignVoted evm I)) ?_
+    (ExecStmt.assign
+      (hperm := Or.inr hperm)
+      (by simp [evalExpr?, pure]) (voteAssignVoted evm I)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_vote_proposal (voteAfterVotedState evm I) I)
+    (ExecStmt.assign
+      (hperm := Or.inr (by simpa [voteAfterVotedState] using hperm))
+      (evalExpr_vote_proposal (voteAfterVotedState evm I) I)
       (voteAssignVote evm I)) ?_
   refine ExecBlock.consNormal ?_ ExecBlock.nil
   apply ExecStmt.assign
+    (hperm := Or.inr (by simpa [voteAfterVoteState, voteAfterVotedState] using hperm))
   · exact evalExpr_vote_proposal_count_add (voteAfterVoteState evm I) I hbound hfit
   · simpa [voteFinalState, voteUpdatedProposalCountCurrent] using
       voteAssignProposalCount (voteAfterVoteState evm I) I hbound hfit
@@ -644,7 +650,8 @@ theorem ballotVoteBodyReverts_oob (evm : EVM.State) (I : ExecutionEnv)
     (hvoted : voteSenderVotedByteCurrent evm I = ⟨0⟩)
     (hbound :
       ¬ (voteProposalWord I).toNat <
-        (voteProposalsLengthCurrent (voteAfterVoteState evm I)).toNat) :
+        (voteProposalsLengthCurrent (voteAfterVoteState evm I)).toNat)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody ballotConfig ballotContract evm (voteStore I) voteTransition.body .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
   refine ExecBlock.consNormal (ExecStmt.requireTrue (evalCallvalueEq_true hwv)) ?_
@@ -655,9 +662,13 @@ theorem ballotVoteBodyReverts_oob (evm : EVM.State) (I : ExecutionEnv)
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue (evalExpr_vote_sender_not_voted_true evm I hvoted)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (by simp [evalExpr?, pure]) (voteAssignVoted evm I)) ?_
+    (ExecStmt.assign
+      (hperm := Or.inr hperm)
+      (by simp [evalExpr?, pure]) (voteAssignVoted evm I)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_vote_proposal (voteAfterVotedState evm I) I)
+    (ExecStmt.assign
+      (hperm := Or.inr (by simpa [voteAfterVotedState] using hperm))
+      (evalExpr_vote_proposal (voteAfterVotedState evm I) I)
       (voteAssignVote evm I)) ?_
   exact ExecBlock.consRevert (ExecStmt.assignExprRevert
     (evalExpr_vote_proposal_count_add_oob_revert (voteAfterVoteState evm I) I hbound))
@@ -672,7 +683,8 @@ theorem ballotVoteBodyReverts_overflow (evm : EVM.State) (I : ExecutionEnv)
     (hover :
       UInt256.size ≤
         (voteProposalCountCurrent (voteAfterVoteState evm I) I).toNat +
-          (voteSenderWeightCurrent (voteAfterVoteState evm I) I).toNat) :
+          (voteSenderWeightCurrent (voteAfterVoteState evm I) I).toNat)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody ballotConfig ballotContract evm (voteStore I) voteTransition.body .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
   refine ExecBlock.consNormal (ExecStmt.requireTrue (evalCallvalueEq_true hwv)) ?_
@@ -683,9 +695,13 @@ theorem ballotVoteBodyReverts_overflow (evm : EVM.State) (I : ExecutionEnv)
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue (evalExpr_vote_sender_not_voted_true evm I hvoted)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (by simp [evalExpr?, pure]) (voteAssignVoted evm I)) ?_
+    (ExecStmt.assign
+      (hperm := Or.inr hperm)
+      (by simp [evalExpr?, pure]) (voteAssignVoted evm I)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_vote_proposal (voteAfterVotedState evm I) I)
+    (ExecStmt.assign
+      (hperm := Or.inr (by simpa [voteAfterVotedState] using hperm))
+      (evalExpr_vote_proposal (voteAfterVotedState evm I) I)
       (voteAssignVote evm I)) ?_
   exact ExecBlock.consRevert (ExecStmt.assignExprRevert
     (evalExpr_vote_proposal_count_add_revert (voteAfterVoteState evm I) I hbound hover))
@@ -1656,7 +1672,7 @@ theorem ballotVoteBodyCore_success
       σ σ₀ g A I := by
   have hd := ballotDispatch_vote (cd := I.calldata) hsel
   have hdec := ballotDecode_vote_ok (I := I) hsz36 hbig
-  have hbody := ballotVoteBodyReturns
+  have hbody := ballotVoteBodyReturns (hperm := by assumption)
     (initState σ σ₀ (Sat256.ofUInt256 g) A I) I
     (by simp only [initState]; exact hwv)
     (by simp [initState])
@@ -1702,7 +1718,7 @@ theorem ballotVoteBodyCore_overflow
       σ σ₀ g A I := by
   have hd := ballotDispatch_vote (cd := I.calldata) hsel
   have hdec := ballotDecode_vote_ok (I := I) hsz36 hbig
-  have hbody := ballotVoteBodyReverts_overflow
+  have hbody := ballotVoteBodyReverts_overflow (hperm := by assumption)
     (initState σ σ₀ (Sat256.ofUInt256 g) A I) I
     (by simp only [initState]; exact hwv)
     (by simp [initState])
@@ -1741,7 +1757,7 @@ theorem ballotVoteBodyCore_oob
       σ σ₀ g A I := by
   have hd := ballotDispatch_vote (cd := I.calldata) hsel
   have hdec := ballotDecode_vote_ok (I := I) hsz36 hbig
-  have hbody := ballotVoteBodyReverts_oob
+  have hbody := ballotVoteBodyReverts_oob (hperm := by assumption)
     (initState σ σ₀ (Sat256.ofUInt256 g) A I) I
     (by simp only [initState]; exact hwv)
     (by simp [initState])

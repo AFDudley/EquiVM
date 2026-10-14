@@ -41,13 +41,13 @@ theorem updatePositionTickX {σ : AccountMap} {ee : ExecutionEnv} {g : Sat256}
   · rcases hc with ⟨hr, hmax⟩ | ⟨hmax, hc⟩
     · exact Or.inl ⟨ExecBlock.consRevert (updatePositionTickCallReverts v a evm upper
         (tickUpdateMaxReverts (immStore v) _ _ hv hmax)), hr⟩
-    · rcases hc with ⟨hr, hp⟩ | ⟨_, hc⟩
+    · rcases hc with ⟨hr, hp⟩ | ⟨hp, hc⟩
       · exact Or.inr (Or.inl ⟨ExecBlock.consStatic (updatePositionTickCallStatic v a evm upper
           (tickUpdateStatic (immStore v) _ _ hv hmax (by rw [hs.env]; exact hp))), hr⟩)
       · rcases hc with ⟨hr, hn⟩ | ⟨hn, σ', k', C', hs', r'⟩
         · exact Or.inl ⟨ExecBlock.consRevert (updatePositionTickCallReverts v a evm upper
-            (tickUpdateNetReverts (immStore v) _ _ ha.2.2.1.1 ha.2.2.1.2 hv hmax hn)), hr⟩
-        · exact Or.inr (Or.inr ⟨updatePositionTickSource v a evm upper ha hv hmax hn,
+            (tickUpdateNetReverts (hperm := by simpa only [hs.env] using hp) (immStore v) _ _ ha.2.2.1.1 ha.2.2.1.2 hv hmax hn)), hr⟩
+        · exact Or.inr (Or.inr ⟨updatePositionTickSource (hperm := by simpa only [hs.env] using hp) v a evm upper ha hv hmax hn,
             σ', k', C', hs', r'⟩)
 
 end Benchmarks.UniswapV3.Pool

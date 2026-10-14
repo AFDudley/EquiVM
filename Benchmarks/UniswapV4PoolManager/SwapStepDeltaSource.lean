@@ -49,7 +49,7 @@ theorem amountDeltaAssignSource {f : Frame} {evm : EVM.State} {a b liquidity : U
   by_cases hfit : amountDeltaFits a b liquidity use0 roundUp
   · rw [if_pos hfit] at hc ⊢
     exact ExecBlock.consNormal hc (ExecBlock.consNormal
-      (ExecStmt.assign wordLocal_eval (assignLocalValue ((store_get_ne _ _ hne).trans hr))) ExecBlock.nil)
+      (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) wordLocal_eval (assignLocalValue ((store_get_ne _ _ hne).trans hr))) ExecBlock.nil)
   · rw [if_neg hfit] at hc ⊢
     exact ExecBlock.consRevert hc
 

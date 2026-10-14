@@ -44,7 +44,7 @@ import json
 import re
 import subprocess
 import tempfile
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Iterable
 
@@ -577,6 +577,10 @@ class Summary:
     max_stack_prefix: int
     existential_words: list[str]
     last_cursor: str
+    codecopies: list[tuple[str, str, str, str, str]]
+    mloads: list[tuple[str, str, str]]
+    word_writes: list[tuple[str, str, str, str]]
+    return_window: tuple[str, str, str] | None
 
 
 def simulate(block: list[Instruction], branch: str | None,
@@ -599,6 +603,10 @@ def simulate(block: list[Instruction], branch: str | None,
     rno = 0
     max_stack_prefix = len(stack)
     existential_words: list[str] = []
+    codecopies: list[tuple[str, str, str, str, str]] = []
+    mloads: list[tuple[str, str, str]] = []
+    word_writes: list[tuple[str, str, str, str]] = []
+    return_window: tuple[str, str, str] | None = None
     steps_done = 0
     full_copy_pcs = {
         block[i + 3].pc for i in range(len(block) - 3)
@@ -747,14 +755,18 @@ def simulate(block: list[Instruction], branch: str | None,
             proof.append(f"  have {after} := {before}.calldataload {decode} {ov}")
         elif op == 0x51:
             a = stack.pop(0)
-            stack.insert(0, f"(memLoad {a} {mem})")
+            load = f"(memLoad {a} {mem})"
+            mloads.append((a, mem, load))
+            stack.insert(0, load)
             costs.append(f"memExpansionCost {aw} {a} {WORD32}")
             aw = f"(M {aw} {a} {WORD32})"
             proof.append(f"  have {after} := RD.genMload {before} {decode} {ov}")
         elif op == 0x52:
             a, b = stack.pop(0), stack.pop(0)
             costs.append(f"memExpansionCost {aw} {a} {WORD32}")
+            base = mem
             mem = f"({b}.toByteArray.write 0 {mem} {a}.toNat 32)"
+            word_writes.append((b, a, base, mem))
             aw = f"(M {aw} {a} {WORD32})"
             proof.append(f"  have {after} := RD.genMstore {before} {decode} {ov}")
         elif op == 0x53:
@@ -775,7 +787,10 @@ def simulate(block: list[Instruction], branch: str | None,
         elif op in {0x37, 0x39}:
             a, b, c = stack.pop(0), stack.pop(0), stack.pop(0)
             source = "ee.calldata" if op == 0x37 else "__CODE__"
-            mem = f"({source}.write {b}.toNat {mem} {a}.toNat {c}.toNat)"
+            base = mem
+            mem = f"({source}.write {b}.toNat {base} {a}.toNat {c}.toNat)"
+            if op == 0x39:
+                codecopies.append((b, a, c, base, mem))
             costs.append(f"memExpansionCost {aw} {a} {c}")
             costs.append(f"3 + 3 * (({c}.toNat + 31) / 32)")
             aw = f"(M {aw} {a} {c})"
@@ -892,6 +907,7 @@ def simulate(block: list[Instruction], branch: str | None,
         elif op in {0xF3, 0xFD}:
             off, length = stack.pop(0), stack.pop(0)
             if op == 0xF3:
+                return_window = (off, length, mem)
                 proof.append(f"  exact RD.genRet {before} {decode} {ov}")
                 terminal = (
                     f"RDret __CODE__ g s0 {world_map} "
@@ -942,7 +958,7 @@ def simulate(block: list[Instruction], branch: str | None,
 
     return Summary(initial, stack, mem, aw, world_map, pc, costs, proof, existential,
                    terminal, extra_hypotheses, branch, max_stack_prefix, existential_words,
-                   f"r{rno}")
+                   f"r{rno}", codecopies, mloads, word_writes, return_window)
 
 
 def render_summary(prefix: str, code_term: str, block: list[Instruction], summary: Summary,
@@ -1025,7 +1041,8 @@ def render_summary(prefix: str, code_term: str, block: list[Instruction], summar
             f"  have hcreationCodeSize : {code_term}.size = {creation_code_size} := "
             "by native_decide"
         )
-    lines.extend(step.replace("__TEMPLATE__", code_term).replace("__LAYOUT__", layout_term or "")
+    lines.extend(step.replace("__CODE__", effective_code_term)
+                 .replace("__TEMPLATE__", code_term).replace("__LAYOUT__", layout_term or "")
                  for step in summary.proof)
     if not summary.terminal:
         last = summary.last_cursor
@@ -1087,6 +1104,282 @@ def render_packed_summary(base_name: str, params: str, assumptions: list[str],
     return lines
 
 
+def static_word_value(term: str) -> int | None:
+    if term == WORD0:
+        return 0
+    match = re.fullmatch(r"\(UInt256\.ofNat (\d+)\)", term)
+    return int(match.group(1)) if match else None
+
+
+def same_word_term(left: str, right: str) -> bool:
+    value = static_word_value(left)
+    return left == right or (value is not None and value == static_word_value(right))
+
+
+def render_vyper_suffix_return(prefix: str, code_term: str, block: list[Instruction],
+                               summary: Summary, layout_term: str,
+                               suffix_size: int, code_size: int) -> str | None:
+    """Render an exact copy and return of the whole Vyper immutable suffix."""
+    if summary.stack_in or summary.extra_hypotheses or summary.existential_counters:
+        return None
+    if len(summary.codecopies) != 1 or block[-1].opcode != 0xF3:
+        return None
+    src, dest, length, base, write = summary.codecopies[0]
+    if (static_word_value(src) != code_size or static_word_value(length) != suffix_size
+            or base != "mem" or summary.mem != write):
+        return None
+    expected = (f"RDret __CODE__ g s0 σ ({write}.readWithPadding "
+                f"{dest}.toNat {length}.toNat)")
+    if summary.terminal != expected:
+        return None
+    name = summary_name(prefix, block, summary.branch)
+    code = f"({code_term} ++ {layout_term}.suffixWords immWords)"
+    suffix = f"{layout_term}.suffixWords immWords"
+    lines = ["/-- Return the complete Vyper immutable suffix. -/",
+             f"theorem {name} {{immWords : String → UInt256}}",
+             "    {ee : ExecutionEnv} {g : Sat256} {s0 : State} {mem : ByteArray}",
+             "    {aw : UInt256} {rdata : ByteArray} {σ : AccountMap} {k C : ℕ} {R : List UInt256}",
+             f"    (hstack : R.length + {summary.max_stack_prefix} ≤ 1024)",
+             f"    (h : RD {code} ee g s0 {u256_nat(block[0].pc)} R mem aw rdata σ k C) :",
+             f"    RDret {code} g s0 σ ({suffix}) := by",
+             f"  have hcode : {code_term}.size = {code_size} := by native_decide",
+             f"  have hsize : ({suffix}).size = {layout_term}.size :=",
+             f"    Reasoning.VyperImmutables.Layout.suffixWords_size {layout_term} immWords",
+             f"  have hread : ({write.replace('__CODE__', code)}.readWithPadding "
+             f"{dest}.toNat {length}.toNat) = ({suffix}) := by",
+             f"    simpa [{layout_term}, hcode] using",
+             f"      Reasoning.VyperImmutables.Layout.codecopy_read_suffix "
+             f"(layout := {layout_term}) (template := {code_term})",
+             f"      (mem := mem) (suffix := {suffix}) hsize (by decide) {dest}.toNat",
+             "  let r0 := h"]
+    for step in summary.proof:
+        step = step.replace("__TEMPLATE__, suffix,",
+                            f"__TEMPLATE__, {layout_term}.suffixWords immWords,")
+        step = step.replace("__CODE__", code).replace("__TEMPLATE__", code_term)
+        if step.startswith("  exact "):
+            step = f"  have {summary.last_cursor} := " + step[len("  exact "):]
+        lines.append(step)
+    lines += [f"  have hraw := {summary.last_cursor}",
+              "  rw [hread] at hraw",
+              "  exact hraw"]
+    return "\n".join(lines)
+
+
+def render_vyper_scalar_return(prefix: str, code_term: str, block: list[Instruction],
+                               summary: Summary, layout_term: str,
+                               scalar_slots: dict[int, str], code_size: int) -> str | None:
+    """Render an exact 32-byte suffix copy followed by RETURN as one word-byte theorem."""
+    if summary.stack_in or summary.extra_hypotheses or summary.existential_counters:
+        return None
+    if len(summary.codecopies) != 1 or block[-1].opcode != 0xF3:
+        return None
+    src, dest, length, base, write = summary.codecopies[0]
+    key = scalar_slots.get(static_word_value(src))
+    if not key or static_word_value(length) != 32 or base != "mem" or summary.mem != write:
+        return None
+    expected = (f"RDret __CODE__ g s0 σ ({write}.readWithPadding "
+                f"{dest}.toNat {length}.toNat)")
+    if summary.terminal != expected:
+        return None
+    name = summary_name(prefix, block, summary.branch)
+    code = f"({code_term} ++ {layout_term}.suffixWords immWords)"
+    word = f"immWords {json.dumps(key)}"
+    named_write = f"(({word}).toByteArray.write 0 mem {dest}.toNat 32)"
+    ident = re.sub(r"[^A-Za-z0-9_]", "_", key)
+    module = layout_term.rsplit(".", 1)[0]
+    lines = [f"/-- Return the Vyper scalar immutable `{key}`. -/",
+             f"theorem {name} {{immWords : String → UInt256}}",
+             "    {ee : ExecutionEnv} {g : Sat256} {s0 : State} {mem : ByteArray}",
+             "    {aw : UInt256} {rdata : ByteArray} {σ : AccountMap} {k C : ℕ} {R : List UInt256}",
+             f"    (hstack : R.length + {summary.max_stack_prefix} ≤ 1024)",
+             f"    (h : RD {code} ee g s0 {u256_nat(block[0].pc)} R mem aw rdata σ k C) :",
+             f"    RDret {code} g s0 σ ({word}).toByteArray := by",
+             f"  have hcode : {code_term}.size = {code_size} := by native_decide",
+             f"  have hcopy : {write.replace('__CODE__', code)} = {named_write} := by",
+             f"    simpa [hcode] using {module}.immutableCopyWord_{ident} immWords mem {dest}.toNat",
+             f"  have hread : ({named_write}.readWithPadding {dest}.toNat {length}.toNat) =",
+             f"      ({word}).toByteArray := by",
+             f"    simpa using Reasoning.VyperImmutables.copy_word_read ({word}) mem {dest}.toNat",
+             "  let r0 := h"]
+    for step in summary.proof:
+        step = step.replace("__TEMPLATE__, suffix,",
+                            f"__TEMPLATE__, {layout_term}.suffixWords immWords,")
+        step = step.replace("__CODE__", code).replace("__TEMPLATE__", code_term)
+        if step.startswith("  exact "):
+            step = f"  have {summary.last_cursor} := " + step[len("  exact "):]
+        lines.append(step)
+    lines += [f"  have hraw := {summary.last_cursor}",
+              "  rw [hcopy] at hraw",
+              "  rw [hread] at hraw",
+              "  exact hraw"]
+    return "\n".join(lines)
+
+
+def render_vyper_scalar_summary(prefix: str, code_term: str, block: list[Instruction],
+                                summary: Summary, layout_term: str,
+                                scalar_slots: dict[int, str], code_size: int) -> str:
+    """Render named Vyper suffix copies in the original block theorem."""
+    if summary.terminal:
+        direct = render_vyper_scalar_return(prefix, code_term, block, summary,
+                                            layout_term, scalar_slots, code_size)
+        if direct is not None:
+            return direct
+    name = summary_name(prefix, block, summary.branch)
+    code = f"({code_term} ++ {layout_term}.suffixWords immWords)"
+    search = " ".join(([summary.terminal] if summary.terminal else
+                       [stack_term(summary.stack_out), summary.mem, summary.pc,
+                        summary.aw, summary.world_map, block_cost(summary.costs)]) +
+                      [term for _, term in summary.extra_hypotheses])
+    copies = []
+    for src, dest, length, base, write in summary.codecopies:
+        key = scalar_slots.get(static_word_value(src))
+        if key and static_word_value(length) == 32 and write in search:
+            copies.append((write, key, base, dest, src))
+    copies.sort(key=lambda item: len(item[0]), reverse=True)
+    loads = []
+    for addr, mem, load in summary.mloads:
+        source = next((item for item in copies if item[0] == mem and
+                       same_word_term(item[3], addr)), None)
+        if source and load in search:
+            loads.append((load, source[1], source[2], addr))
+    loads.sort(key=lambda item: len(item[0]), reverse=True)
+
+    def named_copies(term: str) -> str:
+        for write, key, base, dest, _ in copies:
+            term = term.replace(write,
+                f'((immWords {json.dumps(key)}).toByteArray.write 0 {base} {dest}.toNat 32)')
+        return term
+
+    def named(term: str) -> str:
+        term = named_copies(term)
+        for load, key, _, _ in loads:
+            term = term.replace(named_copies(load), f'(immWords {json.dumps(key)})')
+        return term.replace("__CODE__", code)
+
+    returned_word = None
+    if summary.return_window is not None:
+        off, length, returned_mem = summary.return_window
+        for value, dest, base, write in reversed(summary.word_writes):
+            if (returned_mem == write and same_word_term(off, dest)
+                    and static_word_value(length) == 32):
+                returned_word = (value, dest, base, write, off, length)
+                break
+
+    valued = replace(summary, stack_out=[named(term) for term in summary.stack_out],
+                     mem=named(summary.mem), pc=named(summary.pc), aw=named(summary.aw),
+                     world_map=named(summary.world_map))
+    final_defs = (None if summary.terminal else
+                  render_final_value_defs(name, valued, code, False, immutable_code=True))
+    params = ("{immWords : String → UInt256} {ee : ExecutionEnv} {g : Sat256} "
+              "{s0 : State} {mem : ByteArray} {aw : UInt256} {rdata : ByteArray} "
+              "{σ : AccountMap} {k C : ℕ}")
+    if summary.stack_in:
+        params += f" {{{' '.join(summary.stack_in)} : UInt256}}"
+    params += " {R : List UInt256}"
+    assumptions = [f"(hstack : R.length + {summary.max_stack_prefix} ≤ 1024)"]
+    assumptions.extend(f"({hyp} : {named(term)})"
+                       for hyp, term in summary.extra_hypotheses)
+    assumptions.append(f"(h : RD {code} ee g s0 {u256_nat(block[0].pc)} "
+                       f"{stack_term(summary.stack_in)} mem aw rdata σ k C)")
+    if summary.terminal:
+        result = named(summary.terminal)
+        if returned_word is not None:
+            value, _, _, write, off, length = returned_word
+            read = f"({write}.readWithPadding {off}.toNat {length}.toNat)"
+            result = result.replace(named(read), f"({named(value)}).toByteArray")
+    else:
+        result_rd = (f"RD {code} ee g s0 {valued.pc} {final_defs.stack} {final_defs.memory} "
+                     f"{valued.aw} rdata {valued.world_map}")
+    if not summary.terminal and summary.existential_counters:
+        word_binders = (f"({' '.join(summary.existential_words)} : UInt256) "
+                        if summary.existential_words else "")
+        result = f"∃ {word_binders}(k' C' : ℕ), {result_rd} k' C'"
+    elif not summary.terminal:
+        result = (f"{result_rd} (k + {len(block)}) "
+                  f"(C + ({named(block_cost(summary.costs))}))")
+    lines = (final_defs.lines + ([""] if final_defs.lines else [])
+             if final_defs is not None else [])
+    lines += [f"/-- Vyper scalar immutable summary for block at pc {block[0].pc}. -/",
+              f"theorem {name} {params}"]
+    lines += [f"    {assumption}" for assumption in assumptions]
+    lines += [f"    : {result} := by",
+              f"  have hcode : {code_term}.size = {code_size} := by native_decide"]
+    for i, (write, key, base, dest, _) in enumerate(copies):
+        ident = re.sub(r"[^A-Za-z0-9_]", "_", key)
+        lines += [f"  have hcopy{i} : {write.replace('__CODE__', code)} = "
+                  f"((immWords {json.dumps(key)}).toByteArray.write 0 "
+                  f"{base.replace('__CODE__', code)} {dest}.toNat 32) := by",
+                  f"    simpa [hcode] using {layout_term.rsplit('.', 1)[0]}.immutableCopyWord_{ident} "
+                  f"immWords ({base.replace('__CODE__', code)}) {dest}.toNat"]
+    for i, (load, key, base, addr) in enumerate(loads):
+        ident = re.sub(r"[^A-Za-z0-9_]", "_", key)
+        lines += [f"  have hload{i} : {load.replace('__CODE__', code)} = "
+                  f"immWords {json.dumps(key)} := by",
+                  f"    simpa [hcode] using {layout_term.rsplit('.', 1)[0]}.immutableLoad_{ident} "
+                  f"immWords ({base.replace('__CODE__', code)}) {addr}"]
+        lines += [f"  try simp only [hcopy{j}] at hload{i}"
+                  for j in range(len(copies))]
+    changed_hyps = []
+    for hyp, term in summary.extra_hypotheses:
+        if named(term) == term.replace("__CODE__", code):
+            continue
+        changed_hyps.append(hyp)
+        lines += [f"  have {hyp}_raw : {term.replace('__CODE__', code)} := by"]
+        lines += [f"    try simp only [hcopy{i}]" for i in range(len(copies))]
+        lines += [f"    try simp only [hload{i}]" for i in range(len(loads))]
+        lines.append(f"    exact {hyp}")
+    lines.append("  let r0 := h")
+    for step in summary.proof:
+        for hyp in changed_hyps:
+            step = re.sub(rf"\b{re.escape(hyp)}\b", f"{hyp}_raw", step)
+        step = step.replace("__TEMPLATE__, suffix,",
+                            f"__TEMPLATE__, {layout_term}.suffixWords immWords,")
+        if summary.terminal and step.startswith("  exact "):
+            step = f"  have {summary.last_cursor} := " + step[len("  exact "):]
+        lines.append(step.replace("__CODE__", code).replace("__TEMPLATE__", code_term))
+    last = summary.last_cursor
+    if not summary.terminal and is_static_word(summary.pc):
+        lines.append(f"  have rFinal := RD.normalizePC (pc' := {summary.pc}) "
+                     f"{last} (by native_decide)")
+        last = "rFinal"
+    if summary.terminal or summary.existential_counters:
+        lines.append(f"  have hraw := {last}")
+    else:
+        raw_result_rd = (f"RD {code} ee g s0 {summary.pc} "
+                         f"{stack_term(summary.stack_out)} {summary.mem} {summary.aw} "
+                         f"rdata {summary.world_map}").replace("__CODE__", code)
+        raw_result = (f"{raw_result_rd} (k + {len(block)}) "
+                      f"(C + ({block_cost(summary.costs)}))").replace("__CODE__", code)
+        lines += [f"  have hraw : {raw_result} := by",
+                  f"    exact RD.normalizeCounters {last} (by omega) (by omega)"]
+    lines += [f"  try simp only [hcopy{i}] at hraw" for i in range(len(copies))]
+    lines += [f"  try simp only [hload{i}] at hraw" for i in range(len(loads))]
+    if returned_word is not None:
+        value, dest, base, write, off, length = returned_word
+        lines += [f"  have hread : ({named(write)}.readWithPadding "
+                  f"{off}.toNat {length}.toNat) = ({named(value)}).toByteArray := by",
+                  f"    simpa using Reasoning.VyperImmutables.copy_word_read "
+                  f"({named(value)}) ({named(base)}) {dest}.toNat",
+                  "  rw [hread] at hraw"]
+    def_names = ([f"{name}_{kind}" for kind in ("stack", "memory")
+                  if f"def {name}_{kind}" in "\n".join(final_defs.lines)]
+                 if final_defs is not None else [])
+    if def_names:
+        lines.append(f"  simp only [{', '.join(def_names)}]")
+    if summary.terminal:
+        lines.append("  exact hraw")
+    elif summary.existential_counters:
+        # The gas words come from `RD.genGas` inside `hraw`; Lean infers the witnesses.
+        witnesses = ", ".join(["_"] * len(summary.existential_words) + ["_", "_", "hraw"])
+        lines.append(f"  exact ⟨{witnesses}⟩")
+    else:
+        lines.append("  exact hraw")
+    if not summary.terminal:
+        lines.append("")
+        lines.extend(render_packed_summary(name, params, assumptions, code, valued, final_defs))
+    return "\n".join(lines)
+
+
 def unsupported_boundary_comment(ins: Instruction, code_size: int) -> str:
     successor = ins.pc + ins.size
     resume = (
@@ -1105,12 +1398,18 @@ def generate_unit_records(code: bytes, prefix: str, code_term: str,
                           creation_code: bool = False,
                           immutable_sites: dict[int, tuple[int, str]] | None = None,
                           layout_term: str | None = None,
-                          runtime_suffix: bool = False) -> list[GeneratedUnit]:
+                          runtime_suffix: bool = False,
+                          vyper_scalar_slots: dict[int, str] | None = None,
+                          vyper_layout_term: str | None = None,
+                          vyper_suffix_size: int | None = None) -> list[GeneratedUnit]:
     """Generate theorem/comment units with index metadata and no module wrapper."""
     if runtime_suffix and (creation_code or immutable_sites is not None or layout_term is not None):
         raise ValueError("runtime suffix and other patch modes are separate")
     if immutable_sites is not None and not layout_term:
         raise ValueError("immutable mode requires an imported Lean layout term")
+    if (vyper_scalar_slots is not None or vyper_suffix_size is not None) and (
+            not runtime_suffix or not vyper_layout_term):
+        raise ValueError("Vyper immutable mode requires a runtime suffix and layout term")
     prefix = lean_ident(prefix)
     analyzed_code = code if keep_metadata else strip_solidity_metadata(code)
     discovered_blocks = blocks(disassemble(analyzed_code))
@@ -1149,10 +1448,23 @@ def generate_unit_records(code: bytes, prefix: str, code_term: str,
                                    runtime_suffix)
                 name = summary_name(prefix, piece, branch)
                 theorem_names = (name,) if summary.terminal else (name, f"{name}_packed")
+                scalar_copy = (vyper_scalar_slots is not None and
+                               any(static_word_value(src) in vyper_scalar_slots and
+                                   static_word_value(length) == 32
+                                   for src, _, length, _, _ in summary.codecopies))
+                suffix_return = (render_vyper_suffix_return(
+                    prefix, code_term, piece, summary, vyper_layout_term,
+                    vyper_suffix_size, len(code)) if vyper_suffix_size is not None and
+                    summary.terminal else None)
+                rendered = (suffix_return if suffix_return is not None else
+                            render_vyper_scalar_summary(
+                                prefix, code_term, piece, summary, vyper_layout_term,
+                                vyper_scalar_slots, len(code)) if scalar_copy else
+                            render_summary(prefix, code_term, piece, summary, creation_code,
+                                           len(code) if creation_code else None, immutable_sites,
+                                           layout_term, runtime_suffix))
                 units.append(GeneratedUnit(
-                    render_summary(prefix, code_term, piece, summary, creation_code,
-                                   len(code) if creation_code else None, immutable_sites,
-                                   layout_term, runtime_suffix),
+                    rendered,
                     theorem_names,
                     pcs,
                 ))
@@ -1165,13 +1477,16 @@ def generate_units(code: bytes, prefix: str, code_term: str,
                    creation_code: bool = False,
                    immutable_sites: dict[int, tuple[int, str]] | None = None,
                    layout_term: str | None = None,
-                   runtime_suffix: bool = False) -> list[str]:
+                   runtime_suffix: bool = False,
+                   vyper_scalar_slots: dict[int, str] | None = None,
+                   vyper_layout_term: str | None = None,
+                   vyper_suffix_size: int | None = None) -> list[str]:
     """Generate theorem/comment units without a Lean module wrapper."""
     return [
         unit.text for unit in generate_unit_records(
             code, prefix, code_term, fail_on_unsupported, keep_metadata,
             max_summary_instructions, creation_code, immutable_sites, layout_term,
-            runtime_suffix
+            runtime_suffix, vyper_scalar_slots, vyper_layout_term, vyper_suffix_size
         )
     ]
 
@@ -1296,9 +1611,12 @@ def render_module(prefix: str, imports: list[str], units: list[Unit],
                   immutable_sites: dict[int, tuple[int, str]] | None = None,
                   code: bytes | None = None,
                   layout_term: str | None = None,
-                  runtime_suffix: bool = False) -> str:
+                  runtime_suffix: bool = False,
+                  max_rec_depth: int | None = None,
+                  namespace: str | None = None) -> str:
     """Wrap generated units as an independently elaboratable Lean module."""
     prefix = lean_ident(prefix)
+    namespace = namespace or f"{prefix}Blocks"
     output = ["import Reasoning.Reach"]
     if creation_code or runtime_suffix:
         output.append("import Reasoning.Initcode")
@@ -1307,8 +1625,10 @@ def render_module(prefix: str, imports: list[str], units: list[Unit],
     output.extend(f"import {module}" for module in imports)
     output += ["", "open Stele ABI Ethereum Ethereum.EVM",
                "open Reasoning.Theory Reasoning.Reach", "",
-               f"namespace {prefix}Blocks", ""]
-    if runtime_suffix:
+               f"namespace {namespace}", ""]
+    if max_rec_depth is not None:
+        output += [f"set_option maxRecDepth {max_rec_depth}", ""]
+    elif runtime_suffix:
         output += ["set_option maxRecDepth 10000", ""]
     if immutable_sites is not None:
         if code_term is None or code is None or not layout_term:
@@ -1326,7 +1646,7 @@ def render_module(prefix: str, imports: list[str], units: list[Unit],
         ]
     for unit in units:
         output += [unit_text(unit), ""]
-    output += [f"end {prefix}Blocks", ""]
+    output += [f"end {namespace}", ""]
     return "\n".join(output)
 
 
@@ -1336,14 +1656,16 @@ def generate(code: bytes, prefix: str, code_term: str, imports: list[str],
              creation_code: bool = False,
              immutable_sites: dict[int, tuple[int, str]] | None = None,
              layout_term: str | None = None,
-             runtime_suffix: bool = False) -> str:
+             runtime_suffix: bool = False,
+             namespace: str | None = None) -> str:
     """Generate a single Lean module. Use ``write_outputs`` for file sharding."""
     units = generate_unit_records(code, prefix, code_term, fail_on_unsupported,
                                   keep_metadata, max_summary_instructions,
                                   creation_code, immutable_sites, layout_term,
                                   runtime_suffix)
     return render_module(prefix, imports, units, creation_code, code_term,
-                         immutable_sites, code, layout_term, runtime_suffix)
+                         immutable_sites, code, layout_term, runtime_suffix,
+                         namespace=namespace)
 
 
 def top_level_item_start(line: str) -> bool:
@@ -1433,12 +1755,14 @@ def write_outputs(output: Path, prefix: str, imports: list[str], units: list[Uni
                   immutable_sites: dict[int, tuple[int, str]] | None = None,
                   code: bytes | None = None,
                   layout_term: str | None = None,
-                  runtime_suffix: bool = False) -> list[Path]:
+                  runtime_suffix: bool = False,
+                  max_rec_depth: int | None = None,
+                  namespace: str | None = None) -> list[Path]:
     index_entries: list[IndexEntry] = []
     if shard_size is None:
         module_text = render_module(prefix, imports, units, creation_code,
                                     code_term, immutable_sites, code, layout_term,
-                                    runtime_suffix)
+                                    runtime_suffix, max_rec_depth, namespace)
         output.write_text(module_text, encoding="utf-8")
         index_entries.extend(module_index_entries(output.name, module_text, units))
         (index_output or default_index_output(output)).write_text(
@@ -1454,7 +1778,7 @@ def write_outputs(output: Path, prefix: str, imports: list[str], units: list[Uni
         path = output.with_name(f"{output.stem}_{index:0{width}d}{suffix}")
         module_text = render_module(prefix, imports, shard, creation_code,
                                     code_term, immutable_sites, code, layout_term,
-                                    runtime_suffix)
+                                    runtime_suffix, max_rec_depth, namespace)
         path.write_text(module_text, encoding="utf-8")
         index_entries.extend(module_index_entries(path.name, module_text, shard))
         paths.append(path)
@@ -1470,6 +1794,7 @@ def main(argv: list[str] | None = None) -> int:
                         help="raw binary, hex text, or solc JSON; use - for stdin")
     parser.add_argument("--hex", dest="hex_bytecode", help="bytecode as a hexadecimal string")
     parser.add_argument("--name", required=True, help="Lean-safe prefix for generated declarations")
+    parser.add_argument("--namespace", help="Lean namespace (default: NAMEBlocks)")
     parser.add_argument("--code-term", required=True,
                         help="ByteArray term provided by the imported bytecode module")
     parser.add_argument("--bytecode-import", required=True,
@@ -1519,7 +1844,7 @@ def main(argv: list[str] | None = None) -> int:
         paths = write_outputs(args.output, args.name, imports, units,
                               args.shard_size, args.creation_code, args.code_term,
                               args.index_output, immutable_sites, code,
-                              layout_term, args.runtime_suffix)
+                              layout_term, args.runtime_suffix, namespace=args.namespace)
     except (OSError, ValueError) as error:
         parser.error(str(error))
     if args.shard_size is not None:

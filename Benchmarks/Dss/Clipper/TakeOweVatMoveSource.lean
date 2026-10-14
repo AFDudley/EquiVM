@@ -269,7 +269,8 @@ theorem clipperTakeOweGtTabVatFluxSuccessTailSourceReverts
         evmLock
         (.internalCall "status" [.var "tic", .storage (salesF (.var "id") "top")] "st")
         (.ok { contract := contract, locals := clipperTakeLocalsSt evmLock I false price, immutables := immStore v }
-          evmPrice)) :
+          evmPrice))
+    (hperm : I.perm = true) :
     let locals := clipperTakeStore I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     ExecTransitionBody config contract evm0 locals takeTransition.body
@@ -448,7 +449,7 @@ theorem clipperTakeOweGtTabVatFluxSuccessTailSourceReverts
         refine ExecBlock.consNormal (ExecStmt.requireTrue ?_) ?_
         · exact evalCallvalueEq_true (by simp [evm0, initState]; exact hwv)
         refine ExecBlock.consNormal (ExecStmt.requireTrue hlockedEval) ?_
-        refine ExecBlock.consNormal (ExecStmt.assign hlockRhs hlockAssign) ?_
+        refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hlockRhs hlockAssign) ?_
         refine ExecBlock.consNormal (ExecStmt.requireTrue hstoppedEval) ?_
         refine ExecBlock.consNormal hletUsr ?_
         refine ExecBlock.consNormal hletTic ?_
@@ -509,7 +510,8 @@ theorem clipperTakeOweGtTabVatFluxSuccessDataEmptyVatMoveNoCodeSourceReverts
         evmLock
         (.internalCall "status" [.var "tic", .storage (salesF (.var "id") "top")] "st")
         (.ok { contract := contract, locals := clipperTakeLocalsSt evmLock I false price, immutables := immStore v }
-          evmPrice)) :
+          evmPrice))
+    (hperm : I.perm = true) :
     let locals := clipperTakeStore I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     ExecTransitionBody config contract evm0 locals takeTransition.body .reverted (immStore v) := by
@@ -690,7 +692,7 @@ theorem clipperTakeOweGtTabVatFluxSuccessDataEmptyVatMoveNoCodeSourceReverts
         refine ExecBlock.consNormal (ExecStmt.requireTrue ?_) ?_
         · exact evalCallvalueEq_true (by simp [evm0, initState]; exact hwv)
         refine ExecBlock.consNormal (ExecStmt.requireTrue hlockedEval) ?_
-        refine ExecBlock.consNormal (ExecStmt.assign hlockRhs hlockAssign) ?_
+        refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hlockRhs hlockAssign) ?_
         refine ExecBlock.consNormal (ExecStmt.requireTrue hstoppedEval) ?_
         refine ExecBlock.consNormal hletUsr ?_
         refine ExecBlock.consNormal hletTic ?_
@@ -758,7 +760,8 @@ theorem clipperTakeOweGtTabVatFluxSuccessDataEmptyVatMoveCallFailureSourceRevert
         evmLock
         (.internalCall "status" [.var "tic", .storage (salesF (.var "id") "top")] "st")
         (.ok { contract := contract, locals := clipperTakeLocalsSt evmLock I false price, immutables := immStore v }
-          evmPrice)) :
+          evmPrice))
+    (hperm : I.perm = true) :
     let locals := clipperTakeStore I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     ExecTransitionBody config contract evm0 locals takeTransition.body
@@ -940,7 +943,7 @@ theorem clipperTakeOweGtTabVatFluxSuccessDataEmptyVatMoveCallFailureSourceRevert
         refine ExecBlock.consNormal (ExecStmt.requireTrue ?_) ?_
         · exact evalCallvalueEq_true (by simp [evm0, initState]; exact hwv)
         refine ExecBlock.consNormal (ExecStmt.requireTrue hlockedEval) ?_
-        refine ExecBlock.consNormal (ExecStmt.assign hlockRhs hlockAssign) ?_
+        refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hlockRhs hlockAssign) ?_
         refine ExecBlock.consNormal (ExecStmt.requireTrue hstoppedEval) ?_
         refine ExecBlock.consNormal hletUsr ?_
         refine ExecBlock.consNormal hletTic ?_
@@ -1004,7 +1007,8 @@ theorem clipperTakeOweGtTabVatFluxSuccessDataEmptyVatMoveNoCodeRevertEquivFromPo
         evmLock
         (.internalCall "status" [.var "tic", .storage (salesF (.var "id") "top")] "st")
         (.ok { contract := contract, locals := clipperTakeLocalsSt evmLock I false price, immutables := immStore v }
-          evmPriceStele)) :
+          evmPriceStele))
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I (immStore v) := by
   have hsrcMul :
       (clipperMinWord (clipperTakeSalesLotEVMWord evmPriceStele I)
@@ -1029,7 +1033,7 @@ theorem clipperTakeOweGtTabVatFluxSuccessDataEmptyVatMoveNoCodeRevertEquivFromPo
         (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         (clipperTakeStore I) takeTransition.body .reverted (immStore v) := by
     simpa using
-      (clipperTakeOweGtTabVatFluxSuccessDataEmptyVatMoveNoCodeSourceReverts
+      (clipperTakeOweGtTabVatFluxSuccessDataEmptyVatMoveNoCodeSourceReverts (hperm := by assumption)
         (σ := σ) (σ₀ := σ₀) (A := A)
         (I := I) (g := g) v hwv hlockedStele hstoppedSteleLt husrStele
         (evmPrice := evmPriceStele) (evmVat := evmVatStele) (outVat := outVat) price
@@ -1103,7 +1107,8 @@ theorem clipperTakeOweGtTabVatFluxSuccessDataEmptyVatMoveNoCodeRevertEquivFromPo
         evmLock
         (.internalCall "status" [.var "tic", .storage (salesF (.var "id") "top")] "st")
         (.ok { contract := contract, locals := clipperTakeLocalsSt evmLock I false price, immutables := immStore v }
-          evmPriceStele)) :
+          evmPriceStele))
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I (immStore v) := by
   subst zVat
   subst aw
@@ -1160,7 +1165,7 @@ theorem clipperTakeOweGtTabVatFluxSuccessDataEmptyVatMoveNoCodeRevertEquivFromPo
         (σ := σVatStele) (target := clipperTakeVatTarget v)
         (addr := v.vat) (clipperTakeVatTargetAddress v).symm hnoCode
   exact
-    clipperTakeOweGtTabVatFluxSuccessDataEmptyVatMoveNoCodeRevertEquivFromPostWords
+    clipperTakeOweGtTabVatFluxSuccessDataEmptyVatMoveNoCodeRevertEquivFromPostWords (hperm := by assumption)
       (v := v) (code := code)
       (σ := σ)  (σ₀ := σ₀) (A := A) (I := I)
       (g := g) (evmPriceStele := evmPriceStele) (evmVatStele := evmVatStele)
@@ -1261,7 +1266,8 @@ theorem clipperTakeOweGtTabVatFluxSuccessDataEmptyVatMoveCallFailureRevertEquivF
         evmLock
         (.internalCall "status" [.var "tic", .storage (salesF (.var "id") "top")] "st")
         (.ok { contract := contract, locals := clipperTakeLocalsSt evmLock I false price, immutables := immStore v }
-          evmPriceStele)) :
+          evmPriceStele))
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I (immStore v) := by
   subst zVat
   subst aw
@@ -1368,7 +1374,7 @@ theorem clipperTakeOweGtTabVatFluxSuccessDataEmptyVatMoveCallFailureRevertEquivF
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (clipperTakeStore I) takeTransition.body .reverted (immStore v) := by
       simpa using
-        (clipperTakeOweGtTabVatFluxSuccessDataEmptyVatMoveCallFailureSourceReverts
+        (clipperTakeOweGtTabVatFluxSuccessDataEmptyVatMoveCallFailureSourceReverts (hperm := by assumption)
           (σ := σ) (σ₀ := σ₀) (A := A)
           (I := I) (g := g) v hwv hlockedStele hstoppedSteleLt husrStele
           (evmPrice := evmPriceStele) (evmVat := evmVatStele) (evmMove := evmMoveStele)
@@ -1449,7 +1455,8 @@ theorem clipperTakeOweGtTabVatFluxSuccessCallbackFalseVatMoveNoCodeRevertEquivFr
         evmLock
         (.internalCall "status" [.var "tic", .storage (salesF (.var "id") "top")] "st")
         (.ok { contract := contract, locals := clipperTakeLocalsSt evmLock I false price, immutables := immStore v }
-          evmPriceStele)) :
+          evmPriceStele))
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I (immStore v) := by
   have hsrcMul :
       (clipperMinWord (clipperTakeSalesLotEVMWord evmPriceStele I)
@@ -1509,7 +1516,7 @@ theorem clipperTakeOweGtTabVatFluxSuccessCallbackFalseVatMoveNoCodeRevertEquivFr
         (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         (clipperTakeStore I) takeTransition.body .reverted (immStore v) := by
     simpa using
-      (clipperTakeOweGtTabVatFluxSuccessTailSourceReverts
+      (clipperTakeOweGtTabVatFluxSuccessTailSourceReverts (hperm := by assumption)
         (σ := σ) (σ₀ := σ₀) (A := A)
         (I := I) (g := g) v hwv hlockedStele hstoppedSteleLt husrStele
         (evmPrice := evmPriceStele) price hmax htail hstatus)
@@ -1595,7 +1602,8 @@ theorem clipperTakeOweGtTabVatFluxSuccessCallbackFalseVatMoveCallFailureRevertEq
         evmLock
         (.internalCall "status" [.var "tic", .storage (salesF (.var "id") "top")] "st")
         (.ok { contract := contract, locals := clipperTakeLocalsSt evmLock I false price, immutables := immStore v }
-          evmPriceStele)) :
+          evmPriceStele))
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I (immStore v) := by
   have hsrcMul :
       (clipperMinWord (clipperTakeSalesLotEVMWord evmPriceStele I)
@@ -1655,7 +1663,7 @@ theorem clipperTakeOweGtTabVatFluxSuccessCallbackFalseVatMoveCallFailureRevertEq
         (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         (clipperTakeStore I) takeTransition.body .reverted (immStore v) := by
     simpa using
-      (clipperTakeOweGtTabVatFluxSuccessTailSourceReverts
+      (clipperTakeOweGtTabVatFluxSuccessTailSourceReverts (hperm := by assumption)
         (σ := σ) (σ₀ := σ₀) (A := A)
         (I := I) (g := g) v hwv hlockedStele hstoppedSteleLt husrStele
         (evmPrice := evmPriceStele) price hmax htail hstatus)
@@ -1715,7 +1723,8 @@ theorem clipperTakeOweGtTabVatFluxSuccessDataEmptyVatMoveCallFailureRevertEquivF
         evmLock
         (.internalCall "status" [.var "tic", .storage (salesF (.var "id") "top")] "st")
         (.ok { contract := contract, locals := clipperTakeLocalsSt evmLock I false price, immutables := immStore v }
-          evmPriceStele)) :
+          evmPriceStele))
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I (immStore v) := by
   have hsrcMul :
       (clipperMinWord (clipperTakeSalesLotEVMWord evmPriceStele I)
@@ -1740,7 +1749,7 @@ theorem clipperTakeOweGtTabVatFluxSuccessDataEmptyVatMoveCallFailureRevertEquivF
         (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         (clipperTakeStore I) takeTransition.body .reverted (immStore v) := by
     simpa using
-      (clipperTakeOweGtTabVatFluxSuccessDataEmptyVatMoveCallFailureSourceReverts
+      (clipperTakeOweGtTabVatFluxSuccessDataEmptyVatMoveCallFailureSourceReverts (hperm := by assumption)
         (σ := σ) (σ₀ := σ₀) (A := A)
         (I := I) (g := g) v hwv hlockedStele hstoppedSteleLt husrStele
         (evmPrice := evmPriceStele) (evmVat := evmVatStele) (evmMove := evmMoveStele)
@@ -1817,7 +1826,8 @@ theorem clipperTakeSourcePrefixToSlice
       ExecBlock config
         { contract := contract,
           locals := clipperTakeLocalsSlice evmLock evmPrice I false price slice, immutables := immStore v }
-        evmPrice (clipperTakeAfterSliceStmts) result) :
+        evmPrice (clipperTakeAfterSliceStmts) result)
+    (hperm : I.perm = true) :
     let locals := clipperTakeStore I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     ExecBlock config { contract := contract, locals := locals, immutables := immStore v } evm0
@@ -1990,7 +2000,7 @@ theorem clipperTakeSourcePrefixToSlice
       refine ExecBlock.consNormal (ExecStmt.requireTrue ?_) ?_
       · exact evalCallvalueEq_true (by simp [evm0, initState]; exact hwv)
       refine ExecBlock.consNormal (ExecStmt.requireTrue hlockedEval) ?_
-      refine ExecBlock.consNormal (ExecStmt.assign hlockRhs hlockAssign) ?_
+      refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hlockRhs hlockAssign) ?_
       refine ExecBlock.consNormal (ExecStmt.requireTrue hstoppedEval) ?_
       refine ExecBlock.consNormal hletUsr ?_
       refine ExecBlock.consNormal hletTic ?_
@@ -2032,11 +2042,12 @@ theorem clipperTakeSourceRevertsOfAfterSlice
       ExecBlock config
         { contract := contract,
           locals := clipperTakeLocalsSlice evmLock evmPrice I false price slice, immutables := immStore v }
-        evmPrice (clipperTakeAfterSliceStmts) .reverted) :
+        evmPrice (clipperTakeAfterSliceStmts) .reverted)
+    (hperm : I.perm = true) :
     ExecTransitionBody config contract
       (initState σ σ₀ (Sat256.ofUInt256 g) A I)
       (clipperTakeStore I) takeTransition.body .reverted (immStore v) := by
-  have hblock := clipperTakeSourcePrefixToSlice
+  have hblock := clipperTakeSourcePrefixToSlice (hperm := by assumption)
     (σ := σ) (σ₀ := σ₀) (A := A)
     (I := I) (g := g) (evmPrice := evmPrice) (result := .reverted)
     v price hwv hlocked hstopped husr hmax hstatus htail
@@ -2070,12 +2081,13 @@ theorem clipperTakeSourceOkOfAfterSlice
       ExecBlock config
         { contract := contract,
           locals := clipperTakeLocalsSlice evmLock evmPrice I false price slice, immutables := immStore v }
-        evmPrice (clipperTakeAfterSliceStmts) (.ok finalFrame evmFinal)) :
+        evmPrice (clipperTakeAfterSliceStmts) (.ok finalFrame evmFinal))
+    (hperm : I.perm = true) :
     ExecTransitionBody config contract
       (initState σ σ₀ (Sat256.ofUInt256 g) A I)
       (clipperTakeStore I) takeTransition.body
       (.returned finalFrame evmFinal none) (immStore v) := by
-  have hblock := clipperTakeSourcePrefixToSlice
+  have hblock := clipperTakeSourcePrefixToSlice (hperm := by assumption)
     (σ := σ) (σ₀ := σ₀) (A := A)
     (I := I) (g := g) (evmPrice := evmPrice)
     (result := .ok finalFrame evmFinal)

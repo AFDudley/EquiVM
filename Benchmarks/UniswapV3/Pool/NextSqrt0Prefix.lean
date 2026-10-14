@@ -69,7 +69,7 @@ theorem nextSqrt0ProductSource (imms : Store) (evm : EVM.State) (a : NextSqrtArg
   all_goals
     exact ExecBlock.consNormal (stele' := nextSqrt0ProductZeroFrame imms a)
       (ExecStmt.letDecl (by simp only [evalExpr?, pure]))
-      (ExecBlock.consNormal (ExecStmt.assign (evalExpr_word_mul hm hp)
+      (ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalExpr_word_mul hm hp)
         (assignLocalVarBase_frame Std.HashMap.getElem?_insert_self)) ExecBlock.nil)
 
 theorem nextSqrt0ProductGet (imms : Store) (a : NextSqrtArgs) :

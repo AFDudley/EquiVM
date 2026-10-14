@@ -2079,6 +2079,7 @@ theorem blindAuctionRevealBodyReturns_empty_callSuccess
   refine ExecBlock.consNormal hfor ?_
   refine ExecBlock.consNormal
     (ExecStmt.lowLevelCallSuccess
+      (hperm := by first | assumption | exact Or.inr ‹_› | exact Or.inl rfl)
       (evalExpr_reveal_sender evm (revealLoopStore ⟨0⟩ ⟨0⟩))
       (evalExpr_reveal_refund evm (revealLoopStore ⟨0⟩ ⟨0⟩) ⟨0⟩ (by native_decide))
       (evalExpr_reveal_emptyBytes evm (revealLoopStore ⟨0⟩ ⟨0⟩))
@@ -2204,6 +2205,7 @@ theorem blindAuctionRevealBodyReverts_empty_callFailure
   refine ExecBlock.consNormal hfor ?_
   refine ExecBlock.consNormal
     (ExecStmt.lowLevelCallFailure
+      (hperm := by first | assumption | exact Or.inr ‹_› | exact Or.inl rfl)
       (evalExpr_reveal_sender evm (revealLoopStore ⟨0⟩ ⟨0⟩))
       (evalExpr_reveal_refund evm (revealLoopStore ⟨0⟩ ⟨0⟩) ⟨0⟩ (by native_decide))
       (evalExpr_reveal_emptyBytes evm (revealLoopStore ⟨0⟩ ⟨0⟩))

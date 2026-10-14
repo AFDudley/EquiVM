@@ -87,7 +87,7 @@ theorem assetSearchIncrement_exec {frame : Frame} {evm : EVM.State} {i : Nat}
     (hi : frame.locals.get? "i" = some (.int i)) (hb : i + 1 < 256) :
     ExecStmt config frame evm assetSearchIncrement
       (.ok { frame with locals := frame.locals.insert "i" (.int (i + 1)) } evm) := by
-  apply ExecStmt.assign (value := .int (i + 1))
+  apply ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (value := .int (i + 1))
   · simp only [evalExpr?, hi, EvalResult.ofOption, bind, EvalResult.bind, pure,
       evalBinaryOp_add_int_ok, castValue?]
     rw [normalizeInt_uint_eq_self _ _ (by omega) (by change (i : Int) + 1 < 256; omega)]

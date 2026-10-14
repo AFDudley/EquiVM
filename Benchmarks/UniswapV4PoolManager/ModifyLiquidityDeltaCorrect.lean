@@ -64,8 +64,9 @@ theorem modifyLiquidityDeltaCorrect {I : ExecutionEnv} {g : Sat256} {s0 evm : St
         (Nat.le_trans hpaid hcost) rd1 with hstatic | hnext
     · exact ⟨.staticViolation, execBlock_append hs
         (modifyLiquidityEventStaticSource hdframeid hdframeparams (by rw [hI]; exact hstatic.1)), hstatic.2⟩
-    · exact ⟨_, execBlock_append hs (modifyLiquidityEventSource hdframeid hdframeparams),
-        rfl, rfl, hnext⟩
+    · exact ⟨_, execBlock_append hs (modifyLiquidityEventSource
+        (hperm := by simpa only [hI] using hnext.1) hdframeid hdframeparams),
+        rfl, rfl, hnext.2⟩
   · rw [if_neg hsum] at hs
     rw [balanceDeltaCombineResult, if_neg hsum] at hr
     exact ⟨.reverted, execBlock_reverted_append hs, hr⟩

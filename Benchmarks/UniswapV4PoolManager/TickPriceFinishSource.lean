@@ -33,7 +33,7 @@ theorem tickPriceFinishPrefix {f : Frame} {evm : EVM.State} {sqrtPrice log2 : UI
     ExecBlock.consNormal (tickPriceScaleSource (log2 := log2) hl)
       (ExecBlock.consNormal (tickPriceLowSource (scaled := tickPriceScaled log2) hl1)
       (ExecBlock.consNormal (tickPriceHighSource (scaled := tickPriceScaled log2) hl2) (ExecBlock.consNormal
-        (ExecStmt.assign (evalLocalValue hlow3) (assignLocalValue ht3)) ExecBlock.nil)))
+        (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalLocalValue hlow3) (assignLocalValue ht3)) ExecBlock.nil)))
   have hlow4 : f4.locals.get? "tickLow" = some (.int (EVM.signed low)) :=
     (store_get_ne _ _ (by decide : ("tick" == "tickLow") = false)).trans hlow3
   have hhigh4 : f4.locals.get? "tickHi" = some (.int (EVM.signed high)) :=

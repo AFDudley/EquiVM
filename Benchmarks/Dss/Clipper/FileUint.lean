@@ -1461,7 +1461,7 @@ theorem clipperFileUintBody (v : ClipperImmutables) {code : ByteArray}
                 fileUintTransition.body
                 (.returned { contract := contract, locals := locals, immutables := immStore v } evm2 none) (immStore v) := by
             simpa [evmStele, evm2, locals, data] using
-              (clipperFileUintBufSourceBody
+              (clipperFileUintBufSourceBody (hperm := by assumption)
                 (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) v hwv
                 hauthStele hlockedStele hbuf)
           have hret := clipperFileUintX_bufOk (v := v) hpatch hperm hauthEvm
@@ -1488,7 +1488,7 @@ theorem clipperFileUintBody (v : ClipperImmutables) {code : ByteArray}
                   fileUintTransition.body
                   (.returned { contract := contract, locals := locals, immutables := immStore v } evm2 none) (immStore v) := by
               simpa [evmStele, evm2, locals, data] using
-                (clipperFileUintTailSourceBody
+                (clipperFileUintTailSourceBody (hperm := by assumption)
                   (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) v hwv
                   hauthStele hlockedStele hbuf htail)
             have hret := clipperFileUintX_tailOk (v := v) hpatch hperm hauthEvm
@@ -1516,7 +1516,7 @@ theorem clipperFileUintBody (v : ClipperImmutables) {code : ByteArray}
                     fileUintTransition.body
                     (.returned { contract := contract, locals := locals, immutables := immStore v } evm2 none) (immStore v) := by
                 simpa [evmStele, evm2, locals, data] using
-                  (clipperFileUintCuspSourceBody
+                  (clipperFileUintCuspSourceBody (hperm := by assumption)
                     (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) v hwv
                     hauthStele hlockedStele hbuf htail hcusp)
               have hret := clipperFileUintX_cuspOk (v := v) hpatch hperm hauthEvm
@@ -1544,7 +1544,7 @@ theorem clipperFileUintBody (v : ClipperImmutables) {code : ByteArray}
                       fileUintTransition.body
                       (.returned { contract := contract, locals := locals, immutables := immStore v } evm2 none) (immStore v) := by
                   simpa [evmStele, evm2, locals, data] using
-                    (clipperFileUintChipSourceBody
+                    (clipperFileUintChipSourceBody (hperm := by assumption)
                       (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) v hwv
                       hauthStele hlockedStele hbuf htail hcusp hchip)
                 have hret := clipperFileUintX_chipOk (v := v) hpatch hperm hauthEvm
@@ -1576,7 +1576,7 @@ theorem clipperFileUintBody (v : ClipperImmutables) {code : ByteArray}
                         fileUintTransition.body
                         (.returned { contract := contract, locals := locals, immutables := immStore v } evm2 none) (immStore v) := by
                     simpa [evmStele, evm2, locals, data] using
-                      (clipperFileUintTipSourceBody
+                      (clipperFileUintTipSourceBody (hperm := by assumption)
                         (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) v hwv
                         hauthStele hlockedStele hbuf htail hcusp hchip htip)
                   have hret := clipperFileUintX_tipOk (v := v) hpatch hperm hauthEvm
@@ -1609,7 +1609,7 @@ theorem clipperFileUintBody (v : ClipperImmutables) {code : ByteArray}
                           fileUintTransition.body
                           (.returned { contract := contract, locals := locals, immutables := immStore v } evm2 none) (immStore v) := by
                       simpa [evmStele, evm2, locals, data] using
-                        (clipperFileUintStoppedSourceBody
+                        (clipperFileUintStoppedSourceBody (hperm := by assumption)
                           (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
                           (g := g) v hwv hauthStele hlockedStele hbuf htail hcusp hchip
                           htip hstopped)
@@ -1635,7 +1635,7 @@ theorem clipperFileUintBody (v : ClipperImmutables) {code : ByteArray}
                         ExecTransitionBody config contract evmStele locals
                           fileUintTransition.body .reverted (immStore v) := by
                       simpa [evmStele, locals] using
-                        (clipperFileUintUnrecognizedSourceBody
+                        (clipperFileUintUnrecognizedSourceBody (hperm := by assumption)
                           (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
                           (g := g) v hwv hauthStele hlockedStele hbuf htail hcusp hchip
                           htip hstopped)

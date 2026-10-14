@@ -5,7 +5,7 @@ import Stele.SolidityLayout
 /-!
 # ERC721 — Stele specification for `ERC721.sol`
 
-A faithful (events-aside) Stele spec of a Solmate-style **ERC721 core**: the IERC721
+A faithful (events-aside) Stele spec of a Steleate-style **ERC721 core**: the IERC721
 transfer/approval/ownership surface over four mappings.
 
 Deliberately **out of scope** (see `ERC721.sol` header) and therefore not modelled here:

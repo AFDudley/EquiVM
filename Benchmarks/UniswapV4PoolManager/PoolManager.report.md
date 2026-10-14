@@ -4,7 +4,7 @@ Derived from `runtime.hex`/`creation.hex` by `scripts/bytecode_report.py`; a dev
 
 - runtime: 24009 bytes (23997 executable + 12 metadata), 10411 instructions, 914 basic blocks
 - creation: 24194 bytes (24182 executable), 10527 instructions, 922 basic blocks
-- compiler: solc 0.8.26+commit.8a97fa7a.Linux.g++; settings `{"evmVersion": "cancun", "metadata": {"bytecodeHash": "none"}, "optimizer": {"enabled": true, "runs": 44444444}, "remappings": ["@ensdomains/=node_modules/@ensdomains/", "@openzeppelin/=lib/openzeppelin-contracts/", "ds-test/=lib/forge-std/lib/ds-test/src/", "forge-std/=lib/forge-std/src/", "hardhat/=node_modules/hardhat/", "solmate/=lib/solmate/"], "viaIR": true}`
+- compiler: solc 0.8.26+commit.8a97fa7a.Linux.g++; settings `{"evmVersion": "cancun", "metadata": {"bytecodeHash": "none"}, "optimizer": {"enabled": true, "runs": 44444444}, "remappings": ["@ensdomains/=node_modules/@ensdomains/", "@openzeppelin/=lib/openzeppelin-contracts/", "ds-test/=lib/forge-std/lib/ds-test/src/", "forge-std/=lib/forge-std/src/", "hardhat/=node_modules/hardhat/", "steleate/=lib/steleate/"], "viaIR": true}`
 - immutables: `original` (AST id 511) at offsets [13606]
 
 ## Opcode census (runtime)

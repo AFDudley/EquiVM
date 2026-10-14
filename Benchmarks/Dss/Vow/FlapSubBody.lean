@@ -79,7 +79,7 @@ theorem flapTailFreeSinUnderflow
           (perm := false))
         (.ok { contract := contract, locals := locals5 } evmSin) := by
     simpa [locals4, locals5, flapLocalsVatSin0Surplus0NeedDaiSin1, collapseReturns] using
-      ExecStmt.externalCallSuccess hvatSin1 (by simp [evalExpr?, pure])
+      ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hvatSin1 (by simp [evalExpr?, pure])
         hargsSin1 hcallSin1 hdecSin1
   have hvatSin1Var :
       evalExpr? config { contract := contract, locals := locals5 } evmSin (.var "vatSin1") =
@@ -310,7 +310,7 @@ theorem flapTailDebtUnderflow
           (perm := false))
         (.ok { contract := contract, locals := locals5 } evmSin) := by
     simpa [locals4, locals5, flapLocalsVatSin0Surplus0NeedDaiSin1, collapseReturns] using
-      ExecStmt.externalCallSuccess hvatSin1 (by simp [evalExpr?, pure])
+      ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hvatSin1 (by simp [evalExpr?, pure])
         hargsSin1 hcallSin1 hdecSin1
   have hvatSin1Var :
       evalExpr? config { contract := contract, locals := locals5 } evmSin (.var "vatSin1") =
@@ -598,7 +598,7 @@ theorem flapTailDebtNotZero
           (perm := false))
         (.ok { contract := contract, locals := locals5 } evmSin) := by
     simpa [locals4, locals5, flapLocalsVatSin0Surplus0NeedDaiSin1, collapseReturns] using
-      ExecStmt.externalCallSuccess hvatSin1 (by simp [evalExpr?, pure])
+      ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hvatSin1 (by simp [evalExpr?, pure])
         hargsSin1 hcallSin1 hdecSin1
   have hvatSin1Var :
       evalExpr? config { contract := contract, locals := locals5 } evmSin (.var "vatSin1") =

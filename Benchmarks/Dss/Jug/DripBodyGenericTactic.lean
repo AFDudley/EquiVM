@@ -565,7 +565,7 @@ cases hrpowCoupled with
                 dripVatFoldCalldataMem_read64 σ' I
                   (UInt256.sub rate (dripVatIlksPrevWord out))
                   hfoldBaseSize hfoldBaseRead64
-              have hbody :
+              have hbody (hpt : I.perm = true) :
                   ExecTransitionBody config contract evm locals
                     dripTransition.body
                     (.returned
@@ -573,16 +573,16 @@ cases hrpowCoupled with
                       evmRhoS
                       (some [.int (Int.ofNat rate.toNat)])) := by
                 simpa [evm, evmVatS, evmFoldS, finalLocals, evmRhoS,
-                  locals, initState, solcSlotWordAt, rate] using hboth.1
+                  locals, initState, solcSlotWordAt, rate] using (hboth.1 hpt)
               obtain ⟨_, _, rd1669⟩ :=
                 RD.jugDripVatFoldCallSucceeded
                   (targetWord := dripVatTargetWord σ' I) rd1651
               rcases RD.jugDripVatFoldStoreRhoReturnsSplit
                   (targetWord := dripVatTargetWord σ' I)
                   hsz36 hfoldCallMemSize hfoldCallMemRead64 rd1669 with
-                ⟨_, hret⟩ | ⟨hpf, hstatic⟩
+                ⟨hpt, hret⟩ | ⟨hpf, hstatic⟩
               · exact hret.reEquivExecutionGen hcode hdispatch
-                  (jugDecode_drip_ok hsz36) hbody
+                  (jugDecode_drip_ok hsz36) (hbody hpt)
                   (by
                     simp [evmRhoS, evmFoldS, evmVatS, evmVatE, σ''_stele,
                       A''_stele, σ'_stele, evm, initState,

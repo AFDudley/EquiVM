@@ -867,7 +867,8 @@ theorem flopperKickBodyReverts_addOverflow (evm : EVM.State) (I : ExecutionEnv)
     (hkicksLt : (kickKicksWord evm).toNat < UInt256.size - 1)
     (haddOverflow :
       2 ^ 48 ≤
-        (kickNow48Word evm).toNat + (kickTauWord (kickAfterGuyState evm I)).toNat) :
+        (kickNow48Word evm).toNat + (kickTauWord (kickAfterGuyState evm I)).toNat)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (kickLocals I) kickTransition.body .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
   simpa [kickTransition, nonpayable, auth, checkedAdd48Into, List.cons_append, List.nil_append]
@@ -884,16 +885,16 @@ theorem flopperKickBodyReverts_addOverflow (evm : EVM.State) (I : ExecutionEnv)
       ExecBlock.consNormal
         (ExecStmt.letDecl (evalExpr_kick_id_add evm I hkicksLt)) <|
       ExecBlock.consNormal
-        (ExecStmt.assign (evalExpr_kick_id_var_idLocals_at evm evm I)
+        (ExecStmt.assign (hperm := Or.inr hperm) (evalExpr_kick_id_var_idLocals_at evm evm I)
           (assign_kickKicksStorage evm I)) <|
       ExecBlock.consNormal
-        (ExecStmt.assign (evalExpr_kick_bid_var_at evm (kickAfterKicksState evm) I)
+        (ExecStmt.assign (hperm := Or.inr (by simpa only [kickAfterKicksState_executionEnv] using hperm)) (evalExpr_kick_bid_var_at evm (kickAfterKicksState evm) I)
           (assign_kickBidStorage evm I)) <|
       ExecBlock.consNormal
-        (ExecStmt.assign (evalExpr_kick_lot_var_at evm (kickAfterBidState evm I) I)
+        (ExecStmt.assign (hperm := Or.inr (by simpa only [kickAfterBidState_executionEnv] using hperm)) (evalExpr_kick_lot_var_at evm (kickAfterBidState evm I) I)
           (assign_kickLotStorage evm I)) <|
       ExecBlock.consNormal
-        (ExecStmt.assign (evalExpr_kick_gal_var_at evm (kickAfterLotState evm I) I)
+        (ExecStmt.assign (hperm := Or.inr (by simpa only [kickAfterLotState_executionEnv] using hperm)) (evalExpr_kick_gal_var_at evm (kickAfterLotState evm I) I)
           (assign_kickGuyStorage evm I)) <|
       ExecBlock.consNormal
         (ExecStmt.letDecl (evalExpr_kick_endAdd_wrapped evm I)) <|
@@ -908,7 +909,7 @@ theorem flopperKickBodyReturns_successSplit (evm : EVM.State) (I : ExecutionEnv)
       Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (relyAuthStorageSlot I) = ⟨1⟩)
     (hlive : kickLiveWord evm = ⟨1⟩)
     (hkicksLt : (kickKicksWord evm).toNat < UInt256.size - 1) :
-    (((kickNow48Word evm).toNat + (kickTauWord (kickAfterGuyState evm I)).toNat <
+    (evm.executionEnv.perm = true → ((kickNow48Word evm).toNat + (kickTauWord (kickAfterGuyState evm I)).toNat <
         2 ^ 48) →
       ExecTransitionBody config contract evm (kickLocals I) kickTransition.body
       (.returned { contract := contract, locals := kickEndLocals evm I }
@@ -936,7 +937,7 @@ theorem flopperKickBodyReturns_successSplit (evm : EVM.State) (I : ExecutionEnv)
           (ExecStmt.letDecl (evalExpr_kick_id_add evm I hkicksLt)) <|
         hwrite)
   constructor
-  · intro haddFit
+  · intro hperm haddFit
     have hreturns :
         evalExprs? config { contract := contract, locals := kickEndLocals evm I }
             (kickPostState evm I) [.var "id"] =
@@ -947,23 +948,23 @@ theorem flopperKickBodyReturns_successSplit (evm : EVM.State) (I : ExecutionEnv)
     apply hprefix
     simpa [kickTransition, nonpayable, auth, checkedAdd48Into] using
       (ExecBlock.consNormal
-          (ExecStmt.assign (evalExpr_kick_id_var_idLocals_at evm evm I)
+          (ExecStmt.assign (hperm := Or.inr hperm) (evalExpr_kick_id_var_idLocals_at evm evm I)
             (assign_kickKicksStorage evm I)) <|
         ExecBlock.consNormal
-          (ExecStmt.assign (evalExpr_kick_bid_var_at evm (kickAfterKicksState evm) I)
+          (ExecStmt.assign (hperm := Or.inr (by simpa only [kickAfterKicksState_executionEnv] using hperm)) (evalExpr_kick_bid_var_at evm (kickAfterKicksState evm) I)
             (assign_kickBidStorage evm I)) <|
         ExecBlock.consNormal
-          (ExecStmt.assign (evalExpr_kick_lot_var_at evm (kickAfterBidState evm I) I)
+          (ExecStmt.assign (hperm := Or.inr (by simpa only [kickAfterBidState_executionEnv] using hperm)) (evalExpr_kick_lot_var_at evm (kickAfterBidState evm I) I)
             (assign_kickLotStorage evm I)) <|
         ExecBlock.consNormal
-          (ExecStmt.assign (evalExpr_kick_gal_var_at evm (kickAfterLotState evm I) I)
+          (ExecStmt.assign (hperm := Or.inr (by simpa only [kickAfterLotState_executionEnv] using hperm)) (evalExpr_kick_gal_var_at evm (kickAfterLotState evm I) I)
             (assign_kickGuyStorage evm I)) <|
         ExecBlock.consNormal
           (ExecStmt.letDecl (evalExpr_kick_endAdd_ok evm I haddFit)) <|
         ExecBlock.consNormal
           (ExecStmt.requireTrue (evalExpr_kick_end_guard_true evm I haddFit)) <|
         ExecBlock.consNormal
-          (ExecStmt.assign (evalExpr_kick_end_var evm I)
+          (ExecStmt.assign (hperm := Or.inr (by simpa only [kickAfterGuyState_executionEnv] using hperm)) (evalExpr_kick_end_var evm I)
             (assign_kickEndStorage_value evm I haddFit)) <|
         ExecBlock.consReturn (ExecStmt.return hreturns))
   · intro hperm
@@ -980,11 +981,12 @@ theorem flopperKickBodyReturns_success (evm : EVM.State) (I : ExecutionEnv)
     (hkicksLt : (kickKicksWord evm).toNat < UInt256.size - 1)
     (haddFit :
       (kickNow48Word evm).toNat + (kickTauWord (kickAfterGuyState evm I)).toNat <
-        2 ^ 48) :
+        2 ^ 48)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (kickLocals I) kickTransition.body
       (.returned { contract := contract, locals := kickEndLocals evm I }
         (kickPostState evm I) (some [.int (Int.ofNat (kickIdWord evm).toNat)])) :=
-  (flopperKickBodyReturns_successSplit evm I hwv hsrc hauth hlive hkicksLt).1 haddFit
+  (flopperKickBodyReturns_successSplit evm I hwv hsrc hauth hlive hkicksLt).1 hperm haddFit
 
 theorem flopperDecode_kick_ok {I : ExecutionEnv} (hsz100 : 100 ≤ I.calldata.size) :
     config.externalABI.decodeCalldata? (kickTransition.params.map Param.name)

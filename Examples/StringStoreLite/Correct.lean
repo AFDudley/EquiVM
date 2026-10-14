@@ -82,7 +82,13 @@ theorem stringStoreLiteClearCurrentLongValid
         (evm := evmStele0) (copy := copy)
         (header := currentLengthHeaderWord σ I) (len := len)
         hload hflag hlen (by simpa [len] using hvalid)
-  have hbodyBytes := clearCurrentBodyReturnsBytes (evm := evmStele0) (evm' := evmStele1)
+  by_cases hperm : I.perm = true
+  swap
+  · have hpf : I.perm = false := by simpa using hperm
+    exact (permSplit_false hpf hsplit).reEquivStaticHalt hcode hd hdec
+      (clearCurrentBodyStatic (evm := evmStele0) (by simp [evmStele0, initState]; exact hwv)
+        hread hdel (by simp [evmStele0, initState]; exact hpf))
+  have hbodyBytes := clearCurrentBodyReturnsBytes (hperm := by assumption) (evm := evmStele0) (evm' := evmStele1)
     (copy := copy) (by simp [evmStele0, initState]; exact hwv) hread hdel
   have hbody :
       ExecTransitionBody stringStoreLiteConfig stringStoreLiteContract evmStele0 ∅
@@ -92,12 +98,6 @@ theorem stringStoreLiteClearCurrentLongValid
             locals := (∅ : Store).insert "copy" (.bytes copy) }
           evmStele1 (some [(.int len.toNat)])) := by
     simpa [hcopySize] using hbodyBytes
-  by_cases hperm : I.perm = true
-  swap
-  · have hpf : I.perm = false := by simpa using hperm
-    exact (permSplit_false hpf hsplit).reEquivStaticHalt hcode hd hdec
-      (clearCurrentBodyStatic (evm := evmStele0) (by simp [evmStele0, initState]; exact hwv)
-        hread hdel (by simp [evmStele0, initState]; exact hpf))
   exact (permSplit_true hperm hsplit).reEquivExecutionGen hcode hd hdec hbody
     (by
       simp [evmStele1, evmSteleLen, evmStele0, clearSolidityBytesDataWordsFrom_accountMap,

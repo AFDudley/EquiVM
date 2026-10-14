@@ -551,7 +551,7 @@ theorem flipperYankBodyCore {σ σ₀ A I} {g : UInt256}
                             "_fluxRet" (collapseReturns [])).insert "_moveRet"
                             (collapseReturns [])
                         have hbodySplit :
-                            (ExecTransitionBody config contract evm0Stele (yankLocals I)
+                            (I.perm = true → ExecTransitionBody config contract evm0Stele (yankLocals I)
                               yankTransition.body
                               (.returned { contract := contract, locals := locals3 }
                                 (bidDeletedEVM evmMoveStele (yankId I)) none)) ∧
@@ -566,7 +566,7 @@ theorem flipperYankBodyCore {σ σ₀ A I} {g : UInt256}
                               hwv hauthStele hguyStele hbidLtStele hcatCode
                               hcallCatSteleTrue hvatCodeStele hcallVatSteleTrue
                               hmoveCodeStele hcallMoveSteleTrue)
-                        rcases hretSplit with ⟨_hperm, hret⟩ | ⟨hperm, hstatic⟩
+                        rcases hretSplit with ⟨hperm, hret⟩ | ⟨hperm, hstatic⟩
                         swap
                         · exact hstatic.reEquivStaticHalt
                             hcode hdispatch hdecode (hbodySplit.2 hperm)
@@ -593,7 +593,7 @@ theorem flipperYankBodyCore {σ σ₀ A I} {g : UInt256}
                               (bidDeletedEVM evmMoveStele (yankId I)).accountMap :=
                           Eq.trans hcollapsed hdeleted
                         exact hret.reEquivExecutionGen hcode hdispatch hdecode
-                          hbodySplit.1
+                          (hbodySplit.1 hperm)
                           haccounts
                           (by
                             rw [show yankTransition.returnType = [] by rfl]

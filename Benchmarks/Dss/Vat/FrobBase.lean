@@ -12947,7 +12947,8 @@ theorem execFrobGemUpdateOk {evm : EVM.State} {I : ExecutionEnv}
         (frobGemVSourceSlot I) = gemOld)
     (hnew : gemNew = UInt256.sub gemOld (frobDinkWord I))
     (hguardNeg : frobDinkInt I ≤ 0 ∨ gemNew.toNat ≤ gemOld.toNat)
-    (hguardPos : 0 ≤ frobDinkInt I ∨ gemOld.toNat ≤ gemNew.toNat) :
+    (hguardPos : 0 ≤ frobDinkInt I ∨ gemOld.toNat ≤ gemNew.toNat)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config { contract := contract, locals := locals } evm
       (checkedSubSignedInto "gemNew" (.storage (gemRef (.var "i") (.var "v"))) (.var "dink") ++
         [ .assign .storage (gemRef (.var "i") (.var "v")) (.var "gemNew") ])
@@ -12993,7 +12994,7 @@ theorem execFrobGemUpdateOk {evm : EVM.State} {I : ExecutionEnv}
       ExecBlock config { contract := contract, locals := localsGem } evm
         [ .assign .storage (gemRef (.var "i") (.var "v")) (.var "gemNew") ]
         (.ok { contract := contract, locals := localsGem } evmGem) := by
-    exact ExecBlock.consNormal (ExecStmt.assign hnewEval hassign) ExecBlock.nil
+    exact ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hnewEval hassign) ExecBlock.nil
   have h := execBlock_append hsub hassignBlock
   simpa [localsGem, evmGem, List.append_assoc] using h
 
@@ -13194,7 +13195,8 @@ theorem execFrobDaiUpdateOk {evm : EVM.State} {I : ExecutionEnv}
     (hdtabMod : dtab % (Int.ofNat EVM.wordModulus) = Int.ofNat dtabWord.toNat)
     (hnew : daiNew = dtabWord + daiOld)
     (hguardNeg : 0 ≤ dtab ∨ daiNew.toNat ≤ daiOld.toNat)
-    (hguardPos : dtab ≤ 0 ∨ daiOld.toNat ≤ daiNew.toNat) :
+    (hguardPos : dtab ≤ 0 ∨ daiOld.toNat ≤ daiNew.toNat)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config { contract := contract, locals := locals } evm
       (checkedAddSignedInto "daiNew" (.storage (daiRef (.var "w"))) (.var "dtab") ++
         [ .assign .storage (daiRef (.var "w")) (.var "daiNew") ])
@@ -13235,7 +13237,7 @@ theorem execFrobDaiUpdateOk {evm : EVM.State} {I : ExecutionEnv}
       ExecBlock config { contract := contract, locals := localsDai } evm
         [ .assign .storage (daiRef (.var "w")) (.var "daiNew") ]
         (.ok { contract := contract, locals := localsDai } evmDai) := by
-    exact ExecBlock.consNormal (ExecStmt.assign hnewEval hassign) ExecBlock.nil
+    exact ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hnewEval hassign) ExecBlock.nil
   have h := execBlock_append hadd hassignBlock
   simpa [localsDai, evmDai, List.append_assoc] using h
 
@@ -13352,7 +13354,8 @@ theorem execFrobFinalStoreTailOk {evm : EVM.State} {I : ExecutionEnv}
     (hGemNeg : frobDinkInt I ≤ 0 ∨ gemNew.toNat ≤ gemOld.toNat)
     (hGemPos : 0 ≤ frobDinkInt I ∨ gemOld.toNat ≤ gemNew.toNat)
     (hDaiNeg : 0 ≤ dtab ∨ daiNew.toNat ≤ daiOld.toNat)
-    (hDaiPos : dtab ≤ 0 ∨ daiOld.toNat ≤ daiNew.toNat) :
+    (hDaiPos : dtab ≤ 0 ∨ daiOld.toNat ≤ daiNew.toNat)
+    (hperm : evm.executionEnv.perm = true) :
     let evmGem := Stele.EVM.storageStore evm evm.executionEnv.codeOwner
       (frobGemVSourceSlot I) gemNew
     let evmDai := Stele.EVM.storageStore evmGem evmGem.executionEnv.codeOwner
@@ -13398,7 +13401,7 @@ theorem execFrobFinalStoreTailOk {evm : EVM.State} {I : ExecutionEnv}
           [ .assign .storage (gemRef (.var "i") (.var "v")) (.var "gemNew") ])
         (.ok { contract := contract, locals := localsGem } evmGem) := by
     simpa [localsGem, evmGem] using
-      execFrobGemUpdateOk (evm := evm) (I := I) locals gemOld gemNew hsz196 hi hv
+      execFrobGemUpdateOk (hperm := by simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm) (evm := evm) (I := I) locals gemOld gemNew hsz196 hi hv
         hdink hbaseGem hloadGem hgemNew hGemNeg hGemPos
   have hwGem : localsGem.get? "w" = some (frobWValue I) := by
     change (locals.insert "gemNew" (.int (Int.ofNat gemNew.toNat))).get? "w" =
@@ -13420,7 +13423,7 @@ theorem execFrobFinalStoreTailOk {evm : EVM.State} {I : ExecutionEnv}
           [ .assign .storage (daiRef (.var "w")) (.var "daiNew") ])
         (.ok { contract := contract, locals := localsDai } evmDai) := by
     simpa [localsGem, localsDai, evmGem, evmDai] using
-      execFrobDaiUpdateOk (evm := evmGem) (I := I) localsGem daiOld daiNew
+      execFrobDaiUpdateOk (hperm := by simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm) (evm := evmGem) (I := I) localsGem daiOld daiNew
         dtabWord dtab hwGem hdtabGem hbaseDaiGem (by simpa [evmGem] using hloadDai)
         hdtabMod hdaiNew hDaiNeg hDaiPos
   have hTailBaseI : localsDai.get? "i" = some (frobIValue I) := by
@@ -13521,37 +13524,44 @@ theorem execFrobFinalStoreTailOk {evm : EVM.State} {I : ExecutionEnv}
           .assign .storage (ilksF (.var "i") "dust") (.var "ilkDust") ]
         (.ok { contract := contract, locals := localsDai } evmDust) := by
     refine ExecBlock.consNormal
-      (ExecStmt.assign
+      (ExecStmt.assign (hperm := Or.inr (by
+        simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm))
         (evalVarAfterDai (evm' := evmDai) hurnInkNew (by native_decide)
           (by native_decide))
         hassignInk) ?_
     refine ExecBlock.consNormal
-      (ExecStmt.assign
+      (ExecStmt.assign (hperm := Or.inr (by
+        simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm))
         (evalVarAfterDai (evm' := evmInk) hurnArtNew (by native_decide)
           (by native_decide))
         hassignArt) ?_
     refine ExecBlock.consNormal
-      (ExecStmt.assign
+      (ExecStmt.assign (hperm := Or.inr (by
+        simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm))
         (evalVarAfterDai (evm' := evmArt) hilkArtNew (by native_decide)
           (by native_decide))
         hassignIlkArt) ?_
     refine ExecBlock.consNormal
-      (ExecStmt.assign
+      (ExecStmt.assign (hperm := Or.inr (by
+        simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm))
         (evalVarAfterDai (evm' := evmIlk) hilkRate (by native_decide)
           (by native_decide))
         hassignRate) ?_
     refine ExecBlock.consNormal
-      (ExecStmt.assign
+      (ExecStmt.assign (hperm := Or.inr (by
+        simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm))
         (evalVarAfterDai (evm' := evmRate) hilkSpot (by native_decide)
           (by native_decide))
         hassignSpot) ?_
     refine ExecBlock.consNormal
-      (ExecStmt.assign
+      (ExecStmt.assign (hperm := Or.inr (by
+        simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm))
         (evalVarAfterDai (evm' := evmSpot) hilkLine (by native_decide)
           (by native_decide))
         hassignLine) ?_
     exact ExecBlock.consNormal
-      (ExecStmt.assign
+      (ExecStmt.assign (hperm := Or.inr (by
+        simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm))
         (evalVarAfterDai (evm' := evmLine) hilkDust (by native_decide)
           (by native_decide))
         hassignDust) ExecBlock.nil
@@ -13570,13 +13580,14 @@ theorem execFrobDebtAddStoreSplit {evm : EVM.State} {locals : Store}
     (hnew : debtNew = dtabWord + debtOld)
     (hguardNeg : 0 ≤ dtab ∨ debtNew.toNat ≤ debtOld.toNat)
     (hguardPos : dtab ≤ 0 ∨ debtOld.toNat ≤ debtNew.toNat) :
+    (evm.executionEnv.perm = true →
     ExecBlock config { contract := contract, locals := locals } evm
       (checkedAddSignedInto "debtNew" (.storage debtRef) (.var "dtab") ++
         [ .assign .storage debtRef (.var "debtNew") ])
       (.ok
         { contract := contract,
           locals := locals.insert "debtNew" (.int (Int.ofNat debtNew.toNat)) }
-        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner foldDebtSlot debtNew)) ∧
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner foldDebtSlot debtNew))) ∧
     (evm.executionEnv.perm = false →
       ExecBlock config { contract := contract, locals := locals } evm
         (checkedAddSignedInto "debtNew" (.storage debtRef) (.var "dtab") ++
@@ -13654,15 +13665,18 @@ theorem execFrobDebtAddStoreSplit {evm : EVM.State} {locals : Store}
         .storage debtRef (.int (Int.ofNat debtNew.toNat)) =
       .ok ({ contract := contract, locals := localsDebt }, evmDebt) := by
     simpa [evmDebt] using assign_fold_debt evm localsDebt debtNew hbaseAfter
-  have hAssign :
-      ExecBlock config { contract := contract, locals := localsDebt } evm
-        [ .assign .storage debtRef (.var "debtNew") ]
-        (.ok { contract := contract, locals := localsDebt } evmDebt) := by
-    exact ExecBlock.consNormal (ExecStmt.assign hdebtNewEval hdebtAssign) ExecBlock.nil
-  have h := execBlock_append hAdd hAssign
-  exact ⟨by simpa [localsDebt, evmDebt, List.append_assoc] using h,
-    fun hpf => execBlock_append hAdd
-      (ExecBlock.consStatic (ExecStmt.assignStatic hdebtNewEval hdebtAssign hpf))⟩
+  constructor
+  · intro hperm
+    have hAssign :
+        ExecBlock config { contract := contract, locals := localsDebt } evm
+          [ .assign .storage debtRef (.var "debtNew") ]
+          (.ok { contract := contract, locals := localsDebt } evmDebt) := by
+      exact ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hdebtNewEval hdebtAssign) ExecBlock.nil
+    have h := execBlock_append hAdd hAssign
+    simpa [localsDebt, evmDebt, List.append_assoc] using h
+  · intro hpf
+    exact execBlock_append hAdd
+      (ExecBlock.consStatic (ExecStmt.assignStatic hdebtNewEval hdebtAssign hpf))
 
 theorem execFrobDebtAddStoreOk {evm : EVM.State} {locals : Store}
     (debtOld debtNew dtabWord : UInt256) (dtab : Int)
@@ -13673,7 +13687,8 @@ theorem execFrobDebtAddStoreOk {evm : EVM.State} {locals : Store}
     (hdtabMod : dtab % (Int.ofNat EVM.wordModulus) = Int.ofNat dtabWord.toNat)
     (hnew : debtNew = dtabWord + debtOld)
     (hguardNeg : 0 ≤ dtab ∨ debtNew.toNat ≤ debtOld.toNat)
-    (hguardPos : dtab ≤ 0 ∨ debtOld.toNat ≤ debtNew.toNat) :
+    (hguardPos : dtab ≤ 0 ∨ debtOld.toNat ≤ debtNew.toNat)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config { contract := contract, locals := locals } evm
       (checkedAddSignedInto "debtNew" (.storage debtRef) (.var "dtab") ++
         [ .assign .storage debtRef (.var "debtNew") ])
@@ -13682,7 +13697,7 @@ theorem execFrobDebtAddStoreOk {evm : EVM.State} {locals : Store}
           locals := locals.insert "debtNew" (.int (Int.ofNat debtNew.toNat)) }
         (Stele.EVM.storageStore evm evm.executionEnv.codeOwner foldDebtSlot debtNew)) :=
   (execFrobDebtAddStoreSplit debtOld debtNew dtabWord dtab hbase hdtab hload hdtabMod hnew
-    hguardNeg hguardPos).1
+    hguardNeg hguardPos).1 hperm
 
 theorem execFrobDebtAddCheckedRevertGuardNeg {evm : EVM.State} {locals : Store}
     (debtOld debtNew dtabWord : UInt256) (dtab : Int)

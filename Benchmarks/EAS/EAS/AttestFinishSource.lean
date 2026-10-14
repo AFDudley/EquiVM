@@ -40,7 +40,7 @@ theorem attestFinishSource {L imms : Store} {evm evm' : EVM.State} {old heap : N
   change ExecBlock config {contract := contract,locals := L1,immutables := imms} evm' _
     (.returned {contract := contract,locals := L1.insert "res" (attestationsResultValue uids used),immutables := imms}
       evm' (some [attestationsResultValue uids used,.int (Int.ofNat heap)]))
-  refine ExecBlock.consNormal (ExecStmt.assign (value := .int (Int.ofNat used.toNat))
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (value := .int (Int.ofNat used.toNat))
     (stele' := {contract := contract,locals := L1.insert "res" (attestationsResultValue uids used),immutables := imms})
     (evm' := evm')
     (by simp only [evalExpr?,hv1,EvalResult.ofOption]) ?_) ?_

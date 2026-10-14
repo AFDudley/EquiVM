@@ -39,14 +39,14 @@ theorem morphoEnableIrmBodySplit (v : MorphoImmutables) (evm : EVM.State)
     (ho : solcSourceWord evm.executionEnv = solcAddressSlotWord ⟨0⟩ evm.accountMap evm.executionEnv)
     (hdisabled : irmEnabledByte evm.accountMap evm.executionEnv
       (calldataWord evm.executionEnv.calldata 4) = ⟨0⟩) :
-    ExecTransitionBody config contract evm (enableIrmArgs evm.executionEnv.calldata)
+    (evm.executionEnv.perm = true → ExecTransitionBody config contract evm (enableIrmArgs evm.executionEnv.calldata)
       enableIrmTransition.body
       (.returned (enableIrmFrame v evm.executionEnv.calldata)
         (Stele.EVM.storageStore evm evm.executionEnv.codeOwner
           (solcMappingSlot ⟨4⟩ (calldataWord evm.executionEnv.calldata 4))
           (UInt256.lor (UInt256.land (solcSlotWordAt
             (solcMappingSlot ⟨4⟩ (calldataWord evm.executionEnv.calldata 4))
-            evm.accountMap evm.executionEnv) (UInt256.lnot ⟨255⟩)) ⟨1⟩)) none) (immStore v) ∧
+            evm.accountMap evm.executionEnv) (UInt256.lnot ⟨255⟩)) ⟨1⟩)) none) (immStore v)) ∧
     (evm.executionEnv.perm = false →
       ExecTransitionBody config contract evm (enableIrmArgs evm.executionEnv.calldata)
         enableIrmTransition.body .staticViolation (immStore v)) := by
@@ -70,10 +70,11 @@ theorem morphoEnableIrmBodySplit (v : MorphoImmutables) (evm : EVM.State)
   have htrue (state : EVM.State) : evalExpr? config (enableIrmFrame v evm.executionEnv.calldata)
       state (.boolLit true) = .ok (.bool true) := by simp only [evalExpr?, pure]
   constructor
-  · apply ExecFuncBody.execBlockOK
+  · intro hperm
+    apply ExecFuncBody.execBlockOK
     apply hprefix.run
-    apply ExecBlock.consNormal (ExecStmt.assign (htrue evm) hassign)
-    apply ExecBlock.consNormal (ExecStmt.emit (evalExprs?_singleton (enableIrmArg_eval v _ _)))
+    apply ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) (htrue evm) hassign)
+    apply ExecBlock.consNormal (ExecStmt.emit (hperm := by simpa only [storageStore_executionEnv] using hperm) (evalExprs?_singleton (enableIrmArg_eval v _ _)))
     exact ExecBlock.nil
   · intro hperm
     exact ExecFuncBody.execBlockStatic
@@ -372,7 +373,7 @@ theorem morphoEnableIrmBody {σ σ₀ A I} {g : UInt256} (v : MorphoImmutables)
                 hcv hbound hcanon ho hdisabled
               rcases morphoEnableIrmXSplit (g := .ofUInt256 g) (σ₀ := σ₀) (A := A)
                 v hcode hsize hsel hcv hlen hbound hcanon ho hdisabled with ⟨hp, hx⟩ | ⟨hp, hx⟩
-              · exact reEquivSelectorExecutionGen hcode hx hd hdec hbody.1
+              · exact reEquivSelectorExecutionGen hcode hx hd hdec (hbody.1 hp)
                   (by rw [storageStore_accountMap]; rfl) (.fallthrough rfl rfl (by native_decide))
               · exact reEquivSelectorStatic hcode hx hd hdec (hbody.2 hp)
             · exact reEquivSelectorRevert hcode

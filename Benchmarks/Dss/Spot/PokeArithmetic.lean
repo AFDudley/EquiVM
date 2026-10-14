@@ -204,7 +204,7 @@ theorem execPokeTrueArithmeticReturns (evm : EVM.State) (I : ExecutionEnv) (out 
   refine ExecBlock.consNormal (ExecStmt.requireTrue hReq) ?_
   refine ExecBlock.consNormal hRdiv1Stmt ?_
   refine ExecBlock.consNormal (by simpa [locals1] using hRdiv2Stmt) ?_
-  exact ExecBlock.consNormal (ExecStmt.assign hSpot2Var hAssign) ExecBlock.nil
+  exact ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inl rfl) hSpot2Var hAssign) ExecBlock.nil
 
 theorem execPokeTrueValScaledOverflowReverts
     (evm : EVM.State) (I : ExecutionEnv) (out : ByteArray)

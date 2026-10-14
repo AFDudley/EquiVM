@@ -203,7 +203,7 @@ theorem uniswapMintInitialSmallRootRevertsFromFactoryCases
           (initState σ σ₀ (Sat256.ofUInt256 g) A I) (mintStore I)
           mintTransition.body .reverted := by
       exact ExecFuncBody.execBlockRevert
-        (uniswapMintInitialSmallRootReverts_feeOff_kLastZero
+        (uniswapMintInitialSmallRootReverts_feeOff_kLastZero (hperm := by assumption)
           (initState σ σ₀ (Sat256.ofUInt256 g) A I) evm0S evm1S evmFeeS I
           feeTo (by simp only [initState]; exact hwv) hunlockedStele hguard0 hguard1
           hcall0 hdec0 hcall1 hdec1 hle0Source hle1Source hfeeGuard hfeeCall hfeeDec
@@ -252,7 +252,7 @@ theorem uniswapMintInitialSmallRootRevertsFromFactoryCases
             (initState σ σ₀ (Sat256.ofUInt256 g) A I) (mintStore I)
             mintTransition.body .reverted := by
         exact ExecFuncBody.execBlockRevert
-          (uniswapMintInitialSmallRootReverts_feeOn_kLastZero
+          (uniswapMintInitialSmallRootReverts_feeOn_kLastZero (hperm := by assumption)
             (initState σ σ₀ (Sat256.ofUInt256 g) A I) evm0S evm1S
             evmFeeS I feeTo (by simp only [initState]; exact hwv) hunlockedStele hguard0
             hguard1 hcall0 hdec0 hcall1 hdec1 hle0Source hle1Source hfeeGuard hfeeCall
@@ -317,7 +317,7 @@ theorem uniswapMintInitialSmallRootRevertsFromFactoryCases
             (initState σ σ₀ (Sat256.ofUInt256 g) A I) (mintStore I)
             mintTransition.body .reverted := by
         exact ExecFuncBody.execBlockRevert
-          (uniswapMintInitialSmallRootReverts_feeOff_kLastNonzero
+          (uniswapMintInitialSmallRootReverts_feeOff_kLastNonzero (hperm := by assumption)
             (initState σ σ₀ (Sat256.ofUInt256 g) A I) evm0S evm1S
             evmFeeS I feeTo (by simp only [initState]; exact hwv) hunlockedStele hguard0
             hguard1 hcall0 hdec0 hcall1 hdec1 hle0Source hle1Source hfeeGuard hfeeCall

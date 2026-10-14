@@ -42,7 +42,7 @@ theorem poolSwapGrowthSource {f : Frame} {evm : State} {s : PoolSwapStepWords} {
             (.elem (.int (.uint ⟨256, by decide⟩)))))
         (.ok (valueLocal f1 "step" (poolSwapStepValue (poolSwapGrowthStep s r.liquidity))) evm) := by
       simpa only [poolSwapGrowthStep, if_neg hz] using
-        ExecStmt.assign (evalWordAdd (evalStructField (field := "feeGrowthGlobalX128") (evalLocalValue hs1) rfl)
+        ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalWordAdd (evalStructField (field := "feeGrowthGlobalX128") (evalLocalValue hs1) rfl)
           (evalLocalValue (store_get_self _ _ _))) (assignLocalField hs1 rfl rfl)
     exact ExecStmt.iteTrue (by simpa only [decide_eq_true hz] using hg)
       (ExecBlock.consNormal hcall (execBlock_singleton hstore))

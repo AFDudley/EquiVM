@@ -998,7 +998,7 @@ theorem flopperDealBodyCoreMintCallSuccess
         (solcAddressSlotWord ⟨3⟩ σ I) ≠ ⟨0⟩ :=
     hcodeSize
   have hbodySplit :
-      (ExecTransitionBody config contract evmStele (dealLocals I)
+      (I.perm = true → ExecTransitionBody config contract evmStele (dealLocals I)
         dealTransition.body
         (.returned { contract := contract, locals := dealMintLocals I }
           (auctionDeletePostState (dealIdWord I) evmCallStele) none)) ∧
@@ -1015,7 +1015,7 @@ theorem flopperDealBodyCoreMintCallSuccess
     flopperDealX_mintCallSuccessDeleteSplit
       (g := Sat256.ofUInt256 g) (σ := σ) (sel := sel)
       (by decide : (⟨1⟩ : UInt256) ≠ ⟨0⟩) rd1164 with
-      ⟨_hperm, hret⟩ | ⟨hperm, hstatic⟩
+      ⟨hperm, hret⟩ | ⟨hperm, hstatic⟩
   swap
   · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode (hbodySplit.2 hperm)
   have hFinalAccounts :
@@ -1024,7 +1024,7 @@ theorem flopperDealBodyCoreMintCallSuccess
     simpa [evmCallStele] using
       auctionDeletePostState_accountMapEq (dealIdWord I) evmCallStele I.codeOwner
         (by simp [evmCallStele, evmStele, initState])
-  exact hret.reEquivExecutionGen hcode hdispatch hdecode hbodySplit.1
+  exact hret.reEquivExecutionGen hcode hdispatch hdecode (hbodySplit.1 hperm)
     (by simpa using hFinalAccounts)
     (by
       simpa [dealTransition] using

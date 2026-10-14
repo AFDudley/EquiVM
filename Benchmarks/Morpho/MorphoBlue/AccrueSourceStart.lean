@@ -109,15 +109,16 @@ theorem morphoAccrueTimestampAssign (p : MarketParamsWords) (locals imms : Store
     (h : MarketLocals p locals) :
     ExecStmt config { contract := contract, locals := locals, immutables := imms } evm
       accrueInterestFunction.body[3]!
-      (.ok { contract := contract, locals := locals, immutables := imms }
-        (storeMarketLastUpdate evm p.id (halfWord false (UInt256.ofNat evm.executionEnv.header.timestamp)))) := by
-  exact ExecStmt.assign (evalCastUint128 (by simp only [evalExpr?, envValue, pure]))
+      (if evm.executionEnv.perm then .ok { contract := contract, locals := locals, immutables := imms }
+        (storeMarketLastUpdate evm p.id (halfWord false (UInt256.ofNat evm.executionEnv.header.timestamp))) else .staticViolation) := by
+  exact execStmt_assign_storage (evalCastUint128 (by simp only [evalExpr?, envValue, pure]))
     (assignMarketLastUpdate evm locals imms (.var "id") p.id _ (halfWord_bound false _) h.market (h.evalId imms evm))
 
 theorem morphoAccrueSourceNoIrm (p : MarketParamsWords) (hc : p.Canonical) (evm : EVM.State) (imms : Store)
     (htime : (marketFieldWord evm.accountMap evm.executionEnv p.id 4).toNat ≤
       (UInt256.ofNat evm.executionEnv.header.timestamp).toNat)
-    (hn : accrueElapsed evm.accountMap evm.executionEnv p ≠ ⟨0⟩) (hi0 : p.irm = ⟨0⟩) :
+    (hn : accrueElapsed evm.accountMap evm.executionEnv p ≠ ⟨0⟩) (hi0 : p.irm = ⟨0⟩)
+    (hperm : evm.executionEnv.perm = true) :
     ExecFuncBody config (accrueStart p imms) evm accrueInterestFunction.body
       (.returned (accrueAfterElapsed p imms (accrueElapsed evm.accountMap evm.executionEnv p))
         (storeMarketLastUpdate evm p.id (halfWord false (UInt256.ofNat evm.executionEnv.header.timestamp))) none) := by
@@ -125,7 +126,8 @@ theorem morphoAccrueSourceNoIrm (p : MarketParamsWords) (hc : p.Canonical) (evm 
   apply (morphoAccrueSourceNonzeroElapsed p evm imms htime hn).run
   apply ExecBlock.consNormal (ExecStmt.iteFalse ?_ ExecBlock.nil)
   · exact ExecBlock.consNormal
-      (morphoAccrueTimestampAssign p _ imms evm (accrueElapsed_locals p imms _)) ExecBlock.nil
+      (by simpa only [hperm, if_true] using
+        morphoAccrueTimestampAssign p _ imms evm (accrueElapsed_locals p imms _)) ExecBlock.nil
   · simpa only [hi0, ne_eq, not_true_eq_false, decide_false] using
       (accrueElapsed_locals p imms _).evalIrmNonzero hc imms evm
 

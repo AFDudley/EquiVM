@@ -140,14 +140,17 @@ theorem approveAssign (evm : EVM.State) (I : ExecutionEnv) :
   simp [approvePostState, approveSlot, approveEvaledRef]
 
 theorem erc20ApproveBodyReturns (evm : EVM.State) (I : ExecutionEnv)
-    (h : evm.executionEnv.weiValue = ⟨0⟩) :
+    (h : evm.executionEnv.weiValue = ⟨0⟩) (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody erc20Config erc20Contract evm (approveStore I) approveTransition.body
       (.returned { contract := erc20Contract, locals := approveStore I }
         (approvePostState evm I) (some [(.bool true)])) := by
   refine ExecFuncBody.execBlockRet ?_
   refine ExecBlock.consNormal (ExecStmt.requireTrue (evalCallvalueEq_true h)) ?_
-  refine ExecBlock.consNormal (ExecStmt.assign (evalExpr_approve_value evm I) (approveAssign evm I)) ?_
-  refine ExecBlock.consNormal (ExecStmt.emit (evalExprs_approve_event (approvePostState evm I) I)) ?_
+  refine ExecBlock.consNormal
+    (ExecStmt.assign (Or.inr hperm) (evalExpr_approve_value evm I) (approveAssign evm I)) ?_
+  refine ExecBlock.consNormal
+    (ExecStmt.emit (by simpa [approvePostState] using hperm)
+      (evalExprs_approve_event (approvePostState evm I) I)) ?_
   exact ExecBlock.consReturn (ExecStmt.return (by simp [evalExprs?, evalExpr?, EvalResult.bind, bind, pure]))
 
 /-- Static mode: the body halts at its storage write. -/
@@ -802,7 +805,8 @@ theorem erc20ApproveBodyCore
       · have hdec := erc20Decode_approve_ok (I := I) hsz68 hbig hcanonSpender
         let evmS := initState σ σ₀ (Sat256.ofUInt256 g) A I
         by_cases hperm : I.perm = true
-        · have hbody := erc20ApproveBodyReturns evmS I (by simp only [evmS, initState]; exact hwv)
+        · have hbody := erc20ApproveBodyReturns evmS I
+            (by simp only [evmS, initState]; exact hwv) hperm
           exact (erc20X_approve (g := Sat256.ofUInt256 g)
               hsz68 hsize hbig hperm hcanonSpender hreach)
             |>.reEquivExecutionGen hcode hd hdec hbody

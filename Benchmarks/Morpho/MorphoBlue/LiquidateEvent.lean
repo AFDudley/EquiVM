@@ -16,10 +16,11 @@ def liquidateTransferTail (assets seized srcOff len : UInt256) (R : List UInt256
 
 theorem liquidateEmit (p : MarketParamsWords) (assets seized shares account badAssets badShares : UInt256)
     (data : ByteArray) (locals imms : Store) (evm : EVM.State)
-    (hl : LiquidateEventLocals p account seized shares data assets badAssets badShares locals) :
+    (hl : LiquidateEventLocals p account seized shares data assets badAssets badShares locals)
+    (hperm : evm.executionEnv.perm = true) :
     ExecStmt config { contract := contract, locals := locals, immutables := imms } evm
       liquidateTransition.body[31]! (.ok { contract := contract, locals := locals, immutables := imms } evm) := by
-  apply ExecStmt.emit
+  apply ExecStmt.emit (hperm := hperm)
   change evalExprs? config _ _ [.var "id", .env .caller, .var "borrower", .var "repaidAssets",
     .var "repaidShares", .var "seizedAssets", .var "badDebtAssets", .var "badDebtShares"] = _
   simp only [evalExprs?, hl.evalId imms evm, hl.evalBorrower imms evm, hl.evalAssets imms evm,

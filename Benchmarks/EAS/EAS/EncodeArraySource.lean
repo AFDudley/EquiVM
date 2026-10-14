@@ -129,7 +129,7 @@ theorem encodeArrayIteration_exec {cfg : Config} {locals imms : Store} {evm : EV
   let L1 := base.insert "heads" (.bytes (wordBytes (attestationArrayHeads ats i ++ [UInt256.ofNat (attestationArrayOffset ats i)])))
   let L2 := L1.insert "tails" (.bytes (attestationArrayBodies ats i ++ ats[i].encoding))
   let L3 := L2.insert "offset" (.int (Int.ofNat (attestationArrayOffset ats i+ats[i].encoding.size)))
-  refine ExecBlock.consNormal (ExecStmt.assign
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
     (value := .bytes (wordBytes (attestationArrayHeads ats i ++ [UInt256.ofNat (attestationArrayOffset ats i)]))) ?_
     (assignLocalBase_ok (frame := {contract := contract, locals := base, immutables := imms}) hb.heads)) ?_
   · apply evalPackedBytes
@@ -145,7 +145,7 @@ theorem encodeArrayIteration_exec {cfg : Config} {locals imms : Store} {evm : EV
         (by simpa only [ulit_toNat' _ hoff] using encodePacked_uint256 (UInt256.ofNat (attestationArrayOffset ats i))))
     simpa only [wordBytes, ByteArray.append_empty, byteArray_toList_eq, ByteArray.data_append,
       Array.toList_append, toByteArray_eq_toBytesBE] using he
-  refine ExecBlock.consNormal (ExecStmt.assign
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
     (value := .bytes (attestationArrayBodies ats i ++ ats[i].encoding)) ?_
     (assignLocalBase_ok (frame := {contract := contract, locals := L1, immutables := imms})
       (by simpa (disch := decide) only [L1, store_get_ne] using hb.tails))) ?_
@@ -161,13 +161,13 @@ theorem encodeArrayIteration_exec {cfg : Config} {locals imms : Store} {evm : EV
             simp (disch := decide) only [evalExpr?, L1, store_get_ne, hbody, EvalResult.ofOption])
         (encodePacked_dynamic_bytes _))
     simpa only [byteArray_toList_eq, ByteArray.data_append, Array.toList_append] using he
-  refine ExecBlock.consNormal (ExecStmt.assign
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
     (value := .int (Int.ofNat (attestationArrayOffset ats i+ats[i].encoding.size))) ?_
     (assignLocalBase_ok (frame := {contract := contract, locals := L2, immutables := imms})
       (by simpa (disch := decide) only [L2, L1, store_get_ne] using hb.offset))) ?_
   · simp (disch := decide) only [evalExpr?, L3, L2, L1, readLocalPath?, store_get_ne, hb.offset, hbody,
       EvalResult.ofOption, EvalResult.bind, bind, evalBinaryOp_add_int_ok, Int.natCast_add, Int.ofNat_eq_natCast]
-  apply ExecBlock.consNormal (ExecStmt.assign (value := .int (Int.ofNat (i+1))) ?_
+  apply ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (value := .int (Int.ofNat (i+1))) ?_
     (assignLocalBase_ok (frame := {contract := contract, locals := L3, immutables := imms})
       (by simpa (disch := decide) only [L3, L2, L1, store_get_ne] using hb.index))) ExecBlock.nil
   simp (disch := decide) only [evalExpr?, L3, L2, L1, store_get_ne, hb.index,

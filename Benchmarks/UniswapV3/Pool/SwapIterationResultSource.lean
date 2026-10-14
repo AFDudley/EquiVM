@@ -53,17 +53,17 @@ theorem swapIterationResultSource {frame : Frame} {evm : EVM.State}
     simpa only [f3, swapIterationFrame, Std.HashMap.get?_eq_getElem?, Std.HashMap.getElem?_insert]
       using hr2
   have h1 : ExecStmt config frame evm swapLoopBody[9]! (.ok f1 evm) :=
-    ExecStmt.assign (evalExpr_tupleGet (evalExpr_var_get hr) rfl)
+    ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalExpr_tupleGet (evalExpr_var_get hr) rfl)
       (assignLocalField_frame hs rfl rfl)
   have h2 : ExecStmt config f1 evm swapLoopBody[10]! (.ok f2 evm) :=
-    ExecStmt.assign (evalExpr_tupleGet (evalExpr_var_get hr1) rfl)
+    ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalExpr_tupleGet (evalExpr_var_get hr1) rfl)
       (assignLocalField_frame hd1 rfl rfl)
   have h3 : ExecStmt config f2 evm swapLoopBody[11]! (.ok f3 evm) :=
-    ExecStmt.assign (evalExpr_tupleGet (evalExpr_var_get hr2) rfl)
+    ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalExpr_tupleGet (evalExpr_var_get hr2) rfl)
       (assignLocalField_frame Std.HashMap.getElem?_insert_self rfl rfl)
   have h4 : ExecStmt config f3 evm swapLoopBody[12]!
       (.ok (swapIterationResultFrame frame s d price amountIn amountOut fee) evm) :=
-    ExecStmt.assign (evalExpr_tupleGet (evalExpr_var_get hr3) rfl)
+    ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalExpr_tupleGet (evalExpr_var_get hr3) rfl)
       (assignLocalField_frame Std.HashMap.getElem?_insert_self rfl rfl)
   exact ExecBlock.consNormal h1 (ExecBlock.consNormal h2
     (ExecBlock.consNormal h3 (ExecBlock.consNormal h4 ExecBlock.nil)))

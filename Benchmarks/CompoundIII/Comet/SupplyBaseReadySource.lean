@@ -74,7 +74,7 @@ theorem supplyBaseReady_finish {v sender dst requested amount evm evm' evm''}
   have hcall := internalStmtResult.cast hcall hu
   have hargs := (supplyBaseReady_args v sender dst requested amount evm).insert
     "__c6" .unit (by decide)
-  obtain ⟨frame', he⟩ := supplyBaseEvents_source final evm'' hargs (supplyAmount_lt _ _)
+  obtain ⟨frame', he⟩ := supplyBaseEvents_source (hperm := updateBaseOutcome_result_perm hu) final evm'' hargs (supplyAmount_lt _ _)
   exact (show internalBlockResult config final evm'' supplyBaseEvents (.ok evm'') from
     ⟨frame', he⟩).prepend hcall
 

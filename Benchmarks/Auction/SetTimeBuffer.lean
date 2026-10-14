@@ -10,7 +10,7 @@ namespace Auction
 theorem setTimeBufferBodySplit (evm : EVM.State) (value : UInt256)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (ho : solcSourceWord evm.executionEnv = ownerWord evm.accountMap evm.executionEnv) :
-    (ExecTransitionBody auctionConfig auctionContract evm
+    (evm.executionEnv.perm = true → ExecTransitionBody auctionConfig auctionContract evm
       ((∅ : Store).insert "_timeBuffer" (.int (Int.ofNat value.toNat)))
       setTimeBufferTransition.body
       (.returned
@@ -25,7 +25,8 @@ theorem setTimeBufferBodySplit (evm : EVM.State) (value : UInt256)
 
 theorem setTimeBufferBody (evm : EVM.State) (value : UInt256)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (ho : solcSourceWord evm.executionEnv = ownerWord evm.accountMap evm.executionEnv) :
+    (ho : solcSourceWord evm.executionEnv = ownerWord evm.accountMap evm.executionEnv)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody auctionConfig auctionContract evm
       ((∅ : Store).insert "_timeBuffer" (.int (Int.ofNat value.toNat)))
       setTimeBufferTransition.body
@@ -33,7 +34,7 @@ theorem setTimeBufferBody (evm : EVM.State) (value : UInt256)
         { contract := auctionContract
           locals := (∅ : Store).insert "_timeBuffer" (.int (Int.ofNat value.toNat)) }
         (Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨203⟩ value) none) :=
-  (setTimeBufferBodySplit evm value hwv ho).1
+  (setTimeBufferBodySplit evm value hwv ho).1 hperm
 
 theorem setTimeBufferBodyCore {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = auctionBytecode) (hsize : I.calldata.size < UInt256.size)
@@ -62,13 +63,13 @@ theorem setTimeBufferBodyCore {σ σ₀ A I} {g : UInt256}
         · obtain ⟨_, _, rd1976⟩ := ownerAllowed 2 rd1934 ho (by evm_ov)
           rcases setterStoreEventSplit 0 rd1976
             (by jump_dest) (by evm_ov) with
-            ⟨_hperm, _, _, rd413⟩ | ⟨hperm, hstatic⟩
+            ⟨hperm, _, _, rd413⟩ | ⟨hperm, hstatic⟩
           swap
           · exact hstatic.reEquivStaticHalt hcode hd hdec
               ((setTimeBufferBodySplit
                 (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                 (calldataWord I.calldata 4) hwv ho).2 hperm)
-          have hbody := setTimeBufferBody
+          have hbody := setTimeBufferBody (hperm := hperm)
             (initState σ σ₀ (Sat256.ofUInt256 g) A I)
             (calldataWord I.calldata 4) hwv ho
           exact (auctionStop rd413 (by evm_ov)).reEquivExecutionGen

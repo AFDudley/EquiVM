@@ -32,11 +32,11 @@ theorem paymentFallbackRoutine {I g s0 amount recipient ret R mem aw ptr rdata �
       depositCall h hs hperm hm hb32 hcode hov
     cases z1 with
     | false =>
-      exact Or.inr ⟨depositSourceFailure hs hv hcode hc1, depositAfterFailure rd3432 (by omega)⟩
+      exact Or.inr ⟨depositSourceFailure hs hv hcode hc1 (by simpa only [hs.env] using hperm), depositAfterFailure rd3432 (by omega)⟩
     | true =>
       obtain ⟨_, _, rd3449⟩ := depositAfterSuccess rd3432 (by omega)
       have hm1 := depositCall_heap hm hb32
-      have hdep := depositSourceSuccess hs hv hcode hc1
+      have hdep := depositSourceSuccess hs hv hcode hc1 (by simpa only [hs.env] using hperm)
       have hv1 := hv.insertOther (collapseReturns []) (name := "_dep")
         (by decide) (by decide) (by decide) (by decide)
       obtain ⟨evm2, σ2, z2, out2, hc2, hs2, ho2, ht⟩ :=

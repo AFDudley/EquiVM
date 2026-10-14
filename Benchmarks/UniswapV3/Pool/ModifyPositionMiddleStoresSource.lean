@@ -17,7 +17,8 @@ def modifyPositionMiddleStoresState (v : UniswapV3PoolImmutables) (a : ModifyPos
 private theorem storePairSource (locals imms : Store) (state : EVM.State) (index cardinality : UInt256)
     (hbase : locals.get? "slot0" = none)
     (hget : locals.get? "__c7" = some (.tuple [.int (Int.ofNat index.toNat),
-      .int (Int.ofNat cardinality.toNat)])) :
+      .int (Int.ofNat cardinality.toNat)]))
+    (hperm : state.executionEnv.perm = true) :
     ExecBlock config {contract := contract, locals := locals, immutables := imms} state
       ((modifyPositionMiddleBody.drop 3).take 2)
       (.ok {contract := contract, locals := locals, immutables := imms}
@@ -29,20 +30,21 @@ private theorem storePairSource (locals imms : Store) (state : EVM.State) (index
     cases second <;>
       simp only [Bool.false_eq_true, if_false, if_true, evalExpr?, hget,
         EvalResult.ofOption, bind, EvalResult.bind, tupleGetValue?] <;> rfl
-  exact ExecBlock.consNormal (ExecStmt.assign (heval _ false)
+  exact ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) (heval _ false)
     (assignSlot0ObservationField _ locals imms false index hbase))
-    (ExecBlock.consNormal (ExecStmt.assign (heval _ true)
+    (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [storeSlot0ObservationField, modifyStorageWord, storageStore_executionEnv] using hperm)) (heval _ true)
       (assignSlot0ObservationField _ locals imms true cardinality hbase)) ExecBlock.nil)
 
 theorem modifyPositionMiddleStoresSource (v : UniswapV3PoolImmutables)
-    (a : ModifyPositionArgs) (evm : EVM.State) :
+    (a : ModifyPositionArgs) (evm : EVM.State)
+    (hperm : (modifyPositionMiddleOracleState v a evm).executionEnv.perm = true) :
     ExecBlock config (modifyPositionMiddleOracleFrame v a evm) (modifyPositionMiddleOracleState v a evm)
       ((modifyPositionMiddleBody.drop 3).take 2)
       (.ok (modifyPositionMiddleOracleFrame v a evm) (modifyPositionMiddleStoresState v a evm)) := by
   have hf : modifyPositionMiddleOracleFrame v a evm =
       {contract := contract, locals := (modifyPositionMiddleOracleFrame v a evm).locals,
         immutables := immStore v} := rfl
-  have hr := storePairSource (modifyPositionMiddleOracleFrame v a evm).locals (immStore v)
+  have hr := storePairSource (hperm := hperm) (modifyPositionMiddleOracleFrame v a evm).locals (immStore v)
     (modifyPositionMiddleOracleState v a evm)
     (oracleWriteResultIndex (modifyPositionMiddleOracleArgs v a evm) (modifyPositionUpdatedState v a evm))
     (oracleWriteResultCardinality (modifyPositionMiddleOracleArgs v a evm) (modifyPositionUpdatedState v a evm))

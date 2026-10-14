@@ -206,13 +206,14 @@ theorem clipperRelyBodyReturns (v : ClipperImmutables) (evm : EVM.State)
     (hsrc : evm.executionEnv.source = I.source)
     (hauth :
       Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
-        (clipperRelyAuthStorageSlot I) = ⟨1⟩) :
+        (clipperRelyAuthStorageSlot I) = ⟨1⟩)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (clipperRelyStore I) relyTransition.body
       (.returned { contract := contract, locals := clipperRelyStore I, immutables := immStore v }
         (clipperRelyPostState evm I) none) (immStore v) := by
   refine ExecFuncBody.execBlockOK ?_
   simpa [relyTransition, nonpayable, auth] using
-    nonpayableRequireAssignStorageBlock
+    nonpayableRequireAssignStorageBlock (hperm := hperm)
       (cfg := config)
       (stele := { contract := contract, locals := clipperRelyStore I, immutables := immStore v })
       (evm := evm)
@@ -1269,7 +1270,7 @@ theorem clipperRelyBodyCoreOk
           (clipperRelyPostState evmStele I) none) (immStore v) := by
     simpa [evmStele, clipperRelyAuthWord, solcSlotWord, initState,
       Stele.EVM.storageLoad, State.lookupAccount] using
-      clipperRelyBodyReturns v evmStele I
+      clipperRelyBodyReturns (hperm := hperm) v evmStele I
         (by simp only [evmStele, initState]; exact hwv)
         (by simp [evmStele, initState])
         hauthWord

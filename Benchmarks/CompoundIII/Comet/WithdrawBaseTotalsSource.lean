@@ -48,8 +48,8 @@ theorem withdrawBaseTotals_source (frame : Frame) (evm : EVM.State) (supplied bo
             .ok (frame, withdrawBaseTotalsState evm supplied borrowed) := by
           simpa only [← hc] using assignTotalsPrincipal evm' frame.locals frame.immutables true
             (withdrawBaseTotal evm' true + borrowed) hBT
-        exact ExecBlock.consNormal (ExecStmt.assign hsub hwS)
-          (ExecBlock.consNormal (ExecStmt.assign hadd hwB) ExecBlock.nil)
+        exact ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hp) hsub hwS)
+          (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [evm', withdrawBaseSupplyState, storeTotalsPrincipal, storageStore_executionEnv] using hp)) hadd hwB) ExecBlock.nil)
       · simp only [withdrawBaseTotalsResult, withdrawBaseTotalsOutcome, if_pos hs, hp,
           if_true, if_neg hb]
         have hadd := uintRangeSourceOverflow ⟨104, by decide⟩
@@ -57,7 +57,7 @@ theorem withdrawBaseTotals_source (frame : Frame) (evm : EVM.State) (supplied bo
             change 2^104 ≤ (withdrawBaseTotal (withdrawBaseSupplyState evm supplied) true).toNat +
               borrowed.toNat
             omega)
-        exact ExecBlock.consNormal (ExecStmt.assign hsub hwS)
+        exact ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hp) hsub hwS)
           (ExecBlock.consRevert (ExecStmt.assignExprRevert hadd))
   · simp only [withdrawBaseTotalsResult, withdrawBaseTotalsOutcome, if_neg hs]
     have hsub := checkedNarrowSubSourceUnderflow ⟨104, by decide⟩ htS heS (by omega)

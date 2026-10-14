@@ -43,7 +43,7 @@ theorem supplyCollateralPrepare_source (imms : Store) (sender dst asset : Accoun
         evm (.var "__c1") = .ok (.int received.toNat) := by
       simp only [evalExpr?, Std.HashMap.get?_eq_getElem?, Std.HashMap.getElem?_insert,
         EvalResult.ofOption]; rfl
-    apply ExecBlock.consNormal (ExecStmt.assign he ?_) .nil
+    apply ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) he ?_) .nil
     apply assignLocalFrame (old := .int requested.toNat)
     simp only [frame, supplyCollateralTransferredFrame, supplyCollateralEntry,
       Std.HashMap.get?_eq_getElem?, Std.HashMap.getElem?_insert]; rfl

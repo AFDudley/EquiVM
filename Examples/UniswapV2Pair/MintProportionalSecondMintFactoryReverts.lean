@@ -151,7 +151,8 @@ theorem uniswapMintProportionalFeeOffKLastZeroSecondMintTotalSupplyOverflowFromF
           ((amount1.mul totalSupply).div reserve1) ∧
       liquidity ≠ ⟨0⟩ ∧
       UInt256.size ≤ mintFunctionTotalSupplyNewNat evmFeeS liquidity ∧
-      UInt256.size ≤ (solcSlotWordAt ⟨0⟩ σFee I).toNat + liquidity.toNat) :
+      UInt256.size ≤ (solcSlotWordAt ⟨0⟩ σFee I).toNat + liquidity.toNat)
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   rcases hcase with
     ⟨hfeeToZero, hkLastZero, htotalNonzero, hmulFit0, hmulFit1, hreserve0Nonzero,
@@ -217,7 +218,7 @@ theorem uniswapMintProportionalFeeOffKLastZeroSecondMintTotalSupplyOverflowFromF
     simpa [evmL, evmS] using hamount0Eq
   have hamount1Eq' : mintAmount1Word evmL balance1 = amount1 := by
     simpa [evmL, evmS] using hamount1Eq
-  exact uniswapMintProportionalSecondMintTotalSupplyOverflowFromAfterFeeCase
+  exact uniswapMintProportionalSecondMintTotalSupplyOverflowFromAfterFeeCase (hperm := hperm)
     nextFrame.locals (AccountAddress.ofNat (mintToWord I).toNat)
     hcode hdispatch hsz36 hwv hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1
     hdec1 hle0Source hle1Source
@@ -466,7 +467,7 @@ theorem uniswapMintProportionalFeeOffKLastZeroSecondMintBalanceOverflowFromFacto
     simpa [evmL, evmS] using hamount0Eq
   have hamount1Eq' : mintAmount1Word evmL balance1 = amount1 := by
     simpa [evmL, evmS] using hamount1Eq
-  exact uniswapMintProportionalSecondMintBalanceOverflowFromAfterFeeCase
+  exact uniswapMintProportionalSecondMintBalanceOverflowFromAfterFeeCase (hpermAfter := by simpa [typedCallViaEVM_executionEnv_eq hfeeCall, typedCallViaEVM_executionEnv_eq hcall1, typedCallViaEVM_executionEnv_eq hcall0, uniswapLockEnteredState, uniswapUnlockedState, initState] using hperm)
     nextFrame.locals (AccountAddress.ofNat (mintToWord I).toNat)
     hcode hdispatch hsz36 hperm hwv hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1
     hdec1 hle0Source hle1Source
@@ -756,7 +757,7 @@ theorem uniswapMintProportionalFeeOffKLastZeroUpdateBoundFromFactoryCases
     simpa [nextFrame, evmL, evmS, hreserve1Eq'] using
       mintAfterMintFeeCallStore_reserve1 evmL I balance0 balance1 false
   rcases hupdateBound with hfail0 | ⟨hfit0, hfail1⟩
-  · exact uniswapMintProportionalUpdateFirstBoundFromAfterFeeCase
+  · exact uniswapMintProportionalUpdateFirstBoundFromAfterFeeCase (hpermAfter := by simpa [typedCallViaEVM_executionEnv_eq hfeeCall, typedCallViaEVM_executionEnv_eq hcall1, typedCallViaEVM_executionEnv_eq hcall0, uniswapLockEnteredState, uniswapUnlockedState, initState] using hperm)
       nextFrame.locals (AccountAddress.ofNat (mintToWord I).toNat)
       hcode hdispatch hsz36 hwv hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1
       hdec1 hle0Source hle1Source hfee hbase hto hamount0 hamount1 hbalance0 hbalance1
@@ -764,7 +765,7 @@ theorem uniswapMintProportionalFeeOffKLastZeroUpdateBoundFromFactoryCases
       hreserve0Nonzero hreserve1Nonzero (by simpa using hliquidity) hliqNonzero
       hfitSupplySource hfitBalanceSource hperm rd3701 hclean0 hclean1 hruntimeSupplyFit
       hruntimeBalanceFit hfail0 hmem hmem64
-  · exact uniswapMintProportionalUpdateSecondBoundFromAfterFeeCase
+  · exact uniswapMintProportionalUpdateSecondBoundFromAfterFeeCase (hpermAfter := by simpa [typedCallViaEVM_executionEnv_eq hfeeCall, typedCallViaEVM_executionEnv_eq hcall1, typedCallViaEVM_executionEnv_eq hcall0, uniswapLockEnteredState, uniswapUnlockedState, initState] using hperm)
       nextFrame.locals (AccountAddress.ofNat (mintToWord I).toNat)
       hcode hdispatch hsz36 hwv hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1
       hdec1 hle0Source hle1Source hfee hbase hto hamount0 hamount1 hbalance0 hbalance1
@@ -918,7 +919,8 @@ theorem uniswapMintProportionalFeeOnKLastZeroSecondMintTotalSupplyOverflowFromFa
           ((amount1.mul totalSupply).div reserve1) ∧
       liquidity ≠ ⟨0⟩ ∧
       UInt256.size ≤ mintFunctionTotalSupplyNewNat evmFeeS liquidity ∧
-      UInt256.size ≤ (solcSlotWordAt ⟨0⟩ σFee I).toNat + liquidity.toNat) :
+      UInt256.size ≤ (solcSlotWordAt ⟨0⟩ σFee I).toNat + liquidity.toNat)
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   rcases hcase with
     ⟨hfeeToNonzero, hkLastZero, htotalNonzero, hmulFit0, hmulFit1,
@@ -985,7 +987,7 @@ theorem uniswapMintProportionalFeeOnKLastZeroSecondMintTotalSupplyOverflowFromFa
     simpa [evmL, evmS] using hamount0Eq
   have hamount1Eq' : mintAmount1Word evmL balance1 = amount1 := by
     simpa [evmL, evmS] using hamount1Eq
-  exact uniswapMintProportionalSecondMintTotalSupplyOverflowFromAfterFeeCase
+  exact uniswapMintProportionalSecondMintTotalSupplyOverflowFromAfterFeeCase (hperm := hperm)
     nextFrame.locals (AccountAddress.ofNat (mintToWord I).toNat)
     hcode hdispatch hsz36 hwv hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1
     hdec1 hle0Source hle1Source
@@ -1234,7 +1236,7 @@ theorem uniswapMintProportionalFeeOnKLastZeroSecondMintBalanceOverflowFromFactor
     simpa [evmL, evmS] using hamount0Eq
   have hamount1Eq' : mintAmount1Word evmL balance1 = amount1 := by
     simpa [evmL, evmS] using hamount1Eq
-  exact uniswapMintProportionalSecondMintBalanceOverflowFromAfterFeeCase
+  exact uniswapMintProportionalSecondMintBalanceOverflowFromAfterFeeCase (hpermAfter := by simpa [typedCallViaEVM_executionEnv_eq hfeeCall, typedCallViaEVM_executionEnv_eq hcall1, typedCallViaEVM_executionEnv_eq hcall0, uniswapLockEnteredState, uniswapUnlockedState, initState] using hperm)
     nextFrame.locals (AccountAddress.ofNat (mintToWord I).toNat)
     hcode hdispatch hsz36 hperm hwv hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1
     hdec1 hle0Source hle1Source

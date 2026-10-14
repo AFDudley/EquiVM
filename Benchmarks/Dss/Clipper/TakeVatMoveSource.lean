@@ -466,7 +466,7 @@ theorem clipperTakeDogDigsOweCallFailureBlock (v : ClipperImmutables)
     simpa [checkedExternalCallStmts, moveFrame] using
       (ExecBlock.consNormal (ExecStmt.requireTrue hguard)
         (ExecBlock.consRevert
-          (ExecStmt.externalCallFailure htarget (by simp [evalExpr?, pure]) hargs hcallDog)))
+          (ExecStmt.externalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) htarget (by simp [evalExpr?, pure]) hargs hcallDog)))
   simpa [moveFrame] using
     ExecBlock.consRevert (ExecStmt.iteFalse hlotCond hdogRevert)
 
@@ -542,7 +542,7 @@ theorem clipperTakeDogDigsOweCallSuccessBlock (v : ClipperImmutables)
       collapseReturns] using
       (ExecBlock.consNormal (ExecStmt.requireTrue hguard)
         (ExecBlock.consNormal
-          (ExecStmt.externalCallSuccess htarget (by simp [evalExpr?, pure]) hargs hcallDog
+          (ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) htarget (by simp [evalExpr?, pure]) hargs hcallDog
             (clipperTakeDecodeDigsVoid outDog))
           ExecBlock.nil))
   simpa [moveFrame, digsFrame] using
@@ -818,7 +818,7 @@ theorem clipperTakeVatMoveCallFailureBlock (v : ClipperImmutables)
     simpa [checkedExternalCallStmts, dogFrame] using
       (ExecBlock.consNormal (ExecStmt.requireTrue hguard)
         (ExecBlock.consRevert
-          (ExecStmt.externalCallFailure
+          (ExecStmt.externalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
             (clipperEvalVat v evmVat
               (clipperTakeLocalsDogLoaded evmLoc evmRead evmVat I price slice owe0 owe
                 slice' tabNew lotNew))
@@ -1013,7 +1013,7 @@ theorem clipperTakeVatMoveCallFailureBlockOfCallbackFalse (v : ClipperImmutables
     simpa [checkedExternalCallStmts, dogFrame] using
       (ExecBlock.consNormal (ExecStmt.requireTrue hguard)
         (ExecBlock.consRevert
-          (ExecStmt.externalCallFailure
+          (ExecStmt.externalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
             (clipperEvalVat v evmVat
               (clipperTakeLocalsDogLoaded evmLoc evmRead evmVat I price slice owe0 owe
                 slice' tabNew lotNew))
@@ -1128,7 +1128,7 @@ theorem clipperTakeVatMoveCallSuccessBlockOfCallbackFalse (v : ClipperImmutables
       collapseReturns] using
       (ExecBlock.consNormal (ExecStmt.requireTrue hguard)
         (ExecBlock.consNormal
-          (ExecStmt.externalCallSuccess
+          (ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
             (clipperEvalVat v evmVat
               (clipperTakeLocalsDogLoaded evmLoc evmRead evmVat I price slice owe0 owe
                 slice' tabNew lotNew))

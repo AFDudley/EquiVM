@@ -6,11 +6,17 @@ from __future__ import annotations
 import sys
 import tempfile
 import unittest
+import shutil
+import argparse
+import json
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import evm_tools as et  # noqa: E402
 import scaffold  # noqa: E402
+import bytecode_report  # noqa: E402
+import check_all_benchmark_blocks as benchmark_blocks  # noqa: E402
+import generate_rd_blocks as rd  # noqa: E402
 from generate_rd_blocks import disassemble  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -133,6 +139,204 @@ class ImmutableOrderTests(unittest.TestCase):
         creation = bytes.fromhex("60ba015260480152")
         order = scaffold.immutable_write_order(creation, {"owner": [0x48, 0xF5], "scale": [0xBA, 0x169]})
         self.assertEqual(order, ["scale", "owner"])
+
+
+class VyperImmutableTests(unittest.TestCase):
+    def test_optimization_pragma_is_recorded(self) -> None:
+        source = "# pragma version 0.4.3\n# pragma optimize codesize\n"
+        self.assertEqual(scaffold.vyper_optimize_mode(source, False), "codesize")
+        self.assertEqual(scaffold.vyper_optimize_mode(source, True), "none")
+        self.assertEqual(scaffold.vyper_optimize_mode("# pragma version 0.4.3", False), "gas")
+
+    def test_vyper_report_uses_pc_positions(self) -> None:
+        directory = ROOT / "Examples/VyperImmutable"
+        build = json.loads((directory / "Immutable.build.json").read_text())
+        abi = json.loads((directory / "Immutable.abi.json").read_text())
+        report = bytecode_report.render(directory, "Immutable", build, abi, True)
+        self.assertIn("compiler: vyper", report)
+        self.assertIn("Vyper source positions annotate blocks", report)
+        self.assertIn("Selectors not recovered as direct arms", report)
+        self.assertIn("line 26:", report)
+
+    @staticmethod
+    def scalar_units(runtime: bytes, prefix: str, code: str, slots: list[dict],
+                     max_summary_instructions: int = 1000) -> list[rd.GeneratedUnit]:
+        return rd.generate_unit_records(
+            runtime, prefix, code, max_summary_instructions=max_summary_instructions,
+            runtime_suffix=True,
+            vyper_scalar_slots={len(runtime) + slot["offset"]: slot["name"]
+                                for slot in slots if slot["length"] == 32},
+            vyper_layout_term=code.rsplit(".", 1)[0] + ".immutableLayout")
+
+    def test_short_vyper_selector_is_padded_to_four_bytes(self) -> None:
+        pairs = scaffold.selector_table(ROOT / "Examples/VyperImmutable", "Immutable",
+                                        {"methodIdentifiers": {"get_rate_mul()": "0x95a0fc6"}})
+        self.assertEqual(pairs, [("get_rate_mul()", bytes.fromhex("095a0fc6"))])
+
+    def test_contract_interface_is_an_address_word(self) -> None:
+        self.assertTrue(scaffold.vyper_scalar_immutable_type("curve_std/interfaces/IERC20.vyi"))
+        self.assertFalse(scaffold.vyper_scalar_immutable_type("DynArray[uint256, 3]"))
+
+    def test_block_check_uses_suffix_mode(self) -> None:
+        self.assertTrue(benchmark_blocks.benchmark_uses_vyper_suffix(
+            ROOT / "Examples/VyperImmutable/Bytecode.lean"))
+        self.assertFalse(benchmark_blocks.benchmark_uses_vyper_suffix(
+            ROOT / "Examples/TinyImmutable/Bytecode.lean"))
+
+    def test_full_suffix_return_gets_byte_valued_summary(self) -> None:
+        from bytecode_io import read_bytecode
+        runtime = read_bytecode(ROOT / "Examples/VyperImmutable/runtime.hex")
+        units = rd.generate_unit_records(runtime, "immutable",
+                                         "Examples.VyperImmutable.immutableBytecode",
+                                         runtime_suffix=True,
+                                         vyper_layout_term="Examples.VyperImmutable.immutableLayout",
+                                         vyper_suffix_size=96)
+        valued = next(unit for unit in units if unit.theorem_names == ("immutable_block_41",))
+        self.assertNotIn("private theorem", valued.text)
+        self.assertIn("codecopy_read_suffix", valued.text)
+        self.assertIn("theorem immutable_block_41 {immWords : String → UInt256}", valued.text)
+        self.assertIn("σ (Examples.VyperImmutable.immutableLayout.suffixWords immWords)",
+                      valued.text)
+        unmatched = rd.generate_unit_records(runtime, "immutable",
+            "Examples.VyperImmutable.immutableBytecode", runtime_suffix=True,
+            vyper_layout_term="Examples.VyperImmutable.immutableLayout", vyper_suffix_size=32)
+        self.assertIn("{suffix : ByteArray}", next(unit for unit in unmatched
+                      if unit.theorem_names == ("immutable_block_41",)).text)
+
+    def test_scalar_return_uses_named_immutable_word(self) -> None:
+        from bytecode_io import read_bytecode
+        runtime = read_bytecode(ROOT / "Examples/VyperImmutable/runtime.hex")
+        slots = [{"name": "OWNER", "offset": 0, "length": 32},
+                 {"name": "LIMIT", "offset": 32, "length": 32},
+                 {"name": "TAG", "offset": 64, "length": 32}]
+        units = self.scalar_units(runtime, "immutable",
+                                  "Examples.VyperImmutable.immutableBytecode", slots)
+        valued = next(unit for unit in units if unit.theorem_names == ("immutable_block_71",))
+        self.assertIn('σ (immWords "OWNER").toByteArray := by', valued.text)
+        self.assertIn("immutableCopyWord_OWNER", valued.text)
+        self.assertNotIn("private theorem", valued.text)
+
+    def test_mload_after_suffix_copy_uses_word_in_expression(self) -> None:
+        from bytecode_io import read_bytecode
+        runtime = read_bytecode(ROOT / "Examples/VyperImmutable/runtime.hex")
+        slots = [{"name": "OWNER", "offset": 0, "length": 32},
+                 {"name": "LIMIT", "offset": 32, "length": 32},
+                 {"name": "TAG", "offset": 64, "length": 32}]
+        units = self.scalar_units(runtime, "immutable",
+                                  "Examples.VyperImmutable.immutableBytecode", slots)
+        valued = next(unit for unit in units if unit.theorem_names == ("immutable_block_106",))
+        self.assertIn('(immWords "LIMIT")', valued.text)
+        self.assertIn("immutableLoad_LIMIT", valued.text)
+        self.assertIn("UInt256.eq", valued.text)
+        self.assertNotIn("readWithPadding", valued.text.split(" := by", 1)[0])
+        unmatched = self.scalar_units(runtime, "immutable",
+                                      "Examples.VyperImmutable.immutableBytecode", slots[:1])
+        self.assertIn("{suffix : ByteArray}", next(unit for unit in unmatched
+                      if unit.theorem_names == ("immutable_block_106",)).text)
+
+    def test_mload_word_survives_a_block_boundary(self) -> None:
+        from bytecode_io import read_bytecode
+        runtime = read_bytecode(ROOT / "Examples/VyperImmutable/runtime.hex")
+        slots = [{"name": "OWNER", "offset": 0, "length": 32},
+                 {"name": "LIMIT", "offset": 32, "length": 32},
+                 {"name": "TAG", "offset": 64, "length": 32}]
+        units = self.scalar_units(runtime, "immutable",
+                                  "Examples.VyperImmutable.immutableBytecode", slots, 8)
+        valued = next(unit for unit in units if unit.theorem_names ==
+                      ("immutable_block_106", "immutable_block_106_packed"))
+        self.assertIn('RD (Examples.VyperImmutable.immutableBytecode ++', valued.text)
+        self.assertIn('(immWords "LIMIT")', valued.text)
+        self.assertIn("theorem immutable_block_106_packed", valued.text)
+
+    def test_multiple_scalar_loads_in_one_block(self) -> None:
+        # Two suffix words are copied to different memory offsets before a
+        # shared calculation. The second copy has the first copy as its base.
+        runtime = bytes.fromhex("602060155f395f5160206035602039602051015b00")
+        slots = [{"name": "A", "offset": 0, "length": 32},
+                 {"name": "B", "offset": 32, "length": 32}]
+        valued = self.scalar_units(runtime, "probe", "Probe.bytecode", slots)[0]
+        self.assertIn("have hload0", valued.text)
+        self.assertIn("have hload1", valued.text)
+        self.assertIn('(immWords "A")', valued.text)
+        self.assertIn('(immWords "B")', valued.text)
+        self.assertIn("theorem probe_block_0_packed", valued.text)
+
+    def test_scalar_load_used_only_in_branch_condition(self) -> None:
+        runtime = bytes.fromhex("6020600d5f395f51600b575b00")
+        slots = [{"name": "A", "offset": 0, "length": 32}]
+        valued = self.scalar_units(runtime, "probe", "Probe.bytecode", slots)[0]
+        self.assertIn('(hcond : (immWords "A") ≠ (UInt256.ofNat 0))', valued.text)
+        self.assertIn("have hload0", valued.text)
+        self.assertIn("theorem probe_block_0_taken_packed", valued.text)
+
+    def test_scalar_copy_without_load_names_memory_bytes(self) -> None:
+        runtime = bytes.fromhex("602060085f395b00")
+        slots = [{"name": "A", "offset": 0, "length": 32}]
+        valued = self.scalar_units(runtime, "probe", "Probe.bytecode", slots)[0]
+        self.assertIn('(immWords "A").toByteArray.write 0 mem', valued.text)
+        self.assertIn("immutableCopyWord_A", valued.text)
+        self.assertNotIn("have hload", valued.text)
+        self.assertNotIn("private theorem", valued.text)
+
+    def test_zero_destination_suffix_copy_is_recognized(self) -> None:
+        runtime = bytes.fromhex("6020600a5f3960205ff3")
+        valued = rd.generate_unit_records(runtime, "probe", "Probe.bytecode",
+            runtime_suffix=True, vyper_layout_term="Probe.immutableLayout",
+            vyper_suffix_size=32)[0]
+        self.assertIn("theorem probe_block_0 {immWords", valued.text)
+        self.assertIn(".write (UInt256.ofNat 10).toNat mem (⟨0⟩ : UInt256).toNat", valued.text)
+
+    def test_compiler_layout_and_suffix_blocks(self) -> None:
+        vyper = shutil.which("vyper")
+        if vyper is None:
+            self.skipTest("Vyper compiler is unavailable")
+        with tempfile.TemporaryDirectory() as tmp:
+            directory = Path(tmp)
+            contracts = directory / "contracts"
+            contracts.mkdir()
+            shutil.copyfile(ROOT / "Examples/VyperImmutable/contracts/Immutable.vy",
+                            contracts / "Immutable.vy")
+            args = argparse.Namespace(dir=directory, vyper=vyper, main="Immutable.vy",
+                                      sources_root="contracts", contract="Immutable",
+                                      evm_version="cancun", no_optimize=False)
+            self.assertEqual(scaffold.cmd_compile_vyper(args), 0)
+            build = json.loads((directory / "Immutable.build.json").read_text())
+            self.assertEqual(build["immutableSuffixSize"], 96)
+            self.assertEqual([(i["name"], i["offset"], i["length"])
+                              for i in build["immutables"]],
+                             [("OWNER", 0, 32), ("LIMIT", 32, 32), ("TAG", 64, 32)])
+            self.assertIn("slots :=", scaffold.render_vyper_immutables_lean(
+                "Probe", "Immutable", build))
+            code_lean = scaffold.render_vyper_immutable_code_lean(
+                "Probe", "Probe", "immutable", build)
+            self.assertIn("theorem returnedRuntime_eq_deployed", code_lean)
+            self.assertIn("theorem returnedRuntime_read_eq_deployed", code_lean)
+            self.assertEqual(scaffold.selector_table(directory, "Immutable", build)[0][1].hex(),
+                             "57de26a4")
+
+    def test_compound_immutable_is_rejected_before_scalar_word_generation(self) -> None:
+        vyper = shutil.which("vyper")
+        if vyper is None:
+            self.skipTest("Vyper compiler is unavailable")
+        with tempfile.TemporaryDirectory() as tmp:
+            directory = Path(tmp)
+            contracts = directory / "contracts"
+            contracts.mkdir()
+            (contracts / "Compound.vy").write_text(
+                "# pragma version ^0.4.3\n"
+                "ITEMS: immutable(uint256[2])\n"
+                "@deploy\n"
+                "def __init__():\n"
+                "    ITEMS = [1, 2]\n"
+                "@external\n"
+                "@view\n"
+                "def first() -> uint256:\n"
+                "    return ITEMS[0]\n", encoding="utf-8")
+            args = argparse.Namespace(dir=directory, vyper=vyper, main="Compound.vy",
+                                      sources_root="contracts", contract="Compound",
+                                      evm_version="cancun", no_optimize=False)
+            with self.assertRaisesRegex(SystemExit, "unsupported immutable type"):
+                scaffold.cmd_compile_vyper(args)
 
 
 if __name__ == "__main__":

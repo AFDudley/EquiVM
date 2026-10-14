@@ -62,7 +62,7 @@ theorem absorbAccountsCond_eval {v absorber accounts startGas i frame}
 theorem absorbAccountsIncrement_exec {frame : Frame} {evm : State} {i : Nat}
     (hi : frame.locals.get? "i" = some (.int i)) (hb : i + 1 < UInt256.size) :
     ExecStmt config frame evm absorbAccountsIncrement (.ok (absorbAccountsNextFrame frame i) evm) := by
-  apply ExecStmt.assign (value := .int (i + 1))
+  apply ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (value := .int (i + 1))
   · simp only [evalExpr?, hi, EvalResult.ofOption, bind, EvalResult.bind, pure,
       evalBinaryOp_add_int_ok, castValue?]
     have hbound : (i : Int) + 1 < Int.ofNat (EVM.twoPow 256) :=

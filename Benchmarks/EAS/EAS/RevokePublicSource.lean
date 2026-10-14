@@ -44,7 +44,7 @@ theorem revokePublicRequestsSource {L imms : Store} {evm : EVM.State}
     simp only [evalExpr?,pure,bind,EvalResult.bind,show ¬ (1 : Int) < 0 by decide,if_false,hd]
     rfl
   apply ExecBlock.consNormal (ExecStmt.letDecl he)
-  apply ExecBlock.consNormal (ExecStmt.assign (value := r.tuple) ?_ ?_) ExecBlock.nil
+  apply ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (value := r.tuple) ?_ ?_) ExecBlock.nil
   · simp only [evalExpr?,store_get_ne _ _ (by decide : ("requests" == "request") = false),hreq,EvalResult.ofOption,EvalResult.bind,bind]
     rfl
   · exact assignLocalArrayExpr (cfg := config) (evm := evm)

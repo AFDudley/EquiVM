@@ -237,13 +237,13 @@ theorem uniswapMintProportionalFeeOffKLastNonzeroSecondMintTotalSupplyOverflowFr
     simpa [evmL, evmS] using hamount0Eq
   have hamount1Eq' : mintAmount1Word evmL balance1 = amount1 := by
     simpa [evmL, evmS] using hamount1Eq
-  exact uniswapMintProportionalSecondMintTotalSupplyOverflowFromAfterFeeCase
+  exact uniswapMintProportionalSecondMintTotalSupplyOverflowFromAfterFeeCase (hperm := hperm)
     nextFrame.locals (AccountAddress.ofNat (mintToWord I).toNat)
     hcode hdispatch hsz36 hwv hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1
     hdec1 hle0Source hle1Source
     (by
       simpa [nextFrame, evmL, evmS, evmAfterFee, resumeAfterInternalCall] using
-        uniswapMintFeeCallFromMint_feeOff_kLastNonzero evmL evm1S evmFeeS I balance0
+        uniswapMintFeeCallFromMint_feeOff_kLastNonzero (hperm := by simpa [typedCallViaEVM_executionEnv_eq hcall1, typedCallViaEVM_executionEnv_eq hcall0, uniswapLockEnteredState, uniswapUnlockedState, initState] using hperm) evmL evm1S evmFeeS I balance0
           balance1 feeTo (by simpa [evmL, evmS] using hfeeGuard) hfeeCall hfeeDec
           hfeeToAddr hkLastSource)
     (by simpa [nextFrame, evmL, evmS] using
@@ -505,13 +505,13 @@ theorem uniswapMintProportionalFeeOffKLastNonzeroSecondMintBalanceOverflowFromFa
     simpa [evmL, evmS] using hamount0Eq
   have hamount1Eq' : mintAmount1Word evmL balance1 = amount1 := by
     simpa [evmL, evmS] using hamount1Eq
-  exact uniswapMintProportionalSecondMintBalanceOverflowFromAfterFeeCase
+  exact uniswapMintProportionalSecondMintBalanceOverflowFromAfterFeeCase (hpermAfter := by simpa only [henvCleared] using hperm)
     nextFrame.locals (AccountAddress.ofNat (mintToWord I).toNat)
     hcode hdispatch hsz36 hperm hwv hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1
     hdec1 hle0Source hle1Source
     (by
       simpa [nextFrame, evmL, evmS, evmAfterFee, resumeAfterInternalCall] using
-        uniswapMintFeeCallFromMint_feeOff_kLastNonzero evmL evm1S evmFeeS I balance0
+        uniswapMintFeeCallFromMint_feeOff_kLastNonzero (hperm := by simpa [typedCallViaEVM_executionEnv_eq hcall1, typedCallViaEVM_executionEnv_eq hcall0, uniswapLockEnteredState, uniswapUnlockedState, initState] using hperm) evmL evm1S evmFeeS I balance0
           balance1 feeTo (by simpa [evmL, evmS] using hfeeGuard) hfeeCall hfeeDec
           hfeeToAddr hkLastSource)
     (by simpa [nextFrame, evmL, evmS] using
@@ -780,7 +780,7 @@ theorem uniswapMintProportionalFeeOffKLastNonzeroUpdateBoundFromFactoryCases
         evm1S (.internalCall "_mintFee" [.var "_reserve0", .var "_reserve1"] "feeOn")
         (.ok { contract := contract, locals := nextFrame.locals } evmAfterFee) := by
     simpa [nextFrame, evmL, evmS, evmAfterFee, resumeAfterInternalCall] using
-      uniswapMintFeeCallFromMint_feeOff_kLastNonzero evmL evm1S evmFeeS I balance0
+      uniswapMintFeeCallFromMint_feeOff_kLastNonzero (hperm := by simpa [typedCallViaEVM_executionEnv_eq hcall1, typedCallViaEVM_executionEnv_eq hcall0, uniswapLockEnteredState, uniswapUnlockedState, initState] using hperm) evmL evm1S evmFeeS I balance0
         balance1 feeTo (by simpa [evmL, evmS] using hfeeGuard) hfeeCall hfeeDec
         hfeeToAddr hkLastSource
   have hbase :
@@ -816,7 +816,7 @@ theorem uniswapMintProportionalFeeOffKLastNonzeroUpdateBoundFromFactoryCases
     simpa [nextFrame, evmL, evmS, hreserve1Eq'] using
       mintAfterMintFeeCallStore_reserve1 evmL I balance0 balance1 false
   rcases hupdateBound with hfail0 | ⟨hfit0, hfail1⟩
-  · exact uniswapMintProportionalUpdateFirstBoundFromAfterFeeCase
+  · exact uniswapMintProportionalUpdateFirstBoundFromAfterFeeCase (hpermAfter := by simpa only [henvCleared] using hperm)
       nextFrame.locals (AccountAddress.ofNat (mintToWord I).toNat)
       hcode hdispatch hsz36 hwv hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1
       hdec1 hle0Source hle1Source hfee hbase hto hamount0 hamount1 hbalance0 hbalance1
@@ -825,7 +825,7 @@ theorem uniswapMintProportionalFeeOffKLastNonzeroUpdateBoundFromFactoryCases
       (by simpa [evmAfterFee] using hfitSupplySource)
       (by simpa [evmAfterFee] using hfitBalanceSource) hperm rd3701 hclean0 hclean1
       hruntimeSupplyFit hruntimeBalanceFit hfail0 hmem hmem64
-  · exact uniswapMintProportionalUpdateSecondBoundFromAfterFeeCase
+  · exact uniswapMintProportionalUpdateSecondBoundFromAfterFeeCase (hpermAfter := by simpa only [henvCleared] using hperm)
       nextFrame.locals (AccountAddress.ofNat (mintToWord I).toNat)
       hcode hdispatch hsz36 hwv hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1
       hdec1 hle0Source hle1Source hfee hbase hto hamount0 hamount1 hbalance0 hbalance1

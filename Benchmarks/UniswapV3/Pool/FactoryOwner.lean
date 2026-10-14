@@ -61,7 +61,7 @@ theorem factoryOwnerCall (v : UniswapV3PoolImmutables) (evm evm' : EVM.State)
       (.lowLevelCall (.var "currentFactory") (.intLit 0) (.bytesLit factoryOwnerCalldata)
         "ownerSuccess" "ownerData" false)
       (.ok (factoryOwnerCallFrame v ok out) evm') :=
-  lowLevelCallWithPermSource (evalFactoryOwnerReceiver v evm)
+  lowLevelCallWithPermSource (hperm := Or.inl rfl) (evalFactoryOwnerReceiver v evm)
     (by simp only [evalExpr?, pure]) (by simp only [evalExpr?, pure]) hcall
 
 theorem evalFactoryOwnerSuccess (v : UniswapV3PoolImmutables) (evm : EVM.State)

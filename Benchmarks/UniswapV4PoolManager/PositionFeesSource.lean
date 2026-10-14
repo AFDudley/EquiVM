@@ -43,7 +43,7 @@ theorem positionFeesBody {f : Frame} {evm : EVM.State} {id key liquidity fee0 fe
       (if fullMath128Fits (positionFeeDifference evm id key fee0 false) liquidity then .ok f1 evm else .reverted) at hcall0
     rw [if_pos hf0] at hcall0
     have hassign0 : ExecStmt config f1 evm positionUpdateFunction.body[5]! (.ok f2 evm) :=
-      ExecStmt.assign wordLocal_eval (assignLocalValue (by
+      ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) wordLocal_eval (assignLocalValue (by
         simpa only [f1, wordLocal_get, beq_iff_eq, String.reduceEq, ↓reduceIte] using ho0))
     have hs2 : f2.locals.get? "self" = some (positionRefValue id key) := by
       simp only [f2, f1, wordLocal_get, beq_iff_eq, String.reduceEq, ↓reduceIte, hs]
@@ -61,7 +61,7 @@ theorem positionFeesBody {f : Frame} {evm : EVM.State} {id key liquidity fee0 fe
         (if fullMath128Fits (positionFeeDifference evm id key fee1 true) liquidity then .ok f3 evm else .reverted) at hcall1
       rw [if_pos hf1] at hcall1
       have hassign1 : ExecStmt config f3 evm positionUpdateFunction.body[7]! (.ok f4 evm) :=
-        ExecStmt.assign wordLocal_eval (assignLocalValue (by
+        ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) wordLocal_eval (assignLocalValue (by
           simpa only [f3, f2, f1, wordLocal_get, beq_iff_eq, String.reduceEq, ↓reduceIte] using ho1))
       have hs4 : f4.locals.get? "self" = some (positionRefValue id key) := by
         simp only [f4, f3, wordLocal_get, beq_iff_eq, String.reduceEq, ↓reduceIte, hs2]

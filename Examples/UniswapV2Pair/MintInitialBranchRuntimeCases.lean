@@ -80,7 +80,7 @@ theorem uniswapMintInitialBranchRuntimeCases
         obtain ⟨_, _, rd3841⟩ := uniswapMintRuntimeInitialLiquidityAfterRootEntry rd2531
           hliquidity hgeWord hperm htotalFit hbalanceFit hmem hmem64
         refine Or.inr ⟨root, liquidity, _, _,
-          uniswapMintInitialLiquidityBranchStmtPrefix evm root liquidity htotal hsqrt hge
+          uniswapMintInitialLiquidityBranchStmtPrefix (hperm := by simpa only [henv] using hperm) evm root liquidity htotal hsqrt hge
             hfitSub rfl hfitSupply hfitBalance,
           mintFunctionPostState_accountMap_eq_of_runtimeMintRecipient
             hAccounts henv rfl (by rw [hmem]; omega) hfitSupply hfitBalance,
@@ -91,7 +91,7 @@ theorem uniswapMintInitialBranchRuntimeCases
             (by rw [hmem]; omega) hmem64
       · obtain ⟨_, _, rd8128⟩ := uniswapMintRuntimeInitialMinimumMintEntry rd2531
           hliquidity hgeWord
-        exact Or.inl ⟨uniswapMintInitialLiquidityBranchStmtMinimumMintBalanceOverflowReverts
+        exact Or.inl ⟨uniswapMintInitialLiquidityBranchStmtMinimumMintBalanceOverflowReverts (hperm := by simpa only [henv] using hperm)
           evm root liquidity htotal hsqrt hge hfitSub rfl hfitSupply
             (Nat.le_of_not_lt hfitBalance),
           uniswapInternalMintRuntimeBalanceOverflowReverts rd8128 hperm htotalFit

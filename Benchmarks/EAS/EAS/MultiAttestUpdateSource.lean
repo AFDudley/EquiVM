@@ -62,12 +62,12 @@ theorem multiAttestUpdateSourceOfFields {L imms : Store} {evm : EVM.State}
       (.assign .localVar {base := "availableValue"}
         (.inRange abiUInt256Int (.binary .sub (.var "availableValue") (.field (.var "res") "usedValue"))))
       (.ok {contract := contract,locals := L1,immutables := imms} evm) :=
-    ExecStmt.assign (evalExpr_uint256_sub (evalLocalValue ha)
+    ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalExpr_uint256_sub (evalLocalValue ha)
       (evalRecordField (evalLocalValue hr) rfl) hu) (assignLocalValue ha)
   have hs2 : ExecStmt config {contract := contract,locals := L1,immutables := imms} evm
       (.assign .localVar {base := "totalUids",steps := [.aindex (.var "i")]} (.field (.var "res") "uids"))
       (.ok {contract := contract,locals := L2,immutables := imms} evm) := by
-    apply ExecStmt.assign (evalRecordField (evalLocalValue hr1) (value := wordListValue words) rfl)
+    apply ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalRecordField (evalLocalValue hr1) (value := wordListValue words) rfl)
     simpa only [L2,List.map_set] using assignLocalArrayIndex
       (cfg := config) (stele := {contract := contract,locals := L1,immutables := imms}) (evm := evm)
       (array := "totalUids") (index := "i") (values := groups.map wordListValue) (i := i) (value := wordListValue words)
@@ -85,7 +85,7 @@ theorem multiAttestUpdateSourceOfFields {L imms : Store} {evm : EVM.State}
   rw [Nat.mod_eq_of_lt hc] at he
   apply ExecBlock.consNormal hs1
   apply ExecBlock.consNormal hs2
-  apply ExecBlock.consNormal (ExecStmt.assign he (assignLocalValue hcount))
+  apply ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) he (assignLocalValue hcount))
   apply ExecBlock.consNormal (execLocalCastIncrement ?_ hib) ExecBlock.nil
   simpa (disch := decide) only [L2,L1,store_get_ne] using hi0
 

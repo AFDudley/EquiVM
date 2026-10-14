@@ -41,7 +41,8 @@ theorem uniswapBurnFunctionBodyReverts_balanceUnderflow
 theorem uniswapBurnFunctionBodyReverts_totalSupplyUnderflow
     (evm : EVM.State) (holder : AccountAddress) (value : UInt256)
     (hbalance : value.toNat ≤ (burnFunctionFromBalanceWord evm holder).toNat)
-    (hlt : (burnFunctionTotalSupplyWord evm holder value).toNat < value.toNat) :
+    (hlt : (burnFunctionTotalSupplyWord evm holder value).toNat < value.toNat)
+    (hperm : evm.executionEnv.perm = true) :
     ExecFuncBody config { contract := contract, locals := burnFunctionCallStore holder value }
       evm burnFunction.body .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
@@ -52,7 +53,9 @@ theorem uniswapBurnFunctionBodyReverts_totalSupplyUnderflow
     (ExecStmt.requireTrue
       (evalExpr_burnFunction_balance_require_true evm holder value hbalance)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_burnFunction_balance_debit evm holder value hbalance)
+    (ExecStmt.assign
+      (hperm := Or.inr hperm)
+      (evalExpr_burnFunction_balance_debit evm holder value hbalance)
       (burnFunctionAssignBalance evm holder value)) ?_
   refine ExecBlock.consNormal
     (ExecStmt.letDecl (evalExpr_burnFunction_totalSupply evm holder value)) ?_
@@ -87,7 +90,8 @@ theorem uniswapBurnFunctionCallRevert_totalSupplyUnderflow
       .ok [burnFunctionFromValue holder, burnFunctionValueValue value])
     (hbalance : value.toNat ≤ (burnFunctionFromBalanceWord evm holder).toNat)
     (hlt : (burnFunctionTotalSupplyWord evm holder value).toNat < value.toNat)
-    (himm : caller.immutables = ∅ := by first | rfl | assumption) :
+    (himm : caller.immutables = ∅ := by first | rfl | assumption)
+    (hperm : evm.executionEnv.perm = true) :
     ExecStmt config caller evm (.internalCall "_burn" args retVar) .reverted := by
   exact internalCallFunctionRevert
     (cfg := config) (caller := caller) (evm := evm)
@@ -97,6 +101,6 @@ theorem uniswapBurnFunctionCallRevert_totalSupplyUnderflow
     hargs (by simpa [hcontract, himm] using uniswapLookupBurnFunction)
     (bindParams_burnFunction_call holder value)
     (by simpa [hcontract, himm] using
-      uniswapBurnFunctionBodyReverts_totalSupplyUnderflow evm holder value hbalance hlt)
+      uniswapBurnFunctionBodyReverts_totalSupplyUnderflow (hperm := by assumption) evm holder value hbalance hlt)
 
 end UniswapV2Pair

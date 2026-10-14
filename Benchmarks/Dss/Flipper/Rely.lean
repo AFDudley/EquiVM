@@ -92,7 +92,7 @@ theorem flipperRelyBodyCoreOk
   · let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let evm1 := Stele.EVM.storageStore evm0 I.codeOwner (flipperUsrSlotFor I) ⟨1⟩
     have hbodySplit :
-        (ExecTransitionBody config contract evm0 locals relyTransition.body
+        (I.perm = true → ExecTransitionBody config contract evm0 locals relyTransition.body
           (.returned { contract := contract, locals := locals } evm1 none)) ∧
         (I.perm = false → ExecTransitionBody config contract
           evm0 locals relyTransition.body .staticViolation) := by
@@ -122,7 +122,8 @@ theorem flipperRelyBodyCoreOk
               flipperUsrEvaledRef, flipperUsrSlotFor])
           (hstore := hstore)
       constructor
-      · have hblock := nonpayableRequireAssignStorageBlock
+      · intro hperm
+        have hblock := nonpayableRequireAssignStorageBlock (hperm := hperm)
           (cfg := config) (stele := { contract := contract, locals := locals })
           (evm := evm0) (evm' := evm1)
           (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
@@ -167,7 +168,7 @@ theorem flipperRelyBodyCoreOk
         unfold flipperMappingStoreOneWf
         repeat' first | apply And.intro | native_decide)
       (by jump_dest) hmemAuth hcanonKey (by simp) with
-        ⟨_hperm, _, _, hretPc⟩ | ⟨hperm, hstatic⟩
+        ⟨hperm, _, _, hretPc⟩ | ⟨hperm, hstatic⟩
     swap
     · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode (hbodySplit.2 hperm)
     have hretPc' := hretPc.jumpdest (by native_decide) (by evm_ov)
@@ -182,7 +183,7 @@ theorem flipperRelyBodyCoreOk
     have henc : returnEquiv ByteArray.empty none relyTransition.returnType := by
       rw [show relyTransition.returnType = [] by rfl]
       exact returnEquiv.fallthrough rfl (by rfl) (by native_decide)
-    exact hret.reEquivExecutionGen hcode hdispatch hdecode hbodySplit.1
+    exact hret.reEquivExecutionGen hcode hdispatch hdecode (hbodySplit.1 hperm)
       haccounts henc
   · let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     have hbody : ExecTransitionBody config contract evm0 locals relyTransition.body .reverted := by

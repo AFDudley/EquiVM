@@ -42,7 +42,7 @@ theorem timestampArrayLoop_correct {ee : ExecutionEnv} {g : Sat256} {s0 : State}
         rw [timestampWord_solc, heen] at hz
         exact hz
       by_cases hp : ee.perm = true
-      · have hsource := timestampArrayIteration_ok (imms := imms) h hi hw hlen hz
+      · have hsource := timestampArrayIteration_ok (hperm := (congrArg ExecutionEnv.perm heen).trans hp) (imms := imms) h hi hw hlen hz
         obtain ⟨mem', aw', k', C', rd'⟩ := easMultiTimestamp_step v hstack hiword hz' hp rd
         have hinc : UInt256.ofNat i + (⟨1⟩ : UInt256) = UInt256.ofNat (i + 1) := by
           rw [u256_add_comm]

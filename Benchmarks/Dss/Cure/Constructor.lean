@@ -266,7 +266,8 @@ theorem assign_cureCtorWardsStorage (evm : EVM.State) (I : ExecutionEnv) {locals
 theorem cureCtorSteleExecOk
     {σ : AccountMap} {σ₀ : AccountMap} {A : Substate} {I : ExecutionEnv}
     {g : UInt256}
-    (hwv : I.weiValue = ⟨0⟩) :
+    (hwv : I.weiValue = ⟨0⟩)
+    (hperm : I.perm = true) :
     steleCtorExec config contract [] σ σ₀ g A I
       (.returned { contract := contract, locals := (∅ : Store) }
         (cureCtorAfterWardsState
@@ -299,8 +300,8 @@ theorem cureCtorSteleExecOk
     simp [constructorDecl, nonpayable]
     refine ExecBlock.consNormal (ExecStmt.requireTrue ?_) ?_
     · exact evalCallvalueEq_true (by simp [evm0, initState]; exact hwv)
-    refine ExecBlock.consNormal (ExecStmt.assign (by simp [evalExpr?, pure]) hassignLive) ?_
-    exact ExecBlock.consNormal (ExecStmt.assign (by simp [evalExpr?, pure]) hassignWards)
+    refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) (by simp [evalExpr?, pure]) hassignLive) ?_
+    exact ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [evm1, cureCtorAfterLiveState, storageStore_executionEnv] using hperm)) (by simp [evalExpr?, pure]) hassignWards)
       ExecBlock.nil
   refine steleCtorExec.intro
     (evmState := evm0)
@@ -366,7 +367,7 @@ theorem cureConstructorBodyCore :
     rcases cureCtorRDretXiResult hcode hrd with hOOG | hSuccess
     · exact typedConstructorRefinementFor.outOfGas (by simpa [Sat256.toUInt256] using hOOG)
     · rcases hSuccess with ⟨g', A', hXi⟩
-      have hStele := cureCtorSteleExecOk
+      have hStele := cureCtorSteleExecOk (hperm := hperm)
         (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
         (g := g) hwv
       have hmapStele :

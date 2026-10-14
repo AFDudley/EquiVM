@@ -55,11 +55,11 @@ theorem absorbSeize_source (frame : Frame) (evm : State) (account asset : Accoun
       have hwT := assignTotalsCollateralBalance ready cleared asset (.var "asset")
         (UInt256.sub (withdrawCollateralTotal cleared asset) seized) hc ht'
         (by simp only [evalExpr?, hb', EvalResult.ofOption])
-      exact ExecBlock.consNormal (ExecStmt.assign hz hw)
-        (ExecBlock.consNormal (ExecStmt.assign he hwT) .nil)
+      exact ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hz hw)
+        (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [storePackedWord, storageStore_executionEnv] using hperm)) he hwT) .nil)
     · rw [if_neg hs]
       have he := checkedNarrowSubSourceUnderflow ⟨128, by decide⟩ ht hseized (Nat.lt_of_not_ge hs)
-      exact ExecBlock.consNormal (ExecStmt.assign hz hw)
+      exact ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hz hw)
         (ExecBlock.consRevert (ExecStmt.assignExprRevert he))
 
 end Benchmarks.CompoundIII.Comet

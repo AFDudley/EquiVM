@@ -61,7 +61,7 @@ theorem poolUpdateTickTail {f : Frame} {evm : EVM.State} {id packed gross : UInt
       exact .execBlockStatic (ExecBlock.consNormal hlet (ExecBlock.consStatic (ExecStmt.assignStatic hval hwrite hp)))
     · rw [if_neg hp]
       refine .execBlockRet (ExecBlock.consNormal hlet (ExecBlock.consNormal
-        (ExecStmt.assign hval hwrite) (ExecBlock.consReturn (ExecStmt.return ?_))))
+        (ExecStmt.assign (hperm := Or.inr (Bool.eq_true_of_not_eq_false hp)) hval hwrite) (ExecBlock.consReturn (ExecStmt.return ?_))))
       have hf1 : f1.locals.get? "flipped" = some (.bool flipped) :=
         (store_get_ne _ _ (by decide : ("liquidityNet" == "flipped") = false)).trans hflip
       have hg1 : f1.locals.get? "liquidityGrossAfter" = some (.int (Int.ofNat gross.toNat)) :=

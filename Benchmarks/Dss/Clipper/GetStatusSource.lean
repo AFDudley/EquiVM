@@ -355,7 +355,7 @@ theorem clipperStatusPriceCallFailure (v : ClipperImmutables) {evm evm' : EVM.St
       (checkedExternalCallStmts (.storage calcRef) "price" (.intLit 0)
         [.var "top", .var "ageForPrice"] "price" (perm := false)) .reverted := by
   simpa [checkedExternalCallStmts] using
-    checkedExternalCallFailure
+    checkedExternalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
       (cfg := config) (C := contract) (evm := evm) (evm' := evm')
       (locals := clipperStatusAgeForPriceLocals tic top age)
       (receiver := .storage calcRef) (retVar := "price") (name := "price")
@@ -391,7 +391,7 @@ theorem clipperStatusPriceCallReturns (v : ClipperImmutables) {evm evm' : EVM.St
       (.ok ({ contract := contract, locals := clipperStatusPriceLocals tic top age price, immutables := immStore v } : Frame)
         evm') := by
   simpa [checkedExternalCallStmts, clipperStatusPriceLocals] using
-    checkedExternalCallSuccess
+    checkedExternalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
       (cfg := config) (C := contract) (evm := evm) (evm' := evm')
       (locals := clipperStatusAgeForPriceLocals tic top age)
       (receiver := .storage calcRef) (retVar := "price") (name := "price")
@@ -425,7 +425,7 @@ theorem clipperStatusPriceCallDecodeReverts (v : ClipperImmutables) {evm evm' : 
       (checkedExternalCallStmts (.storage calcRef) "price" (.intLit 0)
         [.var "top", .var "ageForPrice"] "price" (perm := false)) .reverted := by
   simpa [checkedExternalCallStmts] using
-    checkedExternalCallDecodeRevert
+    checkedExternalCallDecodeRevert (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
       (cfg := config) (C := contract) (evm := evm) (evm' := evm')
       (locals := clipperStatusAgeForPriceLocals tic top age)
       (receiver := .storage calcRef) (retVar := "price") (name := "price")
@@ -637,7 +637,7 @@ theorem clipperStatusAssignDoneTrue (v : ClipperImmutables) (evm : EVM.State)
         .ok (doneTrueFrame, evm) := by
     simp [assignStorageRef?, updateLocalPath?, varRef, clipperStatusDoneLocals,
       clipperStatusDoneTrueLocals, doneTrueFrame, pure, bind, EvalResult.bind]
-  simpa [doneTrueFrame] using ExecStmt.assign hrhs hassign
+  simpa [doneTrueFrame] using ExecStmt.assign (hperm := Or.inl rfl) hrhs hassign
 
 theorem clipperEvalStatusVarDoneTrue (v : ClipperImmutables) (evm : EVM.State)
     (tic top ageForPrice price ageForDone : UInt256) :
@@ -907,7 +907,7 @@ theorem clipperStatusAssignDoneFromRatio (v : ClipperImmutables) (evm : EVM.Stat
         .localVar (varRef "done") (.bool done) = .ok (doneFrame, evm) := by
     simp [assignStorageRef?, updateLocalPath?, varRef, clipperStatusDoneFromRatioLocals,
       clipperStatusRatioLocals, doneFrame, pure, bind, EvalResult.bind]
-  simpa [doneFrame] using ExecStmt.assign hdone hassign
+  simpa [doneFrame] using ExecStmt.assign (hperm := Or.inl rfl) hdone hassign
 
 theorem clipperEvalStatusVarDoneFromRatio (v : ClipperImmutables) (evm : EVM.State)
     (tic top ageForPrice price ageForDone ratio : UInt256) (done : Bool) :
@@ -1099,7 +1099,7 @@ theorem clipperStatusFunctionReturnsDoneTailTrue (v : ClipperImmutables)
           [.var "top", .var "ageForPrice"] "price" (perm := false))
         (.ok priceFrame evmPrice) := by
     simpa [priceFrame] using
-      (ExecStmt.externalCallSuccess
+      (ExecStmt.externalCallSuccess (hperm := Or.inl rfl)
         (cfg := config) (stele := ageFrame) (evm := evm) (evm' := evmPrice)
         (receiver := .storage calcRef) (name := "price") (eth := .intLit 0)
         (args := [.var "top", .var "ageForPrice"]) (retVar := "price")
@@ -1227,7 +1227,7 @@ theorem clipperStatusFunctionReturnsRdivBranch (v : ClipperImmutables)
           [.var "top", .var "ageForPrice"] "price" (perm := false))
         (.ok priceFrame evmPrice) := by
     simpa [priceFrame] using
-      (ExecStmt.externalCallSuccess
+      (ExecStmt.externalCallSuccess (hperm := Or.inl rfl)
         (cfg := config) (stele := ageFrame) (evm := evm) (evm' := evmPrice)
         (receiver := .storage calcRef) (name := "price") (eth := .intLit 0)
         (args := [.var "top", .var "ageForPrice"]) (retVar := "price")

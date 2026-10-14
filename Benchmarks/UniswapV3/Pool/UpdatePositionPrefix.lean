@@ -32,7 +32,7 @@ theorem updatePositionKeySource (imms : Store) (evm : EVM.State) (a : UpdatePosi
   refine ExecBlock.consNormal (stele' := updatePositionZeroFrame imms a) (evm' := evm)
     (ExecStmt.letDecl (by simp only [evalExpr?, pure]; rfl)) ?_
   refine ExecBlock.consNormal (updatePositionGetSource imms evm a hfit) ?_
-  exact ExecBlock.consNormal (ExecStmt.assign
+  exact ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
     (evalExpr_var_get (by update_position_prefix_get))
     (assignLocalVarBase_frame (by update_position_prefix_get))) ExecBlock.nil
 

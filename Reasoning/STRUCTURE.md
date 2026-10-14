@@ -20,11 +20,11 @@ dependencies.
 |---|---|
 | `Stepping.lean` | Base layer. Trace drivers — `initState` (the fresh EVM state), the `Ξ`-to-iterator bridge (`Xi_*_of_X`), single-step peeling (`X_peel`, `stepContinue`, `stepOOG`, `stepHalt*`) — plus one lemma per opcode (`<op>_xstep`) evaluating a single `Xstep` to an explicit gas-guarded successor state (`st<Op>` definitions). |
 | `EVMWord.lean` | `UInt256` arithmetic: no-wrap `toNat` lemmas, bitwise normalization, unsigned comparisons, signed `SLT`, `compare` order instances, the word-rounding used by solc memory allocation. |
-| `SteleBody.lean` | The Stele side: `ExecTransitionBody`/`ExecStmt`/`ExecBlock` lemmas. Non-payable guard, call wrappers (external/checked/low-level/delegate), loop rules, block sequencing (`execBlock_append`), locals lookup, storage-access collapse. |
+| `SteleBody.lean` | The Stele side: `ExecTransitionBody`/`ExecStmt`/`ExecBlock` lemmas. Non-payable guard, call wrappers (external/checked/low-level/delegate), loop rules, block sequencing (`execBlock_append`), locals lookup, storage-access collapse through either a specified backend read/write or a Solidity-layout leaf. |
 | `Memory.lean` | Byte-level memory: little-endian word arithmetic, `MSTORE`/`MLOAD` read-write facts, scratch memory for mapping hashes, selector extraction, calldata decode coupling, mapping-slot keccak facts, and the `keccak_size` theorem. |
 | `Reach.lean` | The EVM trace layer. `RD` (reached-or-out-of-gas invariant), one forward step lemma per opcode (`RD.<op>`), `CALL`/`STATICCALL` with the callee treated as an opaque `Θ` result, terminal forms `RDret`/`RDrev` with the `reEquiv_*` case builders for `runtimeRefinementFor` and the `reEquivElim` eliminators, `Cursor`/`RDc`, and the `evm_run` macro that chains steps with auto-discharged decode/overflow side conditions. |
 | `ABI.lean` | Calldata decoding and return-value encoding: per-shape decode lemmas (address/uint256/bool/bytes32/string/dynamic-array combinations), decode-mode variants, failure cases (short, huge, non-canonical), return encodings. |
-| `MemCascade.lean` | Word-write cascades, sparse writes, scratch-memory shapes, and read/size preservation. |
+| `MemCascade.lean` | Word-write cascades, sparse writes, scratch-memory shapes, and read/size preservation, including two-word preimages written in either order. |
 | `JumpDest.lean` | The `@[valid_jumps]` attribute and `jump_dest` tactic discharging jump-target validity (via `native_decide`, deliberately). |
 | `Initcode.lean` | Constructor-time facts: decode of the initcode prefix, jump-table survival, constructor-argument arithmetic. |
 | `Solc.lean` | Compiler-emitted code shapes, proved once: selector dispatch, ABI length checks, free-memory-pointer and revert memory, the 160-bit address mask, getter/store routines, reentrancy locks, checked arithmetic, event logs, high-level call combinators. |
@@ -44,6 +44,7 @@ dependencies.
 | `Immutables.lean` | Named immutable layouts, runtime construction, preserved decode windows, and decoding of patched PUSH20/PUSH32 operands for generated block summaries. |
 | `SolcRoutines.lean` | Bytecode-parameterized getter, authorization, storage-update, checked-arithmetic, and revert routines. |
 | `SteleArithmetic.lean` | Source arithmetic expressions, checked and wrapping operations, local-variable frames, and exponentiation-frame evaluation facts. |
+| `Vyper.lean` | Vyper mapping-slot hashes with `baseSlot ++ key` preimages, including both scratch-memory write orders and address keys; full-word scalar storage reads and writes through a Vyper layout. Nested mappings use the same hash helper at each level. |
 
 ## Dependencies
 
@@ -87,6 +88,8 @@ The remaining extension modules have distinct responsibilities:
 - `SteleArithmetic` combines source evaluation, ABI types, and word arithmetic. Its `RpowB`
   and `RpowBase` namespaces retain the two local-variable conventions for exponentiation.
 - `StorageLoops` combines storage updates and word arithmetic for clearing and copying loops.
+- `Vyper` combines the generic memory and storage facts with `Stele.VyperLayout`; it does not
+  depend on a particular contract or bytecode.
 
 Basic memory bounds and byte-array conversions live in `Memory`; write-cascade facts live in
 `MemCascade`; compiler allocation and mapping-memory facts live in `Solc`. State projections
@@ -137,7 +140,7 @@ source of the constraint and the rule's reuse, rather than the absence of numeri
 - A code shape the compiler emits → `Solc`, `SolcRoutines`.
 - Storage, state projections, and account-map equality → `Storage`; packed values →
   `PackedStorage`; transient scalar facts → `TransientStorage`, `TransientPackedStorage`;
-  clearing and copying loops → `StorageLoops`.
+  clearing and copying loops → `StorageLoops`; Vyper mapping hashes and full-word leaves → `Vyper`.
 - Code-size guards and precompile results → `ExternalCall`.
 - Elementary source evaluation → `SteleBody`; arithmetic and exponentiation frames →
   `SteleArithmetic`.

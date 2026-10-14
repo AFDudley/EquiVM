@@ -56,7 +56,7 @@ theorem divRoundBody {f : Frame} {evm : EVM.State} {x y : UInt256}
     have h1 : ExecStmt config f0 evm divRoundFunction.body[1]! (.ok f0 evm) :=
       ExecStmt.iteFalse (by simpa only [decide_eq_false hz] using heq) ExecBlock.nil
     have h2 : ExecStmt config f0 evm divRoundFunction.body[2]! (.ok f1 evm) :=
-      ExecStmt.assign (evalDivRound (evalLocalValue hx0) (evalLocalValue hy0) hz)
+      ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalDivRound (evalLocalValue hx0) (evalLocalValue hy0) hz)
         (assignLocalValue (store_get_self _ _ _))
     exact ⟨f1, ExecFuncBody.execBlockRet (ExecBlock.consNormal h0 (ExecBlock.consNormal h1
       (ExecBlock.consNormal h2 (ABlock.start.returns wordLocal_eval))))⟩

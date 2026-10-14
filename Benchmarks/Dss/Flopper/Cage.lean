@@ -76,7 +76,7 @@ theorem flopperCageBodyReturnsSplit (evm : EVM.State) (I : ExecutionEnv)
     (hsrc : evm.executionEnv.source = I.source)
     (hauth :
       Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (relyAuthStorageSlot I) = ⟨1⟩) :
-    (ExecTransitionBody config contract evm ∅ cageTransition.body
+    (evm.executionEnv.perm = true → ExecTransitionBody config contract evm ∅ cageTransition.body
       (.returned { contract := contract, locals := ∅ } (cagePostState evm I) none)) ∧
       (evm.executionEnv.perm = false →
         ExecTransitionBody config contract evm ∅ cageTransition.body .staticViolation) := by
@@ -92,11 +92,12 @@ theorem flopperCageBodyReturnsSplit (evm : EVM.State) (I : ExecutionEnv)
     refine ExecBlock.consNormal (ExecStmt.requireTrue (evalCallvalueEq_true hwv)) ?_
     exact ExecBlock.consNormal (ExecStmt.requireTrue hguard) hwrite
   constructor
-  · apply ExecFuncBody.execBlockOK
+  · intro hperm
+    apply ExecFuncBody.execBlockOK
     apply hprefix
-    refine ExecBlock.consNormal (ExecStmt.assign hvalue hassign) ?_
+    refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hvalue hassign) ?_
     refine ExecBlock.consNormal
-      (ExecStmt.assign ?_ (cageAssignVow evm I hsrc)) ExecBlock.nil
+      (ExecStmt.assign (hperm := Or.inr (by simpa [cageLivePostState] using hperm)) ?_ (cageAssignVow evm I hsrc)) ExecBlock.nil
     simp [evalExpr?, sender, envValue, cageLivePostState, pure]
   · intro hperm
     exact ExecFuncBody.execBlockStatic
@@ -393,7 +394,7 @@ theorem flopperCageBodyCoreOk
   let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
   have hauthWord : relyAuthWord σ I = ⟨1⟩ := hauth
   have hbodySplit :
-      (ExecTransitionBody config contract evmStele ∅ cageTransition.body
+      (I.perm = true → ExecTransitionBody config contract evmStele ∅ cageTransition.body
         (.returned { contract := contract, locals := ∅ } (cagePostState evmStele I) none)) ∧
       (I.perm = false → ExecTransitionBody config contract evmStele ∅
         cageTransition.body .staticViolation) := by
@@ -404,10 +405,10 @@ theorem flopperCageBodyCoreOk
         (by simp [evmStele, initState])
         hauthWord
   rcases flopperX_cage_okSplit (g := Sat256.ofUInt256 g) hauth hreach with
-      ⟨_hperm, hret⟩ | ⟨hperm, hstatic⟩
+      ⟨hperm, hret⟩ | ⟨hperm, hstatic⟩
   swap
   · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode (hbodySplit.2 hperm)
-  exact hret.reEquivExecutionGen hcode hdispatch hdecode hbodySplit.1
+  exact hret.reEquivExecutionGen hcode hdispatch hdecode (hbodySplit.1 hperm)
       (by
         simpa [cagePostState, cageLivePostState, cagePostAccountMap,
           cageLivePostAccountMap, cageVowStoredWord, evmStele, initState,

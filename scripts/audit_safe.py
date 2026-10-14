@@ -138,11 +138,13 @@ def main() -> None:
     with tempfile.TemporaryDirectory(prefix="safe-blocks-") as directory:
         destination = Path(directory)
         shards = write_outputs(destination / "Runtime.lean", "safeRuntime",
-                               [f"{module}.Bytecode"], units, 20, code=runtime)
+                               [f"{module}.Bytecode"], units, 20, code=runtime,
+                               max_rec_depth=10000 if args.via_ir else None,
+                               namespace=f"{module}.RuntimeBlocks")
         ctor_files = write_outputs(destination / "Creation.lean", "safeCreation",
                                    [f"{module}.Bytecode"], ctor_units, None,
                                    creation_code=True, code_term=f"{module}.safeCreationBytecode",
-                                   code=creation)
+                                   code=creation, namespace=f"{module}.CreationBlocks")
         outputs = sorted(destination.iterdir())
         for path in outputs:
             compare_or_write(safe / "Blocks" / path.name, path.read_text(), args.write)

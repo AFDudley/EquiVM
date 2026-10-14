@@ -6153,7 +6153,7 @@ theorem endSnipCheckedDogIlksFailure {σ σ₀ A I} {g : UInt256}
         .ok [.fixedBytes bytes32Width (endBytes32ArgBytes I)] := by
     simp [evalExprs?, hilk, endSnipIlkBytes, endBytes32ArgBytes, EvalResult.bind, bind, pure]
   simpa only [checkedExternalCallStmts] using
-    checkedExternalCallFailure
+    checkedExternalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
       (cfg := config) (C := contract) (evm := evm0) (evm' := evmDog)
       (locals := endSnipStore I) (receiver := .storage dogRef)
       (retVar := "dogIlk") (name := "dogIlks") (target := endSnipDogAddr σ I)
@@ -6201,7 +6201,7 @@ theorem endSnipCheckedDogIlksDecodeRevert {σ σ₀ A I} {g : UInt256}
         .ok [.fixedBytes bytes32Width (endBytes32ArgBytes I)] := by
     simp [evalExprs?, hilk, endSnipIlkBytes, endBytes32ArgBytes, EvalResult.bind, bind, pure]
   simpa [checkedExternalCallStmts] using
-    checkedExternalCallDecodeRevert
+    checkedExternalCallDecodeRevert (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
       (cfg := config) (C := contract) (evm := evm0) (evm' := evmDog)
       (locals := endSnipStore I) (receiver := .storage dogRef)
       (retVar := "dogIlk") (name := "dogIlks") (target := endSnipDogAddr σ I)
@@ -6251,7 +6251,7 @@ theorem endSnipCheckedDogIlksSuccess {σ σ₀ A I} {g : UInt256}
         .ok [.fixedBytes bytes32Width (endBytes32ArgBytes I)] := by
     simp [evalExprs?, hilk, endSnipIlkBytes, endBytes32ArgBytes, EvalResult.bind, bind, pure]
   have hvalue := endSnipDogIlksDecode_ok (out := out) hlo
-  have hblock := checkedExternalCallSuccess
+  have hblock := checkedExternalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
     (cfg := config) (C := contract) (evm := evm0) (evm' := evmDog)
     (locals := endSnipStore I) (receiver := .storage dogRef)
     (retVar := "dogIlk") (name := "dogIlks") (target := endSnipDogAddr σ I)
@@ -6601,7 +6601,7 @@ theorem endSnipCheckedVatIlksFailure {σ I} {dogOut vatOut : ByteArray}
     endEvalExpr_extCodeGuard_true hreceiver hcodePos
   have hargs := evalExprs_endSnip_vatIlksArgs_afterClip evm I dogOut
   simpa [checkedExternalCallStmts] using
-    checkedExternalCallFailure
+    checkedExternalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
       (cfg := config) (C := contract) (evm := evm) (evm' := evmVat)
       (locals := endSnipStoreClip I dogOut) (receiver := .storage vatRef)
       (retVar := "vatIlk") (name := "vatIlks") (target := endPackVatAddr σ I)
@@ -6632,7 +6632,7 @@ theorem endSnipCheckedVatIlksDecodeRevert {σ I} {dogOut vatOut : ByteArray}
     endEvalExpr_extCodeGuard_true hreceiver hcodePos
   have hargs := evalExprs_endSnip_vatIlksArgs_afterClip evm I dogOut
   simpa [checkedExternalCallStmts] using
-    checkedExternalCallDecodeRevert
+    checkedExternalCallDecodeRevert (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
       (cfg := config) (C := contract) (evm := evm) (evm' := evmVat)
       (locals := endSnipStoreClip I dogOut) (receiver := .storage vatRef)
       (retVar := "vatIlk") (name := "vatIlks") (target := endPackVatAddr σ I)
@@ -6666,7 +6666,7 @@ theorem endSnipCheckedVatIlksSuccess {σ I} {dogOut vatOut : ByteArray}
     endEvalExpr_extCodeGuard_true hreceiver hcodePos
   have hargs := evalExprs_endSnip_vatIlksArgs_afterClip evm I dogOut
   have hvalue := endFlowVatIlksDecode_ok (out := vatOut) hlo
-  have hblock := checkedExternalCallSuccess
+  have hblock := checkedExternalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
     (cfg := config) (C := contract) (evm := evm) (evm' := evmVat)
     (locals := endSnipStoreClip I dogOut) (receiver := .storage vatRef)
     (retVar := "vatIlk") (name := "vatIlks") (target := endPackVatAddr σ I)
@@ -6907,7 +6907,7 @@ theorem endSnipCheckedSalesFailure {σ I} {dogOut vatOut saleOut : ByteArray}
     endEvalExpr_extCodeGuard_true hreceiver hcodePos
   have hargs := evalExprs_endSnip_salesArgs_afterRate evm I dogOut vatOut
   simpa [checkedExternalCallStmts] using
-    checkedExternalCallFailure
+    checkedExternalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
       (cfg := config) (C := contract) (evm := evm) (evm' := evmSales)
       (locals := endSnipStoreRate I dogOut vatOut) (receiver := .var "clip")
       (retVar := "clipSale") (name := "sales")
@@ -6939,7 +6939,7 @@ theorem endSnipCheckedSalesDecodeRevert {σ I} {dogOut vatOut saleOut : ByteArra
     endEvalExpr_extCodeGuard_true hreceiver hcodePos
   have hargs := evalExprs_endSnip_salesArgs_afterRate evm I dogOut vatOut
   simpa [checkedExternalCallStmts] using
-    checkedExternalCallDecodeRevert
+    checkedExternalCallDecodeRevert (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
       (cfg := config) (C := contract) (evm := evm) (evm' := evmSales)
       (locals := endSnipStoreRate I dogOut vatOut) (receiver := .var "clip")
       (retVar := "clipSale") (name := "sales")
@@ -6974,7 +6974,7 @@ theorem endSnipCheckedSalesSuccess {σ I} {dogOut vatOut saleOut : ByteArray}
     endEvalExpr_extCodeGuard_true hreceiver hcodePos
   have hargs := evalExprs_endSnip_salesArgs_afterRate evm I dogOut vatOut
   have hvalue := endSnipSalesDecode_ok (out := saleOut) hlo
-  have hblock := checkedExternalCallSuccess
+  have hblock := checkedExternalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
     (cfg := config) (C := contract) (evm := evm) (evm' := evmSales)
     (locals := endSnipStoreRate I dogOut vatOut) (receiver := .var "clip")
     (retVar := "clipSale") (name := "sales")
@@ -7293,7 +7293,7 @@ theorem endSnipCheckedSuckFailure {σ I} {dogOut vatOut saleOut suckOut : ByteAr
   have hargs := evalExprs_endSnip_suckArgs_afterUsr evm I σ dogOut vatOut saleOut
     hmap howner
   simpa [checkedExternalCallStmts] using
-    checkedExternalCallFailure
+    checkedExternalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
       (cfg := config) (C := contract) (evm := evm) (evm' := evmSuck)
       (locals := endSnipStoreUsr I dogOut vatOut saleOut) (receiver := .storage vatRef)
       (retVar := "_suck") (name := "suck") (target := endPackVatAddr σ I)
@@ -7333,7 +7333,7 @@ theorem endSnipCheckedSuckSuccess {σ I} {dogOut vatOut saleOut suckOut : ByteAr
     hmap howner
   have hdec : config.externalABI.decode? "suck" suckOut = some [] := by
     simp [config, externalABI, decodeVoid?]
-  have hblock := checkedExternalCallSuccess
+  have hblock := checkedExternalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
     (cfg := config) (C := contract) (evm := evm) (evm' := evmSuck)
     (locals := endSnipStoreUsr I dogOut vatOut saleOut) (receiver := .storage vatRef)
     (retVar := "_suck") (name := "suck") (target := endPackVatAddr σ I)
@@ -7433,7 +7433,7 @@ theorem endSnipCheckedYankFailure {σ I} {dogOut vatOut saleOut yankOut : ByteAr
     endEvalExpr_extCodeGuard_true hreceiver hcodePos
   have hargs := evalExprs_endSnip_yankArgs_afterSuck evm I dogOut vatOut saleOut
   simpa only [checkedExternalCallStmts] using
-    checkedExternalCallFailure
+    checkedExternalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
       (cfg := config) (C := contract) (evm := evm) (evm' := evmYank)
       (locals := endSnipStoreSuck I dogOut vatOut saleOut) (receiver := .var "clip")
       (retVar := "_yank") (name := "yank") (target := endSnipDogIlkClipAddr dogOut)
@@ -7466,7 +7466,7 @@ theorem endSnipCheckedYankSuccess {σ I} {dogOut vatOut saleOut yankOut : ByteAr
   have hargs := evalExprs_endSnip_yankArgs_afterSuck evm I dogOut vatOut saleOut
   have hdec : config.externalABI.decode? "yank" yankOut = some [] := by
     simp [config, externalABI, decodeVoid?]
-  have hblock := checkedExternalCallSuccess
+  have hblock := checkedExternalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
     (cfg := config) (C := contract) (evm := evm) (evm' := evmYank)
     (locals := endSnipStoreSuck I dogOut vatOut saleOut) (receiver := .var "clip")
     (retVar := "_yank") (name := "yank") (target := endSnipDogIlkClipAddr dogOut)
@@ -7731,7 +7731,7 @@ theorem endSnipAssignArt {locals : Store} (evm : EVM.State) (I : ExecutionEnv)
 theorem endSnipStmtArtAssignSplit (evm : EVM.State) (I : ExecutionEnv)
     (σ : AccountMap) (dogOut vatOut saleOut : ByteArray)
     (hsz68 : 68 ≤ I.calldata.size) :
-    (ExecStmt config
+    (evm.executionEnv.perm = true → ExecStmt config
       { contract := contract, locals := endSnipStoreArtNew σ I dogOut vatOut saleOut }
       evm (.assign .storage (ArtRef (.var "ilk")) (.var "ArtNew"))
       (.ok { contract := contract, locals := endSnipStoreArtNew σ I dogOut vatOut saleOut }
@@ -7779,17 +7779,18 @@ theorem endSnipStmtArtAssignSplit (evm : EVM.State) (I : ExecutionEnv)
       rw [endSnipStoreArtNew, store_get_ne _ _ (by native_decide)]
       exact endSnipStoreArt_get_ilk I dogOut vatOut saleOut
     exact endSnipAssignArt evm I (endSnipArtNewWord σ I vatOut saleOut) hbase hget hsz68
-  exact ⟨ExecStmt.assign hArtNew hassign,
+  exact ⟨fun hperm ↦ ExecStmt.assign (hperm := Or.inr hperm) hArtNew hassign,
     fun hperm ↦ ExecStmt.assignStatic hArtNew hassign hperm⟩
 
 theorem endSnipStmtArtAssign (evm : EVM.State) (I : ExecutionEnv)
     (σ : AccountMap) (dogOut vatOut saleOut : ByteArray)
-    (hsz68 : 68 ≤ I.calldata.size) :
+    (hsz68 : 68 ≤ I.calldata.size)
+    (hperm : evm.executionEnv.perm = true) :
     ExecStmt config { contract := contract, locals := endSnipStoreArtNew σ I dogOut vatOut saleOut }
       evm (.assign .storage (ArtRef (.var "ilk")) (.var "ArtNew"))
       (.ok { contract := contract, locals := endSnipStoreArtNew σ I dogOut vatOut saleOut }
         (endSnipPostArtState evm I (endSnipArtNewWord σ I vatOut saleOut))) :=
-  (endSnipStmtArtAssignSplit evm I σ dogOut vatOut saleOut hsz68).1
+  (endSnipStmtArtAssignSplit evm I σ dogOut vatOut saleOut hsz68).1 hperm
 
 theorem endSnipEvalExpr_intLimit (evm : EVM.State) {locals : Store} :
     evalExpr? config { contract := contract, locals := locals } evm (.intLit int256Limit) =
@@ -8146,7 +8147,7 @@ theorem endSnipGrabTailReverts_callFailedFor {σCall σLoc I}
             .int (Int.ofNat (endSnipArtWord vatOut saleOut).toNat)] := by
     simpa [hmap] using hargsRaw
   simpa [checkedExternalCallStmts] using
-    checkedExternalCallFailure
+    checkedExternalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
       (cfg := config) (C := contract) (evm := evm) (evm' := evmGrab)
       (locals := endSnipStoreArtNew σLoc I dogOut vatOut saleOut)
       (receiver := .storage vatRef) (retVar := "_grab") (name := "grab")
@@ -8214,7 +8215,7 @@ theorem endSnipGrabTailReturns_successFor {σCall σLoc I}
     simpa [hmap] using hargsRaw
   have hdec : config.externalABI.decode? "grab" grabOut = some [] := by
     simp [config, externalABI, decodeVoid?]
-  have hblock := checkedExternalCallSuccess
+  have hblock := checkedExternalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
     (cfg := config) (C := contract) (evm := evm) (evm' := evmGrab)
     (locals := endSnipStoreArtNew σLoc I dogOut vatOut saleOut)
     (receiver := .storage vatRef) (retVar := "_grab") (name := "grab")
@@ -8255,7 +8256,7 @@ theorem endSnipTailAfterUsrReturnsSplit {I σLoc}
         (checkedExternalCallStmts (.var "clip") "yank" (.intLit 0) [.var "id"] "_yank")
         (.ok { contract := contract, locals := endSnipStoreYank I dogOut vatOut saleOut }
           evmYank)) :
-    (((endSnipSaleLotWord saleOut).toNat < 2 ^ 255) →
+    (evmYank.executionEnv.perm = true → ((endSnipSaleLotWord saleOut).toNat < 2 ^ 255) →
       ((endSnipArtWord vatOut saleOut).toNat < 2 ^ 255) →
       ExecBlock config { contract := contract, locals := endSnipStoreUsr I dogOut vatOut saleOut }
       evmUsr
@@ -8327,10 +8328,10 @@ theorem endSnipTailAfterUsrReturnsSplit {I σLoc}
   have hassign := endSnipStmtArtAssignSplit evmYank I σLoc
     dogOut vatOut saleOut hsz68
   constructor
-  · intro hlot hart
+  · intro hperm hlot hart
     apply hprefix
     refine ExecBlock.consNormal
-      (hassign.1) ?_
+      (hassign.1 hperm) ?_
     exact ExecBlock.consNormal
       (ExecStmt.requireTrue
         (endSnipEvalExpr_intGuard_true
@@ -8364,7 +8365,8 @@ theorem endSnipTailAfterUsrReturns {I σLoc}
         evmSuck
         (checkedExternalCallStmts (.var "clip") "yank" (.intLit 0) [.var "id"] "_yank")
         (.ok { contract := contract, locals := endSnipStoreYank I dogOut vatOut saleOut }
-          evmYank)) :
+          evmYank))
+    (hperm : evmYank.executionEnv.perm = true) :
     ExecBlock config { contract := contract, locals := endSnipStoreUsr I dogOut vatOut saleOut }
       evmUsr
       (checkedExternalCallStmts (.storage vatRef) "suck" (.intLit 0)
@@ -8380,7 +8382,7 @@ theorem endSnipTailAfterUsrReturns {I σLoc}
       (.ok { contract := contract, locals := endSnipStoreArtNew σLoc I dogOut vatOut saleOut }
         (endSnipPostArtState evmYank I (endSnipArtNewWord σLoc I vatOut saleOut))) :=
   (endSnipTailAfterUsrReturnsSplit hsz68 hArtLoad hrate hfit
-    hsuck hyank).1 hlot hart
+    hsuck hyank).1 hperm hlot hart
 
 theorem endSnipTailReverts_suck {I} {dogOut vatOut saleOut : ByteArray}
     {evmUsr : EVM.State}
@@ -8571,7 +8573,8 @@ theorem endSnipTailReverts_intGuardLot {I σLoc}
         evmSuck
         (checkedExternalCallStmts (.var "clip") "yank" (.intLit 0) [.var "id"] "_yank")
         (.ok { contract := contract, locals := endSnipStoreYank I dogOut vatOut saleOut }
-          evmYank)) :
+          evmYank))
+    (hperm : evmYank.executionEnv.perm = true) :
     ExecBlock config { contract := contract, locals := endSnipStoreUsr I dogOut vatOut saleOut }
       evmUsr
       (checkedExternalCallStmts (.storage vatRef) "suck" (.intLit 0)
@@ -8600,7 +8603,7 @@ theorem endSnipTailReverts_intGuardLot {I σLoc}
     refine ExecBlock.consNormal
       (endSnipStmtArtNewAddReturns evmYank I σLoc dogOut vatOut saleOut hsz68 hArtLoad hfit) ?_
     refine ExecBlock.consNormal
-      (endSnipStmtArtAssign evmYank I σLoc dogOut vatOut saleOut hsz68) ?_
+      (endSnipStmtArtAssign (hperm := hperm) evmYank I σLoc dogOut vatOut saleOut hsz68) ?_
     exact ExecBlock.consRevert
       (ExecStmt.requireFalse
         (endSnipEvalExpr_intGuard_false_lot
@@ -8634,7 +8637,8 @@ theorem endSnipTailReverts_intGuardArt {I σLoc}
         evmSuck
         (checkedExternalCallStmts (.var "clip") "yank" (.intLit 0) [.var "id"] "_yank")
         (.ok { contract := contract, locals := endSnipStoreYank I dogOut vatOut saleOut }
-          evmYank)) :
+          evmYank))
+    (hperm : evmYank.executionEnv.perm = true) :
     ExecBlock config { contract := contract, locals := endSnipStoreUsr I dogOut vatOut saleOut }
       evmUsr
       (checkedExternalCallStmts (.storage vatRef) "suck" (.intLit 0)
@@ -8663,7 +8667,7 @@ theorem endSnipTailReverts_intGuardArt {I σLoc}
     refine ExecBlock.consNormal
       (endSnipStmtArtNewAddReturns evmYank I σLoc dogOut vatOut saleOut hsz68 hArtLoad hfit) ?_
     refine ExecBlock.consNormal
-      (endSnipStmtArtAssign evmYank I σLoc dogOut vatOut saleOut hsz68) ?_
+      (endSnipStmtArtAssign (hperm := hperm) evmYank I σLoc dogOut vatOut saleOut hsz68) ?_
     exact ExecBlock.consRevert
       (ExecStmt.requireFalse
         (endSnipEvalExpr_intGuard_false_art
@@ -10035,7 +10039,7 @@ theorem endSnipBody {σ σ₀ A I} {g : UInt256}
                                               hperm hsz68 hloDog hloVat hloSale hlot
                                               hart rd2391
                                           have htailOk :=
-                                            endSnipTailAfterUsrReturns hsz68
+                                            endSnipTailAfterUsrReturns (hperm := hperm) hsz68
                                               hArtLoadStele hrateNE hfitStele hlot hart
                                               hsuckBlock hyankBlock
                                           let σ_post :=
@@ -10479,7 +10483,7 @@ theorem endSnipBody {σ σ₀ A I} {g : UInt256}
                                                 (endSnipArtWord vatOut saleOut).toNat := by
                                             simpa [hint256Bound] using hartOverflowBound
                                           have htail :=
-                                            endSnipTailReverts_intGuardArt hsz68
+                                            endSnipTailReverts_intGuardArt (hperm := hperm) hsz68
                                               hArtLoadStele hrateNE hfitStele hlot
                                               hartOverflow hsuckBlock hyankBlock
                                           have hbody :
@@ -10505,7 +10509,7 @@ theorem endSnipBody {σ σ₀ A I} {g : UInt256}
                                               (endSnipSaleLotWord saleOut).toNat := by
                                           simpa [hint256Bound] using hlotOverflowBound
                                         have htail :=
-                                          endSnipTailReverts_intGuardLot hsz68
+                                          endSnipTailReverts_intGuardLot (hperm := hperm) hsz68
                                             hArtLoadStele hrateNE hfitStele hlotOverflow
                                             hsuckBlock hyankBlock
                                         have hbody :

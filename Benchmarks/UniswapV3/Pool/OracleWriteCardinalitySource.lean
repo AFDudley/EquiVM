@@ -32,12 +32,12 @@ theorem oracleWriteCardinalityChoice (imms : Store) (evm : EVM.State) (a : Oracl
   · simp only [oracleWriteCardinalityFrame, oracleWriteCardinality, hg, Bool.false_eq_true, if_false]
     apply ExecStmt.iteFalse (by simpa only [hg] using hc)
     exact ExecBlock.consNormal
-      (ExecStmt.assign (evalExpr_var_get (by oracle_write_get))
+      (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalExpr_var_get (by oracle_write_get))
         (assignLocalVarBase_frame (old := .int 0) (by oracle_write_get))) ExecBlock.nil
   · simp only [oracleWriteCardinalityFrame, oracleWriteCardinality, hg, if_true]
     apply ExecStmt.iteTrue (by simpa only [hg] using hc)
     exact ExecBlock.consNormal
-      (ExecStmt.assign (evalExpr_var_get (by oracle_write_get))
+      (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalExpr_var_get (by oracle_write_get))
         (assignLocalVarBase_frame (old := .int 0) (by oracle_write_get))) ExecBlock.nil
 
 theorem oracleWriteCardinalitySource (imms : Store) (evm : EVM.State) (a : OracleWriteArgs)
@@ -67,7 +67,7 @@ theorem oracleWriteIndexSource (imms : Store) (evm : EVM.State) (a : OracleWrite
   change ExecBlock config (oracleWriteFrame imms a) evm
     (oracleWriteFunction.body.take 5 ++ [oracleWriteFunction.body[5]!]) _
   exact execBlock_append_ok (oracleWriteCardinalitySource imms evm a hin hsame)
-    (ExecBlock.consNormal (ExecStmt.assign (evalOracleWriteIndex imms evm a hn)
+    (ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalOracleWriteIndex imms evm a hn)
       (assignLocalVarBase_frame (old := .int 0) (by oracle_write_get))) ExecBlock.nil)
 
 theorem oracleWriteCardinalityReverts (imms : Store) (evm : EVM.State) (a : OracleWriteArgs)

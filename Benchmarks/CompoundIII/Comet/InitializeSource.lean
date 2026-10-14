@@ -56,8 +56,9 @@ theorem initializeReady (evm : EVM.State) (imms : Store)
 theorem initializeTimeAssign (evm : EVM.State) (imms : Store) :
     ExecStmt config (initializeReadyFrame evm imms) evm
       (.assign .storage ⟨"lastAccrualTime", []⟩ (.var "__c0"))
-      (.ok (initializeReadyFrame evm imms) (storeLastAccrual evm (timestampWord evm.executionEnv))) := by
-  apply ExecStmt.assign
+      (if evm.executionEnv.perm then .ok (initializeReadyFrame evm imms)
+        (storeLastAccrual evm (timestampWord evm.executionEnv)) else .staticViolation) := by
+  apply execStmt_assign_storage
   · simp only [evalExpr?, initializeReadyFrame, Std.HashMap.get?_eq_getElem?,
       Std.HashMap.getElem?_insert, EvalResult.ofOption]
     rfl
@@ -67,21 +68,23 @@ theorem initializeStorage_returns (evm : EVM.State) (imms : Store)
     (hv : evm.executionEnv.weiValue = ⟨0⟩)
     (hhi : evm.executionEnv.calldata.size < 2^255 + 4)
     (hz : lastAccrualWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) = ⟨0⟩)
-    (ht : (timestampWord evm.executionEnv).toNat < 2^40) :
+    (ht : (timestampWord evm.executionEnv).toNat < 2^40)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm ∅ initializeStorageTransition.body
       (.returned (initializeReadyFrame evm imms) (initializeSourceState evm) none) imms := by
   apply ExecFuncBody.execBlockOK
   apply (initializeReady evm imms hv hhi hz ht).run
-  apply ExecBlock.consNormal (initializeTimeAssign evm imms)
-  have hs (state : EVM.State) (b : Bool) :
+  apply ExecBlock.consNormal (by simpa only [hperm, if_true] using initializeTimeAssign evm imms)
+  have hs (state : EVM.State) (b : Bool) (hp : state.executionEnv.perm = true) :
       ExecStmt config (initializeReadyFrame evm imms) state
         (.assign .storage ⟨totalsIndexName b, []⟩ (.intLit 1000000000000000))
         (.ok (initializeReadyFrame evm imms) (storeTotalsIndex state b ⟨1000000000000000⟩)) := by
-    apply ExecStmt.assign (value := .int (Int.ofNat (⟨1000000000000000⟩ : UInt256).toNat))
+    apply ExecStmt.assign (hperm := Or.inr hp) (value := .int (Int.ofNat (⟨1000000000000000⟩ : UInt256).toNat))
       (by norm_num [evalExpr?, pure, UInt256.toNat, UInt256.size])
     exact assignTotalsIndex state _ imms b _ (by
       cases b <;> simp [initializeReadyFrame, calldataLocalFrame, totalsIndexName])
-  exact ExecBlock.consNormal (hs _ false) (ExecBlock.consNormal (hs _ true) ExecBlock.nil)
+  exact ExecBlock.consNormal (hs _ false (by simpa [storeLastAccrual] using hperm))
+    (ExecBlock.consNormal (hs _ true (by simpa [storeLastAccrual, storeTotalsIndex] using hperm)) ExecBlock.nil)
 
 theorem initializeStorage_static (evm : EVM.State) (imms : Store)
     (hv : evm.executionEnv.weiValue = ⟨0⟩)

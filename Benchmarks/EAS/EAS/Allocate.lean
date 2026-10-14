@@ -82,7 +82,7 @@ theorem allocatePrefix_exec {cfg : Config} {frame : Frame} {evm : EVM.State}
   have hr : evalExpr? cfg {frame with locals := frame.locals.insert "rounded" (.int (Int.ofNat ((size + 31) % UInt256.size)))}
       evm (.var "rounded") = .ok (.int (Int.ofNat ((size + 31) % UInt256.size))) := by
     simp only [evalExpr?, store_get_self, EvalResult.ofOption]
-  refine ExecBlock.consNormal (ExecStmt.assign (evalFloor32 hr) (assignLocalBase_ok (store_get_self _ _ _))) ?_
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalFloor32 hr) (assignLocalBase_ok (store_get_self _ _ _))) ?_
   refine ExecBlock.consNormal (ExecStmt.letDecl (value := .int (Int.ofNat (allocateNext heap size))) ?_) ExecBlock.nil
   apply evalCastUint256Add
   · simp only [evalExpr?, store_get_ne _ _ (by decide : ("rounded" == "$EAS.freeMemory") = false), hp, EvalResult.ofOption]
@@ -127,7 +127,7 @@ theorem allocateSource_ok {cfg : Config} {frame : Frame} {evm : EVM.State}
   refine ExecBlock.consNormal (ExecStmt.requireTrue ?_) ?_
   · simpa only [hguard, decide_true] using evalAllocateGuard (evm := evm) (cfg := cfg)
       (frame := {frame with locals := allocatePrefixLocals frame.locals heap size}) hn hp'
-  refine ExecBlock.consNormal (ExecStmt.assign (value := .int (Int.ofNat (allocateNext heap size)))
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (value := .int (Int.ofNat (allocateNext heap size)))
     ?_ (assignLocalBase_ok hp')) ?_
   · simp only [evalExpr?, hn, EvalResult.ofOption]
   apply ExecBlock.consReturn
@@ -279,7 +279,7 @@ theorem unpackHeapResult {cfg : Config} {frame : Frame} {evm : EVM.State}
   refine ExecBlock.consNormal (ExecStmt.letDecl (value := value) ?_) ?_
   · simp only [evalExpr?, hret, EvalResult.ofOption, EvalResult.bind, bind]
     rfl
-  refine ExecBlock.consNormal (ExecStmt.assign (value := .int (Int.ofNat heap)) ?_
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (value := .int (Int.ofNat heap)) ?_
     (assignLocalBase_ok (by simpa only [store_get_ne _ _ hrc] using hheap))) ExecBlock.nil
   simp only [evalExpr?, store_get_ne _ _ hrt, hret, EvalResult.ofOption, EvalResult.bind, bind]
   rfl

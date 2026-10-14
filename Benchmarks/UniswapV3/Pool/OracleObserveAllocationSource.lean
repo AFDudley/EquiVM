@@ -41,12 +41,12 @@ theorem oracleObserveAllocatePrefix (imms : Store) (evm : EVM.State) (time : UIn
         (by simp [f0, oracleObserveZeroFrame, oracleObserveLocals, Std.HashMap.getElem_insert])
   have st : ExecStmt config f0 evm oracleObserveFunction.body[4]!
       (.ok f1 evm) := by
-    exact ExecStmt.assign (evalExpr_newIntArray (.sint ⟨56, by decide⟩) _ e0)
+    exact ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalExpr_newIntArray (.sint ⟨56, by decide⟩) _ e0)
       (assignLocalVarBase_frame (old := .array []) (by
         simp [f0, oracleObserveZeroFrame, Std.HashMap.getElem_insert]))
   have ss : ExecStmt config f1 evm oracleObserveFunction.body[6]!
       (.ok (oracleObserveAllocatedFrame imms time secondsAgos tick index liquidity card) evm) := by
-    exact ExecStmt.assign (evalExpr_newIntArray (.uint ⟨160, by decide⟩) _ e1)
+    exact ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalExpr_newIntArray (.uint ⟨160, by decide⟩) _ e1)
       (assignLocalVarBase_frame (old := .array []) (by
         simp [f1, oracleObserveTicksFrame, oracleObserveZeroFrame, Std.HashMap.getElem_insert]))
   exact execBlock_append_ok (oracleObserveZeroPrefix imms evm time secondsAgos tick index liquidity card)

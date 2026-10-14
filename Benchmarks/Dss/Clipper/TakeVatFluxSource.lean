@@ -45,7 +45,8 @@ theorem clipperTakeOweGtTabVatFluxCallFailureSourceReverts {σ σ₀ A I}
         evmLock
         (.internalCall "status" [.var "tic", .storage (salesF (.var "id") "top")] "st")
         (.ok { contract := contract, locals := clipperTakeLocalsSt evmLock I false price, immutables := immStore v }
-          evmPrice)) :
+          evmPrice))
+    (hperm : I.perm = true) :
     let locals := clipperTakeStore I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     ExecTransitionBody config contract evm0 locals takeTransition.body .reverted (immStore v) := by
@@ -235,7 +236,7 @@ theorem clipperTakeOweGtTabVatFluxCallFailureSourceReverts {σ σ₀ A I}
         refine ExecBlock.consNormal (ExecStmt.requireTrue ?_) ?_
         · exact evalCallvalueEq_true (by simp [evm0, initState]; exact hwv)
         refine ExecBlock.consNormal (ExecStmt.requireTrue hlockedEval) ?_
-        refine ExecBlock.consNormal (ExecStmt.assign hlockRhs hlockAssign) ?_
+        refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hlockRhs hlockAssign) ?_
         refine ExecBlock.consNormal (ExecStmt.requireTrue hstoppedEval) ?_
         refine ExecBlock.consNormal hletUsr ?_
         refine ExecBlock.consNormal hletTic ?_

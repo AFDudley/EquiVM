@@ -63,7 +63,7 @@ theorem bitmapNextReadInitialized (imms : Store) (evm : EVM.State)
       simp only [bitmapNextReadFrame, bitmapNextMaskFrame, bitmapNextBitFrame,
         bitmapNextWordFrame, bitmapNextCallFrame, bitmapNextCallName,
         Std.HashMap.get?_eq_getElem?, Std.HashMap.getElem?_insert] <;> exact hp
-  apply ExecStmt.assign _ (assignLocalVarBase_frame hg)
+  apply ExecStmt.assign (hperm := Or.inl rfl) _ (assignLocalVarBase_frame hg)
   refine (evalExpr_int_ne he hz).trans ?_
   apply congrArg (fun b : Bool ↦ (EvalResult.ok (Value.bool b) : EvalResult Value))
   apply Bool.eq_iff_iff.mpr

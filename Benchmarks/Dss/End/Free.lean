@@ -1368,7 +1368,7 @@ theorem endFreeBodyReverts_urnsCallFailed {σ σ₀ A I} {g : UInt256}
       ExecBlock config { contract := contract, locals := endFreeStore I } evm0
         endFreeUrnsCallStmts .reverted := by
     simpa [endFreeUrnsCallStmts, checkedExternalCallStmts] using
-      checkedExternalCallFailure
+      checkedExternalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
         (cfg := config) (C := contract) (evm := evm0) (evm' := evmUrns)
         (locals := endFreeStore I) (receiver := .storage vatRef)
         (retVar := "vatUrn") (name := "urns") (target := endPackVatAddr σ I)
@@ -1443,7 +1443,7 @@ theorem endFreeBodyReverts_urnsDecodeShort {σ σ₀ A I} {g : UInt256}
       ExecBlock config { contract := contract, locals := endFreeStore I } evm0
         endFreeUrnsCallStmts .reverted := by
     simpa [endFreeUrnsCallStmts, checkedExternalCallStmts] using
-      checkedExternalCallDecodeRevert
+      checkedExternalCallDecodeRevert (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
         (cfg := config) (C := contract) (evm := evm0) (evm' := evmUrns)
         (locals := endFreeStore I) (receiver := .storage vatRef)
         (retVar := "vatUrn") (name := "urns") (target := endPackVatAddr σ I)
@@ -1523,7 +1523,7 @@ theorem endFreePrefixUrnsSuccess {σ σ₀ A I} {g : UInt256}
       ExecBlock config { contract := contract, locals := endFreeStore I } evm0
         endFreeUrnsCallStmts
         (.ok { contract := contract, locals := endFreeStoreVatUrn I out } evmUrns) := by
-    have hblock := checkedExternalCallSuccess
+    have hblock := checkedExternalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
       (cfg := config) (C := contract) (evm := evm0) (evm' := evmUrns)
       (locals := endFreeStore I) (receiver := .storage vatRef)
       (retVar := "vatUrn") (name := "urns") (target := endPackVatAddr σ I)
@@ -1908,7 +1908,7 @@ theorem endFreeTailReverts_grabCallFailed (evm evmGrab : EVM.State) (I : Executi
             .intLit 0] "_grab")
         .reverted := by
     simpa [checkedExternalCallStmts] using
-      checkedExternalCallFailure
+      checkedExternalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
         (cfg := config) (C := contract) (evm := evm) (evm' := evmGrab)
         (locals := endFreeStoreArt I out) (receiver := .storage vatRef)
         (retVar := "_grab") (name := "grab") (target := endPackVatAddr evm.accountMap I)
@@ -1961,7 +1961,7 @@ theorem endFreeTailReturns_grabSuccessSplit (evm evmGrab : EVM.State) (I : Execu
           .int (-(Int.ofNat (endFreeUrnInkWord out).toNat)),
           .int 0]
         (true, evmGrab, grabOut) true) :
-    (ExecBlock config { contract := contract, locals := endFreeStoreVatUrn I out } evm
+    (evm.executionEnv.perm = true → ExecBlock config { contract := contract, locals := endFreeStoreVatUrn I out } evm
       endFreeAfterUrnsStmts
       (.ok { contract := contract, locals := endFreeStoreGrab I out } evmGrab)) ∧
       (evm.executionEnv.perm = false →
@@ -2034,7 +2034,7 @@ theorem endFreeTailReturns_grabSuccessSplit (evm evmGrab : EVM.State) (I : Execu
         (.ok { contract := contract, locals := endFreeStoreGrab I out } evmGrab) := by
     have hdec : config.externalABI.decode? "grab" grabOut = some [] := by
       simp [config, externalABI, decodeVoid?]
-    have hblock := checkedExternalCallSuccess
+    have hblock := checkedExternalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
       (cfg := config) (C := contract) (evm := evm) (evm' := evmGrab)
       (locals := endFreeStoreArt I out) (receiver := .storage vatRef)
       (retVar := "_grab") (name := "grab") (target := endPackVatAddr evm.accountMap I)
@@ -2065,7 +2065,8 @@ theorem endFreeTailReturns_grabSuccessSplit (evm evmGrab : EVM.State) (I : Execu
     refine ExecBlock.consNormal (ExecStmt.requireTrue hreqInk) ?_
     exact execBlock_append_ok hgrabBlock htail
   constructor
-  · exact hfinish (ExecBlock.consNormal (ExecStmt.emit hargsEvent) ExecBlock.nil)
+  · intro hperm
+    exact hfinish (ExecBlock.consNormal (ExecStmt.emit (hperm := by rw [typedCallViaEVM_executionEnv_eq hcall]; exact hperm) hargsEvent) ExecBlock.nil)
   · intro hperm
     exact hfinish (ExecBlock.consStatic (ExecStmt.emitStatic hargsEvent
       (by rw [typedCallViaEVM_executionEnv_eq hcall]; exact hperm)))
@@ -2278,7 +2279,7 @@ theorem endFreeBodyReturns_grabSuccessSplit {σ σ₀ A I} {g : UInt256}
           .int 0]
         (true, evmGrab, grabOut) true) :
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-    (ExecTransitionBody config contract evm0 (endFreeStore I) freeTransition.body
+    (I.perm = true → ExecTransitionBody config contract evm0 (endFreeStore I) freeTransition.body
       (.returned { contract := contract, locals := endFreeStoreGrab I out } evmGrab none)) ∧
       (I.perm = false → ExecTransitionBody config contract evm0 (endFreeStore I)
         freeTransition.body .staticViolation) := by
@@ -2305,7 +2306,9 @@ theorem endFreeBodyReturns_grabSuccessSplit {σ σ₀ A I} {g : UInt256}
       checkedExternalCallStmts, List.cons_append, List.nil_append, List.append_assoc] using
       execBlock_append hprefix htail
   constructor
-  · exact ExecFuncBody.execBlockOK (hfinish htailSplit.1)
+  · intro hperm
+    exact ExecFuncBody.execBlockOK (hfinish (htailSplit.1
+      (by rw [typedCallViaEVM_executionEnv_eq hcall]; exact hperm)))
   · intro hperm
     exact ExecFuncBody.execBlockStatic
       (hfinish (htailSplit.2 (by rw [typedCallViaEVM_executionEnv_eq hcall]; exact hperm)))
@@ -3720,7 +3723,7 @@ theorem endFreeBody {σ σ₀ A I} {g : UInt256}
                         have hretSplit := endFreeX_grabLogReturnSplit
                           (σ := σ') (out := out) (ret := ret) rd8177
                         have hbodySplit :
-                            (ExecTransitionBody config contract evmStele (endFreeStore I)
+                            (I.perm = true → ExecTransitionBody config contract evmStele (endFreeStore I)
                               freeTransition.body
                               (.returned { contract := contract, locals := endFreeStoreGrab I out }
                                 evmGrabStele none)) ∧
@@ -3741,7 +3744,7 @@ theorem endFreeBody {σ σ₀ A I} {g : UInt256}
                         · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode (hbodySplit.2
                           hperm)
                         exact hretEvm.reEquivExecutionGen
-                          hcode hdispatch hdecode hbodySplit.1
+                          hcode hdispatch hdecode (hbodySplit.1 _hperm)
                           (by simp [evmGrabStele])
                           (by
                             simpa [freeTransition] using

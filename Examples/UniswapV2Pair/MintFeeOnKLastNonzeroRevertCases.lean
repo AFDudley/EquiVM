@@ -425,12 +425,13 @@ theorem uniswapMintAfterMintFeeReverts_of_call
         { contract := contract,
           locals := mintAmountStore (uniswapLockEnteredState evm) I balance0 balance1 }
         evm1 (.internalCall "_mintFee" [.var "_reserve0", .var "_reserve1"] "feeOn")
-        .reverted) :
+        .reverted)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config { contract := contract, locals := mintStore I } evm mintTransition.body
       .reverted := by
   let evmL := uniswapLockEnteredState evm
   have hprefix :=
-    uniswapMintAmountsPrefix evm evm0 evm1 I hwv hunlocked hguard0 hguard1 hcall0 hdec0
+    uniswapMintAmountsPrefix (hperm := by assumption) evm evm0 evm1 I hwv hunlocked hguard0 hguard1 hcall0 hdec0
       hcall1 hdec1 henough0 henough1
   have hfeeBlock :
       ExecBlock config
@@ -679,7 +680,8 @@ theorem uniswapMintFeeOnKLastNonzeroRootArithmeticOverflowFromFactoryCase
           outFee)
     (hcase :
       mintFeeOnKLastNonzeroRootArithmeticOverflowFromFactoryCaseData feeToWord σFee
-        evmFeeS I) :
+        evmFeeS I)
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   rcases hcase with ⟨hfeeToNonzero, hkLastNonzero, hrootCase⟩
   let evmS := initState σ σ₀ (Sat256.ofUInt256 g) A I
@@ -749,7 +751,7 @@ theorem uniswapMintFeeOnKLastNonzeroRootArithmeticOverflowFromFactoryCase
     have hbody :
         ExecTransitionBody config contract evmS (mintStore I) mintTransition.body .reverted :=
       ExecFuncBody.execBlockRevert
-        (uniswapMintAfterMintFeeReverts_of_call evmS evm0S evm1S I
+        (uniswapMintAfterMintFeeReverts_of_call (hperm := by assumption) evmS evm0S evm1S I
           (by simp [evmS, initState]; exact hwv) hunlockedStele hguard0 hguard1 hcall0
           hdec0 hcall1 hdec1 hle0Source hle1Source hfeeRevert)
     exact rdRev.reEquivExecutionRevert hcode hdispatch (uniswapDecode_mint_ok hsz36) hbody

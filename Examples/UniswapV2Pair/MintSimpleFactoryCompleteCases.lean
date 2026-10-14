@@ -650,7 +650,7 @@ theorem uniswapMintFeeOffKLastNonzeroCompleteFromFactoryCases
         evm1S (.internalCall "_mintFee" [.var "_reserve0", .var "_reserve1"] "feeOn")
         (.ok { contract := contract, locals := nextFrame.locals } evmAfterFee) := by
     simpa [nextFrame, evmL, evmS, evmAfterFee, resumeAfterInternalCall] using
-      uniswapMintFeeCallFromMint_feeOff_kLastNonzero evmL evm1S evmFeeS I balance0
+      uniswapMintFeeCallFromMint_feeOff_kLastNonzero (hperm := by simpa [typedCallViaEVM_executionEnv_eq hcall1, typedCallViaEVM_executionEnv_eq hcall0, uniswapLockEnteredState, uniswapUnlockedState, initState] using hperm) evmL evm1S evmFeeS I balance0
         balance1 feeTo (by simpa [evmL, evmS] using hfeeGuard) hfeeCall hfeeDec
         hfeeToAddr hkLastSource
   have hbase : nextFrame.locals.get? "totalSupply" = none := by

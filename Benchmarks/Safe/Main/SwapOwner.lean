@@ -5,7 +5,7 @@ import Benchmarks.Safe.Main.TripleCalldata
 import Benchmarks.Safe.Main.Blocks.Runtime_012
 
 open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
-open safeRuntimeBlocks
+open Benchmarks.Safe.Main.RuntimeBlocks
 
 namespace Benchmarks.Safe.Main
 
@@ -74,7 +74,7 @@ theorem safeSwapownerBodyCore
                               reEquivSelectorExecution hdispatch hdec hbody (.staticHalt hΞ rfl)
                         | true =>
                             have hret := safeSwapOwnerTrace h6275 (by simp) hm₂ hc0 hc1 hc2 hperm
-                            have hbody := safeSwapOwnerSource evm prev old new hc0 hc1 hc2
+                            have hbody := safeSwapOwnerSource (hperm := hperm) evm prev old new hc0 hc1 hc2
                               hvalue hauth hvn he' hvo hl'
                             refine reEquivReturnElim hcode hret fun _ _ hsuccess ↦ ?_
                             exact reEquivSelectorExecution hdispatch hdec hbody

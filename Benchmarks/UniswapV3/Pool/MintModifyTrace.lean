@@ -37,8 +37,8 @@ theorem mintModifyX {σ : AccountMap} {ee : ExecutionEnv} {g : Sat256}
         (p + UInt256.ofNat 128).toNat) := by
   rcases mintLockAmountX (v := v) evm hs rd ha.2.2 hperm (by evm_ov) with
     ⟨rr, hz⟩ | ⟨hpos, k0, C0, r0⟩
-  · exact Or.inl ⟨mintRevertsZero v a evm hwv hunlocked hz, Or.inl rr⟩
-  have hprefix := mintAmountPrefix v a evm hwv hunlocked hpos
+  · exact Or.inl ⟨mintRevertsZero (hperm := (congrArg ExecutionEnv.perm hs.env).trans hperm) v a evm hwv hunlocked hz, Or.inl rr⟩
+  have hprefix := mintAmountPrefix (hperm := (congrArg ExecutionEnv.perm hs.env).trans hperm) v a evm hwv hunlocked hpos
   have hs0 : SourceState s0 ee (storeSlot0Unlocked evm false).accountMap
       (storeSlot0Unlocked evm false) :=
     ⟨(storeSlot0Unlocked_originalAccounts evm false).trans hs.world,

@@ -404,14 +404,15 @@ theorem clipperTakeOweGtTabVatFluxNoCodeRevertEquivCore
         evmLock
         (.internalCall "status" [.var "tic", .storage (salesF (.var "id") "top")] "st")
         (.ok { contract := contract, locals := clipperTakeLocalsSt evmLock I false price, immutables := immStore v }
-          evmPriceStele)) :
+          evmPriceStele))
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I (immStore v) := by
   have hbody :
       ExecTransitionBody config contract
         (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         (clipperTakeStore I) takeTransition.body .reverted (immStore v) := by
     exact
-      clipperTakeOweGtTabVatFluxNoCodeSourceReverts
+      clipperTakeOweGtTabVatFluxNoCodeSourceReverts (hperm := by assumption)
         (σ := σ) (σ₀ := σ₀) (A := A)
         (I := I) (g := g) v hwv hlockedStele hstoppedSteleLt husrStele price hmax
         hsrcMul hsrcGt hsrcSliceLot hnoVatCodeStele hstatus
@@ -451,10 +452,11 @@ theorem clipperTakeOweGtTabVatFluxNoCodeRevertEquivFromPostWords
         evmLock
         (.internalCall "status" [.var "tic", .storage (salesF (.var "id") "top")] "st")
         (.ok { contract := contract, locals := clipperTakeLocalsSt evmLock I false price, immutables := immStore v }
-          evmPriceStele)) :
+          evmPriceStele))
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I (immStore v) := by
   exact
-    clipperTakeOweGtTabVatFluxNoCodeRevertEquivCore v hcode hwv hdispatch hdec
+    clipperTakeOweGtTabVatFluxNoCodeRevertEquivCore (hperm := by assumption) v hcode hwv hdispatch hdec
       hlockedStele hstoppedSteleLt husrStele hrev hmax
       (clipperTakeOweGtTabSourceMul_of_post_lot hlot hmul)
       (clipperTakeOweGtTabSourceGt_of_post_words htab hlot hgt)
@@ -506,7 +508,8 @@ theorem clipperTakeOweGtTabVatFluxNoCodeRevertEquivFromPostAccounts
         evmLock
         (.internalCall "status" [.var "tic", .storage (salesF (.var "id") "top")] "st")
         (.ok { contract := contract, locals := clipperTakeLocalsSt evmLock I false price, immutables := immStore v }
-          evmPriceStele)) :
+          evmPriceStele))
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I (immStore v) := by
   have hrev :
       RDrev code (Sat256.ofUInt256 g)
@@ -525,7 +528,7 @@ theorem clipperTakeOweGtTabVatFluxNoCodeRevertEquivFromPostAccounts
         (σ := σPostStele) (target := clipperTakeVatTarget v)
         (addr := v.vat) (clipperTakeVatTargetAddress v).symm hnoCode
   exact
-    clipperTakeOweGtTabVatFluxNoCodeRevertEquivFromPostWords v hcode hwv hdispatch
+    clipperTakeOweGtTabVatFluxNoCodeRevertEquivFromPostWords (hperm := by assumption) v hcode hwv hdispatch
       hdec hlockedStele hstoppedSteleLt husrStele htab hlot hrev hmax
       (by simpa [hslice] using hmul)
       (by simpa [hslice] using hgt)
@@ -581,14 +584,15 @@ theorem clipperTakeOweGtTabVatFluxCallFailureRevertEquivCore
         evmLock
         (.internalCall "status" [.var "tic", .storage (salesF (.var "id") "top")] "st")
         (.ok { contract := contract, locals := clipperTakeLocalsSt evmLock I false price, immutables := immStore v }
-          evmPriceStele)) :
+          evmPriceStele))
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I (immStore v) := by
   have hbody :
       ExecTransitionBody config contract
         (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         (clipperTakeStore I) takeTransition.body .reverted (immStore v) := by
     exact
-      clipperTakeOweGtTabVatFluxCallFailureSourceReverts
+      clipperTakeOweGtTabVatFluxCallFailureSourceReverts (hperm := by assumption)
         (σ := σ) (σ₀ := σ₀) (A := A)
         (I := I) (g := g) v hwv hlockedStele hstoppedSteleLt husrStele price hmax
         hsrcMul hsrcGt hsrcSliceLot hvatCodeStele hcallVatStele hstatus
@@ -637,10 +641,11 @@ theorem clipperTakeOweGtTabVatFluxCallFailureRevertEquivFromPostWords
         evmLock
         (.internalCall "status" [.var "tic", .storage (salesF (.var "id") "top")] "st")
         (.ok { contract := contract, locals := clipperTakeLocalsSt evmLock I false price, immutables := immStore v }
-          evmPriceStele)) :
+          evmPriceStele))
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I (immStore v) := by
   exact
-    clipperTakeOweGtTabVatFluxCallFailureRevertEquivCore v hcode hwv hdispatch hdec
+    clipperTakeOweGtTabVatFluxCallFailureRevertEquivCore (hperm := by assumption) v hcode hwv hdispatch hdec
       hlockedStele hstoppedSteleLt husrStele hrev hmax
       (clipperTakeOweGtTabSourceMul_of_post_lot hlot hmul)
       (clipperTakeOweGtTabSourceGt_of_post_words htab hlot hgt)
@@ -708,7 +713,8 @@ theorem clipperTakeOweGtTabVatFluxCallFailureRevertEquivFromPostCallAccounts
         evmLock
         (.internalCall "status" [.var "tic", .storage (salesF (.var "id") "top")] "st")
         (.ok { contract := contract, locals := clipperTakeLocalsSt evmLock I false price, immutables := immStore v }
-          evmPriceStele)) :
+          evmPriceStele))
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I (immStore v) := by
   subst zVat
   have hrev :
@@ -752,7 +758,7 @@ theorem clipperTakeOweGtTabVatFluxCallFailureRevertEquivFromPostCallAccounts
         (false, evmVatStele, outVat) true := by
     simpa [evmVatStele, hevmPriceEnv, htab, hwho] using hcallVatSteleRaw
   exact
-    clipperTakeOweGtTabVatFluxCallFailureRevertEquivFromPostWords v
+    clipperTakeOweGtTabVatFluxCallFailureRevertEquivFromPostWords (hperm := by assumption) v
       hcode hwv hdispatch hdec hlockedStele hstoppedSteleLt husrStele
       htab hlot hrev hmax hmul hgt hvatCodeStele hcallVatStele hstatus
 

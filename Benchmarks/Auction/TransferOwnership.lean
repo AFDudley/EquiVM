@@ -13,7 +13,7 @@ theorem transferOwnershipBodySplit (evm : EVM.State) (value : UInt256)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (ho : solcSourceWord evm.executionEnv = ownerWord evm.accountMap evm.executionEnv)
     (hc : value.toNat < EVM.addressModulus) (hz : value ≠ ⟨0⟩) :
-    (ExecTransitionBody auctionConfig auctionContract evm
+    (evm.executionEnv.perm = true → ExecTransitionBody auctionConfig auctionContract evm
       ((∅ : Store).insert "newOwner" (.address (AccountAddress.ofNat value.toNat)))
       transferOwnershipTransition.body
       (.returned
@@ -42,7 +42,8 @@ theorem transferOwnershipBodySplit (evm : EVM.State) (value : UInt256)
       (fun h ↦ hz ((canonicalAddress_eq_zero_iff value hc).mp h))))
     exact htail
   constructor
-  · exact ExecFuncBody.execBlockOK (hprefix (assignStorageBlock hvalue hassign))
+  · intro hperm
+    exact ExecFuncBody.execBlockOK (hprefix (assignStorageBlock hvalue hassign hperm))
   · intro hperm
     exact ExecFuncBody.execBlockStatic
       (hprefix (ExecBlock.consStatic (ExecStmt.assignStatic hvalue hassign hperm)))
@@ -50,7 +51,8 @@ theorem transferOwnershipBodySplit (evm : EVM.State) (value : UInt256)
 theorem transferOwnershipBody (evm : EVM.State) (value : UInt256)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (ho : solcSourceWord evm.executionEnv = ownerWord evm.accountMap evm.executionEnv)
-    (hc : value.toNat < EVM.addressModulus) (hz : value ≠ ⟨0⟩) :
+    (hc : value.toNat < EVM.addressModulus) (hz : value ≠ ⟨0⟩)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody auctionConfig auctionContract evm
       ((∅ : Store).insert "newOwner" (.address (AccountAddress.ofNat value.toNat)))
       transferOwnershipTransition.body
@@ -60,7 +62,7 @@ theorem transferOwnershipBody (evm : EVM.State) (value : UInt256)
         (Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨151⟩
           (setAddressOffset0Word
             (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨151⟩) value)) none) :=
-  (transferOwnershipBodySplit evm value hwv ho hc hz).1
+  (transferOwnershipBodySplit evm value hwv ho hc hz).1 hperm
 
 theorem transferOwnershipZeroBodyReverts (evm : EVM.State) (value : UInt256)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
@@ -195,7 +197,7 @@ theorem transferOwnershipBodyCore {σ σ₀ A I} {g : UInt256}
                   ((transferOwnershipBodySplit
                     (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                     (calldataWord I.calldata 4) hwv ho hc hz).2 hperm)
-              have hbody := transferOwnershipBody
+              have hbody := transferOwnershipBody (hperm := _hperm)
                 (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                 (calldataWord I.calldata 4) hwv ho hc hz
               exact (auctionStop rd413 (by evm_ov)).reEquivExecutionGen

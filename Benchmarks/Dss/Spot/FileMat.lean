@@ -256,7 +256,7 @@ theorem spotFileMatSourceBodySplit {σ σ₀ A I} {g : UInt256}
     let locals := fileMatLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let evm1 := Stele.EVM.storageStore evm0 I.codeOwner (fileMatSlotFor I) (fileMatData I)
-    (ExecTransitionBody config contract evm0 locals fileMatTransition.body
+    (I.perm = true → ExecTransitionBody config contract evm0 locals fileMatTransition.body
       (.returned { contract := contract, locals := locals } evm1 none)) ∧
       (I.perm = false → ExecTransitionBody config contract evm0 locals
         fileMatTransition.body .staticViolation) := by
@@ -305,8 +305,9 @@ theorem spotFileMatSourceBodySplit {σ σ₀ A I} {g : UInt256}
     refine ExecBlock.consNormal (ExecStmt.requireTrue hliveGuard) ?_
     exact execBlock_singleton (ExecStmt.iteTrue hcond hwrite)
   constructor
-  · exact ExecFuncBody.execBlockOK
-      (hprefix (ExecBlock.consNormal (ExecStmt.assign hdata hassign) ExecBlock.nil))
+  · intro hperm
+    exact ExecFuncBody.execBlockOK
+      (hprefix (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hdata hassign) ExecBlock.nil))
   · intro hperm
     exact ExecFuncBody.execBlockStatic
       (hprefix (ExecBlock.consStatic (ExecStmt.assignStatic hdata hassign
@@ -833,7 +834,7 @@ theorem spotFileMatBodyCoreOk
   have hauthStele : relyAuthWord σ I = ⟨1⟩ := hauth
   have hliveStele : spotLiveWord σ I = ⟨1⟩ := hlive
   have hbodySplit :
-      (ExecTransitionBody config contract evm0 locals fileMatTransition.body
+      (I.perm = true → ExecTransitionBody config contract evm0 locals fileMatTransition.body
         (.returned { contract := contract, locals := locals } evm1 none)) ∧
       (I.perm = false → ExecTransitionBody config contract evm0 locals
         fileMatTransition.body .staticViolation) := by
@@ -851,7 +852,7 @@ theorem spotFileMatBodyCoreOk
     ⟨_hperm, hret⟩ | ⟨hperm, hstatic⟩
   swap
   · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode (hbodySplit.2 hperm)
-  exact hret.reEquivExecutionGen hcode hdispatch hdecode hbodySplit.1
+  exact hret.reEquivExecutionGen hcode hdispatch hdecode (hbodySplit.1 _hperm)
     (by simp [evm1, evm0, initState, storageStore_accountMap, matSlot, data])
     (by
       simpa [fileMatTransition] using

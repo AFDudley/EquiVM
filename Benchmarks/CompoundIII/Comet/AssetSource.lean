@@ -109,7 +109,7 @@ theorem assetPrefix_exec (imms : Store) (i : UInt256) (addr : AccountAddress)
       (.ok (assetCallFrame imms i addr z out) evm') := by
   apply ExecBlock.consNormal (ExecStmt.letDecl (value := .address addr) ?_)
   · apply ExecBlock.consNormal (ExecStmt.letDecl (assetPayload_eval _ _ i ?_))
-    · apply ExecBlock.consNormal (lowLevelCallSourceWithPerm (target := addr)
+    · apply ExecBlock.consNormal (lowLevelCallSourceWithPerm (hperm := Or.inl rfl) (target := addr)
         (value := 0) (calldata := assetPayload i) ?_ (by simp only [evalExpr?, pure]) ?_ hc)
       · exact ExecBlock.nil
       all_goals

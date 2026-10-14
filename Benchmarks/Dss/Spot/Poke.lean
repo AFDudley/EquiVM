@@ -329,7 +329,7 @@ theorem spotPokeBodyCore {σ σ₀ A I} {g : UInt256}
                     simpa using rd902
                   obtain ⟨_, _, rd920⟩ := RD.spotPokeVatFileCallSucceeded rd902True
                   have hbodySplit :
-                      (ExecTransitionBody config contract
+                      (I.perm = true → ExecTransitionBody config contract
                         (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                         (pokeLocals I) pokeTransition.body
                         (.returned
@@ -373,7 +373,7 @@ theorem spotPokeBodyCore {σ σ₀ A I} {g : UInt256}
                     simpa [pokeTransition] using
                       (returnEquiv.fallthrough (o := ByteArray.empty) (r := none) (t := [])
                         (dvs := []) rfl (by native_decide) (by native_decide))
-                  exact hret.reEquivExecutionGen hcode hdispatch hdecode hbodySplit.1
+                  exact hret.reEquivExecutionGen hcode hdispatch hdecode (hbodySplit.1 _hperm)
                     (by simpa using hMap'') henc
             ·
               have hhasNe : pokePeekHasWord out ≠ ⟨0⟩ := hhasZero
@@ -737,7 +737,7 @@ theorem spotPokeBodyCore {σ σ₀ A I} {g : UInt256}
                                 (by simpa [pokeTrueBranchStmts] using harith)
                                 hvatCodeStele hfileCallStele
                             have hbodySplit :
-                                (ExecTransitionBody config contract
+                                (I.perm = true → ExecTransitionBody config contract
                                   (initState σ σ₀
                                     (Sat256.ofUInt256 g) A I)
                                   (pokeLocals I) pokeTransition.body
@@ -793,7 +793,7 @@ theorem spotPokeBodyCore {σ σ₀ A I} {g : UInt256}
                                   (dvs := []) rfl (by native_decide)
                                   (by native_decide))
                             exact hret.reEquivExecutionGen
-                              hcode hdispatch hdecode hbodySplit.1
+                              hcode hdispatch hdecode (hbodySplit.1 _hperm)
                               (by simpa using hMap'')
                               henc
                     · have hoverMat :

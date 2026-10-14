@@ -35,7 +35,7 @@ theorem recordArraysSource {L imms : Store} {evm : EVM.State} {ats : List Attest
     simpa only [L1,List.map_set] using assignLocalArrayExpr hats
       (show evalExpr? config {contract := contract,locals := L,immutables := imms} evm (.var "i") = .ok (.int (Int.ofNat i)) by
         simp only [evalExpr?,hi,EvalResult.ofOption]) (by simpa only [List.length_map] using hia)
-  refine ExecBlock.consNormal (ExecStmt.assign (by simp only [evalExpr?,ha,EvalResult.ofOption]) hs1) ?_
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (by simp only [evalExpr?,ha,EvalResult.ofOption]) hs1) ?_
   have hv1 : L1.get? "values" = some (.array (values.map (fun w => Value.int (Int.ofNat w.toNat)))) :=
     (store_get_ne _ _ (by decide)).trans hvalues
   have hs2 : assignStorageRef? config {contract := contract,locals := L1,immutables := imms} evm .localVar
@@ -49,7 +49,7 @@ theorem recordArraysSource {L imms : Store} {evm : EVM.State} {ats : List Attest
     simp only [evalExpr?,L1,store_get_ne _ _ (by decide : ("attestations" == "request") = false),hr,
       EvalResult.ofOption,EvalResult.bind,bind]
     rfl
-  refine ExecBlock.consNormal (ExecStmt.assign her hs2) ?_
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) her hs2) ?_
   have hres2 : L2.get? "res" = some (attestationsResultValue uids used) :=
     (store_get_ne _ _ (by decide)).trans ((store_get_ne _ _ (by decide)).trans huids)
   have hpath : updateLocalPath? config {contract := contract,locals := L2,immutables := imms} evm
@@ -63,7 +63,7 @@ theorem recordArraysSource {L imms : Store} {evm : EVM.State} {ats : List Attest
     rfl
   have hu2 : L2.get? "uid" = some (wordBytes32Value uid) :=
     (store_get_ne _ _ (by decide)).trans ((store_get_ne _ _ (by decide)).trans hu)
-  refine ExecBlock.consNormal (ExecStmt.assign (value := wordBytes32Value uid) (by simp only [evalExpr?,hu2,EvalResult.ofOption]) ?_) ExecBlock.nil
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (value := wordBytes32Value uid) (by simp only [evalExpr?,hu2,EvalResult.ofOption]) ?_) ExecBlock.nil
   simp only [assignStorageRef?,hres2,hpath,EvalResult.bind,bind,pure]
   rfl
 

@@ -7393,7 +7393,7 @@ theorem endSkipCheckedCatIlksFailure {σ σ₀ A I} {g : UInt256}
         .ok [.fixedBytes bytes32Width (endBytes32ArgBytes I)] := by
     simp [evalExprs?, hilk, endSkipIlkBytes, endBytes32ArgBytes, EvalResult.bind, bind, pure]
   simpa [checkedExternalCallStmts] using
-    checkedExternalCallFailure
+    checkedExternalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
       (cfg := config) (C := contract) (evm := evm0) (evm' := evmCat)
       (locals := endSkipStore I) (receiver := .storage catRef)
       (retVar := "catIlk") (name := "catIlks") (target := endSkipCatAddr σ I)
@@ -7441,7 +7441,7 @@ theorem endSkipCheckedCatIlksDecodeRevert {σ σ₀ A I} {g : UInt256}
         .ok [.fixedBytes bytes32Width (endBytes32ArgBytes I)] := by
     simp [evalExprs?, hilk, endSkipIlkBytes, endBytes32ArgBytes, EvalResult.bind, bind, pure]
   simpa [checkedExternalCallStmts] using
-    checkedExternalCallDecodeRevert
+    checkedExternalCallDecodeRevert (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
       (cfg := config) (C := contract) (evm := evm0) (evm' := evmCat)
       (locals := endSkipStore I) (receiver := .storage catRef)
       (retVar := "catIlk") (name := "catIlks") (target := endSkipCatAddr σ I)
@@ -7491,7 +7491,7 @@ theorem endSkipCheckedCatIlksSuccess {σ σ₀ A I} {g : UInt256}
         .ok [.fixedBytes bytes32Width (endBytes32ArgBytes I)] := by
     simp [evalExprs?, hilk, endSkipIlkBytes, endBytes32ArgBytes, EvalResult.bind, bind, pure]
   have hvalue := endSkipCatIlksDecode_ok (out := out) hlo
-  have hblock := checkedExternalCallSuccess
+  have hblock := checkedExternalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
     (cfg := config) (C := contract) (evm := evm0) (evm' := evmCat)
     (locals := endSkipStore I) (receiver := .storage catRef)
     (retVar := "catIlk") (name := "catIlks") (target := endSkipCatAddr σ I)
@@ -7848,7 +7848,7 @@ theorem endSkipCheckedVatIlksFailure {σ I} {catOut vatOut : ByteArray}
     endEvalExpr_extCodeGuard_true hreceiver hcodePos
   have hargs := evalExprs_endSkip_vatIlksArgs_afterFlip evm I catOut
   simpa [checkedExternalCallStmts] using
-    checkedExternalCallFailure
+    checkedExternalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
       (cfg := config) (C := contract) (evm := evm) (evm' := evmVat)
       (locals := endSkipStoreFlip I catOut) (receiver := .storage vatRef)
       (retVar := "vatIlk") (name := "vatIlks") (target := endPackVatAddr σ I)
@@ -7879,7 +7879,7 @@ theorem endSkipCheckedVatIlksDecodeRevert {σ I} {catOut vatOut : ByteArray}
     endEvalExpr_extCodeGuard_true hreceiver hcodePos
   have hargs := evalExprs_endSkip_vatIlksArgs_afterFlip evm I catOut
   simpa [checkedExternalCallStmts] using
-    checkedExternalCallDecodeRevert
+    checkedExternalCallDecodeRevert (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
       (cfg := config) (C := contract) (evm := evm) (evm' := evmVat)
       (locals := endSkipStoreFlip I catOut) (receiver := .storage vatRef)
       (retVar := "vatIlk") (name := "vatIlks") (target := endPackVatAddr σ I)
@@ -7913,7 +7913,7 @@ theorem endSkipCheckedVatIlksSuccess {σ I} {catOut vatOut : ByteArray}
     endEvalExpr_extCodeGuard_true hreceiver hcodePos
   have hargs := evalExprs_endSkip_vatIlksArgs_afterFlip evm I catOut
   have hvalue := endFlowVatIlksDecode_ok (out := vatOut) hlo
-  have hblock := checkedExternalCallSuccess
+  have hblock := checkedExternalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
     (cfg := config) (C := contract) (evm := evm) (evm' := evmVat)
     (locals := endSkipStoreFlip I catOut) (receiver := .storage vatRef)
     (retVar := "vatIlk") (name := "vatIlks") (target := endPackVatAddr σ I)
@@ -8185,7 +8185,7 @@ theorem endSkipCheckedBidsFailure {σ I} {catOut vatOut bidOut : ByteArray}
   have hargs := evalExprs_endSkip_bidsArgs_afterRate evm I catOut vatOut
   rw [endSkipBidsCallStmts]
   simpa [checkedExternalCallStmts] using
-    checkedExternalCallFailure
+    checkedExternalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
       (cfg := config) (C := contract) (evm := evm) (evm' := evmBids)
       (locals := endSkipStoreRate I catOut vatOut) (receiver := .var "flip")
       (retVar := "flipBid") (name := "bids")
@@ -8218,7 +8218,7 @@ theorem endSkipCheckedBidsDecodeRevert {σ I} {catOut vatOut bidOut : ByteArray}
   have hargs := evalExprs_endSkip_bidsArgs_afterRate evm I catOut vatOut
   rw [endSkipBidsCallStmts]
   simpa [checkedExternalCallStmts] using
-    checkedExternalCallDecodeRevert
+    checkedExternalCallDecodeRevert (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
       (cfg := config) (C := contract) (evm := evm) (evm' := evmBids)
       (locals := endSkipStoreRate I catOut vatOut) (receiver := .var "flip")
       (retVar := "flipBid") (name := "bids")
@@ -8253,7 +8253,7 @@ theorem endSkipCheckedBidsSuccess {σ I} {catOut vatOut bidOut : ByteArray}
     endEvalExpr_extCodeGuard_true hreceiver hcodePos
   have hargs := evalExprs_endSkip_bidsArgs_afterRate evm I catOut vatOut
   have hvalue := endSkipBidsDecode_ok (out := bidOut) hlo
-  have hblock := checkedExternalCallSuccess
+  have hblock := checkedExternalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
     (cfg := config) (C := contract) (evm := evm) (evm' := evmBids)
     (locals := endSkipStoreRate I catOut vatOut) (receiver := .var "flip")
     (retVar := "flipBid") (name := "bids")
@@ -8611,7 +8611,7 @@ theorem endSkipCheckedSuck1Failure {σ I} {catOut vatOut bidOut suckOut : ByteAr
   have hargs := evalExprs_endSkip_suck1Args_afterTab evm I σ catOut vatOut bidOut
     hmap howner
   simpa [checkedExternalCallStmts] using
-    checkedExternalCallFailure
+    checkedExternalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
       (cfg := config) (C := contract) (evm := evm) (evm' := evmSuck)
       (locals := endSkipStoreTab I catOut vatOut bidOut) (receiver := .storage vatRef)
       (retVar := "_suck1") (name := "suck") (target := endPackVatAddr σ I)
@@ -8651,7 +8651,7 @@ theorem endSkipCheckedSuck1Success {σ I} {catOut vatOut bidOut suckOut : ByteAr
     hmap howner
   have hdec : config.externalABI.decode? "suck" suckOut = some [] := by
     simp [config, externalABI, decodeVoid?]
-  have hblock := checkedExternalCallSuccess
+  have hblock := checkedExternalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
     (cfg := config) (C := contract) (evm := evm) (evm' := evmSuck)
     (locals := endSkipStoreTab I catOut vatOut bidOut) (receiver := .storage vatRef)
     (retVar := "_suck1") (name := "suck") (target := endPackVatAddr σ I)
@@ -8773,7 +8773,7 @@ theorem endSkipCheckedSuck2Failure {σ I} {catOut vatOut bidOut suckOut : ByteAr
   have hargs := evalExprs_endSkip_suck2Args_afterSuck1 evm I σ catOut vatOut bidOut
     hmap howner
   simpa [checkedExternalCallStmts] using
-    checkedExternalCallFailure
+    checkedExternalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
       (cfg := config) (C := contract) (evm := evm) (evm' := evmSuck)
       (locals := endSkipStoreSuck1 I catOut vatOut bidOut) (receiver := .storage vatRef)
       (retVar := "_suck2") (name := "suck") (target := endPackVatAddr σ I)
@@ -8814,7 +8814,7 @@ theorem endSkipCheckedSuck2Success {σ I} {catOut vatOut bidOut suckOut : ByteAr
     hmap howner
   have hdec : config.externalABI.decode? "suck" suckOut = some [] := by
     simp [config, externalABI, decodeVoid?]
-  have hblock := checkedExternalCallSuccess
+  have hblock := checkedExternalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
     (cfg := config) (C := contract) (evm := evm) (evm' := evmSuck)
     (locals := endSkipStoreSuck1 I catOut vatOut bidOut) (receiver := .storage vatRef)
     (retVar := "_suck2") (name := "suck") (target := endPackVatAddr σ I)
@@ -8918,7 +8918,7 @@ theorem endSkipCheckedHopeFailure {σ I} {catOut vatOut bidOut hopeOut : ByteArr
     endEvalExpr_extCodeGuard_true hreceiver hcodePos
   have hargs := evalExprs_endSkip_hopeArgs_afterSuck2 evm I catOut vatOut bidOut
   simpa [checkedExternalCallStmts] using
-    checkedExternalCallFailure
+    checkedExternalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
       (cfg := config) (C := contract) (evm := evm) (evm' := evmHope)
       (locals := endSkipStoreSuck2 I catOut vatOut bidOut) (receiver := .storage vatRef)
       (retVar := "_hope") (name := "hope") (target := endPackVatAddr σ I)
@@ -8954,7 +8954,7 @@ theorem endSkipCheckedHopeSuccess {σ I} {catOut vatOut bidOut hopeOut : ByteArr
   have hargs := evalExprs_endSkip_hopeArgs_afterSuck2 evm I catOut vatOut bidOut
   have hdec : config.externalABI.decode? "hope" hopeOut = some [] := by
     simp [config, externalABI, decodeVoid?]
-  have hblock := checkedExternalCallSuccess
+  have hblock := checkedExternalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
     (cfg := config) (C := contract) (evm := evm) (evm' := evmHope)
     (locals := endSkipStoreSuck2 I catOut vatOut bidOut) (receiver := .storage vatRef)
     (retVar := "_hope") (name := "hope") (target := endPackVatAddr σ I)
@@ -9067,7 +9067,7 @@ theorem endSkipCheckedYankFailure {σ I} {catOut vatOut bidOut yankOut : ByteArr
     endEvalExpr_extCodeGuard_true hreceiver hcodePos
   have hargs := evalExprs_endSkip_yankArgs_afterHope evm I catOut vatOut bidOut
   simpa [checkedExternalCallStmts] using
-    checkedExternalCallFailure
+    checkedExternalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
       (cfg := config) (C := contract) (evm := evm) (evm' := evmYank)
       (locals := endSkipStoreHope I catOut vatOut bidOut) (receiver := .var "flip")
       (retVar := "_yank") (name := "yank") (target := endSkipCatIlkFlipAddr catOut)
@@ -9103,7 +9103,7 @@ theorem endSkipCheckedYankSuccess {σ I} {catOut vatOut bidOut yankOut : ByteArr
   have hargs := evalExprs_endSkip_yankArgs_afterHope evm I catOut vatOut bidOut
   have hdec : config.externalABI.decode? "yank" yankOut = some [] := by
     simp [config, externalABI, decodeVoid?]
-  have hblock := checkedExternalCallSuccess
+  have hblock := checkedExternalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
     (cfg := config) (C := contract) (evm := evm) (evm' := evmYank)
     (locals := endSkipStoreHope I catOut vatOut bidOut) (receiver := .var "flip")
     (retVar := "_yank") (name := "yank") (target := endSkipCatIlkFlipAddr catOut)
@@ -9342,7 +9342,7 @@ theorem endSkipAssignArt {locals : Store} (evm : EVM.State) (I : ExecutionEnv)
 theorem endSkipStmtArtAssignSplit (evm : EVM.State) (I : ExecutionEnv)
     (σ : AccountMap) (catOut vatOut bidOut : ByteArray)
     (hsz68 : 68 ≤ I.calldata.size) :
-    (ExecStmt config { contract := contract, locals := endSkipStoreArtNew σ I catOut vatOut bidOut }
+    (evm.executionEnv.perm = true → ExecStmt config { contract := contract, locals := endSkipStoreArtNew σ I catOut vatOut bidOut }
       evm (.assign .storage (ArtRef (.var "ilk")) (.var "ArtNew"))
       (.ok { contract := contract, locals := endSkipStoreArtNew σ I catOut vatOut bidOut }
         (endSkipPostArtState evm I (endSkipArtNewWord σ I vatOut bidOut)))) ∧
@@ -9373,17 +9373,18 @@ theorem endSkipStmtArtAssignSplit (evm : EVM.State) (I : ExecutionEnv)
       rw [endSkipStoreArtNew, store_get_ne _ _ (by native_decide)]
       exact endSkipStoreArt_get_ilk I catOut vatOut bidOut
     exact endSkipAssignArt evm I (endSkipArtNewWord σ I vatOut bidOut) hbase hget hsz68
-  exact ⟨ExecStmt.assign hArtNew hassign,
+  exact ⟨fun hperm ↦ ExecStmt.assign (hperm := Or.inr hperm) hArtNew hassign,
     fun hperm ↦ ExecStmt.assignStatic hArtNew hassign hperm⟩
 
 theorem endSkipStmtArtAssign (evm : EVM.State) (I : ExecutionEnv)
     (σ : AccountMap) (catOut vatOut bidOut : ByteArray)
-    (hsz68 : 68 ≤ I.calldata.size) :
+    (hsz68 : 68 ≤ I.calldata.size)
+    (hperm : evm.executionEnv.perm = true) :
     ExecStmt config { contract := contract, locals := endSkipStoreArtNew σ I catOut vatOut bidOut }
       evm (.assign .storage (ArtRef (.var "ilk")) (.var "ArtNew"))
       (.ok { contract := contract, locals := endSkipStoreArtNew σ I catOut vatOut bidOut }
         (endSkipPostArtState evm I (endSkipArtNewWord σ I vatOut bidOut))) :=
-  (endSkipStmtArtAssignSplit evm I σ catOut vatOut bidOut hsz68).1
+  (endSkipStmtArtAssignSplit evm I σ catOut vatOut bidOut hsz68).1 hperm
 
 theorem evalExpr_endSkip_lot_afterArtNew (evm : EVM.State) (I : ExecutionEnv)
     (σ : AccountMap) (catOut vatOut bidOut : ByteArray) :
@@ -9704,7 +9705,7 @@ theorem endSkipGrabTailReverts_callFailedFor {σCall σLoc I}
     rw [endSkipGrabPositiveArgValues]
     exact hargsRaw
   rw [endSkipGrabStmts, checkedExternalCallStmts]
-  exact checkedExternalCallFailure
+  exact checkedExternalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
       (cfg := config) (C := contract) (evm := evm) (evm' := evmGrab)
       (locals := endSkipStoreArtNew σLoc I catOut vatOut bidOut)
       (receiver := .storage vatRef) (retVar := "_grab") (name := "grab")
@@ -9760,7 +9761,7 @@ theorem endSkipGrabTailReturns_successFor {σCall σLoc I}
     exact hargsRaw
   have hdec : config.externalABI.decode? "grab" grabOut = some [] := by
     simp [config, externalABI, decodeVoid?]
-  have hblock := checkedExternalCallSuccess
+  have hblock := checkedExternalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
     (cfg := config) (C := contract) (evm := evm) (evm' := evmGrab)
     (locals := endSkipStoreArtNew σLoc I catOut vatOut bidOut)
     (receiver := .storage vatRef) (retVar := "_grab") (name := "grab")
@@ -9843,7 +9844,7 @@ theorem endSkipTailAfterTabReturnsSplit {I σLoc}
         evmHope endSkipYankStmts
         (.ok { contract := contract, locals := endSkipStoreYank I catOut vatOut bidOut }
           evmYank)) :
-    (((endSkipLotWord bidOut).toNat < 2 ^ 255) →
+    (evmYank.executionEnv.perm = true → ((endSkipLotWord bidOut).toNat < 2 ^ 255) →
       ((endSkipArtWord vatOut bidOut).toNat < 2 ^ 255) →
       ExecBlock config { contract := contract, locals := endSkipStoreTab I catOut vatOut bidOut }
       evmTab endSkipTailNoGrabStmts
@@ -9879,10 +9880,10 @@ theorem endSkipTailAfterTabReturnsSplit {I σLoc}
   have hassign := endSkipStmtArtAssignSplit evmYank I σLoc
     catOut vatOut bidOut hsz68
   constructor
-  · intro hlot hart
+  · intro hperm hlot hart
     apply hprefix
     refine ExecBlock.consNormal
-      (hassign.1) ?_
+      (hassign.1 hperm) ?_
     exact ExecBlock.consNormal
       (ExecStmt.requireTrue
         (endSkipEvalExpr_intGuard_true
@@ -9927,13 +9928,14 @@ theorem endSkipTailAfterTabReturns {I σLoc}
         { contract := contract, locals := endSkipStoreHope I catOut vatOut bidOut }
         evmHope endSkipYankStmts
         (.ok { contract := contract, locals := endSkipStoreYank I catOut vatOut bidOut }
-          evmYank)) :
+          evmYank))
+    (hperm : evmYank.executionEnv.perm = true) :
     ExecBlock config { contract := contract, locals := endSkipStoreTab I catOut vatOut bidOut }
       evmTab endSkipTailNoGrabStmts
       (.ok { contract := contract, locals := endSkipStoreArtNew σLoc I catOut vatOut bidOut }
         (endSkipPostArtState evmYank I (endSkipArtNewWord σLoc I vatOut bidOut))) :=
   (endSkipTailAfterTabReturnsSplit hsz68 hArtLoad hrate hfit
-    hsuck1 hsuck2 hhope hyank).1 hlot hart
+    hsuck1 hsuck2 hhope hyank).1 hperm hlot hart
 
 theorem endSkipTailReverts_suck1 {I} {catOut vatOut bidOut : ByteArray}
     {evmTab : EVM.State}
@@ -10158,7 +10160,8 @@ theorem endSkipTailReverts_intGuardLot {I σLoc}
         { contract := contract, locals := endSkipStoreHope I catOut vatOut bidOut }
         evmHope endSkipYankStmts
         (.ok { contract := contract, locals := endSkipStoreYank I catOut vatOut bidOut }
-          evmYank)) :
+          evmYank))
+    (hperm : evmYank.executionEnv.perm = true) :
     ExecBlock config { contract := contract, locals := endSkipStoreTab I catOut vatOut bidOut }
       evmTab endSkipTailNoGrabStmts .reverted := by
   have hartBlock :
@@ -10168,7 +10171,7 @@ theorem endSkipTailReverts_intGuardLot {I σLoc}
     refine ExecBlock.consNormal
       (endSkipStmtArtNewAddReturns evmYank I σLoc catOut vatOut bidOut hsz68 hArtLoad hfit) ?_
     refine ExecBlock.consNormal
-      (endSkipStmtArtAssign evmYank I σLoc catOut vatOut bidOut hsz68) ?_
+      (endSkipStmtArtAssign (hperm := by assumption) evmYank I σLoc catOut vatOut bidOut hsz68) ?_
     exact ExecBlock.consRevert
       (ExecStmt.requireFalse
         (endSkipEvalExpr_intGuard_false_lot
@@ -10215,7 +10218,8 @@ theorem endSkipTailReverts_intGuardArt {I σLoc}
         { contract := contract, locals := endSkipStoreHope I catOut vatOut bidOut }
         evmHope endSkipYankStmts
         (.ok { contract := contract, locals := endSkipStoreYank I catOut vatOut bidOut }
-          evmYank)) :
+          evmYank))
+    (hperm : evmYank.executionEnv.perm = true) :
     ExecBlock config { contract := contract, locals := endSkipStoreTab I catOut vatOut bidOut }
       evmTab endSkipTailNoGrabStmts .reverted := by
   have hartBlock :
@@ -10225,7 +10229,7 @@ theorem endSkipTailReverts_intGuardArt {I σLoc}
     refine ExecBlock.consNormal
       (endSkipStmtArtNewAddReturns evmYank I σLoc catOut vatOut bidOut hsz68 hArtLoad hfit) ?_
     refine ExecBlock.consNormal
-      (endSkipStmtArtAssign evmYank I σLoc catOut vatOut bidOut hsz68) ?_
+      (endSkipStmtArtAssign (hperm := by assumption) evmYank I σLoc catOut vatOut bidOut hsz68) ?_
     exact ExecBlock.consRevert
       (ExecStmt.requireFalse
         (endSkipEvalExpr_intGuard_false_art
@@ -11833,7 +11837,7 @@ theorem endSkipBody {σ σ₀ A I} {g : UInt256}
                                                       (σpost := σ_yank) hperm hsz68
                                                       hloCat hloVat hloBid hlot hart rd4197
                                                   have htailOk :=
-                                                    endSkipTailAfterTabReturns hsz68
+                                                    endSkipTailAfterTabReturns (hperm := by assumption) hsz68
                                                       hArtLoadStele hrateNE hfitStele hlot hart
                                                       hsuck1Block hsuck2Block hhopeBlock
                                                       hyankBlock
@@ -12170,7 +12174,7 @@ theorem endSkipBody {σ σ₀ A I} {g : UInt256}
                                                         (endSkipArtWord vatOut bidOut).toNat := by
                                                     simpa [hint256Bound] using hartOverflowBound
                                                   have htail :=
-                                                    endSkipTailReverts_intGuardArt hsz68
+                                                    endSkipTailReverts_intGuardArt (hperm := by assumption) hsz68
                                                       hArtLoadStele hrateNE hfitStele hlot
                                                       hartOverflow hsuck1Block hsuck2Block
                                                       hhopeBlock hyankBlock
@@ -12198,7 +12202,7 @@ theorem endSkipBody {σ σ₀ A I} {g : UInt256}
                                                       (endSkipLotWord bidOut).toNat := by
                                                   simpa [hint256Bound] using hlotOverflowBound
                                                 have htail :=
-                                                  endSkipTailReverts_intGuardLot hsz68
+                                                  endSkipTailReverts_intGuardLot (hperm := by assumption) hsz68
                                                     hArtLoadStele hrateNE hfitStele hlotOverflow
                                                     hsuck1Block hsuck2Block hhopeBlock
                                                     hyankBlock

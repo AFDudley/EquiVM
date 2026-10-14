@@ -83,7 +83,8 @@ theorem morphoAccrueFeeRefineWithFee (p : MarketParamsWords) (locals imms : Stor
     have hm1 := (hm.hash p.id (UInt256.ofNat 3)).hash p.id (UInt256.ofNat 3)
     by_cases hw : AccrueFeeWritesFit evm p.id shares
     · obtain ⟨σ2, aw2, k2, C2, hs2, rd2⟩ := morphoAccrueFeeWritesOk (v := v) (by omega) hp hs hm1 hb hw rd1
-      have hsource := morphoAccrueFeeWritesSourceOk p l imms evm shares hml hes hw
+      have hsource := morphoAccrueFeeWritesSourceOk
+        (hperm := (congrArg ExecutionEnv.perm hs.env).trans hp) p l imms evm shares hml hes hw
       have hab : ABlock config evm { contract := contract, locals := locals, immutables := imms } accrueFeeBody
           { contract := contract, locals := l, immutables := imms } (accrueFeeBody.drop 3) := by
         simpa only [hs.env, ← hs.accounts] using ab
@@ -92,7 +93,8 @@ theorem morphoAccrueFeeRefineWithFee (p : MarketParamsWords) (locals imms : Stor
     · refine Or.inl ⟨?_, morphoAccrueFeeWritesReverts (v := v) (by omega) hp hs hm1 hb hw rd1⟩
       apply ab.run
       simpa only [hs.env, ← hs.accounts] using
-        morphoAccrueFeeWritesSourceReverts p l imms evm shares hml hes hw
+        morphoAccrueFeeWritesSourceReverts
+          (hperm := (congrArg ExecutionEnv.perm hs.env).trans hp) p l imms evm shares hml hes hw
   · refine Or.inl ⟨?_, morphoAccrueFeeMathReverts (v := v) hstack hf h⟩
     apply morphoAccrueFeeCalcSourceReverts p locals imms evm interest hl.toMarketLocals (hl.evalInterest imms evm)
     simpa only [hs.env, ← hs.accounts] using hf

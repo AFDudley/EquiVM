@@ -57,7 +57,7 @@ theorem checkedNounSourceSuccess {s0 I σ evm evm' locals name retVar args value
       (checkedExternalCallStmts (.storage nounsRef) name (.intLit 0) args retVar)
       (.ok { contract := auctionContract, locals := locals.insert retVar (collapseReturns []) }
         evm') := by
-  apply checkedExternalCallSuccess (target := AccountAddress.ofUInt256 (nounsWord σ I))
+  apply checkedExternalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (target := AccountAddress.ofUInt256 (nounsWord σ I))
     ?_ (nounsSourceRead hs hb) hargs ?_ hdecode
   · rw [nounsCodeGuardSource hs hb, decide_eq_true hyes]
   · rw [addressOfAddress]
@@ -72,7 +72,7 @@ theorem checkedNounSourceFailure {s0 I σ evm evm' locals name retVar args value
     (hc : callViaEVM evm (AccountAddress.ofUInt256 (nounsWord σ I)) 0 cdata (false, evm', out)) :
     ExecBlock auctionConfig { contract := auctionContract, locals := locals } evm
       (checkedExternalCallStmts (.storage nounsRef) name (.intLit 0) args retVar) .reverted := by
-  apply checkedExternalCallFailure (evm' := evm') (out := out)
+  apply checkedExternalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evm' := evm') (out := out)
     (target := AccountAddress.ofUInt256 (nounsWord σ I))
     ?_ (nounsSourceRead hs hb) hargs ?_
   · rw [nounsCodeGuardSource hs hb, decide_eq_true hyes]

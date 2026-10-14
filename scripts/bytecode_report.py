@@ -108,6 +108,20 @@ def block_entry(entries: list[SourceMapEntry], index_of: dict[int, int],
     return first[counter.most_common(1)[0][0]]
 
 
+def vyper_block_snippet(block: list[Instruction], positions: dict, source: list[str]) -> str:
+    """Choose the most frequent Vyper pc position in a block and show its source line."""
+    spans = [tuple(positions[str(ins.pc)]) for ins in block if str(ins.pc) in positions]
+    if not spans:
+        return ""
+    line, column, _, _ = Counter(spans).most_common(1)[0][0]
+    if not isinstance(line, int) or line < 1 or line > len(source):
+        return ""
+    snippet = source[line - 1].strip()
+    if len(snippet) > 72:
+        snippet = snippet[:71] + "…"
+    return f"line {line}:{column}: {snippet}"
+
+
 def render(directory: Path, name: str, build: dict | None, abi: list[dict] | None,
            full_creation: bool) -> str:
     out: list[str] = []
@@ -131,7 +145,7 @@ def render(directory: Path, name: str, build: dict | None, abi: list[dict] | Non
                    f"{len(cinstrs)} instructions, {len(cblocks)} basic blocks")
     if build is not None:
         comp = build.get("compiler", {})
-        out.append(f"- compiler: solc {comp.get('version', '?')}; settings "
+        out.append(f"- compiler: {comp.get('kind', 'solc')} {comp.get('version', '?')}; settings "
                    f"`{json.dumps(build.get('settings', {}), sort_keys=True)}`")
         imm = build.get("immutableReferences") or {}
         if imm:
@@ -165,8 +179,17 @@ def render(directory: Path, name: str, build: dict | None, abi: list[dict] | Non
     functions: list[AstFunction] = []
     view = SourceView(directory, build, "runtime")
     srcmap_note = ""
-    if build is not None and build.get("sourceMap", {}).get("runtime"):
-        entries = decode_source_map(build["sourceMap"]["runtime"])
+    runtime_map = build.get("sourceMap", {}).get("runtime") if build else None
+    vyper_positions: dict = {}
+    vyper_source: list[str] = []
+    if isinstance(runtime_map, dict):
+        vyper_positions = runtime_map.get("pc_pos_map", {})
+        source_path = directory / build.get("sourcesRoot", ".") / build.get("main", "")
+        if source_path.is_file():
+            vyper_source = source_path.read_text(encoding="utf-8").splitlines()
+        srcmap_note = "Vyper source positions annotate blocks; solc AST function ranges and jump tags are unavailable"
+    elif isinstance(runtime_map, str) and runtime_map:
+        entries = decode_source_map(runtime_map)
         # solc maps one entry per assembly instruction; the trailing INVALID data separator and
         # anything after it are unmapped.
         if len(entries) > len(instructions):
@@ -187,11 +210,26 @@ def render(directory: Path, name: str, build: dict | None, abi: list[dict] | Non
 
     # Dispatcher
     disp: Dispatcher = dispatcher(instructions)
+    vyper = build is not None and build.get("compiler", {}).get("kind") == "vyper"
     out.append("## Dispatcher (runtime)")
     out.append("")
-    out.append(f"- callvalue guard: {'global, before dispatch' if disp.callvalue_guard else 'none before dispatch (per-function or payable)'}")
+    if vyper:
+        out.append("Vyper may use a computed jump table; the generic arm recovery below can be incomplete. "
+                   "Use the compiler method identifiers and inspect the dispatch blocks directly.")
+        out.append("")
+        if sel_names:
+            out.append("| compiler selector | signature |")
+            out.append("|---|---|")
+            for value, signature in sorted(sel_names.items()):
+                out.append(f"| 0x{value:08x} | {signature} |")
+            out.append("")
+    if vyper:
+        out.append("- callvalue guard: inspect each selector path; the generic global-guard heuristic is solc-oriented")
+    else:
+        out.append(f"- callvalue guard: {'global, before dispatch' if disp.callvalue_guard else 'none before dispatch (per-function or payable)'}")
     if disp.calldatasize_check:
-        out.append(f"- short-calldata check: JUMPI at pc {disp.calldatasize_check[0]} → pc {disp.calldatasize_check[1]}")
+        prefix = "candidate short-calldata check" if vyper else "short-calldata check"
+        out.append(f"- {prefix}: JUMPI at pc {disp.calldatasize_check[0]} → pc {disp.calldatasize_check[1]}")
     else:
         out.append("- short-calldata check: not recognised")
     if disp.pivots:
@@ -213,7 +251,9 @@ def render(directory: Path, name: str, build: dict | None, abi: list[dict] | Non
     unmatched = [s for s in sel_names if s not in {a.selector for a in disp.arms}]
     if unmatched:
         out.append("")
-        out.append("ABI functions without a selector arm (served by the fallback, or not dispatched): " +
+        label = ("Selectors not recovered as direct arms" if vyper else
+                 "ABI functions without a selector arm (served by the fallback, or not dispatched)")
+        out.append(label + ": " +
                    ", ".join(f"`{sel_names[s]}`" for s in sorted(unmatched)))
     if disp.fallthroughs:
         out.append("")
@@ -292,6 +332,10 @@ def render(directory: Path, name: str, build: dict | None, abi: list[dict] | Non
                 where = fn.label if fn else (view.yul_function(e) or view.names.get(e.file, f"src {e.file}"))
                 snip = view.snippet(e)
                 notes.append(f"{where}: {snip}" if snip else where)
+        elif vyper_positions and vyper_source:
+            snippet = vyper_block_snippet(block, vyper_positions, vyper_source)
+            if snippet:
+                notes.append(snippet)
         out.append(line + (f"    ;; {' ;; '.join(notes)}" if notes else ""))
     out.append("```")
     out.append("")
@@ -308,8 +352,10 @@ def render(directory: Path, name: str, build: dict | None, abi: list[dict] | Non
         if full_creation:
             cview = SourceView(directory, build, "creation")
             centries: list[SourceMapEntry] = []
-            if build is not None and build.get("sourceMap", {}).get("creation"):
-                centries = decode_source_map(build["sourceMap"]["creation"])
+            creation_map = build.get("sourceMap", {}).get("creation") if build else None
+            creation_positions = creation_map.get("pc_pos_map", {}) if isinstance(creation_map, dict) else {}
+            if isinstance(creation_map, str) and creation_map:
+                centries = decode_source_map(creation_map)
                 if len(centries) > len(cinstrs):
                     centries = []
             cindex = {ins.pc: k for k, ins in enumerate(cinstrs)}
@@ -325,6 +371,10 @@ def render(directory: Path, name: str, build: dict | None, abi: list[dict] | Non
                         where = fn.label if fn else cview.names.get(e.file, f"src {e.file}")
                         snip = cview.snippet(e)
                         note = f"    ;; {where}: {snip}" if snip else f"    ;; {where}"
+                elif creation_positions and vyper_source:
+                    snippet = vyper_block_snippet(block, creation_positions, vyper_source)
+                    if snippet:
+                        note = f"    ;; {snippet}"
                 out.append(line + note)
             out.append("```")
         out.append("")

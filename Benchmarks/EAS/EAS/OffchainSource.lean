@@ -25,7 +25,8 @@ theorem offchainSource_ok {evm : EVM.State} {locals imms : Store} {revoker : Acc
     (hkey : locals.get? "data" = some (wordBytes32Value word))
     (ht : locals.get? "time" = some (.int (Int.ofNat time.toNat)))
     (hh : locals.get? "$EAS.freeMemory" = some (.int (Int.ofNat heap)))
-    (hz : offchainWord evm revoker word = ⟨0⟩) :
+    (hz : offchainWord evm revoker word = ⟨0⟩)
+    (hperm : evm.executionEnv.perm = true) :
     ExecFuncBody config {contract := contract, locals := locals, immutables := imms} evm offchainFunction.body
       (.returned {contract := contract, locals := offchainLocals locals revoker, immutables := imms}
         (offchainStore evm revoker word time) (some [.tuple [], .int (Int.ofNat heap)])) := by
@@ -41,9 +42,9 @@ theorem offchainSource_ok {evm : EVM.State} {locals imms : Store} {revoker : Acc
   refine ExecBlock.consNormal (ExecStmt.letStorage (offchain_root_resolve hnone hwho)) ?_
   refine ExecBlock.consNormal (ExecStmt.requireTrue ?_) ?_
   · simpa only [offchainGuard, hz, decide_true] using evalWordEqZero (offchain_alias_read (evm := evm) (imms := imms) ha hk)
-  refine ExecBlock.consNormal (ExecStmt.assign (value := .int (Int.ofNat time.toNat))
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) (value := .int (Int.ofNat time.toNat))
     (by simp only [evalExpr?, htt, EvalResult.ofOption]) (offchain_alias_write (time := time) ha hk)) ?_
-  refine ExecBlock.consNormal (ExecStmt.emit (vals := [.address revoker, wordBytes32Value word, .int (Int.ofNat time.toNat)]) ?_) ?_
+  refine ExecBlock.consNormal (ExecStmt.emit (hperm := by simpa only [offchainStore, storageStore_executionEnv] using hperm) (vals := [.address revoker, wordBytes32Value word, .int (Int.ofNat time.toNat)]) ?_) ?_
   · simp only [evalExprs?, evalExpr?, hw, hk, htt, EvalResult.ofOption, EvalResult.bind, bind, pure]
   apply ExecBlock.consReturn
   apply ExecStmt.return
@@ -127,14 +128,15 @@ theorem offchainCall_ok {locals imms : Store} {evm : EVM.State}
     {args : List Expr} {revoker : AccountAddress} {word time : UInt256} {heap : Nat} {retVar : Ident}
     (hargs : evalExprs? config {contract := contract, locals := locals, immutables := imms} evm args =
       .ok [.address revoker, wordBytes32Value word, .int (Int.ofNat time.toNat), .int (Int.ofNat heap)])
-    (hz : offchainWord evm revoker word = ⟨0⟩) :
+    (hz : offchainWord evm revoker word = ⟨0⟩)
+    (hperm : evm.executionEnv.perm = true) :
     ExecStmt config {contract := contract, locals := locals, immutables := imms} evm
       (.internalCall "_revokeOffchain" args retVar)
       (.ok {contract := contract, locals := locals.insert retVar (.tuple [.tuple [], .int (Int.ofNat heap)]), immutables := imms}
         (offchainStore evm revoker word time)) := by
   have hf := offchainArgs_facts revoker word time heap
   exact internalCallFunctionReturn hargs offchain_lookup (offchain_bind revoker word time heap)
-    (offchainSource_ok hf.1 hf.2.1 hf.2.2.1 hf.2.2.2.1 hf.2.2.2.2 hz)
+    (offchainSource_ok (hperm := by assumption) hf.1 hf.2.1 hf.2.2.1 hf.2.2.2.1 hf.2.2.2.2 hz)
 
 theorem offchainCall_revert {locals imms : Store} {evm : EVM.State}
     {args : List Expr} {revoker : AccountAddress} {word time : UInt256} {heap : Nat} {retVar : Ident}

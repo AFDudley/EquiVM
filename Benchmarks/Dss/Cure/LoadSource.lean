@@ -212,7 +212,7 @@ theorem cureLoadSourceBodyCallFailureRevert {σ σ₀ A I} {g : UInt256}
           (perm := false))
         .reverted := by
     simpa [checkedExternalCallStmts, evm0] using
-      checkedExternalCallVarFailure
+      checkedExternalCallVarFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
         (cfg := config) (C := contract) (evm := evm0) (evm' := evmCall)
         (locals := localsOld) (receiver := "src") (retVar := "newAmt_")
         (name := "cure") (target := loadSrc I) (sendVal := 0) (args := [])
@@ -311,7 +311,7 @@ theorem cureLoadSourceBodyReturnDecodeRevert {σ σ₀ A I} {g : UInt256}
           (perm := false))
         .reverted := by
     simpa [checkedExternalCallStmts] using
-      checkedExternalCallVarDecodeRevert
+      checkedExternalCallVarDecodeRevert (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
         (cfg := config) (C := contract) (evm := evm0) (evm' := evmCall)
         (locals := localsOld) (receiver := "src") (retVar := "newAmt_")
         (name := "cure") (target := loadSrc I) (sendVal := 0) (args := [])
@@ -372,7 +372,7 @@ theorem cureLoadSourceBodySubRevertSplit {σ σ₀ A I} {g : UInt256}
     (hdec :
       config.externalABI.decode? "cure" out =
         some [.int (Int.ofNat newAmt.toNat)]) :
-    ((Stele.EVM.storageLoad
+    (evmCall.executionEnv.perm = true → (Stele.EVM.storageLoad
         (Stele.EVM.storageStore evmCall evmCall.executionEnv.codeOwner (loadAmtSlotFor I)
           newAmt)
         evmCall.executionEnv.codeOwner ⟨9⟩).toNat <
@@ -425,7 +425,7 @@ theorem cureLoadSourceBodySubRevertSplit {σ σ₀ A I} {g : UInt256}
           (perm := false))
         (.ok { contract := contract, locals := localsNew } evmCall) := by
     simpa [checkedExternalCallStmts, localsNew] using
-      checkedExternalCallVarSuccess
+      checkedExternalCallVarSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
         (cfg := config) (C := contract) (evm := evm0) (evm' := evmCall)
         (locals := localsOld) (receiver := "src") (retVar := "newAmt_")
         (name := "cure") (target := loadSrc I) (sendVal := 0) (args := [])
@@ -472,7 +472,7 @@ theorem cureLoadSourceBodySubRevertSplit {σ σ₀ A I} {g : UInt256}
     · simpa [oldAmt, oldAmtVal, evm0] using holdAmt
     exact execBlock_append hcallBlock hrest
   constructor
-  · intro hunder
+  · intro hperm hunder
     have holdVar :
         evalExpr? config { contract := contract, locals := localsNew } evmAmt (.var "oldAmt_") =
           .ok (.int (Int.ofNat oldAmt.toNat)) := by
@@ -540,7 +540,8 @@ theorem cureLoadSourceBodySubRevertSplit {σ σ₀ A I} {g : UInt256}
             oldAmt)
         hargsSub (by rfl) hbindSub hbody
     exact ExecFuncBody.execBlockRevert (hprefix
-      (ExecBlock.consNormal (ExecStmt.assign hnewVar hassignAmt)
+      (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by
+        simpa only [evmAmt, storageStore_executionEnv] using hperm)) hnewVar hassignAmt)
         (ExecBlock.consRevert hsubStmt)))
   · intro hperm
     exact ExecFuncBody.execBlockStatic (hprefix
@@ -567,11 +568,12 @@ theorem cureLoadSourceBodySubRevert {σ σ₀ A I} {g : UInt256}
         evmCall.executionEnv.codeOwner ⟨9⟩).toNat <
         (Stele.EVM.storageLoad
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
-          I.codeOwner (loadAmtSlotFor I)).toNat) :
+          I.codeOwner (loadAmtSlotFor I)).toNat)
+    (hperm : evmCall.executionEnv.perm = true) :
     ExecTransitionBody config contract
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) (loadLocals I)
       loadTransition.body .reverted :=
-  (cureLoadSourceBodySubRevertSplit hwv hlive hpos hcode hcall hdec).1 hunder
+  (cureLoadSourceBodySubRevertSplit hwv hlive hpos hcode hcall hdec).1 hperm hunder
 
 theorem cureLoadSourceBodyAddRevert {σ σ₀ A I} {g : UInt256}
     {evmCall : EVM.State} {out : ByteArray} {newAmt : UInt256}
@@ -604,7 +606,8 @@ theorem cureLoadSourceBodyAddRevert {σ σ₀ A I} {g : UInt256}
             evmCall.executionEnv.codeOwner ⟨9⟩)
           (Stele.EVM.storageLoad
             (initState σ σ₀ (Sat256.ofUInt256 g) A I)
-            I.codeOwner (loadAmtSlotFor I))).toNat + newAmt.toNat) :
+            I.codeOwner (loadAmtSlotFor I))).toNat + newAmt.toNat)
+    (hperm : evmCall.executionEnv.perm = true) :
     ExecTransitionBody config contract
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) (loadLocals I)
       loadTransition.body .reverted := by
@@ -651,7 +654,7 @@ theorem cureLoadSourceBodyAddRevert {σ σ₀ A I} {g : UInt256}
           (perm := false))
         (.ok { contract := contract, locals := localsNew } evmCall) := by
     simpa [checkedExternalCallStmts, localsNew] using
-      checkedExternalCallVarSuccess
+      checkedExternalCallVarSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
         (cfg := config) (C := contract) (evm := evm0) (evm' := evmCall)
         (locals := localsOld) (receiver := "src") (retVar := "newAmt_")
         (name := "cure") (target := loadSrc I) (sendVal := 0) (args := [])
@@ -821,7 +824,8 @@ theorem cureLoadSourceBodyAddRevert {σ σ₀ A I} {g : UInt256}
                 .assign .storage lCountRef (incUnchecked (.storage lCountRef)) ]
               [] ]
           .reverted := by
-      refine ExecBlock.consNormal (ExecStmt.assign hnewVar hassignAmt) ?_
+      refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by
+        simpa only [evmAmt, storageStore_executionEnv] using hperm)) hnewVar hassignAmt) ?_
       refine ExecBlock.consNormal hsubStmt ?_
       exact ExecBlock.consRevert haddStmt
     exact execBlock_append hcallBlock hrest
@@ -882,7 +886,8 @@ theorem cureLoadSourceBodyOkLoadedNonzero {σ σ₀ A I} {g : UInt256}
           evmCall.executionEnv.codeOwner ⟨9⟩)
         (Stele.EVM.storageLoad
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
-          I.codeOwner (loadAmtSlotFor I))).toNat + newAmt.toNat < UInt256.size) :
+          I.codeOwner (loadAmtSlotFor I))).toNat + newAmt.toNat < UInt256.size)
+    (hperm : evmCall.executionEnv.perm = true) :
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let oldAmt := Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (loadAmtSlotFor I)
     let oldAmtVal : Value := .int (Int.ofNat oldAmt.toNat)
@@ -933,7 +938,7 @@ theorem cureLoadSourceBodyOkLoadedNonzero {σ σ₀ A I} {g : UInt256}
           (perm := false))
         (.ok { contract := contract, locals := localsNew } evmCall) := by
     simpa [checkedExternalCallStmts, localsNew] using
-      checkedExternalCallVarSuccess
+      checkedExternalCallVarSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
         (cfg := config) (C := contract) (evm := evm0) (evm' := evmCall)
         (locals := localsOld) (receiver := "src") (retVar := "newAmt_")
         (name := "cure") (target := loadSrc I) (sendVal := 0) (args := [])
@@ -1151,10 +1156,12 @@ theorem cureLoadSourceBodyOkLoadedNonzero {σ σ₀ A I} {g : UInt256}
                 .assign .storage lCountRef (incUnchecked (.storage lCountRef)) ]
               [] ]
           (.ok { contract := contract, locals := localsSay } evmSay) := by
-      refine ExecBlock.consNormal (ExecStmt.assign hnewVar hassignAmt) ?_
+      refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by
+        simpa only [evmAmt, storageStore_executionEnv] using hperm)) hnewVar hassignAmt) ?_
       refine ExecBlock.consNormal hsubStmt ?_
       refine ExecBlock.consNormal haddStmt ?_
-      refine ExecBlock.consNormal (ExecStmt.assign hsayNewVar hassignSay) ?_
+      refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by
+        simpa only [evmAmt, storageStore_executionEnv] using hperm)) hsayNewVar hassignSay) ?_
       exact ExecBlock.consNormal (ExecStmt.iteFalse hcond ExecBlock.nil) ExecBlock.nil
     exact execBlock_append hcallBlock hrest
   have hblock :
@@ -1214,7 +1221,8 @@ theorem cureLoadSourceBodyOkLoadedZero {σ σ₀ A I} {g : UInt256}
           evmCall.executionEnv.codeOwner ⟨9⟩)
         (Stele.EVM.storageLoad
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
-          I.codeOwner (loadAmtSlotFor I))).toNat + newAmt.toNat < UInt256.size) :
+          I.codeOwner (loadAmtSlotFor I))).toNat + newAmt.toNat < UInt256.size)
+    (hperm : evmCall.executionEnv.perm = true) :
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let oldAmt := Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (loadAmtSlotFor I)
     let oldAmtVal : Value := .int (Int.ofNat oldAmt.toNat)
@@ -1270,7 +1278,7 @@ theorem cureLoadSourceBodyOkLoadedZero {σ σ₀ A I} {g : UInt256}
           (perm := false))
         (.ok { contract := contract, locals := localsNew } evmCall) := by
     simpa [checkedExternalCallStmts, localsNew] using
-      checkedExternalCallVarSuccess
+      checkedExternalCallVarSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
         (cfg := config) (C := contract) (evm := evm0) (evm' := evmCall)
         (locals := localsOld) (receiver := "src") (retVar := "newAmt_")
         (name := "cure") (target := loadSrc I) (sendVal := 0) (args := [])
@@ -1473,7 +1481,8 @@ theorem cureLoadSourceBodyOkLoadedZero {σ σ₀ A I} {g : UInt256}
         store_get_ne _ _ (by native_decide), store_get_ne _ _ (by native_decide)]
       simp [loadLocals]
     simpa [evmLoaded, count, evmCount] using
-      execLoadLoadedZeroTail (evm := evmSay) (locals := localsSay) I
+      execLoadLoadedZeroTail (hperm := by
+        simpa only [evmSay, evmAmt, storageStore_executionEnv] using hperm) (evm := evmSay) (locals := localsSay) I
         hbaseLoaded hbaseLCount hsrcSay hloaded
   have hcallTail :
       ExecBlock config { contract := contract, locals := localsOld } evm0
@@ -1501,10 +1510,12 @@ theorem cureLoadSourceBodyOkLoadedZero {σ σ₀ A I} {g : UInt256}
                 .assign .storage lCountRef (incUnchecked (.storage lCountRef)) ]
               [] ]
           (.ok { contract := contract, locals := localsSay } evmCount) := by
-      refine ExecBlock.consNormal (ExecStmt.assign hnewVar hassignAmt) ?_
+      refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by
+        simpa only [evmAmt, storageStore_executionEnv] using hperm)) hnewVar hassignAmt) ?_
       refine ExecBlock.consNormal hsubStmt ?_
       refine ExecBlock.consNormal haddStmt ?_
-      refine ExecBlock.consNormal (ExecStmt.assign hsayNewVar hassignSay) ?_
+      refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by
+        simpa only [evmAmt, storageStore_executionEnv] using hperm)) hsayNewVar hassignSay) ?_
       exact ExecBlock.consNormal htail ExecBlock.nil
     exact execBlock_append hcallBlock hrest
   have hblock :

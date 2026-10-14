@@ -57,7 +57,9 @@ theorem attestRecordRun {L : Store} {evm : EVM.State} {ee : ExecutionEnv} {g : S
       ⟨hla,(hkeep "request" (by decide)).trans hr,hlu,(hkeep "i" (by decide)).trans hli,
         (hkeep "attestations" (by decide)).trans hlas,(hkeep "values" (by decide)).trans hlvs,
         (hkeep "res" (by decide)).trans hlres,(hkeep "attester" (by decide)).trans ha,(hkeep "schema" (by decide)).trans hsch⟩
-    obtain ⟨hs2,hu2,ha2,hv2,hh2,aw2,k2,C2,hr2⟩ := recordTailRun v site (by omega) hperm hf hm1 hlength hi hb hr1
+    obtain ⟨hs2,hu2,ha2,hv2,hh2,aw2,k2,C2,hr2⟩ := recordTailRun
+      (hperm := (congrArg ExecutionEnv.perm hstate.env).trans hperm)
+      v site (by omega) hperm hf hm1 hlength hi hb hr1
     exact Or.inl ⟨Lp,e1,σ1,m1,aw2,k2,C2,heap1,word,hperm,hgrowth,hcap,hkeep,hlh,
       execBlock_append hsol hs2,hstate,(hpre.mono (by have := hm.uidArray.span; omega)).trans
         (recordTailMemory_prefix site hm1 hi hb),hpre,hview,hm1,hu2,ha2,hv2,hh2,hr2⟩

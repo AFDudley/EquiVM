@@ -32,7 +32,7 @@ theorem verifyRevokeRun {L : Store} {ee : ExecutionEnv} {g : Sat256} {s0 evm : E
   simp only [List.append_assoc]
   refine HeapReturnOrStatic.prepend ?_ hp1 (MemoryPrefix.refl _ _) (le_refl _)
   by_cases hp : ee.perm = true
-  · have hw := nonceWriteSource (L := L1) (imms := immStore v) (evm := evm) (a := r.revoker) hnone1 hn1 he1
+  · have hw := nonceWriteSource (hperm := by simpa only [hs.env] using hp) (L := L1) (imms := immStore v) (evm := evm) (a := r.revoker) hnone1 hn1 he1
     have hwb : ExecBlock config {contract := contract,locals := L1,immutables := immStore v} evm
         [nonceWrite (.field (.var "request") "revoker")]
         (.ok {contract := contract,locals := L1,immutables := immStore v} (nonceStore evm r.revoker)) :=

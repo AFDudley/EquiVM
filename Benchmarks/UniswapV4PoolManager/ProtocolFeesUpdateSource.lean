@@ -32,7 +32,7 @@ theorem protocolFeesUpdateBody {f : Frame} {evm : State} {currency : AccountAddr
   · rw [if_pos hp]
     exact .execBlockStatic (ExecBlock.consStatic (ExecStmt.assignStatic he hw hp))
   · rw [if_neg hp]
-    exact .execBlockOK (ExecBlock.consNormal (ExecStmt.assign he hw) ExecBlock.nil)
+    exact .execBlockOK (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (Bool.eq_true_of_not_eq_false hp)) he hw) ExecBlock.nil)
 
 theorem protocolFeesUpdateCall {f : Frame} {evm : State} {ec ea : Expr}
     {currency : AccountAddress} {amount : UInt256} (hf : f.contract = contract)

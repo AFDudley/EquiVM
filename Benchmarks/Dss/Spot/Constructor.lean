@@ -84,7 +84,7 @@ theorem spotConstructorCorrect :
       refine typedConstructorRefinementFor.execution hsuccess
         (by
           simpa [evm0s, evm1s, evm2s, evm3s, evm4s] using
-            spotSteleCtorExecSuccess
+            spotSteleCtorExecSuccess (hperm := hperm)
               (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
               (g := g) vat hwv)
         ?_

@@ -46,7 +46,7 @@ theorem poolSwapComputeSource {f : Frame} {evm : State}
   let f5 := valueLocal f4 "step" (poolSwapStepValue {s with priceNext := next, amountIn := w.amountIn})
   let f6 := valueLocal f5 "step" (poolSwapStepValue {s with priceNext := next, amountIn := w.amountIn, amountOut := w.amountOut})
   have hnext : ExecStmt config f evm poolSwapLoopBody[8]! (.ok f1 evm) :=
-    ExecStmt.assign (evalLocalValue hn) (assignLocalField hs rfl rfl)
+    ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalLocalValue hn) (assignLocalField hs rfl rfl)
   have hz1 : f1.locals.get? "zeroForOne" = some (.bool p.zeroForOne) :=
     (store_get_ne _ _ (by decide : ("step" == "zeroForOne") = false)).trans hz
   have hp1 : f1.locals.get? "params" = some (poolSwapParamsValue p) :=
@@ -78,20 +78,20 @@ theorem poolSwapComputeSource {f : Frame} {evm : State}
         (by decide : ("__c15" == "step") = false) (by decide : ("result" == "step") = false)).trans
         (store_get_self _ _ _)
     have hprice : ExecStmt config f3 evm poolSwapLoopBody[11]! (.ok f4 evm) :=
-      ExecStmt.assign (evalTupleProjection (evalLocalValue hv3) (i := 0) rfl) (assignLocalField hr3 rfl rfl)
+      ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalTupleProjection (evalLocalValue hv3) (i := 0) rfl) (assignLocalField hr3 rfl rfl)
     have hv4 : f4.locals.get? "__c15" = some (.tuple (swapStepReturnValues w)) :=
       (store_get_ne _ _ (by decide : ("result" == "__c15") = false)).trans hv3
     have hin : ExecStmt config f4 evm poolSwapLoopBody[12]! (.ok f5 evm) :=
-      ExecStmt.assign (evalTupleProjection (evalLocalValue hv4) (i := 1) rfl) (assignLocalField hs4 rfl rfl)
+      ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalTupleProjection (evalLocalValue hv4) (i := 1) rfl) (assignLocalField hs4 rfl rfl)
     have hv5 : f5.locals.get? "__c15" = some (.tuple (swapStepReturnValues w)) :=
       (store_get_ne _ _ (by decide : ("step" == "__c15") = false)).trans hv4
     have hout : ExecStmt config f5 evm poolSwapLoopBody[13]! (.ok f6 evm) :=
-      ExecStmt.assign (evalTupleProjection (evalLocalValue hv5) (i := 2) rfl)
+      ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalTupleProjection (evalLocalValue hv5) (i := 2) rfl)
         (assignLocalField (store_get_self _ _ _) rfl rfl)
     have hv6 : f6.locals.get? "__c15" = some (.tuple (swapStepReturnValues w)) :=
       (store_get_ne _ _ (by decide : ("step" == "__c15") = false)).trans hv5
     have hfee' : ExecStmt config f6 evm poolSwapLoopBody[14]! (.ok (poolSwapComputeFrame f s r p next remaining fee) evm) :=
-      ExecStmt.assign (evalTupleProjection (evalLocalValue hv6) (i := 3) rfl)
+      ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalTupleProjection (evalLocalValue hv6) (i := 3) rfl)
         (assignLocalField (store_get_self _ _ _) rfl rfl)
     exact ExecBlock.consNormal hnext (ExecBlock.consNormal htarget (ExecBlock.consNormal hcompute
       (ExecBlock.consNormal hprice (ExecBlock.consNormal hin (ExecBlock.consNormal hout (execBlock_singleton hfee'))))))

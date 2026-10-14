@@ -166,8 +166,8 @@ theorem vatInitSourceBodySplit {σ σ₀ A I} {g : UInt256}
     let locals := initStore I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let evm1 := Stele.EVM.storageStore evm0 I.codeOwner (initRateSlot I) initRayWord
-    ExecTransitionBody config contract evm0 locals initTransition.body
-      (.returned { contract := contract, locals := locals } evm1 none) ∧
+    (I.perm = true → ExecTransitionBody config contract evm0 locals initTransition.body
+      (.returned { contract := contract, locals := locals } evm1 none)) ∧
     (I.perm = false →
       ExecTransitionBody config contract evm0 locals initTransition.body
         .staticViolation) := by
@@ -205,9 +205,9 @@ theorem vatInitSourceBodySplit {σ σ₀ A I} {g : UInt256}
     refine ExecBlock.consNormal (ExecStmt.requireTrue hguard) ?_
     refine ExecBlock.consNormal (ExecStmt.requireTrue hrateGuard) ?_
     exact execBlock_singleton h
-  refine ⟨?_, fun hpf => ?_⟩
+  refine ⟨fun hperm => ?_, fun hpf => ?_⟩
   · simpa [ExecTransitionBody, locals, evm0, evm1] using
-      ExecFuncBody.execBlockOK (hbody _ (ExecStmt.assign hray hassign))
+      ExecFuncBody.execBlockOK (hbody _ (ExecStmt.assign (hperm := Or.inr hperm) hray hassign))
   · simpa [ExecTransitionBody, locals, evm0] using ExecFuncBody.execBlockStatic
       (hbody _ (ExecStmt.assignStatic hray hassign (by simp [evm0, initState]; exact hpf)))
 
@@ -670,10 +670,10 @@ theorem vatInitBodyCoreOk
   let evm1 := Stele.EVM.storageStore evm0 I.codeOwner slot initRayWord
   have hboth := vatInitSourceBodySplit (σ := σ)
     (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hsz36 hauth hrate
-  have hbody :
+  have hbody (hperm : I.perm = true) :
       ExecTransitionBody config contract evm0 locals initTransition.body
         (.returned { contract := contract, locals := locals } evm1 none) := by
-    simpa [evm0, evm1, locals, slot] using hboth.1
+    simpa [evm0, evm1, locals, slot] using hboth.1 hperm
   obtain ⟨_, _, hdecoded⟩ := vatInitX_decoded (g := Sat256.ofUInt256 g)
     hsz36 hsize hreach
   have hauthSolc :
@@ -713,7 +713,7 @@ theorem vatInitBodyCoreOk
       unfold vatInitStoreRayWf initRayWord
       repeat' first | apply And.intro | native_decide)
     (by jump_dest) hrateMem (by simp) with
-    ⟨_, _, _, hretPc⟩ | ⟨hpf, hstatic⟩
+    ⟨hperm, _, _, hretPc⟩ | ⟨hpf, hstatic⟩
   swap
   · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode (hboth.2 hpf)
   have hretPc' := hretPc.jumpdest (by native_decide) (by evm_ov)
@@ -729,7 +729,7 @@ theorem vatInitBodyCoreOk
   have henc : returnEquiv ByteArray.empty none initTransition.returnType := by
     rw [show initTransition.returnType = [] by rfl]
     exact returnEquiv.fallthrough rfl (by rfl) (by native_decide)
-  exact hret.reEquivExecutionGen hcode hdispatch hdecode hbody
+  exact hret.reEquivExecutionGen hcode hdispatch hdecode (hbody hperm)
     haccounts henc
 
 theorem vatInitBodyCoreUnauthorized

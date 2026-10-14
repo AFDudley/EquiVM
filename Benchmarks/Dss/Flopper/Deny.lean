@@ -43,7 +43,7 @@ theorem flopperDenyBodyReturnsSplit (evm : EVM.State) (I : ExecutionEnv)
     (hsrc : evm.executionEnv.source = I.source)
     (hauth :
       Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (relyAuthStorageSlot I) = ⟨1⟩) :
-    (ExecTransitionBody config contract evm (relyStore I) denyTransition.body
+    (evm.executionEnv.perm = true → ExecTransitionBody config contract evm (relyStore I) denyTransition.body
       (.returned { contract := contract, locals := relyStore I } (denyPostState evm I) none)) ∧
       (evm.executionEnv.perm = false →
         ExecTransitionBody config contract evm (relyStore I)
@@ -60,8 +60,9 @@ theorem flopperDenyBodyReturnsSplit (evm : EVM.State) (I : ExecutionEnv)
     refine ExecBlock.consNormal (ExecStmt.requireTrue (evalCallvalueEq_true hwv)) ?_
     exact ExecBlock.consNormal (ExecStmt.requireTrue hguard) htail
   constructor
-  · exact ExecFuncBody.execBlockOK
-      (hprefix (ExecBlock.consNormal (ExecStmt.assign hval hassign) ExecBlock.nil))
+  · intro hperm
+    exact ExecFuncBody.execBlockOK
+      (hprefix (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hval hassign) ExecBlock.nil))
   · intro hperm
     exact ExecFuncBody.execBlockStatic
       (hprefix (ExecBlock.consStatic (ExecStmt.assignStatic hval hassign hperm)))
@@ -393,7 +394,7 @@ theorem flopperDenyBodyCoreOk
   let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
   have hauthWord : relyAuthWord σ I = ⟨1⟩ := hauth
   have hbodySplit :
-      (ExecTransitionBody config contract evmStele (relyStore I)
+      (I.perm = true → ExecTransitionBody config contract evmStele (relyStore I)
         denyTransition.body
         (.returned { contract := contract, locals := relyStore I }
           (denyPostState evmStele I) none)) ∧
@@ -406,10 +407,10 @@ theorem flopperDenyBodyCoreOk
         (by simp [evmStele, initState])
         hauthWord
   rcases flopperX_deny_okSplit (g := Sat256.ofUInt256 g) hsz36 hsize hauth hreach with
-    ⟨_hperm, hret⟩ | ⟨hperm, hstatic⟩
+    ⟨hperm, hret⟩ | ⟨hperm, hstatic⟩
   swap
   · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode (hbodySplit.2 hperm)
-  exact hret.reEquivExecutionGen hcode hdispatch hdecode hbodySplit.1
+  exact hret.reEquivExecutionGen hcode hdispatch hdecode (hbodySplit.1 hperm)
       (by
         simp [denyPostState, evmStele, initState,
           storageStore_accountMap, storageStore_executionEnv])

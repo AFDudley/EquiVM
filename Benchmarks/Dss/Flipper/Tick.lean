@@ -1316,7 +1316,7 @@ theorem flipperTickSourceBodySuccessSplit {σ σ₀ A I} {g : UInt256}
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let evm1 := Stele.EVM.storageStore evm0 I.codeOwner (tickBidPackedSlot I)
       (tickEndStoredWord σ I)
-    (ExecTransitionBody config contract evm0 locals tickTransition.body
+    (I.perm = true → ExecTransitionBody config contract evm0 locals tickTransition.body
       (.returned { contract := contract, locals := tickLocalsWithEnd σ I } evm1 none)) ∧
       (I.perm = false → ExecTransitionBody config contract evm0 locals
         tickTransition.body .staticViolation) := by
@@ -1379,9 +1379,10 @@ theorem flipperTickSourceBodySuccessSplit {σ σ₀ A I} {g : UInt256}
     exact hblock
   have hvalue := evalExpr_tickEndVarWithEnd (evm := evm0) (σ := σ) (I := I)
   constructor
-  · exact ExecFuncBody.execBlockOK
+  · intro hperm
+    exact ExecFuncBody.execBlockOK
       (hprefix (ExecBlock.consNormal (ExecStmt.requireTrue hge)
-        (ExecBlock.consNormal (ExecStmt.assign hvalue hassign) ExecBlock.nil)))
+        (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hvalue hassign) ExecBlock.nil)))
   · intro hperm
     exact ExecFuncBody.execBlockStatic
       (hprefix (ExecBlock.consNormal (ExecStmt.requireTrue hge)
@@ -1419,7 +1420,7 @@ theorem flipperTickBodyCore {σ σ₀ A I} {g : UInt256}
           let evm1 := Stele.EVM.storageStore evm0 I.codeOwner (tickBidPackedSlot I)
             (tickEndStoredWord σ I)
           have hbodySplit :
-              (ExecTransitionBody config contract evm0 locals tickTransition.body
+              (I.perm = true → ExecTransitionBody config contract evm0 locals tickTransition.body
                 (.returned { contract := contract, locals := tickLocalsWithEnd σ I }
                   evm1 none)) ∧
               (I.perm = false → ExecTransitionBody config contract evm0 locals
@@ -1429,10 +1430,10 @@ theorem flipperTickBodyCore {σ σ₀ A I} {g : UInt256}
                 (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
                 hwv hltEvm hticEvm hfitEvm)
           rcases flipperTickX_storeEndSplit rd6216 with
-              ⟨_hperm, hret⟩ | ⟨hperm, hstatic⟩
+              ⟨hperm, hret⟩ | ⟨hperm, hstatic⟩
           swap
           · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode (hbodySplit.2 hperm)
-          exact hret.reEquivExecutionGen hcode hdispatch hdecode hbodySplit.1
+          exact hret.reEquivExecutionGen hcode hdispatch hdecode (hbodySplit.1 hperm)
             (by simp [evm1, evm0, initState, storageStore_accountMap])
             (by
               rw [show tickTransition.returnType = [] by rfl]

@@ -25,7 +25,7 @@ theorem resolveOneResolverRun {locals imms : Store} {ee : ExecutionEnv} {g : Sat
   obtain ⟨evm',σ',success,out,hcall,hs',hout,hr⟩ := resolverOneEVM v rev
     (by simp only [List.length_cons]; omega) hperm hs hview hsrc hdata hheap hh rd1
   simp only [accountAddress_roundtrip] at hcall
-  have hsource := resolveOneResolverSource (imms := imms) hf.resolver hf.attestation hf.value hf.heap hf.revocation
+  have hsource := resolveOneResolverSource (hperm := Or.inr ((congrArg ExecutionEnv.perm hs.env).trans hperm)) (imms := imms) hf.resolver hf.attestation hf.value hf.heap hf.revocation
     hsize hcall (by omega)
   have houtWord : out.size < UInt256.size := by change out.size < 2^256; omega
   by_cases hv : resolverCallValid ptr.toNat success out

@@ -277,7 +277,7 @@ theorem flapperFileBegSourceBodySplit {σ σ₀ A I} {g : UInt256}
     let locals := fileLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let evm1 := fileBegPostState evm0 I
-    (ExecTransitionBody config contract evm0 locals fileTransition.body
+    (I.perm = true → ExecTransitionBody config contract evm0 locals fileTransition.body
       (.returned { contract := contract, locals := locals } evm1 none)) ∧
       (I.perm = false → ExecTransitionBody config contract evm0 locals
         fileTransition.body .staticViolation) := by
@@ -317,8 +317,9 @@ theorem flapperFileBegSourceBodySplit {σ σ₀ A I} {g : UInt256}
     refine ExecBlock.consNormal (ExecStmt.requireTrue hguard) ?_
     exact execBlock_singleton (ExecStmt.iteTrue hcond hwrite)
   constructor
-  · exact ExecFuncBody.execBlockOK
-      (hprefix (ExecBlock.consNormal (ExecStmt.assign hdata hassign) ExecBlock.nil))
+  · intro hperm
+    exact ExecFuncBody.execBlockOK
+      (hprefix (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hdata hassign) ExecBlock.nil))
   · intro hperm
     exact ExecFuncBody.execBlockStatic
       (hprefix (ExecBlock.consStatic (ExecStmt.assignStatic hdata hassign
@@ -332,7 +333,7 @@ theorem flapperFileTtlSourceBodySplit {σ σ₀ A I} {g : UInt256}
     let locals := fileLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let evm1 := fileTtlPostState evm0 I
-    (ExecTransitionBody config contract evm0 locals fileTransition.body
+    (I.perm = true → ExecTransitionBody config contract evm0 locals fileTransition.body
       (.returned { contract := contract, locals := locals } evm1 none)) ∧
       (I.perm = false → ExecTransitionBody config contract evm0 locals
         fileTransition.body .staticViolation) := by
@@ -379,8 +380,9 @@ theorem flapperFileTtlSourceBodySplit {σ σ₀ A I} {g : UInt256}
     exact execBlock_singleton (ExecStmt.iteFalse hbegCond
       (execBlock_singleton (ExecStmt.iteTrue httlCond hwrite)))
   constructor
-  · exact ExecFuncBody.execBlockOK
-      (hprefix (ExecBlock.consNormal (ExecStmt.assign hdata hassign) ExecBlock.nil))
+  · intro hperm
+    exact ExecFuncBody.execBlockOK
+      (hprefix (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hdata hassign) ExecBlock.nil))
   · intro hperm
     exact ExecFuncBody.execBlockStatic
       (hprefix (ExecBlock.consStatic (ExecStmt.assignStatic hdata hassign
@@ -396,7 +398,7 @@ theorem flapperFileTauSourceBodySplit {σ σ₀ A I} {g : UInt256}
     let locals := fileLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let evm1 := fileTauPostState evm0 I
-    (ExecTransitionBody config contract evm0 locals fileTransition.body
+    (I.perm = true → ExecTransitionBody config contract evm0 locals fileTransition.body
       (.returned { contract := contract, locals := locals } evm1 none)) ∧
       (I.perm = false → ExecTransitionBody config contract evm0 locals
         fileTransition.body .staticViolation) := by
@@ -450,8 +452,9 @@ theorem flapperFileTauSourceBodySplit {σ σ₀ A I} {g : UInt256}
       (execBlock_singleton (ExecStmt.iteFalse httlCond
         (execBlock_singleton (ExecStmt.iteTrue htauCond hwrite)))))
   constructor
-  · exact ExecFuncBody.execBlockOK
-      (hprefix (ExecBlock.consNormal (ExecStmt.assign hdata hassign) ExecBlock.nil))
+  · intro hperm
+    exact ExecFuncBody.execBlockOK
+      (hprefix (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hdata hassign) ExecBlock.nil))
   · intro hperm
     exact ExecFuncBody.execBlockStatic
       (hprefix (ExecBlock.consStatic (ExecStmt.assignStatic hdata hassign
@@ -468,7 +471,7 @@ theorem flapperFileLidSourceBodySplit {σ σ₀ A I} {g : UInt256}
     let locals := fileLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let evm1 := fileLidPostState evm0 I
-    (ExecTransitionBody config contract evm0 locals fileTransition.body
+    (I.perm = true → ExecTransitionBody config contract evm0 locals fileTransition.body
       (.returned { contract := contract, locals := locals } evm1 none)) ∧
       (I.perm = false → ExecTransitionBody config contract evm0 locals
         fileTransition.body .staticViolation) := by
@@ -529,8 +532,9 @@ theorem flapperFileLidSourceBodySplit {σ σ₀ A I} {g : UInt256}
         (execBlock_singleton (ExecStmt.iteFalse htauCond
           (execBlock_singleton (ExecStmt.iteTrue hlidCond hwrite)))))))
   constructor
-  · exact ExecFuncBody.execBlockOK
-      (hprefix (ExecBlock.consNormal (ExecStmt.assign hdata hassign) ExecBlock.nil))
+  · intro hperm
+    exact ExecFuncBody.execBlockOK
+      (hprefix (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hdata hassign) ExecBlock.nil))
   · intro hperm
     exact ExecFuncBody.execBlockStatic
       (hprefix (ExecBlock.consStatic (ExecStmt.assignStatic hdata hassign
@@ -1473,7 +1477,7 @@ theorem flapperFileBodyCoreBeg
     rw [← hword]
     exact hauth
   have hbodySplit :
-      (ExecTransitionBody config contract evm0 locals fileTransition.body
+      (I.perm = true → ExecTransitionBody config contract evm0 locals fileTransition.body
         (.returned { contract := contract, locals := locals } evm1 none)) ∧
       (I.perm = false → ExecTransitionBody config contract evm0 locals
         fileTransition.body .staticViolation) := by
@@ -1489,7 +1493,7 @@ theorem flapperFileBodyCoreBeg
       ⟨_hperm, hret⟩ | ⟨hperm, hstatic⟩
   swap
   · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode (hbodySplit.2 hperm)
-  exact hret.reEquivExecutionGen hcode hdispatch hdecode hbodySplit.1
+  exact hret.reEquivExecutionGen hcode hdispatch hdecode (hbodySplit.1 _hperm)
     (by
       simp [evm1, evm0, initState, fileBegPostState, storageStore_accountMap, data])
     (by
@@ -1525,7 +1529,7 @@ theorem flapperFileBodyCoreLid
     rw [← hword]
     exact hauth
   have hbodySplit :
-      (ExecTransitionBody config contract evm0 locals fileTransition.body
+      (I.perm = true → ExecTransitionBody config contract evm0 locals fileTransition.body
         (.returned { contract := contract, locals := locals } evm1 none)) ∧
       (I.perm = false → ExecTransitionBody config contract evm0 locals
         fileTransition.body .staticViolation) := by
@@ -1548,7 +1552,7 @@ theorem flapperFileBodyCoreLid
       ⟨_hperm, hret⟩ | ⟨hperm, hstatic⟩
   swap
   · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode (hbodySplit.2 hperm)
-  exact hret.reEquivExecutionGen hcode hdispatch hdecode hbodySplit.1
+  exact hret.reEquivExecutionGen hcode hdispatch hdecode (hbodySplit.1 _hperm)
     (by
       simp [evm1, evm0, initState, fileLidPostState, storageStore_accountMap, data])
     (by
@@ -1581,7 +1585,7 @@ theorem flapperFileBodyCoreTtl
     rw [← hword]
     exact hauth
   have hbodySplit :
-      (ExecTransitionBody config contract evm0 locals fileTransition.body
+      (I.perm = true → ExecTransitionBody config contract evm0 locals fileTransition.body
         (.returned { contract := contract, locals := locals } evm1 none)) ∧
       (I.perm = false → ExecTransitionBody config contract evm0 locals
         fileTransition.body .staticViolation) := by
@@ -1599,7 +1603,7 @@ theorem flapperFileBodyCoreTtl
       ⟨_hperm, hret⟩ | ⟨hperm, hstatic⟩
   swap
   · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode (hbodySplit.2 hperm)
-  exact hret.reEquivExecutionGen hcode hdispatch hdecode hbodySplit.1
+  exact hret.reEquivExecutionGen hcode hdispatch hdecode (hbodySplit.1 _hperm)
     (by
       simpa [evm1, evm0, initState, fileTtlPostState, fileTtlStoredWord,
         fileTtlPostAccountMap, fileTtlStoredWordMap, storageStore_accountMap,
@@ -1636,7 +1640,7 @@ theorem flapperFileBodyCoreTau
     rw [← hword]
     exact hauth
   have hbodySplit :
-      (ExecTransitionBody config contract evm0 locals fileTransition.body
+      (I.perm = true → ExecTransitionBody config contract evm0 locals fileTransition.body
         (.returned { contract := contract, locals := locals } evm1 none)) ∧
       (I.perm = false → ExecTransitionBody config contract evm0 locals
         fileTransition.body .staticViolation) := by
@@ -1656,7 +1660,7 @@ theorem flapperFileBodyCoreTau
       ⟨_hperm, hret⟩ | ⟨hperm, hstatic⟩
   swap
   · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode (hbodySplit.2 hperm)
-  exact hret.reEquivExecutionGen hcode hdispatch hdecode hbodySplit.1
+  exact hret.reEquivExecutionGen hcode hdispatch hdecode (hbodySplit.1 _hperm)
     (by
       simpa [evm1, evm0, initState, fileTauPostState, fileTauStoredWord,
         fileTauPostAccountMap, fileTauStoredWordMap, storageStore_accountMap,

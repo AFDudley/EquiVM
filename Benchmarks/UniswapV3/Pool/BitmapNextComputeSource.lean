@@ -114,7 +114,7 @@ theorem bitmapNextComputeSource (imms locals : Store) (evm : EVM.State)
         (.assign .localVar ⟨bitmapNextCondName lte, []⟩ (bitmapNextResultExpr lte false))
         (.ok (bitmapNextComputedFrame imms locals compressed spacing lte masked) evm) := by
       simp only [bitmapNextComputedFrame, if_pos hz]
-      exact ExecStmt.assign he (assignLocalVarBase_frame hh)
+      exact ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) he (assignLocalVarBase_frame hh)
     cases lte <;> exact ExecStmt.iteFalse eg (ExecBlock.consNormal ha ExecBlock.nil)
   · have he := evalBitmapNextResult (frame := bitmapNextScanFrame imms locals lte masked)
       (evm := evm) compressed spacing lte masked
@@ -130,7 +130,7 @@ theorem bitmapNextComputeSource (imms locals : Store) (evm : EVM.State)
         (.assign .localVar ⟨bitmapNextCondName lte, []⟩ (bitmapNextResultExpr lte true))
         (.ok (bitmapNextComputedFrame imms locals compressed spacing lte masked) evm) := by
       simp only [bitmapNextComputedFrame, if_neg hz]
-      exact ExecStmt.assign he (assignLocalVarBase_frame hh')
+      exact ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) he (assignLocalVarBase_frame hh')
     have hscan := bitmapNextScanSource imms locals evm lte masked hm hz
     cases lte <;> exact ExecStmt.iteTrue eg
       (ExecBlock.consNormal hscan (ExecBlock.consNormal ha ExecBlock.nil))

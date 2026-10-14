@@ -428,7 +428,7 @@ theorem weth9ConstructorCorrect :
       have hσ' : s.accountMap = weth9EvmFinalMap σ I.codeOwner := hacc
       rw [hσ'] at hsuccess
       refine typedConstructorRefinementFor.execution hsuccess
-        (weth9SteleCtorExecSuccess (σ := σ) (σ₀ := σ₀)
+        (weth9SteleCtorExecSuccess (hperm := by assumption) (σ := σ) (σ₀ := σ₀)
           (g := g) (A := A) (I := I) hwv) ?_
       refine ctorResultEquiv.success rfl rfl ?_ rfl
       exact weth9FinalReconcile I.codeOwner

@@ -435,7 +435,8 @@ theorem transferAssignTo (evm : EVM.State) (I : ExecutionEnv)
 theorem erc20TransferBodyReturns (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (henough : (transferValueWord I).toNat ≤ (transferFromBalanceWord evm).toNat)
-    (hfit : transferNewToNat evm I < UInt256.size) :
+    (hfit : transferNewToNat evm I < UInt256.size)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody erc20Config erc20Contract evm (transferStore I)
       transferTransition.body
       (.returned { contract := erc20Contract, locals := transferStoreNewToBalance evm I }
@@ -446,14 +447,17 @@ theorem erc20TransferBodyReturns (evm : EVM.State) (I : ExecutionEnv)
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue (evalExpr_transfer_require_from_true evm I henough)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_transfer_debit evm I henough) (transferAssignSender evm I)) ?_
+    (ExecStmt.assign (Or.inr hperm) (evalExpr_transfer_debit evm I henough)
+      (transferAssignSender evm I)) ?_
   refine ExecBlock.consNormal (ExecStmt.letDecl (evalExpr_transfer_to_balance evm I)) ?_
   refine ExecBlock.consNormal (ExecStmt.letDecl (evalExpr_transfer_newToBalance evm I hfit)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_transfer_newToBalance_var evm I)
+    (ExecStmt.assign (Or.inr (by simpa [transferAfterDebitState] using hperm))
+      (evalExpr_transfer_newToBalance_var evm I)
       (transferAssignTo evm I hfit)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.emit (evalExprs_transfer_event evm (transferPostState evm I) I)) ?_
+    (ExecStmt.emit (by simpa [transferPostState, transferAfterDebitState] using hperm)
+      (evalExprs_transfer_event evm (transferPostState evm I) I)) ?_
   exact ExecBlock.consReturn (ExecStmt.return (by simp [evalExprs?, evalExpr?, EvalResult.bind, bind, pure]))
 
 /-- Static mode: the body halts at its first storage write (the sender debit). -/
@@ -486,7 +490,8 @@ theorem erc20TransferBodyReverts_insufficient (evm : EVM.State) (I : ExecutionEn
 theorem erc20TransferBodyReverts_overflow (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (henough : (transferValueWord I).toNat ≤ (transferFromBalanceWord evm).toNat)
-    (hover : UInt256.size ≤ transferNewToNat evm I) :
+    (hover : UInt256.size ≤ transferNewToNat evm I)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody erc20Config erc20Contract evm (transferStore I)
       transferTransition.body .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
@@ -495,7 +500,8 @@ theorem erc20TransferBodyReverts_overflow (evm : EVM.State) (I : ExecutionEnv)
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue (evalExpr_transfer_require_from_true evm I henough)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_transfer_debit evm I henough) (transferAssignSender evm I)) ?_
+    (ExecStmt.assign (Or.inr hperm) (evalExpr_transfer_debit evm I henough)
+      (transferAssignSender evm I)) ?_
   refine ExecBlock.consNormal (ExecStmt.letDecl (evalExpr_transfer_to_balance evm I)) ?_
   exact ExecBlock.consRevert
     (ExecStmt.letDeclRevert (evalExpr_transfer_newToBalance_revert evm I hover))
@@ -1761,7 +1767,7 @@ theorem erc20TransferBodyCore
           · have henoughS :
                 (transferValueWord I).toNat ≤ (transferFromBalanceWord evmS).toNat := by
               simpa [evmS] using henough
-            have hbody := erc20TransferBodyReturns evmS I
+            have hbody := erc20TransferBodyReturns (hperm := hperm) evmS I
               (by simp only [evmS, initState]; exact hwv) henoughS
               (by simpa [evmS] using hfit)
             exact (erc20X_transfer (g := Sat256.ofUInt256 g)
@@ -1778,7 +1784,7 @@ theorem erc20TransferBodyCore
             have henoughS :
                 (transferValueWord I).toNat ≤ (transferFromBalanceWord evmS).toNat := by
               simpa [evmS] using henough
-            have hbody := erc20TransferBodyReverts_overflow evmS I
+            have hbody := erc20TransferBodyReverts_overflow (hperm := hperm) evmS I
               (by simp only [evmS, initState]; exact hwv) henoughS
               (by simpa [evmS] using hover)
             exact (erc20TransferX_overflow (g := Sat256.ofUInt256 g)

@@ -305,7 +305,8 @@ theorem clipperTakeGenericPostDogLotZeroOk
     (hlocked : locals.get? "locked" = none)
     (hremove : ExecFuncBody config
       { contract := contract, locals := clipperYankRemoveStore I, immutables := immStore v }
-      evm removeFunction.body (.returned callee evmRemove none)) :
+      evm removeFunction.body (.returned callee evmRemove none))
+    (hperm : evmRemove.executionEnv.perm = true) :
     let resultLocals := locals.insert "_removeRet" .unit
     ExecBlock config (Frame.mk contract locals (immStore v)) evm
       (clipperTakePostDogStmts)
@@ -339,7 +340,7 @@ theorem clipperTakeGenericPostDogLotZeroOk
       (.assign .storage lockedRef (.intLit 0))
       (.ok (Frame.mk contract resultLocals (immStore v))
         (Stele.EVM.storageStore evmRemove evmRemove.executionEnv.codeOwner ⟨13⟩ ⟨0⟩)) := by
-    apply ExecStmt.assign (value := .int 0)
+    apply ExecStmt.assign (hperm := Or.inr hperm) (value := .int 0)
     · simp [evalExpr?, pure]
     · simpa using assign_clipperLocked v evmRemove resultLocals hlocked' ⟨0⟩
   simpa only [clipperTakePostDogStmts] using
@@ -526,7 +527,8 @@ theorem clipperTakeGenericPostDogTabZeroRemoveOk
         .int (Int.ofNat lot.toNat)] (true, evmFlux, out) true)
     (hremove : ExecFuncBody config
       { contract := contract, locals := clipperYankRemoveStore I, immutables := immStore v }
-      evmFlux removeFunction.body (.returned callee evmRemove none)) :
+      evmFlux removeFunction.body (.returned callee evmRemove none))
+    (hperm : evmRemove.executionEnv.perm = true) :
     let resultLocals := (locals.insert "_fluxUsrRet" .unit).insert
       "_removeRet2" .unit
     ExecBlock config (Frame.mk contract locals (immStore v)) evm
@@ -585,7 +587,7 @@ theorem clipperTakeGenericPostDogTabZeroRemoveOk
       (.assign .storage lockedRef (.intLit 0))
       (.ok (Frame.mk contract resultLocals (immStore v))
         (Stele.EVM.storageStore evmRemove evmRemove.executionEnv.codeOwner ⟨13⟩ ⟨0⟩)) := by
-    apply ExecStmt.assign (value := .int 0)
+    apply ExecStmt.assign (hperm := Or.inr hperm) (value := .int 0)
     · simp [evalExpr?, pure]
     · simpa using assign_clipperLocked v evmRemove resultLocals hlocked' ⟨0⟩
   simpa only [clipperTakePostDogStmts] using

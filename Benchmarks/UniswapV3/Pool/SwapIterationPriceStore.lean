@@ -14,7 +14,7 @@ theorem swapIterationPriceStoreSource {frame : Frame} {evm : EVM.State}
     (hr : frame.locals.get? "__c3" = some (.int (Int.ofNat price.toNat))) :
     ExecStmt config frame evm swapLoopBody[7]!
       (.ok (swapIterationFrame frame {d with priceNext := price}) evm) := by
-  exact ExecStmt.assign (evalExpr_var_get hr) (assignLocalField_frame hd rfl rfl)
+  exact ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalExpr_var_get hr) (assignLocalField_frame hd rfl rfl)
 
 theorem SwapIterationMemory.load_priceNext {mem : ByteArray} {p : UInt256}
     {d : SwapIterationData} (hm : SwapIterationMemory mem p d)

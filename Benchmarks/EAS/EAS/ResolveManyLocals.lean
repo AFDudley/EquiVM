@@ -73,7 +73,7 @@ theorem resolveManyAccumulateSource {cfg : Config} {locals imms : Store} {evm : 
     (frame := {contract := contract, locals := locals, immutables := imms}) (a := .var "totalUsedValue") (b := .var "value") (x := total.toNat) (y := value.toNat)
     (by simp only [evalExpr?,ht,EvalResult.ofOption]) (by simp only [evalExpr?,hv,EvalResult.ofOption])
   rw [← uadd_toNat] at he
-  apply ExecBlock.consNormal (ExecStmt.assign he (assignLocalBase_ok ht))
+  apply ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) he (assignLocalBase_ok ht))
   exact ExecBlock.consNormal (resolveManyIncrementSource
     (by simpa (disch := decide) only [store_get_ne] using hi) hb) ExecBlock.nil
 

@@ -33,12 +33,14 @@ theorem resolveManyResolverSource {locals imms : Store} {evm evm' : EVM.State}
     (hdata : ∀ a ∈ ats, a.data.size < UInt256.size) (hbound : attestationArrayOffset ats ats.length < UInt256.size)
     (hvlen : words.length < UInt256.size) (hsize : 64+(attestationArrayEncoding ats).size < UInt256.size)
     (hc : callViaEVM evm target (Int.ofNat total.toNat) (resolverManyPayload ats words rev) (success,evm',out))
-    (hout : out.size < 2^255) :
+    (hout : out.size < 2^255)
+    (hperm : EVM.wordOfInt (Int.ofNat total.toNat) = ⟨0⟩ ∨ evm.executionEnv.perm = true) :
     if callBoolAccepted heap success out then
       ExecStmt config {contract := contract, locals := locals, immutables := imms} evm resolveManyResolver
         (.ok {contract := contract, locals := resolveManyResolverLocals locals rev heap out, immutables := imms} evm')
     else ExecStmt config {contract := contract, locals := locals, immutables := imms} evm resolveManyResolver .reverted := by
-  have hcall := resolverManyCall (heap := heap) (imms := imms) (locals := locals) (retVar := resolveManyCallTmp rev)
+  have hcall := resolverManyCall (hperm := hperm) (heap := heap) (imms := imms)
+    (locals := locals) (retVar := resolveManyCallTmp rev)
     (args := [.var "resolver",.var "attestations",.var "values",.boolLit rev,.var "totalUsedValue",.var "$EAS.freeMemory"])
     (by simp only [evalExprs?,evalExpr?,h.resolver,h.attestations,h.values,h.total,h.heap,EvalResult.ofOption,EvalResult.bind,bind,pure])
     hdata hbound hvlen hsize hc hout

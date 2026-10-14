@@ -164,7 +164,8 @@ theorem resolverManySource {locals imms : Store} {evm evm' : EVM.State}
     (hvlen : values.length < UInt256.size)
     (hsize : 64+(attestationArrayEncoding ats).size < UInt256.size)
     (hc : callViaEVM evm resolver (Int.ofNat value.toNat) (resolverManyPayload ats values revocation) (success, evm', out))
-    (hout : out.size < 2^255) :
+    (hout : out.size < 2^255)
+    (hperm : EVM.wordOfInt (Int.ofNat value.toNat) = ⟨0⟩ ∨ evm.executionEnv.perm = true) :
     if resolverCallValid heap success out then
       ∃ L, ExecFuncBody config {contract := contract, locals := locals, immutables := imms} evm resolverManyFunction.body
         (.returned {contract := contract, locals := L, immutables := imms} evm'
@@ -176,7 +177,7 @@ theorem resolverManySource {locals imms : Store} {evm evm' : EVM.State}
   have hcall : ExecBlock config {contract := contract, locals := L, immutables := imms} evm
       [.lowLevelCall (.var "resolver") (.var "value") (.var "payload") "ok" "result"]
       (.ok {contract := contract, locals := L', immutables := imms} evm') := by
-    exact ExecBlock.consNormal (lowLevelCallSource
+    exact ExecBlock.consNormal (lowLevelCallSource (hperm := hperm)
       (by simp only [evalExpr?, hf.resolver, EvalResult.ofOption])
       (by simp only [evalExpr?, hf.value, EvalResult.ofOption])
       (by simp only [evalExpr?, hf.payload, EvalResult.ofOption]) hc) ExecBlock.nil
@@ -234,7 +235,8 @@ theorem resolverManyCall {locals imms : Store} {evm evm' : EVM.State}
     (hvlen : values.length < UInt256.size)
     (hsize : 64+(attestationArrayEncoding ats).size < UInt256.size)
     (hc : callViaEVM evm resolver (Int.ofNat value.toNat) (resolverManyPayload ats values revocation) (success, evm', out))
-    (hout : out.size < 2^255) :
+    (hout : out.size < 2^255)
+    (hperm : EVM.wordOfInt (Int.ofNat value.toNat) = ⟨0⟩ ∨ evm.executionEnv.perm = true) :
     if resolverCallValid heap success out then
       ExecStmt config {contract := contract, locals := locals, immutables := imms} evm
         (.internalCall "_resolverMany" args retVar)
@@ -243,7 +245,7 @@ theorem resolverManyCall {locals imms : Store} {evm evm' : EVM.State}
     else ExecStmt config {contract := contract, locals := locals, immutables := imms} evm
       (.internalCall "_resolverMany" args retVar) .reverted := by
   have hf := resolverManyArgs_facts resolver ats values revocation value heap
-  have hs := resolverManySource (imms := imms) hf.1 hf.2.1 hf.2.2.1 hf.2.2.2.1 hf.2.2.2.2.1 hf.2.2.2.2.2
+  have hs := resolverManySource (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (imms := imms) hf.1 hf.2.1 hf.2.2.1 hf.2.2.2.1 hf.2.2.2.2.1 hf.2.2.2.2.2
     hdata hbound hvlen hsize hc hout
   by_cases hg : resolverCallValid heap success out
   · rw [if_pos hg] at hs ⊢

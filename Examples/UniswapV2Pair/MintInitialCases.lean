@@ -64,14 +64,15 @@ theorem uniswapMintAfterMintFeeInitialRootUnderflowReverts_of_call
                   (uniswapUint256Value (mintFunctionTotalSupplyWord evmAfter)) }
             "rootLiquidity" (some [.int rootLiquidity]))
           evmAfter))
-    (hlt : rootLiquidity < minimumLiquidity) :
+    (hlt : rootLiquidity < minimumLiquidity)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config { contract := contract, locals := mintStore I } evm
       mintTransition.body .reverted := by
   let afterTotalSupplyLocals :=
     nextLocals.insert "_totalSupply"
       (uniswapUint256Value (mintFunctionTotalSupplyWord evmAfter))
   have hprefix :=
-    uniswapMintAfterMintFeeTotalSupplyPrefix_of_call evm evm0 evm1 evmAfter I nextLocals
+    uniswapMintAfterMintFeeTotalSupplyPrefix_of_call (hperm := by assumption) evm evm0 evm1 evmAfter I nextLocals
       hwv hunlocked hguard0 hguard1 hcall0 hdec0 hcall1 hdec1 henough0 henough1 hfee hbase
   have htotal :
       afterTotalSupplyLocals.get? "_totalSupply" =
@@ -185,7 +186,9 @@ theorem uniswapMintAfterMintFeeInitialFeeOffReturn_of_call
           (mintFunctionPostState
             (mintFunctionPostState evmAfter (AccountAddress.ofNat 0) (⟨1000⟩ : UInt256))
             recipient liquidity) =
-        0) :
+        0)
+    (hperm : evm.executionEnv.perm = true)
+    (hpermAfter : evmAfter.executionEnv.perm = true) :
     let afterTotalSupplyLocals :=
       nextLocals.insert "_totalSupply"
         (uniswapUint256Value (mintFunctionTotalSupplyWord evmAfter))
@@ -209,7 +212,7 @@ theorem uniswapMintAfterMintFeeInitialFeeOffReturn_of_call
   intro afterTotalSupplyLocals caller afterRoot afterLiquidity afterMinimum evmMinimum
     afterMint afterUpdate
   have hprefix :=
-    uniswapMintAfterMintFeeTotalSupplyPrefix_of_call evm evm0 evm1 evmAfter I nextLocals
+    uniswapMintAfterMintFeeTotalSupplyPrefix_of_call (hperm := by assumption) evm evm0 evm1 evmAfter I nextLocals
       hwv hunlocked hguard0 hguard1 hcall0 hdec0 hcall1 hdec1 henough0 henough1 hfee hbase
   have htotal :
       afterTotalSupplyLocals.get? "_totalSupply" =
@@ -271,7 +274,7 @@ theorem uniswapMintAfterMintFeeInitialFeeOffReturn_of_call
           (some [uniswapUint256Value liquidity])) := by
     simpa [caller, afterRoot, afterLiquidity, afterMinimum, evmMinimum, afterMint,
       afterUpdate] using
-      uniswapMintInitialLiquidityUpdateElapsedZeroFeeOffReturn
+      uniswapMintInitialLiquidityUpdateElapsedZeroFeeOffReturn (hperm := by assumption)
         (locals := afterTotalSupplyLocals) evmAfter rootLiquidity recipient balance0 balance1
         reserve0 reserve1 liquidity htotal hto' hbalance0' hbalance1' hreserve0'
         hreserve1' hfeeOn' hreserve0Base' hreserve1Base' hunlockedBase'
@@ -389,7 +392,9 @@ theorem uniswapMintAfterMintFeeInitialFeeOnReturn_of_call
                 (mintFunctionPostState evmAfter (AccountAddress.ofNat 0) (⟨1000⟩ : UInt256))
                 recipient liquidity)
               balance0 balance1)) <
-        UInt256.size) :
+        UInt256.size)
+    (hperm : evm.executionEnv.perm = true)
+    (hpermAfter : evmAfter.executionEnv.perm = true) :
     let afterTotalSupplyLocals :=
       nextLocals.insert "_totalSupply"
         (uniswapUint256Value (mintFunctionTotalSupplyWord evmAfter))
@@ -414,7 +419,7 @@ theorem uniswapMintAfterMintFeeInitialFeeOnReturn_of_call
   intro afterTotalSupplyLocals caller afterRoot afterLiquidity afterMinimum evmMinimum
     afterMint afterUpdate
   have hprefix :=
-    uniswapMintAfterMintFeeTotalSupplyPrefix_of_call evm evm0 evm1 evmAfter I nextLocals
+    uniswapMintAfterMintFeeTotalSupplyPrefix_of_call (hperm := by assumption) evm evm0 evm1 evmAfter I nextLocals
       hwv hunlocked hguard0 hguard1 hcall0 hdec0 hcall1 hdec1 henough0 henough1 hfee hbase
   have htotal :
       afterTotalSupplyLocals.get? "_totalSupply" =
@@ -481,7 +486,7 @@ theorem uniswapMintAfterMintFeeInitialFeeOnReturn_of_call
           (some [uniswapUint256Value liquidity])) := by
     simpa [caller, afterRoot, afterLiquidity, afterMinimum, evmMinimum, afterMint,
       afterUpdate] using
-      uniswapMintInitialLiquidityUpdateElapsedZeroFeeOnReturn
+      uniswapMintInitialLiquidityUpdateElapsedZeroFeeOnReturn (hperm := by assumption)
         (locals := afterTotalSupplyLocals) evmAfter rootLiquidity recipient balance0 balance1
         reserve0 reserve1 liquidity htotal hto' hbalance0' hbalance1' hreserve0'
         hreserve1' hfeeOn' hreserve0Base' hreserve1Base' hkLastBase' hunlockedBase'
@@ -584,7 +589,8 @@ theorem uniswapMintInitialFeeOffReturn_kLastZero
           (mintFunctionPostState
             (mintFunctionPostState evmFee (AccountAddress.ofNat 0) (⟨1000⟩ : UInt256))
             (AccountAddress.ofNat (mintToWord I).toNat) liquidity) =
-        0) :
+        0)
+    (hperm : evm.executionEnv.perm = true) :
     let evmL := uniswapLockEnteredState evm
     let recipient := AccountAddress.ofNat (mintToWord I).toNat
     let nextFrame :=
@@ -613,7 +619,7 @@ theorem uniswapMintInitialFeeOffReturn_kLastZero
         (some [uniswapUint256Value liquidity])) := by
   intro evmL recipient nextFrame afterTotalSupplyLocals caller afterRoot afterLiquidity
     afterMinimum evmMinimum afterMint afterUpdate
-  exact uniswapMintAfterMintFeeInitialFeeOffReturn_of_call
+  exact uniswapMintAfterMintFeeInitialFeeOffReturn_of_call (hpermAfter := by simpa [typedCallViaEVM_executionEnv_eq hfeeCall, typedCallViaEVM_executionEnv_eq hcall1, typedCallViaEVM_executionEnv_eq hcall0, uniswapLockEnteredState, uniswapUnlockedState] using hperm) (hperm := by assumption)
     evm evm0 evm1 evmFee I nextFrame.locals rootLiquidity recipient hwv hunlocked
     hguard0 hguard1 hcall0 hdec0 hcall1 hdec1 henough0 henough1
     (by
@@ -752,7 +758,8 @@ theorem uniswapMintInitialFeeOnReturn_kLastZero
                   (⟨1000⟩ : UInt256))
                 (AccountAddress.ofNat (mintToWord I).toNat) liquidity)
               balance0 balance1)) <
-        UInt256.size) :
+        UInt256.size)
+    (hperm : evm.executionEnv.perm = true) :
     let evmL := uniswapLockEnteredState evm
     let recipient := AccountAddress.ofNat (mintToWord I).toNat
     let nextFrame :=
@@ -782,7 +789,7 @@ theorem uniswapMintInitialFeeOnReturn_kLastZero
         (some [uniswapUint256Value liquidity])) := by
   intro evmL recipient nextFrame afterTotalSupplyLocals caller afterRoot afterLiquidity
     afterMinimum evmMinimum afterMint afterUpdate
-  exact uniswapMintAfterMintFeeInitialFeeOnReturn_of_call
+  exact uniswapMintAfterMintFeeInitialFeeOnReturn_of_call (hpermAfter := by simpa [typedCallViaEVM_executionEnv_eq hfeeCall, typedCallViaEVM_executionEnv_eq hcall1, typedCallViaEVM_executionEnv_eq hcall0, uniswapLockEnteredState, uniswapUnlockedState] using hperm) (hperm := by assumption)
     evm evm0 evm1 evmFee I nextFrame.locals rootLiquidity recipient hwv hunlocked
     hguard0 hguard1 hcall0 hdec0 hcall1 hdec1 henough0 henough1
     (by
@@ -919,13 +926,14 @@ theorem uniswapMintInitialAfterMintFeeRootUnderflowRevertCase
     (hrootSize : rootLiquidity.toNat < UInt256.size)
     (hrootLt : rootLiquidity < minimumLiquidity)
     (hmem : mem.size = 164)
-    (hmem64 : mem.readWithPadding 64 32 = UInt256.toByteArray ⟨128⟩) :
+    (hmem64 : mem.readWithPadding 64 32 = UInt256.toByteArray ⟨128⟩)
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   let evmS := initState σ σ₀ (Sat256.ofUInt256 g) A I
   have hbody :
       ExecTransitionBody config contract evmS (mintStore I) mintTransition.body .reverted := by
     exact ExecFuncBody.execBlockRevert
-      (uniswapMintAfterMintFeeInitialRootUnderflowReverts_of_call evmS evm0S evm1S
+      (uniswapMintAfterMintFeeInitialRootUnderflowReverts_of_call (hperm := by assumption) evmS evm0S evm1S
         evmAfter I nextLocals rootLiquidity
         (by simp only [evmS, initState]; exact hwv) hunlockedStele hguard0 hguard1
         hcall0 hdec0 hcall1 hdec1 henough0 henough1 hfee hbase htotalZero hsqrt hrootLt)

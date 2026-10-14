@@ -595,7 +595,7 @@ theorem cureFileSourceBodyOkSplit {σ σ₀ A I} {g : UInt256}
     let locals := fileLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let evm1 := Stele.EVM.storageStore evm0 I.codeOwner ⟨3⟩ (fileData I)
-    (ExecTransitionBody config contract evm0 locals fileTransition.body
+    (I.perm = true → ExecTransitionBody config contract evm0 locals fileTransition.body
       (.returned { contract := contract, locals := locals } evm1 none)) ∧
     (I.perm = false →
       ExecTransitionBody config contract evm0 locals
@@ -636,9 +636,10 @@ theorem cureFileSourceBodyOkSplit {σ σ₀ A I} {g : UInt256}
     refine ExecBlock.consNormal (ExecStmt.requireTrue hguardLive) ?_
     exact hrest
   constructor
-  · exact ExecFuncBody.execBlockOK (hprefix (ExecBlock.consNormal
+  · intro hperm
+    exact ExecFuncBody.execBlockOK (hprefix (ExecBlock.consNormal
       (ExecStmt.iteTrue hcond
-        (ExecBlock.consNormal (ExecStmt.assign hdata hassign) ExecBlock.nil)) ExecBlock.nil))
+        (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hdata hassign) ExecBlock.nil)) ExecBlock.nil))
   · intro hperm
     exact ExecFuncBody.execBlockStatic (hprefix (ExecBlock.consStatic
       (ExecStmt.iteTrue hcond (ExecBlock.consStatic
@@ -790,7 +791,7 @@ theorem cureFileBodyCore {σ σ₀ A I} {g : UInt256}
         · let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
           let evm1 := Stele.EVM.storageStore evm0 I.codeOwner ⟨3⟩ (fileData I)
           have hbodySplit :
-              (ExecTransitionBody config contract evm0 locals fileTransition.body
+              (I.perm = true → ExecTransitionBody config contract evm0 locals fileTransition.body
                 (.returned { contract := contract, locals := locals } evm1 none)) ∧
               (I.perm = false →
                 ExecTransitionBody config contract evm0 locals fileTransition.body
@@ -802,10 +803,10 @@ theorem cureFileBodyCore {σ σ₀ A I} {g : UInt256}
           have hmatch : calldataWord I.calldata 4 = ABI.bytesToWord fileWaitBytes :=
             fileWhatWord_eq_of_bytes_eq (by omega) hwhat
           rcases cureFileX_storeWaitSplit (I := I) hmatch hafterLive with
-            ⟨_, hret⟩ | ⟨hperm, hstatic⟩
+            ⟨hperm, hret⟩ | ⟨hperm, hstatic⟩
           swap
           · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode (hbodySplit.2 hperm)
-          have hbody := hbodySplit.1
+          have hbody := hbodySplit.1 hperm
           have haccounts :
               sstoreAccountMap I.codeOwner σ ⟨3⟩ (fileData I) = evm1.accountMap := by
             simp [evm1, evm0, initState, storageStore_accountMap]

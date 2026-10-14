@@ -646,7 +646,7 @@ theorem vowFlopBody {σ σ₀ A I} {g : UInt256}
                   (zKick, evmKickStele, outKick) true := by
               simpa [evmKickStele, evmKickSteleBase, hownerAshStele] using hcallKickSteleRaw
             cases zKick
-            · exact vowFlopKickCallFailureBodyCore (acc := σ_kick)
+            · exact vowFlopKickCallFailureBodyCore (hperm := hperm) (acc := σ_kick)
                 (evmSin := evmSinStele) (evmDai := evmDaiStele)
                 (evmKick := evmKickStele)
                 hcode hwv hdispatch hdecode (by simpa using rd1498) houtKickSize
@@ -682,7 +682,7 @@ theorem vowFlopBody {σ σ₀ A I} {g : UInt256}
                 have rflFinal : Eq σ_kick
                     evmKickStele.accountMap := by
                   rfl
-                exact vowFlopKickSuccessBodyCore (acc := σ_kick)
+                exact vowFlopKickSuccessBodyCore (hperm := hperm) (acc := σ_kick)
                   (evmSin := evmSinStele) (evmDai := evmDaiStele)
                   (evmKick := evmKickStele) (id := id)
                   hcode hwv hdispatch hdecode (by simpa using rd1498True)
@@ -729,7 +729,7 @@ theorem vowFlopBody {σ σ₀ A I} {g : UInt256}
                       ⟨128⟩ :=
                   mloadFreePtrValue (by rw [hmemKickShort]; decide)
                     hread64KickShort
-                exact vowFlopKickDecodeShortBodyCore (acc := σ_kick)
+                exact vowFlopKickDecodeShortBodyCore (hperm := hperm) (acc := σ_kick)
                   (evmSin := evmSinStele) (evmDai := evmDaiStele)
                   (evmKick := evmKickStele)
                   hcode hwv hdispatch hdecode (by simpa using rd1516)

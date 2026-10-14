@@ -45,7 +45,7 @@ private theorem versionSource_ok {cfg : Config} {evm : EVM.State} {locals imms :
   refine ExecBlock.consNormal (ExecStmt.letDecl (value := .tuple []) ?_) ?_
   · simp only [evalExpr?, store_get_self, EvalResult.ofOption, EvalResult.bind, bind]
     rfl
-  refine ExecBlock.consNormal (ExecStmt.assign (value := .int 288) ?_ (assignLocalBase_ok (old := .int 224) ?_)) ?_
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (value := .int 288) ?_ (assignLocalBase_ok (old := .int 224) ?_)) ?_
   · simp only [evalExpr?, store_get_ne _ _ (by decide : ("allocation" == "allocation$allocation") = false),
       store_get_self, EvalResult.ofOption, EvalResult.bind, bind]
     rfl

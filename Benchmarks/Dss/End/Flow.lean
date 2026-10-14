@@ -2460,7 +2460,7 @@ theorem endFlowCheckedVatIlksFailure {σ σ₀ A I} {g : UInt256}
         .ok [.fixedBytes bytes32Width (endBytes32ArgBytes I)] := by
     simp [evalExprs?, hilk, EvalResult.bind, bind, pure]
   simpa [checkedExternalCallStmts] using
-    checkedExternalCallFailure
+    checkedExternalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
       (cfg := config) (C := contract) (evm := evm0) (evm' := evmVat)
       (locals := endFlowStore I) (receiver := .storage vatRef)
       (retVar := "vatIlk") (name := "vatIlks") (target := endPackVatAddr σ I)
@@ -2515,7 +2515,7 @@ theorem endFlowCheckedVatIlksDecodeRevert {σ σ₀ A I} {g : UInt256}
         .ok [.fixedBytes bytes32Width (endBytes32ArgBytes I)] := by
     simp [evalExprs?, hilk, EvalResult.bind, bind, pure]
   simpa [checkedExternalCallStmts] using
-    checkedExternalCallDecodeRevert
+    checkedExternalCallDecodeRevert (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
       (cfg := config) (C := contract) (evm := evm0) (evm' := evmVat)
       (locals := endFlowStore I) (receiver := .storage vatRef)
       (retVar := "vatIlk") (name := "vatIlks") (target := endPackVatAddr σ I)
@@ -2572,7 +2572,7 @@ theorem endFlowCheckedVatIlksSuccess {σ σ₀ A I} {g : UInt256}
         .ok [.fixedBytes bytes32Width (endBytes32ArgBytes I)] := by
     simp [evalExprs?, hilk, EvalResult.bind, bind, pure]
   have hvalue := endFlowVatIlksDecode_ok (out := out) hlo
-  have hblock := checkedExternalCallSuccess
+  have hblock := checkedExternalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
     (cfg := config) (C := contract) (evm := evm0) (evm' := evmVat)
     (locals := endFlowStore I) (receiver := .storage vatRef)
     (retVar := "vatIlk") (name := "vatIlks") (target := endPackVatAddr σ I)
@@ -3228,7 +3228,7 @@ theorem endFlowStmtFixVLet (evm : EVM.State) (I : ExecutionEnv)
 theorem endFlowStmtAssignFixVSplit (evm : EVM.State) (I : ExecutionEnv)
     (σ : AccountMap) (out : ByteArray)
     (hsz36 : 36 ≤ I.calldata.size) :
-    (ExecStmt config { contract := contract, locals := endFlowStoreFixV σ I out } evm
+    (evm.executionEnv.perm = true → ExecStmt config { contract := contract, locals := endFlowStoreFixV σ I out } evm
       (.assign .storage (fixRef (.var "ilk")) (.var "fixV"))
       (.ok { contract := contract, locals := endFlowStoreFixV σ I out }
         (endFlowPostState evm I (endFlowFixVWord σ I out)))) ∧
@@ -3273,7 +3273,7 @@ theorem endFlowStmtAssignFixVSplit (evm : EVM.State) (I : ExecutionEnv)
       (hloc := by rfl)
     simpa [endFlowPostState] using
       storageLocStore_uint256 evm (endFlowFixSlot I) (endFlowFixVWord σ I out)
-  exact ⟨ExecStmt.assign hfixV hassign,
+  exact ⟨fun hperm ↦ ExecStmt.assign (hperm := Or.inr hperm) hfixV hassign,
     fun hperm ↦ ExecStmt.assignStatic hfixV hassign hperm⟩
 
 theorem endFlowTailReturnsSplit (evm : EVM.State) (I : ExecutionEnv)
@@ -3298,7 +3298,7 @@ theorem endFlowTailReturnsSplit (evm : EVM.State) (I : ExecutionEnv)
     (hleSub : (endFlowGapWord σ I).toNat ≤ (endFlowWadWord σ I out).toNat)
     (hfitMul : (endFlowNum0Word σ I out).toNat * endRayWord.toNat < UInt256.size)
     (hden : endFlowDenWord σ I ≠ ⟨0⟩) :
-    (ExecBlock config { contract := contract, locals := endFlowStoreVatIlk I out } evm
+    (evm.executionEnv.perm = true → ExecBlock config { contract := contract, locals := endFlowStoreVatIlk I out } evm
       [ .letDecl "rate" (some uint256) (.tupleGet (.var "vatIlk") 1),
         .internalCall "rmul" [.storage (ArtRef (.var "ilk")), .var "rate"] "wad0",
         .internalCall "rmul" [.var "wad0", .storage (tagRef (.var "ilk"))] "wad",
@@ -3346,7 +3346,8 @@ theorem endFlowTailReturnsSplit (evm : EVM.State) (I : ExecutionEnv)
     exact hwrite
   have hwrite := endFlowStmtAssignFixVSplit evm I σ out hsz36
   constructor
-  · exact hprefix (ExecBlock.consNormal hwrite.1 ExecBlock.nil)
+  · intro hperm
+    exact hprefix (ExecBlock.consNormal (hwrite.1 hperm) ExecBlock.nil)
   · intro hperm
     exact hprefix (ExecBlock.consStatic (hwrite.2 hperm))
 
@@ -3371,7 +3372,8 @@ theorem endFlowTailReturns (evm : EVM.State) (I : ExecutionEnv)
       (endFlowWad0Word σ I out).toNat * (endFlowTagWord σ I).toNat < UInt256.size)
     (hleSub : (endFlowGapWord σ I).toNat ≤ (endFlowWadWord σ I out).toNat)
     (hfitMul : (endFlowNum0Word σ I out).toNat * endRayWord.toNat < UInt256.size)
-    (hden : endFlowDenWord σ I ≠ ⟨0⟩) :
+    (hden : endFlowDenWord σ I ≠ ⟨0⟩)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config { contract := contract, locals := endFlowStoreVatIlk I out } evm
       [ .letDecl "rate" (some uint256) (.tupleGet (.var "vatIlk") 1),
         .internalCall "rmul" [.storage (ArtRef (.var "ilk")), .var "rate"] "wad0",
@@ -3384,7 +3386,7 @@ theorem endFlowTailReturns (evm : EVM.State) (I : ExecutionEnv)
       (.ok { contract := contract, locals := endFlowStoreFixV σ I out }
         (endFlowPostState evm I (endFlowFixVWord σ I out))) :=
   (endFlowTailReturnsSplit evm I σ out hsz36
-    hArtLoad hTagLoad hGapLoad hDebtLoad hfitWad0 hfitWad hleSub hfitMul hden).1
+    hArtLoad hTagLoad hGapLoad hDebtLoad hfitWad0 hfitWad hleSub hfitMul hden).1 hperm
 
 theorem endEvalExpr_div_uint256_revert {evm : EVM.State} {locals : Store}
     {x y : Expr} {a : UInt256}
@@ -4252,7 +4254,8 @@ theorem endFlowBodyReturns {σ σ₀ A I} {g : UInt256}
       (endFlowWad0Word σ I out).toNat * (endFlowTagWord σ I).toNat < UInt256.size)
     (hleSub : (endFlowGapWord σ I).toNat ≤ (endFlowWadWord σ I out).toNat)
     (hfitMul : (endFlowNum0Word σ I out).toNat * endRayWord.toNat < UInt256.size)
-    (hden : endFlowDenWord σ I ≠ ⟨0⟩) :
+    (hden : endFlowDenWord σ I ≠ ⟨0⟩)
+    (hperm : evmVat.executionEnv.perm = true) :
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     ExecTransitionBody config contract evm0 (endFlowStore I) flowTransition.body
       (.returned { contract := contract, locals := endFlowStoreFixV σ I out }
@@ -4272,7 +4275,7 @@ theorem endFlowBodyReturns {σ σ₀ A I} {g : UInt256}
         (A := A) (I := I) (g := g) (evmVat := evmVat) (out := out)
         hwv hsz36 hdebt hfix hcodeSize hcall hlo
   have htail :=
-    endFlowTailReturns evmVat I σ out hsz36 hArtLoad hTagLoad hGapLoad hDebtLoad
+    endFlowTailReturns (hperm := hperm) evmVat I σ out hsz36 hArtLoad hTagLoad hGapLoad hDebtLoad
       hfitWad0 hfitWad hleSub hfitMul hden
   have hblock :
       ExecBlock config { contract := contract, locals := endFlowStore I } evm0
@@ -4742,7 +4745,7 @@ theorem endFlowBody {σ σ₀ A I} {g : UInt256}
                                 (evmVat := evmVatStele) (out := out)
                                 hwv hsz36 hdebt hfix hvatCodeNE
                                 (by simpa [evmVatStele, evmStele] using hcallStele)
-                                hlo htail.1
+                                hlo (htail.1 (by simpa [evmVatStele, evmStele, initState] using _hperm))
                           exact hret.reEquivExecutionGen
                             hcode hdispatch hdecode hbody
                             (by simp [evmVatStele, evmStele, endFlowPostState,

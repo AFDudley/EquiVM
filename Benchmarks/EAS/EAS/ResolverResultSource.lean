@@ -39,7 +39,7 @@ theorem resolverCopyPrefix_exec {cfg : Config} {locals imms : Store} {evm : EVM.
   by_cases hgt : 32 < out.size
   · rw [resolverCopiedLocals, if_pos hgt]
     apply ExecBlock.consNormal (ExecStmt.iteTrue (by simpa only [hgt, decide_true] using hc) ?_) ExecBlock.nil
-    exact ExecBlock.consNormal (ExecStmt.assign (by simp only [evalExpr?, pure])
+    exact ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (by simp only [evalExpr?, pure])
       (assignLocalBase_ok (store_get_self _ _ _))) ExecBlock.nil
   · rw [resolverCopiedLocals, if_neg hgt]
     exact ExecBlock.consNormal (ExecStmt.iteFalse (by simpa only [hgt, decide_false] using hc) ExecBlock.nil) ExecBlock.nil

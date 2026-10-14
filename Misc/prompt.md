@@ -17,6 +17,9 @@ You are given a working directory, which is named after the contract
   arbitrary provenance — do not assume a specific compiler or
   version. Always check.
 
+  For Vyper, the source is `.vy` plus its imported `.vy`/`.vyi` closure. Read the
+  compiler kind in `<Name>.build.json` before choosing any compiler-specific lemma.
+
 - The Stele specification of the contract, including its storage
   layout. (file `Spec.lean`)
 
@@ -94,6 +97,17 @@ callee ABI. The default calldata and value decoders are modern; use
 `externalABI.withMode` or override the individual decoders when the
 compiler requires different behavior.
 
+For Vyper, use `.withMode DecodeMode.vyper` for ordinary entry calldata. Where the source
+declares `DynArray[T, N]`, `Bytes[N]`, or `String[N]` input, use source-derived
+`ABI.VyperABIFunction` entries and `.withVyperABI` to reject values beyond the bound.
+Include each selector created by default arguments and prove the omitted arguments take their
+source defaults. Check constructor decoding and explicit `abi_decode` independently; the entry
+adapter does not cover them. Check Vyper storage with `vyperStorage!` or
+`vyperBoundedStorage!`, including the compiler's layout for mappings, strings, and arrays.
+The generated full proof skeleton is solc-specific; a Vyper proof must assemble dispatch,
+constructor, and immutable lemmas from its actual blocks. `Examples/VyperERC20` and
+`Examples/VyperImmutable` are starting points, not claims that every Vyper shape is supported.
+
 Things to watch for:
 
 - The Stele spec, in general, must model storage reads/writes in the
@@ -102,7 +116,7 @@ Things to watch for:
   important as otherwise you will have to introduce a slot noncollision
   axiom to prove the refinement, which is not allowed.
 
-  If you find that you need such an axiom, evaluate whether the Stele can 
+  If you find that you need such an axiom, evaluate whether the Stele can
   be written 
   differently to exactly model the bytecode's storage reads/writes. 
   If it can, rewrite the Stele spec to do so.
@@ -124,6 +138,8 @@ includes the dispatch skeleton, the per-function `…BodyCore` lemmas,
 and the revert paths. The top-level theorem should type-check and
 route correctly before the leaves are done. Reuse the available
 machinery drivers for dispatching (e.g., `solcDispatchReachBody`).
+For Vyper, establish the dispatcher shape from its own bytecode before using a solc-specific
+driver. Prove all selector variants, including default-argument overloads.
 
 1. Add the dispatch handler to the main theorem first. Wire the full
    dispatcher (`by_cases` on `callvalue`/`size`/each selector, routing
@@ -170,6 +186,8 @@ The proof of each function follows, roughly, four phases:
    (`decodeCalldata_address_ok`, `decodeCalldata_uint256_ok`,
    `…_none_short`, `…_none_huge`, `…_none_noncanon`). One `simpa …
    using <lib lemma>` per branch (see `BalanceOf.lean`).
+   For Vyper bound-bearing inputs, also prove the at-bound success and over-bound failure
+   branches through `.withVyperABI`; use the schema's selector and parameter list.
 
 2. Add selector theorems for the public selectors in `Selectors.lean`.
    Keep any canonical-signature normalization lemma private or inline; expose only the selector
@@ -247,7 +265,7 @@ The proof of a contract `<Name>` goes in a directory `<Name>/`:
 
 | File | Role |
 |---|---|
-| `<Name>.sol` | the Solidity source + the exact compiler invocation used. |
+| `<Name>.sol` or `<Name>.vy` | the pinned source closure + the exact compiler invocation used. |
 | `Spec.lean` | the Stele `ContractDecl`, storage layout, `Config`. |
 | `Bytecode.lean` | runtime bytecode + verified jump destinations. |
 | `Selectors.lean` | selector table, `selIs`/`selWord`, and ABI selector theorems. |
@@ -258,8 +276,8 @@ The proof of a contract `<Name>` goes in a directory `<Name>/`:
 | `Constructor.lean` | the equivalence proof of the contract's constructor. |
 | `RuntimeBlocks_NNN.lean` | provided: proved `RD` summaries of the runtime blocks (sharded). Never edit. |
 | `CreationBlocks_NNN.lean` | provided: proved `RD` summaries of the initcode blocks (sharded). Never edit. |
-| `Immutables.lean` (with immutables) | the solc `immutableReferences` table and the immutables valuation. |
-| `ImmutableCode.lean` (with immutables) | the `Layout` of the runtime template's immutable sites. |
+| `Immutables.lean` (with immutables) | the solc patch-site table or Vyper code-suffix layout and the immutables valuation. |
+| `ImmutableCode.lean` (with immutables) | the `Layout` of solc patch sites or Vyper's appended runtime words. |
 | `Correct.lean` | thin top-level: dispatcher driver + per-function routing + revert paths + constructor packaging + the final `theorem <name>Correct`. |
 
 
@@ -678,7 +696,7 @@ re-check it against the disassembly first.
   they are resolved.
 
 - Edit `Spec.lean` only if you are certain it is wrong, and report the
-  change immediately. Do not change the given bytecode or Solidity
+  change immediately. Do not change the given bytecode or Solidity/Vyper
   source.
 
 - Never edit `Bytecode.lean`. If you suspect it is wrong, report it

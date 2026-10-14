@@ -60,7 +60,7 @@ theorem flashCallbackReverts {frame : Frame} {evm evm' : EVM.State} {σ : Accoun
     (hc : extCodeSizeWord σ (EVM.word target.val) ≠ ⟨0⟩)
     (hcall : callViaEVM evm target 0 (flashCallbackCalldata fee0 fee1 data) (false, evm', out)) :
     ExecBlock config frame evm flashCallbackStmts .reverted := by
-  apply checkedExternalCallVarFailure (evm' := evm') (out := out) (flashCallbackGuardTrue ha ht hc) ht
+  apply checkedExternalCallVarFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evm' := evm') (out := out) (flashCallbackGuardTrue ha ht hc) ht
     (evalFlashCallbackArgs hf0 hf1 hd)
   refine ⟨flashCallbackCalldata fee0 fee1 data, flashCallbackEncode fee0 fee1 data, ?_⟩
   simpa only [show EVM.address target.val = target from by
@@ -78,7 +78,7 @@ theorem flashCallbackReturns {frame : Frame} {evm evm' : EVM.State} {σ : Accoun
     (hcall : callViaEVM evm target 0 (flashCallbackCalldata fee0 fee1 data) (true, evm', out)) :
     ExecBlock config frame evm flashCallbackStmts
       (.ok {frame with locals := frame.locals.insert "__c7" .unit} evm') := by
-  apply checkedExternalCallVarSuccess (out := out) (flashCallbackGuardTrue ha ht hc) ht
+  apply checkedExternalCallVarSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (out := out) (flashCallbackGuardTrue ha ht hc) ht
     (evalFlashCallbackArgs hf0 hf1 hd) (value := [])
   · refine ⟨flashCallbackCalldata fee0 fee1 data, flashCallbackEncode fee0 fee1 data, ?_⟩
     simpa only [show EVM.address target.val = target from by

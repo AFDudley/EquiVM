@@ -1682,7 +1682,7 @@ theorem endPackTailReturnsSplit (evm : EVM.State) (I : ExecutionEnv)
       (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (endPackBagSlot I)).toNat +
           (endPackWadWord I).toNat <
         UInt256.size) :
-    (ExecBlock config { contract := contract, locals := endPackStoreMove I } evm
+    (evm.executionEnv.perm = true → ExecBlock config { contract := contract, locals := endPackStoreMove I } evm
       [ .internalCall "add" [.storage (bagRef sender), .var "wad"] "bagNew",
         .assign .storage (bagRef sender) (.var "bagNew") ]
       (.ok
@@ -1760,8 +1760,9 @@ theorem endPackTailReturnsSplit (evm : EVM.State) (I : ExecutionEnv)
       (by simp [endPackStoreBagNew, endPackStoreMove, endPackStoreAmt, endPackStore])
       hsrc
   constructor
-  · exact ExecBlock.consNormal haddStmt
-      (ExecBlock.consNormal (ExecStmt.assign hbagNew hassign) ExecBlock.nil)
+  · intro hperm
+    exact ExecBlock.consNormal haddStmt
+      (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hbagNew hassign) ExecBlock.nil)
   · intro hperm
     exact ExecBlock.consNormal haddStmt
       (ExecBlock.consStatic (ExecStmt.assignStatic hbagNew hassign hperm))
@@ -1771,7 +1772,8 @@ theorem endPackTailReturns (evm : EVM.State) (I : ExecutionEnv)
     (hfit :
       (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (endPackBagSlot I)).toNat +
           (endPackWadWord I).toNat <
-        UInt256.size) :
+        UInt256.size)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config { contract := contract, locals := endPackStoreMove I } evm
       [ .internalCall "add" [.storage (bagRef sender), .var "wad"] "bagNew",
         .assign .storage (bagRef sender) (.var "bagNew") ]
@@ -1784,7 +1786,7 @@ theorem endPackTailReturns (evm : EVM.State) (I : ExecutionEnv)
         (endPackPostState evm I
           (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (endPackBagSlot I) +
             endPackWadWord I))) :=
-  (endPackTailReturnsSplit evm I hsrc hfit).1
+  (endPackTailReturnsSplit evm I hsrc hfit).1 hperm
 
 theorem endPackVatAddr_eq_ofUInt256 (σ : AccountMap) (I : ExecutionEnv) :
     endPackVatAddr σ I = AccountAddress.ofUInt256 (endPackVatWord σ I) := by
@@ -2141,7 +2143,7 @@ theorem endPackBodyReverts_moveCallFailed {σ σ₀ A I} {g : UInt256}
           [sender, vowAddr, .var "amt"] "_move")
         .reverted := by
     simpa [checkedExternalCallStmts] using
-      checkedExternalCallFailure
+      checkedExternalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
         (cfg := config) (C := contract) (evm := evm0) (evm' := evmMove)
         (locals := endPackStoreAmt I) (receiver := .storage vatRef)
         (retVar := "_move") (name := "move") (target := endPackVatAddr σ I)
@@ -2298,7 +2300,7 @@ theorem endPackPrefixMoveSuccess {σ σ₀ A I} {g : UInt256}
         (.ok { contract := contract, locals := endPackStoreMove I } evmMove) := by
     have hdec : config.externalABI.decode? "move" out = some [] := by
       simp [config, externalABI, decodeVoid?]
-    have hblock := checkedExternalCallSuccess
+    have hblock := checkedExternalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
       (cfg := config) (C := contract) (evm := evm0) (evm' := evmMove)
       (locals := endPackStoreAmt I) (receiver := .storage vatRef)
       (retVar := "_move") (name := "move") (target := endPackVatAddr σ I)
@@ -2391,7 +2393,7 @@ theorem endPackBodyReturnsSplit {σ σ₀ A I} {g : UInt256}
           (endPackWadWord I).toNat <
         UInt256.size) :
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-    (ExecTransitionBody config contract evm0 (endPackStore I) packTransition.body
+    (I.perm = true → ExecTransitionBody config contract evm0 (endPackStore I) packTransition.body
       (.returned
         { contract := contract,
           locals :=
@@ -2429,7 +2431,8 @@ theorem endPackBodyReturnsSplit {σ σ₀ A I} {g : UInt256}
         packTransition.body result := by
     simpa [packTransition, List.append_assoc] using execBlock_append hprefix htail
   constructor
-  · exact ExecFuncBody.execBlockOK (hfinish htailSplit.1)
+  · intro hperm
+    exact ExecFuncBody.execBlockOK (hfinish (htailSplit.1 (by simpa only [typedCallViaEVM_executionEnv_eq hcall, initState] using hperm)))
   · intro hperm
     exact ExecFuncBody.execBlockStatic
       (hfinish (htailSplit.2 (by rw [typedCallViaEVM_executionEnv_eq hcall]; exact hperm)))
@@ -2451,7 +2454,8 @@ theorem endPackBodyReturns {σ σ₀ A I} {g : UInt256}
     (hfitAdd :
       (Stele.EVM.storageLoad evmMove evmMove.executionEnv.codeOwner (endPackBagSlot I)).toNat +
           (endPackWadWord I).toNat <
-        UInt256.size) :
+        UInt256.size)
+    (hperm : I.perm = true) :
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     ExecTransitionBody config contract evm0 (endPackStore I) packTransition.body
       (.returned
@@ -2464,7 +2468,7 @@ theorem endPackBodyReturns {σ σ₀ A I} {g : UInt256}
           (Stele.EVM.storageLoad evmMove evmMove.executionEnv.codeOwner (endPackBagSlot I) +
             endPackWadWord I))
         none) :=
-  (endPackBodyReturnsSplit hwv hdebt hfit hcodeSize hcall hsrcMove hfitAdd).1
+  (endPackBodyReturnsSplit hwv hdebt hfit hcodeSize hcall hsrcMove hfitAdd).1 hperm
 
 theorem endDecode_pack_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
     config.externalABI.decodeCalldata? (packTransition.params.map Param.name)
@@ -2783,7 +2787,7 @@ theorem endPackBody {σ σ₀ A I} {g : UInt256}
                 obtain ⟨_, _, rdBagStore⟩ := endPackX_bagAddSuccess hfitAdd rdAddEntry
                 have hretSplit := endPackX_bagStoreReturnSplit rdBagStore
                 have hbodySplit :
-                    (ExecTransitionBody config contract evmStele (endPackStore I)
+                    (I.perm = true → ExecTransitionBody config contract evmStele (endPackStore I)
                       packTransition.body
                       (.returned
                         { contract := contract,
@@ -2808,7 +2812,7 @@ theorem endPackBody {σ σ₀ A I} {g : UInt256}
                       (by simpa [evmMoveStele, evmStele] using hcallStele)
                       hsrcMove hfitAddStele
                 rw [← hbagCouple] at hbodySplit
-                rcases hretSplit with ⟨_hperm, hret⟩ | ⟨hperm, hstatic⟩
+                rcases hretSplit with ⟨hperm, hret⟩ | ⟨hperm, hstatic⟩
                 swap
                 · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode (hbodySplit.2 hperm)
                 have hbody' :
@@ -2820,7 +2824,7 @@ theorem endPackBody {σ σ₀ A I} {g : UInt256}
                             (endPackBagWord σ' I + endPackWadWord I) }
                         (endPackPostState evmMoveEvm I
                           (endPackBagWord σ' I + endPackWadWord I)) none) := by
-                  simpa [evmMoveEvm, evmMoveStele, evmStele] using hbodySplit.1
+                  simpa [evmMoveEvm, evmMoveStele, evmStele] using (hbodySplit.1 hperm)
                 exact hret.reEquivExecutionGen
                   hcode hdispatch hdecode hbody'
                   (by simp [evmMoveEvm, endPackPostState, initState,

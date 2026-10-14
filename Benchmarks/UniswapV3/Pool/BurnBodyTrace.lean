@@ -53,7 +53,7 @@ theorem burnBodyX {σ : AccountMap} {ee : ExecutionEnv} {g : Sat256}
     rw [← List.take_append_drop 12 burnTransition.body]
     apply execBlock_append_ok hpre12
     exact ExecBlock.consNormal
-      (burnOwedChoiceSource v a (modifyPositionKey (burnModifyArgs a evm)) a0 a1 evm1)
-      (burnFinishSource v a (modifyPositionKey (burnModifyArgs a evm)) a0 a1 evm1)
+      (burnOwedChoiceSource (hperm := (congrArg ExecutionEnv.perm hs1.env).trans hperm) v a (modifyPositionKey (burnModifyArgs a evm)) a0 a1 evm1)
+      (burnFinishSource (hperm := (congrArg ExecutionEnv.perm hs1.env).trans hperm) v a (modifyPositionKey (burnModifyArgs a evm)) a0 a1 evm1)
 
 end Benchmarks.UniswapV3.Pool

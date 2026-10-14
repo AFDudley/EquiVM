@@ -202,7 +202,7 @@ theorem clipperTakeOweLeTabEquiv
     have hbody : ExecTransitionBody config contract
         (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         (clipperTakeStore I) takeTransition.body .reverted (immStore v) := by
-      apply clipperTakeSourceRevertsOfAfterSlice
+      apply clipperTakeSourceRevertsOfAfterSlice (hperm := hperm)
         (σ := σ) (σ₀ := σ₀)
         (A := A) (I := I) (g := g) (evmPrice := evmPrice)
         v price hwv hlocked hstopped husr hmax hstatus

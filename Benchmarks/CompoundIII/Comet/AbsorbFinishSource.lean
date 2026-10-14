@@ -49,10 +49,11 @@ theorem absorbFinish_source (frame : Frame) (v : CometWithExtendedAssetListImmut
         rw [hbasic]; rfl)
     (by simp only [evalExpr?, principal, absorbPrincipalFrame, Std.HashMap.get?_eq_getElem?,
           Std.HashMap.getElem?_insert, EvalResult.ofOption, principalValueWord_signed104 hf]; rfl)
-  have htail {evm' result'} (hf : PrincipalValueFits evm next)
+  have htail {evm' result'} (hpermAfter : evm'.executionEnv.perm = true)
+      (hf : PrincipalValueFits evm next)
       (ht' : AbsorbSettlementTrace v evm' account basic.principal
         (principalValueWord evm next) old next price result') :=
-    absorbSettlement_source updated v evm' absorber account basic.principal
+    absorbSettlement_source (hperm := hpermAfter) updated v evm' absorber account basic.principal
       (principalValueWord evm next) old next price ht' hc hi
       ((hget _ (by decide) (by decide)).trans ha) ((hget _ (by decide) (by decide)).trans hb)
       ((hget _ (by decide) (by decide)).trans ho) ((hget _ (by decide) (by decide)).trans hn)
@@ -81,6 +82,6 @@ theorem absorbFinish_source (frame : Frame) (v : CometWithExtendedAssetListImmut
       ExecBlock.consStatic (internalStmtResult.cast (hupdate hf) hu)).prepend hprincipal
   | settled hf hu ht' =>
     rw [if_pos hf] at hprincipal
-    exact ((htail hf ht').prepend (internalStmtResult.cast (hupdate hf) hu)).prepend hprincipal
+    exact ((htail (updateBaseOutcome_result_perm hu) hf ht').prepend (internalStmtResult.cast (hupdate hf) hu)).prepend hprincipal
 
 end Benchmarks.CompoundIII.Comet

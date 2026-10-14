@@ -33,6 +33,6 @@ theorem safePostModuleTrace {I g s0 σ k C aw mem rdata}
       safePostModuleSourceStatic hs hz (by simpa only [he] using hperm)⟩)
   · obtain ⟨aw'', k'', C'', hr'⟩ := safePostModuleEventTrace z hr (by omega) hret hperm
     exact Or.inr (Or.inr ⟨frame, evm', σ', mem', aw'', rdata', k'', C'',
-      safePostModuleSourceSuccess hs hz, he, ha, hw, hr', hmem⟩)
+      safePostModuleSourceSuccess (hperm := by simpa only [he] using hperm) hs hz, he, ha, hw, hr', hmem⟩)
 
 end Benchmarks.Safe.Main

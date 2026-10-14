@@ -205,15 +205,16 @@ theorem weth9WithdrawBodyReturns_success (evm evm' : EVM.State) (I : ExecutionEn
       (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (callerBalSlot I)).toNat)
     (hcall : callViaEVM (withdrawStoreState evm I)
       (EVM.address (withdrawStoreState evm I).executionEnv.source)
-      (Int.ofNat (withdrawWadWord I).toNat) ByteArray.empty (true, evm', out)) :
+      (Int.ofNat (withdrawWadWord I).toNat) ByteArray.empty (true, evm', out))
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (withdrawStore I) withdrawTransition.body
       (.returned { contract := contract, locals := withdrawCallStore I true out } evm' none) := by
   refine ExecFuncBody.execBlockOK ?_
   apply weth9WithdrawBodyPrefix hsrc hwv hle
   refine ExecBlock.consNormal
-    (ExecStmt.assign (evalWithdrawSub evm I hsrc) (withdrawAssign evm I hsrc hle)) ?_
+    (ExecStmt.assign (hperm := Or.inr hperm) (evalWithdrawSub evm I hsrc) (withdrawAssign evm I hsrc hle)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.lowLevelCallSuccess
+    (ExecStmt.lowLevelCallSuccess (hperm := Or.inr (by simpa [withdrawStoreState] using hperm))
       (evalWithdrawSender (withdrawStoreState evm I) (withdrawStore I))
       (evalWithdrawWadVar (withdrawStoreState evm I) I)
       (evalWithdrawEmptyBytes (withdrawStoreState evm I) (withdrawStore I)) hcall) ?_
@@ -227,14 +228,15 @@ theorem weth9WithdrawBodyReverts_callFailure (evm evm' : EVM.State) (I : Executi
       (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (callerBalSlot I)).toNat)
     (hcall : callViaEVM (withdrawStoreState evm I)
       (EVM.address (withdrawStoreState evm I).executionEnv.source)
-      (Int.ofNat (withdrawWadWord I).toNat) ByteArray.empty (false, evm', out)) :
+      (Int.ofNat (withdrawWadWord I).toNat) ByteArray.empty (false, evm', out))
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (withdrawStore I) withdrawTransition.body .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
   apply weth9WithdrawBodyPrefix hsrc hwv hle
   refine ExecBlock.consNormal
-    (ExecStmt.assign (evalWithdrawSub evm I hsrc) (withdrawAssign evm I hsrc hle)) ?_
+    (ExecStmt.assign (hperm := Or.inr hperm) (evalWithdrawSub evm I hsrc) (withdrawAssign evm I hsrc hle)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.lowLevelCallFailure
+    (ExecStmt.lowLevelCallFailure (hperm := Or.inr (by simpa [withdrawStoreState] using hperm))
       (evalWithdrawSender (withdrawStoreState evm I) (withdrawStore I))
       (evalWithdrawWadVar (withdrawStoreState evm I) I)
       (evalWithdrawEmptyBytes (withdrawStoreState evm I) (withdrawStore I)) hcall) ?_

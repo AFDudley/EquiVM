@@ -1487,7 +1487,7 @@ theorem flopperDentBodyAfterAshSuccessKissCallFailure
           (.intLit 0) [.var "kissAmt"] "_kissRet")
         .reverted := by
     simpa [checkedExternalCallStmts] using
-      checkedExternalCallFailure hguard htarget hargs hcall
+      checkedExternalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hguard htarget hargs hcall
   simpa [List.cons_append, List.nil_append] using
    execBlock_append hmin hkiss
 
@@ -1547,7 +1547,7 @@ theorem flopperDentBodyAfterAshSuccessKissCallSuccess
         (.ok { contract := contract, locals := dentKissRetLocals localsEvm I outAsh }
           evmKiss) := by
     simpa [checkedExternalCallStmts, dentKissRetLocals] using
-      checkedExternalCallSuccess hguard htarget hargs hcall (dentKissDecode_ok outKiss)
+      checkedExternalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hguard htarget hargs hcall (dentKissDecode_ok outKiss)
   simpa [List.cons_append, List.nil_append] using
    execBlock_append hmin hkiss
 

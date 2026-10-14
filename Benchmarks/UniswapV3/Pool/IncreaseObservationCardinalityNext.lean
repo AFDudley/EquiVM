@@ -47,7 +47,7 @@ theorem uniswapV3PoolIncreaseObservationCardinalityNextBody {σ σ₀ A I} {g : 
           rcases increaseLockDelegateX (v := v) rdLock hs hperm (by simp) with
             ⟨rdRevert, hdelegate⟩ | ⟨hself, _, _, rdReady⟩
           · exact rdRevert.reEquivExecutionRevert hcode hd hdec
-              (increaseDelegateReverts v evm next hwv hunlocked hdelegate)
+              (increaseDelegateReverts (hperm := by assumption) v evm next hwv hunlocked hdelegate)
           · let locked := storeSlot0Unlocked evm false
             have henv : locked.executionEnv = I := storeSlot0Unlocked_executionEnv evm false
             have hsLocked : SourceState evm I locked.accountMap locked :=
@@ -62,7 +62,7 @@ theorem uniswapV3PoolIncreaseObservationCardinalityNextBody {σ σ₀ A I} {g : 
                 (by rw [uniswapV3PoolPatchedValidJumps v]; jump_dest) (by simp) with
               ⟨rdRevert, hzero⟩ | ⟨hpos, _, _, rdGrown⟩
             · exact rdRevert.reEquivExecutionRevert hcode hd hdec
-                (increaseGrowZeroReverts v evm next hwv hunlocked hself hzero)
+                (increaseGrowZeroReverts (hperm := by assumption) v evm next hwv hunlocked hself hzero)
             · let grown := oracleGrowState locked current.toNat (next.toNat - current.toNat)
               have hsGrown : SourceState evm I grown.accountMap grown :=
                 ⟨(oracleGrowState_originalAccounts locked _ _).trans hsLocked.world,
@@ -70,7 +70,7 @@ theorem uniswapV3PoolIncreaseObservationCardinalityNextBody {σ σ₀ A I} {g : 
               have rdFinal := increaseFinishX (v := v) rdGrown hsGrown hperm hcurrent
                 (oracleGrowResult_lt current next hcurrent hnext) (by simp)
               exact rdFinal.reEquivExecutionGen hcode hd hdec
-                (increaseReturns v evm next hwv hunlocked hself hnext hpos) rfl
+                (increaseReturns (hperm := by assumption) v evm next hwv hunlocked hself hnext hpos) rfl
                 (returnEquiv.fallthrough (dvs := []) rfl rfl (by native_decide))
   · have hshort : I.calldata.size < 36 := by omega
     exact (uniswapV3PoolIncreaseShortX (g := Sat256.ofUInt256 g) v hcode hwv hsz hsize hsel hshort)

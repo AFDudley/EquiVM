@@ -268,7 +268,7 @@ theorem flipperFileUintSourceBodyBegSplit {σ σ₀ A I} {g : UInt256}
     let locals := fileUintLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let evm1 := Stele.EVM.storageStore evm0 I.codeOwner ⟨4⟩ (fileUintData I)
-    (ExecTransitionBody config contract evm0 locals fileUintTransition.body
+    (I.perm = true → ExecTransitionBody config contract evm0 locals fileUintTransition.body
       (.returned { contract := contract, locals := locals } evm1 none)) ∧
       (I.perm = false → ExecTransitionBody config contract evm0 locals
         fileUintTransition.body .staticViolation) := by
@@ -308,8 +308,9 @@ theorem flipperFileUintSourceBodyBegSplit {σ σ₀ A I} {g : UInt256}
     refine ExecBlock.consNormal (ExecStmt.requireTrue hguard) ?_
     exact (execBlock_singleton (ExecStmt.iteTrue hbeg hwrite))
   constructor
-  · exact ExecFuncBody.execBlockOK
-      (hprefix (ExecBlock.consNormal (ExecStmt.assign hdata hassign) ExecBlock.nil))
+  · intro hperm
+    exact ExecFuncBody.execBlockOK
+      (hprefix (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hdata hassign) ExecBlock.nil))
   · intro hperm
     exact ExecFuncBody.execBlockStatic
       (hprefix (ExecBlock.consStatic (ExecStmt.assignStatic hdata hassign
@@ -325,7 +326,7 @@ theorem flipperFileUintSourceBodyTtlSplit {σ σ₀ A I} {g : UInt256}
     let evm1 := Stele.EVM.storageStore evm0 I.codeOwner ⟨5⟩
       (setUint48Offset0Word (Stele.EVM.storageLoad evm0 I.codeOwner ⟨5⟩)
         (fileUintData48 I))
-    (ExecTransitionBody config contract evm0 locals fileUintTransition.body
+    (I.perm = true → ExecTransitionBody config contract evm0 locals fileUintTransition.body
       (.returned { contract := contract, locals := locals } evm1 none)) ∧
       (I.perm = false → ExecTransitionBody config contract evm0 locals
         fileUintTransition.body .staticViolation) := by
@@ -374,8 +375,9 @@ theorem flipperFileUintSourceBodyTtlSplit {σ σ₀ A I} {g : UInt256}
     exact execBlock_singleton (ExecStmt.iteFalse hbeg
         (execBlock_singleton (ExecStmt.iteTrue httl hwrite)))
   constructor
-  · exact ExecFuncBody.execBlockOK
-      (hprefix (ExecBlock.consNormal (ExecStmt.assign hdata hassign) ExecBlock.nil))
+  · intro hperm
+    exact ExecFuncBody.execBlockOK
+      (hprefix (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hdata hassign) ExecBlock.nil))
   · intro hperm
     exact ExecFuncBody.execBlockStatic
       (hprefix (ExecBlock.consStatic (ExecStmt.assignStatic hdata hassign
@@ -392,7 +394,7 @@ theorem flipperFileUintSourceBodyTauSplit {σ σ₀ A I} {g : UInt256}
     let evm1 := Stele.EVM.storageStore evm0 I.codeOwner ⟨5⟩
       (setUint48Offset6Word (Stele.EVM.storageLoad evm0 I.codeOwner ⟨5⟩)
         (fileUintData48 I))
-    (ExecTransitionBody config contract evm0 locals fileUintTransition.body
+    (I.perm = true → ExecTransitionBody config contract evm0 locals fileUintTransition.body
       (.returned { contract := contract, locals := locals } evm1 none)) ∧
       (I.perm = false → ExecTransitionBody config contract evm0 locals
         fileUintTransition.body .staticViolation) := by
@@ -449,8 +451,9 @@ theorem flipperFileUintSourceBodyTauSplit {σ σ₀ A I} {g : UInt256}
         (execBlock_singleton (ExecStmt.iteFalse httl
           (execBlock_singleton (ExecStmt.iteTrue htau hwrite)))))
   constructor
-  · exact ExecFuncBody.execBlockOK
-      (hprefix (ExecBlock.consNormal (ExecStmt.assign hdata hassign) ExecBlock.nil))
+  · intro hperm
+    exact ExecFuncBody.execBlockOK
+      (hprefix (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hdata hassign) ExecBlock.nil))
   · intro hperm
     exact ExecFuncBody.execBlockStatic
       (hprefix (ExecBlock.consStatic (ExecStmt.assignStatic hdata hassign
@@ -1174,7 +1177,7 @@ theorem flipperFileUintBodyCoreOkBeg
   let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
   let evm1 := Stele.EVM.storageStore evm0 I.codeOwner ⟨4⟩ (fileUintData I)
   have hbodySplit :
-      (ExecTransitionBody config contract evm0 locals fileUintTransition.body
+      (I.perm = true → ExecTransitionBody config contract evm0 locals fileUintTransition.body
         (.returned { contract := contract, locals := locals } evm1 none)) ∧
       (I.perm = false → ExecTransitionBody config contract evm0 locals
         fileUintTransition.body .staticViolation) := by
@@ -1187,10 +1190,10 @@ theorem flipperFileUintBodyCoreOkBeg
   have hmatch : calldataWord I.calldata 4 = ABI.bytesToWord fileUintBegBytes :=
     fileUintWhatWord_eq_of_bytes_eq (by omega) hwhat
   rcases flipperFileUintX_storeBegSplit hmatch hswitch with
-      ⟨_hperm, hret⟩ | ⟨hperm, hstatic⟩
+      ⟨hperm, hret⟩ | ⟨hperm, hstatic⟩
   swap
   · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode (hbodySplit.2 hperm)
-  exact hret.reEquivExecutionGen hcode hdispatch hdecode hbodySplit.1
+  exact hret.reEquivExecutionGen hcode hdispatch hdecode (hbodySplit.1 hperm)
     (by simp [evm1, evm0, initState, storageStore_accountMap])
     (by
       rw [show fileUintTransition.returnType = [] by rfl]
@@ -1219,7 +1222,7 @@ theorem flipperFileUintBodyCoreOkTtl
   let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
   let evm1 := Stele.EVM.storageStore evm0 I.codeOwner ⟨5⟩ stored
   have hbodySplit :
-      (ExecTransitionBody config contract evm0 locals fileUintTransition.body
+      (I.perm = true → ExecTransitionBody config contract evm0 locals fileUintTransition.body
         (.returned { contract := contract, locals := locals } evm1 none)) ∧
       (I.perm = false → ExecTransitionBody config contract evm0 locals
         fileUintTransition.body .staticViolation) := by
@@ -1235,7 +1238,7 @@ theorem flipperFileUintBodyCoreOkTtl
   have hmatch : calldataWord I.calldata 4 = ABI.bytesToWord fileUintTtlBytes :=
     fileUintWhatWord_eq_of_bytes_eq (by omega) hwhat
   rcases flipperFileUintX_storeTtlSplit hnotBegWord hmatch hswitch with
-      ⟨_hperm, hret⟩ | ⟨hperm, hstatic⟩
+      ⟨hperm, hret⟩ | ⟨hperm, hstatic⟩
   swap
   · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode (hbodySplit.2 hperm)
   have hret' :
@@ -1243,7 +1246,7 @@ theorem flipperFileUintBodyCoreOkTtl
         (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         (sstoreAccountMap I.codeOwner σ ⟨5⟩ stored) ByteArray.empty := by
     simpa [stored, data] using hret
-  exact hret'.reEquivExecutionGen hcode hdispatch hdecode hbodySplit.1
+  exact hret'.reEquivExecutionGen hcode hdispatch hdecode (hbodySplit.1 hperm)
     (by simp [evm1, evm0, initState, storageStore_accountMap])
     (by
       rw [show fileUintTransition.returnType = [] by rfl]
@@ -1273,7 +1276,7 @@ theorem flipperFileUintBodyCoreOkTau
   let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
   let evm1 := Stele.EVM.storageStore evm0 I.codeOwner ⟨5⟩ stored
   have hbodySplit :
-      (ExecTransitionBody config contract evm0 locals fileUintTransition.body
+      (I.perm = true → ExecTransitionBody config contract evm0 locals fileUintTransition.body
         (.returned { contract := contract, locals := locals } evm1 none)) ∧
       (I.perm = false → ExecTransitionBody config contract evm0 locals
         fileUintTransition.body .staticViolation) := by
@@ -1291,7 +1294,7 @@ theorem flipperFileUintBodyCoreOkTau
   have hmatch : calldataWord I.calldata 4 = ABI.bytesToWord fileUintTauBytes :=
     fileUintWhatWord_eq_of_bytes_eq (by omega) hwhat
   rcases flipperFileUintX_storeTauSplit hnotBegWord hnotTtlWord hmatch hswitch with
-      ⟨_hperm, hret⟩ | ⟨hperm, hstatic⟩
+      ⟨hperm, hret⟩ | ⟨hperm, hstatic⟩
   swap
   · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode (hbodySplit.2 hperm)
   have hret' :
@@ -1299,7 +1302,7 @@ theorem flipperFileUintBodyCoreOkTau
         (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         (sstoreAccountMap I.codeOwner σ ⟨5⟩ stored) ByteArray.empty := by
     simpa [stored, data] using hret
-  exact hret'.reEquivExecutionGen hcode hdispatch hdecode hbodySplit.1
+  exact hret'.reEquivExecutionGen hcode hdispatch hdecode (hbodySplit.1 hperm)
     (by simp [evm1, evm0, initState, storageStore_accountMap])
     (by
       rw [show fileUintTransition.returnType = [] by rfl]

@@ -1429,7 +1429,8 @@ theorem daiTransferFromBodyReturns_spend (evm : EVM.State) (I : ExecutionEnv)
     (hsrcDebitEnough : (transferFromWadWord I).toNat ≤
       (transferFromSrcBalanceWord (transferFromAfterAllowanceState evm I) I).toNat)
     (hfit : transferFromDstCreditNat
-      (transferFromAfterSrcDebitState (transferFromAfterAllowanceState evm I) I) I < UInt256.size) :
+      (transferFromAfterSrcDebitState (transferFromAfterAllowanceState evm I) I) I < UInt256.size)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (transferFromStore I) transferFromTransition.body
       (.returned { contract := contract, locals := transferFromStore I }
         (transferFromPostStateFrom (transferFromAfterAllowanceState evm I) I)
@@ -1450,7 +1451,8 @@ theorem daiTransferFromBodyReturns_spend (evm : EVM.State) (I : ExecutionEnv)
     refine ExecBlock.consNormal
       (ExecStmt.requireTrue (evalExpr_transferFrom_allowance_checkedSub_true evm I hallowEnough)) ?_
     refine ExecBlock.consNormal
-      (ExecStmt.assign (evalExpr_transferFrom_allowance_debit evm I hallowEnough)
+      (ExecStmt.assign (hperm := Or.inr (by simpa only [transferFromAfterAllowanceState,
+        transferFromAfterSrcDebitState, storageStore_executionEnv] using hperm)) (evalExpr_transferFrom_allowance_debit evm I hallowEnough)
         (transferFromAssignAllowance evm I)) ?_
     exact ExecBlock.nil
   · refine ExecBlock.consNormal
@@ -1462,7 +1464,8 @@ theorem daiTransferFromBodyReturns_spend (evm : EVM.State) (I : ExecutionEnv)
         (evalExpr_transferFrom_src_checkedSub_true (transferFromAfterAllowanceState evm I) I
           hsrcDebitEnough)) ?_
     refine ExecBlock.consNormal
-      (ExecStmt.assign
+      (ExecStmt.assign (hperm := Or.inr (by simpa only [transferFromAfterAllowanceState,
+        transferFromAfterSrcDebitState, storageStore_executionEnv] using hperm))
         (evalExpr_transferFrom_src_debit (transferFromAfterAllowanceState evm I) I
           hsrcDebitEnough)
         (transferFromAssignSrc (transferFromAfterAllowanceState evm I) I)) ?_
@@ -1471,7 +1474,8 @@ theorem daiTransferFromBodyReturns_spend (evm : EVM.State) (I : ExecutionEnv)
         (evalExpr_transferFrom_dst_checkedAdd_true
           (transferFromAfterSrcDebitState (transferFromAfterAllowanceState evm I) I) I hfit)) ?_
     refine ExecBlock.consNormal
-      (ExecStmt.assign
+      (ExecStmt.assign (hperm := Or.inr (by simpa only [transferFromAfterAllowanceState,
+        transferFromAfterSrcDebitState, storageStore_executionEnv] using hperm))
         (evalExpr_transferFrom_dst_credit
           (transferFromAfterSrcDebitState (transferFromAfterAllowanceState evm I) I) I hfit)
         (transferFromAssignDst (transferFromAfterAllowanceState evm I) I hfit)) ?_
@@ -1510,7 +1514,8 @@ theorem daiTransferFromBodyReturns_skipSender (evm : EVM.State) (I : ExecutionEn
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hsrcEnough : (transferFromWadWord I).toNat ≤ (transferFromSrcBalanceWord evm I).toNat)
     (heq : AccountAddress.ofNat (transferFromSrcWord I).toNat = evm.executionEnv.source)
-    (hfit : transferFromDstCreditNat (transferFromAfterSrcDebitState evm I) I < UInt256.size) :
+    (hfit : transferFromDstCreditNat (transferFromAfterSrcDebitState evm I) I < UInt256.size)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (transferFromStore I) transferFromTransition.body
       (.returned { contract := contract, locals := transferFromStore I }
         (transferFromPostStateFrom evm I) (some [.bool true])) := by
@@ -1529,13 +1534,15 @@ theorem daiTransferFromBodyReturns_skipSender (evm : EVM.State) (I : ExecutionEn
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue (evalExpr_transferFrom_src_checkedSub_true evm I hsrcEnough)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_transferFrom_src_debit evm I hsrcEnough)
+    (ExecStmt.assign (hperm := Or.inr (by simpa only [transferFromAfterAllowanceState,
+        transferFromAfterSrcDebitState, storageStore_executionEnv] using hperm)) (evalExpr_transferFrom_src_debit evm I hsrcEnough)
       (transferFromAssignSrc evm I)) ?_
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue
       (evalExpr_transferFrom_dst_checkedAdd_true (transferFromAfterSrcDebitState evm I) I hfit)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign
+    (ExecStmt.assign (hperm := Or.inr (by simpa only [transferFromAfterAllowanceState,
+        transferFromAfterSrcDebitState, storageStore_executionEnv] using hperm))
       (evalExpr_transferFrom_dst_credit (transferFromAfterSrcDebitState evm I) I hfit)
       (transferFromAssignDst evm I hfit)) ?_
   exact ExecBlock.consReturn
@@ -1572,7 +1579,8 @@ theorem daiTransferFromBodyReturns_skipMax (evm : EVM.State) (I : ExecutionEnv)
     (hsrcEnough : (transferFromWadWord I).toNat ≤ (transferFromSrcBalanceWord evm I).toNat)
     (hne : AccountAddress.ofNat (transferFromSrcWord I).toNat ≠ evm.executionEnv.source)
     (hmax : (transferFromAllowanceWord evm I).toNat = UInt256.size - 1)
-    (hfit : transferFromDstCreditNat (transferFromAfterSrcDebitState evm I) I < UInt256.size) :
+    (hfit : transferFromDstCreditNat (transferFromAfterSrcDebitState evm I) I < UInt256.size)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (transferFromStore I) transferFromTransition.body
       (.returned { contract := contract, locals := transferFromStore I }
         (transferFromPostStateFrom evm I) (some [.bool true])) := by
@@ -1591,13 +1599,15 @@ theorem daiTransferFromBodyReturns_skipMax (evm : EVM.State) (I : ExecutionEnv)
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue (evalExpr_transferFrom_src_checkedSub_true evm I hsrcEnough)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_transferFrom_src_debit evm I hsrcEnough)
+    (ExecStmt.assign (hperm := Or.inr (by simpa only [transferFromAfterAllowanceState,
+        transferFromAfterSrcDebitState, storageStore_executionEnv] using hperm)) (evalExpr_transferFrom_src_debit evm I hsrcEnough)
       (transferFromAssignSrc evm I)) ?_
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue
       (evalExpr_transferFrom_dst_checkedAdd_true (transferFromAfterSrcDebitState evm I) I hfit)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign
+    (ExecStmt.assign (hperm := Or.inr (by simpa only [transferFromAfterAllowanceState,
+        transferFromAfterSrcDebitState, storageStore_executionEnv] using hperm))
       (evalExpr_transferFrom_dst_credit (transferFromAfterSrcDebitState evm I) I hfit)
       (transferFromAssignDst evm I hfit)) ?_
   exact ExecBlock.consReturn
@@ -1672,7 +1682,8 @@ theorem daiTransferFromBodyReverts_srcDebit (evm : EVM.State) (I : ExecutionEnv)
     (hnotMax : (transferFromAllowanceWord evm I).toNat ≠ UInt256.size - 1)
     (hallowEnough : (transferFromWadWord I).toNat ≤ (transferFromAllowanceWord evm I).toNat)
     (hltDebit : (transferFromSrcBalanceWord (transferFromAfterAllowanceState evm I) I).toNat <
-      (transferFromWadWord I).toNat) :
+      (transferFromWadWord I).toNat)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (transferFromStore I) transferFromTransition.body
       .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
@@ -1691,7 +1702,8 @@ theorem daiTransferFromBodyReverts_srcDebit (evm : EVM.State) (I : ExecutionEnv)
     refine ExecBlock.consNormal
       (ExecStmt.requireTrue (evalExpr_transferFrom_allowance_checkedSub_true evm I hallowEnough)) ?_
     refine ExecBlock.consNormal
-      (ExecStmt.assign (evalExpr_transferFrom_allowance_debit evm I hallowEnough)
+      (ExecStmt.assign (hperm := Or.inr (by simpa only [transferFromAfterAllowanceState,
+        transferFromAfterSrcDebitState, storageStore_executionEnv] using hperm)) (evalExpr_transferFrom_allowance_debit evm I hallowEnough)
         (transferFromAssignAllowance evm I)) ?_
     exact ExecBlock.nil
   exact ExecBlock.consRevert
@@ -1709,7 +1721,8 @@ theorem daiTransferFromBodyReverts_dstOverflow_spend (evm : EVM.State) (I : Exec
     (hsrcDebitEnough : (transferFromWadWord I).toNat ≤
       (transferFromSrcBalanceWord (transferFromAfterAllowanceState evm I) I).toNat)
     (hover : UInt256.size ≤ transferFromDstCreditNat
-      (transferFromAfterSrcDebitState (transferFromAfterAllowanceState evm I) I) I) :
+      (transferFromAfterSrcDebitState (transferFromAfterAllowanceState evm I) I) I)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (transferFromStore I) transferFromTransition.body
       .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
@@ -1728,7 +1741,8 @@ theorem daiTransferFromBodyReverts_dstOverflow_spend (evm : EVM.State) (I : Exec
     refine ExecBlock.consNormal
       (ExecStmt.requireTrue (evalExpr_transferFrom_allowance_checkedSub_true evm I hallowEnough)) ?_
     refine ExecBlock.consNormal
-      (ExecStmt.assign (evalExpr_transferFrom_allowance_debit evm I hallowEnough)
+      (ExecStmt.assign (hperm := Or.inr (by simpa only [transferFromAfterAllowanceState,
+        transferFromAfterSrcDebitState, storageStore_executionEnv] using hperm)) (evalExpr_transferFrom_allowance_debit evm I hallowEnough)
         (transferFromAssignAllowance evm I)) ?_
     exact ExecBlock.nil
   refine ExecBlock.consNormal
@@ -1740,7 +1754,8 @@ theorem daiTransferFromBodyReverts_dstOverflow_spend (evm : EVM.State) (I : Exec
       (evalExpr_transferFrom_src_checkedSub_true (transferFromAfterAllowanceState evm I) I
         hsrcDebitEnough)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign
+    (ExecStmt.assign (hperm := Or.inr (by simpa only [transferFromAfterAllowanceState,
+        transferFromAfterSrcDebitState, storageStore_executionEnv] using hperm))
       (evalExpr_transferFrom_src_debit (transferFromAfterAllowanceState evm I) I
         hsrcDebitEnough)
       (transferFromAssignSrc (transferFromAfterAllowanceState evm I) I)) ?_
@@ -1754,7 +1769,8 @@ theorem daiTransferFromBodyReverts_dstOverflow_skipSender (evm : EVM.State) (I :
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hsrcEnough : (transferFromWadWord I).toNat ≤ (transferFromSrcBalanceWord evm I).toNat)
     (heq : AccountAddress.ofNat (transferFromSrcWord I).toNat = evm.executionEnv.source)
-    (hover : UInt256.size ≤ transferFromDstCreditNat (transferFromAfterSrcDebitState evm I) I) :
+    (hover : UInt256.size ≤ transferFromDstCreditNat (transferFromAfterSrcDebitState evm I) I)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (transferFromStore I) transferFromTransition.body
       .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
@@ -1772,7 +1788,8 @@ theorem daiTransferFromBodyReverts_dstOverflow_skipSender (evm : EVM.State) (I :
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue (evalExpr_transferFrom_src_checkedSub_true evm I hsrcEnough)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_transferFrom_src_debit evm I hsrcEnough)
+    (ExecStmt.assign (hperm := Or.inr (by simpa only [transferFromAfterAllowanceState,
+        transferFromAfterSrcDebitState, storageStore_executionEnv] using hperm)) (evalExpr_transferFrom_src_debit evm I hsrcEnough)
       (transferFromAssignSrc evm I)) ?_
   exact ExecBlock.consRevert
     (ExecStmt.requireRevert
@@ -1785,7 +1802,8 @@ theorem daiTransferFromBodyReverts_dstOverflow_skipMax (evm : EVM.State) (I : Ex
     (hsrcEnough : (transferFromWadWord I).toNat ≤ (transferFromSrcBalanceWord evm I).toNat)
     (hne : AccountAddress.ofNat (transferFromSrcWord I).toNat ≠ evm.executionEnv.source)
     (hmax : (transferFromAllowanceWord evm I).toNat = UInt256.size - 1)
-    (hover : UInt256.size ≤ transferFromDstCreditNat (transferFromAfterSrcDebitState evm I) I) :
+    (hover : UInt256.size ≤ transferFromDstCreditNat (transferFromAfterSrcDebitState evm I) I)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (transferFromStore I) transferFromTransition.body
       .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
@@ -1803,7 +1821,8 @@ theorem daiTransferFromBodyReverts_dstOverflow_skipMax (evm : EVM.State) (I : Ex
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue (evalExpr_transferFrom_src_checkedSub_true evm I hsrcEnough)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_transferFrom_src_debit evm I hsrcEnough)
+    (ExecStmt.assign (hperm := Or.inr (by simpa only [transferFromAfterAllowanceState,
+        transferFromAfterSrcDebitState, storageStore_executionEnv] using hperm)) (evalExpr_transferFrom_src_debit evm I hsrcEnough)
       (transferFromAssignSrc evm I)) ?_
   exact ExecBlock.consRevert
     (ExecStmt.requireRevert
@@ -2362,7 +2381,8 @@ theorem daiTransferFromCallBodyReturns_spend (evm : EVM.State) (I : ExecutionEnv
     (hsrcDebitEnough : (transferFromWadWord I).toNat ≤
       (transferFromSrcBalanceWord (transferFromAfterAllowanceState evm I) I).toNat)
     (hfit : transferFromDstCreditNat
-      (transferFromAfterSrcDebitState (transferFromAfterAllowanceState evm I) I) I < UInt256.size) :
+      (transferFromAfterSrcDebitState (transferFromAfterAllowanceState evm I) I) I < UInt256.size)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (transferFromCallStore I) transferFromTransition.body
       (.returned { contract := contract, locals := transferFromCallStore I }
         (transferFromPostStateFrom (transferFromAfterAllowanceState evm I) I)
@@ -2383,7 +2403,8 @@ theorem daiTransferFromCallBodyReturns_spend (evm : EVM.State) (I : ExecutionEnv
     refine ExecBlock.consNormal
       (ExecStmt.requireTrue (evalExpr_transferFromCall_allowance_checkedSub_true evm I hallowEnough)) ?_
     refine ExecBlock.consNormal
-      (ExecStmt.assign (evalExpr_transferFromCall_allowance_debit evm I hallowEnough)
+      (ExecStmt.assign (hperm := Or.inr (by simpa only [transferFromAfterAllowanceState,
+        transferFromAfterSrcDebitState, storageStore_executionEnv] using hperm)) (evalExpr_transferFromCall_allowance_debit evm I hallowEnough)
         (transferFromCallAssignAllowance evm I)) ?_
     exact ExecBlock.nil
   · refine ExecBlock.consNormal
@@ -2395,7 +2416,8 @@ theorem daiTransferFromCallBodyReturns_spend (evm : EVM.State) (I : ExecutionEnv
         (evalExpr_transferFromCall_src_checkedSub_true (transferFromAfterAllowanceState evm I) I
           hsrcDebitEnough)) ?_
     refine ExecBlock.consNormal
-      (ExecStmt.assign
+      (ExecStmt.assign (hperm := Or.inr (by simpa only [transferFromAfterAllowanceState,
+        transferFromAfterSrcDebitState, storageStore_executionEnv] using hperm))
         (evalExpr_transferFromCall_src_debit (transferFromAfterAllowanceState evm I) I
           hsrcDebitEnough)
         (transferFromCallAssignSrc (transferFromAfterAllowanceState evm I) I)) ?_
@@ -2404,7 +2426,8 @@ theorem daiTransferFromCallBodyReturns_spend (evm : EVM.State) (I : ExecutionEnv
         (evalExpr_transferFromCall_dst_checkedAdd_true
           (transferFromAfterSrcDebitState (transferFromAfterAllowanceState evm I) I) I hfit)) ?_
     refine ExecBlock.consNormal
-      (ExecStmt.assign
+      (ExecStmt.assign (hperm := Or.inr (by simpa only [transferFromAfterAllowanceState,
+        transferFromAfterSrcDebitState, storageStore_executionEnv] using hperm))
         (evalExpr_transferFromCall_dst_credit
           (transferFromAfterSrcDebitState (transferFromAfterAllowanceState evm I) I) I hfit)
         (transferFromCallAssignDst (transferFromAfterAllowanceState evm I) I hfit)) ?_
@@ -2443,7 +2466,8 @@ theorem daiTransferFromCallBodyReturns_skipSender (evm : EVM.State) (I : Executi
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hsrcEnough : (transferFromWadWord I).toNat ≤ (transferFromSrcBalanceWord evm I).toNat)
     (heq : AccountAddress.ofNat (transferFromSrcWord I).toNat = evm.executionEnv.source)
-    (hfit : transferFromDstCreditNat (transferFromAfterSrcDebitState evm I) I < UInt256.size) :
+    (hfit : transferFromDstCreditNat (transferFromAfterSrcDebitState evm I) I < UInt256.size)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (transferFromCallStore I) transferFromTransition.body
       (.returned { contract := contract, locals := transferFromCallStore I }
         (transferFromPostStateFrom evm I) (some [.bool true])) := by
@@ -2462,13 +2486,15 @@ theorem daiTransferFromCallBodyReturns_skipSender (evm : EVM.State) (I : Executi
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue (evalExpr_transferFromCall_src_checkedSub_true evm I hsrcEnough)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_transferFromCall_src_debit evm I hsrcEnough)
+    (ExecStmt.assign (hperm := Or.inr (by simpa only [transferFromAfterAllowanceState,
+        transferFromAfterSrcDebitState, storageStore_executionEnv] using hperm)) (evalExpr_transferFromCall_src_debit evm I hsrcEnough)
       (transferFromCallAssignSrc evm I)) ?_
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue
       (evalExpr_transferFromCall_dst_checkedAdd_true (transferFromAfterSrcDebitState evm I) I hfit)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign
+    (ExecStmt.assign (hperm := Or.inr (by simpa only [transferFromAfterAllowanceState,
+        transferFromAfterSrcDebitState, storageStore_executionEnv] using hperm))
       (evalExpr_transferFromCall_dst_credit (transferFromAfterSrcDebitState evm I) I hfit)
       (transferFromCallAssignDst evm I hfit)) ?_
   exact ExecBlock.consReturn
@@ -2505,7 +2531,8 @@ theorem daiTransferFromCallBodyReturns_skipMax (evm : EVM.State) (I : ExecutionE
     (hsrcEnough : (transferFromWadWord I).toNat ≤ (transferFromSrcBalanceWord evm I).toNat)
     (hne : AccountAddress.ofNat (transferFromSrcWord I).toNat ≠ evm.executionEnv.source)
     (hmax : (transferFromAllowanceWord evm I).toNat = UInt256.size - 1)
-    (hfit : transferFromDstCreditNat (transferFromAfterSrcDebitState evm I) I < UInt256.size) :
+    (hfit : transferFromDstCreditNat (transferFromAfterSrcDebitState evm I) I < UInt256.size)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (transferFromCallStore I) transferFromTransition.body
       (.returned { contract := contract, locals := transferFromCallStore I }
         (transferFromPostStateFrom evm I) (some [.bool true])) := by
@@ -2524,13 +2551,15 @@ theorem daiTransferFromCallBodyReturns_skipMax (evm : EVM.State) (I : ExecutionE
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue (evalExpr_transferFromCall_src_checkedSub_true evm I hsrcEnough)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_transferFromCall_src_debit evm I hsrcEnough)
+    (ExecStmt.assign (hperm := Or.inr (by simpa only [transferFromAfterAllowanceState,
+        transferFromAfterSrcDebitState, storageStore_executionEnv] using hperm)) (evalExpr_transferFromCall_src_debit evm I hsrcEnough)
       (transferFromCallAssignSrc evm I)) ?_
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue
       (evalExpr_transferFromCall_dst_checkedAdd_true (transferFromAfterSrcDebitState evm I) I hfit)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign
+    (ExecStmt.assign (hperm := Or.inr (by simpa only [transferFromAfterAllowanceState,
+        transferFromAfterSrcDebitState, storageStore_executionEnv] using hperm))
       (evalExpr_transferFromCall_dst_credit (transferFromAfterSrcDebitState evm I) I hfit)
       (transferFromCallAssignDst evm I hfit)) ?_
   exact ExecBlock.consReturn
@@ -2605,7 +2634,8 @@ theorem daiTransferFromCallBodyReverts_srcDebit (evm : EVM.State) (I : Execution
     (hnotMax : (transferFromAllowanceWord evm I).toNat ≠ UInt256.size - 1)
     (hallowEnough : (transferFromWadWord I).toNat ≤ (transferFromAllowanceWord evm I).toNat)
     (hltDebit : (transferFromSrcBalanceWord (transferFromAfterAllowanceState evm I) I).toNat <
-      (transferFromWadWord I).toNat) :
+      (transferFromWadWord I).toNat)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (transferFromCallStore I) transferFromTransition.body
       .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
@@ -2624,7 +2654,8 @@ theorem daiTransferFromCallBodyReverts_srcDebit (evm : EVM.State) (I : Execution
     refine ExecBlock.consNormal
       (ExecStmt.requireTrue (evalExpr_transferFromCall_allowance_checkedSub_true evm I hallowEnough)) ?_
     refine ExecBlock.consNormal
-      (ExecStmt.assign (evalExpr_transferFromCall_allowance_debit evm I hallowEnough)
+      (ExecStmt.assign (hperm := Or.inr (by simpa only [transferFromAfterAllowanceState,
+        transferFromAfterSrcDebitState, storageStore_executionEnv] using hperm)) (evalExpr_transferFromCall_allowance_debit evm I hallowEnough)
         (transferFromCallAssignAllowance evm I)) ?_
     exact ExecBlock.nil
   exact ExecBlock.consRevert
@@ -2642,7 +2673,8 @@ theorem daiTransferFromCallBodyReverts_dstOverflow_spend (evm : EVM.State) (I : 
     (hsrcDebitEnough : (transferFromWadWord I).toNat ≤
       (transferFromSrcBalanceWord (transferFromAfterAllowanceState evm I) I).toNat)
     (hover : UInt256.size ≤ transferFromDstCreditNat
-      (transferFromAfterSrcDebitState (transferFromAfterAllowanceState evm I) I) I) :
+      (transferFromAfterSrcDebitState (transferFromAfterAllowanceState evm I) I) I)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (transferFromCallStore I) transferFromTransition.body
       .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
@@ -2661,7 +2693,8 @@ theorem daiTransferFromCallBodyReverts_dstOverflow_spend (evm : EVM.State) (I : 
     refine ExecBlock.consNormal
       (ExecStmt.requireTrue (evalExpr_transferFromCall_allowance_checkedSub_true evm I hallowEnough)) ?_
     refine ExecBlock.consNormal
-      (ExecStmt.assign (evalExpr_transferFromCall_allowance_debit evm I hallowEnough)
+      (ExecStmt.assign (hperm := Or.inr (by simpa only [transferFromAfterAllowanceState,
+        transferFromAfterSrcDebitState, storageStore_executionEnv] using hperm)) (evalExpr_transferFromCall_allowance_debit evm I hallowEnough)
         (transferFromCallAssignAllowance evm I)) ?_
     exact ExecBlock.nil
   refine ExecBlock.consNormal
@@ -2673,7 +2706,8 @@ theorem daiTransferFromCallBodyReverts_dstOverflow_spend (evm : EVM.State) (I : 
       (evalExpr_transferFromCall_src_checkedSub_true (transferFromAfterAllowanceState evm I) I
         hsrcDebitEnough)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign
+    (ExecStmt.assign (hperm := Or.inr (by simpa only [transferFromAfterAllowanceState,
+        transferFromAfterSrcDebitState, storageStore_executionEnv] using hperm))
       (evalExpr_transferFromCall_src_debit (transferFromAfterAllowanceState evm I) I
         hsrcDebitEnough)
       (transferFromCallAssignSrc (transferFromAfterAllowanceState evm I) I)) ?_
@@ -2687,7 +2721,8 @@ theorem daiTransferFromCallBodyReverts_dstOverflow_skipSender (evm : EVM.State) 
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hsrcEnough : (transferFromWadWord I).toNat ≤ (transferFromSrcBalanceWord evm I).toNat)
     (heq : AccountAddress.ofNat (transferFromSrcWord I).toNat = evm.executionEnv.source)
-    (hover : UInt256.size ≤ transferFromDstCreditNat (transferFromAfterSrcDebitState evm I) I) :
+    (hover : UInt256.size ≤ transferFromDstCreditNat (transferFromAfterSrcDebitState evm I) I)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (transferFromCallStore I) transferFromTransition.body
       .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
@@ -2705,7 +2740,8 @@ theorem daiTransferFromCallBodyReverts_dstOverflow_skipSender (evm : EVM.State) 
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue (evalExpr_transferFromCall_src_checkedSub_true evm I hsrcEnough)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_transferFromCall_src_debit evm I hsrcEnough)
+    (ExecStmt.assign (hperm := Or.inr (by simpa only [transferFromAfterAllowanceState,
+        transferFromAfterSrcDebitState, storageStore_executionEnv] using hperm)) (evalExpr_transferFromCall_src_debit evm I hsrcEnough)
       (transferFromCallAssignSrc evm I)) ?_
   exact ExecBlock.consRevert
     (ExecStmt.requireRevert
@@ -2718,7 +2754,8 @@ theorem daiTransferFromCallBodyReverts_dstOverflow_skipMax (evm : EVM.State) (I 
     (hsrcEnough : (transferFromWadWord I).toNat ≤ (transferFromSrcBalanceWord evm I).toNat)
     (hne : AccountAddress.ofNat (transferFromSrcWord I).toNat ≠ evm.executionEnv.source)
     (hmax : (transferFromAllowanceWord evm I).toNat = UInt256.size - 1)
-    (hover : UInt256.size ≤ transferFromDstCreditNat (transferFromAfterSrcDebitState evm I) I) :
+    (hover : UInt256.size ≤ transferFromDstCreditNat (transferFromAfterSrcDebitState evm I) I)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (transferFromCallStore I) transferFromTransition.body
       .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
@@ -2736,7 +2773,8 @@ theorem daiTransferFromCallBodyReverts_dstOverflow_skipMax (evm : EVM.State) (I 
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue (evalExpr_transferFromCall_src_checkedSub_true evm I hsrcEnough)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_transferFromCall_src_debit evm I hsrcEnough)
+    (ExecStmt.assign (hperm := Or.inr (by simpa only [transferFromAfterAllowanceState,
+        transferFromAfterSrcDebitState, storageStore_executionEnv] using hperm)) (evalExpr_transferFromCall_src_debit evm I hsrcEnough)
       (transferFromCallAssignSrc evm I)) ?_
   exact ExecBlock.consRevert
     (ExecStmt.requireRevert
@@ -5088,7 +5126,7 @@ theorem daiTransferFromInternalCallRuntimeCore
               (.returned { contract := contract, locals := transferFromCallStore I }
                 (transferFromPostStateFrom evmStele I) (some [.bool true])) := by
           simpa [evmStele] using
-            daiTransferFromCallBodyReturns_skipSender evmStele I
+            daiTransferFromCallBodyReturns_skipSender (hperm := by assumption) evmStele I
               (by simp only [evmStele, initState]; exact hwv)
               hsrcEnoughBody
               (by simpa [evmStele, initState] using hsrcIsSender)
@@ -5123,7 +5161,7 @@ theorem daiTransferFromInternalCallRuntimeCore
             ExecTransitionBody config contract evmStele (transferFromCallStore I)
               transferFromTransition.body .reverted := by
           simpa [evmStele] using
-            daiTransferFromCallBodyReverts_dstOverflow_skipSender evmStele I
+            daiTransferFromCallBodyReverts_dstOverflow_skipSender (hperm := by assumption) evmStele I
               (by simp only [evmStele, initState]; exact hwv)
               hsrcEnoughBody
               (by simpa [evmStele, initState] using hsrcIsSender)
@@ -5170,7 +5208,7 @@ theorem daiTransferFromInternalCallRuntimeCore
                 (.returned { contract := contract, locals := transferFromCallStore I }
                   (transferFromPostStateFrom evmStele I) (some [.bool true])) := by
             simpa [evmStele] using
-              daiTransferFromCallBodyReturns_skipMax evmStele I
+              daiTransferFromCallBodyReturns_skipMax (hperm := by assumption) evmStele I
                 (by simp only [evmStele, initState]; exact hwv)
                 hsrcEnoughBody
                 (by simpa [evmStele, initState] using hsrcIsSender)
@@ -5206,7 +5244,7 @@ theorem daiTransferFromInternalCallRuntimeCore
               ExecTransitionBody config contract evmStele (transferFromCallStore I)
                 transferFromTransition.body .reverted := by
             simpa [evmStele] using
-              daiTransferFromCallBodyReverts_dstOverflow_skipMax evmStele I
+              daiTransferFromCallBodyReverts_dstOverflow_skipMax (hperm := by assumption) evmStele I
                 (by simp only [evmStele, initState]; exact hwv)
                 hsrcEnoughBody
                 (by simpa [evmStele, initState] using hsrcIsSender)
@@ -5266,7 +5304,7 @@ theorem daiTransferFromInternalCallRuntimeCore
                       (transferFromPostStateFrom evmAfterAllowance I)
                       (some [.bool true])) := by
                 simpa [evmAfterAllowance, evmStele] using
-                  daiTransferFromCallBodyReturns_spend evmStele I
+                  daiTransferFromCallBodyReturns_spend (hperm := by assumption) evmStele I
                     (by simp only [evmStele, initState]; exact hwv)
                     hsrcEnoughStele
                     (by simpa [evmStele, initState] using hsrcIsSender)
@@ -5308,7 +5346,7 @@ theorem daiTransferFromInternalCallRuntimeCore
                   ExecTransitionBody config contract evmStele (transferFromCallStore I)
                     transferFromTransition.body .reverted := by
                 simpa [evmAfterAllowance, evmStele] using
-                  daiTransferFromCallBodyReverts_dstOverflow_spend evmStele I
+                  daiTransferFromCallBodyReverts_dstOverflow_spend (hperm := by assumption) evmStele I
                     (by simp only [evmStele, initState]; exact hwv)
                     hsrcEnoughStele
                     (by simpa [evmStele, initState] using hsrcIsSender)
@@ -5344,7 +5382,7 @@ theorem daiTransferFromInternalCallRuntimeCore
                 ExecTransitionBody config contract evmStele (transferFromCallStore I)
                   transferFromTransition.body .reverted := by
               simpa [evmAfterAllowance, evmStele] using
-                daiTransferFromCallBodyReverts_srcDebit evmStele I
+                daiTransferFromCallBodyReverts_srcDebit (hperm := by assumption) evmStele I
                   (by simp only [evmStele, initState]; exact hwv)
                   hsrcEnoughStele
                   (by simpa [evmStele, initState] using hsrcIsSender)
@@ -5469,7 +5507,7 @@ theorem daiTransferFromBodyCore {σ σ₀ A I} {g : UInt256}
                 (.returned { contract := contract, locals := transferFromStore I }
                   (transferFromPostStateFrom evmStele I) (some [.bool true])) := by
             simpa [evmStele] using
-              daiTransferFromBodyReturns_skipSender evmStele I
+              daiTransferFromBodyReturns_skipSender (hperm := by assumption) evmStele I
                 (by simp only [evmStele, initState]; exact hwv)
                 hsrcEnoughBody
                 (by simpa [evmStele, initState] using hsrcIsSender)
@@ -5495,7 +5533,7 @@ theorem daiTransferFromBodyCore {σ σ₀ A I} {g : UInt256}
               ExecTransitionBody config contract evmStele (transferFromStore I)
                 transferFromTransition.body .reverted := by
             simpa [evmStele] using
-              daiTransferFromBodyReverts_dstOverflow_skipSender evmStele I
+              daiTransferFromBodyReverts_dstOverflow_skipSender (hperm := by assumption) evmStele I
                 (by simp only [evmStele, initState]; exact hwv)
                 hsrcEnoughBody
                 (by simpa [evmStele, initState] using hsrcIsSender)
@@ -5540,7 +5578,7 @@ theorem daiTransferFromBodyCore {σ σ₀ A I} {g : UInt256}
                   (.returned { contract := contract, locals := transferFromStore I }
                     (transferFromPostStateFrom evmStele I) (some [.bool true])) := by
               simpa [evmStele] using
-                daiTransferFromBodyReturns_skipMax evmStele I
+                daiTransferFromBodyReturns_skipMax (hperm := by assumption) evmStele I
                   (by simp only [evmStele, initState]; exact hwv)
                   hsrcEnoughBody
                   (by simpa [evmStele, initState] using hsrcIsSender)
@@ -5567,7 +5605,7 @@ theorem daiTransferFromBodyCore {σ σ₀ A I} {g : UInt256}
                 ExecTransitionBody config contract evmStele (transferFromStore I)
                   transferFromTransition.body .reverted := by
               simpa [evmStele] using
-                daiTransferFromBodyReverts_dstOverflow_skipMax evmStele I
+                daiTransferFromBodyReverts_dstOverflow_skipMax (hperm := by assumption) evmStele I
                   (by simp only [evmStele, initState]; exact hwv)
                   hsrcEnoughBody
                   (by simpa [evmStele, initState] using hsrcIsSender)
@@ -5624,7 +5662,7 @@ theorem daiTransferFromBodyCore {σ σ₀ A I} {g : UInt256}
                         (transferFromPostStateFrom evmAfterAllowance I)
                         (some [.bool true])) := by
                   simpa [evmAfterAllowance, evmStele] using
-                    daiTransferFromBodyReturns_spend evmStele I
+                    daiTransferFromBodyReturns_spend (hperm := by assumption) evmStele I
                       (by simp only [evmStele, initState]; exact hwv)
                       hsrcEnoughStele
                       (by simpa [evmStele, initState] using hsrcIsSender)
@@ -5656,7 +5694,7 @@ theorem daiTransferFromBodyCore {σ σ₀ A I} {g : UInt256}
                     ExecTransitionBody config contract evmStele (transferFromStore I)
                       transferFromTransition.body .reverted := by
                   simpa [evmAfterAllowance, evmStele] using
-                    daiTransferFromBodyReverts_dstOverflow_spend evmStele I
+                    daiTransferFromBodyReverts_dstOverflow_spend (hperm := by assumption) evmStele I
                       (by simp only [evmStele, initState]; exact hwv)
                       hsrcEnoughStele
                       (by simpa [evmStele, initState] using hsrcIsSender)
@@ -5689,7 +5727,7 @@ theorem daiTransferFromBodyCore {σ σ₀ A I} {g : UInt256}
                   ExecTransitionBody config contract evmStele (transferFromStore I)
                     transferFromTransition.body .reverted := by
                 simpa [evmAfterAllowance, evmStele] using
-                  daiTransferFromBodyReverts_srcDebit evmStele I
+                  daiTransferFromBodyReverts_srcDebit (hperm := by assumption) evmStele I
                     (by simp only [evmStele, initState]; exact hwv)
                     hsrcEnoughStele
                     (by simpa [evmStele, initState] using hsrcIsSender)

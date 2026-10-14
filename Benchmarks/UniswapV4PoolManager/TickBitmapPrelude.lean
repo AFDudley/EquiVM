@@ -58,7 +58,7 @@ theorem tickBitmapPrelude {f : Frame} {evm : EVM.State} {tick spacing : Int}
       rw [decide_eq_true ha] at heq
       exact ExecBlock.consNormal hlet (execBlock_singleton (ExecStmt.iteTrue hcond
         (ExecBlock.consNormal (ExecStmt.requireTrue heq) (execBlock_singleton
-          (ExecStmt.assign (evalSignedDiv (evalLocalValue ht1) (evalLocalValue hs1) hz)
+          (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalSignedDiv (evalLocalValue ht1) (evalLocalValue hs1) hz)
             (assignLocalValue (store_get_self _ _ _)))))))
     · rw [if_neg (by exact fun h => h.elim hz ha)]
       rw [decide_eq_false ha] at heq

@@ -62,7 +62,7 @@ theorem attestUIDDecl_source {L imms : Store} {evm : EVM.State} {len : Nat}
       .ok (.array ((List.replicate len (⟨0⟩ : UInt256)).map wordBytes32Value)) := by
     rw [List.map_replicate]
     exact evalLocalNewArray hl (by native_decide)
-  apply ExecStmt.assign he
+  apply ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) he
   simp only [assignStorageRef?,hr,updateLocalPath?,attestationsResultValue,lookupField?,
     EvalResult.ofOption,EvalResult.bind,bind,pure]
   rfl

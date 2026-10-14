@@ -35,7 +35,7 @@ theorem safeAddPrefix (imms : Store) (evm : EVM.State) (x y : UInt256) :
       (.ok (safeAddResultFrame imms x y) evm) := by
   refine ExecBlock.consNormal (stele' := safeAddZeroFrame imms x y) (evm' := evm)
     (ExecStmt.letDecl (by simp only [evalExpr?, pure])) ?_
-  refine ExecBlock.consNormal (ExecStmt.assign (value := .int (Int.ofNat (x + y).toNat)) ?_ ?_)
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (value := .int (Int.ofNat (x + y).toNat)) ?_ ?_)
     ExecBlock.nil
   · apply evalExpr_word_add
     · exact evalExpr_var_get (by simp [safeAddZeroFrame, safeAddLocals, Std.HashMap.getElem_insert])

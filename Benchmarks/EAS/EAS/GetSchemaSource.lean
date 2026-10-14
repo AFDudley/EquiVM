@@ -72,7 +72,7 @@ theorem getSchemaPrefixSource {cfg : Config} {locals : Store} {evm evm' : EVM.St
   apply ExecBlock.consNormal (ExecStmt.letDecl (evalImmutable__schemaRegistry _ _ _ _ v))
   apply ExecBlock.consNormal (ExecStmt.letDecl (getSchemaPayload_eval (by
     simpa only [store_get_ne _ _ (by decide : ("registry" == "uid") = false)] using hu)))
-  apply ExecBlock.consNormal (lowLevelCallSource_perm ?_ (by simp only [evalExpr?, pure]) ?_ hc) ExecBlock.nil
+  apply ExecBlock.consNormal (lowLevelCallSource_perm (hperm := Or.inl rfl) ?_ (by simp only [evalExpr?, pure]) ?_ hc) ExecBlock.nil
   · simp only [evalExpr?, store_get_ne _ _ (by decide : ("payload" == "registry") = false), store_get_self, EvalResult.ofOption]
   · simp only [evalExpr?, store_get_self, EvalResult.ofOption]
 

@@ -339,7 +339,8 @@ theorem ballotGiveRightToVoteBodyReturns (evm : EVM.State) (I : ExecutionEnv)
       solcAddrMask = UInt256.ofNat evm.executionEnv.source.val)
     (hvoted : UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (giveRightVotedSlot I)) ⟨255⟩ = ⟨0⟩)
-    (hweight : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (giveRightVoterSlot I) = ⟨0⟩) :
+    (hweight : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (giveRightVoterSlot I) = ⟨0⟩)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody ballotConfig ballotContract evm (giveRightStore I)
       giveRightToVoteTransition.body
       (.returned { contract := ballotContract, locals := giveRightStore I }
@@ -352,7 +353,9 @@ theorem ballotGiveRightToVoteBodyReturns (evm : EVM.State) (I : ExecutionEnv)
     (evalExpr_giveRight_notVoted_true evm I hvoted)) ?_
   refine ExecBlock.consNormal (ExecStmt.requireTrue
     (evalExpr_giveRight_weight_zero_true evm I hweight)) ?_
-  exact ExecBlock.consNormal (ExecStmt.assign (by simp [evalExpr?, pure]) (giveRightAssign evm I))
+  exact ExecBlock.consNormal (ExecStmt.assign
+    (hperm := by first | assumption | exact Or.inr ‹_› | exact Or.inl rfl)
+    (by simp [evalExpr?, pure]) (giveRightAssign evm I))
     ExecBlock.nil
 
 /-- Static mode: the body halts at the weight write. -/
@@ -1445,7 +1448,7 @@ theorem ballotGiveRightToVoteBodyCore
         · by_cases hvoted : giveRightVotedByte σ I = ⟨0⟩
           · by_cases hweight : giveRightWeightWord σ I = ⟨0⟩
             · by_cases hperm : I.perm = true
-              · have hbody := ballotGiveRightToVoteBodyReturns
+              · have hbody := ballotGiveRightToVoteBodyReturns (hperm := by assumption)
                   (initState σ σ₀ (Sat256.ofUInt256 g) A I) I
                   (by simp only [initState]; exact hwv)
                   (by

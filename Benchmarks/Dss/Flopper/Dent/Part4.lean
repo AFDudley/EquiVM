@@ -54,7 +54,8 @@ theorem flopperDentBodyReverts_addOverflow_moveCallerNe_ticZero_kissSuccess
     (haddOverflow :
       2 ^ 48 ≤
         (dentNow48Word (dentAfterGuyStore evmKiss I)).toNat +
-          (dentTtlWord (dentAfterLotStore (dentAfterGuyStore evmKiss I) I)).toNat) :
+          (dentTtlWord (dentAfterLotStore (dentAfterGuyStore evmKiss I) I)).toNat)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (dentLocals I) dentTransition.body .reverted := by
   let evmGuy := dentAfterGuyStore evmKiss I
   let evmLot := dentAfterLotStore evmGuy I
@@ -68,7 +69,7 @@ theorem flopperDentBodyReverts_addOverflow_moveCallerNe_ticZero_kissSuccess
     | inl hgt => exact evalExpr_dent_tic_guard_true_gt evm I hgt
     | inr hzero => exact evalExpr_dent_tic_guard_true_zero evm I hzero
   have htailIteLot :=
-    flopperDentBodyMoveAshKissSuccessTicZeroToLot
+    flopperDentBodyMoveAshKissSuccessTicZeroToLot (hperm := hperm)
       evm evmMove evmAsh evmKiss I outMove outAsh outKiss hcaller hcodeSize hcall
       hticMove hashCodeSize hashCall houtAsh32 hkissCodeSize hkissCall
   have htickChecked :
@@ -180,7 +181,7 @@ theorem flopperDentBodyReturns_success_moveCallerNe_ticZero_kissSuccessSplit
         (EVM.address (AccountAddress.ofNat (dentGuyWord evmAsh I).toNat)) "kiss" 0
         [.int (Int.ofNat (dentKissAmtWord I outAsh).toNat)]
         (true, evmKiss, outKiss) true) :
-    (((dentNow48Word (dentAfterGuyStore evmKiss I)).toNat +
+    (evm.executionEnv.perm = true → ((dentNow48Word (dentAfterGuyStore evmKiss I)).toNat +
           (dentTtlWord (dentAfterLotStore (dentAfterGuyStore evmKiss I) I)).toNat <
         2 ^ 48) →
       ExecTransitionBody config contract evm (dentLocals I) dentTransition.body
@@ -237,8 +238,8 @@ theorem flopperDentBodyReturns_success_moveCallerNe_ticZero_kissSuccessSplit
           (ExecStmt.requireTrue (evalExpr_dent_decrease_true evm I hsuff)) <|
         htail)
   constructor
-  · intro haddFit
-    have htailIteLot := htailIteLotSplit.1
+  · intro hperm haddFit
+    have htailIteLot := htailIteLotSplit.1 hperm
     have htickLet :
         ExecBlock config { contract := contract, locals := dentKissRetLocals evm I outAsh }
             evmLot
@@ -254,7 +255,7 @@ theorem flopperDentBodyReturns_success_moveCallerNe_ticZero_kissSuccessSplit
             (ExecStmt.requireTrue
               (evalExpr_dent_tic_guard_true_kissRetLocals evm evmGuy I outAsh haddFit)) <|
           ExecBlock.consNormal
-            (ExecStmt.assign
+            (ExecStmt.assign (hperm := Or.inr (by simpa only [dentAfterLotStore_executionEnv, evmGuy, dentAfterGuyStore, storageStore_executionEnv, typedCallViaEVM_executionEnv_eq hkissCall, typedCallViaEVM_executionEnv_eq hashCall, typedCallViaEVM_executionEnv_eq hcall] using hperm))
               (evalExpr_dent_tic_var_kissRetTicLocals evm evmGuy I outAsh)
               (assign_dentTicStorage_value_of_locals evmGuy I
                 (dentKissRetTicLocals_get_id evm evmGuy I outAsh)
@@ -338,7 +339,8 @@ theorem flopperDentBodyReturns_success_moveCallerNe_ticZero_kissSuccess
     (haddFit :
       (dentNow48Word (dentAfterGuyStore evmKiss I)).toNat +
           (dentTtlWord (dentAfterLotStore (dentAfterGuyStore evmKiss I) I)).toNat <
-        2 ^ 48) :
+        2 ^ 48)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (dentLocals I) dentTransition.body
       (.returned
         { contract := contract
@@ -347,7 +349,7 @@ theorem flopperDentBodyReturns_success_moveCallerNe_ticZero_kissSuccess
   (flopperDentBodyReturns_success_moveCallerNe_ticZero_kissSuccessSplit
     evm evmMove evmAsh evmKiss I outMove outAsh outKiss hwv hlive hguy hticOk hendGt hbid
     hlotLt hbegFit hlotOneFit hsuff hcaller hcodeSize hcall hticMove hashCodeSize
-    hashCall houtAsh32 hkissCodeSize hkissCall).1 haddFit
+    hashCall houtAsh32 hkissCodeSize hkissCall).1 hperm haddFit
 
 set_option maxHeartbeats 1000000 in
 theorem flopperDentBodyReverts_addOverflow_moveCallerNe_ticNonzero
@@ -378,7 +380,8 @@ theorem flopperDentBodyReverts_addOverflow_moveCallerNe_ticNonzero
     (haddOverflow :
       2 ^ 48 ≤
         (dentNow48Word (dentAfterGuyStore evmMove I)).toNat +
-          (dentTtlWord (dentAfterLotStore (dentAfterGuyStore evmMove I) I)).toNat) :
+          (dentTtlWord (dentAfterLotStore (dentAfterGuyStore evmMove I) I)).toNat)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (dentLocals I) dentTransition.body .reverted := by
   let evmGuy := dentAfterGuyStore evmMove I
   let evmLot := dentAfterLotStore evmGuy I
@@ -392,7 +395,7 @@ theorem flopperDentBodyReverts_addOverflow_moveCallerNe_ticNonzero
     | inl hgt => exact evalExpr_dent_tic_guard_true_gt evm I hgt
     | inr hzero => exact evalExpr_dent_tic_guard_true_zero evm I hzero
   have htailIteLot :=
-    flopperDentBodyMoveSuccessTicNonzeroToLot evm evmMove I out hcaller hcodeSize hcall
+    flopperDentBodyMoveSuccessTicNonzeroToLot (hperm := hperm) evm evmMove I out hcaller hcodeSize hcall
       hticMove
   have htickChecked :
       ExecBlock config { contract := contract, locals := dentMoveLocals evm I } evmLot
@@ -483,7 +486,7 @@ theorem flopperDentBodyReturns_success_moveCallerNe_ticNonzeroSplit
           .int (Int.ofNat (dentBidWord I).toNat)]
         (true, evmMove, out) true)
     (hticMove : dentTicWord evmMove I ≠ ⟨0⟩) :
-    (((dentNow48Word (dentAfterGuyStore evmMove I)).toNat +
+    (evm.executionEnv.perm = true → ((dentNow48Word (dentAfterGuyStore evmMove I)).toNat +
           (dentTtlWord (dentAfterLotStore (dentAfterGuyStore evmMove I) I)).toNat <
         2 ^ 48) →
       ExecTransitionBody config contract evm (dentLocals I) dentTransition.body
@@ -538,8 +541,8 @@ theorem flopperDentBodyReturns_success_moveCallerNe_ticNonzeroSplit
           (ExecStmt.requireTrue (evalExpr_dent_decrease_true evm I hsuff)) <|
         htail)
   constructor
-  · intro haddFit
-    have htailIteLot := htailIteLotSplit.1
+  · intro hperm haddFit
+    have htailIteLot := htailIteLotSplit.1 hperm
     have htickLet :
         ExecBlock config { contract := contract, locals := dentMoveLocals evm I } evmLot
           (checkedAdd48Into "tic_" now48 (.storage ttlRef) ++
@@ -553,7 +556,7 @@ theorem flopperDentBodyReturns_success_moveCallerNe_ticNonzeroSplit
             (ExecStmt.requireTrue
               (evalExpr_dent_tic_guard_true_moveLocals evm evmGuy I haddFit)) <|
           ExecBlock.consNormal
-            (ExecStmt.assign (evalExpr_dent_tic_var_moveTicLocals evm evmGuy I)
+            (ExecStmt.assign (hperm := Or.inr (by simpa only [dentAfterLotStore_executionEnv, evmGuy, dentAfterGuyStore, storageStore_executionEnv, typedCallViaEVM_executionEnv_eq hcall] using hperm)) (evalExpr_dent_tic_var_moveTicLocals evm evmGuy I)
               (assign_dentTicStorage_value_of_locals evmGuy I
                 (dentMoveTicLocals_get_id evm evmGuy I)
                 (dentMoveTicLocals_get_bids evm evmGuy I) haddFit))
@@ -619,14 +622,15 @@ theorem flopperDentBodyReturns_success_moveCallerNe_ticNonzero
     (haddFit :
       (dentNow48Word (dentAfterGuyStore evmMove I)).toNat +
           (dentTtlWord (dentAfterLotStore (dentAfterGuyStore evmMove I) I)).toNat <
-        2 ^ 48) :
+        2 ^ 48)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (dentLocals I) dentTransition.body
       (.returned
         { contract := contract, locals := dentMoveTicLocals evm (dentAfterGuyStore evmMove I) I }
         (dentPostState (dentAfterGuyStore evmMove I) I) none) :=
   (flopperDentBodyReturns_success_moveCallerNe_ticNonzeroSplit
     evm evmMove I out hwv hlive hguy hticOk hendGt hbid hlotLt hbegFit hlotOneFit hsuff hcaller
-    hcodeSize hcall hticMove).1 haddFit
+    hcodeSize hcall hticMove).1 hperm haddFit
 
 set_option maxHeartbeats 1000000 in
 theorem flopperDentBodyReverts_addOverflow_callerEq (evm : EVM.State) (I : ExecutionEnv)
@@ -645,7 +649,8 @@ theorem flopperDentBodyReverts_addOverflow_callerEq (evm : EVM.State) (I : Execu
     (hcaller : UInt256.ofNat evm.executionEnv.source.val = dentGuyWord evm I)
     (haddOverflow :
       2 ^ 48 ≤
-        (dentNow48Word evm).toNat + (dentTtlWord (dentAfterLotStore evm I)).toNat) :
+        (dentNow48Word evm).toNat + (dentTtlWord (dentAfterLotStore evm I)).toNat)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (dentLocals I) dentTransition.body .reverted := by
   let evmLot := dentAfterLotStore evm I
   have hticGuard :
@@ -678,7 +683,7 @@ theorem flopperDentBodyReverts_addOverflow_callerEq (evm : EVM.State) (I : Execu
         (.ok { contract := contract, locals := dentLotOneLocals evm I } evmLot) := by
     exact ExecBlock.consNormal (ExecStmt.iteFalse hcallerCond ExecBlock.nil) <|
       ExecBlock.consNormal
-        (ExecStmt.assign (evalExpr_dent_lot_var_lotOneLocals evm I)
+        (ExecStmt.assign (hperm := Or.inr hperm) (evalExpr_dent_lot_var_lotOneLocals evm I)
           (by simpa [evmLot] using assign_dentLotStorage evm I))
         ExecBlock.nil
   have htickChecked :
@@ -756,7 +761,7 @@ theorem flopperDentBodyReturns_success_callerEqSplit (evm : EVM.State) (I : Exec
     (hlotOneFit : (dentLotStoredWord evm I).toNat * dentOneWord.toNat < UInt256.size)
     (hsuff : (dentBegLotWord evm I).toNat ≤ (dentLotOneWord evm I).toNat)
     (hcaller : UInt256.ofNat evm.executionEnv.source.val = dentGuyWord evm I) :
-    (((dentNow48Word evm).toNat + (dentTtlWord (dentAfterLotStore evm I)).toNat <
+    (evm.executionEnv.perm = true → ((dentNow48Word evm).toNat + (dentTtlWord (dentAfterLotStore evm I)).toNat <
         2 ^ 48) →
       ExecTransitionBody config contract evm (dentLocals I) dentTransition.body
       (.returned { contract := contract, locals := dentTicLocals evm I }
@@ -807,7 +812,7 @@ theorem flopperDentBodyReturns_success_callerEqSplit (evm : EVM.State) (I : Exec
           (ExecStmt.requireTrue (evalExpr_dent_decrease_true evm I hsuff)) <|
         htail)
   constructor
-  · intro haddFit
+  · intro hperm haddFit
     have htailIteLot :
         ExecBlock config { contract := contract, locals := dentLotOneLocals evm I } evm
           [.ite (.binary .ne sender (.storage (bidsF (.var "id") "guy")))
@@ -827,7 +832,7 @@ theorem flopperDentBodyReturns_success_callerEqSplit (evm : EVM.State) (I : Exec
           (.ok { contract := contract, locals := dentLotOneLocals evm I } evmLot) := by
       exact ExecBlock.consNormal (ExecStmt.iteFalse hcallerCond ExecBlock.nil) <|
         ExecBlock.consNormal
-          (ExecStmt.assign (evalExpr_dent_lot_var_lotOneLocals evm I)
+          (ExecStmt.assign (hperm := Or.inr (by simpa only [dentAfterLotStore_executionEnv] using hperm)) (evalExpr_dent_lot_var_lotOneLocals evm I)
             (by simpa [evmLot] using assign_dentLotStorage evm I))
           ExecBlock.nil
     have htickLet :
@@ -840,7 +845,7 @@ theorem flopperDentBodyReturns_success_callerEqSplit (evm : EVM.State) (I : Exec
           ExecBlock.consNormal
             (ExecStmt.requireTrue (evalExpr_dent_tic_guard_true evm I haddFit)) <|
           ExecBlock.consNormal
-            (ExecStmt.assign (evalExpr_dent_tic_var evm I)
+            (ExecStmt.assign (hperm := Or.inr (by simpa only [dentAfterLotStore_executionEnv] using hperm)) (evalExpr_dent_tic_var evm I)
               (assign_dentTicStorage_value evm I haddFit))
             ExecBlock.nil)
     have htail :
@@ -887,12 +892,13 @@ theorem flopperDentBodyReturns_success_callerEq (evm : EVM.State) (I : Execution
     (hcaller : UInt256.ofNat evm.executionEnv.source.val = dentGuyWord evm I)
     (haddFit :
       (dentNow48Word evm).toNat + (dentTtlWord (dentAfterLotStore evm I)).toNat <
-        2 ^ 48) :
+        2 ^ 48)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (dentLocals I) dentTransition.body
       (.returned { contract := contract, locals := dentTicLocals evm I }
         (dentPostState evm I) none) :=
   (flopperDentBodyReturns_success_callerEqSplit
-    evm I hwv hlive hguy hticOk hendGt hbid hlotLt hbegFit hlotOneFit hsuff hcaller).1 haddFit
+    evm I hwv hlive hguy hticOk hendGt hbid hlotLt hbegFit hlotOneFit hsuff hcaller).1 hperm haddFit
 
 theorem dentRuntimeAfterLotMap_source_eq
     {σ σ₀ A I} {g : UInt256} :

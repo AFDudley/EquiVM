@@ -71,7 +71,7 @@ theorem flapBeforeDaiSuccess
           (perm := false))
         (.ok { contract := contract, locals := locals1 } evmSin) := by
     simpa [locals, locals1, flapLocalsVatSin0, collapseReturns] using
-      ExecStmt.externalCallSuccess hvat (by simp [evalExpr?, pure]) hargsSin hcallSin hdecSin
+      ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hvat (by simp [evalExpr?, pure]) hargsSin hcallSin hdecSin
   have hvatSin0Var :
       evalExpr? config { contract := contract, locals := locals1 } evmSin (.var "vatSin0") =
         .ok (.int (Int.ofNat vatSin0.toNat)) := by
@@ -301,7 +301,7 @@ theorem flapSourceDai0CallFailure
       ExecStmt config { contract := contract, locals := locals3 } evmSin
         (.externalCall (.storage vatRef) "dai" (.intLit 0) [thisAddr] "vatDai"
           (perm := false)) .reverted := by
-    exact ExecStmt.externalCallFailure hvatDai (by simp [evalExpr?, pure])
+    exact ExecStmt.externalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hvatDai (by simp [evalExpr?, pure])
       hargsDai hcallDai
   have htail :
       ExecBlock config { contract := contract, locals := locals3 } evmSin
@@ -390,7 +390,7 @@ theorem flapSourceDai0DecodeRevert
       ExecStmt config { contract := contract, locals := locals3 } evmSin
         (.externalCall (.storage vatRef) "dai" (.intLit 0) [thisAddr] "vatDai"
           (perm := false)) .reverted := by
-    exact ExecStmt.externalCallReturnDecodeRevert hvatDai (by simp [evalExpr?, pure])
+    exact ExecStmt.externalCallReturnDecodeRevert (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hvatDai (by simp [evalExpr?, pure])
       hargsDai hcallDai hdecDai
   have htail :
       ExecBlock config { contract := contract, locals := locals3 } evmSin

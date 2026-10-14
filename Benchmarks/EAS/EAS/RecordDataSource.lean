@@ -21,7 +21,8 @@ theorem recordDataAssign {L imms : Store} {evm : EVM.State} {word : UInt256} {by
 
 theorem recordDataSource {L imms : Store} {evm : EVM.State} {word : UInt256} {a : AttestationRecord}
     (hd : L.get? "_db" = none) (hu : L.get? "uid" = some (wordBytes32Value word))
-    (ha : L.get? "attestation" = some a.value) :
+    (ha : L.get? "attestation" = some a.value)
+    (hperm : evm.executionEnv.perm = true) :
     if storedBytesValid (attestationHeader evm word) then
       ExecStmt config {contract := contract,locals := L,immutables := imms} evm (attestationWriteStmt "data")
         (.ok {contract := contract,locals := L,immutables := imms}
@@ -34,7 +35,7 @@ theorem recordDataSource {L imms : Store} {evm : EVM.State} {word : UInt256} {a 
   split at hw
   · rename_i hv
     rw [if_pos hv]
-    exact ExecStmt.assign he hw
+    exact ExecStmt.assign (hperm := Or.inr hperm) he hw
   · rename_i hv
     rw [if_neg hv]
     exact ExecStmt.assignStoreRevert he hw

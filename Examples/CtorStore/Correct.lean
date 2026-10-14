@@ -327,12 +327,14 @@ theorem ctorStoreAssign (evm : EVM.State) (L : Store) (i : Int)
 theorem ctorStoreCtorBodyReturns (evm : EVM.State) (locals : Store) (i : Int)
     (h0 : 0 ≤ i)
     (hx : locals.get? "x" = some (.int i))
-    (hbase : locals.get? "stored" = none) :
+    (hbase : locals.get? "stored" = none) (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody ctorStoreConfig CtorStore.contract evm locals CtorStore.contract.ctor.body
       (.returned { contract := CtorStore.contract, locals := locals }
         (EVM.storageStore evm evm.executionEnv.codeOwner ⟨0⟩ (EVM.word i.toNat)) none) := by
   refine ExecFuncBody.execBlockOK
-    (ExecBlock.consNormal (ExecStmt.assign ?_ (ctorStoreAssign evm locals i h0 hbase)) ExecBlock.nil)
+    (ExecBlock.consNormal (ExecStmt.assign
+      (hperm := Or.inr hperm)
+      ?_ (ctorStoreAssign evm locals i h0 hbase)) ExecBlock.nil)
   show evalExpr? ctorStoreConfig _ evm (.var "x") = .ok (.int i)
   simp only [evalExpr?, EvalResult.ofOption, hx]
 
@@ -342,7 +344,7 @@ theorem ctorStoreSteleCtorExec
     {g : Ethereum.UInt256}
     {A : Ethereum.Substate}
     {I : Ethereum.ExecutionEnv}
-    (i : Int) (h0 : 0 ≤ i) :
+    (i : Int) (h0 : 0 ≤ i) (hperm : I.perm = true) :
     steleCtorExec ctorStoreConfig CtorStore.contract [.int i] σ σ₀ g A I
       (.returned
         { contract := CtorStore.contract
@@ -358,7 +360,7 @@ theorem ctorStoreSteleCtorExec
   · rfl
   · exact ctorStoreCtorBodyReturns _ _ i h0
       (by simp [CtorStore.contract, CtorStore.ctor])
-      (by simp [CtorStore.contract, CtorStore.ctor])
+      (by simp [CtorStore.contract, CtorStore.ctor]) hperm
 
 /-- The creation/initcode bytecode refines the Stele constructor specification. -/
 theorem ctorStoreConstructorCorrect :
@@ -382,7 +384,7 @@ theorem ctorStoreConstructorCorrect :
     rw [hacc] at hsuccess
     refine typedConstructorRefinementFor.execution hsuccess
       (ctorStoreSteleCtorExec (σ := σ) (σ₀ := σ₀) (g := g) (A := A) (I := I)
-        i h0) ?_
+        i h0 hperm) ?_
     refine ctorResultEquiv.success rfl rfl ?_ rfl
     simp [storageStore_accountMap, initState]
 

@@ -334,7 +334,7 @@ theorem endFileUintSourceWaitOkSplit {σ σ₀ A I} {g : UInt256}
     let locals := endFileUintLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let evm1 := endFileUintPostState evm0 I
-    (ExecTransitionBody config contract evm0 locals fileUintTransition.body
+    (I.perm = true → ExecTransitionBody config contract evm0 locals fileUintTransition.body
       (.returned { contract := contract, locals := locals } evm1 none)) ∧
       (I.perm = false → ExecTransitionBody config contract evm0 locals
         fileUintTransition.body .staticViolation) := by
@@ -379,8 +379,9 @@ theorem endFileUintSourceWaitOkSplit {σ σ₀ A I} {g : UInt256}
     refine ExecBlock.consNormal (ExecStmt.requireTrue hguardLive) ?_
     exact execBlock_singleton (ExecStmt.iteTrue hcond hwrite)
   constructor
-  · exact ExecFuncBody.execBlockOK
-      (hprefix (ExecBlock.consNormal (ExecStmt.assign hdata hassign) ExecBlock.nil))
+  · intro hperm
+    exact ExecFuncBody.execBlockOK
+      (hprefix (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hdata hassign) ExecBlock.nil))
   · intro hperm
     exact ExecFuncBody.execBlockStatic
       (hprefix (ExecBlock.consStatic (ExecStmt.assignStatic hdata hassign
@@ -1044,7 +1045,7 @@ theorem endFileUintBody {σ σ₀ A I} {g : UInt256}
               calldataWord I.calldata 4 = ABI.bytesToWord endFileUintWaitBytes := by
             rw [← endFileUintWhatWord_eq (I := I) hsz36, hwait]
           have hbodySplit :
-              (ExecTransitionBody config contract evmStele (endFileUintLocals I)
+              (I.perm = true → ExecTransitionBody config contract evmStele (endFileUintLocals I)
                 fileUintTransition.body
                 (.returned { contract := contract, locals := endFileUintLocals I }
                   (endFileUintPostState evmStele I) none)) ∧
@@ -1058,7 +1059,7 @@ theorem endFileUintBody {σ σ₀ A I} {g : UInt256}
             ⟨_hperm, hret⟩ | ⟨hperm, hstatic⟩
           swap
           · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode (hbodySplit.2 hperm)
-          exact hret.reEquivExecutionGen hcode hdispatch hdecode hbodySplit.1
+          exact hret.reEquivExecutionGen hcode hdispatch hdecode (hbodySplit.1 _hperm)
               (by simp [endFileUintPostState, evmStele, initState, storageStore_accountMap])
               (by
                 simpa [fileUintTransition] using

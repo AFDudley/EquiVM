@@ -320,7 +320,8 @@ theorem accessControlGrantRoleBodyReturns_write (evm : EVM.State) (I : Execution
         ⟨255⟩ ≠ ⟨0⟩)
     (htarget : UInt256.land
       (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (grantRoleTargetSlot I)) ⟨255⟩ =
-        ⟨0⟩) :
+        ⟨0⟩)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (grantRoleStore I) grantRoleTransition.body
       (.returned { contract := contract, locals := grantRoleStoreWithAdmin evm I }
         (grantRolePostState evm I) none) := by
@@ -335,7 +336,9 @@ theorem accessControlGrantRoleBodyReturns_write (evm : EVM.State) (I : Execution
       (grantRolePostState evm I))
       (evalExpr_grantRole_target_not_true evm I hsz68 htarget) ?_) ?_
   · refine ExecBlock.consNormal
-      (ExecStmt.assign (by simp [evalExpr?, pure]) (grantRoleAssignTarget evm I hsz68)) ?_
+      (ExecStmt.assign
+        (hperm := by first | assumption | exact Or.inr ‹_› | exact Or.inl rfl)
+        (by simp [evalExpr?, pure]) (grantRoleAssignTarget evm I hsz68)) ?_
     exact ExecBlock.nil
   exact ExecBlock.nil
 
@@ -1257,7 +1260,7 @@ theorem accessControlGrantRoleBody {σ σ₀ A I}
                 grantRoleTargetStorageWord, grantRoleStorageWordAt, revokeRoleStorageWordAt] using
                   htarget
             by_cases hperm : I.perm = true
-            · have hbody := accessControlGrantRoleBodyReturns_write evmS I hsz68
+            · have hbody := accessControlGrantRoleBodyReturns_write (hperm := hperm) evmS I hsz68
                 (by simp only [evmS, initState]; exact hwv) hadminStele htargetStele
               exact (permSplit_true hperm (accessControlGrantRoleX_grant_write
                   (g := Sat256.ofUInt256 g) hsz68 hcanonAccount htarget rd379))

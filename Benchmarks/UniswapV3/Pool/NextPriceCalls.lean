@@ -79,7 +79,7 @@ theorem nextPriceCallAssign (imms : Store) (evm : EVM.State) (input : Bool)
     ExecStmt config (nextPriceCallFrame imms input a) evm
       (.assign .localVar ⟨"__cond2", []⟩ (.var (nextPriceCallName a)))
       (.ok (nextPriceResultFrame imms input a) evm) := by
-  apply ExecStmt.assign (evalExpr_var_get Std.HashMap.getElem?_insert_self)
+  apply ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalExpr_var_get Std.HashMap.getElem?_insert_self)
   apply assignLocalVarBase_frame (old := .int 0)
   cases hz : a.zeroForOne <;>
     simp only [nextPriceCallFrame, nextPriceCallName, hz, Bool.false_eq_true,

@@ -42,7 +42,7 @@ theorem absorbPointsCounts_source (frame : Frame) (evm : State) (p : LiquidatorP
     have hinc := checkedNarrowAddSourceOk ⟨32, by decide⟩ (by decide)
       (evalLiquidatorPointsLocalField 0 he) hone hi
     have hstep : ExecStmt config frame evm absorbPointsCountsBlock[0]!
-        (.ok f1 evm) := ExecStmt.assign hinc (assignLiquidatorPointsLocalField 0 _ hp)
+        (.ok f1 evm) := ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hinc (assignLiquidatorPointsLocalField 0 _ hp)
     have halen : evalExpr? config f1 evm (.arrayLength .localVar ⟨"accounts", []⟩) =
         .ok (.int n.toNat) := by
       have ha' := ha
@@ -66,7 +66,7 @@ theorem absorbPointsCounts_source (frame : Frame) (evm : State) (p : LiquidatorP
       have hadd := checkedNarrowAddSourceOk ⟨64, by decide⟩ (by decide)
         (evalLiquidatorPointsLocalField 1 he2) hn2 hj
       exact ExecBlock.consNormal hstep (ExecBlock.consNormal hcall
-        (ExecBlock.consNormal (ExecStmt.assign hadd
+        (ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hadd
           (assignLiquidatorPointsLocalField 1 (p.absorbed + n) hp2)) ExecBlock.nil))
     · rw [if_neg (fun hh ↦ hj hh.2)]
       have hadd := uintRangeSourceOverflow ⟨64, by decide⟩

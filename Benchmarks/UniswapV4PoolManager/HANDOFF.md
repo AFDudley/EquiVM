@@ -1402,7 +1402,7 @@ This correction changes only the Stele model; the pinned Solidity and bytecode a
 
 - Upstream: `Uniswap/v4-core`, commit `46c6834698c48bc4a463a86d8420f4eb1d7f3b75`.
 - Main contract: `src/PoolManager.sol:PoolManager`; 45 source units in `contracts/`.
-- Solmate: `4b47a19038b798b4a33d9749d25e570443520647`.
+- Steleate: `4b47a19038b798b4a33d9749d25e570443520647`.
 - Compiler: `0.8.26+commit.8a97fa7a.Linux.g++`; binary SHA-256
   `d5f23436f443edb85d8e76906d12f0a86ce0490e7663a9e608efeb7a93f149ef`.
 - Settings from the pinned `foundry.toml`: optimizer enabled, 44,444,444 runs,
@@ -1428,7 +1428,7 @@ PYTHONDONTWRITEBYTECODE=1 python3 scripts/scaffold.py all \
   --remapping ds-test/=lib/forge-std/lib/ds-test/src/ \
   --remapping forge-std/=lib/forge-std/src/ \
   --remapping hardhat/=node_modules/hardhat/ \
-  --remapping solmate/=lib/solmate/ --no-register
+  --remapping steleate/=lib/steleate/ --no-register
 ```
 
 Final checks:

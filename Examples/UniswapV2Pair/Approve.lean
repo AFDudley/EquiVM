@@ -137,13 +137,16 @@ theorem uniswapDecode_approve_ok_noncanon {I : ExecutionEnv}
 /-- The Stele `approve(address,uint256)` body writes `allowance[msg.sender][spender]` and returns
     `true`. -/
 theorem uniswapApproveBodyReturns (evm : EVM.State) (I : ExecutionEnv)
-    (h : evm.executionEnv.weiValue = ⟨0⟩) :
+    (h : evm.executionEnv.weiValue = ⟨0⟩)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (approveStore I) approveTransition.body
       (.returned { contract := contract, locals := approveStore I } (approvePostState evm I)
         (some [(.bool true)])) := by
   refine ExecFuncBody.execBlockRet ?_
   refine ExecBlock.consNormal (ExecStmt.requireTrue (evalCallvalueEq_true h)) ?_
-  refine ExecBlock.consNormal (ExecStmt.assign (evalExpr_approve_value evm I)
+  refine ExecBlock.consNormal (ExecStmt.assign
+    (hperm := Or.inr hperm)
+    (evalExpr_approve_value evm I)
     (approveAssign evm I)) ?_
   exact ExecBlock.consReturn (ExecStmt.return (by simp [evalExprs?, evalExpr?, EvalResult.bind, bind, pure]))
 
@@ -398,7 +401,7 @@ theorem uniswapApproveBodyCoreOk
       ExecTransitionBody config contract evmS (approveStore I) approveTransition.body
         (.returned { contract := contract, locals := approveStore I }
           (approvePostState evmS I) (some [(.bool true)])) := by
-    exact uniswapApproveBodyReturns evmS I (by simp only [evmS, initState]; exact hwv)
+    exact uniswapApproveBodyReturns (hperm := by assumption) evmS I (by simp only [evmS, initState]; exact hwv)
   have hslotS :
       approveStorageSlot evmS I =
         mapSlot (approveSpenderMaskedWord I) (mapSlot (uniswapSourceWord I) ⟨2⟩) := by

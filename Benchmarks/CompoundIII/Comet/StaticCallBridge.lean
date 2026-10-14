@@ -62,7 +62,8 @@ theorem lowLevelCallSourceWithPerm {cfg : Config} {frame : Frame} {evm evm' : EV
     (hr : evalExpr? cfg frame evm receiver = .ok (.address target))
     (hv : evalExpr? cfg frame evm eth = .ok (.int value))
     (hd : evalExpr? cfg frame evm cdata = .ok (.bytes calldata))
-    (hc : callViaEVM evm target value calldata (z, evm', out) perm) :
+    (hc : callViaEVM evm target value calldata (z, evm', out) perm)
+    (hperm : EVM.wordOfInt value = ⟨0⟩ ∨ evm.executionEnv.perm = true) :
     ExecStmt cfg frame evm (.lowLevelCall receiver eth cdata success data (perm := perm))
       (.ok { frame with locals := (frame.locals.insert success (.bool z)).insert data (.bytes out) }
         evm') := by
@@ -71,7 +72,7 @@ theorem lowLevelCallSourceWithPerm {cfg : Config} {frame : Frame} {evm evm' : EV
     exact Nat.mod_eq_of_lt target.isLt
   rw [← ht] at hc
   cases z with
-  | false => exact ExecStmt.lowLevelCallFailure hr hv hd hc
-  | true => exact ExecStmt.lowLevelCallSuccess hr hv hd hc
+  | false => exact ExecStmt.lowLevelCallFailure (hperm := hperm) hr hv hd hc
+  | true => exact ExecStmt.lowLevelCallSuccess (hperm := hperm) hr hv hd hc
 
 end Benchmarks.CompoundIII.Comet

@@ -74,7 +74,7 @@ theorem pricePrefix_exec (imms : Store) (addr : AccountAddress) (evm evm' : EVM.
     ExecBlock config (priceEntry imms addr) evm pricePrefix
       (.ok (priceCallFrame imms addr z out) evm') := by
   apply ExecBlock.consNormal (ExecStmt.letDecl (pricePayload_eval _ _))
-  apply ExecBlock.consNormal (lowLevelCallSourceWithPerm (target := addr)
+  apply ExecBlock.consNormal (lowLevelCallSourceWithPerm (hperm := Or.inl rfl) (target := addr)
     (value := 0) (calldata := pricePayload) ?_ (by simp only [evalExpr?, pure]) ?_ hc)
   · exact ExecBlock.nil
   all_goals

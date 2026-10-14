@@ -48,7 +48,8 @@ theorem flashGrowthReturns (locals imms : Store) (evm : EVM.State) (second : Boo
     (hf : locals.get? (flashProtocolFeesName second) = some (.int (Int.ofNat fees.toNat)))
     (hl : locals.get? "_liquidity" = some (.int (Int.ofNat liquidity.toNat)))
     (hbase : locals.get? (feeGrowthName second) = none)
-    (hv : fullMathValid (UInt256.sub paid fees) (UInt256.ofNat (2 ^ 128)) liquidity) :
+    (hv : fullMathValid (UInt256.sub paid fees) (UInt256.ofNat (2 ^ 128)) liquidity)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config {contract := contract, locals := locals, immutables := imms} evm
       (flashGrowthStmts second) (.ok (flashGrowthFrame locals imms second paid fees liquidity)
         (addFeeGrowth evm second (flashGrowthResult paid fees liquidity))) := by
@@ -68,7 +69,7 @@ theorem flashGrowthReturns (locals imms : Store) (evm : EVM.State) (second : Boo
     cases second <;>
       simpa [flashGrowthFrame, flashGrowthCallName, feeGrowthName,
         Std.HashMap.getElem?_insert] using hbase
-  exact ExecStmt.assign (evalExpr_word_add
+  exact ExecStmt.assign (hperm := Or.inr hperm) (evalExpr_word_add
     (evalFeeGrowth _ imms evm second hbase')
     (evalExpr_var_get (by simp [flashGrowthFrame, Std.HashMap.getElem?_insert])))
     (assignFeeGrowth _ imms evm second _ hbase')

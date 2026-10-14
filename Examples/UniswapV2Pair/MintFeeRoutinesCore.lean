@@ -183,7 +183,7 @@ theorem uniswapMintFeeCheckedCallFailure
         (perm := false))
       .reverted := by
   simpa [checkedExternalCallStmts] using
-    checkedExternalCallFailure
+    checkedExternalCallFailure (hperm := Or.inl rfl)
       (cfg := config) (C := contract) (evm := evm) (evm' := evmFee)
       (locals := mintFeeCallStore reserve0 reserve1)
       (receiver := .storage factoryRef) (name := "feeTo") (sendVal := 0)
@@ -207,7 +207,7 @@ theorem uniswapMintFeeCheckedCallDecodeRevert
         (perm := false))
       .reverted := by
   simpa [checkedExternalCallStmts] using
-    checkedExternalCallDecodeRevert
+    checkedExternalCallDecodeRevert (hperm := Or.inl rfl)
       (cfg := config) (C := contract) (evm := evm) (evm' := evmFee)
       (locals := mintFeeCallStore reserve0 reserve1)
       (receiver := .storage factoryRef) (name := "feeTo") (sendVal := 0)
@@ -275,7 +275,7 @@ theorem uniswapMintFeeCheckedCallSuccess
         (perm := false))
       (.ok (mintFeeAfterFeeToFrame reserve0 reserve1 feeTo) evmFee) := by
   simpa [checkedExternalCallStmts, mintFeeAfterFeeToFrame, mintFeeAfterFeeToStore] using
-    checkedExternalCallSuccess
+    checkedExternalCallSuccess (hperm := Or.inl rfl)
       (cfg := config) (C := contract) (evm := evm) (evm' := evmFee)
       (locals := mintFeeCallStore reserve0 reserve1)
       (receiver := .storage factoryRef) (name := "feeTo") (sendVal := 0)
@@ -1275,7 +1275,8 @@ theorem uniswapMintFeePositiveRootBranch_withLiquidity
         UInt256.size)
     (hfitBalance :
       mintFunctionToBalanceNewNat evm feeTo (mintFeeLiquidityWord evm rootK rootKLast) <
-        UInt256.size) :
+        UInt256.size)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config
       (mintFeeAfterRootKLastFrame reserve0 reserve1 feeTo true kLast rootK rootKLast) evm
       mintFeePositiveRootBranchStmts
@@ -1327,7 +1328,7 @@ theorem uniswapMintFeePositiveRootBranch_withLiquidity
         (.ok (mintFeeAfterFeeMintFrame evm reserve0 reserve1 feeTo kLast rootK rootKLast)
           (mintFunctionPostState evm feeTo (mintFeeLiquidityWord evm rootK rootKLast))) := by
     simpa [mintFeeAfterFeeMintFrame, mintFeeAfterFeeMintStore, resumeAfterInternalCall] using
-      uniswapMintFunctionCallSuccess
+      uniswapMintFunctionCallSuccess (hperm := by assumption)
         (caller := mintFeeAfterLiquidityFrame evm reserve0 reserve1 feeTo true kLast rootK
           rootKLast)
         (evm := evm) (recipient := feeTo)

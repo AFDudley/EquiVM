@@ -78,10 +78,10 @@ theorem morphoRepayPositionRefine {v : MorphoImmutables} {ee : ExecutionEnv} {g 
     simpa only [hs.env, ← hs.accounts] using hf
   have hass : ExecStmt config { contract := contract, locals := l1, immutables := imms }
       evm repayTransition.body[13]!
-      (.ok { contract := contract, locals := l1, immutables := imms }
+      (if evm.executionEnv.perm then .ok { contract := contract, locals := l1, immutables := imms }
         (storePositionPacked evm p.id account false
-          (UInt256.sub (positionFieldWord evm.accountMap evm.executionEnv p.id account 1) shares))) :=
-    ExecStmt.assign (evalCheckedUint128SubOk (hl1.evalPositionBorrowShares imms evm ha) he5 hb' hf')
+          (UInt256.sub (positionFieldWord evm.accountMap evm.executionEnv p.id account 1) shares)) else .staticViolation) :=
+    execStmt_assign_storage (evalCheckedUint128SubOk (hl1.evalPositionBorrowShares imms evm ha) he5 hb' hf')
       (assignPositionPacked evm l1 imms _ _ p.id account false _ (by rw [usub_toNat hf']; omega)
         ha hl1.position (hl1.evalId imms evm) (hl1.evalAccount imms evm))
   obtain ⟨k4, C4, rd4⟩ := morphoCheckedSub128Ok (v := v) (by change R.length + 15 + 6 ≤ 1024; omega)
@@ -95,7 +95,7 @@ theorem morphoRepayPositionRefine {v : MorphoImmutables} {ee : ExecutionEnv} {g 
   have hm1 := hm.narrow (by decide : 64 ≤ 288)
   have had := (hm.narrowAdvance.trans (heapAdvance_hash _ _ p.id (UInt256.ofNat 2))).trans
     (heapAdvance_hash _ _ account (solcMappingSlot ⟨2⟩ p.id))
-  exact .ok (ab1.step hass) (by simpa only [hs.env, ← hs.accounts] using hs') hperm
+  exact .ok (ab1.step (by simpa only [hs.env, hperm, if_true] using hass)) (by simpa only [hs.env, ← hs.accounts] using hs') hperm
     ((hm1.hash p.id (UInt256.ofNat 2)).hash account (solcMappingSlot ⟨2⟩ p.id))
     (by simpa only [Nat.add_zero] using had) rd5
 

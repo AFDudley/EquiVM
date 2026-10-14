@@ -39,7 +39,7 @@ theorem tickClearInternalX {σ : AccountMap} {ee : ExecutionEnv} {g : Sat256}
     refine Or.inr ⟨?_, k', C', SourceState.tickClear hs tick, ?_, HeapMemory.twoWordHash hm _ _⟩
     · exact internalCallFunctionReturn (callee := tickClearFunction)
         (calleeStele := tickClearFrame (immStore v) tick) (value := none)
-        he hl (tickClearBind tick) (by rw [hc]; exact tickClearReturns (immStore v) evm tick)
+        he hl (tickClearBind tick) (by rw [hc]; exact tickClearReturns (hperm := by simpa only [hs.env] using hp) (immStore v) evm tick)
     · change RD (deployedRuntime v) ee g s0 ret R (twoWordHashMem (EVM.wordOfInt tick) ⟨5⟩ mem)
         (tickUpdateMemoryWords aw) rdata _ k' C' at r'
       rw [tickUpdateMemoryWords_eq hm.active] at r'

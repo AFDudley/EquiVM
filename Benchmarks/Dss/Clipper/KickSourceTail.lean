@@ -277,13 +277,14 @@ theorem clipperKickUnlockReturn (v : ClipperImmutables)
     (locals : Store)
     (hlocked : locals.get? "locked" = none)
     (hid : locals.get? "id" =
-      some (.int (Int.ofNat (clipperKickSourceIdWord evmLock).toNat))) :
+      some (.int (Int.ofNat (clipperKickSourceIdWord evmLock).toNat)))
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config { contract := contract, locals := locals, immutables := immStore v } evm
       [.assign .storage lockedRef (.intLit 0), .return [.var "id"]]
       (.returned { contract := contract, locals := locals, immutables := immStore v }
         (Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨13⟩ ⟨0⟩)
         (some [.int (Int.ofNat (clipperKickSourceIdWord evmLock).toNat)])) := by
-  have hunlock := clipperRedoUnlock v evm locals hlocked
+  have hunlock := clipperRedoUnlock (hperm := by assumption) v evm locals hlocked
   have hret : evalExprs? config { contract := contract, locals := locals, immutables := immStore v }
       (Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨13⟩ ⟨0⟩)
       [.var "id"] =
@@ -295,7 +296,8 @@ theorem clipperKickUnlockReturn (v : ClipperImmutables)
 theorem clipperKickIncentiveInactiveTail (v : ClipperImmutables)
     (evmLock evmTop : EVM.State) (I : ExecutionEnv) (feedPrice top : UInt256)
     (htip : clipperRedoTipSteleWord evmTop = ⟨0⟩)
-    (hchip : clipperRedoChipSteleWord evmTop = ⟨0⟩) :
+    (hchip : clipperRedoChipSteleWord evmTop = ⟨0⟩)
+    (hperm : evmTop.executionEnv.perm = true) :
     let locals := clipperKickLocalsCoinZero evmLock evmTop I feedPrice top
     ExecBlock config { contract := contract, locals := locals, immutables := immStore v } evmTop
       [ .ite clipperKickIncentiveCond (clipperKickIncentiveBody) [],
@@ -311,7 +313,7 @@ theorem clipperKickIncentiveInactiveTail (v : ClipperImmutables)
       (by simpa [locals] using
         clipperEvalKickIncentiveInactive v evmLock evmTop evmTop I feedPrice top htip hchip)
       ExecBlock.nil
-  have htail := clipperKickUnlockReturn v evmLock evmTop evmTop I feedPrice top locals
+  have htail := clipperKickUnlockReturn (hperm := by assumption) v evmLock evmTop evmTop I feedPrice top locals
     (by simpa [locals] using
       clipperKickLocalsCoinZero_get_locked evmLock evmTop I feedPrice top)
     (by
@@ -411,7 +413,8 @@ theorem clipperKickAfterInitializationSuccessPrefix
         locals := clipperKickLocalsCoinZero evmLock evmTop I feedPrice top, immutables := immStore v }
       evmTop
       [ .ite clipperKickIncentiveCond (clipperKickIncentiveBody) [],
-        .assign .storage lockedRef (.intLit 0), .return [.var "id"] ] result) :
+        .assign .storage lockedRef (.intLit 0), .return [.var "id"] ] result)
+    (hperm : evmFeed.executionEnv.perm = true) :
     ExecBlock config
       { contract := contract, locals := clipperKickLocalsActivePos evmLock I, immutables := immStore v }
       evm (clipperKickAfterInitializationBody) result := by
@@ -446,7 +449,7 @@ theorem clipperKickAfterInitializationSuccessPrefix
   have htopAssign : ExecStmt config topFrame evmFeed
       (.assign .storage (salesF (.var "id") "top") (.var "top"))
       (.ok topFrame evmTop) :=
-    ExecStmt.assign htopValue (by
+    ExecStmt.assign (hperm := Or.inr hperm) htopValue (by
       simpa [topFrame, hevmTop] using
         clipperKickAssignSalesTop v evmLock evmFeed I feedPrice top)
   have htip : ExecStmt config topFrame evmTop

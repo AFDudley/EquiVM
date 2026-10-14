@@ -346,7 +346,7 @@ theorem cureCageSourceLiveStorePrefixSplit {σ σ₀ A I} {g : UInt256}
     let locals : Store := ∅
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let evmLive := Stele.EVM.storageStore evm0 I.codeOwner ⟨1⟩ ⟨0⟩
-    (ExecBlock config { contract := contract, locals := locals } evm0
+    (I.perm = true → ExecBlock config { contract := contract, locals := locals } evm0
       (.require (.binary .eq (.env .callvalue) (.intLit 0)) ::
         .require (.binary .eq (.storage (wardsRef sender)) (.intLit 1)) ::
         .require (.binary .eq (.storage liveRef) (.intLit 1)) ::
@@ -383,7 +383,8 @@ theorem cureCageSourceLiveStorePrefixSplit {σ σ₀ A I} {g : UInt256}
   have hzero : evalExpr? config { contract := contract, locals := locals } evm0
       (.intLit 0) = .ok (.int 0) := by simp [evalExpr?, pure]
   constructor
-  · exact hprefix (ExecBlock.consNormal (ExecStmt.assign hzero hassignLive) ExecBlock.nil)
+  · intro hperm
+    exact hprefix (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hzero hassignLive) ExecBlock.nil)
   · intro hperm
     exact ExecFuncBody.execBlockStatic (hprefix
       (ExecBlock.consStatic (ExecStmt.assignStatic hzero hassignLive
@@ -392,7 +393,8 @@ theorem cureCageSourceLiveStorePrefixSplit {σ σ₀ A I} {g : UInt256}
 theorem cureCageSourceLiveStorePrefix {σ σ₀ A I} {g : UInt256}
     (hwv : I.weiValue = ⟨0⟩)
     (hauth : solcSlotWordAt (cureCallerWardsSlot I) σ I = ⟨1⟩)
-    (hlive : solcSlotWordAt ⟨1⟩ σ I = ⟨1⟩) :
+    (hlive : solcSlotWordAt ⟨1⟩ σ I = ⟨1⟩)
+    (hperm : I.perm = true) :
     let locals : Store := ∅
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let evmLive := Stele.EVM.storageStore evm0 I.codeOwner ⟨1⟩ ⟨0⟩
@@ -402,7 +404,7 @@ theorem cureCageSourceLiveStorePrefix {σ σ₀ A I} {g : UInt256}
         .require (.binary .eq (.storage liveRef) (.intLit 1)) ::
         [ .assign .storage liveRef (.intLit 0) ])
       (.ok { contract := contract, locals := locals } evmLive) :=
-  (cureCageSourceLiveStorePrefixSplit hwv hauth hlive).1
+  (cureCageSourceLiveStorePrefixSplit hwv hauth hlive).1 hperm
 
 abbrev cageTimestampWord (I : ExecutionEnv) : UInt256 :=
   UInt256.ofNat I.header.timestamp
@@ -472,7 +474,8 @@ theorem cureCageSourceBodyOk {σ σ₀ A I} {g : UInt256}
     (hwv : I.weiValue = ⟨0⟩)
     (hauth : solcSlotWordAt (cureCallerWardsSlot I) σ I = ⟨1⟩)
     (hlive : solcSlotWordAt ⟨1⟩ σ I = ⟨1⟩)
-    (hfit : (cageTimestampWord I).toNat + (cageWaitWord σ I).toNat < UInt256.size) :
+    (hfit : (cageTimestampWord I).toNat + (cageWaitWord σ I).toNat < UInt256.size)
+    (hperm : I.perm = true) :
     let locals : Store := ∅
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let evmLive := Stele.EVM.storageStore evm0 I.codeOwner ⟨1⟩ ⟨0⟩
@@ -482,7 +485,7 @@ theorem cureCageSourceBodyOk {σ σ₀ A I} {g : UInt256}
     ExecTransitionBody config contract evm0 locals cageTransition.body
       (.returned { contract := contract, locals := localsWhen } evmWhen none) := by
   intro locals evm0 evmLive sum localsWhen evmWhen
-  have hprefix := cureCageSourceLiveStorePrefix
+  have hprefix := cureCageSourceLiveStorePrefix (hperm := hperm)
     (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hauth hlive
   have htimestamp :
       evalExpr? config { contract := contract, locals := locals } evmLive (.env .timestamp) =
@@ -552,7 +555,7 @@ theorem cureCageSourceBodyOk {σ σ₀ A I} {g : UInt256}
           .assign .storage whenRef (.var "when_") ]
         (.ok { contract := contract, locals := localsWhen } evmWhen) := by
     refine ExecBlock.consNormal hcall ?_
-    exact ExecBlock.consNormal (ExecStmt.assign hwhenVar hassignWhen) ExecBlock.nil
+    exact ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [evmLive, storageStore_executionEnv] using hperm)) hwhenVar hassignWhen) ExecBlock.nil
   have hblock :
       ExecBlock config { contract := contract, locals := locals } evm0 cageTransition.body
         (.ok { contract := contract, locals := localsWhen } evmWhen) := by
@@ -564,13 +567,14 @@ theorem cureCageSourceBodyReverts_add {σ σ₀ A I} {g : UInt256}
     (hwv : I.weiValue = ⟨0⟩)
     (hauth : solcSlotWordAt (cureCallerWardsSlot I) σ I = ⟨1⟩)
     (hlive : solcSlotWordAt ⟨1⟩ σ I = ⟨1⟩)
-    (hover : UInt256.size ≤ (cageTimestampWord I).toNat + (cageWaitWord σ I).toNat) :
+    (hover : UInt256.size ≤ (cageTimestampWord I).toNat + (cageWaitWord σ I).toNat)
+    (hperm : I.perm = true) :
     let locals : Store := ∅
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     ExecTransitionBody config contract evm0 locals cageTransition.body .reverted := by
   intro locals evm0
   let evmLive := Stele.EVM.storageStore evm0 I.codeOwner ⟨1⟩ ⟨0⟩
-  have hprefix := cureCageSourceLiveStorePrefix
+  have hprefix := cureCageSourceLiveStorePrefix (hperm := hperm)
     (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hauth hlive
   have htimestamp :
       evalExpr? config { contract := contract, locals := locals } evmLive (.env .timestamp) =
@@ -918,7 +922,7 @@ theorem cureCageBodyCore {σ σ₀ A I} {g : UInt256}
             ExecTransitionBody config contract evm0 locals cageTransition.body
               (.returned { contract := contract, locals := localsWhen } evmWhen none) := by
           simpa [locals, evm0, evmLive, sumStele, localsWhen, evmWhen] using
-            cureCageSourceBodyOk (σ := σ)
+            cureCageSourceBodyOk (hperm := hperm) (σ := σ)
               (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hauthEvm hliveEvm hfitEvm
         have hret := RD.cureCageSuccessTail
           (σ := σ) (I := I) (g := Sat256.ofUInt256 g)
@@ -941,7 +945,7 @@ theorem cureCageBodyCore {σ σ₀ A I} {g : UInt256}
         let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
         have hbody : ExecTransitionBody config contract evm0 locals cageTransition.body .reverted := by
           simpa [locals, evm0] using
-            cureCageSourceBodyReverts_add
+            cureCageSourceBodyReverts_add (hperm := hperm)
               (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
               hwv hauthEvm hliveEvm hoverEvm
         have hrev := RD.cureCageAddRevertTail

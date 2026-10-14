@@ -533,7 +533,11 @@ theorem uniswapMintFeeOnKLastNonzeroInitialSecondMintTotalSupplyOverflowFromFact
     ⟨hrootGeMin, hliqNonzero, hfitSupplyMinSource, hfitBalanceMinSource,
       htotalFitMin, hbalanceFitMin, hsourceOverflow, hruntimeOverflow⟩
   exact
-    uniswapMintInitialAfterMintFeeSecondMintTotalSupplyOverflowRevertCase
+    uniswapMintInitialAfterMintFeeSecondMintTotalSupplyOverflowRevertCase (hpermAfter := by
+      simpa only [typedCallViaEVM_executionEnv_eq hfeeCall,
+        typedCallViaEVM_executionEnv_eq hcall1, typedCallViaEVM_executionEnv_eq hcall0,
+        uniswapLockEnteredState, uniswapUnlockedState, storageStore_executionEnv, initState]
+        using hperm)
       nextFrame.locals root (AccountAddress.ofNat (mintToWord I).toNat)
       hcode hdispatch hsz36 hwv hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1
       hdec1 hle0Source hle1Source (by simpa [evmL, evmS] using hfee) hbase hto
@@ -750,7 +754,11 @@ theorem uniswapMintFeeOnKLastNonzeroInitialSecondMintBalanceOverflowFromFactoryC
       htotalFitMin, hbalanceFitMin, hfitSupplySource, hsourceOverflow,
       hruntimeSupplyFit, hruntimeOverflow⟩
   exact
-    uniswapMintInitialAfterMintFeeSecondMintBalanceOverflowRevertCase
+    uniswapMintInitialAfterMintFeeSecondMintBalanceOverflowRevertCase (hpermAfter := by
+      simpa only [typedCallViaEVM_executionEnv_eq hfeeCall,
+        typedCallViaEVM_executionEnv_eq hcall1, typedCallViaEVM_executionEnv_eq hcall0,
+        uniswapLockEnteredState, uniswapUnlockedState, storageStore_executionEnv, initState]
+        using hperm)
       nextFrame.locals root (AccountAddress.ofNat (mintToWord I).toNat)
       hcode hdispatch hsz36 hwv hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1
       hdec1 hle0Source hle1Source (by simpa [evmL, evmS] using hfee) hbase hto

@@ -346,7 +346,7 @@ theorem erc20TransferFromBodyCore
                       (transferFromFromBalanceWord
                         (transferFromAfterAllowanceState evmS I) I).toNat := by
                   simpa [hAfterAllowanceFromBalance] using hbalanceDebit
-                have hbody := erc20TransferFromBodyReturns evmS I
+                have hbody := erc20TransferFromBodyReturns (hperm := by assumption) evmS I
                   (by simp only [evmS, initState]; exact hwv)
                   hallowanceS hbalanceS hbalanceDebitS
                   (by simpa [hNewToNat] using hfit)
@@ -377,7 +377,7 @@ theorem erc20TransferFromBodyCore
                       (transferFromFromBalanceWord
                         (transferFromAfterAllowanceState evmS I) I).toNat := by
                   simpa [hAfterAllowanceFromBalance] using hbalanceDebit
-                have hbody := erc20TransferFromBodyReverts_overflow evmS I
+                have hbody := erc20TransferFromBodyReverts_overflow (hperm := by assumption) evmS I
                   (by simp only [evmS, initState]; exact hwv)
                   hallowanceS hbalanceS hbalanceDebitS
                   (by simpa [hNewToNat] using hover)
@@ -392,7 +392,7 @@ theorem erc20TransferFromBodyCore
                   (transferFromFromBalanceWord (transferFromAfterAllowanceState evmE I) I).toNat <
                     (transferFromValueWord I).toNat := by
                 omega
-              have hbody := erc20TransferFromBodyReverts_balanceDebit evmS I
+              have hbody := erc20TransferFromBodyReverts_balanceDebit (hperm := by assumption) evmS I
                 (by simp only [evmS, initState]; exact hwv)
                 (by simpa [hAllowance] using hallowance)
                 (by simpa [hFromBalance] using hbalance)

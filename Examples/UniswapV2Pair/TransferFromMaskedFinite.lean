@@ -687,7 +687,7 @@ theorem uniswapTransferFromBodyCoreOk_finiteAllowance_masked
       ExecTransitionBody config contract evmS (transferFromStore I) transferFromTransition.body
         (.returned { contract := contract, locals := transferFromStoreToBalance evmS I }
           (transferFromPostState evmS I) (some [(.bool true)])) := by
-    exact uniswapTransferFromBodyReturns_finiteAllowance evmS I
+    exact uniswapTransferFromBodyReturns_finiteAllowance (hperm := by assumption) evmS I
       (by simp only [evmS, initState]; exact hwv) hnotMaxS hallowanceS hbalanceS hfitS
   have hallowanceSlot : transferFromAllowanceSlot evmE I =
       mapSlot (uniswapSourceWord I) (mapSlot (transferFromFromMaskedWord I) ⟨2⟩) := by
@@ -778,7 +778,7 @@ theorem uniswapTransferFromBodyCoreRevert_balance_finiteAllowance_masked
   have hbody :
       ExecTransitionBody config contract evmS (transferFromStore I) transferFromTransition.body
         .reverted := by
-    exact uniswapTransferFromBodyReverts_balance_finiteAllowance evmS I
+    exact uniswapTransferFromBodyReverts_balance_finiteAllowance (hperm := by assumption) evmS I
       (by simp only [evmS, initState]; exact hwv) hnotMaxS hallowanceS hltS
   exact (uniswapTransferFromX_balanceFiniteAllowance_masked (g := Sat256.ofUInt256 g)
       hsz100 hsize hperm hnotMax hallowance hlt hreach)
@@ -848,7 +848,7 @@ theorem uniswapTransferFromBodyCoreRevert_overflow_finiteAllowance_masked
   have hbody :
       ExecTransitionBody config contract evmS (transferFromStore I) transferFromTransition.body
         .reverted := by
-    exact uniswapTransferFromBodyReverts_overflow_finiteAllowance evmS I
+    exact uniswapTransferFromBodyReverts_overflow_finiteAllowance (hperm := by assumption) evmS I
       (by simp only [evmS, initState]; exact hwv) hnotMaxS hallowanceS hbalanceS hoverS
   exact (uniswapTransferFromX_overflowFiniteAllowance_masked (g := Sat256.ofUInt256 g)
       hsz100 hsize hperm hnotMax hallowance hbalance hover hreach)

@@ -37,7 +37,12 @@ theorem resolveManyResolverRun {locals imms : Store} {ee : ExecutionEnv} {g : Sa
     (junk0 := junk0) (junk1 := junk1) (junk2 := junk2) v rev
     (by simp only [List.length_cons]; omega) hperm hs harray hvalues hheap hlo hh rd
   simp only [accountAddress_roundtrip] at hcall
-  have hsource := resolveManyResolverSource (imms := imms) hf hdata hbound hvlen hsize hcall (by omega)
+  have hsource := resolveManyResolverSource (imms := imms)
+    (hperm := by
+      rcases hperm with hp | hz
+      · exact Or.inr ((congrArg ExecutionEnv.perm hs.env).trans hp)
+      · exact Or.inl (by subst total; rfl))
+    hf hdata hbound hvlen hsize hcall (by omega)
   by_cases hv : resolverCallValid ptr.toNat success out
   · rw [if_pos hv] at hr
     obtain ⟨a1,k1,C1,r1⟩ := hr

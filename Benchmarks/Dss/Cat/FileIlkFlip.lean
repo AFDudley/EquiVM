@@ -428,7 +428,7 @@ theorem fileIlkFlipSourceSuccessSplit {σ σ₀ A I} {g : UInt256}
       (ilksBase (fileIlkFlipIlkKey I))
       (setAddressOffset0Word (Stele.EVM.storageLoad evmNope evmNope.executionEnv.codeOwner
         (ilksBase (fileIlkFlipIlkKey I))) (fileIlkFlipFlipKey I))) :
-    (∀ {evmHope : EVM.State} {outHope : ByteArray}
+    (I.perm = true → ∀ {evmHope : EVM.State} {outHope : ByteArray}
       (_hvatCodeHope :
         0 < (UInt256.ofNat ((evmStore.lookupAccount (biteVatAddr evmStore)).option 0
           (fun acc => acc.code.size))).toNat)
@@ -479,7 +479,7 @@ theorem fileIlkFlipSourceSuccessSplit {σ σ₀ A I} {g : UInt256}
           [.storage (ilksF (.var "ilk") "flip")] "_nopeRet")
         (.ok { contract := contract, locals := L1 } evmNope) := by
     simpa [hL1, collapseReturns] using
-      ExecStmt.externalCallSuccess (biteVatRead (fileIlkFlipLocals_get_vat I))
+      ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (biteVatRead (fileIlkFlipLocals_get_vat I))
         (by simp [evalExpr?, pure]) hnopeArgs hcallNope hdecNope
   -- store `ilks[ilk].flip := flip`
   have hflipL1 : L1.get? "flip" = some (.address (fileIlkFlipFlip I)) := by
@@ -515,7 +515,7 @@ theorem fileIlkFlipSourceSuccessSplit {σ σ₀ A I} {g : UInt256}
     exact ExecBlock.consNormal (ExecStmt.requireTrue hnopeGuard)
       (ExecBlock.consNormal hnopeCallStmt h)
   constructor
-  · intro evmHope outHope hvatCodeHope hcallHope hdecHope
+  · intro hperm evmHope outHope hvatCodeHope hcallHope hdecHope
     -- hope call
     have hhopeGuard :
         evalExpr? config { contract := contract, locals := L1 } evmStore
@@ -538,12 +538,12 @@ theorem fileIlkFlipSourceSuccessSplit {σ σ₀ A I} {g : UInt256}
           (.externalCall (.storage vatRef) "hope" (.intLit 0) [.var "flip"] "_hopeRet")
           (.ok { contract := contract, locals := L2 } evmHope) := by
       simpa [hL2, collapseReturns] using
-        ExecStmt.externalCallSuccess
+        ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
           (biteVatRead (by
             rw [hL1, store_get_ne _ _ (by decide)]; exact fileIlkFlipLocals_get_vat I))
           (by simp [evalExpr?, pure]) hhopeArgs hcallHope hdecHope
     exact ExecFuncBody.execBlockOK (hprefix _
-      (ExecBlock.consNormal (ExecStmt.assign hflipVar hassign)
+      (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by rw [typedCallViaEVM_executionEnv_eq hcallNope]; exact hperm)) hflipVar hassign)
         (ExecBlock.consNormal (ExecStmt.requireTrue hhopeGuard)
           (ExecBlock.consNormal hhopeCallStmt ExecBlock.nil))))
   · intro hperm
@@ -580,7 +580,8 @@ theorem fileIlkFlipSourceSuccess {σ σ₀ A I} {g : UInt256}
     (hcallHope :
       typedCallViaEVM config evmStore (EVM.address (biteVatAddr evmStore)) "hope" 0
         [.address (fileIlkFlipFlip I)] (true, evmHope, outHope) true)
-    (hdecHope : config.externalABI.decode? "hope" outHope = some []) :
+    (hdecHope : config.externalABI.decode? "hope" outHope = some [])
+    (hperm : I.perm = true) :
     ExecTransitionBody config contract (initState σ σ₀ (Sat256.ofUInt256 g) A I)
       (fileIlkFlipLocals I) fileIlkFlipTransition.body
       (.returned
@@ -589,7 +590,7 @@ theorem fileIlkFlipSourceSuccess {σ σ₀ A I} {g : UInt256}
             "_hopeRet" (collapseReturns []) }
         evmHope none) :=
   (fileIlkFlipSourceSuccessSplit hwv hsz100 hauth hwhat hvatCodeNope
-    hcallNope hdecNope hStore).1 hvatCodeHope hcallHope hdecHope
+    hcallNope hdecNope hStore).1 hperm hvatCodeHope hcallHope hdecHope
 
 /-! ### Stele body — nope-call reverts (`vat` has no code / nope call fails) -/
 
@@ -678,7 +679,7 @@ theorem fileIlkFlipNopeCallFailSource {σ σ₀ A I} {g : UInt256}
     refine ExecBlock.consRevert (ExecStmt.iteTrue hcond ?_)
     refine ExecBlock.consNormal (ExecStmt.requireTrue hnopeGuard) ?_
     exact ExecBlock.consRevert
-      (ExecStmt.externalCallFailure (biteVatRead (fileIlkFlipLocals_get_vat I))
+      (ExecStmt.externalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (biteVatRead (fileIlkFlipLocals_get_vat I))
         (by simp [evalExpr?, pure]) hnopeArgs hcallNope)
   simpa [ExecTransitionBody, hevm0, fileIlkFlipTransition, nonpayable, auth,
     checkedExternalCallStmts] using ExecFuncBody.execBlockRevert hblock
@@ -708,7 +709,8 @@ theorem fileIlkFlipHopeNoCodeSource {σ σ₀ A I} {g : UInt256}
         (ilksBase (fileIlkFlipIlkKey I))) (fileIlkFlipFlipKey I)))
     (hvatCodeHopeZero :
       (UInt256.ofNat ((evmStore.lookupAccount (biteVatAddr evmStore)).option 0
-        (fun acc => acc.code.size))).toNat = 0) :
+        (fun acc => acc.code.size))).toNat = 0)
+    (hperm : I.perm = true) :
     ExecTransitionBody config contract (initState σ σ₀ (Sat256.ofUInt256 g) A I)
       (fileIlkFlipLocals I) fileIlkFlipTransition.body .reverted := by
   set evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I with hevm0
@@ -741,7 +743,7 @@ theorem fileIlkFlipHopeNoCodeSource {σ σ₀ A I} {g : UInt256}
           [.storage (ilksF (.var "ilk") "flip")] "_nopeRet")
         (.ok { contract := contract, locals := L1 } evmNope) := by
     simpa [hL1, collapseReturns] using
-      ExecStmt.externalCallSuccess (biteVatRead (fileIlkFlipLocals_get_vat I))
+      ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (biteVatRead (fileIlkFlipLocals_get_vat I))
         (by simp [evalExpr?, pure]) hnopeArgs hcallNope hdecNope
   have hflipL1 : L1.get? "flip" = some (.address (fileIlkFlipFlip I)) := by
     rw [hL1, store_get_ne _ _ (by decide)]; exact fileIlkFlipLocals_get_flip I
@@ -774,7 +776,7 @@ theorem fileIlkFlipHopeNoCodeSource {σ σ₀ A I} {g : UInt256}
     refine ExecBlock.consRevert (ExecStmt.iteTrue hcond ?_)
     refine ExecBlock.consNormal (ExecStmt.requireTrue hnopeGuard) ?_
     refine ExecBlock.consNormal hnopeCallStmt ?_
-    refine ExecBlock.consNormal (ExecStmt.assign hflipVar hassign) ?_
+    refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by rw [typedCallViaEVM_executionEnv_eq hcallNope]; exact hperm)) hflipVar hassign) ?_
     exact ExecBlock.consRevert (ExecStmt.requireFalse hhopeGuardFalse)
   simpa [ExecTransitionBody, hevm0, fileIlkFlipTransition, nonpayable, auth,
     checkedExternalCallStmts] using ExecFuncBody.execBlockRevert hblock
@@ -805,7 +807,8 @@ theorem fileIlkFlipHopeCallFailSource {σ σ₀ A I} {g : UInt256}
         (fun acc => acc.code.size))).toNat)
     (hcallHope :
       typedCallViaEVM config evmStore (EVM.address (biteVatAddr evmStore)) "hope" 0
-        [.address (fileIlkFlipFlip I)] (false, evmHope, outHope) true) :
+        [.address (fileIlkFlipFlip I)] (false, evmHope, outHope) true)
+    (hperm : I.perm = true) :
     ExecTransitionBody config contract (initState σ σ₀ (Sat256.ofUInt256 g) A I)
       (fileIlkFlipLocals I) fileIlkFlipTransition.body .reverted := by
   set evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I with hevm0
@@ -838,7 +841,7 @@ theorem fileIlkFlipHopeCallFailSource {σ σ₀ A I} {g : UInt256}
           [.storage (ilksF (.var "ilk") "flip")] "_nopeRet")
         (.ok { contract := contract, locals := L1 } evmNope) := by
     simpa [hL1, collapseReturns] using
-      ExecStmt.externalCallSuccess (biteVatRead (fileIlkFlipLocals_get_vat I))
+      ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (biteVatRead (fileIlkFlipLocals_get_vat I))
         (by simp [evalExpr?, pure]) hnopeArgs hcallNope hdecNope
   have hflipL1 : L1.get? "flip" = some (.address (fileIlkFlipFlip I)) := by
     rw [hL1, store_get_ne _ _ (by decide)]; exact fileIlkFlipLocals_get_flip I
@@ -881,10 +884,10 @@ theorem fileIlkFlipHopeCallFailSource {σ σ₀ A I} {g : UInt256}
     refine ExecBlock.consRevert (ExecStmt.iteTrue hcond ?_)
     refine ExecBlock.consNormal (ExecStmt.requireTrue hnopeGuard) ?_
     refine ExecBlock.consNormal hnopeCallStmt ?_
-    refine ExecBlock.consNormal (ExecStmt.assign hflipVar hassign) ?_
+    refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by rw [typedCallViaEVM_executionEnv_eq hcallNope]; exact hperm)) hflipVar hassign) ?_
     refine ExecBlock.consNormal (ExecStmt.requireTrue hhopeGuard) ?_
     exact ExecBlock.consRevert
-      (ExecStmt.externalCallFailure
+      (ExecStmt.externalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
         (biteVatRead (by rw [hL1, store_get_ne _ _ (by decide)]; exact fileIlkFlipLocals_get_vat I))
         (by simp [evalExpr?, pure]) hhopeArgs hcallHope)
   simpa [ExecTransitionBody, hevm0, fileIlkFlipTransition, nonpayable, auth,
@@ -1065,7 +1068,7 @@ theorem catFileIlkFlipBody {σ σ₀ A I} {g : UInt256}
             · -- vat has no code at the hope call → both sides revert at the hope guard
               exact (RD.catFileIlkFlipHopeNoCodeGen rd3679 hcodeHope).reEquivExecutionRevert
                 hcode hdispatch hdecode
-                (fileIlkFlipHopeNoCodeSource (σ := σ) hwv hsz100 hauthStele hflip
+                (fileIlkFlipHopeNoCodeSource (hperm := by assumption) (σ := σ) hwv hsz100 hauthStele hflip
                   (fifVatCodePos hcodeSteleNe) hcallNope_stele (fifNopeDecode out) hevmStoreStele
                   (fifVatCodeZeroGen hHopeTarget (hHopeCode.trans hcodeHope)))
             · obtain ⟨σ'', z2, out2, A'', k2, C2, rd3695, hcallHope_evm, hout2sz⟩ :=
@@ -1126,11 +1129,11 @@ theorem catFileIlkFlipBody {σ σ₀ A I} {g : UInt256}
               · -- hope call failed → both sides revert at the hope call
                 exact (RD.catFileIlkFlipHopeCallFailure rd3695 hout2sz).reEquivExecutionRevert
                   hcode hdispatch hdecode
-                  (fileIlkFlipHopeCallFailSource (σ := σ) hwv hsz100 hauthStele hflip
+                  (fileIlkFlipHopeCallFailSource (hperm := by assumption) (σ := σ) hwv hsz100 hauthStele hflip
                     (fifVatCodePos hcodeSteleNe) hcallNope_stele (fifNopeDecode out) hevmStoreStele
                     (fifVatCodePosGen hHopeTarget hcodeStoreSteleNe) hcallHopeStele)
               · -- hope call succeeded → refinement holds
-                have hbody := fileIlkFlipSourceSuccess
+                have hbody := fileIlkFlipSourceSuccess (hperm := by assumption)
                   (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
                   hwv hsz100 hauthStele hflip (fifVatCodePos hcodeSteleNe) hcallNope_stele
                   (fifNopeDecode out) hevmStoreStele

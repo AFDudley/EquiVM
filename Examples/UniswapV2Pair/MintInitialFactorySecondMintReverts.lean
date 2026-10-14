@@ -187,7 +187,7 @@ theorem uniswapMintInitialFeeOffKLastZeroSecondMintTotalSupplyOverflowFromFactor
       uniswapMintFeeCallFromMint_feeOff_kLastZero evmL evm1S evmFeeS I balance0
         balance1 feeTo (by simpa [evmL, evmS] using hfeeGuard) hfeeCall hfeeDec
         hfeeToAddr hkLastSource
-  exact uniswapMintInitialAfterMintFeeSecondMintTotalSupplyOverflowRevertCase
+  exact uniswapMintInitialAfterMintFeeSecondMintTotalSupplyOverflowRevertCase (hpermAfter := by simpa [typedCallViaEVM_executionEnv_eq hfeeCall, typedCallViaEVM_executionEnv_eq hcall1, typedCallViaEVM_executionEnv_eq hcall0, uniswapLockEnteredState, uniswapUnlockedState, initState] using hperm)
     nextFrame.locals rootLiquidity (AccountAddress.ofNat (mintToWord I).toNat)
     hcode hdispatch hsz36 hwv hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1
     hdec1 hle0Source hle1Source hfee
@@ -380,7 +380,7 @@ theorem uniswapMintInitialFeeOnKLastZeroSecondMintTotalSupplyOverflowFromFactory
       uniswapMintFeeCallFromMint_feeOn_kLastZero evmL evm1S evmFeeS I balance0
         balance1 feeTo (by simpa [evmL, evmS] using hfeeGuard) hfeeCall hfeeDec
         hfeeToAddr hkLastSource
-  exact uniswapMintInitialAfterMintFeeSecondMintTotalSupplyOverflowRevertCase
+  exact uniswapMintInitialAfterMintFeeSecondMintTotalSupplyOverflowRevertCase (hpermAfter := by simpa [typedCallViaEVM_executionEnv_eq hfeeCall, typedCallViaEVM_executionEnv_eq hcall1, typedCallViaEVM_executionEnv_eq hcall0, uniswapLockEnteredState, uniswapUnlockedState, initState] using hperm)
     nextFrame.locals rootLiquidity (AccountAddress.ofNat (mintToWord I).toNat)
     hcode hdispatch hsz36 hwv hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1
     hdec1 hle0Source hle1Source hfee
@@ -590,10 +590,10 @@ theorem uniswapMintInitialFeeOffKLastNonzeroSecondMintTotalSupplyOverflowFromFac
         evm1S (.internalCall "_mintFee" [.var "_reserve0", .var "_reserve1"] "feeOn")
         (.ok { contract := contract, locals := nextFrame.locals } evmAfterFee) := by
     simpa [nextFrame, evmL, evmS, evmAfterFee, resumeAfterInternalCall] using
-      uniswapMintFeeCallFromMint_feeOff_kLastNonzero evmL evm1S evmFeeS I balance0
+      uniswapMintFeeCallFromMint_feeOff_kLastNonzero (hperm := by simpa [typedCallViaEVM_executionEnv_eq hcall1, typedCallViaEVM_executionEnv_eq hcall0, uniswapLockEnteredState, uniswapUnlockedState, initState] using hperm) evmL evm1S evmFeeS I balance0
         balance1 feeTo (by simpa [evmL, evmS] using hfeeGuard) hfeeCall hfeeDec
         hfeeToAddr hkLastSource
-  exact uniswapMintInitialAfterMintFeeSecondMintTotalSupplyOverflowRevertCase
+  exact uniswapMintInitialAfterMintFeeSecondMintTotalSupplyOverflowRevertCase (hpermAfter := by simpa [evmAfterFee, mintFeeKLastClearedState, typedCallViaEVM_executionEnv_eq hfeeCall, typedCallViaEVM_executionEnv_eq hcall1, typedCallViaEVM_executionEnv_eq hcall0, uniswapLockEnteredState, uniswapUnlockedState, initState] using hperm)
     nextFrame.locals rootLiquidity (AccountAddress.ofNat (mintToWord I).toNat)
     hcode hdispatch hsz36 hwv hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1
     hdec1 hle0Source hle1Source hfee

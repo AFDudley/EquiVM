@@ -36,8 +36,8 @@ theorem tickCrossWriteSource {f : Frame} {evm : EVM.State} {id growth0 growth1 :
       (tickField_read hi .feeGrowthOutside1)
     have hw1 := tickField_write (evm := tickCrossWrite0 evm id tick growth0) hi .feeGrowthOutside1
       (UInt256.sub growth1 (tickFieldWord (tickCrossWrite0 evm id tick growth0) id tick .feeGrowthOutside1))
-    exact ExecBlock.consNormal (ExecStmt.assign he0 hw0)
-      (execBlock_singleton (ExecStmt.assign he1 hw1))
+    exact ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (Bool.eq_true_of_not_eq_false hp)) he0 hw0)
+      (execBlock_singleton (ExecStmt.assign (hperm := Or.inr (by simpa only [tickCrossWrite0, storageStore_executionEnv] using Bool.eq_true_of_not_eq_false hp)) he1 hw1))
 
 def tickCrossResult (f : Frame) (evm : EVM.State) (id : UInt256) (tick : Int) (growth0 growth1 : UInt256) : ExecResult :=
   if evm.executionEnv.perm = false then .staticViolation else
@@ -81,7 +81,7 @@ theorem tickCrossBody {f : Frame} {evm : EVM.State} {id growth0 growth1 : UInt25
     have hn : f2.locals.get? "liquidityNet" = some (.int 0) :=
       (store_get_ne _ _ (by decide : ("info" == "liquidityNet") = false)).trans (store_get_self _ _ _)
     have hnet : ExecStmt config f2 post tickCrossFunction.body[4]! (.ok f3 post) :=
-      ExecStmt.assign (tickNet_eval (tickField_read hi2 .liquidityPacked)) (assignLocalValue hn)
+      ExecStmt.assign (hperm := Or.inl rfl) (tickNet_eval (tickField_read hi2 .liquidityPacked)) (assignLocalValue hn)
     have htail : ExecFuncBody config f2 evm (tickCrossFunction.body.drop 2)
         (.returned f3 post (some [.int (EVM.signed net)])) :=
       ExecFuncBody.execBlockRet (execBlock_append_ok hwrites

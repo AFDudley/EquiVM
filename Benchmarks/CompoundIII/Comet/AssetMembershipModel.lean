@@ -33,6 +33,21 @@ def assetMembershipResult (evm : EVM.State) (account : AccountAddress)
   | none => .ok evm
   | some add => assetMembershipWriteResult evm account offset add
 
+theorem assetMembershipResult_executionEnv {evm evm' account offset initial final}
+    (he : assetMembershipResult evm account offset initial final = .ok evm') :
+    evm'.executionEnv = evm.executionEnv := by
+  unfold assetMembershipResult at he
+  split at he
+  · cases he
+    rfl
+  · unfold assetMembershipWriteResult at he
+    split_ifs at he with ho hp
+    · cases he
+      unfold assetMembershipState
+      split <;> simp only [storePackedWord, storageStore_executionEnv]
+    · cases he
+      rfl
+
 def assetMembershipRef (reserved : Bool) : StorageRef :=
   ⟨"userBasic", [.mindex (.var "account"), .field (if reserved then "_reserved" else "assetsIn")]⟩
 

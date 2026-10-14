@@ -49,7 +49,7 @@ theorem oracleSearchReadPrefix (locals imms : Store) (evm : EVM.State)
       (b := ⟨2⟩) (by simp only [evalExpr?, pure]; rfl) (by decide)
   obtain ⟨oldI, hi⟩ := h.index
   refine ExecBlock.consNormal (stele' := fm) (evm' := evm)
-    (ExecStmt.assign he (assignLocalVarBase_frame hi)) ?_
+    (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) he (assignLocalVarBase_frame hi)) ?_
   have hfm := h.insert_aux "i" (.int (Int.ofNat mid.toNat)) (by decide)
   have hr : evalExpr? config fm evm (.binary .mod (.var "i") (.var "cardinality")) =
       .ok (.int (Int.ofNat (UInt256.mod mid cardinality).toNat)) :=
@@ -57,7 +57,7 @@ theorem oracleSearchReadPrefix (locals imms : Store) (evm : EVM.State)
       (evalExpr_var_get hfm.cardinality) hn
   obtain ⟨oldBefore, hbefore⟩ := hfm.beforeOrAt
   exact ExecBlock.consNormal
-    (ExecStmt.assign (evalOracleObservationExpr _ _ _ _ _ hfm.base hr
+    (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalOracleObservationExpr _ _ _ _ _ hfm.base hr
       (oracleSearchRemainder_lt mid cardinality hn hc)) (assignLocalVarBase_frame hbefore))
     ExecBlock.nil
 
@@ -86,7 +86,7 @@ theorem oracleSearchUninitialized (locals imms : Store) (evm : EVM.State)
   apply execBlock_append_ok (oracleSearchReadPrefix locals imms evm time target cardinality left right h hn hc)
   refine ExecBlock.consContinue (ExecStmt.iteTrue ?_ ?_)
   · simpa only [hinit, Bool.not_false] using evalOracleSearchInitialized locals imms evm left right cardinality
-  · refine ExecBlock.consNormal (ExecStmt.assign (value := .int (Int.ofNat next.toNat))
+  · refine ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (value := .int (Int.ofNat next.toNat))
       ?_ (assignLocalVarBase_frame hfr.left)) ?_
     · exact evalExpr_word_add (b := ⟨1⟩)
         (evalExpr_var_get (by simp [oracleSearchReadFrame, Std.HashMap.getElem_insert]))

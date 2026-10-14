@@ -40,7 +40,7 @@ theorem tickLogNormalizeSource {frame : Frame} {evm : EVM.State}
       omega
     refine ExecStmt.iteTrue (by simpa only [h, decide_true] using hg) ?_
     refine ExecBlock.consNormal
-      (ExecStmt.assign (value := .int (Int.ofNat (tickLogNormalized ratio msb).toNat)) ?_
+      (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (value := .int (Int.ofNat (tickLogNormalized ratio msb).toNat)) ?_
         (assignLocalVarBase_frame hr)) ExecBlock.nil
     simpa only [tickLogNormalized, if_pos h] using
       evalExpr_word_shr_by hq' (evalExpr_word_sub hm' h127) hb
@@ -52,7 +52,7 @@ theorem tickLogNormalizeSource {frame : Frame} {evm : EVM.State}
       omega
     refine ExecStmt.iteFalse (by simpa only [h, decide_false] using hg) ?_
     refine ExecBlock.consNormal
-      (ExecStmt.assign (value := .int (Int.ofNat (tickLogNormalized ratio msb).toNat)) ?_
+      (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (value := .int (Int.ofNat (tickLogNormalized ratio msb).toNat)) ?_
         (assignLocalVarBase_frame hr)) ExecBlock.nil
     simpa only [tickLogNormalized, if_neg h] using
       evalExpr_word_shl_by hq' (evalExpr_word_sub h127 hm') hb

@@ -51,7 +51,7 @@ theorem settleNativeBody {f : Frame} {evm : EVM.State} {recipient : AccountAddre
     (store_get_self _ _ _)
   apply execFuncBody_prepend (settlePrefix hf)
   apply execFuncBody_prepend (pre := [settleFunction.body[3]!]) ?_ hb
-  exact execBlock_singleton (ExecStmt.iteTrue hg (ExecBlock.consNormal (ExecStmt.assign
+  exact execBlock_singleton (ExecStmt.iteTrue hg (ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
     (by simp only [evalExpr?, envValue, pure]; rfl) (assignLocalValue (settleInput_paid f evm))) ExecBlock.nil))
 
 theorem evalCallvaluePositive {f : Frame} {evm : EVM.State} :
@@ -129,7 +129,7 @@ theorem settleTokenBody {f : Frame} {evm evm' : EVM.State} {recipient : AccountA
       evalLocalValue ((store_get_ne _ _ (by decide : ("reservesNow" == "reservesBefore") = false)).trans (store_get_self _ _ _))
     by_cases hsub : (transientWord evm reservesSlot).toNat ≤ (returnedBalanceWord out).toNat
     · rw [if_pos hsub]
-      have hpaid := ExecStmt.assign (evalExpr_uint256_sub hnow hprev hsub) (assignLocalValue hp3)
+      have hpaid := ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalExpr_uint256_sub hnow hprev hsub) (assignLocalValue hp3)
       have hreset := resetCurrencyCall (f := f4) (evm := evm') hf "__c4"
       by_cases hp : evm'.executionEnv.perm = false
       · rw [if_pos hp] at hreset ⊢

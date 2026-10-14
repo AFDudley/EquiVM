@@ -819,7 +819,7 @@ theorem uniswapTransferFromBodyCoreRevert_overflow_maxAllowance_masked
   have hbody :
       ExecTransitionBody config contract evmS (transferFromStore I) transferFromTransition.body
         .reverted := by
-    exact uniswapTransferFromBodyReverts_overflow_maxAllowance evmS I
+    exact uniswapTransferFromBodyReverts_overflow_maxAllowance (hperm := by assumption) evmS I
       (by simp only [evmS, initState]; exact hwv) hmaxS hbalanceS hoverS
   exact (uniswapTransferFromX_overflowMaxAllowance_masked (g := Sat256.ofUInt256 g)
       hsz100 hsize hperm hmax hbalance hover hreach)
@@ -887,7 +887,7 @@ theorem uniswapTransferFromBodyCoreOk_maxAllowance_masked
       ExecTransitionBody config contract evmS (transferFromStore I) transferFromTransition.body
         (.returned { contract := contract, locals := transferFromStoreToBalanceMax evmS I }
           (transferFromPostStateMax evmS I) (some [(.bool true)])) := by
-    exact uniswapTransferFromBodyReturns_maxAllowance evmS I
+    exact uniswapTransferFromBodyReturns_maxAllowance (hperm := by assumption) evmS I
       (by simp only [evmS, initState]; exact hwv) hmaxS hbalanceS hfitS
   have hPostMap :
       (sstoreAccountMap I.codeOwner

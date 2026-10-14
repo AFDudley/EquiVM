@@ -59,10 +59,10 @@ theorem amount0Sort {f : Frame} {evm : EVM.State} {a b : UInt256}
     exact ExecStmt.iteTrue (by simpa only [decide_eq_true ho] using hgt)
       (ExecBlock.consNormal (ExecStmt.letDecl (evalLocalValue hb))
       (ExecBlock.consNormal (ExecStmt.letDecl (evalLocalValue ha1))
-      (ExecBlock.consNormal (ExecStmt.assign
+      (ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
         (evalLocalValue (f := f2) (by simp only [f2, f1, wordLocal_get, beq_iff_eq, String.reduceEq, ↓reduceIte]))
         (assignLocalValue ha2))
-      (execBlock_singleton (ExecStmt.assign
+      (execBlock_singleton (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
         (evalLocalValue (f := f3) (by simp only [f3, f2, wordLocal_get, beq_iff_eq, String.reduceEq, ↓reduceIte]))
         (assignLocalValue hb3))))))
   next ho => exact ExecStmt.iteFalse (by simpa only [decide_eq_false ho] using hgt) ExecBlock.nil

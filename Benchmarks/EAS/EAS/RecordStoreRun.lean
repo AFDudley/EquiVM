@@ -35,7 +35,7 @@ theorem recordStoreRun {L : Store} {evm : EVM.State} {ee : ExecutionEnv} {g : Sa
   | true =>
     obtain ⟨aw1,k1,C1,hr1⟩ := easRecordScalarWrites v site (by omega) hp hview hlen hdata hb rd
     have hs1 := attestationWriteHead_sourceState hs (dbSlot word) {a with uid := word}
-    have hsol1 := recordScalarSource (imms := immStore v) (evm := evm) ha hu hd
+    have hsol1 := recordScalarSource (hperm := by simpa only [hs.env] using hp) (imms := immStore v) (evm := evm) ha hu hd
     have hv1 := recordStoreMemory_view hview word hdata hb
     have hr := recordDataRun v site hstack hp hs1 (recordScalarLocals_attestation L a word)
       ((recordScalarLocals_get L a word "uid" (by decide)).trans hu)

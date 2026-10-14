@@ -13,7 +13,7 @@ theorem recordSetUIDSource {L imms : Store} {evm : EVM.State} {a : AttestationRe
     (ha : L.get? "attestation" = some a.value) (hu : L.get? "uid" = some (wordBytes32Value word)) :
     ExecStmt config {contract := contract,locals := L,immutables := imms} evm recordSetUIDStmt
       (.ok {contract := contract,locals := recordScalarLocals L a word,immutables := imms} evm) := by
-  apply ExecStmt.assign (value := wordBytes32Value word) (by simp only [evalExpr?,hu,EvalResult.ofOption])
+  apply ExecStmt.assign (hperm := Or.inl rfl) (value := wordBytes32Value word) (by simp only [evalExpr?,hu,EvalResult.ofOption])
   simp only [recordSetUIDStmt,assignStorageRef?,ha,updateLocalPath?,
     show lookupField? a.value "uid" = some (wordBytes32Value a.uid) from rfl,EvalResult.ofOption,EvalResult.bind,bind,pure,
     show updateField? a.value "uid" (wordBytes32Value word) = some {a with uid := word}.value from rfl]
@@ -27,7 +27,8 @@ theorem recordScalarLocals_get (L : Store) (a : AttestationRecord) (word : UInt2
 
 theorem recordScalarSource {L imms : Store} {evm : EVM.State} {a : AttestationRecord} {word : UInt256}
     (ha : L.get? "attestation" = some a.value) (hu : L.get? "uid" = some (wordBytes32Value word))
-    (hd : L.get? "_db" = none) :
+    (hd : L.get? "_db" = none)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config {contract := contract,locals := L,immutables := imms} evm recordScalarBody
       (.ok {contract := contract,locals := recordScalarLocals L a word,immutables := imms}
         (attestationWriteHead evm (dbSlot word) {a with uid := word})) := by
@@ -36,7 +37,7 @@ theorem recordScalarSource {L imms : Store} {evm : EVM.State} {a : AttestationRe
     (recordScalarLocals_get _ _ _ _ (by decide)).trans hd
   have hu' : (recordScalarLocals L a word).get? "uid" = some (wordBytes32Value word) :=
     (recordScalarLocals_get _ _ _ _ (by decide)).trans hu
-  exact attestationScalarAssignmentsRun hd' hu' (recordScalarLocals_attestation _ _ _)
+  exact attestationScalarAssignmentsRun (hperm := by assumption) hd' hu' (recordScalarLocals_attestation _ _ _)
     (attestationScalarWrites (dbSlot word) {a with uid := word}) (fun _ h => h)
 
 theorem recordScalarSource_static {L imms : Store} {evm : EVM.State} {a : AttestationRecord} {word : UInt256}

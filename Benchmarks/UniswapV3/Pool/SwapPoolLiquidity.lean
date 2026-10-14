@@ -77,7 +77,7 @@ theorem swapPoolLiquidityX {σ : AccountMap} {ee : ExecutionEnv} {g : Sat256}
     have hex : ExecStmt config frame evm swapTransition.body[15]!
         (.ok frame (storePoolLiquidity evm s.liquidity)) :=
       ExecStmt.iteTrue he (ExecBlock.consNormal
-      (ExecStmt.assign
+      (ExecStmt.assign (hperm := Or.inr ((congrArg ExecutionEnv.perm hsource.env).trans hperm))
         (evalExpr_structField (name := "liquidity") (evalExpr_var_get hsget) rfl) hass) .nil)
     obtain ⟨k2, C2, r2⟩ := uniswapV3Pool_block_4302 (immWords := wordsOf (immStore v))
       (by change R.length + 2 + 7 ≤ 1024; omega) hperm r1

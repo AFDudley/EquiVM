@@ -84,7 +84,7 @@ theorem safeTransferTail_allocationPrefix_preserves {frame : Frame} {evm : EVM.S
       .iteFalse ht .nil
     let frame' := { frame with locals := frame.locals.insert "__memory" (.int (Int.ofNat (n + 128))) }
     have ha : ExecStmt config frame evm safeTransferTail[1]! (.ok frame' evm) :=
-      .assign (safeTransferMemoryAdd_eval hm 128) (assignLocalWord hm)
+      .assign (hperm := Or.inl rfl) (safeTransferMemoryAdd_eval hm 128) (assignLocalWord hm)
     refine ⟨frame', ⟨fun hh ↦ .consNormal hi (.consNormal ha hh)⟩, ?_, ?_⟩
     · simp only [frame', store_get_self, safeTransferReturnAlloc, hz, ↓reduceIte, Nat.add_zero]
     · intro name hname
@@ -97,13 +97,13 @@ theorem safeTransferTail_allocationPrefix_preserves {frame : Frame} {evm : EVM.S
         .ok (.bool true) := (safeTransferCap_eval (safeTransferRetLength_eval hout)).trans
           (by rw [decide_eq_true (by omega)])
     have he : ExecStmt config frame evm (.assign .localVar ⟨"__memory", []⟩ safeTransferCopyCursor)
-        (.ok mid evm) := .assign (safeTransferCopyCursor_eval hm hout) (assignLocalWord hm)
+        (.ok mid evm) := .assign (hperm := Or.inl rfl) (safeTransferCopyCursor_eval hm hout) (assignLocalWord hm)
     have hi : ExecStmt config frame evm safeTransferTail[0]! (.ok mid evm) :=
       .iteTrue ht (.consNormal (.requireTrue hc) (.consNormal he .nil))
     have hmm : mid.locals.get? "__memory" = some (.int (Int.ofNat m)) := store_get_self _ _ _
     let frame' := { mid with locals := mid.locals.insert "__memory" (.int (Int.ofNat (m + 128))) }
     have ha : ExecStmt config mid evm safeTransferTail[1]! (.ok frame' evm) :=
-      .assign (safeTransferMemoryAdd_eval hmm 128) (assignLocalWord hmm)
+      .assign (hperm := Or.inl rfl) (safeTransferMemoryAdd_eval hmm 128) (assignLocalWord hmm)
     refine ⟨frame', ⟨fun hh ↦ .consNormal hi (.consNormal ha hh)⟩, ?_, ?_⟩
     · rw [show frame'.locals.get? "__memory" = some (.int (Int.ofNat (m + 128)))
         from store_get_self _ _ _]

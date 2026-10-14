@@ -593,7 +593,8 @@ theorem vowKissSourceHealNoCode
     (hvatNoCodeHeal :
       (UInt256.ofNat
         (((Stele.EVM.storageStore evmDai evmDai.executionEnv.codeOwner ⟨6⟩ AshNew).lookupAccount
-          (kissVatAddress σ I)).option 0 (fun acc => acc.code.size))).toNat = 0) :
+          (kissVatAddress σ I)).option 0 (fun acc => acc.code.size))).toNat = 0)
+    (hperm : I.perm = true) :
     let locals := kissLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     ExecTransitionBody config contract evm0 locals kissTransition.body .reverted := by
@@ -637,7 +638,7 @@ theorem vowKissSourceHealNoCode
           (perm := false))
         (.ok { contract := contract, locals := locals1 } evmDai) := by
     simpa [locals, locals1, kissLocalsVatDai, collapseReturns] using
-      ExecStmt.externalCallSuccess hvat (by simp [evalExpr?, pure]) hargs hcallDai hdecDai
+      ExecStmt.externalCallSuccess (hperm := Or.inl rfl) hvat (by simp [evalExpr?, pure]) hargs hcallDai hdecDai
   have hradDai :
       evalExpr? config { contract := contract, locals := locals1 } evmDai
         (.var "rad") = .ok (.int (Int.ofNat (kissRad I).toNat)) := by
@@ -721,7 +722,7 @@ theorem vowKissSourceHealNoCode
     refine ExecBlock.consNormal hcallDaiStmt ?_
     refine ExecBlock.consNormal (ExecStmt.requireTrue hreqSurplus) ?_
     refine ExecBlock.consNormal hsubStmt ?_
-    refine ExecBlock.consNormal (ExecStmt.assign hAshNewVar hassignAsh) ?_
+    refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [typedCallViaEVM_executionEnv_eq hcallDai, initState] using hperm)) hAshNewVar hassignAsh) ?_
     exact ExecBlock.consRevert (ExecStmt.requireFalse hguardHeal)
   simpa [ExecTransitionBody, evm0, locals, kissTransition, nonpayable,
     checkedExternalCallStmts] using ExecFuncBody.execBlockRevert hblock
@@ -758,7 +759,8 @@ theorem vowKissSourceHealCallFailure
       typedCallViaEVM config
         (Stele.EVM.storageStore evmDai evmDai.executionEnv.codeOwner ⟨6⟩ AshNew)
         (EVM.address (kissVatAddress σ I)) "heal" 0
-        [.int (Int.ofNat (kissRad I).toNat)] (false, evmHeal, outHeal) true) :
+        [.int (Int.ofNat (kissRad I).toNat)] (false, evmHeal, outHeal) true)
+    (hperm : I.perm = true) :
     let locals := kissLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     ExecTransitionBody config contract evm0 locals kissTransition.body .reverted := by
@@ -802,7 +804,7 @@ theorem vowKissSourceHealCallFailure
           (perm := false))
         (.ok { contract := contract, locals := locals1 } evmDai) := by
     simpa [locals, locals1, kissLocalsVatDai, collapseReturns] using
-      ExecStmt.externalCallSuccess hvat (by simp [evalExpr?, pure]) hargs hcallDai hdecDai
+      ExecStmt.externalCallSuccess (hperm := Or.inl rfl) hvat (by simp [evalExpr?, pure]) hargs hcallDai hdecDai
   have hradDai :
       evalExpr? config { contract := contract, locals := locals1 } evmDai
         (.var "rad") = .ok (.int (Int.ofNat (kissRad I).toNat)) := by
@@ -877,7 +879,7 @@ theorem vowKissSourceHealCallFailure
       ExecStmt config { contract := contract, locals := locals2 } evmAsh
         (.externalCall (.storage vatRef) "heal" (.intLit 0) [.var "rad"] "_healRet")
         .reverted := by
-    exact ExecStmt.externalCallFailure hvatHeal (by simp [evalExpr?, pure])
+    exact ExecStmt.externalCallFailure (hperm := Or.inl rfl) hvatHeal (by simp [evalExpr?, pure])
       hargsHeal hcallHeal
   have hblock :
       ExecBlock config { contract := contract, locals := locals } evm0
@@ -899,7 +901,7 @@ theorem vowKissSourceHealCallFailure
     refine ExecBlock.consNormal hcallDaiStmt ?_
     refine ExecBlock.consNormal (ExecStmt.requireTrue hreqSurplus) ?_
     refine ExecBlock.consNormal hsubStmt ?_
-    refine ExecBlock.consNormal (ExecStmt.assign hAshNewVar hassignAsh) ?_
+    refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [typedCallViaEVM_executionEnv_eq hcallDai, initState] using hperm)) hAshNewVar hassignAsh) ?_
     refine ExecBlock.consNormal (ExecStmt.requireTrue hguardHeal) ?_
     exact ExecBlock.consRevert hcallHealStmt
   simpa [ExecTransitionBody, evm0, locals, kissTransition, nonpayable,
@@ -946,10 +948,11 @@ theorem vowKissHealNoCodeBodyCore
     (hvatNoCodeHeal :
       (UInt256.ofNat
         (((Stele.EVM.storageStore evmDai evmDai.executionEnv.codeOwner ⟨6⟩ AshNew).lookupAccount
-          (kissVatAddress σ I)).option 0 (fun acc => acc.code.size))).toNat = 0) :
+          (kissVatAddress σ I)).option 0 (fun acc => acc.code.size))).toNat = 0)
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   have hrev := RD.vowKissHealNoCode rd1839 hmem hread64 hcodeSizeEvm
-  have hbody := vowKissSourceHealNoCode
+  have hbody := vowKissSourceHealNoCode (hperm := hperm)
     (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
     (evmDai := evmDai) (outDai := outDai) (vatDai := vatDai) (AshNew := AshNew)
     hwv hashEnough hvatCode hcallDai hdecDai hvatDaiEnough hAshLoadDai hvatLoadDai
@@ -1000,10 +1003,11 @@ theorem vowKissHealCallFailureBodyCore
       typedCallViaEVM config
         (Stele.EVM.storageStore evmDai evmDai.executionEnv.codeOwner ⟨6⟩ AshNew)
         (EVM.address (kissVatAddress σ I)) "heal" 0
-        [.int (Int.ofNat (kissRad I).toNat)] (false, evmHeal, outHeal) true) :
+        [.int (Int.ofNat (kissRad I).toNat)] (false, evmHeal, outHeal) true)
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   have hrev := RD.vowKissHealCallFailure rd1919 hrdataSize
-  have hbody := vowKissSourceHealCallFailure
+  have hbody := vowKissSourceHealCallFailure (hperm := hperm)
     (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
     (evmDai := evmDai) (evmHeal := evmHeal) (outDai := outDai) (outHeal := outHeal)
     (vatDai := vatDai) (AshNew := AshNew) hwv hashEnough hvatCode hcallDai hdecDai
@@ -1055,10 +1059,11 @@ theorem vowKissHealSuccessBodyCore
         (EVM.address (kissVatAddress σ I)) "heal" 0
         [.int (Int.ofNat (kissRad I).toNat)] (true, evmHeal, outHeal) true)
     (hdecHeal : config.externalABI.decode? "heal" outHeal = some [])
-    (hAccountsFinal : Eq acc evmHeal.accountMap) :
+    (hAccountsFinal : Eq acc evmHeal.accountMap)
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   have hret := RD.vowKissHealCallSuccess rd1919
-  have hbody := vowKissSourceSuccess
+  have hbody := vowKissSourceSuccess (hperm := hperm)
     (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
     (evmDai := evmDai) (evmHeal := evmHeal) (outDai := outDai) (outHeal := outHeal)
     (vatDai := vatDai) (AshNew := AshNew) hwv hashEnough hvatCode hcallDai hdecDai
@@ -1300,7 +1305,7 @@ theorem vowKissBody {σ σ₀ A I} {g : UInt256}
                 (σ := evmAshStele.accountMap)
                 (target := kissDaiTargetWord evmAshStele.accountMap I)
                 (addr := kissVatAddress σ I) haddrHeal hcodeSizeHealStele
-          exact vowKissHealNoCodeBodyCore (σAsh_evm := σAshEvm)
+          exact vowKissHealNoCodeBodyCore (hperm := hperm) (σAsh_evm := σAshEvm)
             (evmDai := evmDaiStele) hcode hwv hdispatch hdecode rd1839 hmem hread64
             hcodeSizeHeal hashEnoughEvm hvatCodeStele hcallDaiStele hdecDai hvatDaiEnough
             hAshLoadDai hvatLoadDai hAshNew hvatNoCodeHeal
@@ -1380,7 +1385,7 @@ theorem vowKissBody {σ σ₀ A I} {g : UInt256}
               (zHeal, evmHealStele, outHeal) true := by
           simpa [evmHealStele, evmAshSteleBase] using hcallHealSteleRaw
         cases zHeal
-        · exact vowKissHealCallFailureBodyCore
+        · exact vowKissHealCallFailureBodyCore (hperm := hperm)
             (acc := σ_heal) (evmDai := evmDaiStele) (evmHeal := evmHealStele)
             hcode hwv hdispatch hdecode (by simpa using rd1919) houtHealSize
             hashEnoughEvm hvatCodeStele hcallDaiStele hdecDai hvatDaiEnough
@@ -1388,7 +1393,7 @@ theorem vowKissBody {σ σ₀ A I} {g : UInt256}
         have hdecHeal : config.externalABI.decode? "heal" outHeal = some [] := by
           simp [config, vowExternalABI, decodeVoid?]
         have rflFinal : Eq σ_heal evmHealStele.accountMap := rfl
-        exact vowKissHealSuccessBodyCore
+        exact vowKissHealSuccessBodyCore (hperm := hperm)
           (acc := σ_heal) (evmDai := evmDaiStele) (evmHeal := evmHealStele)
           hcode hwv hdispatch hdecode (by simpa using rd1919)
           hashEnoughEvm hvatCodeStele hcallDaiStele hdecDai hvatDaiEnough

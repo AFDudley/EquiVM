@@ -44,7 +44,7 @@ theorem swapAccountingRemainingSource {frame : Frame} {evm : EVM.State}
   cases exactInput
   all_goals
     simp only [swapAccountingFirstName, Bool.false_eq_true, if_false, if_true] at hvalue
-    apply ExecStmt.assign (value := .int (swapAccountingRemaining _ s d)) ?_
+    apply ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (value := .int (swapAccountingRemaining _ s d)) ?_
       (assignLocalField_frame hs rfl rfl)
     simp only [evalExpr?, hstate, hvalue, bind, EvalResult.bind, evalBinaryOp?, castValue?,
       EvalResult.ofOption, swapAccountingRemaining, safeSignedMathResult,
@@ -69,6 +69,6 @@ theorem swapAccountingCalculatedSource {frame : Frame} {evm : EVM.State}
     ExecStmt config frame evm (swapAccountingBody exactInput)[4]!
       (.ok (swapStateFrame frame {s with calculated := value}) evm) := by
   cases exactInput <;>
-    exact ExecStmt.assign (evalExpr_var_get hr) (assignLocalField_frame hs rfl rfl)
+    exact ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalExpr_var_get hr) (assignLocalField_frame hs rfl rfl)
 
 end Benchmarks.UniswapV3.Pool

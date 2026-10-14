@@ -23,7 +23,7 @@ theorem morphoSupplyCollateralTail {v : MorphoImmutables} {ee : ExecutionEnv} {g
       show UInt256.ofNat 128 + UInt256.ofNat 32 = UInt256.ofNat 160 from rfl] using hparams ⟨1, by decide⟩
   have hevent : StateBlock config { contract := contract, locals := locals, immutables := imms } evm
       (supplyCollateralTransition.body.drop 9) { contract := contract, locals := locals, immutables := imms } evm
-      (supplyCollateralTransition.body.drop 10) := StateBlock.start.step (supplyCollateralEmit p assets account data locals imms evm hl)
+      (supplyCollateralTransition.body.drop 10) := StateBlock.start.step (supplyCollateralEmit (hperm := (congrArg ExecutionEnv.perm hs.env).trans hp) p assets account data locals imms evm hl)
   by_cases hz : len = UInt256.ofNat 0
   · rw [if_pos hz] at rd1
     have hd : data.size = 0 := by rw [hdataSize, hz]; rfl

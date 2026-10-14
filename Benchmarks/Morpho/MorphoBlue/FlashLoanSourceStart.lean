@@ -72,11 +72,12 @@ theorem morphoFlashLoanSourceStatic (token : AccountAddress) (assets : UInt256) 
 
 theorem morphoFlashLoanSourceEnter (token : AccountAddress) (assets : UInt256) (data : ByteArray)
     (evm : EVM.State) (imms : Store) (hcv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hsize : evm.executionEnv.calldata.size < 2 ^ 255 + 4) (hz : assets ≠ ⟨0⟩) :
+    (hsize : evm.executionEnv.calldata.size < 2 ^ 255 + 4) (hz : assets ≠ ⟨0⟩)
+    (hperm : evm.executionEnv.perm = true) :
     ABlock config evm { contract := contract, locals := flashLoanArgs token assets data, immutables := imms }
       flashLoanTransition.body (flashLoanFrame token assets data evm.executionEnv.calldata imms)
       (flashLoanTransition.body.drop 5) := by
   exact (morphoFlashLoanSourceGuard token assets data evm imms hcv hsize hz).emitStep
-    (flashLoanEventArgs (flashLoanFrame_inputs token assets data evm.executionEnv.calldata imms) evm)
+    (flashLoanEventArgs (flashLoanFrame_inputs token assets data evm.executionEnv.calldata imms) evm) hperm
 
 end Benchmarks.Morpho.MorphoBlue

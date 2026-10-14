@@ -28,8 +28,8 @@ theorem assignTuplePair {cfg : Config} {f : Frame} {evm : State} {source name0 n
        .assign .localVar ⟨name1, []⟩ (.tupleGet (.var source) 1)]
       (.ok (tupleLocalsFrame f name0 name1 v0 v1) evm) :=
   ExecBlock.consNormal
-    (ExecStmt.assign (evalTupleProjection (evalLocalValue h) (i := 0) rfl) (assignLocalValue h0))
-    (execBlock_singleton (ExecStmt.assign (evalTupleProjection
+    (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalTupleProjection (evalLocalValue h) (i := 0) rfl) (assignLocalValue h0))
+    (execBlock_singleton (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalTupleProjection
       (evalLocalValue ((store_get_ne _ _ hn).trans h)) (i := 1) rfl)
       (assignLocalValue ((store_get_ne _ _ hd).trans h1))))
 

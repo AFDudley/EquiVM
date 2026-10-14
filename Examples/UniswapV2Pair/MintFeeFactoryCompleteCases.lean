@@ -271,7 +271,7 @@ theorem uniswapMintFeeOnKLastNonzeroCompleteFromFactoryCases
           using execBlock_append hprefix htail)
     have hbody : ExecTransitionBody config contract evmS (mintStore I)
         mintTransition.body .reverted := ExecFuncBody.execBlockRevert
-      (uniswapMintAfterMintFeeReverts_of_call evmS evm0S evm1S I hwv hunlockedStele
+      (uniswapMintAfterMintFeeReverts_of_call (hperm := hperm) evmS evm0S evm1S I hwv hunlockedStele
         hguard0 hguard1 hcall0 hdec0 hcall1 hdec1 hle0Source hle1Source hfeeRevert)
     exact rdRev.reEquivExecutionRevert hcode hdispatch (uniswapDecode_mint_ok hsz36) hbody
   · have hfee : ExecStmt config

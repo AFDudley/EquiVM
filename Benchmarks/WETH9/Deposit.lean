@@ -21,7 +21,7 @@ namespace Benchmarks.WETH9
 /-- The Stele `deposit()` body credits `balanceOf[msg.sender] += msg.value` and falls through
     (no explicit return).  The unchecked `+=` truncates on store to the wrapping word. -/
 theorem weth9DepositBodyReturnsSplit {σ σ₀ A I} {g : Sat256} :
-    (ExecTransitionBody config contract (initState σ σ₀ g A I) ∅
+    (I.perm = true → ExecTransitionBody config contract (initState σ σ₀ g A I) ∅
       depositTransition.body
       (.returned { contract := contract, locals := ∅ }
         (Stele.EVM.storageStore (initState σ σ₀ g A I) I.codeOwner (callerBalSlot I)
@@ -62,19 +62,21 @@ theorem weth9DepositBodyReturnsSplit {σ σ₀ A I} {g : Sat256} :
     · rw [show wordLoc (callerBalSlot I) = uint256Loc (callerBalSlot I) from rfl,
         storageLocStore_uint256_int, hco, wordOfInt_add_words]
   constructor
-  · exact ExecFuncBody.execBlockOK (assignStorageBlock heval hassign)
+  · intro hperm
+    exact ExecFuncBody.execBlockOK (assignStorageBlock heval hassign hperm)
   · intro hperm
     exact ExecFuncBody.execBlockStatic (ExecBlock.consStatic
       (ExecStmt.assignStatic heval hassign (by simpa [evm, initState] using hperm)))
 
-theorem weth9DepositBodyReturns {σ σ₀ A I} {g : Sat256} :
+theorem weth9DepositBodyReturns {σ σ₀ A I} {g : Sat256}
+    (hperm : I.perm = true) :
     ExecTransitionBody config contract (initState σ σ₀ g A I) ∅
       depositTransition.body
       (.returned { contract := contract, locals := ∅ }
         (Stele.EVM.storageStore (initState σ σ₀ g A I) I.codeOwner (callerBalSlot I)
           (UInt256.add (Stele.EVM.storageLoad (initState σ σ₀ g A I) I.codeOwner
             (callerBalSlot I)) I.weiValue)) none) :=
-  weth9DepositBodyReturnsSplit.1
+  weth9DepositBodyReturnsSplit.1 hperm
 
 /-! ## EVM trace (store portion — the caller-keyed keccak + load-add-store) -/
 
@@ -280,7 +282,7 @@ theorem weth9DepositBodyCore {σ σ₀ A I} {g : UInt256}
       (by change decodeCalldataWithMode .modern [] [] I.calldata = some ∅
           exact decodeCalldataWithMode_empty_ok hsz4)
       (weth9DepositBodyReturnsSplit.2 hperm)
-  have hbody := weth9DepositBodyReturns (σ := σ) (σ₀ := σ₀)
+  have hbody := weth9DepositBodyReturns (hperm := by assumption) (σ := σ) (σ₀ := σ₀)
     (A := A) (I := I) (g := Sat256.ofUInt256 g)
   have hvaleq : I.weiValue + solcSlotWord σ I (callerBalSlot I)
       = UInt256.add (solcSlotWord σ I (callerBalSlot I)) I.weiValue := by
@@ -386,14 +388,15 @@ theorem weth9_receive_none {cd : ByteArray} : receiveDispatchMsg contract cd = n
 
 /-- The deposit source body, transported to the fallback: `fallbackTransition.body` is defeq to
     `depositTransition.body`, and `∅` callargs. -/
-theorem weth9FallbackBody {σ σ₀ A I} {g : Sat256} :
+theorem weth9FallbackBody {σ σ₀ A I} {g : Sat256}
+    (hperm : I.perm = true) :
     ExecTransitionBody config contract (initState σ σ₀ g A I) ∅
       fallbackTransition.body
       (.returned { contract := contract, locals := ∅ }
         (Stele.EVM.storageStore (initState σ σ₀ g A I) I.codeOwner (callerBalSlot I)
           (UInt256.add (Stele.EVM.storageLoad (initState σ σ₀ g A I) I.codeOwner
             (callerBalSlot I)) I.weiValue)) none) :=
-  weth9DepositBodyReturns
+  weth9DepositBodyReturns (hperm := by assumption)
 
 /-- The shared connect for a fallback-dispatched deposit run (no-match or short). -/
 theorem weth9FallbackConnect {σ σ₀ A I} {g : UInt256}
@@ -402,13 +405,14 @@ theorem weth9FallbackConnect {σ σ₀ A I} {g : UInt256}
     (hX : RDret weth9Bytecode (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I)
       (sstoreAccountMap I.codeOwner σ (callerBalSlot I)
-        (I.weiValue + solcSlotWord σ I (callerBalSlot I))) ByteArray.empty) :
+        (I.weiValue + solcSlotWord σ I (callerBalSlot I))) ByteArray.empty)
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   have hvaleq : I.weiValue + solcSlotWord σ I (callerBalSlot I)
       = UInt256.add (solcSlotWord σ I (callerBalSlot I)) I.weiValue := by
     exact u256_add_comm _ _
   refine weth9ReEquivFallbackGen (t := fallbackTransition) hcode hX
-    hnosel weth9_receive_none rfl rfl rfl weth9FallbackBody ?_ ?_
+    hnosel weth9_receive_none rfl rfl rfl (weth9FallbackBody (hperm := hperm)) ?_ ?_
   · rw [hvaleq, weth9DepositBody_accountMap]
   · exact returnDataEquiv.abi (returnEquiv.fallthrough (dvs := []) rfl rfl (by native_decide))
 
@@ -423,7 +427,7 @@ theorem weth9FallbackConnectSplit {σ σ₀ A I} {g : UInt256}
         (initState σ σ₀ (Sat256.ofUInt256 g) A I))) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   rcases hX with ⟨_hperm, hret⟩ | ⟨hperm, hstatic⟩
-  · exact weth9FallbackConnect hcode hnosel hret
+  · exact weth9FallbackConnect (hperm := by assumption) hcode hnosel hret
   · exact weth9ReEquivFallbackStatic hcode hstatic hnosel weth9_receive_none rfl rfl rfl
       (weth9DepositBodyReturnsSplit.2 hperm)
 

@@ -124,7 +124,7 @@ theorem flapTailSin1CallFailure
       ExecStmt config { contract := contract, locals := locals4 } evmDai
         (.externalCall (.storage vatRef) "sin" (.intLit 0) [thisAddr] "vatSin1"
           (perm := false)) .reverted := by
-    exact ExecStmt.externalCallFailure hvatSin1 (by simp [evalExpr?, pure])
+    exact ExecStmt.externalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hvatSin1 (by simp [evalExpr?, pure])
       hargsSin1 hcallSin1
   simp only [flapTailStmts, flapPostDaiToKickStmts, flapKickAndReturnStmts,
     checkedExternalCallStmts, List.cons_append, List.nil_append]
@@ -194,7 +194,7 @@ theorem flapTailSin1DecodeRevert
       ExecStmt config { contract := contract, locals := locals4 } evmDai
         (.externalCall (.storage vatRef) "sin" (.intLit 0) [thisAddr] "vatSin1"
           (perm := false)) .reverted := by
-    exact ExecStmt.externalCallReturnDecodeRevert hvatSin1 (by simp [evalExpr?, pure])
+    exact ExecStmt.externalCallReturnDecodeRevert (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hvatSin1 (by simp [evalExpr?, pure])
       hargsSin1 hcallSin1 hdecSin1
   simp only [flapTailStmts, flapPostDaiToKickStmts, flapKickAndReturnStmts,
     checkedExternalCallStmts, List.cons_append, List.nil_append]

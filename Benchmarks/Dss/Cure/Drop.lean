@@ -1196,7 +1196,8 @@ theorem cureDropSwapSourceBodyForRefinement
         (dropSwapPopLenState
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (solcSlotWordAt (dropPosSlotFor I) σ I)
-          (solcSlotWordAt ⟨2⟩ σ I)).toNat) :
+          (solcSlotWordAt ⟨2⟩ σ I)).toNat)
+    (hperm : I.perm = true) :
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let posWord := solcSlotWordAt (dropPosSlotFor I) σ I
     let lenWord := solcSlotWordAt ⟨2⟩ σ I
@@ -1223,7 +1224,7 @@ theorem cureDropSwapSourceBodyForRefinement
   simpa [evm0, posWord, lenWord, lastIndex, dstIndex, localsPos, localsLast,
     localsLastIndex, localsMove, localsDst, evmMoveElem, evmMovePos, popLen, evmPop, evmPos,
     evmAmt] using
-    (cureDropSourceBodyOkSwap (σ := σ)
+    (cureDropSourceBodyOkSwap (hperm := hperm) (σ := σ)
       (σ₀ := σ₀) (A := A) (I := I) (g := g)
       hwv hauth hlive hposNe hlenPos hswap hpopLenPos)
 
@@ -1342,7 +1343,7 @@ theorem cureDropSwapBranchRefinement {σ σ₀ A I} {g sel key : UInt256}
       (solcSlotWordAt (dropPosSlotFor I) σ I).toNat <
         (solcSlotWordAt ⟨2⟩ σ I).toNat := by
     exact hswap
-  have hbody := cureDropSwapSourceBodyForRefinement
+  have hbody := cureDropSwapSourceBodyForRefinement (hperm := hperm)
     (σ := σ) (σ₀ := σ₀)
     (A := A) (I := I) (g := g)
     hwv hauthStele hliveStele hposStele hlenPosStele hswapStele hpopLenPosStele
@@ -1538,7 +1539,7 @@ theorem cureDropBodyCore {σ σ₀ A I} {g : UInt256}
                   ExecTransitionBody config contract evm0 (dropLocals I)
                     dropTransition.body .reverted := by
                 simpa [evm0] using
-                  (cureDropSourceBodySwapPopZeroRevert
+                  (cureDropSourceBodySwapPopZeroRevert (hperm := _hperm)
                     (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
                     hwv hauthStele hliveStele hposStele hlenPosStele hswapStele
                     hpopLenZeroSteleState)
@@ -1640,10 +1641,10 @@ theorem cureDropBodyCore {σ σ₀ A I} {g : UInt256}
                 (s0 := initState σ σ₀ (Sat256.ofUInt256 g) A I)
                 (ee := I) (key := key) (R := [sel])
                 hafterLive hcanonKey hposSolc hnoswapSolc hlenPos hmemAuth hread64 (by simp)
-              rcases hfirstWrite with ⟨_, hret⟩ | ⟨hperm, hstatic⟩
+              rcases hfirstWrite with ⟨hperm, hret⟩ | ⟨hperm, hstatic⟩
               swap
               · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode (hbodySplit.2 hperm)
-              have hbody := hbodySplit.1
+              have hbody := hbodySplit.1 hperm
               have haccounts :
                   dropNoSwapFinalAccountMapFor σ I key
                     (solcSlotWordAt ⟨2⟩ σ I) = evmAmt.accountMap := by

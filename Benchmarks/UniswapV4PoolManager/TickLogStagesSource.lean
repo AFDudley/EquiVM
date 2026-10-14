@@ -62,8 +62,8 @@ theorem tickLogStageExec {f : Frame} {evm : EVM.State} {r log2 : UInt256}
   have htuple2 : f2.locals.get? stage.name = some (.tuple result) :=
     (store_get_ne _ _ (beq_eq_false_iff_ne.mpr (Ne.symm hnr))).trans htuple1
   refine ⟨f3, ExecBlock.consNormal hc (ExecBlock.consNormal
-    (ExecStmt.assign (evalTupleProjection (evalLocalValue htuple1) rfl) (assignLocalValue hr1))
-    (ExecBlock.consNormal (ExecStmt.assign (evalTupleProjection (evalLocalValue htuple2) rfl)
+    (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalTupleProjection (evalLocalValue htuple1) rfl) (assignLocalValue hr1))
+    (ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalTupleProjection (evalLocalValue htuple2) rfl)
       (assignLocalValue hl2)) ExecBlock.nil)), ?_, store_get_self _ _ _, rfl, ?_⟩
   · exact (store_get_ne _ _ (by decide : ("log_2" == "r") = false)).trans (store_get_self _ _ _)
   · intro name hrn hln hsn

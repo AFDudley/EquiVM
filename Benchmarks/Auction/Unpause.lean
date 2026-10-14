@@ -62,7 +62,7 @@ theorem unpauseBodyCore {σ σ₀ A I} {g : UInt256}
             exact execBlock_append_term
               (hprefix (ExecBlock.consStatic (hstoreSplit.2 hperm))) (by intro _ _ h; cases h)
           exact hstatic.reEquivStaticHalt hcode hd hdec hbody
-        have hprefixOK := hprefix (ExecBlock.consNormal hstoreSplit.1 ExecBlock.nil)
+        have hprefixOK := hprefix (ExecBlock.consNormal (hstoreSplit.1 hperm) ExecBlock.nil)
         rcases unpauseAfterRoutine rd1126 (SourceState.unpause hs0) hperm
             (addressEventHeap freshHeapMemory (solcSourceWord I) (by decide))
             (by jump_dest) (by evm_ov) with

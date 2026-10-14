@@ -68,7 +68,7 @@ theorem swapPoolDeltaSource {f : Frame} {evm : State} {delta : UInt256} {old : V
     (hd : f.locals.get? "swapDelta" = some old) :
     ExecStmt config (swapPoolCallFrame f delta) evm swapTransition.body[24]!
       (.ok (swapPoolDeltaFrame f delta) evm) :=
-  ExecStmt.assign (evalLocalValue (store_get_self _ _ _))
+  ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalLocalValue (store_get_self _ _ _))
     (assignLocalValue ((store_get_ne _ _ (by decide : ("__c6" == "swapDelta") = false)).trans hd))
 
 end Benchmarks.UniswapV4PoolManager

@@ -22,7 +22,7 @@ theorem donatePoolDeltaSource {f : Frame} {evm : State} {delta : UInt256} {old :
     (hd : f.locals.get? "delta" = some old) :
     ExecStmt config (donatePoolCallFrame f delta) evm donateTransition.body[16]!
       (.ok (donatePoolDeltaFrame f delta) evm) :=
-  ExecStmt.assign (evalLocalValue (store_get_self _ _ _))
+  ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalLocalValue (store_get_self _ _ _))
     (assignLocalValue ((store_get_ne _ _ (by decide : ("__c6" == "delta") = false)).trans hd))
 
 

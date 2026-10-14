@@ -635,7 +635,8 @@ theorem blindAuctionBidBodyReturns (evm : EVM.State)
     (hsz36 : 36 ≤ evm.executionEnv.calldata.size)
     (htime :
       (UInt256.ofNat evm.executionEnv.header.timestamp).toNat <
-        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat) :
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody blindAuctionConfig blindAuctionContract evm (bidStore evm.executionEnv)
       bidTransition.body
       (.returned { contract := blindAuctionContract, locals := bidStore evm.executionEnv }
@@ -646,6 +647,7 @@ theorem blindAuctionBidBodyReturns (evm : EVM.State)
   refine ExecBlock.consNormal (ExecStmt.requireTrue (evalExpr_bid_time_true evm htime)) ?_
   exact ExecBlock.consNormal
     (ExecStmt.pushVal
+      (hperm := by first | assumption | exact Or.inr ‹_› | exact Or.inl rfl)
       (by
         simp [bidStructValue, bidBlindedValue, bidCallValue, evalExpr?, evalStructFields?,
           envValue, bidStore, EvalResult.ofOption, EvalResult.bind, pure, bind]
@@ -950,16 +952,6 @@ theorem blindAuctionBidBodyCore {σ σ₀ A I} {g : UInt256}
     · have hdec := blindAuctionDecode_bid_ok (I := I) hsz36 hbig
       by_cases htime : (bidTimestampWord I).toNat < (biddingEndWord σ I).toNat
       · have htimeS' : (bidTimestampWord I).toNat < (biddingEndWord σ I).toNat := htime
-        have hbody :
-            ExecTransitionBody blindAuctionConfig blindAuctionContract evmS (bidStore I)
-              bidTransition.body
-              (.returned { contract := blindAuctionContract, locals := bidStore I }
-                (bidPostState evmS I (bidLengthWord σ I)) none) :=
-          blindAuctionBidBodyReturns evmS
-            (by simpa [evmS, initState] using hsz36)
-            (by
-              simpa [evmS, initState, biddingEndWord, bidTimestampWord, Stele.EVM.storageLoad,
-                State.lookupAccount] using htimeS')
         by_cases hperm : I.perm = true
         swap
         · have hpf : I.perm = false := by simpa using hperm
@@ -971,6 +963,16 @@ theorem blindAuctionBidBodyCore {σ σ₀ A I} {g : UInt256}
                 simpa [evmS, initState, biddingEndWord, bidTimestampWord, Stele.EVM.storageLoad,
                   State.lookupAccount] using htimeS')
               (by simpa [evmS, initState] using hpf))
+        have hbody :
+            ExecTransitionBody blindAuctionConfig blindAuctionContract evmS (bidStore I)
+              bidTransition.body
+              (.returned { contract := blindAuctionContract, locals := bidStore I }
+                (bidPostState evmS I (bidLengthWord σ I)) none) :=
+          blindAuctionBidBodyReturns (hperm := by assumption) evmS
+            (by simpa [evmS, initState] using hsz36)
+            (by
+              simpa [evmS, initState, biddingEndWord, bidTimestampWord, Stele.EVM.storageLoad,
+                State.lookupAccount] using htimeS')
         exact (permSplit_true hperm (blindAuctionBidX_ok (g := Sat256.ofUInt256 g) hsz36 hsize
             hbig htime hreach))
           |>.reEquivExecutionGen hcode hd hdec hbody

@@ -105,7 +105,7 @@ theorem collectDebitTrace {I : ExecutionEnv} {g : Sat256} {s0 evm : State} {f : 
       obtain ⟨result, hb', hr⟩ := collectTransferTrace (f := f) v hstack
         ((storageStore_executionEnv _ _ _ _).trans hI) ((storageStore_σ₀ _ _ _ _).trans hσ0) hf hc ht ha
         (twoWordHashMem_size_96 _ _ hmem) ((mappingMemory_load64 _ _ hmem).trans hfree) rdTransfer
-      exact ⟨result, execFuncBody_prepend (execBlock_singleton (ExecStmt.assign heval hwrite)) hb', hr⟩
+      exact ⟨result, execFuncBody_prepend (execBlock_singleton (ExecStmt.assign (hperm := Or.inr (by simpa only [hI] using Bool.eq_true_of_not_eq_false hp)) heval hwrite)) hb', hr⟩
   · exact ⟨.reverted, .execBlockRevert (ExecBlock.consRevert (ExecStmt.assignExprRevert
       (checkedSubSourceUnderflow hread (evalLocalValue ha) (Nat.lt_of_not_ge hfit)))),
       checkedSubReverts v (by simp; omega) (Nat.lt_of_not_ge hfit) rdSub⟩

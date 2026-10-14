@@ -224,7 +224,7 @@ theorem cureLiftSourceBodyOkSplit {σ σ₀ A I} {g : UInt256}
     let evm1 := liftAfterSrcsLengthState evm0 len
     let evm2 := liftAfterSrcsElemState evm1 len (liftKey I)
     let evm3 := liftAfterPosState evm2 I
-    (ExecTransitionBody config contract evm0 (liftLocals I) liftTransition.body
+    (I.perm = true → ExecTransitionBody config contract evm0 (liftLocals I) liftTransition.body
       (.returned { contract := contract, locals := liftLocals I } evm3 none)) ∧
     (I.perm = false →
       ExecTransitionBody config contract evm0 (liftLocals I)
@@ -265,11 +265,12 @@ theorem cureLiftSourceBodyOkSplit {σ σ₀ A I} {g : UInt256}
     refine ExecBlock.consNormal (ExecStmt.requireTrue hguardPos) ?_
     exact hrest
   constructor
-  · have hlen := evalExpr_liftSrcsLength evm2 I
+  · intro hperm
+    have hlen := evalExpr_liftSrcsLength evm2 I
     have hassign := liftAssignPos_ok evm2 I
     exact ExecFuncBody.execBlockOK (hprefix
-      (ExecBlock.consNormal (ExecStmt.pushVal hsrc hpush)
-        (ExecBlock.consNormal (ExecStmt.assign hlen hassign) ExecBlock.nil)))
+      (ExecBlock.consNormal (ExecStmt.pushVal (hperm := hperm) hsrc hpush)
+        (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [evm2, evm1, liftAfterSrcsElemState, liftAfterSrcsLengthState, storageStore_executionEnv] using hperm)) hlen hassign) ExecBlock.nil)))
   · intro hperm
     exact ExecFuncBody.execBlockStatic (hprefix
       (ExecBlock.consStatic (ExecStmt.pushValStatic hsrc hpush
@@ -839,7 +840,7 @@ theorem cureLiftBodyCore {σ σ₀ A I} {g : UInt256}
           let evm2 := liftAfterSrcsElemState evm1 len (liftKey I)
           let evm3 := liftAfterPosState evm2 I
           have hbodySplit :
-              (ExecTransitionBody config contract evm0 locals liftTransition.body
+              (I.perm = true → ExecTransitionBody config contract evm0 locals liftTransition.body
                 (.returned { contract := contract, locals := locals } evm3 none)) ∧
               (I.perm = false →
                 ExecTransitionBody config contract evm0 locals liftTransition.body
@@ -870,10 +871,10 @@ theorem cureLiftBodyCore {σ σ₀ A I} {g : UInt256}
             (s0 := initState σ σ₀ (Sat256.ofUInt256 g) A I)
             (ee := I) (key := key) (ret := ⟨484⟩) (R := [sel])
             hposPc (by jump_dest) hmemPos hreadPos64 hcanonKey (by simp)
-          rcases hfirstWrite with ⟨_, _, _, hretPc⟩ | ⟨hperm, hstatic⟩
+          rcases hfirstWrite with ⟨hperm, _, _, hretPc⟩ | ⟨hperm, hstatic⟩
           swap
           · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode (hbodySplit.2 hperm)
-          have hbody := hbodySplit.1
+          have hbody := hbodySplit.1 hperm
           have hretPc' := hretPc.jumpdest (by native_decide) (by evm_ov)
           have hret :
               RDret cureBytecode (Sat256.ofUInt256 g)

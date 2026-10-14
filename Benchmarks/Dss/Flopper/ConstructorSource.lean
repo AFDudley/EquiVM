@@ -274,7 +274,8 @@ theorem assign_flopperCtorKicksStorage (evm : EVM.State) (locals : Store)
 theorem flopperCtorBodySuccess
     {σ : AccountMap} {σ₀ : AccountMap} {A : Substate} {I : ExecutionEnv}
     {g : UInt256} (vat gem : AccountAddress)
-    (hwv : I.weiValue = ⟨0⟩) :
+    (hwv : I.weiValue = ⟨0⟩)
+    (hperm : I.perm = true) :
     let locals := flopperCtorLocals vat gem
     let evm0 := initState σ σ₀
       (Sat256.ofUInt256 g) A I
@@ -290,6 +291,23 @@ theorem flopperCtorBodySuccess
     ExecBlock config { contract := contract, locals := locals } evm0 constructorDecl.body
       (.ok { contract := contract, locals := locals } evm9) := by
   intro locals evm0 evm1 evm2 evm3 evm4 evm5 evm6 evm7 evm8 evm9
+  have hp0 : evm0.executionEnv.perm = true := hperm
+  have hp1 : evm1.executionEnv.perm = true := by
+    simpa only [evm1, flopperCtorAfterBegState, storageStore_executionEnv] using hp0
+  have hp2 : evm2.executionEnv.perm = true := by
+    simpa only [evm2, flopperCtorAfterPadState, storageStore_executionEnv] using hp1
+  have hp3 : evm3.executionEnv.perm = true := by
+    simpa only [evm3, flopperCtorAfterTtlState, storageStore_executionEnv] using hp2
+  have hp4 : evm4.executionEnv.perm = true := by
+    simpa only [evm4, flopperCtorAfterTauState, storageStore_executionEnv] using hp3
+  have hp5 : evm5.executionEnv.perm = true := by
+    simpa only [evm5, flopperCtorAfterKicksState, storageStore_executionEnv] using hp4
+  have hp6 : evm6.executionEnv.perm = true := by
+    simpa only [evm6, flopperCtorAfterWardsState, storageStore_executionEnv] using hp5
+  have hp7 : evm7.executionEnv.perm = true := by
+    simpa only [evm7, flopperCtorAfterVatState, storageStore_executionEnv] using hp6
+  have hp8 : evm8.executionEnv.perm = true := by
+    simpa only [evm8, flopperCtorAfterGemState, storageStore_executionEnv] using hp7
   have hassignBeg :
       assignStorageRef? config { contract := contract, locals := locals } evm0
         .storage begRef (.int defaultBeg) =
@@ -348,23 +366,24 @@ theorem flopperCtorBodySuccess
   simp only [constructorDecl, nonpayable, List.cons_append, List.nil_append]
   refine ExecBlock.consNormal (ExecStmt.requireTrue ?_) ?_
   · exact evalCallvalueEq_true (by simp [evm0, initState]; exact hwv)
-  refine ExecBlock.consNormal (ExecStmt.assign (by simp [evalExpr?, pure, defaultBeg]) hassignBeg) ?_
-  refine ExecBlock.consNormal (ExecStmt.assign (by simp [evalExpr?, pure, defaultPad]) hassignPad) ?_
-  refine ExecBlock.consNormal (ExecStmt.assign (by simp [evalExpr?, pure, defaultTtl]) hassignTtl) ?_
-  refine ExecBlock.consNormal (ExecStmt.assign (by simp [evalExpr?, pure, defaultTau]) hassignTau) ?_
-  refine ExecBlock.consNormal (ExecStmt.assign (by simp [evalExpr?, pure]) hassignKicks) ?_
-  refine ExecBlock.consNormal (ExecStmt.assign (by simp [evalExpr?, pure]) hassignWards) ?_
-  refine ExecBlock.consNormal (ExecStmt.assign ?_ hassignVat) ?_
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hp0) (by simp [evalExpr?, pure, defaultBeg]) hassignBeg) ?_
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hp1) (by simp [evalExpr?, pure, defaultPad]) hassignPad) ?_
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hp2) (by simp [evalExpr?, pure, defaultTtl]) hassignTtl) ?_
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hp3) (by simp [evalExpr?, pure, defaultTau]) hassignTau) ?_
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hp4) (by simp [evalExpr?, pure]) hassignKicks) ?_
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hp5) (by simp [evalExpr?, pure]) hassignWards) ?_
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hp6) ?_ hassignVat) ?_
   · simpa [locals] using evalExpr_flopperCtorLocalVat (evm := evm6) vat gem
-  refine ExecBlock.consNormal (ExecStmt.assign ?_ hassignGem) ?_
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hp7) ?_ hassignGem) ?_
   · simpa [locals] using evalExpr_flopperCtorLocalGem (evm := evm7) vat gem
-  exact ExecBlock.consNormal (ExecStmt.assign (by simp [evalExpr?, pure]) hassignLive)
+  exact ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hp8) (by simp [evalExpr?, pure]) hassignLive)
     ExecBlock.nil
 
 theorem flopperSteleCtorExecSuccess
     {σ : AccountMap} {σ₀ : AccountMap} {A : Substate} {I : ExecutionEnv}
     {g : UInt256} (vat gem : AccountAddress)
-    (hwv : I.weiValue = ⟨0⟩) :
+    (hwv : I.weiValue = ⟨0⟩)
+    (hperm : I.perm = true) :
     steleCtorExec config contract [.address vat, .address gem] σ σ₀ g A I
       (.returned { contract := contract, locals := flopperCtorLocals vat gem }
         (flopperCtorAfterLiveState
@@ -390,7 +409,7 @@ theorem flopperSteleCtorExecSuccess
   · rfl
   · simpa [ExecTransitionBody, contract, constructorDecl] using
       ExecFuncBody.execBlockOK
-        (flopperCtorBodySuccess
+        (flopperCtorBodySuccess (hperm := hperm)
           (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
           vat gem hwv)
 

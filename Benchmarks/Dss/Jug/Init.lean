@@ -176,8 +176,8 @@ theorem jugInitSourceBodySplit {σ σ₀ A I} {g : UInt256}
     let evm1 := Stele.EVM.storageStore evm0 I.codeOwner (fileDutyDutySlotFor I) initOne
     let evm2 := Stele.EVM.storageStore evm1 I.codeOwner (fileDutyRhoSlotFor I)
       (initTimestampWord I)
-    ExecTransitionBody config contract evm0 locals initTransition.body
-      (.returned { contract := contract, locals := locals } evm2 none) ∧
+    (I.perm = true → ExecTransitionBody config contract evm0 locals initTransition.body
+      (.returned { contract := contract, locals := locals } evm2 none)) ∧
     (I.perm = false →
       ExecTransitionBody config contract evm0 locals initTransition.body .staticViolation) := by
   intro locals evm0 evm1 evm2
@@ -235,10 +235,10 @@ theorem jugInitSourceBodySplit {σ σ₀ A I} {g : UInt256}
     · exact evalCallvalueEq_true (by simp [evm0, initState]; exact hwv)
     refine ExecBlock.consNormal (ExecStmt.requireTrue hguard) ?_
     exact ExecBlock.consNormal (ExecStmt.requireTrue hdutyGuard) h
-  refine ⟨?_, fun hpf => ?_⟩
+  refine ⟨fun hperm => ?_, fun hpf => ?_⟩
   · simpa [ExecTransitionBody, locals, evm0, evm1, evm2] using ExecFuncBody.execBlockOK
-      (hbody _ (ExecBlock.consNormal (ExecStmt.assign hone hassignDuty)
-        (ExecBlock.consNormal (ExecStmt.assign htimestamp hassignRho) ExecBlock.nil)))
+      (hbody _ (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hone hassignDuty)
+        (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [evm1, storageStore_executionEnv] using hperm)) htimestamp hassignRho) ExecBlock.nil)))
   · simpa [ExecTransitionBody, locals, evm0] using ExecFuncBody.execBlockStatic
       (hbody _ (ExecBlock.consStatic (ExecStmt.assignStatic hone hassignDuty
         (by simp [evm0, initState]; exact hpf))))
@@ -247,7 +247,8 @@ theorem jugInitSourceBody {σ σ₀ A I} {g : UInt256}
     (hwv : I.weiValue = ⟨0⟩)
     (hsz36 : 36 ≤ I.calldata.size)
     (hauth : relyAuthWord σ I = ⟨1⟩)
-    (hduty : solcSlotWordAt (fileDutyDutySlotFor I) σ I = ⟨0⟩) :
+    (hduty : solcSlotWordAt (fileDutyDutySlotFor I) σ I = ⟨0⟩)
+    (hperm : I.perm = true) :
     let locals := initLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let evm1 := Stele.EVM.storageStore evm0 I.codeOwner (fileDutyDutySlotFor I) initOne
@@ -255,7 +256,7 @@ theorem jugInitSourceBody {σ σ₀ A I} {g : UInt256}
       (initTimestampWord I)
     ExecTransitionBody config contract evm0 locals initTransition.body
       (.returned { contract := contract, locals := locals } evm2 none) :=
-  (jugInitSourceBodySplit (σ₀ := σ₀) (A := A) (g := g) hwv hsz36 hauth hduty).1
+  (jugInitSourceBodySplit (σ₀ := σ₀) (A := A) (g := g) hwv hsz36 hauth hduty).1 hperm
 
 theorem jugInitSourceBodyStatic {σ σ₀ A I} {g : UInt256}
     (hwv : I.weiValue = ⟨0⟩)
@@ -720,7 +721,7 @@ theorem jugInitBodyCoreOk
       ExecTransitionBody config contract evm0 locals initTransition.body
         (.returned { contract := contract, locals := locals } evm2 none) := by
     simpa [evm0, evm1, evm2, locals, dutySlot, rhoSlot, timestamp] using
-      (jugInitSourceBody (σ := σ)
+      (jugInitSourceBody (hperm := hperm) (σ := σ)
         (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hsz36 hauthStele hdutyStele)
   obtain ⟨_, _, hdecoded⟩ := jugInitX_decoded (g := Sat256.ofUInt256 g)
     hsz36 hsize hreach

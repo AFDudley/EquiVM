@@ -503,7 +503,7 @@ theorem flipperDealBodyCoreCatPostCall {σ σ₀ A I}
           ((dealLocals I).insert "_clawRet" (collapseReturns [])).insert "_fluxRet"
             (collapseReturns [])
         have hbodySplit :
-            (ExecTransitionBody config contract evm0 (dealLocals I) dealTransition.body
+            (I.perm = true → ExecTransitionBody config contract evm0 (dealLocals I) dealTransition.body
               (.returned { contract := contract, locals := locals2 }
                 (bidDeletedEVM evmVat (dealId I)) none)) ∧
             (I.perm = false → ExecTransitionBody config contract evm0
@@ -514,7 +514,7 @@ theorem flipperDealBodyCoreCatPostCall {σ σ₀ A I}
               (evmCat := evmCat) (evmVat := evmVat)
               (outCat := outCat) (outVat := outVat)
               hwv hfinishedStele hcatCode hcallCatTrue hvatCodeStele hcallVatTrue)
-        rcases hretSplit with ⟨_hperm, hret⟩ | ⟨hperm, hstatic⟩
+        rcases hretSplit with ⟨hperm, hret⟩ | ⟨hperm, hstatic⟩
         swap
         · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode (hbodySplit.2 hperm)
         have haccounts :
@@ -522,7 +522,7 @@ theorem flipperDealBodyCoreCatPostCall {σ σ₀ A I}
               (bidDeletedEVM evmVat (dealId I)).accountMap := by
           simpa [dealBidDeleteAccountMap, evmVat, evmCat, evm0, initState] using
             (bidDeleteCollapsedAccountMap_eq_bidDeletedEVM evmVat (dealId I))
-        exact hret.reEquivExecutionGen hcode hdispatch hdecode hbodySplit.1
+        exact hret.reEquivExecutionGen hcode hdispatch hdecode (hbodySplit.1 hperm)
           haccounts
           (by
             rw [show dealTransition.returnType = [] by rfl]

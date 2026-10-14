@@ -43,7 +43,7 @@ theorem poolSwapScanSource {f : Frame} {evm : State} {id : UInt256}
   let after := poolSwapScanStep s evm id r p
   let f3 := valueLocal f2 "step" (poolSwapStepValue {s with priceStart := r.price, tickNext := after.tickNext})
   have hstart : ExecStmt config f evm poolSwapLoopBody[0]! (.ok f0 evm) :=
-    ExecStmt.assign (evalStructField (evalLocalValue hr) rfl) (assignLocalField hs rfl rfl)
+    ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalStructField (evalLocalValue hr) rfl) (assignLocalField hs rfl rfl)
   have hself0 : f0.locals.get? "self" = some (poolRefValue id) :=
     (store_get_ne _ _ (by decide : ("step" == "self") = false)).trans hself
   have href : ExecStmt config f0 evm poolSwapLoopBody[1]! (.ok f1 evm) :=
@@ -67,12 +67,12 @@ theorem poolSwapScanSource {f : Frame} {evm : State} {id : UInt256}
   have hv2 : f2.locals.get? "__c12" = some (.tuple (tickScanValues evm id r.tick p.tickSpacing p.zeroForOne)) :=
     store_get_self _ _ _
   have hnext : ExecStmt config f2 evm poolSwapLoopBody[3]! (.ok f3 evm) :=
-    ExecStmt.assign (evalTupleProjection (evalLocalValue hv2) (i := 0) rfl)
+    ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalTupleProjection (evalLocalValue hv2) (i := 0) rfl)
       (poolSwapStep_tick_assign hs2 after.tickNext)
   have hv3 : f3.locals.get? "__c12" = some (.tuple (tickScanValues evm id r.tick p.tickSpacing p.zeroForOne)) :=
     (store_get_ne _ _ (by decide : ("step" == "__c12") = false)).trans hv2
   have hinit : ExecStmt config f3 evm poolSwapLoopBody[4]! (.ok (poolSwapScanFrame f s evm id r p) evm) :=
-    ExecStmt.assign (evalTupleProjection (evalLocalValue hv3) (i := 1) rfl)
+    ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalTupleProjection (evalLocalValue hv3) (i := 1) rfl)
       (assignLocalField (store_get_self _ _ _) rfl rfl)
   exact ExecBlock.consNormal hstart (ExecBlock.consNormal href (ExecBlock.consNormal hcall
     (ExecBlock.consNormal hnext (execBlock_singleton hinit))))

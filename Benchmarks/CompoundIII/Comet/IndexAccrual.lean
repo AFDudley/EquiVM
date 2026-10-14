@@ -116,7 +116,7 @@ theorem indexAccrualBlock_result (frame : Frame) (evm : EVM.State) (borrow : Boo
     by_cases ha : index.toNat + delta.toNat < 2^64
     · simp only [IndexAccrualValid, show indexIncrement index rate elapsed = delta from rfl,
         hs, ha, and_self, if_true]
-      apply ExecBlock.consNormal (ExecStmt.assign
+      apply ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
         (checkedNarrowAddSourceOk ⟨64, by decide⟩ (by decide) heib hedb ha)
         (assignLocalFrame hig))
       exact ExecBlock.nil

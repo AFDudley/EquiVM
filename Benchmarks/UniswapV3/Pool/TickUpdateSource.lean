@@ -7,12 +7,13 @@ set_option maxRecDepth 1000
 
 theorem tickUpdateNetStartSource (imms : Store) (evm : EVM.State) (a : TickUpdateArgs)
     (hv : liquidityDeltaValid (tickUpdateGrossBefore a evm) a.delta)
-    (hm : tickUpdateGrossAfter a evm ≤ Int.ofNat a.maxLiquidity.toNat) :
+    (hm : tickUpdateGrossAfter a evm ≤ Int.ofNat a.maxLiquidity.toNat)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config (tickUpdateFrame imms a) evm (tickUpdateFunction.body.take 9)
       (.ok (tickUpdateNetStartFrame imms a evm) (tickUpdateGrossState a evm)) := by
   change ExecBlock config (tickUpdateFrame imms a) evm
     (tickUpdateFunction.body.take 8 ++ [tickUpdateFunction.body[8]!]) _
-  exact execBlock_append_ok (tickUpdateStoresSource imms evm a hv hm)
+  exact execBlock_append_ok (tickUpdateStoresSource (hperm := by assumption) imms evm a hv hm)
     (ExecBlock.consNormal (ExecStmt.letDecl (by simp only [evalExpr?, pure])) ExecBlock.nil)
 
 theorem evalTickUpdateUpper (imms : Store) (evm : EVM.State) (a : TickUpdateArgs) :
@@ -49,11 +50,12 @@ theorem tickUpdateNetReverts (imms : Store) (evm : EVM.State) (a : TickUpdateArg
     (hdlo : -(2 ^ 127 : Int) ≤ a.delta) (hdhi : a.delta < 2 ^ 127)
     (hv : liquidityDeltaValid (tickUpdateGrossBefore a evm) a.delta)
     (hm : tickUpdateGrossAfter a evm ≤ Int.ofNat a.maxLiquidity.toNat)
-    (hn : ¬ safeCast128Valid (tickUpdateNetResult a evm a.upper)) :
+    (hn : ¬ safeCast128Valid (tickUpdateNetResult a evm a.upper))
+    (hperm : evm.executionEnv.perm = true) :
     ExecFuncBody config (tickUpdateFrame imms a) evm tickUpdateFunction.body .reverted := by
   apply ExecFuncBody.execBlockRevert
   rw [← List.take_append_drop 9 tickUpdateFunction.body]
-  apply execBlock_append_ok (tickUpdateNetStartSource imms evm a hv hm)
+  apply execBlock_append_ok (tickUpdateNetStartSource (hperm := by assumption) imms evm a hv hm)
   exact ExecBlock.consRevert (tickUpdateNetChoiceReverts imms evm a hdlo hdhi hn)
 
 theorem tickUpdateNetReadyGet (imms : Store) (evm : EVM.State) (a : TickUpdateArgs)
@@ -73,18 +75,19 @@ theorem tickUpdateReturns (imms : Store) (evm : EVM.State) (a : TickUpdateArgs)
     (hdlo : -(2 ^ 127 : Int) ≤ a.delta) (hdhi : a.delta < 2 ^ 127)
     (hv : liquidityDeltaValid (tickUpdateGrossBefore a evm) a.delta)
     (hm : tickUpdateGrossAfter a evm ≤ Int.ofNat a.maxLiquidity.toNat)
-    (hn : safeCast128Valid (tickUpdateNetResult a evm a.upper)) :
+    (hn : safeCast128Valid (tickUpdateNetResult a evm a.upper))
+    (hperm : evm.executionEnv.perm = true) :
     ExecFuncBody config (tickUpdateFrame imms a) evm tickUpdateFunction.body
       (.returned (tickUpdateNetReadyFrame imms a evm a.upper) (tickUpdateFinalState a evm)
         (some [.bool (tickUpdateFlipped a evm)])) := by
   apply ExecFuncBody.execBlockRet
   rw [← List.take_append_drop 9 tickUpdateFunction.body]
-  apply execBlock_append_ok (tickUpdateNetStartSource imms evm a hv hm)
+  apply execBlock_append_ok (tickUpdateNetStartSource (hperm := by assumption) imms evm a hv hm)
   refine ExecBlock.consNormal (tickUpdateNetChoiceSource imms evm a hdlo hdhi hn) ?_
   have hg := tickUpdateNetReadyGet imms evm a a.upper
   refine ExecBlock.consNormal (stele' := tickUpdateNetReadyFrame imms a evm a.upper)
     (evm' := tickUpdateFinalState a evm)
-    (ExecStmt.assign (evalExpr_var_get hg.2.2)
+    (ExecStmt.assign (hperm := Or.inr (by simpa only [tickUpdateGrossState, tickLiquidityState, storageStore_executionEnv, tickUpdateInitializedState_executionEnv] using hperm)) (evalExpr_var_get hg.2.2)
       (assignTickLiquidity (tickUpdateNetReadyFrame imms a evm a.upper).locals imms _ "info"
         a.tick true (.int (tickUpdateNetResult a evm a.upper))
         (EVM.wordOfInt (tickUpdateNetResult a evm a.upper)) hg.1 rfl)) ?_

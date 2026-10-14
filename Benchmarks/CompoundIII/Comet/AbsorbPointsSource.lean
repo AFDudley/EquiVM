@@ -86,7 +86,7 @@ theorem absorbPoints_source (frame : Frame) (evm : State) (addr : AccountAddress
           (execBlock_append hspend (ExecBlock.consStatic (ExecStmt.assignStatic he3 hw hperm))))
       · simp only [if_true, internalBlockResult]
         exact ⟨f3, ExecBlock.consNormal hload (execBlock_append hcounts
-          (execBlock_append hspend (execBlock_singleton (ExecStmt.assign he3 hw))))⟩
+          (execBlock_append hspend (execBlock_singleton (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) he3 hw))))⟩
     · rw [if_neg hspvalid] at hspend
       rw [if_neg (show ¬ AbsorbPointsValid p n gasUsed fee from fun hh ↦ hspvalid hh.2)]
       exact ExecBlock.consNormal hload (execBlock_append hcounts

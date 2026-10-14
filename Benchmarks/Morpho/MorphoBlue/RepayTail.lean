@@ -31,7 +31,7 @@ theorem morphoRepayTail {v : MorphoImmutables} {ee : ExecutionEnv} {g : Sat256}
     have he : evalExpr? config { contract := contract, locals := locals, immutables := imms }
         evm (.var "__c7") = .ok (.int (Int.ofNat debt.toNat)) := by
       simp only [evalExpr?, hget7, EvalResult.ofOption]
-    apply ExecStmt.assign he
+    apply ExecStmt.assign (hperm := Or.inr ((congrArg ExecutionEnv.perm hs.env).trans hp)) he
     exact assignMarketField evm locals imms (.var "id") p.id ⟨2, by decide⟩ debt hfit hl.market (hl.evalId imms evm)
   let e1 := storeMarketField evm p.id ⟨2, by decide⟩ debt
   let σ1 := storeMarketFieldAccounts σ ee p.id ⟨2, by decide⟩ debt
@@ -39,7 +39,8 @@ theorem morphoRepayTail {v : MorphoImmutables} {ee : ExecutionEnv} {g : Sat256}
   have hevent : StateBlock config { contract := contract, locals := locals, immutables := imms } evm
       (repayTransition.body.drop 18) { contract := contract, locals := locals, immutables := imms } e1
       (repayTransition.body.drop 20) :=
-    (StateBlock.start.step hass).step (repayEmit p assets shares account data locals imms e1 hl)
+    (StateBlock.start.step hass).step (repayEmit p assets shares account data locals imms e1 hl
+      ((congrArg ExecutionEnv.perm hs1.env).trans hp))
   obtain ⟨a1, k1, C1, rd1⟩ := morphoRepayStoreEvent (v := v) (by decide) hp (hm.hash p.id (UInt256.ofNat 3)).free hfit h
   obtain ⟨hm1, hpe⟩ := (hm.hash p.id (UInt256.ofNat 3)).twoWordEvent (by decide) assets shares
   have hpref := (heapAdvance_hash mem fp p.id (UInt256.ofNat 3)).preserves.trans hpe

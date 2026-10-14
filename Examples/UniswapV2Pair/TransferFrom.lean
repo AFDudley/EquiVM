@@ -1677,7 +1677,8 @@ theorem uniswapTransferFromAllowanceFinitePrefix (evm : EVM.State) (I : Executio
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hnotMax : (transferFromCurrentAllowanceWord evm I).toNat ≠ UInt256.size - 1)
     (henough : (transferFromValueWord I).toNat ≤
-      (transferFromCurrentAllowanceWord evm I).toNat) :
+      (transferFromCurrentAllowanceWord evm I).toNat)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config { contract := contract, locals := transferFromStore I } evm
       transferFromAllowancePrefixBody
       (.ok { contract := contract, locals := transferFromStoreCurrentAllowance evm I }
@@ -1700,7 +1701,9 @@ theorem uniswapTransferFromAllowanceFinitePrefix (evm : EVM.State) (I : Executio
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue (evalExpr_transferFrom_require_allowance_true evm I henough)) ?_
   exact ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_transferFrom_allowance_debit evm I henough)
+    (ExecStmt.assign
+      (hperm := Or.inr hperm)
+      (evalExpr_transferFrom_allowance_debit evm I henough)
       (transferFromAssignAllowance evm I)) ExecBlock.nil
 
 theorem uniswapTransferFromAllowanceMaxPrefix (evm : EVM.State) (I : ExecutionEnv)
@@ -1795,7 +1798,8 @@ theorem uniswapTransferFromBodyReturns_finiteAllowance (evm : EVM.State) (I : Ex
       (transferFromCurrentAllowanceWord evm I).toNat)
     (hbalance : (transferFromValueWord I).toNat ≤
       (transferFromFromBalanceWord (transferFromAfterAllowanceState evm I) I).toNat)
-    (hfit : transferFromNewToNat evm I < UInt256.size) :
+    (hfit : transferFromNewToNat evm I < UInt256.size)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (transferFromStore I) transferFromTransition.body
       (.returned { contract := contract, locals := transferFromStoreToBalance evm I }
         (transferFromPostState evm I) (some [(.bool true)])) := by
@@ -1813,16 +1817,20 @@ theorem uniswapTransferFromBodyReturns_finiteAllowance (evm : EVM.State) (I : Ex
     (.returned { contract := contract, locals := transferFromStoreToBalance evm I }
       (transferFromPostState evm I) (some [(.bool true)]))
   refine execBlock_append
-    (uniswapTransferFromAllowanceFinitePrefix evm I hwv hnotMax hallowance) ?_
+    (uniswapTransferFromAllowanceFinitePrefix (hperm := by assumption) evm I hwv hnotMax hallowance) ?_
   refine ExecBlock.consNormal (ExecStmt.letDecl (evalExpr_transferFrom_from_balance evm I)) ?_
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue (evalExpr_transferFrom_require_from_true evm I hbalance)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_transferFrom_balance_debit evm I hbalance)
+    (ExecStmt.assign
+      (hperm := Or.inr (by simpa [transferFromAfterAllowanceState] using hperm))
+      (evalExpr_transferFrom_balance_debit evm I hbalance)
       (transferFromAssignFrom evm I)) ?_
   refine ExecBlock.consNormal (ExecStmt.letDecl (evalExpr_transferFrom_to_balance evm I)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_transferFrom_newToBalance evm I hfit)
+    (ExecStmt.assign
+      (hperm := Or.inr (by simpa [transferFromAfterBalanceState, transferFromAfterAllowanceState] using hperm))
+      (evalExpr_transferFrom_newToBalance evm I hfit)
       (transferFromAssignTo evm I hfit)) ?_
   exact ExecBlock.consReturn (ExecStmt.return (by simp [evalExprs?, evalExpr?, EvalResult.bind, bind, pure]))
 
@@ -1830,7 +1838,8 @@ theorem uniswapTransferFromBodyReturns_maxAllowance (evm : EVM.State) (I : Execu
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hmax : (transferFromCurrentAllowanceWord evm I).toNat = UInt256.size - 1)
     (hbalance : (transferFromValueWord I).toNat ≤ (transferFromFromBalanceWord evm I).toNat)
-    (hfit : transferFromNewToNatMax evm I < UInt256.size) :
+    (hfit : transferFromNewToNatMax evm I < UInt256.size)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (transferFromStore I) transferFromTransition.body
       (.returned { contract := contract, locals := transferFromStoreToBalanceMax evm I }
         (transferFromPostStateMax evm I) (some [(.bool true)])) := by
@@ -1852,11 +1861,15 @@ theorem uniswapTransferFromBodyReturns_maxAllowance (evm : EVM.State) (I : Execu
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue (evalExpr_transferFrom_require_from_true_max evm I hbalance)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_transferFrom_balance_debit_max evm I hbalance)
+    (ExecStmt.assign
+      (hperm := Or.inr hperm)
+      (evalExpr_transferFrom_balance_debit_max evm I hbalance)
       (transferFromAssignFromMax evm I)) ?_
   refine ExecBlock.consNormal (ExecStmt.letDecl (evalExpr_transferFrom_to_balance_max evm I)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_transferFrom_newToBalanceMax evm I hfit)
+    (ExecStmt.assign
+      (hperm := Or.inr (by simpa [transferFromAfterBalanceStateMax] using hperm))
+      (evalExpr_transferFrom_newToBalanceMax evm I hfit)
       (transferFromAssignToMax evm I hfit)) ?_
   exact ExecBlock.consReturn (ExecStmt.return (by simp [evalExprs?, evalExpr?, EvalResult.bind, bind, pure]))
 
@@ -1960,7 +1973,8 @@ theorem uniswapTransferFromBodyReverts_balance_finiteAllowance
     (hallowance : (transferFromValueWord I).toNat ≤
       (transferFromCurrentAllowanceWord evm I).toNat)
     (hlt : (transferFromFromBalanceWord (transferFromAfterAllowanceState evm I) I).toNat <
-      (transferFromValueWord I).toNat) :
+      (transferFromValueWord I).toNat)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (transferFromStore I) transferFromTransition.body
       .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
@@ -1976,7 +1990,7 @@ theorem uniswapTransferFromBodyReverts_balance_finiteAllowance
         .return [(.boolLit true)] ])
     .reverted
   refine execBlock_append
-    (uniswapTransferFromAllowanceFinitePrefix evm I hwv hnotMax hallowance) ?_
+    (uniswapTransferFromAllowanceFinitePrefix (hperm := by assumption) evm I hwv hnotMax hallowance) ?_
   refine ExecBlock.consNormal (ExecStmt.letDecl (evalExpr_transferFrom_from_balance evm I)) ?_
   exact ExecBlock.consRevert
     (ExecStmt.requireFalse (evalExpr_transferFrom_require_from_false evm I hlt))
@@ -2013,7 +2027,8 @@ theorem uniswapTransferFromBodyReverts_overflow_finiteAllowance
       (transferFromCurrentAllowanceWord evm I).toNat)
     (hbalance : (transferFromValueWord I).toNat ≤
       (transferFromFromBalanceWord (transferFromAfterAllowanceState evm I) I).toNat)
-    (hover : UInt256.size ≤ transferFromNewToNat evm I) :
+    (hover : UInt256.size ≤ transferFromNewToNat evm I)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (transferFromStore I) transferFromTransition.body
       .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
@@ -2029,12 +2044,14 @@ theorem uniswapTransferFromBodyReverts_overflow_finiteAllowance
         .return [(.boolLit true)] ])
     .reverted
   refine execBlock_append
-    (uniswapTransferFromAllowanceFinitePrefix evm I hwv hnotMax hallowance) ?_
+    (uniswapTransferFromAllowanceFinitePrefix (hperm := by assumption) evm I hwv hnotMax hallowance) ?_
   refine ExecBlock.consNormal (ExecStmt.letDecl (evalExpr_transferFrom_from_balance evm I)) ?_
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue (evalExpr_transferFrom_require_from_true evm I hbalance)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_transferFrom_balance_debit evm I hbalance)
+    (ExecStmt.assign
+      (hperm := Or.inr (by simpa [transferFromAfterAllowanceState] using hperm))
+      (evalExpr_transferFrom_balance_debit evm I hbalance)
       (transferFromAssignFrom evm I)) ?_
   refine ExecBlock.consNormal (ExecStmt.letDecl (evalExpr_transferFrom_to_balance evm I)) ?_
   exact ExecBlock.consRevert
@@ -2045,7 +2062,8 @@ theorem uniswapTransferFromBodyReverts_overflow_maxAllowance
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hmax : (transferFromCurrentAllowanceWord evm I).toNat = UInt256.size - 1)
     (hbalance : (transferFromValueWord I).toNat ≤ (transferFromFromBalanceWord evm I).toNat)
-    (hover : UInt256.size ≤ transferFromNewToNatMax evm I) :
+    (hover : UInt256.size ≤ transferFromNewToNatMax evm I)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (transferFromStore I) transferFromTransition.body
       .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
@@ -2065,7 +2083,9 @@ theorem uniswapTransferFromBodyReverts_overflow_maxAllowance
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue (evalExpr_transferFrom_require_from_true_max evm I hbalance)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_transferFrom_balance_debit_max evm I hbalance)
+    (ExecStmt.assign
+      (hperm := Or.inr hperm)
+      (evalExpr_transferFrom_balance_debit_max evm I hbalance)
       (transferFromAssignFromMax evm I)) ?_
   refine ExecBlock.consNormal (ExecStmt.letDecl (evalExpr_transferFrom_to_balance_max evm I)) ?_
   exact ExecBlock.consRevert

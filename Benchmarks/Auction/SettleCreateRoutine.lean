@@ -40,7 +40,7 @@ theorem settleCreateRoutineSplit {I g s0 ret R mem aw rdata σ k C evm}
           (ExecBlock.consStatic (hstoreSplit.2 (by rw [hs.env]; exact hperm))), hstatic⟩
     apply Or.inl
     have hs2 := (SourceState.status hs) ⟨2⟩
-    have hstore := hstoreSplit.1
+    have hstore := hstoreSplit.1 (by rw [hs.env]; exact hperm)
     have hprefix : ExecBlock auctionConfig { contract := auctionContract, locals := ∅ } evm
         [.require (.binary .ne (.storage statusRef) entered), .assign .storage statusRef entered]
         (.ok { contract := auctionContract, locals := ∅ } (statusState evm ⟨2⟩)) :=
@@ -73,7 +73,7 @@ theorem settleCreateRoutineSplit {I g s0 ret R mem aw rdata σ k C evm}
             omega) hargsC (retVar := "_c") (by jump_dest) (by evm_ov) with
           ⟨evmC, σC, memC, awC, outC, _, _, hcreate, hsC, rd2471⟩ | ⟨hcreate, hrev⟩
         · obtain ⟨_, _, rdret⟩ := settleExit rd2471 hperm hret (by evm_ov)
-          have hexit := statusStoreSource (evm := evmC)
+          have hexit := statusStoreSource (hperm := by rw [hsC.env]; exact hperm) (evm := evmC)
             (locals := ((∅ : Store).insert "_s" (.int (Int.ofNat ptrS.toNat))).insert "_c" .unit)
             (word := ⟨1⟩) (e := notEntered) (by simp)
             (by simp only [notEntered, evalExpr?, pure]; rfl)

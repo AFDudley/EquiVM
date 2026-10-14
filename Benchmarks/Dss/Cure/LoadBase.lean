@@ -593,7 +593,8 @@ theorem execLoadLoadedZeroTail {evm : EVM.State} {locals : Store} (I : Execution
     (hbaseLCount : locals.get? "lCount" = none)
     (hsrc : locals.get? "src" = some (.address (loadSrc I)))
     (hloaded :
-      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (loadLoadedSlotFor I) = ⟨0⟩) :
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (loadLoadedSlotFor I) = ⟨0⟩)
+    (hperm : evm.executionEnv.perm = true) :
     let evmLoaded := Stele.EVM.storageStore evm evm.executionEnv.codeOwner
       (loadLoadedSlotFor I) ⟨1⟩
     let count := Stele.EVM.storageLoad evmLoaded evmLoaded.executionEnv.codeOwner ⟨8⟩
@@ -633,9 +634,9 @@ theorem execLoadLoadedZeroTail {evm : EVM.State} {locals : Store} (I : Execution
         [ .assign .storage (loadedRef (.var "src")) (.intLit 1),
           .assign .storage lCountRef (incUnchecked (.storage lCountRef)) ]
         (.ok { contract := contract, locals := locals } evmCount) := by
-    refine ExecBlock.consNormal (ExecStmt.assign ?_ hassignLoaded) ?_
+    refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) ?_ hassignLoaded) ?_
     · simp [evalExpr?, pure]
-    exact ExecBlock.consNormal (ExecStmt.assign hinc hassignCount) ExecBlock.nil
+    exact ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [evmLoaded, storageStore_executionEnv] using hperm)) hinc hassignCount) ExecBlock.nil
   exact ExecStmt.iteTrue hcond hthen
 
 theorem evalExpr_loadPosGtZero_false (evm : EVM.State) (I : ExecutionEnv)

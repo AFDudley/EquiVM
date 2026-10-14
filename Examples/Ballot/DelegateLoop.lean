@@ -260,7 +260,9 @@ theorem ballotDelegateStele_loopContinueBodyCurrent (evm : EVM.State) (I : Execu
         .require (.binary .ne (.var "to") sender) ]
       (.ok { contract := ballotContract, locals := delegateCurrentNextStore evm I w } evm) := by
   exact ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_delegate_current_voter_delegate evm I w)
+    (ExecStmt.assign
+      (hperm := by first | assumption | exact Or.inr ‹_› | exact Or.inl rfl)
+      (evalExpr_delegate_current_voter_delegate evm I w)
       (assign_delegate_current_to_next evm I w))
     (ExecBlock.consNormal
       (ExecStmt.requireTrue
@@ -279,7 +281,9 @@ theorem ballotDelegateStele_loopRevertSenderCurrent (evm : EVM.State) (I : Execu
       .reverted := by
   refine ExecStmt.whileRevert (evalExpr_delegate_current_loop_continues evm I w hdelegate) ?_
   exact ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_delegate_current_voter_delegate evm I w)
+    (ExecStmt.assign
+      (hperm := by first | assumption | exact Or.inr ‹_› | exact Or.inl rfl)
+      (evalExpr_delegate_current_voter_delegate evm I w)
       (assign_delegate_current_to_next evm I w))
       (ExecBlock.consRevert
       (ExecStmt.requireFalse

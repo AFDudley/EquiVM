@@ -66,7 +66,7 @@ theorem tickUpdateNetBranchSource (imms : Store) (evm : EVM.State) (a : TickUpda
       (.ok (tickUpdateNetReadyFrame imms a evm subtract) (tickUpdateGrossState a evm)) := by
   refine ExecBlock.consNormal (tickUpdateMathCall imms evm a subtract hdlo hdhi) ?_
   refine ExecBlock.consNormal (tickUpdateCastCall imms evm a subtract hv) ?_
-  refine ExecBlock.consNormal (ExecStmt.assign
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
     (evalExpr_var_get Std.HashMap.getElem?_insert_self) ?_) ExecBlock.nil
   apply assignLocalVarBase_frame (old := .int 0)
   cases subtract <;> simp only [tickUpdateCastFrame, tickUpdateMathFrame, tickUpdateNetStartFrame,

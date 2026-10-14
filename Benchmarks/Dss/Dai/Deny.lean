@@ -210,13 +210,14 @@ theorem daiDenyBodyReturns (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hsrc : evm.executionEnv.source = I.source)
     (hauth :
-      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (denyAuthStorageSlot I) = ⟨1⟩) :
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (denyAuthStorageSlot I) = ⟨1⟩)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (denyStore I) denyTransition.body
       (.returned { contract := contract, locals := denyStore I }
         (denyPostState evm I) none) := by
   refine ExecFuncBody.execBlockOK ?_
   simpa [denyTransition, nonpayable, auth] using
-    nonpayableRequireAssignStorageBlock
+    nonpayableRequireAssignStorageBlock (hperm := hperm)
       (cfg := config)
       (stele := { contract := contract, locals := denyStore I })
       (evm := evm)
@@ -614,7 +615,7 @@ theorem daiDenyBodyCoreOk
           (denyPostState evmStele I) none) := by
     simpa [evmStele, denyAuthWord, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
-      daiDenyBodyReturns evmStele I
+      daiDenyBodyReturns (hperm := hperm) evmStele I
         (by simp only [evmStele, initState]; exact hwv)
         (by simp [evmStele, initState])
         hauthWord

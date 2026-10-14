@@ -26,11 +26,12 @@ theorem collateralTransfer_args {p assets account receiver locals}
   rfl
 
 theorem collateralTransferEmit {p assets account receiver locals}
-    (hl : CollateralTransferLocals p assets account receiver locals) (imms : Store) (evm : EVM.State) :
+    (hl : CollateralTransferLocals p assets account receiver locals) (imms : Store) (evm : EVM.State)
+    (hperm : evm.executionEnv.perm = true) :
     ExecStmt config { contract := contract, locals := locals, immutables := imms } evm
       withdrawCollateralTransition.body[17]!
       (.ok { contract := contract, locals := locals, immutables := imms } evm) := by
-  apply ExecStmt.emit
+  apply ExecStmt.emit (hperm := hperm)
   change evalExprs? config _ _ [.var "id", .env .caller, .var "onBehalf", .var "receiver", .var "assets"] = _
   simp only [evalExprs?, hl.evalId imms evm, hl.evalAccount imms evm, hl.evalReceiver imms evm,
     hl.evalAssets imms evm, evalExpr?, envValue, EvalResult.bind, bind, pure]
@@ -62,7 +63,7 @@ theorem morphoWithdrawCollateralTail {v : MorphoImmutables} {ee : ExecutionEnv} 
   have ab : StateBlock config { contract := contract, locals := locals, immutables := imms } evm
       (withdrawCollateralTransition.body.drop 16) { contract := contract, locals := locals, immutables := imms } evm
       (withdrawCollateralTransition.body.drop 18) :=
-    (StateBlock.start.step (ExecStmt.requireTrue hez)).step (collateralTransferEmit hl imms evm)
+    (StateBlock.start.step (ExecStmt.requireTrue hez)).step (collateralTransferEmit (hperm := (congrArg ExecutionEnv.perm hs.env).trans hp) hl imms evm)
   obtain ⟨hm2, hp2⟩ := hm1.twoWordEvent (by decide) (UInt256.ofNat ee.source.val) assets
   have hpref := had1.preserves.trans (hp2.mono (by rw [had1.cursor]; omega))
   let mem2 := twoWordEventMem (morphoHealthMem mem) (fp + UInt256.ofNat 64) (UInt256.ofNat ee.source.val) assets

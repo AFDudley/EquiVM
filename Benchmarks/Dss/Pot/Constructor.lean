@@ -94,7 +94,7 @@ theorem potConstructorCorrect :
       refine typedConstructorRefinementFor.execution hsuccess
         (by
           simpa [evm0s, evm1s, evm2s, evm3s, evm4s, evm5s, evm6s, potCtorPostState] using
-            potSteleCtorExecSuccess
+            potSteleCtorExecSuccess (hperm := hperm)
               (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
               (g := g) vat hwv)
         ?_

@@ -300,7 +300,8 @@ theorem accessControlRevokeRoleBodyReturns_write (evm : EVM.State) (I : Executio
         ⟨255⟩ ≠ ⟨0⟩)
     (htarget : UInt256.land
       (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (revokeRoleTargetSlot I)) ⟨255⟩ ≠
-        ⟨0⟩) :
+        ⟨0⟩)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (revokeRoleStore I) revokeRoleTransition.body
       (.returned { contract := contract, locals := revokeRoleStoreWithAdmin evm I }
         (revokeRolePostState evm I) none) := by
@@ -315,7 +316,9 @@ theorem accessControlRevokeRoleBodyReturns_write (evm : EVM.State) (I : Executio
       (revokeRolePostState evm I))
       (evalExpr_revokeRole_target_true evm I hsz68 htarget) ?_) ?_
   · refine ExecBlock.consNormal
-      (ExecStmt.assign (by simp [evalExpr?, pure]) (revokeRoleAssignTarget evm I hsz68)) ?_
+      (ExecStmt.assign
+        (hperm := by first | assumption | exact Or.inr ‹_› | exact Or.inl rfl)
+        (by simp [evalExpr?, pure]) (revokeRoleAssignTarget evm I hsz68)) ?_
     exact ExecBlock.nil
   exact ExecBlock.nil
 
@@ -1663,7 +1666,7 @@ theorem accessControlRevokeRoleBody {σ σ₀ A I}
               simpa [evmS, initState, Stele.EVM.storageLoad, State.lookupAccount,
                 revokeRoleTargetStorageWord, revokeRoleStorageWordAt] using htargetNonzero
             by_cases hperm : I.perm = true
-            · have hbody := accessControlRevokeRoleBodyReturns_write evmS I
+            · have hbody := accessControlRevokeRoleBodyReturns_write (hperm := hperm) evmS I
                 (by simp only [evmS, initState]; exact hwv) hsz68 hadminStele htargetStele
               exact (permSplit_true hperm (accessControlRevokeRoleX_revoke_write
                   (g := Sat256.ofUInt256 g) hsz68 hcanonAccount htargetNonzero rd517))

@@ -64,7 +64,7 @@ theorem balanceCall (v : UniswapV3PoolImmutables) (second : Bool) (evm evm' : EV
       (balanceCalldata evm.executionEnv.codeOwner) (ok, evm', out) false) :
     ExecStmt config (balanceTokenFrame v second) evm balanceCallStmt
       (.ok (balanceCallFrame v second ok out) evm') := by
-  apply lowLevelCallWithPermSource (target := balanceToken v second)
+  apply lowLevelCallWithPermSource (hperm := Or.inl rfl) (target := balanceToken v second)
     (calldata := balanceCalldata evm.executionEnv.codeOwner)
     (value := 0) _ (by simp only [evalExpr?, pure]) _ hcall
   · exact evalExpr_var_get (by simp [balanceTokenFrame])

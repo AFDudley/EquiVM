@@ -1,3 +1,4 @@
+import Reasoning.ExternalCall
 import Reasoning.Storage
 import Examples.UniswapV2Pair.Sync
 
@@ -799,7 +800,8 @@ theorem uniswapUpdateFunctionReturns_conditionTrue_packed
     (hbound1 : Int.ofNat balance1.toNat ≤ maxUint112)
     (helapsed : 0 < syncTimeElapsedInt evm)
     (hreserve0 : Int.ofNat (uniswapReserve0Word evm).toNat ≠ 0)
-    (hreserve1 : Int.ofNat (uniswapReserve1Word evm).toNat ≠ 0) :
+    (hreserve1 : Int.ofNat (uniswapReserve1Word evm).toNat ≠ 0)
+    (hperm : evm.executionEnv.perm = true) :
     ExecFuncBody config (syncUpdateCallFrame evm balance0 balance1) evm
       updateFunction.body
       (.returned
@@ -898,6 +900,7 @@ theorem uniswapUpdateFunctionReturns_conditionTrue_packed
           evmP1) := by
     refine ExecBlock.consNormal
       (ExecStmt.assign
+        (hperm := Or.inr (by simpa [evmP0, evmP1, evmR0, evmR1] using hperm))
         (evalExpr_sync_update_price0Cumulative evm evm balance0 balance1 hreserve0)
         (uniswapAssignPrice0CumulativeLastOfStore evm evmP0
           (syncUpdateTimeElapsedStore evm balance0 balance1)
@@ -907,6 +910,7 @@ theorem uniswapUpdateFunctionReturns_conditionTrue_packed
           hstoreP0)) ?_
     exact ExecBlock.consNormal
       (ExecStmt.assign
+        (hperm := Or.inr (by simpa [evmP0, evmP1, evmR0, evmR1] using hperm))
         (evalExpr_sync_update_price1Cumulative evmP0 evm balance0 balance1 hreserve1)
         (uniswapAssignPrice1CumulativeLastOfStore evmP0 evmP1
           (syncUpdateTimeElapsedStore evm balance0 balance1)
@@ -921,6 +925,7 @@ theorem uniswapUpdateFunctionReturns_conditionTrue_packed
       hpriceBlock) ?_
   refine ExecBlock.consNormal
     (ExecStmt.assign
+      (hperm := Or.inr (by simpa [evmP0, evmP1, evmR0, evmR1] using hperm))
       (evalExpr_sync_update_u112_balance0 evm evmP1 balance0 balance1 hbound0)
       (uniswapAssignReserve0OfStore evmP1 evmR0
         (syncUpdateTimeElapsedStore evm balance0 balance1) balance0
@@ -928,6 +933,7 @@ theorem uniswapUpdateFunctionReturns_conditionTrue_packed
         hstoreR0)) ?_
   refine ExecBlock.consNormal
     (ExecStmt.assign
+      (hperm := Or.inr (by simpa [evmP0, evmP1, evmR0, evmR1] using hperm))
       (evalExpr_sync_update_u112_balance1 evm evmR0 balance0 balance1 hbound1)
       (uniswapAssignReserve1OfStore evmR0 evmR1
         (syncUpdateTimeElapsedStore evm balance0 balance1) balance1
@@ -935,6 +941,7 @@ theorem uniswapUpdateFunctionReturns_conditionTrue_packed
         hstoreR1)) ?_
   exact ExecBlock.consNormal
     (ExecStmt.assign
+      (hperm := Or.inr (by simpa [evmP0, evmP1, evmR0, evmR1] using hperm))
       (evalExpr_sync_update_blockTimestamp_var evmR1 evm balance0 balance1)
       (uniswapAssignBlockTimestampLastOfStore evmR1
         (syncUpdateCumulativePackedReserveState evm balance0 balance1)
@@ -951,7 +958,8 @@ theorem uniswapUpdateFunctionReturns_conditionTrue_packed_with
     (hbound1 : Int.ofNat balance1.toNat ≤ maxUint112)
     (helapsed : 0 < syncTimeElapsedInt evm)
     (hreserve0 : Int.ofNat reserve0.toNat ≠ 0)
-    (hreserve1 : Int.ofNat reserve1.toNat ≠ 0) :
+    (hreserve1 : Int.ofNat reserve1.toNat ≠ 0)
+    (hperm : evm.executionEnv.perm = true) :
     ExecFuncBody config (syncUpdateCallFrameWith balance0 balance1 reserve0 reserve1) evm
       updateFunction.body
       (.returned
@@ -1066,6 +1074,7 @@ theorem uniswapUpdateFunctionReturns_conditionTrue_packed_with
           evmP1) := by
     refine ExecBlock.consNormal
       (ExecStmt.assign
+        (hperm := Or.inr (by simpa [evmP0, evmP1, evmR0, evmR1] using hperm))
         (evalExpr_sync_update_price0Cumulative_with evm evm balance0 balance1 reserve0
           reserve1 hreserve0)
         (uniswapAssignPrice0CumulativeLastOfStore evm evmP0
@@ -1077,6 +1086,7 @@ theorem uniswapUpdateFunctionReturns_conditionTrue_packed_with
           hstoreP0)) ?_
     exact ExecBlock.consNormal
       (ExecStmt.assign
+        (hperm := Or.inr (by simpa [evmP0, evmP1, evmR0, evmR1] using hperm))
         (evalExpr_sync_update_price1Cumulative_with evmP0 evm balance0 balance1 reserve0
           reserve1 hreserve1)
         (uniswapAssignPrice1CumulativeLastOfStore evmP0 evmP1
@@ -1094,6 +1104,7 @@ theorem uniswapUpdateFunctionReturns_conditionTrue_packed_with
       hpriceBlock) ?_
   refine ExecBlock.consNormal
     (ExecStmt.assign
+      (hperm := Or.inr (by simpa [evmP0, evmP1, evmR0, evmR1] using hperm))
       (evalExpr_sync_update_u112_balance0_with evm evmP1 balance0 balance1 reserve0 reserve1
         hbound0)
       (uniswapAssignReserve0OfStore evmP1 evmR0
@@ -1102,6 +1113,7 @@ theorem uniswapUpdateFunctionReturns_conditionTrue_packed_with
         hstoreR0)) ?_
   refine ExecBlock.consNormal
     (ExecStmt.assign
+      (hperm := Or.inr (by simpa [evmP0, evmP1, evmR0, evmR1] using hperm))
       (evalExpr_sync_update_u112_balance1_with evm evmR0 balance0 balance1 reserve0 reserve1
         hbound1)
       (uniswapAssignReserve1OfStore evmR0 evmR1
@@ -1110,6 +1122,7 @@ theorem uniswapUpdateFunctionReturns_conditionTrue_packed_with
         hstoreR1)) ?_
   exact ExecBlock.consNormal
     (ExecStmt.assign
+      (hperm := Or.inr (by simpa [evmP0, evmP1, evmR0, evmR1] using hperm))
       (evalExpr_sync_update_blockTimestamp_var_with evmR1 evm balance0 balance1 reserve0
         reserve1)
       (uniswapAssignBlockTimestampLastOfStore evmR1
@@ -1128,7 +1141,8 @@ theorem uniswapSyncUpdateCallReturns_conditionTrue_packed
     (hbound1 : Int.ofNat balance1.toNat ≤ maxUint112)
     (helapsed : 0 < syncTimeElapsedInt evm)
     (hreserve0 : Int.ofNat (uniswapReserve0Word evm).toNat ≠ 0)
-    (hreserve1 : Int.ofNat (uniswapReserve1Word evm).toNat ≠ 0) :
+    (hreserve1 : Int.ofNat (uniswapReserve1Word evm).toNat ≠ 0)
+    (hperm : evm.executionEnv.perm = true) :
     ExecStmt config { contract := contract, locals := syncBalanceStore balance0 balance1 } evm
       (.internalCall "_update"
         [ .var "balance0", .var "balance1", .storage reserve0Ref, .storage reserve1Ref ]
@@ -1136,7 +1150,7 @@ theorem uniswapSyncUpdateCallReturns_conditionTrue_packed
       (.ok (syncAfterUpdateFrame balance0 balance1)
         (syncUpdateCumulativePackedReserveState evm balance0 balance1)) := by
   have hbody :=
-    uniswapUpdateFunctionReturns_conditionTrue_packed evm balance0 balance1
+    uniswapUpdateFunctionReturns_conditionTrue_packed (hperm := by assumption) evm balance0 balance1
       hbound0 hbound1 helapsed hreserve0 hreserve1
   simpa [syncAfterUpdateFrame, syncAfterUpdateStore, resumeAfterInternalCall] using
     (internalCallFunctionReturn
@@ -1177,17 +1191,21 @@ theorem uniswapSyncBodyReturns_conditionTrue_packed (evm evm0 evm1 : EVM.State)
     (hbound1 : Int.ofNat balance1.toNat ≤ maxUint112)
     (helapsed : 0 < syncTimeElapsedInt evm1)
     (hreserve0 : Int.ofNat (uniswapReserve0Word evm1).toNat ≠ 0)
-    (hreserve1 : Int.ofNat (uniswapReserve1Word evm1).toNat ≠ 0) :
+    (hreserve1 : Int.ofNat (uniswapReserve1Word evm1).toNat ≠ 0)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm ∅ syncTransition.body
       (.returned (syncAfterUpdateFrame balance0 balance1)
         (uniswapLockExitedState (syncUpdateCumulativePackedReserveState evm1 balance0 balance1))
         none) := by
-  have hbalances := uniswapSyncBalanceOfCallsPrefix
+  have hperm1 : evm1.executionEnv.perm = true := by
+    rw [typedCallViaEVM_executionEnv_eq hcall1, typedCallViaEVM_executionEnv_eq hcall0]
+    simpa [uniswapLockEnteredState, uniswapUnlockedState] using hperm
+  have hbalances := uniswapSyncBalanceOfCallsPrefix (hperm := by assumption)
     (evm := evm) (evm0 := evm0) (evm1 := evm1)
     (balance0 := uniswapUint256Value balance0) (balance1 := uniswapUint256Value balance1)
     hwv hunlocked hguard0 hcall0 hdec0 hguard1 hcall1 hdec1
   have hupdateStmt :=
-    uniswapSyncUpdateCallReturns_conditionTrue_packed evm1 balance0 balance1 hbound0
+    uniswapSyncUpdateCallReturns_conditionTrue_packed (hperm := by assumption) evm1 balance0 balance1 hbound0
       hbound1 helapsed hreserve0 hreserve1
   have hupdateBlock :
       ExecBlock config { contract := contract, locals := syncBalanceStore balance0 balance1 } evm1
@@ -1197,7 +1215,7 @@ theorem uniswapSyncBodyReturns_conditionTrue_packed (evm evm0 evm1 : EVM.State)
     simpa [updateReservesStmts] using
       (ExecBlock.consNormal hupdateStmt ExecBlock.nil)
   have hlock :=
-    uniswapLockExitSuffix (syncUpdateCumulativePackedReserveState evm1 balance0 balance1)
+    uniswapLockExitSuffix (hperm := by simpa [syncUpdateCumulativePackedReserveState] using hperm1) (syncUpdateCumulativePackedReserveState evm1 balance0 balance1)
       (syncAfterUpdateStore balance0 balance1)
       (by simp [syncAfterUpdateStore, syncBalanceStore, uniswapBalanceOfStore])
   have htail := execBlock_append hupdateBlock hlock

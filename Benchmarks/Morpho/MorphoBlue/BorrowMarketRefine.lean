@@ -61,6 +61,8 @@ theorem morphoBorrowMarketRefine {v : MorphoImmutables} {ee : ExecutionEnv} {g :
         (halfWord_bound _ _) hc (Nat.le_of_not_gt hf) rd2)
   have hass := morphoAccrueAssetsAssign p l1 imms evm ⟨3, by decide⟩ "__c7" shares hl1.toMarketLocals hs1
     (by simpa only [hs.env, ← hs.accounts] using hf)
+  simp only [show evm.executionEnv.perm = true from
+    (congrArg ExecutionEnv.perm hs.env).trans hperm, if_true] at hass
   obtain ⟨k3, C3, rd3⟩ := morphoCheckedAdd128Ok (v := v) (by simp only [borrowMarketTail, borrowSharesStoreTail, borrowStoreTail, borrowHealthTail, List.length_append, List.length_cons, List.length_nil, List.append]; omega)
     (by rw [morphoPatchedValidJumps v]; jump_dest) (halfWord_bound _ _) hc hf rd2
   obtain ⟨a4, k4, C4, rd4⟩ := morphoBorrowMarketSharesStore (v := v) (by omega) hperm (accrueAssetSumClean hf) rd3
@@ -102,6 +104,8 @@ theorem morphoBorrowMarketRefine {v : MorphoImmutables} {ee : ExecutionEnv} {g :
     (by rw [morphoPatchedValidJumps v]; jump_dest) (halfWord_bound _ _) hca hfa rd7
   have hass2 := morphoAccrueAssetsAssign p l2 imms e1 ⟨2, by decide⟩ "__c8" assets hl2.toMarketLocals ha2
     (by simpa only [heq.env, ← heq.accounts] using hfa)
+  simp only [show e1.executionEnv.perm = true from
+    (congrArg ExecutionEnv.perm heq.env).trans hperm, if_true] at hass2
   let e2 := storeMarketField e1 p.id ⟨2, by decide⟩ (marketFieldWord e1.accountMap e1.executionEnv p.id 2 + assets)
   let σ2 := storeMarketFieldAccounts σ1 ee p.id ⟨2, by decide⟩ (marketFieldWord σ1 ee p.id 2 + assets)
   have heq2 : SourceState s0 ee σ2 e2 := by

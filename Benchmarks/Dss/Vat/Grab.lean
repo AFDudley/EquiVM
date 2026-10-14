@@ -2229,7 +2229,8 @@ theorem execGrabUrnInkUpdateSplit {evm : EVM.State} {I : ExecutionEnv}
     (hnew : urnInkNew = grabDinkWord I + urnInkOld)
     (hguardNeg : 0 ≤ grabDinkInt I ∨ urnInkNew.toNat ≤ urnInkOld.toNat)
     (hguardPos : grabDinkInt I ≤ 0 ∨ urnInkOld.toNat ≤ urnInkNew.toNat) :
-    ExecBlock config { contract := contract, locals := locals } evm
+    (evm.executionEnv.perm = true →
+      ExecBlock config { contract := contract, locals := locals } evm
       (checkedAddSignedInto "urnInkNew" (.storage (urnsF (.var "i") (.var "u") "ink"))
         (.var "dink") ++
         [ .assign .storage (urnsF (.var "i") (.var "u") "ink") (.var "urnInkNew") ])
@@ -2237,7 +2238,7 @@ theorem execGrabUrnInkUpdateSplit {evm : EVM.State} {I : ExecutionEnv}
         { contract := contract,
           locals := locals.insert "urnInkNew" (.int (Int.ofNat urnInkNew.toNat)) }
         (Stele.EVM.storageStore evm evm.executionEnv.codeOwner
-          (grabUrnInkSourceSlot I) urnInkNew)) ∧
+          (grabUrnInkSourceSlot I) urnInkNew))) ∧
     (evm.executionEnv.perm = false →
       ExecBlock config { contract := contract, locals := locals } evm
         (checkedAddSignedInto "urnInkNew" (.storage (urnsF (.var "i") (.var "u") "ink"))
@@ -2335,7 +2336,7 @@ theorem execGrabUrnInkUpdateSplit {evm : EVM.State} {I : ExecutionEnv}
     refine ExecBlock.consNormal (ExecStmt.letDecl hlet) ?_
     refine ExecBlock.consNormal (ExecStmt.requireTrue hguardNegEval) ?_
     exact ExecBlock.consNormal (ExecStmt.requireTrue hguardPosEval) hrest
-  exact ⟨hpre _ (ExecBlock.consNormal (ExecStmt.assign hnewEval hassign) ExecBlock.nil),
+  exact ⟨fun hperm ↦ hpre _ (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hnewEval hassign) ExecBlock.nil),
     fun hpf => hpre _ (ExecBlock.consStatic (ExecStmt.assignStatic hnewEval hassign hpf))⟩
 
 theorem execGrabUrnInkUpdateOk {evm : EVM.State} {I : ExecutionEnv}
@@ -2350,7 +2351,8 @@ theorem execGrabUrnInkUpdateOk {evm : EVM.State} {I : ExecutionEnv}
         (grabUrnInkSourceSlot I) = urnInkOld)
     (hnew : urnInkNew = grabDinkWord I + urnInkOld)
     (hguardNeg : 0 ≤ grabDinkInt I ∨ urnInkNew.toNat ≤ urnInkOld.toNat)
-    (hguardPos : grabDinkInt I ≤ 0 ∨ urnInkOld.toNat ≤ urnInkNew.toNat) :
+    (hguardPos : grabDinkInt I ≤ 0 ∨ urnInkOld.toNat ≤ urnInkNew.toNat)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config { contract := contract, locals := locals } evm
       (checkedAddSignedInto "urnInkNew" (.storage (urnsF (.var "i") (.var "u") "ink"))
         (.var "dink") ++
@@ -2361,7 +2363,7 @@ theorem execGrabUrnInkUpdateOk {evm : EVM.State} {I : ExecutionEnv}
         (Stele.EVM.storageStore evm evm.executionEnv.codeOwner
           (grabUrnInkSourceSlot I) urnInkNew)) :=
   (execGrabUrnInkUpdateSplit locals urnInkOld urnInkNew hsz196 hi hu hdink hbase hload hnew
-    hguardNeg hguardPos).1
+    hguardNeg hguardPos).1 hperm
 
 theorem execGrabUrnInkCheckedOk {evm : EVM.State} {I : ExecutionEnv}
     (locals : Store) (urnInkOld urnInkNew : UInt256)
@@ -4168,7 +4170,8 @@ theorem execGrabUrnArtUpdateOk {evm : EVM.State} {I : ExecutionEnv}
         (grabUrnArtSourceSlot I) = urnArtOld)
     (hnew : urnArtNew = grabDartWord I + urnArtOld)
     (hguardNeg : 0 ≤ grabDartInt I ∨ urnArtNew.toNat ≤ urnArtOld.toNat)
-    (hguardPos : grabDartInt I ≤ 0 ∨ urnArtOld.toNat ≤ urnArtNew.toNat) :
+    (hguardPos : grabDartInt I ≤ 0 ∨ urnArtOld.toNat ≤ urnArtNew.toNat)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config { contract := contract, locals := locals } evm
       (checkedAddSignedInto "urnArtNew" (.storage (urnsF (.var "i") (.var "u") "art"))
         (.var "dart") ++
@@ -4212,7 +4215,7 @@ theorem execGrabUrnArtUpdateOk {evm : EVM.State} {I : ExecutionEnv}
       ExecBlock config { contract := contract, locals := locals' } evm
         [ .assign .storage (urnsF (.var "i") (.var "u") "art") (.var "urnArtNew") ]
         (.ok { contract := contract, locals := locals' } evm') :=
-    ExecBlock.consNormal (ExecStmt.assign hnewEval hassign) ExecBlock.nil
+    ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hnewEval hassign) ExecBlock.nil
   exact execBlock_append hchecked hassignBlock
 
 theorem execGrabIlkArtUpdateOk {evm : EVM.State} {I : ExecutionEnv}
@@ -4226,7 +4229,8 @@ theorem execGrabIlkArtUpdateOk {evm : EVM.State} {I : ExecutionEnv}
         (grabIlkArtSourceSlot I) = ilkArtOld)
     (hnew : ilkArtNew = grabDartWord I + ilkArtOld)
     (hguardNeg : 0 ≤ grabDartInt I ∨ ilkArtNew.toNat ≤ ilkArtOld.toNat)
-    (hguardPos : grabDartInt I ≤ 0 ∨ ilkArtOld.toNat ≤ ilkArtNew.toNat) :
+    (hguardPos : grabDartInt I ≤ 0 ∨ ilkArtOld.toNat ≤ ilkArtNew.toNat)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config { contract := contract, locals := locals } evm
       (checkedAddSignedInto "ilkArtNew" (.storage (ilksF (.var "i") "Art"))
         (.var "dart") ++
@@ -4265,7 +4269,7 @@ theorem execGrabIlkArtUpdateOk {evm : EVM.State} {I : ExecutionEnv}
       ExecBlock config { contract := contract, locals := locals' } evm
         [ .assign .storage (ilksF (.var "i") "Art") (.var "ilkArtNew") ]
         (.ok { contract := contract, locals := locals' } evm') :=
-    ExecBlock.consNormal (ExecStmt.assign hnewEval hassign) ExecBlock.nil
+    ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hnewEval hassign) ExecBlock.nil
   exact execBlock_append hchecked hassignBlock
 
 theorem execGrabGemUpdateOk {evm : EVM.State} {I : ExecutionEnv}
@@ -4280,7 +4284,8 @@ theorem execGrabGemUpdateOk {evm : EVM.State} {I : ExecutionEnv}
         (grabGemSourceSlot I) = gemOld)
     (hnew : gemNew = UInt256.sub gemOld (grabDinkWord I))
     (hguardNeg : grabDinkInt I ≤ 0 ∨ gemNew.toNat ≤ gemOld.toNat)
-    (hguardPos : 0 ≤ grabDinkInt I ∨ gemOld.toNat ≤ gemNew.toNat) :
+    (hguardPos : 0 ≤ grabDinkInt I ∨ gemOld.toNat ≤ gemNew.toNat)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config { contract := contract, locals := locals } evm
       (checkedSubSignedInto "gemNew" (.storage (gemRef (.var "i") (.var "v")))
         (.var "dink") ++
@@ -4323,7 +4328,7 @@ theorem execGrabGemUpdateOk {evm : EVM.State} {I : ExecutionEnv}
       ExecBlock config { contract := contract, locals := locals' } evm
         [ .assign .storage (gemRef (.var "i") (.var "v")) (.var "gemNew") ]
         (.ok { contract := contract, locals := locals' } evm') :=
-    ExecBlock.consNormal (ExecStmt.assign hnewEval hassign) ExecBlock.nil
+    ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hnewEval hassign) ExecBlock.nil
   exact execBlock_append hchecked hassignBlock
 
 theorem execGrabSinUpdateOk {evm : EVM.State} {I : ExecutionEnv}
@@ -4337,7 +4342,8 @@ theorem execGrabSinUpdateOk {evm : EVM.State} {I : ExecutionEnv}
     (hdtabMod : dtab % (Int.ofNat EVM.wordModulus) = Int.ofNat dtabWord.toNat)
     (hnew : sinNew = UInt256.sub sinOld dtabWord)
     (hguardNeg : dtab ≤ 0 ∨ sinNew.toNat ≤ sinOld.toNat)
-    (hguardPos : 0 ≤ dtab ∨ sinOld.toNat ≤ sinNew.toNat) :
+    (hguardPos : 0 ≤ dtab ∨ sinOld.toNat ≤ sinNew.toNat)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config { contract := contract, locals := locals } evm
       (checkedSubSignedInto "sinNew" (.storage (sinRef (.var "w"))) (.var "dtab") ++
         [ .assign .storage (sinRef (.var "w")) (.var "sinNew") ])
@@ -4374,7 +4380,7 @@ theorem execGrabSinUpdateOk {evm : EVM.State} {I : ExecutionEnv}
       ExecBlock config { contract := contract, locals := locals' } evm
         [ .assign .storage (sinRef (.var "w")) (.var "sinNew") ]
         (.ok { contract := contract, locals := locals' } evm') :=
-    ExecBlock.consNormal (ExecStmt.assign hnewEval hassign) ExecBlock.nil
+    ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hnewEval hassign) ExecBlock.nil
   exact execBlock_append hchecked hassignBlock
 
 theorem execGrabViceUpdateOk {evm : EVM.State}
@@ -4386,7 +4392,8 @@ theorem execGrabViceUpdateOk {evm : EVM.State}
     (hdtabMod : dtab % (Int.ofNat EVM.wordModulus) = Int.ofNat dtabWord.toNat)
     (hnew : viceNew = UInt256.sub viceOld dtabWord)
     (hguardNeg : dtab ≤ 0 ∨ viceNew.toNat ≤ viceOld.toNat)
-    (hguardPos : 0 ≤ dtab ∨ viceOld.toNat ≤ viceNew.toNat) :
+    (hguardPos : 0 ≤ dtab ∨ viceOld.toNat ≤ viceNew.toNat)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config { contract := contract, locals := locals } evm
       (checkedSubSignedInto "viceNew" (.storage viceRef) (.var "dtab") ++
         [ .assign .storage viceRef (.var "viceNew") ])
@@ -4417,7 +4424,7 @@ theorem execGrabViceUpdateOk {evm : EVM.State}
       ExecBlock config { contract := contract, locals := locals' } evm
         [ .assign .storage viceRef (.var "viceNew") ]
         (.ok { contract := contract, locals := locals' } evm') :=
-    ExecBlock.consNormal (ExecStmt.assign hnewEval hassign) ExecBlock.nil
+    ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hnewEval hassign) ExecBlock.nil
   exact execBlock_append hchecked hassignBlock
 
 theorem execGrabFinalAssignmentsOk {evm : EVM.State} {I : ExecutionEnv}
@@ -4444,7 +4451,8 @@ theorem execGrabFinalAssignmentsOk {evm : EVM.State} {I : ExecutionEnv}
     (hilks : locals.get? "ilks" = none)
     (hgem : locals.get? "gem" = none)
     (hsin : locals.get? "sin" = none)
-    (hvice : locals.get? "vice" = none) :
+    (hvice : locals.get? "vice" = none)
+    (hperm : evm.executionEnv.perm = true) :
     let evm1 := Stele.EVM.storageStore evm evm.executionEnv.codeOwner
       (grabUrnInkSourceSlot I) urnInkNew
     let evm2 := Stele.EVM.storageStore evm1 evm1.executionEnv.codeOwner
@@ -4526,12 +4534,12 @@ theorem execGrabFinalAssignmentsOk {evm : EVM.State} {I : ExecutionEnv}
         .ok ({ contract := contract, locals := locals }, evm6) := by
     simpa [evm6] using
       assignStorageRef_grab_vice evm5 locals viceNew hvice
-  refine ExecBlock.consNormal (ExecStmt.assign hurnInkNewEval hassignUrnInk) ?_
-  refine ExecBlock.consNormal (ExecStmt.assign hurnArtNewEval hassignUrnArt) ?_
-  refine ExecBlock.consNormal (ExecStmt.assign hilkArtNewEval hassignIlkArt) ?_
-  refine ExecBlock.consNormal (ExecStmt.assign hgemNewEval hassignGem) ?_
-  refine ExecBlock.consNormal (ExecStmt.assign hsinNewEval hassignSin) ?_
-  exact ExecBlock.consNormal (ExecStmt.assign hviceNewEval hassignVice) ExecBlock.nil
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm)) hurnInkNewEval hassignUrnInk) ?_
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm)) hurnArtNewEval hassignUrnArt) ?_
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm)) hilkArtNewEval hassignIlkArt) ?_
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm)) hgemNewEval hassignGem) ?_
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm)) hsinNewEval hassignSin) ?_
+  exact ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm)) hviceNewEval hassignVice) ExecBlock.nil
 
 theorem grabStoreViceNew_get_i (I : ExecutionEnv)
     (urnInkNew urnArtNew ilkArtNew : UInt256) (dtab : Int)
@@ -4790,7 +4798,8 @@ theorem execGrabSourceOk {σ σ₀ A I} {g : UInt256}
       Stele.EVM.storageLoad evm5 evm5.executionEnv.codeOwner grabViceSourceSlot = viceOld)
     (hviceNew : viceNew = UInt256.sub viceOld dtabWord)
     (hviceNeg : dtab ≤ 0 ∨ viceNew.toNat ≤ viceOld.toNat)
-    (hvicePos : 0 ≤ dtab ∨ viceOld.toNat ≤ viceNew.toNat) :
+    (hvicePos : 0 ≤ dtab ∨ viceOld.toNat ≤ viceNew.toNat)
+    (hperm : I.perm = true) :
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let evm1 := Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner
       (grabUrnInkSourceSlot I) urnInkNew
@@ -4824,7 +4833,7 @@ theorem execGrabSourceOk {σ σ₀ A I} {g : UInt256}
     · exact evalCallvalueEq_true (by simp [evm0, initState]; exact hwei)
     exact ExecBlock.consNormal (ExecStmt.requireTrue hguardAuth) ExecBlock.nil
   have hInkBlock :=
-    execGrabUrnInkUpdateOk (evm := evm0) (I := I) (locals := grabStore I)
+    execGrabUrnInkUpdateOk (hperm := by simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm) (evm := evm0) (I := I) (locals := grabStore I)
       urnInkOld urnInkNew hsz196 (grabStore_get_i I) (grabStore_get_u I)
       (grabStore_get_dink I) (grabStore_urns I) hloadUrnInk hurnInkNew hinkNeg hinkPos
   let localsInk := grabStoreUrnInkNew I urnInkNew
@@ -4849,7 +4858,7 @@ theorem execGrabSourceOk {σ σ₀ A I} {g : UInt256}
     rw [store_get_ne _ _ (by native_decide)]
     exact grabStore_urns I
   have hArtBlock :=
-    execGrabUrnArtUpdateOk (evm := evm1) (I := I) (locals := localsInk)
+    execGrabUrnArtUpdateOk (hperm := by simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm) (evm := evm1) (I := I) (locals := localsInk)
       urnArtOld urnArtNew hsz196 hArt_i hArt_u hArt_dart hArt_urns
       (by simpa [evm0, evm1] using hloadUrnArt) hurnArtNew hurnArtNeg hurnArtPos
   let localsArt := grabStoreUrnArtNew I urnInkNew urnArtNew
@@ -4872,7 +4881,7 @@ theorem execGrabSourceOk {σ σ₀ A I} {g : UInt256}
     rw [store_get_ne _ _ (by native_decide)]
     simp [grabStore]
   have hIlkBlock :=
-    execGrabIlkArtUpdateOk (evm := evm2) (I := I) (locals := localsArt)
+    execGrabIlkArtUpdateOk (hperm := by simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm) (evm := evm2) (I := I) (locals := localsArt)
       ilkArtOld ilkArtNew hsz196 hIlk_i hIlk_dart hIlk_ilks
       (by simpa [grabSourceEvm0, grabSourceEvm1, grabSourceEvm2, grabSourceEvm3, grabSourceEvm4,
         grabSourceEvm5, evm0, evm1, evm2] using hloadIlkArt)
@@ -4949,7 +4958,7 @@ theorem execGrabSourceOk {σ σ₀ A I} {g : UInt256}
     rw [store_get_ne _ _ (by native_decide)]
     simp [grabStore]
   have hGemBlock :=
-    execGrabGemUpdateOk (evm := evm3) (I := I) (locals := localsDtab)
+    execGrabGemUpdateOk (hperm := by simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm) (evm := evm3) (I := I) (locals := localsDtab)
       gemOld gemNew hsz196 hGem_i hGem_v hGem_dink hGem_gem
       (by simpa [grabSourceEvm0, grabSourceEvm1, grabSourceEvm2, grabSourceEvm3, grabSourceEvm4,
         grabSourceEvm5, evm0, evm1, evm2, evm3] using hloadGem) hgemNew
@@ -4990,7 +4999,7 @@ theorem execGrabSourceOk {σ σ₀ A I} {g : UInt256}
     rw [store_get_ne _ _ (by native_decide)]
     simp [grabStore]
   have hSinBlock :=
-    execGrabSinUpdateOk (evm := evm4) (I := I) (locals := localsGem)
+    execGrabSinUpdateOk (hperm := by simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm) (evm := evm4) (I := I) (locals := localsGem)
       sinOld sinNew dtabWord dtab hSin_w hSin_dtab hSin_sin
       (by simpa [grabSourceEvm0, grabSourceEvm1, grabSourceEvm2, grabSourceEvm3, grabSourceEvm4,
         grabSourceEvm5, evm0, evm1, evm2, evm3, evm4] using hloadSin) hdtabMod hsinNew
@@ -5021,7 +5030,7 @@ theorem execGrabSourceOk {σ σ₀ A I} {g : UInt256}
     rw [store_get_ne _ _ (by native_decide)]
     simp [grabStore]
   have hViceBlock :=
-    execGrabViceUpdateOk (evm := evm5) (locals := localsSin)
+    execGrabViceUpdateOk (hperm := by simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm) (evm := evm5) (locals := localsSin)
       viceOld viceNew dtabWord dtab hVice_dtab hVice_vice
       (by simpa [grabSourceEvm0, grabSourceEvm1, grabSourceEvm2, grabSourceEvm3, grabSourceEvm4,
         grabSourceEvm5, evm0, evm1, evm2, evm3, evm4, evm5] using hloadVice) hdtabMod hviceNew
@@ -5118,7 +5127,8 @@ theorem vatGrabSourceBodySuccessFromFinalValues
     (hVicePos :
       0 ≤ dtab ∨
         (solcSlotWord (grabAfterSin σ I) I ⟨8⟩).toNat ≤
-          (grabViceNew σ I).toNat) :
+          (grabViceNew σ I).toNat)
+    (hperm : I.perm = true) :
     let urnInkNew := grabUrnInkNew σ I
     let urnArtNew := grabUrnArtNew σ I
     let ilkArtNew := grabIlkArtNew σ I
@@ -5143,7 +5153,7 @@ theorem vatGrabSourceBodySuccessFromFinalValues
       (.returned { contract := contract, locals := finalLocals } evm6 none) := by
   intro urnInkNew urnArtNew ilkArtNew gemNew sinNew viceNew evm0 evm1 evm2 evm3 evm4 evm5
     evm6 finalLocals
-  exact execGrabSourceOk (σ := σ) (σ₀ := σ₀)
+  exact execGrabSourceOk (hperm := by simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm) (σ := σ) (σ₀ := σ₀)
     (A := A) (I := I) (g := g) hwei hauth hsz196
     (solcSlotWordAt (grabUrnInkSlot I) σ I) (grabUrnInkNew σ I)
     (solcSlotWord (grabAfterUrnInk σ I) I (grabUrnArtSlot I)) (grabUrnArtNew σ I)
@@ -5228,7 +5238,8 @@ theorem vatGrabSourceBodySuccessFromRuntimeGuards
     (hDtabMax : grabDtabMaxOk σ I) (hDtabMul : grabDtabMulOk σ I)
     (hGemPos : grabGemPosOk σ I) (hGemNeg : grabGemNegOk σ I)
     (hSinPos : grabSinPosOk σ I) (hSinNeg : grabSinNegOk σ I)
-    (hVicePos : grabVicePosOk σ I) (hViceNeg : grabViceNegOk σ I) :
+    (hVicePos : grabVicePosOk σ I) (hViceNeg : grabViceNegOk σ I)
+    (hperm : I.perm = true) :
     let urnInkNew := grabUrnInkNew σ I
     let urnArtNew := grabUrnArtNew σ I
     let ilkArtNew := grabIlkArtNew σ I
@@ -5251,7 +5262,7 @@ theorem vatGrabSourceBodySuccessFromRuntimeGuards
       grabStoreViceNew I urnInkNew urnArtNew ilkArtNew dtab gemNew sinNew viceNew
     ExecTransitionBody config contract evm0 (grabStore I) grabTransition.body
       (.returned { contract := contract, locals := finalLocals } evm6 none) := by
-  exact vatGrabSourceBodySuccessFromFinalValues
+  exact vatGrabSourceBodySuccessFromFinalValues (hperm := by simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm)
     (σ := σ) (σ₀ := σ₀) (A := A)
     (I := I) (g := g) hwei hauth hsz196 dtab dtabWord
     hDtab hdtabLo hdtabHi hguardMax hguardMul hDtabWord hdtabMod
@@ -5481,7 +5492,8 @@ theorem vatGrabSourceBodyUrnArtRevertFromBlock
         { contract := contract, locals := grabStoreUrnInkNew I (grabUrnInkNew σ I) } evm1
         (checkedAddSignedInto "urnArtNew"
           (.storage (urnsF (.var "i") (.var "u") "art")) (.var "dart"))
-        .reverted) :
+        .reverted)
+    (hperm : I.perm = true) :
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     ExecTransitionBody config contract evm0 (grabStore I) grabTransition.body .reverted := by
   intro evm0
@@ -5509,7 +5521,7 @@ theorem vatGrabSourceBodyUrnArtRevertFromBlock
           (.storage (urnsF (.var "i") (.var "u") "ink")) (.var "dink") ++
           [ .assign .storage (urnsF (.var "i") (.var "u") "ink") (.var "urnInkNew") ])
         (.ok { contract := contract, locals := localsInk } evm1) := by
-    exact execGrabUrnInkUpdateOk (evm := evm0) (I := I) (locals := grabStore I)
+    exact execGrabUrnInkUpdateOk (hperm := by simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm) (evm := evm0) (I := I) (locals := grabStore I)
       (solcSlotWordAt (grabUrnInkSlot I) σ I) urnInkNew hsz196
       (grabStore_get_i I) (grabStore_get_u I) (grabStore_get_dink I)
       (grabStore_urns I)
@@ -5561,10 +5573,11 @@ theorem vatGrabSourceBodyUrnArtRevertGuardNeg
     (hguardNeg :
       grabDartInt I < 0 ∧
         (solcSlotWord (grabAfterUrnInk σ I) I (grabUrnArtSlot I)).toNat <
-          (grabUrnArtNew σ I).toNat) :
+          (grabUrnArtNew σ I).toNat)
+    (hperm : I.perm = true) :
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     ExecTransitionBody config contract evm0 (grabStore I) grabTransition.body .reverted := by
-  refine vatGrabSourceBodyUrnArtRevertFromBlock
+  refine vatGrabSourceBodyUrnArtRevertFromBlock (hperm := by simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm)
     (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
     (g := g) hwei hauth hsz196 hinkNeg hinkPos ?_
   intro evm0 evm1
@@ -5618,10 +5631,11 @@ theorem vatGrabSourceBodyUrnArtRevertGuardPos
     (hguardPos :
       0 < grabDartInt I ∧
         (grabUrnArtNew σ I).toNat <
-          (solcSlotWord (grabAfterUrnInk σ I) I (grabUrnArtSlot I)).toNat) :
+          (solcSlotWord (grabAfterUrnInk σ I) I (grabUrnArtSlot I)).toNat)
+    (hperm : I.perm = true) :
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     ExecTransitionBody config contract evm0 (grabStore I) grabTransition.body .reverted := by
-  refine vatGrabSourceBodyUrnArtRevertFromBlock
+  refine vatGrabSourceBodyUrnArtRevertFromBlock (hperm := by simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm)
     (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
     (g := g) hwei hauth hsz196 hinkNeg hinkPos ?_
   intro evm0 evm1
@@ -5687,7 +5701,8 @@ theorem vatGrabSourceBodyIlkArtRevertFromBlock
           locals := grabStoreUrnArtNew I (grabUrnInkNew σ I) (grabUrnArtNew σ I) } evm2
         (checkedAddSignedInto "ilkArtNew" (.storage (ilksF (.var "i") "Art"))
           (.var "dart"))
-        .reverted) :
+        .reverted)
+    (hperm : I.perm = true) :
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     ExecTransitionBody config contract evm0 (grabStore I) grabTransition.body .reverted := by
   intro evm0
@@ -5719,7 +5734,7 @@ theorem vatGrabSourceBodyIlkArtRevertFromBlock
           (.storage (urnsF (.var "i") (.var "u") "ink")) (.var "dink") ++
           [ .assign .storage (urnsF (.var "i") (.var "u") "ink") (.var "urnInkNew") ])
         (.ok { contract := contract, locals := localsInk } evm1) := by
-    exact execGrabUrnInkUpdateOk (evm := evm0) (I := I) (locals := grabStore I)
+    exact execGrabUrnInkUpdateOk (hperm := by simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm) (evm := evm0) (I := I) (locals := grabStore I)
       (solcSlotWordAt (grabUrnInkSlot I) σ I) urnInkNew hsz196
       (grabStore_get_i I) (grabStore_get_u I) (grabStore_get_dink I)
       (grabStore_urns I)
@@ -5756,7 +5771,7 @@ theorem vatGrabSourceBodyIlkArtRevertFromBlock
           (.storage (urnsF (.var "i") (.var "u") "art")) (.var "dart") ++
           [ .assign .storage (urnsF (.var "i") (.var "u") "art") (.var "urnArtNew") ])
         (.ok { contract := contract, locals := localsArt } evm2) := by
-    exact execGrabUrnArtUpdateOk (evm := evm1) (I := I) (locals := localsInk)
+    exact execGrabUrnArtUpdateOk (hperm := by simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm) (evm := evm1) (I := I) (locals := localsInk)
       (solcSlotWord (grabAfterUrnInk σ I) I (grabUrnArtSlot I)) urnArtNew hsz196
       hArt_i hArt_u hArt_dart hArt_urns
       (by simpa [evm0, evm1] using
@@ -5813,10 +5828,11 @@ theorem vatGrabSourceBodyIlkArtRevertGuardNeg
     (hguardNeg :
       grabDartInt I < 0 ∧
         (solcSlotWord (grabAfterUrnArt σ I) I (grabIlkArtSlot I)).toNat <
-          (grabIlkArtNew σ I).toNat) :
+          (grabIlkArtNew σ I).toNat)
+    (hperm : I.perm = true) :
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     ExecTransitionBody config contract evm0 (grabStore I) grabTransition.body .reverted := by
-  refine vatGrabSourceBodyIlkArtRevertFromBlock
+  refine vatGrabSourceBodyIlkArtRevertFromBlock (hperm := by simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm)
     (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
     (g := g) hwei hauth hsz196 hinkNeg hinkPos hartNeg hartPos ?_
   intro evm0 evm1 evm2
@@ -5884,10 +5900,11 @@ theorem vatGrabSourceBodyIlkArtRevertGuardPos
     (hguardPos :
       0 < grabDartInt I ∧
         (grabIlkArtNew σ I).toNat <
-          (solcSlotWord (grabAfterUrnArt σ I) I (grabIlkArtSlot I)).toNat) :
+          (solcSlotWord (grabAfterUrnArt σ I) I (grabIlkArtSlot I)).toNat)
+    (hperm : I.perm = true) :
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     ExecTransitionBody config contract evm0 (grabStore I) grabTransition.body .reverted := by
-  refine vatGrabSourceBodyIlkArtRevertFromBlock
+  refine vatGrabSourceBodyIlkArtRevertFromBlock (hperm := by simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm)
     (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
     (g := g) hwei hauth hsz196 hinkNeg hinkPos hartNeg hartPos ?_
   intro evm0 evm1 evm2
@@ -5969,7 +5986,8 @@ theorem vatGrabSourceBodyDtabRevertFromBlock
           locals := grabStoreIlkArtNew I (grabUrnInkNew σ I) (grabUrnArtNew σ I)
             (grabIlkArtNew σ I) } evm3
         (checkedMulSignedInto "dtab" (.storage (ilksF (.var "i") "rate")) (.var "dart"))
-        .reverted) :
+        .reverted)
+    (hperm : I.perm = true) :
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     ExecTransitionBody config contract evm0 (grabStore I) grabTransition.body .reverted := by
   intro evm0
@@ -6005,7 +6023,7 @@ theorem vatGrabSourceBodyDtabRevertFromBlock
           (.storage (urnsF (.var "i") (.var "u") "ink")) (.var "dink") ++
           [ .assign .storage (urnsF (.var "i") (.var "u") "ink") (.var "urnInkNew") ])
         (.ok { contract := contract, locals := localsInk } evm1) := by
-    exact execGrabUrnInkUpdateOk (evm := evm0) (I := I) (locals := grabStore I)
+    exact execGrabUrnInkUpdateOk (hperm := by simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm) (evm := evm0) (I := I) (locals := grabStore I)
       (solcSlotWordAt (grabUrnInkSlot I) σ I) urnInkNew hsz196
       (grabStore_get_i I) (grabStore_get_u I) (grabStore_get_dink I)
       (grabStore_urns I)
@@ -6042,7 +6060,7 @@ theorem vatGrabSourceBodyDtabRevertFromBlock
           (.storage (urnsF (.var "i") (.var "u") "art")) (.var "dart") ++
           [ .assign .storage (urnsF (.var "i") (.var "u") "art") (.var "urnArtNew") ])
         (.ok { contract := contract, locals := localsArt } evm2) := by
-    exact execGrabUrnArtUpdateOk (evm := evm1) (I := I) (locals := localsInk)
+    exact execGrabUrnArtUpdateOk (hperm := by simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm) (evm := evm1) (I := I) (locals := localsInk)
       (solcSlotWord (grabAfterUrnInk σ I) I (grabUrnArtSlot I)) urnArtNew hsz196
       hArt_i hArt_u hArt_dart hArt_urns
       (by simpa [evm0, evm1] using
@@ -6075,7 +6093,7 @@ theorem vatGrabSourceBodyDtabRevertFromBlock
           (.var "dart") ++
           [ .assign .storage (ilksF (.var "i") "Art") (.var "ilkArtNew") ])
         (.ok { contract := contract, locals := localsIlk } evm3) := by
-    exact execGrabIlkArtUpdateOk (evm := evm2) (I := I) (locals := localsArt)
+    exact execGrabIlkArtUpdateOk (hperm := by simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm) (evm := evm2) (I := I) (locals := localsArt)
       (solcSlotWord (grabAfterUrnArt σ I) I (grabIlkArtSlot I)) ilkArtNew hsz196
       hIlk_i hIlk_dart hIlk_ilks
       (by simpa [grabSourceEvm0, grabSourceEvm1, grabSourceEvm2, grabSourceEvm3, grabSourceEvm4,
@@ -6175,7 +6193,8 @@ theorem vatGrabSourceBodyPostDtabRevertFromBlock
         [ .assign .storage (sinRef (.var "w")) (.var "sinNew") ] ++
         checkedSubSignedInto "viceNew" (.storage viceRef) (.var "dtab") ++
         [ .assign .storage viceRef (.var "viceNew") ])
-        .reverted) :
+        .reverted)
+    (hperm : I.perm = true) :
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     ExecTransitionBody config contract evm0 (grabStore I) grabTransition.body .reverted := by
   intro evm0
@@ -6212,7 +6231,7 @@ theorem vatGrabSourceBodyPostDtabRevertFromBlock
           (.storage (urnsF (.var "i") (.var "u") "ink")) (.var "dink") ++
           [ .assign .storage (urnsF (.var "i") (.var "u") "ink") (.var "urnInkNew") ])
         (.ok { contract := contract, locals := localsInk } evm1) := by
-    exact execGrabUrnInkUpdateOk (evm := evm0) (I := I) (locals := grabStore I)
+    exact execGrabUrnInkUpdateOk (hperm := by simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm) (evm := evm0) (I := I) (locals := grabStore I)
       (solcSlotWordAt (grabUrnInkSlot I) σ I) urnInkNew hsz196
       (grabStore_get_i I) (grabStore_get_u I) (grabStore_get_dink I)
       (grabStore_urns I)
@@ -6249,7 +6268,7 @@ theorem vatGrabSourceBodyPostDtabRevertFromBlock
           (.storage (urnsF (.var "i") (.var "u") "art")) (.var "dart") ++
           [ .assign .storage (urnsF (.var "i") (.var "u") "art") (.var "urnArtNew") ])
         (.ok { contract := contract, locals := localsArt } evm2) := by
-    exact execGrabUrnArtUpdateOk (evm := evm1) (I := I) (locals := localsInk)
+    exact execGrabUrnArtUpdateOk (hperm := by simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm) (evm := evm1) (I := I) (locals := localsInk)
       (solcSlotWord (grabAfterUrnInk σ I) I (grabUrnArtSlot I)) urnArtNew hsz196
       hArt_i hArt_u hArt_dart hArt_urns
       (by simpa [evm0, evm1] using
@@ -6282,7 +6301,7 @@ theorem vatGrabSourceBodyPostDtabRevertFromBlock
           (.var "dart") ++
           [ .assign .storage (ilksF (.var "i") "Art") (.var "ilkArtNew") ])
         (.ok { contract := contract, locals := localsIlk } evm3) := by
-    exact execGrabIlkArtUpdateOk (evm := evm2) (I := I) (locals := localsArt)
+    exact execGrabIlkArtUpdateOk (hperm := by simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm) (evm := evm2) (I := I) (locals := localsArt)
       (solcSlotWord (grabAfterUrnArt σ I) I (grabIlkArtSlot I)) ilkArtNew hsz196
       hIlk_i hIlk_dart hIlk_ilks
       (by simpa [grabSourceEvm0, grabSourceEvm1, grabSourceEvm2, grabSourceEvm3, grabSourceEvm4,
@@ -8718,7 +8737,7 @@ theorem vatGrabBodyCore : VatBodyTheoremAnyPerm 13 := by
             grabDtab_mod_word I
               (solcSlotWord (grabAfterIlkArt σ I) I (grabIlkRateSlot I))
         have hbody :=
-          vatGrabSourceBodySuccessFromRuntimeGuards
+          vatGrabSourceBodySuccessFromRuntimeGuards (hperm := by simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm)
             (σ := σ)
              (σ₀ := σ₀) (A := A) (I := I) (g := g)
             hwv hauthStele hsz196 dtab dtabWord
@@ -9100,7 +9119,7 @@ theorem vatGrabBodyCore : VatBodyTheoremAnyPerm 13 := by
                                       exact hViceNeg (by
                                         simpa [grabViceNegOk, grabViceNew] using h)
                                     have hbody :=
-                                      vatGrabSourceBodyPostDtabRevertFromBlock
+                                      vatGrabSourceBodyPostDtabRevertFromBlock (hperm := by simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm)
                                         (σ := σ)
                                         (σ₀ := σ₀) (A := A) (I := I) (g := g)
                                         hwv hauthStele hsz196 hInkGuardNeg hInkGuardPos
@@ -9141,7 +9160,7 @@ theorem vatGrabBodyCore : VatBodyTheoremAnyPerm 13 := by
                                                 (.ok
                                                   { contract := contract, locals := localsGem }
                                                   evm4') := by
-                                            exact execGrabGemUpdateOk
+                                            exact execGrabGemUpdateOk (hperm := by simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm)
                                               (evm := evm3') (I := I)
                                               (grabStoreDtab I (grabUrnInkNew σ I)
                                                 (grabUrnArtNew σ I)
@@ -9184,7 +9203,7 @@ theorem vatGrabBodyCore : VatBodyTheoremAnyPerm 13 := by
                                                 (.ok
                                                   { contract := contract, locals := localsSin }
                                                   evm5') := by
-                                            exact execGrabSinUpdateOk
+                                            exact execGrabSinUpdateOk (hperm := by simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm)
                                               (evm := evm4') (I := I) (locals := localsGem)
                                               (solcSlotWord (grabAfterGem σ I) I
                                                 (grabSinSlot I))
@@ -9324,7 +9343,7 @@ theorem vatGrabBodyCore : VatBodyTheoremAnyPerm 13 := by
                                     exact hVicePos (by
                                       simpa [grabVicePosOk, grabViceNew] using h)
                                   have hbody :=
-                                    vatGrabSourceBodyPostDtabRevertFromBlock
+                                    vatGrabSourceBodyPostDtabRevertFromBlock (hperm := by simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm)
                                       (σ := σ)
                                       (σ₀ := σ₀) (A := A) (I := I) (g := g)
                                       hwv hauthStele hsz196 hInkGuardNeg hInkGuardPos
@@ -9364,7 +9383,7 @@ theorem vatGrabBodyCore : VatBodyTheoremAnyPerm 13 := by
                                                 (.var "gemNew") ])
                                               (.ok { contract := contract, locals := localsGem }
                                                 evm4') := by
-                                          exact execGrabGemUpdateOk
+                                          exact execGrabGemUpdateOk (hperm := by simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm)
                                             (evm := evm3') (I := I)
                                             (grabStoreDtab I (grabUrnInkNew σ I)
                                               (grabUrnArtNew σ I)
@@ -9403,7 +9422,7 @@ theorem vatGrabBodyCore : VatBodyTheoremAnyPerm 13 := by
                                                 (.var "sinNew") ])
                                               (.ok { contract := contract, locals := localsSin }
                                                 evm5') := by
-                                          exact execGrabSinUpdateOk
+                                          exact execGrabSinUpdateOk (hperm := by simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm)
                                             (evm := evm4') (I := I) (locals := localsGem)
                                             (solcSlotWord (grabAfterGem σ I) I
                                               (grabSinSlot I))
@@ -9532,7 +9551,7 @@ theorem vatGrabBodyCore : VatBodyTheoremAnyPerm 13 := by
                                     simpa [grabSinNegOk, grabSinNew]
                                       using h)
                                 have hbody :=
-                                  vatGrabSourceBodyPostDtabRevertFromBlock
+                                  vatGrabSourceBodyPostDtabRevertFromBlock (hperm := by simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm)
                                     (σ := σ)
                                     (σ₀ := σ₀) (A := A) (I := I) (g := g)
                                     hwv hauthStele hsz196 hInkGuardNeg hInkGuardPos
@@ -9564,7 +9583,7 @@ theorem vatGrabBodyCore : VatBodyTheoremAnyPerm 13 := by
                                               (.var "gemNew") ])
                                             (.ok { contract := contract, locals := localsGem }
                                               evm4') := by
-                                        exact execGrabGemUpdateOk
+                                        exact execGrabGemUpdateOk (hperm := by simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm)
                                           (evm := evm3') (I := I)
                                           (grabStoreDtab I (grabUrnInkNew σ I)
                                             (grabUrnArtNew σ I)
@@ -9674,7 +9693,7 @@ theorem vatGrabBodyCore : VatBodyTheoremAnyPerm 13 := by
                                   simpa [grabSinPosOk, grabSinNew]
                                     using h)
                               have hbody :=
-                                vatGrabSourceBodyPostDtabRevertFromBlock
+                                vatGrabSourceBodyPostDtabRevertFromBlock (hperm := by simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm)
                                   (σ := σ)
                                   (σ₀ := σ₀) (A := A) (I := I) (g := g)
                                   hwv hauthStele hsz196 hInkGuardNeg hInkGuardPos
@@ -9706,7 +9725,7 @@ theorem vatGrabBodyCore : VatBodyTheoremAnyPerm 13 := by
                                             (.var "gemNew") ])
                                           (.ok { contract := contract, locals := localsGem }
                                             evm4') := by
-                                      exact execGrabGemUpdateOk
+                                      exact execGrabGemUpdateOk (hperm := by simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm)
                                         (evm := evm3') (I := I)
                                         (grabStoreDtab I (grabUrnInkNew σ I)
                                           (grabUrnArtNew σ I)
@@ -9806,7 +9825,7 @@ theorem vatGrabBodyCore : VatBodyTheoremAnyPerm 13 := by
                               exact hGemNeg (by
                                 simpa [grabGemNegOk, grabGemNew] using h)
                             have hbody :=
-                              vatGrabSourceBodyPostDtabRevertFromBlock
+                              vatGrabSourceBodyPostDtabRevertFromBlock (hperm := by simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm)
                                 (σ := σ)
                                 (σ₀ := σ₀) (A := A) (I := I) (g := g)
                                 hwv hauthStele hsz196 hInkGuardNeg hInkGuardPos
@@ -9862,7 +9881,7 @@ theorem vatGrabBodyCore : VatBodyTheoremAnyPerm 13 := by
                             exact hGemPos (by
                               simpa [grabGemPosOk, grabGemNew] using h)
                           have hbody :=
-                            vatGrabSourceBodyPostDtabRevertFromBlock
+                            vatGrabSourceBodyPostDtabRevertFromBlock (hperm := by simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm)
                               (σ := σ)
                               (σ₀ := σ₀) (A := A) (I := I) (g := g)
                               hwv hauthStele hsz196 hInkGuardNeg hInkGuardPos
@@ -9980,7 +9999,7 @@ theorem vatGrabBodyCore : VatBodyTheoremAnyPerm 13 := by
                             exact grabDartAddGuardPosCond (by
                               simpa [grabIlkArtPosOk, grabIlkArtNew] using hIlkArtPos)
                           have hbody :=
-                            vatGrabSourceBodyDtabRevertFromBlock
+                            vatGrabSourceBodyDtabRevertFromBlock (hperm := by simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm)
                               (σ := σ)
                               (σ₀ := σ₀) (A := A) (I := I) (g := g)
                               hwv hauthStele hsz196 hInkGuardNeg hInkGuardPos hArtGuardNeg
@@ -10150,7 +10169,7 @@ theorem vatGrabBodyCore : VatBodyTheoremAnyPerm 13 := by
                       by_cases hbadRange :
                           dtab < -((2 : Int) ^ 255) ∨ dtab ≥ (2 : Int) ^ 255
                       · have hbody :=
-                          vatGrabSourceBodyDtabRevertFromBlock
+                          vatGrabSourceBodyDtabRevertFromBlock (hperm := by simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm)
                             (σ := σ)
                             (σ₀ := σ₀) (A := A) (I := I) (g := g)
                             hwv hauthStele hsz196 hInkGuardNeg hInkGuardPos hArtGuardNeg
@@ -10219,7 +10238,7 @@ theorem vatGrabBodyCore : VatBodyTheoremAnyPerm 13 := by
                         have hdtabHi : dtab < (2 : Int) ^ 255 :=
                           not_le.mp (fun h => hbadRange (Or.inr h))
                         have hbody :=
-                          vatGrabSourceBodyDtabRevertFromBlock
+                          vatGrabSourceBodyDtabRevertFromBlock (hperm := by simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm)
                             (σ := σ)
                             (σ₀ := σ₀) (A := A) (I := I) (g := g)
                             hwv hauthStele hsz196 hInkGuardNeg hInkGuardPos hArtGuardNeg
@@ -10328,7 +10347,7 @@ theorem vatGrabBodyCore : VatBodyTheoremAnyPerm 13 := by
                           exact hIlkArtPos (by
                             simpa [grabIlkArtPosOk, grabIlkArtNew] using h))
                     have hbody :=
-                      vatGrabSourceBodyIlkArtRevertGuardPos
+                      vatGrabSourceBodyIlkArtRevertGuardPos (hperm := by simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm)
                         (σ := σ)
                         (σ₀ := σ₀) (A := A) (I := I) (g := g)
                         hwv hauthStele hsz196 hInkGuardNeg hInkGuardPos hArtGuardNeg
@@ -10396,7 +10415,7 @@ theorem vatGrabBodyCore : VatBodyTheoremAnyPerm 13 := by
                         exact hIlkArtNeg (by
                           simpa [grabIlkArtNegOk, grabIlkArtNew] using h))
                   have hbody :=
-                    vatGrabSourceBodyIlkArtRevertGuardNeg
+                    vatGrabSourceBodyIlkArtRevertGuardNeg (hperm := by simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm)
                       (σ := σ)
                       (σ₀ := σ₀) (A := A) (I := I) (g := g)
                       hwv hauthStele hsz196 hInkGuardNeg hInkGuardPos hArtGuardNeg
@@ -10453,7 +10472,7 @@ theorem vatGrabBodyCore : VatBodyTheoremAnyPerm 13 := by
                       exact hUrnArtPos (by
                         simpa [grabUrnArtPosOk, grabUrnArtNew] using h))
                 have hbody :=
-                  vatGrabSourceBodyUrnArtRevertGuardPos
+                  vatGrabSourceBodyUrnArtRevertGuardPos (hperm := by simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm)
                     (σ := σ)
                     (σ₀ := σ₀) (A := A) (I := I) (g := g)
                     hwv hauthStele hsz196 hInkGuardNeg hInkGuardPos hArtGuardNeg
@@ -10498,7 +10517,7 @@ theorem vatGrabBodyCore : VatBodyTheoremAnyPerm 13 := by
                     exact hUrnArtNeg (by
                       simpa [grabUrnArtNegOk, grabUrnArtNew] using h))
               have hbody :=
-                vatGrabSourceBodyUrnArtRevertGuardNeg
+                vatGrabSourceBodyUrnArtRevertGuardNeg (hperm := by simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm)
                   (σ := σ)
                   (σ₀ := σ₀) (A := A) (I := I) (g := g)
                   hwv hauthStele hsz196 hInkGuardNeg hInkGuardPos hArtGuardNeg

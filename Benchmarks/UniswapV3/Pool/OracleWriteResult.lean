@@ -20,7 +20,8 @@ def oracleWriteReturnFrame (imms : Store) (a : OracleWriteArgs) (evm : EVM.State
   else oracleWriteTransformedFrame imms a evm
 
 theorem oracleWriteSourceReturns (imms : Store) (evm : EVM.State) (a : OracleWriteArgs)
-    (hv : oracleWriteValid a evm) (hfit : a.Fits) :
+    (hv : oracleWriteValid a evm) (hfit : a.Fits)
+    (hperm : oracleWriteSame a evm = true ∨ evm.executionEnv.perm = true) :
     ExecFuncBody config (oracleWriteFrame imms a) evm oracleWriteFunction.body
       (.returned (oracleWriteReturnFrame imms a evm) (oracleWriteState a evm)
         (some [.int (Int.ofNat (oracleWriteResultIndex a evm).toNat),
@@ -29,7 +30,7 @@ theorem oracleWriteSourceReturns (imms : Store) (evm : EVM.State) (a : OracleWri
   · have hn : (oracleWriteCardinality a).toNat ≠ 0 := hv.2.resolve_left (by simp only [hs]; decide)
     simpa only [oracleWriteReturnFrame, oracleWriteState, oracleWriteResultIndex,
       oracleWriteResultCardinality, hs, Bool.false_eq_true, if_false] using
-      oracleWriteReturns imms evm a hv.1 hs hn hfit
+      oracleWriteReturns (hperm := hperm.resolve_left (by simp only [hs, Bool.false_eq_true, not_false_eq_true])) imms evm a hv.1 hs hn hfit
   · simpa only [oracleWriteReturnFrame, oracleWriteState, oracleWriteResultIndex,
       oracleWriteResultCardinality, hs, if_true] using oracleWriteSameReturns imms evm a hv.1 hs
 

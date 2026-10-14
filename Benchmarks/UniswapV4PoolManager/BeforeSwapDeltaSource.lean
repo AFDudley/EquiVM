@@ -45,7 +45,7 @@ theorem beforeSwapDeltaSource {f : Frame} {evm : State} {amount : UInt256} {out 
     simp only [evalExpr?, hspecified, EvalResult.ofOption, bind, EvalResult.bind, pure,
       evalBinaryOp?, BEq.beq, Value.int.injEq, decide_not, ne_eq, signed_eq_zero_iff]
   have hset : ExecStmt config f evm beforeSwapDeltaStmts[0]! (.ok f1 evm) :=
-    ExecStmt.assign hdecode (assignLocalValue hh)
+    ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hdecode (assignLocalValue hh)
   have hlet : ExecStmt config f1 evm beforeSwapDeltaStmts[1]! (.ok (beforeSwapDeltaFrame f out) evm) :=
     ExecStmt.letDecl hcomponent'
   by_cases hz : beforeSwapSpecified out = ⟨0⟩

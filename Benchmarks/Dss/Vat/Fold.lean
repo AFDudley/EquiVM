@@ -835,7 +835,7 @@ theorem vatFoldBodyCore : VatBodyTheoremAnyPerm 9 := by
                     simpa [evmDai, evmRate, storageStore_executionEnv] using
                       evalSignedAddGuardPos_true hrad0 hdebtNewVar hdebtLoad
                         (Or.inl (by norm_num))
-                  have hbody := vatFoldSourceSuccess evm0 I hwv hsz100
+                  have hbody := vatFoldSourceSuccess (hperm := by assumption) evm0 I hwv hsz100
                     hguardAuth hguardLive hloadRateS (by rfl)
                     hRateGuardNeg hRateGuardPos hloadArtS
                     (by simp [hRateIntZero]) (by norm_num) (by norm_num)
@@ -943,7 +943,7 @@ theorem vatFoldBodyCore : VatBodyTheoremAnyPerm 9 := by
                       (by rfl) hradLo hradHi
                       (by simpa [evmRate] using hmulGuardMax)
                       (by simpa [evmRate] using hmulGuard)
-                  have hrateBlock := vatFoldRateAddAssignOk evm0 I hsz100 hloadRateS
+                  have hrateBlock := vatFoldRateAddAssignOk (hperm := by assumption) evm0 I hsz100 hloadRateS
                     (by rfl) hRateGuardNeg hRateGuardPos
                   have hmemArt :
                       (twoWordHashMem (foldIlkWord I) ⟨2⟩
@@ -1225,7 +1225,7 @@ theorem vatFoldBodyCore : VatBodyTheoremAnyPerm 9 := by
                                 hDebtPosE)
                             simpa [evmDai, evmRate, storageStore_executionEnv] using
                               evalSignedAddGuardPos_true hradv hnewv hloadv hcond
-                          have hbody := vatFoldSourceSuccess evm0 I hwv hsz100
+                          have hbody := vatFoldSourceSuccess (hperm := by assumption) evm0 I hwv hsz100
                             hguardAuth hguardLive hloadRateS (by rfl)
                             hRateGuardNeg hRateGuardPos hloadArtS (by rfl)
                             hradLo hradHi hmulGuardMax hmulGuard hloadDaiS
@@ -1347,7 +1347,8 @@ theorem vatFoldBodyCore : VatBodyTheoremAnyPerm 9 := by
                           have hdaiOk := vatFoldDaiAddOk evmRate I
                             (by simpa [evmRate, storageStore_executionEnv] using hloadDaiS)
                             hradWord (by rfl) hDaiGuardNeg hDaiGuardPos
-                          have hdaiAssign := vatFoldAssignDaiOk evmRate I
+                          have hdaiAssign := vatFoldAssignDaiOk (hperm := by
+                              simpa only [evmRate, evm0, storageStore_executionEnv] using hperm) evmRate I
                             (rateNew := rateNewS) (rad := rad) (daiNew := daiNewS)
                           have hloadDebtS :
                               Stele.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner
@@ -1494,7 +1495,8 @@ theorem vatFoldBodyCore : VatBodyTheoremAnyPerm 9 := by
                         have hdaiOk := vatFoldDaiAddOk evmRate I
                           (by simpa [evmRate, storageStore_executionEnv] using hloadDaiS)
                           hradWord (by rfl) hDaiGuardNeg hDaiGuardPos
-                        have hdaiAssign := vatFoldAssignDaiOk evmRate I
+                        have hdaiAssign := vatFoldAssignDaiOk (hperm := by
+                              simpa only [evmRate, evm0, storageStore_executionEnv] using hperm) evmRate I
                           (rateNew := rateNewS) (rad := rad) (daiNew := daiNewS)
                         have hloadDebtS :
                             Stele.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner
@@ -1712,7 +1714,7 @@ theorem vatFoldBodyCore : VatBodyTheoremAnyPerm 9 := by
                     hguardAuth hguardLive
                     (by
                       simpa [evmRate, rateSlotS] using
-                        vatFoldRateAddAssignOk evm0 I hsz100 hloadRateS (by rfl)
+                        vatFoldRateAddAssignOk (hperm := by assumption) evm0 I hsz100 hloadRateS (by rfl)
                           hRateGuardNeg hRateGuardPos)
                     hradRevert
                   exact hrev.reEquivExecutionRevert hcode hdispatch hdecode hbody
@@ -1756,7 +1758,7 @@ theorem vatFoldBodyCore : VatBodyTheoremAnyPerm 9 := by
                 hguardAuth hguardLive
                 (by
                   simpa [evmRate, rateSlotS] using
-                    vatFoldRateAddAssignOk evm0 I hsz100 hloadRateS (by rfl)
+                    vatFoldRateAddAssignOk (hperm := by assumption) evm0 I hsz100 hloadRateS (by rfl)
                       hRateGuardNeg hRateGuardPos)
                 hradRevert
               have hrev := RD.vatFoldArtMulRevert

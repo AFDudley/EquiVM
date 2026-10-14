@@ -1423,7 +1423,7 @@ theorem clipperFileAddressBody (v : ClipperImmutables) {code : ByteArray}
                 fileAddressTransition.body
                 (.returned { contract := contract, locals := locals, immutables := immStore v } evm2 none) (immStore v) := by
             simpa [evmStele, evm2, locals, data] using
-              (clipperFileAddressSpotterSourceBody
+              (clipperFileAddressSpotterSourceBody (hperm := by assumption)
                 (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) v hwv
                 hauthStele hlockedStele hspotter)
           have hret := clipperFileAddressX_spotterOk (v := v) hpatch hperm hauthEvm
@@ -1453,7 +1453,7 @@ theorem clipperFileAddressBody (v : ClipperImmutables) {code : ByteArray}
                   fileAddressTransition.body
                   (.returned { contract := contract, locals := locals, immutables := immStore v } evm2 none) (immStore v) := by
               simpa [evmStele, evm2, locals, data] using
-                (clipperFileAddressDogSourceBody
+                (clipperFileAddressDogSourceBody (hperm := by assumption)
                   (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) v hwv
                   hauthStele hlockedStele hspotter hdog)
             have hret := clipperFileAddressX_dogOk (v := v) hpatch hperm hauthEvm
@@ -1484,7 +1484,7 @@ theorem clipperFileAddressBody (v : ClipperImmutables) {code : ByteArray}
                     fileAddressTransition.body
                     (.returned { contract := contract, locals := locals, immutables := immStore v } evm2 none) (immStore v) := by
                 simpa [evmStele, evm2, locals, data] using
-                  (clipperFileAddressVowSourceBody
+                  (clipperFileAddressVowSourceBody (hperm := by assumption)
                     (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) v hwv
                     hauthStele hlockedStele hspotter hdog hvow)
               have hret := clipperFileAddressX_vowOk (v := v) hpatch hperm hauthEvm
@@ -1516,7 +1516,7 @@ theorem clipperFileAddressBody (v : ClipperImmutables) {code : ByteArray}
                       fileAddressTransition.body
                       (.returned { contract := contract, locals := locals, immutables := immStore v } evm2 none) (immStore v) := by
                   simpa [evmStele, evm2, locals, data] using
-                    (clipperFileAddressCalcSourceBody
+                    (clipperFileAddressCalcSourceBody (hperm := by assumption)
                       (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) v hwv
                       hauthStele hlockedStele hspotter hdog hvow hcalc)
                 have hret := clipperFileAddressX_calcOk (v := v) hpatch hperm hauthEvm
@@ -1541,7 +1541,7 @@ theorem clipperFileAddressBody (v : ClipperImmutables) {code : ByteArray}
                     ExecTransitionBody config contract evmStele locals
                       fileAddressTransition.body .reverted (immStore v) := by
                   simpa [evmStele, locals] using
-                    (clipperFileAddressUnrecognizedSourceBody
+                    (clipperFileAddressUnrecognizedSourceBody (hperm := by assumption)
                       (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
                       (g := g) v hwv hauthStele hlockedStele hspotter hdog hvow hcalc)
                 obtain ⟨_, _, rd6840⟩ := hreachBody

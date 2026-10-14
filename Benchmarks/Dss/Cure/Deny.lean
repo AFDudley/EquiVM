@@ -222,7 +222,7 @@ theorem cureDenyBodyCore {σ σ₀ A I} {g : UInt256}
       · let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
         let evm1 := Stele.EVM.storageStore evm0 I.codeOwner (denySlotFor I) ⟨0⟩
         have hbodySplit :
-            (ExecTransitionBody config contract evm0 locals denyTransition.body
+            (I.perm = true → ExecTransitionBody config contract evm0 locals denyTransition.body
               (.returned { contract := contract, locals := locals } evm1 none)) ∧
             (I.perm = false →
               ExecTransitionBody config contract evm0 locals denyTransition.body
@@ -270,8 +270,9 @@ theorem cureDenyBodyCore {σ σ₀ A I} {g : UInt256}
           have hrhs : evalExpr? config { contract := contract, locals := locals } evm0
               (.intLit 0) = .ok (.int 0) := by simp [evalExpr?, pure]
           constructor
-          · exact ExecFuncBody.execBlockOK (hprefix
-              (ExecBlock.consNormal (ExecStmt.assign hrhs hassign) ExecBlock.nil))
+          · intro hperm
+            exact ExecFuncBody.execBlockOK (hprefix
+              (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hrhs hassign) ExecBlock.nil))
           · intro hperm
             exact ExecFuncBody.execBlockStatic (hprefix
               (ExecBlock.consStatic (ExecStmt.assignStatic hrhs hassign
@@ -301,10 +302,10 @@ theorem cureDenyBodyCore {σ σ₀ A I} {g : UInt256}
           (g := Sat256.ofUInt256 g) (s0 := initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (ee := I) (key := key) (ret := ⟨484⟩) (R := [sel])
           hstorePc (by jump_dest) hmemAuth hread64 hcanonKey (by simp)
-        rcases hfirstWrite with ⟨_, _, _, hretPc⟩ | ⟨hperm, hstatic⟩
+        rcases hfirstWrite with ⟨hperm, _, _, hretPc⟩ | ⟨hperm, hstatic⟩
         swap
         · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode (hbodySplit.2 hperm)
-        have hbody := hbodySplit.1
+        have hbody := hbodySplit.1 hperm
         have hretPc' := hretPc.jumpdest (by native_decide) (by evm_ov)
         have hret :
             RDret cureBytecode (Sat256.ofUInt256 g)

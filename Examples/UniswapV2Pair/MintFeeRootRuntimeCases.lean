@@ -94,7 +94,7 @@ theorem uniswapMintFeeActualRootRuntimeCasesWithMemoryOfTail
             obtain ⟨_, _, rdRet⟩ :=
               uniswapMintFeeRuntimeAfterInternalMintReturnOfTail rd8014 hret hov
             refine Or.inr ⟨_, _, _, _, _, _,
-              uniswapMintFeeAfterRoots_positiveWithLiquidity evmFeeS reserve0 reserve1
+              uniswapMintFeeAfterRoots_positiveWithLiquidity (hperm := by simpa only [henv] using hperm) evmFeeS reserve0 reserve1
                 feeTo kLast rootK rootKLast hroot hrootKNonneg hrootKSize hrootKLastNonneg
                 hnumFit hrootFiveFit hdenFit hdenom hliq hliqFit hfitSupply hfitBalance,
               evalExpr_mintFee_afterFeeMint_feeOn evmFeeS _ reserve0 reserve1 feeTo
@@ -115,7 +115,7 @@ theorem uniswapMintFeeActualRootRuntimeCasesWithMemoryOfTail
           · exact Or.inl ⟨uniswapMintFeeAfterRoots_mintCallReverts evmFeeS reserve0 reserve1
               feeTo kLast rootK rootKLast hroot hrootKNonneg hrootKSize hrootKLastNonneg
               hnumFit hrootFiveFit hdenFit hdenom hliq
-              (uniswapMintFunctionCallRevert_balanceOverflow rfl hargs hfitSupply
+              (uniswapMintFunctionCallRevert_balanceOverflow (hperm := by simpa only [henv] using hperm) rfl hargs hfitSupply
                 (Nat.le_of_not_lt hfitBalance)),
               uniswapInternalMintRuntimeBalanceOverflowReverts rd8128 hperm htotalFit
                 (by rw [← hbalanceEq]; exact Nat.le_of_not_lt hfitBalance) hmem hmem64

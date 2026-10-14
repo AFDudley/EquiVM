@@ -1489,7 +1489,8 @@ theorem daiSteleCtorExecSuccess
     (chainId : Int)
     (h0 : 0 ≤ chainId)
     (hlt : chainId < Int.ofNat (EVM.twoPow 256))
-    (hwv : I.weiValue = ⟨0⟩) :
+    (hwv : I.weiValue = ⟨0⟩)
+    (hperm : I.perm = true) :
     steleCtorExec config contract [.int chainId]
       σ σ₀ g A I
       (.returned (daiCtorFrame chainId)
@@ -1512,7 +1513,7 @@ theorem daiSteleCtorExecSuccess
         (stele := daiCtorFrame chainId) (evm := evm0)
         (by simpa [evm0, initState] using hwv))) ?_
     refine ExecBlock.consNormal (stele' := daiCtorFrame chainId) (evm' := evm1) ?_ ?_
-    · exact ExecStmt.assign (value := .int 1)
+    · exact ExecStmt.assign (hperm := Or.inr hperm) (value := .int 1)
         (by simp [evalExpr?, pure])
         (by
           unfold evm0
@@ -1520,7 +1521,7 @@ theorem daiSteleCtorExecSuccess
             (initState σ σ₀ (Sat256.ofUInt256 g) A I)
             I chainId (by simp [initState]))
     · refine ExecBlock.consNormal ?_ ExecBlock.nil
-      exact ExecStmt.assign
+      exact ExecStmt.assign (hperm := Or.inr (by simpa only [evm1, storageStore_executionEnv] using hperm))
         (value := .fixedBytes bytes32Width
           (daiCtorDomainBytes (EVM.word chainId.toNat) (daiCtorThisWord I)))
         (by
@@ -1564,7 +1565,7 @@ theorem daiConstructorCorrect :
         simpa [Sat256.ofUInt256] using hX)
       rw [hacc] at hsuccess
       refine typedConstructorRefinementFor.execution hsuccess
-        (daiSteleCtorExecSuccess
+        (daiSteleCtorExecSuccess (hperm := hperm)
           (σ := σ) (σ₀ := σ₀) (g := g) (A := A) (I := I)
           chainId h0 hlt hwv) ?_
       refine ctorResultEquiv.success rfl rfl ?_ rfl

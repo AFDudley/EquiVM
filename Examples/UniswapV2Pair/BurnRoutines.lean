@@ -398,7 +398,8 @@ theorem bindParams_burnFunction_call (holder : AccountAddress) (value : UInt256)
 
 theorem uniswapBurnFunctionBody (evm : EVM.State) (holder : AccountAddress) (value : UInt256)
     (hbalance : value.toNat ≤ (burnFunctionFromBalanceWord evm holder).toNat)
-    (hsupply : value.toNat ≤ (burnFunctionTotalSupplyWord evm holder value).toNat) :
+    (hsupply : value.toNat ≤ (burnFunctionTotalSupplyWord evm holder value).toNat)
+    (hperm : evm.executionEnv.perm = true) :
     ExecFuncBody config { contract := contract, locals := burnFunctionCallStore holder value } evm
       burnFunction.body
       (.returned { contract := contract, locals := burnFunctionAfterTotalSupplyStore evm holder value }
@@ -421,6 +422,7 @@ theorem uniswapBurnFunctionBody (evm : EVM.State) (holder : AccountAddress) (val
       (evalExpr_burnFunction_balance_require_true evm holder value hbalance)) ?_
   refine ExecBlock.consNormal
     (ExecStmt.assign
+      (hperm := Or.inr hperm)
       (evalExpr_burnFunction_balance_debit evm holder value hbalance)
       (burnFunctionAssignBalance evm holder value)) ?_
   refine ExecBlock.consNormal
@@ -430,6 +432,7 @@ theorem uniswapBurnFunctionBody (evm : EVM.State) (holder : AccountAddress) (val
       (evalExpr_burnFunction_totalSupply_require_true evm holder value hsupply)) ?_
   exact ExecBlock.consNormal
     (ExecStmt.assign
+      (hperm := Or.inr (by simpa [burnFunctionAfterBalanceState] using hperm))
       (evalExpr_burnFunction_totalSupply_debit evm holder value hsupply)
       (burnFunctionAssignTotalSupply evm holder value))
     ExecBlock.nil
@@ -441,7 +444,8 @@ theorem uniswapBurnFunctionCallSuccess {caller : Frame} {evm : EVM.State}
       .ok [burnFunctionFromValue holder, burnFunctionValueValue value])
     (hbalance : value.toNat ≤ (burnFunctionFromBalanceWord evm holder).toNat)
     (hsupply : value.toNat ≤ (burnFunctionTotalSupplyWord evm holder value).toNat)
-    (himm : caller.immutables = ∅ := by first | rfl | assumption) :
+    (himm : caller.immutables = ∅ := by first | rfl | assumption)
+    (hperm : evm.executionEnv.perm = true) :
     ExecStmt config caller evm (.internalCall "_burn" args retVar)
       (.ok (resumeAfterInternalCall caller retVar none) (burnFunctionPostState evm holder value)) := by
   exact internalCallFunctionReturn
@@ -457,6 +461,6 @@ theorem uniswapBurnFunctionCallSuccess {caller : Frame} {evm : EVM.State}
     (bindParams_burnFunction_call holder value)
     (by
       simpa [hcontract, himm] using
-        (uniswapBurnFunctionBody evm holder value hbalance hsupply))
+        (uniswapBurnFunctionBody (hperm := by assumption) evm holder value hbalance hsupply))
 
 end UniswapV2Pair

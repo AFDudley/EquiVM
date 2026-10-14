@@ -165,8 +165,8 @@ theorem jugFileBaseSourceBodySplit {σ σ₀ A I} {g : UInt256}
     let locals := fileBaseLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let evm1 := Stele.EVM.storageStore evm0 I.codeOwner ⟨4⟩ (fileBaseData I)
-    ExecTransitionBody config contract evm0 locals fileBaseTransition.body
-      (.returned { contract := contract, locals := locals } evm1 none) ∧
+    (I.perm = true → ExecTransitionBody config contract evm0 locals fileBaseTransition.body
+      (.returned { contract := contract, locals := locals } evm1 none)) ∧
     (I.perm = false →
       ExecTransitionBody config contract evm0 locals fileBaseTransition.body .staticViolation) := by
   intro locals evm0 evm1
@@ -205,22 +205,23 @@ theorem jugFileBaseSourceBodySplit {σ σ₀ A I} {g : UInt256}
     refine ExecBlock.consNormal (ExecStmt.requireTrue hguard) ?_
     exact execBlock_singleton (ExecStmt.iteTrue hcond
       (execBlock_singleton h))
-  refine ⟨?_, fun hpf => ?_⟩
+  refine ⟨fun hperm => ?_, fun hpf => ?_⟩
   · simpa [ExecTransitionBody, locals, evm0, evm1] using
-      ExecFuncBody.execBlockOK (hbody _ (ExecStmt.assign hdata hassign))
+      ExecFuncBody.execBlockOK (hbody _ (ExecStmt.assign (hperm := Or.inr hperm) hdata hassign))
   · simpa [ExecTransitionBody, locals, evm0] using ExecFuncBody.execBlockStatic
       (hbody _ (ExecStmt.assignStatic hdata hassign (by simp [evm0, initState]; exact hpf)))
 
 theorem jugFileBaseSourceBody {σ σ₀ A I} {g : UInt256}
     (hwv : I.weiValue = ⟨0⟩)
     (hauth : relyAuthWord σ I = ⟨1⟩)
-    (hwhat : fileBaseWhat I = fileBaseBytes) :
+    (hwhat : fileBaseWhat I = fileBaseBytes)
+    (hperm : I.perm = true) :
     let locals := fileBaseLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let evm1 := Stele.EVM.storageStore evm0 I.codeOwner ⟨4⟩ (fileBaseData I)
     ExecTransitionBody config contract evm0 locals fileBaseTransition.body
       (.returned { contract := contract, locals := locals } evm1 none) :=
-  (jugFileBaseSourceBodySplit (σ₀ := σ₀) (A := A) (g := g) hwv hauth hwhat).1
+  (jugFileBaseSourceBodySplit (σ₀ := σ₀) (A := A) (g := g) hwv hauth hwhat).1 hperm
 
 theorem jugFileBaseSourceBodyStatic {σ σ₀ A I} {g : UInt256}
     (hwv : I.weiValue = ⟨0⟩)
@@ -689,7 +690,7 @@ theorem jugFileBaseBodyCoreOk
       ExecTransitionBody config contract evm0 locals fileBaseTransition.body
         (.returned { contract := contract, locals := locals } evm1 none) := by
     simpa [evm0, evm1, locals, data] using
-      (jugFileBaseSourceBody (σ := σ)
+      (jugFileBaseSourceBody (hperm := hperm) (σ := σ)
         (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hauthStele hwhat)
   obtain ⟨_, _, hdecoded⟩ := jugFileBaseX_decoded (g := Sat256.ofUInt256 g)
     hsz68 hsize hreach

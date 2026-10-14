@@ -517,7 +517,8 @@ theorem blindAuctionWithdrawBodyReturns_callSuccess
     (hpos : amount ≠ ⟨0⟩)
     (hcall :
       callViaEVM (withdrawZeroState evm) (EVM.address (withdrawZeroState evm).executionEnv.source)
-        (Int.ofNat amount.toNat) ByteArray.empty (true, evm', out)) :
+        (Int.ofNat amount.toNat) ByteArray.empty (true, evm', out))
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody blindAuctionConfig blindAuctionContract evm ∅ withdrawTransition.body
       (.returned { contract := blindAuctionContract, locals := withdrawCallStore amount true out }
         evm' none) := by
@@ -542,9 +543,12 @@ theorem blindAuctionWithdrawBodyReturns_callSuccess
         .require (.var "success") ]
       (.ok { contract := blindAuctionContract, locals := withdrawCallStore amount true out } evm')
     refine ExecBlock.consNormal
-      (ExecStmt.assign (by simp [evalExpr?, pure]) (withdrawAssignZero evm amount)) ?_
+      (ExecStmt.assign
+        (hperm := Or.inr hperm)
+        (by simp [evalExpr?, pure]) (withdrawAssignZero evm amount)) ?_
     refine ExecBlock.consNormal
       (ExecStmt.lowLevelCallSuccess
+        (hperm := Or.inr (by simpa [withdrawZeroState, withdrawClearedState] using hperm))
         (evalExpr_withdraw_sender (withdrawZeroState evm) (withdrawAmountStore amount))
         (evalExpr_withdraw_amount (withdrawZeroState evm) amount)
         (evalExpr_withdraw_emptyBytes (withdrawZeroState evm) (withdrawAmountStore amount))
@@ -564,7 +568,8 @@ theorem blindAuctionWithdrawBodyReverts_callFailure
     (hpos : amount ≠ ⟨0⟩)
     (hcall :
       callViaEVM (withdrawZeroState evm) (EVM.address (withdrawZeroState evm).executionEnv.source)
-        (Int.ofNat amount.toNat) ByteArray.empty (false, evm', out)) :
+        (Int.ofNat amount.toNat) ByteArray.empty (false, evm', out))
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody blindAuctionConfig blindAuctionContract evm ∅
       withdrawTransition.body .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
@@ -586,9 +591,12 @@ theorem blindAuctionWithdrawBodyReverts_callFailure
       .require (.var "success") ]
     .reverted
   refine ExecBlock.consNormal
-    (ExecStmt.assign (by simp [evalExpr?, pure]) (withdrawAssignZero evm amount)) ?_
+    (ExecStmt.assign
+      (hperm := Or.inr hperm)
+      (by simp [evalExpr?, pure]) (withdrawAssignZero evm amount)) ?_
   refine ExecBlock.consNormal
     (ExecStmt.lowLevelCallFailure
+      (hperm := Or.inr (by simpa [withdrawZeroState, withdrawClearedState] using hperm))
       (evalExpr_withdraw_sender (withdrawZeroState evm) (withdrawAmountStore amount))
       (evalExpr_withdraw_amount (withdrawZeroState evm) amount)
       (evalExpr_withdraw_emptyBytes (withdrawZeroState evm) (withdrawAmountStore amount))
@@ -1184,7 +1192,7 @@ theorem blindAuctionWithdrawBodyCore {σ σ₀ A I}
         have hbody :
             ExecTransitionBody blindAuctionConfig blindAuctionContract evmS ∅
               withdrawTransition.body .reverted :=
-          blindAuctionWithdrawBodyReverts_callFailure evmS evmSFail
+          blindAuctionWithdrawBodyReverts_callFailure (hperm := by assumption) evmS evmSFail
             (withdrawAmountWord σ I) ByteArray.empty
             (by simpa [evmS, initState] using hwv) hamountS hposS
             (by simpa [evmSZero] using hcall)
@@ -1264,7 +1272,7 @@ theorem blindAuctionWithdrawBodyCore {σ σ₀ A I}
           · have hbody :
                 ExecTransitionBody blindAuctionConfig blindAuctionContract evmS ∅
                   withdrawTransition.body .reverted :=
-              blindAuctionWithdrawBodyReverts_callFailure evmS evmSCall
+              blindAuctionWithdrawBodyReverts_callFailure (hperm := by assumption) evmS evmSCall
                 (withdrawAmountWord σ I) out
                 (by simpa [evmS, initState] using hwv) hamountS hposS
                 (by simpa [evmSZero] using hcallS)
@@ -1278,7 +1286,7 @@ theorem blindAuctionWithdrawBodyCore {σ σ₀ A I}
                     { contract := blindAuctionContract
                       locals := withdrawCallStore (withdrawAmountWord σ I) true out }
                     evmSCall none) :=
-              blindAuctionWithdrawBodyReturns_callSuccess evmS evmSCall
+              blindAuctionWithdrawBodyReturns_callSuccess (hperm := by assumption) evmS evmSCall
                 (withdrawAmountWord σ I) out
                 (by simpa [evmS, initState] using hwv) hamountS hposS
                 (by simpa [evmSZero] using hcallS)
@@ -1318,7 +1326,7 @@ theorem blindAuctionWithdrawBodyCore {σ σ₀ A I}
           have hbody :
               ExecTransitionBody blindAuctionConfig blindAuctionContract evmS ∅
                 withdrawTransition.body .reverted :=
-            blindAuctionWithdrawBodyReverts_callFailure evmS evmSFail
+            blindAuctionWithdrawBodyReverts_callFailure (hperm := by assumption) evmS evmSFail
               (withdrawAmountWord σ I) ByteArray.empty
               (by simpa [evmS, initState] using hwv) hamountS hposS
               (by simpa [evmSZero] using hcall)

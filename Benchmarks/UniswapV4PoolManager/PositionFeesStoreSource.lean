@@ -34,8 +34,8 @@ theorem positionFeesStoreBody {f : Frame} {evm : EVM.State} {id key fee0 fee1 ow
   · rw [if_neg hp]
     let evm1 := Stele.EVM.storageStore evm evm.executionEnv.codeOwner (positionFeeSlot id key false) fee0
     have hw1 := positionFee_write (f := f) (evm := evm1) (value := fee1) hs true
-    refine .execBlockRet (ExecBlock.consNormal (ExecStmt.assign (evalLocalValue h0) hw0)
-      (ExecBlock.consNormal (ExecStmt.assign (evalLocalValue h1) hw1) (ExecBlock.consReturn (ExecStmt.return ?_))))
+    refine .execBlockRet (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (Bool.eq_true_of_not_eq_false hp)) (evalLocalValue h0) hw0)
+      (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [evm1, storageStore_executionEnv] using Bool.eq_true_of_not_eq_false hp)) (evalLocalValue h1) hw1) (ExecBlock.consReturn (ExecStmt.return ?_))))
     change evalExprs? config f (positionFeeStores evm id key fee0 fee1) [.var "feesOwed0", .var "feesOwed1"] = _
     simp only [evalExprs?, evalLocalValue (cfg := config) (f := f) (evm := positionFeeStores evm id key fee0 fee1) ho0,
       evalLocalValue (cfg := config) (f := f) (evm := positionFeeStores evm id key fee0 fee1) ho1,

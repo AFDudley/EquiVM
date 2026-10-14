@@ -30,4 +30,13 @@ def absorbRepayResult (frame : Frame) (evm : State) (old next : UInt256) : ExecR
       (supplyAmount old next) (repayAmount old next)
   else .reverted
 
+theorem absorbRepayOutcome_result_perm {evm old next updated}
+    (hr : absorbRepayOutcome evm old next = .ok updated) :
+    updated.executionEnv.perm = true := by
+  unfold absorbRepayOutcome supplyBaseTotalsOutcome at hr
+  split_ifs at hr with hf hs hp hb
+  cases hr
+  simpa only [supplyBaseTotalsState, supplyBaseSupplyState, storeTotalsPrincipal,
+    storageStore_executionEnv] using hp
+
 end Benchmarks.CompoundIII.Comet

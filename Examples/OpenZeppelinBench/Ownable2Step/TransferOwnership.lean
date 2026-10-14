@@ -156,7 +156,8 @@ theorem ownable2StepTransferOwnershipBodyReturns (evm : EVM.State) (I : Executio
     (howner :
       UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩) solcAddrMask =
         ownable2StepSourceWord evm.executionEnv)
-    (hcanon : (transferOwnershipNewOwnerWord I).toNat < EVM.addressModulus) :
+    (hcanon : (transferOwnershipNewOwnerWord I).toNat < EVM.addressModulus)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (transferOwnershipStore I)
       transferOwnershipTransition.body
       (.returned { contract := contract, locals := transferOwnershipStore I }
@@ -166,7 +167,9 @@ theorem ownable2StepTransferOwnershipBodyReturns (evm : EVM.State) (I : Executio
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue (evalExpr_transferOwnership_owner_eq_true evm I howner)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_transferOwnership_newOwner evm I)
+    (ExecStmt.assign
+      (hperm := by first | assumption | exact Or.inr ‹_› | exact Or.inl rfl)
+      (evalExpr_transferOwnership_newOwner evm I)
       (transferOwnershipAssignPending evm I hcanon)) ?_
   exact ExecBlock.nil
 
@@ -567,7 +570,7 @@ theorem ownable2StepTransferOwnershipBody {σ σ₀ A I}
               transferOwnershipOwnerWord, ownable2StepSourceWord] using howner
           have hdec := ownable2StepDecode_transferOwnership_ok (I := I) hsz36 hbig hcanon
           by_cases hperm : I.perm = true
-          · have hbody := ownable2StepTransferOwnershipBodyReturns evmS I
+          · have hbody := ownable2StepTransferOwnershipBodyReturns (hperm := hperm) evmS I
               (by simp only [evmS, initState]; exact hwv) hownerStele hcanon
             exact (permSplit_true hperm (ownable2StepX_transferOwnership_success
                 (g := Sat256.ofUInt256 g) hsz36 hsize hbig hcanon howner hreach))

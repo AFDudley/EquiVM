@@ -722,7 +722,8 @@ abbrev flipperCtorAfterWardsState (evm : EVM.State) : EVM.State :=
 theorem flipperCtorSteleExecSuccess
     {σ : AccountMap} {σ₀ : AccountMap} {A : Substate} {I : ExecutionEnv}
     {g : UInt256} (vat cat : AccountAddress) (ilk : List UInt8)
-    (hilk : ilk.length = 32) (hwv : I.weiValue = ⟨0⟩) :
+    (hilk : ilk.length = 32) (hwv : I.weiValue = ⟨0⟩)
+    (hperm : I.perm = true) :
     let evm0 := initState σ σ₀
       (Sat256.ofUInt256 g) A I
     let evm1 := flipperCtorAfterBegState evm0
@@ -799,17 +800,17 @@ theorem flipperCtorSteleExecSuccess
       simp only [constructorDecl, nonpayable, List.cons_append, List.nil_append]
       refine ExecBlock.consNormal (ExecStmt.requireTrue ?_) ?_
       · exact evalCallvalueEq_true (by simp [evm0, initState]; exact hwv)
-      refine ExecBlock.consNormal (ExecStmt.assign (by simp [evalExpr?, pure]) hassignBeg) ?_
-      refine ExecBlock.consNormal (ExecStmt.assign (by simp [evalExpr?, pure]) hassignTtl) ?_
-      refine ExecBlock.consNormal (ExecStmt.assign (by simp [evalExpr?, pure]) hassignTau) ?_
-      refine ExecBlock.consNormal (ExecStmt.assign (by simp [evalExpr?, pure]) hassignKicks) ?_
-      refine ExecBlock.consNormal (ExecStmt.assign ?_ hassignVat) ?_
+      refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) (by simp [evalExpr?, pure]) hassignBeg) ?_
+      refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa [evm1, evm0, flipperCtorAfterBegState, initState] using hperm)) (by simp [evalExpr?, pure]) hassignTtl) ?_
+      refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa [evm2, evm1, evm0, flipperCtorAfterBegState, flipperCtorAfterTtlState, initState] using hperm)) (by simp [evalExpr?, pure]) hassignTau) ?_
+      refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa [evm3, evm2, evm1, evm0, flipperCtorAfterBegState, flipperCtorAfterTtlState, flipperCtorAfterTauState, initState] using hperm)) (by simp [evalExpr?, pure]) hassignKicks) ?_
+      refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa [evm4, evm3, evm2, evm1, evm0, flipperCtorAfterBegState, flipperCtorAfterTtlState, flipperCtorAfterTauState, flipperCtorAfterKicksState, initState] using hperm)) ?_ hassignVat) ?_
       · simpa [locals] using evalExpr_flipperCtorLocalVat (evm := evm4) vat cat ilk
-      refine ExecBlock.consNormal (ExecStmt.assign ?_ hassignCat) ?_
+      refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa [evm5, evm4, evm3, evm2, evm1, evm0, flipperCtorAfterBegState, flipperCtorAfterTtlState, flipperCtorAfterTauState, flipperCtorAfterKicksState, flipperCtorAfterVatState, initState] using hperm)) ?_ hassignCat) ?_
       · simpa [locals] using evalExpr_flipperCtorLocalCat (evm := evm5) vat cat ilk
-      refine ExecBlock.consNormal (ExecStmt.assign ?_ hassignIlk) ?_
+      refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa [evm6, evm5, evm4, evm3, evm2, evm1, evm0, flipperCtorAfterBegState, flipperCtorAfterTtlState, flipperCtorAfterTauState, flipperCtorAfterKicksState, flipperCtorAfterVatState, flipperCtorAfterCatState, initState] using hperm)) ?_ hassignIlk) ?_
       · simpa [locals] using evalExpr_flipperCtorLocalIlk (evm := evm6) vat cat ilk
-      exact ExecBlock.consNormal (ExecStmt.assign (by simp [evalExpr?, pure]) hassignWards)
+      exact ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa [evm7, evm6, evm5, evm4, evm3, evm2, evm1, evm0, flipperCtorAfterBegState, flipperCtorAfterTtlState, flipperCtorAfterTauState, flipperCtorAfterKicksState, flipperCtorAfterVatState, flipperCtorAfterCatState, flipperCtorAfterIlkState, initState] using hperm)) (by simp [evalExpr?, pure]) hassignWards)
         ExecBlock.nil
     simpa [ExecTransitionBody, contract, constructorDecl, locals, evm0, evm8] using
       ExecFuncBody.execBlockOK hblock
@@ -1781,7 +1782,7 @@ theorem flipperConstructorCorrect :
         (by simpa [Sat256.ofUInt256] using hsuccess)
         (by
           simpa [evm0s, evm1s, evm2s, evm3s, evm4s, evm5s, evm6s, evm7s, evm8s]
-            using flipperCtorSteleExecSuccess
+            using flipperCtorSteleExecSuccess (hperm := hperm)
               (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
               (g := g) vat cat ilk hilk hwv)
         ?_

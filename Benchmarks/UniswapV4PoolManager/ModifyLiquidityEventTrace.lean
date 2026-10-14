@@ -21,7 +21,8 @@ theorem modifyLiquidityEventTrace {I : ExecutionEnv} {g : Sat256} {s0 : State}
     (h : RD (deployedRuntime v) I g s0 ⟨6084⟩
       ([a1, a0, paramsPtr, id, fees, src, len, ⟨6222⟩, ⟨6240⟩, fees, keyPtr, UInt256.ofNat 64, junk] ++ R)
       mem aw rdata σ k C) :
-    (I.perm = false ∧ RDstatic (deployedRuntime v) g s0) ∨ ∃ aw' k' C', Cₘ aw' ≤ C' ∧
+    (I.perm = false ∧ RDstatic (deployedRuntime v) g s0) ∨
+    I.perm = true ∧ ∃ aw' k' C', Cₘ aw' ≤ C' ∧
       RD (deployedRuntime v) I g s0 ⟨14427⟩
         ([key.hooks, keyPtr, paramsPtr, balanceDeltaWord a0 a1, fees, src, len,
           ⟨6222⟩, ⟨6240⟩, fees, keyPtr, UInt256.ofNat 64, junk] ++ R)
@@ -57,7 +58,7 @@ theorem modifyLiquidityEventTrace {I : ExecutionEnv} {g : Sat256} {s0 : State}
        (free+UInt256.ofNat 32, ⟨32⟩), (free+UInt256.ofNat 64, ⟨32⟩), (free+UInt256.ofNat 96, ⟨32⟩),
        (free, UInt256.ofNat 128), (keyPtr+UInt256.ofNat 128, ⟨32⟩)]
     simp only [memoryAccessWords, memoryAccessCost] at hcost
-    refine .inr ⟨_, _, _, ?_, rd⟩
+    refine .inr ⟨hperm, _, _, _, ?_, rd⟩
     omega (config := { splitNatSub := false })
   · exact .inl ⟨Bool.eq_false_iff.mpr hperm,
       modifyLiquidityEventStatic (R := junk :: R) (by simp only [List.length_cons]; omega)

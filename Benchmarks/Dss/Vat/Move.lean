@@ -521,7 +521,7 @@ theorem vatMoveSourceStoreSrcSplit
     evalExpr? config { contract := contract, locals := moveStore I } evm0
         (wishExpr (.var "src") sender) = .ok (.bool true) →
     (moveRadWord I).toNat ≤ srcOld.toNat →
-    (∀ r, ExecBlock config { contract := contract, locals := moveStoreSrcDaiNew I srcDaiNew } evm1
+    (I.perm = true → ∀ r, ExecBlock config { contract := contract, locals := moveStoreSrcDaiNew I srcDaiNew } evm1
         [ .letDecl "dstDaiNew" (some uint256)
             (add256 (.storage (daiRef (.var "dst"))) (.var "rad")),
           .require (.binary .ge (.var "dstDaiNew")
@@ -610,13 +610,14 @@ theorem vatMoveSourceStoreSrcSplit
     refine ExecBlock.consNormal (ExecStmt.letDecl hsub) ?_
     refine ExecBlock.consNormal (ExecStmt.requireTrue hreqSub) ?_
     exact hrest
-  refine ⟨fun r h => hpre r (ExecBlock.consNormal (ExecStmt.assign hsrcDaiNewEval hassignSrc) h),
+  refine ⟨fun hperm r h => hpre r (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hsrcDaiNewEval hassignSrc) h),
     fun hpf => ExecFuncBody.execBlockStatic (hpre _ (ExecBlock.consStatic
       (ExecStmt.assignStatic hsrcDaiNewEval hassignSrc (by simp [evm0, initState]; exact hpf))))⟩
 
 theorem vatMoveSourceOk
     {σ σ₀ A I} {g : UInt256}
-    (hwv : I.weiValue = ⟨0⟩) :
+    (hwv : I.weiValue = ⟨0⟩)
+    (hperm : I.perm = true) :
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let srcOld := solcSlotWordAt (moveSrcDaiSlot I) σ I
     let srcDaiNew := UInt256.sub srcOld (moveRadWord I)
@@ -690,10 +691,10 @@ theorem vatMoveSourceOk
         (moveDstDaiSlot I) dstDaiNew)
       (I := I) (srcDaiNew := srcDaiNew) (dstDaiNew := dstDaiNew) rfl
   simpa [ExecTransitionBody, evm0, evm1] using ExecFuncBody.execBlockOK
-    ((vatMoveSourceStoreSrcSplit (g := g) hwv hwish hsrcEnough).1 _
+    ((vatMoveSourceStoreSrcSplit (g := g) hwv hwish hsrcEnough).1 hperm _
       (ExecBlock.consNormal (ExecStmt.letDecl hadd)
         (ExecBlock.consNormal (ExecStmt.requireTrue hreqAdd)
-          (ExecBlock.consNormal (ExecStmt.assign hdstDaiNewEval hassignDst) ExecBlock.nil))))
+          (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [evm1, storageStore_executionEnv] using hperm)) hdstDaiNewEval hassignDst) ExecBlock.nil))))
 
 theorem vatMoveSourceRevertWish
     {σ σ₀ A I} {g : UInt256}
@@ -798,7 +799,8 @@ theorem vatMoveSourceRevertSrcUnderflow
 set_option maxHeartbeats 1000000 in
 theorem vatMoveSourceRevertDstOverflow
     {σ σ₀ A I} {g : UInt256}
-    (hwv : I.weiValue = ⟨0⟩) :
+    (hwv : I.weiValue = ⟨0⟩)
+    (hperm : I.perm = true) :
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let srcOld := solcSlotWordAt (moveSrcDaiSlot I) σ I
     let srcDaiNew := UInt256.sub srcOld (moveRadWord I)
@@ -910,7 +912,7 @@ theorem vatMoveSourceRevertDstOverflow
     refine ExecBlock.consNormal (ExecStmt.requireTrue hwish) ?_
     refine ExecBlock.consNormal (ExecStmt.letDecl hsub) ?_
     refine ExecBlock.consNormal (ExecStmt.requireTrue hreqSub) ?_
-    refine ExecBlock.consNormal (ExecStmt.assign hsrcDaiNewEval hassignSrc) ?_
+    refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hsrcDaiNewEval hassignSrc) ?_
     exact ExecBlock.consRevert (ExecStmt.letDeclRevert hadd)
   simpa [ExecTransitionBody, moveTransition, evm0, nonpayable, checkedSubUintInto,
     checkedAddUintInto, List.append_assoc] using ExecFuncBody.execBlockRevert hblock
@@ -1749,7 +1751,7 @@ theorem vatMoveAuthorizedPath
       have hbody :
           ExecTransitionBody config contract evm0 (moveStore I) moveTransition.body
             .reverted := by
-        exact vatMoveSourceRevertDstOverflow
+        exact vatMoveSourceRevertDstOverflow (hperm := hperm)
           (σ := σ) (σ₀ := σ₀)
           (A := A) (I := I) (g := g) hwv
           (by simpa [evm0] using hwishStele)
@@ -1818,7 +1820,7 @@ theorem vatMoveAuthorizedPath
                 (moveRadWord I).toNat < UInt256.size := by
           simpa [dstOld] using hdstFit
         exact htmp
-      have hbody := vatMoveSourceOk
+      have hbody := vatMoveSourceOk (hperm := hperm)
         (σ := σ) (σ₀ := σ₀)
         (A := A) (I := I) (g := g) hwv
         (by simpa [evm0] using hwishStele)

@@ -73,6 +73,16 @@ import Benchmarks.Scaffolds.Klima.Spec
 import Benchmarks.Scaffolds.Klima.Bytecode
 import Benchmarks.Safe.Main.Spec
 import Benchmarks.Safe.Main.Bytecode
+import Benchmarks.Safe.ViaIR.Spec
+import Benchmarks.Safe.ViaIR.Bytecode
+import Benchmarks.Safe.Runs1e6.Spec
+import Benchmarks.Safe.Runs1e6.Bytecode
+import Benchmarks.Safe.V0_cdb2eb5.Bytecode
+import Benchmarks.Safe.V1_0227664.Bytecode
+import Benchmarks.Safe.V2_0e91d99.Spec
+import Benchmarks.Safe.V2_0e91d99.Bytecode
+import Benchmarks.Safe.V3_77901a5.Spec
+import Benchmarks.Safe.V3_77901a5.Bytecode
 import Benchmarks.Scaffolds.TimelockController.Spec
 import Benchmarks.Scaffolds.TimelockController.Bytecode
 import Benchmarks.Scaffolds.VestingWallet.Spec
@@ -267,6 +277,48 @@ def safe : Target :=
     runtime := Benchmarks.Safe.Main.safeBytecode, initcode := some Benchmarks.Safe.Main.safeCreationBytecode,
     callees := standardCallees, words := [0, 1, 2, 3], gas := 400000, fuel := 5000 }
 
+def safe_ViaIR : Target :=
+  { name := "Safe_ViaIR", contract := Benchmarks.Safe.ViaIR.contract,
+    config := Benchmarks.Safe.ViaIR.config,
+    runtime := Benchmarks.Safe.ViaIR.safeBytecode,
+    initcode := some Benchmarks.Safe.ViaIR.safeCreationBytecode,
+    callees := standardCallees, words := [0, 1, 2, 3], gas := 400000, fuel := 5000 }
+
+def safe_Runs1e6 : Target :=
+  { name := "Safe_Runs1e6", contract := Benchmarks.Safe.Runs1e6.contract,
+    config := Benchmarks.Safe.Runs1e6.config,
+    runtime := Benchmarks.Safe.Runs1e6.safeBytecode,
+    initcode := some Benchmarks.Safe.Runs1e6.safeCreationBytecode,
+    callees := standardCallees, words := [0, 1, 2, 3], gas := 400000, fuel := 5000 }
+
+def safe_V0_cdb2eb5 : Target :=
+  { name := "Safe_V0_cdb2eb5", contract := Benchmarks.Safe.V0_cdb2eb5.contract,
+    config := Benchmarks.Safe.V0_cdb2eb5.config,
+    runtime := Benchmarks.Safe.V0_cdb2eb5.safeBytecode,
+    initcode := some Benchmarks.Safe.V0_cdb2eb5.safeCreationBytecode,
+    callees := standardCallees, words := [0, 1, 2, 3], gas := 400000, fuel := 5000 }
+
+def safe_V1_0227664 : Target :=
+  { name := "Safe_V1_0227664", contract := Benchmarks.Safe.V1_0227664.contract,
+    config := Benchmarks.Safe.V1_0227664.config,
+    runtime := Benchmarks.Safe.V1_0227664.safeBytecode,
+    initcode := some Benchmarks.Safe.V1_0227664.safeCreationBytecode,
+    callees := standardCallees, words := [0, 1, 2, 3], gas := 400000, fuel := 5000 }
+
+def safe_V2_0e91d99 : Target :=
+  { name := "Safe_V2_0e91d99", contract := Benchmarks.Safe.V2_0e91d99.contract,
+    config := Benchmarks.Safe.V2_0e91d99.config,
+    runtime := Benchmarks.Safe.V2_0e91d99.safeBytecode,
+    initcode := some Benchmarks.Safe.V2_0e91d99.safeCreationBytecode,
+    callees := standardCallees, words := [0, 1, 2, 3], gas := 400000, fuel := 5000 }
+
+def safe_V3_77901a5 : Target :=
+  { name := "Safe_V3_77901a5", contract := Benchmarks.Safe.V3_77901a5.contract,
+    config := Benchmarks.Safe.V3_77901a5.config,
+    runtime := Benchmarks.Safe.V3_77901a5.safeBytecode,
+    initcode := some Benchmarks.Safe.V3_77901a5.safeCreationBytecode,
+    callees := standardCallees, words := [0, 1, 2, 3], gas := 400000, fuel := 5000 }
+
 def timelockController : Target :=
   { name := "TimelockController", contract := OpenZeppelinBench.TimelockController.contract,
     config := OpenZeppelinBench.TimelockController.config,
@@ -303,7 +355,8 @@ def benchmarks : List Target :=
   [weth9, auction, pot, cat, cure, dai, daiJoin, dssEnd, exponentialDecrease, flapper, flipper, flopper, gemJoin, jug, linearDecrease, spot, stairstepExponentialDecrease, vat, vow]
 
 def scaffolds : List Target :=
-  [erc721, klima, safe, timelockController, vestingWallet]
+  [erc721, klima, safe_ViaIR, safe_Runs1e6, safe_V0_cdb2eb5, safe_V1_0227664, safe_V2_0e91d99, safe_V3_77901a5,
+    timelockController, vestingWallet]
 
 /-- Every target: the ones above, then the generated ones (`Generated.lean`) not already named. -/
 def allTargets : List Target :=

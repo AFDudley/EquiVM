@@ -253,7 +253,8 @@ theorem erc6909SetOperatorBodyReturns (evm : EVM.State)
     (hsource : evm.executionEnv.source ≠ AccountAddress.ofNat 0)
     (hspender :
       AccountAddress.ofNat (setOperatorSpenderWord evm.executionEnv).toNat ≠
-        AccountAddress.ofNat 0) :
+        AccountAddress.ofNat 0)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (setOperatorStore evm.executionEnv)
       setOperatorTransition.body
       (.returned { contract := contract, locals := setOperatorStore evm.executionEnv }
@@ -266,7 +267,9 @@ theorem erc6909SetOperatorBodyReturns (evm : EVM.State)
     (ExecStmt.requireTrue
       (evalExpr_setOperator_spender_ne_zero_true evm evm.executionEnv hspender)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_setOperator_approved evm evm.executionEnv)
+    (ExecStmt.assign
+      (hperm := Or.inr hperm)
+      (evalExpr_setOperator_approved evm evm.executionEnv)
       (setOperatorAssign evm evm.executionEnv)) ?_
   exact ExecBlock.consReturn (ExecStmt.return (by simp [evalExprs?, evalExpr?, EvalResult.bind, bind, pure]))
 
@@ -1171,7 +1174,7 @@ theorem erc6909SetOperatorBodyCore
                       setOperatorTransition.body
                       (.returned { contract := contract, locals := setOperatorStore I }
                         (setOperatorPostState evmS I) (some [(.bool true)])) := by
-                  simpa [evmS, initState] using erc6909SetOperatorBodyReturns evmS
+                  simpa [evmS, initState] using erc6909SetOperatorBodyReturns (hperm := by assumption) evmS
                     (by simp only [evmS, initState]; exact hwv)
                     (by simpa [evmS, initState] using hsource)
                     (by simpa [evmS, initState] using hspender)

@@ -44,7 +44,7 @@ theorem tickScanBody {f : Frame} {evm : EVM.State} {id tick spacing : UInt256} (
         simp only [evalExpr?, pure]; rfl)
     rw [signextend24_add_left] at he
     have hinc : ExecStmt config f0 evm (.assign .localVar {base := "compressed"} tickScanIncrementExpr)
-        (.ok f1 evm) := ExecStmt.assign he (assignLocalValue hc0)
+        (.ok f1 evm) := ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) he (assignLocalValue hc0)
     have hf1 : f1.contract = contract := (valueLocal_contract _ _ _).trans hf0
     have hc1 : f1.locals.get? "compressed" =
         some (.int (EVM.signed (UInt256.signextend (UInt256.ofNat 2) (compressed+UInt256.ofNat 1)))) :=

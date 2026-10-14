@@ -75,11 +75,12 @@ theorem clipperKickAfterFeedTopPrefix
       evmTop
       [ .ite clipperKickIncentiveCond (clipperKickIncentiveBody) [],
         .assign .storage lockedRef (.intLit 0), .return [.var "id"] ] result)
-    (hevmTop : evmTop = clipperKickSourceTopState evmLock sourceAfter top) :
+    (hevmTop : evmTop = clipperKickSourceTopState evmLock sourceAfter top)
+    (hperm : sourceAfter.executionEnv.perm = true) :
     ExecBlock config
       (Frame.mk contract (clipperKickLocalsActivePos evmLock I) (immStore v))
       sourceInit (clipperKickAfterInitializationBody) result := by
-  exact clipperKickAfterInitializationSuccessPrefix
+  exact clipperKickAfterInitializationSuccessPrefix (hperm := by assumption)
     v evmLock sourceInit sourceAfter evmTop I feedPrice top hgetFeed hmul
       htopEq htopPos hevmTop htail
 
@@ -250,6 +251,7 @@ theorem clipperKickFinishActive
             v evmLock evmTop evmSuck I feedPrice top outSuck hcodeVat
               hcallSuckSource
           have htail := clipperKickIncentiveSucceeds
+            (hperm := (congrArg ExecutionEnv.perm halignSuck.executionEnv).trans hperm)
             v evmLock evmTop evmSuck I feedPrice top hactiveSource
               hwmulSource haddSource hsuck
           let sourceFinal := Stele.EVM.storageStore evmSuck
@@ -381,7 +383,8 @@ theorem clipperKickFinishAfterFeedPrice
             ExecBlock config
               (Frame.mk contract (clipperKickLocalsActivePos evmLock I) (immStore v))
               sourceInit (clipperKickAfterInitializationBody) result := by
-          exact clipperKickAfterFeedTopPrefix v evmLock sourceInit sourceAfter
+          exact clipperKickAfterFeedTopPrefix
+            (hperm := (congrArg ExecutionEnv.perm halign.executionEnv).trans hperm) v evmLock sourceInit sourceAfter
             evmTop I feedPrice top hgetFeed hmulSource htopSource htopPos htail rfl
         by_cases htipZero : clipperKickTipWord σTop I = ⟨0⟩
         · by_cases hchipZero : clipperKickChipWord σTop I = ⟨0⟩
@@ -392,6 +395,7 @@ theorem clipperKickFinishAfterFeedPrice
               v hpatch rd6394 hmemTop hreadTop hperm
               (by omega)
             have htail := clipperKickIncentiveInactiveTail
+              (hperm := (congrArg ExecutionEnv.perm halignTop.executionEnv).trans hperm)
               v evmLock evmTop I feedPrice top (htip.symm.trans htipZero)
                 (hchip.symm.trans hchipZero)
             have hsource := hprefix htail

@@ -16,6 +16,9 @@ Sizes are bytes of checked-in `runtime.hex`.
 
 ## Completed
 
+`import Benchmarks` exposes all 35 completed benchmark correctness modules. The tables below
+list their whole-contract certificates; the unfinished scaffolds remain separate.
+
 | Benchmark | Upstream source | solc | Runtime bytes | Top-level theorem |
 |---|---|---|---|---|
 | `Auction` | [Nouns auction house, `nounsDAO/nouns-monorepo`](https://github.com/nounsDAO/nouns-monorepo) | 0.8.23 | 6150 | `auctionContractCorrect` |
@@ -39,19 +42,25 @@ Sizes are bytes of checked-in `runtime.hex`.
 | `Dss/StairstepExponentialDecrease` | [`makerdao/dss` `abaci.sol`](https://github.com/makerdao/dss/blob/master/src/abaci.sol) | 0.6.12 | 1433 | `stairstepExponentialDecreaseContractCorrect` |
 | `Dss/ExponentialDecrease` | [`makerdao/dss` `abaci.sol`](https://github.com/makerdao/dss/blob/master/src/abaci.sol) | 0.6.12 | 1321 | `exponentialDecreaseContractCorrect` |
 
-## Active proof targets
+Additional completed proofs:
 
-| Benchmark | Upstream source | solc | Runtime bytes | Status |
-|---|---|---|---|---|
-| `Dss/Clipper` | [`makerdao/dss` `clip.sol`](https://github.com/makerdao/dss/blob/master/src/clip.sol) | 0.6.12 | 9360 | Proof in progress |
-| `EAS/Attester` | [`ethereum-attestation-service/eas-contracts-example`](https://github.com/ethereum-attestation-service/eas-contracts-example/blob/d2864b166a08f9b3f9314f8b302316d67f227462/contracts/Attester.sol) | 0.8.26 (Paris, 1M runs) | 3865 | Audited; ready for proof |
-
-`Dss/Clipper` stays here rather than in `Scaffolds/` because it completes the Dss suite and its
-proof is substantially under way.
-
-`EAS/Attester` has an audited specification, executable regression checks, generated block
-summaries, and ten open functional proof targets. Start with its [proof handoff](EAS/Attester/README.md#proof-handoff)
-and [semantic audit](EAS/Attester/AUDIT.md). Its refinement proof is not complete.
+| Benchmark | Top-level theorem |
+|---|---|
+| `Dss/Clipper` | `clipperContractCorrect` |
+| `EAS/Attester` | `attesterContractCorrect` |
+| `EAS/EAS` | `easContractCorrect` |
+| `CompoundIII/Comet` | `cometWithExtendedAssetListContractCorrect` |
+| `CurveVault` | `vaultContractCorrect` |
+| `Morpho/MorphoBlue` | `morphoContractCorrect` |
+| `UniswapV3/Pool` | `uniswapV3PoolContractCorrect` |
+| `UniswapV4PoolManager` | `poolManagerContractCorrect` |
+| `Safe/Main` | `safeContractCorrect` |
+| `Safe/Runs1e6` | `safeContractCorrect` |
+| `Safe/V0_cdb2eb5` | `safeContractCorrect` |
+| `Safe/V1_0227664` | `safeContractCorrect` |
+| `Safe/V2_0e91d99` | `safeContractCorrect` |
+| `Safe/V3_77901a5` | `safeContractCorrect` |
+| `Safe/ViaIR` | `safeContractCorrect` |
 
 ## Scaffolds
 

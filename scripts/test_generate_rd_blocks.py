@@ -194,6 +194,15 @@ class GeneratorTests(unittest.TestCase):
         self.assertIn("decode_append_left_of_decode", rendered)
         self.assertIn("RD (sampleCode ++ tail)", rendered)
 
+    def test_creation_jump_destination_substitutes_codecopy_source(self) -> None:
+        from bytecode_io import read_bytecode
+        creation = read_bytecode(Path(__file__).resolve().parent.parent /
+                                 "Examples/VyperImmutable/creation.hex")
+        rendered = "\n".join(rd.generate_units(
+            creation, "sample", "sampleCode", creation_code=True))
+        self.assertIn("(j tail (memLoad", rendered)
+        self.assertNotIn("__CODE__", rendered)
+
     def test_index_covers_generated_theorems(self) -> None:
         records = rd.generate_unit_records(bytes.fromhex("6001"), "sample", "sampleCode",
                                            keep_metadata=True)
@@ -214,6 +223,23 @@ class GeneratorTests(unittest.TestCase):
             index = output.with_suffix(".index").read_text()
             for shard in shards:
                 self.assertIn(shard.name + ":", index)
+
+    def test_contract_variants_can_share_summary_prefix(self) -> None:
+        records = rd.generate_unit_records(bytes.fromhex("5b5b"), "sample", "sampleCode",
+                                           keep_metadata=True)
+        for shard_size in (None, 1):
+            with self.subTest(shard_size=shard_size), tempfile.TemporaryDirectory() as tmp:
+                for variant in ("Main", "Alternate"):
+                    namespace = f"Sample.{variant}.RuntimeBlocks"
+                    output = Path(tmp) / f"{variant}.lean"
+                    paths = rd.write_outputs(output, "sample", ["Sample.Bytecode"], records,
+                                             shard_size, namespace=namespace)
+                    for path in paths:
+                        rendered = path.read_text()
+                        self.assertIn(f"namespace {namespace}\n", rendered)
+                        self.assertIn(f"end {namespace}\n", rendered)
+                        self.assertIn("theorem sample_block_", rendered)
+                        self.assertNotIn("namespace sampleBlocks\n", rendered)
 
 
 class BenchmarkInputTests(unittest.TestCase):

@@ -290,7 +290,7 @@ theorem uniswapMintProportionalSecondMintOverflowFromFactoryCases
     runtimeRefinementFor config contract σ σ₀ g A I := by
   unfold mintProportionalSecondMintOverflowCase at hcase
   rcases hcase with hfeeOffTotal | hrest
-  · exact uniswapMintProportionalFeeOffKLastZeroSecondMintTotalSupplyOverflowFromFactoryCase
+  · exact uniswapMintProportionalFeeOffKLastZeroSecondMintTotalSupplyOverflowFromFactoryCase (hperm := by assumption)
       feeTo hcode hdispatch hsz36 hwv hunlockedStele hguard0 hguard1 hcall0 hdec0
       hcall1 hdec1 hle0Source hle1Source hfeeGuard hfeeCall hfeeDec hfeeToEq rd7781
       ho32 hoSize ho132 ho1Size houtFeeSize hzFeeTrue houtFee32 hkLastEq htotalEq
@@ -311,7 +311,7 @@ theorem uniswapMintProportionalSecondMintOverflowFromFactoryCases
           hkLastEq htotalEq htotalSlot hruntimeReserve0 hruntimeReserve1 hreserve0Eq
           hreserve1Eq hamount0Eq hamount1Eq hfeeOffUpdate
       · rcases hrest with hfeeOnTotal | hrest
-        · exact uniswapMintProportionalFeeOnKLastZeroSecondMintTotalSupplyOverflowFromFactoryCase
+        · exact uniswapMintProportionalFeeOnKLastZeroSecondMintTotalSupplyOverflowFromFactoryCase (hperm := by assumption)
             feeTo hcode hdispatch hsz36 hwv hunlockedStele hguard0 hguard1 hcall0 hdec0
             hcall1 hdec1 hle0Source hle1Source hfeeGuard hfeeCall hfeeDec hfeeToEq
             rd7781 ho32 hoSize ho132 ho1Size houtFeeSize hzFeeTrue houtFee32 hkLastEq

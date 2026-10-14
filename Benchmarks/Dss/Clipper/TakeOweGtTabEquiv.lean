@@ -462,7 +462,7 @@ theorem clipperTakeOweGtTabEquiv
     change ExecTransitionBody config contract
       (initState σ σ₀ (Sat256.ofUInt256 g) A I)
       (clipperTakeStore I) takeTransition.body .reverted (immStore v)
-    exact clipperTakeOweGtTabVatFluxNoCodeSourceReverts
+    exact clipperTakeOweGtTabVatFluxNoCodeSourceReverts (hperm := hperm)
       (σ := σ) (σ₀ := σ₀)
       (A := A) (I := I) (g := g) v hwv hlocked hstopped husr price hmax
       hsourceMul hsourceGt hsliceLot hnoCode hstatus
@@ -488,7 +488,7 @@ theorem clipperTakeOweGtTabEquiv
     change ExecTransitionBody config contract
       (initState σ σ₀ (Sat256.ofUInt256 g) A I)
       (clipperTakeStore I) takeTransition.body .reverted (immStore v)
-    exact clipperTakeOweGtTabVatFluxCallFailureSourceReverts
+    exact clipperTakeOweGtTabVatFluxCallFailureSourceReverts (hperm := hperm)
       (σ := σ) (σ₀ := σ₀)
       (A := A) (I := I) (g := g) v hwv hlocked hstopped husr price hmax
       hsourceMul hsourceGt hsliceLot hvatCode hcallVat' hstatus
@@ -534,7 +534,7 @@ theorem clipperTakeOweGtTabEquiv
     change ExecTransitionBody config contract
       (initState σ σ₀ (Sat256.ofUInt256 g) A I)
       (clipperTakeStore I) takeTransition.body .reverted (immStore v)
-    exact clipperTakeSourceRevertsOfAfterSlice
+    exact clipperTakeSourceRevertsOfAfterSlice (hperm := hperm)
       (σ := σ) (σ₀ := σ₀)
       (A := A) (I := I) (g := g) (evmPrice := evmPrice)
       v price hwv hlocked hstopped husr hmax hstatus htail'
@@ -555,7 +555,7 @@ theorem clipperTakeOweGtTabEquiv
       (initState σ σ₀ (Sat256.ofUInt256 g) A I)
       (clipperTakeStore I) takeTransition.body
       (.returned finalFrame finalEvm none) (immStore v)
-    exact clipperTakeSourceOkOfAfterSlice
+    exact clipperTakeSourceOkOfAfterSlice (hperm := hperm)
       (σ := σ) (σ₀ := σ₀)
       (A := A) (I := I) (g := g) (evmPrice := evmPrice)
       v price hwv hlocked hstopped husr hmax hstatus htail'

@@ -206,7 +206,7 @@ theorem erc20CtorAssignBalance (evm : EVM.State) (initialSupply : Int)
       evm .storage (balanceOfRef sender) (.int initialSupply) =
         .ok ({ contract := erc20Contract, locals := erc20CtorLocals initialSupply },
           erc20CtorBalancePostState evm (EVM.word initialSupply.toNat)) := by
-  apply assignStorageRef_storage_scalar (hbackend := rfl)
+  apply assignStorageRef_storage_vyper_scalar (hbackend := rfl) (hcheck := by rfl)
       (hleaf := Or.inl ⟨_, rfl⟩) (ty := uint256Storage)
       (hbase := erc20CtorLocals_get_balanceOf initialSupply)
       (her := by
@@ -238,7 +238,7 @@ theorem erc20CtorAssignTotalSupply (evm : EVM.State) (initialSupply : Int)
         .ok ({ contract := erc20Contract, locals := erc20CtorLocals initialSupply },
           Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨2⟩
             (EVM.word initialSupply.toNat)) := by
-  apply assignStorageRef_storage_scalar (hbackend := rfl)
+  apply assignStorageRef_storage_vyper_scalar (hbackend := rfl) (hcheck := by rfl)
       (hleaf := Or.inl ⟨_, rfl⟩) (ty := uint256Storage)
       (hbase := erc20CtorLocals_get_totalSupply initialSupply)
       (her := by
@@ -287,7 +287,8 @@ theorem erc20SteleCtorExecSuccess
     (initialSupply : Int)
     (h0 : 0 ≤ initialSupply)
     (hlt : initialSupply < Int.ofNat (EVM.twoPow 256))
-    (hwv : I.weiValue = ⟨0⟩) :
+    (hwv : I.weiValue = ⟨0⟩)
+    (hperm : I.perm = true) :
     steleCtorExec config erc20Contract [.int initialSupply]
       σ σ₀ g A I
       (.returned
@@ -310,7 +311,9 @@ theorem erc20SteleCtorExecSuccess
       (ExecStmt.requireTrue (evalCallvalueEq_true (cfg := config)
         (stele := frame) (evm := evm0) (by simpa [evm0, initState] using hwv))) ?_
     refine ExecBlock.consNormal (stele' := frame) (evm' := evm1) ?_ ?_
-    · exact ExecStmt.assign (value := .int initialSupply)
+    · exact ExecStmt.assign
+        (hperm := Or.inr (by simpa [evm0, initState] using hperm))
+        (value := .int initialSupply)
         (by
           show evalExpr? config frame evm0 (.var "initialSupply") = .ok (.int initialSupply)
           unfold frame
@@ -321,7 +324,9 @@ theorem erc20SteleCtorExecSuccess
             (initState σ σ₀ (Sat256.ofUInt256 g) A I)
             initialSupply h0 hlt)
     · refine ExecBlock.consNormal ?_ ExecBlock.nil
-      exact ExecStmt.assign (value := .int initialSupply)
+      exact ExecStmt.assign
+        (hperm := Or.inr (by simpa [evm1, evm0, erc20CtorBalancePostState, initState] using hperm))
+        (value := .int initialSupply)
         (by
           show evalExpr? config frame evm1 (.var "initialSupply") = .ok (.int initialSupply)
           unfold frame
@@ -1557,7 +1562,7 @@ theorem constructorCorrect :
         hacc
       rw [hσ'] at hsuccess
       refine typedConstructorRefinementFor.execution hsuccess
-        (erc20SteleCtorExecSuccess
+        (erc20SteleCtorExecSuccess (hperm := by assumption)
           (σ := σ) (σ₀ := σ₀) (g := g) (A := A) (I := I)
           initialSupply h0 hlt hwv) ?_
       refine ctorResultEquiv.success rfl rfl ?_ rfl

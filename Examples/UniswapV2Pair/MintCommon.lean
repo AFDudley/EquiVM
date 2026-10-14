@@ -704,15 +704,17 @@ theorem uniswapMintBodyStatic (evm : EVM.State) (I : ExecutionEnv)
 
 theorem uniswapMintLockEnterPrefix (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩) :
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config { contract := contract, locals := mintStore I } evm lockEnter
       (.ok { contract := contract, locals := mintStore I } (uniswapLockEnteredState evm)) := by
-  exact uniswapLockEnterPrefix evm (mintStore I) hwv (by simp [mintStore]) hunlocked
+  exact uniswapLockEnterPrefix (hperm := by assumption) evm (mintStore I) hwv (by simp [mintStore]) hunlocked
 
-theorem uniswapMintLockExitSuffix (evm : EVM.State) (I : ExecutionEnv) :
+theorem uniswapMintLockExitSuffix (evm : EVM.State) (I : ExecutionEnv)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config { contract := contract, locals := mintStore I } evm lockExit
       (.ok { contract := contract, locals := mintStore I } (uniswapLockExitedState evm)) := by
-  exact uniswapLockExitSuffix evm (mintStore I) (by simp [mintStore])
+  exact uniswapLockExitSuffix (hperm := by assumption) evm (mintStore I) (by simp [mintStore])
 
 abbrev mintReserveStore (evm : EVM.State) (I : ExecutionEnv) : Store :=
   ((mintStore I).insert "_reserve0" (.int (Int.ofNat (uniswapReserve0Word evm).toNat))).insert
@@ -993,7 +995,8 @@ theorem mintReserve1Word_initState_eq_evm
 
 theorem uniswapMintReservePrefix (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩) :
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config { contract := contract, locals := mintStore I } evm
       (lockEnter ++
         [ .letDecl "_reserve0" (some uint112) (.storage reserve0Ref),
@@ -1001,7 +1004,7 @@ theorem uniswapMintReservePrefix (evm : EVM.State) (I : ExecutionEnv)
       (.ok { contract := contract, locals := mintReserveStore (uniswapLockEnteredState evm) I }
         (uniswapLockEnteredState evm)) := by
   let evmL := uniswapLockEnteredState evm
-  have hlock := uniswapMintLockEnterPrefix evm I hwv hunlocked
+  have hlock := uniswapMintLockEnterPrefix (hperm := by assumption) evm I hwv hunlocked
   have hreserve0 :
       evalExpr? config { contract := contract, locals := mintStore I } evmL
         (.storage reserve0Ref) = .ok (.int (Int.ofNat (uniswapReserve0Word evmL).toNat)) := by
