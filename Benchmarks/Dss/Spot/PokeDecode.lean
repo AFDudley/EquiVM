@@ -747,7 +747,7 @@ theorem execSpotRdivFunctionReturn (evm : EVM.State) {x y prod q : UInt256}
           (some [.int (Int.ofNat q.toNat)])) := by
     simp only [rdivFunction, List.cons_append, List.nil_append]
     refine ExecBlock.consNormal hmulStmt ?_
-    refine ExecBlock.consNormal (ExecStmt.assign hDiv hAssign) ?_
+    refine ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hDiv hAssign) ?_
     exact ExecBlock.consReturn (ExecStmt.return (evalExprs?_singleton hzQ))
   simpa [locals, localsQ] using ExecFuncBody.execBlockRet hblock
 

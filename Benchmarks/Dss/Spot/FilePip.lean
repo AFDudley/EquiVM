@@ -201,7 +201,7 @@ theorem spotFilePipSourceBodySplit {σ σ₀ A I} {g : UInt256}
       (setAddressOffset0Word
         (Stele.EVM.storageLoad evm0 I.codeOwner (filePipSlotFor I))
         (filePipMaskedWord I))
-    (ExecTransitionBody config contract evm0 locals filePipTransition.body
+    (I.perm = true → ExecTransitionBody config contract evm0 locals filePipTransition.body
       (.returned { contract := contract, locals := locals } evm1 none)) ∧
       (I.perm = false → ExecTransitionBody config contract evm0 locals
         filePipTransition.body .staticViolation) := by
@@ -250,8 +250,9 @@ theorem spotFilePipSourceBodySplit {σ σ₀ A I} {g : UInt256}
     refine ExecBlock.consNormal (ExecStmt.requireTrue hliveGuard) ?_
     exact execBlock_singleton (ExecStmt.iteTrue hcond hwrite)
   constructor
-  · exact ExecFuncBody.execBlockOK
-      (hprefix (ExecBlock.consNormal (ExecStmt.assign hpip hassign) ExecBlock.nil))
+  · intro hperm
+    exact ExecFuncBody.execBlockOK
+      (hprefix (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hpip hassign) ExecBlock.nil))
   · intro hperm
     exact ExecFuncBody.execBlockStatic
       (hprefix (ExecBlock.consStatic (ExecStmt.assignStatic hpip hassign
@@ -839,7 +840,7 @@ theorem spotFilePipBodyCoreOk
   have hauthStele : relyAuthWord σ I = ⟨1⟩ := hauth
   have hliveStele : spotLiveWord σ I = ⟨1⟩ := hlive
   have hbodySplit :
-      (ExecTransitionBody config contract evm0 locals filePipTransition.body
+      (I.perm = true → ExecTransitionBody config contract evm0 locals filePipTransition.body
         (.returned { contract := contract, locals := locals } evm1 none)) ∧
       (I.perm = false → ExecTransitionBody config contract evm0 locals
         filePipTransition.body .staticViolation) := by
@@ -858,7 +859,7 @@ theorem spotFilePipBodyCoreOk
     ⟨_hperm, hret⟩ | ⟨hperm, hstatic⟩
   swap
   · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode (hbodySplit.2 hperm)
-  exact hret.reEquivExecutionGen hcode hdispatch hdecode hbodySplit.1
+  exact hret.reEquivExecutionGen hcode hdispatch hdecode (hbodySplit.1 _hperm)
     (by simp [evm1, evm0, initState, storageStore_accountMap, pipSlot, pipWord, storedStele])
     (by
       simpa [filePipTransition] using
