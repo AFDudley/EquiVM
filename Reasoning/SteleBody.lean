@@ -61,7 +61,8 @@ theorem nonpayableRequireAssignStorageBlock {cfg : Config} {stele : Frame}
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hguard : evalExpr? cfg stele evm guard = .ok (.bool true))
     (hrhs : evalExpr? cfg stele evm rhs = .ok value)
-    (hassign : assignStorageRef? cfg stele evm .storage ref value = .ok (stele, evm')) :
+    (hassign : assignStorageRef? cfg stele evm .storage ref value = .ok (stele, evm'))
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock cfg stele evm
       [ .require (.binary .eq (.env .callvalue) (.intLit 0)),
         .require guard,
@@ -69,7 +70,7 @@ theorem nonpayableRequireAssignStorageBlock {cfg : Config} {stele : Frame}
       (.ok stele evm') := by
   refine ExecBlock.consNormal (ExecStmt.requireTrue (evalCallvalueEq_true hwv)) ?_
   refine ExecBlock.consNormal (ExecStmt.requireTrue hguard) ?_
-  exact ExecBlock.consNormal (ExecStmt.assign hrhs hassign) ExecBlock.nil
+  exact ExecBlock.consNormal (ExecStmt.assign (Or.inr hperm) hrhs hassign) ExecBlock.nil
 
 /-- Static-call twin of `nonpayableRequireAssignStorageBlock`: both guards pass and the storage
     assignment halts; later statements never run. -/
@@ -89,14 +90,13 @@ theorem nonpayableRequireAssignStorageBlockStatic {cfg : Config} {stele stele' :
   refine ExecBlock.consNormal (ExecStmt.requireTrue hguard) ?_
   exact ExecBlock.consStatic (ExecStmt.assignStatic hrhs hassign hperm)
 
-/-- A storage assignment that succeeds halts instead when run in a static call. -/
-theorem execStmt_assign_static {cfg : Config} {stele stele' : Frame} {evm evm' : EVM.State}
+/-- A successful storage assignment requires write permission. -/
+theorem execStmt_assign_perm {cfg : Config} {stele stele' : Frame} {evm evm' : EVM.State}
     {slot : StorageRef} {rhs : Expr}
-    (h : ExecStmt cfg stele evm (.assign .storage slot rhs) (.ok stele' evm'))
-    (hperm : evm.executionEnv.perm = false) :
-    ExecStmt cfg stele evm (.assign .storage slot rhs) .staticViolation := by
+    (h : ExecStmt cfg stele evm (.assign .storage slot rhs) (.ok stele' evm')) :
+    evm.executionEnv.perm = true := by
   cases h with
-  | assign heval hassign => exact ExecStmt.assignStatic heval hassign hperm
+  | assign hp _ _ => simpa using hp
 
 /-- The non-payable guard passes but the second `require(guard)` fails: the block reverts. -/
 theorem nonpayableSecondRequireReverts {cfg : Config} {stele : Frame}
@@ -113,9 +113,10 @@ theorem nonpayableSecondRequireReverts {cfg : Config} {stele : Frame}
 theorem assignStorageBlock {cfg : Config} {stele : Frame} {evm evm' : EVM.State}
     {rhs : Expr} {ref : StorageRef} {value : Value}
     (hrhs : evalExpr? cfg stele evm rhs = .ok value)
-    (hassign : assignStorageRef? cfg stele evm .storage ref value = .ok (stele, evm')) :
+    (hassign : assignStorageRef? cfg stele evm .storage ref value = .ok (stele, evm'))
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock cfg stele evm [ .assign .storage ref rhs ] (.ok stele evm') := by
-  exact ExecBlock.consNormal (ExecStmt.assign hrhs hassign) ExecBlock.nil
+  exact ExecBlock.consNormal (ExecStmt.assign (Or.inr hperm) hrhs hassign) ExecBlock.nil
 
 /-- A single-expression `return` evaluates its one operand into a singleton value list. -/
 theorem evalExprs?_singleton {cfg : Config} {stele : Frame} {evm : EVM.State}
@@ -274,12 +275,13 @@ theorem externalCallFailure {cfg : Config} {C : ContractDecl} {imms : Store}
     (hargs : evalExprs? cfg { contract := C, locals := locals, immutables := imms } evm args = .ok argVals)
     (hcall :
       typedCallViaEVM cfg evm (EVM.address target) name sendVal argVals
-        (false, evm', out) perm) :
+        (false, evm', out) perm)
+    (hperm : EVM.wordOfInt sendVal = ⟨0⟩ ∨ evm.executionEnv.perm = true) :
     ExecBlock cfg { contract := C, locals := locals, immutables := imms } evm
       [ .externalCall receiver name (.intLit sendVal) args retVar (perm := perm) ]
       .reverted := by
   exact ExecBlock.consRevert
-    (ExecStmt.externalCallFailure hreceiver (by simp [evalExpr?, pure]) hargs hcall)
+    (ExecStmt.externalCallFailure hperm hreceiver (by simp [evalExpr?, pure]) hargs hcall)
 
 /-- A one-statement typed external call succeeds and stores the decoded return value. -/
 theorem externalCallSuccess {cfg : Config} {C : ContractDecl} {imms : Store}
@@ -292,12 +294,13 @@ theorem externalCallSuccess {cfg : Config} {C : ContractDecl} {imms : Store}
     (hcall :
       typedCallViaEVM cfg evm (EVM.address target) name sendVal argVals
         (true, evm', out) perm)
-    (hdec : cfg.externalABI.decode? name out = some value) :
+    (hdec : cfg.externalABI.decode? name out = some value)
+    (hperm : EVM.wordOfInt sendVal = ⟨0⟩ ∨ evm.executionEnv.perm = true) :
     ExecBlock cfg { contract := C, locals := locals, immutables := imms } evm
       [ .externalCall receiver name (.intLit sendVal) args retVar (perm := perm) ]
       (.ok { contract := C, locals := locals.insert retVar (collapseReturns value), immutables := imms } evm') := by
   exact ExecBlock.consNormal
-    (ExecStmt.externalCallSuccess hreceiver (by simp [evalExpr?, pure]) hargs hcall hdec)
+    (ExecStmt.externalCallSuccess hperm hreceiver (by simp [evalExpr?, pure]) hargs hcall hdec)
     ExecBlock.nil
 
 /-- If a typed external call succeeds but its return bytes fail ABI decoding, the source statement
@@ -312,12 +315,13 @@ theorem externalCallDecodeRevert {cfg : Config} {C : ContractDecl} {imms : Store
     (hcall :
       typedCallViaEVM cfg evm (EVM.address target) name sendVal argVals
         (true, evm', out) perm)
-    (hdec : cfg.externalABI.decode? name out = none) :
+    (hdec : cfg.externalABI.decode? name out = none)
+    (hperm : EVM.wordOfInt sendVal = ⟨0⟩ ∨ evm.executionEnv.perm = true) :
     ExecBlock cfg { contract := C, locals := locals, immutables := imms } evm
       [ .externalCall receiver name (.intLit sendVal) args retVar (perm := perm) ]
       .reverted := by
   exact ExecBlock.consRevert
-    (ExecStmt.externalCallReturnDecodeRevert hreceiver (by simp [evalExpr?, pure]) hargs hcall hdec)
+    (ExecStmt.externalCallReturnDecodeRevert hperm hreceiver (by simp [evalExpr?, pure]) hargs hcall hdec)
 
 /-- A guarded typed external call reverts when the raw call returns `success = false`. -/
 theorem checkedExternalCallFailure {cfg : Config} {C : ContractDecl} {imms : Store}
@@ -332,13 +336,14 @@ theorem checkedExternalCallFailure {cfg : Config} {C : ContractDecl} {imms : Sto
     (hargs : evalExprs? cfg { contract := C, locals := locals, immutables := imms } evm args = .ok argVals)
     (hcall :
       typedCallViaEVM cfg evm (EVM.address target) name sendVal argVals
-        (false, evm', out) perm) :
+        (false, evm', out) perm)
+    (hperm : EVM.wordOfInt sendVal = ⟨0⟩ ∨ evm.executionEnv.perm = true) :
     ExecBlock cfg { contract := C, locals := locals, immutables := imms } evm
       [ .require (.binary .gt (.extCodeSize receiver) (.intLit 0)),
         .externalCall receiver name (.intLit sendVal) args retVar (perm := perm) ]
       .reverted := by
   refine ExecBlock.consNormal (ExecStmt.requireTrue hguard) ?_
-  exact externalCallFailure hreceiver hargs hcall
+  exact externalCallFailure (hperm := hperm) hreceiver hargs hcall
 
 /-- A guarded typed external call succeeds and stores the decoded return value. -/
 theorem checkedExternalCallSuccess {cfg : Config} {C : ContractDecl} {imms : Store}
@@ -354,13 +359,14 @@ theorem checkedExternalCallSuccess {cfg : Config} {C : ContractDecl} {imms : Sto
     (hcall :
       typedCallViaEVM cfg evm (EVM.address target) name sendVal argVals
         (true, evm', out) perm)
-    (hdec : cfg.externalABI.decode? name out = some value) :
+    (hdec : cfg.externalABI.decode? name out = some value)
+    (hperm : EVM.wordOfInt sendVal = ⟨0⟩ ∨ evm.executionEnv.perm = true) :
     ExecBlock cfg { contract := C, locals := locals, immutables := imms } evm
       [ .require (.binary .gt (.extCodeSize receiver) (.intLit 0)),
         .externalCall receiver name (.intLit sendVal) args retVar (perm := perm) ]
       (.ok { contract := C, locals := locals.insert retVar (collapseReturns value), immutables := imms } evm') := by
   refine ExecBlock.consNormal (ExecStmt.requireTrue hguard) ?_
-  exact externalCallSuccess hreceiver hargs hcall hdec
+  exact externalCallSuccess (hperm := hperm) hreceiver hargs hcall hdec
 
 /-- A guarded typed external call reverts when the successful subcall's return bytes do not
 decode. -/
@@ -377,13 +383,14 @@ theorem checkedExternalCallDecodeRevert {cfg : Config} {C : ContractDecl} {imms 
     (hcall :
       typedCallViaEVM cfg evm (EVM.address target) name sendVal argVals
         (true, evm', out) perm)
-    (hdec : cfg.externalABI.decode? name out = none) :
+    (hdec : cfg.externalABI.decode? name out = none)
+    (hperm : EVM.wordOfInt sendVal = ⟨0⟩ ∨ evm.executionEnv.perm = true) :
     ExecBlock cfg { contract := C, locals := locals, immutables := imms } evm
       [ .require (.binary .gt (.extCodeSize receiver) (.intLit 0)),
         .externalCall receiver name (.intLit sendVal) args retVar (perm := perm) ]
       .reverted := by
   refine ExecBlock.consNormal (ExecStmt.requireTrue hguard) ?_
-  exact externalCallDecodeRevert hreceiver hargs hcall hdec
+  exact externalCallDecodeRevert (hperm := hperm) hreceiver hargs hcall hdec
 
 /-- A guarded typed external call reverts before the call when the extcodesize guard is false. -/
 theorem checkedExternalCallNoCode {cfg : Config} {C : ContractDecl} {imms : Store} {evm : EVM.State}
@@ -409,11 +416,12 @@ theorem externalCallVarSuccess {cfg : Config} {C : ContractDecl} {imms : Store}
     (hcall :
       typedCallViaEVM cfg evm (EVM.address target) name sendVal argVals
         (true, evm', out) perm)
-    (hdec : cfg.externalABI.decode? name out = some value) :
+    (hdec : cfg.externalABI.decode? name out = some value)
+    (hperm : EVM.wordOfInt sendVal = ⟨0⟩ ∨ evm.executionEnv.perm = true) :
     ExecBlock cfg { contract := C, locals := locals, immutables := imms } evm
       [ .externalCall (.var receiver) name (.intLit sendVal) args retVar (perm := perm) ]
       (.ok { contract := C, locals := locals.insert retVar (collapseReturns value), immutables := imms } evm') := by
-  exact externalCallSuccess
+  exact externalCallSuccess (hperm := hperm)
     (receiver := .var receiver)
     (by rw [evalExpr?, hreceiver]; rfl)
     hargs hcall hdec
@@ -431,12 +439,13 @@ theorem checkedExternalCallVarFailure {cfg : Config} {C : ContractDecl} {imms : 
     (hargs : evalExprs? cfg { contract := C, locals := locals, immutables := imms } evm args = .ok argVals)
     (hcall :
       typedCallViaEVM cfg evm (EVM.address target) name sendVal argVals
-        (false, evm', out) perm) :
+        (false, evm', out) perm)
+    (hperm : EVM.wordOfInt sendVal = ⟨0⟩ ∨ evm.executionEnv.perm = true) :
     ExecBlock cfg { contract := C, locals := locals, immutables := imms } evm
       [ .require (.binary .gt (.extCodeSize (.var receiver)) (.intLit 0)),
         .externalCall (.var receiver) name (.intLit sendVal) args retVar (perm := perm) ]
       .reverted := by
-  exact checkedExternalCallFailure
+  exact checkedExternalCallFailure (hperm := hperm)
     (receiver := .var receiver)
     hguard
     (by rw [evalExpr?, hreceiver]; rfl)
@@ -456,12 +465,13 @@ theorem checkedExternalCallVarSuccess {cfg : Config} {C : ContractDecl} {imms : 
     (hcall :
       typedCallViaEVM cfg evm (EVM.address target) name sendVal argVals
         (true, evm', out) perm)
-    (hdec : cfg.externalABI.decode? name out = some value) :
+    (hdec : cfg.externalABI.decode? name out = some value)
+    (hperm : EVM.wordOfInt sendVal = ⟨0⟩ ∨ evm.executionEnv.perm = true) :
     ExecBlock cfg { contract := C, locals := locals, immutables := imms } evm
       [ .require (.binary .gt (.extCodeSize (.var receiver)) (.intLit 0)),
         .externalCall (.var receiver) name (.intLit sendVal) args retVar (perm := perm) ]
       (.ok { contract := C, locals := locals.insert retVar (collapseReturns value), immutables := imms } evm') := by
-  exact checkedExternalCallSuccess
+  exact checkedExternalCallSuccess (hperm := hperm)
     (receiver := .var receiver)
     hguard
     (by rw [evalExpr?, hreceiver]; rfl)
@@ -481,12 +491,13 @@ theorem checkedExternalCallVarDecodeRevert {cfg : Config} {C : ContractDecl} {im
     (hcall :
       typedCallViaEVM cfg evm (EVM.address target) name sendVal argVals
         (true, evm', out) perm)
-    (hdec : cfg.externalABI.decode? name out = none) :
+    (hdec : cfg.externalABI.decode? name out = none)
+    (hperm : EVM.wordOfInt sendVal = ⟨0⟩ ∨ evm.executionEnv.perm = true) :
     ExecBlock cfg { contract := C, locals := locals, immutables := imms } evm
       [ .require (.binary .gt (.extCodeSize (.var receiver)) (.intLit 0)),
         .externalCall (.var receiver) name (.intLit sendVal) args retVar (perm := perm) ]
       .reverted := by
-  exact checkedExternalCallDecodeRevert
+  exact checkedExternalCallDecodeRevert (hperm := hperm)
     (receiver := .var receiver)
     hguard
     (by rw [evalExpr?, hreceiver]; rfl)
@@ -522,7 +533,8 @@ theorem lowLevelCallSuccessThenRequireTrue {cfg : Config} {C : ContractDecl} {im
     (hrequire :
       evalExpr? cfg
         { contract := C, locals := (locals.insert okVar (.bool true)).insert dataVar (.bytes out), immutables := imms }
-        evm' requireCond = .ok (.bool true)) :
+        evm' requireCond = .ok (.bool true))
+    (hperm : EVM.wordOfInt sendVal = ⟨0⟩ ∨ evm.executionEnv.perm = true) :
     ExecBlock cfg { contract := C, locals := locals, immutables := imms } evm
       [ .lowLevelCall receiver eth cdata okVar dataVar,
         .require requireCond ]
@@ -532,7 +544,7 @@ theorem lowLevelCallSuccessThenRequireTrue {cfg : Config} {C : ContractDecl} {im
   refine ExecBlock.consNormal
     (stele' := { contract := C, locals := (locals.insert okVar (.bool true)).insert dataVar (.bytes out), immutables := imms })
     (evm' := evm') ?_ ?_
-  · exact ExecStmt.lowLevelCallSuccess hreceiver heth hdata hcall
+  · exact ExecStmt.lowLevelCallSuccess hperm hreceiver heth hdata hcall
   · exact ExecBlock.consNormal (ExecStmt.requireTrue hrequire) ExecBlock.nil
 
 /-- A low-level call followed by `require cond` reverts when the call returns `success = false` and
@@ -550,7 +562,8 @@ theorem lowLevelCallFailureThenRequireFalse {cfg : Config} {C : ContractDecl} {i
     (hrequire :
       evalExpr? cfg
         { contract := C, locals := (locals.insert okVar (.bool false)).insert dataVar (.bytes out), immutables := imms }
-        evm' requireCond = .ok (.bool false)) :
+        evm' requireCond = .ok (.bool false))
+    (hperm : EVM.wordOfInt sendVal = ⟨0⟩ ∨ evm.executionEnv.perm = true) :
     ExecBlock cfg { contract := C, locals := locals, immutables := imms } evm
       [ .lowLevelCall receiver eth cdata okVar dataVar,
         .require requireCond ]
@@ -559,7 +572,7 @@ theorem lowLevelCallFailureThenRequireFalse {cfg : Config} {C : ContractDecl} {i
     (stele' :=
       { contract := C, locals := (locals.insert okVar (.bool false)).insert dataVar (.bytes out), immutables := imms })
     (evm' := evm') ?_ ?_
-  · exact ExecStmt.lowLevelCallFailure hreceiver heth hdata hcall
+  · exact ExecStmt.lowLevelCallFailure hperm hreceiver heth hdata hcall
   · exact ExecBlock.consRevert (ExecStmt.requireFalse hrequire)
 
 /-- **Hoare while-rule for the Stele semantics** — the loop analog of the EVM `RD.loop`.
@@ -740,7 +753,7 @@ theorem execBlock_assign_cons {cfg : Config} {stele : Frame} {evm : EVM.State} {
         ExecBlock cfg stele' evm' rest r := by
   cases h with
   | consNormal hst hrest =>
-      cases hst with | assign hv ha => exact Or.inr (Or.inr ⟨_, _, _, hv, ha, hrest⟩)
+      cases hst with | assign _ hv ha => exact Or.inr (Or.inr ⟨_, _, _, hv, ha, hrest⟩)
   | consReturn hst => cases hst
   | consRevert _ => exact Or.inl rfl
   | consBreak hst => cases hst
@@ -753,7 +766,7 @@ theorem execBlock_emit_cons {cfg : Config} {stele : Frame} {evm : EVM.State} {na
     (h : ExecBlock cfg stele evm (.emit name args :: rest) r) :
     r = .reverted ∨ r = .staticViolation ∨ ExecBlock cfg stele evm rest r := by
   cases h with
-  | consNormal hst hrest => cases hst with | emit _ => exact Or.inr (Or.inr hrest)
+  | consNormal hst hrest => cases hst with | emit _ _ => exact Or.inr (Or.inr hrest)
   | consReturn hst => cases hst
   | consRevert _ => exact Or.inl rfl
   | consBreak hst => cases hst
@@ -854,9 +867,10 @@ theorem ABlock.letStep {cfg evm stele₀ stmts₀ stele rest} {name ty expr valu
 theorem ABlock.emitStep {cfg evm stele₀ stmts₀ stele rest} {name : Ident} {args : List Expr}
     {vals : List Value}
     (prev : ABlock cfg evm stele₀ stmts₀ stele (.emit name args :: rest))
-    (heval : evalExprs? cfg stele evm args = .ok vals) :
+    (heval : evalExprs? cfg stele evm args = .ok vals)
+    (hperm : evm.executionEnv.perm = true) :
     ABlock cfg evm stele₀ stmts₀ stele rest :=
-  ⟨fun h => prev.run (ExecBlock.consNormal (ExecStmt.emit heval) h)⟩
+  ⟨fun h => prev.run (ExecBlock.consNormal (ExecStmt.emit hperm heval) h)⟩
 
 /-- A `while` loop that runs to `.ok` at frame `stele'` (supply the loop fact, e.g. `execWhile_var`). -/
 theorem ABlock.whileStep {cfg evm stele₀ stmts₀ stele stele' rest} {cond body}
