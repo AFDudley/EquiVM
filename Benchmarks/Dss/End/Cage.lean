@@ -2799,7 +2799,7 @@ theorem endCageSourceStoresPrefixSplit {σ σ₀ A I} {g : UInt256}
     (hlive : solcSlotWordAt ⟨8⟩ σ I = ⟨1⟩) :
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let evmStores := endCagePostStoresState evm0
-    (ExecBlock config { contract := contract, locals := ∅ } evm0
+    (I.perm = true → ExecBlock config { contract := contract, locals := ∅ } evm0
       (nonpayable ++ auth ++
         [ .require (.binary .eq (.storage liveRef) (.intLit 1)),
           .assign .storage liveRef (.intLit 0),
@@ -2851,9 +2851,10 @@ theorem endCageSourceStoresPrefixSplit {σ σ₀ A I} {g : UInt256}
     refine ExecBlock.consNormal (ExecStmt.requireTrue hguardAuth) ?_
     exact ExecBlock.consNormal (ExecStmt.requireTrue hguardLive) htail
   constructor
-  · apply hprefix
-    refine ExecBlock.consNormal (ExecStmt.assign (by simp [evalExpr?, pure]) hassignLive) ?_
-    exact ExecBlock.consNormal (ExecStmt.assign htimestamp hassignWhen) ExecBlock.nil
+  · intro hperm
+    apply hprefix
+    refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) (by simp [evalExpr?, pure]) hassignLive) ?_
+    exact ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [evmLive, storageStore_executionEnv] using hperm)) htimestamp hassignWhen) ExecBlock.nil
   · intro hperm
     exact hprefix (ExecBlock.consStatic
       (ExecStmt.assignStatic (by simp [evalExpr?, pure]) hassignLive
@@ -2950,7 +2951,7 @@ theorem endCageCheckedCallFailed {evm evm' : EVM.State} {locals : Store}
       evalExprs? config { contract := contract, locals := locals } evm [] = .ok [] := by
     rfl
   simpa [checkedExternalCallStmts] using
-    checkedExternalCallFailure
+    checkedExternalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
       (cfg := config) (C := contract) (evm := evm) (evm' := evm')
       (locals := locals) (receiver := .storage ref)
       (retVar := retVar) (name := "cage")
@@ -2994,7 +2995,7 @@ theorem endCageCheckedCallSuccess {evm evm' : EVM.State} {locals : Store}
     rfl
   have hdec : config.externalABI.decode? "cage" out = some [] := by
     simp [config, externalABI, decodeVoid?]
-  have hblock := checkedExternalCallSuccess
+  have hblock := checkedExternalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
     (cfg := config) (C := contract) (evm := evm) (evm' := evm')
     (locals := locals) (receiver := .storage ref)
     (retVar := retVar) (name := "cage")
@@ -3165,7 +3166,7 @@ theorem endCageBody {σ σ₀ A I} {g : UInt256}
             endCageSourceStorePrefixStmts
             (.ok { contract := contract, locals := ∅ } evmS0) := by
         simpa [evmStele, evmS0, endCageSourceStorePrefixStmts] using
-          hsrcSplit.1
+          hsrcSplit.1 hperm
       have hAccounts0 : Eq evmE0.accountMap evmS0.accountMap := rfl
       have hState0 : EVMStateEquiv evmE0 evmS0 := by
         refine ⟨?_, ?_⟩

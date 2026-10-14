@@ -1455,7 +1455,7 @@ theorem endFileAddressSourceVatOkSplit {σ σ₀ A I} {g : UInt256}
     let locals := endFileAddressLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let evm1 := endFileAddressPostState evm0 I ⟨1⟩
-    (ExecTransitionBody config contract evm0 locals fileAddressTransition.body
+    (I.perm = true → ExecTransitionBody config contract evm0 locals fileAddressTransition.body
       (.returned { contract := contract, locals := locals } evm1 none)) ∧
       (I.perm = false → ExecTransitionBody config contract evm0 locals
         fileAddressTransition.body .staticViolation) := by
@@ -1506,8 +1506,9 @@ theorem endFileAddressSourceVatOkSplit {σ σ₀ A I} {g : UInt256}
     refine ExecBlock.consNormal (ExecStmt.requireTrue hguardLive) ?_
     exact execBlock_singleton (ExecStmt.iteTrue hvat hwrite)
   constructor
-  · exact ExecFuncBody.execBlockOK
-      (hprefix (ExecBlock.consNormal (ExecStmt.assign hdata hassign) ExecBlock.nil))
+  · intro hperm
+    exact ExecFuncBody.execBlockOK
+      (hprefix (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hdata hassign) ExecBlock.nil))
   · intro hperm
     exact ExecFuncBody.execBlockStatic
       (hprefix (ExecBlock.consStatic (ExecStmt.assignStatic hdata hassign
@@ -1522,7 +1523,7 @@ theorem endFileAddressSourceCatOkSplit {σ σ₀ A I} {g : UInt256}
     let locals := endFileAddressLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let evm1 := endFileAddressPostState evm0 I ⟨2⟩
-    (ExecTransitionBody config contract evm0 locals fileAddressTransition.body
+    (I.perm = true → ExecTransitionBody config contract evm0 locals fileAddressTransition.body
       (.returned { contract := contract, locals := locals } evm1 none)) ∧
       (I.perm = false → ExecTransitionBody config contract evm0 locals
         fileAddressTransition.body .staticViolation) := by
@@ -1581,8 +1582,9 @@ theorem endFileAddressSourceCatOkSplit {σ σ₀ A I} {g : UInt256}
     exact execBlock_singleton (ExecStmt.iteFalse hvat
       (execBlock_singleton (ExecStmt.iteTrue hcat hwrite)))
   constructor
-  · exact ExecFuncBody.execBlockOK
-      (hprefix (ExecBlock.consNormal (ExecStmt.assign hdata hassign) ExecBlock.nil))
+  · intro hperm
+    exact ExecFuncBody.execBlockOK
+      (hprefix (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hdata hassign) ExecBlock.nil))
   · intro hperm
     exact ExecFuncBody.execBlockStatic
       (hprefix (ExecBlock.consStatic (ExecStmt.assignStatic hdata hassign
@@ -1598,7 +1600,7 @@ theorem endFileAddressSourceDogOkSplit {σ σ₀ A I} {g : UInt256}
     let locals := endFileAddressLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let evm1 := endFileAddressPostState evm0 I ⟨3⟩
-    (ExecTransitionBody config contract evm0 locals fileAddressTransition.body
+    (I.perm = true → ExecTransitionBody config contract evm0 locals fileAddressTransition.body
       (.returned { contract := contract, locals := locals } evm1 none)) ∧
       (I.perm = false → ExecTransitionBody config contract evm0 locals
         fileAddressTransition.body .staticViolation) := by
@@ -1665,8 +1667,9 @@ theorem endFileAddressSourceDogOkSplit {σ σ₀ A I} {g : UInt256}
       (execBlock_singleton (ExecStmt.iteFalse hcat
         (execBlock_singleton (ExecStmt.iteTrue hdog hwrite)))))
   constructor
-  · exact ExecFuncBody.execBlockOK
-      (hprefix (ExecBlock.consNormal (ExecStmt.assign hdata hassign) ExecBlock.nil))
+  · intro hperm
+    exact ExecFuncBody.execBlockOK
+      (hprefix (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hdata hassign) ExecBlock.nil))
   · intro hperm
     exact ExecFuncBody.execBlockStatic
       (hprefix (ExecBlock.consStatic (ExecStmt.assignStatic hdata hassign
@@ -1683,7 +1686,7 @@ theorem endFileAddressSourceVowOkSplit {σ σ₀ A I} {g : UInt256}
     let locals := endFileAddressLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let evm1 := endFileAddressPostState evm0 I ⟨4⟩
-    (ExecTransitionBody config contract evm0 locals fileAddressTransition.body
+    (I.perm = true → ExecTransitionBody config contract evm0 locals fileAddressTransition.body
       (.returned { contract := contract, locals := locals } evm1 none)) ∧
       (I.perm = false → ExecTransitionBody config contract evm0 locals
         fileAddressTransition.body .staticViolation) := by
@@ -1758,8 +1761,9 @@ theorem endFileAddressSourceVowOkSplit {σ σ₀ A I} {g : UInt256}
         (execBlock_singleton (ExecStmt.iteFalse hdog
           (execBlock_singleton (ExecStmt.iteTrue hvow hwrite)))))))
   constructor
-  · exact ExecFuncBody.execBlockOK
-      (hprefix (ExecBlock.consNormal (ExecStmt.assign hdata hassign) ExecBlock.nil))
+  · intro hperm
+    exact ExecFuncBody.execBlockOK
+      (hprefix (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hdata hassign) ExecBlock.nil))
   · intro hperm
     exact ExecFuncBody.execBlockStatic
       (hprefix (ExecBlock.consStatic (ExecStmt.assignStatic hdata hassign
@@ -1777,7 +1781,7 @@ theorem endFileAddressSourcePotOkSplit {σ σ₀ A I} {g : UInt256}
     let locals := endFileAddressLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let evm1 := endFileAddressPostState evm0 I ⟨5⟩
-    (ExecTransitionBody config contract evm0 locals fileAddressTransition.body
+    (I.perm = true → ExecTransitionBody config contract evm0 locals fileAddressTransition.body
       (.returned { contract := contract, locals := locals } evm1 none)) ∧
       (I.perm = false → ExecTransitionBody config contract evm0 locals
         fileAddressTransition.body .staticViolation) := by
@@ -1860,8 +1864,9 @@ theorem endFileAddressSourcePotOkSplit {σ σ₀ A I} {g : UInt256}
           (execBlock_singleton (ExecStmt.iteFalse hvow
             (execBlock_singleton (ExecStmt.iteTrue hpot hwrite)))))))))
   constructor
-  · exact ExecFuncBody.execBlockOK
-      (hprefix (ExecBlock.consNormal (ExecStmt.assign hdata hassign) ExecBlock.nil))
+  · intro hperm
+    exact ExecFuncBody.execBlockOK
+      (hprefix (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hdata hassign) ExecBlock.nil))
   · intro hperm
     exact ExecFuncBody.execBlockStatic
       (hprefix (ExecBlock.consStatic (ExecStmt.assignStatic hdata hassign
@@ -1880,7 +1885,7 @@ theorem endFileAddressSourceSpotOkSplit {σ σ₀ A I} {g : UInt256}
     let locals := endFileAddressLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let evm1 := endFileAddressPostState evm0 I ⟨6⟩
-    (ExecTransitionBody config contract evm0 locals fileAddressTransition.body
+    (I.perm = true → ExecTransitionBody config contract evm0 locals fileAddressTransition.body
       (.returned { contract := contract, locals := locals } evm1 none)) ∧
       (I.perm = false → ExecTransitionBody config contract evm0 locals
         fileAddressTransition.body .staticViolation) := by
@@ -1971,8 +1976,9 @@ theorem endFileAddressSourceSpotOkSplit {σ σ₀ A I} {g : UInt256}
             (execBlock_singleton (ExecStmt.iteFalse hpot
               (execBlock_singleton (ExecStmt.iteTrue hspot hwrite)))))))))))
   constructor
-  · exact ExecFuncBody.execBlockOK
-      (hprefix (ExecBlock.consNormal (ExecStmt.assign hdata hassign) ExecBlock.nil))
+  · intro hperm
+    exact ExecFuncBody.execBlockOK
+      (hprefix (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hdata hassign) ExecBlock.nil))
   · intro hperm
     exact ExecFuncBody.execBlockStatic
       (hprefix (ExecBlock.consStatic (ExecStmt.assignStatic hdata hassign
@@ -1992,7 +1998,7 @@ theorem endFileAddressSourceCureOkSplit {σ σ₀ A I} {g : UInt256}
     let locals := endFileAddressLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let evm1 := endFileAddressPostState evm0 I ⟨7⟩
-    (ExecTransitionBody config contract evm0 locals fileAddressTransition.body
+    (I.perm = true → ExecTransitionBody config contract evm0 locals fileAddressTransition.body
       (.returned { contract := contract, locals := locals } evm1 none)) ∧
       (I.perm = false → ExecTransitionBody config contract evm0 locals
         fileAddressTransition.body .staticViolation) := by
@@ -2091,8 +2097,9 @@ theorem endFileAddressSourceCureOkSplit {σ σ₀ A I} {g : UInt256}
               (execBlock_singleton (ExecStmt.iteFalse hspot
                 (execBlock_singleton (ExecStmt.iteTrue hcure hwrite)))))))))))))
   constructor
-  · exact ExecFuncBody.execBlockOK
-      (hprefix (ExecBlock.consNormal (ExecStmt.assign hdata hassign) ExecBlock.nil))
+  · intro hperm
+    exact ExecFuncBody.execBlockOK
+      (hprefix (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hdata hassign) ExecBlock.nil))
   · intro hperm
     exact ExecFuncBody.execBlockStatic
       (hprefix (ExecBlock.consStatic (ExecStmt.assignStatic hdata hassign
@@ -2315,7 +2322,7 @@ theorem endFileAddressBody {σ σ₀ A I} {g : UInt256}
               calldataWord I.calldata 4 = ABI.bytesToWord endFileAddressVatBytes :=
             endFileAddressWhatWord_eq_of_bytes_eq hsz36 hvat
           have hbodySplit :
-              (ExecTransitionBody config contract evmStele (endFileAddressLocals I)
+              (I.perm = true → ExecTransitionBody config contract evmStele (endFileAddressLocals I)
                 fileAddressTransition.body
                 (.returned { contract := contract, locals := endFileAddressLocals I }
                   (endFileAddressPostState evmStele I ⟨1⟩) none)) ∧
@@ -2332,7 +2339,7 @@ theorem endFileAddressBody {σ σ₀ A I} {g : UInt256}
           · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode (hbodySplit.2 hperm)
           have hret := endFileAddressX_logReturn (I := I) (g := Sat256.ofUInt256 g)
             hperm hstore
-          exact endFileAddressBodyCoreStore hcode hdispatch hdecode hbodySplit.1 hret
+          exact endFileAddressBodyCoreStore hcode hdispatch hdecode (hbodySplit.1 hperm) hret
         · have hnotVatWord :
               calldataWord I.calldata 4 ≠ ABI.bytesToWord endFileAddressVatBytes :=
             endFileAddressWhatWord_ne_of_bytes_ne hsz36 hvat (by native_decide)
@@ -2342,7 +2349,7 @@ theorem endFileAddressBody {σ σ₀ A I} {g : UInt256}
                 calldataWord I.calldata 4 = ABI.bytesToWord endFileAddressCatBytes :=
               endFileAddressWhatWord_eq_of_bytes_eq hsz36 hcat
             have hbodySplit :
-                (ExecTransitionBody config contract evmStele (endFileAddressLocals I)
+                (I.perm = true → ExecTransitionBody config contract evmStele (endFileAddressLocals I)
                   fileAddressTransition.body
                   (.returned { contract := contract, locals := endFileAddressLocals I }
                     (endFileAddressPostState evmStele I ⟨2⟩) none)) ∧
@@ -2359,7 +2366,7 @@ theorem endFileAddressBody {σ σ₀ A I} {g : UInt256}
             · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode (hbodySplit.2 hperm)
             have hret := endFileAddressX_logReturn (I := I) (g := Sat256.ofUInt256 g)
               hperm hstore
-            exact endFileAddressBodyCoreStore hcode hdispatch hdecode hbodySplit.1 hret
+            exact endFileAddressBodyCoreStore hcode hdispatch hdecode (hbodySplit.1 hperm) hret
           · have hnotCatWord :
                 calldataWord I.calldata 4 ≠ ABI.bytesToWord endFileAddressCatBytes :=
               endFileAddressWhatWord_ne_of_bytes_ne hsz36 hcat (by native_decide)
@@ -2369,7 +2376,7 @@ theorem endFileAddressBody {σ σ₀ A I} {g : UInt256}
                   calldataWord I.calldata 4 = ABI.bytesToWord endFileAddressDogBytes :=
                 endFileAddressWhatWord_eq_of_bytes_eq hsz36 hdog
               have hbodySplit :
-                  (ExecTransitionBody config contract evmStele (endFileAddressLocals I)
+                  (I.perm = true → ExecTransitionBody config contract evmStele (endFileAddressLocals I)
                     fileAddressTransition.body
                     (.returned { contract := contract, locals := endFileAddressLocals I }
                       (endFileAddressPostState evmStele I ⟨3⟩) none)) ∧
@@ -2386,7 +2393,7 @@ theorem endFileAddressBody {σ σ₀ A I} {g : UInt256}
               · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode (hbodySplit.2 hperm)
               have hret := endFileAddressX_logReturn (I := I) (g := Sat256.ofUInt256 g)
                 hperm hstore
-              exact endFileAddressBodyCoreStore hcode hdispatch hdecode hbodySplit.1 hret
+              exact endFileAddressBodyCoreStore hcode hdispatch hdecode (hbodySplit.1 hperm) hret
             · have hnotDogWord :
                   calldataWord I.calldata 4 ≠ ABI.bytesToWord endFileAddressDogBytes :=
                 endFileAddressWhatWord_ne_of_bytes_ne hsz36 hdog (by native_decide)
@@ -2396,7 +2403,7 @@ theorem endFileAddressBody {σ σ₀ A I} {g : UInt256}
                     calldataWord I.calldata 4 = ABI.bytesToWord endFileAddressVowBytes :=
                   endFileAddressWhatWord_eq_of_bytes_eq hsz36 hvow
                 have hbodySplit :
-                    (ExecTransitionBody config contract evmStele (endFileAddressLocals I)
+                    (I.perm = true → ExecTransitionBody config contract evmStele (endFileAddressLocals I)
                       fileAddressTransition.body
                       (.returned { contract := contract, locals := endFileAddressLocals I }
                         (endFileAddressPostState evmStele I ⟨4⟩) none)) ∧
@@ -2413,7 +2420,7 @@ theorem endFileAddressBody {σ σ₀ A I} {g : UInt256}
                 · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode (hbodySplit.2 hperm)
                 have hret := endFileAddressX_logReturn (I := I) (g := Sat256.ofUInt256 g)
                   hperm hstore
-                exact endFileAddressBodyCoreStore hcode hdispatch hdecode hbodySplit.1 hret
+                exact endFileAddressBodyCoreStore hcode hdispatch hdecode (hbodySplit.1 hperm) hret
               · have hnotVowWord :
                     calldataWord I.calldata 4 ≠ ABI.bytesToWord endFileAddressVowBytes :=
                   endFileAddressWhatWord_ne_of_bytes_ne hsz36 hvow (by native_decide)
@@ -2424,7 +2431,7 @@ theorem endFileAddressBody {σ σ₀ A I} {g : UInt256}
                       calldataWord I.calldata 4 = ABI.bytesToWord endFileAddressPotBytes :=
                     endFileAddressWhatWord_eq_of_bytes_eq hsz36 hpot
                   have hbodySplit :
-                      (ExecTransitionBody config contract evmStele (endFileAddressLocals I)
+                      (I.perm = true → ExecTransitionBody config contract evmStele (endFileAddressLocals I)
                         fileAddressTransition.body
                         (.returned { contract := contract, locals := endFileAddressLocals I }
                           (endFileAddressPostState evmStele I ⟨5⟩) none)) ∧
@@ -2441,7 +2448,7 @@ theorem endFileAddressBody {σ σ₀ A I} {g : UInt256}
                   · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode (hbodySplit.2 hperm)
                   have hret := endFileAddressX_logReturn (I := I) (g := Sat256.ofUInt256 g)
                     hperm hstore
-                  exact endFileAddressBodyCoreStore hcode hdispatch hdecode hbodySplit.1 hret
+                  exact endFileAddressBodyCoreStore hcode hdispatch hdecode (hbodySplit.1 hperm) hret
                 · have hnotPotWord :
                       calldataWord I.calldata 4 ≠ ABI.bytesToWord endFileAddressPotBytes :=
                     endFileAddressWhatWord_ne_of_bytes_ne hsz36 hpot (by native_decide)
@@ -2452,7 +2459,7 @@ theorem endFileAddressBody {σ σ₀ A I} {g : UInt256}
                         calldataWord I.calldata 4 = ABI.bytesToWord endFileAddressSpotBytes :=
                       endFileAddressWhatWord_eq_of_bytes_eq hsz36 hspot
                     have hbodySplit :
-                        (ExecTransitionBody config contract evmStele (endFileAddressLocals I)
+                        (I.perm = true → ExecTransitionBody config contract evmStele (endFileAddressLocals I)
                           fileAddressTransition.body
                           (.returned { contract := contract, locals := endFileAddressLocals I }
                             (endFileAddressPostState evmStele I ⟨6⟩) none)) ∧
@@ -2470,7 +2477,7 @@ theorem endFileAddressBody {σ σ₀ A I} {g : UInt256}
                     · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode (hbodySplit.2 hperm)
                     have hret := endFileAddressX_logReturn (I := I) (g := Sat256.ofUInt256 g)
                       hperm hstore
-                    exact endFileAddressBodyCoreStore hcode hdispatch hdecode hbodySplit.1 hret
+                    exact endFileAddressBodyCoreStore hcode hdispatch hdecode (hbodySplit.1 hperm) hret
                   · have hnotSpotWord :
                         calldataWord I.calldata 4 ≠ ABI.bytesToWord endFileAddressSpotBytes :=
                       endFileAddressWhatWord_ne_of_bytes_ne hsz36 hspot (by native_decide)
@@ -2481,7 +2488,7 @@ theorem endFileAddressBody {σ σ₀ A I} {g : UInt256}
                           calldataWord I.calldata 4 = ABI.bytesToWord endFileAddressCureBytes :=
                         endFileAddressWhatWord_eq_of_bytes_eq hsz36 hcure
                       have hbodySplit :
-                          (ExecTransitionBody config contract evmStele (endFileAddressLocals I)
+                          (I.perm = true → ExecTransitionBody config contract evmStele (endFileAddressLocals I)
                             fileAddressTransition.body
                             (.returned { contract := contract, locals := endFileAddressLocals I }
                               (endFileAddressPostState evmStele I ⟨7⟩) none)) ∧
@@ -2499,7 +2506,7 @@ theorem endFileAddressBody {σ σ₀ A I} {g : UInt256}
                       · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode (hbodySplit.2 hperm)
                       have hret := endFileAddressX_logReturn (I := I)
                         (g := Sat256.ofUInt256 g) hperm hstore
-                      exact endFileAddressBodyCoreStore hcode hdispatch hdecode hbodySplit.1 hret
+                      exact endFileAddressBodyCoreStore hcode hdispatch hdecode (hbodySplit.1 hperm) hret
                     · have hnotCureWord :
                           calldataWord I.calldata 4 ≠ ABI.bytesToWord endFileAddressCureBytes :=
                         endFileAddressWhatWord_ne_of_bytes_ne hsz36 hcure (by native_decide)
