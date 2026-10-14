@@ -923,7 +923,8 @@ theorem catBiteRevertKickFail {σ σ₀ A I} {g : UInt256}
     (hArtPos : art ≠ ⟨0⟩) (hFitInkDart : dart.toNat * ink.toNat < UInt256.size)
     (hDartPos : 0 < dart.toNat) (hDinkPos : 0 < dink.toNat)
     (hDartLim : dart.toNat ≤ (UInt256.shiftLeft (⟨1⟩ : UInt256) ⟨255⟩).toNat)
-    (hDinkLim : dink.toNat ≤ (UInt256.shiftLeft (⟨1⟩ : UInt256) ⟨255⟩).toNat) :
+    (hDinkLim : dink.toNat ≤ (UInt256.shiftLeft (⟨1⟩ : UInt256) ⟨255⟩).toNat)
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   have hdepthNe : I.depth ≠ 1024 := by omega
   have hmask : biteAddrMaskWord = solcAddrMask := by native_decide
@@ -1234,7 +1235,7 @@ theorem catBiteRevertKickFail {σ σ₀ A I} {g : UInt256}
     rw [storeFlat] at h
     exact h
   refine catBiteKickFailLeaf hcode hdispatch hdecode rd2532 hoszk hov3 ?_
-  refine catBiteSourceKickFailRevert hwv
+  refine catBiteSourceKickFailRevert (hperm := hperm) hwv
     (catBiteVatCodePos_of_uniswap hvatCode) hIlksStele hIlksDec
     hvatCodeIlkS hUrnsStele hUrnsDec hlive' hsz36 hfitInkSpot hfitArtRate
     hspotPos (hposNe iRate hRatePos) hunsafe ?_ ?_ ?_ ?_ ?_
@@ -1393,7 +1394,8 @@ theorem catBiteRevertKickDecode {σ σ₀ A I} {g : UInt256}
     (hArtPos : art ≠ ⟨0⟩) (hFitInkDart : dart.toNat * ink.toNat < UInt256.size)
     (hDartPos : 0 < dart.toNat) (hDinkPos : 0 < dink.toNat)
     (hDartLim : dart.toNat ≤ (UInt256.shiftLeft (⟨1⟩ : UInt256) ⟨255⟩).toNat)
-    (hDinkLim : dink.toNat ≤ (UInt256.shiftLeft (⟨1⟩ : UInt256) ⟨255⟩).toNat) :
+    (hDinkLim : dink.toNat ≤ (UInt256.shiftLeft (⟨1⟩ : UInt256) ⟨255⟩).toNat)
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   have hdepthNe : I.depth ≠ 1024 := by omega
   have hmask : biteAddrMaskWord = solcAddrMask := by native_decide
@@ -1706,7 +1708,7 @@ theorem catBiteRevertKickDecode {σ σ₀ A I} {g : UInt256}
   have hKickDec : config.externalABI.decode? "kick" ok = none := catBiteKickDecode_none hshort
   refine catBiteKickReturnDecodeShortLeaf hcode hdispatch hdecode rd2532 hstatus hshort hoszk
     hMloadFreeValue hMloadFreeCost hMloadFreeAw hov3 ?_
-  refine catBiteSourceKickDecodeRevert hwv
+  refine catBiteSourceKickDecodeRevert (hperm := hperm) hwv
     (catBiteVatCodePos_of_uniswap hvatCode) hIlksStele hIlksDec
     hvatCodeIlkS hUrnsStele hUrnsDec hlive' hsz36 hfitInkSpot hfitArtRate
     hspotPos (hposNe iRate hRatePos) hunsafe ?_ ?_ ?_ ?_ ?_
@@ -1872,14 +1874,15 @@ theorem catBiteRevertKickDecodeW {σ σ₀ A I} {g : UInt256}
     (hArtPos : art ≠ ⟨0⟩) (hFitInkDart : dart.toNat * ink.toNat < UInt256.size)
     (hDartPos : 0 < dart.toNat) (hDinkPos : 0 < dink.toNat)
     (hDartLim : dart.toNat ≤ (UInt256.shiftLeft (⟨1⟩ : UInt256) ⟨255⟩).toNat)
-    (hDinkLim : dink.toNat ≤ (UInt256.shiftLeft (⟨1⟩ : UInt256) ⟨255⟩).toNat) :
+    (hDinkLim : dink.toNat ≤ (UInt256.shiftLeft (⟨1⟩ : UInt256) ⟨255⟩).toNat)
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   have hMloadFreeAw : UInt256.ofNat (MachineState.M (⟨17⟩ : UInt256).toNat 64 32) = ⟨17⟩ := by
     native_decide
   have hMloadFreeValue := catBiteKickPostCallMemP_mload64_short p
     (biteAddrMaskWord.land (biteAddrMaskWord.land (calldataWord I.calldata 36))) kvow tab dink ok
     hp96 hpmem hpsz hshort hread64
-  exact catBiteRevertKickDecode hcode hdispatch hdecode hwv hsz36 hdepth hurn
+  exact catBiteRevertKickDecode (hperm := hperm) hcode hdispatch hdecode hwv hsz36 hdepth hurn
     hilkslen hurnslen hlive hvatCode hUrnsVatCode hGrabCode hFessCode hKickCode hIlksCall
     hUrnsCall hGrabCall hFessCall hKickCall rd2532 hoszk hov3 hzk hstatus hshort
     hMloadFreeValue (memoryExpansionCost_zero_of_aw_stable hMloadFreeAw) hMloadFreeAw hRateFit hflipWDef hdartRateDef
@@ -5557,7 +5560,7 @@ theorem catBiteRevertKickNoCodeSplit {σ σ₀ A I} {g : UInt256}
     (hDartPos : 0 < dart.toNat) (hDinkPos : 0 < dink.toNat)
     (hDartLim : dart.toNat ≤ (UInt256.shiftLeft (⟨1⟩ : UInt256) ⟨255⟩).toNat)
     (hDinkLim : dink.toNat ≤ (UInt256.shiftLeft (⟨1⟩ : UInt256) ⟨255⟩).toNat) :
-    (∀ {rdata3 mem3 : ByteArray} {aw3 : UInt256} {R3 : List UInt256} {k3 C3 : ℕ}
+    (I.perm = true → ∀ {rdata3 mem3 : ByteArray} {aw3 : UInt256} {R3 : List UInt256} {k3 C3 : ℕ}
       (_hKickCode :
         Reasoning.Theory.extCodeSizeWord (sstoreAccountMap I.codeOwner σf ⟨6⟩ litterNew)
           (biteAddrMaskWord.land flipW) = ⟨0⟩)
@@ -5818,7 +5821,7 @@ theorem catBiteRevertKickNoCodeSplit {σ σ₀ A I} {g : UInt256}
     rw [storeFlat] at h
     exact h
   have hbodySplit :
-    ((UInt256.ofNat
+    (eFessS.executionEnv.perm = true → (UInt256.ofNat
       ((eLitS.lookupAccount (biteFlipAddrV I eUrnS)).option 0
         (fun acc ↦ acc.code.size))).toNat = 0 →
       ExecTransitionBody config contract
@@ -5867,7 +5870,7 @@ theorem catBiteRevertKickNoCodeSplit {σ σ₀ A I} {g : UInt256}
     · rw [← biteLitW_eq_of_equiv hEqFessState, ← biteTabV_eq_of_equiv hEqU,
         hlitFB, htabB]; exact hLitFit
   constructor
-  · intro rdata3 mem3 aw3 R3 k3 C3 hKickCode rd2516 hov3
+  · intro hperm rdata3 mem3 aw3 R3 k3 C3 hKickCode rd2516 hov3
     have codeZero : ∀ (e : EVM.State) (w : UInt256),
         extCodeSizeWord e.accountMap w = ⟨0⟩ →
         (UInt256.ofNat ((e.lookupAccount
@@ -5903,7 +5906,7 @@ theorem catBiteRevertKickNoCodeSplit {σ σ₀ A I} {g : UInt256}
         (by native_decide) (by native_decide) (by native_decide) (by native_decide)
         (by native_decide) (by native_decide) (by native_decide) (by native_decide)
         (by native_decide) hov3
-    simpa using hrev.reEquivExecutionRevert hcode hdispatch hdecode (hbodySplit.1 hflipCode0)
+    simpa using hrev.reEquivExecutionRevert hcode hdispatch hdecode (hbodySplit.1 hperm hflipCode0)
   · intro hperm hstatic
     exact hstatic.reEquivStaticHalt hcode hdispatch hdecode (hbodySplit.2 hperm)
 
@@ -6009,7 +6012,8 @@ theorem catBiteRevertKickNoCode {σ σ₀ A I} {g : UInt256}
     (hArtPos : art ≠ ⟨0⟩) (hFitInkDart : dart.toNat * ink.toNat < UInt256.size)
     (hDartPos : 0 < dart.toNat) (hDinkPos : 0 < dink.toNat)
     (hDartLim : dart.toNat ≤ (UInt256.shiftLeft (⟨1⟩ : UInt256) ⟨255⟩).toNat)
-    (hDinkLim : dink.toNat ≤ (UInt256.shiftLeft (⟨1⟩ : UInt256) ⟨255⟩).toNat) :
+    (hDinkLim : dink.toNat ≤ (UInt256.shiftLeft (⟨1⟩ : UInt256) ⟨255⟩).toNat)
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I :=
   (catBiteRevertKickNoCodeSplit
     hcode hdispatch hdecode hwv hsz36 hdepth
@@ -6021,7 +6025,7 @@ theorem catBiteRevertKickNoCode {σ σ₀ A I} {g : UInt256}
     hdartDenomDef hdartCandDef hdartDef hinkDartDef hdinkCandDef hdinkDef
     hspotPos hfitArtRate hfitInkSpot hunsafe hlitterbox hroomdust
     hRatePos hChopPos hFitWad hArtPos hFitInkDart hDartPos
-    hDinkPos hDartLim hDinkLim).1 hKickCode rd2516 hov3
+    hDinkPos hDartLim hDinkLim).1 hperm hKickCode rd2516 hov3
 
 set_option maxHeartbeats 1000000 in
 /-- The shared DSMath checked-add routine `@3802` on the **overflow** path (empty `revert(0,0)`

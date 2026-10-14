@@ -189,8 +189,8 @@ theorem jugFileVowSourceBodySplit {σ σ₀ A I} {g : UInt256}
     let evm1 := Stele.EVM.storageStore evm0 I.codeOwner ⟨3⟩
       (setAddressOffset0Word (Stele.EVM.storageLoad evm0 I.codeOwner ⟨3⟩)
         (fileVowDataMaskedWord I))
-    ExecTransitionBody config contract evm0 locals fileVowTransition.body
-      (.returned { contract := contract, locals := locals } evm1 none) ∧
+    (I.perm = true → ExecTransitionBody config contract evm0 locals fileVowTransition.body
+      (.returned { contract := contract, locals := locals } evm1 none)) ∧
     (I.perm = false →
       ExecTransitionBody config contract evm0 locals fileVowTransition.body .staticViolation) := by
   intro locals evm0 evm1
@@ -229,16 +229,17 @@ theorem jugFileVowSourceBodySplit {σ σ₀ A I} {g : UInt256}
     refine ExecBlock.consNormal (ExecStmt.requireTrue hguard) ?_
     exact execBlock_singleton (ExecStmt.iteTrue hcond
       (execBlock_singleton h))
-  refine ⟨?_, fun hpf => ?_⟩
+  refine ⟨fun hperm => ?_, fun hpf => ?_⟩
   · simpa [ExecTransitionBody, locals, evm0, evm1] using
-      ExecFuncBody.execBlockOK (hbody _ (ExecStmt.assign hdata hassign))
+      ExecFuncBody.execBlockOK (hbody _ (ExecStmt.assign (hperm := Or.inr hperm) hdata hassign))
   · simpa [ExecTransitionBody, locals, evm0] using ExecFuncBody.execBlockStatic
       (hbody _ (ExecStmt.assignStatic hdata hassign (by simp [evm0, initState]; exact hpf)))
 
 theorem jugFileVowSourceBody {σ σ₀ A I} {g : UInt256}
     (hwv : I.weiValue = ⟨0⟩)
     (hauth : relyAuthWord σ I = ⟨1⟩)
-    (hwhat : fileVowWhat I = fileVowBytes) :
+    (hwhat : fileVowWhat I = fileVowBytes)
+    (hperm : I.perm = true) :
     let locals := fileVowLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let evm1 := Stele.EVM.storageStore evm0 I.codeOwner ⟨3⟩
@@ -246,7 +247,7 @@ theorem jugFileVowSourceBody {σ σ₀ A I} {g : UInt256}
         (fileVowDataMaskedWord I))
     ExecTransitionBody config contract evm0 locals fileVowTransition.body
       (.returned { contract := contract, locals := locals } evm1 none) :=
-  (jugFileVowSourceBodySplit (σ₀ := σ₀) (A := A) (g := g) hwv hauth hwhat).1
+  (jugFileVowSourceBodySplit (σ₀ := σ₀) (A := A) (g := g) hwv hauth hwhat).1 hperm
 
 theorem jugFileVowSourceBodyStatic {σ σ₀ A I} {g : UInt256}
     (hwv : I.weiValue = ⟨0⟩)
@@ -703,7 +704,7 @@ theorem jugFileVowBodyCoreOk
         (.returned { contract := contract, locals := locals } evm1 none) := by
     simpa [evm0, evm1, locals, stored, data, hstoredStele, solcSlotWord, initState,
       Stele.EVM.storageLoad] using
-      (jugFileVowSourceBody (σ := σ)
+      (jugFileVowSourceBody (hperm := hperm) (σ := σ)
         (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hauthStele hwhat)
   obtain ⟨_, _, hdecoded⟩ := jugFileVowX_decoded (g := Sat256.ofUInt256 g)
     hsz68 hsize hreach

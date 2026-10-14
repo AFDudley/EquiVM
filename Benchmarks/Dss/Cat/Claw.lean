@@ -310,10 +310,10 @@ theorem catClawBodyCore
       let diff := UInt256.sub (solcSlotWord σ I ⟨6⟩) (clawRad I)
       let evm1 := Stele.EVM.storageStore evm0 I.codeOwner ⟨6⟩ diff
       have hbodySplit :
-          ExecTransitionBody config contract evm0 (clawLocals I) clawTransition.body
+          (I.perm = true → ExecTransitionBody config contract evm0 (clawLocals I) clawTransition.body
             (.returned
               (resumeAfterInternalCall { contract := contract, locals := clawLocals I } "litterNew"
-                (some [.int (Int.ofNat diff.toNat)])) evm1 none) ∧
+                (some [.int (Int.ofNat diff.toNat)])) evm1 none)) ∧
           (I.perm = false →
             ExecTransitionBody config contract evm0 (clawLocals I) clawTransition.body
               .staticViolation) := by
@@ -376,11 +376,11 @@ theorem catClawBodyCore
           refine ExecBlock.consNormal (ExecStmt.requireTrue hguard) ?_
           refine ExecBlock.consNormal hcall ?_
           exact execBlock_singleton h
-        refine ⟨?_, fun hperm ↦ ?_⟩
-        · exact ExecFuncBody.execBlockOK (hprefix _ (ExecStmt.assign hlitterNew hassign))
+        refine ⟨fun hperm ↦ ?_, fun hperm ↦ ?_⟩
+        · exact ExecFuncBody.execBlockOK (hprefix _ (ExecStmt.assign (hperm := Or.inr hperm) hlitterNew hassign))
         · exact ExecFuncBody.execBlockStatic (hprefix _ (ExecStmt.assignStatic hlitterNew hassign
             (by simp [evm0, initState]; exact hperm)))
-      rcases hstoreSplit with ⟨_, _, _, hretPc⟩ | ⟨hperm, hstatic⟩
+      rcases hstoreSplit with ⟨hperm, _, _, hretPc⟩ | ⟨hperm, hstatic⟩
       swap
       · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode (hbodySplit.2 hperm)
       have hretPc' := hretPc.jumpdest (by native_decide) (by evm_ov)
@@ -397,7 +397,7 @@ theorem catClawBodyCore
       have henc : returnEquiv ByteArray.empty none clawTransition.returnType := by
         rw [show clawTransition.returnType = [] by rfl]
         exact returnEquiv.fallthrough rfl (by rfl) (by native_decide)
-      exact hret.reEquivExecutionGen hcode hdispatch hdecode hbodySplit.1
+      exact hret.reEquivExecutionGen hcode hdispatch hdecode (hbodySplit.1 hperm)
         haccounts henc
     · -- `rad > litter`: sub underflows, revert.
       replace hle := Nat.not_le.mp hle

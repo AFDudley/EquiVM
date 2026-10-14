@@ -127,7 +127,7 @@ theorem execRmulFunctionReturn (evm : EVM.State) {x y prod q : UInt256}
           (some [.int (Int.ofNat q.toNat)])) := by
     refine ExecBlock.consNormal (ExecStmt.letDecl hMul) ?_
     refine ExecBlock.consNormal (ExecStmt.requireTrue hReq) ?_
-    refine ExecBlock.consNormal (ExecStmt.assign hDivRay hAssign) ?_
+    refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inl rfl) hDivRay hAssign) ?_
     exact ExecBlock.consReturn (ExecStmt.return (evalExprs?_singleton hzQ))
   simpa [rmulFunction, checkedMulUintInto, locals, localsZ, localsQ]
     using ExecFuncBody.execBlockRet hblock
@@ -296,7 +296,7 @@ theorem execRpowFunctionReturnXNonzeroNZero (evm : EVM.State) {x b : UInt256}
           (some [.int (Int.ofNat b.toNat)])) := by
     refine ExecBlock.consNormal (ExecStmt.letDecl hZExpr) ?_
     refine ExecBlock.consNormal (ExecStmt.letDecl hHalfExpr) ?_
-    refine ExecBlock.consNormal (ExecStmt.assign hDivN hAssignN) ?_
+    refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inl rfl) hDivN hAssignN) ?_
     refine ExecBlock.consNormal (ExecStmt.whileFalse hWhileCond) ?_
     exact ExecBlock.consReturn (ExecStmt.return (evalExprs?_singleton hzDone))
   have hblock :
@@ -439,7 +439,7 @@ theorem execRpowFunctionReturnXNonzeroNOne (evm : EVM.State) {x b : UInt256}
           (some [.int (Int.ofNat x.toNat)])) := by
     refine ExecBlock.consNormal (ExecStmt.letDecl hZExpr) ?_
     refine ExecBlock.consNormal (ExecStmt.letDecl hHalfExpr) ?_
-    refine ExecBlock.consNormal (ExecStmt.assign hDivN hAssignN) ?_
+    refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inl rfl) hDivN hAssignN) ?_
     refine ExecBlock.consNormal (ExecStmt.whileFalse hWhileCond) ?_
     exact ExecBlock.consReturn (ExecStmt.return (evalExprs?_singleton hzDone))
   have hblock :

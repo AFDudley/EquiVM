@@ -666,23 +666,23 @@ by_cases hprevMaxNot :
                 (by simpa [age] using hageNZ))
             hprevMax hfoldCodeStele
             (by simpa [evmVat] using hfoldCall))
-      have hbody :
+      have hbody (hpt : I.perm = true) :
           ExecTransitionBody config contract evm locals
             dripTransition.body
             (.returned { contract := contract, locals := finalLocals }
               evmRhoS
               (some [.int (Int.ofNat (⟨0⟩ : UInt256).toNat)])) := by
         simpa [evm, evmVat, evmFoldS, finalLocals, evmRhoS,
-          locals, initState, solcSlotWordAt] using hboth.1
+          locals, initState, solcSlotWordAt] using (hboth.1 hpt)
       obtain ⟨_, _, rd1669⟩ :=
         RD.jugDripVatFoldCallSucceeded
           (targetWord := dripVatTargetWord σ' I) rd1651
       rcases RD.jugDripVatFoldStoreRhoReturnsSplit
           (targetWord := dripVatTargetWord σ' I)
           hsz36 hfoldCallMemSize hfoldCallMemRead64 rd1669 with
-        ⟨_, hret⟩ | ⟨hpf, hstatic⟩
+        ⟨hpt, hret⟩ | ⟨hpf, hstatic⟩
       · exact hret.reEquivExecutionGen hcode hdispatch
-          (jugDecode_drip_ok hsz36) hbody
+          (jugDecode_drip_ok hsz36) (hbody hpt)
           (by simp [evmRhoS, evmFoldS, evmVat, evm, initState,
             storageStore_accountMap])
           (by
