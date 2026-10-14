@@ -4,7 +4,7 @@ import Benchmarks.Safe.V3_77901a5.Bytecode
 open Stele ABI Ethereum Ethereum.EVM
 open Reasoning.Theory Reasoning.Reach
 
-namespace safeRuntimeBlocks
+namespace Benchmarks.Safe.V3_77901a5.RuntimeBlocks
 
 /-- Final stack for bytecode block summary `safeRuntime_block_8084_taken`. -/
 def safeRuntime_block_8084_taken_stack {mem : ByteArray} {x0 : UInt256} {x1 : UInt256} {x3 : UInt256} {x4 : UInt256} {x5 : UInt256} {R : List UInt256} : List UInt256 :=
@@ -806,4 +806,4 @@ theorem safeRuntime_block_8507_taken_packed {ee : ExecutionEnv} {g : Sat256} {s0
   obtain ⟨k', C', h'⟩ := RD.pack (safeRuntime_block_8507_taken hstack hcond hvalid h)
   exact ⟨_, k', C', h'⟩
 
-end safeRuntimeBlocks
+end Benchmarks.Safe.V3_77901a5.RuntimeBlocks

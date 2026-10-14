@@ -6,7 +6,7 @@ import Benchmarks.Safe.Runs1e6.FallbackGas
 import Benchmarks.Safe.Runs1e6.RawZeroCall
 
 open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
-open safeRuntimeBlocks
+open Benchmarks.Safe.Runs1e6.RuntimeBlocks
 
 namespace Benchmarks.Safe.Runs1e6
 

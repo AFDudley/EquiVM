@@ -2,7 +2,7 @@ import Benchmarks.Safe.ViaIR.PreModuleCheck
 import Benchmarks.Safe.ViaIR.PreModuleAuthorization
 
 open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
-open safeRuntimeBlocks
+open Benchmarks.Safe.ViaIR.RuntimeBlocks
 
 namespace Benchmarks.Safe.ViaIR
 

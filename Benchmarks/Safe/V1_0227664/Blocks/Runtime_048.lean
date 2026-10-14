@@ -4,7 +4,7 @@ import Benchmarks.Safe.V1_0227664.Bytecode
 open Stele ABI Ethereum Ethereum.EVM
 open Reasoning.Theory Reasoning.Reach
 
-namespace safeRuntimeBlocks
+namespace Benchmarks.Safe.V1_0227664.RuntimeBlocks
 
 /-- Automatically generated RD summary for bytecode block at pc 10817. -/
 theorem safeRuntime_block_10817 {ee : ExecutionEnv} {g : Sat256} {s0 : State} {mem : ByteArray} {aw : UInt256} {rdata : ByteArray} {σ : AccountMap} {k C : ℕ} {R : List UInt256}
@@ -686,4 +686,4 @@ theorem safeRuntime_block_11156_taken_packed {ee : ExecutionEnv} {g : Sat256} {s
   obtain ⟨k', C', h'⟩ := RD.pack (safeRuntime_block_11156_taken hstack hcond hvalid h)
   exact ⟨_, k', C', h'⟩
 
-end safeRuntimeBlocks
+end Benchmarks.Safe.V1_0227664.RuntimeBlocks

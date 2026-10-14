@@ -4,7 +4,7 @@ import Benchmarks.Safe.ViaIR.Bytecode
 open Stele ABI Ethereum Ethereum.EVM
 open Reasoning.Theory Reasoning.Reach
 
-namespace safeRuntimeBlocks
+namespace Benchmarks.Safe.ViaIR.RuntimeBlocks
 
 set_option maxRecDepth 10000
 
@@ -636,4 +636,4 @@ theorem safeRuntime_block_10990 {ee : ExecutionEnv} {g : Sat256} {s0 : State} {m
   let r0 := h
   exact RD.invalid r0 (by native_decide)
 
-end safeRuntimeBlocks
+end Benchmarks.Safe.ViaIR.RuntimeBlocks

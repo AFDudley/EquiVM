@@ -6,7 +6,7 @@ import Benchmarks.Safe.V1_0227664.Blocks.Runtime_014
 import Benchmarks.Safe.V1_0227664.Blocks.Runtime_015
 
 open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
-open safeRuntimeBlocks
+open Benchmarks.Safe.V1_0227664.RuntimeBlocks
 
 namespace Benchmarks.Safe.V1_0227664
 

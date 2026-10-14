@@ -3,7 +3,7 @@ import Benchmarks.Safe.ViaIR.SignatureAddressDecodeSteps
 import Benchmarks.Safe.ViaIR.Blocks.Runtime_032
 
 open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
-open safeRuntimeBlocks
+open Benchmarks.Safe.ViaIR.RuntimeBlocks
 
 namespace Benchmarks.Safe.ViaIR
 

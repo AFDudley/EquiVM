@@ -3,7 +3,7 @@ import Benchmarks.Safe.V2_0e91d99.Blocks.Creation
 import Reasoning.Constructor
 
 open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
-open safeCreationBlocks
+open Benchmarks.Safe.V2_0e91d99.CreationBlocks
 
 namespace Benchmarks.Safe.V2_0e91d99
 

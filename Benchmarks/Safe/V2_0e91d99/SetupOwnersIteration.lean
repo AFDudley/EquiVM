@@ -4,7 +4,7 @@ import Benchmarks.Safe.V2_0e91d99.SetupOwnersStore
 import Benchmarks.Safe.V2_0e91d99.OwnerGuardTraces
 
 open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
-open safeRuntimeBlocks
+open Benchmarks.Safe.V2_0e91d99.RuntimeBlocks
 
 namespace Benchmarks.Safe.V2_0e91d99
 

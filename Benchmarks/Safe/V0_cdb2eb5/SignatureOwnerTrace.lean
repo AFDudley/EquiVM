@@ -3,7 +3,7 @@ import Benchmarks.Safe.V0_cdb2eb5.Blocks.Runtime_016
 import Benchmarks.Safe.V0_cdb2eb5.Blocks.Runtime_030
 
 open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
-open safeRuntimeBlocks
+open Benchmarks.Safe.V0_cdb2eb5.RuntimeBlocks
 
 namespace Benchmarks.Safe.V0_cdb2eb5
 

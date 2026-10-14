@@ -2,7 +2,7 @@ import Benchmarks.Safe.ViaIR.ExecTransactionAllocate
 import Benchmarks.Safe.ViaIR.ExecTransactionGasMath
 
 open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
-open safeRuntimeBlocks
+open Benchmarks.Safe.ViaIR.RuntimeBlocks
 
 namespace Benchmarks.Safe.ViaIR
 

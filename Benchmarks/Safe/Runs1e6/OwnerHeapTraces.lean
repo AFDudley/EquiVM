@@ -2,7 +2,7 @@ import Benchmarks.Safe.Runs1e6.OwnerGuards
 import Benchmarks.Safe.Runs1e6.MemoryPreserves
 
 open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
-open safeRuntimeBlocks
+open Benchmarks.Safe.Runs1e6.RuntimeBlocks
 
 namespace Benchmarks.Safe.Runs1e6
 

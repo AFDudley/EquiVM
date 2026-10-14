@@ -4,7 +4,7 @@ import Benchmarks.Safe.Runs1e6.Bytecode
 open Stele ABI Ethereum Ethereum.EVM
 open Reasoning.Theory Reasoning.Reach
 
-namespace safeRuntimeBlocks
+namespace Benchmarks.Safe.Runs1e6.RuntimeBlocks
 
 /-- Final memory for bytecode block summary `safeRuntime_block_10770_taken`. -/
 def safeRuntime_block_10770_taken_memory {mem : ByteArray} {x1 : UInt256} : ByteArray :=
@@ -689,4 +689,4 @@ theorem safeRuntime_block_11185_fallthrough_packed {ee : ExecutionEnv} {g : Sat2
   obtain ⟨k', C', h'⟩ := RD.pack (safeRuntime_block_11185_fallthrough hstack hcond h)
   exact ⟨_, k', C', h'⟩
 
-end safeRuntimeBlocks
+end Benchmarks.Safe.Runs1e6.RuntimeBlocks

@@ -3,7 +3,7 @@ import Benchmarks.Safe.Main.RawValueCall
 import Benchmarks.Safe.Main.LocalArrays
 
 open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
-open safeRuntimeBlocks
+open Benchmarks.Safe.Main.RuntimeBlocks
 
 namespace Benchmarks.Safe.Main
 

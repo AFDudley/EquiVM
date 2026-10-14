@@ -4,7 +4,7 @@ import Benchmarks.Safe.Main.RemoveOwnerTrace
 import Benchmarks.Safe.Main.Blocks.Runtime_013
 
 open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
-open safeRuntimeBlocks
+open Benchmarks.Safe.Main.RuntimeBlocks
 
 namespace Benchmarks.Safe.Main
 

@@ -4,7 +4,7 @@ import Benchmarks.Safe.V0_cdb2eb5.Bytecode
 open Stele ABI Ethereum Ethereum.EVM
 open Reasoning.Theory Reasoning.Reach
 
-namespace safeRuntimeBlocks
+namespace Benchmarks.Safe.V0_cdb2eb5.RuntimeBlocks
 
 /-- Automatically generated RD summary for bytecode block at pc 3329. -/
 theorem safeRuntime_block_3329_fallthrough {ee : ExecutionEnv} {g : Sat256} {s0 : State} {mem : ByteArray} {aw : UInt256} {rdata : ByteArray} {σ : AccountMap} {k C : ℕ} {x0 : UInt256} {R : List UInt256}
@@ -684,4 +684,4 @@ theorem safeRuntime_block_3652 {ee : ExecutionEnv} {g : Sat256} {s0 : State} {me
   have r6 := r5.push0 (by native_decide) (by evm_ov)
   exact RD.genRev r6 (by native_decide) (by evm_ov)
 
-end safeRuntimeBlocks
+end Benchmarks.Safe.V0_cdb2eb5.RuntimeBlocks

@@ -4,7 +4,7 @@ import Benchmarks.Safe.ViaIR.Bytecode
 open Stele ABI Ethereum Ethereum.EVM
 open Reasoning.Theory Reasoning.Reach
 
-namespace safeRuntimeBlocks
+namespace Benchmarks.Safe.ViaIR.RuntimeBlocks
 
 set_option maxRecDepth 10000
 
@@ -607,4 +607,4 @@ theorem safeRuntime_block_10727 {ee : ExecutionEnv} {g : Sat256} {s0 : State} {m
   have r27 := r26.swap1 (by native_decide) (by evm_ov)
   exact RD.genRev r27 (by native_decide) (by evm_ov)
 
-end safeRuntimeBlocks
+end Benchmarks.Safe.ViaIR.RuntimeBlocks

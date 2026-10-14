@@ -4,7 +4,7 @@ import Benchmarks.Safe.ViaIR.RemoveOwnerTrace
 import Benchmarks.Safe.ViaIR.IRLengthCheck
 
 open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
-open safeRuntimeBlocks
+open Benchmarks.Safe.ViaIR.RuntimeBlocks
 
 namespace Benchmarks.Safe.ViaIR
 

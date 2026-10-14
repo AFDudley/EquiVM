@@ -3,7 +3,7 @@ import Reasoning.HeapMemory
 import Benchmarks.Safe.V1_0227664.Blocks.Runtime_037
 
 open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
-open safeRuntimeBlocks
+open Benchmarks.Safe.V1_0227664.RuntimeBlocks
 
 namespace Benchmarks.Safe.V1_0227664
 

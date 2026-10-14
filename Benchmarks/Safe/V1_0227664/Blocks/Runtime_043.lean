@@ -4,7 +4,7 @@ import Benchmarks.Safe.V1_0227664.Bytecode
 open Stele ABI Ethereum Ethereum.EVM
 open Reasoning.Theory Reasoning.Reach
 
-namespace safeRuntimeBlocks
+namespace Benchmarks.Safe.V1_0227664.RuntimeBlocks
 
 /-- Final stack for bytecode block summary `safeRuntime_block_9738_fallthrough`. -/
 def safeRuntime_block_9738_fallthrough_stack {x0 : UInt256} {x1 : UInt256} {R : List UInt256} : List UInt256 :=
@@ -640,4 +640,4 @@ theorem safeRuntime_block_9950 {ee : ExecutionEnv} {g : Sat256} {s0 : State} {me
   have r2 := r1.push0 (by native_decide) (by evm_ov)
   exact RD.genRev r2 (by native_decide) (by evm_ov)
 
-end safeRuntimeBlocks
+end Benchmarks.Safe.V1_0227664.RuntimeBlocks

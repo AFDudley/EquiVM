@@ -6,7 +6,7 @@ import Benchmarks.Safe.ViaIR.FallbackGas
 import Benchmarks.Safe.ViaIR.RawZeroCall
 
 open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
-open safeRuntimeBlocks
+open Benchmarks.Safe.ViaIR.RuntimeBlocks
 
 namespace Benchmarks.Safe.ViaIR
 

@@ -4,7 +4,7 @@ import Benchmarks.Safe.ViaIR.Bytecode
 open Stele ABI Ethereum Ethereum.EVM
 open Reasoning.Theory Reasoning.Reach
 
-namespace safeRuntimeBlocks
+namespace Benchmarks.Safe.ViaIR.RuntimeBlocks
 
 set_option maxRecDepth 10000
 
@@ -796,4 +796,4 @@ theorem safeRuntime_block_8783_fallthrough_packed {ee : ExecutionEnv} {g : Sat25
   obtain ⟨k', C', h'⟩ := RD.pack (safeRuntime_block_8783_fallthrough hstack hcond h)
   exact ⟨_, k', C', h'⟩
 
-end safeRuntimeBlocks
+end Benchmarks.Safe.ViaIR.RuntimeBlocks

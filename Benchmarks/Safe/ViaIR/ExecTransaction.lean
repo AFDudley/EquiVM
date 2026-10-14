@@ -4,7 +4,7 @@ import Benchmarks.Safe.ViaIR.ExecTransactionBodyTrace
 import Benchmarks.Safe.ViaIR.Routines
 
 open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
-open safeRuntimeBlocks
+open Benchmarks.Safe.ViaIR.RuntimeBlocks
 
 namespace Benchmarks.Safe.ViaIR
 

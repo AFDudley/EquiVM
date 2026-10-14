@@ -5,7 +5,7 @@ import Benchmarks.Safe.V1_0227664.Bytecode
 open Stele ABI Ethereum Ethereum.EVM
 open Reasoning.Theory Reasoning.Reach
 
-namespace safeCreationBlocks
+namespace Benchmarks.Safe.V1_0227664.CreationBlocks
 
 private abbrev d := Reasoning.Theory.decode_append_left_of_decode Benchmarks.Safe.V1_0227664.safeCreationBytecode
 private abbrev j := Reasoning.Theory.D_J_contains_append_left Benchmarks.Safe.V1_0227664.safeCreationBytecode
@@ -124,4 +124,4 @@ theorem safeCreation_block_32 {tail : ByteArray} {ee : ExecutionEnv} {g : Sat256
   have hcreationCodeSize : Benchmarks.Safe.V1_0227664.safeCreationBytecode.size = 11532 := by native_decide
   exact RD.invalid r0 (by exact d tail _ _ _ (by native_decide) (by rw [hcreationCodeSize]; native_decide) (by native_decide))
 
-end safeCreationBlocks
+end Benchmarks.Safe.V1_0227664.CreationBlocks

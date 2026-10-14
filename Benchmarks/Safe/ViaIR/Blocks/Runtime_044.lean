@@ -4,7 +4,7 @@ import Benchmarks.Safe.ViaIR.Bytecode
 open Stele ABI Ethereum Ethereum.EVM
 open Reasoning.Theory Reasoning.Reach
 
-namespace safeRuntimeBlocks
+namespace Benchmarks.Safe.ViaIR.RuntimeBlocks
 
 set_option maxRecDepth 10000
 
@@ -725,4 +725,4 @@ theorem safeRuntime_block_9979_packed {ee : ExecutionEnv} {g : Sat256} {s0 : Sta
 
 /- Unsupported instruction boundary at pc 9989: call (0xf1). No RD transition is asserted. Summaries resume at pc 9990 from a fresh symbolic RD state. -/
 
-end safeRuntimeBlocks
+end Benchmarks.Safe.ViaIR.RuntimeBlocks

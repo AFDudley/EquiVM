@@ -5,7 +5,7 @@ import Benchmarks.Safe.ViaIR.SafeAddTrace
 import Benchmarks.Safe.ViaIR.MemoryPreserves
 
 open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
-open safeRuntimeBlocks
+open Benchmarks.Safe.ViaIR.RuntimeBlocks
 
 namespace Benchmarks.Safe.ViaIR
 

@@ -4,7 +4,7 @@ import Benchmarks.Safe.V0_cdb2eb5.Bytecode
 open Stele ABI Ethereum Ethereum.EVM
 open Reasoning.Theory Reasoning.Reach
 
-namespace safeRuntimeBlocks
+namespace Benchmarks.Safe.V0_cdb2eb5.RuntimeBlocks
 
 /-- Final memory for bytecode block summary `safeRuntime_block_6782_fallthrough`. -/
 def safeRuntime_block_6782_fallthrough_memory {mem : ByteArray} {x2 : UInt256} : ByteArray :=
@@ -660,4 +660,4 @@ theorem safeRuntime_block_7072 {ee : ExecutionEnv} {g : Sat256} {s0 : State} {me
   have r2 := r1.push0 (by native_decide) (by evm_ov)
   exact RD.genRev r2 (by native_decide) (by evm_ov)
 
-end safeRuntimeBlocks
+end Benchmarks.Safe.V0_cdb2eb5.RuntimeBlocks

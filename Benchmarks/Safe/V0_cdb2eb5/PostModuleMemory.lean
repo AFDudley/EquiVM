@@ -4,7 +4,7 @@ import Reasoning.WordArithmetic
 import Benchmarks.Safe.V0_cdb2eb5.Blocks.Runtime_033
 
 open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
-open safeRuntimeBlocks
+open Benchmarks.Safe.V0_cdb2eb5.RuntimeBlocks
 
 namespace Benchmarks.Safe.V0_cdb2eb5
 

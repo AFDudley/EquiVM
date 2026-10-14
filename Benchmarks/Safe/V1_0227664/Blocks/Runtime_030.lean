@@ -4,7 +4,7 @@ import Benchmarks.Safe.V1_0227664.Bytecode
 open Stele ABI Ethereum Ethereum.EVM
 open Reasoning.Theory Reasoning.Reach
 
-namespace safeRuntimeBlocks
+namespace Benchmarks.Safe.V1_0227664.RuntimeBlocks
 
 /-- Final stack for bytecode block summary `safeRuntime_block_6850`. -/
 def safeRuntime_block_6850_stack {mem : ByteArray} {x0 : UInt256} {x1 : UInt256} {x2 : UInt256} {x3 : UInt256} {x4 : UInt256} {R : List UInt256} : List UInt256 :=
@@ -716,4 +716,4 @@ theorem safeRuntime_block_7167_packed {ee : ExecutionEnv} {g : Sat256} {s0 : Sta
 
 /- Unsupported instruction boundary at pc 7180: call (0xf1). No RD transition is asserted. Summaries resume at pc 7181 from a fresh symbolic RD state. -/
 
-end safeRuntimeBlocks
+end Benchmarks.Safe.V1_0227664.RuntimeBlocks
