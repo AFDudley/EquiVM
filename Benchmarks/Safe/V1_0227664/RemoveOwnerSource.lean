@@ -57,12 +57,13 @@ theorem safeRemoveOwnerPrefix (evm : EVM.State) (prev key threshold : UInt256) {
     (hauth : evm.executionEnv.source = evm.executionEnv.codeOwner)
     (hnz : ownerCount evm ≠ ⟨0⟩)
     (htail : ExecBlock config (removeOwnerFrame prev key threshold) (removeOwnerCountState evm)
-      removeOwnerTail result) :
+      removeOwnerTail result)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config (removeOwnerFrame prev key threshold) evm removeownerTransition.body
       result :=
   .consNormal (.requireTrue (evalCallvalueEq_true hvalue))
     (.consNormal (.requireTrue (by simpa [hauth] using safeEvalAuthorized evm _))
-      (.consNormal (.assign (safeRemoveOwnerDecrement evm prev key threshold hnz)
+      (.consNormal (.assign (hperm := Or.inr hperm) (safeRemoveOwnerDecrement evm prev key threshold hnz)
         (safeAssignOwnerCount evm _ _
           (safeRemoveOwnerLocal prev key threshold "ownerCount" (by decide)))) htail))
 
@@ -173,7 +174,8 @@ theorem safeRemoveOwnerLinksPrefix (evm : EVM.State) (prev key threshold : UInt2
     (hle : threshold.toNat ≤ (ownerCount evm).toNat)
     (hv : validOwner evm.accountMap evm.executionEnv key) (hl : ownerLink evm prev = key)
     (ht : ExecStmt config (removeOwnerFrame₁ prev key threshold) (removeOwnerLinks evm prev key)
-      thresholdChangeStmt result) :
+      thresholdChangeStmt result)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config (removeOwnerFrame prev key threshold) evm removeOwnerTail result := by
   have hb := safeRemoveOwnerLocal₁ prev key threshold "owners" (by decide)
   have hload := safeEvalOwnerLink evm _ _ key hb hc (safeRemoveOwnerEval₁ evm prev key threshold)
@@ -184,9 +186,9 @@ theorem safeRemoveOwnerLinksPrefix (evm : EVM.State) (prev key threshold : UInt2
   exact .consNormal (.requireTrue (by
     simpa [hle] using safeRemoveOwnerCountGuard evm prev key threshold))
     (.consNormal (safeRemoveOwnerCanRemove evm prev key threshold hp hc hv hl)
-      (.consNormal (.assign hload hfirst)
-        (.consNormal (.assign (evalAddressLiteral _ _ _ (AccountAddress.ofNat 0)) hsecond)
-          (.consNormal (.emit (evalExprs?_singleton (safeRemoveOwnerEval₁ _ prev key threshold)))
+      (.consNormal (.assign (hperm := Or.inr hperm) hload hfirst)
+        (.consNormal (.assign (hperm := Or.inr (by simpa only [writeOwnerLink, storageStore_executionEnv] using hperm)) (evalAddressLiteral _ _ _ (AccountAddress.ofNat 0)) hsecond)
+          (.consNormal (.emit (hperm := by simpa only [writeOwnerLink, storageStore_executionEnv] using hperm) (evalExprs?_singleton (safeRemoveOwnerEval₁ _ prev key threshold)))
             (execBlock_singleton ht)))))
 
 theorem safeRemoveOwnerUnauthorized (evm : EVM.State) (locals : Store)

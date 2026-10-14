@@ -44,7 +44,8 @@ theorem safeSetupOwnersGuardRevert (evm : EVM.State) {p locals i current}
 theorem safeSetupOwnersWrite (evm : EVM.State) {p locals i current}
     (h : SetupOwnersLocals p locals i current) (owner : UInt256)
     (hc : current.toNat < EVM.addressModulus) (ho : owner.toNat < EVM.addressModulus)
-    (hfit : i + 1 < UInt256.size) :
+    (hfit : i + 1 < UInt256.size)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config { contract := contract, locals := setupOwnersCheckedLocals locals owner } evm
       (setupOwnersLoopBody.drop 3)
       (.ok { contract := contract, locals := setupOwnersNextLocals locals owner i }
@@ -58,9 +59,9 @@ theorem safeSetupOwnersWrite (evm : EVM.State) {p locals i current}
   have hindex : ((setupOwnersCheckedLocals locals owner).insert "currentOwner"
       (addressArrayValue owner))["i"]? = some (.int (Int.ofNat i)) := by
     simpa [Std.HashMap.getElem?_insert] using hh.index
-  exact .consNormal (.assign (evalLocalValue howner) hassign)
-    (.consNormal (.assign (evalLocalValue howner) (assignLocalVarBase_ok hh.current))
-      (.consNormal (.assign (evalNatIncrement (evalLocalValue hindex) hfit)
+  exact .consNormal (.assign (hperm := Or.inr hperm) (evalLocalValue howner) hassign)
+    (.consNormal (.assign (hperm := Or.inl rfl) (evalLocalValue howner) (assignLocalVarBase_ok hh.current))
+      (.consNormal (.assign (hperm := Or.inl rfl) (evalNatIncrement (evalLocalValue hindex) hfit)
         (assignLocalVarBase_ok hindex)) .nil))
 
 theorem safeSetupOwnersStep (evm : EVM.State) {p locals i current}
@@ -68,7 +69,8 @@ theorem safeSetupOwnersStep (evm : EVM.State) {p locals i current}
     (hc : current.toNat < EVM.addressModulus) (ho : p.owners[i].toNat < EVM.addressModulus)
     (he : p.owners[i] ≠ current) (hfit : i + 1 < UInt256.size)
     (hv : validOwner evm.accountMap evm.executionEnv p.owners[i])
-    (hempty : ownerLink evm p.owners[i] = ⟨0⟩) :
+    (hempty : ownerLink evm p.owners[i] = ⟨0⟩)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config { contract := contract, locals := locals } evm setupOwnersLoopBody
       (.ok { contract := contract, locals := setupOwnersNextLocals locals p.owners[i] i }
         (writeOwnerLink evm current p.owners[i])) := by
@@ -82,6 +84,6 @@ theorem safeSetupOwnersStep (evm : EVM.State) {p locals i current}
       have hg := safeSetupOwnersDifferent evm h p.owners[i] hc ho
       rw [decide_eq_true he] at hg
       exact hg))
-      (.consNormal hcall (safeSetupOwnersWrite evm h p.owners[i] hc ho hfit)))
+      (.consNormal hcall (safeSetupOwnersWrite (hperm := by assumption) evm h p.owners[i] hc ho hfit)))
 
 end Benchmarks.Safe.V0_cdb2eb5

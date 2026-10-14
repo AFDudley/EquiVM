@@ -50,7 +50,7 @@ theorem safeExecTransactionFinish (p : ExecTransactionInput) (evm : EVM.State)
     obtain ⟨hr, hs⟩ | ⟨frame', evm', σ', mem', aw', out, k', C', hs, hz', he', ha', hw',
         h₃, hmem⟩ := safeExecAfterGuardTrace z evm h₂ hee hacc hworld hg hh hz hf₂ hm₂ hp hb
           (by simp [execResultSaved]; omega)
-    · exact .inl ⟨hr, .consNormal (safeExecEventSource hz hh hpaid) (.consRevert hs)⟩
+    · exact .inl ⟨hr, .consNormal (safeExecEventSource (hperm := by simpa only [hee] using hperm) hz hh hpaid) (.consRevert hs)⟩
     have h₄ := safeRuntime_block_4255 (by simp; omega) (by jump_dest) h₃
     have hf' : memLoad ⟨64⟩ mem' = ptr := by
       rcases hmem with rfl | rfl
@@ -64,7 +64,7 @@ theorem safeExecTransactionFinish (p : ExecTransactionInput) (evm : EVM.State)
     have hret : ExecBlock config frame' evm' [.return [.var "success"]]
         (.returned frame' evm' (some [.bool z])) :=
       .consReturn (.return (evalExprs?_singleton (evalLocalValue hz')))
-    exact .inr (.inr ⟨frame', evm', σ', .consNormal (safeExecEventSource hz hh hpaid)
+    exact .inr (.inr ⟨frame', evm', σ', .consNormal (safeExecEventSource (hperm := by simpa only [hee] using hperm) hz hh hpaid)
       (.consNormal hs hret), he', ha', hw', hr⟩)
 
 end Benchmarks.Safe.V2_0e91d99

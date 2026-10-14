@@ -77,7 +77,7 @@ theorem safeSwapownerBodyCore
                                 reEquivSelectorExecution hdispatch hdec hbody (.staticHalt hΞ rfl)
                           | true =>
                               have hret := safeSwapOwnerTrace h6275 (by simp) hm₂ hc0 hc1 hc2 hperm
-                              have hbody := safeSwapOwnerSource evm prev old new hc0 hc1 hc2
+                              have hbody := safeSwapOwnerSource (hperm := hperm) evm prev old new hc0 hc1 hc2
                                 hvalue hauth hself hvn he' hvo hl'
                               refine reEquivReturnElim hcode hret fun _ _ hsuccess ↦ ?_
                               exact reEquivSelectorExecution hdispatch hdec hbody

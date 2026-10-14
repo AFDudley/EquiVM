@@ -56,10 +56,10 @@ theorem signatureP256DecodeSource {p : SignatureInput} {f : Frame} {evm : EVM.St
   have hoff₃ : f₃.locals["p256Offset"]? = some (uint256Value s) := by
     simp [f₃, signatureSet, Std.HashMap.getElem?_insert, hoff₂]
   have h₁ : ExecStmt config f evm signatureP256Body[5]! (.ok f₁ evm) :=
-    .assign (evalSignatureWordAt (evalLocalValue hc.signatures) (evalLocalValue hoff) (by omega))
+    .assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalSignatureWordAt (evalLocalValue hc.signatures) (evalLocalValue hoff) (by omega))
       (assignLocalValue _ hr)
   have h₂ : ExecStmt config f₁ evm signatureP256Body[6]! (.ok f₂ evm) :=
-    .assign (evalSignatureWordAt (evalLocalValue hc₁.signatures)
+    .assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalSignatureWordAt (evalLocalValue hc₁.signatures)
       (naturalAddSource (evalLocalValue hoff₁) (by simp [evalExpr?]; rfl)) (by omega))
       (assignLocalValue _ (old := oldS)
         (by simp [f₁, signatureSet, Std.HashMap.getElem?_insert, hs]))

@@ -34,9 +34,10 @@ theorem safeExecSignatureRevert (p : ExecTransactionInput) (evm : EVM.State)
     (hn : p.signatures.size ≤ 2 ^ 64 - 192) (ho : p.tx.operation.toNat < 2)
     (hno : (execNonce evm).toNat + 1 < UInt256.size)
     (hb : ExecFuncBody config (execSignatureInput p evm).frame (execNonceState evm)
-      checkSignaturesImplFunction.body .reverted) :
+      checkSignaturesImplFunction.body .reverted)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config p.frame evm exectransactionTransition.body .reverted :=
-  safeExecTransactionNoncePrefix p evm hn ho hno
+  safeExecTransactionNoncePrefix (hperm := by assumption) p evm hn ho hno
     (.consNormal (safeExecTransactionHashLet p evm) (.consRevert (safeExecSignatureCall p evm hb)))
 
 theorem safeExecSignaturePrefix (p : ExecTransactionInput) (evm : EVM.State)
@@ -46,9 +47,10 @@ theorem safeExecSignaturePrefix (p : ExecTransactionInput) (evm : EVM.State)
     (hb : ExecFuncBody config (execSignatureInput p evm).frame (execNonceState evm)
       checkSignaturesImplFunction.body (.returned f' evm' none))
     (ht : ExecBlock config (execSignedFrame p evm) evm'
-      (exectransactionTransition.body.drop 6) result) :
+      (exectransactionTransition.body.drop 6) result)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config p.frame evm exectransactionTransition.body result :=
-  safeExecTransactionNoncePrefix p evm hn ho hno
+  safeExecTransactionNoncePrefix (hperm := by assumption) p evm hn ho hno
     (.consNormal (safeExecTransactionHashLet p evm)
       (.consNormal (safeExecSignatureCall p evm hb) ht))
 

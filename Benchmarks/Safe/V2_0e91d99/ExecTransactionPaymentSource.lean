@@ -80,7 +80,7 @@ theorem safeExecPaymentAssign (locals : Store) (evm : EVM.State) (paid : UInt256
         (some [uint256Value paid])) evm
       (.assign .localVar (varRef "payment") (.var "paymentCall"))
       (.ok (execPaymentFinal locals paid true) evm) := by
-  apply ExecStmt.assign (value := uint256Value paid)
+  apply ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (value := uint256Value paid)
   · apply evalLocalValue
     simp [resumeAfterInternalCall, collapseReturns]
   · apply assignLocalValue (old := uint256Value ⟨0⟩)

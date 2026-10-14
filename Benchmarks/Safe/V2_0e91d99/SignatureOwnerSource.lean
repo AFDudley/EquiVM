@@ -78,10 +78,10 @@ theorem signatureOwnerSourceAccepted {p : SignatureInput} {f : Frame} {evm : EVM
   exact .consNormal (.requireTrue (by
       simpa only [hv, decide_true] using
         evalSignatureOwnerCondition (evm := evm) hc hcurrent hlast))
-    (.consNormal (.assign (evalLocalValue (evm := evm) hcurrent) (by
+    (.consNormal (.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalLocalValue (evm := evm) hcurrent) (by
       simp [assignStorageRef?, signatureSet, varRef, hlast, updateLocalPath?,
         EvalResult.bind, bind, pure]))
-      (.consNormal (.assign (evalNatIncrement (evm := evm) (evalLocalValue hi') hfit) (by
+      (.consNormal (.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalNatIncrement (evm := evm) (evalLocalValue hi') hfit) (by
         simp [assignStorageRef?, signatureNextFrame, signatureSet, varRef, hi, updateLocalPath?,
           EvalResult.bind, bind, pure, Std.HashMap.getElem?_insert])) .nil))
 

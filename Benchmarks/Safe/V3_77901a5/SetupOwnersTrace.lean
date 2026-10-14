@@ -39,7 +39,7 @@ theorem safeSetupOwnersTrace (p : SetupOwnersInput) (evm : EVM.State)
   refine .inr ⟨{ contract := contract, locals := locals₂ },
     setupOwnersFinishState p evm₂ current₂, twoWordHashMem current₂ ⟨2⟩ mem₂, aw₃, k₃, C₃,
     .execBlockOK (safeSetupOwnersPrefix p evm hz hle hnz
-      (.consNormal hloop (safeSetupOwnersFinishSource evm₂ hl₂ hc₂ (by omega)))), ?_, ?_,
+      (.consNormal hloop (safeSetupOwnersFinishSource (hperm := by simpa only [hee₂] using hperm) evm₂ hl₂ hc₂ (by omega)))), ?_, ?_,
     h₃, ?_, ?_⟩
   · simpa only [setupOwnersFinishState, writeOwnerLink, storageStore_executionEnv] using hee₂
   · simpa only [setupOwnersFinishState, writeOwnerLink, storageStore_σ₀] using hw₂

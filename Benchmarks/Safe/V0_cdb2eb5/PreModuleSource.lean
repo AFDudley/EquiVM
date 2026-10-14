@@ -170,7 +170,7 @@ theorem safePreModuleCheckFailed {evm evm' : EVM.State} {target : EVM.Address}
   apply ExecStmt.iteTrue (by
     simpa [hz] using
       safePreModuleCondition evm target value payload operation guard)
-  exact .consRevert (.externalCallFailure (sendVal := 0)
+  exact .consRevert (.externalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (sendVal := 0)
     (safePreModuleReceiver evm target value payload operation guard) (by simp [evalExpr?, pure])
     (safePreModuleArguments evm target value payload operation guard) hc)
 
@@ -186,7 +186,7 @@ theorem safePreModuleCheckInvalid {evm evm' : EVM.State} {target : EVM.Address}
   apply ExecStmt.iteTrue (by
     simpa [hz] using
       safePreModuleCondition evm target value payload operation guard)
-  exact .consRevert (.externalCallReturnDecodeRevert (sendVal := 0)
+  exact .consRevert (.externalCallReturnDecodeRevert (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (sendVal := 0)
     (safePreModuleReceiver evm target value payload operation guard) (by simp [evalExpr?, pure])
     (safePreModuleArguments evm target value payload operation guard) hc hd)
 
@@ -204,10 +204,10 @@ theorem safePreModuleCheckSuccess {evm evm' : EVM.State} {target : EVM.Address}
   apply ExecStmt.iteTrue (by
     simpa [hz] using
       safePreModuleCondition evm target value payload operation guard)
-  refine .consNormal (.externalCallSuccess (sendVal := 0)
+  refine .consNormal (.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (sendVal := 0)
     (safePreModuleReceiver evm target value payload operation guard) (by simp [evalExpr?, pure])
     (safePreModuleArguments evm target value payload operation guard) hc hd)
-    (.consNormal (.assign (value := .fixedBytes bytes32Width (EVM.Word.toBytesBE hash))
+    (.consNormal (.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (value := .fixedBytes bytes32Width (EVM.Word.toBytesBE hash))
       (by simp [evalExpr?, EvalResult.ofOption, collapseReturns]) ?_) .nil)
   apply assignLocalVarBase_ok (old := .fixedBytes bytes32Width (EVM.Word.toBytesBE ⟨0⟩))
   simp [preModuleCheckingFrame, preModuleLocals, Std.HashMap.getElem_insert]

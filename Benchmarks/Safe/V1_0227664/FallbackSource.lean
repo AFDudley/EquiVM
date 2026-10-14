@@ -99,7 +99,7 @@ theorem safeFallbackCallSuccess {evm evm' : EVM.State} {out : ByteArray}
   apply safeFallbackPrefix evm hv
   refine .consReturn (.iteFalse (by
     simpa [hn] using safeFallbackCondition evm evm.executionEnv.calldata (fallbackHandler evm)) ?_)
-  refine .consNormal (.lowLevelCallSuccess (sendVal := 0) ?_ (by simp [evalExpr?, pure])
+  refine .consNormal (.lowLevelCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (sendVal := 0) ?_ (by simp [evalExpr?, pure])
     (safeFallbackData evm _) (by simpa only [addressOfAddress] using hcall))
     (.consNormal (.requireTrue ?_) (.consReturn (.return ?_)))
   · simp [fallbackLocals, evalExpr?, EvalResult.ofOption]
@@ -116,7 +116,7 @@ theorem safeFallbackCallFailure {evm evm' : EVM.State} {out : ByteArray}
   apply safeFallbackPrefix evm hv
   refine .consRevert (.iteFalse (by
     simpa [hn] using safeFallbackCondition evm evm.executionEnv.calldata (fallbackHandler evm)) ?_)
-  refine .consNormal (.lowLevelCallFailure (sendVal := 0) ?_ (by simp [evalExpr?, pure])
+  refine .consNormal (.lowLevelCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (sendVal := 0) ?_ (by simp [evalExpr?, pure])
     (safeFallbackData evm _) (by simpa only [addressOfAddress] using hcall))
     (.consRevert (.requireFalse ?_))
   · simp [fallbackLocals, evalExpr?, EvalResult.ofOption]

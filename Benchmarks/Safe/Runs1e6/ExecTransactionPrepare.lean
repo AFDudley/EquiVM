@@ -103,12 +103,12 @@ theorem safeExecTransactionPrepare (evm : EVM.State)
           hee₁ rfl hw₁ hsigs hf hz (by decide) ha (by omega)
           (by change p.signatures.size < 2 ^ 64; omega)
           (by simp [execSignatureSaved, execTransactionDecodedStack]; omega) (by jump_dest)
-      · exact .inl ⟨hrev, safeExecSignatureRevert p evm hsig ho hno hs⟩
+      · exact .inl ⟨hrev, safeExecSignatureRevert (hperm := by simpa only [hee] using hperm) p evm hsig ho hno hs⟩
       · rw [← hacc'] at h₆
         have ha' : 128 + 32 + p.signatures.size ≤ ptr' := by omega
         have hp' : ptr' < 2 ^ 205 := by omega
         exact .inr (.inr ⟨evm', mem', ptr', out, aw', k', C',
-          fun _ ht ↦ safeExecSignaturePrefix p evm hsig ho hno hs ht,
+          fun _ ht ↦ safeExecSignaturePrefix (hperm := by simpa only [hee] using hperm) p evm hsig ho hno hs ht,
           hee', hw', h₆, hsigs', hf', hz', ha', hp'⟩)
 
 end Benchmarks.Safe.Runs1e6

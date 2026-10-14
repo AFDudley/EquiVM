@@ -106,7 +106,8 @@ theorem safeSwapOwnerSource (evm : EVM.State) (prev old new : UInt256)
     (hauth : evm.executionEnv.source = evm.executionEnv.codeOwner)
     (hself : AccountAddress.ofNat new.toNat ≠ evm.executionEnv.codeOwner)
     (hvn : validOwner evm.accountMap evm.executionEnv new) (he : ownerLink evm new = ⟨0⟩)
-    (hvo : validOwner evm.accountMap evm.executionEnv old) (hl : ownerLink evm prev = old) :
+    (hvo : validOwner evm.accountMap evm.executionEnv old) (hl : ownerLink evm prev = old)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (swapOwnerArgs prev old new) swapownerTransition.body
       (.returned (swapOwnerFrame₂ prev old new) (swapOwnerState evm prev old new) none) := by
   have hbase := safeSwapOwnerLocals prev old new
@@ -128,11 +129,11 @@ theorem safeSwapOwnerSource (evm : EVM.State) (prev old new : UInt256)
         simpa [hself] using (safeSwapOwnerSelfGuard evm prev old new)))
       (.consNormal (safeSwapOwnerCanAdd evm prev old new hn hvn he)
         (.consNormal (safeSwapOwnerCanRemove evm prev old new hp ho hvo hl)
-          (.consNormal (.assign hload hfirst)
-            (.consNormal (.assign (safeSwapOwnerEvalNew _ prev old new) hsecond)
-              (.consNormal (.assign (hz _) hthird)
-                (.consNormal (.emit (evalExprs?_singleton (safeSwapOwnerEvalOld _ prev old new)))
-                  (.consNormal (.emit (evalExprs?_singleton (safeSwapOwnerEvalNew _ prev old new)))
+          (.consNormal (.assign (hperm := Or.inr hperm) hload hfirst)
+            (.consNormal (.assign (hperm := Or.inr (by simpa only [writeOwnerLink, storageStore_executionEnv] using hperm)) (safeSwapOwnerEvalNew _ prev old new) hsecond)
+              (.consNormal (.assign (hperm := Or.inr (by simpa only [writeOwnerLink, storageStore_executionEnv] using hperm)) (hz _) hthird)
+                (.consNormal (.emit (hperm := by simpa only [writeOwnerLink, storageStore_executionEnv] using hperm) (evalExprs?_singleton (safeSwapOwnerEvalOld _ prev old new)))
+                  (.consNormal (.emit (hperm := by simpa only [writeOwnerLink, storageStore_executionEnv] using hperm) (evalExprs?_singleton (safeSwapOwnerEvalNew _ prev old new)))
                     .nil))))))))))
 
 theorem safeSwapOwnerSourceStatic (evm : EVM.State) (prev old new : UInt256)

@@ -57,7 +57,7 @@ theorem safeGuardCheckFailed {evm evm' : EVM.State} {guard : UInt256} {out : Byt
       "supportsInterface" 0 [guardInterfaceValue kind] (false, evm', out) false) :
     ExecStmt config (guardFrame kind guard) evm (guardCheck kind) .reverted := by
   exact .iteTrue (by simpa [hz] using safeGuardCondition evm guard hc)
-    (.consRevert (.externalCallFailure (sendVal := 0) (safeEvalGuard evm guard)
+    (.consRevert (.externalCallFailure (hperm := Or.inl rfl) (sendVal := 0) (safeEvalGuard evm guard)
       (by simp [evalExpr?, pure])
       (safeGuardInterface evm _) (by simpa only [addressOfAddress] using hcall)))
 
@@ -68,7 +68,7 @@ theorem safeGuardCheckInvalid {evm evm' : EVM.State} {guard : UInt256} {out : By
     (hdecode : config.externalABI.decode? "supportsInterface" out = none) :
     ExecStmt config (guardFrame kind guard) evm (guardCheck kind) .reverted := by
   exact .iteTrue (by simpa [hz] using safeGuardCondition evm guard hc)
-    (.consRevert (.externalCallReturnDecodeRevert (sendVal := 0) (safeEvalGuard evm guard)
+    (.consRevert (.externalCallReturnDecodeRevert (hperm := Or.inl rfl) (sendVal := 0) (safeEvalGuard evm guard)
       (by simp [evalExpr?, pure])
       (safeGuardInterface evm _) (by simpa only [addressOfAddress] using hcall) hdecode))
 
@@ -79,7 +79,7 @@ theorem safeGuardCheckFalse {evm evm' : EVM.State} {guard : UInt256} {out : Byte
     (hdecode : config.externalABI.decode? "supportsInterface" out = some [.bool false]) :
     ExecStmt config (guardFrame kind guard) evm (guardCheck kind) .reverted := by
   exact .iteTrue (by simpa [hz] using safeGuardCondition evm guard hc)
-    (.consNormal (.externalCallSuccess (sendVal := 0) (safeEvalGuard evm guard)
+    (.consNormal (.externalCallSuccess (hperm := Or.inl rfl) (sendVal := 0) (safeEvalGuard evm guard)
       (by simp [evalExpr?, pure])
       (safeGuardInterface evm _) (by simpa only [addressOfAddress] using hcall) hdecode)
       (.consRevert (.requireFalse (by
@@ -95,7 +95,7 @@ theorem safeGuardCheckTrue {evm evm' : EVM.State} {guard : UInt256} {out : ByteA
           (guardArgs kind guard).insert "supported" (.bool true) }
         evm') := by
   exact .iteTrue (by simpa [hz] using safeGuardCondition evm guard hc)
-    (.consNormal (.externalCallSuccess (sendVal := 0) (safeEvalGuard evm guard)
+    (.consNormal (.externalCallSuccess (hperm := Or.inl rfl) (sendVal := 0) (safeEvalGuard evm guard)
       (by simp [evalExpr?, pure])
       (safeGuardInterface evm _) (by simpa only [addressOfAddress] using hcall) hdecode)
       (.consNormal (.requireTrue (by
@@ -127,7 +127,8 @@ theorem safeGuardSourceSuccess {evm evm' : EVM.State} {guard : UInt256} {locals 
     (hg : locals[(guardName kind)]? = some (.address (AccountAddress.ofNat guard.toNat)))
     (hb : locals.get? (guardField kind) = none)
     (hcheck : ExecStmt config (guardFrame kind guard) evm (guardCheck kind)
-      (.ok { contract := contract, locals := locals } evm')) :
+      (.ok { contract := contract, locals := locals } evm'))
+    (hperm : evm'.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (guardArgs kind guard) (guardTransition kind).body
       (.returned { contract := contract, locals := locals }
         (Stele.EVM.storageStore evm' evm'.executionEnv.codeOwner (guardStorageSlot kind) guard)
@@ -139,8 +140,8 @@ theorem safeGuardSourceSuccess {evm evm' : EVM.State} {guard : UInt256} {locals 
     simp [evalExpr?, EvalResult.ofOption, hg]
   refine .execBlockOK (.consNormal (.requireTrue (evalCallvalueEq_true hv))
     (.consNormal (.requireTrue (by simpa [ha] using safeEvalAuthorized evm _))
-      (.consNormal hcheck (.consNormal (.assign he (safeAssignGuard evm' locals guard hc hb))
-        (.consNormal (.emit (vals := [.address (AccountAddress.ofNat guard.toNat)]) ?_) .nil)))))
+      (.consNormal hcheck (.consNormal (.assign (hperm := Or.inr hperm) he (safeAssignGuard evm' locals guard hc hb))
+        (.consNormal (.emit (hperm := by simpa only [storageStore_executionEnv] using hperm) (vals := [.address (AccountAddress.ofNat guard.toNat)]) ?_) .nil)))))
   apply evalExprs?_singleton
   simp [evalExpr?, EvalResult.ofOption, hg]
 

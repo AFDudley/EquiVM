@@ -113,7 +113,7 @@ theorem safeContractSignatureSource {evm evm' : EVM.State} {owner : EVM.Address}
   cases z with
   | false =>
       simp only [contractSignatureDecoded, Bool.false_and, Bool.false_eq_true, if_false]
-      exact .execBlockRevert (.consRevert (.externalCallFailure ht hv ha hcall))
+      exact .execBlockRevert (.consRevert (.externalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) ht hv ha hcall))
   | true =>
       by_cases hl : 32 ≤ out.size
       swap
@@ -121,7 +121,7 @@ theorem safeContractSignatureSource {evm evm' : EVM.State} {owner : EVM.Address}
           Bool.false_eq_true, if_false]
         apply ExecFuncBody.execBlockRevert
         apply ExecBlock.consRevert
-        apply ExecStmt.externalCallReturnDecodeRevert ht hv ha hcall
+        apply ExecStmt.externalCallReturnDecodeRevert (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) ht hv ha hcall
         change (ABI.decodeReturnValueWithMode? .modern abiBytes4 out).map (fun v ↦ [v]) = none
         rw [decodeBytes4ReturnShort (by omega)]; rfl
       by_cases hd : calldataWord out 0 = UInt256.land (calldataWord out 0) bytes4Mask
@@ -130,7 +130,7 @@ theorem safeContractSignatureSource {evm evm' : EVM.State} {owner : EVM.Address}
         apply ExecFuncBody.execBlockRet
         refine .consNormal ?_ (.consReturn (.return (evalExprs?_singleton
           (evalContractSignatureResult evm' owner hash signature out hl hd))))
-        apply ExecStmt.externalCallSuccess (value := [bytes4WordValue (calldataWord out 0)])
+        apply ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (value := [bytes4WordValue (calldataWord out 0)])
           ht hv ha hcall
         change (ABI.decodeReturnValueWithMode? .modern abiBytes4 out).map (fun v ↦ [v]) =
           some [bytes4WordValue (calldataWord out 0)]
@@ -140,7 +140,7 @@ theorem safeContractSignatureSource {evm evm' : EVM.State} {owner : EVM.Address}
           Bool.false_eq_true, if_false]
         apply ExecFuncBody.execBlockRevert
         apply ExecBlock.consRevert
-        apply ExecStmt.externalCallReturnDecodeRevert ht hv ha hcall
+        apply ExecStmt.externalCallReturnDecodeRevert (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) ht hv ha hcall
         change (ABI.decodeReturnValueWithMode? .modern abiBytes4 out).map (fun v ↦ [v]) = none
         rw [decodeBytes4ReturnLong hl hb, if_neg hd]; rfl
 

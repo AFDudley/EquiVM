@@ -93,7 +93,7 @@ theorem safeContractSignatureSource {evm evm' : EVM.State} {owner : EVM.Address}
       Std.HashMap.getElem_insert, EvalResult.ofOption, EvalResult.bind, bind, pure,
       contractSignatureCallEncoding]
   cases z
-  · exact .lowLevelCallFailure ht hv hd hc
-  · exact .lowLevelCallSuccess ht hv hd hc
+  · exact .lowLevelCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) ht hv hd hc
+  · exact .lowLevelCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) ht hv hd hc
 
 end Benchmarks.Safe.Runs1e6

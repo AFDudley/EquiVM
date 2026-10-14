@@ -114,9 +114,9 @@ theorem safeGetOwnersLoopStep (evm : EVM.State) {locals words i current}
   have hinc : evalExpr? config { contract := contract, locals := locals₂ } evm
       (inc256 (.var "index")) = .ok (.int (Int.ofNat (i + 1))) := by
     exact evalNatIncrement (evalLocalValue hi₂) hfit
-  refine .consNormal (.assign (evalLocalValue hl.currentOwner) hfirst)
-    (.consNormal (.assign hnext (assignLocalVarBase_ok hc₁))
-      (.consNormal (.assign hinc (assignLocalVarBase_ok hi₂)) .nil))
+  refine .consNormal (.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalLocalValue hl.currentOwner) hfirst)
+    (.consNormal (.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hnext (assignLocalVarBase_ok hc₁))
+      (.consNormal (.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hinc (assignLocalVarBase_ok hi₂)) .nil))
 
 theorem safeGetOwnersLoopBounds (evm : EVM.State) {locals words i current}
     (hl : GetOwnersLocals locals words i current) (hi : words.length ≤ i) :

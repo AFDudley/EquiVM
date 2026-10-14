@@ -113,7 +113,7 @@ theorem safeContractSignatureSource {evm evm' : EVM.State} {owner : EVM.Address}
   refine .consNormal ?_ (.consReturn (.return (evalExprs?_singleton
     (evalContractSignatureResult evm' owner hash signature z out))))
   cases z
-  · exact .lowLevelCallFailure ht hv hdata hc
-  · exact .lowLevelCallSuccess ht hv hdata hc
+  · exact .lowLevelCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) ht hv hdata hc
+  · exact .lowLevelCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) ht hv hdata hc
 
 end Benchmarks.Safe.V3_77901a5

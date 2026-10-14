@@ -33,10 +33,11 @@ theorem safeSetupEventValues (p : SetupInput) (evm : EVM.State) :
 
 theorem safeSetupPrefix (p : SetupInput) (evm : EVM.State) {result : ExecResult}
     (hv : evm.executionEnv.weiValue = ⟨0⟩)
-    (ht : ExecBlock config p.frame evm (setupTransition.body.drop 2) result) :
+    (ht : ExecBlock config p.frame evm (setupTransition.body.drop 2) result)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config p.frame evm setupTransition.body result :=
   .consNormal (.requireTrue (evalCallvalueEq_true hv))
-    (.consNormal (.emit (safeSetupEventValues p evm)) ht)
+    (.consNormal (.emit (hperm := hperm) (safeSetupEventValues p evm)) ht)
 
 theorem safeSetupStatic (p : SetupInput) (evm : EVM.State)
     (hv : evm.executionEnv.weiValue = ⟨0⟩) (hp : evm.executionEnv.perm = false) :

@@ -108,7 +108,7 @@ theorem safeTokenTransferSource {evm evm' : EVM.State} {p : TokenTransferInput}
       Std.HashMap.getElem?_insert, Std.HashMap.getElem_insert, EvalResult.ofOption,
       EvalResult.bind, bind, pure, tokenTransferCallEncoding]
   cases z
-  · exact .lowLevelCallFailure ht hv hd hc
-  · exact .lowLevelCallSuccess ht hv hd hc
+  · exact .lowLevelCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) ht hv hd hc
+  · exact .lowLevelCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) ht hv hd hc
 
 end Benchmarks.Safe.Runs1e6

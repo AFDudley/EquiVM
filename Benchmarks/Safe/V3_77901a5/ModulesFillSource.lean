@@ -68,9 +68,9 @@ theorem safeModulesFillStep (evm : EVM.State) {locals words index count current 
   simp only [← List.map_set] at hwrite
   have hnext := safeEvalModuleLink evm ls₁ (.var "current") current
     (by simpa [ls₁, Std.HashMap.getElem?_insert] using hl.modules) hc (evalLocalValue hc₁)
-  exact .consNormal (.assign (evalLocalValue hl.current) hwrite)
-    (.consNormal (.assign hnext (assignLocalVarBase_ok hc₁))
-      (.consNormal (.assign (evalNatIncrement (evalLocalValue hi₂) hfit)
+  exact .consNormal (.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalLocalValue hl.current) hwrite)
+    (.consNormal (.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hnext (assignLocalVarBase_ok hc₁))
+      (.consNormal (.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalNatIncrement (evalLocalValue hi₂) hfit)
         (assignLocalVarBase_ok hi₂)) .nil))
 
 theorem safeModulesFillLoop (evm : EVM.State) {locals doneWords fuel current words last next count}

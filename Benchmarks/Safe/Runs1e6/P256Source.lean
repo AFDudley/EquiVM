@@ -98,7 +98,7 @@ theorem safeP256Source {evm evm' : EVM.State} {p : P256Input} {z : Bool} {out : 
     decide +kernel
   rw [← ha] at hc
   cases z
-  · exact .lowLevelCallFailure ht hv (evalP256Payload evm p) hc
-  · exact .lowLevelCallSuccess ht hv (evalP256Payload evm p) hc
+  · exact .lowLevelCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) ht hv (evalP256Payload evm p) hc
+  · exact .lowLevelCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) ht hv (evalP256Payload evm p) hc
 
 end Benchmarks.Safe.Runs1e6

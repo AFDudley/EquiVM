@@ -55,11 +55,12 @@ theorem safeSetupModulesCode (p : SetupModulesInput) (evm : EVM.State) :
 
 theorem safeSetupModulesPrefix (p : SetupModulesInput) (evm : EVM.State) {result : ExecResult}
     (he : moduleLink evm ⟨1⟩ = ⟨0⟩)
-    (htail : ExecBlock config p.frame (p.state evm) (setupModulesFunction.body.drop 2) result) :
+    (htail : ExecBlock config p.frame (p.state evm) (setupModulesFunction.body.drop 2) result)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config p.frame evm setupModulesFunction.body result := by
   exact .consNormal (.requireTrue (by
       simpa only [he, decide_true] using safeSetupModulesEmpty p evm))
-    (.consNormal (.assign (safeEvalModuleSentinel evm p.args)
+    (.consNormal (.assign (hperm := Or.inr hperm) (safeEvalModuleSentinel evm p.args)
       (safeAssignModuleLink evm p.args sentinelAddr ⟨1⟩ ⟨1⟩
         (by simp [SetupModulesInput.args, Std.HashMap.getElem_insert])
         (by decide) (by decide) (safeEvalModuleSentinel evm p.args))) htail)
@@ -71,21 +72,23 @@ theorem safeSetupModulesAlreadyInitialized (p : SetupModulesInput) (evm : EVM.St
     simpa only [he, decide_false] using safeSetupModulesEmpty p evm)))
 
 theorem safeSetupModulesZero (p : SetupModulesInput) (evm : EVM.State)
-    (he : moduleLink evm ⟨1⟩ = ⟨0⟩) (hz : p.target = ⟨0⟩) :
+    (he : moduleLink evm ⟨1⟩ = ⟨0⟩) (hz : p.target = ⟨0⟩)
+    (hperm : evm.executionEnv.perm = true) :
     ExecFuncBody config p.frame evm setupModulesFunction.body
       (.returned p.frame (p.state evm) none) := by
   apply ExecFuncBody.execBlockOK
-  apply safeSetupModulesPrefix p evm he
+  apply safeSetupModulesPrefix (hperm := by assumption) p evm he
   exact .consNormal (.iteFalse (by
     simpa only [hz, ne_eq, not_true_eq_false, decide_false] using
       safeSetupModulesCondition p (p.state evm) (by rw [hz]; decide)) .nil) .nil
 
 theorem safeSetupModulesNoCode (p : SetupModulesInput) (evm : EVM.State)
     (hc : p.target.toNat < EVM.addressModulus) (he : moduleLink evm ⟨1⟩ = ⟨0⟩)
-    (ht : p.target ≠ ⟨0⟩) (hz : extCodeSizeWord (p.state evm).accountMap p.target = ⟨0⟩) :
+    (ht : p.target ≠ ⟨0⟩) (hz : extCodeSizeWord (p.state evm).accountMap p.target = ⟨0⟩)
+    (hperm : evm.executionEnv.perm = true) :
     ExecFuncBody config p.frame evm setupModulesFunction.body .reverted := by
   apply ExecFuncBody.execBlockRevert
-  apply safeSetupModulesPrefix p evm he
+  apply safeSetupModulesPrefix (hperm := by assumption) p evm he
   exact .consRevert (.iteTrue
     ((safeSetupModulesCondition p (p.state evm) hc).trans (by congr 2; exact decide_eq_true ht))
     (.consRevert (.requireFalse (by
@@ -117,7 +120,8 @@ theorem safeSetupModulesCalled (p : SetupModulesInput) (evm : EVM.State)
     (ht : p.target ≠ ⟨0⟩) (hz : extCodeSizeWord (p.state evm).accountMap p.target ≠ ⟨0⟩)
     (hb : ExecFuncBody config (executeFrame (AccountAddress.ofNat p.target.toNat) ⟨0⟩
       p.payload ⟨1⟩ (UInt256.lnot ⟨0⟩)) (p.state evm) executeFunction.body
-      (.returned f' evm' (some [.bool z]))) :
+      (.returned f' evm' (some [.bool z])))
+    (hperm : evm.executionEnv.perm = true) :
     ExecFuncBody config p.frame evm setupModulesFunction.body
       (if z then .returned (p.finalFrame z) evm' none else .reverted) := by
   have hcond : evalExpr? config p.frame (p.state evm) (neE (.var "to") zeroAddr) =
@@ -133,11 +137,11 @@ theorem safeSetupModulesCalled (p : SetupModulesInput) (evm : EVM.State)
       .ok (.bool z) := evalLocalValue (by simp [SetupModulesInput.finalFrame])
   cases z with
   | false =>
-      exact .execBlockRevert (safeSetupModulesPrefix p evm he
+      exact .execBlockRevert (safeSetupModulesPrefix (hperm := by assumption) p evm he
         (.consRevert (.iteTrue hcond (.consNormal (.requireTrue hcode)
           (.consNormal hcall (.consRevert (.requireFalse hresult)))))))
   | true =>
-      exact .execBlockOK (safeSetupModulesPrefix p evm he
+      exact .execBlockOK (safeSetupModulesPrefix (hperm := by assumption) p evm he
         (.consNormal (.iteTrue hcond (.consNormal (.requireTrue hcode)
           (.consNormal hcall (.consNormal (.requireTrue hresult) .nil)))) .nil))
 

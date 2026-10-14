@@ -95,7 +95,8 @@ theorem safePaymentNativeCall {p : PaymentInput} {evm evm' : EVM.State} {z : Boo
     {out : ByteArray}
     (hc : callViaEVM evm (EVM.address (p.receiver evm.executionEnv))
       (Int.ofNat (UInt256.mul p.gasTotal (p.nativePrice evm.executionEnv)).toNat)
-      ByteArray.empty (z, evm', out)) :
+      ByteArray.empty (z, evm', out))
+    (hperm : UInt256.mul p.gasTotal (p.nativePrice evm.executionEnv) = ⟨0⟩ ∨ evm.executionEnv.perm = true) :
     ExecStmt config (p.paidFrame evm.executionEnv (p.nativePrice evm.executionEnv)) evm
       (.lowLevelCall (.var "receiver") (.var "payment") emptyBytes "refundSuccess" "refundData")
       (.ok (p.nativeFinal evm.executionEnv z out) evm') := by
@@ -108,8 +109,8 @@ theorem safePaymentNativeCall {p : PaymentInput} {evm evm' : EVM.State} {z : Boo
       .ok (uint256Value (UInt256.mul p.gasTotal (p.nativePrice evm.executionEnv))) :=
     evalLocalValue (by simp [PaymentInput.paidFrame, Std.HashMap.getElem?_insert])
   cases z
-  · exact .lowLevelCallFailure hr hp (by simp only [emptyBytes, evalExpr?, pure]) hc
-  · exact .lowLevelCallSuccess hr hp (by simp only [emptyBytes, evalExpr?, pure]) hc
+  · exact .lowLevelCallFailure (hperm := by simpa only [wordOfInt_ofNat_toNat] using hperm) hr hp (by simp only [emptyBytes, evalExpr?, pure]) hc
+  · exact .lowLevelCallSuccess (hperm := by simpa only [wordOfInt_ofNat_toNat] using hperm) hr hp (by simp only [emptyBytes, evalExpr?, pure]) hc
 
 theorem safePaymentNativeSource {p : PaymentInput} {evm evm' : EVM.State} {z : Bool}
     {out : ByteArray} (hsum : p.gasUsed.toNat + p.baseGas.toNat < UInt256.size)
@@ -117,7 +118,8 @@ theorem safePaymentNativeSource {p : PaymentInput} {evm evm' : EVM.State} {z : B
     (htoken : p.gasToken = EVM.address 0)
     (hc : callViaEVM evm (EVM.address (p.receiver evm.executionEnv))
       (Int.ofNat (UInt256.mul p.gasTotal (p.nativePrice evm.executionEnv)).toNat)
-      ByteArray.empty (z, evm', out)) :
+      ByteArray.empty (z, evm', out))
+    (hperm : UInt256.mul p.gasTotal (p.nativePrice evm.executionEnv) = ⟨0⟩ ∨ evm.executionEnv.perm = true) :
     ExecFuncBody config p.frame evm handlePaymentFunction.body
       (if z then .returned (p.nativeFinal evm.executionEnv z out) evm'
         (some [uint256Value (UInt256.mul p.gasTotal (p.nativePrice evm.executionEnv))])
@@ -126,7 +128,7 @@ theorem safePaymentNativeSource {p : PaymentInput} {evm evm' : EVM.State} {z : B
       (eqE (.var "gasToken") zeroAddr) = .ok (.bool true) := by
     simpa only [htoken, decide_true] using safePaymentTokenCondition p evm
   have hmul := safePaymentMul (safePaymentPrice p evm) hprod
-  have hcall := safePaymentNativeCall hc
+  have hcall := safePaymentNativeCall (hperm := by assumption) hc
   have he : evalExpr? config (p.nativeFinal evm.executionEnv z out) evm' (.var "refundSuccess") =
       .ok (.bool z) := evalLocalValue (by
     simp [PaymentInput.nativeFinal, Std.HashMap.getElem?_insert, Std.HashMap.getElem_insert])

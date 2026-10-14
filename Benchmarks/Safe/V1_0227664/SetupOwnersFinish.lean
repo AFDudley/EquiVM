@@ -31,7 +31,8 @@ def setupOwnersFinishState (p : SetupOwnersInput) (evm : EVM.State)
 
 theorem safeSetupOwnersFinishSource (evm : EVM.State) {p locals i current}
     (hl : SetupOwnersLocals p locals i current) (hc : current.toNat < EVM.addressModulus)
-    (hn : p.owners.length < UInt256.size) :
+    (hn : p.owners.length < UInt256.size)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config { contract := contract, locals := locals } evm
       (setupOwnersFunction.body.drop 7)
       (.ok { contract := contract, locals := locals } (setupOwnersFinishState p evm current)) := by
@@ -42,9 +43,9 @@ theorem safeSetupOwnersFinishSource (evm : EVM.State) {p locals i current}
       .ok (uint256Value (UInt256.ofNat p.owners.length)) := by
     rw [uint256Value, ulit_toNat' _ hn]
     exact evalLocalValue hl.length
-  exact .consNormal (.assign (safeEvalOwnerSentinel evm locals) hfirst)
-    (.consNormal (.assign hlen (safeAssignOwnerCount _ locals _ hl.countAbsent))
-      (.consNormal (.assign (evalLocalValue hl.threshold)
+  exact .consNormal (.assign (hperm := Or.inr hperm) (safeEvalOwnerSentinel evm locals) hfirst)
+    (.consNormal (.assign (hperm := Or.inr (by simpa only [writeOwnerLink, storageStore_executionEnv] using hperm)) hlen (safeAssignOwnerCount _ locals _ hl.countAbsent))
+      (.consNormal (.assign (hperm := Or.inr (by simpa only [writeOwnerLink, storageStore_executionEnv] using hperm)) (evalLocalValue hl.threshold)
         (safeAssignThresholdLocals _ locals _ hl.thresholdAbsent)) .nil))
 
 theorem setupOwnersFinishState_accounts (p : SetupOwnersInput) (evm : EVM.State)

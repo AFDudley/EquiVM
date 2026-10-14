@@ -35,7 +35,7 @@ theorem safeSetupBodyTrace (evm : EVM.State)
               rw [calldataWords_length]; have := hb.ownersLength; norm_num [UInt256.size]; omega)
           (fun j hj ↦ hc _ (List.getElem_mem hj)) hperm
           (by simp [setupDecodedStack]; omega) (by jump_dest)
-      · exact .reverted (safeSetupPrefix p evm hv'
+      · exact .reverted (safeSetupPrefix (hperm := by simpa only [hee] using hperm) p evm hv'
           (.consRevert (safeSetupOwnersCall p evm (SetupLocals.initial p) hs))) hrev
       have hm : mem'.size = 288 + 32 * n :=
         hm'.trans (setupOwnersAllocatedMemory_size hb.ownersEnd)
@@ -58,8 +58,8 @@ theorem safeSetupBodyTrace (evm : EVM.State)
         hfree (by omega) hzero hperm hov hret
       have hbody := htail.prepend (safeSetupOwnersCall p evm (SetupLocals.initial p) hs)
       cases hbody with
-      | reverted source trace => exact .reverted (safeSetupPrefix p evm hv' source) trace
-      | staticHalt source trace => exact .staticHalt (safeSetupPrefix p evm hv' source) trace
-      | success source trace => exact .success (safeSetupPrefix p evm hv' source) trace
+      | reverted source trace => exact .reverted (safeSetupPrefix (hperm := by simpa only [hee] using hperm) p evm hv' source) trace
+      | staticHalt source trace => exact .staticHalt (safeSetupPrefix (hperm := by simpa only [hee] using hperm) p evm hv' source) trace
+      | success source trace => exact .success (safeSetupPrefix (hperm := by simpa only [hee] using hperm) p evm hv' source) trace
 
 end Benchmarks.Safe.V3_77901a5

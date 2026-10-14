@@ -61,7 +61,7 @@ theorem optionalCheckedCallFailure {cfg : Config} {frame : Frame} {evm evm' : EV
     (hcall : typedCallViaEVM cfg evm (EVM.address target) name 0 argVals (false, evm', out)) :
     ExecStmt cfg frame evm (optionalCheckedCall receiver name args retVar) .reverted := by
   apply ExecStmt.iteTrue (by simpa [hz] using evalAddressValueNonzero he)
-  apply checkedExternalCallFailure _ he ha hcall
+  apply checkedExternalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) _ he ha hcall
   have hp : 0 < (extCodeSizeWord evm.accountMap word).toNat :=
     Nat.pos_of_ne_zero (fun hz ↦ hc (u256_inj hz))
   simpa only [hp, decide_true] using evalExpr_codeGuard_of_accounts_eq rfl ht he
@@ -79,7 +79,7 @@ theorem optionalCheckedCallSuccess {cfg : Config} {frame : Frame} {evm evm' : EV
       (.ok { frame with locals := frame.locals.insert retVar (collapseReturns values) } evm') :=
     by
   apply ExecStmt.iteTrue (by simpa [hz] using evalAddressValueNonzero he)
-  apply checkedExternalCallSuccess _ he ha hcall hd
+  apply checkedExternalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) _ he ha hcall hd
   have hp : 0 < (extCodeSizeWord evm.accountMap word).toNat :=
     Nat.pos_of_ne_zero (fun hz ↦ hc (u256_inj hz))
   simpa only [hp, decide_true] using evalExpr_codeGuard_of_accounts_eq rfl ht he
