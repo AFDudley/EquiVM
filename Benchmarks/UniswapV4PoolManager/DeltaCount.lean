@@ -67,7 +67,7 @@ theorem deltaCountBodyExec {f : Frame} {evm : EVM.State}
   · rw [if_pos hp]
     exact ExecFuncBody.execBlockStatic (ExecBlock.consStatic (ExecStmt.assignTransientStatic he hs hp))
   · rw [if_neg hp]
-    exact ExecFuncBody.execBlockOK (ExecBlock.consNormal (ExecStmt.assign he hs) ExecBlock.nil)
+    exact ExecFuncBody.execBlockOK (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (Bool.eq_true_of_not_eq_false hp)) he hs) ExecBlock.nil)
 
 theorem deltaCountCall {f : Frame} {evm : EVM.State}
     (hf : f.contract = contract) (increment : Bool) (retVar : Ident) :

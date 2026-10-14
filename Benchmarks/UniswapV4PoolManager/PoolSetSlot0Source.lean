@@ -55,6 +55,6 @@ theorem poolSetSlot0BodyExec {f : Frame} {evm : EVM.State} {id fee word : UInt25
         (ExecBlock.consNormal hfee (ExecBlock.consStatic (ExecStmt.assignStatic hval hwrite hp)))))
     · rw [if_neg hp]
       exact .execBlockOK (ExecBlock.consNormal hlet (ExecBlock.consNormal hcheck
-        (ExecBlock.consNormal hfee (ExecBlock.consNormal (ExecStmt.assign hval hwrite) ExecBlock.nil))))
+        (ExecBlock.consNormal hfee (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (Bool.eq_true_of_not_eq_false hp)) hval hwrite) ExecBlock.nil))))
 
 end Benchmarks.UniswapV4PoolManager
