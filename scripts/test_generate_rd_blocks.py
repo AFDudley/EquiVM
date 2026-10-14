@@ -194,6 +194,15 @@ class GeneratorTests(unittest.TestCase):
         self.assertIn("decode_append_left_of_decode", rendered)
         self.assertIn("RD (sampleCode ++ tail)", rendered)
 
+    def test_creation_jump_destination_substitutes_codecopy_source(self) -> None:
+        from bytecode_io import read_bytecode
+        creation = read_bytecode(Path(__file__).resolve().parent.parent /
+                                 "Examples/VyperImmutable/creation.hex")
+        rendered = "\n".join(rd.generate_units(
+            creation, "sample", "sampleCode", creation_code=True))
+        self.assertIn("(j tail (memLoad", rendered)
+        self.assertNotIn("__CODE__", rendered)
+
     def test_index_covers_generated_theorems(self) -> None:
         records = rd.generate_unit_records(bytes.fromhex("6001"), "sample", "sampleCode",
                                            keep_metadata=True)

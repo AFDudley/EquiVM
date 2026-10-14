@@ -1,0 +1,6 @@
+ok   vaultBytecode matches the hex artifact
+ok   validJumps: matches the JUMPDEST scan
+ok   vaultCreationBytecode matches the hex artifact
+ok   creationValidJumps: matches the JUMPDEST scan
+ok   Selectors.lean: 46 entries match the ABI in SpecSyntax order
+ok   sources.sha256 verified

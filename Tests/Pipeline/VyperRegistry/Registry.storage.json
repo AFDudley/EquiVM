@@ -1,0 +1,1 @@
+{"storage_layout": {"ownable": {"owner": {"type": "address", "n_slots": 1, "slot": 0}}, "entries": {"type": "HashMap[uint256, Entry]", "n_slots": 1, "slot": 1}, "ids": {"type": "DynArray[uint256, 16]", "n_slots": 17, "slot": 2}, "nextId": {"type": "uint256", "n_slots": 1, "slot": 19}, "totalWeight": {"type": "uint256", "n_slots": 1, "slot": 20}}}

@@ -3,11 +3,11 @@
 
 Subcommands (``all`` runs them in order):
 
-  compile   run solc (standard JSON) on the pinned sources and write the artifacts:
+  compile   run solc (standard JSON), or Vyper 0.4.3 with --vyper, on the pinned sources:
             runtime.hex, creation.hex, <Name>.abi.json, <Name>.storage.json,
-            <Name>.sol.ast.json (main source unit), <Name>.metadata.json, sources.sha256, and
-            <Name>.build.json (compiler version and settings, method identifiers, immutable
-            references, source maps, generated sources, every source unit's AST).
+            sources.sha256 and <Name>.build.json (compiler settings, selectors, source maps,
+            immutables). solc also writes <Name>.sol.ast.json, <Name>.metadata.json and the
+            full source-unit AST; Vyper records its code layout and pc source-position map.
   lean      write Bytecode.lean (chunked byte arrays plus the JUMPDEST theorems), Selectors.lean
             (selector table, selIs/selWord, keccak facts), and for contracts with immutables
             Immutables.lean and ImmutableCode.lean.  Existing files are kept unless --force.
@@ -23,6 +23,9 @@ Example:
   scripts/scaffold.py all --dir Benchmarks/Scaffolds/Foo --solc /tmp/solc-0.8.20 \
       --main contracts/Foo.sol --contract Foo --runs 200 --evm-version shanghai \
       --module Benchmarks.Scaffolds.Foo
+
+  scripts/scaffold.py compile --dir Examples/VyperImmutable --vyper vyper \
+      --main Immutable.vy --evm-version cancun
 """
 
 from __future__ import annotations
@@ -174,6 +177,29 @@ def solc_version(solc: str) -> str:
     return match.group(1) if match else out.strip()
 
 
+def vyper_scalar_immutable_type(ty: str) -> bool:
+    if ty in ("address", "bool"):
+        return True
+    # A Vyper contract interface is represented by the address of its contract.
+    # code_layout reports its source .vyi path rather than the word type.
+    if ty.endswith(".vyi"):
+        return True
+    match = re.fullmatch(r"(?:uint|int)([0-9]+)", ty)
+    if match:
+        width = int(match.group(1))
+        return 8 <= width <= 256 and width % 8 == 0
+    match = re.fullmatch(r"bytes([0-9]+)", ty)
+    return bool(match and 1 <= int(match.group(1)) <= 32)
+
+
+def vyper_optimize_mode(source: str, no_optimize: bool) -> str:
+    """Record the optimization selected by the CLI or the source pragma."""
+    if no_optimize:
+        return "none"
+    match = re.search(r"(?m)^\s*#\s*pragma\s+optimize\s+(gas|codesize|none)\s*$", source)
+    return match.group(1) if match else "gas"
+
+
 def immutable_declarations(units: dict[str, dict]) -> dict[int, dict]:
     out: dict[int, dict] = {}
     for unit in units.values():
@@ -202,6 +228,8 @@ def immutable_write_order(creation: bytes, offsets_by_name: dict[str, list[int]]
 
 
 def cmd_compile(args: argparse.Namespace) -> int:
+    if args.vyper:
+        return cmd_compile_vyper(args)
     directory: Path = args.dir
     directory.mkdir(parents=True, exist_ok=True)
     sources_root = directory / args.sources_root
@@ -314,8 +342,95 @@ def cmd_compile(args: argparse.Namespace) -> int:
     return 0
 
 
-def write_hashes(directory: Path, name: str, sources_root: Path) -> None:
-    files = sorted(sources_root.rglob("*.sol"))
+def cmd_compile_vyper(args: argparse.Namespace) -> int:
+    """Compile one Vyper module and preserve its code layout for suffix proofs."""
+    directory: Path = args.dir
+    directory.mkdir(parents=True, exist_ok=True)
+    sources_root = directory / args.sources_root
+    candidates = sorted(sources_root.rglob("*.vy"))
+    main = args.main or (candidates[0].relative_to(sources_root).as_posix()
+                         if len(candidates) == 1 else None)
+    if main is None:
+        raise SystemExit("pass --main when the sources root holds multiple .vy files")
+    source = sources_root / main
+    if not source.is_file() or source.suffix != ".vy":
+        raise SystemExit(f"Vyper source {source} does not exist")
+    optimize = vyper_optimize_mode(source.read_text(encoding="utf-8"), args.no_optimize)
+    version = subprocess.run([args.vyper, "--version"], text=True, capture_output=True,
+                             check=True).stdout.strip()
+    if not version.startswith("0.4.3"):
+        raise SystemExit(f"Vyper 0.4.3 required; got {version}")
+    command = [args.vyper, "--no-bytecode-metadata", "-f", "combined_json"]
+    if args.evm_version:
+        command += ["--evm-version", args.evm_version]
+    if args.no_optimize:
+        command += ["--no-optimize"]
+    command += ["--path", str(sources_root.resolve()), str(source.resolve())]
+    result = subprocess.run(command, text=True, capture_output=True)
+    if result.returncode:
+        sys.stderr.write(result.stderr)
+        return result.returncode
+    output = json.loads(result.stdout)
+    artifact = output.get(str(source.resolve()))
+    if artifact is None:
+        raise SystemExit(f"Vyper combined_json has no artifact for {source}")
+    name = args.contract or source.stem
+    # the annotated AST (types on every expression) drives vy2stele.py
+    ast_command = [args.vyper, "-f", "annotated_ast"]
+    if args.evm_version:
+        ast_command += ["--evm-version", args.evm_version]
+    ast_command += ["--path", str(sources_root.resolve()), str(source.resolve())]
+    ast_result = subprocess.run(ast_command, text=True, capture_output=True)
+    if ast_result.returncode:
+        sys.stderr.write(ast_result.stderr)
+        return ast_result.returncode
+    annotated = json.loads(ast_result.stdout)
+    for unit in [annotated.get("ast", {})] + list(annotated.get("imports", [])):
+        for key in ("path", "resolved_path"):   # absolute on the compiling machine
+            if unit.get(key):
+                unit[key] = rel_to_root(Path(unit[key]), sources_root.resolve())
+    (directory / f"{name}.vy.ast.json").write_text(json.dumps(annotated) + "\n", encoding="utf-8")
+    layout = artifact.get("layout", {}).get("code_layout", {})
+    immutables = []
+    for key, info in sorted(layout.items(), key=lambda pair: pair[1]["offset"]):
+        if not isinstance(info.get("offset"), int) or not isinstance(info.get("length"), int):
+            raise SystemExit(f"invalid Vyper code_layout entry for {key}")
+        if info["length"] != 32 or not vyper_scalar_immutable_type(info.get("type", "")):
+            raise SystemExit(f"{key}: unsupported immutable type {info.get('type')} "
+                             f"with length {info['length']}; scalar 32-byte slots are supported")
+        immutables.append({"name": key, "type": info["type"], "offset": info["offset"],
+                           "length": info["length"]})
+    for left, right in zip(immutables, immutables[1:]):
+        if left["offset"] + left["length"] > right["offset"]:
+            raise SystemExit(f"overlapping Vyper immutable slots: {left['name']}, {right['name']}")
+    suffix_size = max((i["offset"] + i["length"] for i in immutables), default=0)
+    runtime_hex = artifact["bytecode_runtime"].removeprefix("0x")
+    creation_hex = artifact["bytecode"].removeprefix("0x")
+    (directory / "runtime.hex").write_text(runtime_hex + "\n", encoding="utf-8")
+    (directory / "creation.hex").write_text(creation_hex + "\n", encoding="utf-8")
+    (directory / f"{name}.abi.json").write_text(json.dumps(artifact["abi"]) + "\n", encoding="utf-8")
+    (directory / f"{name}.storage.json").write_text(json.dumps(artifact["layout"]) + "\n", encoding="utf-8")
+    build = {"contract": name, "main": main, "sourcesRoot": args.sources_root,
+             "compiler": {"kind": "vyper", "version": version, "path": args.vyper},
+             "settings": {"evmVersion": args.evm_version or "prague",
+                          "optimize": optimize,
+                          "bytecodeMetadata": False},
+             "methodIdentifiers": artifact.get("method_identifiers", {}),
+             "immutables": immutables, "immutableSuffixSize": suffix_size,
+             "sourceMap": {"runtime": artifact.get("source_map_runtime", {}),
+                           "creation": artifact.get("source_map", {})},
+             "ast": annotated}
+    (directory / f"{name}.build.json").write_text(json.dumps(build) + "\n", encoding="utf-8")
+    write_hashes(directory, name, sources_root, ".vy")
+    print(f"compiled {name} with Vyper {version}: runtime {len(runtime_hex)//2} bytes, "
+          f"creation {len(creation_hex)//2} bytes, immutable suffix {suffix_size} bytes")
+    return 0
+
+
+def write_hashes(directory: Path, name: str, sources_root: Path, extension: str = ".sol") -> None:
+    files = sorted(sources_root.rglob(f"*{extension}"))
+    if extension == ".vy":
+        files = sorted(files + list(sources_root.rglob("*.vyi")))
     for artifact in ("creation.hex", "runtime.hex", f"{name}.abi.json", f"{name}.sol.ast.json",
                      f"{name}.storage.json", f"{name}.metadata.json"):
         if (directory / artifact).exists():
@@ -369,14 +484,18 @@ def render_bytecode_lean(namespace: str, prefix: str, name: str, runtime: bytes,
     header = [f"/-!", f"# {name} bytecode", "",
               "Generated by `scripts/scaffold.py lean` from `runtime.hex` and `creation.hex`; do not edit."]
     if build:
-        header.append(f"Compiler: solc `{build['compiler']['version']}`, main source `{build['main']}`, "
+        header.append(f"Compiler: {build['compiler'].get('kind', 'solc')} `{build['compiler']['version']}`, main source `{build['main']}`, "
                       f"settings `{json.dumps(build['settings'], sort_keys=True)}`.")
     header.append(f"Runtime: {len(runtime)} bytes ({len(body)} executable, {len(meta)} metadata)"
                   + (f"; creation: {len(creation)} bytes." if creation is not None else "."))
     if build and build.get("immutables"):
-        sites = "; ".join(f"`{i['name']}` at {i['offsets']}" for i in build["immutables"])
-        header.append(f"`{prefix}Bytecode` is the runtime template with zeroed immutable sites: {sites} "
-                      "(see `Immutables.lean`).")
+        if build["compiler"].get("kind") == "vyper":
+            header.append(f"`{prefix}Bytecode` is the runtime prefix; the constructor appends "
+                          f"{build['immutableSuffixSize']} immutable bytes (see `Immutables.lean`).")
+        else:
+            sites = "; ".join(f"`{i['name']}` at {i['offsets']}" for i in build["immutables"])
+            header.append(f"`{prefix}Bytecode` is the runtime template with zeroed immutable sites: {sites} "
+                          "(see `Immutables.lean`).")
     header.append("-/")
     out = ["import Ethereum.Semantics", "import Reasoning.JumpDest", "", *header, "",
            "open Ethereum Ethereum.EVM", "", f"namespace {namespace}", "",
@@ -399,7 +518,14 @@ def render_bytecode_lean(namespace: str, prefix: str, name: str, runtime: bytes,
 def selector_table(directory: Path, name: str, build: dict | None) -> list[tuple[str, bytes]]:
     """(canonical signature, 4-byte selector) for every external function, in table order."""
     if build and build.get("methodIdentifiers"):
-        pairs = [(sig, bytes.fromhex(sel)) for sig, sel in build["methodIdentifiers"].items()]
+        # Vyper may omit leading zeroes when serializing a selector as hex.  It also lists
+        # `__default__()`, whose selector the dispatcher never compares: the fallback runs when
+        # no selector matches.
+        pairs = [(sig, bytes.fromhex(sel.removeprefix("0x").zfill(8)))
+                 for sig, sel in build["methodIdentifiers"].items()
+                 if not (build.get("compiler", {}).get("kind") == "vyper" and sig.startswith("__default__("))]
+        if any(len(value) != 4 for _, value in pairs):
+            raise SystemExit("compiler emitted a method identifier wider than four bytes")
     else:
         abi_path = directory / f"{name}.abi.json"
         if not abi_path.exists():
@@ -510,6 +636,222 @@ def render_immutable_code_lean(namespace: str, module: str) -> str:
         f"end {namespace}", ""])
 
 
+def render_vyper_immutables_lean(namespace: str, name: str, build: dict) -> str:
+    rows = [f'{{ name := "{i["name"]}", offset := {i["offset"]}, length := {i["length"]} }}'
+            for i in build["immutables"]]
+    return "\n".join([
+        "import Reasoning.VyperImmutables", "",
+        f"/-! Vyper {build['compiler']['version']} `code_layout` for {name}. -/", "",
+        f"namespace {namespace}", "",
+        "/-- Offsets are relative to the appended immutable section. -/",
+        "def immutableLayout : Reasoning.VyperImmutables.Layout :=",
+        f"  {{ slots := [{', '.join(rows)}], size := {build['immutableSuffixSize']} }}", "",
+        f"end {namespace}", ""])
+
+
+def render_vyper_immutable_code_lean(namespace: str, module: str, prefix: str,
+                                     build: dict) -> str:
+    imms = build["immutables"]
+    n = len(imms)
+    values = " ".join(f"v{i}" for i in range(n))
+    byte_values = " ".join(f"b{i}" for i in range(n))
+    get_names = " ".join(f"hget{i}" for i in range(n))
+    enc_names = " ".join(f"henc{i}" for i in range(n))
+    patches = ", ".join(f"({imm['offset']}, b{i})" for i, imm in enumerate(imms))
+    out = [
+        f"import {module}.Bytecode", f"import {module}.Immutables", "",
+        "open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory", "",
+        f"namespace {namespace}", "",
+        "/-- Runtime bytes from the constructor's immutable valuation. -/",
+        "def deployedRuntime (imms : Stele.Store) : ByteArray :=",
+        f"  immutableLayout.deployed {prefix}Bytecode imms", "",
+        "/-- The compiler's slot order, with each named Stele value encoded as Vyper bytes. -/",
+        f"private theorem immutablePatches (imms : Stele.Store) ({values} : Stele.Value)",
+        f"    ({byte_values} : ByteArray)",
+    ]
+    for i, imm in enumerate(imms):
+        out += [f'    (hget{i} : imms.get? "{imm["name"]}" = some v{i})',
+                f'    (henc{i} : Reasoning.VyperImmutables.scalarBytes? v{i} = some b{i})']
+    out += [f"    : immutableLayout.patches? imms = some [{patches}] := by",
+            f"  simp only [Std.HashMap.get?_eq_getElem?] at {get_names}",
+            "  simp [immutableLayout, Reasoning.VyperImmutables.Layout.patches?,",
+            f"    Reasoning.VyperImmutables.Slot.patch?, {get_names.replace(' ', ', ')}, "
+            f"{enc_names.replace(' ', ', ')}]", ""]
+    for i, imm in enumerate(imms):
+        off = imm["offset"]
+        before = ", ".join(f"({v['offset']}, b{j})" for j, v in enumerate(imms[:i]))
+        after = ", ".join(f"({v['offset']}, b{i+1+j})" for j, v in enumerate(imms[i+1:]))
+        assumptions = [f"    (hsize : b{i}.size = 32)",
+                       "    (hsuffix : immutableLayout.suffix? imms = some suffix)"]
+        evidence = " ".join(f"hget{j} henc{j}" for j in range(n))
+        arguments = f"imms {values} {byte_values} {evidence}"
+        common = [
+            f"    (layout := immutableLayout) (imms := imms) (template := {prefix}Bytecode)",
+            f"    (suffix := suffix) (value := b{i}) (pre := [{before}]) (post := [{after}])",
+            f"  · simpa using immutablePatches {arguments}",
+            "  · exact hsize", "  · decide",
+        ]
+        if after:
+            cases = " | ".join("rfl" for _ in imms[i+1:])
+            common += ["  · intro p hp", "    simp only [List.mem_cons, List.not_mem_nil, or_false] at hp",
+                       f"    rcases hp with {cases}", "    all_goals omega"]
+        else:
+            common += ["  · simp"]
+        name = re.sub(r"[^A-Za-z0-9_]", "_", imm["name"])
+        out += [f"/-- The runtime code read for Vyper immutable `{imm['name']}`. -/",
+                f"theorem immutableRead_{name} (imms : Stele.Store) ({values} : Stele.Value)",
+                f"    ({byte_values} suffix : ByteArray)"]
+        for j, other in enumerate(imms):
+            out += [f'    (hget{j} : imms.get? "{other["name"]}" = some v{j})',
+                    f'    (henc{j} : Reasoning.VyperImmutables.scalarBytes? v{j} = some b{j})']
+        out += [*assumptions,
+                f"    : ({prefix}Bytecode ++ suffix).readWithPadding ({prefix}Bytecode.size + {off}) 32 = b{i} := by",
+                "  apply Reasoning.VyperImmutables.Layout.runtime_read_slot", *common,
+                "  · exact hsuffix", ""]
+        out += [f"/-- Read `{imm['name']}` back from memory after copying the immutable section. -/",
+                f"theorem immutableCopy_{name} (imms : Stele.Store) ({values} : Stele.Value)",
+                f"    ({byte_values} suffix mem : ByteArray) (dest : Nat)"]
+        for j, other in enumerate(imms):
+            out += [f'    (hget{j} : imms.get? "{other["name"]}" = some v{j})',
+                    f'    (henc{j} : Reasoning.VyperImmutables.scalarBytes? v{j} = some b{j})']
+        out += [*assumptions,
+                f"    : (({prefix}Bytecode ++ suffix).write {prefix}Bytecode.size mem dest "
+                f"{build['immutableSuffixSize']}).readWithPadding (dest + {off}) 32 = b{i} := by",
+                "  apply Reasoning.VyperImmutables.Layout.codecopy_read_slot",
+                *common, "  · exact hsuffix", ""]
+        def word_patch(other: dict) -> str:
+            return f'({other["offset"]}, (immWords "{other["name"]}").toByteArray)'
+        word_pre = "[" + ", ".join(map(word_patch, imms[:i])) + "]"
+        word_post = "[" + ", ".join(map(word_patch, imms[i + 1:])) + "]"
+        out += [f"/-- A 32-byte code copy and MLOAD of `{imm['name']}` returns its word. -/",
+                f"theorem immutableLoad_{name} (immWords : String → Ethereum.UInt256)",
+                "    (mem : ByteArray) (dest : Ethereum.UInt256) :",
+                f"    Reasoning.Reach.memLoad dest (({prefix}Bytecode ++ immutableLayout.suffixWords immWords).write",
+                f"      ({prefix}Bytecode.size + {off}) mem dest.toNat 32) = immWords \"{imm['name']}\" := by",
+                "  have hslots :",
+                "      immutableLayout.slots.map (fun slot => (slot.offset, (immWords slot.name).toByteArray)) =",
+                f"      {word_pre} ++ ({off}, (immWords \"{imm['name']}\").toByteArray) :: {word_post} := by",
+                "    rfl",
+                "  have hpatch : ∃ suffix, Stele.patchRuntime (ByteArray.zeroes immutableLayout.size)",
+                "      (immutableLayout.slots.map (fun slot => (slot.offset, (immWords slot.name).toByteArray))) =",
+                "      some suffix := by",
+                "    simp only [immutableLayout, List.map_cons, List.map_nil]",
+                "    simp [Stele.patchRuntime, Stele.spliceBytes?, ByteArray.size_append,",
+                "      ByteArray.size_extract, ByteArray_zeroes_size, toByteArray_size]",
+                f"  have hpost : ∀ (p : Nat × ByteArray), p ∈ {word_post} → "
+                f"{off} + 32 ≤ p.1 ∨ p.1 + 32 ≤ {off} := by",
+                "    intro p hp",
+                "    simp only [List.mem_cons, List.not_mem_nil, or_false] at hp"
+                if imms[i + 1:] else "    simp at hp",
+                "    rcases hp with " + " | ".join("rfl" for _ in imms[i + 1:])
+                if imms[i + 1:] else "",
+                "    all_goals omega" if imms[i + 1:] else "",
+                "  exact Reasoning.VyperImmutables.Layout.codecopy_load_scalar",
+                "    (layout := immutableLayout) (template := " + f"{prefix}Bytecode) (mem := mem)",
+                f"    (words := immWords) (name := \"{imm['name']}\") (offset := {off}) (dest := dest)",
+                f"    (pre := {word_pre}) (post := {word_post}) hslots (by decide) hpost hpatch", ""]
+        out += [f"/-- Copying `{imm['name']}` from code writes its named word bytes to memory. -/",
+                f"theorem immutableCopyWord_{name} (immWords : String → Ethereum.UInt256)",
+                "    (mem : ByteArray) (dest : Nat) :",
+                f"    (({prefix}Bytecode ++ immutableLayout.suffixWords immWords).write",
+                f"      ({prefix}Bytecode.size + {off}) mem dest 32) =",
+                f"      (immWords \"{imm['name']}\").toByteArray.write 0 mem dest 32 := by",
+                "  have hslots :",
+                "      immutableLayout.slots.map (fun slot => (slot.offset, (immWords slot.name).toByteArray)) =",
+                f"      {word_pre} ++ ({off}, (immWords \"{imm['name']}\").toByteArray) :: {word_post} := by",
+                "    rfl",
+                "  have hpatch : ∃ suffix, Stele.patchRuntime (ByteArray.zeroes immutableLayout.size)",
+                "      (immutableLayout.slots.map (fun slot => (slot.offset, (immWords slot.name).toByteArray))) =",
+                "      some suffix := by",
+                "    simp only [immutableLayout, List.map_cons, List.map_nil]",
+                "    simp [Stele.patchRuntime, Stele.spliceBytes?, ByteArray.size_append,",
+                "      ByteArray.size_extract, ByteArray_zeroes_size, toByteArray_size]",
+                f"  have hpost : ∀ (p : Nat × ByteArray), p ∈ {word_post} → "
+                f"{off} + 32 ≤ p.1 ∨ p.1 + 32 ≤ {off} := by",
+                "    intro p hp",
+                "    simp only [List.mem_cons, List.not_mem_nil, or_false] at hp"
+                if imms[i + 1:] else "    simp at hp",
+                "    rcases hp with " + " | ".join("rfl" for _ in imms[i + 1:])
+                if imms[i + 1:] else "",
+                "    all_goals omega" if imms[i + 1:] else "",
+                "  exact Reasoning.VyperImmutables.Layout.codecopy_write_scalar",
+                "    (layout := immutableLayout) (template := " + f"{prefix}Bytecode) (mem := mem)",
+                f"    (words := immWords) (name := \"{imm['name']}\") (offset := {off}) (dest := dest)",
+                f"    (pre := {word_pre}) (post := {word_post}) hslots (by decide) hpost hpatch", ""]
+    out += ["/-- The scalar word valuation encodes the same suffix as the Stele store. -/",
+            f"theorem immutableWordsBridge (imms : Stele.Store) ({values} : Stele.Value)",
+            f"    ({byte_values} : ByteArray)"]
+    for i, imm in enumerate(imms):
+        out += [f'    (hget{i} : imms.get? "{imm["name"]}" = some v{i})',
+                f'    (henc{i} : Reasoning.VyperImmutables.scalarBytes? v{i} = some b{i})']
+    out += ["    " + " ".join(f"(hsize{i} : b{i}.size = 32)" for i in range(n)),
+            "    : immutableLayout.suffixWords (Reasoning.VyperImmutables.wordsOf imms) =",
+            "      (immutableLayout.suffix? imms).getD (ByteArray.zeroes immutableLayout.size) := by",
+            f"  have hp := immutablePatches imms {values} {byte_values} "
+            + " ".join(f"hget{i} henc{i}" for i in range(n)),
+            f"  simp only [Std.HashMap.get?_eq_getElem?] at {get_names}"]
+    for i, imm in enumerate(imms):
+        out += [f"  have hw{i} : Ethereum.UInt256.toByteArray",
+                f'      (Reasoning.VyperImmutables.wordsOf imms "{imm["name"]}") = b{i} := by',
+                f"    simp [Reasoning.VyperImmutables.wordsOf, hget{i}, henc{i},",
+                f"      Reasoning.Theory.toByteArray_uInt256OfByteArray_of_size32 hsize{i}]"]
+    out += ["  simp only [Reasoning.VyperImmutables.Layout.suffixWords,",
+            "    Reasoning.VyperImmutables.Layout.suffix?]",
+            "  rw [hp]",
+            f"  simp [immutableLayout, {', '.join(f'hw{i}' for i in range(n))}]", ""]
+    out += ["/-- The scalar word runtime agrees with the constructor's Stele valuation. -/",
+            f"theorem deployedRuntime_eq_words (imms : Stele.Store) ({values} : Stele.Value)",
+            f"    ({byte_values} : ByteArray)"]
+    for i, imm in enumerate(imms):
+        out += [f'    (hget{i} : imms.get? "{imm["name"]}" = some v{i})',
+                f'    (henc{i} : Reasoning.VyperImmutables.scalarBytes? v{i} = some b{i})']
+    out += ["    " + " ".join(f"(hsize{i} : b{i}.size = 32)" for i in range(n)),
+            f"    : deployedRuntime imms = {prefix}Bytecode ++",
+            "        immutableLayout.suffixWords (Reasoning.VyperImmutables.wordsOf imms) := by",
+            "  unfold deployedRuntime Reasoning.VyperImmutables.Layout.deployed",
+            "  rw [immutableWordsBridge imms " + f"{values} {byte_values} "
+            + " ".join(f"hget{i} henc{i}" for i in range(n))
+            + " " + " ".join(f"hsize{i}" for i in range(n)) + "]", ""]
+    out += ["/-- Constructor memory writes in slot order produce the patched runtime. -/",
+            f"theorem returnedRuntime_eq_deployed (imms : Stele.Store) (returned : ByteArray)",
+            f"    ({values} : Stele.Value) ({byte_values} : ByteArray)"]
+    for i, imm in enumerate(imms):
+        out += [f'    (hget{i} : imms.get? "{imm["name"]}" = some v{i})',
+                f'    (henc{i} : Reasoning.VyperImmutables.scalarBytes? v{i} = some b{i})']
+    out += ["    " + " ".join(f"(hsize{i} : b{i}.size = 32)" for i in range(n)),
+            f"    (hreturned : returned = {prefix}Bytecode ++",
+            "      Reasoning.Theory.writeCascade (ByteArray.zeroes immutableLayout.size)",
+            "        (immutableLayout.slots.map fun slot =>",
+            "          (slot.offset, Reasoning.VyperImmutables.wordsOf imms slot.name))) :",
+            "    returned = deployedRuntime imms := by",
+            "  exact Reasoning.VyperImmutables.Layout.returned_eq_deployed",
+            f"    immutableLayout {prefix}Bytecode returned imms (by decide)",
+            "    (immutableWordsBridge imms " + f"{values} {byte_values} "
+            + " ".join(f"hget{i} henc{i}" for i in range(n))
+            + " " + " ".join(f"hsize{i}" for i in range(n)) + ") hreturned", ""]
+    out += ["/-- A full RETURN read of that buffer yields the patched runtime. -/",
+            f"theorem returnedRuntime_read_eq_deployed (imms : Stele.Store) (returned : ByteArray)",
+            f"    ({values} : Stele.Value) ({byte_values} : ByteArray)"]
+    for i, imm in enumerate(imms):
+        out += [f'    (hget{i} : imms.get? "{imm["name"]}" = some v{i})',
+                f'    (henc{i} : Reasoning.VyperImmutables.scalarBytes? v{i} = some b{i})']
+    out += ["    " + " ".join(f"(hsize{i} : b{i}.size = 32)" for i in range(n)),
+            f"    (hreturned : returned = {prefix}Bytecode ++",
+            "      Reasoning.Theory.writeCascade (ByteArray.zeroes immutableLayout.size)",
+            "        (immutableLayout.slots.map fun slot =>",
+            "          (slot.offset, Reasoning.VyperImmutables.wordsOf imms slot.name))) :",
+            f"    returned.readWithPadding 0 ({prefix}Bytecode.size + immutableLayout.size) =",
+            "      deployedRuntime imms := by",
+            "  exact Reasoning.VyperImmutables.Layout.returned_read_eq_deployed",
+            f"    immutableLayout {prefix}Bytecode returned imms (by decide)",
+            "    (immutableWordsBridge imms " + f"{values} {byte_values} "
+            + " ".join(f"hget{i} henc{i}" for i in range(n))
+            + " " + " ".join(f"hsize{i}" for i in range(n))
+            + ") hreturned (by native_decide) (by native_decide)", ""]
+    out += [f"end {namespace}", ""]
+    return "\n".join(out)
+
+
 def render_difftarget_lean(namespace: str, module: str, prefix: str, name: str,
                            has_creation: bool, has_immutables: bool) -> str:
     """The contract's `Target` for the differential suite (`Stele/DiffTest/Harness.lean`)."""
@@ -536,7 +878,10 @@ def render_difftarget_lean(namespace: str, module: str, prefix: str, name: str,
 
 
 def difftarget_files(root: Path) -> list[Path]:
-    return sorted(p for p in root.rglob("DiffTarget.lean") if ".lake" not in p.parts)
+    """Every `DiffTarget.lean` of the checkout, skipping hidden directories (`.lake`, git worktrees
+    under `.claude/`, …)."""
+    return sorted(p for p in root.rglob("DiffTarget.lean")
+                  if not any(part.startswith(".") for part in p.relative_to(root).parts))
 
 
 def render_difftest_registry(root: Path) -> str:
@@ -586,8 +931,14 @@ def cmd_lean(args: argparse.Namespace) -> int:
     write_file(directory / "Selectors.lean", render_selectors_lean(namespace, prefix, name, table),
                args.force)
     if build and build.get("immutables"):
-        write_file(directory / "Immutables.lean", render_immutables_lean(namespace, name, build), args.force)
-        write_file(directory / "ImmutableCode.lean", render_immutable_code_lean(namespace, module), args.force)
+        if build["compiler"].get("kind") == "vyper":
+            write_file(directory / "Immutables.lean",
+                       render_vyper_immutables_lean(namespace, name, build), args.force)
+            write_file(directory / "ImmutableCode.lean",
+                       render_vyper_immutable_code_lean(namespace, module, prefix, build), args.force)
+        else:
+            write_file(directory / "Immutables.lean", render_immutables_lean(namespace, name, build), args.force)
+            write_file(directory / "ImmutableCode.lean", render_immutable_code_lean(namespace, module), args.force)
     return 0
 
 
@@ -631,16 +982,28 @@ def cmd_blocks(args: argparse.Namespace) -> int:
     runtime = read_bytecode(directory / "runtime.hex")
     bytecode_import = f"{module}.Bytecode"
     sites = None
+    runtime_suffix = bool(build and build["compiler"].get("kind") == "vyper"
+                          and build.get("immutables"))
     imports = [bytecode_import]
+    if runtime_suffix:
+        imports.append(f"{module}.Immutables")
+        imports.append(f"{module}.ImmutableCode")
     layout_term = None
-    if build and build.get("immutables"):
+    if build and build.get("immutables") and not runtime_suffix:
         sites = immutable_sites(build, runtime)
         imports.append(f"{module}.ImmutableCode")
         layout_term = f"{namespace}.immutableLayout"
+    vyper_slots = ({len(runtime) + slot["offset"]: slot["name"]
+                    for slot in build["immutables"] if slot["length"] == 32}
+                   if runtime_suffix else None)
     units = rd.generate_unit_records(runtime, prefix, f"{namespace}.{prefix}Bytecode", False, False,
-                                     args.max_summary_instructions, False, sites, layout_term, False)
+                                     args.max_summary_instructions, False, sites, layout_term, runtime_suffix,
+                                     vyper_slots,
+                                     f"{namespace}.immutableLayout" if runtime_suffix else None,
+                                     build["immutableSuffixSize"] if runtime_suffix else None)
     paths = rd.write_outputs(directory / "RuntimeBlocks.lean", prefix, imports, units, args.shard_size,
-                             False, f"{namespace}.{prefix}Bytecode", None, sites, runtime, layout_term, False)
+                             False, f"{namespace}.{prefix}Bytecode", None, sites, runtime, layout_term,
+                             runtime_suffix)
     print(f"wrote {len(paths)} runtime summary shards ({len(units)} units) and RuntimeBlocks.index")
     creation_path = directory / "creation.hex"
     if creation_path.exists() and not args.no_creation:
@@ -721,7 +1084,20 @@ def cmd_check(args: argparse.Namespace) -> int:
     else:
         failures.append("Selectors.lean is missing")
 
-    if build and build.get("immutables"):
+    if build and build.get("immutables") and build["compiler"].get("kind") == "vyper":
+        imm_lean = directory / "Immutables.lean"
+        if imm_lean.exists():
+            body = imm_lean.read_text(encoding="utf-8")
+            for imm in build["immutables"]:
+                fragment = (f'name := "{imm["name"]}", offset := {imm["offset"]}, '
+                            f'length := {imm["length"]}')
+                (ok if fragment in body else failures).append(
+                    f"{imm['name']} code_layout {'matches' if fragment in body else 'differs from'} Immutables.lean")
+            if f"size := {build['immutableSuffixSize']}" not in body:
+                failures.append("immutable suffix size differs from Immutables.lean")
+        else:
+            failures.append("Immutables.lean is missing although the contract has immutables")
+    elif build and build.get("immutables"):
         imm_lean = directory / "Immutables.lean"
         if imm_lean.exists():
             text = imm_lean.read_text(encoding="utf-8")
@@ -765,9 +1141,10 @@ def main(argv: list[str] | None = None) -> int:
 
     def compile_args(p: argparse.ArgumentParser) -> None:
         p.add_argument("--solc", default="solc", help="solc binary (default: solc on PATH)")
+        p.add_argument("--vyper", help="use this Vyper 0.4.3 binary instead of solc")
         p.add_argument("--main", help="main source unit, relative to the sources root")
         p.add_argument("--sources-root", default=None,
-                       help="directory holding the .sol closure (default: contracts/ if present, else .)")
+                       help="directory holding .sol or .vy sources (default: contracts/ if present, else .)")
         p.add_argument("--runs", type=int, default=200)
         p.add_argument("--no-optimize", action="store_true")
         p.add_argument("--via-ir", action="store_true")

@@ -110,7 +110,7 @@ theorem approveAssign (evm : EVM.State) (I : ExecutionEnv) :
       .storage (allowanceRef sender (.var "spender")) (approveValueValue I) =
         .ok ({ contract := erc20Contract, locals := approveStore I }, approvePostState evm I) := by
   simp only [allowanceRef]
-  apply assignStorageRef_storage_scalar (hbackend := rfl)
+  apply assignStorageRef_storage_vyper_scalar (hbackend := rfl) (hcheck := by rfl)
       (hleaf := Or.inl ⟨_, rfl⟩) (ty := uint256Storage)
       (hbase := approveStore_allowance I)
       (her := evalStorageRef_approve_allowance evm I)

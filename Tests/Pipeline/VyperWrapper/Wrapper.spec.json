@@ -1,0 +1,146 @@
+{
+  "contract": "/home/lefteris/EquiVM3/Tests/Pipeline/VyperWrapper/contracts/Wrapper.vy",
+  "compiler": "vyper",
+  "evmVersion": "cancun",
+  "externalCalls": [
+    {
+      "name": "transferFrom",
+      "params": [
+        "address",
+        "address",
+        "uint256"
+      ],
+      "returns": [
+        "bool"
+      ],
+      "view": false
+    },
+    {
+      "name": "balanceOf",
+      "params": [
+        "address"
+      ],
+      "returns": [
+        "uint256"
+      ],
+      "view": true
+    },
+    {
+      "name": "onWrap",
+      "params": [
+        "address",
+        "uint256"
+      ],
+      "returns": [],
+      "view": false
+    },
+    {
+      "name": "transfer",
+      "params": [
+        "address",
+        "uint256"
+      ],
+      "returns": [
+        "bool"
+      ],
+      "view": false
+    }
+  ],
+  "selectors": [
+    {
+      "signature": "hook()",
+      "name": "hook",
+      "params": [],
+      "getter": true
+    },
+    {
+      "signature": "shares(address)",
+      "name": "shares",
+      "params": [],
+      "getter": true
+    },
+    {
+      "signature": "totalShares()",
+      "name": "totalShares",
+      "params": [],
+      "getter": true
+    },
+    {
+      "signature": "setHook(address)",
+      "name": "setHook",
+      "params": [
+        {
+          "name": "target",
+          "type": "address",
+          "vyperType": "address"
+        }
+      ],
+      "bounded": []
+    },
+    {
+      "signature": "wrap(uint256)",
+      "name": "wrap",
+      "params": [
+        {
+          "name": "amount",
+          "type": "uint256",
+          "vyperType": "uint256"
+        }
+      ],
+      "bounded": []
+    },
+    {
+      "signature": "unwrap(uint256)",
+      "name": "unwrap",
+      "params": [
+        {
+          "name": "sharesOut",
+          "type": "uint256",
+          "vyperType": "uint256"
+        }
+      ],
+      "bounded": []
+    },
+    {
+      "signature": "token()",
+      "name": "token",
+      "params": [],
+      "bounded": []
+    },
+    {
+      "signature": "previewUnwrap(uint256)",
+      "name": "previewUnwrap",
+      "params": [
+        {
+          "name": "sharesOut",
+          "type": "uint256",
+          "vyperType": "uint256"
+        }
+      ],
+      "bounded": []
+    }
+  ],
+  "storage": [
+    {
+      "name": "hook",
+      "slot": 0,
+      "transient": false,
+      "vyperType": "address"
+    },
+    {
+      "name": "shares",
+      "slot": 1,
+      "transient": false,
+      "vyperType": "HashMap[address, uint256]"
+    },
+    {
+      "name": "totalShares",
+      "slot": 2,
+      "transient": false,
+      "vyperType": "uint256"
+    }
+  ],
+  "nonreentrantLock": null,
+  "holes": [],
+  "notes": []
+}

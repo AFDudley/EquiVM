@@ -2396,12 +2396,12 @@ theorem gemJoinExitBodyCoreVatNoCode
           (solcAddressSlotWord ⟨1⟩ σ I) =
         Reasoning.Theory.extCodeSizeWord σ
           (solcAddressSlotWord ⟨1⟩ σ I) := rfl
-    have hsolmAtEvmTarget :
+    have hsteleAtEvmTarget :
         Reasoning.Theory.extCodeSizeWord σ
           (solcAddressSlotWord ⟨1⟩ σ I) = ⟨0⟩ := by
       rw [← hsame]
       exact hvatNoCode
-    simpa [hVatSlot] using hsolmAtEvmTarget
+    simpa [hVatSlot] using hsteleAtEvmTarget
   have hvatAddr :
       joinVatAddressOf evmStele =
         AccountAddress.ofUInt256 (solcAddressSlotWord ⟨1⟩ σ I) := by
