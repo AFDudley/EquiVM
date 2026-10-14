@@ -71,41 +71,63 @@ theorem forwardCopyMemory_payload (mem : ByteArray) (src dst len : Nat)
       (by omega), ← paddedReadPrefix _ _ _ (32 * (forwardCopyWords mem src dst len).length)
       hin (by rw [hlen]; omega), writeWords_read, forwardCopyWords_payload _ _ _ _ hl hi ha hb]
 
+-- The IR copy loop uses bytes-object bases and returns the end of the padded destination.
 set_option maxRecDepth 100000 in
 theorem safeForwardBytesCopy {I g s0 σ k C aw mem rdata src dst len}
     {ret : UInt256} {R : List UInt256}
-    (h : RD safeBytecode I g s0 ⟨9733⟩
-      (UInt256.ofNat src :: UInt256.ofNat dst :: UInt256.ofNat len :: ret :: R)
+    (h : RD safeBytecode I g s0 ⟨7384⟩
+      (⟨0⟩ :: UInt256.ofNat src :: UInt256.ofNat dst :: ret :: UInt256.ofNat len :: R)
       mem aw rdata σ k C)
-    (hl : 32 ≤ len) (hm : dst ≤ mem.size) (ha : src + len ≤ dst)
-    (hb : dst + len + 64 < UInt256.size)
+    (hl : 32 ≤ len) (hm : dst + 32 ≤ mem.size) (ha : src + len ≤ dst)
+    (hb : dst + len + 96 < UInt256.size)
     (hov : R.length + 12 ≤ 1024) (hret : (D_J safeBytecode 0).contains ret = true) :
-    ∃ aw' k' C', RD safeBytecode I g s0 ret R (forwardCopyMemory mem src dst len)
-      aw' rdata σ k' C' := by
-  let first := memLoad (UInt256.ofNat src) mem
-  let m := writeWord mem dst first
-  let words := memoryWords m (src + 32) ((len + 31) / 32 - 1)
+    ∃ aw' k' C', RD safeBytecode I g s0 ret
+      (UInt256.ofNat (dst + 32 + 32 * ((len + 31) / 32)) :: R)
+      (forwardCopyMemory mem (src + 32) (dst + 32) len) aw' rdata σ k' C' := by
+  let first := memLoad (UInt256.ofNat (src + 32)) mem
+  let m := writeWord mem (dst + 32) first
+  let words := memoryWords m (src + 32 + 32) ((len + 31) / 32 - 1)
   have hwords : words.length = (len + 31) / 32 - 1 := memoryWords_length _ _ _
-  have h₀ := safeRuntime_block_9733 (by simp; omega) h
   have hlt : UInt256.lt ⟨0⟩ (UInt256.ofNat len) = ⟨1⟩ :=
     ult_one (by rw [ulit_toNat' len (by omega)]; change 0 < len; omega)
-  have h₁ := safeRuntime_block_9735_fallthrough (by simp; omega) (by rw [hlt]; decide) h₀
-  obtain ⟨_, _, _, h₂⟩ := safeRuntime_block_9744_packed (by simp; omega) (by jump_dest) h₁
-  simp only [safeRuntime_block_9744_stack, safeRuntime_block_9744_memory,
-    u256_zero_add, ulit_toNat' dst (by omega)] at h₂
-  change RD safeBytecode I g s0 ⟨9735⟩
-    (UInt256.ofNat 32 :: UInt256.ofNat src :: UInt256.ofNat dst :: UInt256.ofNat len :: ret :: R)
+  have h₁ := safeRuntime_block_7384_taken (by simp; omega)
+    (by rw [hlt]; decide) (by jump_dest) h
+  obtain ⟨_, _, _, h₂⟩ := safeRuntime_block_7416_packed (by simp; omega) (by jump_dest) h₁
+  have hs : UInt256.ofNat src + UInt256.ofNat 32 = UInt256.ofNat (src + 32) := by
+    rw [u256_add_comm]
+    exact u256_32_add_ofNat src
+  have hd : (UInt256.ofNat dst + UInt256.ofNat 32).toNat = dst + 32 :=
+    uadd_ofNat_toNat (by omega) (by decide) (by omega)
+  simp only [safeRuntime_block_7416_stack, safeRuntime_block_7416_memory,
+    u256_add_zero, u256_zero_add, hs, hd] at h₂
+  change RD safeBytecode I g s0 ⟨7384⟩
+    (UInt256.ofNat 32 :: UInt256.ofNat src :: UInt256.ofNat dst :: ret :: UInt256.ofNat len :: R)
     m _ rdata σ _ _ at h₂
   obtain ⟨_, _, _, h₃⟩ := safeByteBufferCopyLoopAfter words h₂ (by simp; omega)
     (memoryWords_view _ _ _) (by dsimp [m]; rw [writeWord_sparse_size]; omega)
     (by rw [hwords]; omega) (by rw [hwords]; omega)
     (by intro hn; have hh := List.length_pos_iff.mpr hn; rw [hwords] at hh ⊢; omega)
     (by rw [hwords]; omega)
-  have h₄ := safeRuntime_block_9759 (by omega) hret h₃
-  have hadd : (UInt256.ofNat len + UInt256.ofNat dst).toNat = dst + len := by
-    simpa only [Nat.add_comm] using (uadd_ofNat_toNat (a := len) (b := dst)
-      (by omega) (by omega) (by omega))
-  simp only [safeRuntime_block_9759_stack, safeRuntime_block_9759_memory, hadd] at h₄
+  obtain ⟨_, _, _, h₄⟩ := safeRuntime_block_7392_packed (by omega) hret h₃
+  have hwrite : ((UInt256.ofNat dst + UInt256.ofNat len) + UInt256.ofNat 32).toNat =
+      dst + 32 + len := by
+    rw [uadd3_ofNat_toNat (by omega) (by omega) (by decide) (by omega) (by omega)]
+    omega
+  have hmask : UInt256.land (UInt256.ofNat len + UInt256.ofNat 31)
+      (UInt256.lnot (UInt256.ofNat 31)) = UInt256.ofNat (32 * ((len + 31) / 32)) := by
+    rw [u256_land_comm]
+    apply u256_inj
+    change (returnReserveSize len).toNat = _
+    rw [returnReserveSize_toNat (by omega), ulit_toNat' _ (by omega)]
+    exact Nat.mul_comm _ _
+  have hend : (UInt256.ofNat (32 * ((len + 31) / 32)) + UInt256.ofNat dst) +
+      UInt256.ofNat 32 = UInt256.ofNat (dst + 32 + 32 * ((len + 31) / 32)) := by
+    apply u256_inj
+    rw [uadd3_ofNat_toNat (by omega) (by omega) (by decide) (by omega) (by omega),
+      ulit_toNat' _ (by omega)]
+    omega
+  simp only [safeRuntime_block_7392_stack, safeRuntime_block_7392_memory,
+    hmask, hend, hwrite] at h₄
   exact ⟨_, _, _, h₄⟩
 
 end Benchmarks.Safe.ViaIR
