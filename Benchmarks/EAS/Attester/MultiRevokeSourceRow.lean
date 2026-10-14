@@ -105,7 +105,7 @@ theorem revokeSourceRow {cfg : Config} {C : ContractDecl} {imms : Store} {evm : 
     (.array (requests.set i (.tuple [schema, .array (revokePairValues uids)]))), ?_, by simp, ?_⟩
   · exact ExecBlock.consNormal h0 (ExecBlock.consNormal h1 (ExecBlock.consNormal h2
       (ExecBlock.consNormal h3 (ExecBlock.consNormal hinner (ExecBlock.consNormal
-        (ExecStmt.assign hvalue (assignLocalArrayIndex hq3 hi3 hindex)) ExecBlock.nil)))))
+        (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hvalue (assignLocalArrayIndex hq3 hi3 hindex)) ExecBlock.nil)))))
   · intro name hname
     rcases hname with ⟨hu, hn, hd, hj, hq⟩
     simp only [Std.HashMap.get?_eq_getElem?, Std.HashMap.getElem?_insert,

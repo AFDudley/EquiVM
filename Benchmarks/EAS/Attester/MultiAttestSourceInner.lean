@@ -87,7 +87,7 @@ theorem attestInnerRun {C : ContractDecl} {imms : Store} {evm : State}
           (.ok ⟨C, afterData, imms⟩ evm) := by
         refine ExecBlock.consNormal (ExecStmt.letDecl hencode) ?_
         refine ExecBlock.consNormal
-          (ExecStmt.assign (evalAttestCellExpr (input := values j) ?_) ?_) ExecBlock.nil
+          (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalAttestCellExpr (input := values j) ?_) ?_) ExecBlock.nil
         · simp [encoded, Std.HashMap.getElem?_insert]
         · apply assignLocalArrayIndex (by simpa [encoded, Std.HashMap.getElem?_insert] using hd)
             (by simpa [encoded, Std.HashMap.getElem?_insert] using hi) hjd

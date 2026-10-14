@@ -35,11 +35,11 @@ theorem multiAttestSourceCall {imms locals : Store} {evm evm' : State} {cd data 
       pure, hencode]
   cases z with
   | false =>
-      exact ExecBlock.consNormal (ExecStmt.lowLevelCallFailure (sendVal := 0) hreceiver
+      exact ExecBlock.consNormal (ExecStmt.lowLevelCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (sendVal := 0) hreceiver
         (by simp only [evalExpr?, pure]) hdata
         (by simpa only [address_of_val] using hraw)) ExecBlock.nil
   | true =>
-      exact ExecBlock.consNormal (ExecStmt.lowLevelCallSuccess (sendVal := 0) hreceiver
+      exact ExecBlock.consNormal (ExecStmt.lowLevelCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (sendVal := 0) hreceiver
         (by simp only [evalExpr?, pure]) hdata
         (by simpa only [address_of_val] using hraw)) ExecBlock.nil
 
