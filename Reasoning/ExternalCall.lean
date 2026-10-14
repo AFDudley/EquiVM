@@ -58,19 +58,22 @@ theorem callCoincides {cfg : Config} {evm : EVM.State} {name : Ident} {args : Li
     callViaEVM.callMade (perm := callPerm) wordOfInt_zero.symm ⟨callGas, A_in, h⟩ rfl
       (by show (⟨0⟩ : UInt256) ≤ _; exact Fin.zero_le _) hdepth⟩
 
+/-- A message call preserves the caller's environment, including its write permission. -/
+theorem callViaEVM_executionEnv_eq {evm evm' : EVM.State} {target : EVM.Address}
+    {value : ℤ} {calldata : ByteArray} {z : Bool} {out : ByteArray} {perm : Bool}
+    (hcall : callViaEVM evm target value calldata (z, evm', out) perm) :
+    evm'.executionEnv = evm.executionEnv := by
+  cases hcall with
+  | callMade _ _ hevm' _ _ => subst evm'; rfl
+  | callNotMade _ hevm' _ => subst evm'; rfl
+
 theorem typedCallViaEVM_executionEnv_eq {cfg : Config} {evm evm' : EVM.State}
     {target : EVM.Address} {name : Ident} {value : ℤ} {args : List Value}
     {z : Bool} {out : ByteArray} {perm : Bool}
     (hcall : typedCallViaEVM cfg evm target name value args (z, evm', out) perm) :
     evm'.executionEnv = evm.executionEnv := by
   obtain ⟨_calldata, _hencode, hraw⟩ := hcall
-  cases hraw with
-  | callMade _hvalue _hTheta hevm' _hvalue' _hdepth =>
-      subst hevm'
-      rfl
-  | callNotMade _hsubstate hevm' _hvalue =>
-      subst hevm'
-      rfl
+  exact callViaEVM_executionEnv_eq hraw
 
 theorem callViaEVM_static_accountStorageStateEq {evm evm' : EVM.State}
     {target : EVM.Address} {value : ℤ} {calldata : ByteArray}

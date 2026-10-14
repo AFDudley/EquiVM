@@ -98,6 +98,26 @@ theorem execStmt_assign_perm {cfg : Config} {stele stele' : Frame} {evm evm' : E
   cases h with
   | assign hp _ _ => simpa using hp
 
+/-- Evaluating a storage assignment determines both its writable and static outcomes. -/
+theorem execStmt_assign_storage {cfg : Config} {stele stele' : Frame} {evm evm' : EVM.State}
+    {slot : StorageRef} {rhs : Expr} {value : Value}
+    (heval : evalExpr? cfg stele evm rhs = .ok value)
+    (hassign : assignStorageRef? cfg stele evm .storage slot value = .ok (stele', evm')) :
+    ExecStmt cfg stele evm (.assign .storage slot rhs)
+      (if evm.executionEnv.perm then .ok stele' evm' else .staticViolation) := by
+  cases hp : evm.executionEnv.perm with
+  | false => exact ExecStmt.assignStatic heval hassign hp
+  | true => exact ExecStmt.assign (Or.inr hp) heval hassign
+
+/-- Select the static outcome of a storage assignment without assuming a successful write. -/
+theorem execStmt_assign_static {cfg : Config} {stele stele' : Frame} {evm evm' : EVM.State}
+    {slot : StorageRef} {rhs : Expr}
+    (h : ExecStmt cfg stele evm (.assign .storage slot rhs)
+      (if evm.executionEnv.perm then .ok stele' evm' else .staticViolation))
+    (hperm : evm.executionEnv.perm = false) :
+    ExecStmt cfg stele evm (.assign .storage slot rhs) .staticViolation := by
+  simpa only [hperm, Bool.false_eq_true, if_false] using h
+
 /-- The non-payable guard passes but the second `require(guard)` fails: the block reverts. -/
 theorem nonpayableSecondRequireReverts {cfg : Config} {stele : Frame}
     {evm : EVM.State} {guard : Expr} {rest : List Stmt}

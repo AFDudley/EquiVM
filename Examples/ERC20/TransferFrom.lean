@@ -818,7 +818,8 @@ theorem erc20TransferFromBodyReturns (evm : EVM.State) (I : ExecutionEnv)
       (transferFromFromBalanceWord evm I).toNat)
     (hbalanceDebit : (transferFromValueWord I).toNat ≤
       (transferFromFromBalanceWord (transferFromAfterAllowanceState evm I) I).toNat)
-    (hfit : transferFromNewToNat evm I < UInt256.size) :
+    (hfit : transferFromNewToNat evm I < UInt256.size)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody erc20Config erc20Contract evm (transferFromStore I)
       transferFromTransition.body
       (.returned { contract := erc20Contract, locals := transferFromStoreNewToBalance evm I }
@@ -832,10 +833,11 @@ theorem erc20TransferFromBodyReturns (evm : EVM.State) (I : ExecutionEnv)
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue (evalExpr_transferFrom_require_from_true evm I hbalance)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_transferFrom_allowance_debit evm I hallowance)
+    (ExecStmt.assign (Or.inr hperm)
+      (evalExpr_transferFrom_allowance_debit evm I hallowance)
       (transferFromAssignAllowance evm I)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign
+    (ExecStmt.assign (Or.inr (by simpa [transferFromAfterAllowanceState] using hperm))
       (evalExpr_transferFrom_balance_debit evm (transferFromAfterAllowanceState evm I) I
         hbalanceDebit)
       (transferFromAssignFrom evm I)) ?_
@@ -843,10 +845,14 @@ theorem erc20TransferFromBodyReturns (evm : EVM.State) (I : ExecutionEnv)
   refine ExecBlock.consNormal
     (ExecStmt.letDecl (evalExpr_transferFrom_newToBalance evm I hfit)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_transferFrom_newToBalance_var evm I)
+    (ExecStmt.assign
+      (Or.inr (by simpa [transferFromAfterBalanceState, transferFromAfterAllowanceState] using hperm))
+      (evalExpr_transferFrom_newToBalance_var evm I)
       (transferFromAssignTo evm I hfit)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.emit (evalExprs_transferFrom_event evm (transferFromPostState evm I) I)) ?_
+    (ExecStmt.emit (by simpa [transferFromPostState, transferFromAfterBalanceState,
+      transferFromAfterAllowanceState] using hperm)
+      (evalExprs_transferFrom_event evm (transferFromPostState evm I) I)) ?_
   exact ExecBlock.consReturn (ExecStmt.return (by simp [evalExprs?, evalExpr?, EvalResult.bind, bind, pure]))
 
 /-- Static mode: the body halts at its first storage write (the allowance debit). -/
@@ -908,7 +914,8 @@ theorem erc20TransferFromBodyReverts_overflow (evm : EVM.State) (I : ExecutionEn
       (transferFromFromBalanceWord evm I).toNat)
     (hbalanceDebit : (transferFromValueWord I).toNat ≤
       (transferFromFromBalanceWord (transferFromAfterAllowanceState evm I) I).toNat)
-    (hover : UInt256.size ≤ transferFromNewToNat evm I) :
+    (hover : UInt256.size ≤ transferFromNewToNat evm I)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody erc20Config erc20Contract evm (transferFromStore I)
       transferFromTransition.body .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
@@ -920,10 +927,11 @@ theorem erc20TransferFromBodyReverts_overflow (evm : EVM.State) (I : ExecutionEn
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue (evalExpr_transferFrom_require_from_true evm I hbalance)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_transferFrom_allowance_debit evm I hallowance)
+    (ExecStmt.assign (Or.inr hperm)
+      (evalExpr_transferFrom_allowance_debit evm I hallowance)
       (transferFromAssignAllowance evm I)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign
+    (ExecStmt.assign (Or.inr (by simpa [transferFromAfterAllowanceState] using hperm))
       (evalExpr_transferFrom_balance_debit evm (transferFromAfterAllowanceState evm I) I
         hbalanceDebit)
       (transferFromAssignFrom evm I)) ?_
@@ -938,7 +946,8 @@ theorem erc20TransferFromBodyReverts_balanceDebit (evm : EVM.State) (I : Executi
     (hbalance : (transferFromValueWord I).toNat ≤
       (transferFromFromBalanceWord evm I).toNat)
     (hltDebit : (transferFromFromBalanceWord (transferFromAfterAllowanceState evm I) I).toNat <
-      (transferFromValueWord I).toNat) :
+      (transferFromValueWord I).toNat)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody erc20Config erc20Contract evm (transferFromStore I)
       transferFromTransition.body .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
@@ -950,7 +959,8 @@ theorem erc20TransferFromBodyReverts_balanceDebit (evm : EVM.State) (I : Executi
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue (evalExpr_transferFrom_require_from_true evm I hbalance)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_transferFrom_allowance_debit evm I hallowance)
+    (ExecStmt.assign (Or.inr hperm)
+      (evalExpr_transferFrom_allowance_debit evm I hallowance)
       (transferFromAssignAllowance evm I)) ?_
   exact ExecBlock.consRevert
     (ExecStmt.assignExprRevert
@@ -2366,7 +2376,7 @@ theorem erc20TransferFromBodyCore
                 transferFromNewToNat
                     (initState σ σ₀ (Sat256.ofUInt256 g) A I) I <
                   UInt256.size
-                · have hbody := erc20TransferFromBodyReturns evmS I
+                · have hbody := erc20TransferFromBodyReturns (hperm := hperm) evmS I
                       (by simp only [evmS, initState]; exact hwv)
                       (by simpa [evmS] using hallowance)
                       (by simpa [evmS] using hbalance)
@@ -2386,7 +2396,7 @@ theorem erc20TransferFromBodyCore
                       transferFromNewToNat
                         (initState σ σ₀ (Sat256.ofUInt256 g) A I) I := by
                     omega
-                  have hbody := erc20TransferFromBodyReverts_overflow evmS I
+                  have hbody := erc20TransferFromBodyReverts_overflow (hperm := hperm) evmS I
                       (by simp only [evmS, initState]; exact hwv)
                       (by simpa [evmS] using hallowance)
                       (by simpa [evmS] using hbalance)
@@ -2403,7 +2413,7 @@ theorem erc20TransferFromBodyCore
                       (initState σ σ₀ (Sat256.ofUInt256 g) A I) I) I).toNat <
                     (transferFromValueWord I).toNat := by
                   omega
-                have hbody := erc20TransferFromBodyReverts_balanceDebit evmS I
+                have hbody := erc20TransferFromBodyReverts_balanceDebit (hperm := hperm) evmS I
                   (by simp only [evmS, initState]; exact hwv)
                   (by simpa [evmS] using hallowance)
                   (by simpa [evmS] using hbalance)
