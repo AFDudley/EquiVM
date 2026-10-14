@@ -13,7 +13,7 @@ theorem basicSetIndex_source (frame : Frame) (evm : EVM.State) (basic : UserBasi
         locals := frame.locals.insert "basic" (userBasicValue
           { basic with index := accountRewardIndex evm borrow,
                        index_lt := accountRewardIndex_lt evm borrow }) } evm) := by
-  apply ExecStmt.assign
+  apply ExecStmt.assign (hperm := by first | assumption | exact Or.inr ‹_› | exact Or.inl rfl)
   · simpa only [← hc] using evalTrackingIndex evm frame.locals frame.immutables borrow hx
   · exact assignBasicIndex _ (accountRewardIndex_lt evm borrow) hb
 
@@ -77,6 +77,6 @@ theorem updateBaseFinish_source (frame : Frame) (evm : EVM.State) (addr : Accoun
     exact ExecBlock.consNormal hindex (ExecBlock.consStatic (ExecStmt.assignStatic heb hw hperm))
   · simp only [if_true, internalBlockResult]
     exact ⟨frame', ExecBlock.consNormal hindex
-      (ExecBlock.consNormal (ExecStmt.assign heb hw) ExecBlock.nil)⟩
+      (ExecBlock.consNormal (ExecStmt.assign (hperm := by first | assumption | exact Or.inr ‹_› | exact Or.inl rfl) heb hw) ExecBlock.nil)⟩
 
 end Benchmarks.CompoundIII.Comet

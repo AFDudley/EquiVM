@@ -39,7 +39,7 @@ theorem cometWithExtendedAssetListPauseBody {σ σ₀ A I} {g : UInt256} (v : Co
             by_cases hp : I.perm = true
             · rw [if_pos hp] at hX
               exact selectorStateReturn_refines hcode hX hd hdec
-                (pause_returns _ v (pauseInputs I.calldata) hv hhi ha)
+                (pause_returns (hperm := by assumption) _ v (pauseInputs I.calldata) hv hhi ha)
                 (pauseSourceState_accountMap _).symm voidReturnEquiv
             · rw [if_neg hp] at hX
               exact selectorStatic_refines hcode hX hd hdec

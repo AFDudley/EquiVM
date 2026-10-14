@@ -46,7 +46,7 @@ theorem cometWithExtendedAssetListInitializeStorageBody {σ σ₀ A I} {g : UInt
         by_cases hp : I.perm = true
         · rw [if_pos hp] at hX
           exact selectorStateReturn_refines hcode hX hd hdec
-            (initializeStorage_returns _ (immStore v) hv hhi hz hvalid.2)
+            (initializeStorage_returns (hperm := hp) _ (immStore v) hv hhi hz hvalid.2)
             initializeSourceState_accountMap.symm voidReturnEquiv
         · rw [if_neg hp] at hX
           exact selectorStatic_refines hcode hX hd hdec
