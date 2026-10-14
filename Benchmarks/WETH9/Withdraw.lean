@@ -75,7 +75,7 @@ theorem weth9WithdrawBodyCore {σ σ₀ A I} {g : UInt256}
             apply callViaEVM.callNotMade rfl rfl
             rintro ⟨_, hdepthNe⟩
             exact hdepthNe (by rw [hZeroEnv]; exact hdepthEq)
-          have hbody := weth9WithdrawBodyReverts_callFailure evmS evmSFail I ByteArray.empty
+          have hbody := weth9WithdrawBodyReverts_callFailure (hperm := by assumption) evmS evmSFail I ByteArray.empty
             hsrcS (by rw [hwvS']; exact hwv) hleLoadS (by rw [← hevmSZero]; exact hcall)
           exact weth9ReEquivExecRev hcode hrev hdisp hdec hbody
         · have hdepthLt : I.depth.val < 1024 :=
@@ -122,11 +122,11 @@ theorem weth9WithdrawBodyCore {σ σ₀ A I} {g : UInt256}
               simpa [← hZeroState, hevmSCall, hevmECall] using hcallE
             cases z
             · -- call failed: revert
-              have hbody := weth9WithdrawBodyReverts_callFailure evmS evmSCall I o
+              have hbody := weth9WithdrawBodyReverts_callFailure (hperm := by assumption) evmS evmSCall I o
                 hsrcS (by rw [hwvS']; exact hwv) hleLoadS (by rw [← hevmSZero]; exact hcallS)
               exact weth9ReEquivExecRev hcode (weth9WithdrawFailureTail hosz rd1470) hdisp hdec hbody
             · -- call succeeded: return
-              have hbody := weth9WithdrawBodyReturns_success evmS evmSCall I o
+              have hbody := weth9WithdrawBodyReturns_success (hperm := by assumption) evmS evmSCall I o
                 hsrcS (by rw [hwvS']; exact hwv) hleLoadS (by rw [← hevmSZero]; exact hcallS)
               refine weth9ReEquivExecGen hcode (weth9WithdrawSuccessTail hperm rd1470) hdisp hdec
                 hbody ?_ (returnEquiv.fallthrough (dvs := []) rfl rfl (by native_decide))
@@ -144,7 +144,7 @@ theorem weth9WithdrawBodyCore {σ σ₀ A I} {g : UInt256}
               rw [wordOfInt_ofNat_toNat, show evmSZero.executionEnv.codeOwner = I.codeOwner from by
                 rw [hZeroEnv]] at hvalueBal
               exact hbalance (by rw [hStoreMap]; exact hvalueBal)
-            have hbody := weth9WithdrawBodyReverts_callFailure evmS evmSFail I ByteArray.empty
+            have hbody := weth9WithdrawBodyReverts_callFailure (hperm := by assumption) evmS evmSFail I ByteArray.empty
               hsrcS (by rw [hwvS']; exact hwv) hleLoadS (by rw [← hevmSZero]; exact hcall)
             exact weth9ReEquivExecRev hcode hrev hdisp hdec hbody
       · -- `balanceOf[caller] < wad`: `require` reverts

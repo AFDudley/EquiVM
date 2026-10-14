@@ -166,7 +166,8 @@ def weth9SteleFinalState (evm : EVM.State) : EVM.State :=
 
 /-! ## The constructor body executes / reverts -/
 
-theorem weth9SteleCtorBodyReturns (evm : EVM.State) (hwv : evm.executionEnv.weiValue = ⟨0⟩) :
+theorem weth9SteleCtorBodyReturns (evm : EVM.State) (hwv : evm.executionEnv.weiValue = ⟨0⟩)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (∅ : Store) contract.ctor.body
       (.returned { contract := contract, locals := ∅ } (weth9SteleFinalState evm) none) := by
   refine ExecFuncBody.execBlockOK ?_
@@ -177,19 +178,19 @@ theorem weth9SteleCtorBodyReturns (evm : EVM.State) (hwv : evm.executionEnv.weiV
       Stmt.assign .storage decimalsRef (.intLit 18) :: []) _
   refine ExecBlock.consNormal (ExecStmt.requireTrue (evalCallvalueEq_true hwv)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (value := .bytes (String.toByteArray "Wrapped Ether")) (by unfold evalExpr?; rfl)
+    (ExecStmt.assign (hperm := Or.inr (by simpa [weth9SteleNameState, weth9SteleSymbolState, clearSolidityBytesDataWordsFrom_executionEnv] using hperm)) (value := .bytes (String.toByteArray "Wrapped Ether")) (by unfold evalExpr?; rfl)
       (weth9SteleAssignBytes evm { contract := contract, locals := ∅ } nameRef ⟨0⟩
         (String.toByteArray "Wrapped Ether")
         (by simp) (by simp [evalStorageRef, nameRef, EvalResult.bind, bind, pure])
         (by simp [storageTypeAt?, contract, storageDecls, nameRef]) rfl (by native_decide))) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (value := .bytes (String.toByteArray "WETH")) (by unfold evalExpr?; rfl)
+    (ExecStmt.assign (hperm := Or.inr (by simpa [weth9SteleNameState, weth9SteleSymbolState, clearSolidityBytesDataWordsFrom_executionEnv] using hperm)) (value := .bytes (String.toByteArray "WETH")) (by unfold evalExpr?; rfl)
       (weth9SteleAssignBytes (weth9SteleNameState evm) { contract := contract, locals := ∅ }
         symbolRef ⟨1⟩ (String.toByteArray "WETH")
         (by simp) (by simp [evalStorageRef, symbolRef, EvalResult.bind, bind, pure])
         (by simp [storageTypeAt?, contract, storageDecls, symbolRef]) rfl (by native_decide))) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (value := .int 18) (by unfold evalExpr?; rfl)
+    (ExecStmt.assign (hperm := Or.inr (by simpa [weth9SteleNameState, weth9SteleSymbolState, clearSolidityBytesDataWordsFrom_executionEnv] using hperm)) (value := .int 18) (by unfold evalExpr?; rfl)
       (assignStorageRef_storage_scalar (hleaf := by simp [uint256St, uint8St]) (er := { base := "decimals", steps := [] })
         (ty := uint8St) (loc := uint8Loc ⟨2⟩)
         (by simp) (by simp [evalStorageRef, decimalsRef, EvalResult.bind, bind, pure])
@@ -200,7 +201,8 @@ theorem weth9SteleCtorBodyReturns (evm : EVM.State) (hwv : evm.executionEnv.weiV
 theorem weth9SteleCtorExecSuccess
 
     {σ σ₀ : AccountMap} {g : UInt256} {A : Substate} {I : ExecutionEnv}
-    (hwv : I.weiValue = ⟨0⟩) :
+    (hwv : I.weiValue = ⟨0⟩)
+    (hperm : I.perm = true) :
     steleCtorExec config contract [] σ σ₀ g A I
       (.returned { contract := contract, locals := ∅ }
         (weth9SteleFinalState (initState σ σ₀ (Sat256.ofUInt256 g) A I)) none) := by
@@ -208,7 +210,7 @@ theorem weth9SteleCtorExecSuccess
     (evmState := initState σ σ₀ (Sat256.ofUInt256 g) A I) (argsStore := ∅)
     rfl rfl ?_ ?_
   · simp [contract, constructorDecl]
-  · exact weth9SteleCtorBodyReturns _ (by simp only [initState]; exact hwv)
+  · exact weth9SteleCtorBodyReturns (hperm := by assumption) _ (by simp only [initState]; exact hwv)
 
 theorem weth9SteleCtorExecReverts
 

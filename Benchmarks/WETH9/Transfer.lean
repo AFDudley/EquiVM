@@ -290,7 +290,7 @@ theorem xferSkip_accountMap {σ σ₀ A I} {g : Sat256} :
 theorem weth9XferCallReturns_skipSenderSplit {σ σ₀ A I} {g : Sat256}
     (hwv : I.weiValue = ⟨0⟩)
     (hle : (xferWadWord I).toNat ≤ (solcSlotWord σ I (callerBalSlot I)).toNat) :
-    (ExecTransitionBody config contract (initState σ σ₀ g A I) (transferCallStore I)
+    (I.perm = true → ExecTransitionBody config contract (initState σ σ₀ g A I) (transferCallStore I)
       transferFromTransition.body
       (.returned { contract := contract, locals := transferCallStore I }
         (xferDstSt (xferSrcSt (initState σ σ₀ g A I) I) I) (some [.bool true]))) ∧
@@ -316,11 +316,12 @@ theorem weth9XferCallReturns_skipSenderSplit {σ σ₀ A I} {g : Sat256}
         (xferCall_cond_false evm I hsrc) ExecBlock.nil) ?_
     exact htail
   constructor
-  · refine ExecFuncBody.execBlockRet (hprefix ?_)
+  · intro hperm
+    refine ExecFuncBody.execBlockRet (hprefix ?_)
     refine ExecBlock.consNormal
-      (ExecStmt.assign (xferCall_sub evm I) (xferCall_assignSrc evm I)) ?_
+      (ExecStmt.assign (hperm := Or.inr (by simpa [xferSrcSt, evm, initState] using hperm)) (xferCall_sub evm I) (xferCall_assignSrc evm I)) ?_
     refine ExecBlock.consNormal
-      (ExecStmt.assign (xferCall_add (xferSrcSt evm I) I) (xferCall_assignDst evm I)) ?_
+      (ExecStmt.assign (hperm := Or.inr (by simpa [xferSrcSt, evm, initState] using hperm)) (xferCall_add (xferSrcSt evm I) I) (xferCall_assignDst evm I)) ?_
     exact ExecBlock.consReturn (ExecStmt.return (evalExprs?_singleton (by simp [evalExpr?, pure])))
   · intro hperm
     exact ExecFuncBody.execBlockStatic (hprefix
@@ -329,12 +330,13 @@ theorem weth9XferCallReturns_skipSenderSplit {σ σ₀ A I} {g : Sat256}
 
 theorem weth9XferCallReturns_skipSender {σ σ₀ A I} {g : Sat256}
     (hwv : I.weiValue = ⟨0⟩)
-    (hle : (xferWadWord I).toNat ≤ (solcSlotWord σ I (callerBalSlot I)).toNat) :
+    (hle : (xferWadWord I).toNat ≤ (solcSlotWord σ I (callerBalSlot I)).toNat)
+    (hperm : I.perm = true) :
     ExecTransitionBody config contract (initState σ σ₀ g A I) (transferCallStore I)
       transferFromTransition.body
       (.returned { contract := contract, locals := transferCallStore I }
         (xferDstSt (xferSrcSt (initState σ σ₀ g A I) I) I) (some [.bool true])) :=
-  (weth9XferCallReturns_skipSenderSplit hwv hle).1
+  (weth9XferCallReturns_skipSenderSplit hwv hle).1 hperm
 
 /-- `transferFrom(msg.sender, dst, wad)` body, revert: `balanceOf[msg.sender] < wad`. -/
 theorem weth9XferCallReverts_bal {σ σ₀ A I} {g : Sat256}
@@ -621,7 +623,7 @@ theorem weth9TransferBodyCore {σ σ₀ A I} {g : UInt256}
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (xferDstSt (xferSrcSt (initState σ σ₀ (Sat256.ofUInt256 g) A I) I) I) I
           (by simp only [initState]; exact hwv) (by simp [initState])
-          (weth9XferCallReturns_skipSender (σ := σ) (σ₀ := σ₀)
+          (weth9XferCallReturns_skipSender (hperm := by assumption) (σ := σ) (σ₀ := σ₀)
             (A := A) (I := I) (g := Sat256.ofUInt256 g) hwv hbal)
         exact weth9ReEquivExecGen (t := transferTransition) hcode hX hdisp (xferDecode_ok hsz68)
           hbody (by rw [xferSkip_accountMap])

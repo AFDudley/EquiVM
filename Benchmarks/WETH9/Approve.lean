@@ -155,7 +155,7 @@ theorem approveAssign (evm : EVM.State) (I : ExecutionEnv)
 theorem weth9ApproveBodyReturnsSplit (evm : EVM.State) (I : ExecutionEnv)
     (h : evm.executionEnv.weiValue = ⟨0⟩)
     (hsrc : evm.executionEnv.source = I.source) :
-    (ExecTransitionBody config contract evm (approveStore I) approveTransition.body
+    (evm.executionEnv.perm = true → ExecTransitionBody config contract evm (approveStore I) approveTransition.body
       (.returned { contract := contract, locals := approveStore I }
         (approvePostState evm I) (some [.bool true]))) ∧
       (evm.executionEnv.perm = false → ExecTransitionBody config contract evm
@@ -169,9 +169,10 @@ theorem weth9ApproveBodyReturnsSplit (evm : EVM.State) (I : ExecutionEnv)
         approveTransition.body result :=
     ExecBlock.consNormal (ExecStmt.requireTrue (evalCallvalueEq_true h)) htail
   constructor
-  · apply ExecFuncBody.execBlockRet
+  · intro hperm
+    apply ExecFuncBody.execBlockRet
     apply hprefix
-    refine ExecBlock.consNormal (ExecStmt.assign hvalue hassign) ?_
+    refine ExecBlock.consNormal (ExecStmt.assign (Or.inr hperm) hvalue hassign) ?_
     exact ExecBlock.consReturn
       (ExecStmt.return (evalExprs?_singleton (by simp [evalExpr?, pure])))
   · intro hperm
@@ -180,11 +181,12 @@ theorem weth9ApproveBodyReturnsSplit (evm : EVM.State) (I : ExecutionEnv)
 
 theorem weth9ApproveBodyReturns (evm : EVM.State) (I : ExecutionEnv)
     (h : evm.executionEnv.weiValue = ⟨0⟩)
-    (hsrc : evm.executionEnv.source = I.source) :
+    (hsrc : evm.executionEnv.source = I.source)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (approveStore I) approveTransition.body
       (.returned { contract := contract, locals := approveStore I }
         (approvePostState evm I) (some [.bool true])) :=
-  (weth9ApproveBodyReturnsSplit evm I h hsrc).1
+  (weth9ApproveBodyReturnsSplit evm I h hsrc).1 hperm
 
 /-! ## EVM trace : scratch-memory abbreviations -/
 
@@ -503,7 +505,7 @@ theorem weth9ApproveBodyCoreOk {σ σ₀ A I} {g : UInt256}
         (.returned { contract := contract, locals := approveStore I }
           (approvePostState (initState σ σ₀ (Sat256.ofUInt256 g) A I) I)
           (some [.bool true])) :=
-    weth9ApproveBodyReturns (initState σ σ₀ (Sat256.ofUInt256 g) A I) I
+    weth9ApproveBodyReturns (hperm := by assumption) (initState σ σ₀ (Sat256.ofUInt256 g) A I) I
       (by simp only [initState]; exact hwv) (by simp [initState])
   refine weth9ReEquivExecGen (t := approveTransition) hcode
     (weth9ApproveX_ok (g := Sat256.ofUInt256 g) hcode hwv hperm hsz68 hsize hsel)
