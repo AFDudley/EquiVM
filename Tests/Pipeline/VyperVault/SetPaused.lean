@@ -191,7 +191,7 @@ theorem vyperVaultSetPausedBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hfi
       rw [setPausedBody_eq]
       exact ExecFuncBody.execBlockOK (ExecBlock.consNormal (ExecStmt.requireTrue hcv)
         (ExecBlock.consNormal (ExecStmt.requireTrue hcaller)
-          (ExecBlock.consNormal (ExecStmt.assign hflag hassign) ExecBlock.nil)))
+          (ExecBlock.consNormal (ExecStmt.assign (hperm := by first | assumption | exact Or.inr ‹_› | exact Or.inl rfl) hflag hassign) ExecBlock.nil)))
     exact rd4.reEquivExecutionGen hcode' hd hdec hbody (by rw [storageStore_accountMap]; rfl)
       (returnEquiv.fallthrough rfl rfl (by native_decide))
   · have hpf : I.perm = false := by simpa using hperm

@@ -243,7 +243,7 @@ theorem vyperVaultWithdrawBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hfit
     rw [withdrawBody_eq]
     exact ExecFuncBody.execBlockRevert (ExecBlock.consNormal (ExecStmt.requireTrue hcv)
       (ExecBlock.consNormal (ExecStmt.requireTrue hne)
-        (ExecBlock.consNormal (ExecStmt.assign hlit2 hassignL)
+        (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [storageStore_executionEnv, initState] using hperm)) hlit2 hassignL)
           (ExecBlock.consRevert (ExecStmt.internalCallRevert (callee := withdrawCallee) (hargs _) withdrawCallee_lookup rfl
             (ExecFuncBody.execBlockRevert (ExecBlock.consRevert (ExecStmt.requireFalse
               (by rw [evalExpr_ge_words hbalRead (hamt _), decide_eq_false hge])))))))))
@@ -311,10 +311,10 @@ theorem vyperVaultWithdrawBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hfit
     rw [withdrawBody_eq]
     exact ExecFuncBody.execBlockRevert (ExecBlock.consNormal (ExecStmt.requireTrue hcv)
       (ExecBlock.consNormal (ExecStmt.requireTrue hne)
-        (ExecBlock.consNormal (ExecStmt.assign hlit2 hassignL)
+        (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [storageStore_executionEnv, initState] using hperm)) hlit2 hassignL)
           (ExecBlock.consRevert (ExecStmt.internalCallRevert (callee := withdrawCallee) (hargs _) withdrawCallee_lookup rfl
             (ExecFuncBody.execBlockRevert (ExecBlock.consNormal (ExecStmt.requireTrue hgeTrue)
-              (ExecBlock.consNormal (ExecStmt.assign hsub1 hassignB)
+              (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [storageStore_executionEnv, initState] using hperm)) hsub1 hassignB)
                 (ExecBlock.consRevert (ExecStmt.assignExprRevert
                   (evalExpr_uint256_sub_underflow htdRead (hamt _) (by omega))))))))))))
   obtain ⟨_, _, rd5⟩ := vyperVaultBlocks.vyperVault_block_877_fallthrough (by simp) hperm
@@ -352,7 +352,7 @@ theorem vyperVaultWithdrawBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hfit
       (.lowLevelCall (.env .caller) (.var "amount") (.newBytes (.intLit 0)) "__ok0" "__data0" true)
       (.ok { frame imms (wStore I) with
           locals := ((wStore I).insert "__ok0" (.bool z)).insert "__data0" (.bytes out) } evm') :=
-    lowLevelCallSource
+    lowLevelCallSource (hperm := Or.inr (by simpa only [hs.env] using hperm))
       (by
         rw [evalExpr_caller, accountAddress_roundtrip]
         simp only [storageStore_executionEnv]
@@ -368,11 +368,11 @@ theorem vyperVaultWithdrawBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hfit
     rw [withdrawBody_eq]
     exact ExecFuncBody.execBlockRevert (ExecBlock.consNormal (ExecStmt.requireTrue hcv)
       (ExecBlock.consNormal (ExecStmt.requireTrue hne)
-        (ExecBlock.consNormal (ExecStmt.assign hlit2 hassignL)
+        (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [storageStore_executionEnv, initState] using hperm)) hlit2 hassignL)
           (ExecBlock.consRevert (ExecStmt.internalCallRevert (callee := withdrawCallee) (hargs _) withdrawCallee_lookup rfl
             (ExecFuncBody.execBlockRevert (ExecBlock.consNormal (ExecStmt.requireTrue hgeTrue)
-              (ExecBlock.consNormal (ExecStmt.assign hsub1 hassignB)
-                (ExecBlock.consNormal (ExecStmt.assign hsub2 hassignT)
+              (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [storageStore_executionEnv, initState] using hperm)) hsub1 hassignB)
+                (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [storageStore_executionEnv, initState] using hperm)) hsub2 hassignT)
                   (ExecBlock.consNormal hcallStmt
                     (ExecBlock.consRevert (ExecStmt.requireFalse
                       (evalVar imms _ _ "__ok0" _ (by rw [store_get_ne _ _ (by decide), store_get_self]))))))))))))))
@@ -407,15 +407,15 @@ theorem vyperVaultWithdrawBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hfit
       rw [withdrawBody_eq]
       exact ExecFuncBody.execBlockOK (ExecBlock.consNormal (ExecStmt.requireTrue hcv)
         (ExecBlock.consNormal (ExecStmt.requireTrue hne)
-          (ExecBlock.consNormal (ExecStmt.assign hlit2 hassignL)
+          (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [storageStore_executionEnv, initState] using hperm)) hlit2 hassignL)
             (ExecBlock.consNormal (ExecStmt.internalCallReturn (callee := withdrawCallee) (hargs _) withdrawCallee_lookup rfl
               (ExecFuncBody.execBlockOK (ExecBlock.consNormal (ExecStmt.requireTrue hgeTrue)
-                (ExecBlock.consNormal (ExecStmt.assign hsub1 hassignB)
-                  (ExecBlock.consNormal (ExecStmt.assign hsub2 hassignT)
+                (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [storageStore_executionEnv, initState] using hperm)) hsub1 hassignB)
+                  (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [storageStore_executionEnv, initState] using hperm)) hsub2 hassignT)
                     (ExecBlock.consNormal hcallStmt
                       (ExecBlock.consNormal (ExecStmt.requireTrue hok)
-                        (ExecBlock.consNormal (ExecStmt.emit hemit) ExecBlock.nil))))))))
-              (ExecBlock.consNormal (ExecStmt.assign hlit3 hassign3) ExecBlock.nil)))))
+                        (ExecBlock.consNormal (ExecStmt.emit (hperm := by simpa only [hs'.env] using hperm) hemit) ExecBlock.nil))))))))
+              (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [hs'.env] using hperm)) hlit3 hassign3) ExecBlock.nil)))))
     exact rd10.reEquivExecutionGen hcode' hd hdec hbody ((hs'.storageWrite ⟨0⟩ (UInt256.ofNat 3)).accounts)
       (returnEquiv.fallthrough rfl rfl (by native_decide))
 

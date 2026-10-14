@@ -359,7 +359,7 @@ theorem vyperVaultDepositBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hfit 
       (ExecBlock.consNormal (ExecStmt.requireTrue hgt)
         (ExecBlock.consNormal (ExecStmt.letDecl hfeeEval)
           (ExecBlock.consNormal (ExecStmt.letDecl hcredEval)
-            (ExecBlock.consNormal (ExecStmt.assign hadd1 hassign1)
+            (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [storageStore_executionEnv, initState] using hperm)) hadd1 hassign1)
               (ExecBlock.consRevert (ExecStmt.assignExprRevert
                 (evalExpr_uint256_add_overflow htd (hcredVar _) (by omega)))))))))
   obtain ⟨_, _, rd6⟩ := vyperVaultBlocks.vyperVault_block_362_fallthrough (by simp) hperm
@@ -425,8 +425,8 @@ theorem vyperVaultDepositBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hfit 
       (ExecBlock.consNormal (ExecStmt.requireTrue hgt)
         (ExecBlock.consNormal (ExecStmt.letDecl hfeeEval)
           (ExecBlock.consNormal (ExecStmt.letDecl hcredEval)
-            (ExecBlock.consNormal (ExecStmt.assign hadd1 hassign1)
-              (ExecBlock.consNormal (ExecStmt.assign hadd2 hassign2)
+            (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [storageStore_executionEnv, initState] using hperm)) hadd1 hassign1)
+              (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [storageStore_executionEnv, initState] using hperm)) hadd2 hassign2)
                 (ExecBlock.consRevert (ExecStmt.assignExprRevert
                   (evalExpr_uint256_add_overflow hfc (hfeeVar _) (by omega))))))))))
   obtain ⟨_, _, rd7⟩ := vyperVaultBlocks.vyperVault_block_385_fallthrough (by simp) hperm
@@ -499,10 +499,10 @@ theorem vyperVaultDepositBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hfit 
       (ExecBlock.consNormal (ExecStmt.requireTrue hgt)
         (ExecBlock.consNormal (ExecStmt.letDecl hfeeEval)
           (ExecBlock.consNormal (ExecStmt.letDecl hcredEval)
-            (ExecBlock.consNormal (ExecStmt.assign hadd1 hassign1)
-              (ExecBlock.consNormal (ExecStmt.assign hadd2 hassign2)
-                (ExecBlock.consNormal (ExecStmt.assign hadd3 hassign3)
-                  (ExecBlock.consNormal (ExecStmt.emit hemit) ExecBlock.nil))))))))
+            (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [storageStore_executionEnv, initState] using hperm)) hadd1 hassign1)
+              (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [storageStore_executionEnv, initState] using hperm)) hadd2 hassign2)
+                (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [storageStore_executionEnv, initState] using hperm)) hadd3 hassign3)
+                  (ExecBlock.consNormal (ExecStmt.emit (hperm := by simpa only [storageStore_executionEnv, initState] using hperm) hemit) ExecBlock.nil))))))))
   exact rd8.reEquivExecutionGen hcode' hd hdec hbody
     (by rw [storageStore_accountMap, storageStore_accountMap, storageStore_accountMap]; rfl)
     (returnEquiv.fallthrough rfl rfl (by native_decide))
