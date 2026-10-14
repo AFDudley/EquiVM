@@ -118,7 +118,7 @@ theorem scratch_blindAuctionReveal_postLoop_callDepth_fromCall
   have hbody :
       ExecTransitionBody blindAuctionConfig blindAuctionContract evmStele
         callargs revealTransition.body .reverted := by
-    exact scratch_blindAuctionRevealBodyReverts_callFailure_fromLoopOfLocals
+    exact scratch_blindAuctionRevealBodyReverts_callFailure_fromLoopOfLocals (hperm := by simpa only [wordOfInt_ofNat_toNat, henvDone, or_comm] using hpv)
       evmStele evmDone evmSFail callargs LDone values fakes secrets
       loopLen aDone.refund ByteArray.empty
       hwvStele hafterBody hbeforeBody hbiddingAbsent hrevealAbsent
@@ -221,7 +221,7 @@ theorem scratch_blindAuctionReveal_postLoop_callInsufficient_fromCall
       ExecTransitionBody blindAuctionConfig blindAuctionContract evmStele
         callargs revealTransition.body .reverted := by
     exact
-      scratch_blindAuctionRevealBodyReverts_callFailure_fromLoopOfLocals
+      scratch_blindAuctionRevealBodyReverts_callFailure_fromLoopOfLocals (hperm := by simpa only [wordOfInt_ofNat_toNat, henvDone, or_comm] using hpv)
         evmStele evmDone evmSFail callargs LDone values fakes secrets
         loopLen aDone.refund ByteArray.empty
         hwvStele hafterBody hbeforeBody hbiddingAbsent hrevealAbsent
@@ -374,7 +374,7 @@ theorem scratch_blindAuctionReveal_postLoop_postCallNonempty
   have rd1400 := evm_run rd1391 with [push2 ⟨1400⟩, jump (by jump_dest), jumpdest]
   exact ⟨_, _, _, _, evm_run rd1400 with [pop, pop, swap1, pop]⟩
 
-omit hpv henvDone rd1349 hawCall in
+omit rd1349 hawCall in
 theorem scratch_blindAuctionReveal_postLoop_callMade_failure
     {σ' : AccountMap}
     {out : ByteArray} {k1350 C1350 : ℕ} {evmSCall : EVM.State}
@@ -398,7 +398,7 @@ theorem scratch_blindAuctionReveal_postLoop_callMade_failure
       ExecTransitionBody blindAuctionConfig blindAuctionContract
         evmStele callargs revealTransition.body .reverted := by
     exact
-      scratch_blindAuctionRevealBodyReverts_callFailure_fromLoopOfLocals
+      scratch_blindAuctionRevealBodyReverts_callFailure_fromLoopOfLocals (hperm := by simpa only [wordOfInt_ofNat_toNat, henvDone, or_comm] using hpv)
         evmStele evmDone evmSCall callargs LDone values fakes secrets
         loopLen aDone.refund out
         hwvStele hafterBody hbeforeBody hbiddingAbsent hrevealAbsent
@@ -466,7 +466,7 @@ theorem scratch_blindAuctionReveal_postLoop_callMade_failure
       rw [hevmStele] at hbody
       exact hbody)
 
-omit hpv henvDone rd1349 hawCall in
+omit rd1349 hawCall in
 theorem scratch_blindAuctionReveal_postLoop_callMade_success
     {σ' : AccountMap}
     {out : ByteArray} {k1350 C1350 : ℕ} {evmSCall : EVM.State}
@@ -496,7 +496,7 @@ theorem scratch_blindAuctionReveal_postLoop_callMade_success
             Frame)
           evmSCall none) := by
     exact
-      scratch_blindAuctionRevealBodyReturns_callSuccess_fromLoopOfLocals
+      scratch_blindAuctionRevealBodyReturns_callSuccess_fromLoopOfLocals (hperm := by simpa only [wordOfInt_ofNat_toNat, henvDone, or_comm] using hpv)
         evmStele evmDone evmSCall callargs LDone values fakes secrets
         loopLen aDone.refund out
         hwvStele hafterBody hbeforeBody hbiddingAbsent hrevealAbsent
@@ -641,7 +641,7 @@ theorem scratch_blindAuctionReveal_postLoop_callMade_fromCall
     rw [hevmEDone] at hcallE
     simpa [evmSCall, hTargetEq] using hcallE
   cases z
-  · exact scratch_blindAuctionReveal_postLoop_callMade_failure
+  · exact scratch_blindAuctionReveal_postLoop_callMade_failure (hpv := hpv) (henvDone := henvDone)
 
       (σ := σ)  (σ₀ := σ₀) (A := A)
       (I := I) (g := g)
@@ -658,7 +658,7 @@ theorem scratch_blindAuctionReveal_postLoop_callMade_fromCall
       (by simpa using hcallS)
   · have hAccounts : σ' = evmSCall.accountMap := by
       simp [evmSCall, evmECall]
-    exact scratch_blindAuctionReveal_postLoop_callMade_success
+    exact scratch_blindAuctionReveal_postLoop_callMade_success (hpv := hpv) (henvDone := henvDone)
 
       (σ := σ)  (σ₀ := σ₀) (A := A)
       (I := I) (g := g)
