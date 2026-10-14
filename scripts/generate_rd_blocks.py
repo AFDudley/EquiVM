@@ -1612,9 +1612,11 @@ def render_module(prefix: str, imports: list[str], units: list[Unit],
                   code: bytes | None = None,
                   layout_term: str | None = None,
                   runtime_suffix: bool = False,
-                  max_rec_depth: int | None = None) -> str:
+                  max_rec_depth: int | None = None,
+                  namespace: str | None = None) -> str:
     """Wrap generated units as an independently elaboratable Lean module."""
     prefix = lean_ident(prefix)
+    namespace = namespace or f"{prefix}Blocks"
     output = ["import Reasoning.Reach"]
     if creation_code or runtime_suffix:
         output.append("import Reasoning.Initcode")
@@ -1623,7 +1625,7 @@ def render_module(prefix: str, imports: list[str], units: list[Unit],
     output.extend(f"import {module}" for module in imports)
     output += ["", "open Stele ABI Ethereum Ethereum.EVM",
                "open Reasoning.Theory Reasoning.Reach", "",
-               f"namespace {prefix}Blocks", ""]
+               f"namespace {namespace}", ""]
     if max_rec_depth is not None:
         output += [f"set_option maxRecDepth {max_rec_depth}", ""]
     elif runtime_suffix:
@@ -1644,7 +1646,7 @@ def render_module(prefix: str, imports: list[str], units: list[Unit],
         ]
     for unit in units:
         output += [unit_text(unit), ""]
-    output += [f"end {prefix}Blocks", ""]
+    output += [f"end {namespace}", ""]
     return "\n".join(output)
 
 
@@ -1654,14 +1656,16 @@ def generate(code: bytes, prefix: str, code_term: str, imports: list[str],
              creation_code: bool = False,
              immutable_sites: dict[int, tuple[int, str]] | None = None,
              layout_term: str | None = None,
-             runtime_suffix: bool = False) -> str:
+             runtime_suffix: bool = False,
+             namespace: str | None = None) -> str:
     """Generate a single Lean module. Use ``write_outputs`` for file sharding."""
     units = generate_unit_records(code, prefix, code_term, fail_on_unsupported,
                                   keep_metadata, max_summary_instructions,
                                   creation_code, immutable_sites, layout_term,
                                   runtime_suffix)
     return render_module(prefix, imports, units, creation_code, code_term,
-                         immutable_sites, code, layout_term, runtime_suffix)
+                         immutable_sites, code, layout_term, runtime_suffix,
+                         namespace=namespace)
 
 
 def top_level_item_start(line: str) -> bool:
@@ -1752,12 +1756,13 @@ def write_outputs(output: Path, prefix: str, imports: list[str], units: list[Uni
                   code: bytes | None = None,
                   layout_term: str | None = None,
                   runtime_suffix: bool = False,
-                  max_rec_depth: int | None = None) -> list[Path]:
+                  max_rec_depth: int | None = None,
+                  namespace: str | None = None) -> list[Path]:
     index_entries: list[IndexEntry] = []
     if shard_size is None:
         module_text = render_module(prefix, imports, units, creation_code,
                                     code_term, immutable_sites, code, layout_term,
-                                    runtime_suffix, max_rec_depth)
+                                    runtime_suffix, max_rec_depth, namespace)
         output.write_text(module_text, encoding="utf-8")
         index_entries.extend(module_index_entries(output.name, module_text, units))
         (index_output or default_index_output(output)).write_text(
@@ -1773,7 +1778,7 @@ def write_outputs(output: Path, prefix: str, imports: list[str], units: list[Uni
         path = output.with_name(f"{output.stem}_{index:0{width}d}{suffix}")
         module_text = render_module(prefix, imports, shard, creation_code,
                                     code_term, immutable_sites, code, layout_term,
-                                    runtime_suffix, max_rec_depth)
+                                    runtime_suffix, max_rec_depth, namespace)
         path.write_text(module_text, encoding="utf-8")
         index_entries.extend(module_index_entries(path.name, module_text, shard))
         paths.append(path)
@@ -1789,6 +1794,7 @@ def main(argv: list[str] | None = None) -> int:
                         help="raw binary, hex text, or solc JSON; use - for stdin")
     parser.add_argument("--hex", dest="hex_bytecode", help="bytecode as a hexadecimal string")
     parser.add_argument("--name", required=True, help="Lean-safe prefix for generated declarations")
+    parser.add_argument("--namespace", help="Lean namespace (default: NAMEBlocks)")
     parser.add_argument("--code-term", required=True,
                         help="ByteArray term provided by the imported bytecode module")
     parser.add_argument("--bytecode-import", required=True,
@@ -1838,7 +1844,7 @@ def main(argv: list[str] | None = None) -> int:
         paths = write_outputs(args.output, args.name, imports, units,
                               args.shard_size, args.creation_code, args.code_term,
                               args.index_output, immutable_sites, code,
-                              layout_term, args.runtime_suffix)
+                              layout_term, args.runtime_suffix, namespace=args.namespace)
     except (OSError, ValueError) as error:
         parser.error(str(error))
     if args.shard_size is not None:

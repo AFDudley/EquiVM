@@ -224,6 +224,23 @@ class GeneratorTests(unittest.TestCase):
             for shard in shards:
                 self.assertIn(shard.name + ":", index)
 
+    def test_contract_variants_can_share_summary_prefix(self) -> None:
+        records = rd.generate_unit_records(bytes.fromhex("5b5b"), "sample", "sampleCode",
+                                           keep_metadata=True)
+        for shard_size in (None, 1):
+            with self.subTest(shard_size=shard_size), tempfile.TemporaryDirectory() as tmp:
+                for variant in ("Main", "Alternate"):
+                    namespace = f"Sample.{variant}.RuntimeBlocks"
+                    output = Path(tmp) / f"{variant}.lean"
+                    paths = rd.write_outputs(output, "sample", ["Sample.Bytecode"], records,
+                                             shard_size, namespace=namespace)
+                    for path in paths:
+                        rendered = path.read_text()
+                        self.assertIn(f"namespace {namespace}\n", rendered)
+                        self.assertIn(f"end {namespace}\n", rendered)
+                        self.assertIn("theorem sample_block_", rendered)
+                        self.assertNotIn("namespace sampleBlocks\n", rendered)
+
 
 class BenchmarkInputTests(unittest.TestCase):
     def test_discovery_is_independent_of_temporary_scaffolds(self) -> None:

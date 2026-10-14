@@ -138,6 +138,9 @@ for a complete Vyper proof and `Examples/VyperImmutable` for the immutable suffi
 - Declarations are prefixed with the lowerCamel contract name (`fooBytecode`, `fooSelBytes`,
   `fooReachTransferBody`, `fooTransferBody`); overloaded functions get their parameter types
   appended (`file_bytes32_uint256`).
+- `generate_rd_blocks.py --namespace <Module>.RuntimeBlocks` gives compiler variants distinct
+  namespaces while preserving their summary names. `audit_safe.py` uses each Safe variant's
+  module path for its runtime and creation namespaces so the proofs can be imported together.
 - Constants are inlined at their uses (solc does the same; the surface grammar has no constant
   item). Enums are `uint8`. Interface casts are dropped (receivers are addresses).
 - A public function that is also called internally is split into `<f>_body` (internal) plus the
