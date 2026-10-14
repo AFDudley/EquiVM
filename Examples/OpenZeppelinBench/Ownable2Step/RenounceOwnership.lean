@@ -200,7 +200,8 @@ theorem ownable2StepRenounceOwnershipBodyReturns (evm : EVM.State)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (howner :
       UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩) solcAddrMask =
-        ownable2StepSourceWord evm.executionEnv) :
+        ownable2StepSourceWord evm.executionEnv)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm ∅ renounceOwnershipTransition.body
       (.returned { contract := contract, locals := ∅ } (renounceOwnershipAfterOwnerState evm)
         none) := by
@@ -209,10 +210,14 @@ theorem ownable2StepRenounceOwnershipBodyReturns (evm : EVM.State)
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue (evalExpr_renounceOwnership_owner_eq_true evm howner)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_renounceOwnership_zeroAddr evm)
+    (ExecStmt.assign
+      (hperm := Or.inr hperm)
+      (evalExpr_renounceOwnership_zeroAddr evm)
       (renounceOwnershipAssignPending evm)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_renounceOwnership_zeroAddr_afterPending evm)
+    (ExecStmt.assign
+      (hperm := Or.inr (by simpa [renounceOwnershipAfterPendingState] using hperm))
+      (evalExpr_renounceOwnership_zeroAddr_afterPending evm)
       (renounceOwnershipAssignOwner evm)) ?_
   exact ExecBlock.nil
 
@@ -431,7 +436,7 @@ theorem ownable2StepRenounceOwnershipBody {σ σ₀ A I}
       simpa [evmS, initState, Stele.EVM.storageLoad, State.lookupAccount,
         renounceOwnershipOwnerWord, ownable2StepSourceWord] using howner
     by_cases hperm : I.perm = true
-    · have hbody := ownable2StepRenounceOwnershipBodyReturns evmS
+    · have hbody := ownable2StepRenounceOwnershipBodyReturns (hperm := hperm) evmS
         (by simp only [evmS, initState]; exact hwv) hownerStele
       exact (permSplit_true hperm (ownable2StepX_renounceOwnership_success
           (g := Sat256.ofUInt256 g) howner hreach))

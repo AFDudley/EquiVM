@@ -153,14 +153,18 @@ theorem erc20Decode_approve_none_noncanon {I : ExecutionEnv}
       (cd := I.calldata) (x := "spender") (y := "value") hsz68 hnc
 
 theorem erc20ApproveBodyReturns (evm : EVM.State) (I : ExecutionEnv)
-    (h : evm.executionEnv.weiValue = ⟨0⟩) :
+    (h : evm.executionEnv.weiValue = ⟨0⟩) (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody vyperERC20Config erc20Contract evm (approveStore I) ERC20.approveTransition.body
       (.returned { contract := erc20Contract, locals := approveStore I }
         (approvePostState evm I) (some [(.bool true)])) := by
   refine ExecFuncBody.execBlockRet ?_
   refine ExecBlock.consNormal (ExecStmt.requireTrue (evalCallvalueEq_true h)) ?_
-  refine ExecBlock.consNormal (ExecStmt.assign (evalExpr_approve_value evm I) (approveAssign evm I)) ?_
-  refine ExecBlock.consNormal (ExecStmt.emit (evalExprs_approve_event (approvePostState evm I) I)) ?_
+  refine ExecBlock.consNormal (ExecStmt.assign
+    (hperm := Or.inr hperm)
+    (evalExpr_approve_value evm I) (approveAssign evm I)) ?_
+  refine ExecBlock.consNormal (ExecStmt.emit
+    (hperm := by simpa [approvePostState] using hperm)
+    (evalExprs_approve_event (approvePostState evm I) I)) ?_
   exact ExecBlock.consReturn (ExecStmt.return (by simp [evalExprs?, evalExpr?, EvalResult.bind, bind, pure]))
 
 /-- Static mode: the body halts at the allowance write. -/
@@ -645,7 +649,6 @@ theorem erc20ApproveBodyCore
       σ σ₀ g A I := by
   have hd := erc20Dispatch_approve (cd := I.calldata) hsel
   let evm := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  have hbody := erc20ApproveBodyReturns evm I (by simp only [evm, initState]; exact hwv)
   have hsz4 := erc20ApproveSelector_size hsel
   by_cases hsz68 : 68 ≤ I.calldata.size
   · by_cases hcanonSpender : (approveSpenderWord I).toNat < EVM.addressModulus
@@ -657,7 +660,9 @@ theorem erc20ApproveBodyCore
               some (approveStore I) := by
         simpa [vyperERC20Config] using hdec0
       by_cases hperm : I.perm = true
-      · exact (permSplit_true hperm (erc20X_approveFromEntry (g := Sat256.ofUInt256 g)
+      · have hbody := erc20ApproveBodyReturns evm I
+          (by simp only [evm, initState]; exact hwv) hperm
+        exact (permSplit_true hperm (erc20X_approveFromEntry (g := Sat256.ofUInt256 g)
             hwv hsz68 hsize hcanonSpender hreach))
           |>.reEquivExecutionGen hcode hd hdec hbody
             (by simp [evm, approvePostState, approveSlot, approveSlotI, initState,

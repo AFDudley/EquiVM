@@ -300,7 +300,8 @@ theorem blindAuctionAuctionEndBodyReverts_callFailure
           (AccountAddress.ofNat
             (auctionEndBeneficiaryWordState (auctionEndAfterEndedState evm)).toNat))
         (Int.ofNat (auctionEndHighestBidWordState (auctionEndAfterEndedState evm)).toNat)
-        ByteArray.empty (false, evm', out)) :
+        ByteArray.empty (false, evm', out))
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody blindAuctionConfig blindAuctionContract evm ∅
       auctionEndTransition.body .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
@@ -310,9 +311,12 @@ theorem blindAuctionAuctionEndBodyReverts_callFailure
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue (evalExpr_auctionEnd_not_ended_true evm hended)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (by simp [evalExpr?, pure]) (auctionEndAssignEnded evm)) ?_
+    (ExecStmt.assign
+      (hperm := Or.inr hperm)
+      (by simp [evalExpr?, pure]) (auctionEndAssignEnded evm)) ?_
   refine ExecBlock.consNormal
     (ExecStmt.lowLevelCallFailure
+      (hperm := Or.inr (by simpa [auctionEndAfterEndedState] using hperm))
       (evalExpr_auctionEnd_beneficiary (auctionEndAfterEndedState evm))
       (evalExpr_auctionEnd_highestBid (auctionEndAfterEndedState evm))
       (evalExpr_auctionEnd_emptyBytes (auctionEndAfterEndedState evm)) hcall) ?_
@@ -350,7 +354,8 @@ theorem blindAuctionAuctionEndBodyReturns_callSuccess
           (AccountAddress.ofNat
             (auctionEndBeneficiaryWordState (auctionEndAfterEndedState evm)).toNat))
         (Int.ofNat (auctionEndHighestBidWordState (auctionEndAfterEndedState evm)).toNat)
-        ByteArray.empty (true, evm', out)) :
+        ByteArray.empty (true, evm', out))
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody blindAuctionConfig blindAuctionContract evm ∅ auctionEndTransition.body
       (.returned { contract := blindAuctionContract, locals := auctionEndCallStore true out }
         evm' none) := by
@@ -361,9 +366,12 @@ theorem blindAuctionAuctionEndBodyReturns_callSuccess
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue (evalExpr_auctionEnd_not_ended_true evm hended)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (by simp [evalExpr?, pure]) (auctionEndAssignEnded evm)) ?_
+    (ExecStmt.assign
+      (hperm := Or.inr hperm)
+      (by simp [evalExpr?, pure]) (auctionEndAssignEnded evm)) ?_
   refine ExecBlock.consNormal
     (ExecStmt.lowLevelCallSuccess
+      (hperm := Or.inr (by simpa [auctionEndAfterEndedState] using hperm))
       (evalExpr_auctionEnd_beneficiary (auctionEndAfterEndedState evm))
       (evalExpr_auctionEnd_highestBid (auctionEndAfterEndedState evm))
       (evalExpr_auctionEnd_emptyBytes (auctionEndAfterEndedState evm)) hcall) ?_
@@ -1161,7 +1169,7 @@ theorem blindAuctionAuctionEndBodyCore {σ σ₀ A I}
           have hbody :
               ExecTransitionBody blindAuctionConfig blindAuctionContract evmS ∅
                 auctionEndTransition.body .reverted :=
-            blindAuctionAuctionEndBodyReverts_callFailure evmS evmSFail ByteArray.empty
+            blindAuctionAuctionEndBodyReverts_callFailure (hperm := by assumption) evmS evmSFail ByteArray.empty
               (by simpa [evmS, initState] using hwv)
               (by
                 simpa [evmS, initState, auctionEndRevealEndWord, auctionEndTimestampWord,
@@ -1312,7 +1320,7 @@ theorem blindAuctionAuctionEndBodyCore {σ σ₀ A I}
             · have hbody :
                   ExecTransitionBody blindAuctionConfig blindAuctionContract evmS ∅
                     auctionEndTransition.body .reverted :=
-                blindAuctionAuctionEndBodyReverts_callFailure evmS evmSCall out
+                blindAuctionAuctionEndBodyReverts_callFailure (hperm := by assumption) evmS evmSCall out
                   (by simpa [evmS, initState] using hwv)
                   (by
                     simpa [evmS, initState, auctionEndRevealEndWord, auctionEndTimestampWord,
@@ -1331,7 +1339,7 @@ theorem blindAuctionAuctionEndBodyCore {σ σ₀ A I}
                     auctionEndTransition.body
                     (.returned { contract := blindAuctionContract, locals := auctionEndCallStore true out }
                       evmSCall none) :=
-                blindAuctionAuctionEndBodyReturns_callSuccess evmS evmSCall out
+                blindAuctionAuctionEndBodyReturns_callSuccess (hperm := by assumption) evmS evmSCall out
                   (by simpa [evmS, initState] using hwv)
                   (by
                     simpa [evmS, initState, auctionEndRevealEndWord, auctionEndTimestampWord,
@@ -1406,7 +1414,7 @@ theorem blindAuctionAuctionEndBodyCore {σ σ₀ A I}
             have hbody :
                 ExecTransitionBody blindAuctionConfig blindAuctionContract evmS ∅
                   auctionEndTransition.body .reverted :=
-              blindAuctionAuctionEndBodyReverts_callFailure evmS evmSFail ByteArray.empty
+              blindAuctionAuctionEndBodyReverts_callFailure (hperm := by assumption) evmS evmSFail ByteArray.empty
                 (by simpa [evmS, initState] using hwv)
                 (by
                   simpa [evmS, initState, auctionEndRevealEndWord, auctionEndTimestampWord,

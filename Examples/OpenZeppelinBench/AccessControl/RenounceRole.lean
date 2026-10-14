@@ -440,7 +440,8 @@ theorem accessControlRenounceRoleBodyReturns_write (evm : EVM.State) (I : Execut
     (hcaller : AccountAddress.ofNat (renounceRoleCallerWord I).toNat = evm.executionEnv.source)
     (htarget : UInt256.land
       (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (renounceRoleTargetSlot I)) ⟨255⟩ ≠
-        ⟨0⟩) :
+        ⟨0⟩)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (renounceRoleStore I) renounceRoleTransition.body
       (.returned { contract := contract, locals := renounceRoleStore I }
         (renounceRolePostState evm I) none) := by
@@ -454,7 +455,9 @@ theorem accessControlRenounceRoleBodyReturns_write (evm : EVM.State) (I : Execut
       (renounceRolePostState evm I))
       (evalExpr_renounceRole_target_true evm I hsz68 htarget) ?_) ?_
   · refine ExecBlock.consNormal
-      (ExecStmt.assign (by simp [evalExpr?, pure]) (renounceRoleAssignTarget evm I hsz68)) ?_
+      (ExecStmt.assign
+        (hperm := by first | assumption | exact Or.inr ‹_› | exact Or.inl rfl)
+        (by simp [evalExpr?, pure]) (renounceRoleAssignTarget evm I hsz68)) ?_
     exact ExecBlock.nil
   exact ExecBlock.nil
 
@@ -980,7 +983,7 @@ theorem accessControlRenounceRoleBody {σ σ₀ A I}
               simpa [renounceRoleMaskedWord, renounceRoleStorageWord, evmS, initState,
                 Stele.EVM.storageLoad, State.lookupAccount] using htargetNonzero
             by_cases hperm : I.perm = true
-            · have hbody := accessControlRenounceRoleBodyReturns_write evmS I hsz68
+            · have hbody := accessControlRenounceRoleBodyReturns_write (hperm := hperm) evmS I hsz68
                 (by simp only [evmS, initState]; exact hwv) hcallerStele htargetStele
               exact (permSplit_true hperm (accessControlRenounceRoleX_revoke_write
                   (g := Sat256.ofUInt256 g) hsz68 hcanon htargetNonzero rd436))

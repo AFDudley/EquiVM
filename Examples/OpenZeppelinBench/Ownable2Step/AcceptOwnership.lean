@@ -247,7 +247,8 @@ theorem ownable2StepAcceptOwnershipBodyReturns (evm : EVM.State)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hpending :
       UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) solcAddrMask =
-        UInt256.ofNat evm.executionEnv.source.val) :
+        UInt256.ofNat evm.executionEnv.source.val)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm ∅ acceptOwnershipTransition.body
       (.returned { contract := contract, locals := ∅ } (acceptOwnershipAfterOwnerState evm) none) := by
   refine ExecFuncBody.execBlockOK ?_
@@ -255,9 +256,13 @@ theorem ownable2StepAcceptOwnershipBodyReturns (evm : EVM.State)
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue (evalExpr_acceptOwnership_pendingOwner_eq_true evm hpending)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_acceptOwnership_zeroAddr evm) (acceptOwnershipAssignPending evm)) ?_
+    (ExecStmt.assign
+      (hperm := Or.inr hperm)
+      (evalExpr_acceptOwnership_zeroAddr evm) (acceptOwnershipAssignPending evm)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_acceptOwnership_sender_afterPending evm)
+    (ExecStmt.assign
+      (hperm := Or.inr (by simpa [acceptOwnershipAfterPendingState] using hperm))
+      (evalExpr_acceptOwnership_sender_afterPending evm)
       (acceptOwnershipAssignOwner evm)) ?_
   exact ExecBlock.nil
 
@@ -542,7 +547,7 @@ theorem ownable2StepAcceptOwnershipBody {σ σ₀ A I}
       simpa [evmS, initState, Stele.EVM.storageLoad, State.lookupAccount,
         acceptOwnershipPendingOwnerWord, ownable2StepSourceWord] using hpending
     by_cases hperm : I.perm = true
-    · have hbody := ownable2StepAcceptOwnershipBodyReturns evmS
+    · have hbody := ownable2StepAcceptOwnershipBodyReturns (hperm := hperm) evmS
         (by simp only [evmS, initState]; exact hwv) hpendingStele
       exact (permSplit_true hperm (ownable2StepX_acceptOwnership_success
           (g := Sat256.ofUInt256 g) hpending hreach))
