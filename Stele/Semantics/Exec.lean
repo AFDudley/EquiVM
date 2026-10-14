@@ -25,10 +25,8 @@ inductive ExecResult where
   | decodingFailed : ExecResult
   /-- Static-mode halt: a state-changing statement (storage write, event, value call, `new`) ran
       with `evm.executionEnv.perm = false`.  Mirrors the EVM's `StaticModeViolation` exception.
-      The rules producing it are *additional* to the ordinary ones, which are not guarded by the
-      permission bit: under `perm = false` a body may halt at any such statement.  The EVM halts
-      at its first one, so the refinement only needs some halting run to exist; a body without
-      such statements (a view function) has none. -/
+      Ordinary execution requires write permission for these operations, so a body halts at
+      its first forbidden operation. Local assignments and zero-value calls remain available. -/
   | staticViolation : ExecResult
 
 structure CallableDecl where
@@ -194,7 +192,7 @@ inductive ExecStmt (cfg : Config) :
   | letGas (w : EVM.Word) :
       ExecStmt cfg stele evm (.letGas name)
         (.ok { stele with locals := stele.locals.insert name (.int (Int.ofNat w.toNat)) } evm)
-  | assign :
+  | assign (hperm : origin = .localVar ∨ evm.executionEnv.perm = true) :
       evalExpr? cfg stele evm expr = .ok value ->
       assignStorageRef? cfg stele evm origin slot value = .ok (stele', evm') ->
       ExecStmt cfg stele evm (.assign origin slot expr) (.ok stele' evm')
@@ -217,7 +215,7 @@ inductive ExecStmt (cfg : Config) :
       assignStorageRef? cfg stele evm .transient slot value = .ok (stele', evm') →
       evm.executionEnv.perm = false →
       ExecStmt cfg stele evm (.assign .transient slot expr) .staticViolation
-  | pushVal :
+  | pushVal (hperm : evm.executionEnv.perm = true) :
       evalExpr? cfg stele evm expr = .ok value ->
       pushArray? cfg stele evm ref (some value) = .ok evm' ->
       ExecStmt cfg stele evm (.push ref (some expr)) (.ok stele evm')
@@ -233,7 +231,7 @@ inductive ExecStmt (cfg : Config) :
       pushArray? cfg stele evm ref (some value) = .ok evm' ->
       evm.executionEnv.perm = false ->
       ExecStmt cfg stele evm (.push ref (some expr)) .staticViolation
-  | pushGrow :
+  | pushGrow (hperm : evm.executionEnv.perm = true) :
       pushArray? cfg stele evm ref none = .ok evm' ->
       ExecStmt cfg stele evm (.push ref none) (.ok stele evm')
   | pushGrowRevert :
@@ -243,7 +241,7 @@ inductive ExecStmt (cfg : Config) :
       pushArray? cfg stele evm ref none = .ok evm' ->
       evm.executionEnv.perm = false ->
       ExecStmt cfg stele evm (.push ref none) .staticViolation
-  | pop :
+  | pop (hperm : evm.executionEnv.perm = true) :
       popArray? cfg stele evm ref = .ok evm' ->
       ExecStmt cfg stele evm (.pop ref) (.ok stele evm')
   | popRevert :
@@ -253,7 +251,7 @@ inductive ExecStmt (cfg : Config) :
       popArray? cfg stele evm ref = .ok evm' ->
       evm.executionEnv.perm = false ->
       ExecStmt cfg stele evm (.pop ref) .staticViolation
-  | delete :
+  | delete (hperm : evm.executionEnv.perm = true) :
       deleteStorage? cfg stele evm ref = .ok evm' ->
       ExecStmt cfg stele evm (.delete ref) (.ok stele evm')
   | deleteRevert :
@@ -352,7 +350,7 @@ inductive ExecStmt (cfg : Config) :
       bindParams? callee.params argVals = some locals ->
       ExecFuncBody cfg { stele with locals := locals } evm callee.body .staticViolation ->
       ExecStmt cfg stele evm (.internalCall name args retVar) .staticViolation
-  | externalCallSuccess :
+  | externalCallSuccess (hperm : EVM.wordOfInt sendVal = ⟨0⟩ ∨ evm.executionEnv.perm = true) :
       evalExpr? cfg stele evm receiver = .ok (.address target) ->
       evalExpr? cfg stele evm eth = .ok (.int sendVal) ->
       evalExprs? cfg stele evm args = .ok argVals ->
@@ -361,14 +359,15 @@ inductive ExecStmt (cfg : Config) :
       cfg.externalABI.decode? name out = some value ->
       ExecStmt cfg stele evm (.externalCall receiver name eth args retVar (perm := perm))
         (.ok { stele with locals := stele.locals.insert retVar (collapseReturns value) } evm')
-  | externalCallFailure :
+  | externalCallFailure (hperm : EVM.wordOfInt sendVal = ⟨0⟩ ∨ evm.executionEnv.perm = true) :
       evalExpr? cfg stele evm receiver = .ok (.address target) ->
       evalExpr? cfg stele evm eth = .ok (.int sendVal) ->
       evalExprs? cfg stele evm args = .ok argVals ->
       typedCallViaEVM cfg evm (EVM.address target) name sendVal argVals
         (false, evm', out) perm ->
       ExecStmt cfg stele evm (.externalCall receiver name eth args retVar (perm := perm)) .reverted
-  | externalCallReturnDecodeRevert :
+  | externalCallReturnDecodeRevert
+      (hperm : EVM.wordOfInt sendVal = ⟨0⟩ ∨ evm.executionEnv.perm = true) :
       -- The sub-call *succeeds* (`z = true`) but the returned bytes do not ABI-decode to the
       -- expected return value (`decode? = none`).  The caller's solc-generated return decoder then
       -- reverts (`if slt(returndatasize, 32) { revert }`), so the whole statement reverts.
@@ -400,14 +399,14 @@ inductive ExecStmt (cfg : Config) :
       evm.executionEnv.perm = false ->
       ExecStmt cfg stele evm (.externalCall receiver name eth args retVar (perm := perm))
         .staticViolation
-  | lowLevelCallSuccess :
+  | lowLevelCallSuccess (hperm : EVM.wordOfInt sendVal = ⟨0⟩ ∨ evm.executionEnv.perm = true) :
       evalExpr? cfg stele evm receiver = .ok (.address target) ->
       evalExpr? cfg stele evm eth = .ok (.int sendVal) ->
       evalExpr? cfg stele evm cdata = .ok (.bytes calldata) ->
       callViaEVM evm (EVM.address target) sendVal calldata (true, evm', out) perm ->
       ExecStmt cfg stele evm (.lowLevelCall receiver eth cdata okVar dataVar (perm := perm))
         (.ok { stele with locals := (stele.locals.insert okVar (.bool true)).insert dataVar (.bytes out) } evm')
-  | lowLevelCallFailure :
+  | lowLevelCallFailure (hperm : EVM.wordOfInt sendVal = ⟨0⟩ ∨ evm.executionEnv.perm = true) :
       evalExpr? cfg stele evm receiver = .ok (.address target) ->
       evalExpr? cfg stele evm eth = .ok (.int sendVal) ->
       evalExpr? cfg stele evm cdata = .ok (.bytes calldata) ->
@@ -459,7 +458,7 @@ inductive ExecStmt (cfg : Config) :
       evalExpr? cfg stele evm receiver = .ok (.address target) ->
       evalExpr? cfg stele evm cdata = .revert ->
       ExecStmt cfg stele evm (.delegateCall receiver cdata okVar dataVar) .reverted
-  | checkedCallSuccess :
+  | checkedCallSuccess (hperm : EVM.wordOfInt sendVal = ⟨0⟩ ∨ evm.executionEnv.perm = true) :
       evalExpr? cfg stele evm receiver = .ok (.address target) ->
       evalExpr? cfg stele evm eth = .ok (.int sendVal) ->
       evalExprs? cfg stele evm args = .ok argVals ->
@@ -469,7 +468,7 @@ inductive ExecStmt (cfg : Config) :
       ExecBlock cfg { stele with locals := stele.locals.insert retVar (collapseReturns value) } evm' onSuccess result ->
       ExecStmt cfg stele evm
         (.checkedCall receiver name eth args retVar onSuccess errVar onFail (perm := perm)) result
-  | checkedCallFail :
+  | checkedCallFail (hperm : EVM.wordOfInt sendVal = ⟨0⟩ ∨ evm.executionEnv.perm = true) :
       -- callee reverted: bind the raw returndata to `errVar` and run `onFail`.  The per-contract spec
       -- decides there (via `ite` on `errVar`) whether to recover or re-revert (`require false`).
       evalExpr? cfg stele evm receiver = .ok (.address target) ->
@@ -480,7 +479,8 @@ inductive ExecStmt (cfg : Config) :
       ExecBlock cfg { stele with locals := stele.locals.insert errVar (.bytes out) } evm' onFail result ->
       ExecStmt cfg stele evm
         (.checkedCall receiver name eth args retVar onSuccess errVar onFail (perm := perm)) result
-  | checkedCallReturnDecodeRevert :
+  | checkedCallReturnDecodeRevert
+      (hperm : EVM.wordOfInt sendVal = ⟨0⟩ ∨ evm.executionEnv.perm = true) :
       -- Call succeeds but returndata doesn't ABI-decode (`decode? = none`, e.g. codeless callee):
       -- solc's return decoder reverts *uncaught* (never enters `onFail`).  Cf. externalCall twin.
       evalExpr? cfg stele evm receiver = .ok (.address target) ->
@@ -515,14 +515,14 @@ inductive ExecStmt (cfg : Config) :
       ExecStmt cfg stele evm
         (.checkedCall receiver name eth args retVar onSuccess errVar onFail (perm := perm))
         .staticViolation
-  | newSuccess :
+  | newSuccess (hperm : evm.executionEnv.perm = true) :
       evalExpr? cfg stele evm valExpr = .ok (.int sendVal) ->
       evalExprs? cfg stele evm args = .ok argVals ->
       evalSalt? cfg stele evm salt = .ok saltBytes ->
       newViaEVM cfg evm name sendVal argVals saltBytes (addr, evm', true) ->
       ExecStmt cfg stele evm (.new name valExpr args retVar salt)
         (.ok { stele with locals := stele.locals.insert retVar (.address addr) } evm')
-  | newRevert :
+  | newRevert (hperm : evm.executionEnv.perm = true) :
       -- A failed creation reverts the caller, unlike a low-level external call.
       evalExpr? cfg stele evm valExpr = .ok (.int sendVal) ->
       evalExprs? cfg stele evm args = .ok argVals ->
@@ -565,7 +565,7 @@ inductive ExecStmt (cfg : Config) :
   | continue :
       ExecStmt cfg stele evm .continue (.continue stele evm)
   /-- `emit`: the arguments are evaluated; the log is not modelled. -/
-  | emit :
+  | emit (hperm : evm.executionEnv.perm = true) :
       evalExprs? cfg stele evm args = .ok vals ->
       ExecStmt cfg stele evm (.emit name args) (.ok stele evm)
   | emitArgsRevert :

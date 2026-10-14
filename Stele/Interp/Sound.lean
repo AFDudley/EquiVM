@@ -246,7 +246,9 @@ theorem exec_sound {o : Oracle Ω} (hs : o.Sound) (fuel : Nat) :
               obtain ⟨hor | hor, hp⟩ := hc <;> subst hor
               · exact ExecStmt.assignStatic hv hst hp
               · exact ExecStmt.assignTransientStatic hv hst hp
-            · cases h; exact ExecStmt.assign hv hst
+            · next hp =>
+              cases h
+              exact ExecStmt.assign (by cases origin <;> simp_all) hv hst
       case require cond =>
         split at h
         · next hc => cases h; exact ExecStmt.requireTrue hc
@@ -343,17 +345,20 @@ theorem exec_sound {o : Oracle Ω} (hs : o.Sound) (fuel : Nat) :
                 · cases h
                 · next evm' out ω'' hcall =>
                   cases h
-                  exact ExecStmt.externalCallFailure hrecv hval hargs
+                  exact ExecStmt.externalCallFailure (by simpa only
+                      [not_and_or, not_not, Bool.not_eq_false] using hc) hrecv hval hargs
                     (typedCallViaEVMRun_sound hs hcall)
                 · next evm' out ω'' hcall =>
                   split at h
                   · next value hdec =>
                     cases h
-                    exact ExecStmt.externalCallSuccess hrecv hval hargs
+                    exact ExecStmt.externalCallSuccess (by simpa only
+                        [not_and_or, not_not, Bool.not_eq_false] using hc) hrecv hval hargs
                       (typedCallViaEVMRun_sound hs hcall) hdec
                   · next hdec =>
                     cases h
-                    exact ExecStmt.externalCallReturnDecodeRevert hrecv hval hargs
+                    exact ExecStmt.externalCallReturnDecodeRevert (by simpa only
+                        [not_and_or, not_not, Bool.not_eq_false] using hc) hrecv hval hargs
                       (typedCallViaEVMRun_sound hs hcall) hdec
           · cases h
         · cases h
@@ -378,8 +383,12 @@ theorem exec_sound {o : Oracle Ω} (hs : o.Sound) (fuel : Nat) :
                 · next z evm' out ω'' hcall =>
                   cases h
                   cases z
-                  · exact ExecStmt.lowLevelCallFailure hrecv hval hcd (callViaEVMRun_sound hs hcall)
-                  · exact ExecStmt.lowLevelCallSuccess hrecv hval hcd (callViaEVMRun_sound hs hcall)
+                  · exact ExecStmt.lowLevelCallFailure (by simpa only
+                      [not_and_or, not_not, Bool.not_eq_false] using hc) hrecv hval hcd
+                      (callViaEVMRun_sound hs hcall)
+                  · exact ExecStmt.lowLevelCallSuccess (by simpa only
+                      [not_and_or, not_not, Bool.not_eq_false] using hc) hrecv hval hcd
+                      (callViaEVMRun_sound hs hcall)
             · cases h
           · cases h
         · cases h
@@ -420,16 +429,19 @@ theorem exec_sound {o : Oracle Ω} (hs : o.Sound) (fuel : Nat) :
                 split at h
                 · cases h
                 · next evm' out ω'' hcall =>
-                  exact ExecStmt.checkedCallFail hrecv hval hargs
+                  exact ExecStmt.checkedCallFail (by simpa only
+                      [not_and_or, not_not, Bool.not_eq_false] using hc) hrecv hval hargs
                     (typedCallViaEVMRun_sound hs hcall) (ihB h)
                 · next evm' out ω'' hcall =>
                   split at h
                   · next value hdec =>
-                    exact ExecStmt.checkedCallSuccess hrecv hval hargs
+                    exact ExecStmt.checkedCallSuccess (by simpa only
+                        [not_and_or, not_not, Bool.not_eq_false] using hc) hrecv hval hargs
                       (typedCallViaEVMRun_sound hs hcall) hdec (ihB h)
                   · next hdec =>
                     cases h
-                    exact ExecStmt.checkedCallReturnDecodeRevert hrecv hval hargs
+                    exact ExecStmt.checkedCallReturnDecodeRevert (by simpa only
+                        [not_and_or, not_not, Bool.not_eq_false] using hc) hrecv hval hargs
                       (typedCallViaEVMRun_sound hs hcall) hdec
           · cases h
         · cases h
@@ -453,10 +465,12 @@ theorem exec_sound {o : Oracle Ω} (hs : o.Sound) (fuel : Nat) :
                 · cases h
                 · next addr evm' ω'' hcall =>
                   cases h
-                  exact ExecStmt.newSuccess hv hargs hsalt (newViaEVMRun_sound hs hcall)
+                  exact ExecStmt.newSuccess (by simpa using hp) hv hargs hsalt
+                    (newViaEVMRun_sound hs hcall)
                 · next addr evm' ω'' hcall =>
                   cases h
-                  exact ExecStmt.newRevert hv hargs hsalt (newViaEVMRun_sound hs hcall)
+                  exact ExecStmt.newRevert (by simpa using hp) hv hargs hsalt
+                    (newViaEVMRun_sound hs hcall)
         · cases h
       case «return» exprs =>
         split at h
@@ -483,7 +497,7 @@ theorem exec_sound {o : Oracle Ω} (hs : o.Sound) (fuel : Nat) :
         · next vals hargs =>
           split at h
           · next hp => cases h; exact ExecStmt.emitStatic hargs hp
-          · cases h; exact ExecStmt.emit hargs
+          · next hperm => cases h; exact ExecStmt.emit (by simpa using hperm) hargs
       case push ref e? =>
         cases e? with
         | none =>
@@ -494,7 +508,7 @@ theorem exec_sound {o : Oracle Ω} (hs : o.Sound) (fuel : Nat) :
           · next evm' hp =>
             split at h
             · next hperm => cases h; exact ExecStmt.pushGrowStatic hp hperm
-            · cases h; exact ExecStmt.pushGrow hp
+            · next hperm => cases h; exact ExecStmt.pushGrow (by simpa using hperm) hp
         | some expr =>
           dsimp only at h
           split at h
@@ -507,7 +521,7 @@ theorem exec_sound {o : Oracle Ω} (hs : o.Sound) (fuel : Nat) :
             · next evm' hp =>
               split at h
               · next hperm => cases h; exact ExecStmt.pushValStatic hv hp hperm
-              · cases h; exact ExecStmt.pushVal hv hp
+              · next hperm => cases h; exact ExecStmt.pushVal (by simpa using hperm) hv hp
       case pop ref =>
         split at h
         · next hp => cases h; exact ExecStmt.popRevert hp
@@ -515,7 +529,7 @@ theorem exec_sound {o : Oracle Ω} (hs : o.Sound) (fuel : Nat) :
         · next evm' hp =>
           split at h
           · next hperm => cases h; exact ExecStmt.popStatic hp hperm
-          · cases h; exact ExecStmt.pop hp
+          · next hperm => cases h; exact ExecStmt.pop (by simpa using hperm) hp
       case delete ref =>
         split at h
         · next hp => cases h; exact ExecStmt.deleteRevert hp
@@ -523,7 +537,7 @@ theorem exec_sound {o : Oracle Ω} (hs : o.Sound) (fuel : Nat) :
         · next evm' hp =>
           split at h
           · next hperm => cases h; exact ExecStmt.deleteStatic hp hperm
-          · cases h; exact ExecStmt.delete hp
+          · next hperm => cases h; exact ExecStmt.delete (by simpa using hperm) hp
     · -- `ExecForLoop`
       intro ω ω' cfg stele evm cond post body r h
       rw [execForLoop] at h

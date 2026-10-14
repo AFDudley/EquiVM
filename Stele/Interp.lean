@@ -22,10 +22,9 @@ applies: an ill-formed program or configuration).  The intended statements are
 **Nondeterminism.**  The relation leaves three things open, and the interpreter resolves them
 through an `Oracle`: the call gas and input substate of `callViaEVM.callMade` (the oracle
 returns the call's result, which must be a `Θ` result for *some* gas and substate), the same
-for `newViaEVM.created`, and the word of `letGas`.  Static mode (`perm = false`) has, for each
-state-changing statement, both an ordinary rule and a `*Static` rule; the interpreter always
-takes the static rule when it applies, which is what the EVM does (it halts at the first
-forbidden opcode).
+for `newViaEVM.created`, and the word of `letGas`. Static mode (`perm = false`) takes the
+`*Static` rule at the first forbidden operation. The ordinary rules require write permission
+for storage writes, events, value-transferring calls, and contract creation.
 -/
 
 namespace Stele.Interp
