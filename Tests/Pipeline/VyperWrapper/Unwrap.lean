@@ -199,7 +199,7 @@ theorem wrapperUnwrapBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hfit : im
     exact ExecFuncBody.execBlockRevert (ExecBlock.consNormal (ExecStmt.requireTrue hcv)
       (ExecBlock.consNormal (ExecStmt.requireTrue hgeT)
         (ExecBlock.consNormal (ExecStmt.letDecl (evalImmutable_TOKEN hget _ _))
-          (ExecBlock.consRevert (ExecStmt.externalCallFailure hrecv heth hargs hcall)))))
+          (ExecBlock.consRevert (ExecStmt.externalCallFailure (hperm := Or.inl rfl) hrecv heth hargs hcall)))))
   | true =>
   have rd6 := wrapperBlocks.wrapper_block_1086_taken (by simp) (by decide)
     (by apply D_J_contains_append_left; jump_dest) rd5
@@ -215,7 +215,7 @@ theorem wrapperUnwrapBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hfit : im
     exact ExecFuncBody.execBlockRevert (ExecBlock.consNormal (ExecStmt.requireTrue hcv)
       (ExecBlock.consNormal (ExecStmt.requireTrue hgeT)
         (ExecBlock.consNormal (ExecStmt.letDecl (evalImmutable_TOKEN hget _ _))
-          (ExecBlock.consRevert (ExecStmt.externalCallReturnDecodeRevert hrecv heth hargs hcall
+          (ExecBlock.consRevert (ExecStmt.externalCallReturnDecodeRevert (hperm := Or.inl rfl) hrecv heth hargs hcall
             (by rw [decode_balanceOf, decodeReturn_uint256_short out hshortR]; rfl))))))
   have h32 : 32 ≤ out.size := by omega
   have rd7 := wrapperBlocks.wrapper_block_1097_fallthrough (by simp)
@@ -234,8 +234,8 @@ theorem wrapperUnwrapBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hfit : im
     rw [decode_balanceOf, decodeReturn_uint256_ok out h32 (by omega), hhw]; rfl
   have hcallS : ExecStmt config (frame imms L1) (initState σ σ₀ (Sat256.ofUInt256 g) A I)
       (.externalCall (.var "__a0") "balanceOf" (.intLit 0) [.env .this] "held" false) (.ok (frame imms L2) evm') :=
-    @ExecStmt.externalCallSuccess config (frame imms L1) (initState σ σ₀ (Sat256.ofUInt256 g) A I) (.var "__a0") a
-      (.intLit 0) 0 [.env .this] [.address I.codeOwner] "balanceOf" evm' out false [uint256Value hw] "held"
+    @ExecStmt.externalCallSuccess (hperm := Or.inl rfl) config 0 (frame imms L1) (initState σ σ₀ (Sat256.ofUInt256 g) A I) (.var "__a0") a
+      (.intLit 0) [.env .this] [.address I.codeOwner] "balanceOf" evm' out false [uint256Value hw] "held"
       hrecv heth hargs hcall hdecode
   have hso : ∀ evm, evalExpr? config (frame imms L2) evm (.var "sharesOut") = .ok (uint256Value (argWord I)) := fun evm =>
     evalVar imms _ _ "sharesOut" _ (by rw [hL2, store_get_ne _ _ (by decide), hL1, store_get_ne _ _ (by decide)]; exact store_get_self _ _ _)
@@ -395,7 +395,7 @@ theorem wrapperUnwrapBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hfit : im
         (ExecBlock.consNormal (ExecStmt.letDecl (evalImmutable_TOKEN hget _ _))
           (ExecBlock.consNormal hcallS
             (ExecBlock.consNormal (ExecStmt.letDecl hdiv)
-              (ExecBlock.consNormal (ExecStmt.assign hsub1 hassign1)
+              (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [hs'.env] using hperm)) hsub1 hassign1)
                 (ExecBlock.consRevert (ExecStmt.assignExprRevert
                   (evalExpr_uint256_sub_underflow hts1 (hso3 _) (by omega))))))))))
   obtain ⟨_, _, rd11⟩ := wrapperBlocks.wrapper_block_1186_fallthrough (by simp) hperm
@@ -455,15 +455,15 @@ theorem wrapperUnwrapBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hfit : im
         (ExecBlock.consNormal (ExecStmt.letDecl (evalImmutable_TOKEN hget _ _))
           (ExecBlock.consNormal hcallS
             (ExecBlock.consNormal (ExecStmt.letDecl hdiv)
-              (ExecBlock.consNormal (ExecStmt.assign hsub1 hassign1)
-                (ExecBlock.consNormal (ExecStmt.assign hsub2 hassign2)
+              (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [hs'.env] using hperm)) hsub1 hassign1)
+                (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [hs1.env] using hperm)) hsub2 hassign2)
                   (ExecBlock.consNormal (ExecStmt.letDecl (evalImmutable_TOKEN hget _ _)) h)))))))
   cases z2 with
   | false =>
     have rd15 := wrapperBlocks.wrapper_block_1255_fallthrough (by simp) (by decide) rd14
     have rd16 := wrapperBlocks.wrapper_block_1259 (by simp [wrapperBlocks.wrapper_block_1255_fallthrough_stack]) rd15
     exact RDrev.reEquivExecutionRevert hcode' rd16 hd hdec (ExecFuncBody.execBlockRevert (hprefix _
-      (ExecBlock.consRevert (ExecStmt.externalCallFailure hrecv2 heth2 hargs2 hcall2))))
+      (ExecBlock.consRevert (ExecStmt.externalCallFailure (hperm := Or.inl rfl) hrecv2 heth2 hargs2 hcall2))))
   | true =>
   have rd15 := wrapperBlocks.wrapper_block_1255_taken (by simp) (by decide)
     (by apply D_J_contains_append_left; jump_dest) rd14
@@ -475,7 +475,7 @@ theorem wrapperUnwrapBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hfit : im
       (by apply D_J_contains_append_left; jump_dest) rd15
     have rd17 := wrapperBlocks.wrapper_block_1760 (by simp [wrapperBlocks.wrapper_block_1266_taken_stack]) rd16
     exact RDrev.reEquivExecutionRevert hcode' rd17 hd hdec (ExecFuncBody.execBlockRevert (hprefix _
-      (ExecBlock.consRevert (ExecStmt.externalCallReturnDecodeRevert hrecv2 heth2 hargs2 hcall2
+      (ExecBlock.consRevert (ExecStmt.externalCallReturnDecodeRevert (hperm := Or.inl rfl) hrecv2 heth2 hargs2 hcall2
         (by rw [decode_transfer, decodeReturn_bool_short out2 hshort2]; rfl)))))
   have h32' : 32 ≤ out2.size := by omega
   have rd16 := wrapperBlocks.wrapper_block_1266_fallthrough (by simp)
@@ -497,7 +497,7 @@ theorem wrapperUnwrapBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hfit : im
       (by apply D_J_contains_append_left; jump_dest) rd16
     have rd18 := wrapperBlocks.wrapper_block_1760 (by simp [wrapperBlocks.wrapper_block_1289_taken_stack]) rd17
     exact RDrev.reEquivExecutionRevert hcode' rd18 hd hdec (ExecFuncBody.execBlockRevert (hprefix _
-      (ExecBlock.consRevert (ExecStmt.externalCallReturnDecodeRevert hrecv2 heth2 hargs2 hcall2
+      (ExecBlock.consRevert (ExecStmt.externalCallReturnDecodeRevert (hperm := Or.inl rfl) hrecv2 heth2 hargs2 hcall2
         (by
           rw [decode_transfer, decodeReturn_bool_noncanon out2 h32' (by omega)
             (by rw [hbw]; intro h; apply hbool; rw [h]; decide) (by rw [hbw]; intro h; apply hbool; rw [h]; decide)]
@@ -522,7 +522,7 @@ theorem wrapperUnwrapBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hfit : im
     have hcall2S : ExecStmt config (frame imms L4) evm2
         (.externalCall (.var "__a2") "transfer" (.intLit 0) [.env .caller, .var "amount"] "ok" true)
         (.ok (frame imms (L4.insert "ok" (.bool false))) evm3) :=
-      @ExecStmt.externalCallSuccess config (frame imms L4) evm2 (.var "__a2") a (.intLit 0) 0
+      @ExecStmt.externalCallSuccess (hperm := Or.inl rfl) config 0 (frame imms L4) evm2 (.var "__a2") a (.intLit 0)
         [.env .caller, .var "amount"] [.address I.source, uint256Value amt] "transfer" evm3 out2 true [.bool false] "ok"
         hrecv2 heth2 hargs2 hcall2 hdec2
     exact RDrev.reEquivExecutionRevert hcode' rd19 hd hdec (ExecFuncBody.execBlockRevert (hprefix _
@@ -557,7 +557,7 @@ theorem wrapperUnwrapBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hfit : im
   have hcall2S : ExecStmt config (frame imms L4) evm2
       (.externalCall (.var "__a2") "transfer" (.intLit 0) [.env .caller, .var "amount"] "ok" true)
       (.ok (frame imms L5) evm3) :=
-    @ExecStmt.externalCallSuccess config (frame imms L4) evm2 (.var "__a2") a (.intLit 0) 0
+    @ExecStmt.externalCallSuccess (hperm := Or.inl rfl) config 0 (frame imms L4) evm2 (.var "__a2") a (.intLit 0)
       [.env .caller, .var "amount"] [.address I.source, uint256Value amt] "transfer" evm3 out2 true [.bool true] "ok"
       hrecv2 heth2 hargs2 hcall2 hdec2
   have hokT : evalExpr? config (frame imms L5) evm3 (.var "ok") = .ok (.bool true) :=
@@ -571,7 +571,7 @@ theorem wrapperUnwrapBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hfit : im
       (.returned (frame imms L5) evm3 (some [uint256Value amt])) (restrictImmutables contract imms) :=
     ExecFuncBody.execBlockRet (hprefix _ (ExecBlock.consNormal hcall2S
       (ExecBlock.consNormal (ExecStmt.requireTrue hokT)
-        (ExecBlock.consNormal (ExecStmt.emit hemit)
+        (ExecBlock.consNormal (ExecStmt.emit (hperm := by simpa only [hs3.env] using hperm) hemit)
           (ExecBlock.consReturn (ExecStmt.return (evalExprs?_singleton hamt5)))))))
   exact rd19.reEquivExecutionGen hcode' hd hdec hbody hs3.accounts (returnEquiv_of_encode (uint256ReturnEncoding _))
 

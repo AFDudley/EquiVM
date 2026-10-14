@@ -135,7 +135,7 @@ theorem wrapperPreviewUnwrapBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hf
     exact ExecFuncBody.execBlockRevert (ExecBlock.consNormal (ExecStmt.requireTrue hcv)
       (ExecBlock.consNormal (ExecStmt.iteFalse hiteF ExecBlock.nil)
         (ExecBlock.consNormal (ExecStmt.letDecl (evalImmutable_TOKEN hget _ _))
-          (ExecBlock.consRevert (ExecStmt.externalCallFailure hrecv heth hargs hcall)))))
+          (ExecBlock.consRevert (ExecStmt.externalCallFailure (hperm := Or.inl rfl) hrecv heth hargs hcall)))))
   | true =>
     have rd6 := wrapperBlocks.wrapper_block_1560_taken (by simp) (by decide)
       (by apply D_J_contains_append_left; jump_dest) rd5
@@ -152,7 +152,7 @@ theorem wrapperPreviewUnwrapBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hf
       exact ExecFuncBody.execBlockRevert (ExecBlock.consNormal (ExecStmt.requireTrue hcv)
         (ExecBlock.consNormal (ExecStmt.iteFalse hiteF ExecBlock.nil)
           (ExecBlock.consNormal (ExecStmt.letDecl (evalImmutable_TOKEN hget _ _))
-            (ExecBlock.consRevert (ExecStmt.externalCallReturnDecodeRevert hrecv heth hargs hcall
+            (ExecBlock.consRevert (ExecStmt.externalCallReturnDecodeRevert (hperm := Or.inl rfl) hrecv heth hargs hcall
               (by rw [decode_balanceOf, decodeReturn_uint256_short out hshortR]; rfl))))))
     have h32 : 32 ≤ out.size := by omega
     have rd7 := wrapperBlocks.wrapper_block_1571_fallthrough (by simp)
@@ -175,8 +175,8 @@ theorem wrapperPreviewUnwrapBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hf
       rw [decode_balanceOf, decodeReturn_uint256_ok out h32 (by omega), hhw]; rfl
     have hcallS : ExecStmt config (frame imms L1) (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         (.externalCall (.var "__a0") "balanceOf" (.intLit 0) [.env .this] "held" false) (.ok (frame imms L2) evm') :=
-      @ExecStmt.externalCallSuccess config (frame imms L1) (initState σ σ₀ (Sat256.ofUInt256 g) A I) (.var "__a0") a
-        (.intLit 0) 0 [.env .this] [.address I.codeOwner] "balanceOf" evm' out false [uint256Value hw] "held"
+      @ExecStmt.externalCallSuccess (hperm := Or.inl rfl) config 0 (frame imms L1) (initState σ σ₀ (Sat256.ofUInt256 g) A I) (.var "__a0") a
+        (.intLit 0) [.env .this] [.address I.codeOwner] "balanceOf" evm' out false [uint256Value hw] "held"
         hrecv heth hargs hcall hdecode
     have hso : ∀ evm, evalExpr? config (frame imms L2) evm (.var "sharesOut") = .ok (uint256Value (argWord I)) := fun evm =>
       evalVar imms _ _ "sharesOut" _ (by rw [hL2, store_get_ne _ _ (by decide), hL1, store_get_ne _ _ (by decide)]; exact store_get_self _ _ _)
