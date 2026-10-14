@@ -28,14 +28,14 @@ theorem bidAfterRoutine {I g s0 s noun ret R mem aw rdata σ k C evm locals}
   rcases bidRefundRoutine h hs hperm hm hsm hv hov with
     ⟨evmR, σR, localsR, memR, awR, _, outR, _, _, hrefund, hvR, hsR,
       rd1715, _, hsmR, _, _⟩ | ⟨hrefund, hr⟩
-  · have hstores := bidStoresSource (evm := evmR) (hvR.storage _ (by decide))
+  · have hstores := bidStoresSource (hperm := by rw [hsR.env]; exact hperm) (evm := evmR) (hvR.storage _ (by decide))
     obtain ⟨_, _, rd1738⟩ := bidStoresRuntime rd1715 hperm (by omega)
     rcases bidExtensionRoutine rd1738 (SourceState.bidStores hsR) hperm hsmR hvR ht (by omega) with
       ⟨evmE, σE, localsE, extended, memE, awE, _, _, hextend, hvE, hsE, rd1792⟩ |
         ⟨hextend, hr⟩
     · obtain ⟨mem', aw', _, _, rd1923⟩ := bidEvents rd1792 hperm (by omega)
       obtain ⟨_, _, rdret⟩ := bidExit rd1923 hperm hret (by omega)
-      have hexit := statusStoreSource (evm := evmE) (e := notEntered) (word := ⟨1⟩)
+      have hexit := statusStoreSource (hperm := by rw [hsE.env]; exact hperm) (evm := evmE) (e := notEntered) (word := ⟨1⟩)
         (hvE.storage _ (by decide)) (by simp only [notEntered, evalExpr?, pure]; rfl)
       exact Or.inl ⟨statusState evmE ⟨1⟩, _, localsE, mem', aw', outR, _, _,
         execBlock_append hrefund (execBlock_append hstores

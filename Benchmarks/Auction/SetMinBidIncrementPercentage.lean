@@ -16,7 +16,7 @@ theorem setMinBidBodySplit (evm : EVM.State) (value : UInt256)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (ho : solcSourceWord evm.executionEnv = ownerWord evm.accountMap evm.executionEnv)
     (hc : value.toNat < 256) :
-    (ExecTransitionBody auctionConfig auctionContract evm
+    (evm.executionEnv.perm = true → ExecTransitionBody auctionConfig auctionContract evm
       ((∅ : Store).insert "_minBidIncrementPercentage" (.int (Int.ofNat value.toNat)))
       setMinBidIncTransition.body
       (.returned
@@ -38,8 +38,9 @@ theorem setMinBidBodySplit (evm : EVM.State) (value : UInt256)
     (by simp [locals]) (by native_decide) rfl (by exact Or.inl ⟨_, rfl⟩)
     (storageLocStore_uint8 evm ⟨205⟩ value hc)
   constructor
-  · exact ExecFuncBody.execBlockOK
-      (nonpayableRequireAssignStorageBlock hwv howner hvalue hassign)
+  · intro hperm
+    exact ExecFuncBody.execBlockOK
+      (nonpayableRequireAssignStorageBlock hwv howner hvalue hassign hperm)
   · intro hperm
     exact ExecFuncBody.execBlockStatic
       (nonpayableRequireAssignStorageBlockStatic hwv howner hvalue hassign hperm)
@@ -47,7 +48,8 @@ theorem setMinBidBodySplit (evm : EVM.State) (value : UInt256)
 theorem setMinBidBody (evm : EVM.State) (value : UInt256)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (ho : solcSourceWord evm.executionEnv = ownerWord evm.accountMap evm.executionEnv)
-    (hc : value.toNat < 256) :
+    (hc : value.toNat < 256)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody auctionConfig auctionContract evm
       ((∅ : Store).insert "_minBidIncrementPercentage" (.int (Int.ofNat value.toNat)))
       setMinBidIncTransition.body
@@ -57,7 +59,7 @@ theorem setMinBidBody (evm : EVM.State) (value : UInt256)
         (Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨205⟩
           (minBidWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨205⟩) value))
         none) :=
-  (setMinBidBodySplit evm value hwv ho hc).1
+  (setMinBidBodySplit evm value hwv ho hc).1 hperm
 
 theorem setMinBidStoreSplit {I g s0 value ret R rdata σ k C}
     (h : RD auctionBytecode I g s0 ⟨1003⟩ (value :: ret :: R)
@@ -145,7 +147,7 @@ theorem setMinBidIncrementPercentageBodyCore {σ σ₀ A I} {g : UInt256}
                 ((setMinBidBodySplit
                   (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                   (calldataWord I.calldata 4) hwv ho hc).2 hperm)
-            have hbody := setMinBidBody
+            have hbody := setMinBidBody (hperm := _hperm)
               (initState σ σ₀ (Sat256.ofUInt256 g) A I)
               (calldataWord I.calldata 4) hwv ho hc
             exact (auctionStop rd413 (by evm_ov)).reEquivExecutionGen

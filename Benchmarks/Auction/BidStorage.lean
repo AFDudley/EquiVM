@@ -32,17 +32,18 @@ def bidStoreStmts : List Stmt :=
   [.assign .storage (aField "amount") (.env .callvalue),
     .assign .storage (aField "bidder") sender]
 
-theorem bidStoresSource {evm locals} (ha : locals.get? "auction" = none) :
+theorem bidStoresSource {evm locals} (ha : locals.get? "auction" = none)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock auctionConfig { contract := auctionContract, locals := locals } evm bidStoreStmts
       (.ok { contract := auctionContract, locals := locals } (bidStoredState evm)) := by
-  apply ExecBlock.consNormal (ExecStmt.assign (value := .int (Int.ofNat
+  apply ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) (value := .int (Int.ofNat
     evm.executionEnv.weiValue.toNat))
     (by simp only [evalExpr?, envValue, pure]; rfl)
     (auctionFieldWrite evm _ locals "amount" (.elem (.int uint256Int)) (auctionUint256Loc ⟨208⟩)
       _ ha (by native_decide) rfl (by exact Or.inl ⟨_, rfl⟩)
       (storageLocStore_uint256 evm ⟨208⟩ evm.executionEnv.weiValue)))
   change ExecBlock _ _ (bidAmountState evm) _ _
-  apply ExecBlock.consNormal (ExecStmt.assign
+  apply ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [bidAmountState, storageStore_executionEnv] using hperm))
     (value := .address (bidAmountState evm).executionEnv.source)
     (by simp only [sender, evalExpr?, envValue, pure])
     (auctionFieldWrite _ _ locals "bidder" (.elem .address) (auctionAddrLoc ⟨211⟩)

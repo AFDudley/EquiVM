@@ -27,7 +27,7 @@ theorem ownerSetUint256Split (evm : EVM.State) (locals : Store) (name param : Id
       some (.elem (.int uint256Int)))
     (hloc : auctionConfig.storageBackend.locate? { base := name } =
       some (.leaf (auctionUint256Loc slot))) :
-    (ExecTransitionBody auctionConfig auctionContract evm locals
+    (evm.executionEnv.perm = true → ExecTransitionBody auctionConfig auctionContract evm locals
       [nonpayable, .require (.binary .eq sender (.storage ownerRef)),
         .assign .storage { base := name } (.var param)]
       (.returned { contract := auctionContract, locals := locals }
@@ -43,8 +43,9 @@ theorem ownerSetUint256Split (evm : EVM.State) (locals : Store) (name param : Id
     (auctionUint256Loc slot) _ hbase hty hloc
     (by exact Or.inl ⟨_, rfl⟩) (storageLocStore_uint256 evm slot value)
   constructor
-  · exact ExecFuncBody.execBlockOK
-      (nonpayableRequireAssignStorageBlock hwv hownerEval hvalue hassign)
+  · intro hperm
+    exact ExecFuncBody.execBlockOK
+      (nonpayableRequireAssignStorageBlock hwv hownerEval hvalue hassign hperm)
   · intro hperm
     exact ExecFuncBody.execBlockStatic
       (nonpayableRequireAssignStorageBlockStatic hwv hownerEval hvalue hassign hperm)

@@ -24,7 +24,7 @@ theorem SourceState.unpause {s0 I σ evm} (hs : SourceState s0 I σ evm) :
 
 theorem unpauseStoreSourceSplit {evm : EVM.State} {locals : Store}
     (hb : locals.get? "_paused" = none) :
-    (ExecStmt auctionConfig { contract := auctionContract, locals := locals } evm
+    (evm.executionEnv.perm = true → ExecStmt auctionConfig { contract := auctionContract, locals := locals } evm
       (.assign .storage pausedRef (.boolLit false))
       (.ok { contract := auctionContract, locals := locals } (unpauseState evm))) ∧
       (evm.executionEnv.perm = false →
@@ -35,14 +35,15 @@ theorem unpauseStoreSourceSplit {evm : EVM.State} {locals : Store}
   have hassign := scalarWrite evm _ locals "_paused" (.elem .bool)
     (auctionBoolLoc ⟨51⟩) (.bool false) hb (by native_decide) rfl (by exact Or.inl ⟨_, rfl⟩)
     (storageLocStore_bool_false_offset0 evm ⟨51⟩)
-  exact ⟨ExecStmt.assign hvalue hassign,
+  exact ⟨fun hperm ↦ ExecStmt.assign (hperm := Or.inr hperm) hvalue hassign,
     fun hperm ↦ ExecStmt.assignStatic hvalue hassign hperm⟩
 
 theorem unpauseStoreSource {evm : EVM.State} {locals : Store}
-    (hb : locals.get? "_paused" = none) :
+    (hb : locals.get? "_paused" = none)
+    (hperm : evm.executionEnv.perm = true) :
     ExecStmt auctionConfig { contract := auctionContract, locals := locals } evm
       (.assign .storage pausedRef (.boolLit false))
       (.ok { contract := auctionContract, locals := locals } (unpauseState evm)) :=
-  (unpauseStoreSourceSplit hb).1
+  (unpauseStoreSourceSplit hb).1 hperm
 
 end Auction

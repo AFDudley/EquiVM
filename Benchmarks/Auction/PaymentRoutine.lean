@@ -31,7 +31,7 @@ theorem paymentRoutine {I g s0 amount recipient ret R mem aw ptr rdata σ k C ev
   have hbraw : ptr.toNat + 2 ^ 139 ≤ 2 ^ 200 := by omega
   obtain ⟨evm1, σ1, z1, out1, _, _, hc1, hs1, rd3347, hm1, hpre1, ho1, hlo1, hhi1⟩ :=
     rawEthRoutine rd4768 hs hperm hm hbraw (by jump_dest) (by evm_ov)
-  obtain ⟨locals1, hraw, hv1, hz1⟩ := rawEthSource hv hbraw ho1 hc1
+  obtain ⟨locals1, hraw, hv1, hz1⟩ := rawEthSource hv hbraw ho1 hc1 (by simpa only [hs.env] using hperm)
   have hg1 := rawEthWords_mono hm hbraw ho1
   cases z1 with
   | true =>

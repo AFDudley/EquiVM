@@ -11,7 +11,7 @@ theorem pauseBodySplit (evm : EVM.State)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (ho : solcSourceWord evm.executionEnv = ownerWord evm.accountMap evm.executionEnv)
     (hp : pausedWord evm.accountMap evm.executionEnv = ⟨0⟩) :
-    (ExecTransitionBody auctionConfig auctionContract evm ∅ pauseTransition.body
+    (evm.executionEnv.perm = true → ExecTransitionBody auctionConfig auctionContract evm ∅ pauseTransition.body
       (.returned { contract := auctionContract, locals := ∅ }
         (Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨51⟩
           (pauseWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨51⟩))) none)) ∧
@@ -26,18 +26,19 @@ theorem pauseBodySplit (evm : EVM.State)
     ExecBlock.consNormal (ExecStmt.requireTrue (evalCallvalueEq_true hwv))
       (ExecBlock.consNormal (ExecStmt.requireTrue (evalOwnerEq_true evm ∅ (by simp) ho)) htail)
   have hblock := pauseBlockSplit evm ∅ (by simp) hp
-  exact ⟨ExecFuncBody.execBlockOK (hprefix hblock.1),
+  exact ⟨fun hperm ↦ ExecFuncBody.execBlockOK (hprefix (hblock.1 hperm)),
     fun hperm ↦ ExecFuncBody.execBlockStatic (hprefix (hblock.2 hperm))⟩
 
 theorem pauseBody (evm : EVM.State)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (ho : solcSourceWord evm.executionEnv = ownerWord evm.accountMap evm.executionEnv)
-    (hp : pausedWord evm.accountMap evm.executionEnv = ⟨0⟩) :
+    (hp : pausedWord evm.accountMap evm.executionEnv = ⟨0⟩)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody auctionConfig auctionContract evm ∅ pauseTransition.body
       (.returned { contract := auctionContract, locals := ∅ }
         (Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨51⟩
           (pauseWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨51⟩))) none) :=
-  (pauseBodySplit evm hwv ho hp).1
+  (pauseBodySplit evm hwv ho hp).1 hperm
 
 theorem pauseBodyAlreadyPaused (evm : EVM.State)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
@@ -75,7 +76,7 @@ theorem pauseBodyCore {σ σ₀ A I} {g : UInt256}
             ((pauseBodySplit
               (initState σ σ₀ (Sat256.ofUInt256 g) A I) hwv ho hp).2 hperm)
         obtain ⟨_, _, rd413⟩ := auctionInternalReturn rd1163 (by jump_dest) (by evm_ov)
-        have hbody := pauseBody
+        have hbody := pauseBody (hperm := _hperm)
           (initState σ σ₀ (Sat256.ofUInt256 g) A I) hwv ho hp
         exact (auctionStop rd413 (by evm_ov)).reEquivExecutionGen
           hcode hd hdec hbody (by simp [storageStore_accountMap, initState,
