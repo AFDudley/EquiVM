@@ -150,7 +150,7 @@ theorem ballotDelegateTailNotVotedSuccessEquiv_general
           (delegateSenderWeightWord (delegateTailAfterSenderMap σ I w) I).toNat <
         UInt256.size := by
     exact hfit
-  have hbody := ballotDelegateBodyReturns_tailNotVoted_general
+  have hbody := ballotDelegateBodyReturns_tailNotVoted_general (hperm := by assumption)
     (initState σ σ₀ (Sat256.ofUInt256 g) A I) I w L hL
     (by simp only [initState]; exact hwv)
     (by simp [initState])
@@ -222,7 +222,7 @@ theorem ballotDelegateTailNotVotedOverflowEquiv_general
       (delegateVoterWeightWord (delegateTailAfterSenderMap σ I w) I w).toNat +
         (delegateSenderWeightWord (delegateTailAfterSenderMap σ I w) I).toNat := by
     exact hover
-  have hbody := ballotDelegateBodyReverts_tailNotVotedOverflow_general
+  have hbody := ballotDelegateBodyReverts_tailNotVotedOverflow_general (hperm := by assumption)
     (initState σ σ₀ (Sat256.ofUInt256 g) A I) I w L hL
     (by simp only [initState]; exact hwv)
     (by simp [initState])
@@ -299,7 +299,7 @@ theorem ballotDelegateTailVotedSuccessEquiv_general
           (delegateSenderWeightWord (delegateTailAfterSenderMap σ I w) I).toNat <
         UInt256.size := by
     exact hfit
-  have hbody := ballotDelegateBodyReturns_tailVoted_general
+  have hbody := ballotDelegateBodyReturns_tailVoted_general (hperm := by assumption)
     (initState σ σ₀ (Sat256.ofUInt256 g) A I) I w L hL
     (by simp only [initState]; exact hwv)
     (by simp [initState])
@@ -375,7 +375,7 @@ theorem ballotDelegateTailVotedOobEquiv_general
       (delegateVoterVoteWord (delegateTailAfterSenderMap σ I w) I w).toNat <
         (delegateTailProposalsLengthWord σ I w).toNat := by
     exact hbound
-  have hbody := ballotDelegateBodyReverts_tailVotedOob_general
+  have hbody := ballotDelegateBodyReverts_tailVotedOob_general (hperm := by assumption)
     (initState σ σ₀ (Sat256.ofUInt256 g) A I) I w L hL
     (by simp only [initState]; exact hwv)
     (by simp [initState])
@@ -450,7 +450,7 @@ theorem ballotDelegateTailVotedOverflowEquiv_general
       (delegateTailProposalCountWord σ I w).toNat +
         (delegateSenderWeightWord (delegateTailAfterSenderMap σ I w) I).toNat := by
     exact hover
-  have hbody := ballotDelegateBodyReverts_tailVotedOverflow_general
+  have hbody := ballotDelegateBodyReverts_tailVotedOverflow_general (hperm := by assumption)
     (initState σ σ₀ (Sat256.ofUInt256 g) A I) I w L hL
     (by simp only [initState]; exact hwv)
     (by simp [initState])

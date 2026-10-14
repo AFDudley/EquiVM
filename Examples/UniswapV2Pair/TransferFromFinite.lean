@@ -247,7 +247,7 @@ theorem uniswapTransferFromBodyCoreOk_finiteAllowance
       ExecTransitionBody config contract evmS (transferFromStore I) transferFromTransition.body
         (.returned { contract := contract, locals := transferFromStoreToBalance evmS I }
           (transferFromPostState evmS I) (some [(.bool true)])) := by
-    exact uniswapTransferFromBodyReturns_finiteAllowance evmS I
+    exact uniswapTransferFromBodyReturns_finiteAllowance (hperm := by assumption) evmS I
       (by simp only [evmS, initState]; exact hwv) hnotMaxS hallowanceS hbalanceS hfitS
   have hfromKeyWord : keyValueToWord (transferFromFromKey I) = transferFromFromWord I := by
     unfold transferFromFromKey

@@ -245,7 +245,9 @@ theorem ballotDelegateStele_loopContinueBodyLocals (evm : EVM.State) (I : Execut
   have hL' : delegateLoopLocals I (delegateCurrentVoterDelegateWordCurrent evm w) L' := by
     simpa [L'] using delegateLoopLocals_insert_to_next evm I w L hL
   exact ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_delegate_loopLocals_voter_delegate evm I w L hL)
+    (ExecStmt.assign
+      (hperm := by first | assumption | exact Or.inr ‹_› | exact Or.inl rfl)
+      (evalExpr_delegate_loopLocals_voter_delegate evm I w L hL)
       (assign_delegate_loopLocals_to_next evm I w L hL))
     (ExecBlock.consNormal
       (ExecStmt.requireTrue
@@ -269,7 +271,9 @@ theorem ballotDelegateStele_loopRevertSenderLocals (evm : EVM.State)
     simpa [L'] using delegateLoopLocals_insert_to_next evm I w L hL
   refine ExecStmt.whileRevert (evalExpr_delegate_loopLocals_continues evm I w L hL hdelegate) ?_
   exact ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_delegate_loopLocals_voter_delegate evm I w L hL)
+    (ExecStmt.assign
+      (hperm := by first | assumption | exact Or.inr ‹_› | exact Or.inl rfl)
+      (evalExpr_delegate_loopLocals_voter_delegate evm I w L hL)
       (assign_delegate_loopLocals_to_next evm I w L hL))
     (ExecBlock.consRevert
       (ExecStmt.requireFalse

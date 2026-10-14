@@ -182,7 +182,7 @@ theorem stringStoreLiteSetNewLongRuntime
         · have hpf : I.perm = false := by simpa using hperm
           exact setRuntimeStaticOfWrite hcode hwv hpf (permSplit_false hpf hsplit) hd hdec hwrite
         obtain ⟨evmEvm1, hState, hret⟩ := permSplit_true hperm hsplit
-        exact setRuntimeOfWriteEVMStateEq hcode hwv hret hd hdec hwrite
+        exact setRuntimeOfWriteEVMStateEq (hperm := by assumption) hcode hwv hret hd hdec hwrite
           rfl hState.accountMap henc
       · have hmissingStele0 :
             evmStele0.accountMap.get? evmStele0.executionEnv.codeOwner = none := by
@@ -290,7 +290,7 @@ theorem stringStoreLiteSetNewLongRuntime
                 evmEvm1.accountMap
                 (UInt256.toByteArray (UInt256.ofNat (setDecodedValueBytes I).size)) := by
             simpa [evmEvm1, evmPostMap, hpostMap, hretWord] using hret
-          exact setRuntimeOfWriteEVMStateEq hcode hwv hret' hd hdec hwrite
+          exact setRuntimeOfWriteEVMStateEq (hperm := by assumption) hcode hwv hret' hd hdec hwrite
             rfl hState.accountMap henc
         · let wordTail : UInt256 :=
             UInt256.ofNat (fromBytesBigEndian
@@ -391,7 +391,7 @@ theorem stringStoreLiteSetNewLongRuntime
                 evmEvm1.accountMap
                 (UInt256.toByteArray (UInt256.ofNat (setDecodedValueBytes I).size)) := by
             simpa [evmEvm1, evmPostMap, hpostMap, hretWord] using hret
-          exact setRuntimeOfWriteEVMStateEq hcode hwv hret' hd hdec hwrite
+          exact setRuntimeOfWriteEVMStateEq (hperm := by assumption) hcode hwv hret' hd hdec hwrite
             rfl hState.accountMap henc
     · have hbad :
           UInt256.sub (UInt256.land (currentLengthHeaderWord σ I) ⟨1⟩)
@@ -499,7 +499,7 @@ theorem stringStoreLiteSetNewLongRuntime
       · have hpf : I.perm = false := by simpa using hperm
         exact setRuntimeStaticOfWrite hcode hwv hpf (permSplit_false hpf hsplit) hd hdec hwrite
       obtain ⟨evmEvm1, hState, hret⟩ := permSplit_true hperm hsplit
-      exact setRuntimeOfWriteEVMStateEq hcode hwv hret hd hdec hwrite
+      exact setRuntimeOfWriteEVMStateEq (hperm := by assumption) hcode hwv hret hd hdec hwrite
         rfl hState.accountMap henc
 
 

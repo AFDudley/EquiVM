@@ -295,8 +295,12 @@ theorem execBlock_sqrtLoopBody (evm : EVM.State) (locals : Store) (y x z : Int)
     rw [sqrtLoopAfterZStore_y locals y x hy, sqrtLoopAfterZStore_x locals x hx]
     simp [evalBinaryOp?, sqrtLoopNextX, hx0]
   have hAssignX := assign_sqrtLoop_x evm locals y x hx
-  refine ExecBlock.consNormal (ExecStmt.assign hEvalX hAssignZ) ?_
-  exact ExecBlock.consNormal (ExecStmt.assign hEvalNext hAssignX) ExecBlock.nil
+  refine ExecBlock.consNormal (ExecStmt.assign
+    (hperm := by first | assumption | exact Or.inr ‹_› | exact Or.inl rfl)
+    hEvalX hAssignZ) ?_
+  exact ExecBlock.consNormal (ExecStmt.assign
+    (hperm := by first | assumption | exact Or.inr ‹_› | exact Or.inl rfl)
+    hEvalNext hAssignX) ExecBlock.nil
 
 set_option maxHeartbeats 1000000 in
 theorem execStmt_sqrtLoopTerminates (evm : EVM.State) (y : Int) (hypos : 0 < y) :

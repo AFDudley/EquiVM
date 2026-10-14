@@ -367,7 +367,8 @@ theorem transferAssignTo (evm : EVM.State) (I : ExecutionEnv)
 theorem uniswapTransferBodyReturns (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (henough : (transferValueWord I).toNat ≤ (transferFromBalanceWord evm).toNat)
-    (hfit : transferNewToNat evm I < UInt256.size) :
+    (hfit : transferNewToNat evm I < UInt256.size)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (transferStore I) transferTransition.body
       (.returned { contract := contract, locals := transferStoreToBalance evm I }
         (transferPostState evm I) (some [(.bool true)])) := by
@@ -377,10 +378,14 @@ theorem uniswapTransferBodyReturns (evm : EVM.State) (I : ExecutionEnv)
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue (evalExpr_transfer_require_from_true evm I henough)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_transfer_debit evm I henough) (transferAssignSender evm I)) ?_
+    (ExecStmt.assign
+      (hperm := Or.inr hperm)
+      (evalExpr_transfer_debit evm I henough) (transferAssignSender evm I)) ?_
   refine ExecBlock.consNormal (ExecStmt.letDecl (evalExpr_transfer_to_balance evm I)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_transfer_newToBalance evm I hfit)
+    (ExecStmt.assign
+      (hperm := Or.inr (by simpa [transferAfterDebitState] using hperm))
+      (evalExpr_transfer_newToBalance evm I hfit)
       (transferAssignTo evm I hfit)) ?_
   exact ExecBlock.consReturn (ExecStmt.return (by simp [evalExprs?, evalExpr?, EvalResult.bind, bind, pure]))
 
@@ -397,7 +402,8 @@ theorem uniswapTransferBodyReverts_insufficient (evm : EVM.State) (I : Execution
 theorem uniswapTransferBodyReverts_overflow (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (henough : (transferValueWord I).toNat ≤ (transferFromBalanceWord evm).toNat)
-    (hover : UInt256.size ≤ transferNewToNat evm I) :
+    (hover : UInt256.size ≤ transferNewToNat evm I)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (transferStore I) transferTransition.body .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
   refine ExecBlock.consNormal (ExecStmt.requireTrue (evalCallvalueEq_true hwv)) ?_
@@ -405,7 +411,9 @@ theorem uniswapTransferBodyReverts_overflow (evm : EVM.State) (I : ExecutionEnv)
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue (evalExpr_transfer_require_from_true evm I henough)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_transfer_debit evm I henough) (transferAssignSender evm I)) ?_
+    (ExecStmt.assign
+      (hperm := Or.inr hperm)
+      (evalExpr_transfer_debit evm I henough) (transferAssignSender evm I)) ?_
   refine ExecBlock.consNormal (ExecStmt.letDecl (evalExpr_transfer_to_balance evm I)) ?_
   exact ExecBlock.consRevert
     (ExecStmt.assignExprRevert (evalExpr_transfer_newToBalance_revert evm I hover))
@@ -860,7 +868,7 @@ theorem uniswapTransferBodyCoreOk
       ExecTransitionBody config contract evmS (transferStore I) transferTransition.body
         (.returned { contract := contract, locals := transferStoreToBalance evmS I }
           (transferPostState evmS I) (some [(.bool true)])) := by
-    exact uniswapTransferBodyReturns evmS I (by simp only [evmS, initState]; exact hwv)
+    exact uniswapTransferBodyReturns (hperm := by assumption) evmS I (by simp only [evmS, initState]; exact hwv)
       henoughS hfitS
   have htoSlot : transferToSlot I = mapSlot (transferToMaskedWord I) ⟨1⟩ :=
     transferToSlot_eq_mapSlot_masked I
@@ -942,7 +950,7 @@ theorem uniswapTransferBodyCoreRevert_overflow
   have hbody :
       ExecTransitionBody config contract evmS (transferStore I) transferTransition.body
         .reverted := by
-    exact uniswapTransferBodyReverts_overflow evmS I
+    exact uniswapTransferBodyReverts_overflow (hperm := by assumption) evmS I
       (by simp only [evmS, initState]; exact hwv) henoughS hoverS
   exact (uniswapTransferX_overflow (g := Sat256.ofUInt256 g)
       hsz68 hsize hperm henough hover hreach)
