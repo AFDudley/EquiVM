@@ -5,10 +5,10 @@ import Stele.Interp.Sound
 
 Every derivation of the relational semantics of `Stele/Semantics/Exec.lean` is reached by the
 interpreter of `Stele/Interp.lean` with enough fuel and the oracle that replays the derivation's own
-witnesses (`scriptOracle`), unless the interpreter stops short (`Reaches`): in static mode it halts
-at the first state-changing statement, where the relation also admits the ordinary result, and it
-does not materialise an allocation beyond `allocationCap`.  The relational semantics is the
-specification; nothing here changes it.
+witnesses (`scriptOracle`), unless the interpreter stops short at an allocation beyond
+`allocationCap` (`Reaches`).  Static mode is exact: the ordinary rules require write permission
+precisely where the interpreter halts with `staticViolation`, and the `*Static` rules are the
+derivation's own result.  The relational semantics is the specification; nothing here changes it.
 -/
 
 namespace Stele.Interp
@@ -42,22 +42,18 @@ def scriptOracle : Oracle (List Witness) where
 
 /-! ## Reaching a result -/
 
-/-- The run `p` reached `r` with its script consumed down to `rest`, or stopped short: a
-    static-mode halt (`perm = false`; a result of the relation, but not the derivation's), or an
+/-- The run `p` reached `r` with its script consumed down to `rest`, or stopped short at an
     allocation beyond `allocationCap` (no result). -/
 inductive Reaches : Outcome × List Witness → ExecResult → List Witness → Prop
   | hit : Reaches (.result r, rest) r rest
-  | static (ω : List Witness) : Reaches (.result .staticViolation, ω) r rest
   | unsupported (why : String) (ω : List Witness) : Reaches (.unsupported why, ω) r rest
 
 theorem Reaches.hit_or_short {p : Outcome × List Witness} {r : ExecResult} {rest : List Witness}
     (h : Reaches p r rest) :
-    p = (.result r, rest) ∨ (∃ ω, p = (.result .staticViolation, ω)) ∨
-      ∃ why ω, p = (.unsupported why, ω) := by
+    p = (.result r, rest) ∨ ∃ why ω, p = (.unsupported why, ω) := by
   cases h with
   | hit => exact .inl rfl
-  | static ω => exact .inr (.inl ⟨ω, rfl⟩)
-  | unsupported why ω => exact .inr (.inr ⟨why, ω, rfl⟩)
+  | unsupported why ω => exact .inr ⟨why, ω, rfl⟩
 
 theorem succ_of_le {n fuel : Nat} (h : n + 1 ≤ fuel) : ∃ k, fuel = k + 1 ∧ n ≤ k :=
   ⟨fuel - 1, by omega, by omega⟩
@@ -117,19 +113,19 @@ theorem body_complete {cfg : Config} {stele : Frame} {evm : EVM.State} {body : L
   complete_of_succ (run := fun fuel ω => execFuncBody fuel scriptOracle ω cfg stele evm body)
     ω n h
 
-/-- Unfold one step of the interpreter `f` and reduce it with the derivation's hypotheses. -/
-macro "step" f:ident "[" hs:Lean.Parser.Tactic.simpLemma,* "]" : tactic =>
+/-- Unfold one step of the interpreter `f` and reduce it with the derivation's hypotheses.
+    Scoped: `step` and `follow` must not become keywords in files importing this module. -/
+scoped macro "step" f:ident "[" hs:Lean.Parser.Tactic.simpLemma,* "]" : tactic =>
   `(tactic| (rw [$f:ident]
              try simp only [List.append_assoc, List.cons_append, List.nil_append, $hs,*]))
 
 /-- Follow the sub-run `h`: the interpreter's arm returns a short stop as it is, and the arm for
     the result reached is what remains (closed when it is the derivation's own result). -/
-macro "follow" h:term : tactic =>
-  `(tactic| (rcases Reaches.hit_or_short $h with hb | ⟨_, hb⟩ | ⟨_, _, hb⟩ <;>
+scoped macro "follow" h:term : tactic =>
+  `(tactic| (rcases Reaches.hit_or_short $h with hb | ⟨_, _, hb⟩ <;>
       simp only [hb] <;>
       try first
         | exact Reaches.hit
-        | exact Reaches.static _
         | exact Reaches.unsupported _ _))
 
 /-! ## Call bridges -/
@@ -199,6 +195,21 @@ theorem newViaEVMRun_complete {cfg : Config} {evm : EVM.State} {name : Ident} {v
       fun hb => hcan ((newCanCreateB_iff _ _ _).1 hb)
     simp [newViaEVMRun, hcode, hg, scriptOracle]
 
+/-! ## Permission guards
+
+The ordinary rule's permission hypothesis is the negation of the interpreter's static test. -/
+
+theorem not_assignStatic {origin : VarOrigin} {perm : Bool}
+    (h : origin = .localVar ∨ perm = true) :
+    ¬ ((origin = .storage ∨ origin = .transient) ∧ perm = false) := by
+  rcases h with rfl | rfl <;> simp
+
+theorem not_static {perm : Bool} (h : perm = true) : ¬ perm = false := by simp [h]
+
+theorem not_callStatic {w : EVM.Word} {perm : Bool} (h : w = ⟨0⟩ ∨ perm = true) :
+    ¬ (w ≠ ⟨0⟩ ∧ perm = false) := by
+  rcases h with rfl | rfl <;> simp
+
 /-! ## Statements -/
 
 mutual
@@ -219,9 +230,9 @@ theorem execStmt_complete {cfg : Config} {stele : Frame} {evm : EVM.State} {stmt
   | .letGas w =>
     exact stmt_complete [.gas w] 0 fun _ _ _ hover => by
       step execStmt [hover, scriptOracle]; constructor
-  | .assign hv hst =>
+  | .assign hperm hv hst =>
     exact stmt_complete [] 0 fun _ _ _ hover => by
-      step execStmt [hover, hv, hst]; split <;> constructor
+      step execStmt [hover, hv, hst]; rw [if_neg (not_assignStatic hperm)]; constructor
   | .assignExprRevert hv =>
     exact stmt_complete [] 0 fun _ _ _ hover => by step execStmt [hover, hv]; constructor
   | .assignStoreRevert hv hst =>
@@ -232,9 +243,9 @@ theorem execStmt_complete {cfg : Config} {stele : Frame} {evm : EVM.State} {stmt
   | .assignTransientStatic hv hst hp =>
     exact stmt_complete [] 0 fun _ _ _ hover => by
       step execStmt [hover, hv, hst]; rw [if_pos ⟨.inr trivial, hp⟩]; constructor
-  | .pushVal hv hp =>
+  | .pushVal hperm hv hp =>
     exact stmt_complete [] 0 fun _ _ _ hover => by
-      step execStmt [hover, hv, hp]; split <;> constructor
+      step execStmt [hover, hv, hp]; rw [if_neg (not_static hperm)]; constructor
   | .pushValExprRevert hv =>
     exact stmt_complete [] 0 fun _ _ _ hover => by step execStmt [hover, hv]; constructor
   | .pushValStoreRevert hv hp =>
@@ -242,25 +253,25 @@ theorem execStmt_complete {cfg : Config} {stele : Frame} {evm : EVM.State} {stmt
   | .pushValStatic hv hp hperm =>
     exact stmt_complete [] 0 fun _ _ _ hover => by
       step execStmt [hover, hv, hp]; rw [if_pos hperm]; constructor
-  | .pushGrow hp =>
+  | .pushGrow hperm hp =>
     exact stmt_complete [] 0 fun _ _ _ hover => by
-      step execStmt [hover, hp]; split <;> constructor
+      step execStmt [hover, hp]; rw [if_neg (not_static hperm)]; constructor
   | .pushGrowRevert hp =>
     exact stmt_complete [] 0 fun _ _ _ hover => by step execStmt [hover, hp]; constructor
   | .pushGrowStatic hp hperm =>
     exact stmt_complete [] 0 fun _ _ _ hover => by
       step execStmt [hover, hp]; rw [if_pos hperm]; constructor
-  | .pop hp =>
+  | .pop hperm hp =>
     exact stmt_complete [] 0 fun _ _ _ hover => by
-      step execStmt [hover, hp]; split <;> constructor
+      step execStmt [hover, hp]; rw [if_neg (not_static hperm)]; constructor
   | .popRevert hp =>
     exact stmt_complete [] 0 fun _ _ _ hover => by step execStmt [hover, hp]; constructor
   | .popStatic hp hperm =>
     exact stmt_complete [] 0 fun _ _ _ hover => by
       step execStmt [hover, hp]; rw [if_pos hperm]; constructor
-  | .delete hp =>
+  | .delete hperm hp =>
     exact stmt_complete [] 0 fun _ _ _ hover => by
-      step execStmt [hover, hp]; split <;> constructor
+      step execStmt [hover, hp]; rw [if_neg (not_static hperm)]; constructor
   | .deleteRevert hp =>
     exact stmt_complete [] 0 fun _ _ _ hover => by step execStmt [hover, hp]; constructor
   | .deleteStatic hp hperm =>
@@ -361,18 +372,21 @@ theorem execStmt_complete {cfg : Config} {stele : Frame} {evm : EVM.State} {stmt
     refine stmt_complete ω₁ n₁ fun fuel hf rest hover => ?_
     step execStmt [hover, hargs, hcallee, hbind]
     follow (h₁ fuel hf rest)
-  | .externalCallSuccess hrecv hval hargs hcall hdec =>
+  | .externalCallSuccess hperm hrecv hval hargs hcall hdec =>
     obtain ⟨ω₀, hrun⟩ := typedCallViaEVMRun_complete hcall
     exact stmt_complete ω₀ 0 fun _ _ rest hover => by
-      step execStmt [hover, hrecv, hval, hargs, hrun rest, hdec]; split <;> constructor
-  | .externalCallFailure hrecv hval hargs hcall =>
+      step execStmt [hover, hrecv, hval, hargs, hrun rest, hdec]
+      rw [if_neg (not_callStatic hperm)]; constructor
+  | .externalCallFailure hperm hrecv hval hargs hcall =>
     obtain ⟨ω₀, hrun⟩ := typedCallViaEVMRun_complete hcall
     exact stmt_complete ω₀ 0 fun _ _ rest hover => by
-      step execStmt [hover, hrecv, hval, hargs, hrun rest]; split <;> constructor
-  | .externalCallReturnDecodeRevert hrecv hval hargs hcall hdec =>
+      step execStmt [hover, hrecv, hval, hargs, hrun rest]
+      rw [if_neg (not_callStatic hperm)]; constructor
+  | .externalCallReturnDecodeRevert hperm hrecv hval hargs hcall hdec =>
     obtain ⟨ω₀, hrun⟩ := typedCallViaEVMRun_complete hcall
     exact stmt_complete ω₀ 0 fun _ _ rest hover => by
-      step execStmt [hover, hrecv, hval, hargs, hrun rest, hdec]; split <;> constructor
+      step execStmt [hover, hrecv, hval, hargs, hrun rest, hdec]
+      rw [if_neg (not_callStatic hperm)]; constructor
   | .externalCallReceiverRevert hrecv =>
     exact stmt_complete [] 0 fun _ _ _ hover => by step execStmt [hover, hrecv]; constructor
   | .externalCallSendRevert hrecv hval =>
@@ -383,14 +397,16 @@ theorem execStmt_complete {cfg : Config} {stele : Frame} {evm : EVM.State} {stmt
   | .externalCallStatic hrecv hval hargs hnz hp =>
     exact stmt_complete [] 0 fun _ _ _ hover => by
       step execStmt [hover, hrecv, hval, hargs]; rw [if_pos ⟨hnz, hp⟩]; constructor
-  | .lowLevelCallSuccess hrecv hval hcd hcall =>
+  | .lowLevelCallSuccess hperm hrecv hval hcd hcall =>
     obtain ⟨ω₀, hrun⟩ := callViaEVMRun_complete hcall
     exact stmt_complete ω₀ 0 fun _ _ rest hover => by
-      step execStmt [hover, hrecv, hval, hcd, hrun rest]; split <;> constructor
-  | .lowLevelCallFailure hrecv hval hcd hcall =>
+      step execStmt [hover, hrecv, hval, hcd, hrun rest]
+      rw [if_neg (not_callStatic hperm)]; constructor
+  | .lowLevelCallFailure hperm hrecv hval hcd hcall =>
     obtain ⟨ω₀, hrun⟩ := callViaEVMRun_complete hcall
     exact stmt_complete ω₀ 0 fun _ _ rest hover => by
-      step execStmt [hover, hrecv, hval, hcd, hrun rest]; split <;> constructor
+      step execStmt [hover, hrecv, hval, hcd, hrun rest]
+      rw [if_neg (not_callStatic hperm)]; constructor
   | .lowLevelCallReceiverRevert hrecv =>
     exact stmt_complete [] 0 fun _ _ _ hover => by step execStmt [hover, hrecv]; constructor
   | .lowLevelCallSendRevert hrecv hval =>
@@ -413,26 +429,25 @@ theorem execStmt_complete {cfg : Config} {stele : Frame} {evm : EVM.State} {stmt
     exact stmt_complete [] 0 fun _ _ _ hover => by step execStmt [hover, hrecv]; constructor
   | .delegateCallDataRevert hrecv hcd =>
     exact stmt_complete [] 0 fun _ _ _ hover => by step execStmt [hover, hrecv, hcd]; constructor
-  | .checkedCallSuccess hrecv hval hargs hcall hdec hblock =>
+  | .checkedCallSuccess hperm hrecv hval hargs hcall hdec hblock =>
     obtain ⟨ω₀, hrun⟩ := typedCallViaEVMRun_complete hcall
     obtain ⟨ω₁, n₁, h₁⟩ := execBlock_complete hblock
     refine stmt_complete (ω₀ ++ ω₁) n₁ fun fuel hf rest hover => ?_
     step execStmt [hover, hrecv, hval, hargs, hrun (ω₁ ++ rest), hdec]
-    split
-    · constructor
-    · exact h₁ fuel hf rest
-  | .checkedCallFail hrecv hval hargs hcall hblock =>
+    rw [if_neg (not_callStatic hperm)]
+    exact h₁ fuel hf rest
+  | .checkedCallFail hperm hrecv hval hargs hcall hblock =>
     obtain ⟨ω₀, hrun⟩ := typedCallViaEVMRun_complete hcall
     obtain ⟨ω₁, n₁, h₁⟩ := execBlock_complete hblock
     refine stmt_complete (ω₀ ++ ω₁) n₁ fun fuel hf rest hover => ?_
     step execStmt [hover, hrecv, hval, hargs, hrun (ω₁ ++ rest)]
-    split
-    · constructor
-    · exact h₁ fuel hf rest
-  | .checkedCallReturnDecodeRevert hrecv hval hargs hcall hdec =>
+    rw [if_neg (not_callStatic hperm)]
+    exact h₁ fuel hf rest
+  | .checkedCallReturnDecodeRevert hperm hrecv hval hargs hcall hdec =>
     obtain ⟨ω₀, hrun⟩ := typedCallViaEVMRun_complete hcall
     exact stmt_complete ω₀ 0 fun _ _ rest hover => by
-      step execStmt [hover, hrecv, hval, hargs, hrun rest, hdec]; split <;> constructor
+      step execStmt [hover, hrecv, hval, hargs, hrun rest, hdec]
+      rw [if_neg (not_callStatic hperm)]; constructor
   | .checkedCallReceiverRevert hrecv =>
     exact stmt_complete [] 0 fun _ _ _ hover => by step execStmt [hover, hrecv]; constructor
   | .checkedCallSendRevert hrecv hval =>
@@ -443,14 +458,16 @@ theorem execStmt_complete {cfg : Config} {stele : Frame} {evm : EVM.State} {stmt
   | .checkedCallStatic hrecv hval hargs hnz hp =>
     exact stmt_complete [] 0 fun _ _ _ hover => by
       step execStmt [hover, hrecv, hval, hargs]; rw [if_pos ⟨hnz, hp⟩]; constructor
-  | .newSuccess hv hargs hsalt hnew =>
+  | .newSuccess hperm hv hargs hsalt hnew =>
     obtain ⟨ω₀, hrun⟩ := newViaEVMRun_complete hnew
     exact stmt_complete ω₀ 0 fun _ _ rest hover => by
-      step execStmt [hover, hv, hargs, hsalt, hrun rest]; split <;> constructor
-  | .newRevert hv hargs hsalt hnew =>
+      step execStmt [hover, hv, hargs, hsalt, hrun rest]
+      rw [if_neg (not_static hperm)]; constructor
+  | .newRevert hperm hv hargs hsalt hnew =>
     obtain ⟨ω₀, hrun⟩ := newViaEVMRun_complete hnew
     exact stmt_complete ω₀ 0 fun _ _ rest hover => by
-      step execStmt [hover, hv, hargs, hsalt, hrun rest]; split <;> constructor
+      step execStmt [hover, hv, hargs, hsalt, hrun rest]
+      rw [if_neg (not_static hperm)]; constructor
   | .newValueRevert hv =>
     exact stmt_complete [] 0 fun _ _ _ hover => by step execStmt [hover, hv]; constructor
   | .newArgsRevert hv hargs =>
@@ -471,9 +488,9 @@ theorem execStmt_complete {cfg : Config} {stele : Frame} {evm : EVM.State} {stmt
     exact stmt_complete [] 0 fun _ _ _ hover => by step execStmt [hover]; constructor
   | .«continue» =>
     exact stmt_complete [] 0 fun _ _ _ hover => by step execStmt [hover]; constructor
-  | .emit hargs =>
+  | .emit hperm hargs =>
     exact stmt_complete [] 0 fun _ _ _ hover => by
-      step execStmt [hover, hargs]; split <;> constructor
+      step execStmt [hover, hargs]; rw [if_neg (not_static hperm)]; constructor
   | .emitArgsRevert hargs =>
     exact stmt_complete [] 0 fun _ _ _ hover => by step execStmt [hover, hargs]; constructor
   | .emitStatic hargs hp =>
