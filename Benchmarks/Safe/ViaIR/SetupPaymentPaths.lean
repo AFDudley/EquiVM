@@ -136,9 +136,9 @@ theorem safeSetupPaymentNativeTrace (p : PaymentInput) (evm : State)
   obtain ⟨hrev, hne⟩ | ⟨aw₃, k₃, C₃, h₃⟩ := safeSetupPaymentReturnBuffer h₂' hf
     (by change ptr + out.size + 64 < 2 ^ 256; omega) (by simp; omega) (by jump_dest)
   · obtain ⟨failed, failedOut, hcFail⟩ := callNonemptyCanReject hc' (by decide) hne
-    exact .inl ⟨hrev, safePaymentNativeSource hsum
+    exact .inl ⟨hrev, safePaymentNativeSource (hperm := Or.inr (by simpa only [hee] using hperm)) hsum
       (by simpa only [hee] using hprod) htoken hcFail⟩
-  have hbody := safePaymentNativeSource hsum (by simpa only [hee] using hprod) htoken hc'
+  have hbody := safePaymentNativeSource (hperm := Or.inr (by simpa only [hee] using hperm)) hsum (by simpa only [hee] using hprod) htoken hc'
   have hfinish := safeSetupPaymentNativeFinish z h₃ (by omega) hret
   cases z
   · exact .inl ⟨hfinish, hbody⟩

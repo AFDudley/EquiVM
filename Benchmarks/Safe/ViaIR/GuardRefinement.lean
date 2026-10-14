@@ -32,7 +32,7 @@ theorem guardFinish {kind : GuardKind} {σ σ₀ σ' : AccountMap} {g : UInt256}
       exact RDstatic.reEquivElim hcode (hstatic hp) fun hΞ ↦
         reEquivSelectorExecution hd hdec hbody (.staticHalt hΞ rfl)
   | true =>
-      have hbody := safeGuardSourceSuccess hc hv ha hg hb hcheck
+      have hbody := safeGuardSourceSuccess (hperm := by simpa only [hee] using hp) hc hv ha hg hb hcheck
       refine reEquivReturnElim hcode (hret hp) fun _ _ hsuccess ↦ ?_
       refine reEquivSelectorExecution hd hdec hbody
         (.success hsuccess rfl (by simp only [storageStore_accountMap, hee, hacc]) ?_)

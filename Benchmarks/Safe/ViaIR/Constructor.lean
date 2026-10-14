@@ -28,7 +28,7 @@ theorem safeConstructorBodyCore :
   · have hr := safeConstructorTrace (σ := σ) (σ₀ := σ₀) (A := A)
       (g := Sat256.ofUInt256 g) hcode hv hperm
     exact hr.constructorRefinementEmptyParams hcode rfl
-      (safeConstructorSource _ hv) (by rw [storageStore_accountMap]; rfl)
+      (safeConstructorSource (hperm := by assumption) _ hv) (by rw [storageStore_accountMap]; rfl)
   · have hr := safeConstructorTraceRevert (σ := σ) (σ₀ := σ₀) (A := A)
       (g := Sat256.ofUInt256 g) hcode hv
     exact hr.constructorRefinementEmptyParams hcode rfl (safeConstructorSourceRevert _ hv)

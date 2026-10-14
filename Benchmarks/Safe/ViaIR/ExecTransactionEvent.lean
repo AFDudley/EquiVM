@@ -20,15 +20,16 @@ def execEventTopic (z : Bool) : UInt256 :=
 theorem safeExecEventSource {frame : Frame} {evm : EVM.State} {z : Bool} {hash paid : UInt256}
     (hz : frame.locals["success"]? = some (.bool z))
     (hh : frame.locals["txHash"]? = some (wordBytes32Value hash))
-    (hp : frame.locals["payment"]? = some (uint256Value paid)) :
+    (hp : frame.locals["payment"]? = some (uint256Value paid))
+    (hperm : evm.executionEnv.perm = true) :
     ExecStmt config frame evm execEventStmt (.ok frame evm) := by
   have he := evalLocalValue (cfg := config) (evm := evm) hz
   have ha : evalExprs? config frame evm [.var "txHash", .var "payment"] =
       .ok [wordBytes32Value hash, uint256Value paid] := by
     simp only [evalExprs?, evalLocalValue hh, evalLocalValue hp, bind, EvalResult.bind, pure]
   cases z
-  · exact .iteFalse he (.consNormal (.emit ha) .nil)
-  · exact .iteTrue he (.consNormal (.emit ha) .nil)
+  · exact .iteFalse he (.consNormal (.emit (hperm := hperm) ha) .nil)
+  · exact .iteTrue he (.consNormal (.emit (hperm := hperm) ha) .nil)
 
 theorem safeExecEventSourceStatic {frame : Frame} {evm : EVM.State} {z : Bool}
     {hash paid : UInt256} (hz : frame.locals["success"]? = some (.bool z))

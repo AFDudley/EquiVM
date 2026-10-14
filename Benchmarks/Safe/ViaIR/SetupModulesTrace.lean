@@ -35,13 +35,13 @@ theorem safeSetupModulesTrace (p : SetupModulesInput) (evm : EVM.State)
   by_cases ht : p.target = ⟨0⟩
   · simp only [if_pos ht] at h₁
     exact .inr ⟨p.frame, p.state evm, rdata, aw₁, k₁, C₁, p.target, UInt256.ofNat ptr,
-      safeSetupModulesZero p evm he ht, hee₁, hw₁, h₁⟩
+      safeSetupModulesZero (hperm := by simpa only [hee] using hperm) p evm he ht, hee₁, hw₁, h₁⟩
   simp only [if_neg ht] at h₁
   by_cases hcode : extCodeSizeWord (p.state evm).accountMap p.target = ⟨0⟩
   · obtain ⟨aw₂, k₂, C₂, h₂⟩ := safeRuntime_block_3503_taken_packed (by simp; omega)
       (by rw [hcode]; decide) (by jump_dest) h₁
     exact .inl ⟨safeRuntime_block_3581 (by simp; omega) h₂,
-      safeSetupModulesNoCode p evm hc he ht hcode⟩
+      safeSetupModulesNoCode (hperm := by simpa only [hee] using hperm) p evm hc he ht hcode⟩
   obtain ⟨aw₂, k₂, C₂, h₂⟩ := safeRuntime_block_3503_fallthrough_packed (by simp; omega)
     (isZero_eq_zero_of_ne hcode) h₁
   have h₃ := safeRuntime_block_3511 (by simp; omega) h₂
@@ -63,7 +63,7 @@ theorem safeSetupModulesTrace (p : SetupModulesInput) (evm : EVM.State)
     simpa only [addressOfAddress, hdata] using hcall
   have hcallee := safeExecuteDelegateSource (value := ⟨0⟩) (operation := ⟨1⟩)
     (txGas := UInt256.lnot ⟨0⟩) rfl hdelegate
-  have hsource := safeSetupModulesCalled p evm hc he ht hcode
+  have hsource := safeSetupModulesCalled (hperm := by simpa only [hee] using hperm) p evm hc he ht hcode
     (by simpa only [accountAddress_ofUInt256_eq_ofNat_toNat] using hcallee)
   cases z with
   | false =>

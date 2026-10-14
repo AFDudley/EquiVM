@@ -63,15 +63,16 @@ theorem safeAssignThreshold (evm : EVM.State) (value : UInt256) :
 
 theorem safeThresholdSource (evm : EVM.State) (value : UInt256)
     (hle : value.toNat ≤ (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩).toNat)
-    (hnz : value ≠ ⟨0⟩) :
+    (hnz : value ≠ ⟨0⟩)
+    (hperm : evm.executionEnv.perm = true) :
     ExecFuncBody config (thresholdFrame value) evm changeThresholdBodyFunction.body
       (.returned (thresholdFrame value)
         (Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨4⟩ value) none) := by
   have hn : value.toNat ≠ 0 := fun h ↦ hnz (uint256_toNat_eq_zero h)
   exact .execBlockOK (.consNormal (.requireTrue (by simpa [hle] using safeThresholdBound evm value))
     (.consNormal (.requireTrue (by simpa [hn] using safeThresholdNonzero evm value))
-      (.consNormal (.assign (safeEvalThreshold evm value) (safeAssignThreshold evm value))
-        (.consNormal (.emit (evalExprs?_singleton (safeEvalThreshold _ value))) .nil))))
+      (.consNormal (.assign (hperm := Or.inr hperm) (safeEvalThreshold evm value) (safeAssignThreshold evm value))
+        (.consNormal (.emit (hperm := by simpa only [storageStore_executionEnv] using hperm) (evalExprs?_singleton (safeEvalThreshold _ value))) .nil))))
 
 theorem safeThresholdSourceStatic (evm : EVM.State) (value : UInt256)
     (hle : value.toNat ≤ (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩).toNat)

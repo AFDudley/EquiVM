@@ -94,8 +94,8 @@ theorem safeStorageAtStep (evm : EVM.State) {locals offset len words}
   have hi' : (locals.insert "result" (.bytes (wordBytes (words ++ [value]))))["index"]? =
       some (.int (Int.ofNat words.length)) := by
     simpa [Std.HashMap.getElem?_insert] using hl.index
-  exact .consNormal (.assign henc (assignLocalVarBase_ok hl.result))
-    (.consNormal (.assign (evalNatIncrement (evalLocalValue hi') hi)
+  exact .consNormal (.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) henc (assignLocalVarBase_ok hl.result))
+    (.consNormal (.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalNatIncrement (evalLocalValue hi') hi)
       (assignLocalVarBase_ok hi')) .nil)
 
 theorem safeStorageAtLengthGuard (evm : EVM.State) (offset len : UInt256) :

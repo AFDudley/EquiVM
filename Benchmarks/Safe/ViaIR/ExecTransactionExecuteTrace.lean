@@ -80,7 +80,7 @@ theorem safeExecTransactionCall (p : ExecTransactionInput) (evm : EVM.State)
       rw [callOutputMem_zero] at h₃
       have h₄ := safeRuntime_block_5339 (by simp; omega) (by jump_dest) h₃
       have hbool : (if z then (⟨1⟩ : UInt256) else ⟨0⟩) = z.toUInt256 := by cases z <;> rfl
-      refine .inr ⟨evm', σ', z, out, aw', k' + 3, C' + 14, safeExecuteCallSource hd ?_,
+      refine .inr ⟨evm', σ', z, out, aw', k' + 3, C' + 14, safeExecuteCallSource (hperm := by simpa only [hee, or_comm] using hp) hd ?_,
         he, ha, hw, ?_, hs⟩
       · simpa only [addressOfAddress, ht, hdata] using hc
       · simpa only [safeRuntime_block_5339_stack, execExecutedStack, hbool] using h₄

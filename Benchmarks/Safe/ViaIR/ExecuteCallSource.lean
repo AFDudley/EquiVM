@@ -48,7 +48,8 @@ theorem safeExecuteCallCondition {cfg : Config} {frame : Frame} {evm : EVM.State
 theorem safeExecuteCallStatement {cfg : Config} {frame : Frame} {evm evm' : EVM.State}
     {target : EVM.Address} {value operation : UInt256} {payload out : ByteArray} {z : Bool}
     (hl : ExecuteLocals frame target value payload operation)
-    (hc : executeViaEVM evm target value payload operation z evm' out) :
+    (hc : executeViaEVM evm target value payload operation z evm' out)
+    (hperm : operation = ⟨1⟩ ∨ value = ⟨0⟩ ∨ evm.executionEnv.perm = true) :
     ExecStmt cfg frame evm executeCallStmt (.ok (executeCallFrame frame z out) evm') := by
   have ht : evalExpr? cfg frame evm (.var "to") = .ok (.address target) := by
     simp [evalExpr?, hl.target, EvalResult.ofOption, pure]
@@ -63,8 +64,8 @@ theorem safeExecuteCallStatement {cfg : Config} {frame : Frame} {evm evm' : EVM.
     · exact .consNormal (.delegateCallSuccess ht hd hc) .nil
   · apply ExecStmt.iteFalse (by simpa only [hop, decide_false] using safeExecuteCallCondition hl)
     cases z
-    · exact .consNormal (.lowLevelCallFailure ht hv hd hc) .nil
-    · exact .consNormal (.lowLevelCallSuccess ht hv hd hc) .nil
+    · exact .consNormal (.lowLevelCallFailure (hperm := by simpa only [wordOfInt_ofNat_toNat] using hperm.resolve_left hop) ht hv hd hc) .nil
+    · exact .consNormal (.lowLevelCallSuccess (hperm := by simpa only [wordOfInt_ofNat_toNat] using hperm.resolve_left hop) ht hv hd hc) .nil
 
 theorem safeExecuteCallStatementStatic {cfg : Config} {frame : Frame} {evm : EVM.State}
     {target : EVM.Address} {value operation : UInt256} {payload : ByteArray}

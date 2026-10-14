@@ -21,17 +21,17 @@ theorem safeSetupBodyTrace (evm : EVM.State)
   let p := setupCalldataInput I.calldata n len
   have hv' : evm.executionEnv.weiValue = ⟨0⟩ := by rwa [hee]
   have hn : p.owners.length = n := calldataWords_length _ _ _
-  have finish (htail : SetupTailOutcome p p.frame evm (setupTransition.body.drop 3) g s0) :
+  have finish (hperm : I.perm = true) (htail : SetupTailOutcome p p.frame evm (setupTransition.body.drop 3) g s0) :
       SetupOutcome p.frame evm setupTransition.body g s0 := by
     cases htail with
     | allocationRevert bound trace =>
-      exact .reverted (safeSetupAllocationRevert p evm hv' bound) trace
+      exact .reverted (safeSetupAllocationRevert (hperm := by simpa only [hee] using hperm) p evm hv' bound) trace
     | reverted source trace =>
       by_cases ha : 32 * p.owners.length + p.payload.size ≤ p.allocationLimit
-      · exact .reverted (safeSetupPrefix p evm hv' ha source) trace
-      · exact .reverted (safeSetupAllocationRevert p evm hv' ha) trace
+      · exact .reverted (safeSetupPrefix (hperm := by simpa only [hee] using hperm) p evm hv' ha source) trace
+      · exact .reverted (safeSetupAllocationRevert (hperm := by simpa only [hee] using hperm) p evm hv' ha) trace
     | success bound source trace =>
-      exact .success (safeSetupPrefix p evm hv' bound source) trace
+      exact .success (safeSetupPrefix (hperm := by simpa only [hee] using hperm) p evm hv' bound source) trace
   obtain ⟨aw₁, k₁, C₁, h₁⟩ := safeSetupEventTrace h hb hc (by omega)
   cases hperm : I.perm with
   | false =>
@@ -40,7 +40,7 @@ theorem safeSetupBodyTrace (evm : EVM.State)
   | true =>
     by_cases ha : 160 + 32 * n < 2 ^ 64
     swap
-    · apply finish
+    · apply finish hperm
       refine .allocationRevert ?_ (safeSetupOwnersAllocateRevert h₁ hb ha hperm (by omega))
       intro hbound
       have hlim := le_trans hbound (safeSetupAllocationLimit_le p)
@@ -57,7 +57,7 @@ theorem safeSetupBodyTrace (evm : EVM.State)
             change 128 + 32 + 32 * n < 2 ^ 256
             omega)
         (fun j hj ↦ hc _ (List.getElem_mem hj)) hperm (by omega)
-    · exact finish (.reverted (.consRevert
+    · exact finish hperm (.reverted (.consRevert
         (safeSetupOwnersCall p evm (SetupLocals.initial p) hs)) hrev)
     have hm : mem'.size = 288 + 32 * n :=
       hm'.trans (setupOwnersAllocatedMemory_size hb.ownersEnd)
@@ -71,6 +71,6 @@ theorem safeSetupBodyTrace (evm : EVM.State)
     have htail := safeSetupAfterOwners evm' h₃ hee' rfl (hw'.trans hworld)
       ((SetupLocals.initial p).set "_ownersSetup" .unit (by decide)) hb
       hfree (by omega) hperm hov
-    exact finish (htail.prepend (safeSetupOwnersCall p evm (SetupLocals.initial p) hs))
+    exact finish hperm (htail.prepend (safeSetupOwnersCall p evm (SetupLocals.initial p) hs))
 
 end Benchmarks.Safe.ViaIR

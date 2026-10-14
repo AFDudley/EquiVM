@@ -88,19 +88,21 @@ theorem safeSetupAllocationCondition (p : SetupInput) (evm : EVM.State) :
 theorem safeSetupPrefix (p : SetupInput) (evm : EVM.State) {result : ExecResult}
     (hv : evm.executionEnv.weiValue = ⟨0⟩)
     (ha : 32 * p.owners.length + p.payload.size ≤ p.allocationLimit)
-    (ht : ExecBlock config p.frame evm (setupTransition.body.drop 3) result) :
+    (ht : ExecBlock config p.frame evm (setupTransition.body.drop 3) result)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config p.frame evm setupTransition.body result :=
   .consNormal (.requireTrue (evalCallvalueEq_true hv))
-    (.consNormal (.emit (safeSetupEventValues p evm))
+    (.consNormal (.emit (hperm := hperm) (safeSetupEventValues p evm))
       (.consNormal (.requireTrue (by
         simpa only [ha, decide_true] using safeSetupAllocationCondition p evm)) ht))
 
 theorem safeSetupAllocationRevert (p : SetupInput) (evm : EVM.State)
     (hv : evm.executionEnv.weiValue = ⟨0⟩)
-    (ha : ¬32 * p.owners.length + p.payload.size ≤ p.allocationLimit) :
+    (ha : ¬32 * p.owners.length + p.payload.size ≤ p.allocationLimit)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config p.frame evm setupTransition.body .reverted :=
   .consNormal (.requireTrue (evalCallvalueEq_true hv))
-    (.consNormal (.emit (safeSetupEventValues p evm))
+    (.consNormal (.emit (hperm := hperm) (safeSetupEventValues p evm))
       (.consRevert (.requireFalse (by
         simpa only [ha, decide_false] using safeSetupAllocationCondition p evm))))
 

@@ -48,12 +48,12 @@ theorem safeExecTransactionFinish (evm : EVM.State)
     obtain ⟨hr, hs⟩ | ⟨frame', evm', σ', mem', aw', out, a, b, c, k', C', hs, hz',
         he', ha', hw', h₃⟩ := safeExecAfterGuardTrace z evm h₂ hee hacc hworld hg hh hz hf₂
           hb hcap (by omega)
-    · exact .inl ⟨hr, .consNormal (safeExecEventSource hz hh hpaid) (.consRevert hs)⟩
+    · exact .inl ⟨hr, .consNormal (safeExecEventSource (hperm := by simpa only [hee] using hperm) hz hh hpaid) (.consRevert hs)⟩
     have hr := safeReturnBoolFromMemory h₃ (by simp; omega)
     have hret : ExecBlock config frame' evm' [.return [.var "success"]]
         (.returned frame' evm' (some [.bool z])) :=
       .consReturn (.return (evalExprs?_singleton (evalLocalValue hz')))
-    exact .inr (.inr ⟨frame', evm', σ', .consNormal (safeExecEventSource hz hh hpaid)
+    exact .inr (.inr ⟨frame', evm', σ', .consNormal (safeExecEventSource (hperm := by simpa only [hee] using hperm) hz hh hpaid)
       (.consNormal hs hret), he', ha', hw', hr⟩)
 
 end Benchmarks.Safe.ViaIR

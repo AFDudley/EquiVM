@@ -46,7 +46,7 @@ theorem safeSetupFallbackTrace (p : SetupInput) (evm : EVM.State)
   refine .inr ⟨locals.insert "_fallbackSet" .unit,
     Stele.EVM.storageStore evm evm.executionEnv.codeOwner fallbackHandlerSlot p.fallbackHandler,
     k' + 4, C' + 14, safeSetupFallbackCall p evm hl hc hz
-      (safeInternalSetFallbackHandlerSource evm p.fallbackHandler hc (by rwa [hee])),
+      (safeInternalSetFallbackHandlerSource (hperm := by simpa only [hee] using hperm) evm p.fallbackHandler hc (by rwa [hee])),
     hl.set _ _ (by decide), ?_, ?_, ?_⟩
   · simpa only [storageStore_executionEnv] using hee
   · exact storageStore_σ₀ _ _ _ _

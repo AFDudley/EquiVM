@@ -81,7 +81,7 @@ theorem safeSetupOwnersIteration (evm : EVM.State) {p locals i current ptr}
       obtain ⟨aw₅, k₅, C₅, h₅⟩ := safeSetupOwnersStore evm h₄ hee hacc
         (by omega) hperm (by simp; omega)
       refine .inr ⟨twoWordHashMem current ⟨2⟩ mem₄, aw₅, k₅, C₅,
-        safeSetupOwnersStep evm hl hi hc ho he (by omega) ?_ ?_, h₅, ?_, ?_⟩
+        safeSetupOwnersStep (hperm := by simpa only [hee] using hperm) evm hl hi hc ho he (by omega) ?_ ?_, h₅, ?_, ?_⟩
       · simpa only [hee, hacc] using hv
       · simpa only [ownerLink_eq_at, hee, hacc] using he0
       · rw [twoWordHashMem_size_of_ge64 _ _ (by omega), hm₄]

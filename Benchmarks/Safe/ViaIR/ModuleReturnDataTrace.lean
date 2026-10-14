@@ -57,12 +57,12 @@ theorem safeModuleReturnDataTrace (evm : EVM.State) (payload : ByteArray)
   rcases safeExecuteRawTrace evm₁ payload h₃ he₁ ha₁ hw₁ hdata (by omega)
     (by simp; omega) (by jump_dest) with
     ⟨hr, hne, hperm, hvalue⟩ |
-      ⟨evm₂, σ₂, z, out₂, aw₂, k₂, C₂, hcall, he₂, ha₂, hw₂, h₄, hout₂, houtBound⟩
+      ⟨evm₂, σ₂, z, out₂, aw₂, k₂, C₂, hcall, hcallPerm, he₂, ha₂, hw₂, h₄, hout₂, houtBound⟩
   · exact Or.inr (Or.inl ⟨hr, .execBlockStatic (safeModuleChecks hv hn ho
       (.consNormal (safeModulePreCall hpre) (.consStatic
         (safeExecuteCallStatementStatic (safeModuleExecuteLocals _ _ _ _ _ _)
           hne hperm hvalue))))⟩)
-  have hexe := safeExecuteCallStatement (cfg := config)
+  have hexe := safeExecuteCallStatement (hperm := hcallPerm) (cfg := config)
     (safeModuleExecuteLocals _ (AccountAddress.ofUInt256 (preModuleGuardWord evm))
       _ _ hash _) hcall
   have hsmall : out₂.size < 2 ^ 138 := houtBound (by

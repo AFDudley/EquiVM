@@ -14,10 +14,11 @@ theorem safeReceiveArgs (evm : State) (frame : Frame) :
   simp only [evalExprs?, sender, callvalue, evalExpr?, envValue, bind, EvalResult.bind, pure]
   rfl
 
-theorem safeReceiveSource (evm : State) :
+theorem safeReceiveSource (evm : State)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm ∅ receiveTransition.body
       (.returned { contract := contract, locals := ∅ } evm none) := by
-  exact .execBlockOK (.consNormal (.emit (safeReceiveArgs evm _)) .nil)
+  exact .execBlockOK (.consNormal (.emit (hperm := hperm) (safeReceiveArgs evm _)) .nil)
 
 theorem safeReceiveSourceStatic (evm : State) (hperm : evm.executionEnv.perm = false) :
     ExecTransitionBody config contract evm ∅ receiveTransition.body .staticViolation := by
@@ -57,7 +58,7 @@ theorem safeReceiveBodyCore
   | true =>
       have hret := safeRuntime_block_115 (by decide) hperm h115
       exact RDret.reEquivElim hcode hret fun _ _ hsuccess ↦
-        reEquiv_receiveExecution hreceive rfl rfl (safeReceiveSource _)
+        reEquiv_receiveExecution hreceive rfl rfl (safeReceiveSource (hperm := by assumption) _)
           (.success hsuccess rfl rfl (.abi (.fallthrough rfl rfl encodeReturnValues_nil)))
 
 /-- Empty calldata follows receive, including its LOG2 static-mode halt. -/

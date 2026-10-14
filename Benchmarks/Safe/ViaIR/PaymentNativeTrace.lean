@@ -52,7 +52,7 @@ theorem safePaymentNativeTrace (p : PaymentInput) (evm : EVM.State)
   obtain hrev | ⟨aw₃, k₃, C₃, h₃, hcap⟩ := safePaymentReturnBuffer h₂' hf
     (by change ptr + out.size + 64 < 2 ^ 256; omega) (by simp; omega) (by jump_dest)
   · exact .inl hrev
-  have hbody := safePaymentNativeSource hsum (by simpa only [hee] using hprod) htoken hc'
+  have hbody := safePaymentNativeSource (hperm := by simpa only [hee, or_comm] using hperm) hsum (by simpa only [hee] using hprod) htoken hc'
   have hfinish := safePaymentNativeFinish z h₃ (by omega)
   cases z
   · exact .inl hfinish
