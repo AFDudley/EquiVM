@@ -7,13 +7,14 @@ open safeCreationBlocks
 
 namespace Benchmarks.Safe.Main
 
-theorem safeConstructorSource (evm : EVM.State) (hv : evm.executionEnv.weiValue = ⟨0⟩) :
+theorem safeConstructorSource (evm : EVM.State) (hv : evm.executionEnv.weiValue = ⟨0⟩)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm ∅ contract.ctor.body
       (.returned { contract := contract, locals := ∅ }
         (Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨4⟩ ⟨1⟩) none) := by
   apply ExecFuncBody.execBlockOK
   exact .consNormal (.requireTrue (evalCallvalueEq_true hv))
-    (.consNormal (.assign (by simp [evalExpr?, pure]; rfl)
+    (.consNormal (.assign (hperm := Or.inr hperm) (by simp [evalExpr?, pure]; rfl)
       (safeAssignThresholdLocals evm ∅ ⟨1⟩ (by simp))) .nil)
 
 theorem safeConstructorSourceRevert (evm : EVM.State)

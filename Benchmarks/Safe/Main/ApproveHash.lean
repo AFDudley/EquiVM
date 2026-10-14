@@ -73,7 +73,8 @@ theorem safeAssignApprovedHash (evm : EVM.State) (key : UInt256) :
 
 theorem safeApproveHashSource (evm : EVM.State) (key : UInt256)
     (hvalue : evm.executionEnv.weiValue = ⟨0⟩)
-    (howner : approveHashOwnerWord evm.accountMap evm.executionEnv ≠ ⟨0⟩) :
+    (howner : approveHashOwnerWord evm.accountMap evm.executionEnv ≠ ⟨0⟩)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (approveHashArgs key) approvehashTransition.body
       (.returned (approveHashFrame key)
         (Stele.EVM.storageStore evm evm.executionEnv.codeOwner (approveHashSlot evm.executionEnv
@@ -81,8 +82,8 @@ theorem safeApproveHashSource (evm : EVM.State) (key : UInt256)
         none) := by
   refine .execBlockOK (.consNormal (.requireTrue (evalCallvalueEq_true hvalue))
     (.consNormal (.requireTrue (by simpa [howner] using safeApproveHashGuard evm key))
-      (.consNormal (.assign (by simp [evalExpr?, pure]) (safeAssignApprovedHash evm key))
-        (.consNormal (.emit (vals := [wordBytes32Value key, .address evm.executionEnv.source]) ?_)
+      (.consNormal (.assign (hperm := Or.inr hperm) (by simp [evalExpr?, pure]) (safeAssignApprovedHash evm key))
+        (.consNormal (.emit (hperm := by simpa only [storageStore_executionEnv] using hperm) (vals := [wordBytes32Value key, .address evm.executionEnv.source]) ?_)
           .nil))))
   simp [evalExprs?, evalExpr?, sender, envValue, approveHashFrame, approveHashArgs,
     EvalResult.bind, EvalResult.ofOption, bind, pure]
@@ -203,7 +204,7 @@ theorem safeApprovehashBodyCore
           | true =>
               have hret := safeApproveHashTrace h5240 (by simp)
                 (twoWordHashMem_size_96 (solcSourceWord I) ⟨2⟩ solcFreePtrMem_size) hperm
-              have hbody := safeApproveHashSource (initState σ σ₀ (.ofUInt256 g) A I)
+              have hbody := safeApproveHashSource (hperm := by assumption) (initState σ σ₀ (.ofUInt256 g) A I)
                 (calldataWord I.calldata 4) hvalue howner
               refine reEquivReturnElim hcode hret fun _ _ hsuccess ↦ ?_
               exact reEquivSelectorExecution hdispatch hdec hbody

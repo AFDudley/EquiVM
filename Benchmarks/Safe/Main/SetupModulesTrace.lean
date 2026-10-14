@@ -33,14 +33,14 @@ theorem safeSetupModulesTrace (p : SetupModulesInput) (evm : EVM.State)
   by_cases ht : p.target = ⟨0⟩
   · simp only [if_pos ht] at h₁
     have h₂ := safeRuntime_block_1936 (by omega) hret h₁
-    exact .inr ⟨p.frame, p.state evm, rdata, aw₁, _, _, safeSetupModulesZero p evm he ht,
+    exact .inr ⟨p.frame, p.state evm, rdata, aw₁, _, _, safeSetupModulesZero (hperm := by simpa only [hee] using hperm) p evm he ht,
       hee₁, hw₁, h₂⟩
   simp only [if_neg ht] at h₁
   by_cases hcode : extCodeSizeWord (p.state evm).accountMap p.target = ⟨0⟩
   · obtain ⟨aw₂, k₂, C₂, h₂⟩ := safeRuntime_block_8470_fallthrough_packed (by simp; omega) hcode h₁
     have h₃ := safeRuntime_block_8476 (by simp; omega) (by jump_dest) h₂
     exact .inl ⟨safeRuntime_block_6898 (by simp; omega) h₃,
-      safeSetupModulesNoCode p evm hc he ht hcode⟩
+      safeSetupModulesNoCode (hperm := by simpa only [hee] using hperm) p evm hc he ht hcode⟩
   obtain ⟨aw₂, k₂, C₂, h₂⟩ := safeRuntime_block_8470_taken_packed (by simp; omega) hcode
     (by jump_dest) h₁
   have h₃ := safeRuntime_block_8492 (by simp; omega) (by jump_dest) h₂
@@ -54,7 +54,7 @@ theorem safeSetupModulesTrace (p : SetupModulesInput) (evm : EVM.State)
       uadd_ofNat_toNat (by omega) (by decide) (by omega)
     rw [hm'.length, ulit_toNat' _ (by omega), hptr]
     exact hm'.payload
-  obtain ⟨_, hn, _, _⟩ | ⟨evm', σ', z, out, aw₄, k₄, C₄, hcall, hee', hacc', hw', h₄, _, _⟩ :=
+  obtain ⟨_, hn, _, _⟩ | ⟨evm', σ', z, out, aw₄, k₄, C₄, hcall, _, hee', hacc', hw', h₄, _, _⟩ :=
     safeExecuteRawTrace (p.state evm) p.payload h₃ hee₁ rfl hw₁ hdata (by decide)
       (by simp; omega) (by jump_dest)
   · exact False.elim (hn rfl)
@@ -65,7 +65,7 @@ theorem safeSetupModulesTrace (p : SetupModulesInput) (evm : EVM.State)
     · exact False.elim (hn rfl)
   have hcallee := safeExecuteDelegateSource (value := ⟨0⟩) (operation := ⟨1⟩)
     (txGas := UInt256.lnot ⟨0⟩) rfl hdelegate
-  have hsource := safeSetupModulesCalled p evm hc he ht hcode
+  have hsource := safeSetupModulesCalled (hperm := by simpa only [hee] using hperm) p evm hc he ht hcode
     (by simpa only [accountAddress_ofUInt256_eq_ofNat_toNat] using hcallee)
   cases z with
   | false =>

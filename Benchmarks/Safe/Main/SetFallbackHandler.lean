@@ -17,7 +17,8 @@ theorem safeSetFallbackHandlerSource (evm : EVM.State) (handler : UInt256)
     (hcanon : handler.toNat < EVM.addressModulus)
     (hvalue : evm.executionEnv.weiValue = ⟨0⟩)
     (hauth : evm.executionEnv.source = evm.executionEnv.codeOwner)
-    (hne : AccountAddress.ofNat handler.toNat ≠ evm.executionEnv.codeOwner) :
+    (hne : AccountAddress.ofNat handler.toNat ≠ evm.executionEnv.codeOwner)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (fallbackHandlerArgs handler)
       setfallbackhandlerTransition.body
       (.returned (resumeAfterInternalCall (fallbackHandlerFrame handler) "_ok" none)
@@ -27,11 +28,11 @@ theorem safeSetFallbackHandlerSource (evm : EVM.State) (handler : UInt256)
     (name := "internalSetFallbackHandler") (retVar := "_ok")
     (callee := internalSetFallbackHandlerFunction)
     (evalExprs?_singleton (safeEvalHandler evm handler)) rfl rfl
-    (safeInternalSetFallbackHandlerSource evm handler hcanon hne)
+    (safeInternalSetFallbackHandlerSource (hperm := by assumption) evm handler hcanon hne)
   refine .execBlockOK (.consNormal (.requireTrue (evalCallvalueEq_true hvalue))
     (.consNormal (.requireTrue (by simpa [hauth] using safeEvalAuthorized evm _))
       (.consNormal hcall (.consNormal
-        (.emit (vals := [.address (AccountAddress.ofNat handler.toNat)]) ?_) .nil))))
+        (.emit (hperm := by simpa only [storageStore_executionEnv] using hperm) (vals := [.address (AccountAddress.ofNat handler.toNat)]) ?_) .nil))))
   apply evalExprs?_singleton
   simp [resumeAfterInternalCall, fallbackHandlerFrame, fallbackHandlerArgs,
     evalExpr?, EvalResult.ofOption, Std.HashMap.getElem_insert]
@@ -144,7 +145,7 @@ theorem safeSetfallbackhandlerBodyCore
                     reEquivSelectorExecution hdispatch hdec hbody (.staticHalt hΞ rfl)
               | true =>
                   have hret := safeSetFallbackHandlerTrace h8283 (by simp) hperm
-                  have hbody := safeSetFallbackHandlerSource
+                  have hbody := safeSetFallbackHandlerSource (hperm := by assumption)
                     (initState σ σ₀ (.ofUInt256 g) A I) (calldataWord I.calldata 4)
                     hcanon hvalue hauth heq
                   refine reEquivReturnElim hcode hret fun _ _ hsuccess ↦ ?_
