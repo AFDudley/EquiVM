@@ -47,7 +47,7 @@ theorem amount1DeltaAssignSource (imms : Store) (evm : EVM.State) (a : AmountDel
       simp only [amount1DeltaCallFrame, amount1DeltaCallName, amount1DeltaZeroFrame, hr,
         Bool.false_eq_true, if_false, if_true, Std.HashMap.get?_eq_getElem?, Std.HashMap.getElem?_insert]
     all_goals rfl
-  exact ExecStmt.assign (evalExpr_var_get Std.HashMap.getElem?_insert_self)
+  exact ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalExpr_var_get Std.HashMap.getElem?_insert_self)
     (assignLocalVarBase_frame hc)
 
 theorem amount1DeltaChoiceSource (imms : Store) (evm : EVM.State) (a : AmountDeltaArgs)

@@ -49,12 +49,13 @@ theorem evalOracleGrowCondition (imms : Store) (evm : EVM.State) (locals : Store
 
 theorem oracleGrowStep (imms : Store) (evm : EVM.State) (locals : Store) (i : Nat)
     (hi : i < 65535) (hget : locals.get? "i" = some (.int (Int.ofNat i)))
-    (hbase : locals.get? "observations" = none) :
+    (hbase : locals.get? "observations" = none)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config {contract := contract, locals := locals, immutables := imms} evm oracleGrowBody
       (.ok {contract := contract, locals := locals, immutables := imms}
         (storeObservationTimestampOne evm (UInt256.ofNat i))) := by
   unfold oracleGrowBody
-  refine ExecBlock.consNormal (ExecStmt.assign (value := .int 1)
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) (value := .int 1)
     (by simp only [evalExpr?, pure]) ?_) ExecBlock.nil
   apply assignObservationTimestampOne _ _ _ "i" (UInt256.ofNat i) hbase
   · rw [ulit_toNat' i (by change i < 2 ^ 256; omega)]; exact hget
@@ -81,12 +82,13 @@ theorem oracleGrowIncrement (imms : Store) (evm : EVM.State) (locals : Store) (i
   have heval := evalExpr_uint_increment (cfg := config) (evm := evm)
     (frame := {contract := contract, locals := locals, immutables := imms})
     ⟨16, by decide⟩ i (evalExpr_var_get hget) (by change i + 1 < 65536; omega)
-  exact ExecBlock.consNormal (ExecStmt.assign heval (assignLocalVarBase_frame hget)) ExecBlock.nil
+  exact ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inl rfl) heval (assignLocalVarBase_frame hget)) ExecBlock.nil
 
 theorem oracleGrowLoop (imms : Store) (evm : EVM.State) (locals : Store) (next : UInt256) (i count : Nat)
     (hnext : next.toNat < 2 ^ 16) (hsum : i + count = next.toNat)
     (hn : locals.get? "next" = some (.int (Int.ofNat next.toNat)))
-    (hi : locals.get? "i" = some (.int (Int.ofNat i))) (hbase : locals.get? "observations" = none) :
+    (hi : locals.get? "i" = some (.int (Int.ofNat i))) (hbase : locals.get? "observations" = none)
+    (hperm : evm.executionEnv.perm = true) :
     ∃ locals', ExecForLoop config {contract := contract, locals := locals, immutables := imms} evm
       oracleGrowCondition oracleGrowPost oracleGrowBody
       (.ok {contract := contract, locals := locals', immutables := imms} (oracleGrowState evm i count)) ∧
@@ -107,7 +109,8 @@ theorem oracleGrowLoop (imms : Store) (evm : EVM.State) (locals : Store) (next :
         simpa only [Std.HashMap.get?_eq_getElem?, Std.HashMap.getElem?_insert] using hbase
       obtain ⟨locals', hloop, hnFinal⟩ := ih (storeObservationTimestampOne evm (UInt256.ofNat i))
         (locals.insert "i" (.int (Int.ofNat (i + 1)))) (i + 1) (by omega) hn' hi' hb'
-      refine ⟨locals', ExecForLoop.iterate ?_ (oracleGrowStep imms evm locals i hib hi hbase)
+        (by simpa only [storeObservationTimestampOne_executionEnv] using hperm)
+      refine ⟨locals', ExecForLoop.iterate ?_ (oracleGrowStep (hperm := hperm) imms evm locals i hib hi hbase)
         (oracleGrowIncrement imms _ locals i hib hi) hloop, hnFinal⟩
       simpa only [show i < next.toNat by omega, decide_true] using
         evalOracleGrowCondition imms evm locals next i hn hi
@@ -122,12 +125,13 @@ theorem oracleGrowRevertsZero (imms : Store) (evm : EVM.State) (next : UInt256) 
   simpa using evalOracleGrowPositive imms evm ⟨0⟩ next
 
 theorem oracleGrowReturns (imms : Store) (evm : EVM.State) (current next : UInt256)
-    (hpos : 0 < current.toNat) (hnext : next.toNat < 2 ^ 16) :
+    (hpos : 0 < current.toNat) (hnext : next.toNat < 2 ^ 16)
+    (hperm : evm.executionEnv.perm = true) :
     ∃ frame, ExecFuncBody config (oracleGrowFrame imms current next) evm oracleGrowFunction.body
       (.returned frame (oracleGrowState evm current.toNat (next.toNat - current.toNat))
         (some [.int (Int.ofNat (oracleGrowResult current next).toNat)])) := by
   by_cases hgrow : current.toNat < next.toNat
-  · obtain ⟨localsFinal, hloop, hgetFinal⟩ := oracleGrowLoop imms evm
+  · obtain ⟨localsFinal, hloop, hgetFinal⟩ := oracleGrowLoop (hperm := hperm) imms evm
       (oracleGrowLoopFrame imms current next current.toNat).locals next current.toNat
       (next.toNat - current.toNat) hnext (by omega)
       (by simp [oracleGrowLoopFrame, oracleGrowLocals, Std.HashMap.getElem_insert])

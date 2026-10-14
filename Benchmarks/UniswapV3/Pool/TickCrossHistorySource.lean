@@ -41,23 +41,25 @@ theorem evalTickCrossHistory (imms : Store) (evm : EVM.State) (a : TickCrossArgs
   simp only [evalExpr?, hg, ho, evalBinaryOp?, bind, EvalResult.bind]
 
 theorem tickCrossHistorySource (imms : Store) (evm : EVM.State) (a : TickCrossArgs)
-    (field : TickCrossField) :
+    (field : TickCrossField)
+    (hperm : evm.executionEnv.perm = true) :
     ExecStmt config (tickCrossAliasFrame imms a) evm
       (.assign .storage ⟨"info", [.field field.field.name]⟩ (tickCrossHistoryExpr field))
       (.ok (tickCrossAliasFrame imms a) (tickCrossHistoryState evm a field)) := by
-  refine ExecStmt.assign (evalTickCrossHistory imms evm a field) ?_
+  refine ExecStmt.assign (hperm := Or.inr hperm) (evalTickCrossHistory imms evm a field) ?_
   have h := assignTickHistory (tickCrossAliasFrame imms a).locals imms evm "info" a.tick
     field.field (.int (tickCrossHistoryValue a field
       (solcSlotWordAt (tickFieldSlot a.tick 3) evm.accountMap evm.executionEnv))) _
     (by tick_cross_get) rfl
   convert h using 1
 
-theorem tickCrossStoresSource (imms : Store) (evm : EVM.State) (a : TickCrossArgs) :
+theorem tickCrossStoresSource (imms : Store) (evm : EVM.State) (a : TickCrossArgs)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config (tickCrossFrame imms a) evm (tickCrossFunction.body.take 7)
       (.ok (tickCrossAliasFrame imms a) (tickCrossState evm a)) := by
-  exact execBlock_append_ok (tickCrossFeesSource imms evm a)
-    (ExecBlock.consNormal (tickCrossHistorySource imms _ a .secondsPerLiquidity)
-      (ExecBlock.consNormal (tickCrossHistorySource imms _ a .cumulative)
-        (ExecBlock.consNormal (tickCrossHistorySource imms _ a .seconds) ExecBlock.nil)))
+  exact execBlock_append_ok (tickCrossFeesSource (hperm := by assumption) imms evm a)
+    (ExecBlock.consNormal (tickCrossHistorySource (hperm := by simpa only [tickCrossHistoryState, modifyStorageWord, tickCrossFeeState, tickFeeOutsideState_executionEnv, storageStore_executionEnv] using hperm) imms _ a .secondsPerLiquidity)
+      (ExecBlock.consNormal (tickCrossHistorySource (hperm := by simpa only [tickCrossHistoryState, modifyStorageWord, tickCrossFeeState, tickFeeOutsideState_executionEnv, storageStore_executionEnv] using hperm) imms _ a .cumulative)
+        (ExecBlock.consNormal (tickCrossHistorySource (hperm := by simpa only [tickCrossHistoryState, modifyStorageWord, tickCrossFeeState, tickFeeOutsideState_executionEnv, storageStore_executionEnv] using hperm) imms _ a .seconds) ExecBlock.nil)))
 
 end Benchmarks.UniswapV3.Pool

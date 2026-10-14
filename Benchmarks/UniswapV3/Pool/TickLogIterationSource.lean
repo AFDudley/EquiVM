@@ -54,14 +54,14 @@ theorem tickLogIterationHeadSource {frame : Frame} {evm : EVM.State}
     exact Std.HashMap.getElem?_insert_self
   refine ⟨f3, ?_, ?_, ?_, ?_, ?_⟩
   · refine ExecBlock.consNormal (stele' := f1) (evm' := evm)
-      (ExecStmt.assign (value := .int (Int.ofNat (tickLogScaled r).toNat)) ?_
+      (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (value := .int (Int.ofNat (tickLogScaled r).toNat)) ?_
         (assignLocalVarBase_frame hr)) ?_
     · have he := evalExpr_var_get (cfg := config) (evm := evm) hr
       exact evalExpr_word_shr 127 (by decide) (evalExpr_word_mul he he)
     refine ExecBlock.consNormal (stele' := f2) (evm' := evm) (ExecStmt.letDecl ?_) ?_
     · exact evalExpr_word_shr 128 (by decide) (evalExpr_var_get hr1)
     refine ExecBlock.consNormal (stele' := f3) (evm' := evm)
-      (ExecStmt.assign (value := .int (signedWordInt (tickLogAccumulate log r bits))) ?_
+      (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (value := .int (signedWordInt (tickLogAccumulate log r bits))) ?_
         (assignLocalVarBase_frame hl2)) ExecBlock.nil
     have hs := evalExpr_sint_shl bits hbits (evalExpr_var_get (cfg := config) (evm := evm) hn2)
     have ho := evalExpr_sint_lor (evalExpr_var_get (cfg := config) (evm := evm) hl2) hs
@@ -90,7 +90,7 @@ theorem tickLogIterationSource {frame : Frame} {evm : EVM.State}
   refine ⟨out, ?_, ?_, ?_, ?_⟩
   · apply execBlock_append_ok hs
     refine ExecBlock.consNormal
-      (ExecStmt.assign (value := .int (Int.ofNat (tickLogNext r).toNat)) ?_
+      (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (value := .int (Int.ofNat (tickLogNext r).toNat)) ?_
         (assignLocalVarBase_frame hr')) ExecBlock.nil
     exact evalExpr_word_shr_by (evalExpr_var_get hr') (evalExpr_var_get hn')
       (lt_trans (tickLogDigit_lt r) (by decide))

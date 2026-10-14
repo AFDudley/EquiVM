@@ -46,7 +46,7 @@ theorem swapCallbackReverts {frame : Frame} {evm evm' : EVM.State} {σ : Account
     (hcall : callViaEVM evm target 0 (swapCallbackCalldata (EVM.wordOfInt amount0) (EVM.wordOfInt
       amount1) data) (false, evm', out)) :
     ExecBlock config frame evm (swapCallbackStmts zeroForOne) .reverted := by
-  apply checkedExternalCallVarFailure (evm' := evm') (out := out) (flashCallbackGuardTrue ha ht hc)
+  apply checkedExternalCallVarFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evm' := evm') (out := out) (flashCallbackGuardTrue ha ht hc)
     ht
     (evalSwapCallbackArgs hf0 hf1 hd)
   refine ⟨swapCallbackCalldata (EVM.wordOfInt amount0) (EVM.wordOfInt amount1) data,
@@ -70,7 +70,7 @@ theorem swapCallbackReturns {frame : Frame} {evm evm' : EVM.State} {σ : Account
     ExecBlock config frame evm (swapCallbackStmts zeroForOne)
       (.ok {frame with locals := frame.locals.insert (swapCallbackName zeroForOne) .unit} evm') :=
         by
-  apply checkedExternalCallVarSuccess (out := out) (flashCallbackGuardTrue ha ht hc) ht
+  apply checkedExternalCallVarSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (out := out) (flashCallbackGuardTrue ha ht hc) ht
     (evalSwapCallbackArgs hf0 hf1 hd) (value := [])
   · refine ⟨swapCallbackCalldata (EVM.wordOfInt amount0) (EVM.wordOfInt amount1) data,
     swapCallbackEncode amount0 amount1 data h0 h1, ?_⟩

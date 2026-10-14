@@ -59,7 +59,8 @@ theorem swapWriteStoresSource {frame : Frame} {evm : EVM.State}
     (s : SwapStateData) (index cardinality : UInt256) (hf : frame.contract = contract)
     (hs : frame.locals.get? "state" = some s.value) (hbase : frame.locals.get? "slot0" = none)
     (hr : frame.locals.get? "__c16" = some (.tuple
-      [.int (Int.ofNat index.toNat), .int (Int.ofNat cardinality.toNat)])) :
+      [.int (Int.ofNat index.toNat), .int (Int.ofNat cardinality.toNat)]))
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config frame evm (swapWriteBody.drop 1)
       (.ok (swapWriteStoreFrame frame s index cardinality)
         (swapSlotFieldsState evm s.price (EVM.wordOfInt s.tick) index cardinality)) := by
@@ -109,16 +110,16 @@ theorem swapWriteStoresSource {frame : Frame} {evm : EVM.State}
       swapWriteBody[7]!
       (.ok (swapWriteStoreFrame frame s index cardinality) (swapSlotFieldState evm false s.price))
         :=
-    ExecStmt.assign (evalExpr_var_get hprice) (by
+    ExecStmt.assign (hperm := Or.inr hperm) (evalExpr_var_get hprice) (by
       simpa only [wordOfInt_ofNat_toNat] using
         assignSwapSlotField_frame evm false (Int.ofNat s.price.toNat) hframe hb)
-  have h8 := ExecStmt.assign (evalExpr_var_get (cfg := config)
+  have h8 := ExecStmt.assign (hperm := Or.inr (by simpa only [swapSlotFieldState, storeSlot0ObservationField, modifyStorageWord, storageStore_executionEnv] using hperm)) (evalExpr_var_get (cfg := config)
     (evm := swapSlotFieldState evm false s.price) htick)
     (assignSwapSlotField_frame _ true s.tick hframe hb)
-  have h9 := ExecStmt.assign (evalExpr_var_get (cfg := config)
+  have h9 := ExecStmt.assign (hperm := Or.inr (by simpa only [swapSlotFieldState, storeSlot0ObservationField, modifyStorageWord, storageStore_executionEnv] using hperm)) (evalExpr_var_get (cfg := config)
     (evm := swapSlotFieldState (swapSlotFieldState evm false s.price) true (EVM.wordOfInt s.tick))
     hindex) (assignSlot0ObservationField_frame _ false index hframe hb)
-  have h10 := ExecStmt.assign (evalExpr_var_get (cfg := config)
+  have h10 := ExecStmt.assign (hperm := Or.inr (by simpa only [swapSlotFieldState, storeSlot0ObservationField, modifyStorageWord, storageStore_executionEnv] using hperm)) (evalExpr_var_get (cfg := config)
     (evm := storeSlot0ObservationField
       (swapSlotFieldState (swapSlotFieldState evm false s.price) true (EVM.wordOfInt s.tick))
       false index) hcard) (assignSlot0ObservationField_frame _ true cardinality hframe hb)

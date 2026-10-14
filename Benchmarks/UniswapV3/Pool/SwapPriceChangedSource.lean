@@ -63,7 +63,7 @@ theorem swapPriceTickAssignValueSource {frame : Frame} {evm : EVM.State}
     (hr : frame.locals.get? "__c15" = some (.int tick)) :
     ExecStmt config frame evm swapPriceChangedBody[1]!
       (.ok (swapStateFrame frame {s with tick := tick}) evm) :=
-  ExecStmt.assign (evalExpr_var_get hr) (assignLocalField_frame hs rfl rfl)
+  ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalExpr_var_get hr) (assignLocalField_frame hs rfl rfl)
 
 theorem swapPriceTickAssignSource {frame : Frame} {evm : EVM.State} (s : SwapStateData)
     (hs : frame.locals.get? "state" = some s.value) :

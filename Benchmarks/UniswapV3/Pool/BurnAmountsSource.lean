@@ -96,14 +96,14 @@ theorem burnAmountsSource (v : UniswapV3PoolImmutables) (a : BurnArgs)
   have h0i : evalExpr? config (burnIntsFrame v a key a0 a1) evm (.var "amount0Int") =
       .ok (.int a0) := evalExpr_var_get (by burn_amounts_get)
   refine ExecBlock.consNormal (stele := burnIntsFrame v a key a0 a1)
-    (ExecStmt.assign (value := .int (Int.ofNat (burnAmount a0).toNat))
+    (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (value := .int (Int.ofNat (burnAmount a0).toNat))
     (by simp only [evalExpr?, h0i, castValue?, evalBinaryOp?, bind, EvalResult.bind,
           EvalResult.ofOption, pure, burnAmount_cast])
     (assignLocalVarBase_frame (old := .int 0) (by burn_amounts_get))) ?_
   have h1i : evalExpr? config (burnAmount0Frame v a key a0 a1) evm (.var "amount1Int") =
       .ok (.int a1) := evalExpr_var_get (by burn_amounts_get)
   exact ExecBlock.consNormal (stele := burnAmount0Frame v a key a0 a1)
-    (ExecStmt.assign (value := .int (Int.ofNat (burnAmount a1).toNat))
+    (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (value := .int (Int.ofNat (burnAmount a1).toNat))
     (by simp only [evalExpr?, h1i, castValue?, evalBinaryOp?, bind, EvalResult.bind,
           EvalResult.ofOption, pure, burnAmount_cast])
     (assignLocalVarBase_frame (old := .int 0) (by burn_amounts_get))) ExecBlock.nil

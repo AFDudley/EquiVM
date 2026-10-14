@@ -31,7 +31,7 @@ theorem nextSqrt1CallAssign (imms : Store) (evm : EVM.State) (a : NextSqrtArgs)
         nextSqrt1CondName, ha, Bool.false_eq_true, hsmall, ↓reduceIte,
         Std.HashMap.get?_eq_getElem?, Std.HashMap.getElem?_insert] <;> rfl
   simp only [nextSqrt1ChosenFrame, if_neg hn]
-  exact ExecStmt.assign (evalExpr_var_get Std.HashMap.getElem?_insert_self)
+  exact ExecStmt.assign (hperm := Or.inl rfl) (evalExpr_var_get Std.HashMap.getElem?_insert_self)
     (assignLocalVarBase_frame hc)
 
 theorem nextSqrt1DirectAssign (imms : Store) (evm : EVM.State) (a : NextSqrtArgs)
@@ -45,7 +45,7 @@ theorem nextSqrt1DirectAssign (imms : Store) (evm : EVM.State) (a : NextSqrtArgs
   have he := evalExpr_word_div (evalNextSqrt1Scaled imms evm a)
     (evalExpr_var_get (nextSqrt1ZeroGet imms a).2.1) hn
   simp only [nextSqrt1ChosenFrame, if_pos hd]
-  apply ExecStmt.assign _ (assignLocalVarBase_frame (nextSqrt1ZeroGet imms a).2.2.2.2)
+  apply ExecStmt.assign (hperm := Or.inl rfl) _ (assignLocalVarBase_frame (nextSqrt1ZeroGet imms a).2.2.2.2)
   simpa only [nextSqrt1Quotient, if_pos hd.1, hd.2, if_true] using he
 
 theorem nextSqrt1ChoiceSource (imms : Store) (evm : EVM.State) (a : NextSqrtArgs)

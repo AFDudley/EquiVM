@@ -41,7 +41,7 @@ theorem bitLsbStepSource {frame : Frame} {evm : EVM.State}
   · let out : Frame := {frame with
       locals := frame.locals.insert "r" (.int (Int.ofNat (state.1 - bits)))}
     refine ⟨out, ExecStmt.iteTrue (by simpa only [h, decide_true] using hg) ?_, ?_, ?_⟩
-    · refine ExecBlock.consNormal (ExecStmt.assign
+    · refine ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
         (value := .int (Int.ofNat (state.1 - bits))) ?_ (assignLocalVarBase_frame hr)) ExecBlock.nil
       have er := evalExpr_var_get (cfg := config) (evm := evm) hr
       simp only [evalExpr?, er, evalBinaryOp?, castValue?, bind, EvalResult.bind, pure]
@@ -63,7 +63,7 @@ theorem bitLsbStepSource {frame : Frame} {evm : EVM.State}
         locals := frame.locals.insert "x"
           (.int (Int.ofNat (UInt256.shiftRight state.2 (UInt256.ofNat bits)).toNat))}
       refine ⟨out, ExecStmt.iteFalse (by simpa only [h, decide_false] using hg) ?_, ?_, ?_⟩
-      · exact ExecBlock.consNormal (ExecStmt.assign
+      · exact ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
           (evalExpr_word_shr bits (by omega) (evalExpr_var_get hx))
           (assignLocalVarBase_frame hx)) ExecBlock.nil
       · simpa only [out, bitLsbStep, if_neg h, Std.HashMap.get?_eq_getElem?,

@@ -28,8 +28,9 @@ theorem tickCrossFeeSource (imms : Store) (evm : EVM.State) (a : TickCrossArgs)
     (second : Bool) :
     ExecStmt config (tickCrossAliasFrame imms a) evm
       (.assign .storage ⟨"info", [.field (tickFeeOutsideName second)]⟩ (tickCrossFeeExpr second))
-      (.ok (tickCrossAliasFrame imms a) (tickCrossFeeState evm a second)) := by
-  apply ExecStmt.assign (value := .int
+      (if evm.executionEnv.perm then .ok (tickCrossAliasFrame imms a)
+        (tickCrossFeeState evm a second) else .staticViolation) := by
+  apply execStmt_assign_storage (value := .int
     (Int.ofNat (tickCrossFeeWord a second evm.accountMap evm.executionEnv).toNat))
   · apply evalExpr_word_sub
     · apply evalExpr_var_get
@@ -39,13 +40,14 @@ theorem tickCrossFeeSource (imms : Store) (evm : EVM.State) (a : TickCrossArgs)
   · exact assignTickFeeOutside (tickCrossAliasFrame imms a).locals imms evm "info" a.tick
       second _ (by tick_cross_get)
 
-theorem tickCrossFeesSource (imms : Store) (evm : EVM.State) (a : TickCrossArgs) :
+theorem tickCrossFeesSource (imms : Store) (evm : EVM.State) (a : TickCrossArgs)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config (tickCrossFrame imms a) evm (tickCrossFunction.body.take 4)
       (.ok (tickCrossAliasFrame imms a)
         (tickCrossFeeState (tickCrossFeeState evm a false) a true)) :=
   execBlock_append_ok (tickCrossPrefix imms evm a)
-    (ExecBlock.consNormal (tickCrossFeeSource imms evm a false)
-      (ExecBlock.consNormal (tickCrossFeeSource imms _ a true) ExecBlock.nil))
+    (ExecBlock.consNormal (by simpa only [hperm, if_true] using tickCrossFeeSource imms evm a false)
+      (ExecBlock.consNormal (by simpa only [tickCrossFeeState, tickFeeOutsideState_executionEnv, hperm, if_true] using (tickCrossFeeSource imms (tickCrossFeeState evm a false) a true)) ExecBlock.nil))
 
 theorem tickCrossStatic (imms : Store) (evm : EVM.State) (a : TickCrossArgs)
     (hp : evm.executionEnv.perm = false) :

@@ -80,7 +80,7 @@ theorem bitmapPositionReturns (imms : Store) (evm : EVM.State) (tick : Int) :
   refine ExecBlock.consNormal (stele' := bitmapPositionZeroFrame imms tick)
     (ExecStmt.letDecl (by simp only [evalExpr?, pure])) ?_
   refine ExecBlock.consNormal (stele' := bitmapPositionWordFrame imms tick) (evm' := evm)
-    (ExecStmt.assign (value := .int (bitmapWordPos tick)) ?_ ?_) ?_
+    (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (value := .int (bitmapWordPos tick)) ?_ ?_) ?_
   · have he := evalExpr_var_get (cfg := config) (evm := evm)
       (bitmapPositionGetTick imms tick).1
     change evalExpr? config (bitmapPositionZeroFrame imms tick) evm
@@ -97,7 +97,7 @@ theorem bitmapPositionReturns (imms : Store) (evm : EVM.State) (tick : Int) :
       Std.HashMap.getElem?_insert]
     exact Std.HashMap.getElem?_insert_self
   · refine ExecBlock.consNormal (stele' := bitmapPositionReadyFrame imms tick) (evm' := evm)
-      (ExecStmt.assign (value := .int (bitmapBitPos tick)) ?_ ?_) ?_
+      (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (value := .int (bitmapBitPos tick)) ?_ ?_) ?_
     · have he := evalExpr_var_get (cfg := config) (evm := evm)
         (bitmapPositionGetTick imms tick).2
       change evalExpr? config (bitmapPositionWordFrame imms tick) evm

@@ -64,9 +64,9 @@ theorem amountDeltaSwapSource (imms : Store) (evm : EVM.State) (second : Bool) (
     refine ExecBlock.consNormal (stele' := amountDeltaSwapAFrame imms second a) (evm' := evm)
       (ExecStmt.letDecl (evalExpr_var_get (by amount_delta_prefix_get))) ?_
     refine ExecBlock.consNormal (stele' := amountDeltaSwapLowerFrame imms second a) (evm' := evm)
-      (ExecStmt.assign (evalExpr_var_get (by amount_delta_prefix_get))
+      (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalExpr_var_get (by amount_delta_prefix_get))
         (assignLocalVarBase_frame (by amount_delta_prefix_get))) ?_
-    exact ExecBlock.consNormal (ExecStmt.assign (evalExpr_var_get (by amount_delta_prefix_get))
+    exact ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalExpr_var_get (by amount_delta_prefix_get))
       (assignLocalVarBase_frame (by amount_delta_prefix_get))) ExecBlock.nil
   · simp only [amountDeltaSortedFrame, if_neg hs]
     exact ExecStmt.iteFalse (by simpa only [decide_eq_false hs] using hg) ExecBlock.nil

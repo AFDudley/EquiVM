@@ -42,14 +42,14 @@ theorem bitMsbStepSource {frame : Frame} {evm : EVM.State}
       cases shift
       · exact ExecBlock.nil
       · exact ExecBlock.consNormal
-          (ExecStmt.assign (evalExpr_word_shr bits (by omega) he)
+          (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalExpr_word_shr bits (by omega) he)
             (assignLocalVarBase_frame hx)) ExecBlock.nil
     have hr' : mid.locals.get? "r" = some (.int (Int.ofNat state.1)) := by
       cases shift <;> simpa [mid, Std.HashMap.getElem?_insert] using hr
     let out : Frame := {mid with locals := mid.locals.insert "r" (.int (Int.ofNat (state.1 + bits)))}
     refine ⟨out, ExecStmt.iteTrue (by simpa only [h, decide_true] using hg) ?_, ?_, ?_⟩
     · apply execBlock_append_ok hm
-      refine ExecBlock.consNormal (ExecStmt.assign (value := .int (Int.ofNat (state.1 + bits)))
+      refine ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (value := .int (Int.ofNat (state.1 + bits)))
         ?_ (assignLocalVarBase_frame hr')) ExecBlock.nil
       have er := evalExpr_var_get (cfg := config) (evm := evm) hr'
       simp only [evalExpr?, er, evalBinaryOp?, castValue?, bind, EvalResult.bind, pure]

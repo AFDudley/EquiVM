@@ -54,7 +54,7 @@ theorem swapFeeGrowthAssignValueSource {frame : Frame} {evm : EVM.State}
     (hr : frame.locals.get? "__c11" = some (.int (Int.ofNat amount.toNat))) :
     ExecStmt config frame evm swapFeeGrowthBody[1]!
       (.ok (swapStateFrame frame {s with feeGrowth := s.feeGrowth + amount}) evm) :=
-  ExecStmt.assign (evalExpr_word_add
+  ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalExpr_word_add
     (evalExpr_structField (name := "feeGrowthGlobalX128") (evalExpr_var_get hs) rfl)
     (evalExpr_var_get hr)) (assignLocalField_frame hs rfl rfl)
 

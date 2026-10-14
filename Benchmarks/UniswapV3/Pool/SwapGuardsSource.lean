@@ -78,19 +78,20 @@ theorem swapGuardsSource (v : UniswapV3PoolImmutables) (a : SwapArgs) (evm : EVM
 theorem swapAssignLock (v : UniswapV3PoolImmutables) (a : SwapArgs) (evm : EVM.State) :
     ExecStmt config (swapSlot0Frame v a evm) evm
       (.assign .storage ⟨"slot0", [.field "unlocked"]⟩ (.boolLit false))
-      (.ok (swapSlot0Frame v a evm) (storeSlot0Unlocked evm false)) :=
-  ExecStmt.assign (by simp only [evalExpr?, pure])
+      (if evm.executionEnv.perm then .ok (swapSlot0Frame v a evm) (storeSlot0Unlocked evm false) else .staticViolation) :=
+  execStmt_assign_storage (by simp only [evalExpr?, pure])
     (assignSlot0Unlocked evm _ (immStore v) false (by swap_slot_get))
 
 theorem swapLockSource (v : UniswapV3PoolImmutables) (a : SwapArgs) (evm : EVM.State)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩) (hself : evm.executionEnv.codeOwner = v.original)
     (hn : a.amountSpecified ≠ 0)
     (hu : slot0FieldWord 30 1 evm.accountMap evm.executionEnv ≠ ⟨0⟩)
-    (hl : swapLimitValid a evm) :
+    (hl : swapLimitValid a evm)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config (swapFrame v a) evm (swapTransition.body.take 9)
       (.ok (swapSlot0Frame v a evm) (storeSlot0Unlocked evm false)) := by
   change ExecBlock config _ _ (swapTransition.body.take 8 ++ [swapTransition.body[8]!]) _
   exact execBlock_append_ok (swapGuardsSource v a evm hwv hself hn hu hl)
-    (ExecBlock.consNormal (swapAssignLock v a evm) ExecBlock.nil)
+    (ExecBlock.consNormal (by simpa only [hperm, if_true] using swapAssignLock v a evm) ExecBlock.nil)
 
 end Benchmarks.UniswapV3.Pool

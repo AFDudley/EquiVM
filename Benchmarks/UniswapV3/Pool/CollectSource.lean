@@ -47,13 +47,14 @@ theorem collectAssignLock (v : UniswapV3PoolImmutables) (evm : EVM.State)
     (recipient : AccountAddress) (lower upper req0 req1 : UInt256) :
     ExecStmt config (collectInitFrame v recipient lower upper req0 req1) evm
       (.assign .storage ⟨"slot0", [.field "unlocked"]⟩ (.boolLit false))
-      (.ok (collectInitFrame v recipient lower upper req0 req1) (storeSlot0Unlocked evm false)) := by
-  exact ExecStmt.assign (by simp only [evalExpr?, pure])
+      (if evm.executionEnv.perm then .ok (collectInitFrame v recipient lower upper req0 req1) (storeSlot0Unlocked evm false) else .staticViolation) := by
+  exact execStmt_assign_storage (by simp only [evalExpr?, pure])
     (assignSlot0Unlocked evm _ _ false (by simp [collectLocals]))
 
 theorem collectLockPrefix (v : UniswapV3PoolImmutables) (evm : EVM.State)
     (recipient : AccountAddress) (lower upper req0 req1 : UInt256) (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : slot0FieldWord 30 1 evm.accountMap evm.executionEnv ≠ ⟨0⟩) :
+    (hunlocked : slot0FieldWord 30 1 evm.accountMap evm.executionEnv ≠ ⟨0⟩)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config (collectFrame v recipient lower upper req0 req1) evm
       (collectTransition.body.take 5)
       (.ok (collectInitFrame v recipient lower upper req0 req1) (storeSlot0Unlocked evm false)) := by
@@ -64,7 +65,7 @@ theorem collectLockPrefix (v : UniswapV3PoolImmutables) (evm : EVM.State)
   refine ExecBlock.consNormal (ExecStmt.requireTrue ?_) ?_
   · simpa only [hunlocked, decide_false, Bool.not_false] using
       evalCollectUnlocked v evm recipient lower upper req0 req1
-  · exact ExecBlock.consNormal (collectAssignLock v evm recipient lower upper req0 req1) ExecBlock.nil
+  · exact ExecBlock.consNormal (by simpa only [hperm, if_true] using collectAssignLock v evm recipient lower upper req0 req1) ExecBlock.nil
 
 theorem collectRevertsLocked (v : UniswapV3PoolImmutables) (evm : EVM.State)
     (recipient : AccountAddress) (lower upper req0 req1 : UInt256) (hwv : evm.executionEnv.weiValue = ⟨0⟩)
@@ -141,14 +142,15 @@ theorem collectLetPosition (v : UniswapV3PoolImmutables) (evm : EVM.State)
 theorem collectPositionPrefix (v : UniswapV3PoolImmutables) (evm : EVM.State)
     (recipient : AccountAddress) (lower upper req0 req1 : UInt256)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : slot0FieldWord 30 1 evm.accountMap evm.executionEnv ≠ ⟨0⟩) :
+    (hunlocked : slot0FieldWord 30 1 evm.accountMap evm.executionEnv ≠ ⟨0⟩)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config (collectFrame v recipient lower upper req0 req1) evm (collectTransition.body.take 7)
       (.ok (collectPositionFrame v recipient lower upper req0 req1
         (positionKey evm.executionEnv.source lower upper)) (storeSlot0Unlocked evm false)) := by
   change ExecBlock _ _ _ (collectTransition.body.take 5 ++
     [.internalCall "Position_get" [.env .caller, .var "tickLower", .var "tickUpper"] "__c0",
      .letStorage "position" ⟨"positions", [.mindex (.var "__c0")]⟩]) _
-  apply execBlock_append_ok (collectLockPrefix v evm recipient lower upper req0 req1 hwv hunlocked)
+  apply execBlock_append_ok (collectLockPrefix (hperm := hperm) v evm recipient lower upper req0 req1 hwv hunlocked)
   have hc := collectCallPosition v (storeSlot0Unlocked evm false) recipient lower upper req0 req1
   rw [storeSlot0Unlocked_executionEnv] at hc
   exact ExecBlock.consNormal hc
@@ -178,7 +180,7 @@ theorem collectAssignMin (locals imms : Store) (evm : EVM.State)
              locals := locals.insert (poolAmountName second) (.int (Int.ofNat
                (minWord requested (positionOwedWord key second evm.accountMap evm.executionEnv)).toNat))
              immutables := imms } evm) :=
-  ExecStmt.assign (evalCollectMin locals imms evm key second requested hget hposition)
+  ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalCollectMin locals imms evm key second requested hget hposition)
     (assignLocalVarBase_frame hold)
 
 def collectAmountsFrame (v : UniswapV3PoolImmutables) (recipient : AccountAddress)

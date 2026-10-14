@@ -75,7 +75,7 @@ theorem mintBeforeBalanceReturns (v : UniswapV3PoolImmutables) (locals : Store)
   refine ExecStmt.iteTrue ?_ (ExecBlock.consNormal
     (poolBalanceReturns v locals (mintBeforeBalanceTemp second) evm evm' second balance
       calleeFrame hcall) (ExecBlock.consNormal
-        (ExecStmt.assign (value := .int (Int.ofNat balance.toNat)) ?_ ?_) ExecBlock.nil))
+        (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (value := .int (Int.ofNat balance.toNat)) ?_ ?_) ExecBlock.nil))
   · simpa only [hp, decide_true] using evalFlashTransferGuard v locals evm second amount ha
   · exact evalExpr_var_get (by simp)
   · apply assignLocalVarBase_frame (old := .int 0)

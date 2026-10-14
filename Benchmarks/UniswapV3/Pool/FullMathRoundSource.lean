@@ -64,7 +64,7 @@ theorem fullMathRoundPrefix (imms : Store) (evm : EVM.State) (a b d : UInt256)
       (value := some [.int (Int.ofNat (fullMathResult a b d).toNat)])
       (evalFullMathRoundArgs imms evm a b d) fullMathLookup (fullMathBind a b d)
       (fullMathReturns imms evm a b d hv)
-  refine ExecBlock.consNormal (ExecStmt.assign (value := .int (Int.ofNat (fullMathResult a b d).toNat))
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (value := .int (Int.ofNat (fullMathResult a b d).toNat))
     ?_ ?_) ExecBlock.nil
   · exact evalExpr_var_get (by simp [fullMathRoundCallFrame])
   · exact assignLocalVarBase_frame (old := .int 0) (by
@@ -93,7 +93,7 @@ theorem fullMathRoundIncrement (imms : Store) (evm : EVM.State) (a b d : UInt256
       (.assign .localVar ⟨"result", []⟩
         (.cast (.binary .add (.var "result") (.intLit 1)) (.elem (.int (.uint ⟨256, by decide⟩)))))
       (.ok (fullMathRoundIncrementFrame imms a b d) evm) := by
-  apply ExecStmt.assign (value := .int (Int.ofNat (fullMathResult a b d + ⟨1⟩).toNat))
+  apply ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (value := .int (Int.ofNat (fullMathResult a b d + ⟨1⟩).toNat))
   · exact evalExpr_word_add (a := fullMathResult a b d) (b := ⟨1⟩)
       (frame := fullMathRoundResultFrame imms a b d (fullMathResult a b d)) (evm := evm)
       (evalExpr_var_get (by simp [fullMathRoundResultFrame]))

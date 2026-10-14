@@ -83,7 +83,7 @@ theorem bitmapNextPrefixSource (imms : Store) (evm : EVM.State) (tick spacing : 
   · rw [bitmapNextPrefixFrame, if_pos h]
     refine ExecBlock.consNormal (ExecStmt.iteTrue
       (by simpa only [h, decide_true] using hg) ?_) ExecBlock.nil
-    refine ExecBlock.consNormal (ExecStmt.assign (value := .int (bitmapNextCompressed tick spacing))
+    refine ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (value := .int (bitmapNextCompressed tick spacing))
       ?_ (assignLocalVarBase_frame Std.HashMap.getElem?_insert_self)) ExecBlock.nil
     have ec : evalExpr? config (bitmapNextDivFrame imms tick spacing lte) evm (.var "compressed") =
         .ok (.int (tick.tdiv spacing)) := evalExpr_var_get Std.HashMap.getElem?_insert_self

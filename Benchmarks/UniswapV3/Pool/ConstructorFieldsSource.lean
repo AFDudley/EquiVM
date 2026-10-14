@@ -48,7 +48,7 @@ theorem constructorSpacingSource (original : AccountAddress) (evm : EVM.State) (
     simp only [constructorFieldsFrame, constructorDecodedFrame, constructorCallFrame,
       constructorReadyFrame, Std.HashMap.get?_eq_getElem?, Std.HashMap.getElem?_insert]
     rfl
-  refine ExecBlock.consNormal (ExecStmt.assign
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
     (evalConstructorParameter _ original evm out 4 _ rfl) (assignLocalVarBase_frame hget)) ?_
   refine ExecBlock.consNormal (ExecStmt.setImmutable (value := .int (constructorUnsignedSpacing out))
     (ty := .int (.uint ⟨256, by decide⟩)) ?_ rfl ?_) ExecBlock.nil

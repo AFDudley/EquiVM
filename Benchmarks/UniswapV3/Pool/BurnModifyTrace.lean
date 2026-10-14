@@ -32,7 +32,7 @@ theorem burnModifyX {σ : AccountMap} {ee : ExecutionEnv} {g : Sat256}
           ⟨0⟩ :: ⟨0⟩ :: ⟨0⟩ :: ⟨0⟩ :: ⟨0⟩ :: a.amount ::
           EVM.wordOfInt a.upper :: EVM.wordOfInt a.lower :: R)
         mem' aw' rdata σ' k' C' ∧ HeapMemory mem' aw' free ∧ free.toNat ≤ p.toNat + 1338) := by
-  have hlock := burnLockPrefix v a evm hwv hunlocked
+  have hlock := burnLockPrefix (hperm := (congrArg ExecutionEnv.perm hs.env).trans hperm) v a evm hwv hunlocked
   rcases burnModifyEntryX (v := v) a evm hs rd ha hm (by omega) hperm (by omega) with
     ⟨hc, rr⟩ | ⟨hc, σ1, aw1, k1, C1, hs1, r1, hm1, hparams⟩
   · refine Or.inl ⟨?_, Or.inl rr⟩

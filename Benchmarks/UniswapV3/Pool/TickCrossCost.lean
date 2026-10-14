@@ -52,7 +52,7 @@ theorem tickCrossInternalMonoX {σ : AccountMap} {ee : ExecutionEnv} {g : Sat256
   · exact internalCallFunctionReturn (callee := tickCrossFunction)
       (calleeStele := tickCrossResultFrame (immStore v) a evm)
       (value := some [.int (tickCrossResult evm a)]) he hl (tickCrossBind a)
-      (by rw [hc]; exact tickCrossReturns (immStore v) evm a)
+      (by rw [hc]; exact tickCrossReturns (hperm := by simpa only [hs.env] using hp) (immStore v) evm a)
   · simpa only [tickUpdateMemoryWords_eq hm.active, ← hv] using rr
 
 end Benchmarks.UniswapV3.Pool

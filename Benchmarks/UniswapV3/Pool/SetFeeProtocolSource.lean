@@ -38,20 +38,21 @@ theorem setFeeProtocolAssignLock (v : UniswapV3PoolImmutables) (evm : EVM.State)
     (fp0 fp1 : UInt256) :
     ExecStmt config (setFeeProtocolFrame v fp0 fp1) evm
       (.assign .storage ⟨"slot0", [.field "unlocked"]⟩ (.boolLit false))
-      (.ok (setFeeProtocolFrame v fp0 fp1) (storeSlot0Unlocked evm false)) := by
-  exact ExecStmt.assign (by simp only [evalExpr?, pure])
+      (if evm.executionEnv.perm then .ok (setFeeProtocolFrame v fp0 fp1) (storeSlot0Unlocked evm false) else .staticViolation) := by
+  exact execStmt_assign_storage (by simp only [evalExpr?, pure])
     (assignSlot0Unlocked evm _ _ false (by simp [setFeeProtocolLocals]))
 
 theorem setFeeProtocolLockPrefix (v : UniswapV3PoolImmutables) (evm : EVM.State)
     (fp0 fp1 : UInt256) (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : slot0FieldWord 30 1 evm.accountMap evm.executionEnv ≠ ⟨0⟩) :
+    (hunlocked : slot0FieldWord 30 1 evm.accountMap evm.executionEnv ≠ ⟨0⟩)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config (setFeeProtocolFrame v fp0 fp1) evm (setFeeProtocolTransition.body.take 3)
       (.ok (setFeeProtocolFrame v fp0 fp1) (storeSlot0Unlocked evm false)) := by
   apply (ABlock.start.requireStep (evalCallvalueEq_true hwv)).run
   refine ExecBlock.consNormal (ExecStmt.requireTrue ?_) ?_
   · simpa only [hunlocked, decide_false, Bool.not_false] using
       evalSetFeeProtocolUnlocked v evm fp0 fp1
-  · exact ExecBlock.consNormal (setFeeProtocolAssignLock v evm fp0 fp1) ExecBlock.nil
+  · exact ExecBlock.consNormal (by simpa only [hperm, if_true] using setFeeProtocolAssignLock v evm fp0 fp1) ExecBlock.nil
 
 theorem setFeeProtocolStatic (v : UniswapV3PoolImmutables) (evm : EVM.State)
     (fp0 fp1 : UInt256) (hwv : evm.executionEnv.weiValue = ⟨0⟩)
@@ -72,12 +73,13 @@ theorem setFeeProtocolFactoryReverts (v : UniswapV3PoolImmutables) (evm : EVM.St
     (hunlocked : slot0FieldWord 30 1 evm.accountMap evm.executionEnv ≠ ⟨0⟩)
     (hfactory : ExecFuncBody config
       { contract := contract, locals := ∅, immutables := immStore v }
-      (storeSlot0Unlocked evm false) factoryOwnerFunction.body .reverted) :
+      (storeSlot0Unlocked evm false) factoryOwnerFunction.body .reverted)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (setFeeProtocolLocals fp0 fp1)
       setFeeProtocolTransition.body .reverted (immStore v) := by
   apply ExecFuncBody.execBlockRevert
   rw [← List.take_append_drop 3 setFeeProtocolTransition.body]
-  apply execBlock_append_ok (setFeeProtocolLockPrefix v evm fp0 fp1 hwv hunlocked)
+  apply execBlock_append_ok (setFeeProtocolLockPrefix (hperm := hperm) v evm fp0 fp1 hwv hunlocked)
   apply ExecBlock.consRevert
   exact internalCallFunctionRevert (argVals := []) (locals := ∅)
     (by simp only [evalExprs?, pure]) factoryOwnerLookup rfl hfactory
@@ -143,12 +145,13 @@ theorem setFeeProtocolRevertsOwner (v : UniswapV3PoolImmutables) (evm evm' : EVM
       { contract := contract, locals := ∅, immutables := immStore v }
       (storeSlot0Unlocked evm false) factoryOwnerFunction.body
       (.returned calleeFrame evm' (some [.address owner])))
-    (howner : evm'.executionEnv.source ≠ owner) :
+    (howner : evm'.executionEnv.source ≠ owner)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (setFeeProtocolLocals fp0 fp1)
       setFeeProtocolTransition.body .reverted (immStore v) := by
   apply ExecFuncBody.execBlockRevert
   rw [← List.take_append_drop 3 setFeeProtocolTransition.body]
-  apply execBlock_append_ok (setFeeProtocolLockPrefix v evm fp0 fp1 hwv hunlocked)
+  apply execBlock_append_ok (setFeeProtocolLockPrefix (hperm := hperm) v evm fp0 fp1 hwv hunlocked)
   apply ExecBlock.consNormal (setFeeProtocolCallOwner v evm evm' fp0 fp1 owner calleeFrame hfactory)
   apply ExecBlock.consRevert
   apply ExecStmt.requireFalse
@@ -162,13 +165,14 @@ theorem setFeeProtocolOwnerPrefix (v : UniswapV3PoolImmutables) (evm evm' : EVM.
       { contract := contract, locals := ∅, immutables := immStore v }
       (storeSlot0Unlocked evm false) factoryOwnerFunction.body
       (.returned calleeFrame evm' (some [.address owner])))
-    (howner : evm'.executionEnv.source = owner) :
+    (howner : evm'.executionEnv.source = owner)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config (setFeeProtocolFrame v fp0 fp1) evm (setFeeProtocolTransition.body.take 5)
       (.ok (setFeeProtocolOwnerFrame v fp0 fp1 owner) evm') := by
   change ExecBlock _ _ _ (setFeeProtocolTransition.body.take 3 ++
     [.internalCall "factoryOwner" [] "__c0",
      .require (.binary .eq (.env .caller) (.var "__c0"))]) _
-  apply execBlock_append_ok (setFeeProtocolLockPrefix v evm fp0 fp1 hwv hunlocked)
+  apply execBlock_append_ok (setFeeProtocolLockPrefix (hperm := hperm) v evm fp0 fp1 hwv hunlocked)
   apply ExecBlock.consNormal (setFeeProtocolCallOwner v evm evm' fp0 fp1 owner calleeFrame hfactory)
   refine ExecBlock.consNormal (ExecStmt.requireTrue ?_) ExecBlock.nil
   simpa only [howner, decide_true] using evalSetFeeProtocolOwner v evm' fp0 fp1 owner
@@ -193,13 +197,14 @@ theorem setFeeProtocolRevertsInvalid (v : UniswapV3PoolImmutables) (evm evm' : E
       (storeSlot0Unlocked evm false) factoryOwnerFunction.body
       (.returned calleeFrame evm' (some [.address owner])))
     (howner : evm'.executionEnv.source = owner)
-    (hvalid : (feeProtocolValid fp0 && feeProtocolValid fp1) = false) :
+    (hvalid : (feeProtocolValid fp0 && feeProtocolValid fp1) = false)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (setFeeProtocolLocals fp0 fp1)
       setFeeProtocolTransition.body .reverted (immStore v) := by
   apply ExecFuncBody.execBlockRevert
   rw [← List.take_append_drop 5 setFeeProtocolTransition.body]
   apply execBlock_append_ok
-    (setFeeProtocolOwnerPrefix v evm evm' fp0 fp1 owner calleeFrame hwv hunlocked hfactory howner)
+    (setFeeProtocolOwnerPrefix (hperm := hperm) v evm evm' fp0 fp1 owner calleeFrame hwv hunlocked hfactory howner)
   apply ExecBlock.consRevert
   apply ExecStmt.requireFalse
   simpa only [hvalid] using evalSetFeeProtocolValid v evm' fp0 fp1 owner
@@ -290,7 +295,9 @@ theorem setFeeProtocolReturns (v : UniswapV3PoolImmutables) (evm evm' : EVM.Stat
       (storeSlot0Unlocked evm false) factoryOwnerFunction.body
       (.returned calleeFrame evm' (some [.address owner])))
     (howner : evm'.executionEnv.source = owner)
-    (hvalid : (feeProtocolValid fp0 && feeProtocolValid fp1) = true) :
+    (hvalid : (feeProtocolValid fp0 && feeProtocolValid fp1) = true)
+    (hperm : evm.executionEnv.perm = true)
+    (hperm' : evm'.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (setFeeProtocolLocals fp0 fp1)
       setFeeProtocolTransition.body
       (.returned (setFeeProtocolFinalFrame v fp0 fp1
@@ -303,7 +310,7 @@ theorem setFeeProtocolReturns (v : UniswapV3PoolImmutables) (evm evm' : EVM.Stat
   apply ExecFuncBody.execBlockOK
   rw [← List.take_append_drop 5 setFeeProtocolTransition.body]
   apply execBlock_append_ok
-    (setFeeProtocolOwnerPrefix v evm evm' fp0 fp1 owner calleeFrame hwv hunlocked hfactory howner)
+    (setFeeProtocolOwnerPrefix (hperm := hperm) v evm evm' fp0 fp1 owner calleeFrame hwv hunlocked hfactory howner)
   refine ExecBlock.consNormal (ExecStmt.requireTrue ?_) ?_
   · simpa only [hvalid] using evalSetFeeProtocolValid v evm' fp0 fp1 owner
   have hbase : (setFeeProtocolOwnerFrame v fp0 fp1 owner).locals.get? "slot0" = none := by
@@ -315,13 +322,13 @@ theorem setFeeProtocolReturns (v : UniswapV3PoolImmutables) (evm evm' : EVM.Stat
   have hbase' : (setFeeProtocolFinalFrame v fp0 fp1
       (slot0FieldWord 29 1 evm'.accountMap evm'.executionEnv) owner).locals.get? "slot0" = none := by
     simp [setFeeProtocolFinalFrame, setFeeProtocolOwnerFrame, setFeeProtocolLocals]
-  apply ExecBlock.consNormal (ExecStmt.assign (evalSetFeeProtocolValue v evm' fp0 fp1 _ owner h0 h1)
+  apply ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm') (evalSetFeeProtocolValue v evm' fp0 fp1 _ owner h0 h1)
     (assignSlot0FeeProtocol evm' _ _ (setFeeProtocolValue fp0 fp1) hbase'))
   obtain ⟨vals, hemit⟩ := evalSetFeeProtocolEvent v
     (storeSlot0FeeProtocol evm' (setFeeProtocolValue fp0 fp1)) fp0 fp1
     (slot0FieldWord 29 1 evm'.accountMap evm'.executionEnv) owner
-  apply ExecBlock.consNormal (ExecStmt.emit hemit)
-  refine ExecBlock.consNormal (ExecStmt.assign ?_ (assignSlot0Unlocked _ _ _ true hbase')) ExecBlock.nil
+  apply ExecBlock.consNormal (ExecStmt.emit (hperm := by simpa only [storeSlot0FeeProtocol_executionEnv] using hperm') hemit)
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [storeSlot0FeeProtocol_executionEnv] using hperm')) ?_ (assignSlot0Unlocked _ _ _ true hbase')) ExecBlock.nil
   simp only [evalExpr?, pure]
 
 end Benchmarks.UniswapV3.Pool

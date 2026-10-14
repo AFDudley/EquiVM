@@ -14,7 +14,8 @@ def burnFinalState (key : UInt256) (a0 a1 : Int) (evm : EVM.State) : EVM.State :
   if burnHasAmounts a0 a1 then burnOwedState key a0 a1 evm else evm
 
 theorem burnOwedChoiceSource (v : UniswapV3PoolImmutables) (a : BurnArgs)
-    (key : UInt256) (a0 a1 : Int) (evm : EVM.State) :
+    (key : UInt256) (a0 a1 : Int) (evm : EVM.State)
+    (hperm : evm.executionEnv.perm = true) :
     ExecStmt config (burnAmountsFrame v a key a0 a1) evm burnTransition.body[12]!
       (.ok (burnFinalFrame v a key a0 a1 evm) (burnFinalState key a0 a1 evm)) := by
   cases hh : burnHasAmounts a0 a1
@@ -23,7 +24,7 @@ theorem burnOwedChoiceSource (v : UniswapV3PoolImmutables) (a : BurnArgs)
       ExecBlock.nil
   · simp only [burnFinalFrame, burnFinalState, hh, if_true]
     exact ExecStmt.iteTrue (by simpa only [hh] using evalBurnHasAmounts v a key a0 a1 evm)
-      (burnOwedSource v a key a0 a1 evm)
+      (burnOwedSource (hperm := hperm) v a key a0 a1 evm)
 
 theorem burnFinalFrame_eq (v : UniswapV3PoolImmutables) (a : BurnArgs)
     (key : UInt256) (a0 a1 : Int) (evm : EVM.State) :
@@ -34,7 +35,8 @@ theorem burnFinalFrame_eq (v : UniswapV3PoolImmutables) (a : BurnArgs)
   all_goals rfl
 
 theorem burnFinishSource (v : UniswapV3PoolImmutables) (a : BurnArgs)
-    (key : UInt256) (a0 a1 : Int) (evm : EVM.State) :
+    (key : UInt256) (a0 a1 : Int) (evm : EVM.State)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config (burnFinalFrame v a key a0 a1 evm) (burnFinalState key a0 a1 evm)
       (burnTransition.body.drop 13)
       (.returned (burnFinalFrame v a key a0 a1 evm)
@@ -56,14 +58,18 @@ theorem burnFinishSource (v : UniswapV3PoolImmutables) (a : BurnArgs)
       some (.int (Int.ofNat (burnAmount a1).toNat)) := by rw [hget]; split <;> burn_owed_get
   have hs : (burnFinalFrame v a key a0 a1 evm).locals.get? "slot0" = none := by
     rw [hget]; split <;> burn_owed_get
+  have hpFinal : (burnFinalState key a0 a1 evm).executionEnv.perm = true := by
+    cases hh : burnHasAmounts a0 a1 <;>
+      simpa only [burnFinalState, hh, Bool.false_eq_true, if_false, if_true,
+        burnOwedState, storePositionOwed_executionEnv] using hperm
   rw [burnFinalFrame_eq]
-  refine ExecBlock.consNormal (ExecStmt.emit (vals :=
+  refine ExecBlock.consNormal (ExecStmt.emit (hperm := hpFinal) (vals :=
     [.address (burnFinalState key a0 a1 evm).executionEnv.source, .int a.lower, .int a.upper,
       .int (Int.ofNat a.amount.toNat), .int (Int.ofNat (burnAmount a0).toNat),
       .int (Int.ofNat (burnAmount a1).toNat)]) ?_) ?_
   · simp only [evalExprs?, evalExpr?, hl, hu, ha, h0, h1, EvalResult.ofOption,
       envValue, bind, EvalResult.bind, pure]
-  refine ExecBlock.consNormal (ExecStmt.assign (by simp only [evalExpr?, pure])
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hpFinal) (by simp only [evalExpr?, pure])
     (assignSlot0Unlocked _ _ _ true hs)) ?_
   apply ExecBlock.consReturn (ExecStmt.return ?_)
   simp only [evalExprs?, evalExpr?, h0, h1, EvalResult.ofOption, bind, EvalResult.bind, pure]

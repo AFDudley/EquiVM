@@ -40,7 +40,7 @@ theorem positionUpdateInternalX {σ : AccountMap} {ee : ExecutionEnv} {g : Sat25
     apply internalCallFunctionRevert he hl (positionUpdateBind a)
     rw [hc]
     exact positionUpdateLiquidityReverts (immStore v) evm a hv
-  · rcases hp with ⟨hr, hp⟩ | ⟨_, σ', k', C', aw', hs', r', hm'⟩
+  · rcases hp with ⟨hr, hp⟩ | ⟨hp, σ', k', C', aw', hs', r', hm'⟩
     · refine Or.inr (Or.inl ⟨?_, hr⟩)
       apply ExecStmt.internalCallStatic he hl (positionUpdateBind a)
       rw [hc]
@@ -48,6 +48,6 @@ theorem positionUpdateInternalX {σ : AccountMap} {ee : ExecutionEnv} {g : Sat25
     · refine Or.inr (Or.inr ⟨?_, σ', aw', k', C', hs', r', hm'⟩)
       exact internalCallFunctionReturn (callee := positionUpdateFunction)
         (calleeStele := positionUpdateReadyFrame (immStore v) a evm) (value := none)
-        he hl (positionUpdateBind a) (by rw [hc]; exact positionUpdateReturns (immStore v) evm a hv)
+        he hl (positionUpdateBind a) (by rw [hc]; exact positionUpdateReturns (hperm := (congrArg ExecutionEnv.perm hs.env).trans hp) (immStore v) evm a hv)
 
 end Benchmarks.UniswapV3.Pool

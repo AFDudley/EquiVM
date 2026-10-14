@@ -79,6 +79,6 @@ theorem mintBodyX {σ : AccountMap} {ee : ExecutionEnv} {g : Sat256}
       (mintTransition.body.drop 19).take 2) _
     exact execBlock_append_ok hpre19 hrepay
   rw [← List.take_append_drop 21 mintTransition.body]
-  exact execBlock_append_ok hpre21 (mintFinishSource v a locals3 a0 a1 evm3 hv3.core)
+  exact execBlock_append_ok hpre21 (mintFinishSource (hperm := (congrArg ExecutionEnv.perm hs3.env).trans hperm) v a locals3 a0 a1 evm3 hv3.core)
 
 end Benchmarks.UniswapV3.Pool

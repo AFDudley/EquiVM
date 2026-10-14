@@ -59,7 +59,7 @@ theorem signedAmountDeltaAssignSource (imms : Store) (evm : EVM.State) (second :
       (.ok (signedAmountDeltaReturnFrame imms second a) evm) := by
   have hc : (signedAmountDeltaCastFrame imms second a).locals.get? "__cond4" = some (.int 0) := by
     signed_amount_delta_get
-  apply ExecStmt.assign (value := .int (signedAmountDeltaResult second a)) ?_
+  apply ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (value := .int (signedAmountDeltaResult second a)) ?_
     (assignLocalVarBase_frame hc)
   have he : evalExpr? config (signedAmountDeltaCastFrame imms second a) evm
       (.var (signedAmountDeltaCastName a)) =

@@ -19,15 +19,16 @@ theorem evalPositionUpdateNonzero (imms : Store) (original current : EVM.State)
 theorem positionUpdateLiquidityStore (imms : Store) (evm : EVM.State) (a : PositionUpdateArgs) :
     ExecStmt config (positionUpdateReadyFrame imms a evm) evm
       (.assign .storage ⟨"self", [.field "liquidity"]⟩ (.var "liquidityNext"))
-      (.ok (positionUpdateReadyFrame imms a evm)
-        (positionLiquidityState evm a.key (EVM.wordOfInt (positionUpdateLiquidityNext a evm)))) := by
+      (if evm.executionEnv.perm then .ok (positionUpdateReadyFrame imms a evm)
+        (positionLiquidityState evm a.key (EVM.wordOfInt (positionUpdateLiquidityNext a evm))) else .staticViolation) := by
   rw [positionUpdateReadyFrame_eq imms a evm]
-  exact ExecStmt.assign (evalExpr_var_get (by position_update_ready_get))
+  exact execStmt_assign_storage (evalExpr_var_get (by position_update_ready_get))
     (assignPositionLiquidity _ imms evm "self" a.key (positionUpdateLiquidityNext a evm)
       (by position_update_ready_get))
 
 theorem positionUpdateLiquidityStoreChoice (imms : Store) (evm : EVM.State)
-    (a : PositionUpdateArgs) :
+    (a : PositionUpdateArgs)
+    (hperm : evm.executionEnv.perm = true) :
     ExecStmt config (positionUpdateReadyFrame imms a evm) evm (positionUpdateFunction.body[8]!)
       (.ok (positionUpdateReadyFrame imms a evm) (positionUpdateLiquidityState a evm)) := by
   have hc := evalPositionUpdateNonzero imms evm evm a
@@ -37,30 +38,32 @@ theorem positionUpdateLiquidityStoreChoice (imms : Store) (evm : EVM.State)
       ExecBlock.nil
   · simp only [positionUpdateLiquidityState, if_neg hz]
     exact ExecStmt.iteTrue (by simpa only [decide_eq_true hz] using hc)
-      (ExecBlock.consNormal (positionUpdateLiquidityStore imms evm a) ExecBlock.nil)
+      (ExecBlock.consNormal (by simpa only [hperm, if_true] using positionUpdateLiquidityStore imms evm a) ExecBlock.nil)
 
 theorem positionUpdateGrowthStore (imms : Store) (original current : EVM.State)
     (a : PositionUpdateArgs) (second : Bool) :
     ExecStmt config (positionUpdateReadyFrame imms a original) current
       (.assign .storage ⟨"self", [.field (positionLastField second)]⟩
         (.var (positionUpdateGrowthName second)))
-      (.ok (positionUpdateReadyFrame imms a original)
-        (positionLastState current a.key second (a.growth second))) := by
+      (if current.executionEnv.perm then .ok (positionUpdateReadyFrame imms a original)
+        (positionLastState current a.key second (a.growth second)) else .staticViolation) := by
   rw [positionUpdateReadyFrame_eq imms a original]
-  exact ExecStmt.assign (evalExpr_var_get (by cases second <;> position_update_ready_get))
+  exact execStmt_assign_storage (evalExpr_var_get (by cases second <;> position_update_ready_get))
     (assignPositionLast _ imms current "self" a.key second (a.growth second)
       (by position_update_ready_get))
 
 theorem positionUpdateStoresSource (imms : Store) (evm : EVM.State)
-    (a : PositionUpdateArgs) (hv : positionUpdateLiquidityValid a evm) :
+    (a : PositionUpdateArgs) (hv : positionUpdateLiquidityValid a evm)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config (positionUpdateFrame imms a) evm (positionUpdateFunction.body.take 11)
       (.ok (positionUpdateReadyFrame imms a evm) (positionUpdateGrowthState a evm)) := by
   change ExecBlock config (positionUpdateFrame imms a) evm
     (positionUpdateFunction.body.take 8 ++ (positionUpdateFunction.body.drop 8).take 3) _
   exact execBlock_append_ok (positionUpdateFeesSource imms evm a hv)
-    (ExecBlock.consNormal (positionUpdateLiquidityStoreChoice imms evm a)
-      (ExecBlock.consNormal (positionUpdateGrowthStore imms evm _ a false)
-        (ExecBlock.consNormal (positionUpdateGrowthStore imms evm _ a true) ExecBlock.nil)))
+    (ExecBlock.consNormal (positionUpdateLiquidityStoreChoice (hperm := by assumption) imms evm a)
+      (ExecBlock.consNormal (by simpa only [positionUpdateLiquidityState_executionEnv, hperm, if_true] using (positionUpdateGrowthStore imms evm (positionUpdateLiquidityState a evm) a false))
+        (ExecBlock.consNormal (by simpa only [positionLastState_executionEnv, positionUpdateLiquidityState_executionEnv, hperm, if_true] using (positionUpdateGrowthStore imms evm
+            (positionLastState (positionUpdateLiquidityState a evm) a.key false (a.growth false)) a true)) ExecBlock.nil)))
 
 theorem evalPositionUpdateFeesGuard (imms : Store) (original current : EVM.State)
     (a : PositionUpdateArgs) :
@@ -75,15 +78,17 @@ theorem evalPositionUpdateFeesGuard (imms : Store) (original current : EVM.State
       (evalExpr_var_get (by position_update_ready_get)) (by simp only [evalExpr?, pure]; rfl)
 
 theorem positionUpdateOwedStore (imms : Store) (original current : EVM.State)
-    (a : PositionUpdateArgs) (second : Bool) :
+    (a : PositionUpdateArgs) (second : Bool)
+    (hperm : current.executionEnv.perm = true) :
     ExecStmt config (positionUpdateReadyFrame imms a original) current (positionUpdateOwedStmt second)
       (.ok (positionUpdateReadyFrame imms a original)
         (positionUpdateOwedState a original current second)) := by
   rw [positionUpdateReadyFrame_eq imms a original]
-  exact positionUpdateOwedSource _ imms original current a second
+  exact positionUpdateOwedSource (hperm := by assumption) _ imms original current a second
     (by position_update_ready_get) (by cases second <;> position_update_ready_get)
 
-theorem positionUpdateOwedChoice (imms : Store) (evm : EVM.State) (a : PositionUpdateArgs) :
+theorem positionUpdateOwedChoice (imms : Store) (evm : EVM.State) (a : PositionUpdateArgs)
+    (hperm : evm.executionEnv.perm = true) :
     ExecStmt config (positionUpdateReadyFrame imms a evm) (positionUpdateGrowthState a evm)
       (positionUpdateFunction.body[11]!)
       (.ok (positionUpdateReadyFrame imms a evm) (positionUpdateFinalState a evm)) := by
@@ -93,7 +98,7 @@ theorem positionUpdateOwedChoice (imms : Store) (evm : EVM.State) (a : PositionU
     exact ExecStmt.iteFalse (by simpa only [hf] using hc) ExecBlock.nil
   · simp only [positionUpdateFinalState, hf, if_true]
     exact ExecStmt.iteTrue (by simpa only [hf] using hc)
-      (ExecBlock.consNormal (positionUpdateOwedStore imms evm _ a false)
-        (ExecBlock.consNormal (positionUpdateOwedStore imms evm _ a true) ExecBlock.nil))
+      (ExecBlock.consNormal (positionUpdateOwedStore (hperm := by simpa only [positionUpdateOwedState_executionEnv, positionUpdateGrowthState_executionEnv] using hperm) imms evm _ a false)
+        (ExecBlock.consNormal (positionUpdateOwedStore (hperm := by simpa only [positionUpdateOwedState_executionEnv, positionUpdateGrowthState_executionEnv] using hperm) imms evm _ a true) ExecBlock.nil))
 
 end Benchmarks.UniswapV3.Pool

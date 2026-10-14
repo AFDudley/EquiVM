@@ -50,15 +50,16 @@ def oracleWriteFinalState (a : OracleWriteArgs) (evm : EVM.State) : EVM.State :=
 theorem oracleWriteAssignSource (imms : Store) (evm : EVM.State) (a : OracleWriteArgs)
     (hn : (oracleWriteCardinality a).toNat ≠ 0) (hfit : a.Fits) :
     ExecStmt config (oracleWriteTransformedFrame imms a evm) evm (oracleWriteFunction.body[7]!)
-      (.ok (oracleWriteTransformedFrame imms a evm) (oracleWriteFinalState a evm)) :=
-  ExecStmt.assign (evalExpr_var_get (by oracle_write_get))
+      (if evm.executionEnv.perm then .ok (oracleWriteTransformedFrame imms a evm) (oracleWriteFinalState a evm) else .staticViolation) :=
+  execStmt_assign_storage (evalExpr_var_get (by oracle_write_get))
     (assignOracleObservation (oracleWriteTransformedFrame imms a evm).locals imms evm
       (.var "indexUpdated") (oracleWriteIndex a) (oracleWriteResultObservation a evm)
       (by oracle_write_get) (evalExpr_var_get (by oracle_write_get)) (oracleWriteIndex_lt a hfit hn))
 
 theorem oracleWriteReturns (imms : Store) (evm : EVM.State) (a : OracleWriteArgs)
     (hin : a.index.toNat < 65535) (hsame : oracleWriteSame a evm = false)
-    (hn : (oracleWriteCardinality a).toNat ≠ 0) (hfit : a.Fits) :
+    (hn : (oracleWriteCardinality a).toNat ≠ 0) (hfit : a.Fits)
+    (hperm : evm.executionEnv.perm = true) :
     ExecFuncBody config (oracleWriteFrame imms a) evm oracleWriteFunction.body
       (.returned (oracleWriteTransformedFrame imms a evm) (oracleWriteFinalState a evm)
         (some [.int (Int.ofNat (oracleWriteIndex a).toNat),
@@ -66,7 +67,7 @@ theorem oracleWriteReturns (imms : Store) (evm : EVM.State) (a : OracleWriteArgs
   apply ExecFuncBody.execBlockRet
   rw [← List.take_append_drop 7 oracleWriteFunction.body]
   apply execBlock_append_ok (oracleWriteTransformedSource imms evm a hin hsame hn hfit)
-  refine ExecBlock.consNormal (oracleWriteAssignSource imms evm a hn hfit) ?_
+  refine ExecBlock.consNormal (by simpa only [hperm, if_true] using oracleWriteAssignSource imms evm a hn hfit) ?_
   apply ExecBlock.consReturn (ExecStmt.return ?_)
   have hi := evalExpr_var_get (cfg := config) (evm := oracleWriteFinalState a evm)
     (frame := oracleWriteTransformedFrame imms a evm) (name := "indexUpdated")

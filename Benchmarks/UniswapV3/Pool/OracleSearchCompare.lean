@@ -71,7 +71,7 @@ theorem oracleSearchPairPrefix (locals imms : Store) (evm : EVM.State)
   have he := evalExpr_word_mod (evalExpr_word_add hi hone) (evalExpr_var_get hr.cardinality) hn
   obtain ⟨oldAfter, hafter⟩ := hr.atOrAfter
   exact ExecBlock.consNormal
-    (ExecStmt.assign (evalOracleObservationExpr _ _ _ _ _ hr.base he
+    (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalOracleObservationExpr _ _ _ _ _ hr.base he
       (oracleSearchRemainder_lt _ cardinality hn hc)) (assignLocalVarBase_frame hafter)) ExecBlock.nil
 
 theorem oracleSearchFirstCall (locals imms : Store) (evm : EVM.State)
@@ -138,7 +138,7 @@ theorem oracleSearchCompareTail (locals imms : Store) (evm : EVM.State)
         evm.accountMap evm.executionEnv = true from hf, ↓reduceIte]
     refine ExecBlock.consNormal (ExecStmt.iteTrue (by simpa only [hf] using he) ?_) ExecBlock.nil
     refine ExecBlock.consNormal hcall ?_
-    refine ExecBlock.consNormal (ExecStmt.assign (value := .bool second) ?_ ?_) ExecBlock.nil
+    refine ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (value := .bool second) ?_ ?_) ExecBlock.nil
     · exact evalExpr_var_get (by simp [second, oracleSearchSecond])
     · apply assignLocalVarBase_frame (old := .bool false)
       simp [base, oracleSearchConditionFrame, Std.HashMap.getElem_insert]
