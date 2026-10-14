@@ -239,7 +239,7 @@ theorem dogCageBodyCoreOk {v : DogImmutables} {code : ByteArray}
   let evm1 := dogCagePostState evm0
   have hauthStele : solcSlotWordAt callerSlot σ I = ⟨1⟩ := hauthEvm
   have hbodySplit :
-      (ExecTransitionBody config contract evm0 locals cageTransition.body
+      (I.perm = true → ExecTransitionBody config contract evm0 locals cageTransition.body
         (.returned { contract := contract, locals := locals, immutables := immStore v } evm1 none) (immStore v)) ∧
       (I.perm = false → ExecTransitionBody config contract
         evm0 locals cageTransition.body .staticViolation (immStore v)) := by
@@ -253,7 +253,8 @@ theorem dogCageBodyCoreOk {v : DogImmutables} {code : ByteArray}
             .ok ({ contract := contract, locals := locals, immutables := immStore v }, evm1) := by
       simpa [locals, evm1] using dogCageAssignLive (v := v) evm0
     constructor
-    · have hblock := nonpayableRequireAssignStorageBlock
+    · intro hperm
+      have hblock := nonpayableRequireAssignStorageBlock (hperm := hperm)
         (cfg := config) (stele := { contract := contract, locals := locals, immutables := immStore v })
         (evm := evm0) (evm' := evm1)
         (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
@@ -317,7 +318,7 @@ theorem dogCageBodyCoreOk {v : DogImmutables} {code : ByteArray}
           native_decide)
     (dogPatchedDJumpPrefix1405 ⟨313⟩ hpatch (by native_decide))
     hmemAuth hread64 (by simp) with
-      ⟨_hperm, _, _, hretPc⟩ | ⟨hperm, hstatic⟩
+      ⟨hperm, _, _, hretPc⟩ | ⟨hperm, hstatic⟩
   swap
   · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode (hbodySplit.2 hperm)
   have hretPc' := hretPc.jumpdest
@@ -342,7 +343,7 @@ theorem dogCageBodyCoreOk {v : DogImmutables} {code : ByteArray}
   have henc : returnEquiv ByteArray.empty none cageTransition.returnType := by
     rw [show cageTransition.returnType = [] by rfl]
     exact returnEquiv.fallthrough rfl (by rfl) (by native_decide)
-  exact hret.reEquivExecutionGen hcode hdispatch hdecode hbodySplit.1
+  exact hret.reEquivExecutionGen hcode hdispatch hdecode (hbodySplit.1 hperm)
     haccounts henc
 
 theorem dogCageBodyCoreAuthRevert {v : DogImmutables} {code : ByteArray}

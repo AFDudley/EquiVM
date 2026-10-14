@@ -207,7 +207,7 @@ theorem fileAddressVowSourceBodySplit {v : DogImmutables} {σ σ₀ A I}
     let evm1 := Stele.EVM.storageStore evm0 I.codeOwner ⟨2⟩
       (setAddressOffset0Word (Stele.EVM.storageLoad evm0 I.codeOwner ⟨2⟩)
         (fileAddressDataKey I))
-    (ExecTransitionBody config contract evm0 locals fileAddressTransition.body
+    (I.perm = true → ExecTransitionBody config contract evm0 locals fileAddressTransition.body
       (.returned { contract := contract, locals := locals, immutables := immStore v } evm1 none) (immStore v)) ∧
       (I.perm = false → ExecTransitionBody config contract
         evm0 locals fileAddressTransition.body .staticViolation (immStore v)) := by
@@ -245,8 +245,9 @@ theorem fileAddressVowSourceBodySplit {v : DogImmutables} {σ σ₀ A I}
     refine ExecBlock.consNormal (ExecStmt.requireTrue hguard) ?_
     exact execBlock_singleton (ExecStmt.iteTrue hcond hwrite)
   constructor
-  · exact ExecFuncBody.execBlockOK
-      (hprefix (ExecBlock.consNormal (ExecStmt.assign hdata hassign) ExecBlock.nil))
+  · intro hperm
+    exact ExecFuncBody.execBlockOK
+      (hprefix (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hdata hassign) ExecBlock.nil))
   · intro hperm
     exact ExecFuncBody.execBlockStatic
       (hprefix (ExecBlock.consStatic (ExecStmt.assignStatic hdata hassign
@@ -256,7 +257,8 @@ theorem fileAddressVowSourceBody {v : DogImmutables} {σ σ₀ A I}
     {g : UInt256}
     (hwv : I.weiValue = ⟨0⟩)
     (hauth : solcSlotWordAt (dogCallerWardsSlot I) σ I = ⟨1⟩)
-    (hwhat : fileAddressWhat I = fileAddressVowBytes) :
+    (hwhat : fileAddressWhat I = fileAddressVowBytes)
+    (hperm : I.perm = true) :
     let locals := fileAddressLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let evm1 := Stele.EVM.storageStore evm0 I.codeOwner ⟨2⟩
@@ -264,7 +266,7 @@ theorem fileAddressVowSourceBody {v : DogImmutables} {σ σ₀ A I}
         (fileAddressDataKey I))
     ExecTransitionBody config contract evm0 locals fileAddressTransition.body
       (.returned { contract := contract, locals := locals, immutables := immStore v } evm1 none) (immStore v) :=
-  (fileAddressVowSourceBodySplit hwv hauth hwhat).1
+  (fileAddressVowSourceBodySplit hwv hauth hwhat).1 hperm
 
 theorem fileAddressUnrecognizedSourceBody {v : DogImmutables} {σ σ₀ A I}
     {g : UInt256}
@@ -1061,7 +1063,7 @@ theorem dogFileAddressBodyCoreOk
       have hstoredStele :
           stored = setAddressOffset0Word (solcSlotWordAt ⟨2⟩ σ I) dataKey := rfl
       have hbodySplit :
-          (ExecTransitionBody config contract evm0 locals fileAddressTransition.body
+          (I.perm = true → ExecTransitionBody config contract evm0 locals fileAddressTransition.body
             (.returned { contract := contract, locals := locals, immutables := immStore v } evm1 none) (immStore v)) ∧
           (I.perm = false → ExecTransitionBody config contract
             evm0 locals fileAddressTransition.body .staticViolation (immStore v)) := by
@@ -1071,7 +1073,7 @@ theorem dogFileAddressBodyCoreOk
             (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
             hwv hauthStele hwhat)
       rcases RD.dogFileAddressSuccessSplit hpatch hreach hsz68 hsize hauthSolc hwhat with
-        ⟨_hperm, hret⟩ | ⟨hperm, hstatic⟩
+        ⟨hperm, hret⟩ | ⟨hperm, hstatic⟩
       swap
       · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode (hbodySplit.2 hperm)
       have haccounts :
@@ -1084,7 +1086,7 @@ theorem dogFileAddressBodyCoreOk
             (initState σ σ₀ (Sat256.ofUInt256 g) A I)
             (sstoreAccountMap I.codeOwner σ ⟨2⟩ stored) ByteArray.empty := by
         simpa [stored, dataKey, solcSlotWordAt] using hret
-      exact hret'.reEquivExecutionGen hcode hdispatch hdecode hbodySplit.1
+      exact hret'.reEquivExecutionGen hcode hdispatch hdecode (hbodySplit.1 hperm)
         haccounts henc
     · let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
       have hbody :

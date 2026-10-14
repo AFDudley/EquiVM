@@ -76,7 +76,7 @@ theorem dogConstructorCorrect :
         (by simpa [Sat256.ofUInt256, σLive, σWards] using hsuccess)
         (by
           simpa [evm0s, evm1s, evm2s] using
-            dogSteleCtorExecSuccess
+            dogSteleCtorExecSuccess (hperm := hperm)
               (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
               (g := g) vat hwv)
         ?_ ?_

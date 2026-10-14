@@ -950,7 +950,7 @@ theorem fileIlkClipSuccessSourceBodySplit {v : DogImmutables} {σ σ₀ A I}
       (setAddressOffset0Word
         (Stele.EVM.storageLoad evmCall evmCall.executionEnv.codeOwner (fileIlkClipSlotFor I))
         (fileIlkClipClipKey I))
-    (ExecTransitionBody config contract evm0 locals fileIlkClipTransition.body
+    (I.perm = true → ExecTransitionBody config contract evm0 locals fileIlkClipTransition.body
       (.returned { contract := contract, locals := locals1, immutables := immStore v } evm1 none) (immStore v)) ∧
       (I.perm = false → ExecTransitionBody config contract
         evm0 locals fileIlkClipTransition.body .staticViolation (immStore v)) := by
@@ -985,7 +985,7 @@ theorem fileIlkClipSuccessSourceBodySplit {v : DogImmutables} {σ σ₀ A I}
         (.externalCall (.var "clip") "ilk" (.intLit 0) [] "clipIlk" (perm := false))
         (.ok { contract := contract, locals := locals1, immutables := immStore v } evmCall) := by
     simpa [locals1, fileIlkClipLocalsClipIlk, collapseReturns] using
-      (ExecStmt.externalCallSuccess (cfg := config)
+      (ExecStmt.externalCallSuccess (hperm := Or.inl rfl) (cfg := config)
         (stele := { contract := contract, locals := locals, immutables := immStore v }) (evm := evm0)
         (receiver := .var "clip") (name := "ilk") (eth := .intLit 0) (args := [])
         (retVar := "clipIlk") (perm := false) hclip (by simp [evalExpr?, pure])
@@ -1031,8 +1031,11 @@ theorem fileIlkClipSuccessSourceBodySplit {v : DogImmutables} {σ σ₀ A I}
         (ExecBlock.consNormal hcallStmt
           (ExecBlock.consNormal (ExecStmt.requireTrue heq) hwrite))))
   constructor
-  · exact ExecFuncBody.execBlockOK
-      (hprefix (ExecBlock.consNormal (ExecStmt.assign hclipPost hassign) ExecBlock.nil))
+  · intro hperm
+    exact ExecFuncBody.execBlockOK
+      (hprefix (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by
+        rw [typedCallViaEVM_executionEnv_eq hcall]
+        exact hperm)) hclipPost hassign) ExecBlock.nil))
   · intro hperm
     exact ExecFuncBody.execBlockStatic
       (hprefix (ExecBlock.consStatic (ExecStmt.assignStatic hclipPost hassign
@@ -1085,7 +1088,7 @@ theorem fileIlkClipCallFailureSourceBody {v : DogImmutables} {σ σ₀ A I}
       ExecStmt config { contract := contract, locals := locals, immutables := immStore v } evm0
         (.externalCall (.var "clip") "ilk" (.intLit 0) [] "clipIlk" (perm := false))
         .reverted := by
-    exact ExecStmt.externalCallFailure hclip (by simp [evalExpr?, pure])
+    exact ExecStmt.externalCallFailure (hperm := Or.inl rfl) hclip (by simp [evalExpr?, pure])
       (evalExprs_fileIlkClipEmptyArgs (v := v) (evm := evm0) (locals := locals))
       hcall'
   have hthenRaw :
@@ -1162,7 +1165,7 @@ theorem fileIlkClipDecodeRevertSourceBody {v : DogImmutables} {σ σ₀ A I}
       ExecStmt config { contract := contract, locals := locals, immutables := immStore v } evm0
         (.externalCall (.var "clip") "ilk" (.intLit 0) [] "clipIlk" (perm := false))
         .reverted := by
-    exact ExecStmt.externalCallReturnDecodeRevert hclip (by simp [evalExpr?, pure])
+    exact ExecStmt.externalCallReturnDecodeRevert (hperm := Or.inl rfl) hclip (by simp [evalExpr?, pure])
       (evalExprs_fileIlkClipEmptyArgs (v := v) (evm := evm0) (locals := locals))
       hcall' hdec
   have hthenRaw :
@@ -1305,7 +1308,7 @@ theorem fileIlkClipMismatchSourceBody {v : DogImmutables} {σ σ₀ A I}
         (.externalCall (.var "clip") "ilk" (.intLit 0) [] "clipIlk" (perm := false))
         (.ok { contract := contract, locals := locals1, immutables := immStore v } evmCall) := by
     simpa [locals1, fileIlkClipLocalsClipIlk, collapseReturns] using
-      (ExecStmt.externalCallSuccess (cfg := config)
+      (ExecStmt.externalCallSuccess (hperm := Or.inl rfl) (cfg := config)
         (stele := { contract := contract, locals := locals, immutables := immStore v }) (evm := evm0)
         (receiver := .var "clip") (name := "ilk") (eth := .intLit 0) (args := [])
         (retVar := "clipIlk") (perm := false) hclip (by simp [evalExpr?, pure])
@@ -3189,7 +3192,7 @@ theorem dogFileIlkClipBodyCoreOk {v : DogImmutables} {code : ByteArray}
                   simpa [actualSlot, sourceSlot] using
                     (fileIlkClipSlotFor_eq (I := I) hsz100).symm
                 have hbodySplit :
-                    (ExecTransitionBody config contract evmStele locals
+                    (I.perm = true → ExecTransitionBody config contract evmStele locals
                       fileIlkClipTransition.body
                       (.returned
                         { contract := contract,
@@ -3202,7 +3205,7 @@ theorem dogFileIlkClipBodyCoreOk {v : DogImmutables} {code : ByteArray}
                       (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
                       (g := g) (evmCall := evmPostStele) (out := out)
                       hwv hsz100 hauthStele hwhatClip hclipCode hcallStele hdecRet)
-                rcases hrdretSplit with ⟨_hperm, hrdret⟩ | ⟨hperm, hstatic⟩
+                rcases hrdretSplit with ⟨hperm, hrdret⟩ | ⟨hperm, hstatic⟩
                 swap
                 · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode
                     (hbodySplit.2 hperm)
@@ -3238,7 +3241,7 @@ theorem dogFileIlkClipBodyCoreOk {v : DogImmutables} {code : ByteArray}
                     hslotEq, storageStore_accountMap, solcSlotWord, Stele.EVM.storageLoad,
                     State.lookupAccount, Account.lookupStorage, initState] using hacc
                 exact hrdret.reEquivExecutionGen hcode hdispatch hdecode
-                  hbodySplit.1 haccounts henc
+                  (hbodySplit.1 hperm) haccounts henc
               · have hrev := RD.dogFileIlkClipMismatchRevert hpatch rd2623 hretMatch
                   hpostMemSize hpostRead64 (by simp)
                 have hdecRet :
