@@ -565,7 +565,7 @@ theorem cureLoadBodyCore {σ σ₀ A I} {g : UInt256}
                             loadAmtSlotFor_eq I]
                         exact hslot.trans hloadedEvm
                       have hbody :=
-                        (cureLoadSourceBodyOkLoadedZero
+                        (cureLoadSourceBodyOkLoadedZero (hperm := by simpa only [evmCallStele, initState] using _hperm)
                           (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
                           (evmCall := evmCallStele) (out := out) (newAmt := newAmt)
                           hwv hliveEvm hposEvm hcodeSizeEvm hcallSteleSrc hdecOut
@@ -669,7 +669,7 @@ theorem cureLoadBodyCore {σ σ₀ A I} {g : UInt256}
                             loadAmtSlotFor_eq I]
                         exact hslot.symm.trans hz
                       have hbody :=
-                        (cureLoadSourceBodyOkLoadedNonzero
+                        (cureLoadSourceBodyOkLoadedNonzero (hperm := by simpa only [evmCallStele, initState] using _hperm)
                           (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
                           (evmCall := evmCallStele) (out := out) (newAmt := newAmt)
                           hwv hliveEvm hposEvm hcodeSizeEvm hcallSteleSrc hdecOut
@@ -749,7 +749,7 @@ theorem cureLoadBodyCore {σ σ₀ A I} {g : UInt256}
                     have hbody :
                         ExecTransitionBody config contract evm0 locals loadTransition.body .reverted := by
                       simpa [evm0, locals, key] using
-                        (cureLoadSourceBodyAddRevert
+                        (cureLoadSourceBodyAddRevert (hperm := by simpa only [evmCallStele, initState] using _hperm)
                           (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
                           (evmCall := evmCallStele) (out := out) (newAmt := newAmt)
                           hwv hliveEvm hposEvm hcodeSizeEvm hcallSteleSrc hdecOut
@@ -832,7 +832,7 @@ theorem cureLoadBodyCore {σ σ₀ A I} {g : UInt256}
                   have hbody :
                       ExecTransitionBody config contract evm0 locals loadTransition.body .reverted := by
                     simpa [evm0, locals, key, evmCallStele] using
-                      (cureLoadSourceBodySubRevert
+                      (cureLoadSourceBodySubRevert (hperm := by simpa only [evmCallStele, initState] using _hperm)
                         (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
                         (evmCall := evmCallStele) (out := out) (newAmt := newAmt)
                         hwv hliveEvm hposEvm hcodeSizeEvm hcallSteleSrc hdecOut hunderStele)
