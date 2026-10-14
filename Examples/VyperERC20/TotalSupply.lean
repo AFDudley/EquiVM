@@ -1,4 +1,5 @@
 import Reasoning.WordArithmetic
+import Reasoning.Vyper
 import Examples.VyperERC20.Bytecode
 import Examples.VyperERC20.Storage
 import Examples.ERC20.Common
@@ -53,9 +54,8 @@ theorem erc20TotalSupplyBodyReturns (evm : EVM.State) (locals : Store)
       have hty : storageTypeAt? erc20Contract.storage ({ base := "totalSupply", steps := [] } : EvaledStorageRef)
           = some (.elem (.int uint256Int)) := by
         decide
-      erw [evalExpr_storage_scalar (hbackend := rfl) (t := .int uint256Int) (hbase := hlocals) (her := her)
-        (hty := hty) (hloc := vyperERC20Config_storage_totalSupply),
-        storageLocLoad_uint256])
+      exact evalExpr_storage_vyper_uint256_backend (hbackend := rfl) (hcheck := by rfl) (hbase := hlocals)
+        (her := her) (hty := hty) (hloc := vyperERC20Config_storage_totalSupply))
 
 macro "vyper_erc20_runtime_decode" : tactic =>
   `(tactic| native_decide)

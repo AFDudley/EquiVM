@@ -1,6 +1,7 @@
 import Stele.Storage
 import Stele.Value
 import ABI.Decode
+import ABI.Vyper
 
 /-! Shared execution context: configurable ABI operations, configuration, and frames. -/
 
@@ -27,6 +28,13 @@ def ExternalCallABI.withMode (abi : ExternalCallABI) (mode : ABI.DecodeMode) : E
   { abi with
     decodeCalldata? := ABI.decodeCalldataWithMode mode
     decodeValue? := ABI.decodeReturnValueWithMode? mode }
+
+/-- Install a Vyper calldata decoder with capacity-bearing declarations while retaining
+the ordinary `Config.externalABI` interface and the named external-call operations. -/
+def ExternalCallABI.withVyperABI (abi : ExternalCallABI)
+    (functions : List ABI.VyperABIFunction) : ExternalCallABI :=
+  { abi.withMode .vyper with
+    decodeCalldata? := ABI.decodeVyperCalldata functions }
 
 @[simp] theorem ExternalCallABI.withMode_encode? (abi : ExternalCallABI)
     (mode : ABI.DecodeMode) : (abi.withMode mode).encode? = abi.encode? := rfl

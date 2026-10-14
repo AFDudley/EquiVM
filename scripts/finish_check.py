@@ -21,7 +21,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 
 ACCEPTED_AXIOMS = {"propext", "Classical.choice", "Quot.sound", "Lean.ofReduceBool", "Lean.trustCompiler"}
-ACCEPTED_PATTERNS = [re.compile(r".*\.native_decide\.ax_\d+$"), re.compile(r".*\._auxLemma\.\d+$")]
+ACCEPTED_PATTERNS = [re.compile(r".*\.native_decide\.ax_\d+(?:_\d+)*$"), re.compile(r".*\._auxLemma\.\d+$")]
 
 
 def run(args: list[str], timeout: int | None = None) -> subprocess.CompletedProcess[str]:

@@ -1,0 +1,1 @@
+{"code_layout": {"TOKEN": {"type": "address", "length": 32, "offset": 0}}, "storage_layout": {"hook": {"type": "address", "n_slots": 1, "slot": 0}, "shares": {"type": "HashMap[address, uint256]", "n_slots": 1, "slot": 1}, "totalShares": {"type": "uint256", "n_slots": 1, "slot": 2}}}

@@ -1,0 +1,75 @@
+import Benchmarks.CurveVault.Dispatch
+import Benchmarks.CurveVault.Entry
+import Benchmarks.CurveVault.Calldata
+import Benchmarks.CurveVault.Lock
+import Benchmarks.CurveVault.ConvertSharesForward
+import Benchmarks.CurveVault.RuntimeBlocks_009
+
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.VyperDispatch
+
+namespace Benchmarks.CurveVault
+
+abbrev vaultConvertToSharesFunction : FunctionDecl := contract.functions[6]!
+
+theorem vaultConvertToSharesBodyCore {σ σ₀ A I} {g : UInt256}
+    (hcode : I.code = vaultBytecode) (hsize : I.calldata.size < UInt256.size)
+    (hsel : selIs I (vaultSelBytes 37)) :
+    runtimeRefinementFor config contract σ σ₀ g A I := by
+  have hsz : 4 ≤ I.calldata.size := calldata_size_ge_of_selIs I (vaultSelBytes 37) rfl hsel
+  have hd : dispatchMsg contract I.calldata = some convertToSharesTransition := by
+    apply vaultDispatch_convertToShares
+    all_goals first | exact hsel | exact selIs_exclusive (by decide +kernel) hsel
+  apply vaultGuardedEntry (t := convertToSharesTransition) (pc := UInt256.ofNat 1782)
+    hcode hsize hd rfl (by decide +kernel) (by decide +kernel)
+    (by decide +kernel : 36 < UInt256.size) (by decide +kernel) (by native_decide)
+    decodeCalldataWithMode_vyper_uint256_none_short (vaultReachConvertToSharesBody hcode hsz hsize hsel)
+  intro hvalue hargs k C rdBody
+  let assets := calldataWord I.calldata 4
+  let locals : Store := (∅ : Store).insert "_assets" (.int (Int.ofNat assets.toNat))
+  have hdec : config.externalABI.decodeCalldata? (convertToSharesTransition.params.map Param.name)
+      (transitionSignature convertToSharesTransition).paramTypes I.calldata = some locals :=
+    decodeCalldataWithMode_vyper_uint256_ok hargs
+  have harg : locals.get? "_assets" = some (.int (Int.ofNat assets.toNat)) := by simp [locals]
+  have hargEval := evalExprs?_singleton
+    (evalExpr_varUInt256 (cfg := config) (contract := contract)
+      (evm := initState σ σ₀ (Sat256.ofUInt256 g) A I) harg)
+  have hload : Stele.EVM.transientLoad (initState σ σ₀ (Sat256.ofUInt256 g) A I)
+      (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner ⟨0⟩ =
+      codeOwnerTransientWord I σ ⟨0⟩ := codeOwnerTransientWord_initState _
+  by_cases hlocked : codeOwnerTransientWord I σ ⟨0⟩ = ⟨1⟩
+  · have rdRevert := vaultBlocks.vault_block_1782_taken (by simp)
+      (by change UInt256.eq _ (codeOwnerTransientWord I σ ⟨0⟩) ≠ _
+          rw [hlocked]; decide +kernel) (by native_decide) rdBody
+    have hrev := vaultBlocks.vault_block_8284 (by simp) rdRevert
+    have hsource (l : Store) := vaultLockedBodyReverts (initState σ σ₀ (Sat256.ofUInt256 g) A I) l
+      [.internalCall "convertToShares_body" [.var "_assets"] "__r", .return [.var "__r"]] hvalue
+      (by rw [hload]; exact hlocked)
+    exact RDrev.reEquivOfDispatch hcode hd hsource hrev
+  · have rd1792 := vaultBlocks.vault_block_1782_fallthrough (by simp)
+      (u256_eq_of_ne (Ne.symm hlocked)) rdBody
+    have rd7108 := vaultBlocks.vault_block_1792 (by simp) (by native_decide) rd1792
+    have hm := vaultConversionArgsMemory_reads (vaultDispatchMemory ⟨3337024914⟩) assets ⟨1⟩ vaultMaxWord
+    rcases vaultConvertSharesRoutine (isFloor := true) SourceState.init hm.1 hm.2.1 hm.2.2.1 hm.2.2.2
+      (by simp) (by native_decide) rd7108 with hsuccess | ⟨hcallee, hrev⟩
+    · rcases hsuccess with ⟨evm', σ', locals', scratch, value, aw', out, k', C', hcallee, hs, _, rd1854⟩
+      have hret := vaultBlocks.vault_block_1854 (by simp) rd1854
+      change RDret vaultBytecode (Sat256.ofUInt256 g) (initState σ σ₀ (Sat256.ofUInt256 g) A I) σ'
+        ((value.toByteArray.write 0 scratch 576 32).readWithPadding 576 32) at hret
+      rw [toByteArray_write_read_back_of_gap _ _ _
+        (lt_of_le_of_lt (Nat.sub_le _ _) (lt_usize 576 (by norm_num)))] at hret
+      have hsource := vaultViewBodyReturns (fn := vaultConvertToSharesFunction) hvalue
+        (by rw [hload]; exact hlocked) hargEval rfl rfl (vaultSharesForwardReturns harg hcallee)
+      exact hret.reEquivExecutionGen hcode hd hdec hsource hs.accounts
+        (returnEquiv_of_encode (uint256ReturnEncoding _))
+    · have hsource := vaultViewBodyReverts (fn := vaultConvertToSharesFunction) hvalue
+        (by rw [hload]; exact hlocked) hargEval rfl rfl (vaultSharesForwardReverts harg hcallee)
+      exact hrev.reEquivExecutionRevert hcode hd hdec hsource
+
+theorem vaultConvertToSharesBody {σ σ₀ A I} {g : UInt256}
+    (_hwf : storageWF σ I)
+    (hcode : I.code = vaultBytecode) (hsize : I.calldata.size < UInt256.size)
+    (hsel : selIs I (vaultSelBytes 37)) :
+    runtimeRefinementFor config contract σ σ₀ g A I :=
+  vaultConvertToSharesBodyCore hcode hsize hsel
+
+end Benchmarks.CurveVault
