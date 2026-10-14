@@ -112,7 +112,8 @@ theorem assign_stairstepCtorWardsCaller (evm : EVM.State) {locals : Store}
 theorem stairstepCtorBodySuccess
     {σ : AccountMap} {σ₀ : AccountMap} {A : Substate} {I : ExecutionEnv}
     {g : UInt256}
-    (hwv : I.weiValue = ⟨0⟩) :
+    (hwv : I.weiValue = ⟨0⟩)
+    (hperm : I.perm = true) :
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let evm1 := stairstepCtorAfterWardsState evm0
     ExecBlock config { contract := contract, locals := ∅ } evm0 constructorDecl.body
@@ -127,12 +128,13 @@ theorem stairstepCtorBodySuccess
   simp only [constructorDecl, nonpayable, List.cons_append, List.nil_append]
   refine ExecBlock.consNormal (ExecStmt.requireTrue ?_) ?_
   · exact evalCallvalueEq_true (by simp [evm0, initState]; exact hwv)
-  exact ExecBlock.consNormal (ExecStmt.assign (by simp [evalExpr?, pure]) hassign) ExecBlock.nil
+  exact ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) (by simp [evalExpr?, pure]) hassign) ExecBlock.nil
 
 theorem stairstepSteleCtorExecSuccess
     {σ : AccountMap} {σ₀ : AccountMap} {A : Substate} {I : ExecutionEnv}
     {g : UInt256}
-    (hwv : I.weiValue = ⟨0⟩) :
+    (hwv : I.weiValue = ⟨0⟩)
+    (hperm : I.perm = true) :
     steleCtorExec config contract [] σ σ₀ g A I
       (.returned { contract := contract, locals := ∅ }
         (stairstepCtorAfterWardsState
@@ -146,7 +148,7 @@ theorem stairstepSteleCtorExecSuccess
   · rfl
   · simpa [ExecTransitionBody, contract, constructorDecl] using
       ExecFuncBody.execBlockOK
-        (stairstepCtorBodySuccess
+        (stairstepCtorBodySuccess (hperm := hperm)
           (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv)
 
 theorem stairstepSteleCtorExecReverts_nonpayable
@@ -314,7 +316,7 @@ theorem linearDecreaseConstructorCorrect :
       refine typedConstructorRefinementFor.execution hsuccess
         (by
           simpa [evm0s] using
-            stairstepSteleCtorExecSuccess
+            stairstepSteleCtorExecSuccess (hperm := hperm)
               (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
               (g := g) hwv)
         ?_

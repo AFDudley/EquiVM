@@ -61,7 +61,7 @@ theorem daiJoinConstructorCorrect :
       refine typedConstructorRefinementFor.execution hsuccess
         (by
           simpa [evm0s, evm1s, evm2s, evm3s, evm4s] using
-            daiJoinSteleCtorExecSuccess
+            daiJoinSteleCtorExecSuccess (hperm := by assumption)
               (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
               (g := g) vat dai hwv)
         ?_

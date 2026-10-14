@@ -462,7 +462,7 @@ theorem daiJoinJoinVatMoveCallFailedReverts (evm evmVat : EVM.State)
     refine ExecBlock.consNormal hmulStmt ?_
     refine ExecBlock.consNormal (ExecStmt.requireTrue hguard) ?_
     exact ExecBlock.consRevert
-      (ExecStmt.externalCallFailure (sendVal := 0) (perm := true)
+      (ExecStmt.externalCallFailure (hperm := Or.inl rfl) (sendVal := 0) (perm := true)
         hvat (by simp [evalExpr?, pure]) hargs hcall)
   simpa [ExecTransitionBody] using ExecFuncBody.execBlockRevert hblock
 
@@ -531,7 +531,7 @@ theorem daiJoinJoinDaiBurnNoCodeAfterVatReverts (evm evmVat : EVM.State)
     refine ExecBlock.consNormal hmulStmt ?_
     refine ExecBlock.consNormal (ExecStmt.requireTrue hvatGuard) ?_
     refine ExecBlock.consNormal
-      (ExecStmt.externalCallSuccess (sendVal := 0) (perm := true)
+      (ExecStmt.externalCallSuccess (hperm := Or.inl rfl) (sendVal := 0) (perm := true)
         hvat (by simp [evalExpr?, pure]) hmoveArgs hcallMove hmoveDecode) ?_
     exact execBlockAppendReverted (checkedExternalCallNoCode
       (cfg := config) (C := contract) (evm := evmVat)
@@ -613,9 +613,9 @@ theorem daiJoinJoinDaiBurnCallFailedAfterVatReverts (evm evmVat evmBurn : EVM.St
     refine ExecBlock.consNormal hmulStmt ?_
     refine ExecBlock.consNormal (ExecStmt.requireTrue hvatGuard) ?_
     refine ExecBlock.consNormal
-      (ExecStmt.externalCallSuccess (sendVal := 0) (perm := true)
+      (ExecStmt.externalCallSuccess (hperm := Or.inl rfl) (sendVal := 0) (perm := true)
         hvat (by simp [evalExpr?, pure]) hmoveArgs hcallMove hmoveDecode) ?_
-    exact execBlockAppendReverted (checkedExternalCallFailure
+    exact execBlockAppendReverted (checkedExternalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
       (cfg := config) (C := contract) (evm := evmVat) (evm' := evmBurn)
       (locals := joinAfterMoveStore I) (receiver := .storage daiRef)
       (retVar := "burnRet") (name := "burn")
@@ -655,7 +655,7 @@ theorem daiJoinJoinDaiBurnSuccessAfterVatReturnsSplit (evm evmVat evmBurn : EVM.
         (EVM.address (daiJoinDaiAddress evmVat.accountMap evmVat.executionEnv)) "burn" 0
         [.address evmVat.executionEnv.source, joinWadValue I]
         (true, evmBurn, outBurn) true) :
-    (ExecTransitionBody config contract evm (joinStore I) joinTransition.body
+    (evmBurn.executionEnv.perm = true → ExecTransitionBody config contract evm (joinStore I) joinTransition.body
       (.returned
         { contract := contract,
           locals := (joinAfterMoveStore I).insert "burnRet" (collapseReturns []) }
@@ -719,9 +719,9 @@ theorem daiJoinJoinDaiBurnSuccessAfterVatReturnsSplit (evm evmVat evmBurn : EVM.
     refine ExecBlock.consNormal hmulStmt ?_
     refine ExecBlock.consNormal (ExecStmt.requireTrue hvatGuard) ?_
     refine ExecBlock.consNormal
-      (ExecStmt.externalCallSuccess (sendVal := 0) (perm := true)
+      (ExecStmt.externalCallSuccess (hperm := Or.inl rfl) (sendVal := 0) (perm := true)
         hvat (by simp [evalExpr?, pure]) hmoveArgs hcallMove hmoveDecode) ?_
-    exact execBlock_append_ok (checkedExternalCallSuccess
+    exact execBlock_append_ok (checkedExternalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
       (cfg := config) (C := contract) (evm := evmVat) (evm' := evmBurn)
       (locals := joinAfterMoveStore I) (receiver := .storage daiRef)
       (retVar := "burnRet") (name := "burn")
@@ -731,9 +731,10 @@ theorem daiJoinJoinDaiBurnSuccessAfterVatReturnsSplit (evm evmVat evmBurn : EVM.
       (out := outBurn) (perm := true) (value := [])
       hdaiGuard hdai hburnArgs hcallBurn hburnDecode) hlog
   constructor
-  · exact ExecFuncBody.execBlockOK
+  · intro hperm
+    exact ExecFuncBody.execBlockOK
       (hprefix (ExecBlock.consNormal
-        (ExecStmt.emit (evalExprs_daiJoinJoinEvent evmBurn I)) ExecBlock.nil))
+        (ExecStmt.emit (hperm := hperm) (evalExprs_daiJoinJoinEvent evmBurn I)) ExecBlock.nil))
   · intro hperm
     exact ExecFuncBody.execBlockStatic
       (hprefix (ExecBlock.consStatic
@@ -1240,7 +1241,7 @@ theorem daiJoinJoinDaiBurnSuccessCore
   let evmBurnS : EVM.State :=
     { evmVatS with accountMap := σ'', substate := ABurn' }
   have hbodySplit :
-      (ExecTransitionBody config contract evmS (joinStore I) joinTransition.body
+      (I.perm = true → ExecTransitionBody config contract evmS (joinStore I) joinTransition.body
         (.returned
           { contract := contract,
             locals := (joinAfterMoveStore I).insert "burnRet" (collapseReturns []) }
@@ -1255,8 +1256,8 @@ theorem daiJoinJoinDaiBurnSuccessCore
         (by simpa [evmS, evmVatS, initState] using hcallMoveStele)
         (by simpa [evmVatS, evmS, initState] using hdaiCodeSizeStele)
         hcallBurnStele)
-  rcases hretSplit with ⟨_hperm, hret⟩ | ⟨hperm, hstatic⟩
-  · exact hret.reEquivExecutionGen hcode hdispatch hdecode hbodySplit.1
+  rcases hretSplit with ⟨hperm, hret⟩ | ⟨hperm, hstatic⟩
+  · exact hret.reEquivExecutionGen hcode hdispatch hdecode (hbodySplit.1 hperm)
       (by rfl)
       (by
         simpa [joinTransition] using

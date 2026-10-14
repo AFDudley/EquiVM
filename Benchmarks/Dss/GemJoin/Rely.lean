@@ -82,12 +82,13 @@ theorem gemJoinRelyBodyReturns (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hsrc : evm.executionEnv.source = I.source)
     (hauth :
-      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (relyAuthStorageSlot I) = ⟨1⟩) :
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (relyAuthStorageSlot I) = ⟨1⟩)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (relyStore I) relyTransition.body
       (.returned { contract := contract, locals := relyStore I } (relyPostState evm I) none) := by
   refine ExecFuncBody.execBlockOK ?_
   simpa [relyTransition, nonpayable, auth] using
-    nonpayableRequireAssignStorageBlock
+    nonpayableRequireAssignStorageBlock (hperm := hperm)
       (cfg := config)
       (stele := { contract := contract, locals := relyStore I })
       (evm := evm)
@@ -510,7 +511,7 @@ theorem gemJoinRelyBodyCoreOk
           (relyPostState evmStele I) none) := by
     simpa [evmStele, relyAuthWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
-      gemJoinRelyBodyReturns evmStele I
+      gemJoinRelyBodyReturns (hperm := hperm) evmStele I
         (by simp only [evmStele, initState]; exact hwv)
         (by simp [evmStele, initState])
         hauthWord

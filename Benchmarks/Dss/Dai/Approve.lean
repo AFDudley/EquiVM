@@ -145,14 +145,15 @@ theorem approveAssign (evm : EVM.State) (I : ExecutionEnv)
 /-- The Stele `approve(address,uint256)` body stores `allowance[msg.sender][usr] = wad`. -/
 theorem daiApproveBodyReturns (evm : EVM.State) (I : ExecutionEnv)
     (h : evm.executionEnv.weiValue = ⟨0⟩)
-    (hsrc : evm.executionEnv.source = I.source) :
+    (hsrc : evm.executionEnv.source = I.source)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (approveStore I) approveTransition.body
       (.returned { contract := contract, locals := approveStore I }
         (approvePostState evm I) (some [.bool true])) := by
   refine ExecFuncBody.execBlockRet ?_
   refine ExecBlock.consNormal (ExecStmt.requireTrue (evalCallvalueEq_true h)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_approve_wad evm I) (approveAssign evm I hsrc)) ?_
+    (ExecStmt.assign (hperm := Or.inr hperm) (evalExpr_approve_wad evm I) (approveAssign evm I hsrc)) ?_
   exact ExecBlock.consReturn
     (ExecStmt.return (evalExprs?_singleton (by simp [evalExpr?, pure])))
 
@@ -523,7 +524,7 @@ theorem daiApproveBodyCoreOk
         (.returned { contract := contract, locals := approveStore I }
           (approvePostState evmStele I) (some [.bool true])) := by
     simpa [evmStele] using
-      daiApproveBodyReturns evmStele I
+      daiApproveBodyReturns (hperm := hperm) evmStele I
         (by simp only [evmStele, initState]; exact hwv)
         (by simp [evmStele, initState])
   exact (daiX_approve_ok (g := Sat256.ofUInt256 g) hsz68 hsize hperm hreach)

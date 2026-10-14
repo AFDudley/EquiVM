@@ -136,7 +136,7 @@ theorem gemJoinConstructorCorrect :
             extCodeSizeWord_zero_lookup_code_zero (σ := evm5s.accountMap)
               (target := gemTarget) (addr := gem) htargetAddr hcodeSizeStele
         refine typedConstructorRefinementFor.execution (by simpa [Sat256.ofUInt256] using hRev)
-          (gemJoinSteleCtorExecReverts_noCode
+          (gemJoinSteleCtorExecReverts_noCode (hperm := hperm)
             (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
             vat ilk gem hwv
             (by
@@ -225,7 +225,7 @@ theorem gemJoinConstructorCorrect :
           rcases hrev.xiResult hcodeCtor with hOOG | ⟨g', outRev, hRev⟩
           · exact typedConstructorRefinementFor.outOfGas (by simpa [Sat256.ofUInt256] using hOOG)
           · refine typedConstructorRefinementFor.execution (by simpa [Sat256.ofUInt256] using hRev)
-              (gemJoinSteleCtorExecReverts_decimalsFailure
+              (gemJoinSteleCtorExecReverts_decimalsFailure (hperm := hperm)
                 (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
                 (evmDecimals := evmDecimalsStele) (outDecimals := out)
                 vat ilk gem hwv
@@ -320,7 +320,7 @@ theorem gemJoinConstructorCorrect :
                     initState]
                 rw [howner]
               refine typedConstructorRefinementFor.execution (by simpa [Sat256.ofUInt256] using hSuccess)
-                (gemJoinSteleCtorExecSuccess
+                (gemJoinSteleCtorExecSuccess (hperm := hperm)
                   (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
                   (evmDecimals := evmDecimalsStele) (outDecimals := out) (dec := retWord)
                   vat ilk gem hwv
@@ -369,7 +369,7 @@ theorem gemJoinConstructorCorrect :
                 simp [config, externalABI, decodeReturn?]
                 exact decodeReturnValueWithMode_legacy_uint256_none_short hshort
               refine typedConstructorRefinementFor.execution (by simpa [Sat256.ofUInt256] using hRev)
-                (gemJoinSteleCtorExecReverts_decimalsDecode
+                (gemJoinSteleCtorExecReverts_decimalsDecode (hperm := hperm)
                   (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
                   (evmDecimals := evmDecimalsStele) (outDecimals := out)
                   vat ilk gem hwv
@@ -410,7 +410,7 @@ theorem gemJoinConstructorCorrect :
                     gemJoinCtorAfterGemState, gemJoinCtorAfterIlkState, gemJoinCtorAfterVatState,
                     gemJoinCtorAfterLiveState, gemJoinCtorAfterWardsState, initState] using hdepthEq))
           refine typedConstructorRefinementFor.execution (by simpa [Sat256.ofUInt256] using hRev)
-            (gemJoinSteleCtorExecReverts_decimalsFailure
+            (gemJoinSteleCtorExecReverts_decimalsFailure (hperm := hperm)
               (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
               (evmDecimals := { evm5s with substate := A_dec }) (outDecimals := ByteArray.empty)
               vat ilk gem hwv

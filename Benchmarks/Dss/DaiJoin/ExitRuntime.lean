@@ -179,7 +179,7 @@ theorem daiJoinExitVatMoveCallFailedReverts (evm evmVat : EVM.State)
     refine ExecBlock.consNormal hmulStmt ?_
     refine ExecBlock.consNormal (ExecStmt.requireTrue hguard) ?_
     exact ExecBlock.consRevert
-      (ExecStmt.externalCallFailure (sendVal := 0) (perm := true)
+      (ExecStmt.externalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (sendVal := 0) (perm := true)
         hvat (by simp [evalExpr?, pure]) hargs hcall)
   simpa [ExecTransitionBody] using ExecFuncBody.execBlockRevert hblock
 
@@ -250,7 +250,7 @@ theorem daiJoinExitDaiMintNoCodeAfterVatReverts (evm evmVat : EVM.State)
     refine ExecBlock.consNormal hmulStmt ?_
     refine ExecBlock.consNormal (ExecStmt.requireTrue hvatGuard) ?_
     refine ExecBlock.consNormal
-      (ExecStmt.externalCallSuccess (sendVal := 0) (perm := true)
+      (ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (sendVal := 0) (perm := true)
         hvat (by simp [evalExpr?, pure]) hmoveArgs hcallMove hmoveDecode) ?_
     exact execBlockAppendReverted (checkedExternalCallNoCode
       (cfg := config) (C := contract) (evm := evmVat)
@@ -334,9 +334,9 @@ theorem daiJoinExitDaiMintCallFailedAfterVatReverts (evm evmVat evmMint : EVM.St
     refine ExecBlock.consNormal hmulStmt ?_
     refine ExecBlock.consNormal (ExecStmt.requireTrue hvatGuard) ?_
     refine ExecBlock.consNormal
-      (ExecStmt.externalCallSuccess (sendVal := 0) (perm := true)
+      (ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (sendVal := 0) (perm := true)
         hvat (by simp [evalExpr?, pure]) hmoveArgs hcallMove hmoveDecode) ?_
-    exact execBlockAppendReverted (checkedExternalCallFailure
+    exact execBlockAppendReverted (checkedExternalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
       (cfg := config) (C := contract) (evm := evmVat) (evm' := evmMint)
       (locals := exitAfterMoveStore I) (receiver := .storage daiRef)
       (retVar := "mintRet") (name := "mint")
@@ -376,7 +376,7 @@ theorem daiJoinExitDaiMintSuccessAfterVatReturnsSplit (evm evmVat evmMint : EVM.
         (EVM.address (daiJoinDaiAddress evmVat.accountMap evmVat.executionEnv)) "mint" 0
         [.address (AccountAddress.ofUInt256 (exitUsrMaskedWord I)), exitWadValue I]
         (true, evmMint, outMint) true) :
-    (ExecTransitionBody config contract evm (exitStore I) exitTransition.body
+    (evmMint.executionEnv.perm = true → ExecTransitionBody config contract evm (exitStore I) exitTransition.body
       (.returned
         { contract := contract,
           locals := (exitAfterMoveStore I).insert "mintRet" (collapseReturns []) }
@@ -442,9 +442,9 @@ theorem daiJoinExitDaiMintSuccessAfterVatReturnsSplit (evm evmVat evmMint : EVM.
     refine ExecBlock.consNormal hmulStmt ?_
     refine ExecBlock.consNormal (ExecStmt.requireTrue hvatGuard) ?_
     refine ExecBlock.consNormal
-      (ExecStmt.externalCallSuccess (sendVal := 0) (perm := true)
+      (ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (sendVal := 0) (perm := true)
         hvat (by simp [evalExpr?, pure]) hmoveArgs hcallMove hmoveDecode) ?_
-    exact execBlock_append_ok (checkedExternalCallSuccess
+    exact execBlock_append_ok (checkedExternalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
       (cfg := config) (C := contract) (evm := evmVat) (evm' := evmMint)
       (locals := exitAfterMoveStore I) (receiver := .storage daiRef)
       (retVar := "mintRet") (name := "mint")
@@ -454,9 +454,10 @@ theorem daiJoinExitDaiMintSuccessAfterVatReturnsSplit (evm evmVat evmMint : EVM.
       (out := outMint) (perm := true) (value := [])
       hdaiGuard hdai hmintArgs hcallMint hmintDecode) hlog
   constructor
-  · exact ExecFuncBody.execBlockOK
+  · intro hperm
+    exact ExecFuncBody.execBlockOK
       (hprefix (ExecBlock.consNormal
-        (ExecStmt.emit (evalExprs_daiJoinExitEvent evmMint I)) ExecBlock.nil))
+        (ExecStmt.emit (hperm := hperm) (evalExprs_daiJoinExitEvent evmMint I)) ExecBlock.nil))
   · intro hperm
     exact ExecFuncBody.execBlockStatic
       (hprefix (ExecBlock.consStatic
@@ -926,7 +927,7 @@ theorem daiJoinExitDaiMintSuccessCore
   let evmMintS : EVM.State :=
     { evmVatS with accountMap := σ'', substate := AMint' }
   have hbodySplit :
-      (ExecTransitionBody config contract evmS (exitStore I) exitTransition.body
+      (I.perm = true → ExecTransitionBody config contract evmS (exitStore I) exitTransition.body
         (.returned
           { contract := contract,
             locals := (exitAfterMoveStore I).insert "mintRet" (collapseReturns []) }
@@ -944,7 +945,7 @@ theorem daiJoinExitDaiMintSuccessCore
         (by simpa [evmVatS, evmS, initState] using hdaiCodeSize)
         hcallMintAligned)
   rcases hretSplit with ⟨_hperm, hret⟩ | ⟨hperm, hstatic⟩
-  · exact hret.reEquivExecutionGen hcode hdispatch hdecode hbodySplit.1
+  · exact hret.reEquivExecutionGen hcode hdispatch hdecode (hbodySplit.1 _hperm)
       (by rfl)
       (by
         simpa [exitTransition] using

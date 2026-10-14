@@ -500,7 +500,8 @@ theorem daiMintBodyReturns (evm : EVM.State) (I : ExecutionEnv)
     (hauth :
       Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (mintAuthStorageSlot I) = ⟨1⟩)
     (hfitUsr : mintUsrCreditNat evm I < UInt256.size)
-    (hfitSupply : mintSupplyCreditNat (mintAfterUsrCreditState evm I) I < UInt256.size) :
+    (hfitSupply : mintSupplyCreditNat (mintAfterUsrCreditState evm I) I < UInt256.size)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (mintStore I) mintTransition.body
       (.returned { contract := contract, locals := mintStore I }
         (mintPostState evm I) none) := by
@@ -513,14 +514,14 @@ theorem daiMintBodyReturns (evm : EVM.State) (I : ExecutionEnv)
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue (evalExpr_mint_usr_checkedAdd_true evm I hfitUsr)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_mint_usr_credit evm I hfitUsr)
+    (ExecStmt.assign (hperm := Or.inr hperm) (evalExpr_mint_usr_credit evm I hfitUsr)
       (mintAssignUsr evm I hfitUsr)) ?_
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue
       (evalExpr_mint_supply_checkedAdd_true (mintAfterUsrCreditState evm I) I
         hfitSupply)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign
+    (ExecStmt.assign (hperm := Or.inr (by simpa only [mintAfterUsrCreditState, storageStore_executionEnv] using hperm))
       (evalExpr_mint_supply_credit (mintAfterUsrCreditState evm I) I hfitSupply)
       (by simpa [mintPostState] using
         mintAssignSupply (mintAfterUsrCreditState evm I) I hfitSupply)) ?_
@@ -585,7 +586,8 @@ theorem daiMintBodyReverts_supplyOverflow (evm : EVM.State) (I : ExecutionEnv)
     (hauth :
       Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (mintAuthStorageSlot I) = ⟨1⟩)
     (hfitUsr : mintUsrCreditNat evm I < UInt256.size)
-    (hover : UInt256.size ≤ mintSupplyCreditNat (mintAfterUsrCreditState evm I) I) :
+    (hover : UInt256.size ≤ mintSupplyCreditNat (mintAfterUsrCreditState evm I) I)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (mintStore I) mintTransition.body .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
   simp only [mintTransition, nonpayable, auth, creditBalance, checkedAdd, List.append_assoc,
@@ -596,7 +598,7 @@ theorem daiMintBodyReverts_supplyOverflow (evm : EVM.State) (I : ExecutionEnv)
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue (evalExpr_mint_usr_checkedAdd_true evm I hfitUsr)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_mint_usr_credit evm I hfitUsr)
+    (ExecStmt.assign (hperm := Or.inr hperm) (evalExpr_mint_usr_credit evm I hfitUsr)
       (mintAssignUsr evm I hfitUsr)) ?_
   exact ExecBlock.consRevert
     (ExecStmt.requireRevert
@@ -1425,7 +1427,7 @@ theorem daiMintBodyCore {σ σ₀ A I} {g : UInt256}
                 (.returned { contract := contract, locals := mintStore I }
                   (mintPostState evmStele I) none) := by
             simpa [evmStele] using
-              daiMintBodyReturns evmStele I
+              daiMintBodyReturns (hperm := hperm) evmStele I
                 (by simp only [evmStele, initState]; exact hwv)
                 hsourceStele
                 hauthBody
@@ -1450,7 +1452,7 @@ theorem daiMintBodyCore {σ σ₀ A I} {g : UInt256}
               ExecTransitionBody config contract evmStele (mintStore I)
                 mintTransition.body .reverted := by
             simpa [evmStele] using
-              daiMintBodyReverts_supplyOverflow evmStele I
+              daiMintBodyReverts_supplyOverflow (hperm := hperm) evmStele I
                 (by simp only [evmStele, initState]; exact hwv)
                 hsourceStele
                 hauthBody
