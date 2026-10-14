@@ -81,7 +81,7 @@ theorem transferBaseReady_finish {v src dst amount evm evm' evm'' result}
   have hcall := transferBaseReady_update (v := v) evm' hf
   change transferBaseUpdateOutcome v evm' src dst _ _ _ _ = .ok evm'' at hu
   simp only [transferBaseUpdateResult, hu] at hcall
-  have hb := transferBaseTail_source tail (transferBaseUpdatedFrame ready) dst
+  have hb := transferBaseTail_source (hperm := transferBaseUpdateOutcome_result_perm hu) tail (transferBaseUpdatedFrame ready) dst
     (withdrawBaseSupplied evm src amount) (supplyBaseSupplied evm dst amount)
     ((hfargs.insert "__c9" .unit (by decide)).insert "__c10" .unit (by decide))
     (withdrawSupplyAmount_lt _ _) (supplyAmount_lt _ _) hf.1.2.1.1

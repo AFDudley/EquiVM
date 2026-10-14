@@ -33,6 +33,13 @@ theorem absorbSeizeOutcome_ok_perm {evm updated : State} {account asset : Accoun
   split_ifs at h with hp
   exact hp
 
+theorem absorbSeizeOutcome_result_perm {evm updated : State} {account asset : AccountAddress}
+    (h : absorbSeizeOutcome evm account asset = .ok updated) : updated.executionEnv.perm = true := by
+  unfold absorbSeizeOutcome absorbSeizeTotalOutcome at h
+  split_ifs at h with hp hs
+  cases h
+  simpa only [absorbSeizeUserState, storePackedWord, storageStore_executionEnv] using hp
+
 def absorbSeizeBlock : List Stmt :=
   [.letDecl "seizeAmount" (some (.elem (.int (.uint ⟨128, by decide⟩))))
       (.storage ⟨"userCollateral", [.mindex (.var "account"), .mindex (.var "asset"), .field "balance"]⟩),

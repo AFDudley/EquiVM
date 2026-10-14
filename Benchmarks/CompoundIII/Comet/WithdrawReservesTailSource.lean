@@ -107,7 +107,7 @@ theorem withdrawReservesAfter_source {v : CometWithExtendedAssetListImmutables}
       by_cases hp : evm'.executionEnv.perm = true
       · rw [if_pos hp]
         refine ⟨final, (withdrawReservesReady v initial evm recipient amount reserves hv).run ?_⟩
-        exact ExecBlock.consNormal hc (ExecBlock.consNormal (ExecStmt.emit hemit) ExecBlock.nil)
+        exact ExecBlock.consNormal hc (ExecBlock.consNormal (ExecStmt.emit (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hemit) ExecBlock.nil)
       · rw [if_neg hp]
         apply (withdrawReservesReady v initial evm recipient amount reserves hv).run
         exact ExecBlock.consNormal hc

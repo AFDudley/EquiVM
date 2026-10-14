@@ -113,7 +113,7 @@ theorem collateralAdd_exec {frame : Frame} {evm : EVM.State} {liquidity value : 
       (.ok (collateralAddFrame frame liquidity value) evm) := by
   obtain ⟨hlo, hhi⟩ := collateralSum_bounds hl hv
   have hsum := signedWord_add_of_range hlo hhi
-  apply ExecStmt.assign (value := .int (signedWord (liquidity + value)))
+  apply ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (value := .int (signedWord (liquidity + value)))
   · rw [hsum]
     apply signedRangeSourceOk ?_ hlo hhi
     simp only [evalExpr?, hf, he, EvalResult.ofOption, bind, EvalResult.bind,

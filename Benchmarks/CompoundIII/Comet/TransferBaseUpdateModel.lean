@@ -28,4 +28,14 @@ def transferBaseUpdateResult (frame : Frame) (v : CometWithExtendedAssetListImmu
   | .reverted => .reverted
   | .staticViolation => .staticViolation
 
+theorem transferBaseUpdateOutcome_result_perm
+    {v evm src dst srcBasic dstBasic srcNext dstNext updated}
+    (hu : transferBaseUpdateOutcome v evm src dst srcBasic dstBasic srcNext dstNext = .ok updated) :
+    updated.executionEnv.perm = true := by
+  unfold transferBaseUpdateOutcome at hu
+  split at hu
+  · exact updateBaseOutcome_result_perm hu
+  · cases hu
+  · cases hu
+
 end Benchmarks.CompoundIII.Comet

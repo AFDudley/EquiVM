@@ -19,7 +19,8 @@ def absorbClearBlock : List Stmt :=
 
 theorem absorbClear_source (frame : Frame) (evm : EVM.State) (account : AccountAddress)
     (hc : frame.contract = contract) (hl : frame.locals.get? "userBasic" = none)
-    (ha : frame.locals.get? "account" = some (.address account)) :
+    (ha : frame.locals.get? "account" = some (.address account))
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config frame evm absorbClearBlock (.ok frame (absorbClearState evm account)) := by
   have he (evm' : EVM.State) : evalExpr? config frame evm' (.var "account") =
       .ok (.address account) := by simp only [evalExpr?, ha, EvalResult.ofOption]
@@ -27,8 +28,8 @@ theorem absorbClear_source (frame : Frame) (evm : EVM.State) (account : AccountA
     hc hl (he evm)
   have h1 := assignUserBasicField frame (storePackedWord evm (userBasicSlot account) ⟨0⟩ 29 2)
     account (.var "account") ⟨3, by decide⟩ ⟨0⟩ hc hl (he _)
-  exact ExecBlock.consNormal (ExecStmt.assign (by simp only [evalExpr?, pure]; rfl) h0)
-    (ExecBlock.consNormal (ExecStmt.assign (by simp only [evalExpr?, pure]; rfl) h1) .nil)
+  exact ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) (by simp only [evalExpr?, pure]; rfl) h0)
+    (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [storePackedWord, storageStore_executionEnv] using hperm)) (by simp only [evalExpr?, pure]; rfl) h1) .nil)
 
 def absorbClearMemory (mem : ByteArray) (account : AccountAddress) : ByteArray :=
   twoWordHashMem (EVM.word account.val) ⟨5⟩ (twoWordHashMem (EVM.word account.val) ⟨5⟩ mem)

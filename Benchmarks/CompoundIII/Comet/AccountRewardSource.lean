@@ -67,7 +67,7 @@ theorem accountReward_source (v : CometWithExtendedAssetListImmutables) (borrow 
             change (UInt256.add basic.accrued reward).toNat < 2^64
             rw [addWord_toNat _ _ (lt_trans hadd (by decide))]
             exact hadd
-          exact ExecBlock.consNormal (ExecStmt.assign (hperm := by first | assumption | exact Or.inr ‹_› | exact Or.inl rfl)
+          exact ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
             (checkedNarrowAddSourceOk ⟨64, by decide⟩ (by decide) (evalBasicAccrued heb2) her hadd)
             (assignBasicAccrued (basic.accrued + reward) hsum hb2)) ExecBlock.nil
         · rw [if_neg (show ¬ AccountRewardValid v evm basic principal borrow from

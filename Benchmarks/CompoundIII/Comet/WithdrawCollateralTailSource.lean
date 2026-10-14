@@ -69,7 +69,7 @@ theorem withdrawCollateralTransfer_source {v src recipient asset amount evm resu
       exact ExecBlock.consNormal (hcall ht) (ExecBlock.consStatic (ExecStmt.emitStatic he hp))
     · simp only [emitOutcome, hp, if_true, internalBlockResult]
       exact ⟨final, ExecBlock.consNormal (hcall ht)
-        (ExecBlock.consNormal (ExecStmt.emit he) .nil)⟩
+        (ExecBlock.consNormal (ExecStmt.emit (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) he) .nil)⟩
 
 theorem withdrawCollateralCheck_source {v src recipient asset amount evm result}
     (ht : WithdrawCollateralCheck v src recipient asset amount evm result) (frame : Frame)

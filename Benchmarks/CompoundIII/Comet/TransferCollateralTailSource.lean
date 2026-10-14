@@ -54,7 +54,7 @@ theorem transferCollateralCheck_source {v src dst asset amount evm result}
     · simp only [emitOutcome, hp, if_true, internalBlockResult]
       exact ⟨ready, ExecBlock.consNormal (hcall ht)
         (ExecBlock.consNormal (ExecStmt.requireTrue (he _ _))
-          (ExecBlock.consNormal (ExecStmt.emit hargs) .nil))⟩
+          (ExecBlock.consNormal (ExecStmt.emit (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hargs) .nil))⟩
 
 theorem transferCollateralDst_source {v src dst asset amount balance next evm out result}
     (ht : TransferCollateralDstMember v src dst balance next evm out result) (frame : Frame)

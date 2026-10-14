@@ -52,7 +52,7 @@ theorem absorbAfterAsset_source {account : AccountAddress} {out : ByteArray} {de
         simp only [ready, absorbAssetSeizedFrame, absorbAssetNameFrame,
           Std.HashMap.get?_eq_getElem?, Std.HashMap.getElem?_insert, beq_iff_eq,
           if_neg hk1, if_neg hk2]
-      have hp := absorbCollateralPrice_source hprice ready absorber account asset hc
+      have hp := absorbCollateralPrice_source (hperm := absorbSeizeOutcome_result_perm hs) hprice ready absorber account asset hc
         ((hget _ (by decide) (by decide)).trans hi)
         ((hget _ (by decide) (by decide)).trans hd)
         (by simp only [ready, absorbAssetSeizedFrame, Std.HashMap.get?_eq_getElem?,

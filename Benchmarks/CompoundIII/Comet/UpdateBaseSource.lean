@@ -32,7 +32,7 @@ theorem updateBase_block (v : CometWithExtendedAssetListImmutables) (evm : EVM.S
   have hb1 : f1.locals.get? "basic" = some (userBasicValue basic) := by
     simp only [f1, f0, updateBaseEntry, Std.HashMap.get?_eq_getElem?, Std.HashMap.getElem?_insert]
     rfl
-  apply internalBlockResult.prepend (ExecStmt.assign (hperm := by first | assumption | exact Or.inr ‹_› | exact Or.inl rfl) hepn (assignBasicPrincipal newPrincipal hb1))
+  apply internalBlockResult.prepend (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hepn (assignBasicPrincipal newPrincipal hb1))
   have hb2 : f2.locals.get? "basic" = some (userBasicValue basic') := by
     simp only [f2, basic', updateBaseRewardEntry, Std.HashMap.get?_eq_getElem?,
       Std.HashMap.getElem?_insert]

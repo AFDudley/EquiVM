@@ -48,13 +48,13 @@ theorem supplyBaseTotals_source (frame : Frame) (evm : EVM.State) (supplied repa
             .ok (frame, supplyBaseTotalsState evm supplied repaid) := by
           simpa only [← hc] using assignTotalsPrincipal evm' frame.locals frame.immutables true
             (UInt256.sub (withdrawBaseTotal evm' true) repaid) hBT
-        exact ExecBlock.consNormal (ExecStmt.assign hadd hwS)
-          (ExecBlock.consNormal (ExecStmt.assign hsub hwB) ExecBlock.nil)
+        exact ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hp) hadd hwS)
+          (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [evm', supplyBaseSupplyState, storeTotalsPrincipal, storageStore_executionEnv] using hp)) hsub hwB) ExecBlock.nil)
       · simp only [supplyBaseTotalsResult, supplyBaseTotalsOutcome, if_pos hs, hp,
           if_true, if_neg hb]
         have hsub := checkedNarrowSubSourceUnderflow ⟨104, by decide⟩ htB heB
           (Nat.lt_of_not_ge hb)
-        exact ExecBlock.consNormal (ExecStmt.assign hadd hwS)
+        exact ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hp) hadd hwS)
           (ExecBlock.consRevert (ExecStmt.assignExprRevert hsub))
   · simp only [supplyBaseTotalsResult, supplyBaseTotalsOutcome, if_neg hs]
     have hadd := uintRangeSourceOverflow ⟨104, by decide⟩ (naturalAddSource htS heS)

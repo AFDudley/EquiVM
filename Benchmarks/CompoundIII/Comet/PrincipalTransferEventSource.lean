@@ -42,7 +42,8 @@ theorem principalTransferEvent_source (frame : Frame) (evm : EVM.State) (mint : 
     (hne : retName ≠ accountName) (hc : frame.contract = contract)
     (ha : frame.locals.get? accountName = some (.address account))
     (hp : frame.locals.get? amountName = some (.int principal.toNat))
-    (hi : frame.locals.get? "baseSupplyIndex" = none) (hb : principal.toNat < 2^104) :
+    (hi : frame.locals.get? "baseSupplyIndex" = none) (hb : principal.toNat < 2^104)
+    (hperm : evm.executionEnv.perm = true) :
     ExecStmt config frame evm (principalTransferEvent mint accountName amountName retName)
       (.ok (principalTransferEventFrame frame evm principal retName) evm) := by
   have he : evalExpr? config frame evm (.var amountName) = .ok (.int principal.toNat) := by
@@ -71,7 +72,7 @@ theorem principalTransferEvent_source (frame : Frame) (evm : EVM.State) (mint : 
     have hem : ExecStmt config final evm (.emit "Transfer" (if mint then
         [.cast (.intLit 0) (.elem .address), .var accountName, .var retName] else
         [.var accountName, .cast (.intLit 0) (.elem .address), .var retName])) (.ok final evm) := by
-      apply ExecStmt.emit (vals := if mint then
+      apply ExecStmt.emit (hperm := hperm) (vals := if mint then
         [.address ⟨0, by decide⟩, .address account, .int value.toNat] else
         [.address account, .address ⟨0, by decide⟩, .int value.toNat])
       cases mint <;> simp only [Bool.false_eq_true, if_false, if_true, evalExprs?, evalExpr?,

@@ -12,7 +12,8 @@ theorem trackingAccrual_source (v : CometWithExtendedAssetListImmutables) (borro
     (hc : frame.contract = contract) (hi : frame.immutables = immStore v)
     (ht : evalExpr? config frame evm (.var "timeElapsed") = .ok (.int elapsed.toNat))
     (hp : frame.locals.get? (totalsPrincipalName borrow) = none)
-    (hx : frame.locals.get? (trackingIndexName borrow) = none) :
+    (hx : frame.locals.get? (trackingIndexName borrow) = none)
+    (hperm : evm.executionEnv.perm = true) :
     let w0 := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩
     let w1 := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩
     ExecBlock config frame evm (trackingAccrualBlock borrow)
@@ -73,7 +74,7 @@ theorem trackingAccrual_source (v : CometWithExtendedAssetListImmutables) (borro
             simpa only [f2, trackingAccrualFrame, hc] using
               assignTrackingIndex evm f2.locals f2.immutables borrow
                 (trackingIndexWord w0 borrow + increment) hlocal
-          exact ExecBlock.consNormal (ExecStmt.assign
+          exact ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm)
             (checkedNarrowAddSourceOk ⟨64, by decide⟩ (by decide) hidx hsafe hadd) ha) ExecBlock.nil
         · rw [if_neg (show ¬ TrackingAccrualValid v borrow w0 w1 elapsed from
             fun h ↦ hadd h.2)]
@@ -98,7 +99,8 @@ theorem trackingBranch_source (v : CometWithExtendedAssetListImmutables) (borrow
     (hc : frame.contract = contract) (hi : frame.immutables = immStore v)
     (ht : evalExpr? config frame evm (.var "timeElapsed") = .ok (.int elapsed.toNat))
     (hp : frame.locals.get? (totalsPrincipalName borrow) = none)
-    (hx : frame.locals.get? (trackingIndexName borrow) = none) :
+    (hx : frame.locals.get? (trackingIndexName borrow) = none)
+    (hperm : evm.executionEnv.perm = true) :
     ExecStmt config frame evm (trackingBranch borrow)
       (if TrackingBranchValid v borrow evm elapsed then
         .ok (trackingBranchFrame frame evm v borrow elapsed)
@@ -115,7 +117,7 @@ theorem trackingBranch_source (v : CometWithExtendedAssetListImmutables) (borrow
       (.binary .ge (.storage ⟨totalsPrincipalName borrow, []⟩) (.immutable "baseMinForRewards")) =
       .ok (.bool (decide (TrackingEnabled v borrow evm))) := by
     exact naturalGeSource htotal hmin
-  have hb := trackingAccrual_source v borrow frame evm elapsed hc hi ht hp hx
+  have hb := trackingAccrual_source (hperm := by assumption) v borrow frame evm elapsed hc hi ht hp hx
   dsimp only at hb
   by_cases hen : TrackingEnabled v borrow evm
   · simp only [TrackingBranchValid, trackingBranchFrame, trackingBranchState, if_pos hen]

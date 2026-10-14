@@ -85,4 +85,16 @@ inductive CollateralLoopTrace (v : CometWithExtendedAssetListImmutables) (borrow
         (liquidity + d.value borrow) evm' result) :
       CollateralLoopTrace v borrow account assets reserved i liquidity evm result
 
+theorem CollateralLoopTrace.executionEnv_eq {v borrow account assets reserved i liquidity evm result}
+    (ht : CollateralLoopTrace v borrow account assets reserved i liquidity evm result) :
+    ∀ evm' b, result = some (evm', b) → evm'.executionEnv = evm.executionEnv := by
+  induction ht with
+  | exhausted _ => intro evm' b he; cases he; rfl
+  | skipped _ _ _ ih => exact ih
+  | solvent _ _ _ => intro evm' b he; cases he; rfl
+  | failed _ _ _ _ => intro evm' b he; cases he
+  | next _ _ _ hv _ ih =>
+    intro evm' b he
+    exact (ih evm' b he).trans (hv.executionEnv_eq _ _ rfl)
+
 end Benchmarks.CompoundIII.Comet
